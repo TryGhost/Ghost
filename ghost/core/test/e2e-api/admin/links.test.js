@@ -1,6 +1,7 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyString, anyEtag, anyNumber} = matchers;
 const sinon = require('sinon');
+const config = require('../../../core/shared/config');
 
 const matchLink = {
     post_id: anyObjectId,
@@ -23,7 +24,8 @@ describe('Links API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'links');
         await agent.loginAsOwner();
-        clock = sinon.useFakeTimers(new Date());
+        // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
+        clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true});
     });
 
     afterEach(async function () {
@@ -62,7 +64,7 @@ describe('Links API', function () {
                     action: 'updateLink',
                     meta: {
                         link: {
-                            to: 'http://127.0.0.1:2369/blog/emails/test?example=1'
+                            to: `${config.get('url')}/blog/emails/test?example=1`
                         }
                     }
                 }
@@ -99,7 +101,7 @@ describe('Links API', function () {
                         ...matchLink,
                         link: {
                             ...matchLink.link,
-                            to: 'http://127.0.0.1:2369/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df',
+                            to: `${config.get('url')}/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df`,
                             edited: true
                         }
                     },
@@ -107,7 +109,7 @@ describe('Links API', function () {
                         ...matchLink,
                         link: {
                             ...matchLink.link,
-                            to: 'http://127.0.0.1:2369/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df',
+                            to: `${config.get('url')}/blog/emails/test?example=1&ref=Test-newsletter&attribution_type=post&attribution_id=618ba1ffbe2896088840a6df`,
                             edited: true
                         }
                     }

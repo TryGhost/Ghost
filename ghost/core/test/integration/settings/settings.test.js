@@ -1,3 +1,4 @@
+const assert = require('node:assert/strict');
 const db = require('../../../core/server/data/db');
 const testUtils = require('../../utils');
 
@@ -30,6 +31,7 @@ describe('Settings', function () {
         'members_email_auth_secret',
         'members_stripe_webhook_id',
         'members_stripe_webhook_secret',
+        'members_otc_secret',
         'site_uuid'
     ];
     // If this test is failing, then it is likely a new setting has been added without group migration
@@ -41,7 +43,7 @@ describe('Settings', function () {
             .count('*')
             .then(function (data) {
                 const countResult = data[0]['count(*)'];
-                countResult.should.eql(0);
+                assert.equal(countResult, 0);
             })
             .catch(function (err) {
             // CASE: table does not exist

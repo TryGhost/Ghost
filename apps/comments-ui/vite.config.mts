@@ -1,0 +1,94 @@
+import pkg from './package.json';
+import react from '@vitejs/plugin-react';
+import svgr from 'vite-plugin-svgr';
+import {defineConfig} from 'vitest/config';
+import {resolve} from 'path';
+import {stripFingerprintingPlugin} from './vite-plugin-strip-fingerprinting';
+
+const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
+
+// https://vitejs.dev/config/
+export default (function viteConfig() {
+    return defineConfig({
+        logLevel: process.env.CI ? 'info' : 'warn',
+        plugins: [
+            stripFingerprintingPlugin(),
+            svgr(),
+            react()
+        ],
+        define: {
+            'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV),
+            'process.env.VITEST_SEGFAULT_RETRY': 3
+        },
+        preview: {
+            host: '0.0.0.0',
+            allowedHosts: true, // allows domain-name proxies to the preview server
+            port: 7173,
+            cors: true
+        },
+        server: {
+            port: 5368
+        },
+        build: {
+            reportCompressedSize: false,
+            outDir: resolve(__dirname, 'umd'),
+            emptyOutDir: true,
+            minify: true,
+            sourcemap: true,
+            cssCodeSplit: true,
+            lib: {
+                entry: resolve(__dirname, 'src/index.tsx'),
+                formats: ['umd'],
+                name: pkg.name,
+                fileName(format) {
+                    if (format === 'umd') {
+                        return `${outputFileName}.min.js`;
+                    }
+
+                    return `${outputFileName}.js`;
+                }
+            },
+            rollupOptions: {
+                output: {}
+            },
+            commonjsOptions: {
+                include: [/ghost/, /node_modules/],
+                dynamicRequireRoot: '../../',
+                // Single glob expands to all SUPPORTED_LOCALES; passing each
+                // locale as an explicit path triggers a full repo-root
+                // directory crawl per entry under vite 7's bundled
+                // @rollup/plugin-commonjs, adding ~1s per locale to build time.
+                dynamicRequireTargets: ['../../ghost/i18n/locales/*/comments.json']
+            }
+        },
+        resolve: {
+            // comments-ui uses React 17 while the monorepo hoists React 18;
+            // dedupe + alias ensures all deps (including @tiptap/react) use
+            // the same React 17 instance from comments-ui's node_modules
+            dedupe: ['react', 'react-dom', '@tryghost/debug'],
+            alias: {
+                'react': resolve(__dirname, 'node_modules/react'),
+                'react-dom': resolve(__dirname, 'node_modules/react-dom')
+            }
+        },
+        test: {
+            globals: true, // required for @testing-library/jest-dom extensions
+            environment: 'jsdom',
+            setupFiles: './src/setup-tests.ts',
+            include: ['test/unit/**/*.test.{js,jsx,ts,tsx}'],
+            testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
+            server: {
+                deps: {
+                    // Inline all deps so Vite's resolve.alias applies to their
+                    // React imports (prevents duplicate React 17 instances when
+                    // the monorepo hoists React 18)
+                    inline: [/@tiptap/, /@headlessui/]
+                }
+            },
+            ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674
+                minThreads: 1,
+                maxThreads: 2
+            })
+        }
+    });
+});

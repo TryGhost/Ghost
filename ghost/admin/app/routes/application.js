@@ -1,14 +1,14 @@
 import * as Sentry from '@sentry/ember';
-import AdminXSettings from '../components/admin-x/settings';
+import * as jsxRuntime from 'react/jsx-runtime';
 import AuthConfiguration from 'ember-simple-auth/configuration';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import Route from '@ember/routing/route';
+import SearchModal from '../components/modals/search';
 import ShortcutsRoute from 'ghost-admin/mixins/shortcuts-route';
 import ctrlOrCmd from 'ghost-admin/utils/ctrl-or-cmd';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {getSentryConfig} from '../utils/sentry';
-import {importComponent} from '../components/admin-x/admin-x-component';
 import {inject} from 'ghost-admin/decorators/inject';
 import {
     isAjaxError,
@@ -31,24 +31,29 @@ let shortcuts = {};
 
 shortcuts.esc = {action: 'closeMenus', scope: 'default'};
 shortcuts[`${ctrlOrCmd}+s`] = {action: 'save', scope: 'all'};
+shortcuts[`${ctrlOrCmd}+k`] = {action: 'openSearchModal'};
+shortcuts[`${ctrlOrCmd}+,`] = {action: 'openSettings'};
 
 // make globals available for any pulled in UMD components
 // - avoids external components needing to bundle React and running into multiple version errors
 window.React = React;
+window.React.jsx = jsxRuntime.jsx;
+window.React.jsxs = jsxRuntime.jsxs;
+window.React.Fragment = jsxRuntime.Fragment;
 window.ReactDOM = ReactDOM;
 
 export default Route.extend(ShortcutsRoute, {
     ajax: service(),
     configManager: service(),
-    feature: service(),
     ghostPaths: service(),
     notifications: service(),
     router: service(),
     session: service(),
     settings: service(),
+    stateBridge: service(),
     ui: service(),
-    whatsNew: service(),
     billing: service(),
+    modals: service(),
 
     shortcuts,
 
@@ -68,14 +73,14 @@ export default Route.extend(ShortcutsRoute, {
 
     async beforeModel(transition) {
         await this.session.setup();
-        
+
         // Intercept home route when unauthenticated to prevent decorator binding issues
         // Check AFTER session setup to ensure isAuthenticated is accurate
         if (transition.to?.name === 'home' && !this.session.isAuthenticated) {
             transition.abort();
             return this.transitionTo('signin');
         }
-        
+
         return this.prepareApp();
     },
 
@@ -119,24 +124,9 @@ export default Route.extend(ShortcutsRoute, {
 
             if (isNotFoundError(error)) {
                 if (transition) {
-                    transition.abort();
-
-                    let routeInfo = transition?.to;
-                    let router = this.router;
-                    let params = [];
-
-                    if (routeInfo) {
-                        for (let key of Object.keys(routeInfo.params)) {
-                            params.push(routeInfo.params[key]);
-                        }
-
-                        let url = router.urlFor(routeInfo.name, ...params)
-                            .replace(/^#\//, '')
-                            .replace(/^\//, '')
-                            .replace(/^ghost\//, '');
-
-                        return this.replaceWith('error404', url);
-                    }
+                    // Let Ember render the error substate (error.hbs) in place
+                    // so the URL stays at the attempted destination
+                    return true;
                 }
 
                 // when there's no transition we fall through to our generic error handler
@@ -177,6 +167,26 @@ export default Route.extend(ShortcutsRoute, {
 
             // fallback to 500 error page
             return true;
+        },
+
+        openSearchModal() {
+            // Don't open the search modal if the sidebar is hidden
+            // e.g. in the editor or settings screens
+            if (this.ui.isFullScreen) {
+                return;
+            }
+
+            return this.modals.open(SearchModal);
+        },
+
+        openSettings() {
+            // Don't open the settings screen if the sidebar is hidden
+            // e.g. in the editor or settings screens
+            if (this.ui.isFullScreen) {
+                return;
+            }
+
+            this.router.transitionTo('/settings');
         }
     },
 
@@ -209,10 +219,11 @@ export default Route.extend(ShortcutsRoute, {
             this.billing.openBillingWindow(this.router.currentURL, '/pro');
         }
 
-        // Preload settings to avoid a delay when opening
-        setTimeout(() => {
-            importComponent(AdminXSettings.packageName);
-        }, 1000);
+        // Notify React of the initial subscription state
+        // React uses this to derive forceUpgrade state (config.forceUpgrade && subscription.status !== 'active')
+        this.stateBridge.triggerSubscriptionChange({
+            subscription: this.billing.subscription
+        });
     }
 
 });

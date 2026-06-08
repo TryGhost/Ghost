@@ -1,14 +1,16 @@
+const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
-const should = require('should');
 const sinon = require('sinon');
 const crypto = require('crypto');
 const fs = require('fs-extra');
+const {assertExists} = require('../../../../utils/assertions');
 const settingsCache = require('../../../../../core/shared/settings-cache');
+const config = require('../../../../../core/shared/config');
 const privateBlogging = require('../../../../../core/frontend/apps/private-blogging/lib/middleware');
 
-function hash(password, salt) {
+function hash(accessCode, salt) {
     const hasher = crypto.createHash('sha256');
-    hasher.update(password + salt, 'utf8');
+    hasher.update(accessCode + salt, 'utf8');
     return hasher.digest('hex');
 }
 
@@ -36,16 +38,16 @@ describe('Private Blogging', function () {
             settingsStub.withArgs('is_private').returns(false);
 
             privateBlogging.checkIsPrivate(req, res, next);
-            next.called.should.be.true();
-            res.isPrivateBlog.should.be.false();
+            sinon.assert.called(next);
+            assert.equal(res.isPrivateBlog, false);
         });
 
         it('Sets res.isPrivateBlog true if setting is true', function () {
             settingsStub.withArgs('is_private').returns(true);
 
             privateBlogging.checkIsPrivate(req, res, next);
-            next.called.should.be.true();
-            res.isPrivateBlog.should.be.true();
+            sinon.assert.called(next);
+            assert.equal(res.isPrivateBlog, true);
         });
     });
 
@@ -57,7 +59,7 @@ describe('Private Blogging', function () {
 
         it('filterPrivateRoutes should call next', function () {
             privateBlogging.filterPrivateRoutes(req, res, next);
-            next.called.should.be.true();
+            sinon.assert.called(next);
         });
 
         it('redirectPrivateToHomeIfLoggedIn should redirect to home', function () {
@@ -66,14 +68,14 @@ describe('Private Blogging', function () {
                 isPrivateBlog: false
             };
             privateBlogging.redirectPrivateToHomeIfLoggedIn(req, res, next);
-            res.redirect.called.should.be.true();
-            res.redirect.calledWith('http://127.0.0.1:2369/').should.be.true();
+            sinon.assert.called(res.redirect);
+            sinon.assert.calledWith(res.redirect, `${config.get('url')}/`);
         });
 
         it('handle404 should still 404', function () {
             privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
-            next.called.should.be.true();
-            (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+            sinon.assert.called(next);
+            assert.equal((next.firstCall.args[0] instanceof errors.NotFoundError), true);
         });
     });
 
@@ -101,43 +103,35 @@ describe('Private Blogging', function () {
         });
 
         describe('Logged Out behavior', function () {
-            it('authenticatePrivateSession should redirect', function () {
-                req.path = req.url = '/welcome/';
-                privateBlogging.authenticatePrivateSession(req, res, next);
-                next.called.should.be.false();
-                res.redirect.called.should.be.true();
-                res.redirect.calledWith('/private/?r=%2Fwelcome%2F').should.be.true();
-            });
-
             it('handle404 should redirect', function () {
                 req.path = req.url = '/welcome/';
                 privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
-                next.called.should.be.false();
-                res.redirect.called.should.be.true();
-                res.redirect.calledWith('/private/?r=%2Fwelcome%2F').should.be.true();
+                sinon.assert.notCalled(next);
+                sinon.assert.called(res.redirect);
+                sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome%2F');
             });
 
             describe('Site privacy managed by filterPrivateRoutes', function () {
                 it('should call next for the /private/ route', function () {
                     req.path = req.url = '/private/';
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
+                    sinon.assert.called(next);
                 });
 
                 it('should redirect to /private/ for private route with extra path', function () {
                     req.path = req.url = '/private/welcome/';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith('/private/?r=%2Fprivate%2Fwelcome%2F').should.be.true();
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fprivate%2Fwelcome%2F');
                 });
 
                 it('should redirect to /private/ for sitemap', function () {
                     req.path = req.url = '/sitemap.xml';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith('/private/?r=%2Fsitemap.xml').should.be.true();
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fsitemap.xml');
                 });
 
                 it('should redirect to /private/ for sitemap with params', function () {
@@ -145,40 +139,40 @@ describe('Private Blogging', function () {
                     req.path = '/sitemap.xml';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith('/private/?r=%2Fsitemap.xml%3Fweird%3Dparam').should.be.true();
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fsitemap.xml%3Fweird%3Dparam');
                 });
 
                 it('should redirect to /private/ for /rss/', function () {
                     req.path = req.url = '/rss/';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith('/private/?r=%2Frss%2F').should.be.true();
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Frss%2F');
                 });
 
                 it('should redirect to /private/ for author rss', function () {
                     req.path = req.url = '/author/halfdan/rss/';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith('/private/?r=%2Fauthor%2Fhalfdan%2Frss%2F').should.be.true();
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fauthor%2Fhalfdan%2Frss%2F');
                 });
 
                 it('should redirect to /private/ for tag rss', function () {
                     req.path = req.url = '/tag/slimer/rss/';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith('/private/?r=%2Ftag%2Fslimer%2Frss%2F').should.be.true();
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Ftag%2Fslimer%2Frss%2F');
                 });
 
                 it('should redirect to /private/ for rss with extra path', function () {
                     req.path = req.url = '/rss/sometag';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith('/private/?r=%2Frss%2Fsometag').should.be.true();
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Frss%2Fsometag');
                 });
 
                 it('should render custom robots.txt', function () {
@@ -191,8 +185,8 @@ describe('Private Blogging', function () {
                         cb(null, 'User-agent: * Disallow: /');
                     });
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    res.writeHead.called.should.be.true();
-                    res.end.called.should.be.true();
+                    sinon.assert.called(res.writeHead);
+                    sinon.assert.called(res.end);
                 });
 
                 it('should allow private /rss/ feed', function () {
@@ -200,8 +194,8 @@ describe('Private Blogging', function () {
                     req.params = {};
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    req.url.should.eql('/rss/');
+                    sinon.assert.called(next);
+                    assert.equal(req.url, '/rss/');
                 });
 
                 it('should allow private tag /rss/ feed', function () {
@@ -209,23 +203,23 @@ describe('Private Blogging', function () {
                     req.params = {};
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    req.url.should.eql('/tag/getting-started/rss/');
+                    sinon.assert.called(next);
+                    assert.equal(req.url, '/tag/getting-started/rss/');
                 });
 
                 it('should redirect to /private/ for private rss with extra path', function () {
                     req.url = req.originalUrl = req.path = '/777aaa/rss/hackme/';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    res.redirect.calledOnce.should.be.true();
-                    res.redirect.calledWith('/private/?r=%2F777aaa%2Frss%2Fhackme%2F').should.be.true();
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, '/private/?r=%2F777aaa%2Frss%2Fhackme%2F');
                 });
             });
 
             describe('/private/ route', function () {
                 it('redirectPrivateToHomeIfLoggedIn should allow /private/ to be rendered', function () {
                     privateBlogging.redirectPrivateToHomeIfLoggedIn(req, res, next);
-                    next.called.should.be.true();
+                    sinon.assert.called(next);
                 });
             });
         });
@@ -234,24 +228,78 @@ describe('Private Blogging', function () {
             it('doLoginToPrivateSite should call next if error', function () {
                 res.error = 'Test Error';
                 privateBlogging.doLoginToPrivateSite(req, res, next);
-                next.called.should.be.true();
+                sinon.assert.called(next);
             });
 
-            it('doLoginToPrivateSite should return next if password is incorrect', function () {
+            it('doLoginToPrivateSite should return next if access code is incorrect', function () {
                 req.body = {password: 'wrongpassword'};
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
-                res.error.should.not.be.empty();
-                next.called.should.be.true();
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.called(next);
             });
 
-            it('doLoginToPrivateSite should redirect if password is correct', function () {
+            it('doLoginToPrivateSite should return next if stored access code is empty', function () {
+                settingsStub.withArgs('password').returns('');
+                req.body = {password: 'rightpassword'};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
+            it('doLoginToPrivateSite should return next if stored access code is undefined', function () {
+                settingsStub.withArgs('password').returns(undefined);
+                req.body = {password: 'rightpassword'};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
+            it('doLoginToPrivateSite should return next if stored access code is null', function () {
+                settingsStub.withArgs('password').returns(null);
+                req.body = {password: 'rightpassword'};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
+            it('doLoginToPrivateSite should return next if submitted access code is empty', function () {
+                req.body = {password: ''};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
+            it('doLoginToPrivateSite should return next if submitted access code is missing', function () {
+                req.body = {};
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                assertExists(res.error);
+                assert.equal(res.error.message, 'Incorrect access code.');
+                sinon.assert.notCalled(res.redirect);
+                sinon.assert.called(next);
+            });
+
+            it('doLoginToPrivateSite should redirect if access code is correct', function () {
                 req.body = {password: 'rightpassword'};
                 req.session = {};
                 res.redirect = sinon.spy();
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
-                res.redirect.called.should.be.true();
+                sinon.assert.called(res.redirect);
             });
 
             it('doLoginToPrivateSite should redirect to "/" if r param is a full url', function () {
@@ -263,8 +311,8 @@ describe('Private Blogging', function () {
                 res.redirect = sinon.spy();
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
-                res.redirect.called.should.be.true();
-                res.redirect.args[0][0].should.be.equal('/');
+                sinon.assert.called(res.redirect);
+                assert.equal(res.redirect.args[0][0], '/');
             });
 
             it('doLoginToPrivateSite should redirect to the relative path if r param is there', function () {
@@ -276,8 +324,34 @@ describe('Private Blogging', function () {
                 res.redirect = sinon.spy();
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
-                res.redirect.called.should.be.true();
-                res.redirect.args[0][0].should.be.equal('/test');
+                sinon.assert.called(res.redirect);
+                assert.equal(res.redirect.args[0][0], '/test');
+            });
+
+            it('doLoginToPrivateSite should preserve query string including UTM parameters', function () {
+                req.body = {password: 'rightpassword'};
+                req.session = {};
+                req.query = {
+                    r: encodeURIComponent('/?utm_source=twitter&utm_campaign=test')
+                };
+                res.redirect = sinon.spy();
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                sinon.assert.called(res.redirect);
+                assert.equal(res.redirect.args[0][0], '/?utm_source=twitter&utm_campaign=test');
+            });
+
+            it('doLoginToPrivateSite should preserve query string on paths', function () {
+                req.body = {password: 'rightpassword'};
+                req.session = {};
+                req.query = {
+                    r: encodeURIComponent('/welcome/?ref=newsletter&utm_medium=email')
+                };
+                res.redirect = sinon.spy();
+
+                privateBlogging.doLoginToPrivateSite(req, res, next);
+                sinon.assert.called(res.redirect);
+                assert.equal(res.redirect.args[0][0], '/welcome/?ref=newsletter&utm_medium=email');
             });
 
             it('doLoginToPrivateSite should redirect to "/" if r param is redirecting to another domain than the current instance', function () {
@@ -289,11 +363,11 @@ describe('Private Blogging', function () {
                 res.redirect = sinon.spy();
 
                 privateBlogging.doLoginToPrivateSite(req, res, next);
-                res.redirect.called.should.be.true();
-                res.redirect.args[0][0].should.be.equal('/');
+                sinon.assert.called(res.redirect);
+                assert.equal(res.redirect.args[0][0], '/');
             });
 
-            describe('Bad Password', function () {
+            describe('Bad access code', function () {
                 beforeEach(function () {
                     req.session = {
                         token: 'wrongpassword',
@@ -302,15 +376,25 @@ describe('Private Blogging', function () {
                 });
                 it('redirectPrivateToHomeIfLoggedIn should return next', function () {
                     privateBlogging.redirectPrivateToHomeIfLoggedIn(req, res, next);
-                    next.called.should.be.true();
+                    sinon.assert.called(next);
                 });
 
-                it('authenticatePrivateSession should redirect', function () {
-                    req.url = '/welcome';
+                it('filterPrivateRoutes should redirect', function () {
+                    req.path = req.url = '/welcome';
 
-                    privateBlogging.authenticatePrivateSession(req, res, next);
-                    res.redirect.called.should.be.true();
-                    res.redirect.calledWith('/private/?r=%2Fwelcome').should.be.true();
+                    privateBlogging.filterPrivateRoutes(req, res, next);
+                    sinon.assert.notCalled(next);
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome');
+                });
+
+                it('handle404 should redirect', function () {
+                    req.path = req.url = '/welcome';
+
+                    privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
+                    sinon.assert.notCalled(next);
+                    sinon.assert.calledOnce(res.redirect);
+                    sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome');
                 });
             });
         });
@@ -325,15 +409,40 @@ describe('Private Blogging', function () {
                 };
             });
 
-            it('authenticatePrivateSession should return next', function () {
-                privateBlogging.authenticatePrivateSession(req, res, next);
-                next.called.should.be.true();
+            it('filterPrivateRoutes should redirect when stored access code is empty', function () {
+                const salt = Date.now().toString();
+                settingsStub.withArgs('password').returns('');
+                req.path = req.url = '/welcome';
+                req.session = {
+                    token: hash('', salt),
+                    salt
+                };
+
+                privateBlogging.filterPrivateRoutes(req, res, next);
+                sinon.assert.notCalled(next);
+                sinon.assert.calledOnce(res.redirect);
+                sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome');
+            });
+
+            it('handle404 should redirect when stored access code is empty', function () {
+                const salt = Date.now().toString();
+                settingsStub.withArgs('password').returns('');
+                req.path = req.url = '/welcome';
+                req.session = {
+                    token: hash('', salt),
+                    salt
+                };
+
+                privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
+                sinon.assert.notCalled(next);
+                sinon.assert.calledOnce(res.redirect);
+                sinon.assert.calledWith(res.redirect, '/private/?r=%2Fwelcome');
             });
 
             it('handle404 should still 404', function () {
                 privateBlogging.handle404(new errors.NotFoundError(), req, res, next);
-                next.called.should.be.true();
-                (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+                sinon.assert.called(next);
+                assert.equal((next.firstCall.args[0] instanceof errors.NotFoundError), true);
             });
 
             describe('Site privacy managed by filterPrivateRoutes', function () {
@@ -341,32 +450,32 @@ describe('Private Blogging', function () {
                     req.url = req.path = '/rss/';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+                    sinon.assert.called(next);
+                    assert.equal((next.firstCall.args[0] instanceof errors.NotFoundError), true);
                 });
 
                 it('should 404 for standard public tag rss requests', function () {
                     req.url = req.path = '/tag/welcome/rss/';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    (next.firstCall.args[0] instanceof errors.NotFoundError).should.eql(true);
+                    sinon.assert.called(next);
+                    assert.equal((next.firstCall.args[0] instanceof errors.NotFoundError), true);
                 });
 
                 it('should allow a tag to contain the word rss', function () {
                     req.url = req.path = '/tag/rss-test/';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    next.firstCall.args.length.should.equal(0);
+                    sinon.assert.called(next);
+                    assert.equal(next.firstCall.args.length, 0);
                 });
 
                 it('should not 404 for very short post url', function () {
                     req.url = req.path = '/ab/';
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    next.firstCall.args.length.should.equal(0);
+                    sinon.assert.called(next);
+                    assert.equal(next.firstCall.args.length, 0);
                 });
 
                 it('should allow private /rss/ feed', function () {
@@ -374,8 +483,8 @@ describe('Private Blogging', function () {
                     req.params = {};
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    req.url.should.eql('/rss/');
+                    sinon.assert.called(next);
+                    assert.equal(req.url, '/rss/');
                 });
 
                 it('should allow private tag /rss/ feed', function () {
@@ -383,15 +492,15 @@ describe('Private Blogging', function () {
                     req.params = {};
 
                     privateBlogging.filterPrivateRoutes(req, res, next);
-                    next.called.should.be.true();
-                    req.url.should.eql('/tag/getting-started/rss/');
+                    sinon.assert.called(next);
+                    assert.equal(req.url, '/tag/getting-started/rss/');
                 });
             });
 
             describe('/private/ route', function () {
                 it('redirectPrivateToHomeIfLoggedIn should redirect to home', function () {
                     privateBlogging.redirectPrivateToHomeIfLoggedIn(req, res, next);
-                    res.redirect.called.should.be.true();
+                    sinon.assert.called(res.redirect);
                 });
             });
         });

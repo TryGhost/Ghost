@@ -1,7 +1,6 @@
-const MailgunEmailProvider = require('../../../../../core/server/services/email-service/MailgunEmailProvider');
+const MailgunEmailProvider = require('../../../../../core/server/services/email-service/mailgun-email-provider');
 const sinon = require('sinon');
-const should = require('should');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 describe('Mailgun Email Provider', function () {
     describe('send', function () {
@@ -37,6 +36,7 @@ describe('Mailgun Email Provider', function () {
                 from: 'ghost@example.com',
                 replyTo: 'ghost@example.com',
                 emailId: '123',
+                domainOverride: undefined,
                 recipients: [
                     {
                         email: 'member@example.com',
@@ -61,9 +61,9 @@ describe('Mailgun Email Provider', function () {
                 openTrackingEnabled: true,
                 deliveryTime
             });
-            should(response.id).eql('provider-123');
-            should(sendStub.calledOnce).be.true();
-            sendStub.calledWith(
+            assert.equal(response.id, 'provider-123');
+            sinon.assert.calledOnce(sendStub);
+            sinon.assert.calledWith(sendStub,
                 {
                     subject: 'Hi',
                     html: '<html><body>Hi %recipient.name%</body></html>',
@@ -71,13 +71,14 @@ describe('Mailgun Email Provider', function () {
                     from: 'ghost@example.com',
                     replyTo: 'ghost@example.com',
                     id: '123',
+                    domainOverride: undefined,
                     deliveryTime,
                     track_opens: true,
                     track_clicks: true
                 },
                 {'member@example.com': {name: 'John'}},
                 []
-            ).should.be.true();
+            );
         });
 
         it('handles mailgun client error correctly', async function () {
@@ -97,8 +98,8 @@ describe('Mailgun Email Provider', function () {
                 mailgunClient,
                 errorHandler: () => {}
             });
-            try {
-                const response = await mailgunEmailProvider.send({
+            await assert.rejects(async () => {
+                await mailgunEmailProvider.send({
                     subject: 'Hi',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
@@ -125,12 +126,12 @@ describe('Mailgun Email Provider', function () {
                         }
                     ]
                 }, {});
-                should(response).be.undefined();
-            } catch (e) {
-                should(e.message).eql('Bad Request: Invalid domain');
-                should(e.statusCode).eql(400);
-                should(e.errorDetails).eql('{"error":{"details":"Invalid domain","status":400},"messageData":{}}');
-            }
+                assert.fail();
+            }, {
+                message: 'Bad Request: Invalid domain',
+                statusCode: 400,
+                errorDetails: '{"error":{"details":"Invalid domain","status":400},"messageData":{}}'
+            });
         });
 
         it('handles unknown error correctly', async function () {
@@ -145,8 +146,8 @@ describe('Mailgun Email Provider', function () {
                 mailgunClient,
                 errorHandler: () => {}
             });
-            try {
-                const response = await mailgunEmailProvider.send({
+            await assert.rejects(async () => {
+                await mailgunEmailProvider.send({
                     subject: 'Hi',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
@@ -173,11 +174,11 @@ describe('Mailgun Email Provider', function () {
                         }
                     ]
                 }, {});
-                should(response).be.undefined();
-            } catch (e) {
-                should(e.message).eql('Unknown Error');
-                should(e.errorDetails).eql(undefined);
-            }
+                assert.fail();
+            }, {
+                message: 'Unknown Error',
+                errorDetails: undefined
+            });
         });
 
         it('handles empty error correctly', async function () {
@@ -192,8 +193,8 @@ describe('Mailgun Email Provider', function () {
                 mailgunClient,
                 errorHandler: () => {}
             });
-            try {
-                const response = await mailgunEmailProvider.send({
+            await assert.rejects(async () => {
+                await mailgunEmailProvider.send({
                     subject: 'Hi',
                     html: '<html><body>Hi {{name}}</body></html>',
                     plaintext: 'Hi',
@@ -220,11 +221,11 @@ describe('Mailgun Email Provider', function () {
                         }
                     ]
                 }, {});
-                should(response).be.undefined();
-            } catch (e) {
-                should(e.message).eql('Mailgun Error');
-                should(e.errorDetails).eql(undefined);
-            }
+                assert.fail();
+            }, {
+                message: 'Mailgun Error',
+                errorDetails: undefined
+            });
         });
     });
 

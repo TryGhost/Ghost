@@ -1,0 +1,192 @@
+const {addCreateDocumentOption} = require('../render-utils/add-create-document-option');
+const {renderWithVisibility} = require('../render-utils/visibility');
+const {wrapReplacementStrings} = require('../render-utils/replacement-strings');
+const {html} = require('../render-utils/tagged-template-fns');
+
+function renderTransistorNode(node, options = {}) {
+    addCreateDocumentOption(options);
+    const document = options.createDocument();
+
+    if (options.target === 'email') {
+        return emailTemplate(node, document, options);
+    }
+    return frontendTemplate(node, document, options);
+}
+
+function setIframeAttributes(iframe) {
+    iframe.setAttribute('width', '100%');
+    iframe.setAttribute('height', '370');
+    iframe.setAttribute('frameborder', 'no');
+    iframe.setAttribute('scrolling', 'no');
+    iframe.setAttribute('seamless', '');
+}
+
+function frontendTemplate(node, document, options) {
+    const figure = document.createElement('figure');
+    figure.setAttribute('class', 'kg-card kg-transistor-card');
+
+    // Use {uuid} placeholder - content.js will substitute with member UUID at request time
+    const embedUrl = new URL(`https://partner.transistor.fm/ghost/embed/{uuid}`);
+
+    if (options.siteUuid) {
+        embedUrl.searchParams.set('ctx', options.siteUuid);
+    }
+
+    const iframe = document.createElement('iframe');
+    setIframeAttributes(iframe);
+    iframe.setAttribute('title', 'Transistor podcasts');
+    iframe.setAttribute('data-src', embedUrl.toString());
+    iframe.setAttribute('data-kg-transistor-embed', '');
+    figure.appendChild(iframe);
+
+    // Use innerHTML to inject script - jsdom's createElement('script') doesn't serialize textContent in outerHTML
+    // Matches implementation from kg-default-nodes set-src-background-from-parent.js
+    figure.insertAdjacentHTML('beforeend', buildEmbedScript());
+
+    // noscript fallback with src (not data-src) so the iframe loads without JS
+    const noscript = document.createElement('noscript');
+    const fallbackIframe = document.createElement('iframe');
+    setIframeAttributes(fallbackIframe);
+    fallbackIframe.setAttribute('src', embedUrl.toString());
+    noscript.appendChild(fallbackIframe);
+    figure.appendChild(noscript);
+
+    return renderWithVisibility({element: figure, type: 'inner'}, node.visibility, options);
+}
+
+function emailTemplate(node, document, options) {
+    // Use the site accent color from the newsletter/email design settings
+    const accentColor = options.design?.accentColor || '#15171A';
+
+    // Use {uuid} replacement string - wrapReplacementStrings converts this to %%{uuid}%%
+    // which gets replaced with actual member UUID when email is sent to each recipient
+    const transistorUrl = 'https://partner.transistor.fm/ghost/{uuid}';
+
+    const cardHtml = html`
+        <table class="kg-card kg-transistor-card" cellspacing="0" cellpadding="0" border="0" width="100%">
+            <tr>
+                <td style="padding: 24px; text-align: center;">
+                    <table cellspacing="0" cellpadding="0" border="0" width="100%" style="text-align: center;">
+                        <tr>
+                            <td style="text-align: center; padding-bottom: 12px;">
+                                <a href="${transistorUrl}" style="display: inline-block; width: 72px; height: 72px; padding-top: 4px; padding-right: 4px; padding-bottom: 4px; padding-left: 4px; border-radius: 8px; background-color: ${accentColor}">
+                                    <img src="https://static.ghost.org/v6.0.0/images/transistor-logo-ondark.png"
+                                        width="40" height="40"
+                                        alt="Transistor"
+                                        style="width: 40px; height: 40px; padding: 16px;">
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td style="text-align: center;">
+                                <a href="${transistorUrl}" class="kg-transistor-title">
+                                    Listen to your podcasts
+                                </a>
+                                <a href="${transistorUrl}"  class="kg-transistor-description">
+                                    Subscribe and listen to your personal podcast feed in your favorite app.
+                                </a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    `;
+
+    const wrappedHtml = wrapReplacementStrings(cardHtml);
+
+    const container = document.createElement('div');
+    container.innerHTML = wrappedHtml;
+
+    return renderWithVisibility({element: container.firstElementChild}, node.visibility, options);
+}
+
+function buildEmbedScript() {
+    /* eslint-disable no-undef */
+    // This function is serialized via .toString() and runs in the browser, not Node
+    function initTransistorEmbed() {
+        const script = document.currentScript;
+        if (!script) {
+            return;
+        }
+
+        const el = script.parentElement.querySelector('iframe[data-src]');
+        if (!el) {
+            return;
+        }
+
+        // Set src with background color detection
+        const baseSrc = el.getAttribute('data-src');
+
+        function colorToRgb(color) {
+            const canvas = document.createElement('canvas');
+            canvas.width = 1;
+            canvas.height = 1;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = color;
+            ctx.fillRect(0, 0, 1, 1);
+            const [r, g, b, a] = ctx.getImageData(0, 0, 1, 1).data;
+            return {r, g, b, a};
+        }
+
+        let node = el.parentElement;
+        let bg;
+        while (node) {
+            bg = window.getComputedStyle(node).backgroundColor;
+            if (bg && bg !== 'transparent') {
+                const {a} = colorToRgb(bg);
+                if (a > 0) {
+                    break;
+                }
+            }
+            node = node.parentElement;
+        }
+
+        if (!node || !bg || bg === 'transparent') {
+            el.src = baseSrc;
+        } else {
+            const {r, g, b, a} = colorToRgb(bg);
+            if (a === 0) {
+                el.src = baseSrc;
+            } else {
+                const hex = [r, g, b].map(c => c.toString(16).padStart(2, '0')).join('');
+                const u = new URL(baseSrc);
+                u.searchParams.set('background', hex);
+                el.src = u.toString();
+            }
+        }
+
+        // Listen for resize messages from the Transistor iframe
+        window.addEventListener('message', (event) => {
+            const isMessageFromValidSource = (
+                event.source === el.contentWindow &&
+                event.origin === 'https://partner.transistor.fm'
+            );
+            if (!isMessageFromValidSource) {
+                return;
+            }
+
+            const isDataValid = (
+                !!event.data &&
+                typeof event.data === 'object' &&
+                !Array.isArray(event.data) &&
+                'type' in event.data &&
+                event.data.type === 'resize' &&
+                'height' in event.data &&
+                typeof event.data.height === 'number' &&
+                Number.isSafeInteger(event.data.height) &&
+                event.data.height >= 1
+            );
+            if (!isDataValid) {
+                return;
+            }
+
+            el.style.height = event.data.height + 'px';
+        });
+    }
+    /* eslint-enable no-undef */
+
+    return `<script>(${initTransistorEmbed.toString()})()</script>`;
+}
+
+module.exports = renderTransistorNode;

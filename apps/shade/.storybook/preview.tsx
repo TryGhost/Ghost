@@ -3,11 +3,9 @@ import React from 'react';
 import '../styles.css';
 import './storybook.css';
 
-import type { Preview } from "@storybook/react";
-import ShadeProvider from '../src/providers/ShadeProvider';
+import type { Preview } from "@storybook/react-vite";
+import ShadeProvider from '../src/providers/shade-provider';
 import shadeTheme from './shade-theme';
-
-// import { MINIMAL_VIEWPORTS } from '@storybook/addon-viewport';
 
 const customViewports = {
 	sm: {
@@ -47,6 +45,35 @@ const customViewports = {
 	},
 };
 
+const StorybookSchemeDecorator = ({Story, scheme}: {Story: React.ComponentType; scheme: string}) => {
+	React.useEffect(() => {
+		const isDark = scheme === 'dark';
+
+		document.documentElement.classList.toggle('dark', isDark);
+		document.body.classList.toggle('dark', isDark);
+
+		return () => {
+			document.documentElement.classList.remove('dark');
+			document.body.classList.remove('dark');
+		};
+	}, [scheme]);
+
+	return (
+		<div className={`shade ${scheme === 'dark' ? 'dark' : ''}`} style={{
+			// padding: '24px',
+			// width: 'unset',
+			height: 'unset',
+			// overflow: 'unset',
+			background: (scheme === 'dark' ? '#131416' : '')
+		}}>
+			{/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}
+			<ShadeProvider darkMode={scheme === 'dark'}>
+				<Story />
+			</ShadeProvider>
+		</div>
+	);
+};
+
 const preview: Preview = {
 	parameters: {
 		actions: { argTypesRegex: "^on[A-Z].*" },
@@ -60,8 +87,25 @@ const preview: Preview = {
 			storySort: {
 				method: 'alphabetical',
 				order: [
-					'Welcome', 'Adding components', 'Component usage', 'Conventions', 'Icons',
-					'Components', 'Layout', 'Experimental', 'Meta'],
+					'Overview',
+					['Introduction', 'Layers', 'Design System Landscape', 'Contributing'],
+					'Tokens',
+					['Tokens Guide', 'Colors', 'Typography', 'Spacing', 'Radius', 'Shadows', 'Motion', 'Breakpoints'],
+					'Primitives',
+					['Primitives Guide', '*'],
+					'Components',
+					['Components Guide', '*'],
+					'Patterns',
+					['Patterns Guide', '*'],
+					'Page Templates',
+					['Page Types', '*'],
+					'Recipes',
+					['Recipes Guide', '*'],
+					'Posts–Stats',
+					['Posts–Stats Overview', '*'],
+					'Deprecated',
+					'*'
+				],
 			},
 		},
 		docs: {
@@ -77,19 +121,7 @@ const preview: Preview = {
 		(Story, context) => {
 			let {scheme} = context.globals;
 
-			return (
-			<div className={`shade ${scheme === 'dark' ? 'dark' : ''}`} style={{
-				// padding: '24px',
-				// width: 'unset',
-				height: 'unset',
-				// overflow: 'unset',
-				background: (scheme === 'dark' ? '#131416' : '')
-			}}>
-				{/* 👇 Decorators in Storybook also accept a function. Replace <Story/> with Story() to enable it  */}
-				<ShadeProvider darkMode={scheme === ''}>
-					<Story />
-				</ShadeProvider>
-			</div>);
+			return <StorybookSchemeDecorator Story={Story} scheme={scheme} />;
 	},
 	],
 	globalTypes: {

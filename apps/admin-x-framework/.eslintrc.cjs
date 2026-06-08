@@ -19,6 +19,12 @@ module.exports = {
         'react/react-in-jsx-scope': 'off',
         // ignore prop-types for now
         'react/prop-types': 'off',
+        'no-restricted-imports': ['error', {
+            paths: [{
+                name: '@tryghost/shade',
+                message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).'
+            }]
+        }],
 
         'react/jsx-sort-props': ['error', {
             reservedFirst: true,
@@ -28,6 +34,9 @@ module.exports = {
         }],
         'react/button-has-type': 'error',
         'react/no-array-index-key': 'error',
-        'react/jsx-key': 'off'
+        'react/jsx-key': 'off',
+
+        // Enforce kebab-case (lowercase with hyphens) for all filenames
+        'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
     }
 };

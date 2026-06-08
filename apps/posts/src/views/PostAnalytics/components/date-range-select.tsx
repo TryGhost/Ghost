@@ -1,0 +1,32 @@
+import React from 'react';
+import {LucideIcon} from '@tryghost/shade/utils';
+import {STATS_RANGES} from '@src/utils/constants';
+import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
+import {useGlobalData} from '@src/providers/post-analytics-context';
+
+const DateRangeSelect: React.FC = () => {
+    const {range, setRange} = useGlobalData();
+
+    return (
+        <Select value={`${range}`} onValueChange={(value) => {
+            setRange(Number(value));
+        }}>
+            <SelectTrigger className='w-auto'>
+                <LucideIcon.Calendar className='mr-2' size={16} strokeWidth={1.5} />
+                <SelectValue placeholder="Select a period" />
+            </SelectTrigger>
+            <SelectContent align='end'>
+                <SelectGroup>
+                    <SelectLabel>Period</SelectLabel>
+                    {Object.values(STATS_RANGES).map(option => (
+                        <SelectItem key={option.value} value={`${option.value}`}>
+                            {option.name}
+                        </SelectItem>
+                    ))}
+                </SelectGroup>
+            </SelectContent>
+        </Select>
+    );
+};
+
+export default DateRangeSelect;

@@ -1,7 +1,12 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const crypto = require('crypto');
+const express = require('express');
+const request = require('supertest');
 const sinon = require('sinon');
 
 const urlUtils = require('../../../../../core/shared/url-utils');
+const config = require('../../../../../core/shared/config');
+const tiersService = require('../../../../../core/server/services/tiers/service');
 const membersService = require('../../../../../core/server/services/members');
 const membersMiddleware = require('../../../../../core/server/services/members/middleware');
 const models = require('../../../../../core/server/models');
@@ -10,21 +15,9 @@ describe('Members Service Middleware', function () {
     describe('createSessionFromMagicLink', function () {
         let oldSSR;
         let oldProductModel;
-        let req;
-        let res;
-        let next;
-
-        before(function () {
-            models.init();
-        });
+        let app;
 
         beforeEach(function () {
-            req = {};
-            res = {};
-            next = sinon.stub();
-
-            res.redirect = sinon.stub().returns('');
-
             // Stub the members Service, handle this in separate tests
             oldSSR = membersService.ssr;
             membersService.ssr = {
@@ -39,6 +32,12 @@ describe('Members Service Middleware', function () {
 
             sinon.stub(urlUtils, 'getSubdir').returns('/blah');
             sinon.stub(urlUtils, 'getSiteUrl').returns('https://site.com/blah');
+
+            app = express();
+            app.use(membersMiddleware.createSessionFromMagicLink);
+            app.use((_req, res) => {
+                res.sendStatus(204);
+            });
         });
 
         afterEach(function () {
@@ -48,21 +47,12 @@ describe('Members Service Middleware', function () {
         });
 
         it('calls next if url does not include a token', async function () {
-            req.url = '/members';
-            req.query = {};
-
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            next.calledOnce.should.be.true();
-            next.firstCall.args.should.be.an.Array().with.lengthOf(0);
+            await request(app)
+                .get('/members')
+                .expect(204);
         });
 
         it('redirects correctly on success', async function () {
-            req.url = '/members?token=test&action=signup';
-            req.query = {token: 'test', action: 'signup'};
-
             // Fake token handling success
             membersService.ssr.exchangeTokenForSession.resolves({
                 subscriptions: [{
@@ -73,35 +63,47 @@ describe('Members Service Middleware', function () {
                 }]
             });
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('/blah/?action=signup&success=true');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signup'})
+                .expect(302)
+                .expect('Location', '/blah/?action=signup&success=true');
         });
 
         it('redirects correctly on failure', async function () {
-            req.url = '/members?token=test&action=signup';
-            req.query = {token: 'test', action: 'signup'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.rejects();
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signup'})
+                .expect(302)
+                .expect('Location', '/blah/?action=signup&success=false');
+        });
 
-            // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('/blah/?action=signup&success=false');
+        it('appends errorCode to the redirect when the rejection has a string code', async function () {
+            const err = new Error('This gift has expired.');
+            err.code = 'GIFT_EXPIRED';
+            membersService.ssr.exchangeTokenForSession.rejects(err);
+
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'subscribe'})
+                .expect(302)
+                .expect('Location', '/blah/?action=subscribe&errorCode=GIFT_EXPIRED&success=false');
+        });
+
+        it('does not append errorCode when the rejection has no code', async function () {
+            membersService.ssr.exchangeTokenForSession.rejects(new Error('boom'));
+
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'subscribe'})
+                .expect(302)
+                .expect('Location', '/blah/?action=subscribe&success=false');
         });
 
         it('redirects free member to custom redirect on signup', async function () {
-            req.url = '/members?token=test&action=signup';
-            req.query = {token: 'test', action: 'signup'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({});
 
@@ -112,19 +114,14 @@ describe('Members Service Middleware', function () {
                 }
             });
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://custom.com/redirect/');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signup'})
+                .expect(302)
+                .expect('Location', 'https://custom.com/redirect/');
         });
 
         it('redirects paid member to custom redirect on signup', async function () {
-            req.url = '/members?token=test&action=signup';
-            req.query = {token: 'test', action: 'signup'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({
                 subscriptions: [{
@@ -135,61 +132,58 @@ describe('Members Service Middleware', function () {
                 }]
             });
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://custom.com/paid/');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signup'})
+                .expect(302)
+                .expect('Location', 'https://custom.com/paid/');
         });
 
         it('redirects member to referrer param path on signin if it is on the site', async function () {
-            req.url = '/members?token=test&action=signin&r=https%3A%2F%2Fsite.com%2Fblah%2Fmy-post%2F';
-            req.query = {token: 'test', action: 'signin', r: 'https://site.com/blah/my-post/#comment-123'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({});
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://site.com/blah/my-post/?action=signin&success=true#comment-123');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signin', r: 'https://site.com/blah/my-post/#comment-123'})
+                .expect(302)
+                .expect('Location', 'https://site.com/blah/my-post/?action=signin&success=true#comment-123');
         });
 
         it('redirects member to referrer param path on signup if it is on the site', async function () {
-            req.url = '/members?token=test&action=signup&r=https%3A%2F%2Fsite.com%2Fblah%2Fmy-post%2F';
-            req.query = {token: 'test', action: 'signup', r: 'https://site.com/blah/my-post/#comment-123'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({});
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signup', r: 'https://site.com/blah/my-post/#comment-123'})
+                .expect(302)
+                .expect('Location', 'https://site.com/blah/my-post/?action=signup&success=true#comment-123');
+        });
 
-            // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('https://site.com/blah/my-post/?action=signup&success=true#comment-123');
+        it('redirects member to referrer param path on failure if it is on the site', async function () {
+            membersService.ssr.exchangeTokenForSession.rejects();
+
+            await request(app)
+                .get('/members')
+                .query({
+                    token: 'test',
+                    action: 'subscribe',
+                    r: 'https://site.com/blah/#/portal/account?giftRedemption=true'
+                })
+                .expect(302)
+                .expect('Location', 'https://site.com/blah/?action=subscribe&success=false#/portal/account?giftRedemption=true');
         });
 
         it('does not redirect to referrer param if it is external', async function () {
-            req.url = '/members?token=test&action=signin&r=https%3A%2F%2Fexternal.com%2Fwhatever%2F';
-            req.query = {token: 'test', action: 'signin', r: 'https://external.com/whatever/'};
-
             // Fake token handling failure
             membersService.ssr.exchangeTokenForSession.resolves({});
 
-            // Call the middleware
-            await membersMiddleware.createSessionFromMagicLink(req, res, next);
-
-            // Check behavior
-            next.calledOnce.should.be.false();
-            res.redirect.calledOnce.should.be.true();
-            res.redirect.firstCall.args[0].should.eql('/blah/?action=signin&success=true');
+            await request(app)
+                .get('/members')
+                .query({token: 'test', action: 'signin', r: 'https://external.com/whatever/'})
+                .expect(302)
+                .expect('Location', '/blah/?action=signin&success=true');
         });
     });
 
@@ -197,10 +191,6 @@ describe('Members Service Middleware', function () {
         // let oldMembersService;
         let req;
         let res;
-
-        before(function () {
-            models.init();
-        });
 
         beforeEach(function () {
             req = {body: {newsletters: [], enable_comment_notifications: null}};
@@ -219,10 +209,10 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            res.writeHead.calledOnce.should.be.true();
-            res.writeHead.firstCall.args[0].should.eql(404);
-            res.end.calledOnce.should.be.true();
-            res.end.firstCall.args[0].should.eql('Email address not found.');
+            sinon.assert.calledOnce(res.writeHead);
+            assert.equal(res.writeHead.firstCall.args[0], 404);
+            sinon.assert.calledOnce(res.end);
+            assert.equal(res.end.firstCall.args[0], 'Email address not found.');
         });
 
         // auth happens prior to this middleware
@@ -240,10 +230,10 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            res.writeHead.calledOnce.should.be.true();
-            res.writeHead.firstCall.args[0].should.eql(404);
-            res.end.calledOnce.should.be.true();
-            res.end.firstCall.args[0].should.eql('Email address not found.');
+            sinon.assert.calledOnce(res.writeHead);
+            assert.equal(res.writeHead.firstCall.args[0], 404);
+            sinon.assert.calledOnce(res.end);
+            assert.equal(res.end.firstCall.args[0], 'Email address not found.');
         });
 
         it('attempts to update newsletters', async function () {
@@ -269,7 +259,7 @@ describe('Members Service Middleware', function () {
             });
             await membersMiddleware.updateMemberNewsletters(req, res);
             // the stubbing of the api is difficult to test with the current design, so we just check that the response is sent
-            res.json.calledOnce.should.be.true();
+            sinon.assert.calledOnce(res.json);
         });
 
         it('returns 400 on error', async function () {
@@ -293,10 +283,133 @@ describe('Members Service Middleware', function () {
             await membersMiddleware.updateMemberNewsletters(req, res);
 
             // Check behavior
-            res.writeHead.calledOnce.should.be.true();
-            res.writeHead.firstCall.args[0].should.eql(400);
-            res.end.calledOnce.should.be.true();
-            res.end.firstCall.args[0].should.eql('Failed to update newsletters');
+            sinon.assert.calledOnce(res.writeHead);
+            assert.equal(res.writeHead.firstCall.args[0], 400);
+            sinon.assert.calledOnce(res.end);
+            assert.equal(res.end.firstCall.args[0], 'Failed to update newsletters');
+        });
+    });
+
+    describe('setAccessCookies (via accessInfoSession)', function () {
+        // setAccessCookies is a private function called via onHeaders inside
+        // accessInfoSession. We test it here by triggering the onHeaders
+        // callback through res.writeHead(), which is how on-headers works.
+
+        let req;
+        let res;
+        let next;
+        const hmacSecret = crypto.randomBytes(64).toString('base64');
+        const freeTierId = '000000000000000000000001';
+
+        let originalTiersApi;
+
+        beforeEach(function () {
+            req = {headers: {}, member: null};
+            res = {
+                _headers: {},
+                getHeader: sinon.stub().returns([]),
+                setHeader: sinon.stub(),
+                writeHead: function (statusCode) {
+                    this.statusCode = statusCode;
+                }
+            };
+            next = sinon.stub();
+
+            // tiersService.api is null until init() runs; assign a mock directly
+            originalTiersApi = tiersService.api;
+            tiersService.api = /** @type {any} */ ({
+                browse: sinon.stub().resolves({
+                    data: [{id: freeTierId, type: 'free'}]
+                })
+            });
+
+            sinon.stub(config, 'get')
+                .withArgs('cacheMembersContent:hmacSecret').returns(hmacSecret)
+                .withArgs('cacheMembersContent:enabled').returns(true);
+        });
+
+        afterEach(function () {
+            tiersService.api = originalTiersApi;
+            sinon.restore();
+        });
+
+        async function runAndFlushHeaders(member) {
+            req.member = member;
+            await membersMiddleware.accessInfoSession(req, res, next);
+            // Trigger onHeaders callbacks by calling writeHead
+            res.writeHead(200);
+        }
+
+        it('uses Path=/ for root site installs', async function () {
+            sinon.stub(urlUtils, 'getSubdir').returns('');
+
+            const member = {
+                subscriptions: [{status: 'active', tier: {id: freeTierId}}]
+            };
+            await runAndFlushHeaders(member);
+
+            const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
+            assert.ok(setCookieArgs, 'Set-Cookie header should be set');
+            const cookies = setCookieArgs[1];
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.ok(accessCookie.includes('Path=/;'), `Expected Path=/ in ghost-access: ${accessCookie}`);
+            assert.ok(hmacCookie.includes('Path=/;'), `Expected Path=/ in ghost-access-hmac: ${hmacCookie}`);
+        });
+
+        it('uses Path=/subdir for subdirectory site installs', async function () {
+            sinon.stub(urlUtils, 'getSubdir').returns('/subdir');
+
+            const member = {
+                subscriptions: [{status: 'active', tier: {id: freeTierId}}]
+            };
+            await runAndFlushHeaders(member);
+
+            const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
+            assert.ok(setCookieArgs, 'Set-Cookie header should be set');
+            const cookies = setCookieArgs[1];
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.ok(accessCookie.includes('Path=/subdir;'), `Expected Path=/subdir in ghost-access: ${accessCookie}`);
+            assert.ok(hmacCookie.includes('Path=/subdir;'), `Expected Path=/subdir in ghost-access-hmac: ${hmacCookie}`);
+        });
+
+        it('clears cookies with Path=/ for root site installs', async function () {
+            sinon.stub(urlUtils, 'getSubdir').returns('');
+            req.headers.cookie = 'ghost-access=stale';
+
+            await runAndFlushHeaders(null);
+
+            const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
+            assert.ok(setCookieArgs, 'Set-Cookie header should be set');
+            const cookies = setCookieArgs[1];
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.match(accessCookie, /^ghost-access=null;.*Path=\/;/, `Expected null with Path=/ in ghost-access: ${accessCookie}`);
+            assert.match(hmacCookie, /^ghost-access-hmac=null;.*Path=\/;/, `Expected null with Path=/ in ghost-access-hmac: ${hmacCookie}`);
+        });
+
+        it('clears cookies with Path=/subdir for subdirectory site installs', async function () {
+            sinon.stub(urlUtils, 'getSubdir').returns('/subdir');
+            req.headers.cookie = 'ghost-access=stale';
+
+            await runAndFlushHeaders(null);
+
+            const setCookieArgs = res.setHeader.args.find(args => args[0] === 'Set-Cookie');
+            assert.ok(setCookieArgs, 'Set-Cookie header should be set');
+            const cookies = setCookieArgs[1];
+            const accessCookie = cookies.find(c => c.startsWith('ghost-access='));
+            const hmacCookie = cookies.find(c => c.startsWith('ghost-access-hmac='));
+            assert.ok(accessCookie, 'ghost-access cookie should be set');
+            assert.ok(hmacCookie, 'ghost-access-hmac cookie should be set');
+            assert.match(accessCookie, /^ghost-access=null;.*Path=\/subdir;/, `Expected null with Path=/subdir in ghost-access: ${accessCookie}`);
+            assert.match(hmacCookie, /^ghost-access-hmac=null;.*Path=\/subdir;/, `Expected null with Path=/subdir in ghost-access-hmac: ${hmacCookie}`);
         });
     });
 });

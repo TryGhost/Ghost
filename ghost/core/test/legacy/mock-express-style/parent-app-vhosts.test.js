@@ -1,11 +1,11 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const path = require('path');
 
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
-const configUtils = require('../../utils/configUtils');
-const urlUtils = require('../../utils/urlUtils');
+const configUtils = require('../../utils/config-utils');
+const urlUtils = require('../../utils/url-utils');
 const themeEngine = require('../../../core/frontend/services/theme-engine');
 
 describe('Integration - Web - vhosts', function () {
@@ -51,7 +51,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -65,7 +65,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -79,7 +79,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -93,7 +93,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -107,7 +107,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -121,7 +121,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
     });
@@ -158,7 +158,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -172,7 +172,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -186,12 +186,12 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(301);
-                    response.headers.location.should.eql('https://admin.example.com/ghost/');
+                    assert.equal(response.statusCode, 301);
+                    assert.equal(response.headers.location, 'https://admin.example.com/ghost/');
                 });
         });
 
-        it('404s the api on configured url', function () {
+        it('redirects the api on configured url', function () {
             const req = {
                 secure: false,
                 method: 'GET',
@@ -201,11 +201,12 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(404);
+                    assert.equal(response.statusCode, 301);
+                    assert.equal(response.headers.location, `https://admin.example.com${ADMIN_API_URL}/site/`);
                 });
         });
 
-        it('404s the api on localhost', function () {
+        it('redirects the api on localhost', function () {
             const req = {
                 secure: false,
                 method: 'GET',
@@ -215,7 +216,8 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(404);
+                    assert.equal(response.statusCode, 301);
+                    assert.equal(response.headers.location, `https://admin.example.com${ADMIN_API_URL}/site/`);
                 });
         });
 
@@ -229,7 +231,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -243,7 +245,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -257,8 +259,8 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(301);
-                    response.headers.location.should.eql('https://admin.example.com/ghost/');
+                    assert.equal(response.statusCode, 301);
+                    assert.equal(response.headers.location, 'https://admin.example.com/ghost/');
                 });
         });
 
@@ -272,7 +274,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(404);
+                    assert.equal(response.statusCode, 404);
                 });
         });
     });
@@ -310,7 +312,21 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(404);
+                    assert.equal(response.statusCode, 404);
+                });
+        });
+
+        it('404s the api on configured url', function () {
+            const req = {
+                secure: false,
+                method: 'GET',
+                url: `${ADMIN_API_URL}/site/`,
+                host: 'example.com'
+            };
+
+            return localUtils.mockExpress.invoke(app, req)
+                .then(function (response) {
+                    assert.equal(response.statusCode, 404);
                 });
         });
     });
@@ -342,7 +358,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -356,7 +372,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -370,7 +386,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -384,8 +400,8 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(301);
-                    response.headers.location.should.eql('https://example.com/ghost/');
+                    assert.equal(response.statusCode, 301);
+                    assert.equal(response.headers.location, 'https://example.com/ghost/');
                 });
         });
 
@@ -399,8 +415,8 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(301);
-                    response.headers.location.should.eql('https://example.com/ghost/');
+                    assert.equal(response.statusCode, 301);
+                    assert.equal(response.headers.location, 'https://example.com/ghost/');
                 });
         });
 
@@ -414,8 +430,8 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(301);
-                    response.headers.location.should.eql(`https://example.com${ADMIN_API_URL}/site/`);
+                    assert.equal(response.statusCode, 301);
+                    assert.equal(response.headers.location, `https://example.com${ADMIN_API_URL}/site/`);
                 });
         });
 
@@ -429,7 +445,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -443,8 +459,8 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(301);
-                    response.headers.location.should.eql('https://example.com/ghost/');
+                    assert.equal(response.statusCode, 301);
+                    assert.equal(response.headers.location, 'https://example.com/ghost/');
                 });
         });
 
@@ -458,7 +474,7 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(200);
+                    assert.equal(response.statusCode, 200);
                 });
         });
 
@@ -472,8 +488,8 @@ describe('Integration - Web - vhosts', function () {
 
             return localUtils.mockExpress.invoke(app, req)
                 .then(function (response) {
-                    response.statusCode.should.eql(301);
-                    response.headers.location.should.eql(`https://example.com${ADMIN_API_URL}/site/`);
+                    assert.equal(response.statusCode, 301);
+                    assert.equal(response.headers.location, `https://example.com${ADMIN_API_URL}/site/`);
                 });
         });
     });

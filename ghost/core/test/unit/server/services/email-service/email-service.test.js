@@ -1,5 +1,5 @@
-const EmailService = require('../../../../../core/server/services/email-service/EmailService');
-const assert = require('assert/strict');
+const EmailService = require('../../../../../core/server/services/email-service/email-service');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {createModel, createModelClass} = require('./utils');
 
@@ -11,6 +11,7 @@ describe('Email Service', function () {
     let emailRenderer;
     let sendingService;
     let scheduleRecurringJobs;
+    let domainWarmingService;
 
     beforeEach(function () {
         memberCount = 123;
@@ -51,6 +52,10 @@ describe('Email Service', function () {
         sendingService = {
             send: sinon.stub().returns()
         };
+        domainWarmingService = {
+            isEnabled: sinon.stub().returns(false),
+            getWarmupLimit: sinon.stub()
+        };
 
         service = new EmailService({
             emailSegmenter: {
@@ -90,7 +95,8 @@ describe('Email Service', function () {
             sendingService,
             emailAnalyticsJobs: {
                 scheduleRecurringJobs
-            }
+            },
+            domainWarmingService: domainWarmingService
         });
     });
 
@@ -114,11 +120,122 @@ describe('Email Service', function () {
             await assert.rejects(service.checkLimits(), /Email sending is temporarily disabled/);
         });
 
+        it('Throws with EMAIL_VERIFICATION_NEEDED code when verification is required', async function () {
+            verificicationRequired = true;
+            try {
+                await service.checkLimits();
+                assert.fail('Should have thrown');
+            } catch (e) {
+                assert.equal(e.code, 'EMAIL_VERIFICATION_NEEDED');
+            }
+        });
+
+        it('Uses custom message when config provides emailSendingDisabledMessage', async function () {
+            const customService = new EmailService({
+                emailSegmenter: {
+                    getMembersCount: () => Promise.resolve(memberCount)
+                },
+                limitService: {
+                    isLimited: () => false,
+                    errorIfIsOverLimit: () => {},
+                    errorIfWouldGoOverLimit: () => {}
+                },
+                verificationTrigger: {
+                    checkVerificationRequired: () => Promise.resolve(true)
+                },
+                models: {Email: createModelClass()},
+                batchSendingService: {scheduleEmail},
+                settingsCache,
+                emailRenderer,
+                membersRepository,
+                sendingService,
+                emailAnalyticsJobs: {scheduleRecurringJobs},
+                domainWarmingService,
+                config: {
+                    get(key) {
+                        if (key === 'hostSettings:emailVerification:emailSendingDisabledMessage') {
+                            return 'Custom: Email paused. Contact help@example.com';
+                        }
+                        return undefined;
+                    }
+                }
+            });
+
+            try {
+                await customService.checkLimits();
+                assert.fail('Should have thrown');
+            } catch (e) {
+                assert.equal(e.message, 'Custom: Email paused. Contact help@example.com');
+                assert.equal(e.code, 'EMAIL_VERIFICATION_NEEDED');
+            }
+        });
+
         it('Does not throw if limits are enabled', async function () {
             // Enable limits, but don't go over limit
             limited.members = false;
             limited.emails = false;
             await assert.doesNotReject(service.checkLimits());
+        });
+    });
+
+    describe('checkCanSendEmail', function () {
+        it('Throws if newsletter is null', async function () {
+            await assert.rejects(
+                service.checkCanSendEmail(null, 'all'),
+                /The post does not have a newsletter relation/
+            );
+        });
+
+        it('Throws if newsletter is archived', async function () {
+            const newsletter = createModel({
+                status: 'archived'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Cannot send email to archived newsletters/
+            );
+        });
+
+        it('Throws if over member limit', async function () {
+            limited.members = true;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Over limit/
+            );
+        });
+
+        it('Throws if over email limit', async function () {
+            limited.emails = true;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Would go over limit/
+            );
+        });
+
+        it('Throws if verification is required', async function () {
+            verificicationRequired = true;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.rejects(
+                service.checkCanSendEmail(newsletter, 'all'),
+                /Email sending is temporarily disabled/
+            );
+        });
+
+        it('Does not throw for active newsletter within limits', async function () {
+            limited.members = false;
+            limited.emails = false;
+            const newsletter = createModel({
+                status: 'active'
+            });
+            await assert.doesNotReject(service.checkCanSendEmail(newsletter, 'all'));
         });
     });
 
@@ -161,6 +278,67 @@ describe('Email Service', function () {
             assert.equal(email.get('source'), post.get('mobiledoc'));
             assert.equal(email.get('source_type'), 'mobiledoc');
             sinon.assert.calledOnce(scheduleRecurringJobs);
+        });
+
+        describe('Domain warming', function () {
+            it('Creates email without csd_email_count when domain warming is disabled', async function () {
+                domainWarmingService.isEnabled.returns(false);
+
+                const post = createModel({
+                    id: '123',
+                    newsletter: createModel({
+                        status: 'active',
+                        feedback_enabled: true
+                    }),
+                    mobiledoc: 'Mobiledoc'
+                });
+
+                const email = await service.createEmail(post);
+                sinon.assert.calledOnce(domainWarmingService.isEnabled);
+                sinon.assert.notCalled(domainWarmingService.getWarmupLimit);
+                assert.equal(email.get('csd_email_count'), undefined);
+            });
+
+            it('Creates email with csd_email_count when domain warming is enabled', async function () {
+                domainWarmingService.isEnabled.returns(true);
+                domainWarmingService.getWarmupLimit.resolves(500);
+
+                const post = createModel({
+                    id: '123',
+                    newsletter: createModel({
+                        status: 'active',
+                        feedback_enabled: true
+                    }),
+                    mobiledoc: 'Mobiledoc'
+                });
+
+                const email = await service.createEmail(post);
+                sinon.assert.calledOnce(domainWarmingService.isEnabled);
+                sinon.assert.calledOnce(domainWarmingService.getWarmupLimit);
+                sinon.assert.calledWith(domainWarmingService.getWarmupLimit, memberCount);
+                assert.equal(email.get('csd_email_count'), 500);
+            });
+
+            it('Creates email with correct email_count passed to getWarmupLimit', async function () {
+                memberCount = 2500;
+                domainWarmingService.isEnabled.returns(true);
+                domainWarmingService.getWarmupLimit.resolves(1000);
+
+                const post = createModel({
+                    id: '123',
+                    newsletter: createModel({
+                        status: 'active',
+                        feedback_enabled: true
+                    }),
+                    mobiledoc: 'Mobiledoc'
+                });
+
+                const email = await service.createEmail(post);
+                sinon.assert.calledOnce(domainWarmingService.getWarmupLimit);
+                sinon.assert.calledWith(domainWarmingService.getWarmupLimit, 2500);
+                assert.equal(email.get('email_count'), 2500);
+                assert.equal(email.get('csd_email_count'), 1000);
+            });
         });
 
         it('Ignores analytics job scheduling errors', async function () {

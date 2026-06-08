@@ -1,5 +1,6 @@
-const should = require('should');
+const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
+const deferred = require('../../../../../utils/deferred');
 
 const api = require('../../../../../../core/frontend/services/proxy').api;
 const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
@@ -8,7 +9,7 @@ const controllers = require('../../../../../../core/frontend/services/routing/co
 
 function failTest(done) {
     return function (err) {
-        should.exist(err);
+        assertExists(err);
         done(err);
     };
 }
@@ -75,17 +76,20 @@ describe('Unit - services/routing/controllers/static', function () {
         sinon.restore();
     });
 
-    it('no extra data to fetch', function (done) {
+    it('no extra data to fetch', function () {
+        const {promise, done} = deferred();
         renderer.renderer.callsFake(function () {
-            renderer.formatResponse.entries.calledOnce.should.be.true();
-            tagsReadStub.called.should.be.false();
+            sinon.assert.calledOnce(renderer.formatResponse.entries);
+            sinon.assert.notCalled(tagsReadStub);
             done();
         });
 
         controllers.static(req, res, failTest(done));
+        return promise;
     });
 
-    it('extra data to fetch', function (done) {
+    it('extra data to fetch', function () {
+        const {promise, done} = deferred();
         res.routerOptions.data = {
             tag: {
                 controller: 'tagsPublic',
@@ -100,11 +104,12 @@ describe('Unit - services/routing/controllers/static', function () {
         tagsReadStub = sinon.stub().resolves({tags: [{slug: 'bacon'}]});
 
         renderer.renderer.callsFake(function () {
-            tagsReadStub.called.should.be.true();
-            renderer.formatResponse.entries.calledOnce.should.be.true();
+            sinon.assert.called(tagsReadStub);
+            sinon.assert.calledOnce(renderer.formatResponse.entries);
             done();
         });
 
         controllers.static(req, res, failTest(done));
+        return promise;
     });
 });

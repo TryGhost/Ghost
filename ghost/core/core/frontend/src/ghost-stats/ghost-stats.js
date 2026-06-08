@@ -1,5 +1,5 @@
 import { getCountryForTimezone } from 'countries-and-timezones';
-import { getReferrer, parseReferrer } from '../utils/url-attribution';
+import { getReferrer, parseReferrerData } from '../utils/url-attribution';
 import { processPayload } from '../utils/privacy';
 import { BrowserService } from './browser-service';
 
@@ -42,11 +42,11 @@ export class GhostStats {
         config.host = currentScript.getAttribute('data-host');
         config.token = currentScript.getAttribute('data-token') || null;
         config.domain = currentScript.getAttribute('data-domain');
-        
+
         // Get optional parameters
         config.datasource = currentScript.getAttribute('data-datasource') || config.datasource;
         config.stringifyPayload = currentScript.getAttribute('data-stringify-payload') !== 'false';
-        
+
         // Get global attributes
         for (const attr of currentScript.attributes) {
             if (attr.name.startsWith('tb_')) {
@@ -115,11 +115,11 @@ export class GhostStats {
             });
 
             this.browser.clearTimeout(timeoutId);
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            
+
             return response;
         } catch (error) {
             // Silently fail for tracking errors
@@ -141,9 +141,9 @@ export class GhostStats {
             // Get locale, falling back gracefully
             const navigator = this.browser.getNavigator();
             const locale = navigator?.languages?.[0] || navigator?.language || 'en';
-            return { 
+            return {
                 country: countryData ? countryData.id : null,  // Returns country code
-                locale 
+                locale
             };
         } catch (error) {
             return { country: null, locale: 'en' };
@@ -161,18 +161,32 @@ export class GhostStats {
         const navigator = this.browser.getNavigator();
         const location = this.browser.getLocation();
 
-        const referrerData = parseReferrer(location?.href);
-        referrerData.url = getReferrer(location?.href) || referrerData.url; // ensure the referrer.url is set for parsing
+        const referrerData = parseReferrerData(location?.href);
+        // WORKAROUND: The downstream referrer-parser library requires the 'url' field to be populated
+        // even when attribution comes from query params (e.g., ?ref=ghost-newsletter) with no document.referrer.
+        // We use getReferrer() to get the primary attribution source and fall back to document.referrer.
+        // This means 'url' might contain non-URL values like "ghost-newsletter" when there's no actual referrer.
+        // TODO: Refactor the referrer-parser to handle query param attribution without requiring this hack.
+        referrerData.url = getReferrer(location?.href) || referrerData.url;
 
-        // Wait a bit for SPA routers
+        // Debounce tracking to avoid duplicates and ensure page has settled
         this.browser.setTimeout(() => {
             this.trackEvent('page_hit', {
                 'user-agent': navigator?.userAgent,
                 locale,
                 location: country,
-                parsedReferrer: referrerData,
+                parsedReferrer: {
+                    url: referrerData.url,
+                    source: referrerData.source,
+                    medium: referrerData.medium,
+                },
                 pathname: location?.pathname,
                 href: location?.href,
+                utm_source: referrerData.utmSource,
+                utm_medium: referrerData.utmMedium,
+                utm_campaign: referrerData.utmCampaign,
+                utm_term: referrerData.utmTerm,
+                utm_content: referrerData.utmContent
             });
         }, 300);
     }
@@ -181,13 +195,6 @@ export class GhostStats {
         if (this.isListenersAttached) {
             return;
         }
-
-        // Track history navigation
-        this.browser.addEventListener('window', 'hashchange', () => this.trackPageHit());
-        
-        // Handle SPA navigation
-        this.browser.wrapHistoryMethod('pushState', () => this.trackPageHit());
-        this.browser.addEventListener('window', 'popstate', () => this.trackPageHit());
 
         // Handle visibility changes for prerendering
         if (this.browser.getVisibilityState() !== 'hidden') {
@@ -227,7 +234,7 @@ export class GhostStats {
 
         // Expose global API
         if (this.browser.window) {
-            this.browser.window.Tinybird = { 
+            this.browser.window.Tinybird = {
                 trackEvent: (name, payload) => this.trackEvent(name, payload),
                 _trackPageHit: () => this.trackPageHit()
             };
@@ -252,4 +259,4 @@ export const setupEventListeners = ghostStats.setupEventListeners.bind(ghostStat
 export const init = ghostStats.init.bind(ghostStats);
 
 // Also export the instance for testing
-export const ghostStatsInstance = ghostStats; 
+export const ghostStatsInstance = ghostStats;

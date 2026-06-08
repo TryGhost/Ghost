@@ -40,6 +40,7 @@ export function feature(name, options = {}) {
 
 @classic
 export default class FeatureService extends Service {
+    @service ghostPaths;
     @service lazyLoader;
     @service notifications;
     @service session;
@@ -59,18 +60,14 @@ export default class FeatureService extends Service {
     @feature('referralInviteDismissed', {user: true}) referralInviteDismissed;
 
     // labs flags
-    @feature('audienceFeedback') audienceFeedback;
-    @feature('webmentions') webmentions;
     @feature('stripeAutomaticTax') stripeAutomaticTax;
     @feature('emailCustomization') emailCustomization;
-    @feature('i18n') i18n;
-    @feature('announcementBar') announcementBar;
     @feature('importMemberTier') importMemberTier;
+    @feature('adminUIRefresh') adminUIRefresh;
     @feature('lexicalIndicators') lexicalIndicators;
     @feature('editorExcerpt') editorExcerpt;
-    @feature('contentVisibility') contentVisibility;
-    @feature('contentVisibilityAlpha') contentVisibilityAlpha;
-
+    @feature('tagsX') tagsX;
+    @feature('commentModeration') commentModeration;
     _user = null;
 
     @computed('settings.labs')

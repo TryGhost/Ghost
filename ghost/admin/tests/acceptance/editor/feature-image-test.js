@@ -21,6 +21,19 @@ describe('Acceptance: Feature Image', function () {
         expect(await find('.gh-editor-feature-image-caption').textContent).to.contain('Hello dogggos');
     });
 
+    it('does not enable update button when a feature image caption is loaded from the API', async function () {
+        const post = this.server.create('post', {
+            status: 'published',
+            featureImage: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg',
+            featureImageCaption: 'Feature image caption from the API'
+        });
+
+        await visit(`/editor/post/${post.id}`);
+
+        expect(find('.gh-editor-feature-image-caption')).to.have.rendered.text('Feature image caption from the API');
+        expect(find('[data-test-button="publish-save"]').disabled).to.be.true;
+    });
+
     it('does not attempt to save if already deleted and goes back to posts', async function () {
         // avoids an infinite loop when the post is deleted and the save button is clicked, potential race condition
         const post = this.server.create('post', {status: 'published', featureImage: 'https://static.ghost.org/v4.0.0/images/feature-image.jpg', featureImageCaption: '<span style="white-space: pre-wrap;">Hello dogggos</span>'});

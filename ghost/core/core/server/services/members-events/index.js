@@ -13,9 +13,9 @@ class MembersEventsServiceWrapper {
         }
 
         // Wire up all the dependencies
-        const EventStorage = require('./EventStorage');
-        const LastSeenAtUpdater = require('./LastSeenAtUpdater');
-        const LastSeenAtCache = require('./LastSeenAtCache');
+        const EventStorage = require('./event-storage');
+        const LastSeenAtUpdater = require('./last-seen-at-updater');
+        const LastSeenAtCache = require('./last-seen-at-cache');
         const models = require('../../models');
 
         // Listen for events and store them in the database

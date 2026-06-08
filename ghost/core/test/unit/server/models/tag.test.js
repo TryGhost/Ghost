@@ -1,13 +1,9 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const {knex} = require('../../../../core/server/data/db');
 
 describe('Unit: models/tag', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
@@ -16,16 +12,16 @@ describe('Unit: models/tag', function () {
         const mockDb = require('mock-knex');
         let tracker;
 
-        before(function () {
+        beforeAll(function () {
             mockDb.mock(knex);
             tracker = mockDb.getTracker();
         });
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 
-        after(function () {
+        afterAll(function () {
             mockDb.unmock(knex);
         });
 
@@ -44,10 +40,10 @@ describe('Unit: models/tag', function () {
                 limit: 'all',
                 withRelated: ['count.posts']
             }).then(() => {
-                queries.length.should.eql(1);
+                assert.equal(queries.length, 1);
 
-                queries[0].sql.should.eql('select `tags`.*, (select count(`posts`.`id`) from `posts` left outer join `posts_tags` on `posts`.`id` = `posts_tags`.`post_id` where posts_tags.tag_id = tags.id) as `count__posts` from `tags` where `count`.`posts` >= ? order by `count__posts` DESC');
-                queries[0].bindings.should.eql([
+                assert.equal(queries[0].sql, 'select `tags`.*, (select count(`posts`.`id`) from `posts` left outer join `posts_tags` on `posts`.`id` = `posts_tags`.`post_id` where posts_tags.tag_id = tags.id) as `count__posts` from `tags` where `count`.`posts` >= ? order by `count__posts` DESC');
+                assert.deepEqual(queries[0].bindings, [
                     1
                 ]);
             });

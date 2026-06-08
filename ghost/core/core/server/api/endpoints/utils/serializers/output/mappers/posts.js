@@ -8,13 +8,14 @@ const clean = require('../utils/clean');
 const date = require('../utils/date');
 const extraAttrs = require('../utils/extra-attrs');
 const gating = require('../utils/post-gating');
+const previewRendering = require('../utils/preview-rendering');
 const url = require('../utils/url');
 
 const utils = require('../../../index');
 
 const postsMetaSchema = require('../../../../../../data/schema').tables.posts_meta;
 
-const getPostServiceInstance = require('../../../../../../services/posts/posts-service');
+const getPostServiceInstance = require('../../../../../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
 
 const commentsService = require('../../../../../../services/comments');
@@ -41,7 +42,15 @@ module.exports = async (model, frame, options = {}) => {
     jsonModel.email_segment = jsonModel.email_recipient_filter;
     delete jsonModel.email_recipient_filter;
 
-    url.forPost(model.id, jsonModel, frame);
+    // Read the type from the bookshelf model rather than jsonModel:
+    // `?fields=...` may have stripped `type` from jsonModel, but the
+    // underlying record always knows whether it's a post or a page.
+    // Some test fakes pass a plain `{toJSON}` object without `.get`; fall
+    // back to jsonModel.type in that case (no fields stripping in unit
+    // tests).
+    const dbType = typeof model.get === 'function' ? model.get('type') : jsonModel.type;
+    const routerType = dbType === 'page' ? 'pages' : 'posts';
+    url.forPost(model.id, jsonModel, frame, routerType);
 
     extraAttrs.forPost(frame.options, model, jsonModel);
 
@@ -80,6 +89,7 @@ module.exports = async (model, frame, options = {}) => {
     if (utils.isContentAPI(frame)) {
         date.forPost(jsonModel);
         gating.forPost(jsonModel, frame);
+        previewRendering.forPost(jsonModel, frame);
 
         if (jsonModel.access) {
             if (commentsService?.api?.enabled !== 'off') {

@@ -297,6 +297,15 @@ class StripeMocker {
             }
         }
 
+        // Mimic Stripe API: set type based on whether recurring is present
+        if (resource === 'prices' && !id) {
+            decoded = {
+                object: 'price',
+                type: decoded.recurring ? 'recurring' : 'one_time',
+                ...decoded
+            };
+        }
+
         if (resource === 'subscriptions') {
             // Convert price to price object
             if (Array.isArray(decoded.items)) {

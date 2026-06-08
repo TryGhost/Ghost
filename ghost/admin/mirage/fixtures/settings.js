@@ -1,4 +1,3 @@
-/* eslint-disable camelcase */
 import moment from 'moment-timezone';
 
 let id = 0;

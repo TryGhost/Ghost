@@ -16,11 +16,20 @@ const debug = require('@tryghost/debug')('boot');
  * Helper class to create consistent log messages
  */
 class BootLogger {
+    /**
+     * @param {{info: (message: string) => unknown}} logging
+     * @param {{metric: (name: string, time: number) => unknown}} metrics
+     * @param {number} startTime
+     */
     constructor(logging, metrics, startTime) {
         this.logging = logging;
         this.metrics = metrics;
         this.startTime = startTime;
     }
+    /**
+     * @param {string} message
+     * @returns {void}
+     */
     log(message) {
         let {logging, startTime} = this;
         logging.info(`Ghost ${message} in ${(Date.now() - startTime) / 1000}s`);
@@ -28,6 +37,7 @@ class BootLogger {
     /**
      * @param {string} name
      * @param {number} [initialTime]
+     * @returns {void}
      */
     metric(name, initialTime) {
         let {metrics, startTime} = this;
@@ -64,7 +74,7 @@ function notifyServerReady(error) {
   * @param {object} options.config
   */
 async function initDatabase({config}) {
-    const DatabaseStateManager = require('./server/data/db/DatabaseStateManager');
+    const DatabaseStateManager = require('./server/data/db/database-state-manager');
     const dbStateManager = new DatabaseStateManager({knexMigratorFilePath: config.get('paths:appRoot')});
     await dbStateManager.makeReady();
 
@@ -87,12 +97,6 @@ async function initCore({ghostServer, config, frontend}) {
     debug('Begin: Load urlUtils');
     require('./shared/url-utils');
     debug('End: Load urlUtils');
-
-    // Models are the heart of Ghost - this is a syncronous operation
-    debug('Begin: models');
-    const models = require('./server/models');
-    models.init();
-    debug('End: models');
 
     // Limit service is booted before settings, so that limits are available for calculated settings
     debug('Begin: limits');
@@ -161,7 +165,7 @@ async function initCore({ghostServer, config, frontend}) {
 /**
  * These are services required by Ghost's frontend.
  * @param {object} options
- * @param {object} options.bootLogger
+ * @param {BootLogger} options.bootLogger
 
  */
 async function initServicesForFrontend({bootLogger}) {
@@ -198,24 +202,17 @@ async function initServicesForFrontend({bootLogger}) {
     await offers.init();
     debug('End: Offers');
 
-    const frontendDataService = require('./server/services/frontend-data-service');
-    let dataService = await frontendDataService.init();
-
     debug('End: initServicesForFrontend');
-    return {dataService};
 }
 
 /**
  * Frontend is intended to be just Ghost's frontend
  */
-async function initFrontend(dataService) {
+function initFrontend() {
     debug('Begin: initFrontend');
 
-    const proxyService = require('./frontend/services/proxy');
-    proxyService.init({dataService});
-
     const helperService = require('./frontend/services/helpers');
-    await helperService.init();
+    helperService.init();
 
     debug('End: initFrontend');
 }
@@ -225,8 +222,8 @@ async function initFrontend(dataService) {
  * What we want is to be able to optionally load various components and mount them
  * So eventually this function should go away
  * @param {Object} options
- * @param {Boolean} options.backend
- * @param {Boolean} options.frontend
+ * @param {boolean} options.backend
+ * @param {boolean} options.frontend
  * @param {Object} options.config
  */
 async function initExpressApps({frontend, backend, config}) {
@@ -244,7 +241,10 @@ async function initExpressApps({frontend, backend, config}) {
 
     if (frontend) {
         // SITE + MEMBERS
-        const urlService = require('./server/services/url');
+        // RouterManager and migrated frontend callers expect the facade
+        // (getUrlForResource / ownsResource), not the raw eager UrlService
+        // (which only exposes the legacy id-based methods).
+        const urlService = require('./server/services/url').facade;
         const frontendApp = require('./server/web/parent/frontend')({urlService});
         parentApp.use(vhost(config.getFrontendMountPath(), frontendApp));
     }
@@ -315,10 +315,10 @@ async function initServices() {
     const members = require('./server/services/members');
     const tiers = require('./server/services/tiers');
     const permissions = require('./server/services/permissions');
-    const xmlrpc = require('./server/services/xmlrpc');
+    const indexnow = require('./server/services/indexnow');
     const slack = require('./server/services/slack');
     const webhooks = require('./server/services/webhooks');
-    const scheduling = require('./server/adapters/scheduling');
+    const postScheduling = require('./server/services/post-scheduling').default;
     const comments = require('./server/services/comments');
     const staffService = require('./server/services/staff');
     const memberAttribution = require('./server/services/member-attribution');
@@ -329,31 +329,34 @@ async function initServices() {
     const emailService = require('./server/services/email-service');
     const emailAnalytics = require('./server/services/email-analytics');
     const mentionsService = require('./server/services/mentions');
-    const mentionsEmailReport = require('./server/services/mentions-email-report');
     const tagsPublic = require('./server/services/tags-public');
     const postsPublic = require('./server/services/posts-public');
     const slackNotifications = require('./server/services/slack-notifications');
     const mediaInliner = require('./server/services/media-inliner');
     const donationService = require('./server/services/donations');
+    const giftService = require('./server/services/gifts');
     const recommendationsService = require('./server/services/recommendations');
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
+    const domainEvents = require('@tryghost/domain-events');
+    const automations = require('./server/services/automations');
 
+    const {createAdapter: createSchedulerAdapter} = require('./server/adapters/scheduling/utils');
     const urlUtils = require('./shared/url-utils');
+    const internalKeys = require('./server/services/internal-keys').default;
 
-    // NOTE: Members service depends on these
-    //       so they are initialized before it.
+    // Initialize things that other services depend on first.
+    emailAddressService.init();
+    const apiUrl = urlUtils.urlFor('api', {type: 'admin'}, true);
+    const schedulerAdapter = createSchedulerAdapter();
+    schedulerAdapter.run();
     await stripe.init();
-
-    // NOTE: newsletter service and email service depend on email address service
-    await emailAddressService.init(),
 
     await Promise.all([
         identityTokens.init(),
         memberAttribution.init(),
         mentionsService.init(),
-        mentionsEmailReport.init(),
         staffService.init(),
         members.init(),
         tiers.init(),
@@ -361,15 +364,12 @@ async function initServices() {
         postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
-        xmlrpc.listen(),
+        indexnow.listen(),
         slack.listen(),
         audienceFeedback.init(),
         emailService.init(),
         emailAnalytics.init(),
         webhooks.listen(),
-        scheduling.init({
-            apiUrl: urlUtils.urlFor('api', {type: 'admin'}, true)
-        }),
         comments.init(),
         linkTracking.init(),
         emailSuppressionList.init(),
@@ -378,8 +378,24 @@ async function initServices() {
         donationService.init(),
         recommendationsService.init(),
         statsService.init(),
-        explorePingService.init()
+        explorePingService.init(),
+        giftService.init({
+            apiUrl,
+            schedulerAdapter,
+            internalKeys
+        }),
+        automations.init({
+            domainEvents,
+            apiUrl,
+            schedulerAdapter,
+            internalKeys
+        })
     ]);
+
+    if (schedulerAdapter.rescheduleOnBoot) {
+        await postScheduling.rescheduleAll();
+    }
+
     debug('End: Services');
 
     debug('End: initServices');
@@ -415,9 +431,16 @@ async function initBackgroundServices({config}) {
 
     const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
+    if (config.get('updateCheck:forceUpdate')) {
+        updateCheck.scheduleBootJob();
+    }
 
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
+
+    // TODO(NY-1220): The outbox is deprecated and will soon be removed.
+    const outboxService = require('./server/services/outbox');
+    outboxService.init();
 
     debug('End: initBackgroundServices');
 }
@@ -495,7 +518,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         const rootApp = require('./app')();
 
         if (server) {
-            const GhostServer = require('./server/GhostServer');
+            const GhostServer = require('./server/ghost-server');
             ghostServer = new GhostServer({url: config.getSiteUrl(), env: config.get('env'), serverConfig: config.get('server')});
             await ghostServer.start(rootApp);
             bootLogger.log('server started');
@@ -529,10 +552,10 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
             prometheusClient.instrumentKnex(connection);
         }
 
-        const {dataService} = await initServicesForFrontend({bootLogger});
+        await initServicesForFrontend({bootLogger});
 
         if (frontend) {
-            await initFrontend(dataService);
+            initFrontend();
         }
         const ghostApp = await initExpressApps({frontend, backend, config});
 

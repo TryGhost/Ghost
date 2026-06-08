@@ -49,22 +49,6 @@ describe('Acceptance: Error Handling', function () {
 
                 expect(currentRouteName()).to.equal('lexical-editor.edit');
             });
-
-            it('displays alert and aborts the transition when navigating', async function () {
-                await visit('/posts');
-
-                // mock the tags endpoint to return version mismatch
-                this.server.get('/tags/', versionMismatchResponse);
-
-                await click('[data-test-nav="tags"]');
-
-                // navigation is blocked on loading screen
-                expect(currentRouteName()).to.equal('tags_loading');
-
-                // has the refresh to update alert
-                expect(findAll('.gh-alert').length).to.equal(1);
-                expect(find('.gh-alert').textContent).to.match(/refresh/);
-            });
         });
 
         describe('logged out', function () {

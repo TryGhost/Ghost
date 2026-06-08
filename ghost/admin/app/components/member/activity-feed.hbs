@@ -30,7 +30,7 @@
                                                             {{/if}}
                                                             {{#if event.route}}
                                                                 <span class="gh-members-activity-event-join">{{event.join}}</span>
-                                                                <LinkTo class="gh-members-activity-object-link" @route={{event.route.name}} @model={{event.route.model}}>{{event.object}}</LinkTo>
+                                                                <a class="gh-members-activity-object-link" href={{event.route}}>{{event.object}}</a>
                                                             {{else if event.url}}
                                                                 <span class="gh-members-activity-event-join">{{event.join}}</span>
                                                                 <a class="ghost-members-activity-object-link" href="{{event.url}}" target="_blank" rel="noopener noreferrer">{{event.object}}</a>

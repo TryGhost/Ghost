@@ -6,7 +6,8 @@ const dbBackup = require('../../data/db/backup');
 const auth = require('../../services/auth');
 const apiMail = require('./index').mail;
 const apiSettings = require('./index').settings;
-const UsersService = require('../../services/Users');
+const {rejectAdminApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
+const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
 const ALLOWED_INCLUDES = ['count.posts', 'permissions', 'roles', 'roles.permissions'];
 const UNSAFE_ATTRS = ['status', 'roles'];
@@ -29,7 +30,28 @@ function getTargetId(frame) {
     return frame.options.id === 'me' ? frame.user.id : frame.options.id;
 }
 
-async function fetchOrCreatePersonalToken(userId) {
+// When a user changes their own password we destroy all of their sessions in
+// the model, then rotate the session_id here and mint a fresh verified session
+// for the current browser. Rotating invalidates any cloned or stolen copy of
+// the pre-change cookie.
+async function rotateSessionForSelfPasswordChange(frame, user) {
+    const targetUserId = frame.data.password[0].user_id;
+    const currentUserId = frame.options.context && frame.options.context.user;
+    if (targetUserId !== currentUserId) {
+        return;
+    }
+    const req = frame.original.session && frame.original.session.req;
+    if (!req) {
+        return;
+    }
+    await auth.session.sessionService.rotateAndAssignVerifiedUserToSession({
+        req,
+        user,
+        ip: frame.options.ip
+    });
+}
+
+async function fetchOrCreateStaffToken(userId) {
     const token = await models.ApiKey.findOne({user_id: userId}, {});
 
     if (!token) {
@@ -106,7 +128,11 @@ const controller = {
         },
         permissions: true,
         query(frame) {
-            return models.User.findPage(frame.options);
+            const options = {
+                ...frame.options,
+                mongoTransformer: rejectAdminApiRestrictedFieldsTransformer
+            };
+            return models.User.findPage(options);
         }
     },
 
@@ -116,7 +142,6 @@ const controller = {
         },
         options: [
             'include',
-            'filter',
             'fields',
             'debug'
         ],
@@ -213,6 +238,9 @@ const controller = {
         headers: {
             cacheInvalidate: false
         },
+        options: [
+            'ip'
+        ],
         validation: {
             docName: 'password',
             data: {
@@ -228,9 +256,10 @@ const controller = {
                 return frame.data.password[0].user_id;
             }
         },
-        query(frame) {
-            frame.options.skipSessionID = frame.original.session.id;
-            return models.User.changePassword(frame.data.password[0], frame.options);
+        async query(frame) {
+            const result = await models.User.changePassword(frame.data.password[0], frame.options);
+            await rotateSessionForSelfPasswordChange(frame, result);
+            return result;
         }
     },
 
@@ -247,7 +276,7 @@ const controller = {
         }
     },
 
-    readToken: {
+    readStaffToken: {
         headers: {
             cacheInvalidate: false
         },
@@ -264,11 +293,11 @@ const controller = {
         permissions: permissionOnlySelf,
         query(frame) {
             const targetId = getTargetId(frame);
-            return fetchOrCreatePersonalToken(targetId);
+            return fetchOrCreateStaffToken(targetId);
         }
     },
 
-    regenerateToken: {
+    regenerateStaffToken: {
         headers: {
             cacheInvalidate: false
         },
@@ -285,7 +314,7 @@ const controller = {
         permissions: permissionOnlySelf,
         async query(frame) {
             const targetId = getTargetId(frame);
-            const model = await fetchOrCreatePersonalToken(targetId);
+            const model = await fetchOrCreateStaffToken(targetId);
             return models.ApiKey.refreshSecret(model.toJSON(), Object.assign({}, {id: model.id}));
         }
     }

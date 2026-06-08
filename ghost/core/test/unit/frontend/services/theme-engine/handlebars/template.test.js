@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const {hbs, templates} = require('../../../../../../core/frontend/services/handlebars');
 
@@ -8,12 +9,12 @@ describe('Helpers Template', function () {
 
         const safeString = templates.execute('test', {name: 'world'});
 
-        should.exist(safeString);
-        safeString.should.have.property('string').and.equal('<h1>Hello world</h1>');
+        assertExists(safeString);
+        assert.equal(safeString.string, '<h1>Hello world</h1>');
     });
 
     it('will throw an IncorrectUsageError if the partial does not exist', function () {
-        should.throws(() => {
+        assert.throws(() => {
             templates.execute('non-existent');
         }, errors.IncorrectUsageError);
     });

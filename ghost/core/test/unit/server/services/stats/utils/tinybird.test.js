@@ -1,5 +1,6 @@
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const tinybird = require('../../../../../../core/server/services/stats/utils/tinybird');
 
 describe('Tinybird Client', function () {
@@ -8,13 +9,13 @@ describe('Tinybird Client', function () {
     let mockRequest;
     let mockSettingsCache;
     let mockTinybirdService;
-    
+
     beforeEach(function () {
         // Set up mocks
         mockConfig = {
             get: sinon.stub()
         };
-        
+
         mockRequest = {
             get: sinon.stub()
         };
@@ -57,27 +58,33 @@ describe('Tinybird Client', function () {
                 dateTo: '2023-01-31'
             });
 
-            should.exist(url);
-            url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe.json?');
-            url.should.containEql('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16');
-            url.should.containEql('date_from=2023-01-01');
-            url.should.containEql('date_to=2023-01-31');
-            // url.should.containEql('timezone=UTC');
-            // url.should.containEql('member_status=all');
+            assertExists(url);
+            assert(url.startsWith('https://api.tinybird.co/v0/pipes/test_pipe.json?'));
+            assert(url.includes('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16'));
+            assert(url.includes('date_from=2023-01-01'));
+            assert(url.includes('date_to=2023-01-31'));
+            // assert(url.includes('timezone=UTC'));
+            // assert(url.includes('member_status=all'));
 
-            should.exist(options);
-            should.exist(options.headers);
-            options.headers.Authorization.should.equal('Bearer mock-jwt-token');
+            assertExists(options);
+            assertExists(options.headers);
+            assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
         });
 
-        it('uses tbVersion if provided', function () {
-            const {url} = tinybirdClient.buildRequest('test_pipe', {
-                dateFrom: '2023-01-01',
-                dateTo: '2023-01-31',
-                tbVersion: '2'
+        it('uses version from config if provided', function () {
+            // Update config mock to include version
+            mockConfig.get.withArgs('tinybird:stats').returns({
+                endpoint: 'https://api.tinybird.co',
+                token: 'tb-token',
+                version: 'v2'
             });
 
-            url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe__v2.json?');
+            const {url} = tinybirdClient.buildRequest('test_pipe', {
+                dateFrom: '2023-01-01',
+                dateTo: '2023-01-31'
+            });
+
+            assert(url.startsWith('https://api.tinybird.co/v0/pipes/test_pipe_v2.json?'));
         });
 
         it('overrides defaults with provided options', function () {
@@ -88,11 +95,11 @@ describe('Tinybird Client', function () {
                 memberStatus: 'paid'
             });
 
-            url.should.containEql('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16');
-            url.should.containEql('timezone=America%2FNew_York');
-            url.should.containEql('member_status=paid');
+            assert(url.includes('site_uuid=931ade9e-a4f1-4217-8625-34bd34250c16'));
+            assert(url.includes('timezone=America%2FNew_York'));
+            assert(url.includes('member_status=paid'));
         });
-        
+
         it('uses local endpoint and token when local is enabled', function () {
             // Update config mock to return local config
             mockConfig.get.withArgs('tinybird:stats').returns({
@@ -104,31 +111,11 @@ describe('Tinybird Client', function () {
                     token: 'local-token'
                 }
             });
-            
+
             const {url, options} = tinybirdClient.buildRequest('test_pipe', {});
-            
-            url.should.startWith('http://localhost:8000/v0/pipes/test_pipe.json?');
-            options.headers.Authorization.should.equal('Bearer mock-jwt-token');
-        });
-        
-        it('ignores tbVersion when local is enabled', function () {
-            // Update config mock to return local config
-            mockConfig.get.withArgs('tinybird:stats').returns({
-                endpoint: 'https://api.tinybird.co',
-                token: 'tb-token',
-                local: {
-                    enabled: true,
-                    endpoint: 'http://localhost:8000',
-                    token: 'local-token'
-                }
-            });
-            
-            const {url} = tinybirdClient.buildRequest('test_pipe', {
-                tbVersion: '2'
-            });
-            
-            // Should not contain __v2 in the URL
-            url.should.startWith('http://localhost:8000/v0/pipes/test_pipe.json?');
+
+            assert(url.startsWith('http://localhost:8000/v0/pipes/test_pipe.json?'));
+            assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
         });
     });
 
@@ -144,10 +131,11 @@ describe('Tinybird Client', function () {
             };
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.exist(result);
-            result.should.be.an.Array().with.lengthOf(2);
-            result[0].pathname.should.equal('/test-1/');
-            result[0].visits.should.equal(100);
+            assertExists(result);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
+            assert.equal(result[0].pathname, '/test-1/');
+            assert.equal(result[0].visits, 100);
         });
 
         it('handles JSON object in response.body', function () {
@@ -161,8 +149,9 @@ describe('Tinybird Client', function () {
             };
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.exist(result);
-            result.should.be.an.Array().with.lengthOf(2);
+            assertExists(result);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
         });
 
         it('handles direct JSON string response', function () {
@@ -173,8 +162,9 @@ describe('Tinybird Client', function () {
             });
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.exist(result);
-            result.should.be.an.Array().with.lengthOf(1);
+            assertExists(result);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
         });
 
         it('handles direct object response', function () {
@@ -185,8 +175,9 @@ describe('Tinybird Client', function () {
             };
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.exist(result);
-            result.should.be.an.Array().with.lengthOf(1);
+            assertExists(result);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 1);
         });
 
         it('returns empty array for empty data', function () {
@@ -195,8 +186,8 @@ describe('Tinybird Client', function () {
             };
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.exist(result);
-            result.should.be.an.Array().with.lengthOf(0);
+            assertExists(result);
+            assert.deepEqual(result, []);
         });
 
         it('returns null for invalid JSON', function () {
@@ -205,7 +196,7 @@ describe('Tinybird Client', function () {
             };
 
             const result = tinybirdClient.parseResponse(mockResponse);
-            should.equal(result, null);
+            assert.equal(result, null);
         });
     });
 
@@ -220,44 +211,45 @@ describe('Tinybird Client', function () {
                     ]
                 }
             });
-            
+
             const result = await tinybirdClient.fetch('test_pipe', {
                 dateFrom: '2023-01-01',
                 dateTo: '2023-01-31'
             });
-            
-            should.exist(result);
-            result.should.be.an.Array().with.lengthOf(2);
-            result[0].pathname.should.equal('/test-1/');
-            result[0].visits.should.equal(100);
-            
+
+            assertExists(result);
+            assert(Array.isArray(result));
+            assert.equal(result.length, 2);
+            assert.equal(result[0].pathname, '/test-1/');
+            assert.equal(result[0].visits, 100);
+
             // Verify request was called with correct parameters
-            mockRequest.get.calledOnce.should.be.true();
+            sinon.assert.calledOnce(mockRequest.get);
             const [url, options] = mockRequest.get.firstCall.args;
-            url.should.startWith('https://api.tinybird.co/v0/pipes/test_pipe.json?');
-            options.headers.Authorization.should.equal('Bearer mock-jwt-token');
+            assert(url.startsWith('https://api.tinybird.co/v0/pipes/test_pipe.json?'));
+            assert.equal(options.headers.Authorization, 'Bearer mock-jwt-token');
         });
-        
+
         it('returns null when request fails', async function () {
             // Setup mock to throw error
             mockRequest.get.rejects(new Error('Network error'));
-            
+
             const result = await tinybirdClient.fetch('test_pipe', {});
-            
-            should.equal(result, null);
-            mockRequest.get.calledOnce.should.be.true();
+
+            assert.equal(result, null);
+            sinon.assert.calledOnce(mockRequest.get);
         });
-        
+
         it('returns null when response parsing fails', async function () {
             // Setup mock with invalid response
             mockRequest.get.resolves({
                 body: 'invalid json'
             });
-            
+
             const result = await tinybirdClient.fetch('test_pipe', {});
-            
-            should.equal(result, null);
-            mockRequest.get.calledOnce.should.be.true();
+
+            assert.equal(result, null);
+            sinon.assert.calledOnce(mockRequest.get);
         });
     });
-}); 
+});

@@ -2,7 +2,7 @@ const _ = require('lodash');
 const fs = require('fs-extra');
 const path = require('path');
 const os = require('os');
-const glob = require('glob');
+const {globSync} = require('glob');
 const crypto = require('crypto');
 const config = require('../../../shared/config');
 const {extract} = require('@tryghost/zip');
@@ -11,11 +11,11 @@ const debug = require('@tryghost/debug')('import-manager');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const ImageHandler = require('./handlers/image');
-const ImporterContentFileHandler = require('./handlers/ImporterContentFileHandler');
+const ImporterContentFileHandler = require('./handlers/importer-content-file-handler');
 const RevueHandler = require('./handlers/revue');
 const JSONHandler = require('./handlers/json');
 const MarkdownHandler = require('./handlers/markdown');
-const ContentFileImporter = require('./importers/ContentFileImporter');
+const ContentFileImporter = require('./importers/content-file-importer');
 const RevueImporter = require('./importers/importer-revue');
 const DataImporter = require('./importers/data');
 const urlUtils = require('../../../shared/url-utils');
@@ -25,7 +25,7 @@ const mediaStorage = require('../../adapters/storage').getStorage('media');
 const imageStorage = require('../../adapters/storage').getStorage('images');
 const fileStorage = require('../../adapters/storage').getStorage('files');
 
-const emailTemplate = require('./email-template');
+const {emailTemplate} = require('./email-template');
 const ghostMailer = new GhostMailer();
 
 const messages = {
@@ -64,7 +64,6 @@ class ImportManager {
             ignoreRootFolderFiles: true,
             extensions: config.get('uploads').media.extensions,
             contentTypes: config.get('uploads').media.contentTypes,
-            contentPath: config.getContentPath('media'),
             urlUtils: urlUtils,
             storage: mediaStorage
         });
@@ -78,7 +77,6 @@ class ImportManager {
             ignoreRootFolderFiles: true,
             extensions: config.get('uploads').files.extensions,
             contentTypes: config.get('uploads').files.contentTypes,
-            contentPath: config.getContentPath('files'),
             urlUtils: urlUtils,
             storage: fileStorage
         });
@@ -141,7 +139,7 @@ class ImportManager {
     /**
      * Convert items into a glob string
      * @param {String[]} items
-     * @returns {String}
+     * @returns {string}
      */
     getGlobPattern(items) {
         return '+(' + _.reduce(items, function (memo, ext) {
@@ -151,8 +149,8 @@ class ImportManager {
 
     /**
      * @param {String[]} extensions
-     * @param {Number} [level]
-     * @returns {String}
+     * @param {number} [level]
+     * @returns {string}
      */
     getExtensionGlob(extensions, level) {
         const prefix = level === ALL_DIRS ? '**/*' :
@@ -164,8 +162,8 @@ class ImportManager {
     /**
      *
      * @param {String[]} directories
-     * @param {Number} [level]
-     * @returns {String}
+     * @param {number} [level]
+     * @returns {string}
      */
     getDirectoryGlob(directories, level) {
         const prefix = level === ALL_DIRS ? '**/' :
@@ -187,18 +185,18 @@ class ImportManager {
      * Importable content includes any files or directories which the handlers can process
      * Importable content must be found either in the root, or inside one base directory
      *
-     * @param {String} directory
+     * @param {string} directory
      * @returns {boolean}
      */
     isValidZip(directory) {
         // Globs match content in the root or inside a single directory
-        const extMatchesBase = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_OR_SINGLE_DIR), {cwd: directory, nocase: true});
+        const extMatchesBase = globSync(this.getExtensionGlob(this.getExtensions(), ROOT_OR_SINGLE_DIR), {cwd: directory, nocase: true});
 
-        const extMatchesAll = glob.sync(
+        const extMatchesAll = globSync(
             this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory, nocase: true}
         );
 
-        const dirMatches = glob.sync(
+        const dirMatches = globSync(
             this.getDirectoryGlob(this.getDirectories(), ROOT_OR_SINGLE_DIR), {cwd: directory}
         );
 
@@ -227,7 +225,7 @@ class ImportManager {
             await extract(filePath, tmpDir);
 
             // Set permissions for all extracted files
-            const files = glob.sync('**/*', {cwd: tmpDir, nodir: true});
+            const files = globSync('**/*', {cwd: tmpDir, nodir: true});
             await Promise.all(files.map(file => fs.chmod(path.join(tmpDir, file), 0o644)));
         } catch (err) {
             if (err.message.startsWith('ENAMETOOLONG:')) {
@@ -257,26 +255,26 @@ class ImportManager {
      * Use the handler extensions to get a globbing pattern, then use that to fetch all the files from the zip which
      * are relevant to the given handler, and return them as a name and path combo
      * @param {Object} handler
-     * @param {String} directory
+     * @param {string} directory
      * @returns {File[]} Files
      */
     getFilesFromZip(handler, directory) {
         const globPattern = this.getExtensionGlob(handler.extensions, ALL_DIRS);
-        return _.map(glob.sync(globPattern, {cwd: directory, nocase: true}), function (file) {
+        return _.map(globSync(globPattern, {cwd: directory, nocase: true}), function (file) {
             return {name: file, path: path.join(directory, file)};
         });
     }
 
     /**
      * Get the name of the single base directory if there is one, else return an empty string
-     * @param {String} directory
-     * @returns {String}
+     * @param {string} directory
+     * @returns {string}
      */
     getBaseDirectory(directory) {
         // Globs match root level only
-        const extMatches = glob.sync(this.getExtensionGlob(this.getExtensions(), ROOT_ONLY), {cwd: directory, nocase: true});
+        const extMatches = globSync(this.getExtensionGlob(this.getExtensions(), ROOT_ONLY), {cwd: directory, nocase: true});
 
-        const dirMatches = glob.sync(this.getDirectoryGlob(this.getDirectories(), ROOT_ONLY), {cwd: directory, nocase: true});
+        const dirMatches = globSync(this.getDirectoryGlob(this.getDirectories(), ROOT_ONLY), {cwd: directory, nocase: true});
         let extMatchesAll;
 
         // There is no base directory
@@ -284,7 +282,7 @@ class ImportManager {
             return;
         }
         // There is a base directory, grab it from any ext match
-        extMatchesAll = glob.sync(
+        extMatchesAll = globSync(
             this.getExtensionGlob(this.getExtensions(), ALL_DIRS), {cwd: directory, nocase: true}
         );
         if (extMatchesAll.length < 1 || extMatchesAll[0].split('/').length < 1) {

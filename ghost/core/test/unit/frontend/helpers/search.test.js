@@ -1,10 +1,9 @@
-const should = require('should');
 const sinon = require('sinon');
 
 const {registerHelper, shouldCompileToExpected} = require('./utils/handlebars');
 
 describe('Search helper', function () {
-    before(function () {
+    beforeAll(function () {
         registerHelper('search');
     });
 

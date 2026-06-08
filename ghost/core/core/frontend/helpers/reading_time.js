@@ -13,18 +13,18 @@
 const {checks} = require('../services/data');
 const {SafeString} = require('../services/handlebars');
 
-const {readingTime: calculateReadingTime} = require('@tryghost/helpers');
+const {readingTime: calculateAndFormatReadingTime} = require('@tryghost/helpers');
 
 module.exports = function reading_time(options) {// eslint-disable-line camelcase
     options = options || {};
     options.hash = options.hash || {};
+    const possiblyPost = this;
 
     // only calculate reading time for posts
-    if (!checks.isPost(this)) {
+    if (!checks.isPost(possiblyPost)) {
         return null;
     }
 
-    let readingTime = calculateReadingTime(this, options.hash);
-
+    const readingTime = calculateAndFormatReadingTime(possiblyPost, options.hash);
     return new SafeString(readingTime);
 };

@@ -5,8 +5,7 @@ const tpl = require('@tryghost/tpl');
 
 const messages = {
     userNotFound: 'User not found',
-    apiKeyNotFound: 'API Key not found',
-    memberNotFound: 'Member not found'
+    apiKeyNotFound: 'API Key not found'
 };
 
 module.exports = {
@@ -72,20 +71,5 @@ module.exports = {
 
                 return {permissions, roles};
             });
-    },
-
-    async member(id) {
-        const foundMember = await models.Member.findOne({id});
-        if (!foundMember) {
-            throw new errors.NotFoundError({
-                message: tpl(messages.memberNotFound)
-            });
-        }
-
-        // @TODO: figure out how we want to associate members with permissions
-        // Dirty code to load all comment permissions except moderation for members
-        const permissions = await models.Permission.findAll({filter: 'object_type:comment+action_type:-moderate'});
-
-        return {permissions: permissions.models};
     }
 };

@@ -48,7 +48,11 @@ module.exports = function emailPostController(req, res, next) {
             }
 
             if (post.status === 'published') {
-                return urlUtils.redirect301(res, routerManager.getUrlByResourceId(post.id, {withSubdirectory: true}));
+                // Email-only mode is post-resources only (per the comment
+                // above), so the router-level type is always 'posts'. The
+                // post object on the public API has its DB `type` column
+                // stripped, so we tag the resource explicitly.
+                return urlUtils.redirect301(res, routerManager.getUrlForResource({...post, type: 'posts'}, {withSubdirectory: true}));
             }
 
             return renderer.renderEntry(req, res)(post);

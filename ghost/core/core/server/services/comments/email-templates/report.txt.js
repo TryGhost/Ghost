@@ -1,13 +1,16 @@
 module.exports = function (data) {
+    const visibilityNote = 'This comment will remain visible until you choose to remove it.';
+
+    const actionLinks = `View comment: ${data.postUrl}\nModerate comment: ${data.moderationUrl}`;
+
     // Be careful when you indent the email, because whitespaces are visible in emails!
     return `Hey there,
 
-${data.reporter} has reported the comment below on ${data.postTitle}. This comment will remain visible until you choose to remove it, which can be done directly on the post.
+${data.reporter} has reported the comment below on ${data.postTitle}. ${visibilityNote}
 
 ${data.memberName} (${data.memberEmail}):
 ${data.commentText}
-
-${data.postUrl}#ghost-comments
+${actionLinks}
 
 ---
 

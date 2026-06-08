@@ -1,12 +1,12 @@
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const mentionsService = require('../../../core/server/services/mentions');
 const recommendationsService = require('../../../core/server/services/recommendations');
 
 let agent;
 const DomainEvents = require('@tryghost/domain-events');
 const {Recommendation} = require('../../../core/server/services/recommendations/service');
-const Mention = require('../../../core/server/services/mentions/Mention');
+const Mention = require('../../../core/server/services/mentions/mention');
 
 describe('Incoming Recommendation Emails', function () {
     let emailMockReceiver;

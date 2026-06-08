@@ -1,7 +1,8 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:posts');
 const mappers = require('./mappers');
-const papaparse = require('papaparse');
 const tiersService = require('../../../../../services/tiers');
+const {createCSVTransform} = require('./posts-csv-transform');
+const {createCSVStreamResponse} = require('./stream-csv-response');
 
 module.exports = {
     async all(models, apiConfig, frame) {
@@ -54,7 +55,11 @@ module.exports = {
     },
 
     exportCSV(models, apiConfig, frame) {
-        frame.response = papaparse.unparse(models.data);
+        frame.response = createCSVStreamResponse({
+            source: models.data,
+            transform: createCSVTransform(),
+            filename: models.filename
+        });
     },
 
     bulkEdit(bulkActionResult, _apiConfig, frame) {

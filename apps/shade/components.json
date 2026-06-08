@@ -4,12 +4,12 @@
   "rsc": false,
   "tsx": true,
   "tailwind": {
-    "config": "tailwind.config.cjs",
     "css": "styles.css",
     "baseColor": "gray",
     "cssVariables": true,
     "prefix": ""
   },
+  "iconLibrary": "lucide",
   "aliases": {
     "components": "@/components",
     "utils": "@/lib/utils",
@@ -17,5 +17,7 @@
     "lib": "@/lib",
     "hooks": "@/hooks"
   },
-  "iconLibrary": "lucide"
+  "registries": {
+    "@reui": "https://reui.io/r/{name}.json"
+  }
 }

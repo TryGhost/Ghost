@@ -14,7 +14,9 @@ describe('Search Index API', function () {
     describe('fetchPosts', function () {
         const searchIndexPostMatcher = {
             id: anyString,
+            uuid: anyString,
             title: anyString,
+            slug: anyString,
             url: anyString,
             status: anyString,
             published_at: anyISODateTime,
@@ -29,7 +31,7 @@ describe('Search Index API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    posts: new Array(11).fill(searchIndexPostMatcher)
+                    posts: new Array(15).fill(searchIndexPostMatcher)
                 });
 
             // Explicitly double-check that expensive fields are not included
@@ -45,7 +47,9 @@ describe('Search Index API', function () {
     describe('fetchPages', function () {
         const searchIndexPageMatcher = {
             id: anyString,
+            uuid: anyString,
             title: anyString,
+            slug: anyString,
             url: anyString,
             status: anyString,
             published_at: anyISODateTime,
@@ -60,7 +64,7 @@ describe('Search Index API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    pages: new Array(5).fill(searchIndexPageMatcher)
+                    pages: new Array(6).fill(searchIndexPageMatcher)
                 });
 
             // Explicitly double-check that expensive fields are not included
@@ -89,7 +93,7 @@ describe('Search Index API', function () {
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
-                    tags: new Array(6).fill(searchIndexTagMatcher)
+                    tags: new Array(7).fill(searchIndexTagMatcher)
                 });
         });
     });

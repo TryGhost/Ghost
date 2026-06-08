@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {labs, metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
+const {metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
@@ -59,7 +59,7 @@ function getMembersHelper(data, frontendKey, excludeList) {
 
         const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
         const attributes = {
-            i18n: labs.isSet('i18n'),
+            i18n: true,
             ghost: urlUtils.getSiteUrl(),
             key: frontendKey,
             api: urlUtils.urlFor('api', {type: 'content'}, true),
@@ -75,10 +75,7 @@ function getMembersHelper(data, frontendKey, excludeList) {
         membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
     }
     if (settingsCache.get('paid_members_enabled')) {
-        // disable fraud detection for e2e tests to reduce waiting time
-        const isFraudSignalsEnabled = process.env.NODE_ENV === 'testing-browser' ? '?advancedFraudSignals=false' : '';
-
-        membersHelper += `<script async src="https://js.stripe.com/v3/${isFraudSignalsEnabled}"></script>`;
+        membersHelper += `<script async src="https://js.stripe.com/v3/"></script>`;
     }
     return membersHelper;
 }
@@ -95,7 +92,7 @@ function getSearchHelper(frontendKey) {
         key: frontendKey,
         styles: stylesUrl,
         'sodo-search': adminUrl,
-        locale: labs.isSet('i18n') ? (settingsCache.get('locale') || 'en') : undefined
+        locale: settingsCache.get('locale') || 'en'
     };
     const dataAttrs = getDataAttributes(attrs);
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
@@ -137,6 +134,42 @@ function getAnnouncementBarHelper(data) {
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 
     return helper;
+}
+
+function getAdminToolbarHelper(dataRoot, siteTitle, excludeList) {
+    if (!dataRoot._locals?.staffFrontendToolsEnabled || excludeList.has('admin_toolbar')) {
+        return '';
+    }
+
+    const {scriptUrl} = getFrontendAppConfig('adminToolbar');
+    const context = dataRoot._locals?.context || dataRoot.context || [];
+    const entry = dataRoot.post || dataRoot.page;
+    const resourceId = entry?.id;
+    const resourceSlug = context.includes('tag') ? dataRoot.tag?.slug : '';
+    const isHome = context.includes('home');
+    let resourceType = '';
+
+    if (resourceId) {
+        resourceType = context.includes('page') || entry.type === 'page' ? 'page' : 'post';
+    } else if (resourceSlug) {
+        resourceType = 'tag';
+    }
+
+    const attrs = {
+        'ghost-admin-toolbar': escapeExpression(urlUtils.urlFor('admin', true)),
+        'site-title': escapeExpression(siteTitle || settingsCache.get('title') || 'Ghost'),
+        'resource-type': resourceType || undefined,
+        'resource-id': resourceId ? escapeExpression(resourceId) : undefined,
+        'resource-slug': resourceSlug ? escapeExpression(resourceSlug) : undefined,
+        'page-context': isHome ? 'home' : undefined,
+        'site-analytics-enabled': isHome && settingsCache.get('web_analytics_enabled') === true ? 'true' : undefined,
+        'activitypub-enabled': isHome && settingsCache.get('social_web_enabled') === true ? 'true' : undefined,
+        'members-enabled': isHome && settingsCache.get('members_enabled') === true ? 'true' : undefined,
+        'comments-enabled': resourceType === 'post' && settingsCache.get('comments_enabled') === 'off' ? 'false' : undefined
+    };
+    const dataAttrs = getDataAttributes(attrs);
+
+    return `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 }
 
 function getWebmentionDiscoveryLink() {
@@ -309,6 +342,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (!excludeList.has('announcement')) {
             head.push(getAnnouncementBarHelper(options.data));
         }
+        const adminToolbarHelper = getAdminToolbarHelper(dataRoot, meta.site.title, excludeList);
+        if (adminToolbarHelper) {
+            head.push(adminToolbarHelper);
+        }
         try {
             head.push(getWebmentionDiscoveryLink());
         } catch (err) {
@@ -334,6 +371,15 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             head.push(`<script defer src="${getAssetUrl('public/member-attribution.min.js')}"></script>`);
         }
 
+        // Use settingsHelpers to check if web analytics is enabled (includes all necessary checks)
+        if (settingsHelpers.isWebAnalyticsEnabled()) {
+            head.push(getTinybirdTrackerScript(dataRoot));
+            // Set a flag in response locals to indicate tracking script is being served
+            if (dataRoot._locals) {
+                dataRoot._locals.ghostAnalytics = true;
+            }
+        }
+
         if (options.data.site.accent_color) {
             const accentColor = escapeExpression(options.data.site.accent_color);
             const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
@@ -355,15 +401,6 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
 
         if (!_.isEmpty(tagCodeInjection)) {
             head.push(tagCodeInjection);
-        }
-
-        // Use settingsHelpers to check if web analytics is enabled (includes all necessary checks)
-        if (settingsHelpers.isWebAnalyticsEnabled()) {
-            head.push(getTinybirdTrackerScript(dataRoot));
-            // Set a flag in response locals to indicate tracking script is being served
-            if (dataRoot._locals) {
-                dataRoot._locals.ghostAnalytics = true;
-            }
         }
 
         // Check if if the request is for a site preview, in which case we **always** use the custom font values

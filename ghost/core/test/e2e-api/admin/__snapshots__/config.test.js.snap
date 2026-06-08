@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Config API As Owner Can retrieve config and all expected properties 1: [body] 1`] = `
 Object {
@@ -8,34 +8,46 @@ Object {
     "emailAnalytics": true,
     "enableDeveloperExperiments": false,
     "environment": StringMatching /\\^testing/,
+    "klipy": Object {
+      "apiKey": null,
+      "contentFilter": "off",
+    },
     "labs": Object {
       "additionalPaymentMethods": true,
-      "announcementBar": true,
-      "audienceFeedback": true,
-      "contentVisibility": true,
-      "contentVisibilityAlpha": true,
+      "adminUIRefresh": true,
+      "automations": true,
+      "commentsPinning": true,
+      "commentsThreads": true,
       "customFonts": true,
+      "dangerZoneResetAuth": true,
       "editorExcerpt": true,
       "emailCustomization": true,
+      "emailUniqueid": true,
       "explore": true,
-      "i18n": true,
+      "featurebaseFeedback": true,
+      "getHelperDeduplication": true,
       "importMemberTier": true,
+      "indexnow": true,
       "lexicalIndicators": true,
+      "llmsTxt": true,
       "members": true,
+      "pictureImageFormats": true,
+      "smarterCounts": true,
       "stripeAutomaticTax": true,
       "superEditors": true,
-      "themeErrorsNotification": true,
+      "tagsX": true,
+      "themeTranslation": true,
       "urlCache": true,
-      "webmentions": true,
     },
     "mail": "",
     "mailgunIsConfigured": false,
     "security": Object {
+      "allowWebhookInternalIPs": true,
       "staffDeviceVerification": false,
     },
     "signupForm": Object {
       "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
-      "version": "0.2",
+      "version": "0.3",
     },
     "stripeDirect": false,
     "tenor": Object {

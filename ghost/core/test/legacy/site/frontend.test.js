@@ -2,37 +2,23 @@
 // As it stands, these tests depend on the database, and as such are integration tests.
 // Mocking out the models to not touch the DB would turn these into unit tests, and should probably be done in future,
 // But then again testing real code, rather than mock code, might be more useful...
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../utils/assertions');
 
 const sinon = require('sinon');
 const supertest = require('supertest');
 const cheerio = require('cheerio');
 const testUtils = require('../../utils');
-const configUtils = require('../../utils/configUtils');
+const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
 let request;
 
 describe('Frontend Routing', function () {
-    function doEnd(done) {
-        return function (err, res) {
-            if (err) {
-                return done(err);
-            }
-
-            should.not.exist(res.headers['x-cache-invalidate']);
-            should.not.exist(res.headers['X-CSRF-Token']);
-            should.not.exist(res.headers['set-cookie']);
-            should.exist(res.headers.date);
-
-            done();
-        };
-    }
-
     function assertCorrectFrontendHeaders(res) {
-        should.not.exist(res.headers['x-cache-invalidate']);
-        should.not.exist(res.headers['X-CSRF-Token']);
-        should.not.exist(res.headers['set-cookie']);
-        should.exist(res.headers.date);
+        assert.equal(res.headers['x-cache-invalidate'], undefined);
+        assert.equal(res.headers['X-CSRF-Token'], undefined);
+        assert.equal(res.headers['set-cookie'], undefined);
+        assertExists(res.headers.date);
     }
 
     async function addPosts() {
@@ -57,55 +43,55 @@ describe('Frontend Routing', function () {
 
     describe('Test with Initial Fixtures', function () {
         describe('Error', function () {
-            it('should 404 for unknown post with invalid characters', function (done) {
-                request.get('/$pec+acular~/')
+            it('should 404 for unknown post with invalid characters', async function () {
+                await request.get('/$pec+acular~/')
                     .expect('Cache-Control', testUtils.cacheRules.noCache)
                     .expect(404)
                     .expect(/Page not found/)
-                    .end(doEnd(done));
+                    .expect(assertCorrectFrontendHeaders);
             });
 
-            it('should 404 for unknown frontend route', function (done) {
-                request.get('/spectacular/marvellous/')
+            it('should 404 for unknown frontend route', async function () {
+                await request.get('/spectacular/marvellous/')
                     .set('Accept', 'application/json')
                     .expect('Cache-Control', testUtils.cacheRules.noCache)
                     .expect(404)
                     .expect(/Page not found/)
-                    .end(doEnd(done));
+                    .expect(assertCorrectFrontendHeaders);
             });
 
-            it('should 404 for encoded char not 301 from uncapitalise', function (done) {
-                request.get('/|/')
+            it('should 404 for encoded char not 301 from uncapitalise', async function () {
+                await request.get('/|/')
                     .expect('Cache-Control', testUtils.cacheRules.noCache)
                     .expect(404)
                     .expect(/Page not found/)
-                    .end(doEnd(done));
+                    .expect(assertCorrectFrontendHeaders);
             });
         });
 
         describe('Default Redirects (clean URLS)', function () {
-            it('Single post should redirect without slash', function (done) {
-                request.get('/welcome')
+            it('Single post should redirect without slash', async function () {
+                await request.get('/welcome')
                     .expect('Location', '/welcome/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
-                    .end(doEnd(done));
+                    .expect(assertCorrectFrontendHeaders);
             });
 
-            it('Single post should redirect uppercase', function (done) {
-                request.get('/Welcome/')
+            it('Single post should redirect uppercase', async function () {
+                await request.get('/Welcome/')
                     .expect('Location', '/welcome/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
-                    .end(doEnd(done));
+                    .expect(assertCorrectFrontendHeaders);
             });
 
-            it('Single post should sanitize double slashes when redirecting uppercase', function (done) {
-                request.get('///Google/')
+            it('Single post should sanitize double slashes when redirecting uppercase', async function () {
+                await request.get('///Google/')
                     .expect('Location', '/google/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
-                    .end(doEnd(done));
+                    .expect(assertCorrectFrontendHeaders);
             });
         });
     });
@@ -114,33 +100,25 @@ describe('Frontend Routing', function () {
         before(addPosts);
 
         describe('Static page', function () {
-            it('should respond with html', function (done) {
-                request.get('/static-page-test/')
+            it('should respond with html', async function () {
+                const res = await request.get('/static-page-test/')
                     .expect('Content-Type', /html/)
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(200)
-                    .end(function (err, res) {
-                        const $ = cheerio.load(res.text);
+                    .expect(assertCorrectFrontendHeaders);
 
-                        should.not.exist(res.headers['x-cache-invalidate']);
-                        should.not.exist(res.headers['X-CSRF-Token']);
-                        should.not.exist(res.headers['set-cookie']);
-                        should.exist(res.headers.date);
-
-                        $('title').text().should.equal('This is a static page');
-                        $('body.page-template').length.should.equal(1);
-                        $('article.post').length.should.equal(1);
-
-                        doEnd(done)(err, res);
-                    });
+                const $ = cheerio.load(res.text);
+                assert.equal($('title').text(), 'This is a static page');
+                assert.equal($('body.page-template').length, 1);
+                assert.equal($('article.post').length, 1);
             });
 
-            it('should redirect without slash', function (done) {
-                request.get('/static-page-test')
+            it('should redirect without slash', async function () {
+                await request.get('/static-page-test')
                     .expect('Location', '/static-page-test/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
                     .expect(301)
-                    .end(doEnd(done));
+                    .expect(assertCorrectFrontendHeaders);
             });
 
             describe('edit', function () {
@@ -193,31 +171,31 @@ describe('Frontend Routing', function () {
                     await addPosts();
                 });
 
-                it('should redirect without slash', function (done) {
-                    request.get('/static-page-test/edit')
+                it('should redirect without slash', async function () {
+                    await request.get('/static-page-test/edit')
                         .expect('Location', '/static-page-test/edit/')
                         .expect('Cache-Control', testUtils.cacheRules.year)
                         .expect(301)
-                        .end(doEnd(done));
+                        .expect(assertCorrectFrontendHeaders);
                 });
 
-                it('should not redirect to editor', function (done) {
-                    request.get('/static-page-test/edit/')
+                it('should not redirect to editor', async function () {
+                    await request.get('/static-page-test/edit/')
                         .expect(404)
                         .expect('Cache-Control', testUtils.cacheRules.noCache)
-                        .end(doEnd(done));
+                        .expect(assertCorrectFrontendHeaders);
                 });
             });
 
             describe('amp', function () {
                 // AMP is no longer supported as of v6.0, so we only check the case in which it's disabled
                 describe('amp disabled', function (){
-                    it('should 301 for amp parameter', function (done) {
+                    it('should 301 for amp parameter', async function () {
                         // NOTE: only post pages are supported so the router doesn't have a way to distinguish if
                         //       the request was done after AMP 'Page' or 'Post'
-                        request.get('/static-page-test/amp/')
+                        await request.get('/static-page-test/amp/')
                             .expect(301)
-                            .end(doEnd(done));
+                            .expect(assertCorrectFrontendHeaders);
                     });
                 });
             });
@@ -226,11 +204,11 @@ describe('Frontend Routing', function () {
         describe('Post with Ghost in the url', function () {
             // All of Ghost's admin depends on the /ghost/ in the url to work properly
             // Badly formed regexs can cause breakage if a post slug starts with the 5 letters ghost
-            it('should retrieve a blog post with ghost at the start of the url', function (done) {
-                request.get('/ghostly-kitchen-sink/')
+            it('should retrieve a blog post with ghost at the start of the url', async function () {
+                await request.get('/ghostly-kitchen-sink/')
                     .expect('Cache-Control', testUtils.cacheRules.public)
                     .expect(200)
-                    .end(doEnd(done));
+                    .expect(assertCorrectFrontendHeaders);
             });
         });
     });

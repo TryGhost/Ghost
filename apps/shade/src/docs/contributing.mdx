@@ -1,0 +1,114 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Overview / Contributing" />
+
+<div className="sb-doc">
+
+# Contributing
+
+<p className="excerpt">Conventions for adding to Shade. The decision tree for *which layer* something belongs in is on the [Layers](?path=/docs/overview-layers--docs) page. The agent-facing rule source is `apps/shade/AGENTS.md`.</p>
+
+## File layout
+
+```
+apps/shade/src/
+├── components/
+│   ├── ui/              Generic controls + recipes
+│   ├── primitives/      Layout primitives (Stack, Inline, …)
+│   ├── patterns/        Product compositions (PageHeader, ListPage, …)
+│   └── posts-stats/     Interim shared between Posts and Stats
+├── docs/                MDX + showcase stories rendered in Storybook
+├── hooks/               Generic React hooks
+├── lib/                 Utilities (cn, formatters, chart helpers)
+└── providers/           Context providers
+```
+
+Each entrypoint barrel (`components.ts`, `primitives.ts`, `patterns.ts`) re-exports from its folder.
+
+## Naming
+
+| What | Convention | Example |
+|---|---|---|
+| File names | kebab-case | `dropdown-menu.tsx` |
+| Component identifiers | PascalCase | `DropdownMenu` |
+| Hooks, functions, variables | camelCase | `useFocusTrap`, `formatNumber` |
+| Storybook titles | layer prefix | `Components / Button`, `Patterns / PageHeader`, `Recipes / inputSurface` |
+
+Always forward and merge `className` with `cn(...)`. Use `cva()` for variants.
+
+## Imports
+
+Always use the layer-specific subpath:
+
+```ts
+import {Button} from '@tryghost/shade/components';
+import {Stack} from '@tryghost/shade/primitives';
+import {PageHeader} from '@tryghost/shade/patterns';
+import {cn} from '@tryghost/shade/utils';
+```
+
+Inside Shade itself, use the `@/` alias for cross-file imports.
+
+## Stories
+
+Every component ships with `<name>.stories.tsx` next to it:
+
+- `title` follows the layer convention (table above).
+- `tags: ['autodocs']` so docs render.
+- A short `parameters.docs.description.component`.
+- One story per important variant/state, each with a one-line `parameters.docs.description.story` explaining when to use it.
+
+Stories are the gallery. Many small focused stories beat one prose-heavy story.
+
+## ShadCN
+
+Most new components start from a ShadCN install:
+
+```bash
+pnpm dlx shadcn@latest add <component-name>
+```
+
+Guardrails:
+
+- **Never overwrite an existing Shade component** when the CLI prompts. Choose "No".
+- Run on a fresh branch so the CLI's diff is clean.
+- If the component already exists, generate into a scratch repo and port the parts you actually want.
+- After integrating: replace any raw colour/spacing with semantic tokens; ensure default / hover / focus-visible / disabled all work; trim props that hint at a specific surface.
+
+## Tokens & dark mode
+
+- Reference semantic tokens (`bg-background`, `text-foreground`, `border-border-default`, `--surface-elevated`). Never hard-code hex values.
+- Don't write `dark:` variants for colour — semantic tokens flip automatically. Exceptions: assets like logos and illustrations.
+- New tokens go in `apps/shade/theme-variables.css` (semantic) or `apps/shade/tailwind.theme.css` (raw `@theme`). Don't introduce ad-hoc CSS variables in component files.
+
+## Acceptance checklist
+
+Before merging a component:
+
+- [ ] Lives in the right layer (see [Layers](?path=/docs/overview-layers--docs))
+- [ ] `className` forwarded and merged with `cn()`
+- [ ] All states work: default, hover, focus-visible, disabled
+- [ ] Semantic tokens only; no hex values, no `bg-gray-200`-style raw utilities for UI chrome
+- [ ] Story covers variants + states with one-line "when to use" descriptions
+- [ ] No product-specific props on a generic control
+- [ ] `pnpm lint`, `pnpm test`, and Storybook all clean
+
+## Commits & PRs
+
+Commit message format (full rules in `apps/shade/AGENTS.md`):
+
+```
+Added Avatar component
+
+ref https://linear.app/ghost/issue/DES-1234/avatar
+
+Builds on Radix Avatar with a size variant scale and a fallback initials slot.
+```
+
+- 1st line: ≤ 80 chars, past tense, starts with one of: Fixed / Changed / Updated / Improved / Added / Removed / Reverted / Moved / Released / Bumped / Cleaned.
+- 3rd line: magic word (`ref`, `closes`, `fixes`) + full Linear URL.
+- 4th+: the **why**, not the what.
+
+PRs: screenshots or GIFs for any UI change; link the Linear issue; update or add stories.
+
+</div>

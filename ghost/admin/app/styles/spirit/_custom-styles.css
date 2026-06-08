@@ -333,18 +333,6 @@ button, .btn-base {
     line-height: 1.4em;
 }
 
-/* Errors
----------------------------------------------------------- */
-.error-background {
-    width: 406px;
-    height: 288px;
-}
-
-.error-code-size {
-    font-size: 7.8rem;
-    line-height: 0.4em;
-}
-
 /* 404 Error animation */
 
 @keyframes travel-1 {

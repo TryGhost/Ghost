@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const testUtils = require('../../utils');
 const dbUtils = require('../../utils/db-utils');
@@ -124,7 +124,7 @@ describe('Migrations - schema utils', function () {
 
             // Verify initial state
             const isNotNullableInitial = await isColumnNotNullable(tableName, 'not_nullable_col');
-            should.equal(isNotNullableInitial, true, 'Column should initially be not nullable');
+            assert.equal(isNotNullableInitial, true, 'Column should initially be not nullable');
 
             // Run up migration
             const transacting = await db.knex.transaction();
@@ -133,7 +133,7 @@ describe('Migrations - schema utils', function () {
 
             // Verify column is now nullable
             const isNullableAfter = await isColumnNullable(tableName, 'not_nullable_col');
-            should.equal(isNullableAfter, true, 'Column should be nullable after up migration');
+            assert.equal(isNullableAfter, true, 'Column should be nullable after up migration');
 
             // Run down migration with foreign key checks disabled
             const transactingDown = await db.knex.transaction();
@@ -142,7 +142,7 @@ describe('Migrations - schema utils', function () {
 
             // Verify column is not nullable again
             const isNotNullableAfterDown = await isColumnNotNullable(tableName, 'not_nullable_col');
-            should.equal(isNotNullableAfterDown, true, 'Column should be not nullable after down migration');
+            assert.equal(isNotNullableAfterDown, true, 'Column should be not nullable after down migration');
         });
 
         it('Skips setting nullable when column is already nullable', async function () {
@@ -151,18 +151,18 @@ describe('Migrations - schema utils', function () {
 
             // Verify initial state
             const isNullableInitial = await isColumnNullable(tableName, 'nullable_col');
-            should.equal(isNullableInitial, true, 'Column should initially be nullable');
+            assert.equal(isNullableInitial, true, 'Column should initially be nullable');
 
             // Run up migration
             const transacting = await db.knex.transaction();
             await migration.up({transacting});
             await transacting.commit();
 
-            should.ok(logSpy.calledWith(sinon.match('skipping as column is already nullable')), 'Should log skip message');
+            sinon.assert.calledWith(logSpy, sinon.match('skipping as column is already nullable'));
 
             // Column should still be nullable
             const isNullableAfter = await isColumnNullable(tableName, 'nullable_col');
-            should.equal(isNullableAfter, true, 'Column should still be nullable');
+            assert.equal(isNullableAfter, true, 'Column should still be nullable');
         });
 
         it('Handles disableForeignKeyChecks option in down migration', async function () {
@@ -178,7 +178,7 @@ describe('Migrations - schema utils', function () {
 
             // Verify column is nullable
             const isNullableAfter = await isColumnNullable(tableName, 'mixed_col');
-            should.equal(isNullableAfter, true, 'Column should be nullable after up migration');
+            assert.equal(isNullableAfter, true, 'Column should be nullable after up migration');
 
             // Run down migration with foreign key checks disabled
             const transactingDown = await db.knex.transaction();
@@ -187,7 +187,7 @@ describe('Migrations - schema utils', function () {
 
             // Verify column is not nullable again
             const isNotNullableAfterDown = await isColumnNotNullable(tableName, 'mixed_col');
-            should.equal(isNotNullableAfterDown, true, 'Column should be not nullable after down migration');
+            assert.equal(isNotNullableAfterDown, true, 'Column should be not nullable after down migration');
             
             // The test passes if no errors were thrown
             // The disableForeignKeyChecks option is being used internally
@@ -200,7 +200,7 @@ describe('Migrations - schema utils', function () {
 
             // Verify initial state
             const isNullableInitial = await isColumnNullable(tableName, 'nullable_col');
-            should.equal(isNullableInitial, true, 'Column should initially be nullable');
+            assert.equal(isNullableInitial, true, 'Column should initially be nullable');
 
             // Run up migration
             const transacting = await db.knex.transaction();
@@ -209,7 +209,7 @@ describe('Migrations - schema utils', function () {
 
             // Verify column is now not nullable
             const isNotNullableAfter = await isColumnNotNullable(tableName, 'nullable_col');
-            should.equal(isNotNullableAfter, true, 'Column should be not nullable after up migration');
+            assert.equal(isNotNullableAfter, true, 'Column should be not nullable after up migration');
 
             // Run down migration
             const transactingDown = await db.knex.transaction();
@@ -218,7 +218,7 @@ describe('Migrations - schema utils', function () {
 
             // Verify column is nullable again
             const isNullableAfterDown = await isColumnNullable(tableName, 'nullable_col');
-            should.equal(isNullableAfterDown, true, 'Column should be nullable after down migration');
+            assert.equal(isNullableAfterDown, true, 'Column should be nullable after down migration');
         });
 
         it('Skips dropping nullable when column is already not nullable', async function () {
@@ -227,18 +227,18 @@ describe('Migrations - schema utils', function () {
 
             // Verify initial state
             const isNotNullableInitial = await isColumnNotNullable(tableName, 'not_nullable_col');
-            should.equal(isNotNullableInitial, true, 'Column should initially be not nullable');
+            assert.equal(isNotNullableInitial, true, 'Column should initially be not nullable');
 
             // Run up migration
             const transacting = await db.knex.transaction();
             await migration.up({transacting});
             await transacting.commit();
 
-            should.ok(logSpy.calledWith(sinon.match('skipping as column is already not nullable')), 'Should log skip message');
+            sinon.assert.calledWith(logSpy, sinon.match('skipping as column is already not nullable'));
 
             // Column should still be not nullable
             const isNotNullableAfter = await isColumnNotNullable(tableName, 'not_nullable_col');
-            should.equal(isNotNullableAfter, true, 'Column should still be not nullable');
+            assert.equal(isNotNullableAfter, true, 'Column should still be not nullable');
         });
 
         it('Handles disableForeignKeyChecks option when dropping nullable', async function () {
@@ -250,7 +250,7 @@ describe('Migrations - schema utils', function () {
 
             // Verify column is initially nullable
             const isNullableInitial = await isColumnNullable(tableName, testColumn);
-            should.equal(isNullableInitial, true, 'Column should be nullable before test');
+            assert.equal(isNullableInitial, true, 'Column should be nullable before test');
 
             // Run up migration with foreign key checks disabled
             const transacting = await db.knex.transaction();
@@ -259,7 +259,7 @@ describe('Migrations - schema utils', function () {
 
             // Verify column is not nullable
             const isNotNullableAfter = await isColumnNotNullable(tableName, testColumn);
-            should.equal(isNotNullableAfter, true, 'Column should be not nullable after up migration');
+            assert.equal(isNotNullableAfter, true, 'Column should be not nullable after up migration');
             
             // The test passes if no errors were thrown
             // The disableForeignKeyChecks option is being used internally
@@ -284,13 +284,13 @@ describe('Migrations - schema utils', function () {
 
             // Verify column is not nullable and still has its default
             const isNotNullable = await isColumnNotNullable(tableName, 'with_default');
-            should.equal(isNotNullable, true, 'Column should be not nullable');
+            assert.equal(isNotNullable, true, 'Column should be not nullable');
             
             // Verify default value is preserved (MySQL-specific check)
             if (dbUtils.isMySQL()) {
                 const response = await db.knex.raw('SHOW COLUMNS FROM ??', [tableName]);
                 const columnInfo = response[0].find(col => col.Field === 'with_default');
-                should.equal(columnInfo.Default, 'default', 'Column should still have its default value');
+                assert.equal(columnInfo.Default, 'default', 'Column should still have its default value');
             }
         });
 
@@ -320,12 +320,11 @@ describe('Migrations - schema utils', function () {
             
             if (dbUtils.isMySQL()) {
                 // MySQL should log a warning when checking nullable status fails
-                should.ok(logWarnSpy.calledWith(sinon.match('Could not check nullable status')), 
-                    'MySQL should log warning about checking nullable status');
+                sinon.assert.calledWith(logWarnSpy, sinon.match('Could not check nullable status'));
             }
             
             // Both databases should eventually fail when trying to ALTER the non-existent table
-            should.ok(errorThrown, 'Should throw an error when trying to alter non-existent table');
+            assert(errorThrown, 'Should throw an error when trying to alter non-existent table');
             
             // The error message varies between databases and Knex versions
             // SQLite might give a Knex internal error or a 'no such table' error
@@ -334,7 +333,7 @@ describe('Migrations - schema utils', function () {
                                   errorMessage.includes('Cannot read properties of undefined') ||
                                   errorMessage.includes('SQLITE_ERROR');
             
-            should.ok(isExpectedError, `Error should be related to missing table, but was: ${errorMessage}`);
+            assert(isExpectedError, `Error should be related to missing table, but was: ${errorMessage}`);
         });
     });
 });

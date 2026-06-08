@@ -1,5 +1,25 @@
 <div class="{{this.visibilityClass}}">
     <div class="gh-billing-container">
         <GhBillingIframe></GhBillingIframe>
+
+        {{#if this.showLoadingState}}
+            <div class="gh-billing-status gh-billing-status-loading" data-test-billing-loading>
+                <div class="gh-loading-spinner"></div>
+            </div>
+        {{/if}}
+
+        {{#if this.showErrorState}}
+            <div class="gh-billing-status gh-billing-status-error" role="alert" data-test-billing-load-error>
+                <div class="gh-billing-empty-indicator">
+                    <div class="gh-billing-empty-badge" aria-hidden="true">
+                        {{svg-jar "cloud-off"}}
+                    </div>
+                    <div class="gh-billing-empty-copy">
+                        <h3 data-test-billing-load-error-title>We couldn't load your Ghost(Pro) settings</h3>
+                        <p data-test-billing-load-error-description>Refresh the page and try again. If the issue continues, contact <a href="mailto:support@ghost.org">support@ghost.org</a>.</p>
+                    </div>
+                </div>
+            </div>
+        {{/if}}
     </div>
 </div>

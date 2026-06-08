@@ -8,9 +8,12 @@ import {tracked} from '@glimmer/tracking';
 export default class GhBillingIframe extends Component {
     @service ajax;
     @service billing;
+    @service configManager;
     @service ghostPaths;
+    @service limit;
     @service notifications;
     @service session;
+    @service stateBridge;
 
     @inject config;
 
@@ -23,7 +26,8 @@ export default class GhBillingIframe extends Component {
 
     @action
     setup() {
-        this.billing.getBillingIframe().src = this.billing.getIframeURL();
+        this.billing.setBillingIframeSrc();
+        this.billing.startBillingAppLoadMonitor();
         window.addEventListener('message', this.handleIframeMessage);
     }
 
@@ -33,20 +37,50 @@ export default class GhBillingIframe extends Component {
             return;
         }
 
-        // only process messages coming from the billing iframe
-        if (event?.data && this.billing.getIframeURL().includes(event?.origin)) {
-            if (event.data?.request === 'token') {
-                this._handleTokenRequest();
-            }
-
-            if (event.data?.request === 'forceUpgradeInfo') {
-                this._handleForceUpgradeRequest();
-            }
-
-            if (event.data?.subscription) {
-                this._handleSubscriptionUpdate(event.data);
-            }
+        if (!this.billing.isValidBillingIframeMessage(event)) {
+            return;
         }
+
+        const data = event.data;
+
+        if (data?.request === 'billingAppReady') {
+            this.billing.markBillingAppLoaded(data);
+
+            if (data?.route) {
+                this.billing.handleRouteChangeInIframe(data.route);
+            }
+
+            return;
+        }
+
+        this.billing.recordBillingAppPreReadyMessage(data);
+
+        if (data?.route) {
+            this.billing.handleRouteChangeInIframe(data.route);
+        }
+
+        if (data?.request === 'token') {
+            this._handleTokenRequest();
+        }
+
+        if (data?.request === 'forceUpgradeInfo') {
+            this._handleForceUpgradeRequest();
+        }
+
+        if (data?.subscription) {
+            await this._handleSubscriptionUpdate(data);
+        }
+    }
+
+    _postMessageToBillingIframe(message) {
+        const billingIframeWindow = this.billing.getBillingIframe()?.contentWindow;
+        const billingAppOrigin = this.billing.getBillingAppOrigin();
+
+        if (!billingIframeWindow || !billingAppOrigin) {
+            return;
+        }
+
+        billingIframeWindow.postMessage(message, billingAppOrigin);
     }
 
     _handleTokenRequest() {
@@ -55,10 +89,10 @@ export default class GhBillingIframe extends Component {
             this.isOwner = false;
 
             // Avoid letting the BMA waiting for a message and send an empty token response instead
-            this.billing.getBillingIframe().contentWindow.postMessage({
+            this._postMessageToBillingIframe({
                 request: 'token',
                 response: null
-            }, '*');
+            });
         };
 
         if (!this.session.user?.isOwnerOnly) {
@@ -69,10 +103,10 @@ export default class GhBillingIframe extends Component {
         const ghostIdentityUrl = this.ghostPaths.url.api('identities');
         this.ajax.request(ghostIdentityUrl).then((response) => {
             const token = response?.identities?.[0]?.token;
-            this.billing.getBillingIframe().contentWindow.postMessage({
+            this._postMessageToBillingIframe({
                 request: 'token',
                 response: token
-            }, '*');
+            });
 
             this.isOwner = true;
         }).catch((error) => {
@@ -95,17 +129,43 @@ export default class GhBillingIframe extends Component {
                 email: owner?.email
             };
         }
-        this.billing.getBillingIframe().contentWindow.postMessage({
+        this._postMessageToBillingIframe({
             request: 'forceUpgradeInfo',
             response: {
                 forceUpgrade: this.config.hostSettings?.forceUpgrade,
                 isOwner: this.isOwner,
                 ownerUser
             }
-        }, '*');
+        });
     }
 
-    _handleSubscriptionUpdate(data) {
+    async _handleSubscriptionUpdate(data) {
+        // Refresh config which includes billing limits and other plan-related settings
+        try {
+            await this.configManager.fetch();
+        } catch (e) {
+            // proceed anyway so we at least re-evaluate limits and nudge Admin-X to refetch
+        }
+
+        // Reload the limit service to ensure all admin pages can enforce limits
+        this.limit.reload();
+
+        this.stateBridge.triggerSubscriptionChange(data);
+
+        // Invalidate React Query cache for config data in admin-x-settings
+        if (window?.adminXQueryClient?.invalidateQueries && typeof window.adminXQueryClient.invalidateQueries === 'function') {
+            try {
+                // React Query v5+
+                window.adminXQueryClient.refetchQueries({queryKey: ['ConfigResponseType']}).catch(() => {});
+                window.adminXQueryClient.refetchQueries({queryKey: ['SettingsResponseType']}).catch(() => {});
+            } catch (_) {
+                // TODO: remove this fallback when Admin-X-Settings updates to React Query v5+ (@tanstack/react-query)
+                // React Query v4 fallback
+                window.adminXQueryClient.refetchQueries(['ConfigResponseType']).catch(() => {});
+                window.adminXQueryClient.refetchQueries(['SettingsResponseType']).catch(() => {});
+            }
+        }
+
         this.billing.subscription = data.subscription;
         this.billing.checkoutRoute = data?.checkoutRoute ?? '/plans';
 
@@ -119,7 +179,7 @@ export default class GhBillingIframe extends Component {
         // Detect if the current subscription is in a grace state and render a notification
         if (data.subscription.status === 'past_due' || data.subscription.status === 'unpaid') {
             // This notification needs to be shown to every user regardless their permissions to see billing
-            this.notifications.showAlert('Billing error: This site is queued for suspension. The owner of this site must update payment information.', {type: 'error', key: 'billing.overdue'});
+            this.notifications.showAlert(htmlSafe(`Your billing details need updating. The site owner must <a href="${this.billing.billingRouteRoot}">update payment information</a> to avoid suspension.`), {type: 'error', key: 'billing.overdue'});
         } else {
             this.notifications.closeAlerts('billing.overdue');
         }
@@ -134,7 +194,7 @@ export default class GhBillingIframe extends Component {
             // then send the destination route as a message to the BMA, which then handles the redirect.
             const checkoutAction = this.billing.billingRouteRoot + '?action=checkout';
 
-            this.notifications.showAlert(htmlSafe(`Your audience has grown! To continue publishing, the site owner must confirm pricing for this number of members <a href="${checkoutAction}">here</a>`), {type: 'warn', key: 'billing.exceeded'});
+            this.notifications.showAlert(htmlSafe(`Your audience has grown! To continue publishing, the site owner must <a href="${checkoutAction}">confirm pricing for this number of members</a>.`), {type: 'warn', key: 'billing.exceeded'});
         } else {
             this.notifications.closeAlerts('billing.exceeded');
         }

@@ -1,5 +1,6 @@
 import Controller from '@ember/controller';
 import {action} from '@ember/object';
+import {getOwner} from '@ember/application';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
@@ -14,8 +15,21 @@ export default class ApplicationController extends Controller {
     @service ghostPaths;
     @service ajax;
     @service store;
+    @service feature;
 
     @inject config;
+
+    get modalDestinationElement() {
+        const owner = getOwner(this);
+        const app = owner.lookup('application:main');
+        let rootElement = app.rootElement || 'body';
+
+        if (typeof rootElement === 'string') {
+            rootElement = document.querySelector(rootElement);
+        }
+
+        return document.getElementById('ember-modal-wormhole') || rootElement;
+    }
 
     get showBilling() {
         return this.config.hostSettings?.billing?.enabled;
@@ -49,24 +63,6 @@ export default class ApplicationController extends Controller {
         }
 
         return this.config.clientExtensions?.script;
-    }
-
-    get showNavMenu() {
-        let {router, session, ui} = this;
-
-        // if we're in fullscreen mode don't show the nav menu
-        if (ui.isFullScreen) {
-            return false;
-        }
-
-        // we need to defer showing the navigation menu until the session.user
-        // is populated so that gh-user-can-admin has the correct data
-        if (!session.isAuthenticated || !session.user) {
-            return false;
-        }
-
-        return (router.currentRouteName !== 'error404' || session.isAuthenticated)
-                && !router.currentRouteName.match(/(signin|signup|setup|reset)/);
     }
 
     @action

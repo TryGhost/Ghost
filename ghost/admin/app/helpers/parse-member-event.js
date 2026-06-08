@@ -104,6 +104,10 @@ export default class ParseMemberEventHelper extends Helper {
             icon = 'sent-email';
         }
 
+        if (event.type === 'automated_email_sent_event') {
+            icon = 'sent-email';
+        }
+
         if (event.type === 'email_delivered_event') {
             icon = 'received-email';
         }
@@ -134,6 +138,18 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'donation_event') {
             icon = 'subscriptions';
+        }
+
+        if (event.type === 'gift_purchase_event') {
+            icon = 'gift';
+        }
+
+        if (event.type === 'gift_redemption_event') {
+            icon = 'gift';
+        }
+
+        if (event.type === 'gift_ended_event') {
+            icon = 'gift';
         }
 
         if (event.type === 'email_change_event') {
@@ -197,6 +213,12 @@ export default class ParseMemberEventHelper extends Helper {
             return 'sent email';
         }
 
+        if (event.type === 'automated_email_sent_event') {
+            const slug = event.data.automatedEmail?.slug || '';
+            const emailType = slug.includes('paid') ? 'Paid' : 'Free';
+            return `received welcome email (${emailType})`;
+        }
+
         if (event.type === 'email_delivered_event') {
             return 'received email';
         }
@@ -243,6 +265,24 @@ export default class ParseMemberEventHelper extends Helper {
 
         if (event.type === 'donation_event') {
             return 'Made a one-time payment';
+        }
+
+        if (event.type === 'gift_purchase_event') {
+            const symbol = getSymbol(event.data.currency);
+            const formattedAmount = symbol + getNonDecimal(event.data.amount, event.data.currency);
+            const tierName = event.data.tier_name;
+            const duration = event.data.duration;
+            const cadenceLabel = duration === 1 ? event.data.cadence : event.data.cadence + 's';
+
+            return `Purchased gift subscription for ${formattedAmount} (${tierName}, ${duration} ${cadenceLabel})`;
+        }
+
+        if (event.type === 'gift_redemption_event') {
+            return 'started gift subscription';
+        }
+
+        if (event.type === 'gift_ended_event') {
+            return 'gift subscription expired';
         }
     }
 
@@ -316,6 +356,9 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'signup_event' && this.membersUtils.paidMembersEnabled) {
+            if (event.data.created_with_status && event.data.created_with_status !== 'free') {
+                return null;
+            }
             return 'Free';
         }
 
@@ -323,6 +366,10 @@ export default class ParseMemberEventHelper extends Helper {
             const symbol = getSymbol(event.data.currency);
             const formattedAmount = symbol + getNonDecimal(event.data.amount, event.data.currency);
             return formattedAmount;
+        }
+
+        if (event.type === 'gift_redemption_event') {
+            return event.data.tier_name;
         }
 
         return;
@@ -364,20 +411,14 @@ export default class ParseMemberEventHelper extends Helper {
      */
     getRoute(event) {
         if (['click_event', 'feedback_event'].includes(event.type)) {
-            if (event.data.post) {
-                return {
-                    name: 'posts-x',
-                    model: event.data.post.id
-                };
+            if (event.data.post?.id) {
+                return `#/posts/analytics/${event.data.post.id}`;
             }
         }
 
         if (['signup_event', 'subscription_event'].includes(event.type)) {
-            if (event.data.attribution_type === 'post') {
-                return {
-                    name: 'posts-x',
-                    model: event.data.attribution_id
-                };
+            if (event.data.attribution_type === 'post' && event.data.attribution_id) {
+                return `#/posts/analytics/${event.data.attribution_id}`;
             }
         }
         return;

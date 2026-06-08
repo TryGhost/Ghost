@@ -1,0 +1,55 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Patterns / Patterns Guide" />
+
+<div className="sb-doc">
+
+# Patterns
+
+<p className="excerpt">Product-shaped compositions. `PageHeader`, `ListPage`, `KpiCard`, `Filters`, `GhAreaChart`. Patterns compose primitives, components, and recipes with knowledge of how Ghost actually uses them.</p>
+
+## Use a pattern when
+
+- The shape is one Ghost reuses across surfaces (page headers, list pages, KPI rows).
+- You'd otherwise be rebuilding the same chrome from primitives + components every time.
+- The page-type taxonomy on [Page Types](?path=/docs/patterns-page-types--docs) names it.
+
+## What patterns do (and don't)
+
+| Do | Don't |
+|---|---|
+| Expose 3–6 named subcomponents (`.Title`, `.Actions`, `.Body`) | Take a prop bag (`title`, `onAdd`, `columns`, `emptyText` …) |
+| Compose components, primitives, recipes | Fetch data, own routing, read app context |
+| Carry generic names (`PageHeader`, `KpiCard`) | Carry surface-specific names (`MembersFilterBar`) |
+| Stay stable across consumers | Add a prop every time a new consumer needs something |
+
+If you find `useQuery` inside a pattern, the boundary is wrong — bring-your-own state.
+
+Promotion rules and the full decision flow: [Layers](?path=/docs/overview-layers--docs). Agent rules: `apps/shade/AGENTS.md`.
+
+## Example
+
+```tsx
+import {PageHeader, ListPage} from '@tryghost/shade/patterns';
+import {Button, Table} from '@tryghost/shade/components';
+
+<ListPage>
+  <PageHeader>
+    <PageHeader.Left>
+      <PageHeader.Title>Members<PageHeader.Count>{count}</PageHeader.Count></PageHeader.Title>
+    </PageHeader.Left>
+    <PageHeader.Actions>
+      <PageHeader.ActionGroup>
+        <Button>Add member</Button>
+      </PageHeader.ActionGroup>
+    </PageHeader.Actions>
+  </PageHeader>
+  <ListPage.Body>
+    <Table>...</Table>
+  </ListPage.Body>
+</ListPage>
+```
+
+Browse the sidebar for the live list of patterns.
+
+</div>

@@ -1,10 +1,9 @@
 const sinon = require('sinon');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const mail = require('../../../../../core/server/services/mail');
-const SettingsBreadService = require('../../../../../core/server/services/settings/SettingsBREADService');
+const SettingsBreadService = require('../../../../../core/server/services/settings/settings-bread-service');
 const urlUtils = require('../../../../../core/shared/url-utils.js');
 const {mockManager} = require('../../../../utils/e2e-framework');
-const should = require('should');
 const emailAddress = require('../../../../../core/server/services/email-address');
 describe('UNIT > Settings BREAD Service:', function () {
     let emailMockReceiver;
@@ -218,6 +217,108 @@ describe('UNIT > Settings BREAD Service:', function () {
         });
     });
 
+    describe('publicSiteAccess limit', function () {
+        const siteSettings = {
+            is_private: {key: 'is_private', value: true, group: 'site'},
+            password: {key: 'password', value: 'silver042', group: 'site'}
+        };
+
+        function createService({isDisabled = false} = {}) {
+            return new SettingsBreadService({
+                SettingsModel: {
+                    async edit(changes) {
+                        return changes.map(change => ({toJSON: () => ({...siteSettings[change.key], ...change})}));
+                    }
+                },
+                settingsCache: {
+                    get: key => siteSettings[key],
+                    getAll: () => ({...siteSettings})
+                },
+                mail,
+                urlUtils,
+                singleUseTokenProvider: {},
+                labsService: {getAll: () => ({})},
+                limitsService: {
+                    isDisabled: sinon.stub().withArgs('publicSiteAccess').returns(isDisabled)
+                }
+            });
+        }
+
+        describe('browse', function () {
+            it('marks is_private and password as is_read_only when the limit is disabled', async function () {
+                const service = createService({isDisabled: true});
+
+                const settings = await service.browse({user: 'test'});
+                const byKey = Object.fromEntries(settings.map(s => [s.key, s]));
+
+                assert.equal(byKey.is_private.is_read_only, true);
+                assert.equal(byKey.password.is_read_only, true);
+            });
+
+            it('does not mark is_private or password as is_read_only when the limit is not disabled', async function () {
+                const service = createService({isDisabled: false});
+
+                const settings = await service.browse({user: 'test'});
+                const byKey = Object.fromEntries(settings.map(s => [s.key, s]));
+
+                assert.equal(byKey.is_private.is_read_only, undefined);
+                assert.equal(byKey.password.is_read_only, undefined);
+            });
+        });
+
+        describe('edit', function () {
+            it('rejects external attempts to set is_private = false when the limit is disabled', async function () {
+                const service = createService({isDisabled: true});
+
+                await assert.rejects(
+                    service.edit([{key: 'is_private', value: false}], {context: {user: 'test'}}, null),
+                    /Site visibility and access code cannot be changed/
+                );
+            });
+
+            it('rejects external attempts to change password when the limit is disabled', async function () {
+                const service = createService({isDisabled: true});
+
+                await assert.rejects(
+                    service.edit([{key: 'password', value: 'attacker-chosen-code'}], {context: {user: 'test'}}, null),
+                    /Site visibility and access code cannot be changed/
+                );
+            });
+
+            it('allows is_private = true (no-op) when the limit is disabled', async function () {
+                const service = createService({isDisabled: true});
+
+                const settings = await service.edit([{key: 'is_private', value: true}], {context: {user: 'test'}}, null);
+
+                assert.equal(settings.find(s => s.key === 'is_private').value, true);
+            });
+
+            it('allows internal context to edit is_private and password when the limit is disabled', async function () {
+                const service = createService({isDisabled: true});
+
+                const settings = await service.edit([
+                    {key: 'is_private', value: false},
+                    {key: 'password', value: 'regenerated-by-ghost'}
+                ], {context: {internal: true}}, null);
+
+                assert.equal(settings.find(s => s.key === 'is_private').value, false);
+                assert.equal(settings.find(s => s.key === 'password').value, 'regenerated-by-ghost');
+            });
+
+            it('does not block edits when the limit is not disabled', async function () {
+                const service = createService({isDisabled: false});
+
+                const settings = await service.edit([
+                    {key: 'is_private', value: false},
+                    {key: 'password', value: 'user-chosen'}
+                ], {context: {user: 'test'}}, null);
+
+                assert.equal(settings.find(s => s.key === 'is_private').value, false);
+                assert.equal(settings.find(s => s.key === 'password').value, 'user-chosen');
+            });
+        });
+    });
+
     describe('verifyKeyUpdate', function () {
         it('can set members_support_address', async function () {
             const defaultSettingsManager = new SettingsBreadService({
@@ -272,7 +373,7 @@ describe('UNIT > Settings BREAD Service:', function () {
                 labsService: {}
             });
 
-            await should(defaultSettingsManager.verifyKeyUpdate('test')).rejectedWith(/Not allowed to update this setting key via tokens/);
+            await assert.rejects(defaultSettingsManager.verifyKeyUpdate('test'), /Not allowed to update this setting key via tokens/);
         });
     });
 });

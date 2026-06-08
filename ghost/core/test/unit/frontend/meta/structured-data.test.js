@@ -1,8 +1,8 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const getStructuredData = require('../../../../core/frontend/meta/structured-data');
 
 describe('getStructuredData', function () {
-    it('should return structured data from metadata per post', function (done) {
+    it('should return structured data from metadata per post', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -38,7 +38,7 @@ describe('getStructuredData', function () {
 
         const structuredData = getStructuredData(metadata);
 
-        should.deepEqual(structuredData, {
+        assert.deepEqual(structuredData, {
             'article:modified_time': '2016-01-21T22:13:05.412Z',
             'article:published_time': '2015-12-25T05:35:01.234Z',
             'article:tag': ['one', 'two', 'tag'],
@@ -64,10 +64,9 @@ describe('getStructuredData', function () {
             'twitter:site': '@testuser',
             'twitter:creator': '@twitterpage'
         });
-        done();
     });
 
-    it('should return structured data from metadata with provided og and twitter images only per post', function (done) {
+    it('should return structured data from metadata with provided og and twitter images only per post', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -100,7 +99,7 @@ describe('getStructuredData', function () {
 
         const structuredData = getStructuredData(metadata);
 
-        should.deepEqual(structuredData, {
+        assert.deepEqual(structuredData, {
             'article:modified_time': '2016-01-21T22:13:05.412Z',
             'article:published_time': '2015-12-25T05:35:01.234Z',
             'article:tag': ['one', 'two', 'tag'],
@@ -126,10 +125,9 @@ describe('getStructuredData', function () {
             'twitter:site': '@testuser',
             'twitter:creator': '@twitterpage'
         });
-        done();
     });
 
-    it('should return structured data from metadata with no nulls', function (done) {
+    it('should return structured data from metadata with no nulls', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -160,7 +158,7 @@ describe('getStructuredData', function () {
 
         const structuredData = getStructuredData(metadata);
 
-        should.deepEqual(structuredData, {
+        assert.deepEqual(structuredData, {
             'article:modified_time': '2016-01-21T22:13:05.412Z',
             'og:site_name': 'Site Title',
             'og:title': 'Post Title',
@@ -172,6 +170,5 @@ describe('getStructuredData', function () {
             'twitter:title': 'Post Title',
             'twitter:url': 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 });
