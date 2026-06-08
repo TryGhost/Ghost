@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/adapter-base-cache",
-  "version": "0.1.25",
+  "version": "0.1.26",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/TryGhost/SDK.git",
