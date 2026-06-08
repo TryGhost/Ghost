@@ -146,7 +146,24 @@
     ],
     "ignorePaths": [
         "test",
-        "ghost/admin/lib/koenig-editor/package.json"
+        // Freeze the Ember admin app wholesale. `ghost/admin` is being replaced by
+        // the React apps in `apps/*`, and its dependency tree is a frozen-as-a-unit
+        // Ember/broccoli stack we deliberately do not upgrade (see
+        // docs/ember-dependency-burden.md). Ignoring the whole directory drops
+        // admin's declared deps from extraction entirely: no update PRs, and they
+        // stop cluttering the Dependency Dashboard's Detected / Abandoned /
+        // Deprecated sections. Because Renovate manages deps per-manifest, anything
+        // admin SHARES with `ghost/core` or `apps/*` is still managed via those
+        // manifests — so in effect only admin-exclusive deps are omitted. This
+        // subsumes the old koenig-editor ignore and the per-package "Disable ember
+        // updates" / "disable css" rules (removed from packageRules below).
+        //
+        // Security note: GitHub Dependabot alerts for admin deps still fire (they
+        // are independent of Renovate) — we lose only Renovate's auto-fix PR. Given
+        // the app is slated for removal, remediate any rare real incident with a
+        // `pnpm overrides` pin. Today's admin-exclusive advisories are all
+        // build-time or verified-not-shipped (see docs/ember-dependency-burden.md).
+        "ghost/admin/**"
     ],
     "packageRules": [
         // Always require dashboard approval for major updates
@@ -331,41 +348,14 @@
             ],
             "automerge": true,
             "automergeType": "pr"
-        },
-
-        // Ignore all ember-related packages in admin
-        // Our ember codebase is being replaced with react and
-        // Most of the dependencies have breaking changes and it's too hard to update
-        // Therefore, we'll leave these as-is for now
-        {
-            "groupName": "Disable ember updates",
-            "matchFileNames": [
-                "ghost/admin/package.json"
-            ],
-            "matchPackageNames": [
-                // `ember-foo` style packages
-                "/^ember(-|$)/",
-                // scoped `@ember/*` packages
-                "/^@ember\\//",
-                // foo/ember-something style packages
-                "/\\/ember(-|$)/"
-            ],
-            "enabled": false
-        },
-
-        // Don't allow css preprocessor updates in admin
-        {
-            "groupName": "disable css",
-            "matchFileNames": [
-                "ghost/admin/package.json"
-            ],
-            "matchPackageNames": [
-                "autoprefixer",
-                "ember-cli-postcss",
-                "/^postcss/",
-                "/^css/"
-            ],
-            "enabled": false
         }
+
+        // NOTE: the Ember admin app is now frozen wholesale via
+        // `ignorePaths: ghost/admin/**` (above). The former per-package
+        // "Disable ember updates" and "disable css" rules used to live here, but
+        // they only matched ember-*named* and css packages in
+        // ghost/admin/package.json — which let non-ember admin deps (broccoli-*,
+        // liquid-fire, tracked-built-ins, the autoprefixer/postcss tree, etc.)
+        // keep surfacing on the dashboard. The ignorePaths entry supersedes both.
     ]
 }
