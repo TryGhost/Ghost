@@ -1,6 +1,6 @@
-const Prettier = require('@prettier/sync');
+import Prettier from '@prettier/sync';
 
-module.exports = function html(partials, ...params) {
+export function html(partials: readonly string[], ...params: readonly string[]): string {
     let output = '';
     for (let i = 0; i < partials.length; i++) {
         output += partials[i];
@@ -10,4 +10,4 @@ module.exports = function html(partials, ...params) {
     }
 
     return Prettier.format(output, {parser: 'html'});
-};
+}

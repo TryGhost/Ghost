@@ -1,5 +1,5 @@
 {
-  "include": ["core/**/*.js", "test/**/*.js"],
+  "include": ["core/**/*.js", "test/**/*.js", "test/**/*.ts"],
   "compilerOptions": {
      "checkJs": true,
      "module": "commonjs",

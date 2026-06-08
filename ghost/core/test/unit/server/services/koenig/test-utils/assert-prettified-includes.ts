@@ -1,8 +1,8 @@
-const assert = require('node:assert/strict');
-const minify = require('html-minifier').minify;
-const prettifyHTML = require('./prettify-html');
+import assert from 'node:assert/strict';
+import {minify} from 'html-minifier';
+import {prettifyHTML} from './prettify-html';
 
-function assertPrettifiedIncludes(actual, expected) {
+export function assertPrettifiedIncludes(actual: string, expected: string): void {
     const actualPrettified = prettifyHTML(actual);
     const expectedPrettified = prettifyHTML(expected);
 
@@ -21,5 +21,3 @@ function assertPrettifiedIncludes(actual, expected) {
 
     assert.ok(normalizedActual.includes(normalizedExpected), message);
 }
-
-module.exports = assertPrettifiedIncludes;
