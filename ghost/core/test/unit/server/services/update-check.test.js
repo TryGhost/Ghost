@@ -599,6 +599,100 @@ describe('Update Check', function () {
         });
     });
 
+    describe('Response shapes', function () {
+        const releaseNotification = {
+            id: 1312,
+            version: 'v6.44.1',
+            messages: [{
+                id: '0f17c191-87ab-46ad-8884-5d99aa3fdee8',
+                version: '^6',
+                content: 'Ghost v6.44.1 has been released.',
+                top: false,
+                dismissible: true,
+                type: 'info'
+            }],
+            created_at: '2026-06-05T16:53:08.000Z',
+            custom: false,
+            next_check: 1781018713
+        };
+
+        const customNotification = {
+            version: 'all-test',
+            messages: [{
+                id: 'all-test-msg',
+                version: '^6',
+                content: 'Critical security update.',
+                top: true,
+                dismissible: false,
+                type: 'alert'
+            }],
+            created_at: '2026-06-04T21:15:00.000Z',
+            custom: true,
+            next_check: 1781018713
+        };
+
+        function makeService(notificationsAddStub) {
+            return new UpdateCheckService({
+                api: {
+                    settings: {read: settingsStub, edit: settingsStub},
+                    users: {
+                        browse: sinon.stub().resolves({
+                            users: [{email: 'a@b.c', roles: [{name: 'Owner'}]}]
+                        })
+                    },
+                    notifications: {add: notificationsAddStub}
+                },
+                config: {
+                    checkEndpoint: 'https://updates.ghost.org',
+                    siteUrl: 'https://localhost:2368/test',
+                    isPrivacyDisabled: false,
+                    ghostVersion: '6.44.0'
+                },
+                request: request,
+                notificationEmailService: {send: sinon.stub().resolves()}
+            });
+        }
+
+        it('handles a bare-object response with messages at the top level', async function () {
+            nock('https://updates.ghost.org')
+                .post('/')
+                .reply(200, JSON.stringify(releaseNotification), {'Content-Type': 'application/json'});
+
+            const addStub = sinon.stub().resolves();
+            await makeService(addStub).check();
+
+            sinon.assert.calledOnce(addStub);
+            const added = addStub.firstCall.args[0].notifications[0];
+            assert.equal(added.id, releaseNotification.messages[0].id);
+            assert.equal(added.message, releaseNotification.messages[0].content);
+        });
+
+        it('handles a wrapped {notifications:[...]} response', async function () {
+            nock('https://updates.ghost.org')
+                .post('/')
+                .reply(200, JSON.stringify({
+                    notifications: [releaseNotification, customNotification],
+                    next_check: 1781018713
+                }), {'Content-Type': 'application/json'});
+
+            const addStub = sinon.stub().resolves();
+            await makeService(addStub).check();
+
+            sinon.assert.calledTwice(addStub);
+        });
+
+        it('handles a bare-array response', async function () {
+            nock('https://updates.ghost.org')
+                .post('/')
+                .reply(200, JSON.stringify([releaseNotification, customNotification]), {'Content-Type': 'application/json'});
+
+            const addStub = sinon.stub().resolves();
+            await makeService(addStub).check();
+
+            sinon.assert.calledTwice(addStub);
+        });
+    });
+
     describe('Error handling', function () {
         it('logs an error when error', function () {
             const updateCheckService = new UpdateCheckService({

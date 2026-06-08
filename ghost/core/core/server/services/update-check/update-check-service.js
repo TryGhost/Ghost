@@ -16,6 +16,24 @@ const messages = {
     checkingForUpdatesFailedHelp: 'If you get this error repeatedly, please seek help from {url}'
 };
 
+// The service's current response is a single notification at the top
+// level; the wrapped and bare-array shapes are accepted for forward-compat.
+function normalizeNotifications(response) {
+    if (!response) {
+        return [];
+    }
+    if (_.isArray(response.notifications)) {
+        return response.notifications;
+    }
+    if (_.isArray(response)) {
+        return response;
+    }
+    if (response.messages) {
+        return [response];
+    }
+    return [];
+}
+
 /**
  * Update Checker Class
  *
@@ -315,7 +333,7 @@ class UpdateCheckService {
             }]
         }, internal);
 
-        let notifications = (response && _.isArray(response.notifications)) ? response.notifications : [];
+        let notifications = normalizeNotifications(response);
 
         // CASE: Hook into received notifications and decide whether you are allowed to receive custom group messages.
         if (notificationGroups.length) {
@@ -425,7 +443,7 @@ class UpdateCheckService {
             }
 
             const response = await this.updateCheckRequest();
-            const notifications = (response && _.isArray(response.notifications)) ? response.notifications : [];
+            const notifications = normalizeNotifications(response);
 
             this.logging.info({
                 event: {name: 'update-check.response.received'},
