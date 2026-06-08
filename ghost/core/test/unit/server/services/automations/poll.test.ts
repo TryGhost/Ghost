@@ -168,7 +168,7 @@ describe('automations poll', function () {
         sinon.assert.notCalled(memberWelcomeEmailService.init);
     });
 
-    it('enqueues the next future poll when no steps are ready', async function () {
+    it('does not run when no steps are ready, but does enqueue a future poll if one will be ready in the future', async function () {
         const nextStepReadyAt = new Date(Date.now() + 60 * 1000);
         automationsApi.fetchAndLockSteps.resolves({steps: [], nextStepReadyAt});
 
