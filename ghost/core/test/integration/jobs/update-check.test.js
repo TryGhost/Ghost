@@ -10,9 +10,13 @@ const JOB_PATH = path.resolve(__dirname, '../../../core/server/services/update-c
 
 describe('Run Update Check', function () {
     let mockUpdateServer;
-    let previousMailTransport;
+    let baselineMailTransport;
 
     before(testUtils.setup('default'));
+
+    beforeEach(function () {
+        baselineMailTransport = process.env.mail__transport;
+    });
 
     afterEach(async function () {
         if (mockUpdateServer) {
@@ -22,11 +26,10 @@ describe('Run Update Check', function () {
         await models.Settings.edit({key: 'notifications', value: '[]'}, {context: {internal: true}});
         // Remove the job so the next test can re-register it
         await jobService.removeJob(JOB_NAME).catch(() => {});
-        if (previousMailTransport === undefined) {
+        if (baselineMailTransport === undefined) {
             delete process.env.mail__transport;
         } else {
-            process.env.mail__transport = previousMailTransport;
-            previousMailTransport = undefined;
+            process.env.mail__transport = baselineMailTransport;
         }
     });
 
@@ -79,7 +82,6 @@ describe('Run Update Check', function () {
         // Worker threads inherit process.env, so this routes the worker's
         // GhostMailer to nodemailer-stub-transport. Without it the worker
         // hits the default SMTP transport and ECONNREFUSEs on localhost:587.
-        previousMailTransport = process.env.mail__transport;
         process.env.mail__transport = 'stub';
 
         mockUpdateServer = http.createServer((req, res) => {
