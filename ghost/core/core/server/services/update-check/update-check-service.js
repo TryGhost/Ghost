@@ -34,6 +34,21 @@ function normalizeNotifications(response) {
     return [];
 }
 
+function channelOf(notification) {
+    if (notification.channel) {
+        return notification.channel;
+    }
+    if (!notification.custom) {
+        return 'release';
+    }
+    const hasAlertMessage = Array.isArray(notification.messages)
+        && notification.messages.some(message => message && message.type === 'alert');
+    if (hasAlertMessage) {
+        return 'security';
+    }
+    return 'custom';
+}
+
 /**
  * Update Checker Class
  *
@@ -63,6 +78,7 @@ class UpdateCheckService {
      * @param {string} options.config.checkEndpoint - update check service URL
      * @param {boolean} [options.config.isPrivacyDisabled]
      * @param {string[]} [options.config.notificationGroups] - example values ["migration", "something"]
+     * @param {string[]} [options.config.enabledChannels] - notification channels this install accepts. Undefined means accept all (default). Empty array means accept none. Known channels today: 'release', 'security', 'custom'.
      * @param {boolean} [options.config.rethrowErrors] - allows to force throwing errors (useful in worker threads)
      * @param {string} options.config.siteUrl - Ghost instance URL
      * @param {boolean} [options.config.forceUpdate]
@@ -334,6 +350,12 @@ class UpdateCheckService {
         }, internal);
 
         let notifications = normalizeNotifications(response);
+
+        const enabledChannels = this.config.enabledChannels;
+        if (Array.isArray(enabledChannels)) {
+            const accepted = new Set(enabledChannels);
+            notifications = notifications.filter(notification => accepted.has(channelOf(notification)));
+        }
 
         // CASE: Hook into received notifications and decide whether you are allowed to receive custom group messages.
         if (notificationGroups.length) {

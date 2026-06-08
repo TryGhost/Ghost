@@ -24,7 +24,8 @@ const {NotificationEmailService} = require('../notifications/notification-email'
 module.exports = async ({
     rethrowErrors = false,
     forceUpdate = config.get('updateCheck:forceUpdate'),
-    updateCheckUrl = config.get('updateCheck:url')
+    updateCheckUrl = config.get('updateCheck:url'),
+    enabledChannels = config.get('notifications:enabledChannels')
 } = {}) => {
     if (!forceUpdate) {
         const allowedCheckEnvironments = ['development', 'production'];
@@ -67,6 +68,7 @@ module.exports = async ({
             checkEndpoint: updateCheckUrl,
             isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
             notificationGroups: config.get('notificationGroups'),
+            enabledChannels,
             siteUrl: urlUtils.urlFor('home', true),
             forceUpdate,
             ghostVersion: ghostVersion.original,

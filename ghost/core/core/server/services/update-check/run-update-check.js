@@ -48,7 +48,8 @@ if (parentPort) {
     await updateCheck({
         rethrowErrors: true,
         forceUpdate: workerData.forceUpdate,
-        updateCheckUrl: workerData.updateCheckUrl
+        updateCheckUrl: workerData.updateCheckUrl,
+        enabledChannels: workerData.enabledChannels
     });
 
     postParentPortMessage(`Ran update check`);
