@@ -3,7 +3,7 @@
   "compilerOptions": {
      "checkJs": true,
      "module": "commonjs",
-     "target": "es2018",
+     "target": "es2024",
      "moduleResolution": "node"
   },
   "exclude": [

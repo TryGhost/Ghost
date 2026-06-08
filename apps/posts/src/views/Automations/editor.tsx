@@ -39,25 +39,7 @@ const editableSlice = (automation: AutomationDetail) => ({
 });
 
 const isFailedEditState = (editState: AutomationEditState): boolean => {
-    switch (editState) {
-    case 'failed to publish':
-    case 'failed to re-publish':
-    case 'failed to save':
-    case 'failed to unpublish':
-        return true;
-    case 'confirming re-publish':
-    case 'confirming unpublish':
-    case 'idle':
-    case 'publishing':
-    case 're-publishing':
-    case 'saving':
-    case 'unpublishing':
-        return false;
-    default: {
-        const _exhaustive: never = editState;
-        throw new Error(`Unhandled edit state: ${_exhaustive}`);
-    }
-    }
+    return editState.phase === 'failed';
 };
 
 const getActionErrors = (automation: AutomationDetail): Record<string, string> => {
@@ -92,7 +74,7 @@ const AutomationEditor: React.FC = () => {
     const automation = data?.automations[0];
 
     const editMutation = useEditAutomation();
-    const [editState, setEditState] = React.useState<AutomationEditState>('idle');
+    const [editState, setEditState] = React.useState<AutomationEditState>({phase: 'idle'});
     const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
 
     // Draft is the user-facing, locally mutable copy. The React Query cache stays as server truth;
@@ -126,7 +108,7 @@ const AutomationEditor: React.FC = () => {
             );
         });
         setEditState(prev => (
-            isFailedEditState(prev) ? 'idle' : prev
+            isFailedEditState(prev) ? {phase: 'idle'} : prev
         ));
     };
 
@@ -157,20 +139,20 @@ const AutomationEditor: React.FC = () => {
         const statusTransition: `${AutomationStatus} -> ${AutomationStatus}` = `${oldStatus} -> ${newStatus}`;
         switch (statusTransition) {
         case 'active -> active':
-            requestState = 're-publishing';
-            errorState = 'failed to re-publish';
+            requestState = {phase: 'submitting', action: 'republish'};
+            errorState = {phase: 'failed', action: 'republish'};
             break;
         case 'inactive -> inactive':
-            requestState = 'saving';
-            errorState = 'failed to save';
+            requestState = {phase: 'submitting', action: 'save'};
+            errorState = {phase: 'failed', action: 'save'};
             break;
         case 'inactive -> active':
-            requestState = 'publishing';
-            errorState = 'failed to publish';
+            requestState = {phase: 'submitting', action: 'publish'};
+            errorState = {phase: 'failed', action: 'publish'};
             break;
         case 'active -> inactive':
-            requestState = 'unpublishing';
-            errorState = 'failed to unpublish';
+            requestState = {phase: 'submitting', action: 'unpublish'};
+            errorState = {phase: 'failed', action: 'unpublish'};
             break;
         default: {
             const _exhaustive: never = statusTransition;
@@ -195,7 +177,7 @@ const AutomationEditor: React.FC = () => {
                 onSuccess: (response) => {
                     setDraft(response.automations[0]);
                     setActionErrors({});
-                    setEditState('idle');
+                    setEditState({phase: 'idle'});
                 },
                 onError: (error) => {
                     void error;
@@ -218,9 +200,9 @@ const AutomationEditor: React.FC = () => {
         );
     };
 
-    let isConfirmUnpublishAlertOpen = false;
-    let isConfirmRepublishAlertOpen = false;
-    let isEditRequestActive = false;
+    const isConfirmUnpublishAlertOpen = editState.action === 'unpublish';
+    const isConfirmRepublishAlertOpen = editState.action === 'republish';
+    const isEditRequestActive = editState.phase === 'submitting';
     let isSaveButtonEnabled = !!draft && draft.actions.length > 0 && draft.status === 'inactive' && hasUnsavedChanges;
     let saveButtonVariant: ButtonProps['variant'] = 'secondary';
     let saveButtonChildren: React.ReactNode = 'Save';
@@ -234,89 +216,84 @@ const AutomationEditor: React.FC = () => {
     let isRepublishButtonEnabled = true;
     let republishButtonVariant: ButtonProps['variant'] = 'default';
     let republishButtonChildren: React.ReactNode = 'Publish changes';
-    switch (editState) {
+    switch (editState.phase) {
     case 'idle':
         break;
-    case 'saving':
-        isEditRequestActive = true;
+    case 'submitting':
         isSaveButtonEnabled = false;
         isPublishButtonEnabled = false;
         isTurnOffButtonEnabled = false;
-        saveButtonChildren = (
-            <>
-                <LoadingIndicator size='sm' />
-                <span className='sr-only'>Saving...</span>
-            </>
-        );
+
+        switch (editState.action) {
+        case 'save':
+            saveButtonChildren = (
+                <>
+                    <LoadingIndicator size='sm' />
+                    <span className='sr-only'>Saving...</span>
+                </>
+            );
+            break;
+        case 'publish':
+            publishButtonChildren = (
+                <>
+                    <LoadingIndicator color='light' size='sm' />
+                    <span className='sr-only'>Publishing...</span>
+                </>
+            );
+            break;
+        case 'republish':
+            isRepublishButtonEnabled = false;
+            republishButtonChildren = (
+                <>
+                    <LoadingIndicator color='light' size='sm' />
+                    <span className='sr-only'>Publishing...</span>
+                </>
+            );
+            break;
+        case 'unpublish':
+            turnOffButtonChildren = (
+                <>
+                    <LoadingIndicator color='light' size='sm' />
+                    <span className='sr-only'>Turning off...</span>
+                </>
+            );
+            break;
+        }
         break;
-    case 'publishing':
-        isEditRequestActive = true;
-        isSaveButtonEnabled = false;
-        isPublishButtonEnabled = false;
-        isTurnOffButtonEnabled = false;
-        publishButtonChildren = (
-            <>
-                <LoadingIndicator color='light' size='sm' />
-                <span className='sr-only'>Publishing...</span>
-            </>
-        );
+    case 'confirming':
+        switch (editState.action) {
+        case 'republish':
+            isPublishButtonEnabled = false;
+            isTurnOffButtonEnabled = false;
+            break;
+        case 'unpublish':
+            isSaveButtonEnabled = false;
+            isPublishButtonEnabled = false;
+            isTurnOffButtonEnabled = false;
+            break;
+        }
         break;
-    case 're-publishing':
-        isEditRequestActive = true;
-        isConfirmRepublishAlertOpen = true;
-        isPublishButtonEnabled = false;
-        isTurnOffButtonEnabled = false;
-        isRepublishButtonEnabled = false;
-        republishButtonChildren = (
-            <>
-                <LoadingIndicator color='light' size='sm' />
-                <span className='sr-only'>Publishing...</span>
-            </>
-        );
-        break;
-    case 'unpublishing':
-        isEditRequestActive = true;
-        isConfirmUnpublishAlertOpen = true;
-        isSaveButtonEnabled = false;
-        isPublishButtonEnabled = false;
-        isTurnOffButtonEnabled = false;
-        turnOffButtonChildren = (
-            <>
-                <LoadingIndicator color='light' size='sm' />
-                <span className='sr-only'>Turning off...</span>
-            </>
-        );
-        break;
-    case 'confirming unpublish':
-        isConfirmUnpublishAlertOpen = true;
-        isSaveButtonEnabled = false;
-        isPublishButtonEnabled = false;
-        isTurnOffButtonEnabled = false;
-        break;
-    case 'confirming re-publish':
-        isConfirmRepublishAlertOpen = true;
-        isPublishButtonEnabled = false;
-        isTurnOffButtonEnabled = false;
-        break;
-    case 'failed to save':
-        saveButtonVariant = 'destructive';
-        saveButtonChildren = 'Retry';
-        break;
-    case 'failed to publish':
-        publishButtonVariant = 'destructive';
-        publishButtonChildren = 'Retry';
-        break;
-    case 'failed to re-publish':
-        isConfirmRepublishAlertOpen = true;
-        isPublishButtonEnabled = false;
-        isTurnOffButtonEnabled = false;
-        republishButtonVariant = 'destructive';
-        republishButtonChildren = 'Retry';
-        break;
-    case 'failed to unpublish':
-        isConfirmUnpublishAlertOpen = true;
-        isTurnOffButtonEnabled = true;
-        turnOffButtonChildren = 'Retry';
+    case 'failed':
+        switch (editState.action) {
+        case 'save':
+            saveButtonVariant = 'destructive';
+            saveButtonChildren = 'Retry';
+            break;
+        case 'publish':
+            publishButtonVariant = 'destructive';
+            publishButtonChildren = 'Retry';
+            break;
+        case 'republish':
+            isPublishButtonEnabled = false;
+            isTurnOffButtonEnabled = false;
+            republishButtonVariant = 'destructive';
+            republishButtonChildren = 'Retry';
+            break;
+        case 'unpublish':
+            isTurnOffButtonEnabled = true;
+            turnOffButtonChildren = 'Retry';
+            break;
+        }
         break;
     default: {
         const _exhaustive: never = editState;
@@ -326,12 +303,12 @@ const AutomationEditor: React.FC = () => {
 
     const onConfirmUnpublishOpenChange = (open: boolean): void => {
         setEditState((oldEditState) => {
-            switch (oldEditState) {
-            case 'confirming unpublish':
-            case 'failed to unpublish':
-                return open ? oldEditState : 'idle';
+            switch (oldEditState.phase) {
+            case 'confirming':
+            case 'failed':
+                return oldEditState.action === 'unpublish' && !open ? {phase: 'idle'} : oldEditState;
             case 'idle':
-                return open ? 'confirming unpublish' : oldEditState;
+                return open ? {phase: 'confirming', action: 'unpublish'} : oldEditState;
             default:
                 return oldEditState;
             }
@@ -340,12 +317,12 @@ const AutomationEditor: React.FC = () => {
 
     const onConfirmRepublishOpenChange = (open: boolean): void => {
         setEditState((oldEditState) => {
-            switch (oldEditState) {
-            case 'confirming re-publish':
-            case 'failed to re-publish':
-                return open ? oldEditState : 'idle';
+            switch (oldEditState.phase) {
+            case 'confirming':
+            case 'failed':
+                return oldEditState.action === 'republish' && !open ? {phase: 'idle'} : oldEditState;
             case 'idle':
-                return open ? 'confirming re-publish' : oldEditState;
+                return open ? {phase: 'confirming', action: 'republish'} : oldEditState;
             default:
                 return oldEditState;
             }
@@ -359,10 +336,10 @@ const AutomationEditor: React.FC = () => {
 
         switch (draft.status) {
         case 'active':
-            if (!validateActionErrors(draft, 'idle')) {
+            if (!validateActionErrors(draft, {phase: 'idle'})) {
                 return;
             }
-            setEditState('confirming re-publish');
+            setEditState({phase: 'confirming', action: 'republish'});
             break;
         case 'inactive':
             save('active');
@@ -399,7 +376,7 @@ const AutomationEditor: React.FC = () => {
                 saveButtonVariant={saveButtonVariant}
                 onPublish={onPublish}
                 onSave={() => save()}
-                onTurnOff={() => setEditState('confirming unpublish')}
+                onTurnOff={() => setEditState({phase: 'confirming', action: 'unpublish'})}
             />
 
             <AutomationCanvas
@@ -448,7 +425,7 @@ const AutomationEditor: React.FC = () => {
                         <AlertDialogCancel disabled={isEditRequestActive}>Cancel</AlertDialogCancel>
                         <Button
                             disabled={isEditRequestActive}
-                            variant={editState === 'failed to unpublish' ? 'destructive' : 'default'}
+                            variant={editState.phase === 'failed' && editState.action === 'unpublish' ? 'destructive' : 'default'}
                             onClick={() => save('inactive')}
                         >
                             {turnOffButtonChildren}

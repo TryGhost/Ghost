@@ -464,6 +464,8 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchOembedDataFromUrl(url, type, options = {}) {
+        const {shouldRethrowFetchError, ...fetchOptions} = options;
+
         try {
             const urlObject = new URL(url);
 
@@ -502,7 +504,7 @@ class OEmbedService {
             }
 
             // Not in the list, we need to fetch the content
-            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url, options);
+            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url, fetchOptions);
 
             // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {
@@ -558,6 +560,10 @@ class OEmbedService {
 
             return data;
         } catch (err) {
+            if (shouldRethrowFetchError?.(err)) {
+                throw err;
+            }
+
             // allow specific validation errors through for better error messages
             if (errors.utils.isGhostError(err) && err.errorType === 'ValidationError') {
                 throw err;

@@ -754,10 +754,15 @@ export default class App extends React.Component {
         const [, qs] = window.location.hash.substr(1).split('?');
         if (hasMode(['preview'])) {
             let data = {};
-            if (hasMode(['offerPreview'])) {
-                data = this.fetchOfferQueryStrData(qs);
-            } else {
-                data = this.fetchQueryStrData(qs);
+            try {
+                if (hasMode(['offerPreview'])) {
+                    data = this.fetchOfferQueryStrData(qs);
+                } else {
+                    data = this.fetchQueryStrData(qs);
+                }
+            } catch (error) {
+                Sentry.captureException(error);
+                return {};
             }
             return {
                 ...data,
