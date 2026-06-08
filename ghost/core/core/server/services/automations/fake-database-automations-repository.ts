@@ -248,6 +248,7 @@ function trigger(database: DatabaseSync, {
     insertRunStep(database, {
         automationRunId: run.id,
         automationActionRevisionId: firstAction.automation_action_revision_id,
+        now,
         readyAt
     });
 }
@@ -255,13 +256,15 @@ function trigger(database: DatabaseSync, {
 function insertRunStep(database: DatabaseSync, {
     automationRunId,
     automationActionRevisionId,
+    now,
     readyAt
 }: Readonly<{
     automationRunId: string;
     automationActionRevisionId: string;
+    now: Date;
     readyAt: Date;
 }>): void {
-    const nowString = new Date().toISOString();
+    const nowString = now.toISOString();
 
     database.prepare(`
         INSERT INTO automation_run_steps
@@ -486,6 +489,7 @@ function finishStepAndEnqueueNext(
     insertRunStep(database, {
         automationRunId: step.automation_run_id,
         automationActionRevisionId: next.automation_action_revision_id,
+        now,
         readyAt: nextReadyAt
     });
 
