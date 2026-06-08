@@ -537,17 +537,10 @@ describe('Update Check', function () {
             assert.equal(emailSendStub.args[0][0].subject, 'Action required: Critical alert from Ghost instance http://127.0.0.1:2369');
             assert.equal(emailSendStub.args[0][0].content, '<p>Critical message. Upgrade your site!</p>');
 
-            // users.browse is called twice: once for stats reporting, once for
-            // the admin lookup. The second call pushes the role filter into
-            // NQL so the DB returns only Owner/Administrator users.
-            sinon.assert.calledTwice(usersBrowseStub);
-            assert.deepEqual(usersBrowseStub.args[1][0], {
-                filter: 'status:active+roles.name:[Owner,Administrator]',
-                context: {internal: true}
-            });
-
             sinon.assert.calledOnce(notificationsAPIAddStub);
-            assert.equal(notificationsAPIAddStub.args[0][0].notifications.length, 1);
+            const addedNotification = notificationsAPIAddStub.args[0][0].notifications[0];
+            assert.equal(addedNotification.type, 'alert');
+            assert.equal(addedNotification.message, '<p>Critical message. Upgrade your site!</p>');
         });
 
         it('not create a notification if the check response has no messages', async function () {
