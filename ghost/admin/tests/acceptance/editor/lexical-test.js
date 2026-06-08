@@ -11,9 +11,21 @@ describe('Acceptance: Lexical editor', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
+    const editorTypographyStorageKeys = {
+        fontStyle: 'ghost-editor-font-style',
+        fontSize: 'ghost-editor-font-size'
+    };
+
     beforeEach(async function () {
         this.server.loadFixtures();
+        localStorage.removeItem(editorTypographyStorageKeys.fontStyle);
+        localStorage.removeItem(editorTypographyStorageKeys.fontSize);
         await loginAsRole('Administrator', this.server);
+    });
+
+    afterEach(function () {
+        localStorage.removeItem(editorTypographyStorageKeys.fontStyle);
+        localStorage.removeItem(editorTypographyStorageKeys.fontSize);
     });
 
     it('redirects to signin when not authenticated', async function () {
@@ -33,6 +45,27 @@ describe('Acceptance: Lexical editor', function () {
             const xpath = '//div[text()="Begin writing your post..."]';
             const match = document.evaluate(xpath, document, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null);
             expect(match.singleNodeValue).to.exist;
+        });
+
+        it('customizes editor typography locally', async function () {
+            const post = this.server.create('post', {lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"This is a test","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}'});
+            await visit(`/editor/post/${post.id}`);
+            await waitFor('[data-secondary-instance="false"] [data-lexical-editor] p');
+            const initialFontSize = parseFloat(window.getComputedStyle(find('[data-secondary-instance="false"] [data-lexical-editor] p')).fontSize);
+
+            expect(find('[data-test-editor-typography-trigger]'), 'typography trigger').to.exist;
+            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-sans'), 'default font class').to.be.true;
+            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-size-2'), 'default size class').to.be.true;
+
+            await click('[data-test-editor-typography-trigger]');
+            await click('[data-test-editor-font-style="serif"]');
+            await click('[data-test-editor-font-size-increase]');
+
+            expect(localStorage.getItem(editorTypographyStorageKeys.fontStyle), 'stored font style').to.equal('serif');
+            expect(localStorage.getItem(editorTypographyStorageKeys.fontSize), 'stored font size').to.equal('3');
+            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-serif'), 'updated font class').to.be.true;
+            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-size-3'), 'updated size class').to.be.true;
+            expect(parseFloat(window.getComputedStyle(find('[data-secondary-instance="false"] [data-lexical-editor] p')).fontSize), 'computed paragraph font size').to.be.greaterThan(initialFontSize);
         });
 
         it('can leave editor without unsaved changes modal', async function () {

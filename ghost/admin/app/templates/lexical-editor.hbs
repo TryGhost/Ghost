@@ -61,6 +61,7 @@
                 koenig editor canvas to support Ghost-specific editor behaviour
             --}}
             <GhKoenigEditorLexical
+                class={{this.editorTypographyClass}}
                 @title={{readonly this.post.titleScratch}}
                 @titlePlaceholder={{concat (capitalize this.post.displayName) " title"}}
                 @titleAutofocus={{this.shouldFocusTitle}}
@@ -108,6 +109,63 @@
                     {{gh-pluralize this.wordCount "word"}}
                 </div>
                 <Editor::EmailSizeWarning @post={{this.post}} />
+                <div class="gh-editor-typography-menu {{if this.showEditorTypographyMenu "open" "closed"}}">
+                    <button
+                        type="button"
+                        class="gh-editor-typography-trigger"
+                        title="Editor typography"
+                        aria-label="Editor typography"
+                        aria-expanded={{if this.showEditorTypographyMenu "true" "false"}}
+                        {{on "click" this.toggleEditorTypographyMenu}}
+                        data-test-editor-typography-trigger
+                    >
+                        <span>Aa</span>
+                    </button>
+                    <div class="gh-editor-typography-popover" data-test-editor-typography-popover>
+                        <div class="gh-editor-typography-section">
+                            {{#each this.editorFontStyleOptions as |option|}}
+                                <button
+                                    type="button"
+                                    class="gh-editor-typography-font {{if (eq this.editorFontStyle option.value) "is-active"}}"
+                                    aria-pressed={{if (eq this.editorFontStyle option.value) "true" "false"}}
+                                    {{on "click" (fn this.setEditorFontStyle option.value)}}
+                                    data-test-editor-font-style={{option.value}}
+                                >
+                                    <span class="gh-editor-typography-font-sample gh-editor-typography-font-sample-{{option.value}}">Aa</span>
+                                    <span>{{option.label}}</span>
+                                </button>
+                            {{/each}}
+                        </div>
+                        <div class="gh-editor-typography-section gh-editor-typography-size-controls">
+                            <button
+                                type="button"
+                                class="gh-editor-typography-size-button"
+                                disabled={{not this.canDecreaseEditorFontSize}}
+                                {{on "click" this.decreaseEditorFontSize}}
+                                data-test-editor-font-size-decrease
+                            >
+                                <span>&minus;</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="gh-editor-typography-size-reset"
+                                {{on "click" this.resetEditorFontSize}}
+                                data-test-editor-font-size-reset
+                            >
+                                <span>Aa</span>
+                            </button>
+                            <button
+                                type="button"
+                                class="gh-editor-typography-size-button"
+                                disabled={{not this.canIncreaseEditorFontSize}}
+                                {{on "click" this.increaseEditorFontSize}}
+                                data-test-editor-font-size-increase
+                            >
+                                <span>+</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
                 <a href="https://ghost.org/help/using-the-editor/" class="flex" target="_blank" rel="noopener noreferrer">{{svg-jar "help"}}</a>
             </div>
 

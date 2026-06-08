@@ -371,6 +371,127 @@
     background: var(--white);
 }
 
+.gh-editor-typography-menu {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.gh-editor-typography-trigger {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    padding: 0;
+    border: 0;
+    background: transparent;
+    color: var(--midgrey);
+    font-family: Georgia, Times, serif;
+    font-size: 1.4rem;
+    font-weight: 700;
+    line-height: 1;
+    cursor: pointer;
+}
+
+.gh-editor-typography-trigger:hover,
+.gh-editor-typography-menu.open .gh-editor-typography-trigger {
+    color: var(--darkgrey);
+}
+
+.gh-editor-typography-trigger span {
+    display: block;
+    transform: translateY(-1px);
+}
+
+.gh-editor-typography-popover {
+    position: absolute;
+    right: -35px;
+    bottom: calc(100% + 10px);
+    z-index: 1100;
+    display: none;
+    width: 224px;
+    padding: 14px;
+    border-radius: 6px;
+    background: var(--white);
+    box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 20px -3px rgba(0,0,0,.2);
+}
+
+.gh-editor-typography-menu.open .gh-editor-typography-popover {
+    display: block;
+}
+
+.gh-editor-typography-section {
+    display: flex;
+    gap: 8px;
+}
+
+.gh-editor-typography-section + .gh-editor-typography-section {
+    margin-top: 12px;
+}
+
+.gh-editor-typography-font,
+.gh-editor-typography-size-button,
+.gh-editor-typography-size-reset {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: var(--whitegrey);
+    color: var(--darkgrey);
+    cursor: pointer;
+}
+
+.gh-editor-typography-font:hover,
+.gh-editor-typography-size-button:hover,
+.gh-editor-typography-size-reset:hover {
+    background: var(--whitegrey-d1);
+}
+
+.gh-editor-typography-font.is-active {
+    border-color: var(--green);
+    box-shadow: 0 0 0 1px var(--green);
+}
+
+.gh-editor-typography-font {
+    flex: 1;
+    flex-direction: column;
+    height: 68px;
+    gap: 3px;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.gh-editor-typography-font-sample {
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1;
+}
+
+.gh-editor-typography-font-sample-serif {
+    font-family: Georgia, Times, serif;
+}
+
+.gh-editor-typography-size-controls > * {
+    flex: 1;
+    height: 32px;
+}
+
+.gh-editor-typography-size-button span,
+.gh-editor-typography-size-reset span {
+    padding: 0;
+    height: auto;
+    font-size: 1.6rem;
+    line-height: 1;
+}
+
+.gh-editor-typography-size-button:disabled {
+    opacity: 0.4;
+    cursor: default;
+}
+
 .gh-editor-wordcount-container svg {
     width: 1.6rem;
     height: 1.6rem;
@@ -437,6 +558,91 @@
     color: var(--midgrey-l2);
     font-size: 1.3rem;
     font-weight: 400;
+}
+
+/* Experimental editor typography customizer. This intentionally lives in Admin
+   for the localStorage spike; release-quality hooks should move into Koenig. */
+.gh-editor-typography-customized.gh-editor-font-sans .koenig-react-editor .kg-prose :where(
+    p,
+    blockquote,
+    aside,
+    ul,
+    ol
+):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
+.gh-editor-typography-customized.gh-editor-font-serif .koenig-react-editor .kg-prose :where(
+    p,
+    blockquote,
+    aside,
+    ul,
+    ol
+):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
+    font-family: Georgia, Times, serif;
+}
+
+.gh-editor-typography-customized.gh-editor-font-sans .koenig-react-editor .pointer-events-none {
+    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
+}
+
+.gh-editor-typography-customized.gh-editor-font-serif .koenig-react-editor .pointer-events-none {
+    font-family: Georgia, Times, serif;
+}
+
+.gh-editor-typography-customized.gh-editor-font-size-0 .koenig-react-editor .kg-prose :where(
+    p,
+    blockquote,
+    aside,
+    ul,
+    ol
+):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
+.gh-editor-typography-customized.gh-editor-font-size-0 .koenig-react-editor .pointer-events-none {
+    font-size: 1.6rem !important;
+}
+
+.gh-editor-typography-customized.gh-editor-font-size-1 .koenig-react-editor .kg-prose :where(
+    p,
+    blockquote,
+    aside,
+    ul,
+    ol
+):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
+.gh-editor-typography-customized.gh-editor-font-size-1 .koenig-react-editor .pointer-events-none {
+    font-size: 1.8rem !important;
+}
+
+.gh-editor-typography-customized.gh-editor-font-size-2 .koenig-react-editor .kg-prose :where(
+    p,
+    blockquote,
+    aside,
+    ul,
+    ol
+):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
+.gh-editor-typography-customized.gh-editor-font-size-2 .koenig-react-editor .pointer-events-none {
+    font-size: 2rem !important;
+}
+
+.gh-editor-typography-customized.gh-editor-font-size-3 .koenig-react-editor .kg-prose :where(
+    p,
+    blockquote,
+    aside,
+    ul,
+    ol
+):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
+.gh-editor-typography-customized.gh-editor-font-size-3 .koenig-react-editor .pointer-events-none {
+    font-size: 2.2rem !important;
+}
+
+.gh-editor-typography-customized.gh-editor-font-size-4 .koenig-react-editor .kg-prose :where(
+    p,
+    blockquote,
+    aside,
+    ul,
+    ol
+):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
+.gh-editor-typography-customized.gh-editor-font-size-4 .koenig-react-editor .pointer-events-none {
+    font-size: 2.4rem !important;
 }
 
 .gh-editor-email-size-warning-container {

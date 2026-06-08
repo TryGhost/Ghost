@@ -39,6 +39,15 @@ const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
 const TIMEDSAVE_TIMEOUT = 60000;
 
+const EDITOR_TYPOGRAPHY_STORAGE_KEYS = {
+    fontStyle: 'ghost-editor-font-style',
+    fontSize: 'ghost-editor-font-size'
+};
+const EDITOR_FONT_STYLES = ['sans', 'serif'];
+const EDITOR_FONT_SIZE_STEPS = [0, 1, 2, 3, 4];
+const DEFAULT_EDITOR_FONT_STYLE = 'sans';
+const DEFAULT_EDITOR_FONT_SIZE_STEP = 2;
+
 const TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
 const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
 
@@ -165,6 +174,9 @@ export default class LexicalEditorController extends Controller {
     @inject config;
 
     @tracked excerptErrorMessage = '';
+    @tracked showEditorTypographyMenu = false;
+    @tracked editorFontStyle = this._getStoredEditorFontStyle();
+    @tracked editorFontSizeStep = this._getStoredEditorFontSizeStep();
 
     /* public properties -----------------------------------------------------*/
 
@@ -180,6 +192,11 @@ export default class LexicalEditorController extends Controller {
     wordCount = 0;
     postTkCount = 0;
     featureImageTkCount = 0;
+
+    editorFontStyleOptions = [
+        {value: 'sans', label: 'System'},
+        {value: 'serif', label: 'Serif'}
+    ];
 
     /* private properties ----------------------------------------------------*/
 
@@ -306,6 +323,48 @@ export default class LexicalEditorController extends Controller {
         const titleTk = this.titleHasTk ? 1 : 0;
         const excerptTk = (this.feature.editorExcerpt && this.excerptHasTk) ? 1 : 0;
         return titleTk + excerptTk + this.postTkCount + this.featureImageTkCount;
+    }
+
+    get editorTypographyClass() {
+        return [
+            'gh-editor-typography-customized',
+            `gh-editor-font-${this.editorFontStyle}`,
+            `gh-editor-font-size-${this.editorFontSizeStep}`
+        ].join(' ');
+    }
+
+    get canDecreaseEditorFontSize() {
+        return this.editorFontSizeStep > EDITOR_FONT_SIZE_STEPS[0];
+    }
+
+    get canIncreaseEditorFontSize() {
+        return this.editorFontSizeStep < EDITOR_FONT_SIZE_STEPS[EDITOR_FONT_SIZE_STEPS.length - 1];
+    }
+
+    _getStoredEditorFontStyle() {
+        try {
+            const storedValue = window.localStorage.getItem(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontStyle);
+            return EDITOR_FONT_STYLES.includes(storedValue) ? storedValue : DEFAULT_EDITOR_FONT_STYLE;
+        } catch (e) {
+            return DEFAULT_EDITOR_FONT_STYLE;
+        }
+    }
+
+    _getStoredEditorFontSizeStep() {
+        try {
+            const storedValue = Number.parseInt(window.localStorage.getItem(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize), 10);
+            return EDITOR_FONT_SIZE_STEPS.includes(storedValue) ? storedValue : DEFAULT_EDITOR_FONT_SIZE_STEP;
+        } catch (e) {
+            return DEFAULT_EDITOR_FONT_SIZE_STEP;
+        }
+    }
+
+    _storeEditorTypographySetting(key, value) {
+        try {
+            window.localStorage.setItem(key, String(value));
+        } catch (e) {
+            // Ignore localStorage errors. The customizer is only a local spike.
+        }
     }
 
     @action
@@ -514,6 +573,47 @@ export default class LexicalEditorController extends Controller {
     @action
     toggleSettingsMenu() {
         this.set('showSettingsMenu', !this.showSettingsMenu);
+    }
+
+    @action
+    toggleEditorTypographyMenu() {
+        this.showEditorTypographyMenu = !this.showEditorTypographyMenu;
+    }
+
+    @action
+    setEditorFontStyle(fontStyle) {
+        if (!EDITOR_FONT_STYLES.includes(fontStyle)) {
+            return;
+        }
+
+        this.editorFontStyle = fontStyle;
+        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontStyle, fontStyle);
+    }
+
+    @action
+    increaseEditorFontSize() {
+        if (!this.canIncreaseEditorFontSize) {
+            return;
+        }
+
+        this.editorFontSizeStep += 1;
+        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize, this.editorFontSizeStep);
+    }
+
+    @action
+    decreaseEditorFontSize() {
+        if (!this.canDecreaseEditorFontSize) {
+            return;
+        }
+
+        this.editorFontSizeStep -= 1;
+        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize, this.editorFontSizeStep);
+    }
+
+    @action
+    resetEditorFontSize() {
+        this.editorFontSizeStep = DEFAULT_EDITOR_FONT_SIZE_STEP;
+        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize, this.editorFontSizeStep);
     }
 
     @action

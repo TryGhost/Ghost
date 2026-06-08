@@ -11,6 +11,11 @@ import {task} from 'ember-concurrency';
 describe('Unit: Controller: lexical-editor', function () {
     setupTest();
 
+    const editorTypographyStorageKeys = {
+        fontStyle: 'ghost-editor-font-style',
+        fontSize: 'ghost-editor-font-size'
+    };
+
     let createPost;
 
     const _createPost = function (attrs) {
@@ -20,6 +25,58 @@ describe('Unit: Controller: lexical-editor', function () {
 
     beforeEach(function () {
         createPost = _createPost.bind(this);
+    });
+
+    afterEach(function () {
+        window.localStorage.removeItem(editorTypographyStorageKeys.fontStyle);
+        window.localStorage.removeItem(editorTypographyStorageKeys.fontSize);
+    });
+
+    describe('editor typography customizer', function () {
+        it('uses default settings when localStorage is empty', function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            expect(controller.editorFontStyle).to.equal('sans');
+            expect(controller.editorFontSizeStep).to.equal(2);
+            expect(controller.editorTypographyClass).to.equal('gh-editor-typography-customized gh-editor-font-sans gh-editor-font-size-2');
+        });
+
+        it('uses default settings when localStorage contains invalid values', function () {
+            window.localStorage.setItem(editorTypographyStorageKeys.fontStyle, 'comic-sans');
+            window.localStorage.setItem(editorTypographyStorageKeys.fontSize, 'large');
+
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            expect(controller.editorFontStyle).to.equal('sans');
+            expect(controller.editorFontSizeStep).to.equal(2);
+        });
+
+        it('loads stored settings from localStorage', function () {
+            window.localStorage.setItem(editorTypographyStorageKeys.fontStyle, 'serif');
+            window.localStorage.setItem(editorTypographyStorageKeys.fontSize, '4');
+
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            expect(controller.editorFontStyle).to.equal('serif');
+            expect(controller.editorFontSizeStep).to.equal(4);
+            expect(controller.editorTypographyClass).to.equal('gh-editor-typography-customized gh-editor-font-serif gh-editor-font-size-4');
+        });
+
+        it('stores font family and size changes in localStorage', function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            controller.setEditorFontStyle('serif');
+            controller.increaseEditorFontSize();
+            controller.increaseEditorFontSize();
+            controller.increaseEditorFontSize();
+            controller.decreaseEditorFontSize();
+            controller.resetEditorFontSize();
+
+            expect(window.localStorage.getItem(editorTypographyStorageKeys.fontStyle)).to.equal('serif');
+            expect(window.localStorage.getItem(editorTypographyStorageKeys.fontSize)).to.equal('2');
+            expect(controller.editorFontStyle).to.equal('serif');
+            expect(controller.editorFontSizeStep).to.equal(2);
+        });
     });
 
     describe('generateSlug', function () {
