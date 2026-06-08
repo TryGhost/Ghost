@@ -4,7 +4,7 @@ import SettingImg from '../../../assets/images/ghost-explore.png';
 import TopLevelGroup from '../../top-level-group';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {Button, Icon, Separator, SettingGroupContent, Toggle, withErrorBoundary} from '@tryghost/admin-x-design-system';
-import {type Setting, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {type Setting, getSettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {abbreviateNumber} from '@tryghost/shade/utils';
 import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -35,8 +35,8 @@ const Explore: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [accentColor, icon] = getSettingValues<string>(settings, ['accent_color', 'icon']);
     const {localSettings, siteData} = useSettingGroup();
     const [title, description] = getSettingValues(localSettings, ['title', 'description']) as string[];
-    const [exploreEnabled] = getSettingValues<boolean>(settings, ['explore_ping']);
-    const [shareGrowthData] = getSettingValues<boolean>(settings, ['explore_ping_growth']);
+    const exploreEnabled = Boolean(getSettingValue<boolean>(settings, 'explore_ping'));
+    const shareGrowthData = Boolean(getSettingValue<boolean>(settings, 'explore_ping_growth'));
 
     const url = siteData?.url;
     const siteDomain = url?.replace(/^https?:\/\//, '').replace(/\/?$/, '');
