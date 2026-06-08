@@ -27,6 +27,7 @@ const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const settingsCache = require('../../shared/settings-cache');
+const config = require('../../shared/config');
 const labs = require('../../shared/labs');
 const events = require('../lib/common/events');
 
@@ -72,6 +73,11 @@ async function ping(post) {
 
     // Skip if site is private
     if (settingsCache.get('is_private')) {
+        return;
+    }
+
+    // Skip if IndexNow pings are disabled via privacy config
+    if (config.isPrivacyDisabled('useIndexNow')) {
         return;
     }
 
