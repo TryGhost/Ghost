@@ -259,6 +259,87 @@ describe('oembed-service', function () {
 
             await oembedService.fetchOembedDataFromUrl('https://youtube.com/live/1234?param=existing');
         });
+
+        it('keeps unknown provider fallback by default when the page fetch fails', async function () {
+            const fetchError = new Error('Service Unavailable');
+            fetchError.response = {
+                statusCode: 503
+            };
+
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest() {
+                    throw fetchError;
+                }
+            });
+
+            await assert.rejects(
+                () => service.fetchOembedDataFromUrl('https://www.example.com', 'mention'),
+                {
+                    name: 'ValidationError',
+                    message: 'No provider found for supplied URL.'
+                }
+            );
+        });
+
+        it('does not pass the rethrow callback to the external request', async function () {
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest(url, options) {
+                    assert.equal(url, 'https://www.example.com');
+                    assert.equal(options.shouldRethrowFetchError, undefined);
+
+                    return {
+                        headers: {
+                            'content-type': 'text/html'
+                        },
+                        body: Buffer.from('<html><head><title>Example</title></head></html>'),
+                        url
+                    };
+                }
+            });
+
+            const response = await service.fetchOembedDataFromUrl('https://www.example.com', 'bookmark', {
+                shouldRethrowFetchError() {
+                    return true;
+                }
+            });
+
+            assert.equal(response.metadata.title, 'Example');
+        });
+
+        it('allows callers to rethrow selected page fetch errors', async function () {
+            const fetchError = new Error('Service Unavailable');
+            fetchError.response = {
+                statusCode: 503
+            };
+
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest() {
+                    throw fetchError;
+                }
+            });
+
+            await assert.rejects(
+                () => service.fetchOembedDataFromUrl('https://www.example.com', 'mention', {
+                    shouldRethrowFetchError(err) {
+                        return err.response?.statusCode === 503;
+                    }
+                }),
+                (err) => {
+                    assert.equal(err, fetchError);
+                    assert.equal(err.response.statusCode, 503);
+                    return true;
+                }
+            );
+        });
     });
 
     describe('processImageFromUrl', function () {
