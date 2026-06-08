@@ -83,7 +83,10 @@ export const BASE_GHOST_ENV = [
     // Email configuration
     'mail__transport=SMTP',
     'mail__options__host=ghost-dev-mailpit',
-    'mail__options__port=1025'
+    'mail__options__port=1025',
+
+    // Disable IndexNow pings (tests run with real network access)
+    'privacy__useIndexNow=false'
 ] as const;
 
 export const TEST_ENVIRONMENT = {

@@ -431,6 +431,9 @@ async function initBackgroundServices({config}) {
 
     const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
+    if (config.get('updateCheck:forceUpdate')) {
+        updateCheck.scheduleBootJob();
+    }
 
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
