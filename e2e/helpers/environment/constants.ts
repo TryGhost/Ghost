@@ -86,7 +86,10 @@ export const BASE_GHOST_ENV = [
     'mail__options__port=1025',
 
     // Disable IndexNow pings (tests run with real network access)
-    'privacy__useIndexNow=false'
+    'privacy__useIndexNow=false',
+
+    // Disable gravatar avatar lookups (real external call, no e2e coverage)
+    'privacy__useGravatar=false'
 ] as const;
 
 export const TEST_ENVIRONMENT = {
@@ -127,13 +130,41 @@ export const EGRESS_MONITOR_ENABLED = process.env.E2E_EGRESS_MONITOR !== '0';
 export const EGRESS_ENFORCE = process.env.E2E_EGRESS_ENFORCE !== '0';
 
 /**
- * Hosts the suite is allowed to reach. Only the local test infrastructure for now
- * — every real external host the app contacts is intentionally left out so it
- * surfaces as a failure; the allowlist is built up from there. An entry matches
- * itself and any subdomain; reverse-DNS (*.arpa) lookups are ignored.
+ * Hosts the suite is allowed to reach. An entry matches itself and any subdomain
+ * (so `unsplash.com` covers `images.unsplash.com`); reverse-DNS (*.arpa) lookups
+ * are ignored. Each entry is a host the suite legitimately contacts — anything
+ * not listed fails enforcement (see EGRESS_ENFORCE).
+ *
+ * Deliberately NOT here:
+ * - api.stripe.com — Ghost should hit the fake Stripe server, not real Stripe.
+ *   It only leaks because a test connects Stripe without `stripeEnabled`; the fix
+ *   is the test, not an allowlist entry. (Hence the specific Stripe subdomains
+ *   below rather than a blanket `stripe.com`.)
+ * - gravatar.com — gated off in e2e instead (privacy__useGravatar above).
  */
 export const EGRESS_ALLOWLIST: readonly string[] = [
-    'host.docker.internal',
-    'localhost',
-    '127.0.0.1'
+    // Local test infrastructure (not real external egress)
+    'host.docker.internal', // host gateway: fake Stripe/Mailgun servers + Caddy gateway
+    'localhost', // the site/admin under test
+    '127.0.0.1', // the site/admin under test
+    'mock.test', // e2e billing mock (billing.mock.test) served by the harness
+
+    // Ghost-owned
+    'ghost.org', // static.ghost.org theme/admin assets + ghost.org changelog & update-check
+
+    // Stripe — browser-side only (Stripe.js/Elements must load from Stripe's own CDN).
+    // Listed per-subdomain so api.stripe.com (server-side) is NOT covered — see above.
+    'js.stripe.com', // Stripe.js loaded by Portal/checkout
+    'm.stripe.com', // Stripe Elements
+    'm.stripe.network', // Stripe Elements
+
+    // reCAPTCHA, pulled in by Stripe checkout
+    'google.com', // reCAPTCHA challenge (www.google.com)
+    'gstatic.com', // reCAPTCHA static assets (t0–t3.gstatic.com)
+
+    // Other third-party services the product uses
+    'bunny.net', // web fonts (fonts.bunny.net)
+    'transistor.fm', // podcast embeds (partner.transistor.fm)
+    'unsplash.com', // editor image selector (api./images.unsplash.com)
+    'geojs.io' // member signup + staff sign-in geolocation (get.geojs.io)
 ];
