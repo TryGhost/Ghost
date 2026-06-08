@@ -55,8 +55,6 @@ function setupResendFailure(server, {responseCode = 400, timing = 0, message} = 
     }, {timing});
 }
 describe('Acceptance: Authentication', function () {
-    let originalReplaceLocation;
-
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
@@ -78,14 +76,12 @@ describe('Acceptance: Authentication', function () {
             });
         });
         it('redirects to setup when setup isn\'t complete', async function () {
-            await visit('settings/labs');
+            await visit('/pages');
             expect(currentURL()).to.equal('/setup');
         });
     });
 
     describe('general page', function () {
-        let newLocation;
-
         const verifyButton = '[data-test-button="verify"]';
         const resendButton = '[data-test-button="resend-token"]';
         const codeInput = '[data-test-input="token"]';
@@ -124,23 +120,18 @@ describe('Acceptance: Authentication', function () {
         }
 
         beforeEach(function () {
-            originalReplaceLocation = windowProxy.replaceLocation;
-            windowProxy.replaceLocation = function (url) {
-                url = url.replace(/^\/ghost\//, '/');
-                newLocation = url;
-            };
-            newLocation = undefined;
+            sinon.stub(windowProxy, 'replaceLocation');
+            sinon.stub(windowProxy, 'changeLocation');
 
             let role = this.server.create('role', {name: 'Administrator'});
             this.server.create('user', {roles: [role], slug: 'test-user'});
         });
 
         afterEach(function () {
-            windowProxy.replaceLocation = originalReplaceLocation;
+            sinon.restore();
         });
 
-        it('invalidates session on 401 API response', async function () {
-            // return a 401 when attempting to retrieve users
+        it('redirects via replaceLocation on 401 API response for current user on app load', async function () {
             this.server.get('/users/me', () => new Response(401, {}, {
                 errors: [
                     {message: 'Access denied.', type: 'UnauthorizedError'}
@@ -148,20 +139,12 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/members');
+            await visit('/pages');
 
-            // running `visit(url)` inside windowProxy.replaceLocation breaks
-            // the async behaviour so we need to run `visit` here to simulate
-            // the browser visiting the new page
-            if (newLocation) {
-                await visit(newLocation);
-            }
-
-            expect(currentURL(), 'url after 401').to.equal('/signin');
+            expect(windowProxy.replaceLocation.calledOnce, 'replaceLocation called').to.be.true;
         });
 
-        it('invalidates session on 403 API response', async function () {
-            // return a 401 when attempting to retrieve users
+        it('redirects via replaceLocation on 403 API response for current user on app load', async function () {
             this.server.get('/users/me', () => new Response(403, {}, {
                 errors: [
                     {message: 'Authorization failed', type: 'NoPermissionError'}
@@ -169,39 +152,40 @@ describe('Acceptance: Authentication', function () {
             }));
 
             await authenticateSession();
-            await visit('/members');
+            await visit('/pages');
 
-            // running `visit(url)` inside windowProxy.replaceLocation breaks
-            // the async behaviour so we need to run `visit` here to simulate
-            // the browser visiting the new page
-            if (newLocation) {
-                await visit(newLocation);
-            }
+            expect(windowProxy.replaceLocation.calledOnce, 'replaceLocation called').to.be.true;
+        });
 
-            expect(currentURL(), 'url after 403').to.equal('/signin');
+        // NOTE: The navigation needs to use standard route hooks for loading, if it
+        // triggers fetches in a task or similar then it will error and fail the test
+        // because we can't catch it before it hits global.onerror despite behaving
+        // correctly in the app.
+        it('replaces location with root URL on 403 API response when navigating whilst "authenticated"', async function () {
+            this.server.get(`/pages/`, () => new Response(403, {}, {
+                errors: [
+                    {message: 'Authorization failed', type: 'NoPermissionError'}
+                ]
+            }));
+
+            await authenticateSession();
+            await visit('/pages');
+
+            expect(windowProxy.replaceLocation.calledWith('/ghost/'), 'replaceLocation called with /ghost/').to.be.true;
         });
 
         it('doesn\'t show navigation menu on invalid url when not authenticated', async function () {
             await invalidateSession();
             await visit('/');
-            
+
             expect(currentURL(), 'current url').to.equal('/signin');
             expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(0);
 
             await visit('/signin/invalidurl/');
 
-            expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
-            expect(currentRouteName(), 'path after invalid url').to.equal('error404');
+            expect(currentURL(), 'url after invalid url').to.equal('/signin');
+            expect(currentRouteName(), 'path after invalid url').to.equal('signin');
             expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(0);
-        });
-
-        it('shows nav menu on invalid url when authenticated', async function () {
-            await authenticateSession();
-            await visit('/signin/invalidurl/');
-
-            expect(currentURL(), 'url after invalid url').to.equal('/signin/invalidurl/');
-            expect(currentRouteName(), 'path after invalid url').to.equal('error404');
-            expect(findAll('nav.gh-nav').length, 'nav menu presence').to.equal(1);
         });
 
         it('has 2fa code happy path', async function () {

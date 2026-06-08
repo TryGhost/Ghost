@@ -1,7 +1,7 @@
 const {agentProvider, fixtureManager, matchers, mockManager} = require('../../utils/e2e-framework');
 const {mockStripe, stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const {anyContentVersion, anyEtag, anyISODate, anyObjectId, anyContentLength} = matchers;
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 
 let agent;
 
@@ -175,29 +175,6 @@ describe('Stats API', function () {
         });
     });
 
-    describe('Post attribution stats', function () {
-        it('Can fetch attribution stats', async function () {
-            await agent
-                .get(`/stats/referrers/posts/${fixtureManager.get('posts', 1).id}/`)
-                .expectStatus(200)
-                .matchBodySnapshot({
-                    stats: [
-                        {
-                            source: 'Direct',
-                            signups: 2,
-                            paid_conversions: 1
-                        },
-                        {
-                            source: 'Twitter',
-                            signups: 1,
-                            paid_conversions: 0
-                        }
-                    ],
-                    meta: {}
-                });
-        });
-    });
-
     describe('Referrer source history stats', function () {
         it('Can fetch attribution stats', async function () {
             await agent
@@ -279,7 +256,7 @@ describe('Stats API', function () {
         it('Can fetch visitor counts for multiple posts', async function () {
             const post1 = fixtureManager.get('posts', 0);
             const post2 = fixtureManager.get('posts', 1);
-            
+
             await agent
                 .post('/stats/posts-visitor-counts')
                 .body({
@@ -346,7 +323,7 @@ describe('Stats API', function () {
         it('Can fetch member counts for multiple posts', async function () {
             const post1 = fixtureManager.get('posts', 0);
             const post2 = fixtureManager.get('posts', 1);
-            
+
             await agent
                 .post('/stats/posts-member-counts')
                 .body({

@@ -11,6 +11,7 @@ import {on} from '@ember/object/evented';
 import {inject as service} from '@ember/service';
 
 const BLANK_LEXICAL = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
+const SEARCH_INDEXED_FIELDS = ['title', 'slug', 'status', 'visibility', 'publishedAtUTC'];
 
 // ember-cli-shims doesn't export these so we must get them manually
 const {Comparable} = Ember;
@@ -187,7 +188,7 @@ export default Model.extend(Comparable, ValidationEngine, {
     }),
 
     showAudienceFeedback: computed('sentiment', function () {
-        return this.feature.get('audienceFeedback') && this.sentiment !== undefined;
+        return this.sentiment !== undefined;
     }),
 
     showEmailOpenAnalytics: computed('hasBeenEmailed', 'isSent', 'isPublished', function () {
@@ -440,12 +441,18 @@ export default Model.extend(Comparable, ValidationEngine, {
         this.set('publishedAtUTC', publishedAtUTC);
     },
 
-    // when a published post is updated, unpublished, or deleted we expire the search content cache
+    // when indexed post fields are updated or deleted we expire the search content cache
     save() {
-        const [oldStatus] = this.changedAttributes().status || [];
+        const changedAttributes = this.changedAttributes();
+        const previousUrl = this.url;
+        const previousPublishedAtUTC = this.publishedAtUTC?.valueOf();
+        const searchIndexedFieldChanged = SEARCH_INDEXED_FIELDS.some(field => changedAttributes[field]);
 
         return this._super(...arguments).then((res) => {
-            if (this.status === 'published' || oldStatus === 'published') {
+            const urlChanged = previousUrl !== this.url;
+            const publishedAtUTCChanged = previousPublishedAtUTC !== this.publishedAtUTC?.valueOf();
+
+            if (this.isDeleted || searchIndexedFieldChanged || urlChanged || publishedAtUTCChanged) {
                 this.search.expireContent();
             }
 

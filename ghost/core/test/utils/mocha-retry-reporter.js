@@ -1,6 +1,7 @@
 const _ = require('lodash');
-const core = require('@actions/core');
 const mocha = require('mocha');
+
+const core = import('@actions/core');
 
 // From https://github.com/findmypast-oss/mocha-json-streamier-reporter/blob/master/lib/parse-stack-trace.js
 function extractModuleLineAndColumn(stackTrace) {
@@ -41,7 +42,9 @@ module.exports = class RetryReporter extends mocha.reporters.Spec {
             .on(mocha.Runner.constants.EVENT_TEST_FAIL, (test, err) => {
                 failedTests.push({test, err});
             })
-            .on(mocha.Runner.constants.EVENT_RUN_END, () => {
+            .on(mocha.Runner.constants.EVENT_RUN_END, async () => {
+                const actionsCore = await core;
+
                 _.uniqWith(retriedTests
                     .filter(({test}) => !failedTests.find(failed => failed.test === test))
                     .map(({test, err}) => {
@@ -56,7 +59,7 @@ module.exports = class RetryReporter extends mocha.reporters.Spec {
                         };
                     }), _.isEqual)
                     .forEach(({file, line, col, testName, err}) => {
-                        core.warning(`Retried '${testName}' due to '${err}'`, {
+                        actionsCore.warning(`Retried '${testName}' due to '${err}'`, {
                             file,
                             startLine: line,
                             startColumn: col

@@ -2,7 +2,6 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const {Buffer} = require('buffer');
 const {randomBytes} = require('crypto');
-const {URL} = require('url');
 
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');

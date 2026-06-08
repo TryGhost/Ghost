@@ -1,4 +1,4 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const raw = require('../../../../core/frontend/helpers/raw');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 
@@ -16,25 +16,22 @@ function compile(templateString) {
 }
 
 describe('{{raw}} helper', function () {
-    before(function () {
+    beforeAll(function () {
         handlebars.registerHelper('raw', raw);
     });
 
     it('can correctly compile space', function () {
-        compile('{{{{raw}}}} {{{{/raw}}}}')
-            .with({})
-            .should.eql(' ');
+        assert.equal(compile('{{{{raw}}}} {{{{/raw}}}}')
+            .with({}), ' ');
     });
 
     it('can correctly ignore handlebars', function () {
-        compile('{{{{raw}}}}{{test}}{{{{/raw}}}}')
-            .with({tag: {}})
-            .should.eql('{{test}}');
+        assert.equal(compile('{{{{raw}}}}{{test}}{{{{/raw}}}}')
+            .with({tag: {}}), '{{test}}');
     });
 
     it('can correctly compile recursive', function () {
-        compile('{{{{raw}}}}{{{{raw}}}}{{{{/raw}}}}{{{{/raw}}}}')
-            .with({tag: {}})
-            .should.eql('{{{{raw}}}}{{{{/raw}}}}');
+        assert.equal(compile('{{{{raw}}}}{{{{raw}}}}{{{{/raw}}}}{{{{/raw}}}}')
+            .with({tag: {}}), '{{{{raw}}}}{{{{/raw}}}}');
     });
 });

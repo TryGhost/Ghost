@@ -1,8 +1,8 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`tag.* events tag.added event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
+  "accept-encoding": "gzip, deflate, br, zstd",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -33,7 +33,7 @@ Object {
       "twitter_image": null,
       "twitter_title": null,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "url": StringMatching /http:\\\\/\\\\/127\\.0\\.0\\.1:2369\\\\/\\[A-Za-z0-9_-\\]\\+\\\\//,
+      "url": StringMatching /http:\\\\/\\\\/127\\.0\\.0\\.1:\\\\d\\+\\\\/\\[A-Za-z0-9_-\\]\\+\\\\//,
       "visibility": "public",
     },
     "previous": Object {},
@@ -43,7 +43,7 @@ Object {
 
 exports[`tag.* events tag.deleted event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
+  "accept-encoding": "gzip, deflate, br, zstd",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -83,7 +83,7 @@ Object {
 
 exports[`tag.* events tag.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
+  "accept-encoding": "gzip, deflate, br, zstd",
   "content-length": Any<Number>,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
@@ -114,7 +114,7 @@ Object {
       "twitter_image": null,
       "twitter_title": null,
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
-      "url": StringMatching /http:\\\\/\\\\/127\\.0\\.0\\.1:2369\\\\/\\[A-Za-z0-9_-\\]\\+\\\\//,
+      "url": StringMatching /http:\\\\/\\\\/127\\.0\\.0\\.1:\\\\d\\+\\\\/\\[A-Za-z0-9_-\\]\\+\\\\//,
       "visibility": "public",
     },
     "previous": Object {

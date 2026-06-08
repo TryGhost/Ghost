@@ -7,7 +7,7 @@ const lazyLoad = createLazyRouter();
 
 /**
  *
- * @param {String} name
+ * @param {string} name
  * @returns {import('express').Application}
  */
 module.exports = (name) => {

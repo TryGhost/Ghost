@@ -31,5 +31,6 @@ module.exports = {
     product: require('./product-renderer'),
     signup: require('./signup-renderer'),
     toggle: require('./toggle-renderer'),
+    transistor: require('./transistor-renderer'),
     video: require('./video-renderer')
 };

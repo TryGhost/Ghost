@@ -47,7 +47,7 @@ module.exports = function (Bookshelf) {
             case 'findAll':
                 return [...baseOptions, ...extraOptions, 'filter', 'columns', 'mongoTransformer'];
             case 'findPage':
-                return [...baseOptions, ...extraOptions, 'filter', 'order', 'autoOrder', 'page', 'limit', 'columns', 'mongoTransformer'];
+                return [...baseOptions, ...extraOptions, 'filter', 'order', 'autoOrder', 'page', 'limit', 'columns', 'mongoTransformer', 'skipPagination'];
             default:
                 return [...baseOptions, ...extraOptions];
             }
@@ -149,7 +149,7 @@ module.exports = function (Bookshelf) {
         /**
          * Filters potentially unsafe `options` in a model method's arguments, so you can pass them to Bookshelf / Knex.
          * @param {Object} unfilteredOptions Represents options to filter in order to be passed to the Bookshelf query.
-         * @param {String} methodName The name of the method to check valid options for.
+         * @param {string} methodName The name of the method to check valid options for.
          * @return {Object} The filtered results of `options`.
          */
         filterOptions: function filterOptions(unfilteredOptions, methodName, filterConfig) {
@@ -164,9 +164,9 @@ module.exports = function (Bookshelf) {
 
             let options = _.cloneDeep(unfilteredOptions);
             const extraAllowedProperties = filterConfig.extraAllowedProperties || [];
-            const permittedOptions = [...new Set([...this.permittedOptions(methodName, options), ...extraAllowedProperties])];
+            const permittedOptions = new Set([...this.permittedOptions(methodName, options), ...extraAllowedProperties]);
             options = Object.fromEntries(
-                Object.entries(options).filter(([key]) => permittedOptions.includes(key))
+                Object.entries(options).filter(([key]) => permittedOptions.has(key))
             );
 
             if (this.defaultRelations) {

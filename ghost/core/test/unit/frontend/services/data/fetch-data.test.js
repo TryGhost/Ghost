@@ -1,5 +1,7 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
+const _ = require('lodash');
 
 const api = require('../../../../../core/frontend/services/proxy').api;
 const data = require('../../../../../core/frontend/services/data');
@@ -55,40 +57,38 @@ describe('Unit - frontend/data/fetch-data', function () {
         sinon.restore();
     });
 
-    it('should handle no options', function (done) {
-        data.fetchData(null, null, locals).then(function (result) {
-            should.exist(result);
-            result.should.be.an.Object().with.properties('posts', 'meta');
-            result.should.not.have.property('data');
+    it('should handle no options', async function () {
+        const result = await data.fetchData(null, null, locals);
+        assertExists(result);
+        assert(result && typeof result === 'object');
+        assert('posts' in result);
+        assert('meta' in result);
+        assert(!('data' in result));
 
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].should.be.an.Object();
-            browsePostsStub.firstCall.args[0].should.have.property('include');
-            browsePostsStub.firstCall.args[0].should.not.have.property('filter');
-
-            done();
-        }).catch(done);
+        sinon.assert.calledOnce(browsePostsStub);
+        assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
+        assert('include' in browsePostsStub.firstCall.args[0]);
+        assert(!('filter' in browsePostsStub.firstCall.args[0]));
     });
 
-    it('should handle path options with page/limit', function (done) {
-        data.fetchData({page: 2, limit: 10}, null, locals).then(function (result) {
-            should.exist(result);
-            result.should.be.an.Object().with.properties('posts', 'meta');
-            result.should.not.have.property('data');
+    it('should handle page and limit options', async function () {
+        const result = await data.fetchData({page: 2, limit: 10}, null, locals);
+        assertExists(result);
+        assert(result && typeof result === 'object');
+        assert('posts' in result);
+        assert('meta' in result);
+        assert(!('data' in result));
 
-            result.posts.length.should.eql(posts.length);
+        assert.equal(result.posts.length, posts.length);
 
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].should.be.an.Object();
-            browsePostsStub.firstCall.args[0].should.have.property('include');
-            browsePostsStub.firstCall.args[0].should.have.property('limit', 10);
-            browsePostsStub.firstCall.args[0].should.have.property('page', 2);
-
-            done();
-        }).catch(done);
+        sinon.assert.calledOnce(browsePostsStub);
+        assert(_.isPlainObject(browsePostsStub.firstCall.args[0]));
+        assert('include' in browsePostsStub.firstCall.args[0]);
+        assert.equal(browsePostsStub.firstCall.args[0].limit, 10);
+        assert.equal(browsePostsStub.firstCall.args[0].page, 2);
     });
 
-    it('should handle multiple queries', function (done) {
+    it('should handle multiple queries', async function () {
         const pathOptions = {};
 
         const routerOptions = {
@@ -104,23 +104,25 @@ describe('Unit - frontend/data/fetch-data', function () {
             }
         };
 
-        data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
-            should.exist(result);
-            result.should.be.an.Object().with.properties('posts', 'meta', 'data');
-            result.data.should.be.an.Object().with.properties('featured');
+        const result = await data.fetchData(pathOptions, routerOptions, locals);
+        assertExists(result);
+        assert(result && typeof result === 'object');
+        assert('posts' in result);
+        assert('meta' in result);
+        assert('data' in result);
+        assert(result.data && typeof result.data === 'object');
+        assert('featured' in result.data);
 
-            result.posts.length.should.eql(posts.length);
-            result.data.featured.length.should.eql(posts.length);
+        assert.equal(result.posts.length, posts.length);
+        assert.equal(result.data.featured.length, posts.length);
 
-            browsePostsStub.calledTwice.should.be.true();
-            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
-            browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
-            browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
-            done();
-        }).catch(done);
+        sinon.assert.calledTwice(browsePostsStub);
+        assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
+        assert.equal(browsePostsStub.secondCall.args[0].filter, 'featured:true');
+        assert.equal(browsePostsStub.secondCall.args[0].limit, 3);
     });
 
-    it('should handle multiple queries with page param', function (done) {
+    it('should handle multiple queries with page param', async function () {
         const pathOptions = {
             page: 2
         };
@@ -135,25 +137,27 @@ describe('Unit - frontend/data/fetch-data', function () {
             }
         };
 
-        data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
-            should.exist(result);
+        const result = await data.fetchData(pathOptions, routerOptions, locals);
+        assertExists(result);
 
-            result.should.be.an.Object().with.properties('posts', 'meta', 'data');
-            result.data.should.be.an.Object().with.properties('featured');
+        assert(result && typeof result === 'object');
+        assert('posts' in result);
+        assert('meta' in result);
+        assert('data' in result);
+        assert(result.data && typeof result.data === 'object');
+        assert('featured' in result.data);
 
-            result.posts.length.should.eql(posts.length);
-            result.data.featured.length.should.eql(posts.length);
+        assert.equal(result.posts.length, posts.length);
+        assert.equal(result.data.featured.length, posts.length);
 
-            browsePostsStub.calledTwice.should.be.true();
-            browsePostsStub.firstCall.args[0].should.have.property('include', 'authors,tags,tiers');
-            browsePostsStub.firstCall.args[0].should.have.property('page', 2);
-            browsePostsStub.secondCall.args[0].should.have.property('filter', 'featured:true');
-            browsePostsStub.secondCall.args[0].should.have.property('limit', 3);
-            done();
-        }).catch(done);
+        sinon.assert.calledTwice(browsePostsStub);
+        assert.equal(browsePostsStub.firstCall.args[0].include, 'authors,tags,tiers');
+        assert.equal(browsePostsStub.firstCall.args[0].page, 2);
+        assert.equal(browsePostsStub.secondCall.args[0].filter, 'featured:true');
+        assert.equal(browsePostsStub.secondCall.args[0].limit, 3);
     });
 
-    it('should handle queries with slug replacements', function (done) {
+    it('should handle queries with slug replacements', async function () {
         const pathOptions = {
             slug: 'testing'
         };
@@ -170,20 +174,22 @@ describe('Unit - frontend/data/fetch-data', function () {
             }
         };
 
-        data.fetchData(pathOptions, routerOptions, locals).then(function (result) {
-            should.exist(result);
-            result.should.be.an.Object().with.properties('posts', 'meta', 'data');
-            result.data.should.be.an.Object().with.properties('tag');
+        const result = await data.fetchData(pathOptions, routerOptions, locals);
+        assertExists(result);
+        assert(result && typeof result === 'object');
+        assert('posts' in result);
+        assert('meta' in result);
+        assert('data' in result);
+        assert(result.data && typeof result.data === 'object');
+        assert('tag' in result.data);
 
-            result.posts.length.should.eql(posts.length);
-            result.data.tag.length.should.eql(tags.length);
+        assert.equal(result.posts.length, posts.length);
+        assert.equal(result.data.tag.length, tags.length);
 
-            browsePostsStub.calledOnce.should.be.true();
-            browsePostsStub.firstCall.args[0].should.have.property('include');
-            browsePostsStub.firstCall.args[0].should.have.property('filter', 'tags:testing');
-            browsePostsStub.firstCall.args[0].should.not.have.property('slug');
-            readTagsStub.firstCall.args[0].should.have.property('slug', 'testing');
-            done();
-        }).catch(done);
+        sinon.assert.calledOnce(browsePostsStub);
+        assert('include' in browsePostsStub.firstCall.args[0]);
+        assert.equal(browsePostsStub.firstCall.args[0].filter, 'tags:testing');
+        assert(!('slug' in browsePostsStub.firstCall.args[0]));
+        assert.equal(readTagsStub.firstCall.args[0].slug, 'testing');
     });
 });

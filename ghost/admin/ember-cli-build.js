@@ -1,6 +1,9 @@
 /* eslint-env node */
 'use strict';
 
+// Check Node.js version compatibility before building
+require('./lib/check-node-version')();
+
 const EmberApp = require('ember-cli/lib/broccoli/ember-app');
 const concat = require('broccoli-concat');
 const mergeTrees = require('broccoli-merge-trees');
@@ -11,6 +14,8 @@ const environment = EmberApp.env();
 const isDevelopment = environment === 'development';
 const isProduction = environment === 'production';
 const isTesting = environment === 'test';
+const shouldIncludeTestAssets = buildEnvironment => buildEnvironment !== 'production' && (buildEnvironment === 'test' || process.env.EMBER_INCLUDE_TESTS === 'true');
+const includeTestAssets = shouldIncludeTestAssets(environment);
 
 const postcssImport = require('postcss-import');
 const postcssCustomProperties = require('postcss-custom-properties');
@@ -55,7 +60,7 @@ const codemirrorAssets = function () {
     };
 
     // put the files in vendor ready for importing into the test-support file
-    if (environment === 'development') {
+    if (environment === 'development' && includeTestAssets) {
         config.vendor = codemirrorFiles;
     }
 
@@ -80,6 +85,9 @@ if (isTesting) {
 module.exports = function (defaults) {
     let app = new EmberApp(defaults, {
         addons: {denylist},
+        tests: includeTestAssets,
+        hinting: includeTestAssets,
+        trees: includeTestAssets ? {} : {tests: false},
         babel: {
             plugins: [
                 require.resolve('babel-plugin-transform-react-jsx')
@@ -107,7 +115,6 @@ module.exports = function (defaults) {
         },
         fingerprint: {
             enabled: isProduction,
-            prepend: process.env.GHOST_CDN_URL || '',
             extensions: [
                 'js',
                 'css',
@@ -259,11 +266,13 @@ module.exports = function (defaults) {
 
     // pull things we rely on via lazy-loading into the test-support.js file so
     // that tests don't break when running via http://localhost:4200/tests
-    if (app.env === 'development') {
+    const includeAppTestAssets = shouldIncludeTestAssets(app.env);
+
+    if (app.env === 'development' && includeAppTestAssets) {
         app.import('vendor/codemirror/lib/codemirror.js', {type: 'test'});
     }
 
-    if (app.env === 'development' || app.env === 'test') {
+    if (includeAppTestAssets) {
         // pull dynamic imports into the assets folder so that they can be lazy-loaded in tests
         // also done in development env so http://localhost:4200/tests works
         app.import('node_modules/@tryghost/koenig-lexical/dist/koenig-lexical.umd.js', {outputFile: 'ghost/assets/koenig-lexical/koenig-lexical.umd.js'});

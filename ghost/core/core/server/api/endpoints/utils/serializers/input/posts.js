@@ -1,4 +1,5 @@
 const _ = require('lodash');
+const config = require('../../../../../../shared/config');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:posts');
 const {ValidationError} = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
@@ -10,7 +11,6 @@ const postsMetaSchema = require('../../../../../data/schema').tables.posts_meta;
 const postsSchema = require('../../../../../data/schema').tables.posts;
 const clean = require('./utils/clean');
 const lexical = require('../../../../../lib/lexical');
-const sentry = require('../../../../../../shared/sentry');
 
 const messages = {
     failedHtmlToMobiledoc: 'Failed to convert HTML to Mobiledoc',
@@ -19,10 +19,10 @@ const messages = {
 
 /**
  * Selects all allowed columns for the given frame.
- * 
+ *
  * NOTE: This doesn't stop them from being FETCHED, just returned in the response. This causes
  *   the output serializer to remove them from the data object before returning.
- * 
+ *
  * NOTE: This is only intended for the Content API. We need these fields within Admin API responses.
  *
  * @param {Object} frame - The frame object.
@@ -37,10 +37,10 @@ function removeSourceFormats(frame) {
 
 /**
  * Selects all allowed columns for the given frame.
- * 
+ *
  * This removes the lexical and mobiledoc columns from the query. This is a performance improvement as we never intend
  *  to expose those columns in the content API and they are very large datasets to be passing around and de/serializing.
- * 
+ *
  * NOTE: This is only intended for the Content API. We need these fields within Admin API responses.
  *
  * @param {Object} frame - The frame object.
@@ -75,16 +75,28 @@ function mapWithRelated(frame) {
     }
 }
 
+// Under lazyRouting, urlService.facade.getUrlForResource evaluates
+// router filters against tags/authors, so ?fields=url needs them loaded.
+function forceUrlRelationsWhenLazy(frame) {
+    if (config.get('lazyRouting')
+        && Array.isArray(frame.options.columns)
+        && frame.options.columns.includes('url')) {
+        frame.options.withRelated = _.union(frame.options.withRelated || [], ['tags', 'authors']);
+    }
+}
+
 function defaultRelations(frame) {
     // Apply same mapping as content API
     mapWithRelated(frame);
+
+    forceUrlRelationsWhenLazy(frame);
 
     // Additional defaults for admin API
     if (frame.options.withRelated) {
         return;
     }
 
-    if (frame.options.columns && !frame.options.withRelated) {
+    if (frame.options.columns) {
         return false;
     }
 
@@ -97,7 +109,9 @@ function setDefaultOrder(frame) {
     }
 
     if (!frame.options.order && !frame.options.autoOrder) {
-        frame.options.order = 'published_at desc';
+        // use id as fallback to ensure consistent ordering across pages when posts
+        // have the same published_at timestamp
+        frame.options.order = 'published_at desc, id desc';
     }
 }
 
@@ -165,6 +179,7 @@ module.exports = {
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
             mapWithRelated(frame);
+            forceUrlRelationsWhenLazy(frame);
         }
 
         if (!localUtils.isContentAPI(frame)) {
@@ -191,6 +206,7 @@ module.exports = {
 
             setDefaultOrder(frame);
             forceVisibilityColumn(frame);
+            forceUrlRelationsWhenLazy(frame);
         }
 
         if (!localUtils.isContentAPI(frame)) {
@@ -214,7 +230,6 @@ module.exports = {
                 try {
                     frame.data.posts[0].mobiledoc = JSON.stringify(mobiledoc.htmlToMobiledocConverter(html));
                 } catch (err) {
-                    sentry.captureException(err);
                     throw new ValidationError({
                         message: tpl(messages.failedHtmlToMobiledoc),
                         err
@@ -234,7 +249,6 @@ module.exports = {
                 try {
                     frame.data.posts[0].lexical = JSON.stringify(lexical.htmlToLexicalConverter(html));
                 } catch (err) {
-                    sentry.captureException(err);
                     throw new ValidationError({
                         message: tpl(messages.failedHtmlToLexical),
                         err

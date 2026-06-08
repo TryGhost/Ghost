@@ -1,7 +1,8 @@
 const config = require('../../../../../../shared/config');
+const urlUtils = require('../../../../../../shared/url-utils');
 
 function getURL(urlPath) {
-    const media = new RegExp('^' + config.getSubdir() + '/' + config.getStaticUrlPrefix('files'));
+    const media = new RegExp('^' + config.getSubdir() + '/' + urlUtils.STATIC_FILES_URL_PREFIX);
     const absolute = media.test(urlPath) ? true : false;
 
     if (absolute) {

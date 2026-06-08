@@ -8,7 +8,7 @@ const mappers = require('./mappers');
  * Filters an object based on a given filter object
  * @private
  * @param {Object} settings
- * @param {String} filter
+ * @param {string} filter
  * @returns {*}
  */
 function settingsFilter(settings, filter) {
@@ -91,6 +91,7 @@ module.exports = {
     browse: serializeSettings,
     read: serializeSettings,
     edit: serializeSettings,
+    regenerateAccessCode: serializeSettings,
     verifyKeyUpdate: serializeSettings,
 
     download: serializeData,

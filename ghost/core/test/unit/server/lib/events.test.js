@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const events = require('../../../../core/server/lib/common/events');
 
 describe('Events', function () {

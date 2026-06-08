@@ -1,9 +1,9 @@
-const DynamicRedirectManager = require('../lib/DynamicRedirectManager');
+const DynamicRedirectManager = require('../lib/dynamic-redirect-manager');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
-const OfferBookshelfRepository = require('./OfferBookshelfRepository');
-const OffersModule = require('./OffersModule');
+const OfferBookshelfRepository = require('./offer-bookshelf-repository');
+const OffersModule = require('./offers-module');
 
 let redirectManager;
 

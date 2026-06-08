@@ -4,8 +4,8 @@ const models = require('../../core/server/models');
 const sinon = require('sinon');
 const jobManager = require('../../core/server/services/jobs/job-service');
 const escapeRegExp = require('lodash/escapeRegExp');
-const should = require('should');
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
+const {assertMatchSnapshot} = require('./assertions');
 
 const getDefaultNewsletter = async function () {
     const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
@@ -153,13 +153,13 @@ function testCleanedSnapshot({html, plaintext}, ignoreReplacements) {
             plaintext = plaintext.replace(new RegExp(escapeRegExp(match), 'g'), replacement);
         }
     }
-    should({html, plaintext}).matchSnapshot();
+    assertMatchSnapshot({html, plaintext});
 }
 
 async function matchEmailSnapshot() {
     const lastEmail = await getLastEmail();
     const defaultNewsletter = await lastEmail.emailModel.getLazyRelation('newsletter');
-    const linkRegexp = /http:\/\/127\.0\.0\.1:2369\/r\/\w+/g;
+    const linkRegexp = /http:\/\/127\.0\.0\.1:\d+\/r\/\w+/g;
 
     const ignoreReplacements = [
         {

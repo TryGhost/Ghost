@@ -1,154 +1,156 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const request = require('supertest');
+const express = require('express');
 const fs = require('fs-extra');
-const servePublicFile = require('../../../../../core/frontend/web/middleware/serve-public-file');
+const config = require('../../../../../core/shared/config');
+const {servePublicFile} = require('../../../../../core/frontend/web/routers/serve-public-file');
 
 describe('servePublicFile', function () {
-    let res;
-    let req;
-    let next;
-
-    beforeEach(function () {
-        res = sinon.spy();
-        req = sinon.spy();
-        next = sinon.spy();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
 
+    function createApp(middleware) {
+        const app = express();
+        app.use(middleware);
+        app.use((_req, res) => {
+            res.status(418).send('next');
+        });
+        app.use((err, _req, res, _next) => {
+            void _next;
+
+            res.status(err.statusCode || 500).json({
+                errorType: err.errorType,
+                code: err.code,
+                property: err.property
+            });
+        });
+        return app;
+    }
+
     it('should return a middleware', function () {
         const result = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
 
-        result.should.be.a.Function();
+        assert.equal(typeof result, 'function');
     });
 
-    it('should skip if the request does NOT match the file', function () {
+    it('should skip if the request does NOT match the file', async function () {
         const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
-        req.path = '/favicon.ico';
-        middleware(req, res, next);
-        next.called.should.be.true();
+        const app = createApp(middleware);
+
+        await request(app)
+            .get('/favicon.ico')
+            .expect(418)
+            .expect('next');
     });
 
-    it('should load the file and send it with the correct headers', function () {
+    it('should load the file and send it with the correct headers', async function () {
         const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
+        const app = createApp(middleware);
         const body = 'User-agent: * Disallow: /';
-        req.path = '/robots.txt';
 
-        let fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+        const fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 
-        res = {
-            writeHead: sinon.spy(),
-            end: sinon.spy()
-        };
+        const {headers, text} = await request(app)
+            .get('/robots.txt')
+            .expect(200);
 
-        middleware(req, res, next);
-
-        next.called.should.be.false();
-        fileStub.firstCall.args[0].should.endWith('core/frontend/public/robots.txt');
-        res.writeHead.called.should.be.true();
-        res.writeHead.args[0][0].should.equal(200);
-        res.writeHead.calledWith(200, sinon.match.has('Content-Type')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('Content-Length')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('ETag')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('Cache-Control', 'public, max-age=3600')).should.be.true();
+        assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/robots.txt'));
+        assert.equal(text, body);
+        assert.match(headers['content-type'], /^text\/plain/);
+        assert.equal(headers['content-length'], `${Buffer.from(body).length}`);
+        assert.match(headers.etag, /^".+"$/);
+        assert.equal(headers['cache-control'], 'public, max-age=3600');
     });
 
-    it('should send the file from the cache the second time', function () {
+    it('should send the file from the cache the second time', async function () {
         const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
+        const app = createApp(middleware);
         const body = 'User-agent: * Disallow: /';
-        req.path = '/robots.txt';
 
-        let fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+        const fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 
-        res = {
-            writeHead: sinon.spy(),
-            end: sinon.spy()
-        };
+        const firstResponse = await request(app)
+            .get('/robots.txt')
+            .expect(200);
 
-        middleware(req, res, next);
-        middleware(req, res, next);
+        const secondResponse = await request(app)
+            .get('/robots.txt')
+            .expect(200);
 
-        next.called.should.be.false();
-
-        // File only gets read onece
-        fileStub.calledOnce.should.be.true();
-        fileStub.firstCall.args[0].should.endWith('core/frontend/public/robots.txt');
+        // File only gets read once
+        sinon.assert.calledOnce(fileStub);
+        assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/robots.txt'));
 
         // File gets served twice
-        res.writeHead.calledTwice.should.be.true();
-        res.writeHead.args[0][0].should.equal(200);
-        res.writeHead.calledWith(200, sinon.match.has('Content-Type')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('Content-Length')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('ETag')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('Cache-Control', 'public, max-age=3600')).should.be.true();
+        assert.equal(firstResponse.text, body);
+        assert.equal(secondResponse.text, body);
+        assert.match(firstResponse.headers['content-type'], /^text\/plain/);
+        assert.equal(firstResponse.headers['content-length'], `${Buffer.from(body).length}`);
+        assert.match(firstResponse.headers.etag, /^".+"$/);
+        assert.equal(firstResponse.headers['cache-control'], 'public, max-age=3600');
+        assert.equal(secondResponse.headers.etag, firstResponse.headers.etag);
+        assert.equal(secondResponse.headers['cache-control'], 'public, max-age=3600');
     });
 
-    it('should not cache files requested with a different v tag', function () {
+    it('should not cache files requested with a different v tag', async function () {
         const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
+        const app = createApp(middleware);
         const body = 'User-agent: * Disallow: /';
-        req.path = '/robots.txt';
-        req.query = {v: 1};
 
-        let fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+        const fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 
-        res = {
-            writeHead: sinon.spy(),
-            end: sinon.spy()
-        };
+        const firstResponse = await request(app)
+            .get('/robots.txt?v=1')
+            .expect(200);
 
-        middleware(req, res, next);
-        middleware(req, res, next);
+        const secondResponse = await request(app)
+            .get('/robots.txt?v=1')
+            .expect(200);
 
-        // Set a different cache key
-        req.query = {v: 2};
-        middleware(req, res, next);
+        const thirdResponse = await request(app)
+            .get('/robots.txt?v=2')
+            .expect(200);
 
-        fileStub.calledTwice.should.be.true();
+        sinon.assert.calledTwice(fileStub);
 
-        next.called.should.be.false();
-        fileStub.firstCall.args[0].should.endWith('core/frontend/public/robots.txt');
-        fileStub.secondCall.args[0].should.endWith('core/frontend/public/robots.txt');
+        assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/robots.txt'));
+        assert(fileStub.secondCall.args[0].endsWith('core/frontend/public/robots.txt'));
 
-        res.writeHead.calledThrice.should.be.true();
-        res.writeHead.args[0][0].should.equal(200);
-        res.writeHead.calledWith(200, sinon.match.has('Content-Type')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('Content-Length')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('ETag')).should.be.true();
-        res.writeHead.calledWith(200, sinon.match.has('Cache-Control', 'public, max-age=3600')).should.be.true();
+        assert.equal(firstResponse.text, body);
+        assert.equal(secondResponse.text, body);
+        assert.equal(thirdResponse.text, body);
+        assert.match(firstResponse.headers['content-type'], /^text\/plain/);
+        assert.equal(firstResponse.headers['content-length'], `${Buffer.from(body).length}`);
+        assert.match(firstResponse.headers.etag, /^".+"$/);
+        assert.equal(firstResponse.headers['cache-control'], 'public, max-age=3600');
     });
 
-    it('should replace {{blog-url}} in text/plain', function () {
+    it('should replace {{blog-url}} in text/plain', async function () {
         const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
+        const app = createApp(middleware);
         const body = 'User-agent: {{blog-url}}';
-        req.path = '/robots.txt';
 
         sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 
-        res = {
-            writeHead: sinon.spy(),
-            end: sinon.spy()
-        };
-
-        middleware(req, res, next);
-        next.called.should.be.false();
-        res.writeHead.called.should.be.true();
-
-        res.end.calledWith('User-agent: http://127.0.0.1:2369').should.be.true();
+        await request(app)
+            .get('/robots.txt')
+            .expect(200)
+            .expect(`User-agent: ${config.get('url')}`);
     });
 
-    it('should 404 for ENOENT on general files', function () {
+    it('should 404 for ENOENT on general files', async function () {
         const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600);
-        req.path = '/robots.txt';
+        const app = createApp(middleware);
 
         sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
             const err = new Error();
@@ -156,37 +158,49 @@ describe('servePublicFile', function () {
             cb(err, null);
         });
 
-        res = {
-            writeHead: sinon.spy(),
-            end: sinon.spy()
-        };
-
-        middleware(req, res, next);
-
-        next.called.should.be.true();
-        next.calledWith(sinon.match({errorType: 'NotFoundError', code: 'PUBLIC_FILE_NOT_FOUND'})).should.be.true();
+        await request(app)
+            .get('/robots.txt')
+            .expect(404)
+            .expect({
+                errorType: 'NotFoundError',
+                code: 'PUBLIC_FILE_NOT_FOUND',
+                property: null
+            });
     });
 
-    it('can serve a built asset file as well as public files', function () {
+    it('can serve a built asset file as well as public files', async function () {
         const middleware = servePublicFile('built', 'something.css', 'text/css', 3600);
+        const app = createApp(middleware);
         const body = '.foo {bar: baz}';
-        req.path = '/something.css';
 
-        let fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+        const fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
             cb(null, body);
         });
 
-        res = {
-            writeHead: sinon.spy(),
-            end: sinon.spy()
-        };
+        const {text} = await request(app)
+            .get('/something.css')
+            .expect(200)
+            .expect('Content-Type', /^text\/css/);
 
-        middleware(req, res, next);
+        assert.equal(text, body);
+        assert(fileStub.firstCall.args[0].endsWith('/public/something.css'));
+    });
 
-        next.called.should.be.false();
-        res.writeHead.called.should.be.true();
-        res.writeHead.args[0][0].should.equal(200);
+    it('can serve the private page runtime asset from the static public directory', async function () {
+        const middleware = servePublicFile('static', 'public/private.min.js', 'application/javascript', 3600);
+        const app = createApp(middleware);
+        const body = 'console.log("private");';
 
-        fileStub.firstCall.args[0].should.endWith('/public/something.css');
+        const fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            cb(null, body);
+        });
+
+        const {text} = await request(app)
+            .get('/public/private.min.js')
+            .expect(200)
+            .expect('Content-Type', /^application\/javascript/);
+
+        assert.equal(text, body);
+        assert(fileStub.firstCall.args[0].endsWith('core/frontend/public/private.min.js'));
     });
 });

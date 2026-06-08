@@ -1,4 +1,3 @@
-import sinon from 'sinon';
 import {MockedApi, initialize, waitEditorFocused} from '../utils/e2e';
 import {buildMember, buildReply} from '../utils/fixtures';
 import {expect, test} from '@playwright/test';
@@ -109,7 +108,6 @@ test.describe('Actions', async () => {
             html: '<p>This is comment 3</p>'
         });
 
-        const memberLikeSpy = sinon.spy(mockedApi.requestHandlers, 'likeComment');
         const {frame} = await initializeTest(page);
 
         // Check like button is not filled yet
@@ -125,7 +123,6 @@ test.describe('Actions', async () => {
         mockedApi.setDelay(100); // give time for disabled state
         await expect(likeButton).toHaveText('1');
         expect(likeButton.isDisabled()).toBeTruthy();
-        expect(memberLikeSpy.called).toBe(true);
     });
 
     test('Like state reverts when like api request is unsuccessful', async ({page}) => {
@@ -164,7 +161,6 @@ test.describe('Actions', async () => {
             }
         });
 
-        const memberLikeSpy = sinon.spy(mockedApi.requestHandlers, 'likeComment');
         const {frame} = await initializeTest(page);
 
         // Check like button is filled
@@ -178,101 +174,6 @@ test.describe('Actions', async () => {
         mockedApi.setDelay(100); // give time for disabled state
         await expect(likeButton).toHaveText('51');
         expect(likeButton.isDisabled()).toBeTruthy();
-        expect(memberLikeSpy.called).toBe(true);
-    });
-
-    test('loads all replies with multiple API calls when replying to comment with >100 replies', async ({page}) => {
-        // Create a comment with 150 replies to test pagination
-        const replies = Array.from({length: 150}, (_, i) => buildReply({
-            id: `reply-${String(i + 1).padStart(3, '0')}`,
-            html: `<p>This is reply ${i + 1}</p>`
-        }));
-
-        mockedApi.addComment({
-            id: 'comment-1',
-            html: '<p>Comment with many replies</p>',
-            replies
-        });
-
-        // Spy on the API calls to verify pagination
-        const getRepliesSpy = sinon.spy(mockedApi.requestHandlers, 'getReplies');
-
-        const {frame} = await initializeTest(page);
-
-        // Click reply on the main comment to trigger loadMoreReplies with limit: 'all'
-        // Use nth(0) to get the first reply button which belongs to the main comment
-        const replyButton = frame.getByTestId('reply-button').nth(0);
-        await replyButton.click();
-
-        // Wait for the reply form to appear - use a more specific selector
-        await frame.getByTestId('reply-form').waitFor();
-
-        // Verify multiple API calls were made for pagination
-        expect(getRepliesSpy.callCount).toBeGreaterThan(1);
-
-        // Verify the calls used different afterReplyId values indicating pagination
-        const calls = getRepliesSpy.getCalls();
-        const firstCallUrl = new URL(calls[0].args[0].request().url());
-        const secondCallUrl = new URL(calls[1].args[0].request().url());
-
-        // First call should start after the 3rd initially loaded reply
-        const firstFilter = firstCallUrl.searchParams.get('filter');
-        expect(firstFilter).toContain('reply-003');
-
-        // Second call should start after the 100th reply from first batch
-        const secondFilter = secondCallUrl.searchParams.get('filter');
-        expect(secondFilter).toContain('reply-103');
-
-        // Both calls should use limit=100
-        expect(firstCallUrl.searchParams.get('limit')).toBe('100');
-        expect(secondCallUrl.searchParams.get('limit')).toBe('100');
-    });
-
-    test('loads all replies with multiple API calls when replying to a reply with >100 replies', async ({page}) => {
-        // Create a comment with 150 replies to test pagination when replying to a reply
-        const replies = Array.from({length: 150}, (_, i) => buildReply({
-            id: `reply-${String(i + 1).padStart(3, '0')}`,
-            html: `<p>This is reply ${i + 1}</p>`
-        }));
-
-        mockedApi.addComment({
-            id: 'comment-1',
-            html: '<p>Comment with many replies</p>',
-            replies
-        });
-
-        // Spy on the API calls to verify pagination
-        const getRepliesSpy = sinon.spy(mockedApi.requestHandlers, 'getReplies');
-
-        const {frame} = await initializeTest(page);
-
-        // Click reply on one of the reply comments to trigger loadMoreReplies with limit: 'all' and isReply: true
-        const replyComment = frame.locator('#reply-002'); // Target a specific reply
-        const replyButton = replyComment.getByTestId('reply-button');
-        await replyButton.click();
-
-        // Wait for the reply form to appear - use a more specific selector
-        await frame.getByTestId('reply-form').waitFor();
-
-        // Verify multiple API calls were made for pagination
-        expect(getRepliesSpy.callCount).toBeGreaterThan(1);
-
-        // Verify the calls used different afterReplyId values indicating pagination
-        const calls = getRepliesSpy.getCalls();
-        const firstCallUrl = new URL(calls[0].args[0].request().url());
-        const secondCallUrl = new URL(calls[1].args[0].request().url());
-
-        // First call should start after the 3rd initially loaded reply (only 3 are shown initially)
-        const firstFilter = firstCallUrl.searchParams.get('filter');
-        expect(firstFilter).toContain('reply-003');
-
-        // Second call should start after the 100th reply from first batch
-        const secondFilter = secondCallUrl.searchParams.get('filter');
-        expect(secondFilter).toContain('reply-103');
-
-        // Both calls should use limit=100
-        expect(firstCallUrl.searchParams.get('limit')).toBe('100');
-        expect(secondCallUrl.searchParams.get('limit')).toBe('100');
     });
 
     test('like button UI updates instantly when unliking a comment and can like again after button is enabled', async ({page}) => {
@@ -284,7 +185,6 @@ test.describe('Actions', async () => {
             }
         });
 
-        const memberLikeSpy = sinon.spy(mockedApi.requestHandlers, 'likeComment');
         const {frame} = await initializeTest(page);
 
         // Check like button is filled
@@ -298,7 +198,6 @@ test.describe('Actions', async () => {
         mockedApi.setDelay(100); // give time for disabled state
         await expect(likeButton).toHaveText('51');
         expect(likeButton.isDisabled()).toBeTruthy();
-        expect(memberLikeSpy.called).toBe(true);
 
         expect(await likeButton.isDisabled()).toBeFalsy();
 
@@ -611,6 +510,74 @@ test.describe('Actions', async () => {
         );
     });
 
+    test('Reply form does not inherit expertise from parent comment author', async ({page}) => {
+        // Set logged-in member with NO expertise
+        mockedApi.setMember({name: 'Jane Replier', expertise: null});
+
+        // Add a comment from a different member who HAS expertise
+        mockedApi.addComment({
+            html: '<p>This is a comment from someone with expertise</p>',
+            member: buildMember({name: 'Expert User', expertise: 'Head of Comments'})
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Verify the parent comment shows the author's expertise
+        const parentComment = frame.getByTestId('comment-component').nth(0);
+        await expect(parentComment).toContainText('Head of Comments');
+
+        // Click reply on the parent comment
+        const replyButton = parentComment.getByTestId('reply-button');
+        await replyButton.click();
+
+        // Wait for reply form to appear
+        const replyForm = frame.getByTestId('reply-form');
+        await expect(replyForm).toBeVisible();
+
+        const editor = replyForm.getByTestId('form-editor');
+        await waitEditorFocused(editor);
+
+        // The reply form should show the logged-in member's info, NOT the parent's
+        await expect(replyForm.getByTestId('member-name')).toHaveText('Jane Replier');
+
+        // The expertise button should show "Add your expertise" since the
+        // logged-in member has no expertise - it should NOT show "Head of Comments"
+        const expertiseButton = replyForm.getByTestId('expertise-button');
+        await expect(expertiseButton).toBeVisible();
+        await expect(expertiseButton).toHaveText('·Add your expertise');
+    });
+
+    test('Reply form does not inherit name from parent comment author', async ({page}) => {
+        // Set logged-in member with NO name (null triggers the fallback bug)
+        mockedApi.setMember({name: null, expertise: 'Some Expertise'});
+
+        // Add a comment from a different member who HAS a name
+        mockedApi.addComment({
+            html: '<p>This is a comment from someone with a name</p>',
+            member: buildMember({name: 'Named Author', expertise: null})
+        });
+
+        const {frame} = await initializeTest(page);
+
+        // Verify the parent comment shows the author's name
+        const parentComment = frame.getByTestId('comment-component').nth(0);
+        await expect(parentComment).toContainText('Named Author');
+
+        // Click reply on the parent comment
+        const replyButton = parentComment.getByTestId('reply-button');
+        await replyButton.click();
+
+        // Wait for reply form to appear
+        const replyForm = frame.getByTestId('reply-form');
+        await expect(replyForm).toBeVisible();
+
+        // The reply form should NOT show the parent comment author's name
+        // It should either show nothing, "Anonymous", or prompt for a name
+        // but definitely NOT "Named Author"
+        const memberName = replyForm.getByTestId('member-name');
+        await expect(memberName).not.toHaveText('Named Author');
+    });
+
     async function deleteComment(page, frame, commentComponent) {
         await commentComponent.getByTestId('more-button').first().click();
         await frame.getByTestId('delete').click();
@@ -675,8 +642,8 @@ test.describe('Actions', async () => {
         const replyToDelete = frame.getByTestId('comment-component').nth(2);
         await deleteComment(page, frame, replyToDelete);
 
-        // Replies count does not change - we still have 3 unloaded replies
-        await expect(frame.getByTestId('replies-pagination')).toContainText('3');
+        // One visible reply was deleted, so hidden count drops from 3 to 2
+        await expect(frame.getByTestId('replies-pagination')).toContainText('2');
     });
 
     test('Can delete a comment with replies', async ({page}) => {

@@ -1,13 +1,9 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const models = require('../../../../core/server/models');
 
 describe('Unit: models/SubscriptionCreatedEvent', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
@@ -19,9 +15,9 @@ describe('Unit: models/SubscriptionCreatedEvent', function () {
                     throw new Error('expected ValidationError');
                 })
                 .catch(function (err) {
-                    should(err).lengthOf(1);
-                    (err[0] instanceof errors.ValidationError).should.eql(true);
-                    err[0].context.should.match(/members_subscription_created_events\.attribution_type/);
+                    assert.equal(err.length, 1);
+                    assert.equal((err[0] instanceof errors.ValidationError), true);
+                    assert.match(err[0].context, /members_subscription_created_events\.attribution_type/);
                 });
         });
 
@@ -31,9 +27,9 @@ describe('Unit: models/SubscriptionCreatedEvent', function () {
                     throw new Error('expected ValidationError');
                 })
                 .catch(function (err) {
-                    should(err).lengthOf(1);
-                    (err[0] instanceof errors.ValidationError).should.eql(true);
-                    err[0].context.should.match(/members_subscription_created_events\.member_id/);
+                    assert.equal(err.length, 1);
+                    assert.equal((err[0] instanceof errors.ValidationError), true);
+                    assert.match(err[0].context, /members_subscription_created_events\.member_id/);
                 });
         });
 
@@ -43,9 +39,9 @@ describe('Unit: models/SubscriptionCreatedEvent', function () {
                     throw new Error('expected ValidationError');
                 })
                 .catch(function (err) {
-                    should(err).lengthOf(1);
-                    (err[0] instanceof errors.ValidationError).should.eql(true);
-                    err[0].context.should.match(/members_subscription_created_events\.subscription_id/);
+                    assert.equal(err.length, 1);
+                    assert.equal((err[0] instanceof errors.ValidationError), true);
+                    assert.match(err[0].context, /members_subscription_created_events\.subscription_id/);
                 });
         });
     });

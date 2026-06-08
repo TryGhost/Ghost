@@ -40,7 +40,7 @@ export default class ModalPostHistory extends Component {
     }
 
     get currentTitle() {
-        return this.selectedRevision.title || this.post.get('title');
+        return this.selectedRevision?.title || this.post.get('title');
     }
 
     get revisionList() {

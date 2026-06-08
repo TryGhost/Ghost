@@ -1,4 +1,4 @@
-const assert = require('assert/strict');
+const assert = require('node:assert/strict');
 const {callRenderer, html, assertPrettifiesTo} = require('../test-utils');
 
 describe('services/koenig/node-renderers/file-renderer', function () {
@@ -130,6 +130,21 @@ describe('services/koenig/node-renderers/file-renderer', function () {
                     </tbody>
                 </table>
             `);
+        });
+
+        it('does not double-escape pre-encoded entities', function () {
+            const result = renderForEmail(getTestData({
+                fileTitle: 'Q&amp;A download',
+                fileCaption: 'Research &amp; Development notes',
+                fileName: 'Q&amp;A.pdf'
+            }));
+
+            assert.ok(result.html.includes('Q&amp;A download'));
+            assert.ok(!result.html.includes('Q&amp;amp;A download'));
+            assert.ok(result.html.includes('Research &amp; Development notes'));
+            assert.ok(!result.html.includes('Research &amp;amp; Development notes'));
+            assert.ok(result.html.includes('Q&amp;A.pdf'));
+            assert.ok(!result.html.includes('Q&amp;amp;A.pdf'));
         });
 
         it('renders nothing with a missing src', function () {

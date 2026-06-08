@@ -1,4 +1,5 @@
-const should = require('should');
+const assert = require('node:assert/strict');
+const {assertExists} = require('../../../utils/assertions');
 const {getSchema, SOCIAL_PLATFORMS} = require('../../../../core/frontend/meta/schema');
 const socialUrls = require('@tryghost/social-urls');
 
@@ -39,7 +40,7 @@ const BASE_METADATA = {
 };
 
 describe('getSchema', function () {
-    it('should return post schema if context starts with post', function (done) {
+    it('should return post schema if context starts with post', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -93,7 +94,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, {
+        assert.deepEqual(schema, {
             '@context': 'https://schema.org',
             '@type': 'Article',
             author: {
@@ -137,10 +138,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
-    it('should return page schema if context starts with page', function (done) {
+    it('should return page schema if context starts with page', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -194,7 +194,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, {
+        assert.deepEqual(schema, {
             '@context': 'https://schema.org',
             '@type': 'Article',
             author: {
@@ -238,10 +238,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-page-slug/'
         });
-        done();
     });
 
-    it('should return post schema removing null or undefined values', function (done) {
+    it('should return post schema removing null or undefined values', function () {
         const metadata = {
             site: {
                 title: 'Site Title'
@@ -275,7 +274,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, {
+        assert.deepEqual(schema, {
             '@context': 'https://schema.org',
             '@type': 'Article',
             author: {
@@ -297,10 +296,9 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
-    it('should return image url instead of ImageObjects if no dimensions supplied', function (done) {
+    it('should return image url instead of ImageObjects if no dimensions supplied', function () {
         const metadata = {
             site: {
                 title: 'Site Title',
@@ -343,7 +341,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, {
+        assert.deepEqual(schema, {
             '@context': 'https://schema.org',
             '@type': 'Article',
             author: {
@@ -382,7 +380,6 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
-        done();
     });
 
     it('should return home schema if context starts with home', function () {
@@ -407,7 +404,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, {
+        assert.deepEqual(schema, {
             '@context': 'https://schema.org',
             '@type': 'WebSite',
             description: 'This is the theme description',
@@ -454,7 +451,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, {
+        assert.deepEqual(schema, {
             '@context': 'https://schema.org',
             '@type': 'Series',
             description: 'This is the tag description!',
@@ -504,7 +501,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, {
+        assert.deepEqual(schema, {
             '@context': 'https://schema.org',
             '@type': 'Person',
             description: 'This is the author description!',
@@ -559,7 +556,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, {
+        assert.deepEqual(schema, {
             '@context': 'https://schema.org',
             '@type': 'Person',
             description: 'This is the author description!',
@@ -607,7 +604,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, {
+        assert.deepEqual(schema, {
             '@context': 'https://schema.org',
             '@type': 'Person',
             description: 'This is the author description!',
@@ -646,7 +643,7 @@ describe('getSchema', function () {
         const expectedSameAs = buildExpectedSameAs('http://myblogsite.com/', USERNAMES);
 
         const schema = getSchema(metadata, data);
-        should.deepEqual(schema.author.sameAs, expectedSameAs);
+        assert.deepEqual(schema.author.sameAs, expectedSameAs);
     });
 
     it('should include all supported social links in sameAs for author context', function () {
@@ -671,7 +668,7 @@ describe('getSchema', function () {
         const expectedSameAs = buildExpectedSameAs('http://myblogsite.com/', USERNAMES);
 
         const schema = getSchema(metadata, data);
-        should.deepEqual(schema.sameAs, expectedSameAs);
+        assert.deepEqual(schema.sameAs, expectedSameAs);
     });
 
     it('should escape special characters in social platform urls', function () {
@@ -696,7 +693,7 @@ describe('getSchema', function () {
         const expectedSameAs = buildExpectedSameAs('http://myblogsite.com/', {facebook: 'user&#x3D;name&#x3D;'});
 
         const schema = getSchema(metadata, data);
-        should.deepEqual(schema.sameAs, expectedSameAs);
+        assert.deepEqual(schema.sameAs, expectedSameAs);
     });
 
     it('should return null if not a supported type', function () {
@@ -704,7 +701,7 @@ describe('getSchema', function () {
         const data = {};
         const schema = getSchema(metadata, data);
 
-        should.deepEqual(schema, null);
+        assert.deepEqual(schema, null);
     });
 
     // Contributors tests
@@ -733,7 +730,7 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.not.exist(schema.contributor);
+        assert.equal(schema.contributor, undefined);
     });
 
     it('should include contributors when post has multiple authors', function () {
@@ -770,8 +767,8 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
-        should.deepEqual(schema.contributor, [
+        assertExists(schema.contributor);
+        assert.deepEqual(schema.contributor, [
             {
                 '@type': 'Person',
                 name: 'Co-Author',
@@ -825,9 +822,9 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
-        should.equal(schema.contributor.length, 2);
-        should.deepEqual(schema.contributor[0], {
+        assertExists(schema.contributor);
+        assert.equal(schema.contributor.length, 2);
+        assert.deepEqual(schema.contributor[0], {
             '@type': 'Person',
             name: 'Co-Author 1',
             url: 'http://mysite.com/author/co-author-1/',
@@ -836,7 +833,7 @@ describe('getSchema', function () {
                 'https://x.com/coauthor1'
             ]
         });
-        should.deepEqual(schema.contributor[1], {
+        assert.deepEqual(schema.contributor[1], {
             '@type': 'Person',
             name: 'Co-Author 2',
             url: 'http://mysite.com/author/co-author-2/',
@@ -875,8 +872,8 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
-        should.deepEqual(schema.contributor[0].sameAs, expectedSameAs);
+        assertExists(schema.contributor);
+        assert.deepEqual(schema.contributor[0].sameAs, expectedSameAs);
     });
 
     it('should handle contributors with missing or null data', function () {
@@ -910,8 +907,8 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
-        should.deepEqual(schema.contributor[0], {
+        assertExists(schema.contributor);
+        assert.deepEqual(schema.contributor[0], {
             '@type': 'Person',
             name: 'Co-Author',
             url: 'http://mysite.com/author/co-author/',
@@ -951,8 +948,8 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
-        should.deepEqual(schema.contributor[0], {
+        assertExists(schema.contributor);
+        assert.deepEqual(schema.contributor[0], {
             '@type': 'Person',
             name: 'Co-Author',
             url: 'http://mysite.com/author/co-author/',
@@ -989,8 +986,8 @@ describe('getSchema', function () {
 
         const schema = getSchema(metadata, data);
 
-        should.exist(schema.contributor);
-        should.deepEqual(schema.contributor[0].sameAs, [
+        assertExists(schema.contributor);
+        assert.deepEqual(schema.contributor[0].sameAs, [
             'http://coauthorsite.com/?user&#x3D;name&amp;param&#x3D;&lt;script&gt;alert(&quot;test&quot;)&lt;/script&gt;',
             'https://www.facebook.com/user&#x3D;name&#x3D;'
         ]);

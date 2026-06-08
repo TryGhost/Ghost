@@ -2,12 +2,14 @@ const ghostBookshelf = require('./base');
 const crypto = require('crypto');
 const _ = require('lodash');
 const config = require('../../shared/config');
+const {MemberCommentingCodec} = require('../services/members/commenting');
 
 const Member = ghostBookshelf.Model.extend({
     tableName: 'members',
 
     actionsCollectCRUD: true,
     actionsResourceType: 'member',
+    actionsExtraContext: ['commenting'],
 
     defaults() {
         return {
@@ -18,6 +20,40 @@ const Member = ghostBookshelf.Model.extend({
             email_opened_count: 0,
             enable_comment_notifications: true
         };
+    },
+
+    /**
+     * Transform data coming from the database.
+     * Parses the `commenting` JSON string into a MemberCommenting domain object
+     * and computes the `can_comment` boolean.
+     */
+    parse(attrs) {
+        attrs = ghostBookshelf.Model.prototype.parse.call(this, attrs);
+
+        if (attrs.commenting !== undefined) {
+            const commenting = MemberCommentingCodec.parse(attrs.commenting);
+            attrs.commenting = commenting;
+            attrs.can_comment = commenting.canComment;
+        }
+
+        return attrs;
+    },
+
+    /**
+     * Transform data going to the database.
+     * Converts the MemberCommenting domain object back to a JSON string
+     * and removes the computed `can_comment` field.
+     */
+    format(attrs) {
+        // Remove computed field - it should not be persisted
+        delete attrs.can_comment;
+
+        // Convert MemberCommenting domain object to JSON string for storage
+        if (attrs.commenting) {
+            attrs.commenting = MemberCommentingCodec.format(attrs.commenting);
+        }
+
+        return ghostBookshelf.Model.prototype.format.call(this, attrs);
     },
 
     filterExpansions() {
@@ -276,32 +312,29 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     onSaving: function onSaving(model, attr, options) {
-        let labelsToSave = [];
+        const rawLabels = this.get('labels');
 
-        if (_.isUndefined(this.get('labels'))) {
+        if (_.isUndefined(rawLabels)) {
             this.unset('labels');
             return;
         }
 
-        // CASE: detect lowercase/uppercase label slugs
-        if (!_.isUndefined(this.get('labels')) && !_.isNull(this.get('labels'))) {
-            labelsToSave = [];
+        // CASE: trim, drop nameless, and dedupe by case-insensitive name (first wins)
+        const seen = new Set();
+        const labelsToSave = (rawLabels || []).filter((item) => {
+            item.name = item.name && item.name.trim();
+            if (!item.name) {
+                return false;
+            }
+            const key = item.name.toLowerCase();
+            if (seen.has(key)) {
+                return false;
+            }
+            seen.add(key);
+            return true;
+        });
 
-            //  and deduplicate upper/lowercase tags
-            _.each(this.get('labels'), function each(item) {
-                item.name = item.name && item.name.trim();
-                for (let i = 0; i < labelsToSave.length; i = i + 1) {
-                    if (labelsToSave[i].name && item.name && labelsToSave[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
-                        return;
-                    }
-                }
-
-                labelsToSave.push(item);
-            });
-
-            this.set('labels', labelsToSave);
-        }
-
+        this.set('labels', labelsToSave);
         this.handleAttachedModels(model);
 
         // CASE: Detect existing labels with same case-insensitive name and replace
@@ -310,12 +343,20 @@ const Member = ghostBookshelf.Model.extend({
                 columns: ['id', 'name']
             }, _.pick(options, 'transacting')))
             .then((labels) => {
+                const existingByName = new Map();
+                for (const lab of labels.models) {
+                    const name = lab.get('name');
+                    if (name) {
+                        existingByName.set(name.toLowerCase(), lab);
+                    }
+                }
+
                 labelsToSave.forEach((label) => {
-                    let existingLabel = labels.find((lab) => {
-                        return label.name.toLowerCase() === lab.get('name').toLowerCase();
-                    });
-                    label.name = (existingLabel && existingLabel.get('name')) || label.name;
-                    label.id = (existingLabel && existingLabel.id) || label.id;
+                    const match = existingByName.get(label.name.toLowerCase());
+                    if (match) {
+                        label.name = match.get('name');
+                        label.id = match.id;
+                    }
                 });
 
                 model.set('labels', labelsToSave);
@@ -402,12 +443,17 @@ const Member = ghostBookshelf.Model.extend({
             attrs.avatar_image = gravatar.url(attrs.email, {size: 250, default: 'blank'});
         }
 
+        // Serialize commenting domain object to API format
+        if (attrs.commenting) {
+            attrs.commenting = MemberCommentingCodec.toJSON(attrs.commenting);
+        }
+
         return attrs;
     }
 }, {
     /**
      * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-     * @param {String} methodName The name of the method to check valid options for.
+     * @param {string} methodName The name of the method to check valid options for.
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName) {

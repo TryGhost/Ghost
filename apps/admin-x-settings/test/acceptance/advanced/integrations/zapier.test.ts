@@ -1,4 +1,4 @@
-import {Integration, IntegrationsResponseType} from '@tryghost/admin-x-framework/api/integrations';
+import {type Integration, type IntegrationsResponseType} from '@tryghost/admin-x-framework/api/integrations';
 import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures} from '@tryghost/admin-x-framework/test/acceptance';
 

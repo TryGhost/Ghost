@@ -25,6 +25,9 @@ export default class GhSiteIframeComponent extends Component {
             srcUrl.searchParams.set('v', this.args.guid);
         }
 
+        srcUrl.searchParams.set('admin', '1');
+        srcUrl.searchParams.set('admin_toolbar', '0');
+
         return srcUrl.href;
     }
 

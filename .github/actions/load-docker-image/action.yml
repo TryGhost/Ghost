@@ -1,0 +1,93 @@
+name: 'Load Docker Image'
+description: 'Load Docker image from registry or artifact based on build source'
+inputs:
+  use-artifact:
+    description: 'Whether to load the image from an artifact (true) or pull from GHCR (false)'
+    required: true
+  image-tags:
+    description: 'Docker image tags (multi-line string)'
+    required: true
+  artifact-name:
+    description: 'Name of the artifact to download (fork PRs only)'
+    required: false
+    default: 'docker-image'
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Download image artifact (artifact)
+      if: inputs.use-artifact == 'true'
+      uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+      with:
+        name: ${{ inputs.artifact-name }}
+
+    - name: Load image from artifact (artifact)
+      if: inputs.use-artifact == 'true'
+      shell: bash
+      env:
+        ARTIFACT_NAME: ${{ inputs.artifact-name }}
+      run: |
+        echo "Loading Docker image from artifact..."
+        gunzip -c "${ARTIFACT_NAME}.tar.gz" | docker load
+        echo "Available images after load:"
+        docker images
+
+    - name: Log in to GitHub Container Registry
+      if: inputs.use-artifact == 'false'
+      uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+      with:
+        registry: ghcr.io
+        username: ${{ github.actor }}
+        password: ${{ github.token }}
+
+    - name: Pull image from registry (main repo/branch)
+      if: inputs.use-artifact == 'false'
+      shell: bash
+      env:
+        IMAGE_TAGS: ${{ inputs.image-tags }}
+      run: |
+        IMAGE_TAG="${IMAGE_TAGS%%$'\n'*}"
+        echo "Pulling image from registry: $IMAGE_TAG"
+
+        max_attempts=5
+        delay_seconds=10
+
+        for attempt in $(seq 1 "$max_attempts"); do
+          if docker pull "$IMAGE_TAG"; then
+            exit 0
+          fi
+
+          if [ "$attempt" -eq "$max_attempts" ]; then
+            echo "Failed to pull $IMAGE_TAG after $max_attempts attempts"
+            exit 1
+          fi
+
+          echo "Pull failed, retrying in ${delay_seconds}s (${attempt}/${max_attempts})..."
+          sleep "$delay_seconds"
+          delay_seconds=$((delay_seconds * 2))
+        done
+
+    - name: Verify image is available
+      id: verify
+      shell: bash
+      env:
+        IMAGE_TAGS: ${{ inputs.image-tags }}
+      run: |
+        IMAGE_TAG="${IMAGE_TAGS%%$'\n'*}"
+        echo "Checking for image: $IMAGE_TAG"
+        echo "image-tag=$IMAGE_TAG" >> "$GITHUB_OUTPUT"
+
+        if docker inspect "$IMAGE_TAG" > /dev/null 2>&1; then
+          echo "✅ Image $IMAGE_TAG is available"
+        else
+          echo "❌ Image $IMAGE_TAG is not available"
+          echo "Available images:"
+          docker images
+          exit 1
+        fi
+
+
+outputs:
+  image-tag:
+    description: 'The Docker image tag to use'
+    value: ${{ steps.verify.outputs.image-tag }}

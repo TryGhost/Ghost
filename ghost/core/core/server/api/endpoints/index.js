@@ -8,6 +8,10 @@ const localUtils = require('./utils');
 /* eslint-disable max-lines */
 
 module.exports = {
+    get automations() {
+        return apiFramework.pipeline(require('./automations'), localUtils);
+    },
+
     get authentication() {
         return apiFramework.pipeline(require('./authentication'), localUtils);
     },
@@ -81,12 +85,24 @@ module.exports = {
         return apiFramework.pipeline(require('./announcements'), localUtils);
     },
 
+    get automatedEmails() {
+        return apiFramework.pipeline(require('./automated-emails'), localUtils);
+    },
+
+    get automatedEmailDesign() {
+        return apiFramework.pipeline(require('./automated-email-design'), localUtils);
+    },
+
     get membersStripeConnect() {
         return apiFramework.pipeline(require('./members-stripe-connect'), localUtils);
     },
 
     get members() {
         return apiFramework.pipeline(require('./members'), localUtils);
+    },
+
+    get memberCommenting() {
+        return apiFramework.pipeline(require('./member-commenting'), localUtils);
     },
 
     get offers() {
@@ -185,6 +201,10 @@ module.exports = {
         return apiFramework.pipeline(require('./tinybird'), localUtils);
     },
 
+    get featurebase() {
+        return apiFramework.pipeline(require('./featurebase'), localUtils);
+    },
+
     get serializers() {
         return require('./utils/serializers');
     },
@@ -199,6 +219,18 @@ module.exports = {
 
     get commentReplies() {
         return apiFramework.pipeline(require('./comment-replies'), localUtils);
+    },
+
+    get commentReports() {
+        return apiFramework.pipeline(require('./comment-reports'), localUtils);
+    },
+
+    get commentLikes() {
+        return apiFramework.pipeline(require('./comment-likes'), localUtils);
+    },
+
+    get commentDislikes() {
+        return apiFramework.pipeline(require('./comment-dislikes'), localUtils);
     },
 
     get links() {
@@ -263,6 +295,14 @@ module.exports = {
 
     get feedbackMembers() {
         return apiFramework.pipeline(require('./feedback-members'), localUtils, 'members');
+    },
+
+    get giftsMembers() {
+        return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
+    },
+
+    get giftReminders() {
+        return apiFramework.pipeline(require('./gift-reminders'), localUtils);
     },
 
     get recommendationsPublic() {

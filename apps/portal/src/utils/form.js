@@ -1,6 +1,7 @@
 import * as Validator from './validator';
+import {t} from './i18n';
 
-export const FormInputError = ({field, t}) => {
+export const FormInputError = ({field}) => {
     if (field.required && !field.value) {
         switch (field.name) {
         case 'name':
@@ -23,14 +24,13 @@ export const FormInputError = ({field, t}) => {
 /**
  * Validate input fields
  * @param {Array} fields
- * @param {Function} t
  * @returns {Object} errors
  */
-export const ValidateInputForm = ({fields, t}) => {
+export const ValidateInputForm = ({fields}) => {
     const errors = {};
     fields.forEach((field) => {
         const name = field.name;
-        const fieldError = FormInputError({field, t});
+        const fieldError = FormInputError({field});
         errors[name] = fieldError;
     });
     return errors;

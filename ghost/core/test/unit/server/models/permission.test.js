@@ -1,14 +1,10 @@
-const should = require('should');
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
-const configUtils = require('../../../utils/configUtils');
+const configUtils = require('../../../utils/config-utils');
 
 describe('Unit: models/permission', function () {
-    before(function () {
-        models.init();
-    });
-
-    after(async function () {
+    afterAll(async function () {
         sinon.restore();
         await configUtils.restore();
     });
@@ -17,10 +13,10 @@ describe('Unit: models/permission', function () {
         it('[error] validation', function () {
             return models.Permission.add({})
                 .then(function () {
-                    'Should fail'.should.be.true();
+                    assert.equal('Should fail', true);
                 })
                 .catch(function (err) {
-                    err.length.should.eql(3);
+                    assert.equal(err.length, 3);
                 });
         });
     });

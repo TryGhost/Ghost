@@ -1,6 +1,8 @@
 import setupGhostApi from './utils/api';
 import {chooseBestErrorMessage} from './utils/errors';
-import {createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
+import {getGiftRedemptionErrorMessage, getGiftRedemptionSuccessMessage} from './utils/gift-redemption-notification';
+import {createNotification, createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
+import {t} from './utils/i18n';
 
 function switchPage({data, state}) {
     return {
@@ -20,6 +22,7 @@ function togglePopup({state}) {
 function openPopup({data}) {
     return {
         showPopup: true,
+        reloadOnPopupClose: false,
         page: data.page,
         ...(data.pageQuery ? {pageQuery: data.pageQuery} : {}),
         ...(data.pageData ? {pageData: data.pageData} : {})
@@ -47,16 +50,35 @@ function closePopup({state}) {
     };
 }
 
-function openNotification({data}) {
+function openNotification({data, state}) {
+    const {
+        action = 'openNotification',
+        status = 'success',
+        autoHide = true,
+        closeable = true,
+        duration = 2600,
+        message = ''
+    } = data || {};
+
+    const notification = createNotification({
+        type: action,
+        status,
+        autoHide,
+        closeable,
+        duration,
+        state,
+        message
+    });
+
     return {
-        showNotification: true,
-        ...data
+        notification,
+        notificationSequence: notification.count
     };
 }
 
 function closeNotification() {
     return {
-        showNotification: false
+        notification: null
     };
 }
 
@@ -67,7 +89,6 @@ async function signout({api, state}) {
             action: 'signout:success'
         };
     } catch (e) {
-        const {t} = state;
         return {
             action: 'signout:failed',
             popupNotification: createPopupNotification({
@@ -79,22 +100,78 @@ async function signout({api, state}) {
 }
 
 async function signin({data, api, state}) {
-    const {t} = state;
-
     try {
         const integrityToken = await api.member.getIntegrityToken();
-        await api.member.sendMagicLink({...data, emailType: 'signin', integrityToken});
+        const payload = {
+            ...data,
+            emailType: 'signin',
+            integrityToken,
+            includeOTC: true
+        };
+        const {otc_ref: otcRef, inboxLinks} = await api.member.sendMagicLink(payload);
         return {
             page: 'magiclink',
-            lastPage: 'signin'
+            lastPage: 'signin',
+            ...(otcRef ? {otcRef} : {}),
+            inboxLinks,
+            pageData: {
+                ...(state.pageData || {}),
+                email: (data?.email || '').trim()
+            }
         };
     } catch (e) {
         return {
             action: 'signin:failed',
             popupNotification: createPopupNotification({
                 type: 'signin:failed', autoHide: false, closeable: true, state, status: 'error',
-                message: chooseBestErrorMessage(e, t('Failed to log in, please try again'), t)
+                message: chooseBestErrorMessage(e, t('Failed to log in, please try again'))
             })
+        };
+    }
+}
+
+function startSigninOTCFromCustomForm({data, state}) {
+    const email = (data?.email || '').trim();
+    const otcRef = data?.otcRef;
+    const inboxLinks = data?.inboxLinks;
+
+    if (!otcRef) {
+        return {};
+    }
+
+    return {
+        showPopup: true,
+        page: 'magiclink',
+        lastPage: 'signin',
+        otcRef,
+        inboxLinks,
+        pageData: {
+            ...(state.pageData || {}),
+            email
+        },
+        popupNotification: null
+    };
+}
+
+async function verifyOTC({data, api}) {
+    const genericErrorMessage = t('Failed to verify code, please try again');
+
+    try {
+        const integrityToken = await api.member.getIntegrityToken();
+        const response = await api.member.verifyOTC({...data, integrityToken});
+
+        if (response.redirectUrl) {
+            return window.location.assign(response.redirectUrl);
+        } else {
+            return {
+                action: 'verifyOTC:failed',
+                actionErrorMessage: chooseBestErrorMessage(response.errors?.[0], genericErrorMessage)
+            };
+        }
+    } catch (e) {
+        return {
+            action: 'verifyOTC:failed',
+            actionErrorMessage: chooseBestErrorMessage(e, genericErrorMessage)
         };
     }
 }
@@ -102,10 +179,12 @@ async function signin({data, api, state}) {
 async function signup({data, state, api}) {
     try {
         let {plan, tierId, cadence, email, name, newsletters, offerId} = data;
+        name = name?.trim();
 
+        let inboxLinks;
         if (plan.toLowerCase() === 'free') {
             const integrityToken = await api.member.getIntegrityToken();
-            await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data});
+            ({inboxLinks} = await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data, name}));
         } else {
             if (tierId && cadence) {
                 await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
@@ -119,17 +198,102 @@ async function signup({data, state, api}) {
         }
         return {
             page: 'magiclink',
-            lastPage: 'signup'
+            lastPage: 'signup',
+            inboxLinks,
+            pageData: {
+                ...(state.pageData || {}),
+                email: (email || '').trim()
+            }
         };
     } catch (e) {
-        const {t} = state;
-        const message = chooseBestErrorMessage(e, t('Failed to sign up, please try again'), t);
+        const message = chooseBestErrorMessage(e, t('Failed to sign up, please try again'));
         return {
             action: 'signup:failed',
             popupNotification: createPopupNotification({
                 type: 'signup:failed', autoHide: false, closeable: true, state, status: 'error',
                 message: message
             })
+        };
+    }
+}
+
+async function redeemGift({data, state, api}) {
+    try {
+        let {email, name, giftToken} = data;
+        name = name?.trim();
+
+        if (state.member) {
+            await api.gift.redeem({token: giftToken});
+            const member = await api.member.sessionData();
+            const notification = createNotification({
+                type: 'giftRedeem',
+                status: 'success',
+                autoHide: true,
+                closeable: true,
+                state,
+                message: getGiftRedemptionSuccessMessage({member})
+            });
+            removePortalLinkFromUrl();
+
+            return {
+                action: 'redeemGift:success',
+                member,
+                showPopup: false,
+                lastPage: null,
+                pageQuery: '',
+                popupNotification: null,
+                notification,
+                notificationSequence: notification.count
+            };
+        }
+
+        const integrityToken = await api.member.getIntegrityToken();
+        const redirectUrl = new URL(state?.site?.url || window.location.href);
+        redirectUrl.search = new URLSearchParams({
+            giftRedemption: 'true'
+        }).toString();
+        redirectUrl.hash = '';
+
+        const {otc_ref: otcRef, inboxLinks} = await api.member.sendMagicLink({
+            email: (email || '').trim(),
+            emailType: 'subscribe',
+            integrityToken,
+            includeOTC: true,
+            redirect: redirectUrl.href,
+            giftToken,
+            ...(name ? {name} : {})
+        });
+
+        return {
+            page: 'magiclink',
+            lastPage: 'gift',
+            ...(otcRef ? {otcRef} : {}),
+            inboxLinks,
+            pageData: {
+                ...(state.pageData || {}),
+                email: (email || '').trim(),
+                redirect: redirectUrl.href
+            }
+        };
+    } catch (e) {
+        const notification = createNotification({
+            type: 'giftRedeem',
+            status: 'error',
+            autoHide: false,
+            closeable: true,
+            state,
+            message: getGiftRedemptionErrorMessage(e)
+        });
+        removePortalLinkFromUrl();
+
+        return {
+            action: 'redeemGift:failed',
+            showPopup: false,
+            lastPage: null,
+            pageQuery: '',
+            popupNotification: null,
+            notification,
+            notificationSequence: notification.count
         };
     }
 }
@@ -150,7 +314,6 @@ async function checkoutPlan({data, state, api}) {
             }
         });
     } catch (e) {
-        const {t} = state;
         return {
             action: 'checkoutPlan:failed',
             popupNotification: createPopupNotification({
@@ -161,8 +324,43 @@ async function checkoutPlan({data, state, api}) {
     }
 }
 
+async function continueGiftSubscription({state, api}) {
+    try {
+        await api.member.continueGiftCheckout();
+    } catch (e) {
+        return {
+            action: 'continueGiftSubscription:failed',
+            popupNotification: createPopupNotification({
+                type: 'continueGiftSubscription:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: t('Failed to process checkout, please try again')
+            })
+        };
+    }
+}
+
+async function checkoutGift({data, state, api}) {
+    try {
+        const {tierId, cadence, email} = data;
+        await api.member.checkoutGift({
+            tierId,
+            cadence,
+            ...(email ? {email} : {})
+        });
+        return {
+            action: 'checkoutGift:success'
+        };
+    } catch (e) {
+        return {
+            action: 'checkoutGift:failed',
+            popupNotification: createPopupNotification({
+                type: 'checkoutGift:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: t('Failed to process checkout, please try again')
+            })
+        };
+    }
+}
+
 async function updateSubscription({data, state, api}) {
-    const {t} = state;
     try {
         const {plan, planId, subscriptionId, cancelAtPeriodEnd} = data;
         const {tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: planId});
@@ -208,10 +406,10 @@ async function cancelSubscription({data, state, api}) {
         return {
             action,
             page: 'accountHome',
-            member: member
+            member: member,
+            reloadOnPopupClose: true
         };
     } catch (e) {
-        const {t} = state;
         return {
             action: 'cancelSubscription:failed',
             popupNotification: createPopupNotification({
@@ -233,10 +431,10 @@ async function continueSubscription({data, state, api}) {
         return {
             action,
             page: 'accountHome',
-            member: member
+            member: member,
+            reloadOnPopupClose: true
         };
     } catch (e) {
-        const {t} = state;
         return {
             action: 'continueSubscription:failed',
             popupNotification: createPopupNotification({
@@ -247,16 +445,60 @@ async function continueSubscription({data, state, api}) {
     }
 }
 
+async function applyOffer({data, state, api}) {
+    try {
+        const {offerId, subscriptionId} = data;
+        await api.member.applyOffer({
+            offerId,
+            subscriptionId
+        });
+        const member = await api.member.sessionData();
+        const action = 'applyOffer:success';
+        return {
+            action,
+            page: 'accountHome',
+            member: member,
+            offers: [],
+            reloadOnPopupClose: true,
+            popupNotification: createPopupNotification({
+                type: 'applyOffer:success', autoHide: true, closeable: true, state, status: 'success',
+                message: 'Offer applied successfully!'
+            })
+        };
+    } catch (e) {
+        return {
+            action: 'applyOffer:failed',
+            popupNotification: createPopupNotification({
+                type: 'applyOffer:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: 'Failed to apply offer, please try again'
+            })
+        };
+    }
+}
+
 async function editBilling({data, state, api}) {
     try {
         await api.member.editBilling(data);
     } catch (e) {
-        const {t} = state;
         return {
             action: 'editBilling:failed',
             popupNotification: createPopupNotification({
                 type: 'editBilling:failed', autoHide: false, closeable: true, state, status: 'error',
                 message: t('Failed to update billing information, please try again')
+            })
+        };
+    }
+}
+
+async function manageBilling({data, state, api}) {
+    try {
+        await api.member.manageBilling(data);
+    } catch (e) {
+        return {
+            action: 'manageBilling:failed',
+            popupNotification: createPopupNotification({
+                type: 'manageBilling:failed', autoHide: false, closeable: true, state, status: 'error',
+                message: t('Failed to open billing portal, please try again')
             })
         };
     }
@@ -303,7 +545,6 @@ async function updateNewsletterPreference({data, state, api}) {
             member
         };
     } catch (e) {
-        const {t} = state;
         return {
             action: 'updateNewsletterPref:failed',
             popupNotification: createPopupNotification({
@@ -316,7 +557,6 @@ async function updateNewsletterPreference({data, state, api}) {
 }
 
 async function removeEmailFromSuppressionList({state, api}) {
-    const {t} = state;
     try {
         await api.member.deleteSuppression();
         const action = 'removeEmailFromSuppressionList:success';
@@ -340,7 +580,6 @@ async function removeEmailFromSuppressionList({state, api}) {
 }
 
 async function updateNewsletter({data, state, api}) {
-    const {t} = state;
     try {
         const {subscribed} = data;
         const member = await api.member.update({subscribed});
@@ -387,8 +626,9 @@ async function updateMemberEmail({data, state, api}) {
 }
 
 async function updateMemberData({data, state, api}) {
-    const {name} = data;
+    const name = data?.name?.trim();
     const originalName = getMemberName({member: state.member});
+
     if (originalName !== name) {
         try {
             const member = await api.member.update({name});
@@ -433,7 +673,6 @@ async function refreshMemberData({state, api}) {
 }
 
 async function updateProfile({data, state, api}) {
-    const {t} = state;
     const [dataUpdate, emailUpdate] = await Promise.all([updateMemberData({data, state, api}), updateMemberEmail({data, state, api})]);
     if (dataUpdate && emailUpdate) {
         if (emailUpdate.success) {
@@ -474,7 +713,7 @@ async function updateProfile({data, state, api}) {
         let message = '';
 
         if (emailUpdate.error) {
-            message = chooseBestErrorMessage(emailUpdate.error, t('Failed to send verification email'), t);
+            message = chooseBestErrorMessage(emailUpdate.error, t('Failed to send verification email'));
         } else {
             message = t('Check your inbox to verify email update');
         }
@@ -562,16 +801,23 @@ const Actions = {
     back,
     signout,
     signin,
+    startSigninOTCFromCustomForm,
+    verifyOTC,
     signup,
+    redeemGift,
     updateSubscription,
     cancelSubscription,
     continueSubscription,
+    applyOffer,
     updateNewsletter,
     updateProfile,
     refreshMemberData,
     clearPopupNotification,
     editBilling,
+    manageBilling,
     checkoutPlan,
+    continueGiftSubscription,
+    checkoutGift,
     updateNewsletterPreference,
     showPopupNotification,
     removeEmailFromSuppressionList,

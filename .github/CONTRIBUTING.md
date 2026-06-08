@@ -31,7 +31,9 @@ On your local repository, you should always work on a branch to make keeping up-
 
 We have a handful of simple standards for commit messages which help us to generate readable changelogs. Please follow this wherever possible and mention the associated issue number.
 
-- **1st line:** Max 80 character summary written in past tense
+- **1st line:** Max 80 character summary
+   - Written in past tense e.g. “Fixed the thing” not “Fixes the thing”
+   - Start with one of: Fixed, Changed, Updated, Improved, Added, Removed, Reverted, Moved, Released, Bumped, Cleaned
 - **2nd line:** [Always blank]
 - **3rd line:** `ref <issue link>`, `fixes <issue link>`, `closes <issue link>` or blank
 - **4th line:** Why this change was made - the code includes the what, the commit message should describe the context of why - why this, why now, why not something else?
@@ -60,7 +62,7 @@ There is no need to include what modules have changed in the commit message, as 
 
 ### Submitting Pull Requests
 
-We aim to merge any straightforward, well-understood bug fixes or improvements immediately, as long as they pass our tests (run `yarn test` to check locally). We generally don’t merge new features and larger changes without prior discussion with the core product team for tech/design specification.
+We aim to merge any straightforward, well-understood bug fixes or improvements immediately, as long as they pass our tests (run `pnpm test` to check locally). We generally don’t merge new features and larger changes without prior discussion with the core product team for tech/design specification.
 
 Please provide plenty of context and reasoning around your changes, to help us merge quickly. Closing an already open issue is our preferred workflow. If your PR gets out of date, we may ask you to rebase as you are more familiar with your changes than we will be.
 

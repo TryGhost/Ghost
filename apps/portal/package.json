@@ -1,11 +1,8 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.51.3",
+  "version": "2.68.56",
   "license": "MIT",
-  "repository": {
-    "type": "git",
-    "url": "git://github.com/TryGhost/Ghost.git"
-  },
+  "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
   "files": [
     "umd/",
@@ -17,23 +14,36 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "concurrently \"yarn preview -l silent\" \"yarn build:watch\"",
+    "dev": "concurrently --kill-others --names preview,build \"pnpm preview -l silent\" \"pnpm build:watch\"",
     "build": "vite build",
     "build:watch": "vite build --watch",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
-    "test:ci": "yarn test --coverage",
-    "test:unit": "yarn test:ci",
-    "lint": "eslint src --ext .js --cache",
-    "preship": "yarn lint",
+    "test:ci": "pnpm test --coverage",
+    "test:unit": "pnpm test:ci",
+    "lint:code": "eslint src test --ext .js,.ts --cache",
+    "lint:types": "tsc --noEmit",
+    "lint": "pnpm lint:code && pnpm lint:types",
+    "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "pnpm build"
   },
   "eslintConfig": {
     "env": {
-      "browser": true,
-      "jest": true
+      "browser": true
+    },
+    "globals": {
+      "vi": "readonly",
+      "describe": "readonly",
+      "it": "readonly",
+      "test": "readonly",
+      "expect": "readonly",
+      "beforeEach": "readonly",
+      "afterEach": "readonly",
+      "beforeAll": "readonly",
+      "afterAll": "readonly",
+      "require": "readonly"
     },
     "parserOptions": {
       "sourceType": "module",
@@ -50,13 +60,41 @@
       "i18next"
     ],
     "rules": {
-      "react/prop-types": "off"
+      "react/prop-types": "off",
+      "ghost/filenames/match-regex": [
+        "error",
+        "^[a-z0-9.-]+$",
+        false
+      ]
     },
     "settings": {
       "react": {
         "version": "detect"
       }
-    }
+    },
+    "overrides": [
+      {
+        "files": [
+          "*.ts",
+          "*.tsx"
+        ],
+        "parser": "@typescript-eslint/parser",
+        "parserOptions": {
+          "sourceType": "module",
+          "ecmaVersion": 2022,
+          "ecmaFeatures": {
+            "jsx": true
+          },
+          "project": "./tsconfig.json"
+        },
+        "extends": [
+          "plugin:@typescript-eslint/recommended"
+        ],
+        "plugins": [
+          "@typescript-eslint"
+        ]
+      }
+    ]
   },
   "browserslist": {
     "production": [
@@ -70,32 +108,36 @@
       "last 1 safari version"
     ]
   },
-  "jest": {
-    "coverageReporters": [
-      "cobertura",
-      "text-summary",
-      "html"
-    ]
-  },
   "devDependencies": {
-    "@babel/eslint-parser": "7.28.0",
-    "@doist/react-interpolate": "2.2.0",
-    "@sentry/react": "7.120.4",
-    "@testing-library/jest-dom": "5.17.0",
-    "@testing-library/react": "12.1.5",
-    "@tryghost/i18n": "0.0.0",
-    "@vitejs/plugin-react": "4.7.0",
-    "@vitest/coverage-v8": "1.6.1",
-    "@vitest/ui": "1.6.1",
-    "concurrently": "8.2.2",
-    "cross-fetch": "4.1.0",
-    "eslint-plugin-i18next": "6.1.1",
-    "jsdom": "24.1.3",
-    "react": "17.0.2",
-    "react-dom": "17.0.2",
-    "vite": "5.4.19",
+    "@doist/react-interpolate": "2.2.2",
+    "@sentry/react": "catalog:",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:react17",
+    "@testing-library/user-event": "14.6.1",
+    "@tryghost/i18n": "workspace:*",
+    "@typescript-eslint/eslint-plugin": "8.49.0",
+    "@typescript-eslint/parser": "catalog:",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "concurrently": "catalog:",
+    "cross-fetch": "catalog:",
+    "dompurify": "catalog:",
+    "eslint": "catalog:",
+    "eslint-plugin-i18next": "6.1.4",
+    "jsdom": "catalog:",
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17",
+    "vite": "catalog:",
     "vite-plugin-css-injected-by-js": "3.5.2",
-    "vite-plugin-svgr": "3.3.0",
-    "vitest": "1.6.1"
+    "vite-plugin-svgr": "catalog:",
+    "vitest": "catalog:"
+  },
+  "dependencies": {
+    "@tryghost/debug": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "i18n"
+    ]
   }
 }

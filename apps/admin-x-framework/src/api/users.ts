@@ -1,7 +1,7 @@
 import {InfiniteData} from '@tanstack/react-query';
 import {Meta, createInfiniteQuery, createMutation, createQueryWithId} from '../utils/api/hooks';
-import {deleteFromQueryCache, updateQueryCache} from '../utils/api/updateQueries';
-import {usersDataType} from './currentUser';
+import {deleteFromQueryCache, updateQueryCache} from '../utils/api/update-queries';
+import {usersDataType} from './current-user';
 import {UserRole} from './roles';
 
 // Types
@@ -41,6 +41,7 @@ export type User = {
     recommendation_notifications: boolean;
     milestone_notifications: boolean;
     donation_notifications: boolean;
+    gift_subscription_notifications: boolean;
     roles: UserRole[];
     url: string;
 }
@@ -48,6 +49,10 @@ export type User = {
 export interface UsersResponseType {
     meta?: Meta;
     users: User[];
+}
+
+export interface UpdateUserRequestBody {
+    users: Array<User>;
 }
 
 interface UpdatePasswordOptions {
@@ -166,6 +171,10 @@ export function isEditorUser(user: User) {
     return isAnyEditor;
 }
 
+export function isSuperEditorUser(user: User) {
+    return user.roles.some(role => role.name === 'Super Editor');
+}
+
 export function isAuthorUser(user: User) {
     return user.roles.some(role => role.name === 'Author');
 }
@@ -179,6 +188,16 @@ export function isAuthorOrContributor(user: User) {
 }
 
 export function canAccessSettings(user: User) {
+    return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
+}
+
+export function canManageMembers(user: User) {
+    // Owner, Admin, or Super Editor can manage members
+    return isOwnerUser(user) || isAdminUser(user) || isSuperEditorUser(user);
+}
+
+export function canManageTags(user: User) {
+    // Owner, Admin or Editor can manage tags
     return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
 }
 

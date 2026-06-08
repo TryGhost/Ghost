@@ -4,7 +4,7 @@
       "lib": ["DOM", "DOM.Iterable", "ESNext"],
       "module": "ESNext",
       "skipLibCheck": true,
-      "types": ["vite/client", "jest"],
+      "types": ["vite/client", "vitest/globals"],
 
       /* Bundler mode */
       "moduleResolution": "bundler",
@@ -16,6 +16,7 @@
       "strict": true,
       "noUnusedLocals": true,
       "noUnusedParameters": true,
+      "erasableSyntaxOnly": true,
       "noFallthroughCasesInSwitch": true
     },
     "include": ["src", "test"],

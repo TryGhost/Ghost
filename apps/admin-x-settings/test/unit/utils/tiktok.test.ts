@@ -1,5 +1,5 @@
 import * as assert from 'assert/strict';
-import {tiktokHandleToUrl, tiktokUrlToHandle, validateTikTokUrl} from '../../../src/utils/socialUrls/index';
+import {tiktokHandleToUrl, tiktokUrlToHandle, validateTikTokUrl} from '../../../src/utils/social-urls/index';
 
 describe('TikTok URL validation', () => {
     it('should return empty string when input is empty', () => {
@@ -13,6 +13,7 @@ describe('TikTok URL validation', () => {
         assert.equal(validateTikTokUrl('tiktok.com/@john_smith123'), 'https://www.tiktok.com/@john_smith123');
         assert.equal(validateTikTokUrl('@johnsmith'), 'https://www.tiktok.com/@johnsmith');
         assert.equal(validateTikTokUrl('johnsmith'), 'https://www.tiktok.com/@johnsmith');
+        assert.equal(validateTikTokUrl('_john_smith_'), 'https://www.tiktok.com/@_john_smith_');
     });
 
     it('should reject URLs from other domains', () => {
@@ -35,7 +36,7 @@ describe('TikTok handle to URL conversion', () => {
         assert.equal(tiktokHandleToUrl('johnsmith'), 'https://www.tiktok.com/@johnsmith');
         assert.equal(tiktokHandleToUrl('@johnsmith'), 'https://www.tiktok.com/@johnsmith');
         assert.equal(tiktokHandleToUrl('john.smith'), 'https://www.tiktok.com/@john.smith');
-        assert.equal(tiktokHandleToUrl('john_smith123'), 'https://www.tiktok.com/@john_smith123');
+        assert.equal(tiktokHandleToUrl('_john_smith123_'), 'https://www.tiktok.com/@_john_smith123_');
     });
 
     it('should reject invalid TikTok handles', () => {
@@ -52,7 +53,7 @@ describe('URL to TikTok handle extraction', () => {
     it('should extract TikTok handle from URL', () => {
         assert.equal(tiktokUrlToHandle('https://www.tiktok.com/@johnsmith'), '@johnsmith');
         assert.equal(tiktokUrlToHandle('https://www.tiktok.com/@john.smith'), '@john.smith');
-        assert.equal(tiktokUrlToHandle('tiktok.com/@john_smith123'), '@john_smith123');
+        assert.equal(tiktokUrlToHandle('tiktok.com/@_john_smith123_'), '@_john_smith123_');
         assert.equal(tiktokUrlToHandle('www.tiktok.com/@johnsmith'), '@johnsmith');
     });
 

@@ -46,7 +46,7 @@ export const getGrowthContentDescription = (selectedContentType: ContentType, ra
     case CONTENT_TYPES.POSTS_AND_PAGES:
         return `Which posts or pages drove the most growth ${getPeriodText(rangeValue)}`;
     case CONTENT_TYPES.SOURCES:
-        return `How readers found your site ${getPeriodText(rangeValue)}`;
+        return `Which sources drove the most growth ${getPeriodText(rangeValue)}`;
     default:
         return `Which posts drove the most growth ${getPeriodText(rangeValue)}`;
     }

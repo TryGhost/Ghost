@@ -1,5 +1,5 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse, waitForApiRequest} from '@tryghost/admin-x-framework/test/acceptance';
 
 // Helper functions to reduce mockApi boilerplate
 const createConfigWithFeatureFlags = (limits?: any) => ({
@@ -97,8 +97,9 @@ test.describe('Analytics settings', async () => {
 
         await section.getByRole('button', {name: 'Save'}).click();
 
-        const body = lastApiRequests.editSettings?.body as {settings: Array<{key: string, value: boolean}>} | undefined;
-        const actualSettings = body?.settings || [];
+        const editSettings = await waitForApiRequest(lastApiRequests, 'editSettings');
+        const body = editSettings.body as {settings: Array<{key: string, value: boolean}>};
+        const actualSettings = body.settings || [];
         const expectedSettings = [
             {key: 'web_analytics', value: false},
             {key: 'members_track_sources', value: false},
@@ -127,10 +128,50 @@ test.describe('Analytics settings', async () => {
 
         await section.getByRole('tab', {name: 'Export'}).click();
 
-        await section.getByRole('button', {name: 'Export post analytics'}).click();
+        await section.getByRole('button', {name: 'Post analytics'}).click();
 
-        const hasDownloadUrl = lastApiRequests.postsExport?.url?.includes('/posts/export/?limit=1000');
+        const postsExport = await waitForApiRequest(lastApiRequests, 'postsExport');
+        const hasDownloadUrl = postsExport.url?.includes('/posts/export/?limit=1000');
         expect(hasDownloadUrl).toBe(true);
+    });
+
+    test('Disables post analytics export button and shows loading state while downloading', async ({page}) => {
+        await mockApi({page, requests: createMockApiConfig({})});
+
+        let exportRequestCount = 0;
+        let resolveExportRequest: (() => void) | undefined;
+
+        await page.route(/\/ghost\/api\/admin\/posts\/export\/\?limit=1000$/, async (route) => {
+            exportRequestCount += 1;
+            await new Promise<void>((resolve) => {
+                resolveExportRequest = resolve;
+            });
+            await route.fulfill({
+                status: 200,
+                body: 'csv data',
+                headers: {
+                    'content-type': 'text/csv'
+                }
+            });
+        });
+
+        await page.goto('/');
+
+        const section = page.getByTestId('migrationtools');
+
+        await section.getByRole('tab', {name: 'Export'}).click();
+
+        const postAnalyticsButton = section.getByTestId('post-analytics-export-button');
+        await postAnalyticsButton.click();
+
+        await expect.poll(() => exportRequestCount).toBe(1);
+        await expect(postAnalyticsButton).toBeDisabled();
+        await expect(postAnalyticsButton).toContainText('Loading...');
+
+        resolveExportRequest?.();
+
+        await expect(postAnalyticsButton).toBeEnabled();
+        expect(exportRequestCount).toBe(1);
     });
 
     test('Supports read only settings', async ({page}) => {
@@ -211,7 +252,8 @@ test.describe('Analytics settings', async () => {
         await webAnalyticsToggle.uncheck();
         await section.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
+        const editSettings = await waitForApiRequest(lastApiRequests, 'editSettings');
+        expect(editSettings.body).toEqual({
             settings: [
                 {key: 'web_analytics', value: false}
             ]
@@ -270,7 +312,8 @@ test.describe('Analytics settings', async () => {
         await webAnalyticsToggle.check();
         await section.getByRole('button', {name: 'Save'}).click();
 
-        expect(lastApiRequests.editSettings?.body).toEqual({
+        const editSettings = await waitForApiRequest(lastApiRequests, 'editSettings');
+        expect(editSettings.body).toEqual({
             settings: [
                 {key: 'web_analytics', value: true}
             ]

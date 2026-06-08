@@ -32,16 +32,16 @@ module.exports = {
         };
     },
 
-    readToken(model, apiConfig, frame) {
-        debug('readToken');
+    readStaffToken(model, apiConfig, frame) {
+        debug('readStaffToken');
 
         frame.response = {
             apiKey: model.toJSON(frame.options)
         };
     },
 
-    regenerateToken(model, apiConfig, frame) {
-        debug('regenerateToken');
+    regenerateStaffToken(model, apiConfig, frame) {
+        debug('regenerateStaffToken');
 
         frame.response = {
             apiKey: model.toJSON(frame.options)

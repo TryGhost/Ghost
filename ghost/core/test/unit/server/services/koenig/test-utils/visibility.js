@@ -1,5 +1,5 @@
 const ALL_MEMBERS_SEGMENT = 'status:free,status:-free';
-const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped
+const PAID_MEMBERS_SEGMENT = 'status:-free'; // paid + comped + gift
 const FREE_MEMBERS_SEGMENT = 'status:free';
 const NO_MEMBERS_SEGMENT = '';
 

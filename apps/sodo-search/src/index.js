@@ -1,7 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
-import App from './App';
+import App from './app';
 
 const ROOT_DIV_ID = 'sodo-search-root';
 

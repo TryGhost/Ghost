@@ -6,6 +6,9 @@ const {socialUrls} = require('../services/proxy');
 const {localUtils} = require('../services/handlebars');
 
 // We use the name twitter_url to match the helper for consistency:
+/**
+ * @deprecated Use {{social_url type="twitter"}} instead.
+ */
 module.exports = function twitter_url(username, options) { // eslint-disable-line camelcase
     if (!options) {
         options = username;

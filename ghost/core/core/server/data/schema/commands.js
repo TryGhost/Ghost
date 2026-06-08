@@ -96,8 +96,10 @@ function dropNullable(tableName, column, transaction = db.knex) {
  * @param {string} column
  * @param {import('knex').Knex.Transaction} [transaction]
  * @param {object} columnSpec
+  * @param {object} [options]
+ * @param {'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
  */
-async function addColumn(tableName, column, transaction = db.knex, columnSpec) {
+async function addColumn(tableName, column, transaction = db.knex, columnSpec, options = {}) {
     const addColumnBuilder = transaction.schema.table(tableName, function (table) {
         addTableColumn(tableName, table, column, columnSpec);
     });
@@ -114,7 +116,12 @@ async function addColumn(tableName, column, transaction = db.knex, columnSpec) {
 
         if (DatabaseInfo.isMySQL(transaction)) {
             // Guard against an ending semicolon
-            sql = sql.replace(/;\s*$/, '') + ', algorithm=copy';
+            sql = sql.replace(/;\s*$/, '');
+            if (options?.algorithm !== 'auto') {
+                // default to copy if not specified
+                const algorithm = options?.algorithm || 'copy';
+                sql += `, algorithm=${algorithm}`;
+            }
         }
 
         await transaction.raw(sql);
@@ -126,8 +133,10 @@ async function addColumn(tableName, column, transaction = db.knex, columnSpec) {
  * @param {string} column
  * @param {import('knex').Knex} [transaction]
  * @param {object} [columnSpec]
+ * @param {object} [options]
+ * @param {'inplace'|'copy'|'auto'} [options.algorithm] - MySQL only
  */
-async function dropColumn(tableName, column, transaction = db.knex, columnSpec = {}) {
+async function dropColumn(tableName, column, transaction = db.knex, columnSpec = {}, options = {}) {
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'references')) {
         const [toTable, toColumn] = columnSpec.references.split('.');
         await dropForeign({fromTable: tableName, fromColumn: column, toTable, toColumn, constraintName: columnSpec.constraintName, transaction});
@@ -149,7 +158,12 @@ async function dropColumn(tableName, column, transaction = db.knex, columnSpec =
 
         if (DatabaseInfo.isMySQL(transaction)) {
             // Guard against an ending semicolon
-            sql = sql.replace(/;\s*$/, '') + ', algorithm=copy';
+            sql = sql.replace(/;\s*$/, '');
+            if (options?.algorithm !== 'auto') {
+                // default to copy if not specified
+                const algorithm = options?.algorithm || 'copy';
+                sql += `, algorithm=${algorithm}`;
+            }
         }
 
         await transaction.raw(sql);
@@ -316,8 +330,8 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
  * @param {string} configuration.toTable - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
  * @param {string} [configuration.constraintName] - name of the FK to create
- * @param {Boolean} [configuration.cascadeDelete] - adds the "on delete cascade" option if true
- * @param {Boolean} [configuration.setNullDelete] - adds the "on delete SET NULL" option if true
+ * @param {boolean} [configuration.cascadeDelete] - adds the "on delete cascade" option if true
+ * @param {boolean} [configuration.setNullDelete] - adds the "on delete SET NULL" option if true
  * @param {import('knex').Knex} [configuration.transaction] - connection object containing knex reference
  */
 async function addForeign({fromTable, fromColumn, toTable, toColumn, constraintName, cascadeDelete = false, setNullDelete = false, transaction = db.knex}) {
@@ -473,7 +487,7 @@ async function addPrimaryKey(tableName, columns, transaction = db.knex) {
  * NOTE: this function does NOT check if the table already exists - use the migration
  * utils if you want that
  *
- * @param {String} table - name of the table to create
+ * @param {string} table - name of the table to create
  * @param {import('knex').Knex} [transaction] - connection to the DB
  * @param {Object} [tableSpec] - table schema to generate table with
  */
@@ -561,7 +575,8 @@ function createColumnMigration(...migrations) {
             dbIsInCorrectState,
             operation,
             operationVerb,
-            columnDefinition
+            columnDefinition,
+            options
         } = migration;
 
         const hasColumn = await conn.schema.hasColumn(table, column);
@@ -571,7 +586,7 @@ function createColumnMigration(...migrations) {
             logging.warn(`${operationVerb} ${table}.${column} column - skipping as table is correct`);
         } else {
             logging.info(`${operationVerb} ${table}.${column} column`);
-            await operation(table, column, conn, columnDefinition);
+            await operation(table, column, conn, columnDefinition, options);
         }
     }
 

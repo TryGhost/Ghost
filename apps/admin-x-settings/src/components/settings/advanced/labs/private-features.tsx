@@ -1,0 +1,116 @@
+import FeatureToggle from './feature-toggle';
+import LabItem from './lab-item';
+import React, {useEffect, useState} from 'react';
+import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
+import {List} from '@tryghost/admin-x-design-system';
+
+type Feature = {
+    title: string;
+    description: string;
+    flag: string;
+    limitName?: string;
+};
+
+const features: Feature[] = [{
+    title: 'Automations',
+    description: 'Enable automations management interface.',
+    flag: 'automations'
+}, {
+    title: 'Stripe Automatic Tax (private beta)',
+    description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
+    flag: 'stripeAutomaticTax'
+}, {
+    title: 'Email customization (internal beta)',
+    description: 'Newsletter customization settings that have been released to Ghost\'s own production sites',
+    flag: 'emailCustomization'
+}, {
+    title: 'Import Member Tier',
+    description: 'Enables tier to be specified when importing members',
+    flag: 'importMemberTier'
+}, {
+    title: 'Admin UI Refresh',
+    description: 'Enable Admin UI refresh (exploration)',
+    flag: 'adminUIRefresh'
+}, {
+    title: 'Explore',
+    description: 'Enables keeping in touch with the new Explore API',
+    flag: 'explore'
+}, {
+    title: 'Tags X',
+    description: 'Enables the new Tags UI',
+    flag: 'tagsX'
+}, {
+    title: 'Email Unique ID',
+    description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
+    flag: 'emailUniqueid'
+}, {
+    title: 'Updated theme translation (beta)',
+    description: 'Enable theme translation using i18next instead of the old translation package.',
+    flag: 'themeTranslation'
+}, {
+    title: 'IndexNow',
+    description: 'Automatically notify search engines when content is published or updated for faster indexing.',
+    flag: 'indexnow'
+}, {
+    title: 'Featurebase Feedback',
+    description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
+    flag: 'featurebaseFeedback'
+}, {
+    title: 'Picture Element',
+    description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
+    flag: 'pictureImageFormats'
+}, {
+    title: 'Smarter Counts',
+    description: 'Use optimized COUNT queries for API pagination when safe',
+    flag: 'smarterCounts'
+}, {
+    title: 'LLMs.txt',
+    description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
+    flag: 'llmsTxt'
+}, {
+    title: 'Get helper deduplication',
+    description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
+    flag: 'getHelperDeduplication'
+}];
+
+const AlphaFeatures: React.FC = () => {
+    const limiter = useLimiter();
+    const [allowedFeatures, setAllowedFeatures] = useState<Feature[]>([]);
+
+    useEffect(() => {
+        const filterFeatures = async () => {
+            const filtered = [];
+            // Remove all features that are limited according to the subscribed plan (given these are beta, is optional to use)
+            for (const feature of features) {
+                if (feature.limitName && limiter?.isLimited(feature.limitName)) {
+                    try {
+                        await limiter.errorIfWouldGoOverLimit(feature.limitName);
+                        filtered.push(feature);
+                    } catch (error) {
+                        if (!(error instanceof HostLimitError)) {
+                            filtered.push(feature);
+                        }
+                    }
+                } else {
+                    filtered.push(feature);
+                }
+            }
+            setAllowedFeatures(filtered);
+        };
+        filterFeatures();
+    }, [limiter]);
+
+    return (
+        <List titleSeparator={false}>
+            {allowedFeatures.map(feature => (
+                <LabItem
+                    key={feature.flag}
+                    action={<FeatureToggle flag={feature.flag} label={feature.title} />}
+                    detail={feature.description}
+                    title={feature.title} />
+            ))}
+        </List>
+    );
+};
+
+export default AlphaFeatures;

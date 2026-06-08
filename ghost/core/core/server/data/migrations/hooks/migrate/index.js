@@ -1,4 +1,4 @@
 exports.before = require('./before');
-exports.beforeEach = require('./beforeEach');
-exports.afterEach = require('./afterEach');
+exports.beforeEach = require('./before-each');
+exports.afterEach = require('./after-each');
 exports.shutdown = require('./shutdown');

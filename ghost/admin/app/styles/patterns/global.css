@@ -181,8 +181,8 @@
     --errorbg-lightred: rgba(240, 82, 48, 0.05);
 
     /* Global layout values */
-    --main-layout-content-sidepadding: 32px;
-    --main-layout-content-maxwidth: 1480px;
+    --main-layout-content-sidepadding: 24px;
+    --main-layout-content-maxwidth: 1200px;
     --main-layout-vpanel-height: 96px;
     --main-layout-section-vpadding: 3vw;
 
@@ -629,11 +629,22 @@ input[type="image"] {
     position: relative;
 }
 
+
 .show {
+    display: block;
+}
+.gh-app .show {
     display: block !important;
 }
 
 .hidden {
+    display: none;
+}
+.gh-app .hidden,
+.ember-basic-dropdown-wormhole .hidden,
+.ember-modal-wormhole .hidden,
+.liquid-destination .hidden,
+.gh-btn .hidden {
     visibility: hidden !important;
     display: none !important;
 }

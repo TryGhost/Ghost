@@ -1,4 +1,4 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`Settings API Browse Can request all settings 1: [body] 1`] = `
 Object {
@@ -57,12 +57,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"Home\\",\\"url\\":\\"/\\"},{\\"label\\":\\"About\\",\\"url\\":\\"/about/\\"},{\\"label\\":\\"Collection\\",\\"url\\":\\"/tag/getting-started/\\"},{\\"label\\":\\"Author\\",\\"url\\":\\"/author/ghost/\\"},{\\"label\\":\\"Portal\\",\\"url\\":\\"/portal/\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -127,6 +159,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "noreply",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -282,7 +318,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -323,6 +359,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -503,12 +563,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -864,12 +956,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -934,6 +1058,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "noreply",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -1089,7 +1217,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -1130,6 +1258,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -1254,12 +1406,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -1324,6 +1508,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "support@example.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -1479,7 +1667,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -1520,6 +1708,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -1591,7 +1803,7 @@ exports[`Settings API Edit can edit Stripe settings when Stripe Connect limit is
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "4753",
+  "content-length": "5431",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1689,12 +1901,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -1759,6 +2003,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "noreply",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -1914,7 +2162,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -1955,6 +2203,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -2078,12 +2350,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -2148,6 +2452,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "support@example.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -2303,7 +2611,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -2344,6 +2652,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -2472,12 +2804,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -2922,12 +3286,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -2992,6 +3388,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "noreply",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -3147,7 +3547,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -3188,6 +3588,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -3312,12 +3736,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -3382,6 +3838,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -3537,7 +3997,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -3578,6 +4038,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -3702,12 +4186,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -3772,6 +4288,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "support@sendingdomain.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -3927,7 +4447,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -3968,6 +4488,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -4096,12 +4640,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -4166,6 +4742,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -4321,7 +4901,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -4362,6 +4942,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -4485,12 +5089,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -4555,6 +5191,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -4710,7 +5350,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -4751,6 +5391,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -4879,12 +5543,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -4949,6 +5645,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "support@example.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -5104,7 +5804,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -5145,6 +5845,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -5272,12 +5996,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -5629,12 +6385,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -5699,6 +6487,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "support@customdomain.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -5854,7 +6646,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -5895,6 +6687,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -6019,12 +6835,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -6089,6 +6937,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -6244,7 +7096,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -6285,6 +7137,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -6409,12 +7285,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -6479,6 +7387,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -6635,7 +7547,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -6676,6 +7588,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -6800,12 +7736,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -6870,6 +7838,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "default@email.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -7026,7 +7998,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -7067,6 +8039,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
@@ -7152,6 +8148,42 @@ Object {
   "location": "http://127.0.0.1:2369/ghost/#/settings/members/?supportAddressUpdate=success",
   "vary": "Origin, Accept, Accept-Encoding",
   "x-powered-by": "Express",
+}
+`;
+
+exports[`Settings API publicSiteAccess limit rejects external attempts to change the access code 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Site visibility and access code cannot be changed.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Permission error, cannot edit setting.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
+exports[`Settings API publicSiteAccess limit rejects external attempts to set is_private = false 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Site visibility and access code cannot be changed.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Permission error, cannot edit setting.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
 }
 `;
 
@@ -7254,12 +8286,44 @@ Object {
       "value": "@ghost",
     },
     Object {
+      "key": "threads",
+      "value": null,
+    },
+    Object {
+      "key": "bluesky",
+      "value": null,
+    },
+    Object {
+      "key": "mastodon",
+      "value": null,
+    },
+    Object {
+      "key": "tiktok",
+      "value": null,
+    },
+    Object {
+      "key": "youtube",
+      "value": null,
+    },
+    Object {
+      "key": "instagram",
+      "value": null,
+    },
+    Object {
+      "key": "linkedin",
+      "value": null,
+    },
+    Object {
       "key": "navigation",
       "value": "[{\\"label\\":\\"label1\\"}]",
     },
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -7324,6 +8388,10 @@ Object {
     Object {
       "key": "members_support_address",
       "value": "support@example.com",
+    },
+    Object {
+      "key": "stripe_billing_portal_configuration_id",
+      "value": null,
     },
     Object {
       "key": "stripe_secret_key",
@@ -7479,7 +8547,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -7520,6 +8588,30 @@ Object {
     Object {
       "key": "explore_ping_growth",
       "value": false,
+    },
+    Object {
+      "key": "transistor",
+      "value": false,
+    },
+    Object {
+      "key": "transistor_portal_enabled",
+      "value": true,
+    },
+    Object {
+      "key": "transistor_portal_heading",
+      "value": "Podcasts",
+    },
+    Object {
+      "key": "transistor_portal_description",
+      "value": "Access your private podcast feed",
+    },
+    Object {
+      "key": "transistor_portal_button_text",
+      "value": "View",
+    },
+    Object {
+      "key": "transistor_portal_url_template",
+      "value": "https://partner.transistor.fm/ghost/{memberUuid}",
     },
     Object {
       "key": "members_enabled",
