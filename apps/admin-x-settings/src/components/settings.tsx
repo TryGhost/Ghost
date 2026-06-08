@@ -1,8 +1,8 @@
 import React from 'react';
 
 import AdvancedSettings from './settings/advanced/advanced-settings';
-import Emails from './settings/email/emails';
 import EmailSettings from './settings/email/email-settings';
+import Emails from './settings/email/emails';
 import GeneralSettings from './settings/general/general-settings';
 import GrowthSettings from './settings/growth/growth-settings';
 import MembershipSettings from './settings/membership/membership-settings';
