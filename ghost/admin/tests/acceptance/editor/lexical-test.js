@@ -51,11 +51,13 @@ describe('Acceptance: Lexical editor', function () {
             const post = this.server.create('post', {lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"This is a test","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}'});
             await visit(`/editor/post/${post.id}`);
             await waitFor('[data-secondary-instance="false"] [data-lexical-editor] p');
-            const initialFontSize = parseFloat(window.getComputedStyle(find('[data-secondary-instance="false"] [data-lexical-editor] p')).fontSize);
+            const initialParagraphStyles = window.getComputedStyle(find('[data-secondary-instance="false"] [data-lexical-editor] p'));
+            const initialFontSize = parseFloat(initialParagraphStyles.fontSize);
 
             expect(find('[data-test-editor-typography-trigger]'), 'typography trigger').to.exist;
             expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-sans'), 'default font class').to.be.true;
             expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-size-2'), 'default size class').to.be.true;
+            expect(parseFloat(initialParagraphStyles.letterSpacing), 'computed sans paragraph letter spacing').to.be.closeTo(initialFontSize * -0.022, 0.01);
 
             await click('[data-test-editor-typography-trigger]');
             await click('[data-test-editor-font-style="serif"]');
@@ -65,7 +67,10 @@ describe('Acceptance: Lexical editor', function () {
             expect(localStorage.getItem(editorTypographyStorageKeys.fontSize), 'stored font size').to.equal('3');
             expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-serif'), 'updated font class').to.be.true;
             expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-size-3'), 'updated size class').to.be.true;
-            expect(parseFloat(window.getComputedStyle(find('[data-secondary-instance="false"] [data-lexical-editor] p')).fontSize), 'computed paragraph font size').to.be.greaterThan(initialFontSize);
+            const paragraphStyles = window.getComputedStyle(find('[data-secondary-instance="false"] [data-lexical-editor] p'));
+            const paragraphFontSize = parseFloat(paragraphStyles.fontSize);
+
+            expect(paragraphFontSize, 'computed paragraph font size').to.be.greaterThan(initialFontSize);
         });
 
         it('can leave editor without unsaved changes modal', async function () {

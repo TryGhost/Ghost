@@ -387,10 +387,6 @@
     border: 0;
     background: transparent;
     color: var(--midgrey);
-    font-family: Georgia, Times, serif;
-    font-size: 1.4rem;
-    font-weight: 700;
-    line-height: 1;
     cursor: pointer;
 }
 
@@ -399,9 +395,9 @@
     color: var(--darkgrey);
 }
 
-.gh-editor-typography-trigger span {
-    display: block;
-    transform: translateY(-1px);
+.gh-editor-typography-trigger svg {
+    width: 18px;
+    height: 18px;
 }
 
 .gh-editor-typography-popover {
@@ -563,19 +559,34 @@
 /* Experimental editor typography customizer. This intentionally lives in Admin
    for the localStorage spike; release-quality hooks should move into Koenig. */
 .gh-editor-typography-customized.gh-editor-font-sans .koenig-react-editor .kg-prose :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
     p,
     blockquote,
     aside,
+    li,
     ul,
     ol
 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
     font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
+    letter-spacing: -0.022em !important;
 }
 
 .gh-editor-typography-customized.gh-editor-font-serif .koenig-react-editor .kg-prose :where(
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6,
     p,
     blockquote,
     aside,
+    li,
     ul,
     ol
 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
@@ -584,6 +595,7 @@
 
 .gh-editor-typography-customized.gh-editor-font-sans .koenig-react-editor .pointer-events-none {
     font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
+    letter-spacing: -0.022em !important;
 }
 
 .gh-editor-typography-customized.gh-editor-font-serif .koenig-react-editor .pointer-events-none {
