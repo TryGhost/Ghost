@@ -10,6 +10,7 @@ const JOB_PATH = path.resolve(__dirname, '../../../core/server/services/update-c
 
 describe('Run Update Check', function () {
     let mockUpdateServer;
+    let previousMailTransport;
 
     before(testUtils.setup('default'));
 
@@ -21,6 +22,12 @@ describe('Run Update Check', function () {
         await models.Settings.edit({key: 'notifications', value: '[]'}, {context: {internal: true}});
         // Remove the job so the next test can re-register it
         await jobService.removeJob(JOB_NAME).catch(() => {});
+        if (previousMailTransport === undefined) {
+            delete process.env.mail__transport;
+        } else {
+            process.env.mail__transport = previousMailTransport;
+            previousMailTransport = undefined;
+        }
     });
 
     it('successfully executes the update checker', async function () {
@@ -58,6 +65,23 @@ describe('Run Update Check', function () {
     });
 
     it('stores an alert-type custom notification end-to-end', async function () {
+        // Default fixtures leave the Owner inactive, so the alert branch's
+        // users.browse returns no recipients and the email send returns
+        // early without exercising the mailer pipeline. Activate the Owner
+        // so the worker actually drives the full notificationEmailService
+        // path that production hits.
+        const owner = await models.User.findOne(
+            {email: 'ghost@example.com'},
+            {context: {internal: true}, withRelated: ['roles']}
+        );
+        await owner.save({status: 'active'}, {patch: true, context: {internal: true}});
+
+        // Worker threads inherit process.env, so this routes the worker's
+        // GhostMailer to nodemailer-stub-transport. Without it the worker
+        // hits the default SMTP transport and ECONNREFUSEs on localhost:587.
+        previousMailTransport = process.env.mail__transport;
+        process.env.mail__transport = 'stub';
+
         mockUpdateServer = http.createServer((req, res) => {
             res.writeHead(200, {'Content-Type': 'application/json'});
             res.end(JSON.stringify({
