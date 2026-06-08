@@ -3,10 +3,12 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const nock = require('nock');
 const rewire = require('rewire');
+const errors = require('@tryghost/errors');
 const testUtils = require('../../../utils');
 const indexnow = rewire('../../../../core/server/services/indexnow');
 const events = require('../../../../core/server/lib/common/events');
 const settingsCache = require('../../../../core/shared/settings-cache');
+const config = require('../../../../core/shared/config');
 const labs = require('../../../../core/shared/labs');
 const logging = require('@tryghost/logging');
 const urlService = require('../../../../core/server/services/url');
@@ -16,16 +18,19 @@ describe('IndexNow', function () {
     let loggingStub;
     let settingsCacheStub;
     let labsStub;
+    let privacyDisabledStub;
 
     beforeEach(function () {
         eventStub = sinon.stub(events, 'on');
         settingsCacheStub = sinon.stub(settingsCache, 'get');
         labsStub = sinon.stub(labs, 'isSet');
+        privacyDisabledStub = sinon.stub(config, 'isPrivacyDisabled');
 
-        // Default: IndexNow enabled, site not private, API key set
+        // Default: IndexNow enabled, site not private, API key set, privacy not disabled
         labsStub.withArgs('indexnow').returns(true);
         settingsCacheStub.withArgs('is_private').returns(false);
         settingsCacheStub.withArgs('indexnow_api_key').returns('a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4');
+        privacyDisabledStub.withArgs('useIndexNow').returns(false);
     });
 
     afterEach(function () {
@@ -327,6 +332,19 @@ describe('IndexNow', function () {
             assert.equal(pingRequest.isDone(), false);
         });
 
+        it('when privacy.useIndexNow is disabled should not execute ping', async function () {
+            privacyDisabledStub.withArgs('useIndexNow').returns(true);
+
+            const pingRequest = nock('https://api.indexnow.org')
+                .get(/\/indexnow/)
+                .reply(200);
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await ping(testPost);
+
+            assert.equal(pingRequest.isDone(), false);
+        });
+
         it('when site is private should not execute ping', async function () {
             settingsCacheStub.withArgs('is_private').returns(true);
 
@@ -434,6 +452,81 @@ describe('IndexNow', function () {
             sinon.assert.calledOnce(loggingStub);
             assert.equal(loggingStub.args[0][0].event.name, 'indexnow.ping_failed');
             assert.equal(loggingStub.args[0][0].http.response.status_code, 204);
+        });
+    });
+
+    describe('ping() error classification (got HTTPError shape)', function () {
+        const ping = indexnow.__get__('ping');
+        let resetIndexNow;
+
+        beforeEach(function () {
+            sinon.stub(urlService.facade, 'getUrlForResource').returns('https://example.com/my-post/');
+            loggingStub = sinon.stub(logging, 'warn');
+        });
+
+        afterEach(function () {
+            if (resetIndexNow) {
+                resetIndexNow();
+                resetIndexNow = null;
+            }
+        });
+
+        function makeHttpError(statusCode) {
+            const err = new Error(`Response code ${statusCode}`);
+            err.name = 'HTTPError';
+            err.code = 'ERR_NON_2XX_3XX_RESPONSE';
+            err.response = {statusCode};
+            return err;
+        }
+
+        async function pingWithHttpError(statusCode) {
+            resetIndexNow = indexnow.__set__('request', sinon.stub().rejects(makeHttpError(statusCode)));
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            await ping(testPost);
+        }
+
+        it('classifies a 429 (status on err.response.statusCode) as rate_limited', async function () {
+            await pingWithHttpError(429);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.rate_limited');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 429);
+        });
+
+        it('classifies a 422 (status on err.response.statusCode) as key_validation_failed', async function () {
+            await pingWithHttpError(422);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.key_validation_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 422);
+        });
+
+        it('classifies a 403 (key not valid) as key_validation_failed', async function () {
+            await pingWithHttpError(403);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.key_validation_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 403);
+        });
+
+        it('classifies other 5xx errors (status on err.response.statusCode) as ping_failed', async function () {
+            await pingWithHttpError(503);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.ping_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 503);
+        });
+
+        it('still classifies a GhostError carrying err.statusCode (manual throw) correctly', async function () {
+            const err = new errors.TooManyRequestsError({message: 'manual', statusCode: 429});
+            resetIndexNow = indexnow.__set__('request', sinon.stub().rejects(err));
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await ping(testPost);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.rate_limited');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 429);
         });
     });
 
