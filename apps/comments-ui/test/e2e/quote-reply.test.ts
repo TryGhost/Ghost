@@ -1,13 +1,11 @@
 import {Locator, expect, test} from '@playwright/test';
-import {MOCKED_SITE_URL, MockedApi, initialize, mockAdminAuthFrame, selectText, waitEditorFocused} from '../utils/e2e';
+import {MockedApi, initialize, selectText, waitEditorFocused} from '../utils/e2e';
 import {buildReply} from '../utils/fixtures';
 
-const admin = MOCKED_SITE_URL + '/ghost/';
-
-async function selectElementContents(locator: Locator) {
+async function selectElement(locator: Locator) {
     await locator.evaluate((element) => {
         const range = element.ownerDocument.createRange();
-        range.selectNodeContents(element);
+        range.selectNode(element);
 
         const selection = element.ownerDocument.getSelection();
         selection?.removeAllRanges();
@@ -154,7 +152,7 @@ test.describe('Quote replies', async () => {
         });
 
         const comment = frame.getByTestId('comment-component').nth(0);
-        await selectElementContents(comment.getByTestId('comment-content').locator('a'));
+        await selectElement(comment.getByTestId('comment-content').locator('a'));
         await frame.getByTestId('quote-reply-button').click();
 
         const replyForm = frame.getByTestId('reply-form');
@@ -198,23 +196,24 @@ test.describe('Quote replies', async () => {
     });
 
     test('does not show the quote action when the reply action is hidden', async ({page}) => {
-        mockedApi.addComment({
-            html: '<p>Hidden comment text</p>',
-            status: 'hidden'
+        mockedApi.setMember({
+            name: 'Disabled Member',
+            can_comment: false
         });
-        await mockAdminAuthFrame({page, admin});
+        mockedApi.addComment({
+            html: '<p>Visible comment text</p>'
+        });
 
         const {frame} = await initialize({
             mockedApi,
             page,
-            publication: 'Publisher Weekly',
-            admin
+            publication: 'Publisher Weekly'
         });
 
-        const hiddenComment = frame.getByTestId('comment-component').filter({hasText: 'Hidden comment text'});
-        await expect(hiddenComment.getByTestId('reply-button')).toHaveCount(0);
+        const comment = frame.getByTestId('comment-component').filter({hasText: 'Visible comment text'});
+        await expect(comment.getByTestId('reply-button')).toHaveCount(0);
 
-        await selectText(hiddenComment.getByTestId('comment-content'), /Hidden comment/);
+        await selectText(comment.getByTestId('comment-content'), /Visible comment/);
         await expect(frame.getByTestId('quote-reply-button')).toHaveCount(0);
     });
 
