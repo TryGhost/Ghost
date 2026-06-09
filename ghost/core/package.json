@@ -278,7 +278,7 @@
     "c8": "catalog:",
     "chai": "catalog:",
     "cli-progress": "3.12.0",
-    "cssnano": "7.1.1",
+    "cssnano": "7.1.9",
     "esbuild": "0.28.0",
     "eslint": "catalog:",
     "expect": "29.7.0",
