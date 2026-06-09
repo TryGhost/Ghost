@@ -56,17 +56,17 @@ describe('Acceptance: Lexical editor', function () {
 
             expect(find('[data-test-editor-typography-trigger]'), 'typography trigger').to.exist;
             expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-sans'), 'default font class').to.be.true;
-            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-size-2'), 'default size class').to.be.true;
+            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-size-medium'), 'default size class').to.be.true;
             expect(parseFloat(initialParagraphStyles.letterSpacing), 'computed sans paragraph letter spacing').to.be.closeTo(initialFontSize * -0.022, 0.01);
 
             await click('[data-test-editor-typography-trigger]');
             await click('[data-test-editor-font-style="serif"]');
-            await click('[data-test-editor-font-size-increase]');
+            await click('[data-test-editor-font-size="large"]');
 
             expect(localStorage.getItem(editorTypographyStorageKeys.fontStyle), 'stored font style').to.equal('serif');
-            expect(localStorage.getItem(editorTypographyStorageKeys.fontSize), 'stored font size').to.equal('3');
+            expect(localStorage.getItem(editorTypographyStorageKeys.fontSize), 'stored font size').to.equal('large');
             expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-serif'), 'updated font class').to.be.true;
-            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-size-3'), 'updated size class').to.be.true;
+            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-size-large'), 'updated size class').to.be.true;
             const paragraphStyles = window.getComputedStyle(find('[data-secondary-instance="false"] [data-lexical-editor] p'));
             const paragraphFontSize = parseFloat(paragraphStyles.fontSize);
 

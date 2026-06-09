@@ -427,9 +427,7 @@
     margin-top: 12px;
 }
 
-.gh-editor-typography-font,
-.gh-editor-typography-size-button,
-.gh-editor-typography-size-reset {
+.gh-editor-typography-font {
     display: flex;
     align-items: center;
     justify-content: center;
@@ -441,9 +439,7 @@
     cursor: pointer;
 }
 
-.gh-editor-typography-font:hover,
-.gh-editor-typography-size-button:hover,
-.gh-editor-typography-size-reset:hover {
+.gh-editor-typography-font:hover {
     background: var(--whitegrey-d1);
 }
 
@@ -473,20 +469,24 @@
 
 .gh-editor-typography-size-controls > * {
     flex: 1;
-    height: 32px;
 }
 
-.gh-editor-typography-size-button span,
-.gh-editor-typography-size-reset span {
-    padding: 0;
-    height: auto;
-    font-size: 1.6rem;
+.gh-editor-typography-size-option {
+    height: 44px;
+}
+
+.gh-editor-typography-size-sample {
+    font-size: 1.5rem;
+    font-weight: 700;
     line-height: 1;
 }
 
-.gh-editor-typography-size-button:disabled {
-    opacity: 0.4;
-    cursor: default;
+.gh-editor-typography-size-sample-small {
+    font-size: 1.3rem;
+}
+
+.gh-editor-typography-size-sample-large {
+    font-size: 1.8rem;
 }
 
 .gh-editor-wordcount-container svg {
@@ -601,70 +601,48 @@
     font-family: Georgia, Times, serif;
 }
 
-.gh-editor-typography-customized.gh-editor-font-size-0 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
+.gh-editor-typography-customized.gh-editor-font-size-small .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
     p,
     blockquote,
     aside,
     ul,
     ol
 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
-.gh-editor-typography-customized.gh-editor-font-size-0 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
-    font-size: 1.6rem !important;
-}
-
-.gh-editor-typography-customized.gh-editor-font-size-1 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
-    p,
-    blockquote,
-    aside,
-    ul,
-    ol
-):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
-.gh-editor-typography-customized.gh-editor-font-size-1 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
+.gh-editor-typography-customized.gh-editor-font-size-small .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
     font-size: 1.8rem !important;
 }
 
-.gh-editor-typography-customized.gh-editor-font-size-2 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
+.gh-editor-typography-customized.gh-editor-font-size-medium .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
     p,
     blockquote,
     aside,
     ul,
     ol
 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
-.gh-editor-typography-customized.gh-editor-font-size-2 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
+.gh-editor-typography-customized.gh-editor-font-size-medium .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
     font-size: 2rem !important;
 }
 
-.gh-editor-typography-customized.gh-editor-font-sans.gh-editor-font-size-2 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
+.gh-editor-typography-customized.gh-editor-font-sans.gh-editor-font-size-medium .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
     p,
     blockquote,
     aside,
     ul,
     ol
 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
-.gh-editor-typography-customized.gh-editor-font-sans.gh-editor-font-size-2 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
+.gh-editor-typography-customized.gh-editor-font-sans.gh-editor-font-size-medium .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
     font-size: 1.95rem !important;
 }
 
-.gh-editor-typography-customized.gh-editor-font-size-3 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
+.gh-editor-typography-customized.gh-editor-font-size-large .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
     p,
     blockquote,
     aside,
     ul,
     ol
 ):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
-.gh-editor-typography-customized.gh-editor-font-size-3 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
+.gh-editor-typography-customized.gh-editor-font-size-large .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
     font-size: 2.2rem !important;
-}
-
-.gh-editor-typography-customized.gh-editor-font-size-4 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
-    p,
-    blockquote,
-    aside,
-    ul,
-    ol
-):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
-.gh-editor-typography-customized.gh-editor-font-size-4 .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
-    font-size: 2.4rem !important;
 }
 
 .gh-editor-email-size-warning-container {

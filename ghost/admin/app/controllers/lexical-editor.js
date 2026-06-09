@@ -44,9 +44,16 @@ const EDITOR_TYPOGRAPHY_STORAGE_KEYS = {
     fontSize: 'ghost-editor-font-size'
 };
 const EDITOR_FONT_STYLES = ['sans', 'serif'];
-const EDITOR_FONT_SIZE_STEPS = [0, 1, 2, 3, 4];
+const EDITOR_FONT_SIZES = ['small', 'medium', 'large'];
+const LEGACY_EDITOR_FONT_SIZE_MAP = {
+    0: 'small',
+    1: 'small',
+    2: 'medium',
+    3: 'large',
+    4: 'large'
+};
 const DEFAULT_EDITOR_FONT_STYLE = 'sans';
-const DEFAULT_EDITOR_FONT_SIZE_STEP = 2;
+const DEFAULT_EDITOR_FONT_SIZE = 'medium';
 
 const TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
 const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
@@ -176,7 +183,7 @@ export default class LexicalEditorController extends Controller {
     @tracked excerptErrorMessage = '';
     @tracked showEditorTypographyMenu = false;
     @tracked editorFontStyle = this._getStoredEditorFontStyle();
-    @tracked editorFontSizeStep = this._getStoredEditorFontSizeStep();
+    @tracked editorFontSize = this._getStoredEditorFontSize();
 
     /* public properties -----------------------------------------------------*/
 
@@ -196,6 +203,12 @@ export default class LexicalEditorController extends Controller {
     editorFontStyleOptions = [
         {value: 'sans', label: 'System'},
         {value: 'serif', label: 'Serif'}
+    ];
+
+    editorFontSizeOptions = [
+        {value: 'small', label: 'S'},
+        {value: 'medium', label: 'M'},
+        {value: 'large', label: 'L'}
     ];
 
     /* private properties ----------------------------------------------------*/
@@ -329,16 +342,8 @@ export default class LexicalEditorController extends Controller {
         return [
             'gh-editor-typography-customized',
             `gh-editor-font-${this.editorFontStyle}`,
-            `gh-editor-font-size-${this.editorFontSizeStep}`
+            `gh-editor-font-size-${this.editorFontSize}`
         ].join(' ');
-    }
-
-    get canDecreaseEditorFontSize() {
-        return this.editorFontSizeStep > EDITOR_FONT_SIZE_STEPS[0];
-    }
-
-    get canIncreaseEditorFontSize() {
-        return this.editorFontSizeStep < EDITOR_FONT_SIZE_STEPS[EDITOR_FONT_SIZE_STEPS.length - 1];
     }
 
     _getStoredEditorFontStyle() {
@@ -350,12 +355,21 @@ export default class LexicalEditorController extends Controller {
         }
     }
 
-    _getStoredEditorFontSizeStep() {
+    _getStoredEditorFontSize() {
         try {
-            const storedValue = Number.parseInt(window.localStorage.getItem(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize), 10);
-            return EDITOR_FONT_SIZE_STEPS.includes(storedValue) ? storedValue : DEFAULT_EDITOR_FONT_SIZE_STEP;
+            const storedValue = window.localStorage.getItem(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize);
+
+            if (EDITOR_FONT_SIZES.includes(storedValue)) {
+                return storedValue;
+            }
+
+            if (Object.prototype.hasOwnProperty.call(LEGACY_EDITOR_FONT_SIZE_MAP, storedValue)) {
+                return LEGACY_EDITOR_FONT_SIZE_MAP[storedValue];
+            }
+
+            return DEFAULT_EDITOR_FONT_SIZE;
         } catch (e) {
-            return DEFAULT_EDITOR_FONT_SIZE_STEP;
+            return DEFAULT_EDITOR_FONT_SIZE;
         }
     }
 
@@ -591,29 +605,13 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    increaseEditorFontSize() {
-        if (!this.canIncreaseEditorFontSize) {
+    setEditorFontSize(fontSize) {
+        if (!EDITOR_FONT_SIZES.includes(fontSize)) {
             return;
         }
 
-        this.editorFontSizeStep += 1;
-        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize, this.editorFontSizeStep);
-    }
-
-    @action
-    decreaseEditorFontSize() {
-        if (!this.canDecreaseEditorFontSize) {
-            return;
-        }
-
-        this.editorFontSizeStep -= 1;
-        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize, this.editorFontSizeStep);
-    }
-
-    @action
-    resetEditorFontSize() {
-        this.editorFontSizeStep = DEFAULT_EDITOR_FONT_SIZE_STEP;
-        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize, this.editorFontSizeStep);
+        this.editorFontSize = fontSize;
+        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize, fontSize);
     }
 
     @action

@@ -137,32 +137,17 @@
                             {{/each}}
                         </div>
                         <div class="gh-editor-typography-section gh-editor-typography-size-controls">
-                            <button
-                                type="button"
-                                class="gh-editor-typography-size-button"
-                                disabled={{not this.canDecreaseEditorFontSize}}
-                                {{on "click" this.decreaseEditorFontSize}}
-                                data-test-editor-font-size-decrease
-                            >
-                                <span>&minus;</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="gh-editor-typography-size-reset"
-                                {{on "click" this.resetEditorFontSize}}
-                                data-test-editor-font-size-reset
-                            >
-                                <span>Aa</span>
-                            </button>
-                            <button
-                                type="button"
-                                class="gh-editor-typography-size-button"
-                                disabled={{not this.canIncreaseEditorFontSize}}
-                                {{on "click" this.increaseEditorFontSize}}
-                                data-test-editor-font-size-increase
-                            >
-                                <span>+</span>
-                            </button>
+                            {{#each this.editorFontSizeOptions as |option|}}
+                                <button
+                                    type="button"
+                                    class="gh-editor-typography-font gh-editor-typography-size-option {{if (eq this.editorFontSize option.value) "is-active"}}"
+                                    aria-pressed={{if (eq this.editorFontSize option.value) "true" "false"}}
+                                    {{on "click" (fn this.setEditorFontSize option.value)}}
+                                    data-test-editor-font-size={{option.value}}
+                                >
+                                    <span class="gh-editor-typography-size-sample gh-editor-typography-size-sample-{{option.value}}">{{option.label}}</span>
+                                </button>
+                            {{/each}}
                         </div>
                     </div>
                 </div>
