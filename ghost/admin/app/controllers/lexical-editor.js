@@ -196,8 +196,8 @@ export default class LexicalEditorController extends Controller {
     featureImageTkCount = 0;
 
     editorFontStyleOptions = [
-        {value: 'sans', label: 'System'},
-        {value: 'serif', label: 'Serif'}
+        {value: 'serif', label: 'Serif'},
+        {value: 'sans', label: 'Sans'}
     ];
 
     editorFontSizeOptions = [

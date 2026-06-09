@@ -60,8 +60,9 @@ describe('Acceptance: Lexical editor', function () {
             expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-sans'), 'updated font class').to.be.true;
             expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-size-large'), 'updated size class').to.be.true;
             const koenigEditorStyles = window.getComputedStyle(find('.gh-koenig-editor'));
-            expect(koenigEditorStyles.getPropertyValue('--koenig-editor-body-font-size').trim(), 'Koenig body font size variable').to.equal('2.2rem');
+            expect(koenigEditorStyles.getPropertyValue('--koenig-editor-body-font-size').trim(), 'Koenig body font size variable').to.equal('2.1rem');
             expect(koenigEditorStyles.getPropertyValue('--koenig-editor-body-letter-spacing').trim(), 'Koenig body letter spacing variable').to.equal('-0.022em');
+            expect(koenigEditorStyles.getPropertyValue('--koenig-editor-body-line-height').trim(), 'Koenig body line height variable').to.equal('1.5em');
 
             await click('[data-test-editor-auto-hide-toolbar-toggle]');
             accessibility = JSON.parse(this.server.schema.users.find('1').accessibility);

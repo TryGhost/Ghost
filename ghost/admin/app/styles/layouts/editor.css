@@ -420,9 +420,9 @@
     bottom: calc(100% + 10px);
     z-index: 1100;
     display: none;
-    width: 224px;
-    padding: 14px;
-    border-radius: 6px;
+    width: 206px;
+    padding: 12px;
+    border-radius: 8px;
     background: var(--white);
     box-shadow: 0 0 0 1px rgba(0,0,0,.04), 0 8px 20px -3px rgba(0,0,0,.2);
 }
@@ -431,13 +431,28 @@
     display: block;
 }
 
+.gh-editor-typography-title {
+    margin: 0 0 10px;
+    color: var(--darkgrey);
+    font-size: 1.25rem;
+    font-weight: 700;
+    line-height: 1.2;
+}
+
 .gh-editor-typography-section {
     display: flex;
-    gap: 8px;
 }
 
 .gh-editor-typography-section + .gh-editor-typography-section {
-    margin-top: 12px;
+    margin-top: 10px;
+}
+
+.gh-editor-typography-control-group {
+    justify-content: center;
+    gap: 2px;
+    padding: 2px;
+    border-radius: 8px;
+    background: var(--whitegrey);
 }
 
 .gh-editor-typography-font {
@@ -447,9 +462,10 @@
     padding: 0;
     border: 1px solid transparent;
     border-radius: 6px;
-    background: var(--whitegrey);
+    background: transparent;
     color: var(--darkgrey);
     cursor: pointer;
+    transition: background-color .15s ease, box-shadow .15s ease, color .15s ease;
 }
 
 .gh-editor-typography-font:hover {
@@ -457,21 +473,22 @@
 }
 
 .gh-editor-typography-font.is-active {
-    border-color: var(--green);
-    box-shadow: 0 0 0 1px var(--green);
+    border-color: rgba(0,0,0,.04);
+    background: var(--white);
+    color: var(--black);
+    box-shadow: 0 1px 2px rgba(0,0,0,.08), 0 6px 14px -8px rgba(0,0,0,.45);
 }
 
 .gh-editor-typography-font {
     flex: 1;
-    flex-direction: column;
-    height: 68px;
-    gap: 3px;
-    font-size: 1.1rem;
+    height: 32px;
+    gap: 5px;
+    font-size: 1.15rem;
     font-weight: 600;
 }
 
 .gh-editor-typography-font-sample {
-    font-size: 2rem;
+    font-size: 1.55rem;
     font-weight: 700;
     line-height: 1;
 }
@@ -485,21 +502,21 @@
 }
 
 .gh-editor-typography-size-option {
-    height: 44px;
+    height: 32px;
 }
 
 .gh-editor-typography-size-sample {
-    font-size: 1.5rem;
+    font-size: 1.35rem;
     font-weight: 700;
     line-height: 1;
 }
 
 .gh-editor-typography-size-sample-small {
-    font-size: 1.3rem;
+    font-size: 1.2rem;
 }
 
 .gh-editor-typography-size-sample-large {
-    font-size: 1.8rem;
+    font-size: 1.55rem;
 }
 
 .gh-editor-typography-toggle {
@@ -545,7 +562,7 @@
 }
 
 .gh-editor-typography-toggle input:checked + .gh-editor-typography-toggle-switch {
-    background: var(--green);
+    background: var(--black);
 }
 
 .gh-editor-typography-toggle input:checked + .gh-editor-typography-toggle-switch::after {
@@ -637,16 +654,24 @@
     --koenig-editor-body-font-size: 2rem;
     --koenig-editor-body-font-size-mobile: 2rem;
     --koenig-editor-body-letter-spacing: normal;
+    --koenig-editor-body-line-height: 1.6em;
 }
 
 .gh-editor-typography-customized.gh-editor-font-sans {
     --koenig-editor-body-font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
     --koenig-editor-body-letter-spacing: -0.022em;
+    --koenig-editor-body-line-height: 1.5em;
 }
 
 .gh-editor-typography-customized.gh-editor-font-size-small {
     --koenig-editor-body-font-size: 1.8rem;
     --koenig-editor-body-font-size-mobile: 1.8rem;
+}
+
+.gh-editor-typography-customized.gh-editor-font-sans.gh-editor-font-size-small {
+    --koenig-editor-body-font-size: 1.7rem;
+    --koenig-editor-body-font-size-mobile: 1.7rem;
+    --koenig-editor-body-letter-spacing: -0.013em;
 }
 
 .gh-editor-typography-customized.gh-editor-font-sans.gh-editor-font-size-medium {
@@ -657,6 +682,12 @@
 .gh-editor-typography-customized.gh-editor-font-size-large {
     --koenig-editor-body-font-size: 2.2rem;
     --koenig-editor-body-font-size-mobile: 2.2rem;
+}
+
+.gh-editor-typography-customized.gh-editor-font-sans.gh-editor-font-size-large {
+    --koenig-editor-body-font-size: 2.1rem;
+    --koenig-editor-body-font-size-mobile: 2.1rem;
+    --koenig-editor-body-letter-spacing: -0.022em;
 }
 
 .gh-editor-email-size-warning-container {

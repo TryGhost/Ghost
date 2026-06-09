@@ -131,7 +131,8 @@
                         {{svg-jar "settings-2"}}
                     </button>
                     <div class="gh-editor-typography-popover" data-test-editor-typography-popover>
-                        <div class="gh-editor-typography-section">
+                        <h3 class="gh-editor-typography-title">Editor settings</h3>
+                        <div class="gh-editor-typography-section gh-editor-typography-control-group">
                             {{#each this.editorFontStyleOptions as |option|}}
                                 <button
                                     type="button"
@@ -141,11 +142,10 @@
                                     data-test-editor-font-style={{option.value}}
                                 >
                                     <span class="gh-editor-typography-font-sample gh-editor-typography-font-sample-{{option.value}}">Aa</span>
-                                    <span>{{option.label}}</span>
                                 </button>
                             {{/each}}
                         </div>
-                        <div class="gh-editor-typography-section gh-editor-typography-size-controls">
+                        <div class="gh-editor-typography-section gh-editor-typography-control-group gh-editor-typography-size-controls">
                             {{#each this.editorFontSizeOptions as |option|}}
                                 <button
                                     type="button"
