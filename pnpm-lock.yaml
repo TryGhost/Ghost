@@ -13,8 +13,8 @@ catalogs:
       specifier: 8.57.1
       version: 8.57.1
     '@faker-js/faker':
-      specifier: 9.9.0
-      version: 9.9.0
+      specifier: 10.4.0
+      version: 10.4.0
     '@playwright/test':
       specifier: 1.60.0
       version: 1.60.0
@@ -1811,7 +1811,7 @@ importers:
     devDependencies:
       '@faker-js/faker':
         specifier: 'catalog:'
-        version: 9.9.0
+        version: 10.4.0
       '@testing-library/jest-dom':
         specifier: 'catalog:'
         version: 6.9.1
@@ -1877,7 +1877,7 @@ importers:
         version: 8.57.1
       '@faker-js/faker':
         specifier: 'catalog:'
-        version: 9.9.0
+        version: 10.4.0
       '@playwright/test':
         specifier: 'catalog:'
         version: 1.60.0
@@ -1970,8 +1970,8 @@ importers:
         specifier: 1.16.13
         version: 1.16.13
       '@faker-js/faker':
-        specifier: 7.6.0
-        version: 7.6.0
+        specifier: 10.4.0
+        version: 10.4.0
       '@glimmer/component':
         specifier: 1.1.2
         version: 1.1.2(@babel/core@7.29.7)
@@ -2319,7 +2319,7 @@ importers:
         version: 3.2.1(encoding@0.1.13)
       '@faker-js/faker':
         specifier: 'catalog:'
-        version: 9.9.0
+        version: 10.4.0
       '@isaacs/ttlcache':
         specifier: 1.4.1
         version: 1.4.1
@@ -4907,13 +4907,9 @@ packages:
     resolution: {integrity: sha512-ZwOY/SFqDph/1J4KfTTOKgGcy5xIrOSkK8b5KDHyoIg8AZ6+uEQ5l7SSNQskc4RxlLZGk+CBNOuRUGfkdPhKLA==}
     engines: {node: '>= 15'}
 
-  '@faker-js/faker@7.6.0':
-    resolution: {integrity: sha512-XK6BTq1NDMo9Xqw/YkYyGjSsg44fbNwYRx7QK2CuoQgyy+f1rrTDHoExVM5PsyXCtfl2vs2vVJ0MN0yN6LppRw==}
-    engines: {node: '>=14.0.0', npm: '>=6.0.0'}
-
-  '@faker-js/faker@9.9.0':
-    resolution: {integrity: sha512-OEl393iCOoo/z8bMezRlJu+GlRGlsKbUAN7jKB6LhnKoqKve5DXRpalbItIIcwnCjs1k/FOPjFzcA6Qn+H+YbA==}
-    engines: {node: '>=18.0.0', npm: '>=9.0.0'}
+  '@faker-js/faker@10.4.0':
+    resolution: {integrity: sha512-sDBWI3yLy8EcDzgobvJTWq1MJYzAkQdpjXuPukga9wXonhpMRvd1Izuo2Qgwey2OiEoRIBr35RMU9HJRoOHzpw==}
+    engines: {node: ^20.19.0 || ^22.13.0 || ^23.5.0 || >=24.0.0, npm: '>=10'}
 
   '@fastify/otel@0.18.0':
     resolution: {integrity: sha512-3TASCATfw+ctICSb4ymrv7iCm0qJ0N9CarB+CZ7zIJ7KqNbwI5JjyDL1/sxoC0ccTO1Zyd1iQ+oqncPg5FJXaA==}
@@ -24424,9 +24420,7 @@ snapshots:
     transitivePeerDependencies:
       - encoding
 
-  '@faker-js/faker@7.6.0': {}
-
-  '@faker-js/faker@9.9.0': {}
+  '@faker-js/faker@10.4.0': {}
 
   '@fastify/otel@0.18.0(@opentelemetry/api@1.9.1)':
     dependencies:
