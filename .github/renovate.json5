@@ -142,7 +142,19 @@
         // tooling (broccoli-templater, sourcemap-validator) plus old @tryghost/*
         // packages, so it can't be removed from the tree here. Ignore it to stop
         // the unactionable dashboard noise.
-        "lodash.template"
+        "lodash.template",
+
+        // https://linear.app/ghost/issue/PLA-78
+        // https://github.com/TryGhost/Ghost/pull/28180
+        // knex 2.5.x breaks migrations: 2.5.0's password-masking mutates the
+        // shared `config.get('database')` object, which we hand to BOTH knex()
+        // and knex-migrator. With core ahead of knex-migrator's pinned knex
+        // (2.4.2), the password is stripped before knex-migrator connects →
+        // "Access denied (using password: NO)". 2.x is EOL; the real move is
+        // knex 3.x, gated on publishing a knex-3 knex-migrator
+        // (TryGhost/knex-migrator#86, unreleased), bumped in lockstep with core.
+        // Ignore until we do that coordinated upgrade.
+        "knex"
     ],
     "ignorePaths": [
         "test",
