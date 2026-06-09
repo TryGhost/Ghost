@@ -44,7 +44,6 @@ describe('Unit: Controller: lexical-editor', function () {
 
             expect(controller.editorFontStyle).to.equal('serif');
             expect(controller.editorFontSize).to.equal('medium');
-            expect(controller.editorAutoHideToolbar).to.be.false;
             expect(controller.editorTypographyClass).to.equal('gh-editor-typography-customized gh-editor-font-serif gh-editor-font-size-medium');
         });
 
@@ -52,8 +51,7 @@ describe('Unit: Controller: lexical-editor', function () {
             setUserAccessibility.call(this, {
                 editor: {
                     fontStyle: 'comic-sans',
-                    fontSize: 'huge',
-                    autoHideToolbar: 'yes'
+                    fontSize: 'huge'
                 }
             });
 
@@ -61,56 +59,35 @@ describe('Unit: Controller: lexical-editor', function () {
 
             expect(controller.editorFontStyle).to.equal('serif');
             expect(controller.editorFontSize).to.equal('medium');
-            expect(controller.editorAutoHideToolbar).to.be.false;
         });
 
         it('loads stored settings from accessibility settings', function () {
             setUserAccessibility.call(this, {
                 editor: {
-                    fontStyle: 'sans',
-                    fontSize: 'large',
-                    autoHideToolbar: true
+                    fontStyle: 'mono',
+                    fontSize: 'large'
                 }
             });
 
             let controller = this.owner.lookup('controller:lexical-editor');
 
-            expect(controller.editorFontStyle).to.equal('sans');
+            expect(controller.editorFontStyle).to.equal('mono');
             expect(controller.editorFontSize).to.equal('large');
-            expect(controller.editorAutoHideToolbar).to.be.true;
-            expect(controller.editorTypographyClass).to.equal('gh-editor-typography-customized gh-editor-font-sans gh-editor-font-size-large');
+            expect(controller.editorTypographyClass).to.equal('gh-editor-typography-customized gh-editor-font-mono gh-editor-font-size-large');
         });
 
         it('stores changed font family and size settings in accessibility settings', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
 
-            controller.setEditorFontStyle('sans');
+            controller.setEditorFontStyle('mono');
             controller.setEditorFontSize('large');
             await settled();
 
             const accessibility = JSON.parse(user.accessibility);
-            expect(accessibility.editor.fontStyle).to.equal('sans');
+            expect(accessibility.editor.fontStyle).to.equal('mono');
             expect(accessibility.editor.fontSize).to.equal('large');
-            expect(controller.editorFontStyle).to.equal('sans');
+            expect(controller.editorFontStyle).to.equal('mono');
             expect(controller.editorFontSize).to.equal('large');
-        });
-
-        it('stores auto-hide toolbar changes in accessibility settings', async function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
-
-            controller.setEditorAutoHideToolbar({target: {checked: true}});
-            await settled();
-
-            let accessibility = JSON.parse(user.accessibility);
-            expect(accessibility.editor.autoHideToolbar).to.be.true;
-            expect(controller.editorAutoHideToolbar).to.be.true;
-
-            controller.setEditorAutoHideToolbar({target: {checked: false}});
-            await settled();
-
-            accessibility = JSON.parse(user.accessibility);
-            expect(accessibility.editor).to.be.undefined;
-            expect(controller.editorAutoHideToolbar).to.be.false;
         });
 
         it('removes editor settings when values are reset to defaults', async function () {
@@ -131,7 +108,6 @@ describe('Unit: Controller: lexical-editor', function () {
 
             controller.setEditorFontStyle('serif');
             controller.setEditorFontSize('medium');
-            controller.setEditorAutoHideToolbar({target: {checked: false}});
             await settled();
 
             const accessibility = JSON.parse(user.accessibility);
@@ -142,7 +118,6 @@ describe('Unit: Controller: lexical-editor', function () {
         it('hides editor chrome while typing and restores it on mouse movement', function () {
             let controller = this.owner.lookup('controller:lexical-editor');
 
-            controller.setEditorAutoHideToolbar({target: {checked: true}});
             controller.hideEditorChromeForTyping({key: 'ArrowDown'});
 
             expect(controller.isEditorChromeHidden).to.be.false;

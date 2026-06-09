@@ -40,12 +40,11 @@ const AUTOSAVE_TIMEOUT = 3000;
 const TIMEDSAVE_TIMEOUT = 60000;
 
 const EDITOR_ACCESSIBILITY_KEY = 'editor';
-const EDITOR_FONT_STYLES = ['sans', 'serif'];
+const EDITOR_FONT_STYLES = ['serif', 'sans', 'mono'];
 const EDITOR_FONT_SIZES = ['small', 'medium', 'large'];
 const DEFAULT_EDITOR_TYPOGRAPHY_SETTINGS = {
     fontStyle: 'serif',
-    fontSize: 'medium',
-    autoHideToolbar: false
+    fontSize: 'medium'
 };
 
 const TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
@@ -177,7 +176,6 @@ export default class LexicalEditorController extends Controller {
     @tracked showEditorTypographyMenu = false;
     @tracked editorFontStyle = this._getStoredEditorFontStyle();
     @tracked editorFontSize = this._getStoredEditorFontSize();
-    @tracked editorAutoHideToolbar = this._getStoredEditorAutoHideToolbar();
     @tracked isEditorChromeHidden = false;
 
     /* public properties -----------------------------------------------------*/
@@ -197,7 +195,8 @@ export default class LexicalEditorController extends Controller {
 
     editorFontStyleOptions = [
         {value: 'serif', label: 'Serif'},
-        {value: 'sans', label: 'Sans'}
+        {value: 'sans', label: 'Sans'},
+        {value: 'mono', label: 'Mono'}
     ];
 
     editorFontSizeOptions = [
@@ -355,10 +354,6 @@ export default class LexicalEditorController extends Controller {
         return EDITOR_FONT_SIZES.includes(storedValue) ? storedValue : DEFAULT_EDITOR_TYPOGRAPHY_SETTINGS.fontSize;
     }
 
-    _getStoredEditorAutoHideToolbar() {
-        return this._getEditorAccessibilitySettings().autoHideToolbar === true;
-    }
-
     _getEditorAccessibilitySettings() {
         const editorSettings = this.feature.accessibility?.[EDITOR_ACCESSIBILITY_KEY];
 
@@ -380,8 +375,7 @@ export default class LexicalEditorController extends Controller {
 
         [
             ['fontStyle', this.editorFontStyle],
-            ['fontSize', this.editorFontSize],
-            ['autoHideToolbar', this.editorAutoHideToolbar]
+            ['fontSize', this.editorFontSize]
         ].forEach(([key, value]) => {
             if (value !== DEFAULT_EDITOR_TYPOGRAPHY_SETTINGS[key]) {
                 editorSettings[key] = value;
@@ -652,21 +646,7 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
-    setEditorAutoHideToolbar(event) {
-        this.editorAutoHideToolbar = event.target.checked;
-        this._storeEditorTypographySettings();
-
-        if (!this.editorAutoHideToolbar) {
-            this.isEditorChromeHidden = false;
-        }
-    }
-
-    @action
     hideEditorChromeForTyping(event) {
-        if (!this.editorAutoHideToolbar) {
-            return;
-        }
-
         if (event && event.key.length > 1 && !['Backspace', 'Delete', 'Enter'].includes(event.key)) {
             return;
         }

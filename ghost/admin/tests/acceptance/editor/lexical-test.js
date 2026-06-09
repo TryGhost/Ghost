@@ -46,6 +46,7 @@ describe('Acceptance: Lexical editor', function () {
 
             await click('[data-test-editor-typography-trigger]');
             expect(find('.gh-editor-typography-menu').classList.contains('open'), 'typography menu opens').to.be.true;
+            expect(find('[data-test-editor-auto-hide-toolbar-toggle]'), 'auto-hide toolbar toggle').to.not.exist;
 
             await click('[data-secondary-instance="false"] [data-lexical-editor] p');
             expect(find('.gh-editor-typography-menu').classList.contains('closed'), 'typography menu closes on outside click').to.be.true;
@@ -63,10 +64,6 @@ describe('Acceptance: Lexical editor', function () {
             expect(koenigEditorStyles.getPropertyValue('--koenig-editor-body-font-size').trim(), 'Koenig body font size variable').to.equal('2.1rem');
             expect(koenigEditorStyles.getPropertyValue('--koenig-editor-body-letter-spacing').trim(), 'Koenig body letter spacing variable').to.equal('-0.022em');
             expect(koenigEditorStyles.getPropertyValue('--koenig-editor-body-line-height').trim(), 'Koenig body line height variable').to.equal('1.5em');
-
-            await click('[data-test-editor-auto-hide-toolbar-toggle]');
-            accessibility = JSON.parse(this.server.schema.users.find('1').accessibility);
-            expect(accessibility.editor.autoHideToolbar, 'stored auto-hide toolbar').to.be.true;
 
             await triggerKeyEvent('[data-secondary-instance="false"] [data-lexical-editor]', 'keydown', 'A');
             expect(find('.gh-editor-fullscreen-container').classList.contains('gh-editor-chrome-hidden'), 'chrome hidden while typing').to.be.true;

@@ -488,6 +488,7 @@
 }
 
 .gh-editor-typography-font-sample {
+    flex: 0 0 auto;
     font-size: 1.55rem;
     font-weight: 700;
     line-height: 1;
@@ -495,6 +496,10 @@
 
 .gh-editor-typography-font-sample-serif {
     font-family: Georgia, Times, serif;
+}
+
+.gh-editor-typography-font-sample-mono {
+    font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
 }
 
 .gh-editor-typography-size-controls > * {
@@ -517,56 +522,6 @@
 
 .gh-editor-typography-size-sample-large {
     font-size: 1.55rem;
-}
-
-.gh-editor-typography-toggle {
-    position: relative;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    width: 100%;
-    min-height: 34px;
-    padding: 0 2px;
-    color: var(--darkgrey);
-    font-size: 1.25rem;
-    font-weight: 600;
-    cursor: pointer;
-}
-
-.gh-editor-typography-toggle input {
-    position: absolute;
-    opacity: 0;
-    pointer-events: none;
-}
-
-.gh-editor-typography-toggle-switch {
-    position: relative;
-    width: 34px;
-    height: 20px;
-    border-radius: 999px;
-    background: var(--midlightgrey);
-    transition: background 0.12s ease;
-}
-
-.gh-editor-typography-toggle-switch::after {
-    content: "";
-    position: absolute;
-    top: 3px;
-    left: 3px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: var(--white);
-    box-shadow: 0 1px 2px rgba(0,0,0,.2);
-    transition: transform 0.12s ease;
-}
-
-.gh-editor-typography-toggle input:checked + .gh-editor-typography-toggle-switch {
-    background: var(--black);
-}
-
-.gh-editor-typography-toggle input:checked + .gh-editor-typography-toggle-switch::after {
-    transform: translateX(14px);
 }
 
 .gh-editor-wordcount-container svg {
@@ -661,6 +616,11 @@
     --koenig-editor-body-font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
     --koenig-editor-body-letter-spacing: -0.022em;
     --koenig-editor-body-line-height: 1.5em;
+}
+
+.gh-editor-typography-customized.gh-editor-font-mono {
+    --koenig-editor-body-font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+    --koenig-editor-body-letter-spacing: normal;
 }
 
 .gh-editor-typography-customized.gh-editor-font-size-small {
