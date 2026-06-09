@@ -26,9 +26,6 @@ export type AutomationSendEmailAction = {
     data: {
         email_subject: string;
         email_lexical: string;
-        email_sender_name: string | null;
-        email_sender_email: string | null;
-        email_sender_reply_to: string | null;
         email_design_setting_id: string;
     };
 }
@@ -115,9 +112,6 @@ const buildSendEmailAction = (): AutomationSendEmailAction => ({
     data: {
         email_subject: '',
         email_lexical: EMPTY_EMAIL_LEXICAL,
-        email_sender_name: null,
-        email_sender_email: null,
-        email_sender_reply_to: null,
         // TODO NY-1252: replace this placeholder when email design settings are available.
         email_design_setting_id: 'placeholder'
     }
