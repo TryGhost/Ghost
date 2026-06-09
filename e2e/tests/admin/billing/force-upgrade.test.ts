@@ -1,6 +1,5 @@
 import {BillingPage, NAV_ITEMS, SidebarPage} from '@/helpers/pages';
 import {expect, test} from '@/helpers/playwright';
-import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 const MOCK_BILLING_URL = 'https://billing.mock.test';
 
@@ -30,8 +29,6 @@ const FORCE_UPGRADE_BMA_HTML = `
 </body>
 </html>
 `;
-
-usePerTestIsolation();
 
 test.describe('Ghost Admin - Force Upgrade Mode', () => {
     test.use({
@@ -99,18 +96,6 @@ test.describe('Ghost Admin - Force Upgrade Mode', () => {
         await expect(billingPage.billingIframe).toBeHidden();
     });
 
-    test('Sign out is accessible', async ({page}) => {
-        const sidebarPage = new SidebarPage(page);
-        const billingPage = new BillingPage(page);
-        await sidebarPage.goto();
-
-        await billingPage.waitForBillingIframe();
-        await sidebarPage.userDropdownTrigger.click();
-        await sidebarPage.signOutLink.click();
-
-        await expect(page).toHaveURL(/signin/);
-    });
-
     test('Ember-handled tag detail route shows billing iframe', async ({page}) => {
         const sidebarPage = new SidebarPage(page);
         const billingPage = new BillingPage(page);
@@ -118,5 +103,21 @@ test.describe('Ghost Admin - Force Upgrade Mode', () => {
 
         const billingIframe = await billingPage.waitForBillingIframe();
         await expect(billingIframe).toBeVisible();
+    });
+
+    test.describe('signed-out navigation', () => {
+        test.use({isolation: 'per-test'});
+
+        test('Sign out is accessible', async ({page}) => {
+            const sidebarPage = new SidebarPage(page);
+            const billingPage = new BillingPage(page);
+            await sidebarPage.goto();
+
+            await billingPage.waitForBillingIframe();
+            await sidebarPage.userDropdownTrigger.click();
+            await sidebarPage.signOutLink.click();
+
+            await expect(page).toHaveURL(/signin/);
+        });
     });
 });
