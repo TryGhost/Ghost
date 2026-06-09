@@ -15,6 +15,9 @@ catalogs:
     '@faker-js/faker':
       specifier: 10.4.0
       version: 10.4.0
+    '@hookform/resolvers':
+      specifier: 5.4.0
+      version: 5.4.0
     '@playwright/test':
       specifier: 1.60.0
       version: 1.60.0
@@ -234,6 +237,9 @@ catalogs:
     react-dom:
       specifier: 18.3.1
       version: 18.3.1
+    react-hook-form:
+      specifier: 7.72.1
+      version: 7.72.1
     react-hot-toast:
       specifier: 2.6.0
       version: 2.6.0
@@ -1312,6 +1318,9 @@ importers:
       '@ebay/nice-modal-react':
         specifier: 'catalog:'
         version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@hookform/resolvers':
+        specifier: 'catalog:'
+        version: 5.4.0(react-hook-form@7.72.1(react@18.3.1))
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
@@ -1351,6 +1360,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
+      react-hook-form:
+        specifier: 'catalog:'
+        version: 7.72.1(react@18.3.1)
       react-router:
         specifier: 'catalog:'
         version: 7.14.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)

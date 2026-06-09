@@ -5,6 +5,7 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class TagRoute extends AuthenticatedRoute {
+    @service feature;
     @service modals;
     @service router;
     @service session;
@@ -15,8 +16,16 @@ export default class TagRoute extends AuthenticatedRoute {
     _requiresBackgroundRefresh = true;
     _unregisterUnsavedChanges = null;
 
-    beforeModel() {
+    beforeModel(transition) {
         super.beforeModel(...arguments);
+
+        // The React admin owns this screen when the flag is enabled. Hand the
+        // URL over to the react-fallback catch-all so this route doesn't load
+        // data or register transition guards in the hidden Ember app.
+        if (this.feature.tagDetailsX) {
+            const slug = transition.to?.params?.tag_slug;
+            return this.replaceWith('react-fallback', slug ? `tags/${slug}` : 'tags/new');
+        }
 
         if (this.session.user.isAuthorOrContributor) {
             return this.transitionTo('home');

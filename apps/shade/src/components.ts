@@ -1,4 +1,5 @@
 // UI components — basic reusable controls
+export * from './components/ui/accordion';
 export * from './components/ui/alert-dialog';
 export * from './components/ui/animated-number';
 export * from './components/ui/avatar';

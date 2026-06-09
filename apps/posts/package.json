@@ -20,7 +20,8 @@
             "require": "./dist/posts.umd.cjs"
         },
         "./api": "./src/api.ts",
-        "./members": "./src/views/members/members.tsx"
+        "./members": "./src/views/members/members.tsx",
+        "./tag-details": "./src/views/Tags/tag-details/tag-details.tsx"
     },
     "private": true,
     "scripts": {
@@ -59,8 +60,9 @@
     },
     "dependencies": {
         "@ebay/nice-modal-react": "catalog:",
-        "@tryghost/color-utils": "catalog:",
+        "@hookform/resolvers": "catalog:",
         "@tryghost/admin-x-framework": "workspace:*",
+        "@tryghost/color-utils": "catalog:",
         "@tryghost/koenig-lexical": "catalog:",
         "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
@@ -72,6 +74,7 @@
         "papaparse": "5.5.3",
         "react": "catalog:",
         "react-dom": "catalog:",
+        "react-hook-form": "catalog:",
         "react-router": "catalog:",
         "sonner": "catalog:",
         "temporal-polyfill": "0.3.2",

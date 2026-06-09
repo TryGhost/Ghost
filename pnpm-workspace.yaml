@@ -28,6 +28,7 @@ catalog:
   '@ebay/nice-modal-react': 1.2.13
   '@eslint/js': 8.57.1
   '@faker-js/faker': 10.4.0
+  '@hookform/resolvers': 5.4.0
   '@playwright/test': 1.60.0
   '@radix-ui/react-avatar': 1.1.11
   '@radix-ui/react-checkbox': 1.3.3
@@ -102,6 +103,7 @@ catalog:
   preact: ^10.29.2
   react: 18.3.1
   react-dom: 18.3.1
+  react-hook-form: 7.72.1
   react-hot-toast: 2.6.0
   react-router: 7.14.0
   sinon: 22.0.0

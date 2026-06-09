@@ -18,6 +18,7 @@ const emberDataTypeMapping = {
     NewslettersResponseType: {type: 'newsletter'},
     RecommendationResponseType: {type: 'recommendation'},
     SettingsResponseType: {type: 'setting', singleton: true},
+    TagsResponseType: {type: 'tag'},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
     UsersResponseType: {type: 'user'},

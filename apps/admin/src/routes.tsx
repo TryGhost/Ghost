@@ -15,6 +15,7 @@ import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 import { MembersRoute } from "./members-route";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
+import { TagDetailsRoute } from "./tag-details-route";
 
 import { NotFound } from "./not-found";
 
@@ -37,7 +38,6 @@ const EMBER_ROUTES: string[] = [
     "/restore",
     "/pages",
     "/editor/*",
-    "/tags/new",
     "/explore/*",
     "/migrate/*",
     "/members/new",
@@ -78,13 +78,19 @@ export const routes: RouteObject[] = [
         element: <ForceUpgradeGuard />,
         children: [
             {
-                // Override the tag detail route from the posts app to ensure we
-                // correctly delegate to Ember since we can't remove the blank screen in
-                // the posts app. The blank screen needs to be there to prevent the
-                // router error fallback from triggering when navigating from the tag
-                // list to a tag detail page.
+                // Override the tag detail route from the posts app: renders the React
+                // tag detail screen when the tagDetailsX labs flag is enabled and
+                // delegates to Ember otherwise. This override (rather than the posts
+                // app's own blank :tagSlug route) needs to exist to prevent the router
+                // error fallback from triggering when navigating from the tag list to
+                // a tag detail page.
+                path: "/tags/new",
+                Component: TagDetailsRoute,
+                handle: emberFallbackHandle,
+            },
+            {
                 path: "/tags/:tagSlug",
-                Component: EmberFallback,
+                Component: TagDetailsRoute,
                 handle: emberFallbackHandle,
             },
             membersRoute,

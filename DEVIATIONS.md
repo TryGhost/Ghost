@@ -24,9 +24,33 @@ and issues worth reviewing at the end. Newest entries at the bottom of each sect
 
 ## Deviations
 
-(none yet)
+### Slice 1: Tag detail/new
+
+- **No Unsplash integration in the React tag image uploads.** The Ember
+  `GhImageUploaderWithPreview` offers Unsplash search; the React implementation
+  uses plain file upload for tag/X/Facebook images. Can be added when a shared
+  Shade image-upload pattern exists.
+- **Code injection fields are plain textareas** (mono font) instead of the
+  CodeMirror editor Ember uses. Shade has no code-editor component yet and
+  pulling in admin-x-design-system's CodeEditor would contradict the
+  "phase out admin-x-design-system" direction.
+- **While `tagDetailsX` is on, the hidden Ember app still runs its tag route in
+  the background** (it fetches the tag for the same URL). Harmless but wasteful;
+  goes away when the Ember routes are removed at flag GA.
+- **Ember store sync:** added `TagsResponseType: {type: 'tag'}` to the state
+  bridge's `emberDataTypeMapping` — React tag mutations now unload Ember's tag
+  cache so both worlds stay consistent during the transition.
 
 ## Infra fixes made along the way
+
+- **Local dev-mode e2e Ghost boots exceed the 30s default test timeout** on this
+  machine (per-file environments boot a fresh Ghost container, including a pnpm
+  install check). Local runs use `pnpm test ... --timeout=240000`; CI build-mode
+  images boot fast and are unaffected.
+- **The local `ghost-dev-ghost-dev` Docker image bakes `pnpm-workspace.yaml` at
+  build time.** Adding new `catalog:` deps (react-hook-form, @hookform/resolvers
+  for the tag form) broke container boots until `pnpm docker:build` was re-run
+  (the running ghost-dev container was hot-patched with `docker cp` meanwhile).
 
 - **E2E dev mode was broken on main (pnpm 11 workspace validation).** The e2e Ghost
   worker container only mounted `ghost/`, but `ghost/admin` has `workspace:*` deps on
