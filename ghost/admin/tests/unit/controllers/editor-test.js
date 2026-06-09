@@ -11,92 +11,132 @@ import {task} from 'ember-concurrency';
 describe('Unit: Controller: lexical-editor', function () {
     setupTest();
 
-    const editorTypographyStorageKeys = {
-        fontStyle: 'ghost-editor-font-style',
-        fontSize: 'ghost-editor-font-size',
-        autoHideToolbar: 'ghost-editor-auto-hide-toolbar'
-    };
-
     let createPost;
+    let user;
 
     const _createPost = function (attrs) {
         const store = this.owner.lookup('service:store');
         return store.createRecord('post', attrs);
     };
 
+    const setUserAccessibility = function (accessibility = {}) {
+        const feature = this.owner.lookup('service:feature');
+
+        user = EmberObject.create({
+            accessibility: JSON.stringify(accessibility),
+            rollbackAttributes() {},
+            save() {
+                return RSVP.resolve(this);
+            }
+        });
+
+        feature.set('_user', user);
+    };
+
     beforeEach(function () {
         createPost = _createPost.bind(this);
-    });
-
-    afterEach(function () {
-        window.localStorage.removeItem(editorTypographyStorageKeys.fontStyle);
-        window.localStorage.removeItem(editorTypographyStorageKeys.fontSize);
-        window.localStorage.removeItem(editorTypographyStorageKeys.autoHideToolbar);
+        setUserAccessibility.call(this);
     });
 
     describe('editor typography customizer', function () {
-        it('uses default settings when localStorage is empty', function () {
+        it('uses default settings when accessibility settings are empty', function () {
             let controller = this.owner.lookup('controller:lexical-editor');
 
-            expect(controller.editorFontStyle).to.equal('sans');
+            expect(controller.editorFontStyle).to.equal('serif');
             expect(controller.editorFontSize).to.equal('medium');
             expect(controller.editorAutoHideToolbar).to.be.false;
-            expect(controller.editorTypographyClass).to.equal('gh-editor-typography-customized gh-editor-font-sans gh-editor-font-size-medium');
+            expect(controller.editorTypographyClass).to.equal('gh-editor-typography-customized gh-editor-font-serif gh-editor-font-size-medium');
         });
 
-        it('uses default settings when localStorage contains invalid values', function () {
-            window.localStorage.setItem(editorTypographyStorageKeys.fontStyle, 'comic-sans');
-            window.localStorage.setItem(editorTypographyStorageKeys.fontSize, 'huge');
+        it('uses default settings when accessibility settings contain invalid values', function () {
+            setUserAccessibility.call(this, {
+                editor: {
+                    fontStyle: 'comic-sans',
+                    fontSize: 'huge',
+                    autoHideToolbar: 'yes'
+                }
+            });
+
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            expect(controller.editorFontStyle).to.equal('serif');
+            expect(controller.editorFontSize).to.equal('medium');
+            expect(controller.editorAutoHideToolbar).to.be.false;
+        });
+
+        it('loads stored settings from accessibility settings', function () {
+            setUserAccessibility.call(this, {
+                editor: {
+                    fontStyle: 'sans',
+                    fontSize: 'large',
+                    autoHideToolbar: true
+                }
+            });
 
             let controller = this.owner.lookup('controller:lexical-editor');
 
             expect(controller.editorFontStyle).to.equal('sans');
-            expect(controller.editorFontSize).to.equal('medium');
-        });
-
-        it('loads stored settings from localStorage', function () {
-            window.localStorage.setItem(editorTypographyStorageKeys.fontStyle, 'serif');
-            window.localStorage.setItem(editorTypographyStorageKeys.fontSize, 'large');
-
-            let controller = this.owner.lookup('controller:lexical-editor');
-
-            expect(controller.editorFontStyle).to.equal('serif');
             expect(controller.editorFontSize).to.equal('large');
-            expect(controller.editorTypographyClass).to.equal('gh-editor-typography-customized gh-editor-font-serif gh-editor-font-size-large');
+            expect(controller.editorAutoHideToolbar).to.be.true;
+            expect(controller.editorTypographyClass).to.equal('gh-editor-typography-customized gh-editor-font-sans gh-editor-font-size-large');
         });
 
-        it('maps legacy numeric size settings from localStorage', function () {
-            window.localStorage.setItem(editorTypographyStorageKeys.fontSize, '4');
-
+        it('stores changed font family and size settings in accessibility settings', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
 
-            expect(controller.editorFontSize).to.equal('large');
-        });
-
-        it('stores font family and size changes in localStorage', function () {
-            let controller = this.owner.lookup('controller:lexical-editor');
-
-            controller.setEditorFontStyle('serif');
+            controller.setEditorFontStyle('sans');
             controller.setEditorFontSize('large');
+            await settled();
 
-            expect(window.localStorage.getItem(editorTypographyStorageKeys.fontStyle)).to.equal('serif');
-            expect(window.localStorage.getItem(editorTypographyStorageKeys.fontSize)).to.equal('large');
-            expect(controller.editorFontStyle).to.equal('serif');
+            const accessibility = JSON.parse(user.accessibility);
+            expect(accessibility.editor.fontStyle).to.equal('sans');
+            expect(accessibility.editor.fontSize).to.equal('large');
+            expect(controller.editorFontStyle).to.equal('sans');
             expect(controller.editorFontSize).to.equal('large');
         });
 
-        it('stores auto-hide toolbar changes in localStorage', function () {
+        it('stores auto-hide toolbar changes in accessibility settings', async function () {
             let controller = this.owner.lookup('controller:lexical-editor');
 
             controller.setEditorAutoHideToolbar({target: {checked: true}});
+            await settled();
 
-            expect(window.localStorage.getItem(editorTypographyStorageKeys.autoHideToolbar)).to.equal('true');
+            let accessibility = JSON.parse(user.accessibility);
+            expect(accessibility.editor.autoHideToolbar).to.be.true;
             expect(controller.editorAutoHideToolbar).to.be.true;
 
             controller.setEditorAutoHideToolbar({target: {checked: false}});
+            await settled();
 
-            expect(window.localStorage.getItem(editorTypographyStorageKeys.autoHideToolbar)).to.equal('false');
+            accessibility = JSON.parse(user.accessibility);
+            expect(accessibility.editor).to.be.undefined;
             expect(controller.editorAutoHideToolbar).to.be.false;
+        });
+
+        it('removes editor settings when values are reset to defaults', async function () {
+            setUserAccessibility.call(this, {
+                navigation: {
+                    menu: {
+                        visible: true
+                    }
+                },
+                editor: {
+                    fontStyle: 'sans',
+                    fontSize: 'large',
+                    autoHideToolbar: true
+                }
+            });
+
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            controller.setEditorFontStyle('serif');
+            controller.setEditorFontSize('medium');
+            controller.setEditorAutoHideToolbar({target: {checked: false}});
+            await settled();
+
+            const accessibility = JSON.parse(user.accessibility);
+            expect(accessibility.editor).to.be.undefined;
+            expect(accessibility.navigation.menu.visible).to.be.true;
         });
 
         it('hides editor chrome while typing and restores it on mouse movement', function () {

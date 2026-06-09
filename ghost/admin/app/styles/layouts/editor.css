@@ -632,80 +632,31 @@
     font-weight: 400;
 }
 
-/* Experimental editor typography customizer. This intentionally lives in Admin
-   for the localStorage spike; release-quality hooks should move into Koenig. */
-.gh-editor-typography-customized.gh-editor-font-sans .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
-    p,
-    blockquote,
-    aside,
-    ul,
-    ol
-):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
-    letter-spacing: -0.022em !important;
+.gh-editor-typography-customized {
+    --koenig-editor-body-font-family: Georgia, Times, serif;
+    --koenig-editor-body-font-size: 2rem;
+    --koenig-editor-body-font-size-mobile: 2rem;
+    --koenig-editor-body-letter-spacing: normal;
 }
 
-.gh-editor-typography-customized.gh-editor-font-serif .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
-    p,
-    blockquote,
-    aside,
-    ul,
-    ol
-):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)) {
-    font-family: Georgia, Times, serif;
+.gh-editor-typography-customized.gh-editor-font-sans {
+    --koenig-editor-body-font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
+    --koenig-editor-body-letter-spacing: -0.022em;
 }
 
-.gh-editor-typography-customized.gh-editor-font-sans .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
-    font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, "Droid Sans", "Helvetica Neue", sans-serif;
-    letter-spacing: -0.022em !important;
+.gh-editor-typography-customized.gh-editor-font-size-small {
+    --koenig-editor-body-font-size: 1.8rem;
+    --koenig-editor-body-font-size-mobile: 1.8rem;
 }
 
-.gh-editor-typography-customized.gh-editor-font-serif .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
-    font-family: Georgia, Times, serif;
+.gh-editor-typography-customized.gh-editor-font-sans.gh-editor-font-size-medium {
+    --koenig-editor-body-font-size: 1.95rem;
+    --koenig-editor-body-font-size-mobile: 1.95rem;
 }
 
-.gh-editor-typography-customized.gh-editor-font-size-small .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
-    p,
-    blockquote,
-    aside,
-    ul,
-    ol
-):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
-.gh-editor-typography-customized.gh-editor-font-size-small .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
-    font-size: 1.8rem !important;
-}
-
-.gh-editor-typography-customized.gh-editor-font-size-medium .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
-    p,
-    blockquote,
-    aside,
-    ul,
-    ol
-):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
-.gh-editor-typography-customized.gh-editor-font-size-medium .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
-    font-size: 2rem !important;
-}
-
-.gh-editor-typography-customized.gh-editor-font-sans.gh-editor-font-size-medium .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
-    p,
-    blockquote,
-    aside,
-    ul,
-    ol
-):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
-.gh-editor-typography-customized.gh-editor-font-sans.gh-editor-font-size-medium .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
-    font-size: 1.95rem !important;
-}
-
-.gh-editor-typography-customized.gh-editor-font-size-large .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > [data-kg="editor"] > .kg-prose > :where(
-    p,
-    blockquote,
-    aside,
-    ul,
-    ol
-):not(:where(.not-kg-prose, [class~='not-kg-prose'] *)),
-.gh-editor-typography-customized.gh-editor-font-size-large .koenig-react-editor > [data-secondary-instance="false"] > .koenig-lexical > .pointer-events-none {
-    font-size: 2.2rem !important;
+.gh-editor-typography-customized.gh-editor-font-size-large {
+    --koenig-editor-body-font-size: 2.2rem;
+    --koenig-editor-body-font-size-mobile: 2.2rem;
 }
 
 .gh-editor-email-size-warning-container {

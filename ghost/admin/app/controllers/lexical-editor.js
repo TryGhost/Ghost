@@ -39,22 +39,14 @@ const AUTOSAVE_TIMEOUT = 3000;
 // time in ms to force a save if the user is continuously typing
 const TIMEDSAVE_TIMEOUT = 60000;
 
-const EDITOR_TYPOGRAPHY_STORAGE_KEYS = {
-    fontStyle: 'ghost-editor-font-style',
-    fontSize: 'ghost-editor-font-size',
-    autoHideToolbar: 'ghost-editor-auto-hide-toolbar'
-};
+const EDITOR_ACCESSIBILITY_KEY = 'editor';
 const EDITOR_FONT_STYLES = ['sans', 'serif'];
 const EDITOR_FONT_SIZES = ['small', 'medium', 'large'];
-const LEGACY_EDITOR_FONT_SIZE_MAP = {
-    0: 'small',
-    1: 'small',
-    2: 'medium',
-    3: 'large',
-    4: 'large'
+const DEFAULT_EDITOR_TYPOGRAPHY_SETTINGS = {
+    fontStyle: 'serif',
+    fontSize: 'medium',
+    autoHideToolbar: false
 };
-const DEFAULT_EDITOR_FONT_STYLE = 'sans';
-const DEFAULT_EDITOR_FONT_SIZE = 'medium';
 
 const TK_REGEX = new RegExp(/(^|.)([^\p{L}\p{N}\s]*(TK)+[^\p{L}\p{N}\s]*)(.)?/u);
 const WORD_CHAR_REGEX = new RegExp(/\p{L}|\p{N}/u);
@@ -354,46 +346,59 @@ export default class LexicalEditorController extends Controller {
     }
 
     _getStoredEditorFontStyle() {
-        try {
-            const storedValue = window.localStorage.getItem(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontStyle);
-            return EDITOR_FONT_STYLES.includes(storedValue) ? storedValue : DEFAULT_EDITOR_FONT_STYLE;
-        } catch (e) {
-            return DEFAULT_EDITOR_FONT_STYLE;
-        }
+        const storedValue = this._getEditorAccessibilitySettings().fontStyle;
+        return EDITOR_FONT_STYLES.includes(storedValue) ? storedValue : DEFAULT_EDITOR_TYPOGRAPHY_SETTINGS.fontStyle;
     }
 
     _getStoredEditorFontSize() {
-        try {
-            const storedValue = window.localStorage.getItem(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize);
-
-            if (EDITOR_FONT_SIZES.includes(storedValue)) {
-                return storedValue;
-            }
-
-            if (Object.prototype.hasOwnProperty.call(LEGACY_EDITOR_FONT_SIZE_MAP, storedValue)) {
-                return LEGACY_EDITOR_FONT_SIZE_MAP[storedValue];
-            }
-
-            return DEFAULT_EDITOR_FONT_SIZE;
-        } catch (e) {
-            return DEFAULT_EDITOR_FONT_SIZE;
-        }
+        const storedValue = this._getEditorAccessibilitySettings().fontSize;
+        return EDITOR_FONT_SIZES.includes(storedValue) ? storedValue : DEFAULT_EDITOR_TYPOGRAPHY_SETTINGS.fontSize;
     }
 
     _getStoredEditorAutoHideToolbar() {
-        try {
-            return window.localStorage.getItem(EDITOR_TYPOGRAPHY_STORAGE_KEYS.autoHideToolbar) === 'true';
-        } catch (e) {
-            return false;
-        }
+        return this._getEditorAccessibilitySettings().autoHideToolbar === true;
     }
 
-    _storeEditorTypographySetting(key, value) {
-        try {
-            window.localStorage.setItem(key, String(value));
-        } catch (e) {
-            // Ignore localStorage errors. The customizer is only a local spike.
+    _getEditorAccessibilitySettings() {
+        const editorSettings = this.feature.accessibility?.[EDITOR_ACCESSIBILITY_KEY];
+
+        if (!editorSettings || typeof editorSettings !== 'object' || isEmberArray(editorSettings)) {
+            return {};
         }
+
+        return editorSettings;
+    }
+
+    _storeEditorTypographySettings() {
+        const editorSettings = {
+            ...this._getEditorAccessibilitySettings()
+        };
+
+        delete editorSettings.fontStyle;
+        delete editorSettings.fontSize;
+        delete editorSettings.autoHideToolbar;
+
+        [
+            ['fontStyle', this.editorFontStyle],
+            ['fontSize', this.editorFontSize],
+            ['autoHideToolbar', this.editorAutoHideToolbar]
+        ].forEach(([key, value]) => {
+            if (value !== DEFAULT_EDITOR_TYPOGRAPHY_SETTINGS[key]) {
+                editorSettings[key] = value;
+            }
+        });
+
+        const nextEditorSettings = Object.keys(editorSettings).length > 0 ? editorSettings : undefined;
+
+        if (!this.feature.get('_user') && this.session.user) {
+            this.feature.set('_user', this.session.user);
+        }
+
+        if (!this.feature.get('_user')) {
+            return;
+        }
+
+        this.saveEditorAccessibilityTask.perform(nextEditorSettings);
     }
 
     @action
@@ -450,6 +455,11 @@ export default class LexicalEditorController extends Controller {
         if (this.post.status === 'draft') {
             yield this.autosaveTask.perform();
         }
+    }
+
+    @enqueueTask
+    *saveEditorAccessibilityTask(editorSettings) {
+        yield this.feature.update(EDITOR_ACCESSIBILITY_KEY, editorSettings, {user: true});
     }
 
     // updates local willPublish/Schedule values, does not get applied to
@@ -628,7 +638,7 @@ export default class LexicalEditorController extends Controller {
         }
 
         this.editorFontStyle = fontStyle;
-        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontStyle, fontStyle);
+        this._storeEditorTypographySettings();
     }
 
     @action
@@ -638,13 +648,13 @@ export default class LexicalEditorController extends Controller {
         }
 
         this.editorFontSize = fontSize;
-        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize, fontSize);
+        this._storeEditorTypographySettings();
     }
 
     @action
     setEditorAutoHideToolbar(event) {
         this.editorAutoHideToolbar = event.target.checked;
-        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.autoHideToolbar, this.editorAutoHideToolbar);
+        this._storeEditorTypographySettings();
 
         if (!this.editorAutoHideToolbar) {
             this.isEditorChromeHidden = false;

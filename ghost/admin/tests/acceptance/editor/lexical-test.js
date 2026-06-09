@@ -11,24 +11,9 @@ describe('Acceptance: Lexical editor', function () {
     let hooks = setupApplicationTest();
     setupMirage(hooks);
 
-    const editorTypographyStorageKeys = {
-        fontStyle: 'ghost-editor-font-style',
-        fontSize: 'ghost-editor-font-size',
-        autoHideToolbar: 'ghost-editor-auto-hide-toolbar'
-    };
-
     beforeEach(async function () {
         this.server.loadFixtures();
-        localStorage.removeItem(editorTypographyStorageKeys.fontStyle);
-        localStorage.removeItem(editorTypographyStorageKeys.fontSize);
-        localStorage.removeItem(editorTypographyStorageKeys.autoHideToolbar);
         await loginAsRole('Administrator', this.server);
-    });
-
-    afterEach(function () {
-        localStorage.removeItem(editorTypographyStorageKeys.fontStyle);
-        localStorage.removeItem(editorTypographyStorageKeys.fontSize);
-        localStorage.removeItem(editorTypographyStorageKeys.autoHideToolbar);
     });
 
     it('redirects to signin when not authenticated', async function () {
@@ -50,17 +35,14 @@ describe('Acceptance: Lexical editor', function () {
             expect(match.singleNodeValue).to.exist;
         });
 
-        it('customizes editor typography locally', async function () {
+        it('customizes editor typography', async function () {
             const post = this.server.create('post', {lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"This is a test","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}'});
             await visit(`/editor/post/${post.id}`);
             await waitFor('[data-secondary-instance="false"] [data-lexical-editor] p');
-            const initialParagraphStyles = window.getComputedStyle(find('[data-secondary-instance="false"] [data-lexical-editor] p'));
-            const initialFontSize = parseFloat(initialParagraphStyles.fontSize);
 
             expect(find('[data-test-editor-typography-trigger]'), 'typography trigger').to.exist;
-            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-sans'), 'default font class').to.be.true;
+            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-serif'), 'default font class').to.be.true;
             expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-size-medium'), 'default size class').to.be.true;
-            expect(parseFloat(initialParagraphStyles.letterSpacing), 'computed sans paragraph letter spacing').to.be.closeTo(initialFontSize * -0.022, 0.01);
 
             await click('[data-test-editor-typography-trigger]');
             expect(find('.gh-editor-typography-menu').classList.contains('open'), 'typography menu opens').to.be.true;
@@ -69,20 +51,21 @@ describe('Acceptance: Lexical editor', function () {
             expect(find('.gh-editor-typography-menu').classList.contains('closed'), 'typography menu closes on outside click').to.be.true;
 
             await click('[data-test-editor-typography-trigger]');
-            await click('[data-test-editor-font-style="serif"]');
+            await click('[data-test-editor-font-style="sans"]');
             await click('[data-test-editor-font-size="large"]');
 
-            expect(localStorage.getItem(editorTypographyStorageKeys.fontStyle), 'stored font style').to.equal('serif');
-            expect(localStorage.getItem(editorTypographyStorageKeys.fontSize), 'stored font size').to.equal('large');
-            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-serif'), 'updated font class').to.be.true;
+            let accessibility = JSON.parse(this.server.schema.users.find('1').accessibility);
+            expect(accessibility.editor.fontStyle, 'stored font style').to.equal('sans');
+            expect(accessibility.editor.fontSize, 'stored font size').to.equal('large');
+            expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-sans'), 'updated font class').to.be.true;
             expect(find('.gh-koenig-editor').classList.contains('gh-editor-font-size-large'), 'updated size class').to.be.true;
-            const paragraphStyles = window.getComputedStyle(find('[data-secondary-instance="false"] [data-lexical-editor] p'));
-            const paragraphFontSize = parseFloat(paragraphStyles.fontSize);
-
-            expect(paragraphFontSize, 'computed paragraph font size').to.be.greaterThan(initialFontSize);
+            const koenigEditorStyles = window.getComputedStyle(find('.gh-koenig-editor'));
+            expect(koenigEditorStyles.getPropertyValue('--koenig-editor-body-font-size').trim(), 'Koenig body font size variable').to.equal('2.2rem');
+            expect(koenigEditorStyles.getPropertyValue('--koenig-editor-body-letter-spacing').trim(), 'Koenig body letter spacing variable').to.equal('-0.022em');
 
             await click('[data-test-editor-auto-hide-toolbar-toggle]');
-            expect(localStorage.getItem(editorTypographyStorageKeys.autoHideToolbar), 'stored auto-hide toolbar').to.equal('true');
+            accessibility = JSON.parse(this.server.schema.users.find('1').accessibility);
+            expect(accessibility.editor.autoHideToolbar, 'stored auto-hide toolbar').to.be.true;
 
             await triggerKeyEvent('[data-secondary-instance="false"] [data-lexical-editor]', 'keydown', 'A');
             expect(find('.gh-editor-fullscreen-container').classList.contains('gh-editor-chrome-hidden'), 'chrome hidden while typing').to.be.true;
