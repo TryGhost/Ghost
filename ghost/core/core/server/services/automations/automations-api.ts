@@ -53,9 +53,6 @@ const sendEmailActionSchema = z.object({
                 return false;
             }
         }),
-        email_sender_name: z.string().nullable(),
-        email_sender_email: z.string().nullable(),
-        email_sender_reply_to: z.string().nullable(),
         email_design_setting_id: z.string().min(1)
     }).strict()
 }).strict();

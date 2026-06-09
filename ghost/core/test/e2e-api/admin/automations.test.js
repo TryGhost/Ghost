@@ -76,9 +76,6 @@ const buildSendEmailAction = (dataOverrides = {}) => ({
     data: {
         email_subject: 'Welcome',
         email_lexical: NON_EMPTY_EMAIL_LEXICAL,
-        email_sender_name: null,
-        email_sender_email: null,
-        email_sender_reply_to: null,
         email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7',
         ...dataOverrides
     }
@@ -190,9 +187,6 @@ describe('Automations API', function () {
                             data: {
                                 email_subject: 'Hello from the editor',
                                 email_lexical: emailLexical,
-                                email_sender_name: null,
-                                email_sender_email: null,
-                                email_sender_reply_to: null,
                                 email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7'
                             }
                         }],
@@ -559,9 +553,6 @@ describe('Automations API', function () {
                 data: {
                     email_subject: 'Changed type',
                     email_lexical: JSON.stringify({root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}}),
-                    email_sender_name: null,
-                    email_sender_email: null,
-                    email_sender_reply_to: null,
                     email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7'
                 }
             } : {
