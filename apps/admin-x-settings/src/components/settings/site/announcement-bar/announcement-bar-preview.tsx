@@ -39,7 +39,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
                     announcementContent,
                     visibilityMemo
                 ),
-                Accept: 'text/plain'
+                Accept: 'text/html'
             },
             mode: 'cors',
             credentials: 'include'

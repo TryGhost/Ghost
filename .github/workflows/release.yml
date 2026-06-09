@@ -34,6 +34,7 @@ concurrency:
 
 jobs:
   release:
+    if: github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-latest
     name: Prepare & Push Release
     steps:

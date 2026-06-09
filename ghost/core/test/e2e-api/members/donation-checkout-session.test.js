@@ -114,6 +114,86 @@ describe('Create Stripe Checkout Session for Donations', function () {
         assert.equal(lastDonation.get('attribution_url'), url);
     });
 
+    it('Strips reserved gift metadata from donation checkout sessions', async function () {
+        const post = await getPost(fixtureManager.get('posts', 0).id);
+        const url = urlService.getUrlByResourceId(post.id, {absolute: false});
+        const paidTier = await models.Product.findOne({type: 'paid'}, {require: true});
+        const attackerToken = 'poc-reserved-donation-metadata';
+        const email = 'reserved-metadata-donation@example.com';
+
+        await membersAgent.post('/api/create-stripe-checkout-session/')
+            .body({
+                customerEmail: email,
+                type: 'donation',
+                successUrl: 'https://example.com/?type=success',
+                cancelUrl: 'https://example.com/?type=cancel',
+                metadata: {
+                    ghost_donation: '',
+                    ghost_gift: 'true',
+                    ghostSignupContext: 'needs_magic_link',
+                    gift_token: attackerToken,
+                    tier_id: paidTier.id,
+                    cadence: 'year',
+                    duration: '10',
+                    urlHistory: [
+                        {
+                            path: url,
+                            time: Date.now(),
+                            referrerMedium: null,
+                            referrerSource: 'ghost-explore',
+                            referrerUrl: 'https://example.com/blog/'
+                        }
+                    ]
+                }
+            })
+            .expectStatus(200);
+
+        const checkoutSession = stripeMocker.checkoutSessions[stripeMocker.checkoutSessions.length - 1];
+
+        assert.equal(checkoutSession.metadata.ghost_donation, true);
+        assert.equal(checkoutSession.metadata.ghost_gift, undefined);
+        assert.equal(checkoutSession.metadata.ghostSignupContext, undefined);
+        assert.equal(checkoutSession.metadata.gift_token, undefined);
+        assert.equal(checkoutSession.metadata.tier_id, undefined);
+        assert.equal(checkoutSession.metadata.cadence, undefined);
+        assert.equal(checkoutSession.metadata.duration, undefined);
+
+        await stripeMocker.sendWebhook({
+            type: 'checkout.session.completed',
+            data: {
+                object: {
+                    id: checkoutSession.id,
+                    mode: 'payment',
+                    amount_total: 100,
+                    currency: 'usd',
+                    customer: checkoutSession.customer,
+                    customer_details: {
+                        name: 'Reserved Metadata Donor',
+                        email
+                    },
+                    metadata: checkoutSession.metadata,
+                    payment_intent: 'pi_reserved_donation_metadata',
+                    custom_fields: [{
+                        key: 'donation_message',
+                        text: {
+                            value: 'Reserved metadata should not create a gift'
+                        }
+                    }]
+                }
+            }
+        });
+
+        const donation = await models.DonationPaymentEvent.findOne({
+            email
+        }, {require: true});
+        const gift = await models.Gift.findOne({token: attackerToken});
+
+        assert.equal(donation.get('amount'), 100);
+        assert.equal(donation.get('currency'), 'usd');
+        assert.equal(donation.get('donation_message'), 'Reserved metadata should not create a gift');
+        assert.equal(gift, null);
+    });
+
     it('Can create a member checkout session for a donation', async function () {
         // Fake a visit to a post
         const post = await getPost(fixtureManager.get('posts', 0).id);

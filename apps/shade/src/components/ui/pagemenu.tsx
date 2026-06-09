@@ -208,7 +208,7 @@ const PageMenuItem = React.forwardRef<HTMLButtonElement, PageMenuItemProps>(
             <Button
                 ref={ref}
                 className={cn(
-                    'relative px-3 gap-1.5 text-md font-medium text-text-secondary hover:text-foreground focus-visible:ring-0',
+                    'relative px-3 gap-1.5 text-control font-medium text-text-secondary hover:text-foreground focus-visible:ring-0',
                     'data-[state=active]:bg-muted-foreground/10 data-[state=active]:text-foreground',
                     className
                 )}

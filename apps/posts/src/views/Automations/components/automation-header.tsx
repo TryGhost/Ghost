@@ -1,6 +1,6 @@
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
-import {Button, type ButtonProps, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Skeleton} from '@tryghost/shade/components';
+import {Button, type ButtonProps, Skeleton} from '@tryghost/shade/components';
 import {Link} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
@@ -58,19 +58,14 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
             </div>
             <div className='flex shrink-0 items-center gap-3'>
                 {status === 'active' && (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button aria-label='Automation options' variant='ghost'>
-                                <LucideIcon.Ellipsis />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align='end' className='min-w-40'>
-                            <DropdownMenuItem disabled={!isTurnOffButtonEnabled} onSelect={onTurnOff}>
-                                <LucideIcon.Power className='size-4' />
-                                Turn off
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button
+                        disabled={!isTurnOffButtonEnabled}
+                        variant='outline'
+                        onClick={onTurnOff}
+                    >
+                        <LucideIcon.Power />
+                        Turn off
+                    </Button>
                 )}
                 {status === 'inactive' && (
                     <Button

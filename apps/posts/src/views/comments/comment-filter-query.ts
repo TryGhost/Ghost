@@ -1,9 +1,15 @@
 import {commentFields} from './comment-fields';
 import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
+import {resolveField} from '../filters/resolve-field';
 import type {AstNode} from '../filters/filter-ast';
 import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
 
 const TIMEZONE_SENSITIVE_COMMENT_FIELDS = getFieldKeysByType(commentFields, 'date');
+
+function isPredicateEnabled(predicate: ParsedPredicate): boolean {
+    const resolved = resolveField(commentFields, predicate.field, 'UTC');
+    return resolved?.definition.operators.includes(predicate.operator) ?? false;
+}
 
 function parseCommentNode(node: AstNode, timezone: string): ParsedPredicate[] {
     if (Array.isArray(node.$and)) {
@@ -20,7 +26,7 @@ export function parseCommentFilter(filter: string | undefined, timezone: string)
         return [];
     }
 
-    return stampPredicates(parseCommentNode(ast, timezone));
+    return stampPredicates(parseCommentNode(ast, timezone).filter(isPredicateEnabled));
 }
 
 export function hasTimezoneSensitiveCommentFilter(filter: string | undefined): boolean {
@@ -34,5 +40,5 @@ export function hasTimezoneSensitiveCommentFilter(filter: string | undefined): b
 }
 
 export function serializeCommentFilters(predicates: FilterPredicate[], timezone: string): string | undefined {
-    return serializePredicates(predicates, commentFields, timezone);
+    return serializePredicates(predicates.filter(isPredicateEnabled), commentFields, timezone);
 }

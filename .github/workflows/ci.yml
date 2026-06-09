@@ -727,7 +727,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:e9f78aab41aed68bbbd376b9abb58ea28b167288186ce81bb11b9d154a01040f
+        image: tinybirdco/tinybird-local:latest@sha256:49f65a4197ae7ff4aa923ec53e969c03220fbc1ddc38fba5edfe6832aacbb5db
         ports:
           - 7181:7181
     steps:
@@ -880,11 +880,11 @@ jobs:
       - name: Determine push strategy
         id: strategy
         run: |
-          # Same-org repos (e.g. TryGhost/Ghost, TryGhost/Ghost-Security) push to GHCR.
-          # External forks and cross-repo PRs use artifact-based image transfer instead.
+          # Only the canonical repo publishes to GHCR by default.
+          # Direct clones, external forks, and cross-repo PRs use artifact-based image transfer instead.
           USE_ARTIFACT="false"
-          if [ "${{ github.repository_owner }}" != "TryGhost" ]; then
-            # External fork — no GHCR push
+          if [ "${{ github.repository }}" != "TryGhost/Ghost" ]; then
+            # Non-canonical repo - no GHCR push
             USE_ARTIFACT="true"
           elif [ "${{ github.event_name }}" = "pull_request" ] && \
                [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
@@ -905,9 +905,9 @@ jobs:
             IMAGE_FULL_NAME="ghcr.io/${OWNER}/${REPO_NAME}"
           fi
 
-          # Force push on tag pushes (release images must always be published)
+          # Force push on canonical tag pushes (release images must always be published)
           IS_TAG="${{ startsWith(github.ref, 'refs/tags/v') }}"
-          if [ "$IS_TAG" = "true" ]; then
+          if [ "$IS_TAG" = "true" ] && [ "${{ github.repository }}" = "TryGhost/Ghost" ]; then
             USE_ARTIFACT="false"
           fi
 
@@ -1117,7 +1117,8 @@ jobs:
             apps/comments-ui/umd \
             apps/sodo-search/umd \
             apps/signup-form/umd \
-            apps/announcement-bar/umd
+            apps/announcement-bar/umd \
+            apps/admin-toolbar/umd
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
@@ -1506,7 +1507,7 @@ jobs:
           rsync -av --remove-source-files admin/* ghost/admin
 
       - name: Upload Admin test coverage
-        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
+        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
         with:
           flags: admin-tests
 
@@ -1523,7 +1524,7 @@ jobs:
 
       - name: Upload E2E test coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
+        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
         with:
           flags: e2e-tests
 
@@ -1591,6 +1592,8 @@ jobs:
             package_path: 'apps/signup-form'
           - package_name: '@tryghost/announcement-bar'
             package_path: 'apps/announcement-bar'
+          - package_name: '@tryghost/admin-toolbar'
+            package_path: 'apps/admin-toolbar'
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -1653,6 +1656,9 @@ jobs:
           - package_name: '@tryghost/announcement-bar'
             package_path: 'apps/announcement-bar'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
+          - package_name: '@tryghost/admin-toolbar'
+            package_path: 'apps/admin-toolbar'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-toolbar@~CURRENT_MINOR/umd/admin-toolbar.min.js'
     steps:
       - name: Checkout code
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
@@ -1745,7 +1751,7 @@ jobs:
     ]
     if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird_datafiles == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Trigger and watch traffic analytics infra Tinybird workflow
         if: github.repository == 'TryGhost/Ghost'
         env:

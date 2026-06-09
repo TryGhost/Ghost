@@ -84,36 +84,36 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
             <h4 className="mb-4 font-semibold md:text-lg">Email info</h4>
             <div className="flex flex-col gap-4">
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium" htmlFor="welcome-email-sender-name">Sender name</label>
+                    <label className="font-medium" htmlFor="welcome-email-sender-name">Sender name</label>
                     <Input
                         id="welcome-email-sender-name"
                         placeholder={senderNamePlaceholder}
                         value={generalSettings.senderName}
                         onChange={e => onGeneralChange({senderName: e.target.value})}
                     />
-                    {senderNameError ? <p className='text-xs text-red'>{senderNameError}</p> : null}
+                    {senderNameError ? <p className='text-sm text-red'>{senderNameError}</p> : null}
                 </div>
                 {showSenderEmailInput ? (
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-sm font-medium" htmlFor="welcome-email-sender-email">Sender email</label>
+                        <label className="font-medium" htmlFor="welcome-email-sender-email">Sender email</label>
                         <Input
                             id="welcome-email-sender-email"
                             placeholder={senderEmailPlaceholder}
                             value={generalSettings.senderEmail}
                             onChange={e => onGeneralChange({senderEmail: e.target.value})}
                         />
-                        {senderEmailError ? <p className='text-xs text-red'>{senderEmailError}</p> : null}
+                        {senderEmailError ? <p className='text-sm text-red'>{senderEmailError}</p> : null}
                     </div>
                 ) : null}
                 <div className="flex flex-col gap-1.5">
-                    <label className="text-sm font-medium" htmlFor="welcome-email-reply-to-email">Reply-to email</label>
+                    <label className="font-medium" htmlFor="welcome-email-reply-to-email">Reply-to email</label>
                     <Input
                         id="welcome-email-reply-to-email"
                         placeholder={replyToEmailPlaceholder}
                         value={generalSettings.replyToEmail}
                         onChange={e => onGeneralChange({replyToEmail: e.target.value})}
                     />
-                    {replyToEmailError ? <p className='text-xs text-red'>{replyToEmailError}</p> : null}
+                    {replyToEmailError ? <p className='text-sm text-red'>{replyToEmailError}</p> : null}
                 </div>
             </div>
         </section>
@@ -129,7 +129,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                 />
                 {showPublicationIconToggle && (
                     <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium">Publication icon</span>
+                        <span className="font-medium">Publication icon</span>
                         <Switch
                             checked={generalSettings.showPublicationIcon}
                             size='sm'
@@ -138,7 +138,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                     </div>
                 )}
                 <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Publication title</span>
+                    <span className="font-medium">Publication title</span>
                     <Switch
                         checked={generalSettings.showPublicationTitle}
                         size='sm'
@@ -146,7 +146,7 @@ const GeneralTab: React.FC<GeneralTabProps> = ({
                     />
                 </div>
                 <div className="mt-2 flex flex-col gap-1.5">
-                    <label className="text-sm font-medium" htmlFor="welcome-email-footer">Email footer</label>
+                    <label className="font-medium" htmlFor="welcome-email-footer">Email footer</label>
                     <Textarea
                         id="welcome-email-footer"
                         placeholder="Any extra information or legal text"
@@ -242,7 +242,7 @@ const Sidebar: React.FC<SidebarProps> = ({
                 <LoadingIndicator size="md" />
             </div>
         ) : errorMessage ? (
-            <div className="flex flex-1 items-center justify-center px-6 text-center text-sm text-gray-700 dark:text-gray-300">
+            <div className="flex flex-1 items-center justify-center px-6 text-center text-gray-700 dark:text-gray-300">
                 {errorMessage}
             </div>
         ) : (
@@ -323,7 +323,7 @@ export function buildAutomatedEmailDesignPayload(state: WelcomeEmailCustomizeFor
 }
 
 const ErrorState: React.FC<{message: string}> = ({message}) => (
-    <div className="flex h-full items-center justify-center px-6 text-center text-sm text-gray-700 dark:text-gray-300">
+    <div className="flex h-full items-center justify-center px-6 text-center text-gray-700 dark:text-gray-300">
         {message}
     </div>
 );

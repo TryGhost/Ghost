@@ -319,7 +319,7 @@
     position: relative;
     display: flex;
     align-items: center;
-    min-height: 33px;
+    min-height: 32px;
 }
 
 .ember-power-select-status-icon {

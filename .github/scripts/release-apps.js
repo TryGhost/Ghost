@@ -11,7 +11,8 @@ const CONFIG_KEYS = {
     '@tryghost/sodo-search': 'sodoSearch',
     '@tryghost/comments-ui': 'comments',
     '@tryghost/announcement-bar': 'announcementBar',
-    '@tryghost/signup-form': 'signupForm'
+    '@tryghost/signup-form': 'signupForm',
+    '@tryghost/admin-toolbar': 'adminToolbar'
 };
 
 const CURRENT_DIR = process.cwd();

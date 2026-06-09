@@ -1,13 +1,7 @@
 module.exports = function (data) {
-    let visibilityNote = 'This comment will remain visible until you choose to remove it.';
-    if (!data.commentModerationEnabled) {
-        visibilityNote = 'This comment will remain visible until you choose to remove it, which can be done directly on the post.';
-    }
+    const visibilityNote = 'This comment will remain visible until you choose to remove it.';
 
-    let actionLinks = data.postUrl;
-    if (data.commentModerationEnabled) {
-        actionLinks = `View comment: ${data.postUrl}\nModerate comment: ${data.moderationUrl}`;
-    }
+    const actionLinks = `View comment: ${data.postUrl}\nModerate comment: ${data.moderationUrl}`;
 
     // Be careful when you indent the email, because whitespaces are visible in emails!
     return `Hey there,

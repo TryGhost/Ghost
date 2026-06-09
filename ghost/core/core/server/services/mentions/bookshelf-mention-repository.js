@@ -58,7 +58,8 @@ module.exports = class BookshelfMentionRepository {
             sourceFavicon: model.get('source_favicon'),
             sourceFeaturedImage: model.get('source_featured_image'),
             verified: model.get('verified'),
-            deleted: model.get('deleted')
+            deleted: model.get('deleted'),
+            revalidationFailureCount: model.get('revalidation_failure_count')
         });
     }
 
@@ -133,7 +134,8 @@ module.exports = class BookshelfMentionRepository {
             resource_type: mention.resourceType,
             payload: mention.payload ? JSON.stringify(mention.payload) : null,
             deleted: Mention.isDeleted(mention),
-            verified: mention.verified
+            verified: mention.verified,
+            revalidation_failure_count: mention.revalidationFailureCount
         };
 
         const existing = await this.#MentionModel.findOne({id: data.id}, {require: false});

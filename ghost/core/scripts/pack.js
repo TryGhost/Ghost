@@ -69,12 +69,9 @@ for (const section of ['dependencies', 'devDependencies', 'optionalDependencies'
 //   - catalog + catalogs (lockfile records & validates these)
 //   - allowBuilds + strictDepBuilds (end-user installs need this to permit
 //     native module post-install scripts like sqlite3, sharp, re2)
+//   - overrides + packageExtensions (root dependency policy must apply to the
+//     standalone install as well as the source workspace)
 // We deliberately drop:
-//   - overrides + packageExtensions: pnpm deploy already applied them to
-//     the resolved package.json and the deploy lockfile does not record
-//     them. Shipping them in workspace.yaml causes pnpm 11's
-//     frozen-lockfile install (CI=true default for ghost-cli) to fail
-//     ERR_PNPM_LOCKFILE_CONFIG_MISMATCH.
 //   - packages: relative paths that don't exist in the deployed dir.
 //   - minimumReleaseAge, blockExoticSubdeps, catalogMode: source-repo
 //     supply-chain policies that aren't meaningful at end-user install.
@@ -85,7 +82,7 @@ const workspaceSrc = path.join(ROOT_DIR, 'pnpm-workspace.yaml');
 const workspaceDst = path.join(DEPLOY_DIR, 'pnpm-workspace.yaml');
 const rootWorkspace = yaml.load(fs.readFileSync(workspaceSrc, 'utf8'));
 const deployWorkspace = {};
-for (const key of ['catalog', 'catalogs', 'allowBuilds', 'strictDepBuilds']) {
+for (const key of ['catalog', 'catalogs', 'allowBuilds', 'strictDepBuilds', 'overrides', 'packageExtensions']) {
     if (rootWorkspace[key] !== undefined) {
         deployWorkspace[key] = rootWorkspace[key];
     }
@@ -98,7 +95,7 @@ for (const key of ['catalog', 'catalogs', 'allowBuilds', 'strictDepBuilds']) {
 deployWorkspace.minimumReleaseAge = 0;
 fs.writeFileSync(workspaceDst, yaml.dump(deployWorkspace));
 
-console.log('Wrote trimmed pnpm-workspace.yaml (catalogs + allowBuilds, age check off)');
+console.log('Wrote trimmed pnpm-workspace.yaml (catalogs + overrides + allowBuilds, age check off)');
 
 // Pack private workspace packages as component tarballs.
 // These are not on npm, so ghost-cli can't install them from the registry.
@@ -139,7 +136,7 @@ if (!rootPkg.packageManager) {
 pkg.packageManager = rootPkg.packageManager;
 console.log(`  Set packageManager: ${rootPkg.packageManager.split('+')[0]}`);
 
-// pnpm overrides live in the published pnpm-workspace.yaml (copied above).
+// pnpm overrides live in the published pnpm-workspace.yaml (written above).
 // pnpm 11 only reads overrides from workspace.yaml, not from a package's
 // `pnpm.overrides`. We deliberately do NOT also write pnpm.overrides here:
 // pnpm 11 still hashes that field into its lockfile-overrides-config check,
@@ -183,6 +180,9 @@ if (!packagedPkg.packageManager) {
 const packagedWorkspace = yaml.load(fs.readFileSync(workspaceDst, 'utf8'));
 if (!packagedWorkspace?.catalog || Object.keys(packagedWorkspace.catalog).length === 0) {
     throw new Error('Packaged pnpm-workspace.yaml is missing the default catalog');
+}
+if (!packagedWorkspace?.overrides || Object.keys(packagedWorkspace.overrides).length === 0) {
+    throw new Error('Packaged pnpm-workspace.yaml is missing root overrides');
 }
 
 // 4. Create tarball

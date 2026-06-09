@@ -18,10 +18,7 @@ const renderGiftRedemptionPage = (overrideContext = {}) => {
         overrideContext: {
             site: {
                 ...testSite,
-                url: 'https://example.com/',
-                labs: {
-                    giftSubscriptions: true
-                }
+                url: 'https://example.com/'
             },
             pageData: {
                 token: 'gift-token-123',
@@ -118,21 +115,5 @@ describe('GiftRedemptionPage', () => {
         });
 
         expect(mockDoActionFn).toHaveBeenCalledWith('closePopup');
-    });
-
-    test('removes the portal link and closes the popup when gift subscriptions are disabled', async () => {
-        const pushStateSpy = vi.spyOn(window.history, 'pushState');
-        const {mockDoActionFn} = renderGiftRedemptionPage({
-            site: {
-                ...testSite,
-                url: 'https://example.com/',
-                labs: {}
-            }
-        });
-
-        await waitFor(() => {
-            expect(pushStateSpy).toHaveBeenCalled();
-            expect(mockDoActionFn).toHaveBeenCalledWith('closePopup');
-        });
     });
 });

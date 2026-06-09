@@ -1,6 +1,5 @@
 {
     "url": "http://localhost:2368",
-    "lazyRouting": false,
     "server": {
         "host": "127.0.0.1",
         "port": 2368,
@@ -8,6 +7,12 @@
     },
     "admin": {
         "redirects": true
+    },
+    "externalRequest": {
+        "keepAlive": true,
+        "keepAliveMsecs": 60000,
+        "maxSockets": 256,
+        "maxFreeSockets": 256
     },
     "updateCheck": {
         "url": "https://updates.ghost.org",
@@ -282,6 +287,10 @@
     },
     "tenor": {
         "googleApiKey": null,
+        "contentFilter": "off"
+    },
+    "klipy": {
+        "apiKey": null,
         "contentFilter": "off"
     },
     "opensea": {

@@ -1,9 +1,10 @@
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
+import useFeatureFlag from '../../../hooks/use-feature-flag';
 import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useSettingGroup from '../../../hooks/use-setting-group';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TabView, TextField, XLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {FacebookLogo, GoogleLogo, Icon, ImageUpload, SettingGroupContent, TabView, TextField, Toggle, XLogo, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -27,7 +28,7 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
     return (
         <div>
             <div className='-mx-5 -mb-5 overflow-hidden rounded-b-xl bg-grey-50 px-5 pt-2 md:-mx-7 md:-mb-7 md:px-7 md:pt-7 dark:bg-grey-950'>
-                <div className='-mt-4 mb-2 text-xs text-grey-500 uppercase dark:text-grey-800'>Preview</div>
+                <div className='-mt-4 mb-2 text-sm text-grey-500 uppercase dark:text-grey-800'>Preview</div>
                 <div className='rounded-t-sm bg-white px-5 py-3 shadow-lg dark:bg-grey-950'>
                     <div className='mt-3 flex items-center'>
                         <div>
@@ -45,14 +46,14 @@ const SearchEnginePreview: React.FC<SearchEnginePreviewProps> = ({
                             backgroundSize: 'contain'
                         }}>
                         </div>
-                        <div className='flex flex-col text-sm'>
+                        <div className='flex flex-col'>
                             <span>{siteDomain}</span>
-                            <span className='-mt-0.5 inline-block text-xs text-grey-600'>{siteUrl}</span>
+                            <span className='-mt-0.5 inline-block text-sm text-grey-600'>{siteUrl}</span>
                         </div>
                     </div>
                     <div className='mt-1 flex flex-col'>
                         <span className='text-lg text-[#1a0dab] dark:text-blue'>{title}</span>
-                        <span className='text-sm text-grey-900 dark:text-grey-700'>{description}</span>
+                        <span className='text-grey-900 dark:text-grey-700'>{description}</span>
                     </div>
                 </div>
             </div>
@@ -76,6 +77,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const handleError = useHandleError();
     const {mutateAsync: uploadImage} = useUploadImage();
     const editor = usePinturaEditor();
+    const hasLlmsTxt = useFeatureFlag('llmsTxt');
 
     // Get all settings needed for all tabs
     const [
@@ -101,6 +103,9 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
         'twitter_description',
         'twitter_image'
     ]).map(value => value || '') as string[];
+
+    const [llmsEnabledValue] = getSettingValues(localSettings, ['llms_enabled']);
+    const llmsEnabled = llmsEnabledValue !== false;
 
     // Tab management
     const [selectedTab, setSelectedTab] = useState('metadata');
@@ -136,6 +141,12 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     };
 
     // Meta data handlers
+    const handleLlmsToggleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        updateSetting('llms_enabled', e.target.checked);
+        if (!isEditing) {
+            handleEditingChange(true);
+        }
+    };
     const handleMetaTitleChange = createSettingHandler('meta_title');
     const handleMetaDescriptionChange = createSettingHandler('meta_description');
 
@@ -155,6 +166,14 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const metadataTabContent = (
         <>
             <SettingGroupContent className="my-6 gap-3">
+                {hasLlmsTxt && (
+                    <Toggle
+                        checked={llmsEnabled}
+                        direction='rtl'
+                        label='Enable structured data for LLMs and AI search engines'
+                        onChange={handleLlmsToggleChange}
+                    />
+                )}
                 <TextField
                     hint="Recommended: 70 characters"
                     inputRef={focusRef}
@@ -198,7 +217,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
                 <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
                     <ImageUpload
-                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 text-sm font-semibold text-grey-800 hover:text-black dark:border-grey-900'
+                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 font-semibold text-grey-800 hover:text-black dark:border-grey-900'
                         height='300px'
                         id='facebook-image'
                         imageURL={facebookImage}
@@ -254,7 +273,7 @@ const SEOMeta: React.FC<{ keywords: string[] }> = ({keywords}) => {
                 <div className="mb-4 h-3 w-3/5 rounded bg-grey-200 dark:bg-grey-900"></div>
                 <SettingGroupContent className="overflow-hidden rounded-md border border-grey-300 dark:border-grey-900">
                     <ImageUpload
-                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 text-sm font-semibold text-grey-800 hover:text-black dark:border-grey-900'
+                        fileUploadClassName='flex cursor-pointer items-center justify-center rounded rounded-b-none border border-grey-100 border-b-0 bg-grey-50 p-3 font-semibold text-grey-800 hover:text-black dark:border-grey-900'
                         height='300px'
                         id='twitter-image'
                         imageURL={twitterImage}
