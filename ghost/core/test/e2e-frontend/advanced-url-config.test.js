@@ -25,7 +25,7 @@ describe('Advanced URL Configurations', function () {
 
             await testUtils.startGhost();
 
-            request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
+            request = supertest.agent(configUtils.getServerUrl());
         });
 
         after(async function () {
@@ -107,14 +107,14 @@ describe('Advanced URL Configurations', function () {
             configUtils.set('admin:url', 'http://admin.localhost/');
             urlUtils.stubUrlUtilsFromConfig();
             await testUtils.startGhost();
-            request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
+            request = supertest.agent(configUtils.getServerUrl());
         });
 
         after(async function () {
             await urlUtils.restore();
             await configUtils.restore();
             await testUtils.startGhost();
-            request = supertest.agent(configUtils.config.get('server:host') + ':' + configUtils.config.get('server:port'));
+            request = supertest.agent(configUtils.getServerUrl());
         });
 
         it('/blog/ghost should redirect to external admin SPA', async function () {

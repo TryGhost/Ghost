@@ -299,7 +299,7 @@
     "qs": "6.15.2",
     "rewire": "9.0.1",
     "sinon": "catalog:",
-    "supertest": "6.3.4",
+    "supertest": "catalog:",
     "tmp": "0.2.6",
     "tsx": "catalog:",
     "typescript": "catalog:",
