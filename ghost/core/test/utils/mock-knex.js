@@ -215,7 +215,7 @@ class Queries {
                 },
 
                 resolve(result) {
-                    return query.response(result);
+                    return this.response(result);
                 },
 
                 reject(error) {
@@ -266,6 +266,7 @@ class Tracker extends EventEmitter {
     install() {
         this.tracking = true;
         this.queries.reset();
+        this.removeAllListeners('query');
     }
 
     uninstall() {
