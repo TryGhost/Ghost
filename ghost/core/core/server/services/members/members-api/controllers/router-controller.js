@@ -1088,6 +1088,9 @@ module.exports = class RouterController {
         }
 
         const requestedNewsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
+        // Escape quotes so each name is safely embedded in the single-quoted
+        // NQL filter below. NQL reads a lone backslash literally (only `\'`/`\"`
+        // are escapes), so escaping quotes alone is sufficient.
         const requestedNewsletterNamesFilter = requestedNewsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
         const matchedNewsletters = (await this._newslettersService.getAll({
             filter: `name:[${requestedNewsletterNamesFilter}]`,
