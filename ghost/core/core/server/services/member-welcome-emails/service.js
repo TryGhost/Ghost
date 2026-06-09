@@ -21,6 +21,10 @@ const EMAIL_VALIDATION_TYPE_BY_FIELD = {
     sender_reply_to: 'replyTo'
 };
 
+/**
+ * @param {null | undefined | string} value
+ * @returns {string}
+ */
 const trimValue = value => value?.trim() || '';
 
 class MemberWelcomeEmailService {
