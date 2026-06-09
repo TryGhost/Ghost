@@ -1,13 +1,13 @@
 import {MemberDetailsPage, MembersListPage} from '@/admin-pages';
 import {MemberFactory, createMemberFactory} from '@/data-factory';
+import {MembersService} from '@/helpers/services/members';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Admin - Members List', () => {
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
-        const response = await page.request.delete('/ghost/api/admin/members?all=true');
-        expect(response.ok()).toBeTruthy();
+        await new MembersService(page.request).deleteAll();
         memberFactory = createMemberFactory(page.request);
     });
 
