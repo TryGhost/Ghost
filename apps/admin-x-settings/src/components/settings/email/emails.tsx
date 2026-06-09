@@ -19,10 +19,10 @@ import {useVerifyAutomatedEmailSender} from '@tryghost/admin-x-framework/api/aut
 
 export const searchKeywords = {
     enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
-    emails: ['emails', 'newsletters', 'transactional', 'design', 'customization', 'automations', 'welcome'],
+    emails: ['emails', 'newsletters', 'automation emails', 'transactional', 'design', 'customization', 'automations', 'welcome'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
     mailgun: ['mailgun', 'emails', 'newsletters'],
-    emailsNavMenu: ['emails', 'newsletters', 'transactional', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'mailgun', 'automations', 'welcome']
+    emailsNavMenu: ['emails', 'newsletters', 'automation emails', 'transactional', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'mailgun', 'automations', 'welcome']
 };
 
 const TransactionalTabContent: React.FC = () => {
@@ -46,9 +46,9 @@ const TransactionalTabContent: React.FC = () => {
                         <Icon colorClass='text-grey-700 dark:text-grey-600' name='mailplus' size='md' />
                     </div>
                     <div className='min-w-0 grow'>
-                        <div className='leading-tight font-medium'>Automations</div>
+                        <div className='leading-tight font-medium'>Email design</div>
                         <div className='mt-1 text-sm leading-[1.35] text-grey-700 dark:text-grey-600'>
-                            Design for automation emails
+                            Customize the appearance of automation emails
                         </div>
                     </div>
                 </button>
@@ -143,17 +143,17 @@ const EmailsGroup: React.FC<{ keywords: string[]; newslettersEnabled: boolean }>
     return (
         <TopLevelGroup
             customButtons={customButtons}
-            description='Manage newsletters and customize transactional emails.'
+            description='Manage newsletters and design automation emails.'
             keywords={keywords}
             navid='emails'
             testId='emails'
-            title='Newsletters & transactional emails'
+            title='Newsletters & automation emails'
         >
             <Tabs value={selectedTab} variant='underline' onValueChange={value => setSelectedTab(value as 'newsletters' | 'transactional')}>
                 <div className='flex items-center justify-between border-b border-grey-200 dark:border-grey-900'>
                     <TabsList className='border-b-0'>
                         {newslettersEnabled && <TabsTrigger value='newsletters'>Newsletters</TabsTrigger>}
-                        <TabsTrigger value='transactional'>Transactional</TabsTrigger>
+                        <TabsTrigger value='transactional'>Automation emails</TabsTrigger>
                     </TabsList>
                     {newslettersEnabled && selectedTab === 'newsletters' && (
                         <Select value={newslettersFilter} onValueChange={value => setNewslettersFilter(value as NewslettersFilter)}>
