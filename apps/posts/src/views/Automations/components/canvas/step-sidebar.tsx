@@ -20,7 +20,7 @@ const getValidWaitDays = (value: string): number | null => {
 
 const SidebarField: React.FC<{label: string; children: React.ReactNode; htmlFor?: string}> = ({children, htmlFor, label}) => (
     <Field>
-        <FieldLabel className='text-xs font-medium text-text-secondary' htmlFor={htmlFor}>
+        <FieldLabel className='text-sm font-medium text-text-secondary' htmlFor={htmlFor}>
             {label}
         </FieldLabel>
         {children}
@@ -53,7 +53,7 @@ const TriggerSidebarBody: React.FC<{memberTiers: MemberTier[]}> = ({memberTiers}
             <ReadOnlySelect value='New member sign up' />
         </SidebarField>
         <div className='flex flex-col gap-2'>
-            <span className='text-xs font-medium text-text-secondary'>Members</span>
+            <span className='text-sm font-medium text-text-secondary'>Members</span>
             <Label className='flex items-center gap-2 text-sm font-normal text-foreground'>
                 <Checkbox checked={memberTiers.includes('free')} disabled />
               Free
@@ -228,7 +228,7 @@ const StepSidebarContent: React.FC<{detail: StepSidebarDetail}> = ({detail}) => 
                         <Icon className='size-4' />
                     </div>
                     <div className='min-w-0'>
-                        <span className='block text-xs text-text-secondary'>{detail.label}</span>
+                        <span className='block text-sm text-text-secondary'>{detail.label}</span>
                         <h2 className={cn('truncate text-base leading-tight font-medium text-foreground', detail.isPlaceholderTitle && 'opacity-50')}>{detail.title}</h2>
                     </div>
                 </div>
