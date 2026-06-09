@@ -63,6 +63,12 @@ describe('Acceptance: Lexical editor', function () {
             expect(parseFloat(initialParagraphStyles.letterSpacing), 'computed sans paragraph letter spacing').to.be.closeTo(initialFontSize * -0.022, 0.01);
 
             await click('[data-test-editor-typography-trigger]');
+            expect(find('.gh-editor-typography-menu').classList.contains('open'), 'typography menu opens').to.be.true;
+
+            await click('[data-secondary-instance="false"] [data-lexical-editor] p');
+            expect(find('.gh-editor-typography-menu').classList.contains('closed'), 'typography menu closes on outside click').to.be.true;
+
+            await click('[data-test-editor-typography-trigger]');
             await click('[data-test-editor-font-style="serif"]');
             await click('[data-test-editor-font-size="large"]');
 
@@ -84,6 +90,12 @@ describe('Acceptance: Lexical editor', function () {
 
             await triggerEvent('.gh-editor-fullscreen-container', 'mousemove');
             expect(find('.gh-editor-fullscreen-container').classList.contains('gh-editor-chrome-hidden'), 'chrome restored on mouse move').to.be.false;
+
+            await click('[data-test-psm-trigger]');
+            await triggerKeyEvent('[data-secondary-instance="false"] [data-lexical-editor]', 'keydown', 'A');
+
+            expect(find('.gh-editor-fullscreen-container').classList.contains('gh-editor-chrome-hidden'), 'chrome hidden while typing with sidebar open').to.be.true;
+            expect(window.getComputedStyle(find('.settings-menu-toggle')).pointerEvents, 'settings menu toggle remains enabled when sidebar is open').to.not.equal('none');
         });
 
         it('can leave editor without unsaved changes modal', async function () {

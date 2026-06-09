@@ -380,7 +380,7 @@
 
 .gh-editor-chrome-hidden .gh-editor-header,
 .gh-editor-chrome-hidden .gh-editor-wordcount-container,
-.gh-editor-chrome-hidden .settings-menu-toggle {
+.gh-editor-chrome-hidden .settings-menu-toggle:not(.settings-menu-toggle-open) {
     opacity: 0;
     pointer-events: none;
 }

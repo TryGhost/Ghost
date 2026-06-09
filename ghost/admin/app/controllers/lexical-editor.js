@@ -612,6 +612,16 @@ export default class LexicalEditorController extends Controller {
     }
 
     @action
+    closeEditorTypographyMenu() {
+        this.showEditorTypographyMenu = false;
+    }
+
+    @action
+    stopEditorTypographyMenuClick(event) {
+        event.stopPropagation();
+    }
+
+    @action
     setEditorFontStyle(fontStyle) {
         if (!EDITOR_FONT_STYLES.includes(fontStyle)) {
             return;

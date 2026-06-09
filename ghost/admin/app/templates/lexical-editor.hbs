@@ -2,6 +2,7 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <div
     class="gh-editor-fullscreen-container {{this.editorChromeClass}}"
+    {{on "click" this.closeEditorTypographyMenu}}
     {{on "keydown" this.hideEditorChromeForTyping}}
     {{on "mousemove" this.showEditorChromeOnMouseMove}}
 >
@@ -114,7 +115,10 @@
                     {{gh-pluralize this.wordCount "word"}}
                 </div>
                 <Editor::EmailSizeWarning @post={{this.post}} />
-                <div class="gh-editor-typography-menu {{if this.showEditorTypographyMenu "open" "closed"}}">
+                <div
+                    class="gh-editor-typography-menu {{if this.showEditorTypographyMenu "open" "closed"}}"
+                    {{on "click" this.stopEditorTypographyMenuClick}}
+                >
                     <button
                         type="button"
                         class="gh-editor-typography-trigger"
@@ -124,7 +128,7 @@
                         {{on "click" this.toggleEditorTypographyMenu}}
                         data-test-editor-typography-trigger
                     >
-                        {{svg-jar "case-sensitive"}}
+                        {{svg-jar "settings-2"}}
                     </button>
                     <div class="gh-editor-typography-popover" data-test-editor-typography-popover>
                         <div class="gh-editor-typography-section">
@@ -207,7 +211,7 @@
         {{/if}}
     </div>
 
-    <button type="button" class="settings-menu-toggle gh-btn gh-btn-editor gh-btn-icon icon-only gh-btn-action-icon" title="Settings" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger data-testid="settings-menu-toggle">
+    <button type="button" class="settings-menu-toggle {{if this.showSettingsMenu "settings-menu-toggle-open"}} gh-btn gh-btn-editor gh-btn-icon icon-only gh-btn-action-icon" title="Settings" {{on "click" this.toggleSettingsMenu}} data-test-psm-trigger data-testid="settings-menu-toggle">
         {{#if this.showSettingsMenu}}
             <span class="settings-menu-open">{{svg-jar "sidemenu-open"}}</span>
         {{else}}
