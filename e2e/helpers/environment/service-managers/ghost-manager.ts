@@ -21,6 +21,8 @@ import type {GhostConfig} from '@/helpers/playwright/fixture';
 const debug = baseDebug('e2e:GhostManager');
 
 type GhostEnvOverrides = GhostConfig | Record<string, string>;
+const READINESS_POLL_INTERVAL_MS = 250;
+
 interface TinybirdConfigFile {
     workspaceId?: string;
     adminToken?: string;
@@ -194,14 +196,13 @@ export class GhostManager {
     }
 
     /**
-     * Wait for Ghost container to become healthy.
-     * Uses Docker's built-in health check mechanism.
+     * Wait for Ghost to become reachable through the same gateway path used by tests.
      */
     async waitForReady(timeoutMs: number = 120000): Promise<void> {
         if (!this.ghostContainer) {
             throw new Error('Ghost container not initialized');
         }
-        await this.waitForHealthy(this.ghostContainer, timeoutMs);
+        await this.waitForHostReadiness(this.ghostContainer, timeoutMs);
     }
 
     private async buildEnvWithSchedulerUrl(
@@ -414,10 +415,7 @@ export class GhostManager {
         }
     }
 
-    /**
-     * Wait for a container to become healthy according to Docker's health check.
-     */
-    private async waitForHealthy(container: Container, timeoutMs: number): Promise<void> {
+    private async waitForHostReadiness(container: Container, timeoutMs: number): Promise<void> {
         const startTime = Date.now();
 
         while (Date.now() - startTime < timeoutMs) {
@@ -425,8 +423,8 @@ export class GhostManager {
             const health = info.State.Health;
             const status = health?.Status;
 
-            if (status === 'healthy') {
-                debug('Container is healthy');
+            if (info.State.Running && await this.probeHostReadiness()) {
+                debug('Host readiness probe passed');
                 return;
             }
 
@@ -444,13 +442,34 @@ export class GhostManager {
 
             // Still starting - wait and check again
             await new Promise((r) => {
-                setTimeout(r, 1000);
+                setTimeout(r, READINESS_POLL_INTERVAL_MS);
             });
         }
 
         // Timeout
         const logs = await container.logs({stdout: true, stderr: true, tail: 100});
         logging.error(`Timeout waiting for container. Last logs:\n${logs.toString()}`);
-        throw new Error('Timeout waiting for Ghost to become healthy');
+        throw new Error('Timeout waiting for Ghost to become ready');
+    }
+
+    private async probeHostReadiness(): Promise<boolean> {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 500);
+
+        try {
+            const response = await fetch(`http://localhost:${this.getGatewayPort()}/ghost/api/admin/authentication/setup`, {
+                method: 'GET',
+                headers: {Accept: 'application/json'},
+                signal: controller.signal
+            });
+            const body = await response.json().catch(() => null) as {setup?: Array<{status?: unknown}>} | null;
+
+            return response.ok && Array.isArray(body?.setup) && typeof body.setup[0]?.status === 'boolean';
+        } catch (error) {
+            debug('Host readiness probe failed:', error);
+            return false;
+        } finally {
+            clearTimeout(timeout);
+        }
     }
 }
