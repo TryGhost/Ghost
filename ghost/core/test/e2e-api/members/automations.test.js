@@ -70,6 +70,11 @@ describe('Members Automations', function () {
     });
 
     it('runs every step in the free member signup automation', async function () {
+        const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+        await models.Newsletter.edit({
+            sender_reply_to: 'support@example.com'
+        }, {id: defaultNewsletter.id});
+
         const email = `automation-free-member-${Date.now()}@test.example`;
         const member = await membersService.api.members.create({
             email,
