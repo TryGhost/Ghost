@@ -7,6 +7,7 @@ const crypto = require('crypto');
 const Papa = require('papaparse');
 const models = require('../../../core/server/models');
 const moment = require('moment');
+const db = require('../../../core/server/data/db');
 
 async function createMember(data) {
     const member = await models.Member.add({
@@ -292,7 +293,7 @@ describe('Members API — exportCSV', function () {
         });
 
         // NOTE: we need to create a subscription here because of the way the customer id is currently fetched
-        await models.StripeCustomerSubscription.add({
+        const subscription = await models.StripeCustomerSubscription.add({
             subscription_id: 'sub_123',
             customer_id: customer.get('customer_id'),
             stripe_price_id: 'price_123',
@@ -305,6 +306,11 @@ describe('Members API — exportCSV', function () {
             plan_interval: 'year',
             plan_amount: 5000,
             plan_currency: 'USD'
+        });
+
+        await db.knex('members_current_subscription').insert({
+            member_id: member.id,
+            subscription_id: subscription.get('id')
         });
 
         await testOutput(member, (row) => {
