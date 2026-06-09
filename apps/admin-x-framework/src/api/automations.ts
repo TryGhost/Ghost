@@ -113,7 +113,7 @@ const buildSendEmailAction = (): AutomationSendEmailAction => ({
     id: generateActionId(),
     type: 'send_email',
     data: {
-        email_subject: 'Untitled email',
+        email_subject: '',
         email_lexical: EMPTY_EMAIL_LEXICAL,
         email_sender_name: null,
         email_sender_email: null,

@@ -8,7 +8,6 @@ import InputForm from '../common/input-form';
 import {ValidateInputForm} from '../../utils/form';
 import {getGiftDurationLabel, getGiftRedemptionErrorMessage} from '../../utils/gift-redemption-notification';
 import {t} from '../../utils/i18n';
-import {hasGiftSubscriptions, removePortalLinkFromUrl} from '../../utils/helpers';
 import useCardTilt from '../../utils/use-card-tilt';
 import {formatGiftValue} from './gift-page';
 
@@ -26,7 +25,6 @@ const GiftRedemptionPage = () => {
     const {action, brandColor, doAction, member, pageData, site} = useContext(AppContext);
     const gift = pageData?.gift;
     const isLoggedIn = !!member;
-    const giftSubscriptionsEnabled = hasGiftSubscriptions({site});
     const [name, setName] = useState(member?.name || '');
     const [email, setEmail] = useState(member?.email || '');
     const [errors, setErrors] = useState({});
@@ -40,16 +38,7 @@ const GiftRedemptionPage = () => {
     }, [member?.email, member?.name]);
 
     useEffect(() => {
-        if (giftSubscriptionsEnabled) {
-            return;
-        }
-
-        removePortalLinkFromUrl();
-        doAction('closePopup');
-    }, [doAction, giftSubscriptionsEnabled]);
-
-    useEffect(() => {
-        if (!giftSubscriptionsEnabled || gift) {
+        if (gift) {
             return;
         }
 
@@ -61,9 +50,9 @@ const GiftRedemptionPage = () => {
             message: getGiftRedemptionErrorMessage()
         });
         doAction('closePopup');
-    }, [doAction, gift, giftSubscriptionsEnabled]);
+    }, [doAction, gift]);
 
-    if (!giftSubscriptionsEnabled || !gift) {
+    if (!gift) {
         return null;
     }
 

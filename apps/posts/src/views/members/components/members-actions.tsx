@@ -20,7 +20,7 @@ interface MembersActionsProps {
     onImportComplete?: (importResponse?: ImportResponse) => void;
 }
 
-async function exportMembers(filter?: string, search?: string): Promise<void> {
+export async function exportMembers(filter?: string, search?: string): Promise<void> {
     const params = new URLSearchParams({limit: 'all'});
     if (filter) {
         params.set('filter', filter);
@@ -28,8 +28,7 @@ async function exportMembers(filter?: string, search?: string): Promise<void> {
     if (search) {
         params.set('search', search);
     }
-    const datetime = new Date().toJSON().substring(0, 10);
-    await blobDownloadFromEndpoint(`/members/upload/?${params}`, `members.${datetime}.csv`);
+    await blobDownloadFromEndpoint(`/members/upload/?${params}`, 'members.csv');
 }
 
 const MembersActions: React.FC<MembersActionsProps> = ({
@@ -266,8 +265,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
             {/* New Member Button - styled like Tags */}
             <Button asChild>
-                <a aria-label="New member" className="inline-flex items-center gap-2 font-bold" href={newMemberHref}>
-                    <LucideIcon.Plus className="size-4" />
+                <a aria-label="New member" className="inline-flex items-center" href={newMemberHref}>
                     <span className="hidden sm:inline">New member</span>
                 </a>
             </Button>

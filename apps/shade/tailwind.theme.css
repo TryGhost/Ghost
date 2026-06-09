@@ -5,6 +5,9 @@
 @custom-variant dark (&:is(.dark *):not(.light *));
 
 @theme {
+
+    /* Breakpoints */
+    /* ---------------------------------------------------------------------- */
     --breakpoint-sm: 480px;
     --breakpoint-md: 640px;
     --breakpoint-sidebar: 800px;
@@ -14,6 +17,9 @@
     --breakpoint-xxl: 1440px;
     --breakpoint-xxxl: 1600px;
     --breakpoint-tablet: 860px;
+
+    /* Colors */
+    /* ---------------------------------------------------------------------- */
     --color-transparent: transparent;
     --color-current: currentColor;
     --color-ghostaccent: var(--accent-color, #ff0095);
@@ -198,6 +204,9 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+
+    /* Typography */
+    /* ---------------------------------------------------------------------- */
     --font-cardo: Cardo;
     --font-manrope: Manrope;
     --font-merriweather: Merriweather;
@@ -258,26 +267,14 @@
     --container-8xl: 140rem;
     --container-9xl: 156rem;
     --container-prose: 65ch;
-    --container-page: 148rem;
+    --container-page: 120rem;
     --container-pageminsidebar: 116rem;
-    /* Preserve legacy Tailwind v3 border radius scale for v4 rounded* utilities. */
-    --radius: 0.4rem;
-    --radius-xs: 0.3rem;
-    --radius-sm: 0.4rem;
-    --radius-md: 0.6rem;
-    --radius-lg: 0.8rem;
-    --radius-xl: 1.2rem;
-    --radius-2xl: 1.6rem;
-    --radius-3xl: 2.4rem;
-    --radius-full: 9999px;
-    --radius-control: var(--radius-md);
-    --radius-surface: var(--radius-lg);
-    --radius-badge: var(--radius-full);
-    --radius-pill: var(--radius-full);
+
+    --text-base: 1.3rem;
+    --text-control: 1.3rem;
     --text-2xs: 1.0rem;
-    --text-base: 1.4rem;
-    --text-xs: 1.2rem;
-    --text-sm: 1.3rem;
+    --text-xs: 1.1rem;
+    --text-sm: 1.2rem;
     --text-md: 1.4rem;
     --text-lg: 1.5rem;
     --text-xl: 1.7rem;
@@ -308,6 +305,26 @@
     --leading-supertight: 1.1em;
     --leading-body: var(--leading-base);
     --leading-heading: var(--leading-tight);
+
+    /* Border radius */
+    /* ---------------------------------------------------------------------- */
+    /* Preserve legacy Tailwind v3 border radius scale for v4 rounded* utilities. */
+    --radius: 0.4rem;
+    --radius-xs: 0.3rem;
+    --radius-sm: 0.4rem;
+    --radius-md: 0.6rem;
+    --radius-lg: 0.8rem;
+    --radius-xl: 1.2rem;
+    --radius-2xl: 1.6rem;
+    --radius-3xl: 2.4rem;
+    --radius-full: 9999px;
+    --radius-control: var(--radius-md);
+    --radius-surface: var(--radius-lg);
+    --radius-badge: var(--radius-full);
+    --radius-pill: var(--radius-full);
+
+    /* Animation */
+    /* ---------------------------------------------------------------------- */
     --duration-fast: 150ms;
     --duration-base: 250ms;
     --duration-slow: 400ms;

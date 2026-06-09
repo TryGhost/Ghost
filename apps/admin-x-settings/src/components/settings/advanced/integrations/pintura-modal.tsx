@@ -113,13 +113,13 @@ const PinturaModal = NiceModal.create(() => {
             <div className='mt-7'>
                 {!config.pintura && <div className='mb-7 flex flex-col items-stretch justify-between gap-4 rounded-sm bg-grey-50 p-4 md:flex-row md:p-7 dark:bg-grey-950'>
                     <div className='md:basis-1/2'>
-                        <p className='mb-4 font-bold'>Add advanced image editing to Ghost, with Pintura</p>
-                        <p className='mb-4 text-sm'>Pintura is a powerful JavaScript image editor that allows you to crop, rotate, annotate and modify images directly inside Ghost.</p>
-                        <p className='text-sm'>Try a demo, purchase a license, and download the required CSS/JS files from pqina.nl/pintura/ to activate this feature.</p>
+                        <p className='mb-4 text-md font-semibold'>Add advanced image editing to Ghost, with Pintura</p>
+                        <p className='mb-4'>Pintura is a powerful JavaScript image editor that allows you to crop, rotate, annotate and modify images directly inside Ghost.</p>
+                        <p>Try a demo, purchase a license, and download the required CSS/JS files from pqina.nl/pintura/ to activate this feature.</p>
                     </div>
-                    <div className='flex grow flex-col items-end justify-between gap-2 md:basis-1/2 md:gap-0'>
+                    <div className='flex grow flex-col items-end justify-between gap-2 md:basis-1/2'>
                         <img alt='Pintura screenshot' src={pinturaScreenshot} />
-                        <a className='-mb-1 text-sm font-bold text-green' href="https://pqina.nl/pintura/ghost/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Find out more &rarr;</a>
+                        <a className='-mb-1 font-medium text-green' href="https://pqina.nl/pintura/ghost/?ref=ghost.org" rel="noopener noreferrer" target="_blank">Find out more &rarr;</a>
                     </div>
                 </div>}
 
@@ -138,7 +138,7 @@ const PinturaModal = NiceModal.create(() => {
                             <div className='flex flex-col justify-between gap-1 md:flex-row md:items-center'>
                                 <div>
                                     <div>Upload Pintura script</div>
-                                    <div className='text-xs text-grey-600'>Upload the <code>pintura-umd.js</code> file from the Pintura package</div>
+                                    <div className='text-sm text-grey-600'>Upload the <code>pintura-umd.js</code> file from the Pintura package</div>
                                 </div>
                                 <input ref={jsUploadRef} accept='.js' type="file" hidden onChange={async (e) => {
                                     await handleUpload(e, 'js');
@@ -150,7 +150,7 @@ const PinturaModal = NiceModal.create(() => {
                             <div className='flex flex-col justify-between gap-1 md:flex-row md:items-center'>
                                 <div>
                                     <div>Upload Pintura styles</div>
-                                    <div className='text-xs text-grey-600'>Upload the <code>pintura.css</code> file from the Pintura package</div>
+                                    <div className='text-sm text-grey-600'>Upload the <code>pintura.css</code> file from the Pintura package</div>
                                 </div>
                                 <input ref={cssUploadRef} accept='.css' type="file" hidden onChange={async (e) => {
                                     await handleUpload(e, 'css');

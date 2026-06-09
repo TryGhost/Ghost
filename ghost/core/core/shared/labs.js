@@ -23,11 +23,9 @@ const messages = {
 const GA_FEATURES = [
     'customFonts',
     'explore',
-    'commentModeration',
     'commentsThreads',
     'commentsPinning',
     'featurebaseFeedback',
-    'giftSubscriptions',
     'dangerZoneResetAuth'
 ];
 

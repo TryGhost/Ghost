@@ -1,24 +1,10 @@
 import moment from 'moment-timezone';
+import {type ImportMembersCompleteResponseType} from '@tryghost/admin-x-framework/api/members';
 import {ImportResponse} from './state';
 import {formatImportError} from './mapping';
 import {unparseErrorCSV} from './csv';
 
-type InvalidMemberRow = Record<string, string> & {error: string};
-
-type UploadApiResponse = {
-    meta: {
-        stats: {
-            imported: number;
-            invalid: InvalidMemberRow[];
-        };
-        import_label?: {
-            name: string;
-            slug: string;
-        };
-    };
-};
-
-export function buildImportResponse(importData: UploadApiResponse): ImportResponse {
+export function buildImportResponse(importData: ImportMembersCompleteResponseType): ImportResponse {
     const importedCount = importData.meta.stats.imported;
     const erroredMembers = importData.meta.stats.invalid || [];
     const errorCount = erroredMembers.length;
@@ -51,6 +37,6 @@ export function buildImportResponse(importData: UploadApiResponse): ImportRespon
         errorCsvUrl,
         errorCsvName,
         errorList: Object.values(errorListMap),
-        importLabel: importData.meta.import_label
+        importLabel: importData.meta.import_label || undefined
     };
 }

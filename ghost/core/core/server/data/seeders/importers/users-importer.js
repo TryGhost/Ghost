@@ -14,15 +14,17 @@ class UsersImporter extends TableImporter {
     }
 
     async generate() {
-        const name = `${faker.name.firstName()} ${faker.name.lastName()}`;
+        const firstName = faker.person.firstName();
+        const lastName = faker.person.lastName();
+        const name = `${firstName} ${lastName}`;
         return {
             id: this.fastFakeObjectId(),
             name: name,
             slug: slugify(name),
             password: await security.password.hash(faker.color.human()),
-            email: faker.internet.email(name),
-            profile_image: faker.internet.avatar(),
-            created_at: dateToDatabaseString(faker.date.between(new Date(2016, 0), new Date()))
+            email: faker.internet.email({firstName, lastName}),
+            profile_image: faker.image.avatar(),
+            created_at: dateToDatabaseString(faker.date.between({from: new Date(2016, 0), to: new Date()}))
         };
     }
 }

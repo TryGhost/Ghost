@@ -7,7 +7,7 @@ const dateToDatabaseString = require('../utils/database-date');
 class PostsImporter extends TableImporter {
     static table = 'posts';
     static dependencies = ['newsletters'];
-    defaultQuantity = faker.datatype.number({
+    defaultQuantity = faker.number.int({
         min: 80,
         max: 120
     });
@@ -26,7 +26,7 @@ class PostsImporter extends TableImporter {
 
     generate() {
         const title = faker.lorem.sentence();
-        const content = faker.lorem.paragraphs(faker.datatype.number({
+        const content = faker.lorem.paragraphs(faker.number.int({
             min: 3,
             max: 10
         })).split('\n');
@@ -34,7 +34,7 @@ class PostsImporter extends TableImporter {
         twoYearsAgo.setFullYear(twoYearsAgo.getFullYear() - 2);
         const twoWeeksFromNow = new Date();
         twoWeeksFromNow.setDate(twoWeeksFromNow.getDate() + 14);
-        const timestamp = faker.date.between(twoYearsAgo, twoWeeksFromNow);
+        const timestamp = faker.date.between({from: twoYearsAgo, to: twoWeeksFromNow});
         const currentTime = new Date();
 
         let status = 'published';
@@ -55,12 +55,12 @@ class PostsImporter extends TableImporter {
             id,
             created_at: dateToDatabaseString(timestamp),
             updated_at: dateToDatabaseString(timestamp),
-            published_at: status === 'published' ? dateToDatabaseString(timestamp) : status === 'scheduled' ? dateToDatabaseString(faker.date.soon(5, timestamp)) : null,
-            uuid: faker.datatype.uuid(),
+            published_at: status === 'published' ? dateToDatabaseString(timestamp) : status === 'scheduled' ? dateToDatabaseString(faker.date.soon({days: 5, refDate: timestamp})) : null,
+            uuid: faker.string.uuid(),
             comment_id: this.type === 'post' ? id : null,
             title: title,
             type: this.type,
-            slug: `${slugify(title)}-${faker.random.numeric(3)}`,
+            slug: `${slugify(title)}-${faker.string.numeric(3)}`,
             status,
             visibility,
             lexical: JSON.stringify({

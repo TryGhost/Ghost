@@ -119,14 +119,12 @@ async function initCore({ghostServer, config, frontend}) {
     // The URLService is a core part of Ghost, which depends on models.
     debug('Begin: Url Service');
     const urlService = require('./server/services/url');
-    if (!urlService.facade.isLazy()) {
-        // Note: there is no await here, we do not wait for the url service to finish
-        // We can return, but the site will remain in maintenance mode until this finishes
-        // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/app.js#L10
-        urlService.init({
-            urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
-        });
-    }
+    // Note: there is no await here, we do not wait for the url service to finish
+    // We can return, but the site will remain in maintenance mode until this finishes
+    // This is managed on request: https://github.com/TryGhost/Ghost/blob/main/core/app.js#L10
+    urlService.init({
+        urlCache: !frontend // hacky parameter to make the cache initialization kick in as we can't initialize labs before the boot
+    });
     debug('End: Url Service');
 
     if (ghostServer) {
@@ -156,11 +154,9 @@ async function initCore({ghostServer, config, frontend}) {
         });
         debug('End: Mentions Job Service');
 
-        if (!urlService.facade.isLazy()) {
-            ghostServer.registerCleanupTask(async () => {
-                await urlService.shutdown();
-            });
-        }
+        ghostServer.registerCleanupTask(async () => {
+            await urlService.shutdown();
+        });
     }
 
     debug('End: initCore');
@@ -212,11 +208,11 @@ async function initServicesForFrontend({bootLogger}) {
 /**
  * Frontend is intended to be just Ghost's frontend
  */
-async function initFrontend() {
+function initFrontend() {
     debug('Begin: initFrontend');
 
     const helperService = require('./frontend/services/helpers');
-    await helperService.init();
+    helperService.init();
 
     debug('End: initFrontend');
 }
@@ -435,6 +431,9 @@ async function initBackgroundServices({config}) {
 
     const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
+    if (config.get('updateCheck:forceUpdate')) {
+        updateCheck.scheduleBootJob();
+    }
 
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
@@ -556,7 +555,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         await initServicesForFrontend({bootLogger});
 
         if (frontend) {
-            await initFrontend();
+            initFrontend();
         }
         const ghostApp = await initExpressApps({frontend, backend, config});
 

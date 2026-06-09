@@ -75,12 +75,6 @@ export const getPost = createQueryWithId<PostsResponseType>({
     path: id => `/posts/${id}/`
 });
 
-// This endpoints returns a csv file
-export const usePostsExports = createQuery<string>({
-    dataType,
-    path: '/posts/export/'
-});
-
 export const useDeletePost = createMutation<unknown, string>({
     method: 'DELETE',
     path: id => `/posts/${id}/`

@@ -160,9 +160,8 @@ class OEmbedService {
         const baseName = ext ? path.basename(fileName, ext) : fileName;
         const name = store.getSanitizedFileName(baseName);
 
-        const hash = crypto.createHash('sha256').update(imageBuffer).digest('hex');
-        const hashedFileName = `${name}-${hash}${ext}`;
-        const targetPath = path.join(imageType, hashedFileName);
+        const uniqueFileName = `${name}-${crypto.randomUUID()}${ext}`;
+        const targetPath = path.join(imageType, uniqueFileName);
 
         return store.saveRaw(imageBuffer, targetPath);
     }
@@ -465,6 +464,8 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchOembedDataFromUrl(url, type, options = {}) {
+        const {shouldRethrowFetchError, ...fetchOptions} = options;
+
         try {
             const urlObject = new URL(url);
 
@@ -503,7 +504,7 @@ class OEmbedService {
             }
 
             // Not in the list, we need to fetch the content
-            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url, options);
+            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url, fetchOptions);
 
             // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {
@@ -559,6 +560,10 @@ class OEmbedService {
 
             return data;
         } catch (err) {
+            if (shouldRethrowFetchError?.(err)) {
+                throw err;
+            }
+
             // allow specific validation errors through for better error messages
             if (errors.utils.isGhostError(err) && err.errorType === 'ValidationError') {
                 throw err;

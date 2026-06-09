@@ -21,10 +21,21 @@ describe('Integration: Model: post', function () {
             search.isContentStale = false;
         });
 
-        it('expires on published save', async function () {
+        it('expires when published title changes', async function () {
             const serverPost = this.server.create('post', {status: 'published'});
 
             const postModel = await store.find('post', serverPost.id);
+            postModel.title = 'New title';
+            await postModel.save();
+
+            expect(search.isContentStale, 'stale flag after save').to.be.true;
+        });
+
+        it('expires when draft title changes', async function () {
+            const serverPost = this.server.create('post', {status: 'draft'});
+
+            const postModel = await store.find('post', serverPost.id);
+            postModel.title = 'New title';
             await postModel.save();
 
             expect(search.isContentStale, 'stale flag after save').to.be.true;
@@ -68,11 +79,21 @@ describe('Integration: Model: post', function () {
             expect(search.isContentStale, 'stale flag after save').to.be.false;
         });
 
-        it('does not expire on draft delete', async function () {
+        it('expires on draft delete', async function () {
             const serverPost = this.server.create('post', {status: 'draft'});
 
             const postModel = await store.find('post', serverPost.id);
             await postModel.destroyRecord();
+
+            expect(search.isContentStale, 'stale flag after save').to.be.true;
+        });
+
+        it('does not expire when non-search content changes', async function () {
+            const serverPost = this.server.create('post', {status: 'published'});
+
+            const postModel = await store.find('post', serverPost.id);
+            postModel.html = '<p>Updated content</p>';
+            await postModel.save();
 
             expect(search.isContentStale, 'stale flag after save').to.be.false;
         });

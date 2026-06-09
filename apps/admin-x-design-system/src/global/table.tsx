@@ -48,7 +48,7 @@ const OptionalShowMore = ({showMore}: {showMore?: ShowMoreData}) => {
     }
 
     return (
-        <div className={`mt-1 flex items-center gap-2 text-sm font-bold text-green hover:text-green-400`}>
+        <div className={`mt-1 flex items-center gap-2 font-bold text-green hover:text-green-400`}>
             <button type='button' onClick={showMore.loadMore}>Show all</button>
         </div>
     );
@@ -122,7 +122,7 @@ const Table: React.FC<TableProps> = ({
     }, [tableHeight]);
 
     const headerClasses = clsx(
-        'h-9 border-b border-grey-200 dark:border-grey-600'
+        'h-8 border-b border-grey-200 dark:border-grey-600'
     );
 
     /**

@@ -19,8 +19,8 @@ class BenefitsImporter extends TableImporter {
         return {
             id: this.fastFakeObjectId(),
             name: name,
-            slug: `${slugify(name)}-${faker.random.numeric(3)}`,
-            created_at: faker.date.between(blogStartDate, sixMonthsLater)
+            slug: `${slugify(name)}-${faker.string.numeric(3)}`,
+            created_at: faker.date.between({from: blogStartDate, to: sixMonthsLater})
         };
     }
 }

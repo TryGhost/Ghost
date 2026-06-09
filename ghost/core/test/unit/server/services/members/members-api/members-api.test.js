@@ -247,22 +247,6 @@ describe('MembersAPI', function () {
         assert.equal(result, createdMember);
     });
 
-    it('does not redeem a gift when gift subscriptions are disabled', async function () {
-        const existingMember = {
-            id: 'member_1',
-            email: 'jamie@example.com'
-        };
-
-        labsService.isSet.withArgs('giftSubscriptions').returns(false);
-        memberBREADService.read.resolves(existingMember);
-
-        const result = await membersAPI.getMemberDataFromMagicLinkToken('magic-token');
-
-        sinon.assert.notCalled(giftRedeem);
-        sinon.assert.calledOnceWithExactly(memberLoginEvent.add, {member_id: 'member_1'});
-        assert.equal(result, existingMember);
-    });
-
     it('propagates gift redemption failures during magic link exchange', async function () {
         const existingMember = {
             id: 'member_1',

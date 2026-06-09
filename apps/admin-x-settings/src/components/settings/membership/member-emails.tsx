@@ -64,7 +64,7 @@ const EmailPreviewRow: React.FC<{
                     </div>
                     <div className='min-w-0 grow'>
                         <div className='leading-tight font-medium' data-testid={`${emailType}-welcome-email-title`}>{title}</div>
-                        <div className='mt-1 text-xs leading-[1.35] text-grey-700 dark:text-grey-600'>
+                        <div className='mt-1 text-sm leading-[1.35] text-grey-700 dark:text-grey-600'>
                             {automatedEmail.subject}
                         </div>
                     </div>

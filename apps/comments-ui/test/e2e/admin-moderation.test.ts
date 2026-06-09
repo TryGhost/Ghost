@@ -304,7 +304,7 @@ test.describe('Admin moderation', async () => {
     });
 
     test.describe('View in admin link', () => {
-        test('shows View in admin link when commentModeration flag is enabled', async ({page}) => {
+        test('shows View in admin link for admins', async ({page}) => {
             mockedApi.addComment({id: 'test-comment-id', html: '<p>This is a comment</p>'});
 
             await mockAdminAuthFrame({page, admin});
@@ -315,10 +315,7 @@ test.describe('Admin moderation', async () => {
                 publication: 'Publisher Weekly',
                 title: 'Member discussion',
                 count: true,
-                admin,
-                labs: {
-                    commentModeration: true
-                }
+                admin
             });
 
             const moreButtons = frame.getByTestId('more-button');
@@ -328,27 +325,6 @@ test.describe('Admin moderation', async () => {
             await expect(viewInAdminLink).toBeVisible();
             await expect(viewInAdminLink).toHaveAttribute('href', `${admin}#/comments/?id=is:test-comment-id`);
             await expect(viewInAdminLink).toHaveAttribute('target', '_blank');
-        });
-
-        test('hides View in admin link when commentModeration flag is not set', async ({page}) => {
-            mockedApi.addComment({html: '<p>This is a comment</p>'});
-
-            await mockAdminAuthFrame({page, admin});
-
-            const {frame} = await initialize({
-                mockedApi,
-                page,
-                publication: 'Publisher Weekly',
-                title: 'Member discussion',
-                count: true,
-                admin,
-                labs: {}
-            });
-
-            const moreButtons = frame.getByTestId('more-button');
-            await moreButtons.nth(0).click();
-
-            await expect(frame.getByTestId('view-in-admin-button')).not.toBeVisible();
         });
     });
 });

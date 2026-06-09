@@ -232,4 +232,75 @@ test.describe('DOM validation for rendered AP content', async () => {
         const excerptText = await excerptElement.textContent();
         expect(excerptText).toContain('<script>');
     });
+
+    test('Notification content preserves safe profile links while removing unsafe HTML', async ({page}) => {
+        await mockApi({page, requests: {
+            getNotifications: {
+                method: 'GET',
+                path: '/v1/notifications',
+                response: {
+                    notifications: [{
+                        id: 'notification-1',
+                        type: 'mention',
+                        actor: {
+                            id: 'actor-1',
+                            name: 'Alice',
+                            url: 'https://example.com/@alice',
+                            handle: '@alice@example.com',
+                            avatarUrl: null,
+                            followedByMe: true
+                        },
+                        post: {
+                            id: 'post-1',
+                            type: 'note',
+                            title: null,
+                            content: '<p>Hello <a href="https://example.com" data-profile="@alice@example.com" onpointerenter="window.__xss=true">safe link</a> and <a href="javascript:alert(1)" onclick="window.__xss=true">unsafe link</a></p>',
+                            url: 'https://example.com/post-1',
+                            likeCount: 0,
+                            likedByMe: false,
+                            repostCount: 0,
+                            repostedByMe: false,
+                            replyCount: 0,
+                            attachments: []
+                        },
+                        inReplyTo: null,
+                        createdAt: '2026-06-03T10:00:00.000Z'
+                    }],
+                    next: null
+                }
+            },
+            getNotificationsCount: {
+                method: 'GET',
+                path: '/v1/notifications/unread/count',
+                response: {
+                    count: 0
+                }
+            },
+            getTopics: {
+                method: 'GET',
+                path: '/v1/topics',
+                response: {
+                    topics: []
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/notifications');
+
+        const safeLink = page.locator('.ap-note-content a', {hasText: /^safe link$/});
+        await expect(safeLink).toBeVisible();
+        await expect(safeLink).toHaveAttribute('href', 'https://example.com');
+        await expect(safeLink).toHaveAttribute('data-profile', '@alice@example.com');
+
+        const unsafeLink = page.locator('.ap-note-content a', {hasText: /^unsafe link$/});
+        await expect(unsafeLink).toBeVisible();
+        await expect(unsafeLink).not.toHaveAttribute('href', /javascript:/i);
+        await expect(page.locator('.ap-note-content [onpointerenter], .ap-note-content [onclick]')).toHaveCount(0);
+
+        await safeLink.hover();
+        await unsafeLink.click();
+
+        const xssValue = await page.evaluate(() => (window as Window & {__xss?: boolean}).__xss);
+        expect(xssValue).toBeUndefined();
+    });
 });
