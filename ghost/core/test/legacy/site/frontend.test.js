@@ -8,6 +8,7 @@ const {assertExists} = require('../../utils/assertions');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const cheerio = require('cheerio');
+const nock = require('nock');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
@@ -87,6 +88,13 @@ describe('Frontend Routing', function () {
             });
 
             it('Single post should sanitize double slashes when redirecting uppercase', async function () {
+                // nock 14 misparses a request whose path begins with `//` as a
+                // connection to an external host (here `///Google/` => host
+                // `Google`) and blocks it via disableNetConnect, even though it
+                // actually targets the local test server. Re-enabling net connect
+                // lets the request reach the local server; the global afterEach
+                // hook re-applies disableNetwork() afterwards.
+                nock.enableNetConnect();
                 await request.get('///Google/')
                     .expect('Location', '/google/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
@@ -131,6 +139,13 @@ describe('Frontend Routing', function () {
                 });
 
                 it('should redirect to editor for post resource', async function () {
+                    // nock 14 misparses a request whose path begins with `//` as a
+                    // connection to an external host (here `//welcome/edit/` =>
+                    // host `welcome`) and blocks it via disableNetConnect, even
+                    // though it actually targets the local test server. Re-enabling
+                    // net connect lets the request reach the local server; the
+                    // global afterEach hook re-applies disableNetwork() afterwards.
+                    nock.enableNetConnect();
                     await request.get('//welcome/edit/')
                         .expect('Location', /ghost\/#\/editor\/post\/\w+/)
                         .expect('Cache-Control', testUtils.cacheRules.public)

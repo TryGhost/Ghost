@@ -3,6 +3,20 @@ const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const nock = require('nock');
 
+// nock 14 (built on @mswjs/interceptors) cannot intercept requests issued by
+// the Stripe Node SDK's default `NodeHttpClient`. That client only writes the
+// request body and calls `req.end()` from inside the socket 'connect'/
+// 'secureConnect' handler, and the socket mocked by @mswjs/interceptors never
+// emits those events — so the request is never flushed and every Stripe call
+// hangs forever (e.g. the billing-portal configuration call made on boot).
+// The SDK's fetch-based HTTP client *is* interceptable by nock 14, so we force
+// the SDK to use it in tests. This is loaded via overrides.js before Ghost
+// boots, so it applies to every Stripe instance created during the test run.
+const {Stripe} = require('stripe');
+Stripe.createNodeHttpClient = function createNodeHttpClientForTests() {
+    return Stripe.createFetchHttpClient();
+};
+
 // Helper services
 const configUtils = require('./config-utils');
 const WebhookMockReceiver = require('@tryghost/webhook-mock-receiver');
