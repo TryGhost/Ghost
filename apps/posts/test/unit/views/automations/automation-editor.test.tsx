@@ -377,9 +377,9 @@ describe('AutomationEditor', () => {
         expect(trigger).toHaveAttribute('aria-pressed', 'true');
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
         expect(within(sidebar).getByRole('heading', {name: 'Member signs up'})).toBeInTheDocument();
-        expect(within(sidebar).getByText('New member sign up')).toBeInTheDocument();
-        expect(within(sidebar).getByRole('checkbox', {name: 'Free'})).toBeChecked();
-        expect(within(sidebar).getByRole('checkbox', {name: 'Paid'})).not.toBeChecked();
+        expect(within(sidebar).getByText('Members')).toBeInTheDocument();
+        expect(within(sidebar).getByText('Free')).toBeInTheDocument();
+        expect(within(sidebar).queryByText('Paid')).not.toBeInTheDocument();
         expect(within(sidebar).queryByRole('button', {name: /Delete/})).not.toBeInTheDocument();
         expect(within(sidebar).queryByRole('button', {name: /Edit/})).not.toBeInTheDocument();
     });
@@ -595,8 +595,8 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Trigger: Member signs up'}));
 
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
-        expect(within(sidebar).getByRole('checkbox', {name: 'Free'})).not.toBeChecked();
-        expect(within(sidebar).getByRole('checkbox', {name: 'Paid'})).toBeChecked();
+        expect(within(sidebar).getByText('Paid')).toBeInTheDocument();
+        expect(within(sidebar).queryByText('Free')).not.toBeInTheDocument();
     });
 
     it('switches the read-only sidebar content when another step is clicked', () => {
