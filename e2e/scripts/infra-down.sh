@@ -6,7 +6,7 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 
 cd "$REPO_ROOT"
 
-compose_files=(-f compose.dev.yaml -f compose.dev.analytics.yaml)
+compose_files=(-f compose.dev.yaml -f e2e/compose.e2e.tmpfs.yaml -f compose.dev.analytics.yaml)
 services=(analytics tb-cli tinybird-local mailpit redis mysql)
 
 docker compose "${compose_files[@]}" stop "${services[@]}"
