@@ -41,7 +41,8 @@ const TIMEDSAVE_TIMEOUT = 60000;
 
 const EDITOR_TYPOGRAPHY_STORAGE_KEYS = {
     fontStyle: 'ghost-editor-font-style',
-    fontSize: 'ghost-editor-font-size'
+    fontSize: 'ghost-editor-font-size',
+    autoHideToolbar: 'ghost-editor-auto-hide-toolbar'
 };
 const EDITOR_FONT_STYLES = ['sans', 'serif'];
 const EDITOR_FONT_SIZES = ['small', 'medium', 'large'];
@@ -184,6 +185,8 @@ export default class LexicalEditorController extends Controller {
     @tracked showEditorTypographyMenu = false;
     @tracked editorFontStyle = this._getStoredEditorFontStyle();
     @tracked editorFontSize = this._getStoredEditorFontSize();
+    @tracked editorAutoHideToolbar = this._getStoredEditorAutoHideToolbar();
+    @tracked isEditorChromeHidden = false;
 
     /* public properties -----------------------------------------------------*/
 
@@ -346,6 +349,10 @@ export default class LexicalEditorController extends Controller {
         ].join(' ');
     }
 
+    get editorChromeClass() {
+        return this.isEditorChromeHidden ? 'gh-editor-chrome-hidden' : '';
+    }
+
     _getStoredEditorFontStyle() {
         try {
             const storedValue = window.localStorage.getItem(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontStyle);
@@ -373,6 +380,14 @@ export default class LexicalEditorController extends Controller {
         }
     }
 
+    _getStoredEditorAutoHideToolbar() {
+        try {
+            return window.localStorage.getItem(EDITOR_TYPOGRAPHY_STORAGE_KEYS.autoHideToolbar) === 'true';
+        } catch (e) {
+            return false;
+        }
+    }
+
     _storeEditorTypographySetting(key, value) {
         try {
             window.localStorage.setItem(key, String(value));
@@ -383,6 +398,8 @@ export default class LexicalEditorController extends Controller {
 
     @action
     updateScratch(lexical) {
+        this.hideEditorChromeForTyping();
+
         const lexicalString = JSON.stringify(lexical);
         this.set('post.lexicalScratch', lexicalString);
         try {
@@ -612,6 +629,36 @@ export default class LexicalEditorController extends Controller {
 
         this.editorFontSize = fontSize;
         this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.fontSize, fontSize);
+    }
+
+    @action
+    setEditorAutoHideToolbar(event) {
+        this.editorAutoHideToolbar = event.target.checked;
+        this._storeEditorTypographySetting(EDITOR_TYPOGRAPHY_STORAGE_KEYS.autoHideToolbar, this.editorAutoHideToolbar);
+
+        if (!this.editorAutoHideToolbar) {
+            this.isEditorChromeHidden = false;
+        }
+    }
+
+    @action
+    hideEditorChromeForTyping(event) {
+        if (!this.editorAutoHideToolbar) {
+            return;
+        }
+
+        if (event && event.key.length > 1 && !['Backspace', 'Delete', 'Enter'].includes(event.key)) {
+            return;
+        }
+
+        this.isEditorChromeHidden = true;
+    }
+
+    @action
+    showEditorChromeOnMouseMove() {
+        if (this.isEditorChromeHidden) {
+            this.isEditorChromeHidden = false;
+        }
     }
 
     @action

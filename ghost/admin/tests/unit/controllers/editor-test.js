@@ -13,7 +13,8 @@ describe('Unit: Controller: lexical-editor', function () {
 
     const editorTypographyStorageKeys = {
         fontStyle: 'ghost-editor-font-style',
-        fontSize: 'ghost-editor-font-size'
+        fontSize: 'ghost-editor-font-size',
+        autoHideToolbar: 'ghost-editor-auto-hide-toolbar'
     };
 
     let createPost;
@@ -30,6 +31,7 @@ describe('Unit: Controller: lexical-editor', function () {
     afterEach(function () {
         window.localStorage.removeItem(editorTypographyStorageKeys.fontStyle);
         window.localStorage.removeItem(editorTypographyStorageKeys.fontSize);
+        window.localStorage.removeItem(editorTypographyStorageKeys.autoHideToolbar);
     });
 
     describe('editor typography customizer', function () {
@@ -38,6 +40,7 @@ describe('Unit: Controller: lexical-editor', function () {
 
             expect(controller.editorFontStyle).to.equal('sans');
             expect(controller.editorFontSize).to.equal('medium');
+            expect(controller.editorAutoHideToolbar).to.be.false;
             expect(controller.editorTypographyClass).to.equal('gh-editor-typography-customized gh-editor-font-sans gh-editor-font-size-medium');
         });
 
@@ -80,6 +83,39 @@ describe('Unit: Controller: lexical-editor', function () {
             expect(window.localStorage.getItem(editorTypographyStorageKeys.fontSize)).to.equal('large');
             expect(controller.editorFontStyle).to.equal('serif');
             expect(controller.editorFontSize).to.equal('large');
+        });
+
+        it('stores auto-hide toolbar changes in localStorage', function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            controller.setEditorAutoHideToolbar({target: {checked: true}});
+
+            expect(window.localStorage.getItem(editorTypographyStorageKeys.autoHideToolbar)).to.equal('true');
+            expect(controller.editorAutoHideToolbar).to.be.true;
+
+            controller.setEditorAutoHideToolbar({target: {checked: false}});
+
+            expect(window.localStorage.getItem(editorTypographyStorageKeys.autoHideToolbar)).to.equal('false');
+            expect(controller.editorAutoHideToolbar).to.be.false;
+        });
+
+        it('hides editor chrome while typing and restores it on mouse movement', function () {
+            let controller = this.owner.lookup('controller:lexical-editor');
+
+            controller.setEditorAutoHideToolbar({target: {checked: true}});
+            controller.hideEditorChromeForTyping({key: 'ArrowDown'});
+
+            expect(controller.isEditorChromeHidden).to.be.false;
+
+            controller.hideEditorChromeForTyping({key: 'a'});
+
+            expect(controller.isEditorChromeHidden).to.be.true;
+            expect(controller.editorChromeClass).to.equal('gh-editor-chrome-hidden');
+
+            controller.showEditorChromeOnMouseMove();
+
+            expect(controller.isEditorChromeHidden).to.be.false;
+            expect(controller.editorChromeClass).to.equal('');
         });
     });
 

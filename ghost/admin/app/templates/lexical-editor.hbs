@@ -1,5 +1,10 @@
 {{#if this.post}}
-<div class="gh-editor-fullscreen-container">
+{{!-- template-lint-disable no-invalid-interactive --}}
+<div
+    class="gh-editor-fullscreen-container {{this.editorChromeClass}}"
+    {{on "keydown" this.hideEditorChromeForTyping}}
+    {{on "mousemove" this.showEditorChromeOnMouseMove}}
+>
     <div class="flex flex-row">
         <GhEditor
             @tagName="section"
@@ -148,6 +153,18 @@
                                     <span class="gh-editor-typography-size-sample gh-editor-typography-size-sample-{{option.value}}">{{option.label}}</span>
                                 </button>
                             {{/each}}
+                        </div>
+                        <div class="gh-editor-typography-section">
+                            <label class="gh-editor-typography-toggle" data-test-editor-auto-hide-toolbar-toggle>
+                                <span>Auto-hide toolbar</span>
+                                <input
+                                    type="checkbox"
+                                    checked={{this.editorAutoHideToolbar}}
+                                    {{on "change" this.setEditorAutoHideToolbar}}
+                                    data-test-editor-auto-hide-toolbar
+                                >
+                                <span class="gh-editor-typography-toggle-switch"></span>
+                            </label>
                         </div>
                     </div>
                 </div>

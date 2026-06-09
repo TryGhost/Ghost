@@ -1,5 +1,5 @@
 import loginAsRole from '../../helpers/login-as-role';
-import {blur, click, currentURL, fillIn, find, waitFor, waitUntil} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, triggerEvent, triggerKeyEvent, waitFor, waitUntil} from '@ember/test-helpers';
 import {enableLabsFlag} from '../../helpers/labs-flag';
 import {expect} from 'chai';
 import {invalidateSession} from 'ember-simple-auth/test-support';
@@ -13,19 +13,22 @@ describe('Acceptance: Lexical editor', function () {
 
     const editorTypographyStorageKeys = {
         fontStyle: 'ghost-editor-font-style',
-        fontSize: 'ghost-editor-font-size'
+        fontSize: 'ghost-editor-font-size',
+        autoHideToolbar: 'ghost-editor-auto-hide-toolbar'
     };
 
     beforeEach(async function () {
         this.server.loadFixtures();
         localStorage.removeItem(editorTypographyStorageKeys.fontStyle);
         localStorage.removeItem(editorTypographyStorageKeys.fontSize);
+        localStorage.removeItem(editorTypographyStorageKeys.autoHideToolbar);
         await loginAsRole('Administrator', this.server);
     });
 
     afterEach(function () {
         localStorage.removeItem(editorTypographyStorageKeys.fontStyle);
         localStorage.removeItem(editorTypographyStorageKeys.fontSize);
+        localStorage.removeItem(editorTypographyStorageKeys.autoHideToolbar);
     });
 
     it('redirects to signin when not authenticated', async function () {
@@ -71,6 +74,16 @@ describe('Acceptance: Lexical editor', function () {
             const paragraphFontSize = parseFloat(paragraphStyles.fontSize);
 
             expect(paragraphFontSize, 'computed paragraph font size').to.be.greaterThan(initialFontSize);
+
+            await click('[data-test-editor-auto-hide-toolbar-toggle]');
+            expect(localStorage.getItem(editorTypographyStorageKeys.autoHideToolbar), 'stored auto-hide toolbar').to.equal('true');
+
+            await triggerKeyEvent('[data-secondary-instance="false"] [data-lexical-editor]', 'keydown', 'A');
+            expect(find('.gh-editor-fullscreen-container').classList.contains('gh-editor-chrome-hidden'), 'chrome hidden while typing').to.be.true;
+            expect(window.getComputedStyle(find('.settings-menu-toggle')).pointerEvents, 'settings menu toggle disabled while hidden').to.equal('none');
+
+            await triggerEvent('.gh-editor-fullscreen-container', 'mousemove');
+            expect(find('.gh-editor-fullscreen-container').classList.contains('gh-editor-chrome-hidden'), 'chrome restored on mouse move').to.be.false;
         });
 
         it('can leave editor without unsaved changes modal', async function () {
