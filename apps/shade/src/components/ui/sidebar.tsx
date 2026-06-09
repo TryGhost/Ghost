@@ -180,6 +180,7 @@ const Sidebar = React.forwardRef<
             return (
                 <div
                     ref={ref}
+                    aria-label="Main navigation"
                     className={cn(
                         'flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground',
                         className
@@ -196,6 +197,7 @@ const Sidebar = React.forwardRef<
             return (
                 <Sheet open={openMobile} onOpenChange={setOpenMobile} {...props}>
                     <SheetContent
+                        aria-label="Main navigation"
                         className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
                         data-mobile="true"
                         data-sidebar="sidebar"
@@ -216,6 +218,7 @@ const Sidebar = React.forwardRef<
         return (
             <div
                 ref={ref}
+                aria-label="Main navigation"
                 className="group peer hidden text-sidebar-foreground md:block"
                 data-collapsible={state === 'collapsed' ? collapsible : ''}
                 data-side={side}

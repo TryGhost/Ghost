@@ -48,7 +48,7 @@ export class SidebarPage extends AdminPage {
 
     constructor(page: Page) {
         super(page);
-        this.sidebar = page.getByRole('navigation');
+        this.sidebar = page.getByRole('navigation', {name: 'Main navigation'});
         this.postsToggle = this.sidebar.getByRole('button', {name: /toggle post views/i});
         this.userDropdownTrigger = page.locator('[data-test-nav="arrow-down"]');
         this.nightShiftToggle = page.getByRole('menuitem', {name: /dark mode/i}).getByRole('switch');
