@@ -90,7 +90,7 @@ export interface EmailContentModalProps {
 
 const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edit', initialSubject, initialLexical, onClose, onSave}) => {
     const {mutateAsync: previewWelcomeEmail} = usePreviewWelcomeEmail();
-    const {data: automatedEmailsData} = useBrowseAutomatedEmails();
+    const {data: automatedEmailsData, isLoading: isLoadingAutomatedEmails} = useBrowseAutomatedEmails();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const [mode, setMode] = useState<EmailModalMode>(initialMode);
     const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
@@ -134,6 +134,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
     const saveButtonLabel = okProps.label || 'Save';
     const {previewFrameState, enterPreview, exitPreview} = useEmailPreview({
         automatedEmailId: previewAutomatedEmailId,
+        isAutomatedEmailIdResolving: isLoadingAutomatedEmails,
         previewWelcomeEmail,
         setErrors
     });
@@ -290,7 +291,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
                                                 </span>
                                             </div>
                                             <div ref={dropdownRef} className='relative'>
-                                                <Button variant="outline" onClick={() => setShowTestDropdown(!showTestDropdown)}>
+                                                <Button disabled={!previewAutomatedEmailId} variant="outline" onClick={() => setShowTestDropdown(!showTestDropdown)}>
                                                     <LucideIcon.Send className='size-4' />
                                                     Test
                                                 </Button>

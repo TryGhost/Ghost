@@ -1,5 +1,5 @@
 import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {useRef, useState} from 'react';
+import {useCallback, useEffect, useRef, useState} from 'react';
 
 import {type EmailDraft, getEmailValidationErrors} from './validation';
 
@@ -55,33 +55,24 @@ const getPreviewErrorMessage = (error: unknown) => {
     return fallbackMessage;
 };
 
-export const useEmailPreview = ({automatedEmailId, previewWelcomeEmail, setErrors}: {
+const PREVIEW_UNAVAILABLE_MESSAGE = 'Preview is currently unavailable';
+
+export const useEmailPreview = ({automatedEmailId, isAutomatedEmailIdResolving, previewWelcomeEmail, setErrors}: {
     automatedEmailId: string;
+    isAutomatedEmailIdResolving: boolean;
     previewWelcomeEmail: (payload: EmailDraft & {id: string}) => Promise<EmailPreviewResponse>;
     setErrors: (errors: Record<string, string>) => void;
 }) => {
     const [previewState, setPreviewState] = useState<EmailPreviewState>({status: 'idle'});
     const previewRequestIdRef = useRef(0);
+    // Preview/test borrow an automated-email id that may still be loading. Hold the
+    // requested draft until the id resolves, then flush it (or surface an error if it
+    // never arrives) rather than firing a request with an empty id.
+    const pendingDraftRef = useRef<EmailDraft | null>(null);
 
-    const exitPreview = () => {
-        previewRequestIdRef.current += 1;
-        setPreviewState({status: 'idle'});
-        setErrors({});
-    };
-
-    const enterPreview = async (draft: EmailDraft) => {
+    const runPreview = useCallback(async (draft: EmailDraft, id: string) => {
         const requestId = previewRequestIdRef.current + 1;
         previewRequestIdRef.current = requestId;
-
-        const validationErrors = getEmailValidationErrors(draft);
-        if (validationErrors.lexical) {
-            setErrors({lexical: validationErrors.lexical});
-            setPreviewState({
-                status: 'invalid',
-                message: validationErrors.lexical
-            });
-            return;
-        }
 
         setErrors({});
         setPreviewState({status: 'loading'});
@@ -89,7 +80,7 @@ export const useEmailPreview = ({automatedEmailId, previewWelcomeEmail, setError
         try {
             // Only the latest preview request is allowed to update preview state.
             const response = await previewWelcomeEmail({
-                id: automatedEmailId,
+                id,
                 subject: draft.subject,
                 lexical: draft.lexical
             });
@@ -121,7 +112,62 @@ export const useEmailPreview = ({automatedEmailId, previewWelcomeEmail, setError
                 message: getPreviewErrorMessage(error)
             });
         }
-    };
+    }, [previewWelcomeEmail, setErrors]);
+
+    const exitPreview = useCallback(() => {
+        previewRequestIdRef.current += 1;
+        pendingDraftRef.current = null;
+        setPreviewState({status: 'idle'});
+        setErrors({});
+    }, [setErrors]);
+
+    const enterPreview = useCallback((draft: EmailDraft) => {
+        const validationErrors = getEmailValidationErrors(draft);
+        if (validationErrors.lexical) {
+            pendingDraftRef.current = null;
+            setErrors({lexical: validationErrors.lexical});
+            setPreviewState({
+                status: 'invalid',
+                message: validationErrors.lexical
+            });
+            return;
+        }
+
+        if (!automatedEmailId) {
+            // Defer while the id is still loading; once it has settled without one,
+            // there is nothing to wait for, so surface an error instead of spinning.
+            if (isAutomatedEmailIdResolving) {
+                pendingDraftRef.current = draft;
+                setErrors({});
+                setPreviewState({status: 'loading'});
+                return;
+            }
+
+            pendingDraftRef.current = null;
+            setErrors({});
+            setPreviewState({status: 'error', message: PREVIEW_UNAVAILABLE_MESSAGE});
+            return;
+        }
+
+        pendingDraftRef.current = null;
+        void runPreview(draft, automatedEmailId);
+    }, [automatedEmailId, isAutomatedEmailIdResolving, runPreview, setErrors]);
+
+    // Flush (or fail) a deferred request once the borrowed id resolves.
+    useEffect(() => {
+        if (!pendingDraftRef.current) {
+            return;
+        }
+
+        if (automatedEmailId) {
+            const draft = pendingDraftRef.current;
+            pendingDraftRef.current = null;
+            void runPreview(draft, automatedEmailId);
+        } else if (!isAutomatedEmailIdResolving) {
+            pendingDraftRef.current = null;
+            setPreviewState({status: 'error', message: PREVIEW_UNAVAILABLE_MESSAGE});
+        }
+    }, [automatedEmailId, isAutomatedEmailIdResolving, runPreview]);
 
     let previewFrameState: EmailPreviewFrameState = {status: 'loading'};
 
