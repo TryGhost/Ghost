@@ -33,7 +33,7 @@
     "@playwright/test": "catalog:",
     "@tryghost/debug": "catalog:",
     "@tryghost/logging": "catalog:",
-    "@types/dockerode": "3.3.47",
+    "@types/dockerode": "4.0.1",
     "@types/express": "catalog:",
     "busboy": "1.6.0",
     "dockerode": "4.0.12",
