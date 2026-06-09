@@ -52,6 +52,25 @@ describe('Account Plan Page', () => {
         expect(continueBtn).toHaveLength(1);
     });
 
+    test('shows an informative message when no paid plans are available', () => {
+        // Reproduces the deep-link / theme-button entry point (#/portal/account/plans)
+        // on a site with members enabled but no paid plan configured. Without the
+        // empty state the body renders blank under the "Choose a plan" header.
+        const siteData = getSiteData({
+            paidMembersEnabled: false,
+            products: getProductsData({numOfProducts: 0})
+        });
+        const {getByTestId, queryByTestId} = customSetup({site: siteData});
+
+        const message = getByTestId('no-plans-available-notification-text');
+        expect(message).toBeInTheDocument();
+        expect(message).toHaveTextContent('Sorry, no paid plans are available.');
+
+        // The plan selectors should not render in the empty state.
+        expect(queryByTestId('monthly-switch')).not.toBeInTheDocument();
+        expect(queryByTestId('yearly-switch')).not.toBeInTheDocument();
+    });
+
     test('can choose plan and continue', async () => {
         const siteData = getSiteData({
             products: getProductsData({numOfProducts: 1})

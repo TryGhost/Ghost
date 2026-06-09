@@ -295,6 +295,7 @@
     "Someone just replied to your comment on {postTitle}.": "Email text when informing user about reply to his comment on post",
     "Something went wrong, please try again later.": "Generic error message",
     "Something went wrong, please try again.": "Generic error message",
+    "Sorry, no paid plans are available.": "Shown on the Portal plans page when a member reaches it (e.g. via a theme button or deep link) but the site has no paid plans configured",
     "Sorry, no recommendations are available right now.": "Shown if a user visits the recommendations screen in portal when recommendations aren't available",
     "Sorry, that didn’t work.": "Title of a page when an error occured while submitting feedback",
     "Sort by": "Used for sorting comments, appears next to a dropdown with options (oldest, newest, best)",
