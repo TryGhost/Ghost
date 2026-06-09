@@ -10,7 +10,7 @@ const models = require('../../../../core/server/models');
 const security = require('@tryghost/security');
 
 describe('Unit: models/post', function () {
-    const mockDb = require('mock-knex');
+    const mockDb = require('../../../utils/mock-knex');
     let tracker;
 
     beforeAll(function () {

@@ -2918,9 +2918,6 @@ importers:
       mocha-slow-test-reporter:
         specifier: 0.1.2
         version: 0.1.2
-      mock-knex:
-        specifier: TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009
-        version: https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))
       nock:
         specifier: 14.0.15
         version: 14.0.15
@@ -17255,12 +17252,6 @@ packages:
     resolution: {integrity: sha512-jNt2iEk9FPmZLzL+sm4FNyOIDYXf2wUU6L4Cc8OIKK/kzgMHKPi4YhTZqG4bW4kQVdIv6wutDybRhXfdnujA1Q==}
     engines: {node: '>= 0.8.x'}
     hasBin: true
-
-  mock-knex@https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009}
-    version: 0.4.13
-    peerDependencies:
-      knex: '> 0.8'
 
   module-details-from-path@1.0.4:
     resolution: {integrity: sha512-EGWKgxALGMgzvxYF1UyGTy0HXX/2vHLkw6+NvDKW2jypWbHpjQuj4UMcqQWXHERJhVGKikolT06G3bcKe4fi7w==}
@@ -40869,13 +40860,6 @@ snapshots:
       mkdirp: 0.5.1
       supports-color: 1.2.0
       to-iso-string: 0.0.2
-
-  mock-knex@https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)):
-    dependencies:
-      bluebird: 3.7.2
-      knex: 2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
-      lodash: 4.18.1
-      semver: 5.7.2
 
   module-details-from-path@1.0.4: {}
 
