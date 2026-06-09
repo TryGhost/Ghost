@@ -139,7 +139,7 @@ test.describe('Email settings', async () => {
 
         const emailsSection = page.getByTestId('emails');
         await expect(emailsSection).toBeVisible();
-        await expect(emailsSection.getByRole('tab', {name: 'Transactional'})).toBeVisible();
+        await expect(emailsSection.getByRole('tab', {name: 'Automation emails'})).toBeVisible();
         await expect(emailsSection.getByRole('tab', {name: 'Newsletters'})).toHaveCount(0);
         await expect(emailsSection.getByRole('button', {name: 'Add newsletter'})).toHaveCount(0);
         await expect(page.getByTestId('mailgun')).toBeHidden();
