@@ -39,7 +39,7 @@ export function defineTagDetailsTests() {
 
     test('can edit tags', async ({page}) => {
         const tagFactory = createTagFactory(page.request);
-        const tag = await tagFactory.create();
+        const tag = await tagFactory.create({name: uniqueName('Suite tag')});
         const newName = uniqueName('Edited tag');
         const newSlug = uniqueSlug('edited-tag');
 
@@ -63,7 +63,7 @@ export function defineTagDetailsTests() {
 
     test('does not create duplicates when editing a tag', async ({page}) => {
         const tagFactory = createTagFactory(page.request);
-        const tag = await tagFactory.create();
+        const tag = await tagFactory.create({name: uniqueName('Suite tag')});
         const newName = uniqueName('Renamed tag');
 
         const tagEditor = new TagEditorPage(page);
@@ -81,7 +81,7 @@ export function defineTagDetailsTests() {
 
     test('can delete tag without posts', async ({page}) => {
         const tagFactory = createTagFactory(page.request);
-        const tag = await tagFactory.create();
+        const tag = await tagFactory.create({name: uniqueName('Suite tag')});
 
         const tagEditor = new TagEditorPage(page);
         await tagEditor.gotoTagBySlug(tag.slug);
@@ -100,7 +100,7 @@ export function defineTagDetailsTests() {
     test('can delete tags with posts', async ({page}) => {
         const tagFactory = createTagFactory(page.request);
         const postFactory = createPostFactory(page.request);
-        const tag = await tagFactory.create();
+        const tag = await tagFactory.create({name: uniqueName('Suite tag')});
         await postFactory.create({status: 'published', tags: [{id: tag.id}]});
 
         const tagEditor = new TagEditorPage(page);
@@ -121,7 +121,7 @@ export function defineTagDetailsTests() {
 
     test('can load tag via slug in url', async ({page}) => {
         const tagFactory = createTagFactory(page.request);
-        const tag = await tagFactory.create();
+        const tag = await tagFactory.create({name: uniqueName('Suite tag')});
 
         const tagEditor = new TagEditorPage(page);
         await tagEditor.gotoTagBySlug(tag.slug);
@@ -140,7 +140,7 @@ export function defineTagDetailsTests() {
 
     test('warns about unsaved changes - staying keeps the edits', async ({page}) => {
         const tagFactory = createTagFactory(page.request);
-        const tag = await tagFactory.create();
+        const tag = await tagFactory.create({name: uniqueName('Suite tag')});
 
         const tagEditor = new TagEditorPage(page);
         await tagEditor.gotoTagBySlug(tag.slug);
@@ -157,7 +157,7 @@ export function defineTagDetailsTests() {
 
     test('warns about unsaved changes - leaving discards the edits', async ({page}) => {
         const tagFactory = createTagFactory(page.request);
-        const tag = await tagFactory.create();
+        const tag = await tagFactory.create({name: uniqueName('Suite tag')});
 
         const tagEditor = new TagEditorPage(page);
         await tagEditor.gotoTagBySlug(tag.slug);
@@ -173,9 +173,31 @@ export function defineTagDetailsTests() {
         await expect(tagsPage.getTagLinkByName('Discarded tag name')).toBeHidden();
     });
 
+    test('renaming an internal tag to a public name makes it public', async ({page}) => {
+        const tagFactory = createTagFactory(page.request);
+        const tag = await tagFactory.create({
+            name: `#Internal ${faker.string.alphanumeric(6)}`,
+            visibility: 'internal'
+        });
+        const newName = uniqueName('Demoted tag');
+
+        const tagEditor = new TagEditorPage(page);
+        await tagEditor.gotoTagBySlug(tag.slug);
+        await tagEditor.fillTagName(newName);
+        await tagEditor.save();
+
+        const tagsPage = new TagsPage(page);
+        await tagsPage.goto();
+        await tagsPage.waitForPageToFullyLoad();
+
+        // the default tab lists public tags only
+        await expect(tagsPage.activeTab).toHaveText('Public tags');
+        await expect(tagsPage.getTagLinkByName(newName)).toBeVisible();
+    });
+
     test('can edit meta data', async ({page}) => {
         const tagFactory = createTagFactory(page.request);
-        const tag = await tagFactory.create();
+        const tag = await tagFactory.create({name: uniqueName('Suite tag')});
 
         const tagEditor = new TagEditorPage(page);
         await tagEditor.gotoTagBySlug(tag.slug);
@@ -205,7 +227,7 @@ export function defineTagDetailsTests() {
 
     test('maintains active state in nav menu when editing a tag', async ({page}) => {
         const tagFactory = createTagFactory(page.request);
-        const tag = await tagFactory.create();
+        const tag = await tagFactory.create({name: uniqueName('Suite tag')});
 
         const tagEditor = new TagEditorPage(page);
         const sidebar = new SidebarPage(page);

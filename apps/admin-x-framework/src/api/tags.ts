@@ -5,6 +5,7 @@ import {
     createMutation,
     createInfiniteQuery
 } from '../utils/api/hooks';
+import {deleteFromQueryCache, insertToQueryCache, updateQueryCache} from '../utils/api/update-queries';
 
 export type Tag = {
     id: string;
@@ -96,12 +97,21 @@ export const getTagBySlug = createQueryWithId<TagsResponseType>({
     defaultSearchParams: {include: 'count.posts'}
 });
 
+// These mutations patch existing query caches in place (and sync the Ember
+// store via the state bridge) instead of invalidating the whole dataType:
+// invalidation would refetch every loaded page of the infinite tags list, and
+// the Ember-side handling of invalidation (store.unloadAll) would strip tag
+// records out of any loaded posts' embedded tag relationships.
 export const useAddTag = createMutation<TagsResponseType, Partial<Tag>>({
     method: 'POST',
     path: () => '/tags/',
     body: tag => ({tags: [tag]}),
     defaultSearchParams: {include: 'count.posts'},
-    invalidateQueries: {dataType}
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: insertToQueryCache('tags')
+    }
 });
 
 export const useEditTag = createMutation<TagsResponseType, Partial<Tag> & {id: string}>({
@@ -109,11 +119,19 @@ export const useEditTag = createMutation<TagsResponseType, Partial<Tag> & {id: s
     path: tag => `/tags/${tag.id}/`,
     body: tag => ({tags: [tag]}),
     defaultSearchParams: {include: 'count.posts'},
-    invalidateQueries: {dataType}
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: updateQueryCache('tags')
+    }
 });
 
 export const useDeleteTag = createMutation<unknown, string>({
     method: 'DELETE',
     path: id => `/tags/${id}/`,
-    invalidateQueries: {dataType}
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'delete',
+        update: deleteFromQueryCache('tags')
+    }
 });

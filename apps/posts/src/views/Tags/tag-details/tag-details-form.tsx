@@ -14,7 +14,8 @@ import {
 import {CharCountdown} from './components/char-countdown';
 import {DeleteTagDialog} from './components/delete-tag-dialog';
 import {ImageUploadField} from './components/image-upload-field';
-import {Link, useBlocker, useNavigate} from '@tryghost/admin-x-framework';
+import {JSONError} from '@tryghost/admin-x-framework/errors';
+import {Link, useBlocker, useConfirmUnload, useNavigate} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Tag, useAddTag, useDeleteTag, useEditTag} from '@tryghost/admin-x-framework/api/tags';
 import {TagExpandableSections} from './components/tag-expandable-sections';
@@ -33,14 +34,14 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 
-type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+type SaveState = 'idle' | 'saved' | 'error';
 
-const SAVE_BUTTON_TEXT: Record<SaveState, string> = {
-    idle: 'Save',
-    saving: 'Saving...',
-    saved: 'Saved',
-    error: 'Retry'
-};
+function apiErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof JSONError && error.data?.errors?.[0]?.message) {
+        return error.data.errors[0].message;
+    }
+    return fallback;
+}
 
 export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
     tag?: Tag;
@@ -57,57 +58,89 @@ export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
 
     const [saveState, setSaveState] = useState<SaveState>(initialSaveState);
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-    // Set when a navigation must skip the unsaved-changes guard (after
-    // creating a tag we redirect to its edit URL; after deleting we leave).
-    const bypassBlockerRef = useRef(false);
-    const slugManuallyEditedRef = useRef(!isNew);
+    const slugManuallyEditedRef = useRef(false);
+    // The Ember implementation used a drop-concurrency save task; this guards
+    // against re-entrant submits (e.g. cmd+S key repeat) creating duplicates.
+    const submitInFlightRef = useRef(false);
 
     const form = useForm<TagFormValues>({
         resolver: zodResolver(tagFormSchema),
         defaultValues: tagToFormValues(tag)
     });
-    const {isDirty} = form.formState;
+    const {isDirty, isSubmitting} = form.formState;
 
     const siteUrl = configData?.config.blogUrl ?? '';
     const tagUrl = tag?.url ?? (siteUrl ? `${siteUrl.replace(/\/$/, '')}/tag/${form.watch('slug') || ''}/` : '');
+    // the View button prefers the canonical URL, matching the Ember controller
+    const viewUrl = tag?.canonical_url || tagUrl;
 
+    // A save can resolve after the user has navigated away (the blocker lets
+    // navigation through while a save is in flight, since it completes either
+    // way) — don't yank them back to the tag screen in that case.
+    const unmountedRef = useRef(false);
+    useEffect(() => {
+        // re-arm on mount: StrictMode runs mount → unmount → mount, and the
+        // cleanup from the throwaway pass must not leave the ref stuck on true
+        unmountedRef.current = false;
+        return () => {
+            unmountedRef.current = true;
+        };
+    }, []);
+
+    // Reads form state at navigation time (not via closed-over deps) so that
+    // form.reset(...) before a programmatic navigate immediately disarms the
+    // guard, and an in-flight save (which completes regardless) doesn't show
+    // a spurious dialog.
     const blocker = useBlocker(
         useCallback(({currentLocation, nextLocation}: {
             currentLocation: {pathname: string};
             nextLocation: {pathname: string};
         }) => {
-            if (bypassBlockerRef.current) {
-                return false;
-            }
-            return isDirty && currentLocation.pathname !== nextLocation.pathname;
-        }, [isDirty])
+            const {isDirty: dirtyNow, isSubmitting: submittingNow} = form.formState;
+            return dirtyNow && !submittingNow && currentLocation.pathname !== nextLocation.pathname;
+        }, [form])
     );
 
+    useConfirmUnload(isDirty);
+
     const onSubmit = async (values: TagFormValues) => {
-        setSaveState('saving');
+        if (submitInFlightRef.current) {
+            return;
+        }
+        submitInFlightRef.current = true;
+        setSaveState('idle');
+
         try {
             const payload = formValuesToTagPayload(values);
 
             if (isNew) {
                 const response = await addTag(payload);
                 const createdTag = response.tags[0];
+                if (unmountedRef.current) {
+                    return;
+                }
                 form.reset(tagToFormValues(createdTag));
-                bypassBlockerRef.current = true;
                 navigate(`/tags/${createdTag.slug}`, {replace: true, state: {justSaved: true}});
             } else {
                 const response = await editTag({id: tag.id, ...payload});
                 const updatedTag = response.tags[0];
+                if (unmountedRef.current) {
+                    return;
+                }
                 form.reset(tagToFormValues(updatedTag));
                 setSaveState('saved');
 
                 if (updatedTag.slug !== tag.slug) {
-                    bypassBlockerRef.current = true;
                     navigate(`/tags/${updatedTag.slug}`, {replace: true, state: {justSaved: true}});
                 }
             }
-        } catch {
-            setSaveState('error');
-            toast.error('Failed to save tag');
+        } catch (error) {
+            if (!unmountedRef.current) {
+                setSaveState('error');
+                toast.error(apiErrorMessage(error, 'Failed to save tag'));
+            }
+        } finally {
+            submitInFlightRef.current = false;
         }
     };
 
@@ -115,10 +148,11 @@ export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
         try {
             await deleteTag(tag!.id);
             setDeleteDialogOpen(false);
-            bypassBlockerRef.current = true;
+            // discard any unsaved edits so the blocker lets the navigation through
+            form.reset();
             navigate('/tags');
-        } catch {
-            toast.error('Failed to delete tag');
+        } catch (error) {
+            toast.error(apiErrorMessage(error, 'Failed to delete tag'));
         }
     };
 
@@ -129,26 +163,27 @@ export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
     };
 
     // Match the Ember admin's cmd/ctrl+s shortcut
+    const submitRef = useRef<() => void>(() => {});
+    submitRef.current = () => form.handleSubmit(onSubmit)();
     useEffect(() => {
         const handler = (event: KeyboardEvent) => {
             if ((event.metaKey || event.ctrlKey) && event.key === 's') {
                 event.preventDefault();
-                form.handleSubmit(onSubmit)();
+                submitRef.current();
             }
         };
         document.addEventListener('keydown', handler);
         return () => document.removeEventListener('keydown', handler);
-    });
+    }, []);
 
-    // Leave the "Saved"/"Retry" state as soon as the user edits again
-    useEffect(() => {
-        const subscription = form.watch((_, {type}) => {
-            if (type === 'change') {
-                setSaveState(current => (current === 'saved' || current === 'error' ? 'idle' : current));
-            }
-        });
-        return () => subscription.unsubscribe();
-    }, [form]);
+    let saveLabel = 'Save';
+    if (isSubmitting) {
+        saveLabel = 'Saving...';
+    } else if (saveState === 'saved' && !isDirty) {
+        saveLabel = 'Saved';
+    } else if (saveState === 'error') {
+        saveLabel = 'Retry';
+    }
 
     return (
         <MainLayout data-testid="tag-details-page">
@@ -168,14 +203,14 @@ export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
                             <div className="flex shrink-0 items-center gap-2">
                                 {!isNew && (
                                     <Button variant="outline" asChild>
-                                        <a href={tagUrl} rel="noopener noreferrer" target="_blank">
+                                        <a href={viewUrl} rel="noopener noreferrer" target="_blank">
                                             View
                                             <LucideIcon.ArrowUpRight className="size-4" />
                                         </a>
                                     </Button>
                                 )}
-                                <Button disabled={saveState === 'saving'} type="submit">
-                                    {SAVE_BUTTON_TEXT[saveState]}
+                                <Button disabled={isSubmitting} type="submit">
+                                    {saveLabel}
                                 </Button>
                             </div>
                         </header>
@@ -222,6 +257,14 @@ export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
                                                             className="pr-10"
                                                             maxLength={7}
                                                             placeholder="#15171A"
+                                                            onBlur={(event) => {
+                                                                // the Ember form accepted bare hex and prepended the #
+                                                                const value = event.target.value.trim();
+                                                                if (/^[0-9A-Fa-f]{6}$/.test(value)) {
+                                                                    field.onChange(`#${value}`);
+                                                                }
+                                                                field.onBlur();
+                                                            }}
                                                         />
                                                         <input
                                                             aria-label="Accent color picker"

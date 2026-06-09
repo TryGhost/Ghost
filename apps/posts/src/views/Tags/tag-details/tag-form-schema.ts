@@ -1,10 +1,12 @@
 import {Tag} from '@tryghost/admin-x-framework/api/tags';
+import {slugify} from '@tryghost/string';
 import {z} from 'zod';
 
 export const tagFormSchema = z.object({
     name: z.string().trim()
         .min(1, 'You must specify a name for the tag.')
-        .max(191, 'Tag names cannot be longer than 191 characters.'),
+        .max(191, 'Tag names cannot be longer than 191 characters.')
+        .refine(value => !value.startsWith(','), 'Tag names can\'t start with commas.'),
     slug: z.string().trim()
         .max(191, 'URL cannot be longer than 191 characters.'),
     description: z.string()
@@ -40,23 +42,15 @@ export const tagFormSchema = z.object({
 export type TagFormValues = z.infer<typeof tagFormSchema>;
 
 /**
- * Mirrors the slug generation behaviour of the Ember admin (which uses
- * @tryghost/string slugify + a `hash-` prefix for internal tags). The server
- * remains the source of truth and will de-duplicate on save.
+ * Mirrors the slug generation behaviour of the Ember admin: @tryghost/string
+ * slugify (same package, including transliteration of non-Latin scripts) plus
+ * a `hash-` prefix for internal tags. The server remains the source of truth
+ * and will de-duplicate on save.
  */
 export function slugifyTagName(name: string): string {
-    const base = name
-        .normalize('NFKD')
-        // strip combining diacritical marks left over from NFKD
-        .replace(/[̀-ͯ]/g, '')
-        .toLowerCase()
-        .replace(/[^\w\s-]/g, '')
-        .trim()
-        .replace(/[\s_]+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-+|-+$/g, '');
+    const base = slugify(name);
 
-    if (/^#/.test(name.trim())) {
+    if (/^#/.test(name)) {
         return base ? `hash-${base}` : '';
     }
 
@@ -89,9 +83,15 @@ function emptyToNull(value: string): string | null {
 }
 
 export function formValuesToTagPayload(values: TagFormValues): Partial<Tag> {
+    const name = values.name.trim();
+
     return {
-        name: values.name.trim(),
+        name,
         slug: values.slug.trim(),
+        // Mirrors the Ember tag model's updateVisibility(): the server promotes
+        // #names to internal on save but never demotes, so renaming '#tag' to
+        // 'tag' must explicitly send visibility back to public.
+        visibility: /^#.?/.test(name) ? 'internal' : 'public',
         description: emptyToNull(values.description),
         accent_color: emptyToNull(values.accentColor),
         feature_image: emptyToNull(values.featureImage),

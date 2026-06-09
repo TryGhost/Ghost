@@ -24,7 +24,7 @@ const TagDetails: React.FC = () => {
     const isNew = !tagSlug;
 
     const {data: currentUser, isLoading: isUserLoading} = useCurrentUser();
-    const {data, isLoading, isError} = getTagBySlug(tagSlug ?? '', {
+    const {data, isLoading} = getTagBySlug(tagSlug ?? '', {
         enabled: !isNew,
         defaultErrorHandler: false
     });
@@ -52,7 +52,10 @@ const TagDetails: React.FC = () => {
 
     const tag = data?.tags?.[0];
 
-    if (isError || !tag) {
+    // Only show the 404 when there is no data at all — a failed background
+    // refetch sets isError while stale data is still available, and unmounting
+    // the form in that case would discard the user's in-progress edits.
+    if (!tag) {
         return <TagNotFound />;
     }
 

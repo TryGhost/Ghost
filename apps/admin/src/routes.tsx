@@ -84,14 +84,17 @@ export const routes: RouteObject[] = [
                 // app's own blank :tagSlug route) needs to exist to prevent the router
                 // error fallback from triggering when navigating from the tag list to
                 // a tag detail page.
+                // Note: deliberately no allowInForceUpgrade handle — when the
+                // tagDetailsX flag is on this renders a functional React screen,
+                // which must redirect to /pro in force-upgrade mode like every
+                // other React route (when the flag is off, /pro is itself an
+                // Ember fallback that shows the billing screen).
                 path: "/tags/new",
                 Component: TagDetailsRoute,
-                handle: emberFallbackHandle,
             },
             {
                 path: "/tags/:tagSlug",
                 Component: TagDetailsRoute,
-                handle: emberFallbackHandle,
             },
             membersRoute,
             {

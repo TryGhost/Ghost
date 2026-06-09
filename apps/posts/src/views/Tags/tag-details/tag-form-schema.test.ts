@@ -31,6 +31,10 @@ describe('slugifyTagName', () => {
         expect(slugifyTagName('Café många')).toBe('cafe-manga');
     });
 
+    it('transliterates non-Latin scripts like the Ember admin', () => {
+        expect(slugifyTagName('Новости')).toBe('novosti');
+    });
+
     it('prefixes internal tags with hash-', () => {
         expect(slugifyTagName('#internal')).toBe('hash-internal');
         expect(slugifyTagName('#Internal Tag')).toBe('hash-internal-tag');
@@ -52,6 +56,11 @@ describe('tagFormSchema', () => {
     it('requires a name', () => {
         const result = tagFormSchema.safeParse(validValues({name: ''}));
         expect(result.success).toBe(false);
+    });
+
+    it('rejects names starting with a comma (matches server validation)', () => {
+        expect(tagFormSchema.safeParse(validValues({name: ',breaking'})).success).toBe(false);
+        expect(tagFormSchema.safeParse(validValues({name: 'no,problem'})).success).toBe(true);
     });
 
     it('limits name length to 191 characters', () => {
@@ -133,5 +142,12 @@ describe('tagToFormValues / formValuesToTagPayload', () => {
 
         expect(payload.name).toBe('Padded');
         expect(payload.slug).toBe('padded');
+    });
+
+    it('derives visibility from the name like the Ember tag model', () => {
+        expect(formValuesToTagPayload(validValues({name: '#internal'})).visibility).toBe('internal');
+        expect(formValuesToTagPayload(validValues({name: 'public'})).visibility).toBe('public');
+        // renaming an internal tag to a public name must demote it
+        expect(formValuesToTagPayload(validValues({name: 'Members'})).visibility).toBe('public');
     });
 });

@@ -66,6 +66,7 @@
         "@tryghost/koenig-lexical": "catalog:",
         "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
+        "@tryghost/string": "catalog:",
         "@xyflow/react": "12.10.2",
         "dequal": "catalog:",
         "i18n-iso-countries": "7.14.0",

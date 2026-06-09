@@ -15,13 +15,13 @@ export interface NavItem {
  * Used for navigation tests and force upgrade redirect validation.
  */
 export const NAV_ITEMS: NavItem[] = [
-    {name: 'Analytics', path: /\/ghost\/#\/analytics\/?$/, directUrl: '/ghost/#/analytics', roles: ['Administrator']},
-    {name: 'Network', path: /\/ghost\/#\/(network|activitypub)\/?/, directUrl: '/ghost/#/activitypub', roles: ['Administrator']},
-    {name: 'View site', path: /\/ghost\/#\/site\/?$/, directUrl: '/ghost/#/site', roles: ['Administrator', 'Editor']},
-    {name: 'Posts', path: /\/ghost\/#\/posts\/?$/, directUrl: '/ghost/#/posts', roles: ['Administrator', 'Editor', 'Author', 'Contributor']},
-    {name: 'Pages', path: /\/ghost\/#\/pages\/?$/, directUrl: '/ghost/#/pages', roles: ['Administrator', 'Editor']},
-    {name: 'Tags', path: /\/ghost\/#\/tags\/?$/, directUrl: '/ghost/#/tags', roles: ['Administrator', 'Editor']},
-    {name: 'Members', path: /\/ghost\/#\/members\/?$/, directUrl: '/ghost/#/members', roles: ['Administrator', 'Editor']}
+    {name: 'Analytics', path: /\/ghost\/?#\/analytics\/?$/, directUrl: '/ghost/#/analytics', roles: ['Administrator']},
+    {name: 'Network', path: /\/ghost\/?#\/(network|activitypub)\/?/, directUrl: '/ghost/#/activitypub', roles: ['Administrator']},
+    {name: 'View site', path: /\/ghost\/?#\/site\/?$/, directUrl: '/ghost/#/site', roles: ['Administrator', 'Editor']},
+    {name: 'Posts', path: /\/ghost\/?#\/posts\/?$/, directUrl: '/ghost/#/posts', roles: ['Administrator', 'Editor', 'Author', 'Contributor']},
+    {name: 'Pages', path: /\/ghost\/?#\/pages\/?$/, directUrl: '/ghost/#/pages', roles: ['Administrator', 'Editor']},
+    {name: 'Tags', path: /\/ghost\/?#\/tags\/?$/, directUrl: '/ghost/#/tags', roles: ['Administrator', 'Editor']},
+    {name: 'Members', path: /\/ghost\/?#\/members\/?$/, directUrl: '/ghost/#/members', roles: ['Administrator', 'Editor']}
 ];
 
 /**

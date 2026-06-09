@@ -34,12 +34,38 @@ and issues worth reviewing at the end. Newest entries at the bottom of each sect
   CodeMirror editor Ember uses. Shade has no code-editor component yet and
   pulling in admin-x-design-system's CodeEditor would contradict the
   "phase out admin-x-design-system" direction.
-- **While `tagDetailsX` is on, the hidden Ember app still runs its tag route in
-  the background** (it fetches the tag for the same URL). Harmless but wasteful;
-  goes away when the Ember routes are removed at flag GA.
+- **Ember route handover:** when `tagDetailsX` is on, the Ember tag route
+  short-circuits in `beforeModel` and hands the URL to the `react-fallback`
+  catch-all, so the hidden Ember app loads no data and registers no transition
+  guards (an earlier version left the Ember route active, and its
+  unsaved-changes guard fought React's navigation after deletes).
 - **Ember store sync:** added `TagsResponseType: {type: 'tag'}` to the state
-  bridge's `emberDataTypeMapping` — React tag mutations now unload Ember's tag
-  cache so both worlds stay consistent during the transition.
+  bridge's `emberDataTypeMapping`. Tag mutations use `updateQueries`
+  (pushPayload/unloadRecord on the Ember side) rather than `invalidateQueries` —
+  invalidation would `store.unloadAll('tag')`, stripping tag records out of any
+  loaded posts' embedded tag relationships (post save could then drop tags).
+- **Post-review fixes from /code-review + Codex pass:** re-entrant submit guard
+  (Ember had a drop-concurrency save task; cmd+S key-repeat could create
+  duplicate tags), server validation messages surfaced in the error toast
+  (was a generic message), `@tryghost/string` slugify (transliteration parity:
+  'Новости' → 'novosti'; the hand-rolled version produced empty slugs for
+  non-Latin names), bare-hex accent color normalization on blur, leading-comma
+  name validation, `useConfirmUnload` for browser-unload parity, no
+  `allowInForceUpgrade` on the React tag routes (force-upgraded sites must not
+  be able to edit tags), 404 only when no data exists (transient refetch errors
+  no longer unmount the form and discard edits), scoped `useWatch` so
+  code-injection keystrokes don't re-render the whole accordion, and the Ember
+  e2e wrapper pins `tagDetailsX: false` so a future flag GA fails loudly
+  instead of silently dropping Ember coverage.
+- **Known accepted gaps:** image uploads have no Unsplash and no drag-and-drop
+  (Ember had both; a shared Dropzone-based RHF field is the right follow-up —
+  apps/posts header-image-field.tsx is the precedent); if another screen ever
+  adopts Shade's `Sidebar`, the hardcoded "Main navigation" aria-label needs to
+  move to the consumer; a labs-flag flip while a user has unsaved edits on the
+  screen swaps implementations without an unsaved-changes prompt (rare admin
+  action, silent edit loss accepted); the unsaved-changes blocker+dialog and
+  the Ember route handover should be extracted into shared helpers when slice 2
+  adds their second consumers.
 
 ## Infra fixes made along the way
 
