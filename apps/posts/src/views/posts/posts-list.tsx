@@ -1,4 +1,5 @@
 import BulkActionModals from './components/bulk-action-modals';
+import CustomViewModal from './components/custom-view-modal';
 import LoadMoreButton from '@components/virtual-table/load-more-button';
 import MainLayout from '@components/layout/main-layout';
 import PostsContextMenu from './components/posts-context-menu';
@@ -20,16 +21,20 @@ import {
     shiftItem,
     toggleItem
 } from './posts-selection';
+import {findMatchingView, paramsToViewFilter} from './posts-views';
 import {getPostsListQueries, parsePostsListParams} from './posts-query-params';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {isAdminUser, isAuthorOrContributor, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
+import {hasAdminAccess, isAdminUser, isAuthorOrContributor, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
 import {useBulkEditPosts, useCopyPost} from '@tryghost/admin-x-framework/api/posts';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
+import {usePostsAnalytics} from './hooks/use-posts-analytics';
 import {usePostsListData} from './hooks/use-posts-list-data';
+import {usePostsViews} from './hooks/use-posts-views';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 import type {PendingBulkAction} from './components/bulk-action-modals';
 import type {Post} from '@tryghost/admin-x-framework/api/posts';
 import type {PostsContextMenuAction} from './components/posts-context-menu';
+import type {PostsListAnalyticsContext} from './components/posts-list-item-analytics';
 import type {PostsResource, PostsSectionKey} from './posts-query-params';
 import type {PostsSelection} from './posts-selection';
 
@@ -80,8 +85,31 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
     const [selection, setSelection] = useState<PostsSelection>(clearSelection());
     const [contextMenu, setContextMenu] = useState<{x: number; y: number} | null>(null);
     const [pendingAction, setPendingAction] = useState<PendingBulkAction | null>(null);
+    const [viewModalOpen, setViewModalOpen] = useState(false);
+
+    const views = usePostsViews(resource);
+    const activeView = useMemo(() => findMatchingView(views, resource, params), [views, resource, params]);
 
     const loadedPosts = useMemo(() => sections.flatMap(section => section.posts), [sections]);
+
+    const webAnalyticsEnabled = !isPages && getSettingValue<boolean>(settingsData?.settings ?? null, 'web_analytics_enabled') === true;
+    const membersTrackSources = !isPages && getSettingValue<boolean>(settingsData?.settings ?? null, 'members_track_sources') === true;
+    const emailTrackOpens = getSettingValue<boolean>(settingsData?.settings ?? null, 'email_track_opens') === true;
+
+    const {visitorCounts, memberCounts} = usePostsAnalytics({
+        posts: loadedPosts,
+        visitorCountsEnabled: webAnalyticsEnabled,
+        memberCountsEnabled: membersTrackSources
+    });
+
+    const analytics: PostsListAnalyticsContext | undefined = isPages ? undefined : {
+        webAnalyticsEnabled,
+        membersTrackSources,
+        emailTrackOpens,
+        membersEnabled,
+        visitorCounts,
+        memberCounts
+    };
     const orderedIds = useMemo(() => loadedPosts.map(post => post.id), [loadedPosts]);
     const selectedPosts = useMemo(
         () => loadedPosts.filter(post => isSelected(selection, post.id)),
@@ -195,13 +223,25 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
     const hasActiveFilters = params.type !== null || params.visibility !== null || params.author !== null || params.tag !== null;
     const typeLabel = isPages ? 'pages' : 'posts';
 
+    // Custom views (Ember parity): the heading shows the matching view's name,
+    // and admins can save the current filter state as a view or edit the
+    // matching saved (non-default) view
+    const headerTitle = activeView?.name ?? (isPages ? 'Pages' : 'Posts');
+    const hasViewFilter = hasActiveFilters || params.order !== null;
+    const canManageViews = !!currentUser && hasAdminAccess(currentUser);
+    const showSaveViewButton = canManageViews && hasViewFilter && !activeView;
+    const showEditViewButton = canManageViews && hasViewFilter && !!activeView && !activeView.isDefault;
+
     return (
         <MainLayout>
             <ListPage data-testid={`${resource}-page`}>
                 <ListPage.Header className="py-4 sidebar:py-5">
                     <PageHeader blurredBackground={false} sticky={false}>
                         <PageHeader.Left>
-                            <PageHeader.Title>{isPages ? 'Pages' : 'Posts'}</PageHeader.Title>
+                            {/* h2 so the page title matches the heading level the Ember screen used */}
+                            <h2 className="scroll-m-20 text-lg leading-[1.1em] font-semibold tracking-[0.1px] whitespace-nowrap" data-page-header="title">
+                                {headerTitle}
+                            </h2>
                         </PageHeader.Left>
                         <PageHeader.Actions>
                             <PageHeader.ActionGroup>
@@ -214,12 +254,26 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
                             </PageHeader.ActionGroup>
                         </PageHeader.Actions>
                     </PageHeader>
-                    <PostsFilters
-                        params={params}
-                        resource={resource}
-                        restricted={restricted}
-                        onParamChange={setParam}
-                    />
+                    <div className="flex flex-wrap items-center gap-2">
+                        <PostsFilters
+                            params={params}
+                            resource={resource}
+                            restricted={restricted}
+                            onParamChange={setParam}
+                        />
+                        {showSaveViewButton && (
+                            <Button variant="outline" onClick={() => setViewModalOpen(true)}>
+                                <LucideIcon.Plus className="size-4" />
+                                Save as view
+                            </Button>
+                        )}
+                        {showEditViewButton && (
+                            <Button variant="outline" onClick={() => setViewModalOpen(true)}>
+                                <LucideIcon.Pencil className="size-4" />
+                                Edit current view
+                            </Button>
+                        )}
+                    </div>
                 </ListPage.Header>
                 <ListPage.Body>
                     {isLoading ? (
@@ -228,9 +282,10 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
                         </div>
                     ) : isError ? (
                         <div className="flex flex-1 flex-col items-center justify-center">
-                            <h2 className="mb-2 text-xl font-medium">
+                            {/* h3 so the page-title h2 in the header stays unique */}
+                            <h3 className="mb-2 text-xl font-medium">
                                 Error loading {typeLabel}
-                            </h2>
+                            </h3>
                             <p className="mb-4 text-muted-foreground">
                                 Please reload the page to try again
                             </p>
@@ -271,6 +326,7 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
                                     {section.posts.map(post => (
                                         <PostsListItem
                                             key={post.id}
+                                            analytics={analytics}
                                             post={post}
                                             resource={resource}
                                             selected={selectionEnabled && isSelected(selection, post.id)}
@@ -310,6 +366,16 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
                 onClose={() => setPendingAction(null)}
                 onCompleted={finishBulkAction}
             />
+            {viewModalOpen && (
+                <CustomViewModal
+                    activeView={activeView && !activeView.isDefault ? activeView : null}
+                    filter={paramsToViewFilter(params)}
+                    resource={resource}
+                    views={views}
+                    onClose={() => setViewModalOpen(false)}
+                    onDeleted={() => setSearchParams({})}
+                />
+            )}
         </MainLayout>
     );
 };

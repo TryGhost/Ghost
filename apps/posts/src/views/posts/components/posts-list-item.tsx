@@ -1,7 +1,9 @@
+import PostsListItemAnalytics from './posts-list-item-analytics';
 import moment from 'moment-timezone';
 import {Badge} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import type {Post} from '@tryghost/admin-x-framework/api/posts';
+import type {PostsListAnalyticsContext} from './posts-list-item-analytics';
 import type {PostsResource} from '../posts-query-params';
 
 export function getStatusLabel(status?: string): string {
@@ -27,6 +29,8 @@ interface PostsListItemProps {
     resource: PostsResource;
     selected: boolean;
     selectionEnabled: boolean;
+    /** When set, analytics metrics are rendered on published/sent rows (posts only) */
+    analytics?: PostsListAnalyticsContext;
     onToggleSelect: (id: string) => void;
     onShiftSelect: (id: string) => void;
     onOpen: (post: Post) => void;
@@ -38,6 +42,7 @@ function PostsListItem({
     resource,
     selected,
     selectionEnabled,
+    analytics,
     onToggleSelect,
     onShiftSelect,
     onOpen,
@@ -96,9 +101,14 @@ function PostsListItem({
                         {formattedDate && <span>{authorNames ? ' – ' : ''}{formattedDate}</span>}
                     </p>
                 </div>
-                <Badge className="shrink-0" data-testid="post-status" variant="outline">
-                    {getStatusLabel(post.status)}
-                </Badge>
+                <div className="flex shrink-0 items-center gap-4">
+                    {analytics && (post.status === 'published' || post.status === 'sent') && (
+                        <PostsListItemAnalytics analytics={analytics} post={post} />
+                    )}
+                    <Badge className="shrink-0" data-testid="post-status" variant="outline">
+                        {getStatusLabel(post.status)}
+                    </Badge>
+                </div>
             </div>
         </div>
     );

@@ -13,6 +13,7 @@ import { NavMemberViews } from "./nav-member-views";
 import { useMemberSidebarViews } from "./member-sidebar-views";
 import { useCustomSidebarViews } from "./use-custom-sidebar-views";
 import { useIsActiveLink } from "./use-is-active-link";
+import { usePostsViewActive } from "./use-posts-view-active";
 import { useEmberRouting } from "@/ember-bridge";
 import { useFeatureFlag } from "@/hooks/use-feature-flag";
 
@@ -85,9 +86,11 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const showMembers = currentUser && canManageMembers(currentUser);
     const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
     const showComments = !!showMembers && commentsEnabled !== 'off';
-    const isDraftPostsRouteActive = routing.isRouteActive('posts', {type: 'draft'});
-    const isScheduledPostsRouteActive = routing.isRouteActive('posts', {type: 'scheduled'});
-    const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
+    const {onRoute: onPostsRoute, isFilterActive: isPostsFilterActive} = usePostsViewActive('posts');
+    const {onRoute: onPagesRoute} = usePostsViewActive('pages');
+    const isDraftPostsRouteActive = isPostsFilterActive({type: 'draft'});
+    const isScheduledPostsRouteActive = isPostsFilterActive({type: 'scheduled'});
+    const isPublishedPostsRouteActive = isPostsFilterActive({type: 'published'});
     const hasActivePostChild = isDraftPostsRouteActive || isScheduledPostsRouteActive || isPublishedPostsRouteActive || postCustomViews.some(view => view.isActive);
     const postsExpanded = savedPostsExpanded;
     const hasActiveMemberView = hasMemberViews && memberViews.some(view => view.isActive);
@@ -96,7 +99,8 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
         ? (!hasActiveMemberView || !membersExpanded)
         : routing.isRouteActive(LEGACY_MEMBERS_ACTIVE_ROUTES);
     const postsRoute = routing.getRouteUrl('posts');
-    const isPostsRouteActive = routing.isRouteActive('posts');
+    // the main link is active on the route when no default/custom view matches
+    const isPostsRouteActive = onPostsRoute && !hasActivePostChild;
     const postsNavActive = isPostsRouteActive || (!postsExpanded && hasActivePostChild);
     return (
         <SidebarGroup {...props}>
@@ -143,7 +147,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                     <NavMenuItem>
                         <NavMenuItem.Link
                             to={routing.getRouteUrl('pages')}
-                            isActive={routing.isRouteActive('pages')}
+                            isActive={onPagesRoute}
                         >
                             <LucideIcon.File />
                             <NavMenuItem.Label>Pages</NavMenuItem.Label>
