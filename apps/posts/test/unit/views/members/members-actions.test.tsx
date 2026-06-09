@@ -156,4 +156,12 @@ describe('MembersActions', () => {
             '#/members/new?back=%2Fmembers%3Ffilter%3Dlabel%253AVIP%26search%3Dalice'
         );
     });
+
+    it('can hide the member actions menu without hiding new member or import modal state', () => {
+        renderMembersActions({showMenu: false});
+
+        expect(screen.queryByTestId('members-actions')).not.toBeInTheDocument();
+        expect(screen.getByRole('link', {name: 'New member'})).toBeInTheDocument();
+        expect(importModalPropsRef.current).not.toBeNull();
+    });
 });

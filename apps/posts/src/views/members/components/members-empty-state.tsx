@@ -55,36 +55,28 @@ const MembersEmptyState: React.FC<MembersEmptyStateProps> = ({membershipsEnabled
 
     return (
         <div className="flex h-full flex-col items-center justify-center px-4">
-            <div className="flex max-w-lg flex-col items-center gap-3">
-                <EmptyIndicator
-                    actions={
-                        <div className="flex flex-col items-center gap-3">
-                            <Button
-                                disabled={isAdding || isCurrentUserLoading || !currentUser}
-                                onClick={handleAddYourself}
-                            >
-                                {isAdding ? 'Adding...' : 'Add yourself as a member to test'}
-                            </Button>
-                            <p className="text-sm text-muted-foreground">
-                                Have members already?{' '}
-                                <a className="font-medium text-foreground hover:underline" href="#/members/new">Add them manually</a>
-                                {' '}or{' '}
-                                <button
-                                    className="font-medium text-foreground hover:underline"
-                                    type="button"
-                                    onClick={() => navigate('/members/import')}
-                                >
-                                    import from CSV
-                                </button>
-                            </p>
-                        </div>
-                    }
-                    description="Use memberships to allow your readers to sign up and subscribe to your content."
-                    title="Start building your audience"
-                >
-                    <LucideIcon.Users />
-                </EmptyIndicator>
-            </div>
+            <EmptyIndicator
+                actions={
+                    <div className="flex flex-col items-center gap-2 sm:flex-row">
+                        <Button
+                            disabled={isAdding || isCurrentUserLoading || !currentUser}
+                            onClick={handleAddYourself}
+                        >
+                            {isAdding ? 'Adding...' : 'Add yourself as a member to test'}
+                        </Button>
+                        <Button
+                            variant="outline"
+                            onClick={() => navigate('/members/import')}
+                        >
+                            Import from CSV
+                        </Button>
+                    </div>
+                }
+                description="Use memberships to allow your readers to sign up and subscribe to your content."
+                title="Start building your audience"
+            >
+                <LucideIcon.Users />
+            </EmptyIndicator>
         </div>
     );
 };

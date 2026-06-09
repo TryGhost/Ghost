@@ -98,6 +98,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
     const hasFilters = visibleFilters.length > 0;
     const shouldShowMobileSearchRow = showMobileSearch;
     const shouldShowFiltersRow = hasFilters;
+    const shouldShowMemberControls = hasFilterOrSearch || totalMembers > 0;
     const shouldShowMembersHelpCards = !hasFilterOrSearch && !shouldShowLoading && !isError && totalMembers < MEMBERS_HELP_CARDS_LIMIT;
 
     useEffect(() => {
@@ -135,7 +136,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                             <PageHeader.Left>
                                 <PageHeader.Title>
                                     Members{' '}
-                                    {!shouldShowLoading && (
+                                    {!shouldShowLoading && totalMembers > 0 && (
                                         <PageHeader.Count className="hidden sm:inline">
                                             {formatNumber(totalMembers)}
                                         </PageHeader.Count>
@@ -144,29 +145,33 @@ const MembersPage: React.FC<MembersPageProps> = ({
                             </PageHeader.Left>
                             <PageHeader.Actions>
                                 <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                                    <div className="hidden lg:flex">
-                                        <MembersHeaderSearch
-                                            search={searchInput}
-                                            onSearchChange={setSearchInput}
-                                        />
-                                    </div>
-                                    <Button
-                                        aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
-                                        className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
-                                        variant="outline"
-                                        onClick={handleMobileSearchToggle}
-                                    >
-                                        <LucideIcon.Search className="size-4" />
-                                    </Button>
-                                    {!hasFilters && (
-                                        <MembersFilters
-                                            activeView={activeView}
-                                            filters={visibleFilters}
-                                            iconOnly={true}
-                                            nql={nql}
-                                            savedViews={savedViews}
-                                            onFiltersChange={setFilters}
-                                        />
+                                    {shouldShowMemberControls && (
+                                        <>
+                                            <div className="hidden lg:flex">
+                                                <MembersHeaderSearch
+                                                    search={searchInput}
+                                                    onSearchChange={setSearchInput}
+                                                />
+                                            </div>
+                                            <Button
+                                                aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
+                                                className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
+                                                variant="outline"
+                                                onClick={handleMobileSearchToggle}
+                                            >
+                                                <LucideIcon.Search className="size-4" />
+                                            </Button>
+                                            {!hasFilters && (
+                                                <MembersFilters
+                                                    activeView={activeView}
+                                                    filters={visibleFilters}
+                                                    iconOnly={true}
+                                                    nql={nql}
+                                                    savedViews={savedViews}
+                                                    onFiltersChange={setFilters}
+                                                />
+                                            )}
+                                        </>
                                     )}
                                     <MembersActions
                                         canBulkDelete={canBulkDelete}
@@ -174,6 +179,8 @@ const MembersPage: React.FC<MembersPageProps> = ({
                                         memberCount={totalMembers}
                                         nql={nql}
                                         search={search}
+                                        showMenu={shouldShowMemberControls}
+                                        showNewMember={shouldShowMemberControls}
                                         onImportComplete={() => {
                                             void refetch();
                                         }}
@@ -182,7 +189,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                             </PageHeader.Actions>
                         </PageHeader>
 
-                        {(shouldShowFiltersRow || shouldShowMobileSearchRow) && (
+                        {shouldShowMemberControls && (shouldShowFiltersRow || shouldShowMobileSearchRow) && (
                             <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
                                 {shouldShowMobileSearchRow && (
                                     <div className="w-full lg:hidden">
@@ -267,7 +274,11 @@ const MembersPage: React.FC<MembersPageProps> = ({
                             totalItems={totalMembers}
                         />
                     )}
-                    {shouldShowMembersHelpCards && <MembersHelpCards />}
+                    {shouldShowMembersHelpCards && (
+                        <div className={cn(data?.members.length && 'mt-8')}>
+                            <MembersHelpCards />
+                        </div>
+                    )}
                 </ListPage.Body>
             </ListPage>
         </MainLayout>
