@@ -1,9 +1,10 @@
-import AutomationCanvas from './components/automation-canvas';
+import AutomationCanvas from './components/canvas/automation-canvas';
 import AutomationHeader from './components/automation-header';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
 import {AutomationDetail, AutomationStatus, useEditAutomation, useReadAutomation} from '@tryghost/admin-x-framework/api/automations';
 import {dequal} from 'dequal';
+import {isEmptyEmailLexical} from './utils';
 import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import {useConfirmUnload, useParams} from '@tryghost/admin-x-framework';
@@ -12,25 +13,6 @@ import type {AutomationEditState} from './types';
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
 const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
-
-const isEmptyEmailLexical = (lexical: string | null | undefined): boolean => {
-    if (!lexical) {
-        return true;
-    }
-
-    try {
-        const parsed = JSON.parse(lexical);
-        const children = parsed?.root?.children;
-
-        if (!children || children.length === 0) {
-            return true;
-        }
-
-        return children.length === 1 && children[0].type === 'paragraph' && (!children[0].children || children[0].children.length === 0);
-    } catch {
-        return true;
-    }
-};
 
 const editableSlice = (automation: AutomationDetail) => ({
     status: automation.status,
