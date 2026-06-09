@@ -41,6 +41,14 @@ describe('Automated Emails API', function () {
         await dbUtils.truncate('brute');
         await dbUtils.truncate('welcome_email_automated_emails');
         await dbUtils.truncate('automations');
+        const defaultEmailDesignSetting = await models.EmailDesignSetting.findOne({
+            slug: 'default-automated-email'
+        });
+        await models.EmailDesignSetting.edit({
+            sender_name: null,
+            sender_email: null,
+            sender_reply_to: null
+        }, {id: defaultEmailDesignSetting.id});
     });
 
     describe('Browse', function () {
@@ -88,6 +96,34 @@ describe('Automated Emails API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('Reads sender settings from email design settings', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            const welcomeEmail = await models.WelcomeEmailAutomatedEmail.findOne({
+                welcome_email_automation_id: automatedEmail.id
+            });
+
+            await models.WelcomeEmailAutomatedEmail.edit({
+                sender_name: 'Ignored Old Sender',
+                sender_email: 'ignored-old@example.com',
+                sender_reply_to: 'ignored-old-reply@example.com'
+            }, {id: welcomeEmail.id});
+
+            await models.EmailDesignSetting.edit({
+                sender_name: 'Design Sender',
+                sender_email: 'design@example.com',
+                sender_reply_to: 'design-reply@example.com'
+            }, {id: welcomeEmail.get('email_design_setting_id')});
+
+            await agent
+                .get(`automated_emails/${automatedEmail.id}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails[0].sender_name, 'Design Sender');
+                    assert.equal(body.automated_emails[0].sender_email, 'design@example.com');
+                    assert.equal(body.automated_emails[0].sender_reply_to, 'design-reply@example.com');
+                });
+        });
     });
 
     describe('Add', function () {
@@ -110,6 +146,32 @@ describe('Automated Emails API', function () {
                     etag: anyEtag,
                     location: anyLocationFor('automated_emails')
                 });
+        });
+
+        it('Can add an automated email with sender settings', async function () {
+            const automatedEmail = await createAutomatedEmail({
+                sender_name: 'Design Sender',
+                sender_email: 'design@example.com',
+                sender_reply_to: 'design-reply@example.com'
+            });
+
+            assert.equal(automatedEmail.sender_name, 'Design Sender');
+            assert.equal(automatedEmail.sender_email, 'design@example.com');
+            assert.equal(automatedEmail.sender_reply_to, 'design-reply@example.com');
+
+            const welcomeEmail = await models.WelcomeEmailAutomatedEmail.findOne({
+                welcome_email_automation_id: automatedEmail.id
+            });
+            assert.equal(welcomeEmail.get('sender_name'), null);
+            assert.equal(welcomeEmail.get('sender_email'), null);
+            assert.equal(welcomeEmail.get('sender_reply_to'), null);
+
+            const emailDesignSetting = await models.EmailDesignSetting.findOne({
+                id: welcomeEmail.get('email_design_setting_id')
+            });
+            assert.equal(emailDesignSetting.get('sender_name'), 'Design Sender');
+            assert.equal(emailDesignSetting.get('sender_email'), 'design@example.com');
+            assert.equal(emailDesignSetting.get('sender_reply_to'), 'design-reply@example.com');
         });
 
         it('Validates status on add', async function () {
@@ -252,6 +314,40 @@ describe('Automated Emails API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('Writes sender settings to email design settings', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            const welcomeEmail = await models.WelcomeEmailAutomatedEmail.findOne({
+                welcome_email_automation_id: automatedEmail.id
+            });
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    sender_name: 'Design Sender',
+                    sender_email: 'design@example.com',
+                    sender_reply_to: 'design-reply@example.com'
+                }]})
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails[0].sender_name, 'Design Sender');
+                    assert.equal(body.automated_emails[0].sender_email, 'design@example.com');
+                    assert.equal(body.automated_emails[0].sender_reply_to, 'design-reply@example.com');
+                });
+
+            const updatedWelcomeEmail = await models.WelcomeEmailAutomatedEmail.findOne({id: welcomeEmail.id});
+            assert.equal(updatedWelcomeEmail.get('sender_name'), null);
+            assert.equal(updatedWelcomeEmail.get('sender_email'), null);
+            assert.equal(updatedWelcomeEmail.get('sender_reply_to'), null);
+
+            const emailDesignSetting = await models.EmailDesignSetting.findOne({
+                id: welcomeEmail.get('email_design_setting_id')
+            });
+            assert.equal(emailDesignSetting.get('sender_name'), 'Design Sender');
+            assert.equal(emailDesignSetting.get('sender_email'), 'design@example.com');
+            assert.equal(emailDesignSetting.get('sender_reply_to'), 'design-reply@example.com');
         });
 
         it('Validates status on edit', async function () {
@@ -451,6 +547,20 @@ describe('Automated Emails API', function () {
                         assert.equal(automatedEmail.sender_reply_to, 'reply@example.com');
                     }
                 });
+
+            const welcomeEmails = await models.WelcomeEmailAutomatedEmail.findAll();
+            for (const welcomeEmail of welcomeEmails.models) {
+                assert.equal(welcomeEmail.get('sender_name'), null);
+                assert.equal(welcomeEmail.get('sender_email'), null);
+                assert.equal(welcomeEmail.get('sender_reply_to'), null);
+
+                const emailDesignSetting = await models.EmailDesignSetting.findOne({
+                    id: welcomeEmail.get('email_design_setting_id')
+                });
+                assert.equal(emailDesignSetting.get('sender_name'), 'Custom Sender');
+                assert.equal(emailDesignSetting.get('sender_email'), 'sender@example.com');
+                assert.equal(emailDesignSetting.get('sender_reply_to'), 'reply@example.com');
+            }
         });
 
         it('Can verify pending sender update with token', async function () {

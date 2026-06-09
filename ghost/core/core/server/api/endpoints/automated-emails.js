@@ -9,14 +9,16 @@ const messages = {
 };
 
 // NOTE: This file is in a transitionary state. The `automated_emails` database table was split into
-// `automations` (automation metadata: status, name, slug) and
-// `welcome_email_automated_emails` (email content: subject, lexical, sender fields). This controller
-// acts as a facade that joins/splits data between those two models while preserving the original
-// `automated_emails` API shape externally.
+// `automations` (automation metadata: status, name, slug),
+// `welcome_email_automated_emails` (email content: subject, lexical), and
+// `email_design_settings` (design and sender fields). This controller acts as a facade that joins/splits
+// data between those models while preserving the original `automated_emails` API shape externally.
 const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
-const EMAIL_FIELDS = ['subject', 'lexical', 'sender_name', 'sender_email', 'sender_reply_to', 'email_design_setting_id'];
+const EMAIL_FIELDS = ['subject', 'lexical', 'email_design_setting_id'];
+const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
 
 function flattenAutomation(automation, email = automation.related('welcomeEmailAutomatedEmail')) {
+    const emailDesignSetting = email.related('emailDesignSetting');
     const result = {
         id: automation.id,
         status: automation.get('status'),
@@ -24,9 +26,9 @@ function flattenAutomation(automation, email = automation.related('welcomeEmailA
         slug: automation.get('slug'),
         subject: email.get('subject'),
         lexical: email.get('lexical'),
-        sender_name: email.get('sender_name'),
-        sender_email: email.get('sender_email'),
-        sender_reply_to: email.get('sender_reply_to'),
+        sender_name: emailDesignSetting.get('sender_name'),
+        sender_email: emailDesignSetting.get('sender_email'),
+        sender_reply_to: emailDesignSetting.get('sender_reply_to'),
         email_design_setting_id: email.get('email_design_setting_id'),
         created_at: automation.get('created_at'),
         updated_at: automation.get('updated_at')
@@ -53,7 +55,7 @@ const controller = {
         async query(frame) {
             const result = await models.Automation.findPage({
                 ...frame.options,
-                withRelated: ['welcomeEmailAutomatedEmail']
+                withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
             });
             return {
                 ...result,
@@ -77,7 +79,7 @@ const controller = {
         async query(frame) {
             const model = await models.Automation.findOne(frame.data, {
                 ...frame.options,
-                withRelated: ['welcomeEmailAutomatedEmail']
+                withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
             });
             if (!model) {
                 throw new errors.NotFoundError({
@@ -99,6 +101,7 @@ const controller = {
             const data = frame.data.automated_emails[0];
 
             const emailData = _.pick(data, EMAIL_FIELDS);
+            const senderData = _.pick(data, SENDER_FIELDS);
             const automationData = _.pick(data, AUTOMATION_FIELDS);
 
             return models.Base.transaction(async (transacting) => {
@@ -111,7 +114,19 @@ const controller = {
                     },
                     {...frame.options, transacting}
                 );
-                return flattenAutomation(automation, email);
+                if (Object.keys(senderData).length > 0) {
+                    await models.EmailDesignSetting.edit(senderData, {
+                        ...frame.options,
+                        transacting,
+                        id: email.get('email_design_setting_id')
+                    });
+                }
+                const emailWithDesignSettings = await models.WelcomeEmailAutomatedEmail.findOne({id: email.id}, {
+                    ...frame.options,
+                    transacting,
+                    withRelated: ['emailDesignSetting']
+                });
+                return flattenAutomation(automation, emailWithDesignSettings);
             });
         }
     },
@@ -136,12 +151,13 @@ const controller = {
             const data = frame.data.automated_emails[0];
 
             const emailData = _.pick(data, EMAIL_FIELDS);
+            const senderData = _.pick(data, SENDER_FIELDS);
             const automationData = _.pick(data, AUTOMATION_FIELDS);
 
             return models.Base.transaction(async (transacting) => {
                 let automation = await models.Automation.findOne({id: frame.options.id}, {
                     transacting,
-                    withRelated: ['welcomeEmailAutomatedEmail']
+                    withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
                 });
                 if (!automation) {
                     throw new errors.NotFoundError({
@@ -158,12 +174,26 @@ const controller = {
                     });
                 }
 
+                if (Object.keys(senderData).length > 0) {
+                    await models.EmailDesignSetting.edit(senderData, {
+                        ...frame.options,
+                        transacting,
+                        id: email.get('email_design_setting_id')
+                    });
+                }
+
                 if (Object.keys(automationData).length > 0) {
                     automation = await models.Automation.edit(automationData, {
                         ...frame.options,
                         transacting
                     });
                 }
+
+                email = await models.WelcomeEmailAutomatedEmail.findOne({id: email.id}, {
+                    ...frame.options,
+                    transacting,
+                    withRelated: ['emailDesignSetting']
+                });
 
                 return flattenAutomation(automation, email);
             });

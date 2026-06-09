@@ -9,7 +9,7 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
-const {Automation, EmailDesignSetting, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
+const {Automation, EmailDesignSetting, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -184,7 +184,7 @@ class MemberWelcomeEmailService {
     async #loadWelcomeEmailsCollection() {
         return Automation.findAll({
             filter: WELCOME_EMAIL_FILTER,
-            withRelated: ['welcomeEmailAutomatedEmail']
+            withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
         });
     }
 
@@ -241,7 +241,7 @@ class MemberWelcomeEmailService {
 
     #hasSharedSenderFieldChanged(rows, field, value) {
         return rows.some((row) => {
-            const currentValue = row.related('welcomeEmailAutomatedEmail')?.get(field);
+            const currentValue = row.related('welcomeEmailAutomatedEmail')?.related('emailDesignSetting')?.get(field);
             return trimValue(currentValue) !== trimValue(value);
         });
     }
@@ -299,7 +299,7 @@ class MemberWelcomeEmailService {
 
         await Promise.all(rows.map((row) => {
             const email = row.related('welcomeEmailAutomatedEmail');
-            return WelcomeEmailAutomatedEmail.edit(attrs, {id: email.id});
+            return EmailDesignSetting.edit(attrs, {id: email.get('email_design_setting_id')});
         }));
     }
 
