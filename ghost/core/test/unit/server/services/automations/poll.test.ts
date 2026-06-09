@@ -270,10 +270,7 @@ describe('automations poll', function () {
     it('sends email revision content and enqueues the next step', async function () {
         const nextReadyAt = new Date(Date.now() + 60 * 1000);
         const step = buildEmailStep({
-            email_design_setting_id: 'design-id',
-            email_sender_email: 'sender@example.com',
-            email_sender_name: 'Sender',
-            email_sender_reply_to: 'reply@example.com'
+            email_design_setting_id: 'design-id'
         });
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
         automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
@@ -285,9 +282,6 @@ describe('automations poll', function () {
             email: {
                 designSettingId: 'design-id',
                 lexical: step.email_lexical,
-                senderEmail: 'sender@example.com',
-                senderName: 'Sender',
-                senderReplyTo: 'reply@example.com',
                 subject: 'Welcome!'
             },
             memberStatus: 'free'
