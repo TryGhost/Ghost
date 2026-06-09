@@ -1,4 +1,4 @@
-<div class="modal-content" data-test-modal="edit-posts-access" {{did-insert this.setup}}>
+<div class="modal-content" data-test-modal="edit-posts-access" data-testid="edit-posts-access-modal" {{did-insert this.setup}}>
     <header class="modal-header">
         <h1>Change {{concat @data.type}} access {{unless @data.selectionList.isSingle (concat 'for ' @data.selectionList.count ' ' @data.type 's')}}</h1>
     </header>
