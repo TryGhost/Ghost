@@ -329,6 +329,11 @@ export class GhostManager {
 
         if (this.config.mode === 'dev') {
             binds.push(`${REPO_ROOT}/ghost:/home/ghost/ghost`);
+            // ghost/admin has workspace:* deps on apps/* (e.g. @tryghost/admin-x-framework).
+            // pnpm 11 strict-validates the workspace graph at install time, so apps/
+            // must be mounted alongside ghost/ — same as compose.dev.yaml does for
+            // the ghost-dev container.
+            binds.push(`${REPO_ROOT}/apps:/home/ghost/apps`);
         }
 
         return binds;
