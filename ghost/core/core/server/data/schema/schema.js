@@ -1178,6 +1178,9 @@ module.exports = {
         divider_color: {type: 'string', maxlength: 50, nullable: true},
         section_title_color: {type: 'string', maxlength: 50, nullable: true},
         show_badge: {type: 'boolean', nullable: false, defaultTo: true},
+        sender_name: {type: 'string', maxlength: 191, nullable: true},
+        sender_email: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
+        sender_reply_to: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
