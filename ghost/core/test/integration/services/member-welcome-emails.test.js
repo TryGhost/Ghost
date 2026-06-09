@@ -6,6 +6,7 @@ const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
+const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const memberWelcomeEmailService = require('../../../core/server/services/member-welcome-emails/service');
 const processOutbox = require('../../../core/server/services/outbox/jobs/lib/process-outbox');
@@ -214,6 +215,37 @@ describe('Member Welcome Emails Integration', function () {
                 .join('automations', 'welcome_email_automated_emails.welcome_email_automation_id', 'automations.id')
                 .where('automations.slug', slug)
                 .first('welcome_email_automated_emails.*');
+        }
+
+        async function sendAutomationEmail() {
+            memberWelcomeEmailService.api = null;
+            memberWelcomeEmailService.init();
+
+            await memberWelcomeEmailService.api.sendAutomationEmail({
+                email: {
+                    designSettingId: defaultEmailDesignSettingId,
+                    lexical: JSON.stringify({
+                        root: {
+                            children: [{
+                                type: 'paragraph',
+                                children: [{type: 'text', text: 'Hello'}]
+                            }],
+                            direction: null,
+                            format: '',
+                            indent: 0,
+                            type: 'root',
+                            version: 1
+                        }
+                    }),
+                    subject: 'Automation email'
+                },
+                member: {
+                    email: 'automation-member@example.com',
+                    name: 'Automation Member',
+                    uuid: '99999999-9999-4999-8999-999999999999'
+                },
+                memberStatus: 'free'
+            });
         }
 
         it('does not send email when template is inactive', async function () {
@@ -451,6 +483,54 @@ describe('Member Welcome Emails Integration', function () {
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             assert.ok(sendCall.args[0].from.includes('automation@example.com'));
             assert.equal(sendCall.args[0].replyTo, 'automation-reply@example.com');
+        });
+
+        it('uses newsletter sender details for automation emails', async function () {
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+
+            await db.knex('newsletters')
+                .where('id', defaultNewsletter.id)
+                .update({
+                    sender_name: 'Newsletter Sender',
+                    sender_email: 'newsletter@example.com',
+                    sender_reply_to: 'newsletter-reply@example.com'
+                });
+
+            await sendAutomationEmail();
+
+            sinon.assert.calledOnceWithExactly(mailService.GhostMailer.prototype.send, sinon.match({
+                from: '"Newsletter Sender" <newsletter@example.com>',
+                replyTo: 'newsletter-reply@example.com'
+            }));
+        });
+
+        it('falls back to site sender defaults for automation emails when newsletter sender fields are missing', async function () {
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+            await db.knex('newsletters')
+                .where('id', defaultNewsletter.id)
+                .update({
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: 'newsletter'
+                });
+
+            await sendAutomationEmail();
+
+            sinon.assert.calledOnceWithExactly(mailService.GhostMailer.prototype.send, sinon.match({
+                from: settingsHelpers.getDefaultEmail().address,
+                replyTo: undefined
+            }));
+        });
+
+        it('falls back to site sender defaults for automation emails when no default newsletter exists', async function () {
+            sinon.stub(models.Newsletter, 'getDefaultNewsletter').resolves(null);
+
+            await sendAutomationEmail();
+
+            sinon.assert.calledOnceWithExactly(mailService.GhostMailer.prototype.send, sinon.match({
+                from: settingsHelpers.getDefaultEmail().address,
+                replyTo: undefined
+            }));
         });
 
         it('uses mock member UUID when sending test welcome emails', async function () {

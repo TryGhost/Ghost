@@ -13,9 +13,6 @@ type MemberWelcomeEmailService = {
             email: {
                 designSettingId: string | null;
                 lexical: string;
-                senderEmail: string | null;
-                senderName: string | null;
-                senderReplyTo: string | null;
                 subject: string;
             };
             member: {
@@ -160,9 +157,6 @@ const processStep = async ({
                 email: {
                     designSettingId: step.email_design_setting_id,
                     lexical: step.email_lexical,
-                    senderEmail: step.email_sender_email,
-                    senderName: step.email_sender_name,
-                    senderReplyTo: step.email_sender_reply_to,
                     subject: step.email_subject
                 },
                 member: {
