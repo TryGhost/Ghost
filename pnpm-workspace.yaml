@@ -79,7 +79,7 @@ catalog:
   chai: 4.5.0
   chalk: 4.1.2
   clsx: 2.1.1
-  concurrently: 10.0.0
+  concurrently: 10.0.3
   cross-fetch: 4.1.0
   dequal: 2.0.3
   dompurify: 3.4.5

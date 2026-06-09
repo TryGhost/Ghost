@@ -166,8 +166,8 @@ catalogs:
       specifier: 2.1.1
       version: 2.1.1
     concurrently:
-      specifier: 10.0.0
-      version: 10.0.0
+      specifier: 10.0.3
+      version: 10.0.3
     cross-fetch:
       specifier: 4.1.0
       version: 4.1.0
@@ -636,7 +636,7 @@ importers:
     devDependencies:
       concurrently:
         specifier: 'catalog:'
-        version: 10.0.0
+        version: 10.0.3
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -1096,7 +1096,7 @@ importers:
         version: 4.1.7(vitest@4.1.7)
       concurrently:
         specifier: 'catalog:'
-        version: 10.0.0
+        version: 10.0.3
       cross-fetch:
         specifier: 'catalog:'
         version: 4.1.0(encoding@0.1.13)
@@ -1196,7 +1196,7 @@ importers:
         version: 2.0.4
       concurrently:
         specifier: 'catalog:'
-        version: 10.0.0
+        version: 10.0.3
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -1272,7 +1272,7 @@ importers:
         version: 4.1.7(vitest@4.1.7)
       concurrently:
         specifier: 'catalog:'
-        version: 10.0.0
+        version: 10.0.3
       cross-fetch:
         specifier: 'catalog:'
         version: 4.1.0(encoding@0.1.13)
@@ -1689,7 +1689,7 @@ importers:
         version: 10.5.0(postcss@8.5.15)
       concurrently:
         specifier: 'catalog:'
-        version: 10.0.0
+        version: 10.0.3
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -1753,7 +1753,7 @@ importers:
         version: 4.1.7(vitest@4.1.7)
       concurrently:
         specifier: 'catalog:'
-        version: 10.0.0
+        version: 10.0.3
       cross-fetch:
         specifier: 'catalog:'
         version: 4.1.0(encoding@0.1.13)
@@ -10157,13 +10157,6 @@ packages:
     resolution: {integrity: sha512-yj9C819u3ED3/OyRd9mLKMXGy8wsElaf6bkkv6OqZEKrNAT461TjiznS4IfPBy8Mmh6DWaXCQCVYSq3+VHkpjQ==}
     engines: {node: '>=0.10.0'}
 
-  autoprefixer@10.4.21:
-    resolution: {integrity: sha512-O+A6LWV5LDHSJD3LjHYoNi4VLsj/Whi7k6zG12xTYaU4cQ8oxQGckXNX8cRHK5yOZ/ppVHe0ZBXGzSV9jXdVbQ==}
-    engines: {node: ^10 || ^12 || >=14}
-    hasBin: true
-    peerDependencies:
-      postcss: ^8.1.0
-
   autoprefixer@10.5.0:
     resolution: {integrity: sha512-FMhOoZV4+qR6aTUALKX2rEqGG+oyATvwBt9IIzVR5rMa2HRWPkxf+P+PAJLD1I/H5/II+HuZcBJYEFBpq39ong==}
     engines: {node: ^10 || ^12 || >=14}
@@ -11630,8 +11623,8 @@ packages:
     resolution: {integrity: sha512-MWufYdFw53ccGjCA+Ol7XJYpAlW6/prSMzuPOTRnJGcGzuhLn4Scrz7qf6o8bROZ514ltazcIFJZevcfbo0x7A==}
     engines: {'0': node >= 6.0}
 
-  concurrently@10.0.0:
-    resolution: {integrity: sha512-DRrk10z3sVPpguNe8od2cGNqZGqbT15rwAnxD4dG3b78mdNNb/gJyr8T834Oj518WcBmTktrt4FhdwZn09ZWSg==}
+  concurrently@10.0.3:
+    resolution: {integrity: sha512-hc3LH4UaKWd/bbyDK/IGVa4RB6PtQ3CUYwtrkzqHn+wIG3Hr5fhpRlk0L/gCa8ZE1L/Ufj50Zho69cI5w8SQBA==}
     engines: {node: '>=22'}
     hasBin: true
 
@@ -14337,9 +14330,6 @@ packages:
     resolution: {integrity: sha512-buRG0fpBtRHSTCOASe6hD258tEubFoRLb4ZNA6NxMVHNw2gOcwHo9wyablzMzOA5z9xA9L1KNjk/Nt6MT9aYow==}
     engines: {node: '>= 0.6'}
 
-  fraction.js@4.3.7:
-    resolution: {integrity: sha512-ZsDfxO51wGAXREY55a7la9LScWpwv9RxIrYABrlvOFBlH/ShPnrtsXeuUIfXKKOVicNxQ+o8JTbJvjS4M89yew==}
-
   fraction.js@5.3.4:
     resolution: {integrity: sha512-1X1NTtiJphryn/uLQz3whtY6jK3fTqoE3ohKs0tT+Ujr1W59oopxmoEh7Lu5p6vBaPbgoM0bzveAW4Qi5RyWDQ==}
 
@@ -14668,7 +14658,7 @@ packages:
       csstype: ^3.0.10
 
   google-caja-bower@https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd:
-    resolution: {gitHosted: true, integrity: sha512-mmCXdxGKGKDznjgkNzVqzTslaldslk5KMb/A7l8rxWnqyxzwsdPhuBJ6oT1Kh/Y3k4jN54ISee/2AgjFyCBxYw==, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
     version: 6011.0.0
 
   gopd@1.2.0:
@@ -16064,7 +16054,7 @@ packages:
     engines: {node: '>= 0.6'}
 
   keymaster@https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49:
-    resolution: {gitHosted: true, integrity: sha512-/WVovQslVEqPGNoD97TbqNHuCDPYu2v4/ggrZj0a+9PVPw3Rud4Ut2K7fOi0kMqzoJINkgP68e9m09Al/wFZ8g==, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
+    resolution: {gitHosted: true, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
     version: 1.6.3
 
   keypair@1.0.4:
@@ -30862,16 +30852,6 @@ snapshots:
 
   audio-extensions@0.0.0: {}
 
-  autoprefixer@10.4.21(postcss@8.5.15):
-    dependencies:
-      browserslist: 4.28.2
-      caniuse-lite: 1.0.30001793
-      fraction.js: 4.3.7
-      normalize-range: 0.1.2
-      picocolors: 1.1.1
-      postcss: 8.5.15
-      postcss-value-parser: 4.2.0
-
   autoprefixer@10.5.0(postcss@8.5.15):
     dependencies:
       browserslist: 4.28.2
@@ -33139,7 +33119,7 @@ snapshots:
       readable-stream: 3.6.2
       typedarray: 0.0.6
 
-  concurrently@10.0.0:
+  concurrently@10.0.3:
     dependencies:
       chalk: 5.6.2
       rxjs: 7.8.2
@@ -37072,8 +37052,6 @@ snapshots:
   forwarded-parse@2.1.2: {}
 
   forwarded@0.2.0: {}
-
-  fraction.js@4.3.7: {}
 
   fraction.js@5.3.4: {}
 
@@ -42725,7 +42703,7 @@ snapshots:
       '@csstools/postcss-text-decoration-shorthand': 1.0.0(postcss@8.5.15)
       '@csstools/postcss-trigonometric-functions': 1.0.2(postcss@8.5.15)
       '@csstools/postcss-unset-value': 1.0.2(postcss@8.5.15)
-      autoprefixer: 10.4.21(postcss@8.5.15)
+      autoprefixer: 10.5.0(postcss@8.5.15)
       browserslist: 4.28.2
       css-blank-pseudo: 3.0.3(postcss@8.5.15)
       css-has-pseudo: 3.0.4(postcss@8.5.15)
