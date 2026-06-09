@@ -32,6 +32,7 @@ Object {
       "llmsTxt": true,
       "members": true,
       "pictureImageFormats": true,
+      "postsListX": true,
       "smarterCounts": true,
       "stripeAutomaticTax": true,
       "superEditors": true,

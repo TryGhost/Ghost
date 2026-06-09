@@ -48,6 +48,7 @@ const PRIVATE_FEATURES = [
     'emailCustomization',
     'tagsX',
     'tagDetailsX',
+    'postsListX',
     'emailUniqueid',
     'themeTranslation',
     'indexnow',
