@@ -107,7 +107,7 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
     return (
         <MainLayout>
             <ListPage data-testid="members-page">
-                <ListPage.Header className="py-4 sidebar:py-6">
+                <ListPage.Header className="py-4 sidebar:py-5">
                     <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
                         <PageHeader
                             blurredBackground={false}

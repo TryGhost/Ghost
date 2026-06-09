@@ -47,7 +47,8 @@ class MembersStripeCustomersImporter extends TableImporter {
         return {
             id: this.fastFakeObjectId(),
             member_id: this.model.id,
-            customer_id: `cus_${faker.string.alphanumeric({length: 14,
+            customer_id: `cus_${faker.string.alphanumeric({
+                length: 14,
                 casing: 'mixed'
             })}`,
             name: this.model.name,

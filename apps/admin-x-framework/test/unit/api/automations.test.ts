@@ -182,7 +182,7 @@ describe('automations api helpers', () => {
             expect(next.actions).toHaveLength(1);
             const newAction = next.actions[0];
             expectSendEmailAction(newAction);
-            expect(newAction.data.email_subject).toBe('Untitled email');
+            expect(newAction.data.email_subject).toBe('');
             expect(() => JSON.parse(newAction.data.email_lexical)).not.toThrow();
             expect(JSON.parse(newAction.data.email_lexical).root.children).toEqual([]);
             expect(newAction.data.email_design_setting_id).toBe('placeholder');

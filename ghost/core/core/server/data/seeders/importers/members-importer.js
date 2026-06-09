@@ -68,7 +68,7 @@ class MembersImporter extends TableImporter {
     generate() {
         const id = this.fastFakeObjectId();
         // Use name from American locale to reflect an English-speaking audience
-        const name = `${americanFaker.name.firstName()} ${americanFaker.name.lastName()}`;
+        const name = `${americanFaker.person.firstName()} ${americanFaker.person.lastName()}`;
         const timestamp = this.timestamps.pop();
 
         return {

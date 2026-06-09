@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {formatWait} from '@src/views/Automations/components/automation-canvas';
+import {formatWait} from '@src/views/Automations/components/canvas/format-wait';
 
 describe('formatWait', () => {
     it('throws for 0 or negative hours', () => {

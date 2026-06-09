@@ -629,11 +629,9 @@ module.exports = class StripeAPI {
          * @type {Stripe.Checkout.SessionCreateParams}
          */
 
-        // TODO - add it higher up the stack to the metadata object.
-        // add ghost_donation key to metadata object
         metadata = {
-            ghost_donation: true,
-            ...metadata
+            ...metadata,
+            ghost_donation: true
         };
 
         const stripeSessionOptions = {
@@ -650,11 +648,8 @@ module.exports = class StripeAPI {
             invoice_creation: {
                 enabled: true,
                 invoice_data: {
-                    // Make sure we pass the data through to the invoice
-                    metadata: {
-                        ghost_donation: true,
-                        ...metadata
-                    }
+                    // Stripe does not inherit Checkout Session metadata for invoice records
+                    metadata
                 }
             },
             line_items: [{
@@ -718,6 +713,9 @@ module.exports = class StripeAPI {
             customer: customer ? customer.id : undefined,
             customer_email: !customer && customerEmail ? customerEmail : undefined,
             submit_type: 'pay',
+            invoice_creation: {
+                enabled: true
+            },
             line_items: [{
                 price_data: {
                     currency,

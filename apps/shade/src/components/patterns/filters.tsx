@@ -242,7 +242,7 @@ const filterInputVariants = cva(
             },
             size: {
                 lg: 'h-10 px-2.5 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
-                md: 'h-(--control-height) px-2 text-sm has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
+                md: 'h-(--control-height) px-2.5 has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0',
                 sm: 'h-8 px-2 text-xs has-[[data-slot=filters-prefix]]:ps-0 has-[[data-slot=filters-suffix]]:pe-0'
             },
             cursorPointer: {
@@ -307,7 +307,7 @@ const filterAddButtonVariants = cva(
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-(--control-height) gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-(--control-height) gap-1.5 px-2.5 [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-1.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
@@ -340,7 +340,7 @@ const filterOperatorVariants = cva(
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm',
-                md: 'h-(--control-height) gap-0.5 px-3 text-sm',
+                md: 'h-(--control-height) gap-0.5 px-2.5',
                 sm: 'h-8 gap-1 px-2.5 text-xs'
             },
             cursorPointer: {
@@ -368,8 +368,8 @@ const filterFieldLabelVariants = cva(
                 outline: 'border border-e-0 border-border'
             },
             size: {
-                lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-(--control-height) gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                lg: 'h-10 gap-1.5 px-2 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-(--control-height) gap-1.5 px-2.5 [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-0.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
@@ -407,8 +407,8 @@ const filterFieldValueVariants = cva(
                 outline: 'border border-border bg-background hover:bg-secondary has-[[data-slot=switch]]:hover:bg-transparent has-[>[data-slot=filters-input-wrapper]]:hover:bg-background'
             },
             size: {
-                lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-(--control-height) gap-1.5 px-3 text-sm [&_svg:not([class*=size-])]:size-4',
+                lg: 'h-10 gap-1.5 px-2 text-sm [&_svg:not([class*=size-])]:size-4',
+                md: 'h-(--control-height) gap-1.5 px-2.5 [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-0.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             cursorPointer: {
@@ -432,7 +432,7 @@ const filterFieldAddonVariants = cva('flex shrink-0 items-center justify-center 
         },
         size: {
             lg: 'h-10 px-4 text-sm',
-            md: 'h-(--control-height) px-3 text-sm',
+            md: 'h-(--control-height) px-2.5',
             sm: 'h-8 px-2.5 text-xs'
         }
     },
@@ -450,7 +450,7 @@ const filterFieldBetweenVariants = cva('flex shrink-0 items-center text-muted-fo
         },
         size: {
             lg: 'h-10 px-4 text-sm',
-            md: 'h-(--control-height) px-3 text-sm',
+            md: 'h-(--control-height) px-2.5',
             sm: 'h-8 px-2.5 text-xs'
         }
     },
@@ -636,7 +636,7 @@ function FilterInput<T = unknown>({
                             </div>
                         </TooltipTrigger>
                         <TooltipContent>
-                            <p className="text-sm">{validationMessage}</p>
+                            <p>{validationMessage}</p>
                         </TooltipContent>
                     </Tooltip>
                 )}
@@ -1207,7 +1207,7 @@ function FilterOperatorDropdown<T = unknown>({field, operator, values, onChange}
     // If hideOperatorSelect is true, just render the operator as plain text
     if (field.hideOperatorSelect) {
         return (
-            <div className="flex items-center self-stretch border border-r-0 px-3 text-sm whitespace-nowrap text-muted-foreground">
+            <div className="flex items-center self-stretch border border-r-0 px-2.5 whitespace-nowrap text-muted-foreground">
                 {operatorLabel}
             </div>
         );
@@ -1341,7 +1341,7 @@ function SelectOptionsList<T = unknown>({
     return (
         <CommandList className="outline-hidden">
             {isInitialLoad ? (
-                <div className="flex items-center justify-center py-6 text-sm text-muted-foreground">
+                <div className="flex items-center justify-center py-6 text-muted-foreground">
                     <Loader2 className="mr-2 size-4 animate-spin" />
                     {context.i18n.loading}
                 </div>
@@ -1360,7 +1360,7 @@ function SelectOptionsList<T = unknown>({
                             {option.icon && option.icon}
                             <div className="flex flex-col overflow-hidden">
                                 <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
-                                {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                {option.detail && <span className="truncate text-muted-foreground" title={option.detail}>{option.detail}</span>}
                             </div>
                             <Check className="ms-auto text-primary" />
                         </CommandItem>
@@ -1382,7 +1382,7 @@ function SelectOptionsList<T = unknown>({
                                 {option.icon && option.icon}
                                 <div className="flex flex-col overflow-hidden">
                                     <span className="truncate text-accent-foreground" title={option.label}>{option.label}</span>
-                                    {option.detail && <span className="truncate text-sm text-muted-foreground" title={option.detail}>{option.detail}</span>}
+                                    {option.detail && <span className="truncate text-muted-foreground" title={option.detail}>{option.detail}</span>}
                                 </div>
                                 <Check className="ms-auto text-primary opacity-0" />
                             </CommandItem>
@@ -1395,7 +1395,7 @@ function SelectOptionsList<T = unknown>({
                     {(selectedOptions.length > 0 || unselectedOptions.length > 0) && <CommandSeparator />}
                     <div className="p-1.5">
                         <button
-                            className="flex w-full items-center justify-center rounded-xs px-2 py-1.5 text-sm text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+                            className="flex w-full items-center justify-center rounded-xs px-2.5 py-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
                             disabled={isLoadingMore}
                             type="button"
                             onClick={onLoadMore}
@@ -1509,7 +1509,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
             <div className="w-full">
                 <Command shouldFilter={shouldClientFilter}>
                     <SelectOptionsSearchInput
-                        className="h-(--control-height) pr-8 text-sm"
+                        className="h-(--control-height) pr-8"
                         isSearching={isSearching}
                         label={field.label}
                         searchable={field.searchable !== false}
@@ -1616,7 +1616,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
             >
                 <Command shouldFilter={shouldClientFilter}>
                     <SelectOptionsSearchInput
-                        className="h-(--control-height) pr-8 text-sm"
+                        className="h-(--control-height) pr-8"
                         isSearching={isSearching}
                         label={field.label}
                         searchable={field.searchable !== false}
@@ -2103,7 +2103,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                 <Command>
                     {field.searchable !== false && (
                         <CommandInput
-                            className="h-(--control-height) text-sm"
+                            className="h-(--control-height)"
                             placeholder={context.i18n.placeholders.searchField(field.label || '')}
                             value={searchInput}
                             onValueChange={setSearchInput}

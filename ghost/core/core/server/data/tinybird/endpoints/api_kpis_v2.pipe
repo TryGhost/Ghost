@@ -5,7 +5,7 @@ NODE timeseries
 SQL >
 
     %
-        {% set _single_day = defined(date_from) and day_diff(date_from, date_to) == 0 %}
+        {% set _single_day = defined(date_from) and defined(date_to) and day_diff(date_from, date_to) == 0 %}
         with
             {% if defined(date_from) %}
                 toStartOfDay(
@@ -81,7 +81,7 @@ SQL >
     %
         select
             site_uuid,
-            {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
+            {% if defined(date_from) and defined(date_to) and day_diff(date_from, date_to) == 0 %}
                 toStartOfHour(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
             {% else %}
                 toDate(toTimezone(first_pageview, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
@@ -121,7 +121,7 @@ SQL >
 
     %
             select
-                {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
+                {% if defined(date_from) and defined(date_to) and day_diff(date_from, date_to) == 0 %}
                     toStartOfHour(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
                 {% else %}
                     toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}})) as date,
@@ -129,7 +129,7 @@ SQL >
                 count() pageviews
             from timeseries a
             inner join _mv_hits h on
-                {% if defined(date_from) and day_diff(date_from, date_to) == 0 %}
+                {% if defined(date_from) and defined(date_to) and day_diff(date_from, date_to) == 0 %}
                     a.date = toStartOfHour(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))
                 {% else %}
                     a.date = toDate(toTimezone(timestamp, {{String(timezone, 'Etc/UTC', description="Site timezone", required=True)}}))

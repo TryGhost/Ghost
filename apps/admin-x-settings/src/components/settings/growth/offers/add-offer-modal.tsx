@@ -42,8 +42,8 @@ export const ButtonSelect: React.FC<{type: OfferType, checked: boolean, onClick:
                     {checked ? <Icon className='w-[7px] stroke-[4]' name='check' size='custom' /> : null}
                 </div>
                 <div className='-mt-px flex flex-col'>
-                    <span>{type.title}</span>
-                    <span className='text-sm'>{type.description}</span>
+                    <span className='font-medium'>{type.title}</span>
+                    <span className='text-gray-700'>{type.description}</span>
                 </div>
             </div>
         </button>
@@ -294,7 +294,7 @@ const Sidebar: React.FC<SidebarProps> = ({tierOptions,
 
                         <TextField
                             error={Boolean(errors.code)}
-                            hint={errors.code || (overrides.code.value !== '' ? <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><span></span><Button className='text-xs' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div> : null)}
+                            hint={errors.code || (overrides.code.value !== '' ? <div className='flex items-center justify-between'><div>{homepageUrl}<span className='font-bold'>{overrides.code.value}</span></div><span></span><Button className='text-sm' color='green' label={`${isCopied ? 'Copied' : 'Copy'}`} size='sm' link onClick={handleCopyClick} /></div> : null)}
                             placeholder='black-friday'
                             title='Offer code'
                             value={overrides.code.value}

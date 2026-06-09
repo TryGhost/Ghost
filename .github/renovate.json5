@@ -37,6 +37,19 @@
     // Vulnerability-alert PRs require dashboard approval below so they do not
     // bypass the live open-PR cap enforced by the workflow.
     "minimumReleaseAge": "3 days",
+    // Hold updates internally during the release-age soak instead of opening a
+    // PR immediately and gating it with a pending `renovate/stability-days`
+    // status. With the default "flexible" filter, a soaking PR is still an open
+    // PR, so it counts against the live 10-PR cap enforced in
+    // .github/workflows/renovate.yml even though it cannot merge for up to 72h —
+    // soakers were starving creation slots from updates that are actually ready.
+    // "strict" keeps soaking updates as branchless/PR-less internal state until
+    // the soak passes, so a slot is only ever held by a mergeable PR. Trade-off:
+    // we lose day-0 CI signal on an update (breakage now surfaces only once the
+    // PR opens post-soak) and security fixes also stay invisible until their
+    // 72h soak clears (see vulnerabilityAlerts below — the soak already applied,
+    // strict only changes when the PR becomes visible).
+    "internalChecksFilter": "strict",
     "timezone": "Etc/UTC",
     // Restrict Renovate runs to the automerge windows so branch updates
     // (rebasing, force-pushes) happen around the same times automerge
@@ -119,11 +132,50 @@
         "ember-cli-code-coverage",
         // https://github.com/TryGhost/Ghost/commit/1382e34e42a513c201cb957b7f843369a2ce1b63
         // ember-cli-terser@4.0.2 has a regression that breaks our sourcemaps
-        "ember-cli-terser"
+        "ember-cli-terser",
+
+        // https://linear.app/ghost/issue/PLA-56
+        // Deprecated (per-method lodash packages are EOL); last real release is
+        // 4.5.0 (2019). The flagged "4.18.0 [SECURITY]" bump does not exist, so
+        // Renovate can't remediate it. It's transitive-only — we never call
+        // `_.template` ourselves — and only reachable via frozen Ember build
+        // tooling (broccoli-templater, sourcemap-validator) plus old @tryghost/*
+        // packages, so it can't be removed from the tree here. Ignore it to stop
+        // the unactionable dashboard noise.
+        "lodash.template",
+
+        // https://linear.app/ghost/issue/PLA-78
+        // https://github.com/TryGhost/Ghost/pull/28180
+        // knex 2.5.x breaks migrations: 2.5.0's password-masking mutates the
+        // shared `config.get('database')` object, which we hand to BOTH knex()
+        // and knex-migrator. With core ahead of knex-migrator's pinned knex
+        // (2.4.2), the password is stripped before knex-migrator connects →
+        // "Access denied (using password: NO)". 2.x is EOL; the real move is
+        // knex 3.x, gated on publishing a knex-3 knex-migrator
+        // (TryGhost/knex-migrator#86, unreleased), bumped in lockstep with core.
+        // Ignore until we do that coordinated upgrade.
+        "knex"
     ],
     "ignorePaths": [
         "test",
-        "ghost/admin/lib/koenig-editor/package.json"
+        // Freeze the Ember admin app wholesale. `ghost/admin` is being replaced by
+        // the React apps in `apps/*`, and its dependency tree is a frozen-as-a-unit
+        // Ember/broccoli stack we deliberately do not upgrade (see
+        // docs/ember-dependency-burden.md). Ignoring the whole directory drops
+        // admin's declared deps from extraction entirely: no update PRs, and they
+        // stop cluttering the Dependency Dashboard's Detected / Abandoned /
+        // Deprecated sections. Because Renovate manages deps per-manifest, anything
+        // admin SHARES with `ghost/core` or `apps/*` is still managed via those
+        // manifests — so in effect only admin-exclusive deps are omitted. This
+        // subsumes the old koenig-editor ignore and the per-package "Disable ember
+        // updates" / "disable css" rules (removed from packageRules below).
+        //
+        // Security note: GitHub Dependabot alerts for admin deps still fire (they
+        // are independent of Renovate) — we lose only Renovate's auto-fix PR. Given
+        // the app is slated for removal, remediate any rare real incident with a
+        // `pnpm overrides` pin. Today's admin-exclusive advisories are all
+        // build-time or verified-not-shipped (see docs/ember-dependency-burden.md).
+        "ghost/admin/**"
     ],
     "packageRules": [
         // Always require dashboard approval for major updates
@@ -225,6 +277,37 @@
             ]
         },
 
+        // Group each pinned-version pnpm catalog into a single PR per catalog.
+        //
+        // The named catalogs in pnpm-workspace.yaml (react17, eslint9,
+        // tailwind3) each hold a version lane we deliberately keep separate
+        // from the main `catalog:` — e.g. eslint 9 lives in `eslint9` while the
+        // default catalog stays on eslint 8. Renovate tags every catalog dep
+        // with a depType of `pnpm.catalog.<name>`, so matching the depType
+        // groups the whole catalog without restating its package list and stays
+        // correct as entries are added or removed in pnpm-workspace.yaml.
+        //
+        // These also override the shared preset's `group:monorepos` rules,
+        // which would otherwise group e.g. eslint + @eslint/js *by name* and
+        // mix the default-catalog (v8) and eslint9-catalog (v9) bumps into one
+        // PR. Matching by depType keeps each lane in its own reviewable PR.
+        //
+        // The main `catalog:` is intentionally left ungrouped: its entries are
+        // independent, so grouping them would only couple unrelated bumps and
+        // let one risky update block the rest.
+        {
+            "groupName": "react17 catalog",
+            "matchDepTypes": ["pnpm.catalog.react17"]
+        },
+        {
+            "groupName": "eslint9 catalog",
+            "matchDepTypes": ["pnpm.catalog.eslint9"]
+        },
+        {
+            "groupName": "tailwind3 catalog",
+            "matchDepTypes": ["pnpm.catalog.tailwind3"]
+        },
+
         // Always automerge these packages:
         {
             "matchPackageNames": [
@@ -277,41 +360,14 @@
             ],
             "automerge": true,
             "automergeType": "pr"
-        },
-
-        // Ignore all ember-related packages in admin
-        // Our ember codebase is being replaced with react and
-        // Most of the dependencies have breaking changes and it's too hard to update
-        // Therefore, we'll leave these as-is for now
-        {
-            "groupName": "Disable ember updates",
-            "matchFileNames": [
-                "ghost/admin/package.json"
-            ],
-            "matchPackageNames": [
-                // `ember-foo` style packages
-                "/^ember(-|$)/",
-                // scoped `@ember/*` packages
-                "/^@ember\\//",
-                // foo/ember-something style packages
-                "/\\/ember(-|$)/"
-            ],
-            "enabled": false
-        },
-
-        // Don't allow css preprocessor updates in admin
-        {
-            "groupName": "disable css",
-            "matchFileNames": [
-                "ghost/admin/package.json"
-            ],
-            "matchPackageNames": [
-                "autoprefixer",
-                "ember-cli-postcss",
-                "/^postcss/",
-                "/^css/"
-            ],
-            "enabled": false
         }
+
+        // NOTE: the Ember admin app is now frozen wholesale via
+        // `ignorePaths: ghost/admin/**` (above). The former per-package
+        // "Disable ember updates" and "disable css" rules used to live here, but
+        // they only matched ember-*named* and css packages in
+        // ghost/admin/package.json — which let non-ember admin deps (broccoli-*,
+        // liquid-fire, tracked-built-ins, the autoprefixer/postcss tree, etc.)
+        // keep surfacing on the dashboard. The ignorePaths entry supersedes both.
     ]
 }

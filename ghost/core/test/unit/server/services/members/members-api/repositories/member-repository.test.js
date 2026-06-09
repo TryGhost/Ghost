@@ -22,6 +22,7 @@ describe('MemberRepository', function () {
     let WelcomeEmailAutomationRun;
     let newslettersService;
     let offersAPI;
+    let automationsApi;
     let productRepository;
     let stripeAPIService;
     let tokenService;
@@ -47,6 +48,7 @@ describe('MemberRepository', function () {
         WelcomeEmailAutomationRun,
         newslettersService,
         offersAPI,
+        automationsApi,
         productRepository,
         stripeAPIService,
         tokenService,
@@ -162,6 +164,10 @@ describe('MemberRepository', function () {
             ensureOfferForStripeCoupon: sinon.stub().resolves({
                 id: 'offer_new'
             })
+        };
+
+        automationsApi = {
+            trigger: sinon.stub().resolves()
         };
 
         productRepository = {
@@ -503,6 +509,7 @@ describe('MemberRepository', function () {
         });
 
         beforeEach(async function () {
+            sinon.stub(MemberRepository.prototype, '_updateCurrentSubscription').resolves();
             subscriptionCreatedNotifySpy = sinon.spy();
             offerRedemptionNotifySpy = sinon.spy();
 
@@ -1704,153 +1711,172 @@ describe('MemberRepository', function () {
         });
     });
 
-    describe('create - automation run integration', function () {
-        it('creates automation run for free member signup (free welcome email)', async function () {
-            const repo = buildRepo({
-                Member,
-                Outbox,
-                WelcomeEmailAutomationRun,
-                MemberStatusEvent,
-                MemberSubscribeEventModel: MemberSubscribeEvent,
-                newslettersService,
-                Automation,
-                OfferRedemption: mockOfferRedemption
-            });
-
+    describe('create - automation integration', function () {
+        it('triggers an automation event for free signup', async function () {
+            const repo = buildRepo();
             await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
 
-            sinon.assert.calledOnce(WelcomeEmailAutomationRun.add);
-            const runCall = WelcomeEmailAutomationRun.add.firstCall.args[0];
-            assert.equal(runCall.welcome_email_automation_id, 'automation_id_free');
-            assert.equal(runCall.member_id, 'member_id_123');
-            assert.equal(runCall.next_welcome_email_automated_email_id, 'automated_email_id_free');
-            assert.ok(runCall.ready_at);
-            assert.equal(runCall.step_started_at, null);
-            assert.equal(runCall.step_attempts, 0);
-            assert.equal(runCall.exit_reason, null);
+            sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+                event: 'member_sign_up',
+                memberId: 'member_id_123',
+                memberEmail: 'test@example.com',
+                memberStatus: 'free'
+            });
         });
 
-        it('does not create automation run for disallowed sources', async function () {
-            const repo = buildRepo({
-                Member,
-                Outbox,
-                WelcomeEmailAutomationRun,
-                MemberStatusEvent,
-                MemberSubscribeEventModel: MemberSubscribeEvent,
-                newslettersService,
-                Automation,
-                OfferRedemption: mockOfferRedemption
+        describe('legacy automations', function () {
+            it('creates automation run for free member signup (free welcome email)', async function () {
+                const repo = buildRepo({
+                    Member,
+                    Outbox,
+                    WelcomeEmailAutomationRun,
+                    MemberStatusEvent,
+                    MemberSubscribeEventModel: MemberSubscribeEvent,
+                    newslettersService,
+                    Automation,
+                    OfferRedemption: mockOfferRedemption
+                });
+
+                await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
+
+                sinon.assert.calledOnce(WelcomeEmailAutomationRun.add);
+                const runCall = WelcomeEmailAutomationRun.add.firstCall.args[0];
+                assert.equal(runCall.welcome_email_automation_id, 'automation_id_free');
+                assert.equal(runCall.member_id, 'member_id_123');
+                assert.equal(runCall.next_welcome_email_automated_email_id, 'automated_email_id_free');
+                assert.ok(runCall.ready_at);
+                assert.equal(runCall.step_started_at, null);
+                assert.equal(runCall.step_attempts, 0);
+                assert.equal(runCall.exit_reason, null);
             });
 
-            const disallowedSources = [
-                {name: 'import', context: {import: true}},
-                {name: 'admin', context: {user: true}},
-                {name: 'api', context: {api_key: true}}
-            ];
+            it('does not create automation run for disallowed sources', async function () {
+                const repo = buildRepo({
+                    Member,
+                    Outbox,
+                    WelcomeEmailAutomationRun,
+                    MemberStatusEvent,
+                    MemberSubscribeEventModel: MemberSubscribeEvent,
+                    newslettersService,
+                    Automation,
+                    OfferRedemption: mockOfferRedemption
+                });
 
-            for (const source of disallowedSources) {
-                WelcomeEmailAutomationRun.add.resetHistory();
-                await repo.create({email: 'test@example.com', name: 'Test Member'}, {context: source.context});
-                sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
-            }
-        });
+                const disallowedSources = [
+                    {name: 'import', context: {import: true}},
+                    {name: 'admin', context: {user: true}},
+                    {name: 'api', context: {api_key: true}}
+                ];
 
-        it('passes transaction to automation run creation', async function () {
-            const repo = buildRepo({
-                Member,
-                Outbox,
-                WelcomeEmailAutomationRun,
-                MemberStatusEvent,
-                MemberSubscribeEventModel: MemberSubscribeEvent,
-                newslettersService,
-                Automation,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
-
-            const runOptions = WelcomeEmailAutomationRun.add.firstCall.args[1];
-            assert.ok(runOptions.transacting);
-        });
-
-        it('does NOT create automation run when welcome email is inactive', async function () {
-            Automation.findOne.resolves({
-                get: sinon.stub().callsFake((key) => {
-                    const data = {status: 'inactive'};
-                    return data[key];
-                }),
-                related: sinon.stub().callsFake((relation) => {
-                    assert.equal(relation, 'welcomeEmailAutomatedEmail');
-                    return {
-                        get: sinon.stub().callsFake((key) => {
-                            const data = {lexical: '{"root":{}}'};
-                            return data[key];
-                        })
-                    };
-                })
-            });
-
-            const repo = buildRepo({
-                Member,
-                Outbox,
-                WelcomeEmailAutomationRun,
-                MemberStatusEvent,
-                MemberSubscribeEventModel: MemberSubscribeEvent,
-                newslettersService,
-                Automation,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
-
-            sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
-        });
-
-        it('does NOT create automation run when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
-            const repo = buildRepo({
-                Member,
-                Outbox,
-                WelcomeEmailAutomationRun,
-                MemberStatusEvent,
-                MemberSubscribeEventModel: MemberSubscribeEvent,
-                newslettersService,
-                Automation,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            // Stub linkSubscription to avoid needing all the stripe-related mocks
-            sinon.stub(repo, 'linkSubscription').resolves();
-            sinon.stub(repo, 'upsertCustomer').resolves();
-
-            // Create a member with a stripeCustomer (i.e., signing up for paid subscription)
-            await repo.create({
-                email: 'test@example.com',
-                name: 'Test Member',
-                stripeCustomer: {
-                    id: 'cus_123',
-                    name: 'Test Member',
-                    email: 'test@example.com',
-                    subscriptions: {
-                        data: [{
-                            id: 'sub_123',
-                            customer: 'cus_123',
-                            status: 'active'
-                        }]
-                    }
+                for (const source of disallowedSources) {
+                    WelcomeEmailAutomationRun.add.resetHistory();
+                    await repo.create({email: 'test@example.com', name: 'Test Member'}, {context: source.context});
+                    sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
                 }
-            }, {});
+            });
 
-            // The free welcome email should NOT be sent when stripeCustomer is present
-            sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
-            sinon.assert.notCalled(Automation.findOne);
-            sinon.assert.notCalled(Member.transaction);
+            it('passes transaction to automation run creation', async function () {
+                const repo = buildRepo({
+                    Member,
+                    Outbox,
+                    WelcomeEmailAutomationRun,
+                    MemberStatusEvent,
+                    MemberSubscribeEventModel: MemberSubscribeEvent,
+                    newslettersService,
+                    Automation,
+                    OfferRedemption: mockOfferRedemption
+                });
+
+                await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
+
+                const runOptions = WelcomeEmailAutomationRun.add.firstCall.args[1];
+                assert.ok(runOptions.transacting);
+            });
+
+            it('does NOT create automation run when welcome email is inactive', async function () {
+                Automation.findOne.resolves({
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {status: 'inactive'};
+                        return data[key];
+                    }),
+                    related: sinon.stub().callsFake((relation) => {
+                        assert.equal(relation, 'welcomeEmailAutomatedEmail');
+                        return {
+                            get: sinon.stub().callsFake((key) => {
+                                const data = {lexical: '{"root":{}}'};
+                                return data[key];
+                            })
+                        };
+                    })
+                });
+
+                const repo = buildRepo({
+                    Member,
+                    Outbox,
+                    WelcomeEmailAutomationRun,
+                    MemberStatusEvent,
+                    MemberSubscribeEventModel: MemberSubscribeEvent,
+                    newslettersService,
+                    Automation,
+                    OfferRedemption: mockOfferRedemption
+                });
+
+                await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
+
+                sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
+            });
+
+            it('does NOT create automation run when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
+                const repo = buildRepo({
+                    Member,
+                    Outbox,
+                    WelcomeEmailAutomationRun,
+                    MemberStatusEvent,
+                    MemberSubscribeEventModel: MemberSubscribeEvent,
+                    newslettersService,
+                    Automation,
+                    OfferRedemption: mockOfferRedemption
+                });
+
+                // Stub linkSubscription to avoid needing all the stripe-related mocks
+                sinon.stub(repo, 'linkSubscription').resolves();
+                sinon.stub(repo, 'upsertCustomer').resolves();
+
+                // Create a member with a stripeCustomer (i.e., signing up for paid subscription)
+                await repo.create({
+                    email: 'test@example.com',
+                    name: 'Test Member',
+                    stripeCustomer: {
+                        id: 'cus_123',
+                        name: 'Test Member',
+                        email: 'test@example.com',
+                        subscriptions: {
+                            data: [{
+                                id: 'sub_123',
+                                customer: 'cus_123',
+                                status: 'active'
+                            }]
+                        }
+                    }
+                }, {});
+
+                // The free welcome email should NOT be sent when stripeCustomer is present
+                sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
+                sinon.assert.notCalled(Automation.findOne);
+                sinon.assert.notCalled(Member.transaction);
+            });
         });
     });
 
-    describe('linkSubscription - automation run integration', function () {
+    describe('linkSubscription - automation integration', function () {
         let subscriptionData;
 
+        afterEach(function () {
+            sinon.restore();
+        });
+
         beforeEach(function () {
+            sinon.stub(MemberRepository.prototype, '_updateCurrentSubscription').resolves();
             subscriptionData = {
                 id: 'sub_123',
                 customer: 'cus_123',
@@ -1998,7 +2024,7 @@ describe('MemberRepository', function () {
             sinon.restore();
         });
 
-        it('creates automation run when member status changes to paid', async function () {
+        it('triggers an automation event for paid signup', async function () {
             Member.edit.resolves({
                 attributes: {status: 'paid'},
                 _previousAttributes: {status: 'free'},
@@ -2008,20 +2034,7 @@ describe('MemberRepository', function () {
                 })
             });
 
-            const repo = buildRepo({
-                Member,
-                Outbox,
-                WelcomeEmailAutomationRun,
-                MemberPaidSubscriptionEvent,
-                StripeCustomerSubscription,
-                MemberProductEvent,
-                MemberStatusEvent,
-                stripeAPIService,
-                productRepository,
-                Automation,
-                OfferRedemption: mockOfferRedemption
-            });
-
+            const repo = buildRepo();
             sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
 
             await repo.linkSubscription({
@@ -2034,51 +2047,41 @@ describe('MemberRepository', function () {
                 context: {}
             });
 
-            sinon.assert.calledOnce(WelcomeEmailAutomationRun.add);
-            const runCall = WelcomeEmailAutomationRun.add.firstCall.args[0];
-            assert.equal(runCall.welcome_email_automation_id, 'automation_id_paid');
-            assert.equal(runCall.member_id, 'member_id_123');
-            assert.equal(runCall.next_welcome_email_automated_email_id, 'automated_email_id_paid');
-            assert.ok(runCall.ready_at);
-            assert.equal(runCall.step_started_at, null);
-            assert.equal(runCall.step_attempts, 0);
-            assert.equal(runCall.exit_reason, null);
+            sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+                event: 'member_sign_up',
+                memberId: 'member_id_123',
+                memberEmail: 'test@example.com',
+                memberStatus: 'paid'
+            });
         });
 
-        it('does NOT create automation run for disallowed sources', async function () {
-            Member.edit.resolves({
-                attributes: {status: 'paid'},
-                _previousAttributes: {status: 'free'},
-                get: sinon.stub().callsFake((key) => {
-                    const data = {status: 'paid'};
-                    return data[key];
-                })
-            });
+        describe('legacy automations', function () {
+            it('creates automation run when member status changes to paid', async function () {
+                Member.edit.resolves({
+                    attributes: {status: 'paid'},
+                    _previousAttributes: {status: 'free'},
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {status: 'paid'};
+                        return data[key];
+                    })
+                });
 
-            const repo = buildRepo({
-                Member,
-                Outbox,
-                WelcomeEmailAutomationRun,
-                MemberPaidSubscriptionEvent,
-                StripeCustomerSubscription,
-                MemberProductEvent,
-                MemberStatusEvent,
-                stripeAPIService,
-                productRepository,
-                Automation,
-                OfferRedemption: mockOfferRedemption
-            });
+                const repo = buildRepo({
+                    Member,
+                    Outbox,
+                    WelcomeEmailAutomationRun,
+                    MemberPaidSubscriptionEvent,
+                    StripeCustomerSubscription,
+                    MemberProductEvent,
+                    MemberStatusEvent,
+                    stripeAPIService,
+                    productRepository,
+                    Automation,
+                    OfferRedemption: mockOfferRedemption
+                });
 
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+                sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
 
-            const disallowedSources = [
-                {name: 'import', context: {import: true}},
-                {name: 'admin', context: {user: true}},
-                {name: 'api', context: {api_key: true}}
-            ];
-
-            for (const source of disallowedSources) {
-                WelcomeEmailAutomationRun.add.resetHistory();
                 await repo.linkSubscription({
                     id: 'member_id_123',
                     subscription: subscriptionData
@@ -2086,106 +2089,162 @@ describe('MemberRepository', function () {
                     transacting: {
                         executionPromise: Promise.resolve()
                     },
-                    context: source.context
+                    context: {}
                 });
+
+                sinon.assert.calledOnce(WelcomeEmailAutomationRun.add);
+                const runCall = WelcomeEmailAutomationRun.add.firstCall.args[0];
+                assert.equal(runCall.welcome_email_automation_id, 'automation_id_paid');
+                assert.equal(runCall.member_id, 'member_id_123');
+                assert.equal(runCall.next_welcome_email_automated_email_id, 'automated_email_id_paid');
+                assert.ok(runCall.ready_at);
+                assert.equal(runCall.step_started_at, null);
+                assert.equal(runCall.step_attempts, 0);
+                assert.equal(runCall.exit_reason, null);
+            });
+
+            it('does NOT create automation run for disallowed sources', async function () {
+                Member.edit.resolves({
+                    attributes: {status: 'paid'},
+                    _previousAttributes: {status: 'free'},
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {status: 'paid'};
+                        return data[key];
+                    })
+                });
+
+                const repo = buildRepo({
+                    Member,
+                    Outbox,
+                    WelcomeEmailAutomationRun,
+                    MemberPaidSubscriptionEvent,
+                    StripeCustomerSubscription,
+                    MemberProductEvent,
+                    MemberStatusEvent,
+                    stripeAPIService,
+                    productRepository,
+                    Automation,
+                    OfferRedemption: mockOfferRedemption
+                });
+
+                sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+                const disallowedSources = [
+                    {name: 'import', context: {import: true}},
+                    {name: 'admin', context: {user: true}},
+                    {name: 'api', context: {api_key: true}}
+                ];
+
+                for (const source of disallowedSources) {
+                    WelcomeEmailAutomationRun.add.resetHistory();
+                    await repo.linkSubscription({
+                        id: 'member_id_123',
+                        subscription: subscriptionData
+                    }, {
+                        transacting: {
+                            executionPromise: Promise.resolve()
+                        },
+                        context: source.context
+                    });
+                    sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
+                }
+            });
+
+            it('does NOT create automation run when paid welcome email is inactive', async function () {
+                Member.edit.resolves({
+                    attributes: {status: 'paid'},
+                    _previousAttributes: {status: 'free'},
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {status: 'paid'};
+                        return data[key];
+                    })
+                });
+
+                Automation.findOne.resolves({
+                    id: 'automation_id_paid',
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {status: 'inactive'};
+                        return data[key];
+                    }),
+                    related: sinon.stub().callsFake((relation) => {
+                        assert.equal(relation, 'welcomeEmailAutomatedEmail');
+                        return {
+                            id: 'automated_email_id_paid',
+                            get: sinon.stub().callsFake((key) => {
+                                const data = {lexical: '{"root":{}}'};
+                                return data[key];
+                            })
+                        };
+                    })
+                });
+
+                const repo = buildRepo({
+                    Member,
+                    Outbox,
+                    WelcomeEmailAutomationRun,
+                    MemberPaidSubscriptionEvent,
+                    StripeCustomerSubscription,
+                    MemberProductEvent,
+                    MemberStatusEvent,
+                    stripeAPIService,
+                    productRepository,
+                    Automation,
+                    OfferRedemption: mockOfferRedemption
+                });
+
+                sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+                await repo.linkSubscription({
+                    id: 'member_id_123',
+                    subscription: subscriptionData
+                }, {
+                    transacting: {
+                        executionPromise: Promise.resolve()
+                    },
+                    context: {}
+                });
+
                 sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
-            }
-        });
-
-        it('does NOT create automation run when paid welcome email is inactive', async function () {
-            Member.edit.resolves({
-                attributes: {status: 'paid'},
-                _previousAttributes: {status: 'free'},
-                get: sinon.stub().callsFake((key) => {
-                    const data = {status: 'paid'};
-                    return data[key];
-                })
             });
 
-            Automation.findOne.resolves({
-                id: 'automation_id_paid',
-                get: sinon.stub().callsFake((key) => {
-                    const data = {status: 'inactive'};
-                    return data[key];
-                }),
-                related: sinon.stub().callsFake((relation) => {
-                    assert.equal(relation, 'welcomeEmailAutomatedEmail');
-                    return {
-                        id: 'automated_email_id_paid',
-                        get: sinon.stub().callsFake((key) => {
-                            const data = {lexical: '{"root":{}}'};
-                            return data[key];
-                        })
-                    };
-                })
+            it('does NOT create automation run when previous status was "gift" (already received paid welcome at redemption)', async function () {
+                Member.edit.resolves({
+                    attributes: {status: 'paid'},
+                    _previousAttributes: {status: 'gift'},
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {status: 'paid'};
+                        return data[key];
+                    })
+                });
+
+                const repo = buildRepo({
+                    Member,
+                    Outbox,
+                    WelcomeEmailAutomationRun,
+                    MemberPaidSubscriptionEvent,
+                    StripeCustomerSubscription,
+                    MemberProductEvent,
+                    MemberStatusEvent,
+                    stripeAPIService,
+                    productRepository,
+                    Automation,
+                    OfferRedemption: mockOfferRedemption
+                });
+
+                sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+                await repo.linkSubscription({
+                    id: 'member_id_123',
+                    subscription: subscriptionData
+                }, {
+                    transacting: {
+                        executionPromise: Promise.resolve()
+                    },
+                    context: {}
+                });
+
+                sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
             });
-
-            const repo = buildRepo({
-                Member,
-                Outbox,
-                WelcomeEmailAutomationRun,
-                MemberPaidSubscriptionEvent,
-                StripeCustomerSubscription,
-                MemberProductEvent,
-                MemberStatusEvent,
-                stripeAPIService,
-                productRepository,
-                Automation,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                id: 'member_id_123',
-                subscription: subscriptionData
-            }, {
-                transacting: {
-                    executionPromise: Promise.resolve()
-                },
-                context: {}
-            });
-
-            sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
-        });
-
-        it('does NOT create automation run when previous status was "gift" (already received paid welcome at redemption)', async function () {
-            Member.edit.resolves({
-                attributes: {status: 'paid'},
-                _previousAttributes: {status: 'gift'},
-                get: sinon.stub().callsFake((key) => {
-                    const data = {status: 'paid'};
-                    return data[key];
-                })
-            });
-
-            const repo = buildRepo({
-                Member,
-                Outbox,
-                WelcomeEmailAutomationRun,
-                MemberPaidSubscriptionEvent,
-                StripeCustomerSubscription,
-                MemberProductEvent,
-                MemberStatusEvent,
-                stripeAPIService,
-                productRepository,
-                Automation,
-                OfferRedemption: mockOfferRedemption
-            });
-
-            sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
-
-            await repo.linkSubscription({
-                id: 'member_id_123',
-                subscription: subscriptionData
-            }, {
-                transacting: {
-                    executionPromise: Promise.resolve()
-                },
-                context: {}
-            });
-
-            sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
         });
     });
 

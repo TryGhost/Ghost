@@ -45,6 +45,11 @@
   "nx": {
     "tags": [
       "i18n"
-    ]
+    ],
+    "targets": {
+      "dev": {
+        "continuous": false
+      }
+    }
   }
 }

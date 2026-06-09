@@ -1,10 +1,11 @@
-import MembersActions from '@src/views/members/components/members-actions';
+import MembersActions, {exportMembers} from '@src/views/members/components/members-actions';
 import React from 'react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
 const importModalPropsRef: {current: Record<string, unknown> | null} = {current: null};
-const {mockUseLocation, mockUseNavigate} = vi.hoisted(() => ({
+const {mockBlobDownloadFromEndpoint, mockUseLocation, mockUseNavigate} = vi.hoisted(() => ({
+    mockBlobDownloadFromEndpoint: vi.fn(),
     mockUseLocation: vi.fn(),
     mockUseNavigate: vi.fn()
 }));
@@ -12,6 +13,10 @@ const {mockUseLocation, mockUseNavigate} = vi.hoisted(() => ({
 vi.mock('@tryghost/admin-x-framework', () => ({
     useLocation: mockUseLocation,
     useNavigate: mockUseNavigate
+}));
+
+vi.mock('@tryghost/admin-x-framework/helpers', () => ({
+    blobDownloadFromEndpoint: mockBlobDownloadFromEndpoint
 }));
 
 vi.mock('@src/views/members/components/bulk-action-modals', () => ({
@@ -66,8 +71,27 @@ const renderMembersActions = (props: Partial<React.ComponentProps<typeof Members
 describe('MembersActions', () => {
     beforeEach(() => {
         importModalPropsRef.current = null;
+        mockBlobDownloadFromEndpoint.mockReset();
         setLocation('/members');
         mockUseNavigate.mockReturnValue(vi.fn());
+    });
+
+    it('exports members via the API, letting the server name the file', async () => {
+        await exportMembers(undefined, '');
+
+        expect(mockBlobDownloadFromEndpoint).toHaveBeenCalledWith(
+            '/members/upload/?limit=all',
+            'members.csv'
+        );
+    });
+
+    it('passes the active filter and search to the export endpoint', async () => {
+        await exportMembers('label:vip', 'alice');
+
+        expect(mockBlobDownloadFromEndpoint).toHaveBeenCalledWith(
+            '/members/upload/?limit=all&filter=label%3Avip&search=alice',
+            'members.csv'
+        );
     });
 
     it('opens the import modal on the import route', () => {

@@ -9,6 +9,7 @@ const membersService = require('../../services/members');
 const settingsCache = require('../../../shared/settings-cache');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
+const {getCSVExportFileName} = require('./utils/csv-export-filename');
 
 const messages = {
     memberNotFound: 'Member not found.',
@@ -377,8 +378,7 @@ const controller = {
             disposition: {
                 type: 'csv',
                 value() {
-                    const datetime = (new Date()).toJSON().substring(0, 10);
-                    return `members.${datetime}.csv`;
+                    return getCSVExportFileName('members');
                 }
             },
             contentType: 'text/csv',
@@ -394,7 +394,8 @@ const controller = {
         validation: {},
         async query(frame) {
             return {
-                data: await membersService.export(frame.options)
+                data: await membersService.export(frame.options),
+                filename: getCSVExportFileName('members')
             };
         }
     },
