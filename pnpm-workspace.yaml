@@ -82,7 +82,7 @@ catalog:
   concurrently: 10.0.0
   cross-fetch: 4.1.0
   dequal: 2.0.3
-  dompurify: 3.4.5
+  dompurify: 3.4.8
   dotenv: 17.4.2
   eslint: 8.57.1
   eslint-plugin-react-hooks: 5.2.0
