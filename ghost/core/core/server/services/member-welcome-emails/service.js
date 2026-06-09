@@ -156,14 +156,14 @@ class MemberWelcomeEmailService {
         return this.#defaultNewsletterSenderOptions;
     }
 
-    async #getEffectiveSenderOptions(automatedSender = {}) {
+    async #getEffectiveSenderOptions(designSettingsJson) {
         const defaultOptions = await this.#getSenderOptions();
         const defaultFrom = EmailAddressParser.parse(defaultOptions.from || '') || emailAddressService.service.defaultFromEmail;
         const defaultReplyTo = defaultOptions.replyTo ? EmailAddressParser.parse(defaultOptions.replyTo) : undefined;
 
-        const senderName = trimValue(automatedSender.senderName) || defaultFrom?.name || undefined;
-        const senderEmail = trimValue(automatedSender.senderEmail) || defaultFrom.address;
-        const senderReplyTo = trimValue(automatedSender.senderReplyTo);
+        const senderName = trimValue(designSettingsJson?.sender_name) || defaultFrom?.name || undefined;
+        const senderEmail = trimValue(designSettingsJson?.sender_email) || defaultFrom.address;
+        const senderReplyTo = trimValue(designSettingsJson?.sender_reply_to);
 
         const addresses = emailAddressService.service.getAddress({
             from: {
@@ -362,10 +362,7 @@ class MemberWelcomeEmailService {
                 lexical: email.get('lexical'),
                 subject: email.get('subject'),
                 status: row.get('status'),
-                designSettings: designSettings?.id ? designSettings.toJSON() : null,
-                senderName: email.get('sender_name'),
-                senderEmail: email.get('sender_email'),
-                senderReplyTo: email.get('sender_reply_to')
+                designSettings: designSettings?.id ? designSettings.toJSON() : null
             };
         }
     }
@@ -381,9 +378,6 @@ class MemberWelcomeEmailService {
      * @param {string} options.email.lexical
      * @param {string} options.email.subject
      * @param {null | object} options.email.designSettings
-     * @param {undefined | null | string} options.email.senderName
-     * @param {undefined | null | string} options.email.senderEmail
-     * @param {undefined | null | string} options.email.senderReplyTo
      * @param {'welcome' | 'automation'} options.emailType
      * @returns {Promise<void>}
      */
@@ -414,7 +408,7 @@ class MemberWelcomeEmailService {
             siteSettings: this.#getSiteSettings()
         });
 
-        const senderOptions = await this.#getEffectiveSenderOptions(email);
+        const senderOptions = await this.#getEffectiveSenderOptions(email.designSettings);
 
         await this.#mailer.send({
             to: member.email,
@@ -540,7 +534,7 @@ class MemberWelcomeEmailService {
 
         return {
             ...preview,
-            automatedEmail
+            designSettings
         };
     }
 
@@ -559,7 +553,7 @@ class MemberWelcomeEmailService {
     }
 
     async sendTestEmail({email, subject, lexical, automatedEmailId}) {
-        const {html, text, subject: renderedSubject, automatedEmail} = await this.#renderWelcomeEmailPreview({
+        const {html, text, subject: renderedSubject, designSettings} = await this.#renderWelcomeEmailPreview({
             automatedEmailId,
             subject,
             lexical,
@@ -568,11 +562,7 @@ class MemberWelcomeEmailService {
 
         // Test sends should always reflect latest newsletter fallback values.
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
-        const senderOptions = await this.#getEffectiveSenderOptions({
-            senderName: automatedEmail.get('sender_name'),
-            senderEmail: automatedEmail.get('sender_email'),
-            senderReplyTo: automatedEmail.get('sender_reply_to')
-        });
+        const senderOptions = await this.#getEffectiveSenderOptions(designSettings?.toJSON());
 
         await this.#mailer.send({
             to: email,
