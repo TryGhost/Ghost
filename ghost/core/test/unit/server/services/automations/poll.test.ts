@@ -291,9 +291,6 @@ describe('automations poll', function () {
             email: {
                 designSettingId: 'design-id',
                 lexical: step.email_lexical,
-                senderEmail: 'sender@example.com',
-                senderName: 'Sender',
-                senderReplyTo: 'reply@example.com',
                 subject: 'Welcome!'
             },
             memberStatus: 'free'

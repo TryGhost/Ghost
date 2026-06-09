@@ -457,9 +457,6 @@ class MemberWelcomeEmailService {
      * @param {object} options.email
      * @param {null | string} options.email.designSettingId
      * @param {string} options.email.lexical
-     * @param {null | string} options.email.senderEmail
-     * @param {null | string} options.email.senderName
-     * @param {null | string} options.email.senderReplyTo
      * @param {string} options.email.subject
      * @param {object} options.member
      * @param {string} options.member.email
@@ -480,10 +477,7 @@ class MemberWelcomeEmailService {
             email: {
                 lexical: email.lexical,
                 subject: email.subject,
-                designSettings: designSettings?.id ? designSettings.toJSON() : null,
-                senderName: email.senderName,
-                senderEmail: email.senderEmail,
-                senderReplyTo: email.senderReplyTo
+                designSettings: designSettings?.id ? designSettings.toJSON() : null
             }
         });
     }
