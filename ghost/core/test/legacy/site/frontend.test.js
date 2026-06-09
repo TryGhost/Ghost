@@ -88,12 +88,8 @@ describe('Frontend Routing', function () {
             });
 
             it('Single post should sanitize double slashes when redirecting uppercase', async function () {
-                // nock 14 misparses a request whose path begins with `//` as a
-                // connection to an external host (here `///Google/` => host
-                // `Google`) and blocks it via disableNetConnect, even though it
-                // actually targets the local test server. Re-enabling net connect
-                // lets the request reach the local server; the global afterEach
-                // hook re-applies disableNetwork() afterwards.
+                // nock 14 misparses the leading `//` as an external host and blocks the
+                // (actually local) request; allow it through. afterEach re-disables.
                 nock.enableNetConnect();
                 await request.get('///Google/')
                     .expect('Location', '/google/')
@@ -139,12 +135,8 @@ describe('Frontend Routing', function () {
                 });
 
                 it('should redirect to editor for post resource', async function () {
-                    // nock 14 misparses a request whose path begins with `//` as a
-                    // connection to an external host (here `//welcome/edit/` =>
-                    // host `welcome`) and blocks it via disableNetConnect, even
-                    // though it actually targets the local test server. Re-enabling
-                    // net connect lets the request reach the local server; the
-                    // global afterEach hook re-applies disableNetwork() afterwards.
+                    // nock 14 misparses the leading `//` as an external host and blocks the
+                    // (actually local) request; allow it through. afterEach re-disables.
                     nock.enableNetConnect();
                     await request.get('//welcome/edit/')
                         .expect('Location', /ghost\/#\/editor\/post\/\w+/)
