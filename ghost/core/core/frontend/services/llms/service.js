@@ -213,18 +213,14 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         ].filter(Boolean).join('\n');
     }
 
-    // All content fetching goes through the public Posts/Pages API rather than
-    // the model layer directly, so the llms service inherits the same caching,
-    // permissions, visibility gating and URL resolution as the Content API.
-    // The `type:post`/`type:page` filter is enforced by the public endpoints.
     async function browsePublicEntries(type, options) {
         const controller = type === 'page' ? api.pagesPublic : api.postsPublic;
         const responseKey = type === 'page' ? 'pages' : 'posts';
 
         const response = await controller.browse({
+            ...options,
             filter: 'status:published+visibility:public',
-            order: type === 'post' ? 'published_at desc' : 'id asc',
-            ...options
+            order: type === 'post' ? 'published_at desc' : 'id asc'
         });
 
         const entries = (response?.[responseKey] || [])

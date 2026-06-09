@@ -30,9 +30,6 @@ describe('Unit: frontend/services/llms/service', function () {
         };
     }
 
-    // Mimics the public Posts/Pages API: each browse response is keyed by
-    // resource type, entries carry a resolved `url`, and pagination meta drives
-    // the `hasMore` logic in the service.
     function createFakeApi(pageData, postData, urlMap) {
         function browse(responseKey, data) {
             return async function (options) {
@@ -245,7 +242,6 @@ describe('Unit: frontend/services/llms/service', function () {
 
         const llmsFullTxt = await service.getLlmsFullTxt();
 
-        // Stops paginating once the 500-post cap is reached (5 pages of 100).
         assert.equal(postBrowseCalls.length, 5);
         assert.match(llmsFullTxt, /### Post 499/);
         assert.doesNotMatch(llmsFullTxt, /### Post 500/);
