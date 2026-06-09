@@ -40,6 +40,10 @@ const features: Feature[] = [{
     description: 'Enables the new Tags UI',
     flag: 'tagsX'
 }, {
+    title: 'Tag Details X',
+    description: 'Enables the new React tag detail screen (tag editing and creation)',
+    flag: 'tagDetailsX'
+}, {
     title: 'Email Unique ID',
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'

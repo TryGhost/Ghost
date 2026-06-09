@@ -47,6 +47,7 @@ const PRIVATE_FEATURES = [
     'adminUIRefresh',
     'emailCustomization',
     'tagsX',
+    'tagDetailsX',
     'emailUniqueid',
     'themeTranslation',
     'indexnow',
