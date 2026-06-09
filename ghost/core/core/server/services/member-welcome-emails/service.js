@@ -9,9 +9,8 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
-const {Automation, EmailDesignSetting, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
+const {Automation, EmailDesignSetting, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
-const designSenderShadow = require('./design-sender-shadow');
 const {resolveSender} = require('./sender-resolver');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -154,21 +153,18 @@ class MemberWelcomeEmailService {
         return this.#defaultNewsletterSenderOptions;
     }
 
-    // The design-tier sender = the dev shadow if set, otherwise the caller's
-    // sender source. Welcome emails pass their legacy row sender; automation
-    // emails pass the sender fields from email_design_settings.
-    #resolveDesignSender(emailDesignSettingId, welcomeRowSender = {}) {
-        return designSenderShadow.get(emailDesignSettingId) || {
-            sender_name: welcomeRowSender.senderName ?? null,
-            sender_email: welcomeRowSender.senderEmail ?? null,
-            sender_reply_to: welcomeRowSender.senderReplyTo ?? null
+    #buildDesignSender(sender = {}) {
+        return {
+            sender_name: sender.senderName ?? sender.sender_name ?? null,
+            sender_email: sender.senderEmail ?? sender.sender_email ?? null,
+            sender_reply_to: sender.senderReplyTo ?? sender.sender_reply_to ?? null
         };
     }
 
     async #getEffectiveSenderOptions(automatedSender = {}) {
         const defaultNewsletterSenderOptions = await this.#getSenderOptions();
         const {sendOptions} = resolveSender({
-            designSender: this.#resolveDesignSender(automatedSender.emailDesignSettingId, automatedSender),
+            designSender: this.#buildDesignSender(automatedSender),
             defaultNewsletterSenderOptions
         });
         return sendOptions;
@@ -176,22 +172,10 @@ class MemberWelcomeEmailService {
 
     async getResolvedDesignSender({emailDesignSettingId}) {
         const defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
-
-        // Fall back to the welcome rows' sender when the shadow is unset (fresh
-        // dev session or production), so the modal shows the effective sender.
-        let welcomeRowSender = {};
-        const {free, paid} = await this.#loadWelcomeEmailsMap();
-        const email = free?.related('welcomeEmailAutomatedEmail') || paid?.related('welcomeEmailAutomatedEmail');
-        if (email?.id) {
-            welcomeRowSender = {
-                senderName: email.get('sender_name'),
-                senderEmail: email.get('sender_email'),
-                senderReplyTo: email.get('sender_reply_to')
-            };
-        }
+        const emailDesignSetting = await EmailDesignSetting.findOne({id: emailDesignSettingId});
 
         const {ui} = resolveSender({
-            designSender: this.#resolveDesignSender(emailDesignSettingId, welcomeRowSender),
+            designSender: emailDesignSetting?.id ? this.#buildDesignSender(emailDesignSetting.toJSON()) : null,
             defaultNewsletterSenderOptions
         });
         return ui;
@@ -200,7 +184,7 @@ class MemberWelcomeEmailService {
     async #loadWelcomeEmailsCollection() {
         return Automation.findAll({
             filter: WELCOME_EMAIL_FILTER,
-            withRelated: ['welcomeEmailAutomatedEmail']
+            withRelated: ['welcomeEmailAutomatedEmail.emailDesignSetting']
         });
     }
 
@@ -257,7 +241,7 @@ class MemberWelcomeEmailService {
 
     #hasSharedSenderFieldChanged(rows, field, value) {
         return rows.some((row) => {
-            const currentValue = row.related('welcomeEmailAutomatedEmail')?.get(field);
+            const currentValue = row.related('welcomeEmailAutomatedEmail')?.related('emailDesignSetting')?.get(field);
             return trimValue(currentValue) !== trimValue(value);
         });
     }
@@ -309,16 +293,16 @@ class MemberWelcomeEmailService {
     }
 
     // Design-tier analogue of #prepareSharedSenderUpdate: compares against the
-    // current shadow record instead of welcome rows. Crucially does NOT touch
-    // welcome rows, so the design modal no longer needs them to exist.
-    #prepareDesignSenderUpdate(emailDesignSettingId, attrs = {}) {
+    // current email design setting row and keeps verification-aware sender writes
+    // out of the general design edit path.
+    async #prepareDesignSenderUpdate(emailDesignSettingId, attrs = {}) {
         const normalizedAttrs = this.#normalizeSharedSenderAttrs(attrs);
-        const current = designSenderShadow.get(emailDesignSettingId) || {};
+        const current = await EmailDesignSetting.findOne({id: emailDesignSettingId});
         const attrsToPersist = {};
         const emailsToVerify = [];
 
         for (const [field, value] of Object.entries(normalizedAttrs)) {
-            if (trimValue(current[field]) === trimValue(value)) {
+            if (trimValue(current?.get(field)) === trimValue(value)) {
                 continue;
             }
 
@@ -342,19 +326,19 @@ class MemberWelcomeEmailService {
             return;
         }
 
-        await Promise.all(rows.map((row) => {
-            const email = row.related('welcomeEmailAutomatedEmail');
-            return WelcomeEmailAutomatedEmail.edit(attrs, {id: email.id});
+        const emailDesignSettingIds = this.#getSharedEmailDesignSettingIds(rows);
+        await Promise.all(emailDesignSettingIds.map((id) => {
+            return EmailDesignSetting.edit(attrs, {id});
         }));
     }
 
-    async #sendSharedSenderVerifications(emailsToVerify = []) {
-        for (const {property, email} of emailsToVerify) {
-            await this.#sendEmailVerificationMagicLink({property, email});
-        }
+    #getSharedEmailDesignSettingIds(rows) {
+        return [...new Set(rows
+            .map(row => row.related('welcomeEmailAutomatedEmail')?.get('email_design_setting_id'))
+            .filter(Boolean))];
     }
 
-    async #sendEmailVerificationMagicLink({email, property, emailDesignSettingId}) {
+    async #sendEmailVerificationMagicLink({email, property, emailDesignSettingId, emailDesignSettingIds}) {
         const fromEmail = emailAddressService.service.defaultFromEmail;
 
         this.#magicLinkService.transporter = {
@@ -378,8 +362,9 @@ class MemberWelcomeEmailService {
                 property,
                 value: email,
                 // Carries the design tier through the magic-link round-trip so
-                // verification writes back to the right design (spike: shadow).
-                ...(emailDesignSettingId ? {emailDesignSettingId} : {})
+                // verification writes back to the right design row(s).
+                ...(emailDesignSettingId ? {emailDesignSettingId} : {}),
+                ...(emailDesignSettingIds ? {emailDesignSettingIds} : {})
             }
         });
     }
@@ -407,24 +392,15 @@ class MemberWelcomeEmailService {
             const designSettings = email.related('emailDesignSetting');
             const emailDesignSettingId = email.get('email_design_setting_id') || designSettings?.id || null;
 
-            // Seed the design-tier shadow from the welcome row's sender (dev-only,
-            // no-op outside development and after the first seed). See
-            // design-sender-shadow.js for the real-home/backfill notes.
-            designSenderShadow.seedFrom(emailDesignSettingId, {
-                sender_name: email.get('sender_name'),
-                sender_email: email.get('sender_email'),
-                sender_reply_to: email.get('sender_reply_to')
-            });
-
             this.#memberWelcomeEmails[memberStatus] = {
                 lexical: email.get('lexical'),
                 subject: email.get('subject'),
                 status: row.get('status'),
                 designSettings: designSettings?.id ? designSettings.toJSON() : null,
                 emailDesignSettingId,
-                senderName: email.get('sender_name'),
-                senderEmail: email.get('sender_email'),
-                senderReplyTo: email.get('sender_reply_to')
+                senderName: designSettings?.get('sender_name'),
+                senderEmail: designSettings?.get('sender_email'),
+                senderReplyTo: designSettings?.get('sender_reply_to')
             };
         }
     }
@@ -633,9 +609,9 @@ class MemberWelcomeEmailService {
         // Test sends should always reflect latest newsletter fallback values.
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
         const senderOptions = await this.#getEffectiveSenderOptions({
-            senderName: automatedEmail.get('sender_name'),
-            senderEmail: automatedEmail.get('sender_email'),
-            senderReplyTo: automatedEmail.get('sender_reply_to'),
+            senderName: automatedEmail.related('emailDesignSetting')?.get('sender_name'),
+            senderEmail: automatedEmail.related('emailDesignSetting')?.get('sender_email'),
+            senderReplyTo: automatedEmail.related('emailDesignSetting')?.get('sender_reply_to'),
             emailDesignSettingId: automatedEmail.get('email_design_setting_id')
         });
 
@@ -654,7 +630,13 @@ class MemberWelcomeEmailService {
         const {attrsToPersist, emailsToVerify} = this.#prepareSharedSenderUpdate(rows, attrs);
 
         await this.#applySharedSenderAttrs(rows, attrsToPersist);
-        await this.#sendSharedSenderVerifications(emailsToVerify);
+        for (const {property, email} of emailsToVerify) {
+            await this.#sendEmailVerificationMagicLink({
+                property,
+                email,
+                emailDesignSettingIds: this.#getSharedEmailDesignSettingIds(rows)
+            });
+        }
 
         const response = await this.#loadWelcomeEmailsCollection();
         if (emailsToVerify.length > 0) {
@@ -668,14 +650,13 @@ class MemberWelcomeEmailService {
         };
     }
 
-    // Edits the design-tier sender (spike: in-memory shadow keyed by design id).
-    // Immediate fields persist now; sender_reply_to goes through magic-link
+    // Edits the design-tier sender. Immediate fields persist now; sender_reply_to goes through magic-link
     // verification and is only written on verifySenderPropertyUpdate.
     async editDesignSenderOptions({emailDesignSettingId, attrs = {}}) {
-        const {attrsToPersist, emailsToVerify} = this.#prepareDesignSenderUpdate(emailDesignSettingId, attrs);
+        const {attrsToPersist, emailsToVerify} = await this.#prepareDesignSenderUpdate(emailDesignSettingId, attrs);
 
         if (Object.keys(attrsToPersist).length > 0) {
-            designSenderShadow.set(emailDesignSettingId, attrsToPersist);
+            await EmailDesignSetting.edit(attrsToPersist, {id: emailDesignSettingId});
         }
 
         for (const {property, email} of emailsToVerify) {
@@ -692,7 +673,7 @@ class MemberWelcomeEmailService {
 
     async verifySenderPropertyUpdate(token) {
         const data = await this.#magicLinkService.getDataFromToken(token);
-        const {property, value, emailDesignSettingId} = data;
+        const {property, value, emailDesignSettingId, emailDesignSettingIds} = data;
 
         if (!VERIFIED_SENDER_PROPERTIES.includes(property)) {
             throw new errors.IncorrectUsageError({
@@ -702,22 +683,15 @@ class MemberWelcomeEmailService {
 
         const normalizedValue = this.#normalizeSharedSenderValue(value);
 
-        // Design-tier tokens (spike) carry the design id and write to the shadow.
-        // Legacy welcome-row tokens (settings app) keep their original behaviour.
-        if (emailDesignSettingId) {
-            designSenderShadow.set(emailDesignSettingId, {[property]: normalizedValue});
-            return {
-                data: [],
-                meta: {email_verified: property}
-            };
-        }
-
-        const rows = await this.#loadRequiredWelcomeEmailRows();
         const attrs = {
             [property]: normalizedValue
         };
+        const rows = (!emailDesignSettingId && !emailDesignSettingIds) ? await this.#loadRequiredWelcomeEmailRows() : null;
+        const ids = emailDesignSettingIds || (emailDesignSettingId ? [emailDesignSettingId] : this.#getSharedEmailDesignSettingIds(rows));
 
-        await this.#applySharedSenderAttrs(rows, attrs);
+        await Promise.all([...new Set(ids)].map((id) => {
+            return EmailDesignSetting.edit(attrs, {id});
+        }));
 
         const response = await this.#loadWelcomeEmailsCollection();
         response.meta = response.meta || {};

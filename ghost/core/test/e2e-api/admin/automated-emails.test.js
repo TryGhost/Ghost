@@ -41,6 +41,13 @@ describe('Automated Emails API', function () {
         await dbUtils.truncate('brute');
         await dbUtils.truncate('welcome_email_automated_emails');
         await dbUtils.truncate('automations');
+
+        const defaultDesign = await models.EmailDesignSetting.findOne({slug: 'default-automated-email'});
+        await models.EmailDesignSetting.edit({
+            sender_name: null,
+            sender_email: null,
+            sender_reply_to: null
+        }, {id: defaultDesign.id});
     });
 
     describe('Browse', function () {
@@ -435,7 +442,7 @@ describe('Automated Emails API', function () {
         });
 
         it('Can edit sender settings for free and paid welcome emails', async function () {
-            await agent
+            const {body} = await agent
                 .put('automated_emails/senders/')
                 .body({
                     sender_name: 'Custom Sender',
@@ -451,12 +458,19 @@ describe('Automated Emails API', function () {
                         assert.equal(automatedEmail.sender_reply_to, 'reply@example.com');
                     }
                 });
+
+            const design = await models.EmailDesignSetting.findOne({
+                id: body.automated_emails[0].email_design_setting_id
+            });
+            assert.equal(design.get('sender_name'), 'Custom Sender');
+            assert.equal(design.get('sender_email'), 'sender@example.com');
+            assert.equal(design.get('sender_reply_to'), 'reply@example.com');
         });
 
         it('Can verify pending sender update with token', async function () {
             const token = await createSenderVerificationToken('sender_reply_to', 'verified-reply@example.com');
 
-            await agent
+            const {body} = await agent
                 .put('automated_emails/verifications/')
                 .body({token})
                 .expectStatus(200)
@@ -467,6 +481,11 @@ describe('Automated Emails API', function () {
                         assert.equal(automatedEmail.sender_reply_to, 'verified-reply@example.com');
                     }
                 });
+
+            const design = await models.EmailDesignSetting.findOne({
+                id: body.automated_emails[0].email_design_setting_id
+            });
+            assert.equal(design.get('sender_reply_to'), 'verified-reply@example.com');
         });
     });
 

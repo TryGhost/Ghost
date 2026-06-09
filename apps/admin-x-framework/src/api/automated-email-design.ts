@@ -40,6 +40,9 @@ export type AutomatedEmailDesign = {
     divider_color: string | null;
     section_title_color: string | null;
     show_badge: boolean;
+    sender_name: string | null;
+    sender_email: string | null;
+    sender_reply_to: string | null;
     created_at: string;
     updated_at: string | null;
 } & AutomatedEmailDesignSender;

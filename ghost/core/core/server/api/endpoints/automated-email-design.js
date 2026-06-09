@@ -9,9 +9,6 @@ const messages = {
     defaultDesignNotFound: 'Default automated email design setting not found.'
 };
 
-// Sender fields live at the design tier (spike: in-memory shadow), not as
-// columns on email_design_settings, so they are routed to the welcome-email
-// service rather than persisted on the design model. See NY-1308.
 const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
 
 function extractSenderAttrs(data) {
@@ -106,16 +103,18 @@ const controller = {
 
             rejectImmutableFields(data);
 
-            // Sender fields are not design columns — route them to the design tier.
+            // Sender fields need verification-aware writes, so route them through the welcome email service.
             const senderAttrs = extractSenderAttrs(data);
 
             const defaultDesign = await resolveDefaultDesign(frame.options);
             const emailDesignSettingId = defaultDesign.get('id');
 
-            const editedDesign = await models.EmailDesignSetting.edit(
-                data,
-                {...frame.options, id: emailDesignSettingId}
-            );
+            const editedDesign = Object.keys(data).length > 0 ?
+                await models.EmailDesignSetting.edit(
+                    data,
+                    {...frame.options, id: emailDesignSettingId}
+                ) :
+                defaultDesign;
 
             memberWelcomeEmailService.init();
             const {meta} = await memberWelcomeEmailService.api.editDesignSenderOptions({
@@ -125,8 +124,9 @@ const controller = {
             const sender = await memberWelcomeEmailService.api.getResolvedDesignSender({
                 emailDesignSettingId
             });
+            const currentDesign = await models.EmailDesignSetting.findOne({id: emailDesignSettingId}, frame.options);
 
-            return buildEditResult(editedDesign, sender, meta);
+            return buildEditResult(currentDesign || editedDesign, sender, meta);
         }
     }
 };

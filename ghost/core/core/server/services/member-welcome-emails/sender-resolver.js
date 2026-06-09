@@ -30,7 +30,7 @@ const firstNonEmpty = (...values) => {
  * @param {{senderName?: string|null, senderEmail?: string|null, senderReplyTo?: string|null}} [args.actionSender]
  *   Per-action override (null today for welcome emails; the top cascade tier).
  * @param {{sender_name?: string|null, sender_email?: string|null, sender_reply_to?: string|null}|null} [args.designSender]
- *   The design-tier sender (from the shadow; what the design modal edits).
+ *   The design-tier sender from email_design_settings.
  * @param {{from?: string, replyTo?: string}} [args.defaultNewsletterSenderOptions]
  *   Stringified default newsletter/site sender, as produced by the service.
  * @returns {{sendOptions: {from: string, replyTo?: string}, ui: object}}
