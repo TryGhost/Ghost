@@ -7,6 +7,18 @@ export type Email = {
     status?: string;
 };
 
+export type PostAuthor = {
+    id: string;
+    name: string;
+    slug: string;
+};
+
+export type PostTag = {
+    id: string;
+    name: string;
+    slug: string;
+};
+
 export type Post = {
     id: string;
     url: string;
@@ -15,6 +27,13 @@ export type Post = {
     visibility?: string;
     uuid: string;
     feature_image?: string;
+    featured?: boolean;
+    excerpt?: string;
+    custom_excerpt?: string;
+    authors?: PostAuthor[];
+    primary_tag?: PostTag | null;
+    tags?: PostTag[];
+    tiers?: {id: string; name: string}[];
     count?: {
         clicks?: number;
         positive_feedback?: number;
@@ -23,6 +42,8 @@ export type Post = {
     email?: Email;
     status?: string;
     published_at?: string;
+    updated_at?: string;
+    created_at?: string;
     newsletter_id?: string;
     newsletter?: object;
     email_only?: boolean;
@@ -78,6 +99,47 @@ export const getPost = createQueryWithId<PostsResponseType>({
 export const useDeletePost = createMutation<unknown, string>({
     method: 'DELETE',
     path: id => `/posts/${id}/`
+});
+
+// ---- bulk operations over an NQL filter (used by the posts/pages list) ----
+
+export type BulkEditAction = 'feature' | 'unfeature' | 'unpublish' | 'unschedule' | 'addTag' | 'access';
+
+export interface BulkEditPostsPayload {
+    action: BulkEditAction;
+    filter: string;
+    meta?: Record<string, unknown>;
+    resource?: 'posts' | 'pages';
+}
+
+export interface BulkEditPostsResponse {
+    bulk: {
+        action: BulkEditAction;
+        meta: {
+            stats: {successful: number; unsuccessful: number};
+            errors: unknown[];
+            unsuccessfulData: unknown[];
+        };
+    };
+}
+
+export const useBulkEditPosts = createMutation<BulkEditPostsResponse, BulkEditPostsPayload>({
+    method: 'PUT',
+    path: ({resource = 'posts'}) => `/${resource}/bulk/`,
+    searchParams: ({filter}) => ({filter}),
+    body: ({action, meta}) => ({bulk: {action, meta: meta ?? {}}})
+});
+
+export const useBulkDeletePosts = createMutation<unknown, {filter: string; resource?: 'posts' | 'pages'}>({
+    method: 'DELETE',
+    path: ({resource = 'posts'}) => `/${resource}/`,
+    searchParams: ({filter}) => ({filter})
+});
+
+export const useCopyPost = createMutation<PostsResponseType, {id: string; resource?: 'posts' | 'pages'}>({
+    method: 'POST',
+    path: ({id, resource = 'posts'}) => `/${resource}/${id}/copy/`,
+    defaultSearchParams: {formats: 'mobiledoc,lexical'}
 });
 
 // Search index endpoints for efficient search

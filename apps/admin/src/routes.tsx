@@ -15,6 +15,7 @@ import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 import { MembersRoute } from "./members-route";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
+import { PagesListRoute, PostsListRoute } from "./posts-list-route";
 import { TagDetailsRoute } from "./tag-details-route";
 
 import { NotFound } from "./not-found";
@@ -32,11 +33,9 @@ const EMBER_ROUTES: string[] = [
     "/signup/*",
     "/reset/*",
     "/pro/*",
-    "/posts",
     "/posts/analytics/:postId/mentions",
     "/posts/analytics/:postId/debug",
     "/restore",
-    "/pages",
     "/editor/*",
     "/explore/*",
     "/migrate/*",
@@ -95,6 +94,18 @@ export const routes: RouteObject[] = [
             {
                 path: "/tags/:tagSlug",
                 Component: TagDetailsRoute,
+            },
+            {
+                // React posts/pages list when the postsListX labs flag is on,
+                // Ember fallback otherwise. Like the Ember screens, these need
+                // to work in force-upgrade mode no more than other content
+                // routes, so no allowInForceUpgrade handle.
+                path: "/posts",
+                Component: PostsListRoute,
+            },
+            {
+                path: "/pages",
+                Component: PagesListRoute,
             },
             membersRoute,
             {

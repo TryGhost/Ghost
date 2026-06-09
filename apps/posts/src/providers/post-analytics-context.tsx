@@ -9,16 +9,6 @@ import {useParams} from '@tryghost/admin-x-framework';
 
 // Comprehensive Post type with all the includes we fetch in PostAnalytics
 export interface Post extends PostBase {
-    published_at?: string;
-    excerpt?: string;
-    authors?: {
-        name: string;
-    }[];
-    email?: {
-        opened_count: number;
-        email_count: number;
-        status?: string;
-    };
     newsletter?: {
         feedback_enabled?: boolean;
     };
@@ -29,8 +19,6 @@ export interface Post extends PostBase {
         signups?: number;
         paid_conversions?: number;
     };
-    tags?: object[];
-    tiers?: object[];
 }
 
 type PostAnalyticsContextType = {

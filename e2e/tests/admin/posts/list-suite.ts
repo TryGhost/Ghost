@@ -112,9 +112,12 @@ export function definePostsListTests() {
         await postsPage.selectOrder('Oldest first');
 
         await expect(postsPage.getPostByTitle(older.title)).toBeVisible();
-        const titles = await postsPage.postsListItem.getByRole('heading', {level: 3}).allTextContents();
-        const indexOf = (title: string) => titles.findIndex(text => text.includes(title));
-        expect(indexOf(older.title)).toBeLessThan(indexOf(newer.title));
+        // poll: the reordered list may render a moment after the refetch
+        await expect.poll(async () => {
+            const titles = await postsPage.postsListItem.getByRole('heading', {level: 3}).allTextContents();
+            const indexOf = (title: string) => titles.findIndex(text => text.includes(title));
+            return indexOf(older.title) < indexOf(newer.title);
+        }).toBe(true);
     });
 
     test('opens with a type filter from the URL', async ({page}) => {
@@ -166,6 +169,9 @@ export function definePostsListTests() {
         await expect(postsPage.addTagsModal).toBeVisible();
         await postsPage.addTagsModal.getByRole('searchbox').fill(tag.name);
         await page.getByRole('option', {name: tag.name}).click();
+        // dismiss the tag dropdown (it can overlay the modal footer) without
+        // closing the modal, then confirm
+        await postsPage.addTagsModal.getByRole('heading', {name: 'Add tags'}).click();
         await postsPage.addTagsModal.getByRole('button', {name: 'Add', exact: true}).click();
         await expect(postsPage.addTagsModal).toBeHidden();
 

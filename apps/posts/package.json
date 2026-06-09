@@ -21,7 +21,9 @@
         },
         "./api": "./src/api.ts",
         "./members": "./src/views/members/members.tsx",
-        "./tag-details": "./src/views/Tags/tag-details/tag-details.tsx"
+        "./tag-details": "./src/views/Tags/tag-details/tag-details.tsx",
+        "./posts-list": "./src/views/posts/posts-list.tsx",
+        "./pages-list": "./src/views/posts/pages-list.tsx"
     },
     "private": true,
     "scripts": {

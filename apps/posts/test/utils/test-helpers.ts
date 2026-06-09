@@ -112,7 +112,7 @@ export const defaultMockData = {
                 signups: 15,
                 paid_conversions: 3
             },
-            authors: [{name: 'Test Author'}],
+            authors: [{id: 'test-author-id', name: 'Test Author', slug: 'test-author'}],
             published_at: '2024-01-01T00:00:00.000Z',
             excerpt: 'Test excerpt',
             tags: [],

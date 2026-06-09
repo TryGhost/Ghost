@@ -9,10 +9,6 @@ interface PublishedPostData {
 }
 
 interface ExtendedPost extends Post {
-    authors?: {
-        name: string;
-    }[];
-    excerpt?: string;
     newsletter?: {
         name: string;
     };

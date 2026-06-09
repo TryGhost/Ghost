@@ -67,6 +67,19 @@ and issues worth reviewing at the end. Newest entries at the bottom of each sect
   the Ember route handover should be extracted into shared helpers when slice 2
   adds their second consumers.
 
+### Slice 2: Posts/pages list
+
+- **The Ember posts/pages routes are NOT gated to react-fallback while
+  `postsListX` is on** (unlike the tag route in slice 1). The tag route needed
+  gating because its unsaved-changes transition guard fought React's
+  navigation; the posts/pages routes have no such guards — the hidden Ember
+  app just wastefully loads its infinity models. Gating them would require
+  carrying query params through the react-fallback wildcard (they'd be
+  URL-encoded into the path), so the tradeoff is background fetch waste over
+  URL fragility. Removed at flag GA when the Ember routes are deleted.
+- **Force-upgrade:** /posts and /pages no longer carry `allowInForceUpgrade`
+  (same reasoning as the tag routes in slice 1).
+
 ## Infra fixes made along the way
 
 - **Local dev-mode e2e Ghost boots exceed the 30s default test timeout** on this
