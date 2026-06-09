@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {Blob} = require('node:buffer');
 const path = require('path');
 const fs = require('fs-extra');
 const supertest = require('supertest');
@@ -191,11 +192,9 @@ describe('Media API', function () {
 
             // Note: still using png mime type here but it doesn't matter because we're sending an invalid
             // request body anyway
-            // eslint-disable-next-line no-undef
             const blob = new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==', 'base64')], {type: 'image/png'});
             const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n\r\n';
 
-            // eslint-disable-next-line no-undef
             const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
                 type: 'multipart/form-data; boundary=boundary'
             })).text();
@@ -214,13 +213,11 @@ describe('Media API', function () {
 
             // Note: still using png mime type here but it doesn't matter because we're sending an invalid
             // request body anyway
-            // eslint-disable-next-line no-undef
             const blob = new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==', 'base64')], {type: 'image/png'});
 
             // Note: this differs from above test by not including the boundary at the end of the payload
             const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n';
 
-            // eslint-disable-next-line no-undef
             const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
                 type: 'multipart/form-data; boundary=boundary'
             })).text();
