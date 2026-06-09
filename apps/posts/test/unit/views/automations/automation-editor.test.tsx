@@ -1005,7 +1005,7 @@ describe('AutomationEditor', () => {
         expect(screen.queryByText('Add a subject line and email body.')).not.toBeInTheDocument();
     });
 
-    it('shows the dropdown for active automations', () => {
+    it('shows the Turn off button for active automations', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
@@ -1014,12 +1014,12 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        expect(screen.getByRole('button', {name: 'Automation options'})).toBeInTheDocument();
+        expect(screen.getByRole('button', {name: 'Turn off'})).toBeInTheDocument();
         expect(screen.getByRole('button', {name: 'Published'})).toBeDisabled();
         expect(screen.queryByRole('button', {name: 'Save'})).not.toBeInTheDocument();
     });
 
-    it('hides the dropdown for inactive automations', () => {
+    it('hides the Turn off button for inactive automations', () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [{...automationDetail, status: 'inactive'}]},
             isLoading: false,
@@ -1028,7 +1028,7 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        expect(screen.queryByRole('button', {name: 'Automation options'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('button', {name: 'Turn off'})).not.toBeInTheDocument();
     });
 
     it('disables the publish button and shows loading UI while a publish request is in flight', () => {
@@ -1056,11 +1056,9 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        const trigger = screen.getByRole('button', {name: 'Automation options'});
-        fireEvent.pointerDown(trigger, {button: 0, ctrlKey: false});
-        fireEvent.click(trigger);
-        fireEvent.click(await screen.findByRole('menuitem', {name: /Turn off/}));
         fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+        const dialog = await screen.findByRole('alertdialog');
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
 
         expect(screen.getByRole('button', {name: 'Cancel'})).toBeDisabled();
         const turnOff = screen.getByRole('button', {name: 'Turning off...'});
@@ -1092,7 +1090,7 @@ describe('AutomationEditor', () => {
         expect(screen.queryByText(/Couldn.t publish automation/)).not.toBeInTheDocument();
     });
 
-    it('turns off an active automation when confirming from the dropdown', async () => {
+    it('turns off an active automation when confirming from the toolbar', async () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
@@ -1101,14 +1099,11 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        const trigger = screen.getByRole('button', {name: 'Automation options'});
-        fireEvent.pointerDown(trigger, {button: 0, ctrlKey: false});
-        fireEvent.click(trigger);
-
-        fireEvent.click(await screen.findByRole('menuitem', {name: /Turn off/}));
-
-        expect(screen.getByText('Turn off this automation?')).toBeInTheDocument();
         fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+
+        const dialog = await screen.findByRole('alertdialog');
+        expect(within(dialog).getByText('Turn off this automation?')).toBeInTheDocument();
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
 
         expect(mockEditMutation.mutate).toHaveBeenCalledWith(
             {
@@ -1130,11 +1125,9 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        const trigger = screen.getByRole('button', {name: 'Automation options'});
-        fireEvent.pointerDown(trigger, {button: 0, ctrlKey: false});
-        fireEvent.click(trigger);
-        fireEvent.click(await screen.findByRole('menuitem', {name: /Turn off/}));
         fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+        const dialog = await screen.findByRole('alertdialog');
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
 
         const button = screen.getByRole('button', {name: 'Turning off...'});
         expect(button).toBeDisabled();
@@ -1153,11 +1146,9 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        const trigger = screen.getByRole('button', {name: 'Automation options'});
-        fireEvent.pointerDown(trigger, {button: 0, ctrlKey: false});
-        fireEvent.click(trigger);
-        fireEvent.click(await screen.findByRole('menuitem', {name: /Turn off/}));
         fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+        const dialog = await screen.findByRole('alertdialog');
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
 
         const button = await screen.findByRole('button', {name: 'Retry'});
         expect(button).not.toBeDisabled();
@@ -1178,11 +1169,9 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        const trigger = screen.getByRole('button', {name: 'Automation options'});
-        fireEvent.pointerDown(trigger, {button: 0, ctrlKey: false});
-        fireEvent.click(trigger);
-        fireEvent.click(await screen.findByRole('menuitem', {name: /Turn off/}));
         fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
+        const dialog = await screen.findByRole('alertdialog');
+        fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
 
         await waitFor(() => {
             expect(screen.queryByText('Turn off this automation?')).not.toBeInTheDocument();
