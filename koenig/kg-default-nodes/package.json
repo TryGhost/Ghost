@@ -51,7 +51,7 @@
     "@types/lodash": "4.17.24",
     "@types/luxon": "3.7.1",
     "@types/mocha": "10.0.10",
-    "@types/node": "24.13.0",
+    "@types/node": "24.13.1",
     "@types/should": "13.0.0",
     "@types/sinon": "21.0.1",
     "c8": "11.0.0",
