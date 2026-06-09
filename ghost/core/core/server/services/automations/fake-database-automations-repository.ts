@@ -42,9 +42,6 @@ interface ActionRow {
     wait_hours: number | null;
     email_subject: string | null;
     email_lexical: string | null;
-    email_sender_name: string | null;
-    email_sender_email: string | null;
-    email_sender_reply_to: string | null;
     email_design_setting_id: string | null;
 }
 
@@ -54,9 +51,6 @@ type ActionRevisionRow = {
     wait_hours: number | null;
     email_subject: string | null;
     email_lexical: string | null;
-    email_sender_name: string | null;
-    email_sender_email: string | null;
-    email_sender_reply_to: string | null;
     email_design_setting_id: string | null;
 };
 
@@ -90,9 +84,6 @@ type StepToRunRow = {
     wait_hours: number | null;
     email_subject: string | null;
     email_lexical: string | null;
-    email_sender_name: string | null;
-    email_sender_email: string | null;
-    email_sender_reply_to: string | null;
     email_design_setting_id: string | null;
 };
 
@@ -360,9 +351,6 @@ function fetchAndLockSteps(database: DatabaseSync, limit: number): {
             revision.wait_hours AS wait_hours,
             revision.email_subject AS email_subject,
             revision.email_lexical AS email_lexical,
-            revision.email_sender_name AS email_sender_name,
-            revision.email_sender_email AS email_sender_email,
-            revision.email_sender_reply_to AS email_sender_reply_to,
             revision.email_design_setting_id AS email_design_setting_id
         FROM automation_run_steps step
         INNER JOIN automation_runs run ON run.id = step.automation_run_id
@@ -421,9 +409,6 @@ function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
             type: 'send_email',
             email_subject: requireValue(row, 'email_subject'),
             email_lexical: requireValue(row, 'email_lexical'),
-            email_sender_name: row.email_sender_name,
-            email_sender_email: row.email_sender_email,
-            email_sender_reply_to: row.email_sender_reply_to,
             email_design_setting_id: row.email_design_setting_id
         };
     default:
@@ -762,9 +747,6 @@ function buildRevisionActionData(action: AutomationAction, revision: ActionRevis
         return {
             email_subject: revision.email_subject,
             email_lexical: revision.email_lexical,
-            email_sender_name: revision.email_sender_name,
-            email_sender_email: revision.email_sender_email,
-            email_sender_reply_to: revision.email_sender_reply_to,
             email_design_setting_id: revision.email_design_setting_id
         };
     default: {
@@ -784,9 +766,6 @@ function loadLatestActionRevision(database: DatabaseSync, actionId: string): Act
             wait_hours,
             email_subject,
             email_lexical,
-            email_sender_name,
-            email_sender_email,
-            email_sender_reply_to,
             email_design_setting_id
         FROM automation_action_revisions
         WHERE action_id = ?
@@ -825,9 +804,6 @@ function insertActionRevision(database: DatabaseSync, actionId: string, action: 
             wait_hours,
             email_subject,
             email_lexical,
-            email_sender_name,
-            email_sender_email,
-            email_sender_reply_to,
             email_design_setting_id
         ) VALUES (
             :id,
@@ -836,9 +812,6 @@ function insertActionRevision(database: DatabaseSync, actionId: string, action: 
             :wait_hours,
             :email_subject,
             :email_lexical,
-            :email_sender_name,
-            :email_sender_email,
-            :email_sender_reply_to,
             :email_design_setting_id
         )
     `).run(revision);
@@ -868,9 +841,6 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
             wait_hours: action.data.wait_hours,
             email_subject: null,
             email_lexical: null,
-            email_sender_name: null,
-            email_sender_email: null,
-            email_sender_reply_to: null,
             email_design_setting_id: null
         };
     }
@@ -882,9 +852,6 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
         wait_hours: null,
         email_subject: action.data.email_subject,
         email_lexical: action.data.email_lexical,
-        email_sender_name: action.data.email_sender_name,
-        email_sender_email: action.data.email_sender_email,
-        email_sender_reply_to: action.data.email_sender_reply_to,
         email_design_setting_id: action.data.email_design_setting_id
     };
 }
@@ -954,9 +921,6 @@ function loadActionRows(database: DatabaseSync, automationId: string): ActionRow
             r.wait_hours AS wait_hours,
             r.email_subject AS email_subject,
             r.email_lexical AS email_lexical,
-            r.email_sender_name AS email_sender_name,
-            r.email_sender_email AS email_sender_email,
-            r.email_sender_reply_to AS email_sender_reply_to,
             r.email_design_setting_id AS email_design_setting_id
         FROM automation_actions a
         INNER JOIN automation_action_revisions r ON r.action_id = a.id
@@ -1002,9 +966,6 @@ function buildActionPayload(row: ActionRow): AutomationAction {
             data: {
                 email_subject: requireValue(row, 'email_subject'),
                 email_lexical: requireValue(row, 'email_lexical'),
-                email_sender_name: row.email_sender_name,
-                email_sender_email: row.email_sender_email,
-                email_sender_reply_to: row.email_sender_reply_to,
                 email_design_setting_id: requireValue(row, 'email_design_setting_id')
             }
         };

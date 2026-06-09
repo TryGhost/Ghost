@@ -169,9 +169,6 @@ const automationDetail: AutomationDetail = {
             data: {
                 email_subject: 'Welcome to The Blueprint',
                 email_lexical: NON_EMPTY_EMAIL_LEXICAL,
-                email_sender_name: null,
-                email_sender_email: null,
-                email_sender_reply_to: null,
                 email_design_setting_id: 'design-1'
             }
         }

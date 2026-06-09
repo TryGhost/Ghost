@@ -17,9 +17,6 @@ type StepSpecificField =
     | 'wait_hours'
     | 'email_subject'
     | 'email_lexical'
-    | 'email_sender_name'
-    | 'email_sender_email'
-    | 'email_sender_reply_to'
     | 'email_design_setting_id';
 type StepBase = Omit<AutomationStepToRun, StepSpecificField>;
 type PollOptions = Parameters<typeof poll>[0];
@@ -105,9 +102,6 @@ function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
         type: 'send_email',
         email_subject: 'Welcome!',
         email_lexical: JSON.stringify({root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}}),
-        email_sender_name: null,
-        email_sender_email: null,
-        email_sender_reply_to: null,
         email_design_setting_id: null,
         ...attrs
     } satisfies SendEmailStep;
