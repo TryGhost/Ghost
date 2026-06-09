@@ -186,7 +186,7 @@ const AutomationEditor: React.FC = () => {
     const isConfirmRepublishAlertOpen = editState.action === 'republish';
     const isEditRequestActive = editState.phase === 'submitting';
     let isSaveButtonEnabled = !!draft && draft.actions.length > 0 && draft.status === 'inactive' && hasUnsavedChanges;
-    let saveButtonVariant: ButtonProps['variant'] = 'secondary';
+    let saveButtonVariant: ButtonProps['variant'] = 'outline';
     let saveButtonChildren: React.ReactNode = 'Save';
     let isPublishButtonEnabled = !!draft && draft.actions.length > 0 && (draft.status === 'inactive' || hasUnsavedChanges);
     let publishButtonVariant: ButtonProps['variant'] = 'default';

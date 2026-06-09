@@ -157,13 +157,10 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
         }
     }, [isDirty, onClose]);
 
-    // Commit to the automation draft, then close the modal.
-    const handleSaveAndClose = useCallback(async () => {
-        const result = await handleSave({fakeWhenUnchanged: true});
-        if (result) {
-            onClose();
-        }
-    }, [handleSave, onClose]);
+    // Commit to the automation draft. The Close button is the only way out of the modal.
+    const handleSaveClick = useCallback(async () => {
+        await handleSave({fakeWhenUnchanged: true});
+    }, [handleSave]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -182,16 +179,16 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
         };
     }, [showTestDropdown]);
 
-    const handleSaveAndCloseRef = useRef(handleSaveAndClose);
+    const handleSaveClickRef = useRef(handleSaveClick);
     useEffect(() => {
-        handleSaveAndCloseRef.current = handleSaveAndClose;
-    }, [handleSaveAndClose]);
+        handleSaveClickRef.current = handleSaveClick;
+    }, [handleSaveClick]);
 
     useEffect(() => {
         const handleCMDS = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 's') {
                 e.preventDefault();
-                handleSaveAndCloseRef.current();
+                handleSaveClickRef.current();
             }
         };
         window.addEventListener('keydown', handleCMDS);
@@ -271,7 +268,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
                                 <Button variant="outline" onClick={attemptClose}>Close</Button>
                                 <Button
                                     disabled={okProps.disabled}
-                                    onClick={handleSaveAndClose}
+                                    onClick={handleSaveClick}
                                 >
                                     {saveButtonLabel}
                                 </Button>

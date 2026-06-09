@@ -48,7 +48,7 @@ export const AutomationCanvasControls: React.FC = () => {
                 <DropdownMenuTrigger asChild>
                     <Button
                         aria-label={`Zoom level ${formatNumber(zoomPercent)}%`}
-                        className='min-w-14 rounded-sm px-2 font-semibold'
+                        className='h-9 min-w-14 rounded-sm px-2 font-semibold'
                         type='button'
                         variant='ghost'
                     >

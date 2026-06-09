@@ -1,7 +1,7 @@
 import '@xyflow/react/dist/style.css';
 import React, {useEffect, useRef, useState} from 'react';
 import {AutomationDetail, AutomationSendEmailAction, AutomationWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {Button, Checkbox, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Label, Select, SelectTrigger} from '@tryghost/shade/components';
+import {Button, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {MemberTier, StepSidebarDetail} from '../types';
 import {TRIGGER_CANVAS_ID} from './nodes';
@@ -20,20 +20,22 @@ const getValidWaitDays = (value: string): number | null => {
 
 const SidebarField: React.FC<{label: string; children: React.ReactNode; htmlFor?: string}> = ({children, htmlFor, label}) => (
     <Field>
-        <FieldLabel className='text-xs font-medium text-text-secondary' htmlFor={htmlFor}>
+        <FieldLabel className='text-sm font-medium text-text-secondary' htmlFor={htmlFor}>
             {label}
         </FieldLabel>
         {children}
     </Field>
 );
 
-const ReadOnlySelect: React.FC<{value: string}> = ({value}) => (
-    <Select value={value}>
-        <SelectTrigger disabled>
-            <span>{value}</span>
-        </SelectTrigger>
-    </Select>
-);
+// Public beta limitation: only one trigger type exists, so the read-only Select
+// in the sidebar header would just mirror the title above it.
+// const ReadOnlySelect: React.FC<{value: string}> = ({value}) => (
+//     <Select value={value}>
+//         <SelectTrigger disabled>
+//             <span>{value}</span>
+//         </SelectTrigger>
+//     </Select>
+// );
 
 const DeleteStepButton: React.FC<{onClick: () => void}> = ({onClick}) => (
     <Button
@@ -47,24 +49,30 @@ const DeleteStepButton: React.FC<{onClick: () => void}> = ({onClick}) => (
     </Button>
 );
 
-const TriggerSidebarBody: React.FC<{memberTiers: MemberTier[]}> = ({memberTiers}) => (
-    <div className='flex flex-col gap-5'>
-        <SidebarField label='Trigger'>
-            <ReadOnlySelect value='New member sign up' />
-        </SidebarField>
-        <div className='flex flex-col gap-2'>
-            <span className='text-xs font-medium text-text-secondary'>Members</span>
-            <Label className='flex items-center gap-2 text-sm font-normal text-foreground'>
-                <Checkbox checked={memberTiers.includes('free')} disabled />
-              Free
-            </Label>
-            <Label className='flex items-center gap-2 text-sm font-normal text-foreground'>
-                <Checkbox checked={memberTiers.includes('paid')} disabled />
-              Paid
-            </Label>
+const MEMBER_TIER_LABELS: Record<MemberTier, string> = {
+    free: 'Free',
+    paid: 'Paid'
+};
+
+const TriggerSidebarBody: React.FC<{memberTiers: MemberTier[]}> = ({memberTiers}) => {
+    const selectedTiers = memberTiers.map(tier => MEMBER_TIER_LABELS[tier]).join(', ');
+
+    return (
+        <div className='flex flex-col gap-5'>
+            {/* Public beta limitation: only one trigger type exists, so the read-only Select
+                in the sidebar header would just mirror the title above it.
+            <SidebarField label='Trigger'>
+                <ReadOnlySelect value='New member sign up' />
+            </SidebarField> */}
+            {selectedTiers && (
+                <div className='flex flex-col'>
+                    <span className='text-sm font-medium text-text-secondary'>Members</span>
+                    <span className='text-base text-foreground'>{selectedTiers}</span>
+                </div>
+            )}
         </div>
-    </div>
-);
+    );
+};
 
 const WaitSidebarBody: React.FC<{
   action: AutomationWaitAction;
@@ -228,7 +236,7 @@ const StepSidebarContent: React.FC<{detail: StepSidebarDetail}> = ({detail}) => 
                         <Icon className='size-4' />
                     </div>
                     <div className='min-w-0'>
-                        <span className='block text-xs text-text-secondary'>{detail.label}</span>
+                        <span className='block text-sm text-text-secondary'>{detail.label}</span>
                         <h2 className={cn('truncate text-base leading-tight font-medium text-foreground', detail.isPlaceholderTitle && 'opacity-50')}>{detail.title}</h2>
                     </div>
                 </div>
