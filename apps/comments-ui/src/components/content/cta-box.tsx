@@ -1,12 +1,16 @@
 import reactStringReplace from 'react-string-replace';
+import {buildCommentPermalink} from '../../utils/helpers';
 import {useAppContext} from '../../app-context';
 
 type Props = {
     isFirst: boolean,
-    isPaid: boolean
+    isPaid: boolean,
+    // When the CTA was opened by clicking "Reply" on a comment, this is that
+    // comment's id — used to return the reader to it after signing in.
+    commentId?: string
 };
-const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
-    const {accentColor, publication, member, t, commentCount} = useAppContext();
+const CTABox: React.FC<Props> = ({isFirst, isPaid, commentId}) => {
+    const {accentColor, publication, member, t, commentCount, pageUrl} = useAppContext();
 
     const buttonStyle = {
         backgroundColor: accentColor
@@ -23,6 +27,16 @@ const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
     };
 
     const handleSignInClick = () => {
+        // If the reader got here by clicking "Reply" on a comment, ask Portal to
+        // return them to that comment after signing in. Portal carries this
+        // redirect through the magic-link round trip, and the comment permalink's
+        // fragment brings them back to the right place (scrolled + highlighted by
+        // the existing permalink handling) — no client-side storage needed.
+        if (commentId) {
+            const redirect = buildCommentPermalink(pageUrl, commentId);
+            window.location.href = `#/portal/signin?redirect=${encodeURIComponent(redirect)}`;
+            return;
+        }
         window.location.href = '#/portal/signin';
     };
 

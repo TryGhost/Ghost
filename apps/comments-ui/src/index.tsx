@@ -48,6 +48,10 @@ function handleTokenUrl() {
 function getPageUrl(): string {
     const url = new URL(window.location.href);
     url.hash = '';
+    // Drop the auth round-trip markers Ghost appends after sign-in so they don't
+    // leak into comment permalinks built from this URL.
+    url.searchParams.delete('success');
+    url.searchParams.delete('action');
     return url.toString();
 }
 

@@ -1,6 +1,31 @@
 import ActionHandler from '../src/actions';
 import {vi, type MockInstance} from 'vitest';
 
+describe('closePopup action', () => {
+    test('clears a one-shot redirect from pageData so it cannot leak into a later sign-in', async () => {
+        const result = await ActionHandler({
+            action: 'closePopup',
+            data: {},
+            api: {},
+            state: {
+                page: 'signin',
+                pageData: {redirect: 'https://example.com/post/#ghost-comments-1', email: 'reader@example.com'}
+            }
+        });
+
+        // the redirect is dropped...
+        expect(result.pageData.redirect).toBeUndefined();
+        // ...but other pageData is preserved
+        expect(result.pageData.email).toBe('reader@example.com');
+        expect(result.showPopup).toBe(false);
+    });
+
+    test('handles missing pageData', async () => {
+        const result = await ActionHandler({action: 'closePopup', data: {}, api: {}, state: {page: 'signin'}});
+        expect(result.pageData).toEqual({});
+    });
+});
+
 describe('updateProfile action', () => {
     test('trims whitespace from name before saving', async () => {
         const mockApi = {

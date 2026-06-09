@@ -493,7 +493,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highli
                 : <LikeCount count={comment.count.likes} liked={comment.liked} />
             }
             {showDislikeButton && <DislikeButton comment={comment} disabled={voteDisabled} setDisabled={setVoteDisabled} />}
-            {showReplyButton && <ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
+            {showReplyButton && <ReplyButton comment={comment} isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
             {showMoreButton && <MoreButton comment={comment} toggleEdit={openEditMode} />}
         </div>
     );

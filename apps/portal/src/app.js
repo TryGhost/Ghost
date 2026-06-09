@@ -15,7 +15,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import {getGiftRedemptionErrorMessage} from './utils/gift-redemption-notification';
 import './app.css';
-import {hasRecommendations, arePaidMembersEnabled, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, arePaidMembersEnabled, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSameOriginUrl, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
 
@@ -738,11 +738,21 @@ export default class App extends React.Component {
                 productYearlyPriceQueryRegex.test(pageQuery) ||
                 offersRegex.test(pageQuery)
             ) ? false : true;
+
+            // Allow an external caller (e.g. comments-ui clicking "Reply") to request
+            // a post-sign-in redirect back to a specific URL via
+            // #/portal/signin?redirect=<url>. Restricted to same-origin URLs (origin
+            // compared, not a string prefix) so we never send a member off-site.
+            const requestedRedirect = hashQuery.get('redirect');
+            const resolvedPageData = (page === 'signin' && requestedRedirect && isSameOriginUrl(requestedRedirect, site.url))
+                ? {...(pageData || {}), redirect: requestedRedirect}
+                : pageData;
+
             return {
                 showPopup,
                 ...(page ? {page} : {}),
                 ...(pageQuery ? {pageQuery} : {}),
-                ...(pageData ? {pageData} : {}),
+                ...(resolvedPageData ? {pageData: resolvedPageData} : {}),
                 ...(lastPage ? {lastPage} : {})
             };
         }
