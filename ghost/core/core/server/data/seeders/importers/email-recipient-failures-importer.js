@@ -57,7 +57,7 @@ class EmailRecipientFailuresImporter extends TableImporter {
             email_id: this.model.email_id,
             member_id: this.model.member_id,
             email_recipient_id: this.model.id,
-            event_id: faker.random.alphaNumeric(20),
+            event_id: faker.string.alphanumeric(20),
             ...error,
             failed_at: this.model.failed_at
         };
