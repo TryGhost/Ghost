@@ -2551,9 +2551,9 @@ importers:
       dompurify:
         specifier: 'catalog:'
         version: 3.4.5
-      downsize:
-        specifier: 0.0.8
-        version: 0.0.8
+      downsize-cjs:
+        specifier: 1.1.2
+        version: 1.1.2
       entities:
         specifier: 4.5.0
         version: 4.5.0
@@ -12811,8 +12811,8 @@ packages:
     resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
     engines: {node: '>=12'}
 
-  downsize@0.0.8:
-    resolution: {integrity: sha512-6vNP5DESwCTwefIFlMUp7MX6GfvjNYWjoLIdfdqPcYPNUcKKfjUctw2yMNbyM1wlkgfCO0oydSR/eysDHFo60w==}
+  downsize-cjs@1.1.2:
+    resolution: {integrity: sha512-WfytyidccC61hSKwiWeMXTO4WwWxjOHhl70cH+nbFEy8tkUyEBdz70FI2xc94uS5GL3cyPG3h5r4HH5cpFsUvw==}
 
   dtrace-provider@0.8.8:
     resolution: {integrity: sha512-b7Z7cNtHPhH9EJhNNbbeqTcXB8LGFFZhq1PGgEvpeHlzd36bhbdTWoE/Ba/YguqpBSlAPKnARWhVlhunCMwfxg==}
@@ -21946,9 +21946,6 @@ packages:
 
   xmlchars@2.2.0:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
-
-  xregexp@2.0.0:
-    resolution: {integrity: sha512-xl/50/Cf32VsGq/1R8jJE5ajH1yMCQkpmoS10QbFZWl2Oor4H0Me64Pu2yxvsRWK3m6soJbmGfzSR7BYmDcWAA==}
 
   xtend@4.0.2:
     resolution: {integrity: sha512-LKYU1iAXJXUgAXn9URjiu+MWhyUXHsvfp7mcuYm9dSUKK0/CjtrUwFAxD82/mCWbtLsGjFIad0wIsod4zrTAEQ==}
@@ -34133,9 +34130,7 @@ snapshots:
 
   dotenv@17.4.2: {}
 
-  downsize@0.0.8:
-    dependencies:
-      xregexp: 2.0.0
+  downsize-cjs@1.1.2: {}
 
   dtrace-provider@0.8.8:
     dependencies:
@@ -46825,8 +46820,6 @@ snapshots:
   xml@1.0.1: {}
 
   xmlchars@2.2.0: {}
-
-  xregexp@2.0.0: {}
 
   xtend@4.0.2: {}
 
