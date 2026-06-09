@@ -305,6 +305,22 @@ export async function trigger(options: TriggerOptions) {
     requestPoll();
 }
 
+export async function fetchAndLockSteps(...args: Parameters<AutomationsRepository['fetchAndLockSteps']>) {
+    return await repository.fetchAndLockSteps(...args);
+}
+
+export async function finishStepAndEnqueueNext(...args: Parameters<AutomationsRepository['finishStepAndEnqueueNext']>) {
+    return await repository.finishStepAndEnqueueNext(...args);
+}
+
+export async function markStepTerminal(...args: Parameters<AutomationsRepository['markStepTerminal']>) {
+    return await repository.markStepTerminal(...args);
+}
+
+export async function retryStep(...args: Parameters<AutomationsRepository['retryStep']>) {
+    return await repository.retryStep(...args);
+}
+
 export function _resetTestDatabase() {
     if (process.env.NODE_ENV?.startsWith('testing')) {
         testDatabase = null;

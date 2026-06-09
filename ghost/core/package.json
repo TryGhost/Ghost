@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.44.2-rc.0",
+  "version": "6.45.0-rc.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -255,6 +255,7 @@
     "@types/common-tags": "1.8.4",
     "@types/express": "catalog:",
     "@types/fs-extra": "11.0.4",
+    "@types/html-minifier": "catalog:",
     "@types/js-yaml": "4.0.9",
     "@types/jsdom": "28.0.3",
     "@types/jsonwebtoken": "9.0.10",

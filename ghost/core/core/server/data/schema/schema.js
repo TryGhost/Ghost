@@ -716,6 +716,10 @@ module.exports = {
         // so we should decide whether we should reduce it down in the future
         plan_currency: {type: 'string', maxlength: 191, nullable: false}
     },
+    members_current_subscription: {
+        member_id: {type: 'string', maxlength: 24, nullable: false, primary: true, references: 'members.id', cascadeDelete: true},
+        subscription_id: {type: 'string', maxlength: 24, nullable: false, unique: true, references: 'members_stripe_customers_subscriptions.id', cascadeDelete: true}
+    },
     members_subscription_created_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         created_at: {type: 'dateTime', nullable: false},
@@ -1080,7 +1084,8 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         payload: {type: 'text', maxlength: 65535, nullable: true},
         deleted: {type: 'boolean', nullable: false, defaultTo: false},
-        verified: {type: 'boolean', nullable: false, defaultTo: false}
+        verified: {type: 'boolean', nullable: false, defaultTo: false},
+        revalidation_failure_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     milestones: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

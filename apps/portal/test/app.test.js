@@ -366,4 +366,31 @@ describe('App', function () {
             name: paidProduct.name
         });
     });
+
+    test('ignores a malformed preview hash instead of interrupting the product', () => {
+        window.location.hash = '#/portal/preview?button={INVALID';
+
+        const app = new App({siteUrl: 'http://example.com'});
+
+        let data;
+        expect(() => {
+            data = app.fetchPreviewData();
+        }).not.toThrow();
+
+        expect(data).toEqual({});
+    });
+
+    test('parses a valid preview hash', () => {
+        window.location.hash = '#/portal/preview?button=true&isFree=true&isMonthly=true&isYearly=false&signupCheckboxRequired=false';
+
+        const app = new App({siteUrl: 'http://example.com'});
+        const data = app.fetchPreviewData();
+
+        expect(data.showPopup).toBe(true);
+        expect(data.site.portal_button).toBe(true);
+        expect(data.site.portal_plans).toContain('free');
+        expect(data.site.portal_plans).toContain('monthly');
+        expect(data.site.portal_plans).not.toContain('yearly');
+        expect(data.site.portal_signup_checkbox_required).toBe(false);
+    });
 });

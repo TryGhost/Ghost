@@ -11,6 +11,7 @@ const crypto = require('crypto');
 const hasActiveOffer = require('../utils/has-active-offer');
 const StartAutomationsPollEvent = require('../../../automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
+const db = require('../../../../data/db');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
 
@@ -182,17 +183,30 @@ module.exports = class MemberRepository {
      * @param {string} memberId
      * @param {string} memberEmail
      * @param {'free' | 'paid'} memberStatus
+     * @param {object} bookshelfOptions
+     * @param {Knex.Transaction} [bookshelfOptions.transacting]
      * @returns {Promise<void>}
      */
-    async #triggerMemberSignupAutomation(memberId, memberEmail, memberStatus) {
-        // TODO(NY-1311) When moving to real tables, we should insert the new
-        // rows in a new transaction.
-        await this._automationsApi.trigger({
-            event: 'member_sign_up',
-            memberId,
-            memberEmail,
-            memberStatus
-        });
+    async #triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+        const trigger = async () => {
+            await this._automationsApi.trigger({
+                event: 'member_sign_up',
+                memberId,
+                memberEmail,
+                memberStatus
+            });
+        };
+
+        if (bookshelfOptions?.transacting) {
+            bookshelfOptions.transacting.executionPromise.then(trigger).catch((err) => {
+                logging.error({
+                    err,
+                    message: `Error triggering automation for member ${memberId}`
+                });
+            });
+        } else {
+            await trigger();
+        }
     }
 
     /**
@@ -253,7 +267,7 @@ module.exports = class MemberRepository {
      */
     async triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
         await Promise.all([
-            this.#triggerMemberSignupAutomation(memberId, memberEmail, memberStatus),
+            this.#triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions),
             this.#triggerMemberSignupLegacyAutomation(memberId, memberStatus, bookshelfOptions)
         ]);
     }
@@ -1583,6 +1597,53 @@ module.exports = class MemberRepository {
                     options
                 );
             }
+        }
+
+        // Update the members_current_subscription lookup table
+        await this._updateCurrentSubscription(data.id, options);
+    }
+
+    async _updateCurrentSubscription(memberId, options) {
+        try {
+            const knex = db.knex;
+            const trx = options.transacting || knex;
+
+            // Resolve the best subscription for this member via the VIEW
+            // (single source of truth for subscription priority logic)
+            const best = await trx('members_resolved_subscription')
+                .where('member_id', memberId)
+                .first();
+
+            if (best) {
+                // The lookup table has a UNIQUE constraint on `subscription_id`
+                // — a sub can be at most one member's current. The view's
+                // owning-member can change (member merges, Stripe customer
+                // re-link, test fixtures reusing customer IDs), in which case
+                // the lookup may still hold a stale row from the previous
+                // owner. Delete that stale row first so the upsert isn't
+                // rejected by the UNIQUE constraint. The displaced member's
+                // row will re-resolve next time their subscriptions change.
+                await trx('members_current_subscription')
+                    .where('subscription_id', best.subscription_id)
+                    .whereNot('member_id', best.member_id)
+                    .del();
+
+                await trx('members_current_subscription')
+                    .insert({member_id: best.member_id, subscription_id: best.subscription_id})
+                    .onConflict('member_id')
+                    .merge();
+            } else {
+                // No subscriptions remain — remove the lookup row
+                await trx('members_current_subscription')
+                    .where({member_id: memberId})
+                    .del();
+            }
+        } catch (e) {
+            logging.error({
+                err: e,
+                message: `Failed to update members_current_subscription for member ${memberId}`
+            });
+            throw e;
         }
     }
 

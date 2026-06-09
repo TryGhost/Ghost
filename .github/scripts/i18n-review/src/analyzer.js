@@ -64,6 +64,16 @@ const REVIEW_TOOL = {
     }
 };
 
+// `pnpm translate` seeds every non-English locale with empty `""` placeholders
+// when new keys are added. Those additions trip the path-based `affects:i18n`
+// labeler but carry no translation to review, so we drop them here. Matches a
+// JSON entry whose value is an empty string, e.g. `    "Some key": "",`.
+const EMPTY_PLACEHOLDER_PATTERN = /:\s*""\s*,?\s*$/;
+
+function isEmptyPlaceholder(content) {
+    return EMPTY_PLACEHOLDER_PATTERN.test(content);
+}
+
 export async function analyzePR(prNumber, {octokit, anthropic, owner, repo, model = DEFAULT_MODEL}) {
     const {data: pr} = await octokit.pulls.get({owner, repo, pull_number: prNumber});
     console.log(`PR #${prNumber}: ${pr.title}`);
@@ -99,7 +109,7 @@ export async function analyzePR(prNumber, {octokit, anthropic, owner, repo, mode
             console.warn(`No patch available for ${file.filename} (likely too large) — skipping.`);
             continue;
         }
-        const addedLines = extractAddedLines(file.patch);
+        const addedLines = extractAddedLines(file.patch).filter(l => !isEmptyPlaceholder(l.content));
         if (addedLines.length === 0) continue;
         for (const l of addedLines) {
             const key = `${file.filename}:${l.position}`;

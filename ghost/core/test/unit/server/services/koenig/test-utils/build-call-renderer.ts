@@ -1,7 +1,12 @@
-const nodeRenderers = require('../../../../../../core/server/services/koenig/node-renderers');
+// @ts-expect-error This module currently lacks types.
+import * as nodeRenderers from '../../../../../../core/server/services/koenig/node-renderers';
 
-module.exports = function buildCallRenderer(dom) {
-    return function callRenderer(nodeType, data, options = {}) {
+export function buildCallRenderer(dom: unknown) {
+    return function callRenderer(
+        nodeType: string,
+        data: Record<string, unknown>,
+        options: Record<string, unknown> = {}
+    ) {
         const renderer = nodeRenderers[nodeType];
         if (!renderer) {
             throw new Error(`Renderer for node type ${nodeType} not found`);
@@ -20,14 +25,9 @@ module.exports = function buildCallRenderer(dom) {
             ...data
         };
 
-        // add dom to options if it's not already present
-        if (!options.dom) {
-            options.dom = dom;
-        }
-
         // default options
         options = {
-            ...options,
+            dom,
             siteUrl: 'https://test.com/',
             postUrl: 'https://test.com/post/',
             imageOptimization: {
@@ -38,7 +38,8 @@ module.exports = function buildCallRenderer(dom) {
                     w2400: {width: 2400}
                 }
             },
-            canTransformImage: () => true
+            canTransformImage: () => true,
+            ...options
         };
 
         let result;
@@ -68,4 +69,4 @@ module.exports = function buildCallRenderer(dom) {
             html
         };
     };
-};
+}

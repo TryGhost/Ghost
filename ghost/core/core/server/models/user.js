@@ -109,6 +109,18 @@ User = ghostBookshelf.Model.extend({
         return attrs;
     },
 
+    filterRelations: function filterRelations() {
+        return {
+            roles: {
+                tableName: 'roles',
+                type: 'manyToMany',
+                joinTable: 'roles_users',
+                joinFrom: 'user_id',
+                joinTo: 'role_id'
+            }
+        };
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'user' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);

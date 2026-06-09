@@ -6,6 +6,7 @@ const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 const {poll} = require('./poll');
 const {welcomeEmailAutomationPoll} = require('./welcome-email-automation-poll');
+const automationsApi = require('./automations-api');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
 /** @import DomainEvents from '@tryghost/domain-events' */
 
@@ -61,6 +62,8 @@ class AutomationsService {
         };
 
         domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => poll({
+            automationsApi,
+            memberWelcomeEmailService,
             enqueueAnotherPollAt: enqueuePollAt
         })));
 

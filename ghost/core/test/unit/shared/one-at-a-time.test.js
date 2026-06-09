@@ -3,25 +3,6 @@ const sinon = require('sinon');
 const {oneAtATime} = require('../../../core/shared/one-at-a-time');
 
 /**
- * Ponyfill of `Promise.withResolvers`.
- *
- * @template T
- * @returns {{
- *     promise: Promise<T>;
- *     resolve: (value: T) => void;
- *     reject: (err: unknown) => void;
- * }}
- */
-const promiseWithResolvers = () => {
-    let resolve, reject;
-    const promise = new Promise((res, rej) => {
-        resolve = res;
-        reject = rej;
-    });
-    return {promise, resolve, reject};
-};
-
-/**
  * A helper function to give the event loop a little time.
  */
 const eventLoop = () => Promise.resolve();
@@ -45,7 +26,7 @@ describe('oneAtATime', function () {
     });
 
     it('enqueues a second call while the first is still running', async function () {
-        const first = promiseWithResolvers();
+        const first = Promise.withResolvers();
         const fn = sinon.stub()
             .onFirstCall().returns(first.promise)
             .resolves();
@@ -67,8 +48,8 @@ describe('oneAtATime', function () {
     });
 
     it('only enqueues, at most, one additional call', async function () {
-        const first = promiseWithResolvers();
-        const second = promiseWithResolvers();
+        const first = Promise.withResolvers();
+        const second = Promise.withResolvers();
         const fn = sinon.stub()
             .onFirstCall().returns(first.promise)
             .onSecondCall().returns(second.promise)
@@ -103,8 +84,8 @@ describe('oneAtATime', function () {
     });
 
     it('ignores all errors', async function () {
-        const first = promiseWithResolvers();
-        const second = promiseWithResolvers();
+        const first = Promise.withResolvers();
+        const second = Promise.withResolvers();
         const fn = sinon.stub()
             .onFirstCall().returns(first.promise)
             .onSecondCall().returns(second.promise);

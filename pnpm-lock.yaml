@@ -112,11 +112,14 @@ catalogs:
       specifier: 0.3.4
       version: 0.3.4
     '@tryghost/timezone-data':
-      specifier: 0.4.20
-      version: 0.4.20
+      specifier: 1.0.0
+      version: 1.0.0
     '@types/express':
       specifier: 4.17.25
       version: 4.17.25
+    '@types/html-minifier':
+      specifier: ^4.0.6
+      version: 4.0.6
     '@types/jest':
       specifier: 29.5.14
       version: 29.5.14
@@ -977,7 +980,7 @@ importers:
         version: 0.3.4
       '@tryghost/timezone-data':
         specifier: 'catalog:'
-        version: 0.4.20
+        version: 1.0.0
       '@uiw/react-codemirror':
         specifier: 4.25.10
         version: 4.25.10(@babel/runtime@7.29.7)(@codemirror/autocomplete@6.20.2)(@codemirror/language@6.12.3)(@codemirror/lint@6.9.6)(@codemirror/search@6.7.0)(@codemirror/state@6.6.0)(@codemirror/theme-one-dark@6.1.3)(@codemirror/view@6.43.0)(codemirror@5.65.21)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -2013,7 +2016,7 @@ importers:
         version: 0.3.4
       '@tryghost/timezone-data':
         specifier: 'catalog:'
-        version: 0.4.20
+        version: 1.0.0
       animejs:
         specifier: 3.2.2
         version: 3.2.2
@@ -2282,8 +2285,8 @@ importers:
         specifier: 7.7.4
         version: 7.7.4
       sentry-testkit:
-        specifier: 5.0.10
-        version: 5.0.10
+        specifier: 6.4.1
+        version: 6.4.1
       sinon-chai:
         specifier: 4.0.1
         version: 4.0.1(chai@4.5.0)(sinon@22.0.0)
@@ -2807,6 +2810,9 @@ importers:
       '@types/fs-extra':
         specifier: 11.0.4
         version: 11.0.4
+      '@types/html-minifier':
+        specifier: 'catalog:'
+        version: 4.0.6
       '@types/js-yaml':
         specifier: 4.0.9
         version: 4.0.9
@@ -8846,8 +8852,9 @@ packages:
   '@tryghost/string@0.3.4':
     resolution: {integrity: sha512-eI8B3lEgfv8RQFbQnP7H4KnlhrDkqrh+lAcNLXHyUAoqb5MwqlrHAIAQZxpl5CLW9agBJ8w1UO7ZrcseHEL8Ww==}
 
-  '@tryghost/timezone-data@0.4.20':
-    resolution: {integrity: sha512-BjH2UxOBPN2vxkQtuS24qzobldWNpEJoeYiwtzGuitP2OlKdaqj1x/q95vPAd5ZZIFir46Z1s4vkFeM6nXQIoQ==}
+  '@tryghost/timezone-data@1.0.0':
+    resolution: {integrity: sha512-A9483jAxE13ivnHdLK1kQYRaQYW+BcrKz33Nkdb59erNXiJYoaWx0HBAQoXKlySvrVX+wvVd9g1LzF44LgqidQ==}
+    engines: {node: '>=18.0.0'}
 
   '@tryghost/tpl@0.1.40':
     resolution: {integrity: sha512-8w94lbNxXptRCIS8pe/IHjzgVFLxljxXx8+UQLO8NRFKraoEXthkPjAphN2MXKp1UGtj5ldh4Ye4D82bUWceOw==}
@@ -8938,6 +8945,9 @@ packages:
 
   '@types/chai@5.2.3':
     resolution: {integrity: sha512-Mw558oeA9fFbv65/y4mHtXDs9bPnFMZAL/jxdPFUpOHHIXX91mcgEHbS5Lahr+pwZFR8A7GQleRWeI6cGFC2UA==}
+
+  '@types/clean-css@4.2.11':
+    resolution: {integrity: sha512-Y8n81lQVTAfP2TOdtJJEsCoYl1AnOkqDqMvXb9/7pfgZZ7r8YrEyurrAvAoAjHOGXKRybay+5CsExqIH6liccw==}
 
   '@types/color-convert@2.0.4':
     resolution: {integrity: sha512-Ub1MmDdyZ7mX//g25uBAoH/mWGd9swVbt8BseymnaE18SU4po/PjmCrHxqIIRjBo3hV/vh1KGr0eMxUhp+t+dQ==}
@@ -9062,6 +9072,9 @@ packages:
 
   '@types/graceful-fs@4.1.9':
     resolution: {integrity: sha512-olP3sd1qOEe5dXTSaFvQG+02VdRXcdytWLAZsAq1PecU8uqQAhkrnbli7DagjtXKW/Bl7YJbUsa8MPcuc8LHEQ==}
+
+  '@types/html-minifier@4.0.6':
+    resolution: {integrity: sha512-1Dcf38DkVMYo8SIOkUka7GxI+0BztCVsnfiG2Sxb6G8ShHDQTWQb1WKps/eb3O074HNDCn8wU7LMl5N99nNG+Q==}
 
   '@types/http-cache-semantics@4.2.0':
     resolution: {integrity: sha512-L3LgimLHXtGkWikKnsPg0/VFx9OGZaC+eN1u4r+OB1XRqH3meBIAVC2zr1WdMH+RHmnRkqliQAOHNJ/E0j/e0Q==}
@@ -9223,6 +9236,9 @@ packages:
   '@types/react@18.3.29':
     resolution: {integrity: sha512-ch0qJdr2JY0r04NXSprbK6TXOgnaJ1Tz23fm5W+z0/CBah6BSBc3n96h7K9GOtwh0HrilNWHIBzE1Ko4Dcw/Wg==}
 
+  '@types/relateurl@0.2.33':
+    resolution: {integrity: sha512-bTQCKsVbIdzLqZhLkF5fcJQreE4y1ro4DIyVrlDNSCJRRwHhB8Z+4zXXa8jN6eDvc2HbRsEYgbvrnGvi54EpSw==}
+
   '@types/resolve@1.20.6':
     resolution: {integrity: sha512-A4STmOXPhMUtHH+S6ymgE2GiBSMqf4oTvcQZMcHzokuTLVYzXTB8ttjcgxOVaAp2lGwEdzZ0J+cRbbeevQj1UQ==}
 
@@ -9279,6 +9295,9 @@ packages:
 
   '@types/trusted-types@2.0.7':
     resolution: {integrity: sha512-ScaPdn1dQczgbl0QFTeTOmVHFULt394XJgOQNoyVhZ6r2vLnMLJfBPd53SB52T/3G36VI1/g2MZaX0cwDuXsfw==}
+
+  '@types/uglify-js@3.17.5':
+    resolution: {integrity: sha512-TU+fZFBTBcXj/GpDpDaBmgWk/gn96kMZ+uocaFUlV2f8a6WdMzzI44QBCmGcCiYR0Y6ZlNRiyUyKKt5nl/lbzQ==}
 
   '@types/unist@2.0.11':
     resolution: {integrity: sha512-CmBKiL6NNo/OqgmMn95Fk9Whlp2mtvIv+KNpQKN2F4SjvrEesubTRWGYSg+BnWZOnlCaSTU1sMpsBOzgbYhnsA==}
@@ -19879,8 +19898,8 @@ packages:
     resolution: {integrity: sha512-1gnZf7DFcoIcajTjTwjwuDjzuz4PPcY2StKPlsGAQ1+YH20IRVrBaXSWmdjowTJ6u8Rc01PoYOGHXfP1mYcZNQ==}
     engines: {node: '>= 18'}
 
-  sentry-testkit@5.0.10:
-    resolution: {integrity: sha512-wpvt29IIK+L1Pe02uc0y7rJkXQcnIk46hvB02Zqd4UNgP2lIhzv80GjR2lu8RtsbAmf7LJnGz8zLuV3rVa69ew==}
+  sentry-testkit@6.4.1:
+    resolution: {integrity: sha512-T0L4bHMEXoOdIT1O087VuZM1bJD9dtOWSf1QgOxst9J03nDsnvU0TuXYtBuwAwZ1MG17EmXjjxvpSa7z+mJoPg==}
 
   seq-queue@0.0.5:
     resolution: {integrity: sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q==}
@@ -29084,7 +29103,7 @@ snapshots:
     dependencies:
       unidecode: 1.1.0
 
-  '@tryghost/timezone-data@0.4.20': {}
+  '@tryghost/timezone-data@1.0.0': {}
 
   '@tryghost/tpl@0.1.40':
     dependencies:
@@ -29254,6 +29273,11 @@ snapshots:
       '@types/deep-eql': 4.0.2
       assertion-error: 2.0.1
 
+  '@types/clean-css@4.2.11':
+    dependencies:
+      '@types/node': 25.9.1
+      source-map: 0.6.1
+
   '@types/color-convert@2.0.4':
     dependencies:
       '@types/color-name': 1.1.5
@@ -29398,6 +29422,12 @@ snapshots:
   '@types/graceful-fs@4.1.9':
     dependencies:
       '@types/node': 25.9.1
+
+  '@types/html-minifier@4.0.6':
+    dependencies:
+      '@types/clean-css': 4.2.11
+      '@types/relateurl': 0.2.33
+      '@types/uglify-js': 3.17.5
 
   '@types/http-cache-semantics@4.2.0': {}
 
@@ -29569,6 +29599,8 @@ snapshots:
       '@types/prop-types': 15.7.15
       csstype: 3.2.3
 
+  '@types/relateurl@0.2.33': {}
+
   '@types/resolve@1.20.6': {}
 
   '@types/responselike@1.0.3':
@@ -29639,6 +29671,10 @@ snapshots:
 
   '@types/trusted-types@2.0.7':
     optional: true
+
+  '@types/uglify-js@3.17.5':
+    dependencies:
+      source-map: 0.6.1
 
   '@types/unist@2.0.11': {}
 
@@ -44213,7 +44249,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  sentry-testkit@5.0.10:
+  sentry-testkit@6.4.1:
     dependencies:
       body-parser: 1.20.5
       express: 4.22.2
