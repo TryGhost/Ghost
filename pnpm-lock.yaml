@@ -2484,10 +2484,10 @@ importers:
         version: 1.20.5
       bookshelf:
         specifier: 1.2.0
-        version: 1.2.0(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))
+        version: 1.2.0(knex@2.5.1(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))
       bookshelf-relations:
         specifier: 2.8.0
-        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)))
+        version: 2.8.0(bookshelf@1.2.0(knex@2.5.1(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)))
       brute-knex:
         specifier: 4.0.1
         version: 4.0.1(express@4.22.2)(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
@@ -2645,8 +2645,8 @@ importers:
         specifier: 1.0.4
         version: 1.0.4
       knex:
-        specifier: 2.4.2
-        version: 2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
+        specifier: 2.5.1
+        version: 2.5.1(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
       knex-migrator:
         specifier: 5.3.2
         version: 5.3.2
@@ -2917,7 +2917,7 @@ importers:
         version: 0.1.2
       mock-knex:
         specifier: TryGhost/mock-knex#68948e11b0ea4fe63456098dfdc169bea7f62009
-        version: https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))
+        version: https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009(knex@2.5.1(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))
       nock:
         specifier: 13.5.6
         version: 13.5.6
@@ -16154,6 +16154,34 @@ packages:
       tedious:
         optional: true
 
+  knex@2.5.1:
+    resolution: {integrity: sha512-z78DgGKUr4SE/6cm7ku+jHvFT0X97aERh/f0MUKAKgFnwCYBEW4TFBqtHWFYiJFid7fMrtpZ/gxJthvz5mEByA==}
+    engines: {node: '>=12'}
+    hasBin: true
+    peerDependencies:
+      better-sqlite3: '*'
+      mysql: '*'
+      mysql2: '*'
+      pg: '*'
+      pg-native: '*'
+      sqlite3: '*'
+      tedious: '*'
+    peerDependenciesMeta:
+      better-sqlite3:
+        optional: true
+      mysql:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+      pg-native:
+        optional: true
+      sqlite3:
+        optional: true
+      tedious:
+        optional: true
+
   knex@3.1.0:
     resolution: {integrity: sha512-GLoII6hR0c4ti243gMs5/1Rb3B+AjwMOfjYm97pu0FOQa7JH56hgBxYf5WK2525ceSbBY1cjeZ9yk99GPMB6Kw==}
     engines: {node: '>=16'}
@@ -18111,6 +18139,9 @@ packages:
 
   pg-connection-string@2.5.0:
     resolution: {integrity: sha512-r5o/V/ORTA6TmUnyWZR9nCj1klXCO2CEKNRlVuJptZe85QuhFayC7WeMic7ndayT5IRIR0S0xFxFi2ousartlQ==}
+
+  pg-connection-string@2.6.1:
+    resolution: {integrity: sha512-w6ZzNu6oMmIzEAYVw+RLK0+nqHPt8K3ZnknKi+g48Ak2pr3dtljJW3o+D/n2zzCG07Zoe9VOX3aiKpj+BN0pjg==}
 
   pg-connection-string@2.6.2:
     resolution: {integrity: sha512-ch6OwaeaPYcova4kKZ15sbJ2hKb/VP48ZD2gE7i1J+L4MspCtBMAx8nMgz7bksc7IojCIIWuEhHibSMFH8m8oA==}
@@ -30135,7 +30166,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.19.19)(typescript@5.9.3))(vite@7.3.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
+      vitest: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
 
   '@vitest/expect@3.2.4':
     dependencies:
@@ -31712,22 +31743,22 @@ snapshots:
       raw-body: 1.1.7
       safe-json-parse: 1.0.1
 
-  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))):
+  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.5.1(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))):
     dependencies:
       '@tryghost/debug': 0.1.40
       '@tryghost/errors': 1.3.13
       bluebird: 3.7.2
-      bookshelf: 1.2.0(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))
+      bookshelf: 1.2.0(knex@2.5.1(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
-  bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)):
+  bookshelf@1.2.0(knex@2.5.1(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)):
     dependencies:
       bluebird: 3.7.2
       create-error: 0.3.1
       inflection: 1.13.4
-      knex: 2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
+      knex: 2.5.1(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
       lodash: 4.18.1
 
   boolbase@1.0.0: {}
@@ -39511,10 +39542,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7):
+  knex@2.5.1(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7):
     dependencies:
       colorette: 2.0.19
-      commander: 9.5.0
+      commander: 10.0.1
       debug: 4.3.4
       escalade: 3.2.0
       esm: 3.2.25
@@ -39522,7 +39553,7 @@ snapshots:
       getopts: 2.3.0
       interpret: 2.2.0
       lodash: 4.18.1
-      pg-connection-string: 2.5.0
+      pg-connection-string: 2.6.1
       rechoir: 0.8.0
       resolve-from: 5.0.0
       tarn: 3.0.2
@@ -40921,10 +40952,10 @@ snapshots:
       supports-color: 1.2.0
       to-iso-string: 0.0.2
 
-  mock-knex@https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)):
+  mock-knex@https://codeload.github.com/TryGhost/mock-knex/tar.gz/68948e11b0ea4fe63456098dfdc169bea7f62009(knex@2.5.1(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)):
     dependencies:
       bluebird: 3.7.2
-      knex: 2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
+      knex: 2.5.1(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
       lodash: 4.18.1
       semver: 5.7.2
 
@@ -42127,6 +42158,8 @@ snapshots:
   pg-connection-string@2.4.0: {}
 
   pg-connection-string@2.5.0: {}
+
+  pg-connection-string@2.6.1: {}
 
   pg-connection-string@2.6.2: {}
 
