@@ -1,14 +1,13 @@
 import {MemberDetailsPage, MembersListPage} from '@/admin-pages';
 import {MemberFactory, createMemberFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
-import {usePerTestIsolation} from '@/helpers/playwright/isolation';
-
-usePerTestIsolation();
 
 test.describe('Ghost Admin - Members List', () => {
     let memberFactory: MemberFactory;
 
     test.beforeEach(async ({page}) => {
+        const response = await page.request.delete('/ghost/api/admin/members?all=true');
+        expect(response.ok()).toBeTruthy();
         memberFactory = createMemberFactory(page.request);
     });
 
