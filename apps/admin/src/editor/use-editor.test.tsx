@@ -785,6 +785,78 @@ describe("useEditor", () => {
         expect(revisions[0].lexical).toBe(lexicalDoc("rev two"));
     });
 
+    it("local revisions carry the full serialized post (Ember parity), not just the content fields", () => {
+        const { result } = setup();
+        const base = makeSnapshot();
+        act(() => result.current.loadPost(makeSnapshot({
+            featureImage: "https://example.com/feature.png",
+            settings: {
+                ...base.settings,
+                visibility: "tiers",
+                tiers: [{ id: "tier-1", name: "Bronze" }],
+                authors: [{ id: "user-1", name: "Author One" }],
+                featured: true,
+                customTemplate: "custom-full-feature-image",
+                canonicalUrl: "https://example.com/canonical",
+                metaTitle: "Meta title",
+                metaDescription: "Meta description",
+                ogImage: "https://example.com/og.png",
+                ogTitle: "OG title",
+                ogDescription: "OG description",
+                twitterImage: "https://example.com/twitter.png",
+                twitterTitle: "Twitter title",
+                twitterDescription: "Twitter description",
+                codeinjectionHead: "<style>head</style>",
+                codeinjectionFoot: "<style>foot</style>",
+            },
+        })));
+
+        act(() => result.current.updateLexical(lexicalDoc("edited")));
+
+        const [revision] = new LocalRevisionsStore().findAll();
+        // same field NAMES as Ember's serialized post so a revision written
+        // here restores identically from either admin shell
+        expect(revision).toMatchObject({
+            id: "post-1",
+            type: "post",
+            status: "draft",
+            feature_image: "https://example.com/feature.png",
+            published_at: null,
+            visibility: "tiers",
+            tiers: [{ id: "tier-1", name: "Bronze" }],
+            authors: [{ id: "user-1", name: "Author One" }],
+            featured: true,
+            custom_template: "custom-full-feature-image",
+            canonical_url: "https://example.com/canonical",
+            meta_title: "Meta title",
+            meta_description: "Meta description",
+            og_image: "https://example.com/og.png",
+            og_title: "OG title",
+            og_description: "OG description",
+            twitter_image: "https://example.com/twitter.png",
+            twitter_title: "Twitter title",
+            twitter_description: "Twitter description",
+            codeinjection_head: "<style>head</style>",
+            codeinjection_foot: "<style>foot</style>",
+        });
+        // page-only field is never written for posts (serializer parity)
+        expect(revision.show_title_and_feature_image).toBeUndefined();
+    });
+
+    it("local revisions omit a null visibility and its tiers (Ember serializer parity)", () => {
+        const { result } = setup();
+        const base = makeSnapshot();
+        act(() => result.current.loadPost(makeSnapshot({
+            settings: { ...base.settings, visibility: null, tiers: [{ id: "tier-1", name: "Bronze" }] },
+        })));
+
+        act(() => result.current.updateLexical(lexicalDoc("edited")));
+
+        const [revision] = new LocalRevisionsStore().findAll();
+        expect(revision.visibility).toBeUndefined();
+        expect(revision.tiers).toBeUndefined();
+    });
+
     it("does not write local revisions for published posts", () => {
         const { result } = setup();
         act(() => result.current.loadPost(makeSnapshot({ status: "published" })));

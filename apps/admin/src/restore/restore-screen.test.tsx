@@ -91,6 +91,74 @@ describe("RestoreScreen", () => {
         });
     });
 
+    it("applies the full serialized revision so the restored draft is not gutted", async () => {
+        seedRevision({
+            custom_excerpt: "Custom excerpt",
+            feature_image: "https://example.com/feature.png",
+            featured: true,
+            visibility: "tiers",
+            tiers: [{ id: "tier-1", name: "Bronze" }],
+            custom_template: "custom-full-feature-image",
+            canonical_url: "https://example.com/canonical",
+            meta_title: "Meta title",
+            meta_description: "Meta description",
+            og_image: "https://example.com/og.png",
+            og_title: "OG title",
+            og_description: "OG description",
+            twitter_image: "https://example.com/twitter.png",
+            twitter_title: "Twitter title",
+            twitter_description: "Twitter description",
+            codeinjection_head: "<style>head</style>",
+            codeinjection_foot: "<style>foot</style>",
+        });
+        mocks.addPost.mockResolvedValue({ posts: [{ id: "new-post-id" }] });
+        render(<RestoreScreen />);
+
+        fireEvent.click(screen.getByRole("button", { name: "Restore" }));
+
+        await waitFor(() => expect(mocks.crossShellNavigate).toHaveBeenCalledWith("/editor/post/new-post-id"));
+        expect(mocks.addPost).toHaveBeenCalledWith(expect.objectContaining({
+            post: expect.objectContaining({
+                status: "draft",
+                custom_excerpt: "Custom excerpt",
+                feature_image: "https://example.com/feature.png",
+                featured: true,
+                visibility: "tiers",
+                tiers: [{ id: "tier-1", name: "Bronze" }],
+                custom_template: "custom-full-feature-image",
+                canonical_url: "https://example.com/canonical",
+                meta_title: "Meta title",
+                meta_description: "Meta description",
+                og_image: "https://example.com/og.png",
+                og_title: "OG title",
+                og_description: "OG description",
+                twitter_image: "https://example.com/twitter.png",
+                twitter_title: "Twitter title",
+                twitter_description: "Twitter description",
+                codeinjection_head: "<style>head</style>",
+                codeinjection_foot: "<style>foot</style>",
+            }) as unknown,
+        }));
+    });
+
+    it("does not invent fields missing from partial (legacy) revisions", async () => {
+        // revisions written before the full-serialization fix only carry the
+        // content fields — restoring them must not send undefined/null extras
+        seedRevision();
+        mocks.addPost.mockResolvedValue({ posts: [{ id: "new-post-id" }] });
+        render(<RestoreScreen />);
+
+        fireEvent.click(screen.getByRole("button", { name: "Restore" }));
+
+        await waitFor(() => expect(mocks.addPost).toHaveBeenCalled());
+        const { post } = mocks.addPost.mock.calls[0][0] as { post: Record<string, unknown> };
+        expect(post).not.toHaveProperty("feature_image");
+        expect(post).not.toHaveProperty("visibility");
+        expect(post).not.toHaveProperty("custom_template");
+        expect(post).not.toHaveProperty("meta_title");
+        expect(post).not.toHaveProperty("codeinjection_head");
+    });
+
     it("restores page revisions through the pages endpoint", async () => {
         seedRevision({ type: "page", slug: "" });
         mocks.addPost.mockResolvedValue({ pages: [{ id: "new-page-id" }] });

@@ -185,6 +185,63 @@ describe('ProScreen', () => {
             }, 'http://billing.example.com');
         });
 
+        it('fetches the owner for forceUpgradeInfo when the current user is not the owner', async () => {
+            mockUser('Administrator');
+            mockConfig({forceUpgrade: true});
+            const fetchMock = vi.fn().mockResolvedValue({
+                ok: true,
+                json: () => Promise.resolve({users: [{name: 'Site Owner', email: 'owner@example.com'}]})
+            });
+            vi.stubGlobal('fetch', fetchMock);
+
+            render(<ProScreen />);
+
+            const iframe = screen.getByTestId<HTMLIFrameElement>('billing-frame');
+            const postMessageSpy = vi.spyOn(iframe.contentWindow!, 'postMessage');
+
+            dispatchBillingMessage(iframe, {request: 'forceUpgradeInfo'});
+
+            await waitFor(() => {
+                expect(postMessageSpy).toHaveBeenCalledWith({
+                    request: 'forceUpgradeInfo',
+                    response: {
+                        forceUpgrade: true,
+                        isOwner: false,
+                        ownerUser: {name: 'Site Owner', email: 'owner@example.com'}
+                    }
+                }, 'http://billing.example.com');
+            });
+            expect(fetchMock).toHaveBeenCalledWith(
+                '/ghost/api/admin/users/?filter=role:Owner&limit=1',
+                {credentials: 'include'}
+            );
+
+            vi.unstubAllGlobals();
+        });
+
+        it('still answers forceUpgradeInfo with a null owner when the owner lookup fails', async () => {
+            mockUser('Administrator');
+            mockConfig({forceUpgrade: true});
+            const fetchMock = vi.fn().mockRejectedValue(new Error('network down'));
+            vi.stubGlobal('fetch', fetchMock);
+
+            render(<ProScreen />);
+
+            const iframe = screen.getByTestId<HTMLIFrameElement>('billing-frame');
+            const postMessageSpy = vi.spyOn(iframe.contentWindow!, 'postMessage');
+
+            dispatchBillingMessage(iframe, {request: 'forceUpgradeInfo'});
+
+            await waitFor(() => {
+                expect(postMessageSpy).toHaveBeenCalledWith({
+                    request: 'forceUpgradeInfo',
+                    response: {forceUpgrade: true, isOwner: false, ownerUser: null}
+                }, 'http://billing.example.com');
+            });
+
+            vi.unstubAllGlobals();
+        });
+
         it('ignores messages from other origins', () => {
             render(<ProScreen />);
 

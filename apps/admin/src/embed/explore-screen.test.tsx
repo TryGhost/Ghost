@@ -1,4 +1,4 @@
-import {render, screen} from '@testing-library/react';
+import {act, render, screen, waitFor} from '@testing-library/react';
 import React from 'react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import ExploreScreen from './explore-screen';
@@ -95,5 +95,43 @@ describe('ExploreScreen', () => {
         render(<ExploreScreen />);
 
         expect(screen.getByTestId('submit-explore')).toBeDisabled();
+    });
+
+    describe('message origin check', () => {
+        function dispatchExploreMessage(data: unknown, origin: string) {
+            act(() => {
+                window.dispatchEvent(new MessageEvent('message', {data, origin}));
+            });
+        }
+
+        it('answers apiUrl requests from the exact explore origin', async () => {
+            render(<ExploreScreen />);
+
+            const iframe = screen.getByTestId<HTMLIFrameElement>('explore-frame');
+            const postMessageSpy = vi.spyOn(iframe.contentWindow!, 'postMessage');
+
+            dispatchExploreMessage({request: 'apiUrl'}, 'https://ghost.org');
+
+            await waitFor(() => {
+                expect(postMessageSpy).toHaveBeenCalledWith(
+                    expect.objectContaining({request: 'apiUrl'}),
+                    '*'
+                );
+            });
+        });
+
+        it('ignores messages from near-miss origins that pass a substring check', () => {
+            render(<ExploreScreen />);
+
+            const iframe = screen.getByTestId<HTMLIFrameElement>('explore-frame');
+            const postMessageSpy = vi.spyOn(iframe.contentWindow!, 'postMessage');
+
+            // both are substrings of 'https://ghost.org/explore/' and would
+            // have slipped past EXPLORE_URL.includes(event.origin)
+            dispatchExploreMessage({request: 'apiUrl'}, 'https://ghost.or');
+            dispatchExploreMessage({request: 'apiUrl'}, 'https://ghost');
+
+            expect(postMessageSpy).not.toHaveBeenCalled();
+        });
     });
 });

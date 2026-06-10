@@ -188,13 +188,33 @@ describe("LocalRevisionsStore", () => {
             expect(store.findAll()).toHaveLength(2);
         });
 
-        it("destroy cancels a scheduled save", () => {
+        it("destroy flushes a pending throttled save instead of dropping it", () => {
             const store = new LocalRevisionsStore();
 
             store.scheduleSave("post", { id: "post-1", title: "First", status: "draft" });
             store.scheduleSave("post", { id: "post-1", title: "Second", status: "draft" });
+            // move the clock (without firing the throttle timer) so the
+            // flushed revision gets its own timestamped key
+            vi.advanceTimersByTime(1000);
             store.destroy();
+
+            // the pending revision was written synchronously on destroy...
+            const revisions = store.findAll();
+            expect(revisions).toHaveLength(2);
+            expect(revisions[0].title).toBe("Second");
+
+            // ...and the cancelled timer doesn't write it a second time
             vi.advanceTimersByTime(MIN_REVISION_TIME_MS);
+            expect(store.findAll()).toHaveLength(2);
+        });
+
+        it("destroy writes nothing when no save is pending", () => {
+            const store = new LocalRevisionsStore();
+
+            store.scheduleSave("post", { id: "post-1", title: "First", status: "draft" });
+            expect(store.findAll()).toHaveLength(1);
+
+            store.destroy();
 
             expect(store.findAll()).toHaveLength(1);
         });
@@ -244,6 +264,45 @@ describe("LocalRevisionsStore", () => {
             const store = new LocalRevisionsStore();
 
             expect(store.find("post-revision-nope-1")).toBeNull();
+        });
+
+        it("find returns null for corrupt or non-object values", () => {
+            window.localStorage.setItem(`${REVISION_PREFIX}-bad-1`, "not json {");
+            window.localStorage.setItem(`${REVISION_PREFIX}-bad-2`, '"a string"');
+            window.localStorage.setItem(`${REVISION_PREFIX}-bad-3`, "[1,2,3]");
+            window.localStorage.setItem(`${REVISION_PREFIX}-bad-4`, "null");
+            const store = new LocalRevisionsStore();
+
+            expect(store.find(`${REVISION_PREFIX}-bad-1`)).toBeNull();
+            expect(store.find(`${REVISION_PREFIX}-bad-2`)).toBeNull();
+            expect(store.find(`${REVISION_PREFIX}-bad-3`)).toBeNull();
+            expect(store.find(`${REVISION_PREFIX}-bad-4`)).toBeNull();
+        });
+
+        it("findAll skips corrupt entries instead of throwing", () => {
+            window.localStorage.setItem(`${REVISION_PREFIX}-bad-1`, "not json {");
+            window.localStorage.setItem(`${REVISION_PREFIX}-bad-2`, '"a string"');
+            const store = new LocalRevisionsStore();
+            vi.setSystemTime(1000);
+            store.performSave("post", { id: "good", title: "Kept" });
+
+            const revisions = store.findAll();
+
+            expect(revisions).toHaveLength(1);
+            expect(revisions[0].title).toBe("Kept");
+        });
+
+        it("findAll sorts revisions with a missing timestamp last", () => {
+            // hand-written/legacy entries may lack revisionTimestamp
+            window.localStorage.setItem(
+                `${REVISION_PREFIX}-legacy-x`,
+                JSON.stringify({ id: "legacy", type: "post", title: "Legacy" }),
+            );
+            const store = new LocalRevisionsStore();
+            vi.setSystemTime(1000);
+            store.performSave("post", { id: "good", title: "Newest" });
+
+            expect(store.findAll().map(revision => revision.title)).toEqual(["Newest", "Legacy"]);
         });
 
         it("clear removes only revision keys", () => {

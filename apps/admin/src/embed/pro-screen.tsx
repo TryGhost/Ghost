@@ -126,12 +126,29 @@ export default function ProScreen() {
             }
         };
 
-        const handleForceUpgradeRequest = () => {
-            // Ember resolves the owner user from its store here; we only have
-            // owner details when the current user is the owner.
-            const ownerUser = isOwner && currentUser
+        const handleForceUpgradeRequest = async () => {
+            // Ember resolves the owner user from its store regardless of who
+            // is signed in (services/billing.js getOwnerUser) — the BMA shows
+            // non-owners who to contact, so fetch the owner via the users API
+            // when the current user isn't the owner themselves.
+            let ownerUser = isOwner && currentUser
                 ? {name: currentUser.name, email: currentUser.email}
                 : null;
+
+            if (!ownerUser) {
+                try {
+                    const {apiRoot} = getGhostPaths();
+                    const response = await fetch(`${apiRoot}/users/?filter=role:Owner&limit=1`, {credentials: "include"});
+                    const json = (await response.json()) as {users?: Array<{name?: string; email?: string}>};
+                    const owner = json?.users?.[0];
+
+                    if (owner) {
+                        ownerUser = {name: owner.name ?? "", email: owner.email ?? ""};
+                    }
+                } catch {
+                    // the reply is still useful without the owner details
+                }
+            }
 
             postToBillingIframe({
                 request: "forceUpgradeInfo",
@@ -174,7 +191,7 @@ export default function ProScreen() {
             }
 
             if (data.request === "forceUpgradeInfo") {
-                handleForceUpgradeRequest();
+                void handleForceUpgradeRequest();
             }
 
             if (data.subscription) {

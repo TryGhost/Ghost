@@ -747,9 +747,11 @@ function TemplateField({ editor, resource }: { editor: UseEditorResult; resource
 
     const updateTemplate = (selectedValue: string) => {
         // template changes don't auto-save in Ember either — the machine is
-        // dirty until the next (auto/manual/leave) save carries the change
+        // dirty until the next (auto/manual/leave) save carries the change.
+        // The default template is stored as null (the API/persisted value);
+        // "" would diff against null and cause spurious dirty state/saves.
         commitSettings(editor, {
-            customTemplate: selectedValue === DEFAULT_TEMPLATE ? "" : selectedValue,
+            customTemplate: selectedValue === DEFAULT_TEMPLATE ? null : selectedValue,
         }, { save: false });
     };
 

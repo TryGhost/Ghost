@@ -54,6 +54,41 @@ export function RestoreScreen() {
                 post.authors = revision.authors as FullPost["authors"];
             }
 
+            // Revisions carry the full serialized post (the same field names
+            // as Ember's serializers/post.js) — apply everything that's
+            // present so the restored draft isn't gutted: feature image,
+            // meta/social data, code injection, custom template, ...
+            const optionalFields = [
+                "custom_excerpt",
+                "feature_image",
+                "featured",
+                "custom_template",
+                "canonical_url",
+                "meta_title",
+                "meta_description",
+                "og_image",
+                "og_title",
+                "og_description",
+                "twitter_image",
+                "twitter_title",
+                "twitter_description",
+                "codeinjection_head",
+                "codeinjection_foot",
+                "show_title_and_feature_image",
+            ] as const;
+            for (const field of optionalFields) {
+                if (revision[field] !== undefined) {
+                    (post as Record<string, unknown>)[field] = revision[field];
+                }
+            }
+            // visibility rides with its tiers (tiers resolve by id)
+            if (revision.visibility !== undefined && revision.visibility !== null) {
+                post.visibility = revision.visibility as FullPost["visibility"];
+                if (Array.isArray(revision.tiers)) {
+                    post.tiers = revision.tiers as FullPost["tiers"];
+                }
+            }
+
             const response = await addPost({ post, resource });
             const saved = (response.posts ?? response.pages)?.[0];
             if (!saved) {

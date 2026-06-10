@@ -1,4 +1,4 @@
-import {render, screen} from '@testing-library/react';
+import {act, render, screen, waitFor} from '@testing-library/react';
 import React from 'react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import MigrateScreen from './migrate-screen';
@@ -114,5 +114,92 @@ describe('MigrateScreen', () => {
         screen.getByTestId('close-migrate').click();
 
         expect(mockNavigate).toHaveBeenCalledWith('/settings/migration');
+    });
+
+    describe('postMessage protocol', () => {
+        function dispatchMigrateMessage(data: unknown) {
+            act(() => {
+                window.dispatchEvent(new MessageEvent('message', {
+                    data,
+                    origin: 'https://migrate.ghost.org'
+                }));
+            });
+        }
+
+        it('defers the apiUrl reply until the integration api key has loaded', async () => {
+            // owner so the reply doesn't need the owner-email fetch
+            mockUseCurrentUser.mockReturnValue({
+                data: {id: '1', email: 'owner@example.com', roles: [{name: 'Owner'}]}
+            });
+            // the apiUrl request arrives before the integrations query settles
+            mockUseBrowseIntegrations.mockReturnValue({data: undefined});
+
+            const {rerender} = render(<MigrateScreen />);
+            const iframe = screen.getByTestId<HTMLIFrameElement>('migrate-frame');
+            const postMessageSpy = vi.spyOn(iframe.contentWindow!, 'postMessage');
+
+            dispatchMigrateMessage({request: 'apiUrl'});
+
+            // no reply yet — replying now would send apiKey: undefined
+            await act(async () => {
+                await Promise.resolve();
+            });
+            expect(postMessageSpy).not.toHaveBeenCalled();
+
+            mockUseBrowseIntegrations.mockReturnValue({
+                data: {
+                    integrations: [{
+                        id: '1',
+                        slug: 'self-serve-migration',
+                        api_keys: [{id: 'k1', type: 'admin', secret: 'migration-api-key'}]
+                    }]
+                }
+            });
+            rerender(<MigrateScreen />);
+
+            await waitFor(() => {
+                expect(postMessageSpy).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        request: 'initialData',
+                        response: expect.objectContaining({apiKey: 'migration-api-key'}) as unknown
+                    }),
+                    'https://migrate.ghost.org'
+                );
+            });
+        });
+
+        it('answers apiUrl requests immediately once the data is loaded', async () => {
+            mockUseCurrentUser.mockReturnValue({
+                data: {id: '1', email: 'owner@example.com', roles: [{name: 'Owner'}]}
+            });
+            mockUseBrowseIntegrations.mockReturnValue({
+                data: {
+                    integrations: [{
+                        id: '1',
+                        slug: 'self-serve-migration',
+                        api_keys: [{id: 'k1', type: 'admin', secret: 'migration-api-key'}]
+                    }]
+                }
+            });
+
+            render(<MigrateScreen />);
+            const iframe = screen.getByTestId<HTMLIFrameElement>('migrate-frame');
+            const postMessageSpy = vi.spyOn(iframe.contentWindow!, 'postMessage');
+
+            dispatchMigrateMessage({request: 'apiUrl'});
+
+            await waitFor(() => {
+                expect(postMessageSpy).toHaveBeenCalledWith(
+                    expect.objectContaining({
+                        request: 'initialData',
+                        response: expect.objectContaining({
+                            apiKey: 'migration-api-key',
+                            ownerEmail: 'owner@example.com'
+                        }) as unknown
+                    }),
+                    'https://migrate.ghost.org'
+                );
+            });
+        });
     });
 });

@@ -152,23 +152,43 @@ export class LocalRevisionsStore {
 
     /** Returns the revision stored under `key`, or null. */
     find(key: string): LocalRevision | null {
-        const value = this.storage.getItem(key);
-        return value === null ? null : (JSON.parse(value) as LocalRevision);
+        return this.parseRevision(this.storage.getItem(key));
     }
 
     /**
      * Returns all revisions (optionally filtered by key prefix), newest
-     * first, each including the key it is stored under.
+     * first, each including the key it is stored under. Missing or corrupt
+     * entries are skipped — a bad value in localStorage must never break the
+     * editor or the /restore screen.
      */
     findAll(prefix: string = REVISION_PREFIX): StoredRevision[] {
-        const revisions = this.keys(prefix).map((key) => {
-            const revision = JSON.parse(this.storage.getItem(key) as string) as LocalRevision;
-            return { key, ...revision };
-        });
+        const revisions: StoredRevision[] = [];
+        for (const key of this.keys(prefix)) {
+            const revision = this.parseRevision(this.storage.getItem(key));
+            if (revision !== null) {
+                revisions.push({ key, ...revision });
+            }
+        }
 
-        revisions.sort((a, b) => b.revisionTimestamp - a.revisionTimestamp);
+        revisions.sort((a, b) => (b.revisionTimestamp || 0) - (a.revisionTimestamp || 0));
 
         return revisions;
+    }
+
+    /** Parses a stored value, returning null for missing/corrupt entries. */
+    private parseRevision(value: string | null): LocalRevision | null {
+        if (value === null) {
+            return null;
+        }
+        try {
+            const parsed: unknown = JSON.parse(value);
+            if (typeof parsed !== "object" || parsed === null || Array.isArray(parsed)) {
+                return null;
+            }
+            return parsed as LocalRevision;
+        } catch {
+            return null;
+        }
     }
 
     remove(key: string): void {
@@ -218,13 +238,17 @@ export class LocalRevisionsStore {
         }
     }
 
-    /** Cancels any scheduled save (e.g. when the editor unmounts). */
+    /**
+     * Flushes any scheduled save synchronously (e.g. when the editor
+     * unmounts): a pending throttled write carries the newest edits, and
+     * dropping it would defeat the crash-recovery purpose of the store.
+     */
     destroy(): void {
         if (this.timer !== null) {
             clearTimeout(this.timer);
             this.timer = null;
         }
-        this.pending = null;
+        this.flushPending();
     }
 
     private flushPending(): void {

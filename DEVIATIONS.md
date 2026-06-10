@@ -436,3 +436,36 @@ flag source (see implementation notes).
   in the monorepo today. Feasibility of adopting BetterAuth server-side without breaking
   every existing API client needs assessment when the slice starts; findings will be
   logged here.
+
+## Final state (end-of-migration summary, 2026-06-11)
+
+- **Every functional admin screen is React-owned behind a labs flag:**
+  tagDetailsX, postsListX, memberDetailsX, authX, editorX, restoreX,
+  embedScreensX, postDebugX. `/` and `/dashboard` are unflagged pure
+  redirects. The only remaining `EMBER_ROUTES` entry is `/designsandbox`,
+  deliberately unported: it is a developer-only showcase OF Ember design
+  components and dies with the Ember app (the React equivalent is shade's
+  storybook).
+- **The shared dual-flag e2e suites cover every flagged screen** (auth,
+  editor, publishing, publish-flow, post-preview, post-updates, tags,
+  posts/pages list, members, restore, site, redirects) using one set of
+  page objects. Full admin suite at the end of the migration: 352 passed.
+- **Stale BetterAuth note above is superseded** by the slice-4 decision
+  section: the assessment happened, the deviation is documented there.
+- **Post-review hardening from the final-slice review pass** (multi-angle
+  + Codex): migrate iframe replies deferred until the API key is loaded,
+  full-fidelity local revisions (Ember serializer field names, restored
+  end-to-end), pending revision flushed on editor unmount, exact-origin
+  postMessage checks on the explore screen, owner details supplied to the
+  billing iframe for non-owners in force-upgrade, template default
+  normalized to null, corrupt local-revision entries skipped, and the
+  debug screen's permission redirect made cross-shell-safe.
+- **Known mechanical follow-ups at flag GA:** delete the Ember routes
+  and their react-fallback handovers, remove the EmberFallback plumbing
+  for each screen, drop the dual e2e wrappers in favor of the React-only
+  ones, and remove the `@source` scan of admin-x-design-system once its
+  last consumers (CodeEditor in tag/PSM code injection) move to a shade
+  equivalent.
+- **The audit-workflow report (AUDIT-REPORT.local.md) is pending the
+  live visual phase**, blocked on a dedicated automation login at the
+  time of writing; source-phase findings are cached for resume.

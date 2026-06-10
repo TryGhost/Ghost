@@ -52,6 +52,7 @@ export default function ExploreScreen() {
 
     useEffect(() => {
         const apiUrl = buildExploreApiUrl(window.location.origin, getGhostPaths().subdir);
+        const exploreOrigin = new URL(EXPLORE_URL).origin;
 
         // Keep the visible admin URL in sync with the Explore iframe's route
         // without adding history entries (services/explore.js
@@ -73,8 +74,10 @@ export default function ExploreScreen() {
         };
 
         const handleMessage = (event: MessageEvent) => {
-            // only process messages coming from the explore iframe
-            if (!event.data || !event.origin || !EXPLORE_URL.includes(event.origin)) {
+            // only process messages coming from the explore iframe — exact
+            // origin match (a substring check would let near-miss origins
+            // like https://ghost.or through)
+            if (!event.data || event.origin !== exploreOrigin) {
                 return;
             }
 

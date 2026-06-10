@@ -1,9 +1,9 @@
 import DebugTabs from './debug-tabs';
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, LoadingIndicator} from '@tryghost/shade/components';
 import {Email, getEmail, getEmailAnalyticsStatus, getEmailBatches, getEmailRecipientFailures, useCancelScheduledEmailAnalytics, useScheduleEmailAnalytics} from '@tryghost/admin-x-framework/api/emails';
 import {H1} from '@tryghost/shade/primitives';
-import {Link, Navigate, hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {Link, hasBeenEmailed, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {getDefaultCustomScheduleRange, getEmailSettings, mapAnalyticsStatus, mapEmailBatches, mapRecipientFailures} from './debug-data';
 import {isAuthorOrContributor, isContributorUser} from '@tryghost/admin-x-framework/api/users';
@@ -76,6 +76,27 @@ const Debug: React.FC = () => {
     const {mutateAsync: scheduleAnalytics} = useScheduleEmailAnalytics();
     const {mutateAsync: cancelScheduledAnalytics} = useCancelScheduledEmailAnalytics();
 
+    // Mirror the Ember route's permission guards: authors/contributors can
+    // only see their own posts, and contributors only drafts
+    const isAuthoredByUser = post?.authors?.some(author => author.id === currentUser?.id) ?? false;
+    const shouldRedirectToPosts = Boolean(post && currentUser && (
+        (isAuthorOrContributor(currentUser) && !isAuthoredByUser)
+        || (isContributorUser(currentUser) && post.status !== 'draft')
+    ));
+
+    useEffect(() => {
+        if (shouldRedirectToPosts) {
+            // Navigate via a real location hash change instead of a router
+            // <Navigate>: router navigations use pushState, which fires no
+            // hashchange — when the posts list is Ember-owned (postsListX
+            // off) the parked Ember shell would never wake and the content
+            // area would stay empty. A location-based hash navigation is
+            // observed by both routers, so it is safe regardless of which
+            // shell owns the target.
+            window.location.assign('#/posts');
+        }
+    }, [shouldRedirectToPosts]);
+
     if (isPostLoading || !currentUser) {
         return (
             <div className="flex h-full items-center justify-center py-20">
@@ -96,14 +117,8 @@ const Debug: React.FC = () => {
         );
     }
 
-    // Mirror the Ember route's permission guards: authors/contributors can
-    // only see their own posts, and contributors only drafts
-    const isAuthoredByUser = post.authors?.some(author => author.id === currentUser.id) ?? false;
-    if (isAuthorOrContributor(currentUser) && !isAuthoredByUser) {
-        return <Navigate to="/posts" replace />;
-    }
-    if (isContributorUser(currentUser) && post.status !== 'draft') {
-        return <Navigate to="/posts" replace />;
+    if (shouldRedirectToPosts) {
+        return null;
     }
 
     const emailed = hasBeenEmailed(post as Post);

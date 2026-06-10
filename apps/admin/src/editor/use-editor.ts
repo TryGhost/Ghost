@@ -427,10 +427,14 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
         }
 
         try {
-            // Same revision shape as Ember's serialized post: the store and
-            // the /restore screen are shared between the two admin shells.
-            // scheduleSave itself drops anything that isn't a draft.
-            localRevisionsRef.current?.scheduleSave(resource === "pages" ? "page" : "post", {
+            // Same revision shape as Ember's serialized post (Ember passes
+            // `post.serialize({includeId: true})`, i.e. the FULL post): the
+            // store and the /restore screen are shared between the two admin
+            // shells, so the field names must match serializers/post.js for
+            // cross-shell restore parity. scheduleSave itself drops anything
+            // that isn't a draft.
+            const settings = current.settingsScratch;
+            const revision: Parameters<LocalRevisionsStore["scheduleSave"]>[1] = {
                 id: post.id ?? undefined,
                 status: post.status,
                 title: current.titleScratch,
@@ -439,7 +443,34 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
                 custom_excerpt: current.customExcerptScratch ?? post.customExcerpt,
                 slug: current.slugScratch || post.slug,
                 tags: current.tagNamesScratch.map(name => ({ name })),
-            });
+                authors: settings.authors.map(({ id, name }) => ({ id, name })),
+                published_at: current.publishedAtScratch,
+                feature_image: current.featureImageScratch,
+                featured: settings.featured,
+                custom_template: settings.customTemplate,
+                canonical_url: settings.canonicalUrl,
+                meta_title: settings.metaTitle,
+                meta_description: settings.metaDescription,
+                og_image: settings.ogImage,
+                og_title: settings.ogTitle,
+                og_description: settings.ogDescription,
+                twitter_image: settings.twitterImage,
+                twitter_title: settings.twitterTitle,
+                twitter_description: settings.twitterDescription,
+                codeinjection_head: settings.codeinjectionHead,
+                codeinjection_foot: settings.codeinjectionFoot,
+            };
+            // Ember serializers/post.js: a null visibility is never sent and
+            // tiers ride along with visibility; show_title_and_feature_image
+            // is page-only
+            if (settings.visibility !== null) {
+                revision.visibility = settings.visibility;
+                revision.tiers = settings.tiers.map(({ id, name }) => ({ id, name }));
+            }
+            if (settings.showTitleAndFeatureImage !== null) {
+                revision.show_title_and_feature_image = settings.showTitleAndFeatureImage;
+            }
+            localRevisionsRef.current?.scheduleSave(resource === "pages" ? "page" : "post", revision);
         } catch {
             // ignore revision save errors (same as Ember)
         }

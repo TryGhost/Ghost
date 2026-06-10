@@ -56,6 +56,13 @@ export default function MigrateScreen() {
     const apiKey = integrationsData?.integrations
         .find(({slug}) => slug === "self-serve-migration")?.api_keys?.[0]?.secret;
 
+    // Ember resolved the API key at reply time (services/migrate.js
+    // postMessagePayload); here the queries may still be loading when the
+    // iframe asks for its initialData, so a request arriving early is queued
+    // and answered once everything is available.
+    const initialDataLoaded = Boolean(configData && settingsData && integrationsData);
+    const pendingUrlRequestRef = useRef(false);
+
     useEffect(() => {
         if (shouldRedirect) {
             return;
@@ -92,6 +99,12 @@ export default function MigrateScreen() {
             }, migrateOrigin);
         };
 
+        // a request that arrived before the queries finished is answered now
+        if (pendingUrlRequestRef.current && initialDataLoaded) {
+            pendingUrlRequestRef.current = false;
+            void handleUrlRequest();
+        }
+
         const handleMessage = (event: MessageEvent) => {
             // Only process messages coming from the migrate iframe
             if (!event.data || event.origin !== migrateOrigin) {
@@ -101,6 +114,11 @@ export default function MigrateScreen() {
             const data = event.data as {request?: string; route?: string; siteData?: Record<string, unknown>};
 
             if (data.request === "apiUrl") {
+                if (!initialDataLoaded) {
+                    // defer the reply until the API key & co are available
+                    pendingUrlRequestRef.current = true;
+                    return;
+                }
                 void handleUrlRequest();
                 return;
             }
@@ -114,7 +132,7 @@ export default function MigrateScreen() {
 
         window.addEventListener("message", handleMessage);
         return () => window.removeEventListener("message", handleMessage);
-    }, [shouldRedirect, currentUser, apiKey, isStripeConnected, ghostVersion]);
+    }, [shouldRedirect, currentUser, apiKey, isStripeConnected, ghostVersion, initialDataLoaded]);
 
     if (!currentUser || shouldRedirect) {
         return null;

@@ -192,7 +192,12 @@ function Harness({ snapshot, resource = "posts" }: { snapshot: PostSnapshot; res
         loadPost(snapshot);
     }, [loadPost, snapshot]);
 
-    return <SettingsMenu editor={editor} resource={resource} />;
+    return (
+        <>
+            <div data-testid="editor-is-dirty">{String(editor.isDirty)}</div>
+            <SettingsMenu editor={editor} resource={resource} />
+        </>
+    );
 }
 
 function renderMenu(snapshot: PostSnapshot = makeSnapshot(), resource: EditorResource = "posts") {
@@ -574,6 +579,39 @@ describe("SettingsMenu", () => {
                 expect(mocks.editPost).toHaveBeenCalledTimes(1);
             });
             expect(lastEditedPost().custom_template).toBe("custom-full-feature-image");
+        });
+
+        it("re-selecting the default template restores a clean state (null, not '')", async () => {
+            renderMenu(); // persisted customTemplate is null
+
+            fireEvent.click(templateTrigger());
+            fireEvent.click(await screen.findByRole("option", { name: "Full feature image" }));
+            expect(screen.getByTestId("editor-is-dirty")).toHaveTextContent("true");
+
+            fireEvent.click(templateTrigger());
+            fireEvent.click(await screen.findByRole("option", { name: "Default" }));
+
+            // '' would diff against the persisted null and stay dirty,
+            // triggering spurious saves
+            expect(screen.getByTestId("editor-is-dirty")).toHaveTextContent("false");
+            expect(mocks.editPost).not.toHaveBeenCalled();
+        });
+
+        it("sends null (not '') when switching a saved custom template back to default", async () => {
+            renderMenu(makeSnapshot({
+                settings: { ...makeSnapshot().settings, customTemplate: "custom-full-feature-image" },
+            }));
+
+            fireEvent.click(templateTrigger());
+            fireEvent.click(await screen.findByRole("option", { name: "Default" }));
+
+            fireEvent.change(excerptField(), { target: { value: "Trigger a save" } });
+            fireEvent.blur(excerptField());
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost().custom_template).toBeNull();
         });
 
         it("is hidden when the active theme has no custom templates", () => {

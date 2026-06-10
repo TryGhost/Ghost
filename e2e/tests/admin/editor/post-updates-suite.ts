@@ -39,7 +39,13 @@ export function definePostUpdatesTests() {
         const publicPage = new PostPage(frontendPage);
         await expect(publicPage.articleTitle).toHaveText(title);
         await expect(publicPage.articleBody).toContainText(initialBody);
-        await expect(publicPage.articleHeader).toContainText(formatFrontendDate(new Date()));
+        // The site clock (container, UTC) and the test clock (host, local
+        // timezone) can disagree on the calendar date near midnight — accept
+        // either side of the boundary.
+        const publishDates = new RegExp(
+            `${formatFrontendDate(new Date())}|${formatFrontendDate(new Date(Date.now() - 24 * 60 * 60 * 1000))}`
+        );
+        await expect(publicPage.articleHeader).toContainText(publishDates);
 
         const postsPage = new PostsPage(page);
         await postsPage.goto();
