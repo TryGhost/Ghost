@@ -56,7 +56,7 @@ function senderEmailAddress(senderEmail: string | null | undefined, config: Conf
         return defaultEmailAddress;
     }
     if (config && isManagedEmail(config) && hasSendingDomain(config)) {
-        return senderEmail?.split("@")[1] === sendingDomain(config) ? senderEmail : defaultEmailAddress;
+        return senderEmail?.split("@")[1] === sendingDomain(config) ? (senderEmail ?? undefined) : defaultEmailAddress;
     }
     return senderEmail || defaultEmailAddress;
 }

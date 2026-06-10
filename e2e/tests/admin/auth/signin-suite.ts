@@ -37,6 +37,12 @@ export function defineSigninTests() {
         const tagsPage = new TagsPage(page);
         await tagsPage.goto();
 
+        // The deep link is a same-document hash navigation; the shell stores
+        // it and bounces back to the signin screen, remounting the form.
+        // Interacting before the URL settles can race the remount (fills
+        // land in the old mount and the fresh form submits empty).
+        await page.waitForURL(/#\/signin/);
+
         const loginPage = new LoginPage(page);
         await expect(loginPage.signInButton).toBeVisible();
 
@@ -50,6 +56,8 @@ export function defineSigninTests() {
 
         const postsPage = new PostsPage(page);
         await postsPage.goto();
+
+        await page.waitForURL(/#\/signin/);
 
         const loginPage = new LoginPage(page);
         await expect(loginPage.signInButton).toBeVisible();
@@ -69,6 +77,8 @@ export function defineSigninTests() {
         await logout(page);
 
         await page.goto('/ghost/#/settings/newsletters/?verifyEmail=fake-token-xyz');
+
+        await page.waitForURL(/#\/signin/);
 
         const loginPage = new LoginPage(page);
         await expect(loginPage.signInButton).toBeVisible();

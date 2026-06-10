@@ -472,7 +472,7 @@ function resyncSettingsScratch(scratch: PostSettings, sent: PostSettings, persis
     for (const key of POST_SETTINGS_KEYS) {
         if (settingsValueEqual(scratch[key], sent[key])) {
             // the per-key loop can't preserve the key<->value type pairing
-            (next as Record<string, PostSettings[keyof PostSettings]>)[key] = persisted[key];
+            (next as unknown as Record<string, PostSettings[keyof PostSettings]>)[key] = persisted[key];
         }
     }
     return clonePostSettings(next);

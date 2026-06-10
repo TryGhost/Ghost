@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { FullPost } from "@tryghost/admin-x-framework/api/editor";
+import type { EditorResource, FullPost } from "@tryghost/admin-x-framework/api/editor";
 import { PublishFlowModal } from "./publish-flow-modal";
 import type { PublishOptionsInput } from "./publish-options";
 
@@ -59,7 +59,7 @@ const savedPost = { id: "post-1", email: null } as unknown as FullPost;
 
 function setup({
     input = makeInput(),
-    resource = "posts" as const,
+    resource = "posts" as EditorResource,
     performSave = vi.fn<() => Promise<FullPost>>().mockResolvedValue(savedPost),
     onClose = vi.fn(),
 } = {}) {

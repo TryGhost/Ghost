@@ -23,6 +23,7 @@ import { MemberDetailsRoute, MembersActivityRoute } from "./member-details-route
 import { MembersRoute } from "./members-route";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 import { PagesListRoute, PostsListRoute } from "./posts-list-route";
+import { PostDebugRoute } from "./post-debug-route";
 import { RestoreRoute } from "./restore/restore-route";
 import { TagDetailsRoute } from "./tag-details-route";
 
@@ -31,7 +32,6 @@ import { NotFound } from "./not-found";
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
 const EMBER_ROUTES: string[] = [
-    "/posts/analytics/:postId/debug",
     "/designsandbox",
 ];
 
@@ -95,6 +95,13 @@ export const routes: RouteObject[] = [
             {
                 path: "/pages",
                 Component: PagesListRoute,
+            },
+            {
+                // React post email debug screen when the postDebugX labs flag
+                // is on, Ember fallback otherwise. A content route like the
+                // analytics screens, so no allowInForceUpgrade handle.
+                path: "/posts/analytics/:postId/debug",
+                Component: PostDebugRoute,
             },
             {
                 // React member detail / activity when the memberDetailsX labs

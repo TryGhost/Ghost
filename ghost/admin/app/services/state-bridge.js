@@ -10,6 +10,7 @@ const emberDataTypeMapping = {
     AutomatedEmailsResponseType: null, // automated emails only exist in React admin
     AutomationsResponseType: null, // automations only exist in React admin
     CommentsResponseType: null, // comments only exist in React admin
+    EmailAnalyticsStatusResponseType: null, // email analytics status only used by the React post debug screen
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
     LabelsResponseType: null, // labels only exist in React admin

@@ -368,6 +368,36 @@ flag source (see implementation notes).
   attribute, relying on the API ignoring it; the React port posts pages to the
   pages endpoint.
 
+### Slice 7: Post email debug screen (`postDebugX`) — last Ember-owned screen
+
+- **React screen lives in `apps/posts`** (`src/views/PostAnalytics/Debug/`,
+  exported as `@tryghost/posts/post-debug`) and is mounted by `apps/admin`'s
+  router at `/posts/analytics/:postId/debug` via `FlagGatedRoute`
+  (`apps/admin/src/post-debug-route.tsx`). The entry was removed from
+  `EMBER_ROUTES`. Ember hands the URL to `react-fallback` from
+  `routes/posts/debug.js#beforeModel` when `feature.postDebugX` is on.
+- **Framework hooks added** (`apps/admin-x-framework/src/api/emails.ts`):
+  `getEmail`, `getEmailBatches`, `getEmailRecipientFailures`,
+  `getEmailAnalyticsStatus` (queries), `useScheduleEmailAnalytics` (PUT) and
+  `useCancelScheduledEmailAnalytics` (DELETE). The analytics-status dataType is
+  mapped to `null` in `state-bridge.js` (read-mostly; mutation only refetches
+  the React-side status query, nothing to sync to Ember).
+- **Data mapping is a pure module** (`debug-data.ts`) ported 1:1 from the Ember
+  component's computed properties (status labels, initials, batch/failure rows,
+  email settings, analytics status, custom-schedule defaults). Timestamps are
+  formatted with a local `formatTimestamp` (no moment dependency) matching
+  Ember's `DD MMM, YYYY, HH:mm:ss[.SSS]`. Presentational `debug-tabs.tsx` is a
+  dumb render so both files are unit-testable without network mocks.
+- **Polling preserved:** the email record (10s) and analytics status (5s) poll
+  via react-query `refetchInterval`, mirroring Ember's ember-concurrency loops.
+- **e2e skipped (deliberate):** the screen only renders meaningfully for a
+  post with a sent newsletter `email` (+ batches/recipient-failures). No e2e
+  data-factory produces a sent email — `PostFactory` sets `newsletter_id`/
+  `email_recipient_filter` but never creates the `emails` row, and a real send
+  needs the Mailgun batch pipeline. Per the task guidance, not feasible simply,
+  so no dual suite was added. Unit coverage: `debug-data.test.ts` (mapping) and
+  `debug-tabs.test.tsx` (tab render / empty states / schedule controls).
+
 ### Upstream issues discovered during slice-2 review (pre-existing, NOT introduced here)
 
 - **Server-side bulk-action authorization gap:** `DELETE /ghost/api/admin/posts/?filter=...`

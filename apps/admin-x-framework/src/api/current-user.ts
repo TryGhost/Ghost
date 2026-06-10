@@ -25,7 +25,21 @@ export const useCurrentUser = () => {
         // retryOnMount refetch caused an infinite mount/refetch/unmount loop
         // on the React auth screens. Auth flows do a full reload after login,
         // which refetches this naturally.
-        retryOnMount: false
+        retryOnMount: false,
+        // 4xx (signed out / forbidden) is definitive: no retry, the auth
+        // screens should show immediately (and the loop fix above relies on
+        // the query settling). Anything else (network drop, 5xx, a dev
+        // server under load) MUST retry — this query decides authenticated
+        // vs signed-out for the whole shell, and classifying a transient
+        // failure as signed-out strands a logged-in user on the signin
+        // screen with no recovery.
+        retry: (failureCount, error) => {
+            const status = (error as {response?: {status?: number}})?.response?.status;
+            if (status && status >= 400 && status < 500) {
+                return false;
+            }
+            return failureCount < 3;
+        }
     });
 
     useEffect(() => {

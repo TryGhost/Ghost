@@ -1,6 +1,6 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import type { FullPost } from "@tryghost/admin-x-framework/api/editor";
+import type { EditorResource, FullPost } from "@tryghost/admin-x-framework/api/editor";
 import { PreviewModal } from "./preview-modal";
 
 type MockSetting = { key: string; value: unknown };
@@ -56,7 +56,7 @@ const post = { id: "post-1", uuid: "uuid-1" } as FullPost;
 const EMAIL_HTML = "<!DOCTYPE html><html><head><style>body { margin: 0; }</style></head><body>Email body</body></html>";
 
 function setup({
-    resource = "posts" as const,
+    resource = "posts" as EditorResource,
     status = "draft" as const,
     isDirty = false,
     performSave = vi.fn<() => Promise<FullPost>>().mockResolvedValue(post),
