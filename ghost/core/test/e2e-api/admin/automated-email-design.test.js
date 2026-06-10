@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag} = matchers;
+const models = require('../../../core/server/models');
 
 const matchEmailDesignSetting = {
     id: anyObjectId,
@@ -15,6 +16,18 @@ describe('Automated Email Design API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
         await agent.loginAsOwner();
+    });
+
+    beforeEach(async function () {
+        const defaultDesign = await models.EmailDesignSetting.findOne({
+            slug: 'default-automated-email'
+        });
+
+        await models.EmailDesignSetting.edit({
+            sender_name: null,
+            sender_email: null,
+            sender_reply_to: null
+        }, {id: defaultDesign.id});
     });
 
     describe('Read', function () {
@@ -106,6 +119,38 @@ describe('Automated Email Design API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('Rejects sender field modification', async function () {
+            const defaultDesign = await models.EmailDesignSetting.findOne({
+                slug: 'default-automated-email'
+            });
+
+            await models.EmailDesignSetting.edit({
+                sender_name: 'Existing Sender',
+                sender_email: 'existing@example.com',
+                sender_reply_to: 'existing-reply@example.com'
+            }, {id: defaultDesign.id});
+
+            await agent
+                .put('automated_emails/design')
+                .body({automated_email_design: [{
+                    sender_name: 'Changed Sender',
+                    sender_email: 'changed@example.com',
+                    sender_reply_to: 'changed-reply@example.com'
+                }]})
+                .expectStatus(422)
+                .expect(({body}) => {
+                    assert.equal(body.errors[0].context, 'Sender fields cannot be modified through the email design endpoint.');
+                });
+
+            const after = await models.EmailDesignSetting.findOne({
+                id: defaultDesign.id
+            });
+
+            assert.equal(after.get('sender_name'), 'Existing Sender');
+            assert.equal(after.get('sender_email'), 'existing@example.com');
+            assert.equal(after.get('sender_reply_to'), 'existing-reply@example.com');
         });
     });
 

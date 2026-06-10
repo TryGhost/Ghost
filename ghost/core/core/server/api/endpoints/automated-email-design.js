@@ -5,8 +5,60 @@ const models = require('../../models');
 const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../../services/member-welcome-emails/constants');
 
 const messages = {
-    defaultDesignNotFound: 'Default automated email design setting not found.'
+    defaultDesignNotFound: 'Default automated email design setting not found.',
+    senderFieldsNotEditable: 'Sender fields cannot be modified through the email design endpoint.'
 };
+
+const EDITABLE_DESIGN_FIELDS = [
+    'background_color',
+    'header_background_color',
+    'header_image',
+    'show_header_icon',
+    'show_header_title',
+    'footer_content',
+    'button_color',
+    'button_corners',
+    'button_style',
+    'link_color',
+    'link_style',
+    'body_font_category',
+    'title_font_category',
+    'title_font_weight',
+    'image_corners',
+    'divider_color',
+    'section_title_color',
+    'show_badge'
+];
+
+const SENDER_FIELDS = [
+    'sender_name',
+    'sender_email',
+    'sender_reply_to'
+];
+
+/**
+ * @param {object} rawData
+ */
+function normalizeEditData(rawData) {
+    // Reject slug changes — the slug is an immutable identifier
+    if ('slug' in rawData) {
+        throw new errors.ValidationError({
+            message: 'The slug field cannot be modified.'
+        });
+    }
+
+    if (SENDER_FIELDS.some(field => Object.hasOwn(rawData, field))) {
+        throw new errors.ValidationError({
+            message: tpl(messages.senderFieldsNotEditable)
+        });
+    }
+
+    return Object.fromEntries(
+        EDITABLE_DESIGN_FIELDS
+            .filter(field => Object.hasOwn(rawData, field))
+            .map(field => [field, rawData[field]])
+    );
+}
 
 /**
  * Resolves the shared default email design setting row.
@@ -57,20 +109,13 @@ const controller = {
             method: 'edit'
         },
         async query(frame) {
-            const data = frame.data.automated_email_design[0];
-
-            // Strip id from the payload — Bookshelf uses the options id
-            // for the WHERE clause and a mismatched id causes "No Rows Updated"
-            delete data.id;
-
-            // Reject slug changes — the slug is an immutable identifier
-            if ('slug' in data) {
-                throw new errors.ValidationError({
-                    message: 'The slug field cannot be modified.'
-                });
-            }
+            const data = normalizeEditData(frame.data.automated_email_design[0]);
 
             const defaultDesign = await resolveDefaultDesign(frame.options);
+
+            if (Object.keys(data).length === 0) {
+                return defaultDesign;
+            }
 
             return await models.EmailDesignSetting.edit(
                 data,
