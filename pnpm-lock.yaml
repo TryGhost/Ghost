@@ -2600,8 +2600,8 @@ importers:
         specifier: 13.0.0
         version: 13.0.0
       gscan:
-        specifier: 6.2.0
-        version: 6.2.0
+        specifier: 6.2.1
+        version: 6.2.1
       handlebars:
         specifier: 4.7.9
         version: 4.7.9
@@ -8620,8 +8620,8 @@ packages:
   '@tryghost/config-url-helpers@1.0.25':
     resolution: {integrity: sha512-hrC0XUYqxGVxoCD+ENjW5tU/Up3BGHGzDWGT0AgFxKKr0FEZ6MQC84aSjp4uf/22NXHguD65eqHz4gIKvQWQZA==}
 
-  '@tryghost/config@2.2.0':
-    resolution: {integrity: sha512-x1DJJHq+ygsiiH0SlfqNEHUeJUuZS8+OV2ARlSbT9/881haQQtPJdNegh5f1NcqOOmcQD59UgX7db4Wz9Jvc+Q==}
+  '@tryghost/config@2.2.1':
+    resolution: {integrity: sha512-Tu3vVd65O9XaR7h7SJH5yzfKF4R3hOFgA0jJE55r78TPSSHXuez0LQaGTCdoJj60NAhC7+3rcVOPUnu2v0Glrg==}
 
   '@tryghost/custom-fonts@1.0.10':
     resolution: {integrity: sha512-qnzMWfu0UFR7XwwYu4Ti7adwoVqU/f/+jCtqsge7uT3wDRopRJ6xwt4oCIL2A3QSRZrdHxpu2+iH9puIKfLR2w==}
@@ -8790,9 +8790,6 @@ packages:
   '@tryghost/nql@0.12.11':
     resolution: {integrity: sha512-8Cb10OpQWT+v0Xvfrov9IkBwzyPlARsjF1EIC8f3ET/JZD3G+ARoQ3GEBQ7XeW6YcUd7MIh3zqJTv5ST+aDjZA==}
 
-  '@tryghost/pretty-cli@3.2.0':
-    resolution: {integrity: sha512-ddd/Zw8WNIXHMz9pAYcI8mT53586YnS9l9aCM7nvvXtIUdOvVBwtmQcAdq8Sqc8WcwzHCXWXsDa6Khe6zV2kDg==}
-
   '@tryghost/pretty-cli@3.2.1':
     resolution: {integrity: sha512-FpghCxZU8ZGgcMDhlI12oUM6krTVFKL1vUQSuqyheHMcViy8Kx+ZXYQl1n6ycA+BOaJAkYwYr+di7WAGiqMxqA==}
 
@@ -8839,8 +8836,8 @@ packages:
   '@tryghost/security@1.0.6':
     resolution: {integrity: sha512-h4FiUK4ndHezlXeuRzfwTZrX/a8ZdCS/FRqmZWCHcMUiBH6lewHv8eIjsPemN6e6Gn9jtsWZsKnuYM2mD0meSQ==}
 
-  '@tryghost/server@2.2.1':
-    resolution: {integrity: sha512-WY7YGd+PIIuX5IaZnNV2X3tMNBpAX4fHpEj887ZWRPReUvxoVj6ODOTQnNCN7UlCoNmDS88KrfLUDA4IQCDEmA==}
+  '@tryghost/server@3.0.1':
+    resolution: {integrity: sha512-X81C+0HKm+WTCgrlk1fHpGpcnjErtyFKDLCwo2zLUplH8smWPT4ELsqOYtznOMOUZ3aMbDjSeEl2fp62PcV4LA==}
 
   '@tryghost/social-urls@0.1.62':
     resolution: {integrity: sha512-ii5DDsZEqOsoj2rs3JwPbdtH3geqZgXR/YOOXoVYA7VEnu6IITX08Pk3rDmDqbICTIWPDejzoT8hCo88q18F4Q==}
@@ -8890,9 +8887,6 @@ packages:
 
   '@tryghost/webhook-mock-receiver@2.1.0':
     resolution: {integrity: sha512-Cka5SW4igfgbGv33fFyEjkgt1HCA3lNhKCL88ThsDCw3/9ROxKQLcHMB+S7SNcewIDfsS5kI2INHtD+1Tbp/BA==}
-
-  '@tryghost/zip@3.3.1':
-    resolution: {integrity: sha512-D8ChQHmqbSsdhCLuRwgy4wKViICiLoB9f/NzolD+koGWtpsUTq9IwDeaAPHenIzeHbds8RmeZGIJlShNutEblg==}
 
   '@tryghost/zip@3.3.2':
     resolution: {integrity: sha512-Zg+kJfQzwPb6ntRrYfVEl1jpBNTNWAFKdCccOhdCi+GYdm0DZUNOglWxVkYltLmn7lo668qPAfFOhvnpjEPiTw==}
@@ -14694,8 +14688,8 @@ packages:
   growly@1.3.0:
     resolution: {integrity: sha512-+xGQY0YyAWCnqy7Cd++hc2JqMYzlm0dG30Jd0beaA64sROr8C4nt8Yc9V5Ro3avlSUDTN0ulqP/VBKi1/lLygw==}
 
-  gscan@6.2.0:
-    resolution: {integrity: sha512-OWhXoWTFWZJu4AydEz/9uaPb7Px9lJ1an+D+WqpDFC5nH/ysoHMgTWwfghpoifO9iqhm71WIx8Lme5kvmRJeDA==}
+  gscan@6.2.1:
+    resolution: {integrity: sha512-Yc67TIJM0TriHrvmAW3G5+XhKV+NqQFP8hvH5k0wW0ycbLMZFlDFs1UwcQzXyuIYEo4Heh39cnB4rZ2KPl2waQ==}
     engines: {node: ^22.13.1 || ^24.0.0}
     hasBin: true
 
@@ -19873,11 +19867,6 @@ packages:
 
   semver@7.7.4:
     resolution: {integrity: sha512-vFKC2IEtQnVhpT78h1Yp8wzwrf8CM+MzKMHGJZfBtzhZNycRFnXsHk6E5TxIkkMsgNS7mdX3AGB7x2QM2di4lA==}
-    engines: {node: '>=10'}
-    hasBin: true
-
-  semver@7.8.0:
-    resolution: {integrity: sha512-AcM7dV/5ul4EekoQ29Agm5vri8JNqRyj39o0qpX6vDF2GZrtutZl5RwgD1XnZjiTAfncsJhMI48QQH3sN87YNA==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -28543,9 +28532,9 @@ snapshots:
 
   '@tryghost/config-url-helpers@1.0.25': {}
 
-  '@tryghost/config@2.2.0':
+  '@tryghost/config@2.2.1':
     dependencies:
-      '@tryghost/root-utils': 2.2.0
+      '@tryghost/root-utils': 2.2.1
       nconf: 0.13.0
 
   '@tryghost/custom-fonts@1.0.10': {}
@@ -28987,11 +28976,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/pretty-cli@3.2.0':
-    dependencies:
-      chalk: 5.6.2
-      sywac: 1.3.0
-
   '@tryghost/pretty-cli@3.2.1':
     dependencies:
       chalk: 5.6.2
@@ -29074,9 +29058,9 @@ snapshots:
       '@tryghost/string': 0.2.21
       bcryptjs: 3.0.3
 
-  '@tryghost/server@2.2.1':
+  '@tryghost/server@3.0.1':
     dependencies:
-      '@tryghost/debug': 2.2.0
+      '@tryghost/debug': 2.2.1
       '@tryghost/logging': 4.2.1
     transitivePeerDependencies:
       - '@75lb/nature'
@@ -29162,17 +29146,6 @@ snapshots:
   '@tryghost/webhook-mock-receiver@2.1.0':
     dependencies:
       p-wait-for: 6.0.0
-
-  '@tryghost/zip@3.3.1':
-    dependencies:
-      '@tryghost/errors': 1.3.13
-      archiver: 7.0.1
-      extract-zip: 2.0.1
-    transitivePeerDependencies:
-      - bare-abort-controller
-      - bare-buffer
-      - react-native-b4a
-      - supports-color
 
   '@tryghost/zip@3.3.2':
     dependencies:
@@ -37545,17 +37518,17 @@ snapshots:
 
   growly@1.3.0: {}
 
-  gscan@6.2.0:
+  gscan@6.2.1:
     dependencies:
       '@sentry/node': 10.53.1
-      '@tryghost/config': 2.2.0
-      '@tryghost/debug': 2.2.0
+      '@tryghost/config': 2.2.1
+      '@tryghost/debug': 2.2.1
       '@tryghost/errors': 1.3.13
       '@tryghost/logging': 4.2.1
       '@tryghost/nql': 0.12.10
-      '@tryghost/pretty-cli': 3.2.0
-      '@tryghost/server': 2.2.1
-      '@tryghost/zip': 3.3.1
+      '@tryghost/pretty-cli': 3.2.1
+      '@tryghost/server': 3.0.1
+      '@tryghost/zip': 3.3.2
       chalk: 5.6.2
       express: 5.2.1
       express-handlebars: 8.0.1
@@ -37563,7 +37536,7 @@ snapshots:
       handlebars: 4.7.9
       lodash: 4.18.1
       multer: 2.1.1
-      semver: 7.8.0
+      semver: 7.8.1
       validator: 13.15.35
     transitivePeerDependencies:
       - '@75lb/nature'
@@ -44177,8 +44150,6 @@ snapshots:
   semver@6.3.1: {}
 
   semver@7.7.4: {}
-
-  semver@7.8.0: {}
 
   semver@7.8.1: {}
 
