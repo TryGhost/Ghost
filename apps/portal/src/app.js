@@ -949,7 +949,6 @@ export default class App extends React.Component {
 
     /** Handle Portal offer urls */
     async handleOfferQuery({site, offerId, member = this.state.member}) {
-        const {portal_button: portalButton} = site;
         removePortalLinkFromUrl();
 
         if (!isPaidMember({member}) || isComplimentaryMember({member})) {
@@ -970,25 +969,10 @@ export default class App extends React.Component {
                     return;
                 }
 
-                if (!portalButton) {
-                    const product = getProductFromId({site, productId: offer.tier.id});
-                    const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
-                    this.dispatchAction('openPopup', {
-                        page: 'loading'
-                    });
-                    if (member) {
-                        const {tierId, cadence} = getProductCadenceFromPrice({site, priceId: price.id});
-                        this.dispatchAction('checkoutPlan', {plan: price.id, offerId, tierId, cadence});
-                    } else {
-                        const {tierId, cadence} = getProductCadenceFromPrice({site, priceId: price.id});
-                        this.dispatchAction('signup', {plan: price.id, offerId, tierId, cadence});
-                    }
-                } else {
-                    this.dispatchAction('openPopup', {
-                        page: 'offer',
-                        pageData: offerData?.offers[0]
-                    });
-                }
+                this.dispatchAction('openPopup', {
+                    page: 'offer',
+                    pageData: offer
+                });
             } catch (e) {
                 // ignore invalid portal url
             }

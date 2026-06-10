@@ -44,6 +44,48 @@ describe('signup action', () => {
             expect.objectContaining({name: 'John Doe'})
         );
     });
+
+    test('continues to signin magic link page when checkout finds an existing subscription', async () => {
+        const checkoutError = new Error('A subscription exists for this Member.') as Error & {code: string};
+        checkoutError.code = 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION';
+
+        const mockApi = {
+            member: {
+                checkoutPlan: vi.fn(() => Promise.reject(checkoutError))
+            }
+        };
+        const state = {
+            site: {},
+            pageData: {
+                offerId: 'offer_123'
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'signup',
+            data: {
+                plan: 'price_123',
+                tierId: 'tier_123',
+                cadence: 'month',
+                email: 'jamie@example.com',
+                name: 'Jamie'
+            },
+            state,
+            api: mockApi
+        });
+
+        expect(mockApi.member.checkoutPlan).toHaveBeenCalled();
+        expect(result).toMatchObject({
+            page: 'magiclink',
+            lastPage: 'signin',
+            pageData: {
+                offerId: 'offer_123',
+                email: 'jamie@example.com'
+            },
+            popupNotification: null
+        });
+        expect(result).not.toHaveProperty('action', 'signup:failed');
+    });
 });
 
 describe('redeemGift action', () => {
