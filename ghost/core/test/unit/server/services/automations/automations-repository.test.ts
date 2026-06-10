@@ -440,11 +440,12 @@ describe('automations repository', function () {
             const originalPrepare = database.prepare.bind(database);
             sinon.stub(database, 'prepare').callsFake((source) => {
                 const statement = originalPrepare(source);
+                const normalizedSource = source.toLowerCase();
 
                 const shouldSimulateLockBySomeoneElse = (
                     !hasSimulatedLock &&
-                    source.includes('SELECT id') &&
-                    source.includes('FROM automation_run_steps')
+                    normalizedSource.includes('select `id`') &&
+                    normalizedSource.includes('from `automation_run_steps`')
                 );
                 if (!shouldSimulateLockBySomeoneElse) {
                     return statement;
