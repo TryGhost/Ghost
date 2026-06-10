@@ -11,7 +11,11 @@ Object {
 }
 `;
 
-exports[`site.* events site.changed event is triggered 2: [body] 1`] = `Object {}`;
+exports[`site.* events site.changed event is triggered 2: [body] 1`] = `
+Object {
+  "event": "site.changed",
+}
+`;
 
 exports[`site.* events site.changed event is triggered, custom integrations are limited but we have an internal webhook 1: [headers] 1`] = `
 Object {
@@ -24,4 +28,8 @@ Object {
 }
 `;
 
-exports[`site.* events site.changed event is triggered, custom integrations are limited but we have an internal webhook 2: [body] 1`] = `Object {}`;
+exports[`site.* events site.changed event is triggered, custom integrations are limited but we have an internal webhook 2: [body] 1`] = `
+Object {
+  "event": "site.changed",
+}
+`;

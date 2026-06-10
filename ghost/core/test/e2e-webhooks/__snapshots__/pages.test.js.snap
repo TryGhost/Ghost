@@ -13,6 +13,7 @@ Object {
 
 exports[`page.* events page.added event is triggered 2: [body] 1`] = `
 Object {
+  "event": "page.added",
   "page": Object {
     "current": Object {
       "authors": Array [
@@ -185,6 +186,7 @@ Object {
 
 exports[`page.* events page.deleted event is triggered 2: [body] 1`] = `
 Object {
+  "event": "page.deleted",
   "page": Object {
     "current": Object {},
     "previous": Object {
@@ -274,6 +276,7 @@ Object {
 
 exports[`page.* events page.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "page.edited",
   "page": Object {
     "current": Object {
       "authors": Array [
@@ -512,6 +515,7 @@ Object {
 
 exports[`page.* events page.published event is triggered 2: [body] 1`] = `
 Object {
+  "event": "page.published",
   "page": Object {
     "current": Object {
       "authors": Array [
@@ -750,6 +754,7 @@ Object {
 
 exports[`page.* events page.published.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "page.published.edited",
   "page": Object {
     "current": Object {
       "authors": Array [
@@ -987,6 +992,7 @@ Object {
 
 exports[`page.* events page.rescheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "page.rescheduled",
   "page": Object {
     "current": Object {
       "authors": Array [
@@ -1224,6 +1230,7 @@ Object {
 
 exports[`page.* events page.scheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "page.scheduled",
   "page": Object {
     "current": Object {
       "authors": Array [
@@ -1462,6 +1469,7 @@ Object {
 
 exports[`page.* events page.tag.attached event is triggered 2: [body] 1`] = `
 Object {
+  "event": "page.tag.attached",
   "page": Object {
     "current": Object {
       "authors": Array [
@@ -1744,6 +1752,7 @@ Object {
 
 exports[`page.* events page.tag.detached event is triggered 2: [body] 1`] = `
 Object {
+  "event": "page.tag.detached",
   "page": Object {
     "current": Object {
       "authors": Array [
@@ -1966,6 +1975,7 @@ Object {
 
 exports[`page.* events page.unpublished event is triggered 2: [body] 1`] = `
 Object {
+  "event": "page.unpublished",
   "page": Object {
     "current": Object {
       "authors": Array [
@@ -2203,6 +2213,7 @@ Object {
 
 exports[`page.* events page.unscheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "page.unscheduled",
   "page": Object {
     "current": Object {
       "authors": Array [
