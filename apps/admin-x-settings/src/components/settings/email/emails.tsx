@@ -21,8 +21,7 @@ export const searchKeywords = {
     enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
     emails: ['emails', 'newsletters', 'automation emails', 'transactional', 'design', 'customization', 'automations', 'welcome'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
-    mailgun: ['mailgun', 'emails', 'newsletters'],
-    emailsNavMenu: ['emails', 'newsletters', 'automation emails', 'transactional', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'mailgun', 'automations', 'welcome']
+    mailgun: ['mailgun', 'emails', 'newsletters']
 };
 
 const TransactionalTabContent: React.FC = () => {
@@ -184,13 +183,20 @@ const Emails: React.FC = () => {
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
     const hasNewslettersEnabled = newslettersEnabled !== 'disabled';
+    const hasMailgun = hasNewslettersEnabled && !config.mailgunIsConfigured;
+    const visibleSearchKeywords = [
+        searchKeywords.enableNewsletters,
+        ...(hasNewslettersEnabled ? [searchKeywords.defaultRecipients] : []),
+        searchKeywords.emails,
+        ...(hasMailgun ? [searchKeywords.mailgun] : [])
+    ].flat();
 
     return (
-        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Email'>
+        <SearchableSection keywords={visibleSearchKeywords} title='Email'>
             <EnableNewsletters keywords={searchKeywords.enableNewsletters} />
             {hasNewslettersEnabled && <DefaultRecipients keywords={searchKeywords.defaultRecipients} />}
             <EmailsGroup keywords={searchKeywords.emails} newslettersEnabled={hasNewslettersEnabled} />
-            {hasNewslettersEnabled && !config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
+            {hasMailgun && <MailGun keywords={searchKeywords.mailgun} />}
         </SearchableSection>
     );
 };
