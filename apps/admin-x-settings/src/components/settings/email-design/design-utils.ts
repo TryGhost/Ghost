@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/design-utils.ts because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 import type {EmailDesignSettings} from './types';
 

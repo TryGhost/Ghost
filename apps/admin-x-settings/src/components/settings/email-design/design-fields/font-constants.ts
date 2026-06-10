@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/design-fields/font-constants.ts because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 export const FONT_OPTIONS = [
     {value: 'serif', label: 'Elegant serif'},
     {value: 'sans_serif', label: 'Clean sans-serif'}
