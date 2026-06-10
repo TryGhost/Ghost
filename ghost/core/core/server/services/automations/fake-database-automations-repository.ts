@@ -3,7 +3,8 @@ import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import {dequal} from 'dequal';
-import type {DatabaseSync} from 'node:sqlite';
+import knex, {type Knex} from 'knex';
+import type {DatabaseSync, SQLInputValue} from 'node:sqlite';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import type {
     Automation,
@@ -20,6 +21,7 @@ import {LOCK_TIMEOUT_MS} from './constants';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
 const HOUR_MS = 60 * 60 * 1000;
+const queryBuilder = knex({client: 'sqlite', useNullAsDefault: true});
 
 const messages = {
     invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".',
@@ -94,6 +96,29 @@ type RevisionDataFor<ActionDataT> = {
 };
 type WaitRevisionData = RevisionDataFor<WaitActionData>;
 type SendEmailRevisionData = RevisionDataFor<SendEmailActionData>;
+
+function toNativeQuery(builder: Knex.QueryBuilder) {
+    const {sql, bindings} = builder.toSQL().toNative();
+    return {
+        sql,
+        bindings: bindings as SQLInputValue[]
+    };
+}
+
+function getRow(database: DatabaseSync, builder: Knex.QueryBuilder) {
+    const {sql, bindings} = toNativeQuery(builder);
+    return database.prepare(sql).get(...bindings);
+}
+
+function getRows(database: DatabaseSync, builder: Knex.QueryBuilder) {
+    const {sql, bindings} = toNativeQuery(builder);
+    return database.prepare(sql).all(...bindings);
+}
+
+function runQuery(database: DatabaseSync, builder: Knex.QueryBuilder) {
+    const {sql, bindings} = toNativeQuery(builder);
+    return database.prepare(sql).run(...bindings);
+}
 
 export function createFakeDatabaseAutomationsRepository({
     getDatabase
@@ -231,11 +256,7 @@ function trigger(database: DatabaseSync, {
         member_email: memberEmail
     };
 
-    database.prepare(`
-        INSERT INTO automation_runs
-        (id, created_at, updated_at, automation_id, member_id, member_email) VALUES
-        (:id, :created_at, :updated_at, :automation_id, :member_id, :member_email)
-    `).run(run);
+    runQuery(database, queryBuilder('automation_runs').insert(run));
     insertRunStep(database, {
         automationRunId: run.id,
         automationActionRevisionId: firstAction.automation_action_revision_id,
@@ -257,18 +278,14 @@ function insertRunStep(database: DatabaseSync, {
 }>): void {
     const nowString = now.toISOString();
 
-    database.prepare(`
-        INSERT INTO automation_run_steps
-        (id, created_at, updated_at, automation_run_id, automation_action_revision_id, ready_at) VALUES
-        (:id, :created_at, :updated_at, :automation_run_id, :automation_action_revision_id, :ready_at)
-    `).run({
+    runQuery(database, queryBuilder('automation_run_steps').insert({
         id: ObjectId().toHexString(),
         created_at: nowString,
         updated_at: nowString,
         automation_run_id: automationRunId,
         automation_action_revision_id: automationActionRevisionId,
         ready_at: readyAt.toISOString()
-    });
+    }));
 }
 
 function fetchAndLockSteps(database: DatabaseSync, limit: number): {
@@ -293,18 +310,21 @@ function fetchAndLockSteps(database: DatabaseSync, limit: number): {
     const lockId = crypto.randomUUID();
 
     // 1. Select up to `limit` candidate rows.
-    const candidates = database.prepare(`
-        SELECT id
-        FROM automation_run_steps
-        WHERE status = 'pending'
-            AND ready_at <= ?
-            AND (
-                locked_by IS NULL
-                OR locked_at < ?
-            )
-        ORDER BY ready_at, created_at, id
-        LIMIT ?
-    `).all(nowString, staleLockCutoffString, limit) as unknown as ReadonlyArray<{id: string}>;
+    const candidates = getRows(database, queryBuilder('automation_run_steps')
+        .select('id')
+        .where('status', 'pending')
+        .where('ready_at', '<=', nowString)
+        .where((builder) => {
+            builder
+                .whereNull('locked_by')
+                .orWhere('locked_at', '<', staleLockCutoffString);
+        })
+        .orderBy([
+            'ready_at',
+            'created_at',
+            'id'
+        ])
+        .limit(limit)) as unknown as ReadonlyArray<{id: string}>;
     if (candidates.length === 0) {
         return {
             steps: [],
@@ -315,51 +335,54 @@ function fetchAndLockSteps(database: DatabaseSync, limit: number): {
     const candidateIds = candidates.map(candidate => candidate.id);
 
     // 2. Try to lock those rows.
-    const placeholders = candidateIds.map(() => '?').join(', ');
-    database.prepare(`
-        UPDATE automation_run_steps
-        SET locked_by = ?,
-            locked_at = ?,
-            started_at = ?,
-            updated_at = ?,
-            step_attempts = step_attempts + 1
-        WHERE id IN (${placeholders})
-            AND status = 'pending'
-            AND ready_at <= ?
-            AND (
-                locked_by IS NULL
-                OR locked_at < ?
-            )
-    `).run(lockId, nowString, nowString, nowString, ...candidateIds, nowString, staleLockCutoffString);
+    runQuery(database, queryBuilder('automation_run_steps')
+        .update({
+            locked_by: lockId,
+            locked_at: nowString,
+            started_at: nowString,
+            updated_at: nowString
+        })
+        .increment('step_attempts', 1)
+        .whereIn('id', candidateIds)
+        .where('status', 'pending')
+        .where('ready_at', '<=', nowString)
+        .where((builder) => {
+            builder
+                .whereNull('locked_by')
+                .orWhere('locked_at', '<', staleLockCutoffString);
+        }));
 
     // 3. Select any rows we successfully locked.
-    const rows = database.prepare(`
-        SELECT
-            step.id AS id,
-            step.locked_by AS locked_by,
-            step.automation_run_id AS automation_run_id,
-            run.automation_id AS automation_id,
-            automation.slug AS automation_slug,
-            automation.status AS automation_status,
-            run.member_id AS member_id,
-            run.member_email AS member_email,
-            action.id AS action_id,
-            revision.id AS automation_action_revision_id,
-            action.type AS type,
-            step.ready_at AS ready_at,
-            step.step_attempts AS step_attempts,
-            revision.wait_hours AS wait_hours,
-            revision.email_subject AS email_subject,
-            revision.email_lexical AS email_lexical,
-            revision.email_design_setting_id AS email_design_setting_id
-        FROM automation_run_steps step
-        INNER JOIN automation_runs run ON run.id = step.automation_run_id
-        INNER JOIN automations automation ON automation.id = run.automation_id
-        INNER JOIN automation_action_revisions revision ON revision.id = step.automation_action_revision_id
-        INNER JOIN automation_actions action ON action.id = revision.action_id
-        WHERE step.locked_by = ?
-        ORDER BY step.ready_at, step.created_at, step.id
-    `).all(lockId) as unknown as StepToRunRow[];
+    const rows = getRows(database, queryBuilder('automation_run_steps as step')
+        .select(
+            'step.id as id',
+            'step.locked_by as locked_by',
+            'step.automation_run_id as automation_run_id',
+            'run.automation_id as automation_id',
+            'automation.slug as automation_slug',
+            'automation.status as automation_status',
+            'run.member_id as member_id',
+            'run.member_email as member_email',
+            'action.id as action_id',
+            'revision.id as automation_action_revision_id',
+            'action.type as type',
+            'step.ready_at as ready_at',
+            'step.step_attempts as step_attempts',
+            'revision.wait_hours as wait_hours',
+            'revision.email_subject as email_subject',
+            'revision.email_lexical as email_lexical',
+            'revision.email_design_setting_id as email_design_setting_id'
+        )
+        .innerJoin('automation_runs as run', 'run.id', 'step.automation_run_id')
+        .innerJoin('automations as automation', 'automation.id', 'run.automation_id')
+        .innerJoin('automation_action_revisions as revision', 'revision.id', 'step.automation_action_revision_id')
+        .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
+        .where('step.locked_by', lockId)
+        .orderBy([
+            'step.ready_at',
+            'step.created_at',
+            'step.id'
+        ])) as unknown as StepToRunRow[];
 
     return {
         steps: rows.map(row => buildStepToRun(row)),
@@ -368,15 +391,14 @@ function fetchAndLockSteps(database: DatabaseSync, limit: number): {
 }
 
 function findNextPendingReadyAt(database: DatabaseSync, staleLockCutoff: Readonly<Date>): Date | null {
-    const row = database.prepare(`
-        SELECT MIN(ready_at) AS next_ready_at
-        FROM automation_run_steps
-        WHERE status = 'pending'
-            AND (
-                locked_by IS NULL
-                OR locked_at < ?
-            )
-    `).get(staleLockCutoff.toISOString()) as {next_ready_at: string | null} | undefined;
+    const row = getRow(database, queryBuilder('automation_run_steps')
+        .min({next_ready_at: 'ready_at'})
+        .where('status', 'pending')
+        .where((builder) => {
+            builder
+                .whereNull('locked_by')
+                .orWhere('locked_at', '<', staleLockCutoff.toISOString());
+        })) as {next_ready_at: string | null} | undefined;
     return row?.next_ready_at ? new Date(row.next_ready_at) : null;
 }
 
@@ -421,34 +443,32 @@ function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
 function findFirstActionRevision(database: DatabaseSync, memberStatus: 'free' | 'paid'): NextActionRevisionRow | null {
     const automationSlug: NonNullable<string> = MEMBER_WELCOME_EMAIL_SLUGS[memberStatus];
 
-    const row = database.prepare(`
-        SELECT
-            automation.id AS automation_id,
-            actions.id AS action_id,
-            revisions.id AS automation_action_revision_id,
-            actions.type AS type,
-            revisions.wait_hours AS wait_hours
-        FROM automations automation
-        INNER JOIN automation_actions actions ON actions.automation_id = automation.id
-        INNER JOIN automation_action_revisions revisions ON revisions.action_id = actions.id
-        WHERE automation.slug = ?
-            AND automation.status = 'active'
-            AND actions.deleted_at IS NULL
-            AND NOT EXISTS (
-                SELECT 1
-                FROM automation_action_edges edge
-                INNER JOIN automation_actions source_actions ON source_actions.id = edge.source_action_id
-                    AND source_actions.deleted_at IS NULL
-                WHERE edge.target_action_id = actions.id
-            )
-            AND revisions.created_at = (
-                SELECT MAX(created_at)
-                FROM automation_action_revisions
-                WHERE action_id = actions.id
-            )
-        ORDER BY actions.created_at, actions.id
-        LIMIT 1
-    `).get(automationSlug) as NextActionRevisionRow | undefined;
+    const row = getRow(database, queryBuilder('automations as automation')
+        .select(
+            'automation.id as automation_id',
+            'actions.id as action_id',
+            'revisions.id as automation_action_revision_id',
+            'actions.type as type',
+            'revisions.wait_hours as wait_hours'
+        )
+        .innerJoin('automation_actions as actions', 'actions.automation_id', 'automation.id')
+        .innerJoin('automation_action_revisions as revisions', 'revisions.action_id', 'actions.id')
+        .where('automation.slug', automationSlug)
+        .where('automation.status', 'active')
+        .whereNull('actions.deleted_at')
+        .whereNotExists(queryBuilder('automation_action_edges as edge')
+            .select('edge.target_action_id')
+            .innerJoin('automation_actions as source_actions', 'source_actions.id', 'edge.source_action_id')
+            .whereNull('source_actions.deleted_at')
+            .where('edge.target_action_id', queryBuilder.ref('actions.id')))
+        .where('revisions.created_at', queryBuilder('automation_action_revisions')
+            .max('created_at')
+            .where('action_id', queryBuilder.ref('actions.id')))
+        .orderBy([
+            'actions.created_at',
+            'actions.id'
+        ])
+        .limit(1)) as NextActionRevisionRow | undefined;
 
     return row ?? null;
 }
@@ -482,25 +502,23 @@ function finishStepAndEnqueueNext(
 }
 
 function findNextActionRevision(database: DatabaseSync, sourceActionId: string): NextActionRevisionRow | null {
-    const row = database.prepare(`
-        SELECT
-            action.id AS action_id,
-            revision.id AS automation_action_revision_id,
-            action.type AS type,
-            revision.wait_hours AS wait_hours
-        FROM automation_action_edges edge
-        INNER JOIN automation_actions action ON action.id = edge.target_action_id
-        INNER JOIN automation_action_revisions revision ON revision.action_id = action.id
-        WHERE edge.source_action_id = ?
-            AND action.deleted_at IS NULL
-            AND revision.created_at = (
-                SELECT MAX(created_at)
-                FROM automation_action_revisions
-                WHERE action_id = action.id
-            )
-        ORDER BY revision.created_at DESC, revision.id DESC
-        LIMIT 1
-    `).get(sourceActionId) as NextActionRevisionRow | undefined;
+    const row = getRow(database, queryBuilder('automation_action_edges as edge')
+        .select(
+            'action.id as action_id',
+            'revision.id as automation_action_revision_id',
+            'action.type as type',
+            'revision.wait_hours as wait_hours'
+        )
+        .innerJoin('automation_actions as action', 'action.id', 'edge.target_action_id')
+        .innerJoin('automation_action_revisions as revision', 'revision.action_id', 'action.id')
+        .where('edge.source_action_id', sourceActionId)
+        .whereNull('action.deleted_at')
+        .where('revision.created_at', queryBuilder('automation_action_revisions')
+            .max('created_at')
+            .where('action_id', queryBuilder.ref('action.id')))
+        .orderBy('revision.created_at', 'desc')
+        .orderBy('revision.id', 'desc')
+        .limit(1)) as NextActionRevisionRow | undefined;
 
     return row ?? null;
 }
@@ -580,62 +598,49 @@ function updateStep(
         updated_at: string;
     }
 ): boolean {
-    const result = database.prepare(`
-        UPDATE automation_run_steps
-        SET status = :status,
-            updated_at = :updated_at,
-            started_at = CASE WHEN :set_started_at THEN :started_at ELSE started_at END,
-            finished_at = CASE WHEN :set_finished_at THEN :finished_at ELSE finished_at END,
-            ready_at = CASE WHEN :set_ready_at THEN :ready_at ELSE ready_at END,
-            locked_by = NULL,
-            locked_at = NULL
-        WHERE id = :id
-            AND status = 'pending'
-            AND locked_by = :locked_by
-    `).run({
-        id: step.id,
-        locked_by: step.locked_by,
-        status: attrs.status,
-        updated_at: attrs.updated_at,
-        set_started_at: attrs.started_at === undefined ? 0 : 1,
-        started_at: attrs.started_at ?? null,
-        set_finished_at: attrs.finished_at === undefined ? 0 : 1,
-        finished_at: attrs.finished_at ?? null,
-        set_ready_at: attrs.ready_at === undefined ? 0 : 1,
-        ready_at: attrs.ready_at ?? null
-    }) as unknown as {changes: number};
+    /* eslint-disable camelcase */
+    const {started_at, finished_at, ready_at} = attrs;
+    const result = runQuery(database, queryBuilder('automation_run_steps')
+        .update({
+            status: attrs.status,
+            updated_at: attrs.updated_at,
+            locked_by: null,
+            locked_at: null,
+            ...(started_at === undefined ? {} : {started_at}),
+            ...(finished_at === undefined ? {} : {finished_at}),
+            ...(ready_at === undefined ? {} : {ready_at})
+        })
+        .where('id', step.id)
+        .where('status', 'pending')
+        .where('locked_by', step.locked_by)) as unknown as {changes: number};
+    /* eslint-enable camelcase */
     return result.changes >= 1;
 }
 
 function loadAutomation(database: DatabaseSync, automationId: string): AutomationRow | null {
-    const automation = database.prepare(`
-        SELECT id, slug, name, status, created_at, updated_at
-        FROM automations
-        WHERE id = ?
-    `).get(automationId) as AutomationRow | undefined;
+    const automation = getRow(database, queryBuilder('automations')
+        .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+        .where('id', automationId)) as AutomationRow | undefined;
 
     return automation ?? null;
 }
 
 function loadAutomations(database: DatabaseSync): AutomationRow[] {
-    return database.prepare(`
-        SELECT id, slug, name, status, created_at, updated_at
-        FROM automations
-        ORDER BY created_at, id
-    `).all() as unknown as AutomationRow[];
+    return getRows(database, queryBuilder('automations')
+        .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+        .orderBy([
+            'created_at',
+            'id'
+        ])) as unknown as AutomationRow[];
 }
 
 function updateAutomation(database: DatabaseSync, automation: AutomationRow): AutomationRow {
-    database.prepare(`
-        UPDATE automations
-        SET status = :status,
-            updated_at = :updated_at
-        WHERE id = :id
-    `).run({
-        id: automation.id,
-        status: automation.status,
-        updated_at: automation.updated_at
-    });
+    runQuery(database, queryBuilder('automations')
+        .update({
+            status: automation.status,
+            updated_at: automation.updated_at
+        })
+        .where('id', automation.id));
 
     return requireAutomation(loadAutomation(database, automation.id), automation.id);
 }
@@ -697,20 +702,16 @@ function replaceAutomationGraph(database: DatabaseSync, automationId: string, ac
 }
 
 function loadAutomationActionRows(database: DatabaseSync, automationId: string): Array<Pick<ActionRow, 'id' | 'type'>> {
-    return database.prepare(`
-        SELECT id, type
-        FROM automation_actions
-        WHERE automation_id = ?
-            AND deleted_at IS NULL
-    `).all(automationId) as unknown as Array<Pick<ActionRow, 'id' | 'type'>>;
+    return getRows(database, queryBuilder('automation_actions')
+        .select('id', 'type')
+        .where('automation_id', automationId)
+        .whereNull('deleted_at')) as unknown as Array<Pick<ActionRow, 'id' | 'type'>>;
 }
 
 function loadActionOwner(database: DatabaseSync, actionId: string): string | null {
-    const row = database.prepare(`
-        SELECT automation_id
-        FROM automation_actions
-        WHERE id = ?
-    `).get(actionId) as {automation_id: string} | undefined;
+    const row = getRow(database, queryBuilder('automation_actions')
+        .select('automation_id')
+        .where('id', actionId)) as {automation_id: string} | undefined;
 
     return row?.automation_id ?? null;
 }
@@ -722,11 +723,7 @@ function insertAction(database: DatabaseSync, action: {
     automation_id: string;
     type: string;
 }) {
-    database.prepare(`
-        INSERT INTO automation_actions
-        (id, created_at, updated_at, automation_id, type) VALUES
-        (:id, :created_at, :updated_at, :automation_id, :type)
-    `).run(action);
+    runQuery(database, queryBuilder('automation_actions').insert(action));
 }
 
 function shouldInsertActionRevision(action: AutomationAction, latestRevision: ActionRevisionRow | null): boolean {
@@ -759,62 +756,36 @@ function buildRevisionActionData(action: AutomationAction, revision: ActionRevis
 }
 
 function loadLatestActionRevision(database: DatabaseSync, actionId: string): ActionRevisionRow | null {
-    const row = database.prepare(`
-        SELECT
-            action_id,
-            created_at,
-            wait_hours,
-            email_subject,
-            email_lexical,
-            email_design_setting_id
-        FROM automation_action_revisions
-        WHERE action_id = ?
-            AND created_at = (
-                SELECT MAX(created_at)
-                FROM automation_action_revisions
-                WHERE action_id = ?
-            )
-    `).get(actionId, actionId) as ActionRevisionRow | undefined;
+    const row = getRow(database, queryBuilder('automation_action_revisions')
+        .select(
+            'action_id',
+            'created_at',
+            'wait_hours',
+            'email_subject',
+            'email_lexical',
+            'email_design_setting_id'
+        )
+        .where('action_id', actionId)
+        .where('created_at', queryBuilder('automation_action_revisions')
+            .max('created_at')
+            .where('action_id', actionId))) as ActionRevisionRow | undefined;
 
     return row ?? null;
 }
 
 function softDeleteAction(database: DatabaseSync, actionId: string, deletedAt: string) {
-    database.prepare(`
-        UPDATE automation_actions
-        SET deleted_at = :deleted_at,
-            updated_at = :updated_at
-        WHERE id = :id
-    `).run({
-        id: actionId,
-        deleted_at: deletedAt,
-        updated_at: deletedAt
-    });
+    runQuery(database, queryBuilder('automation_actions')
+        .update({
+            deleted_at: deletedAt,
+            updated_at: deletedAt
+        })
+        .where('id', actionId));
 }
 
 function insertActionRevision(database: DatabaseSync, actionId: string, action: AutomationAction, createdAt: string, latestRevision: ActionRevisionRow | null) {
     const revision = buildActionRevision(actionId, action, getNextRevisionCreatedAt(latestRevision?.created_at ?? null, createdAt));
 
-    database.prepare(`
-        INSERT INTO automation_action_revisions
-        (
-            id,
-            created_at,
-            action_id,
-            wait_hours,
-            email_subject,
-            email_lexical,
-            email_design_setting_id
-        ) VALUES (
-            :id,
-            :created_at,
-            :action_id,
-            :wait_hours,
-            :email_subject,
-            :email_lexical,
-            :email_design_setting_id
-        )
-    `).run(revision);
+    runQuery(database, queryBuilder('automation_action_revisions').insert(revision));
 }
 
 function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreatedAt: string) {
@@ -857,25 +828,18 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
 }
 
 function deleteAutomationEdges(database: DatabaseSync, automationId: string) {
-    database.prepare(`
-        DELETE FROM automation_action_edges
-        WHERE source_action_id IN (
-            SELECT id
-            FROM automation_actions
-            WHERE automation_id = ?
-        )
-    `).run(automationId);
+    runQuery(database, queryBuilder('automation_action_edges')
+        .delete()
+        .whereIn('source_action_id', queryBuilder('automation_actions')
+            .select('id')
+            .where('automation_id', automationId)));
 }
 
 function insertActionEdge(database: DatabaseSync, edge: AutomationEdge) {
-    database.prepare(`
-        INSERT INTO automation_action_edges
-        (source_action_id, target_action_id) VALUES
-        (:source_action_id, :target_action_id)
-    `).run({
+    runQuery(database, queryBuilder('automation_action_edges').insert({
         source_action_id: edge.source_action_id,
         target_action_id: edge.target_action_id
-    });
+    }));
 }
 
 function requireAutomation(automation: AutomationRow | null, id: string): AutomationRow {
@@ -914,39 +878,46 @@ function serializeDate(date: string) {
 }
 
 function loadActionRows(database: DatabaseSync, automationId: string): ActionRow[] {
-    return database.prepare(`
-        SELECT
-            a.id AS id,
-            a.type AS type,
-            r.wait_hours AS wait_hours,
-            r.email_subject AS email_subject,
-            r.email_lexical AS email_lexical,
-            r.email_design_setting_id AS email_design_setting_id
-        FROM automation_actions a
-        INNER JOIN automation_action_revisions r ON r.action_id = a.id
-        WHERE a.automation_id = ?
-            AND a.deleted_at IS NULL
-            AND r.created_at = (
-                SELECT MAX(created_at)
-                FROM automation_action_revisions
-                WHERE action_id = a.id
-            )
-        ORDER BY a.created_at, a.id
-    `).all(automationId) as unknown as ActionRow[];
+    return getRows(database, queryBuilder('automation_actions as a')
+        .select(
+            'a.id as id',
+            'a.type as type',
+            'r.wait_hours as wait_hours',
+            'r.email_subject as email_subject',
+            'r.email_lexical as email_lexical',
+            'r.email_design_setting_id as email_design_setting_id'
+        )
+        .innerJoin('automation_action_revisions as r', 'r.action_id', 'a.id')
+        .where('a.automation_id', automationId)
+        .whereNull('a.deleted_at')
+        .where('r.created_at', queryBuilder('automation_action_revisions')
+            .max('created_at')
+            .where('action_id', queryBuilder.ref('a.id')))
+        .orderBy([
+            'a.created_at',
+            'a.id'
+        ])) as unknown as ActionRow[];
 }
 
 function loadEdgeRows(database: DatabaseSync, automationId: string): EdgeRow[] {
-    return database.prepare(`
-        SELECT e.source_action_id, e.target_action_id
-        FROM automation_action_edges e
-        INNER JOIN automation_actions source_action ON source_action.id = e.source_action_id
-            AND source_action.deleted_at IS NULL
-        INNER JOIN automation_actions target_action ON target_action.id = e.target_action_id
-            AND target_action.deleted_at IS NULL
-            AND target_action.automation_id = source_action.automation_id
-        WHERE source_action.automation_id = ?
-        ORDER BY e.source_action_id, e.target_action_id
-    `).all(automationId) as unknown as EdgeRow[];
+    return getRows(database, queryBuilder('automation_action_edges as e')
+        .select('e.source_action_id', 'e.target_action_id')
+        .innerJoin('automation_actions as source_action', (join) => {
+            join
+                .on('source_action.id', 'e.source_action_id')
+                .onNull('source_action.deleted_at');
+        })
+        .innerJoin('automation_actions as target_action', (join) => {
+            join
+                .on('target_action.id', 'e.target_action_id')
+                .onNull('target_action.deleted_at')
+                .on('target_action.automation_id', 'source_action.automation_id');
+        })
+        .where('source_action.automation_id', automationId)
+        .orderBy([
+            'e.source_action_id',
+            'e.target_action_id'
+        ])) as unknown as EdgeRow[];
 }
 
 function buildActionPayload(row: ActionRow): AutomationAction {
