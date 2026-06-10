@@ -19,6 +19,8 @@
     "@libsql/client": "0.14.0",
     "@tryghost/kg-default-nodes": "2.1.2",
     "@tryghost/kg-lexical-html-renderer": "1.4.2",
+    "@types/bcryptjs": "^3.0.0",
+    "bcryptjs": "^3.0.3",
     "drizzle-orm": "0.38.2",
     "handlebars": "4.7.8",
     "hono": "4.6.2",

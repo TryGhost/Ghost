@@ -183,9 +183,15 @@ References (all in this directory):
 - [ ] Headless Content API completeness + Astro path
 
 ## 22) API compatibility facades
-- [ ] Admin API facade (Ember admin runs unmodified)
-- [ ] Content/Members API facades (portal, comments, signup, search run
-      unmodified)
+- [ ] Admin API facade (boot-critical surface implemented and tested against
+      imported fixture data: /site, /session (bcrypt-compat login + cookie),
+      /users/me with roles, /config, /settings, /posts incl. drafts in
+      `src/modules/compat/`; native v10 API moved to /ghost/api/v10; admin
+      HTML serving and write endpoints absent — Ember admin boot unverified
+      in browser)
+- [ ] Content/Members API facades (Content API /posts, /pages, /settings,
+      /tags, /authors, /tiers, /newsletters serve Ghost wire shapes from
+      imported data with tests; Members API and key auth absent)
 
 ## Operations PRD
 ### Data export/import

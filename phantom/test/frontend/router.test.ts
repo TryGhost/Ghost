@@ -66,7 +66,9 @@ const contentReader: FrontendContentReader = {
         pagination: {page: 1, limit: 10, pages: 1, total: 1, next: null, prev: null}
     }),
     getTagBySlug: async () => null,
-    getAuthorBySlug: async () => null
+    getAuthorBySlug: async () => null,
+    listTags: async () => [],
+    listAuthors: async () => []
 };
 
 const settingsService: SettingsService = {

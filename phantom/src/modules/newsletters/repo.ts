@@ -39,6 +39,7 @@ import {
 export type NewsletterRepository = {
     createNewsletter: (newsletter: NewNewsletterRecord) => Promise<NewsletterRecord>;
     getNewsletterById: (id: string) => Promise<NewsletterRecord | null>;
+    listNewsletters: () => Promise<NewsletterRecord[]>;
     createIssue: (issue: NewIssueRecord) => Promise<IssueRecord>;
     getIssueById: (id: string) => Promise<IssueRecord | null>;
     createDeliveryJob: (job: NewDeliveryJobRecord) => Promise<DeliveryJobRecord>;
@@ -75,6 +76,10 @@ export const createNewsletterRepository = (db: DbClient): NewsletterRepository =
     const getNewsletterById = async (id: string) => {
         const rows = await db.select().from(newsletterTable).where(eq(newsletterTable.id, id)).limit(1);
         return rows[0] ?? null;
+    };
+
+    const listNewsletters = async () => {
+        return db.select().from(newsletterTable);
     };
 
     const createIssue = async (issue: NewIssueRecord) => {
@@ -271,6 +276,7 @@ export const createNewsletterRepository = (db: DbClient): NewsletterRepository =
 
     return {
         createNewsletter,
+        listNewsletters,
         getNewsletterById,
         createIssue,
         getIssueById,

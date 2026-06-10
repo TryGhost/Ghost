@@ -21,6 +21,8 @@ export type FrontendContentReader = {
     listPublished: (options: {page: number; limit: number; filter?: PublishedPostFilter}) => Promise<{entries: FrontendEntry[]; pagination: FrontendPagination}>;
     getTagBySlug: (slug: string) => Promise<TagRecord | null>;
     getAuthorBySlug: (slug: string) => Promise<AuthorProfileRecord | null>;
+    listTags: () => Promise<TagRecord[]>;
+    listAuthors: () => Promise<AuthorProfileRecord[]>;
 };
 
 // Read model for the public site: full records with tags/authors attached,
@@ -69,6 +71,8 @@ export const createFrontendContentReader = (repository: ContentRepository): Fron
         getEntryBySlug,
         listPublished,
         getTagBySlug: (slug: string) => repository.getTagBySlug(slug),
-        getAuthorBySlug: (slug: string) => repository.getAuthorProfileBySlug(slug)
+        getAuthorBySlug: (slug: string) => repository.getAuthorProfileBySlug(slug),
+        listTags: () => repository.listTags(),
+        listAuthors: () => repository.listAuthorProfiles()
     };
 };

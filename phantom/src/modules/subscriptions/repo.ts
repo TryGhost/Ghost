@@ -32,6 +32,7 @@ import {
 
 export type SubscriptionRepository = {
     createPlan: (plan: NewPlanRecord) => Promise<PlanRecord>;
+    listPlans: () => Promise<PlanRecord[]>;
     createPrice: (price: NewPriceRecord) => Promise<PriceRecord>;
     getPriceById: (id: string) => Promise<PriceRecord | null>;
     getPricesByPlan: (planId: string) => Promise<PriceRecord[]>;
@@ -58,6 +59,10 @@ export const createSubscriptionRepository = (db: DbClient): SubscriptionReposito
             throw new Error('Plan missing after insert');
         }
         return rows[0];
+    };
+
+    const listPlans = async () => {
+        return db.select().from(planTable);
     };
 
     const createPrice = async (price: NewPriceRecord) => {
@@ -183,6 +188,7 @@ export const createSubscriptionRepository = (db: DbClient): SubscriptionReposito
 
     return {
         createPlan,
+        listPlans,
         createPrice,
         getPriceById,
         getPricesByPlan,

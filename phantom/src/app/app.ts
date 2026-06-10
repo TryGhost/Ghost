@@ -40,6 +40,10 @@ import type {CommentService} from '../modules/comments/service.js';
 import {createCommentRouter} from '../modules/comments/routes.js';
 import type {MetricsClient} from '../platform/metrics/client.js';
 import type {FrontendContentReader} from '../modules/content/frontend-reader.js';
+import type {SubscriptionRepository} from '../modules/subscriptions/repo.js';
+import type {NewsletterRepository} from '../modules/newsletters/repo.js';
+import {createContentApiRouter} from '../modules/compat/content-api.js';
+import {createAdminApiRouter} from '../modules/compat/admin-api.js';
 import {createFrontendRouter} from '../frontend/router.js';
 
 export type AppDependencies = {
@@ -64,6 +68,8 @@ export type AppDependencies = {
     commentService: CommentService;
     metricsClient: MetricsClient;
     contentReader: FrontendContentReader;
+    subscriptionRepository: SubscriptionRepository;
+    newsletterRepository: NewsletterRepository;
 };
 
 export const createApp = ({
@@ -87,7 +93,9 @@ export const createApp = ({
     extensionsService,
     commentService,
     metricsClient,
-    contentReader
+    contentReader,
+    subscriptionRepository,
+    newsletterRepository
 }: AppDependencies) => {
     const app = new Hono();
     const api = new Hono();
@@ -125,7 +133,23 @@ export const createApp = ({
         return context.text(metricsClient.render(), 200);
     });
 
-    app.route('/ghost/api', api);
+    // Ghost compat facades own the legacy API paths so existing apps run
+    // unmodified (decision #16); the native v10 API lives under /ghost/api/v10.
+    const siteUrl = `http://localhost:${config.port}`;
+    app.route('/ghost/api/content', createContentApiRouter({
+        contentReader,
+        settingsService,
+        subscriptionRepository,
+        newsletterRepository,
+        siteUrl
+    }));
+    app.route('/ghost/api/admin', createAdminApiRouter({
+        contentReader,
+        settingsService,
+        staffAuthService,
+        siteUrl
+    }));
+    app.route('/ghost/api/v10', api);
     app.route('/', createFrontendRouter({
         config,
         contentReader,

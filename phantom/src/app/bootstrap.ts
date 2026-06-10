@@ -130,6 +130,8 @@ export const createAppDependencies = async () => {
         extensionsService,
         commentService,
         metricsClient,
-        contentReader
+        contentReader,
+        subscriptionRepository,
+        newsletterRepository
     };
 };

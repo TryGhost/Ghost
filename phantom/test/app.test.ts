@@ -436,6 +436,8 @@ const billingService = {listPrices: async () => ({prices: []})} as unknown as Bi
 const extensionsService = {listExtensions: async () => ({extensions: []})} as unknown as ExtensionsService;
 const commentService = {listComments: async () => ({comments: []})} as unknown as CommentService;
 const metricsClient = {isEnabled: () => false, render: () => ''} as unknown as MetricsClient;
+const subscriptionRepository = {listPlans: async () => [], getPricesByPlan: async () => []} as unknown as import('../src/modules/subscriptions/repo.js').SubscriptionRepository;
+const newsletterRepository = {listNewsletters: async () => []} as unknown as import('../src/modules/newsletters/repo.js').NewsletterRepository;
 const contentReader = {
     getEntryBySlug: async () => null,
     listPublished: async () => ({entries: [], pagination: {page: 1, limit: 10, pages: 1, total: 0, next: null, prev: null}}),
@@ -466,10 +468,12 @@ describe('app routes', () => {
             extensionsService,
             commentService,
             metricsClient,
-            contentReader
+            contentReader,
+            subscriptionRepository,
+            newsletterRepository
         });
 
-        const response = await app.request('/ghost/api/health');
+        const response = await app.request('/ghost/api/v10/health');
         const body = await response.json();
 
         expect(response.status).toBe(200);
@@ -498,10 +502,12 @@ describe('app routes', () => {
             extensionsService,
             commentService,
             metricsClient,
-            contentReader
+            contentReader,
+            subscriptionRepository,
+            newsletterRepository
         });
 
-        const response = await app.request('/ghost/api/site', {
+        const response = await app.request('/ghost/api/v10/site', {
             method: 'PUT',
             headers: {
                 authorization: 'Bearer session',
@@ -542,10 +548,12 @@ describe('app routes', () => {
             extensionsService,
             commentService,
             metricsClient,
-            contentReader
+            contentReader,
+            subscriptionRepository,
+            newsletterRepository
         });
 
-        const response = await app.request('/ghost/api/site', {
+        const response = await app.request('/ghost/api/v10/site', {
             method: 'PUT',
             headers: {
                 authorization: 'Bearer session',

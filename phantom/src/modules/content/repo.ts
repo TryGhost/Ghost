@@ -1,4 +1,4 @@
-import {and, count, desc, eq, inArray} from 'drizzle-orm';
+import {and, count, desc, eq, inArray, sql} from 'drizzle-orm';
 import type {DbClient} from '../../db/client.js';
 import {
     authorProfileTable,
@@ -30,6 +30,8 @@ export type PublishedPostFilter = {
     type?: 'post' | 'page';
     tagSlug?: string;
     authorSlug?: string;
+    // 'all' lifts the published-only restriction (admin browse).
+    status?: 'published' | 'all';
 };
 
 export type ContentRepository = {
@@ -48,6 +50,7 @@ export type ContentRepository = {
     createContentUrlEvent: (event: NewContentUrlEventRecord) => Promise<void>;
     createContentRedirect: (redirect: NewContentRedirectRecord) => Promise<void>;
     createTag: (tag: NewTagRecord) => Promise<TagRecord>;
+    listTags: () => Promise<TagRecord[]>;
     getTagBySlug: (slug: string) => Promise<TagRecord | null>;
     linkTagToPost: (postId: string, tagId: string) => Promise<void>;
     createCollection: (collection: NewCollectionRecord) => Promise<CollectionRecord>;
@@ -93,7 +96,7 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
     };
 
     const buildPublishedWhere = async (filter?: PublishedPostFilter) => {
-        const conditions = [eq(postTable.status, 'published')];
+        const conditions = filter?.status === 'all' ? [] : [eq(postTable.status, 'published')];
         if (filter?.type) {
             conditions.push(eq(postTable.type, filter.type));
         }
@@ -121,7 +124,7 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
             }
             conditions.push(inArray(postTable.id, postIds));
         }
-        return and(...conditions);
+        return conditions.length > 0 ? and(...conditions) : sql`1 = 1`;
     };
 
     const listPublishedPosts = async ({limit, offset, filter}: {limit: number; offset: number; filter?: PublishedPostFilter}) => {
@@ -248,6 +251,10 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         return rows[0];
     };
 
+    const listTags = async () => {
+        return db.select().from(tagTable);
+    };
+
     const getTagBySlug = async (slug: string) => {
         const rows = await db.select().from(tagTable).where(eq(tagTable.slug, slug)).limit(1);
         return rows[0] ?? null;
@@ -309,6 +316,7 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         createContentUrlEvent,
         createContentRedirect,
         createTag,
+        listTags,
         getTagBySlug,
         linkTagToPost,
         createCollection,

@@ -1,6 +1,11 @@
 import {randomBytes, scryptSync, timingSafeEqual} from 'node:crypto';
+import bcrypt from 'bcryptjs';
 
 const keyLength = 64;
+
+// Staff imported from current-day Ghost carry bcrypt hashes; phantom-native
+// accounts use scrypt.
+const isBcryptHash = (hash: string) => /^\$2[aby]\$/.test(hash);
 
 export const hashPassword = (password: string) => {
     const salt = randomBytes(16).toString('hex');
@@ -9,6 +14,10 @@ export const hashPassword = (password: string) => {
 };
 
 export const verifyPassword = (password: string, hash: string) => {
+    if (isBcryptHash(hash)) {
+        return bcrypt.compareSync(password, hash);
+    }
+
     const [salt, stored] = hash.split(':');
     if (!salt || !stored) {
         return false;

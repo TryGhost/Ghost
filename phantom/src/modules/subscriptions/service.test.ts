@@ -22,6 +22,7 @@ const createSubscriptionRepository = (): SubscriptionRepository & {state: () => 
             plans.push(plan as PlanRecord);
             return plan as PlanRecord;
         },
+        listPlans: async () => plans,
         createPrice: async (price) => {
             prices.push(price as {id: string; planId: string; cadence: string; amount: number; currency: string});
             return price as {id: string; planId: string; cadence: string; amount: number; currency: string};

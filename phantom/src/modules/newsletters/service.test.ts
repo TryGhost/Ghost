@@ -16,6 +16,7 @@ const createRepository = (): NewsletterRepository => {
             return record;
         },
         getNewsletterById: async (id) => newsletters.find((newsletter) => newsletter.id === id) ?? null,
+        listNewsletters: async () => newsletters,
         createIssue: async (issue) => {
             const record = issue as {id: string; newsletterId: string; subject: string; status: string; sendAt: number | null; createdAt: number; updatedAt: number};
             issues.push(record);
