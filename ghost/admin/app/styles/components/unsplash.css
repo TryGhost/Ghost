@@ -131,7 +131,7 @@
     cursor: zoom-in;
 }
 
-@media (max-width: 540px) {
+@media (pointer: coarse) {
     .gh-unsplash-photo {
         cursor: default;
     }
