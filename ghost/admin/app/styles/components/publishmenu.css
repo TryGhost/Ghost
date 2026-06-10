@@ -966,6 +966,10 @@
     padding: 16px 24px 16px 24px;
 }
 
+.modal-post-success .modal-body h2 {
+    overflow-wrap: anywhere;
+}
+
 .modal-post-success .modal-body p {
     font-size: 1.6rem;
     line-height: 1.5em;
