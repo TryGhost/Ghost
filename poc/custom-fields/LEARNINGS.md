@@ -57,7 +57,11 @@ This reconciles `portal_name` with the placement model and is the planned Story 
 
 - **Portal has no design system** (TailwindCSS v3, UMD bundles). The signup/account inputs are hand-rolled in `getInputFields()`. Rendering custom fields there means hand-built controls, especially a **multi-select** for `select` + `multiple`. Budget for it.
 - **Signup field order is hardcoded.** `signup-page.js` leads with `email` and `unshift`s `Name` above it when `portal_name` is on; `tabIndex` (1/2) and `autoFocus` (`fields[0]`) are hardcoded. Data-driven order (drag-to-reorder in the unified list) requires built-in email/name to be represented as entries in one ordered list alongside custom placements, with autoFocus/tabIndex derived from position. Email stays required/locked even if moved; the honeypot stays hidden/appended.
-- Signup values must survive the magic-link round trip (they ride in the token data), not just the logged-in update path.
+- Signup values must survive the magic-link round trip (they ride in the token data), not just the logged-in update path. In the POC we sidestep this by writing values straight to the repo on submit (faked member id); a real build must thread custom values through `sendMagicLink` → `_handleSignup`.
+- **`InputField` only renders a plain `<input>`** (text/email/number). boolean needs a checkbox, select needs a native `<select>` (with a manual chevron, since `.gh-portal-input` sets `appearance: none`) or a checkbox group for multi. Custom controls were hand-built in `signup-page.js` rather than extending the shared `InputField`/`InputForm` (used by other pages).
+- **Validation reuse:** `ValidateInputForm`/`FormInputError` validate any field with `required && !value`, so putting custom fields into the same `fields` array gives required-validation for free, as long as empty values coerce correctly (empty multi-select → `''`, unchecked boolean → `false`). The default message uses `field.name`, so for a nice label we pass a label-based message ourselves.
+- **"Placed = required"** is enforced in the renderer (`required: true` for every custom placement), not trusted from the stored flag, so legacy/seed data can't make a placed field optional by accident.
+- **Cross-document live sync:** the same-tab subscribe/notify doesn't reach a separate bundle (admin vs Portal preview iframe). A `window 'storage'` listener in the repo bridges them so the live preview reflects admin edits. A real build gets this from the server + query invalidation.
 
 ## i18n
 

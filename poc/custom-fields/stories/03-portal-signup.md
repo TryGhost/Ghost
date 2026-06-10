@@ -2,9 +2,15 @@
 
 **Goal:** the Portal "Signup options" tab becomes a single **Form fields** list that mixes the built-in fields (Email, Name) with placed custom fields. The owner curates the signup form from one place, and Portal renders it dynamically and captures values on signup.
 
-**Status:** Not started
+**Status:** ✅ Done. Part A (admin unified list) + Part B (Portal renders + captures), tested and approved.
 
 **Depends on:** Stories 0 and 1.
+
+## Built (Part B)
+
+- `apps/portal/src/components/pages/signup-page.js` loads `getForm('signup')` + `listFields()` (and subscribes for live updates), renders Email/Name + custom fields in the saved order (honours Name↔Email reorder), with controls per type: text/number via `InputField`, boolean as a checkbox, select as a dropdown (single) / checkboxes (multi).
+- Values captured in `cfValues`; required enforced via the existing `ValidateInputForm`; on signup, values are stored via `repo.setValue(member_1, fieldId, value)` (faked member id).
+- Repo listens to the cross-document `storage` event so the live admin preview reflects edits without a reload.
 
 ## Design: one unified Form fields list
 

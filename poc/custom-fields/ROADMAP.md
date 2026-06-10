@@ -20,7 +20,7 @@ Each story below targets **Tier 1** for its first demoable version. Tier 2 (sele
 | 0 | [Foundation: data model + repository facade](./stories/00-foundation.md) | shared | Demoable (verified when Story 1 imports it) |
 | 1 | [Admin: define custom fields](./stories/01-admin-define-fields.md) | admin-x-settings | Built (Tier 1 + Tier 2); final test pending |
 | 2 | [Admin: member detail values](./stories/02-admin-member-detail.md) | Ember admin | Not started |
-| 3 | [Portal: collect at signup](./stories/03-portal-signup.md) | portal/admin-x-settings | Part A (admin unified list) done; Part B (Portal render + capture) TODO |
+| 3 | [Portal: collect at signup](./stories/03-portal-signup.md) | portal/admin-x-settings | ✅ Done (Part A + Part B) |
 | 4 | [Portal: self-edit on account page](./stories/04-portal-account.md) | portal | Not started |
 
 Status values: `Not started` / `In progress` / `Demoable` / `Done`.

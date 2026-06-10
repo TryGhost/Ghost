@@ -42,7 +42,7 @@ const STORAGE_KEY = 'ghost-poc-custom-fields';
 // an older version is discarded and reseeded from the JSON, so dev browsers pick
 // up seed changes automatically (this DOES wipe local edits, which is the point
 // of a reseed).
-const SEED_VERSION = 4;
+const SEED_VERSION = 5;
 
 /** Type options for the "data type" dropdown in the create UI. */
 export const TYPES = [
@@ -70,6 +70,17 @@ function notify() {
 export function subscribe(listener) {
     listeners.add(listener);
     return () => listeners.delete(listener);
+}
+
+// Cross-document sync: the `storage` event fires in OTHER documents of the same
+// origin (e.g. the admin tab vs the Portal preview iframe), letting the live
+// preview reflect edits made in admin without a reload.
+if (typeof window !== 'undefined') {
+    window.addEventListener('storage', (event) => {
+        if (event.key === STORAGE_KEY) {
+            notify();
+        }
+    });
 }
 
 function read() {

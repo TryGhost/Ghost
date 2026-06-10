@@ -5,7 +5,8 @@ import CloseButton from '../common/close-button';
 import SiteTitleBackButton from '../common/site-title-back-button';
 import NewsletterSelectionPage from './newsletter-selection-page';
 import ProductsSection from '../common/products-section';
-import InputForm from '../common/input-form';
+import InputField from '../common/input-field';
+import * as customFields from '../../../../../poc/custom-fields/repo';
 import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
 import InvitationIcon from '../../images/icons/invitation.svg?react';
@@ -355,6 +356,10 @@ html[dir=rtl] .gh-portal-signup-terms .checkbox:before {
 }
 `;
 
+// POC: store signup-collected custom field values against this faked member so
+// they show up later in member detail / account page demos.
+const DEMO_MEMBER_ID = 'member_1';
+
 class SignupPage extends React.Component {
     static contextType = AppContext;
 
@@ -365,7 +370,11 @@ class SignupPage extends React.Component {
             email: '',
             plan: 'free',
             showNewsletterSelection: false,
-            termsCheckboxChecked: false
+            termsCheckboxChecked: false,
+            // POC custom fields: ordered signup placements, field definitions, entered values
+            cfForm: [],
+            cfDefs: [],
+            cfValues: {}
         };
 
         this.termsRef = React.createRef();
@@ -381,6 +390,17 @@ class SignupPage extends React.Component {
 
         // Handle the default plan if not set
         this.handleSelectedPlan();
+
+        // POC: load the signup form config + custom field definitions, and keep
+        // them live as the owner edits them in admin.
+        this.loadCustomFields();
+        this.cfUnsubscribe = customFields.subscribe(() => this.loadCustomFields());
+    }
+
+    loadCustomFields() {
+        Promise.all([customFields.getForm('signup'), customFields.listFields()]).then(([cfForm, cfDefs]) => {
+            this.setState({cfForm, cfDefs});
+        });
     }
 
     componentDidUpdate() {
@@ -401,6 +421,7 @@ class SignupPage extends React.Component {
 
     componentWillUnmount() {
         clearTimeout(this.timeoutId);
+        this.cfUnsubscribe?.();
     }
 
     getFormErrors(state) {
@@ -433,6 +454,13 @@ class SignupPage extends React.Component {
             }
 
             if (!hasFormErrors) {
+                // POC: persist entered custom field values for the (faked) member.
+                (this.state.cfForm || []).forEach((entry) => {
+                    if (entry.fieldId !== 'email' && entry.fieldId !== 'name') {
+                        customFields.setValue(DEMO_MEMBER_ID, entry.fieldId, this.state.cfValues[entry.fieldId]);
+                    }
+                });
+
                 if (hasMultipleNewsletters({site})) {
                     this.setState({
                         showNewsletterSelection: true,
@@ -462,10 +490,28 @@ class SignupPage extends React.Component {
     }
 
     handleInputChange(e, field) {
+        if (field.custom) {
+            this.handleCustomChange(field, e.target.value);
+            return;
+        }
         const fieldName = field.name;
         const value = e.target.value;
         this.setState({
             [fieldName]: value
+        });
+    }
+
+    handleCustomChange(field, value) {
+        this.setState(state => ({
+            cfValues: {...state.cfValues, [field.name]: value}
+        }));
+    }
+
+    toggleMultiOption(field, option) {
+        this.setState((state) => {
+            const current = Array.isArray(state.cfValues[field.name]) ? state.cfValues[field.name] : [];
+            const next = current.includes(option) ? current.filter(o => o !== option) : [...current, option];
+            return {cfValues: {...state.cfValues, [field.name]: next}};
         });
     }
 
@@ -507,45 +553,102 @@ class SignupPage extends React.Component {
         const {site: {portal_name: portalName}} = this.context;
 
         const errors = state.errors || {};
-        const fields = [
-            {
-                type: 'email',
-                value: state.email,
-                placeholder: t('jamie@example.com'),
-                label: t('Email'),
-                name: 'email',
-                required: true,
-                tabIndex: 2,
-                errorMessage: errors.email || ''
-            },
-            {
-                type: 'text',
-                value: state.phonenumber,
-                placeholder: t('+1 (123) 456-7890'),
-                // Doesn't need translation, hidden field
-                label: t('Phone number'),
-                name: 'phonenumber',
-                required: false,
-                tabIndex: -1,
-                autoComplete: 'off',
-                hidden: true
-            }
-        ];
+        const cfDefs = state.cfDefs || [];
+        const cfValues = state.cfValues || {};
 
-        /** Show Name field if portal option is set*/
-        if (portalName) {
-            fields.unshift({
-                type: 'text',
-                value: state.name,
-                placeholder: t('Jamie Larson'),
-                label: t('Name'),
-                name: 'name',
-                required: true,
-                tabIndex: 1,
-                errorMessage: errors.name || ''
-            });
+        const emailField = {
+            type: 'email',
+            value: state.email,
+            placeholder: t('jamie@example.com'),
+            label: t('Email'),
+            name: 'email',
+            required: true,
+            errorMessage: errors.email || ''
+        };
+        const nameField = {
+            type: 'text',
+            value: state.name,
+            placeholder: t('Jamie Larson'),
+            label: t('Name'),
+            name: 'name',
+            required: true,
+            errorMessage: errors.name || ''
+        };
+
+        // POC: build the field list from the saved signup form order (built-in
+        // Email/Name + custom-field placements). Fall back to Email + Name before
+        // the repo config has loaded.
+        const ordered = (state.cfForm && state.cfForm.length) ? state.cfForm : [{fieldId: 'email'}, {fieldId: 'name'}];
+        const fields = [];
+
+        ordered.forEach((entry) => {
+            if (entry.fieldId === 'email') {
+                fields.push(emailField);
+            } else if (entry.fieldId === 'name') {
+                if (portalName) {
+                    fields.push(nameField);
+                }
+            } else {
+                const def = cfDefs.find(d => d.id === entry.fieldId);
+                if (!def) {
+                    return;
+                }
+                const raw = cfValues[def.id];
+                const isMulti = def.type === 'select' && def.multiple;
+                // For required validation: an empty multi-select array counts as empty.
+                let value;
+                if (isMulti) {
+                    value = (Array.isArray(raw) && raw.length) ? raw : '';
+                } else if (def.type === 'boolean') {
+                    value = raw ?? false;
+                } else {
+                    value = raw ?? '';
+                }
+                fields.push({
+                    type: def.type === 'number' ? 'number' : 'text',
+                    cfType: def.type,
+                    custom: true,
+                    options: def.options || [],
+                    multiple: def.multiple,
+                    value,
+                    placeholder: entry.placeholder || '',
+                    label: def.label,
+                    name: def.id,
+                    // POC: any custom field placed on the form is required.
+                    required: true,
+                    // Use the field label (lowercased to match the sentence-case of
+                    // the built-in messages) rather than the raw id.
+                    errorMessage: errors[def.id] ? t('Please enter {fieldName}', {fieldName: def.label.toLowerCase()}) : ''
+                });
+            }
+        });
+
+        // Hidden honeypot field for bot prevention.
+        fields.push({
+            type: 'text',
+            value: state.phonenumber,
+            placeholder: t('+1 (123) 456-7890'),
+            label: t('Phone number'),
+            name: 'phonenumber',
+            required: false,
+            tabIndex: -1,
+            autoComplete: 'off',
+            hidden: true
+        });
+
+        // Tab order + autofocus follow the rendered order.
+        let tabIndex = 1;
+        fields.forEach((field) => {
+            if (!field.hidden) {
+                field.tabIndex = tabIndex;
+                tabIndex += 1;
+            }
+        });
+        const firstVisible = fields.find(f => !f.hidden);
+        if (firstVisible) {
+            firstVisible.autoFocus = true;
         }
-        fields[0].autoFocus = true;
+
         if (fieldNames && fieldNames.length > 0) {
             return fields.filter((f) => {
                 return fieldNames.includes(f.name);
@@ -695,6 +798,114 @@ class SignupPage extends React.Component {
         );
     }
 
+    renderInputFields(fields) {
+        return fields.map((field) => {
+            if (field.custom && field.cfType === 'boolean') {
+                return this.renderBooleanField(field);
+            }
+            if (field.custom && field.cfType === 'select') {
+                return this.renderSelectField(field);
+            }
+            return (
+                <InputField
+                    key={field.name}
+                    label={field.label}
+                    type={field.type}
+                    name={field.name}
+                    hidden={field.hidden}
+                    placeholder={field.placeholder}
+                    disabled={field.disabled}
+                    value={field.value}
+                    tabIndex={field.tabIndex}
+                    autoFocus={field.autoFocus}
+                    errorMessage={field.errorMessage}
+                    onChange={e => this.handleInputChange(e, field)}
+                    onKeyDown={e => this.onKeyDown(e)}
+                />
+            );
+        });
+    }
+
+    renderCustomFieldError(field) {
+        if (!field.errorMessage) {
+            return null;
+        }
+        return (
+            <p style={{color: 'var(--red)', fontSize: '1.3rem', lineHeight: '1.6em', marginBottom: 0}}>
+                {field.errorMessage}
+            </p>
+        );
+    }
+
+    renderBooleanField(field) {
+        return (
+            <section className='gh-portal-input-section' key={field.name}>
+                <label style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
+                    <input
+                        type='checkbox'
+                        name={field.name}
+                        checked={!!field.value}
+                        onChange={e => this.handleCustomChange(field, e.target.checked)}
+                    />
+                    <span>{field.label}</span>
+                </label>
+                {this.renderCustomFieldError(field)}
+            </section>
+        );
+    }
+
+    renderSelectField(field) {
+        const options = field.options || [];
+        const header = (
+            <div className='gh-portal-input-labelcontainer'>
+                <label className='gh-portal-input-label'>{field.label}</label>
+                {this.renderCustomFieldError(field)}
+            </div>
+        );
+        if (field.multiple) {
+            const selected = Array.isArray(field.value) ? field.value : [];
+            return (
+                <section className='gh-portal-input-section' key={field.name}>
+                    {header}
+                    <div style={{display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px'}}>
+                        {options.map(option => (
+                            <label key={option} style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
+                                <input
+                                    type='checkbox'
+                                    checked={selected.includes(option)}
+                                    onChange={() => this.toggleMultiOption(field, option)}
+                                />
+                                <span>{option}</span>
+                            </label>
+                        ))}
+                    </div>
+                </section>
+            );
+        }
+        return (
+            <section className='gh-portal-input-section' key={field.name}>
+                {header}
+                <select
+                    className={field.errorMessage ? 'gh-portal-input error' : 'gh-portal-input'}
+                    name={field.name}
+                    value={field.value || ''}
+                    style={{
+                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8a8a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
+                        backgroundRepeat: 'no-repeat',
+                        backgroundPosition: 'right 14px center',
+                        paddingRight: '36px'
+                    }}
+                    onChange={e => this.handleCustomChange(field, e.target.value)}
+                >
+                    <option value=''>{field.placeholder || t('Select an option')}</option>
+                    {options.map(option => (
+                        <option key={option} value={option}>{option}</option>
+                    ))}
+                </select>
+            </section>
+        );
+    }
+
     renderForm() {
         const fields = this.getInputFields({state: this.state});
         const {site, pageQuery} = this.context;
@@ -740,11 +951,7 @@ class SignupPage extends React.Component {
             <section className="gh-portal-signup">
                 <div className='gh-portal-section'>
                     <div className='gh-portal-logged-out-form-container'>
-                        <InputForm
-                            fields={fields}
-                            onChange={(e, field) => this.handleInputChange(e, field)}
-                            onKeyDown={e => this.onKeyDown(e)}
-                        />
+                        {this.renderInputFields(fields)}
                     </div>
                     <div>
                         {(hasOnlyFree ?
