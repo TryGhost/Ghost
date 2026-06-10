@@ -2,7 +2,7 @@ import React, {useCallback, useState} from 'react';
 import {AddLabelModal, DeleteModal, ImportMembersModal, RemoveLabelModal, UnsubscribeModal} from './bulk-action-modals';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {type ImportResponse} from './bulk-action-modals/import-members/state';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {buildMemberOperationParams} from '../member-query-params';
 import {buildMembersUrl} from '../member-route';
@@ -229,25 +229,25 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                             <DropdownMenuItem onClick={handleExport}>
                                 <LucideIcon.Download className="mr-2 size-4" />
                                 {hasFilterOrSearch
-                                    ? `Export ${memberCount.toLocaleString()} members`
+                                    ? `Export ${formatNumber(memberCount)} members`
                                     : 'Export all members'}
                             </DropdownMenuItem>
 
                             <DropdownMenuSeparator />
                             <DropdownMenuItem onClick={() => setShowAddLabelModal(true)}>
                                 <LucideIcon.Tags className="mr-2 size-4" />
-                                    Add label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                                    Add label to {formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}
                             </DropdownMenuItem>
                             <DropdownMenuItem onClick={() => setShowRemoveLabelModal(true)}>
                                 <LucideIcon.Tag className="mr-2 size-4" />
-                                    Remove label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                                    Remove label from {formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                                 disabled={isLoadingNewsletters}
                                 onClick={() => setShowUnsubscribeModal(true)}
                             >
                                 <LucideIcon.MailX className="mr-2 size-4" />
-                                    Unsubscribe {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                                    Unsubscribe {formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}
                             </DropdownMenuItem>
                             <DropdownMenuSeparator />
                             <DropdownMenuItem
@@ -256,7 +256,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
                                 onClick={() => setShowDeleteModal(true)}
                             >
                                 <LucideIcon.Trash2 className="mr-2 size-4" />
-                                    Delete {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
+                                    Delete {formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}
                             </DropdownMenuItem>
                         </>
                     )}
@@ -267,6 +267,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             <Button asChild>
                 <a aria-label="New member" className="inline-flex items-center" href={newMemberHref}>
                     <span className="hidden sm:inline">New member</span>
+                    <span className="sm:hidden"><LucideIcon.Plus /></span>
                 </a>
             </Button>
 

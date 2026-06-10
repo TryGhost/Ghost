@@ -438,6 +438,23 @@ const UpgradePlanSection = ({
     );
 };
 
+// Shown when there are no paid plans to display (e.g. a member reaches the
+// plans page via a theme button or deep link while the site has no paid tiers).
+const NoPlansAvailableMessage = () => {
+    return (
+        <section>
+            <div className='gh-portal-section'>
+                <p
+                    className='gh-portal-no-plans-available-notification'
+                    data-testid="no-plans-available-notification-text"
+                >
+                    {t('Sorry, no paid plans are available.')}
+                </p>
+            </div>
+        </section>
+    );
+};
+
 const PlansContainer = ({
     plans, selectedPlan, confirmationPlan, confirmationType, showConfirmation = false,
     pendingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
@@ -446,6 +463,14 @@ const PlansContainer = ({
     const {member} = useContext(AppContext);
     // Plan upgrade flow for free, complimentary, or gift members.
     if (!isPaidMember({member}) || isComplimentaryMember({member}) || isGiftMember({member})) {
+        // No paid plans to choose from. This covers the deep-link / theme-button
+        // entry point (#/portal/account/plans), which cannot be gated in-app,
+        // where the body would otherwise render blank under the page header.
+        if (plans.length === 0) {
+            return (
+                <NoPlansAvailableMessage />
+            );
+        }
         return (
             <UpgradePlanSection
                 {...{plans, selectedPlan, onPlanSelect, onPlanCheckout}}

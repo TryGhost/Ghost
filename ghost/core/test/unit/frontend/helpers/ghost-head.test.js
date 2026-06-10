@@ -1271,6 +1271,22 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
         });
+        it('does not inject the portal script when portal url is disabled', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
+            configUtils.set({'portal:url': false});
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }))).toString();
+
+            assert.doesNotMatch(rendered, /src="false"/);
+            assert.doesNotMatch(rendered, /data-ghost=/);
+        });
     });
 
     describe('search scripts', function () {

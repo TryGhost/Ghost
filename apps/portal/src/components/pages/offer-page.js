@@ -276,7 +276,7 @@ export default class OfferPage extends React.Component {
 
     handleSignup(e) {
         e.preventDefault();
-        const {pageData: offer, site} = this.context;
+        const {pageData: offer, site, member} = this.context;
         if (!offer || !offer.tier) {
             return null;
         }
@@ -298,7 +298,9 @@ export default class OfferPage extends React.Component {
                     offerId: offer?.id,
                     phonenumber
                 };
-                if (hasMultipleNewsletters({site})) {
+                // Logged-in members are upgrading and already have newsletter preferences,
+                // so they skip the newsletter selection step that new signups see.
+                if (hasMultipleNewsletters({site}) && !member) {
                     this.setState({
                         showNewsletterSelection: true,
                         pageData: signupData,

@@ -1,5 +1,5 @@
 type Props = {
-    adminUrl: string|undefined;
+    adminUrl: string;
     onLoad: () => void;
 };
 const AuthFrame: React.FC<Props> = ({adminUrl, onLoad}) => {
