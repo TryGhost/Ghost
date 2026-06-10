@@ -17,7 +17,7 @@ const MultipleActiveSubscriptionsBanner = ({
     });
 
     if (!banner.shouldShow) {
-        // return null;
+        return null;
     }
 
     return (
