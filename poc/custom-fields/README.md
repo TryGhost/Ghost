@@ -19,6 +19,8 @@ Branch: `poc/member-custom-fields`.
 | [`data-model.md`](./data-model.md) | The agreed schema: field definitions, type catalog, value shapes, presets, storage. |
 | [`custom-fields.seed.json`](./custom-fields.seed.json) | Initial seed data (field definitions + per-member values). |
 | [`stories/`](./stories/) | One file per story with tasks, scope, and a demo script. |
+| [`LEARNINGS.md`](./LEARNINGS.md) | What the POC surfaced that should inform a real implementation. |
+| [`ideas/`](./ideas/) | Future-task write-ups (e.g. the post-signup survey surface). |
 
 ## How we work
 
