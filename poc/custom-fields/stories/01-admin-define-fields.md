@@ -2,7 +2,7 @@
 
 **Goal:** a "Custom fields" section in the admin-x-settings Membership sidebar where the owner can create, edit, archive, and delete field definitions.
 
-**Status:** Tier 1 + Tier 2 built. Browser verification pending.
+**Status:** ✅ Done (Tier 1 + Tier 2).
 
 **Depends on:** Story 0.
 
@@ -23,7 +23,7 @@
 ## Deferred / out of scope (documented decisions)
 
 - **Descriptions dropped.** `helpText` is admin-only by design; we removed it from the seed and the list to keep the modal minimal. The property is reserved in the model for a future admin-only Description field.
-- **No explicit internal flag.** Member-visibility is implicit: a field reaches members only if placed on a Portal form (account page is opt-in). An explicit "internal" flag is a documented future enhancement (see ROADMAP).
+- **No explicit internal flag.** Member-visibility is implicit: a field reaches members only if placed on the Portal form (the account page reuses that same list). An explicit "internal" flag is a documented future enhancement (see ROADMAP).
 - **Presets deferred** (not built now): name-style presets clash with the built-in `name`, but gap-filling presets could be useful later. `PRESETS` removed from the repo for now; the nullable `preset` property remains. See [ideas/field-formats.md](../ideas/field-formats.md).
 - **Orphaned values** when a select option is deleted after members have values: ignored for the POC.
 

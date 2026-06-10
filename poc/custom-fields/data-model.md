@@ -21,7 +21,7 @@ One entry per custom field the owner creates. This is the "schema" the owner edi
 | `key` | Machine name (snake_case), e.g. `first_name`. Unique. Auto-derived from `label`, not shown in the create UI for the POC. |
 | `label` | Display name, e.g. `First name`. The "Enter name" field in the create dialog. |
 | `type` | One of the type catalog below. Drives the input control and the type badge. Read-only once placed on a form. |
-| `preset` | Non-null when created from a preset (`first_name`, `last_name`, ...). `null` for fully custom fields. A preset just pre-fills `label` + `type`. |
+| `preset` | Non-null when created from a preset (`phone`, `company`, ...). `null` for fully custom fields. A preset just pre-fills `label` + `type`. |
 | `tier` | Build tier (1/2/3) for the POC rollout. See ROADMAP. Not a product concept. |
 | `helpText` | Optional helper/description text. |
 | `options` | Array of choices. Only for `select`. `null` otherwise. |
@@ -67,7 +67,7 @@ Stored values are **always nullable/optional**. Nothing at the storage layer enf
 
 ## Presets
 
-Quick-create templates that pre-fill `label` + `type` (all `text` for now): `first_name`, `last_name`, `phone`, `company`, `address`, `website`. Owner can still rename/retype after picking one. "Custom field" = no preset, owner sets everything.
+Quick-create templates that pre-fill `label` + `type` (all `text` for now): `phone`, `company`, `address`, `website`, etc. Name-style presets are intentionally excluded (they'd clash with Ghost's built-in `name`). Owner can still rename/retype after picking one. "Custom field" = no preset, owner sets everything. Deferred for the POC — see [ideas/field-formats.md](./ideas/field-formats.md).
 
 ## Storage
 

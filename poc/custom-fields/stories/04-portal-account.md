@@ -2,15 +2,13 @@
 
 **Goal:** a logged-in member can view and update their own custom field values from the "Your account" page.
 
-**Status:** Not started
+**Status:** ✅ Done.
 
-**Depends on:** Stories 0, 1, and the account-form placements (`forms.account`).
+**Depends on:** Stories 0, 1, 3 (the account page reuses the signup placement list).
 
 ## Surface
 
 `apps/portal/src/components/pages/account-profile-page.js` (the Edit profile view behind the account page "Edit" action).
-
-**Status:** Built, test pending.
 
 ## UX (connected Portal model)
 

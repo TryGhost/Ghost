@@ -36,6 +36,8 @@ Owner defines fields (Story 1)
 
 The POC is successful if that loop feels natural to test users, independent of how data is stored.
 
+**Status: the full loop is built (Stories 0–4 done).** Define a field in Membership settings → it shows on the signup Form fields list → new members fill it at signup → it appears (and is editable) on the member detail in admin and on the member's account page. All data is local (localStorage) per the storage decision; see [LEARNINGS.md](./LEARNINGS.md) for what a real, backend-backed build would entail.
+
 ## Constraints (apply to every story)
 
 - **Reuse only existing components and patterns.** Prefer `shade` (shadcn) components; otherwise existing custom components in the target app. In Ember admin, reuse existing Ember components.
