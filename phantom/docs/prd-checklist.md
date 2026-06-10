@@ -1,65 +1,94 @@
-# Ghost Rewrite PRD v4 Checklist
+# Ghost v10 PRD Checklist
 
-References:
-- `prd-v4.md`
-- `prd-v4-operations.md`
-- `prd-v4-admin-settings.md`
-- `architecture-v4.md`
-- `domainmodel-v4.md`
+`[x]` asserts: the PRD's acceptance bullets for the item are implemented AND
+at least one colocated test exercises them. Scaffolding (schema + routes
+without the behavior) does not qualify. UI-flow items (sections 16-19,
+Admin Settings) additionally require browser e2e tests running the existing
+apps against phantom.
+
+Binding design rulings live in `decisions.md` — read it before grading or
+designing. This checklist reflects the 2026-06-10 source-grounded review
+against `phantom/src`.
+
+References (all in this directory):
+- `prd.md`
+- `prd-operations.md`
+- `prd-admin-settings.md`
+- `architecture.md` (system) / `module-architecture.md` (module layout)
+- `domainmodel.md`
+- `decisions.md`
 
 ## 1) Staff authentication and access control
 - [x] Password-based staff login with rate limiting
 - [x] 2FA/device verification flow
-- [x] Staff password reset
-- [x] Staff invitations with role assignment
-- [x] Staff sessions with role/permission enforcement
-- [x] Staff API tokens vs integration tokens
+- [ ] Staff password reset (service exists; expiry/session-revocation
+      acceptance is not fully tested)
+- [ ] Staff invitations with role assignment (create/accept tested; expiry
+      and error paths untested)
+- [ ] Staff sessions with role/permission enforcement (route helper exists;
+      forbidden-role behavior untested)
+- [ ] Staff API tokens vs integration tokens (creation/revocation tested;
+      staff-token request auth and integration-token denial on staff routes
+      are not implemented/tested)
 - [x] SSO adapters
 - [x] Audit trail for staff auth events
 
 ## 2) Partner access via Partner Portal
 - [x] Access grants with scoped roles and TTL
-- [x] Partner Portal token validation
-- [x] External staff mapping to local StaffAccount
-- [x] Access grant enforcement per request
-- [x] Partner audit logging
+- [ ] Partner Portal token validation (local opaque tokens only; no remote
+      signed-token validation/mock service)
+- [ ] External staff mapping to local StaffAccount (implemented; external
+      management fields untested)
+- [ ] Access grant enforcement per request (validation endpoint exists; not
+      wired into every privileged request)
+- [ ] Partner audit logging (implemented on validation; audit persistence
+      untested)
 
 ## 3) Member authentication and signup policy
 - [x] Magic-link login tokens
-- [x] SignupPolicy enforcement
-- [x] AbuseGuard rate limits
+- [ ] SignupPolicy enforcement (non-open policies collapse to one
+      `signup_not_allowed` path; policy-specific errors unimplemented)
+- [ ] AbuseGuard rate limits (limiter exists; no colocated member test)
 - [x] Member auth events persisted
 - [x] Session verification for gated content
 
 ## 4) Member subscriptions and payments
 - [x] Plans/tiers with pricing and benefits
-- [x] Offers/discounts with redemption
+- [ ] Offers/discounts with redemption (service code exists; redemption path
+      untested)
 - [x] CheckoutSession creation
 - [x] Prevent duplicate checkout for active subs
-- [x] BillingAccount maintenance
-- [x] ContentEntitlements
-- [x] Subscription lifecycle events
+- [ ] BillingAccount maintenance (service code exists; not asserted in tests)
+- [ ] ContentEntitlements (service code exists; not asserted in tests)
+- [ ] Subscription lifecycle events (local event row created; no outbox and
+      event persistence untested)
 
 ## 5) Content authoring and publishing
-- [ ] Posts/pages with Lexical content + revisions
-- [ ] Tags, collections, author profiles
-- [x] Draft/scheduled/published states
-- [ ] Domain events for content lifecycle
-- [ ] URL routing + cache invalidation
+- [x] Posts/pages with Lexical content + revisions
+- [ ] Tags, collections, author profiles (collection filters never evaluated)
+- [ ] Draft/scheduled/published states (nothing publishes scheduled posts)
+- [ ] Domain events for content lifecycle (stored, but no outbox dispatch)
+- [ ] URL routing + cache invalidation (no cache invalidation exists)
 
 ## 6) Newsletters and email delivery
-- [x] Newsletters with branding and defaults
-- [x] Issues linked to content or standalone
-- [x] Queue-backed email sending
-- [ ] Delivery status tracking
-- [ ] Suppression lists + automated emails
-- [ ] Email lifecycle events
+- [ ] Newsletters with branding and defaults (basic name/sender create tested;
+      branding/default subscription behavior absent)
+- [ ] Issues linked to content or standalone (no rendering pipeline exists)
+- [ ] Queue-backed email sending (local batch records only; no worker or
+      provider)
+- [ ] Delivery status tracking (untested)
+- [ ] Suppression lists + workflow-driven automated emails (suppression not
+      checked at send)
+- [ ] Email lifecycle events (untested)
 
 ## 7) Activity feed and analytics
-- [x] Activity event store + query
-- [ ] Aggregated event types
-- [ ] Snapshot pipeline
-- [ ] Explore attribution integration
+- [x] Analytics event store + query (standing in until ActivityEvent feed
+      projection is wired)
+- [ ] Aggregated event types (service method exists; untested and not feed
+      projected)
+- [ ] Snapshot pipeline (service method exists; untested and not feed
+      projected)
+- [ ] Explore attribution integration (no retry, no posts/MRR metadata)
 
 ## 8) Link tracking and redirects
 - [x] Canonical tracked links
@@ -67,45 +96,49 @@ References:
 - [x] Click events + attribution
 
 ## 9) Media storage and CDN configuration
-- [x] File uploads with metadata
-- [x] Switchable storage adapters
-- [x] CDN base URL rewriting
-- [ ] Asset URL integrity in Lexical content
+- [ ] File uploads with metadata (filename/attachment-ref retention missing)
+- [ ] Switchable storage adapters (one adapter; see storage ruling)
+- [ ] CDN base URL rewriting (rewrite logic untested)
+- [ ] Asset URL integrity in Lexical content (idempotency/external URLs untested)
 
 ## 10) Integrations and webhooks
-- [ ] Integration tokens + webhooks
-- [ ] Webhook ownership enforcement
-- [x] Outbox-backed webhook dispatch
-- [ ] Webhook retry/backoff
+- [ ] Integration tokens + webhooks (integration token guard exists on routes;
+      manifest event filtering missing)
+- [ ] Webhook ownership enforcement (implemented in service; ownership paths
+      untested)
+- [ ] Outbox-backed webhook dispatch (no HTTP dispatch ever occurs)
+- [ ] Webhook retry/backoff (not per-webhook; retry test stubbed)
 
 ## 11) Marketplace and extensions
-- [ ] Registry listing discovery
-- [ ] Paid listing eligibility checks
-- [ ] Local extension install state
-- [ ] Scoped API/webhook permissions
-- [ ] Runtime license checks (extension-owned)
+- [ ] Registry listing discovery (hardcoded local data; see central services ruling)
+- [ ] Paid listing eligibility checks (needs remote mock registry + tests)
+- [ ] Local extension install state (no version tracking or enabled lifecycle)
+- [ ] Scoped API/webhook permissions (manifest stored, never enforced)
+- [ ] Runtime license checks (extension-owned) (no cached-eligibility fallback)
 
 ## 12) Site billing opt-in
-- [ ] BillingProfile enrollment
-- [ ] Central billing link without core impact
-- [ ] Cached MarketplaceEntitlements
+- [ ] BillingProfile enrollment (no SiteIdentity token verification)
+- [ ] Central billing link without core impact (untested)
+- [ ] Cached MarketplaceEntitlements (expiry exists but is never invoked)
 
 ## 13) Settings and configuration
-- [ ] Typed settings
-- [ ] Metafield migration support
-- [ ] Custom objects CRUD
+- [ ] Typed settings (service exists; module has zero colocated tests)
+- [ ] Metafield migration support (service exists; rollback path untested)
+- [ ] Custom objects CRUD (service exists; no indexed field queries; JSON blob
+      only and untested)
 
 ## 14) Notifications
-- [ ] Admin notifications CRUD
-- [ ] System notifications from events/jobs
+- [ ] Admin notifications CRUD (role enforcement untested)
+- [ ] System notifications from events/jobs (no event/job integration exists)
 
 ## 15) Work orchestration and jobs
-- [ ] Queue provider adapter
-- [ ] Named queues with retry/backoff
-- [ ] JobDefinition/JobRun
-- [ ] Async offload for heavy work
-- [ ] Idempotency keys
-- [ ] Operational visibility APIs
+- [ ] Queue provider adapters (in-memory only; ruling requires all three)
+- [ ] Named queues with retry/backoff (policies hardcoded, untested)
+- [ ] JobDefinition/JobRun (untested)
+- [ ] Async offload for heavy work (no worker consumes the queue)
+- [ ] Idempotency keys (dedup behavior untested)
+- [ ] Operational visibility APIs (`/ghost/api/metrics` exists when enabled;
+      job/metrics visibility is untested)
 
 ## 16) Public experience: portal, signup, comments
 - [ ] Portal modal flows
@@ -135,38 +168,63 @@ References:
 - [ ] Growth/newsletter analytics empty states
 - [ ] Stats app error handling
 
+## 20) Automation workflows
+- [ ] Workflow definitions triggered by domain events
+- [ ] Workflow runs execute on the job primitives
+- [ ] Seeded welcome drip workflow
+
+## 21) Theme rendering and public site
+- [ ] Handlebars theme compat rendering (basic fs bundle render tested; helper
+      surface parity and routes.yaml absent)
+- [ ] Headless Content API completeness + Astro path
+
+## 22) API compatibility facades
+- [ ] Admin API facade (Ember admin runs unmodified)
+- [ ] Content/Members API facades (portal, comments, signup, search run
+      unmodified)
+
 ## Operations PRD
 ### Data export/import
-- [ ] Exporter table set output
-- [ ] Import legacy formats
-- [ ] Legacy field mapping
+- [ ] Exporter table set output (service returns a static table set; no tests
+      or file payload)
+- [ ] Import legacy formats (format contract exists; no fixture-backed import)
+- [ ] Legacy field mapping (partial amp/comment normalization in service;
+      untested)
+- [ ] Fixture-based importer test per restructured table
 
 ### Migrations and schema utilities
-- [ ] Rollback and re-apply migrations
-- [ ] Idempotent migrations
-- [ ] Default fixtures
-- [ ] Nullable migration utilities
+- [ ] Rollback and re-apply migrations (run records only; no SQL migration
+      execution)
+- [ ] Idempotent migrations (run records are idempotent; SQL behavior absent)
+- [ ] Default fixtures (service seeds basics; untested)
+- [ ] Nullable migration utilities (records requested changes; no SQL
+      nullability change)
 
 ### Settings integrity
 - [ ] Core settings allowlist
 - [ ] Non-core settings migration requirements
 
 ### URL service
-- [ ] URL generator uses routing rules
-- [ ] Tags/authors with no public content
-- [ ] Subdirectory URL support
+- [ ] URL generator uses routing rules (simple `/posts`, `/tag`, `/author`
+      paths only)
+- [ ] Tags/authors with no public content (implemented via `hasContent`;
+      untested)
+- [ ] Subdirectory URL support (implemented; untested)
 
 ### Email analytics events and suppression
-- [ ] Mailgun event handling
-- [ ] Complaint event suppression
-- [ ] Unsubscribe event handling
-- [ ] Ignore invalid events
-- [ ] Suppression list updates
+- [ ] Mailgun event handling (service exists; no operations tests)
+- [ ] Complaint event suppression (service exists; no operations tests)
+- [ ] Unsubscribe event handling (service exists; no operations tests)
+- [ ] Ignore invalid events (service exists; no operations tests)
+- [ ] Suppression list updates (service exists; no operations tests)
 
-### Member welcome emails and outbox
-- [ ] MemberCreatedEvent outbox entries
-- [ ] Imported/admin-created member handling
-- [ ] Welcome email template validation
+### Member welcome workflows and outbox
+- [ ] MemberCreatedEvent outbox entries trigger signup workflows (no workflow
+      engine/outbox integration)
+- [ ] Imported/admin-created members do not trigger workflows (welcome queue
+      method checks source; untested)
+- [ ] Workflow step template validation (welcome template check exists;
+      workflow runs absent)
 
 ### Email sending and batching
 - [ ] Batch sending and unique recipients
@@ -188,12 +246,14 @@ References:
 - [ ] Newsletter sender name defaults
 
 ### Jobs and maintenance
-- [ ] Outbox processing
-- [ ] Update-check job
-- [ ] Token cleanup job
+- [ ] Outbox processing (local delete/retry only; no HTTP delivery and
+      untested)
+- [ ] Update-check job (method calls configured endpoint; no scheduler/test)
+- [ ] Token cleanup job (method calls repository cleanup hooks; no
+      scheduler/test)
 
 ### Metrics
-- [ ] Prometheus client exposure
+- [ ] Prometheus-format metrics exposure (client and route exist; untested)
 
 ## Admin Settings PRD
 - [ ] Layout, routing, permissions

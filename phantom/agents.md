@@ -4,8 +4,16 @@
 Use `yarn` (v1).
 
 ## Architecture
+- Workers-first development (decision 2026-06-10): workerd/wrangler is the
+  primary dev runtime; Node is the secondary target, verified in CI.
+  Stateful concerns (rate limits, storage, queues, env) live behind
+  platform adapters with implementations for both runtimes.
 - Hono for HTTP routing and middleware.
 - Drizzle ORM with libSQL/Turso for the database.
+  - Decision (2026-06-10): libSQL-family is the ONLY supported database for
+    Ghost v10 — per-site DB, Workers-native. MySQL users migrate via import.
+    Email sends are provider-throttled, so delivery writes trickle rather
+    than burst; no separate event store needed.
 - Zod for request/response contracts and `@hono/zod-openapi` for typed RPC.
 - Keep dependencies minimal and avoid bespoke frameworks.
 
