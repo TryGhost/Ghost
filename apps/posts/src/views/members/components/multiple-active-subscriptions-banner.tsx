@@ -1,4 +1,4 @@
-import {Banner, Button} from '@tryghost/shade/components';
+import {Banner} from '@tryghost/shade/components';
 import {formatNumber} from '@tryghost/shade/utils';
 import {useMultipleActiveSubscriptionsBanner} from '../hooks/use-multiple-active-subscriptions-banner';
 
@@ -17,7 +17,7 @@ const MultipleActiveSubscriptionsBanner = ({
     });
 
     if (!banner.shouldShow) {
-        return null;
+        // return null;
     }
 
     return (
@@ -31,16 +31,16 @@ const MultipleActiveSubscriptionsBanner = ({
                 dismissible: false as const
             })}
         >
-            <div className="flex flex-col gap-3 pr-8 sm:flex-row sm:items-center sm:justify-between">
-                <div className="text-sm font-medium">
-                    We found {formatNumber(banner.count)} {banner.count === 1 ? 'member' : 'members'} with more than one active paid subscription.{' '}
-                    <a className="font-semibold underline" href="https://ghost.org/help/duplicate-subscription-warning/" rel="noopener noreferrer" target="_blank">Learn more</a>
+            <div className="flex flex-col items-baseline gap-3 pr-8 sm:flex-row">
+                We found {formatNumber(banner.count)} {banner.count === 1 ? 'member' : 'members'} with more than one active paid subscription.{' '}
+                <div className="flex items-baseline gap-3">
+                    {banner.canDismiss && (
+                        <button className="nowrap font-semibold !underline" type="button" onClick={banner.handleViewMembers}>
+                            View members
+                        </button>
+                    )}
+                    <a className="nowrap font-semibold underline" href="https://ghost.org/help/duplicate-subscription-warning/" rel="noopener noreferrer" target="_blank">Learn more</a>
                 </div>
-                {banner.canDismiss && (
-                    <Button size="sm" variant="outline" onClick={banner.handleViewMembers}>
-                        View members
-                    </Button>
-                )}
             </div>
         </Banner>
     );
