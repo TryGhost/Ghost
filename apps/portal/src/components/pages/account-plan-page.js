@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isArchivedTier, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isGiftMember, isPaidMember} from '../../utils/helpers';
+import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isArchivedTier, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, isComplimentaryMember, isGiftMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 import {translateCadence} from '../../utils/helpers';
@@ -91,7 +91,6 @@ const Header = ({showConfirmation, confirmationType, pendingOffer}) => {
 };
 
 const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandColor}) => {
-    const {site} = useContext(AppContext);
     if (!member.paid) {
         return null;
     }
@@ -127,7 +126,7 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
                 disabled={disabled}
                 isPrimary={isPrimary}
                 isDestructive={isDestructive}
-                classes={hasMultipleProductsFeature({site}) ? 'gh-portal-btn-text mt2 mb4' : ''}
+                classes='gh-portal-btn-text mt2 mb4'
                 brandColor={brandColor}
                 label={label}
                 style={{
@@ -154,7 +153,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
     const priceString = formatNumber(plan.price);
     const planStartMessage = `${plan.currency_symbol}${priceString}/${translateCadence(plan.interval)} – ${planStartingMessage}`;
     const product = getProductFromPrice({site, priceId: plan?.id});
-    const priceLabel = hasMultipleProductsFeature({site}) ? product?.name : t('Price');
+    const priceLabel = product?.name;
     if (type === 'changePlan') {
         return (
             <div className='gh-portal-logged-out-form-container'>
