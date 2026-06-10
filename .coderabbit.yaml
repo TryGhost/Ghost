@@ -6,3 +6,6 @@ reviews:
   sequence_diagrams: false
   estimate_code_review_effort: false
   poem: false
+  pre_merge_checks:
+    docstrings:
+      mode: "off"

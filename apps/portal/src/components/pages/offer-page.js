@@ -4,7 +4,7 @@ import AppContext from '../../app-context';
 import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import CloseButton from '../common/close-button';
 import InputForm from '../common/input-form';
-import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, getUpdatedOfferPrice, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
+import {getCurrencySymbol, getProductFromId, getUpdatedOfferPrice, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
 import {interceptAnchorClicks} from '../../utils/links';
 import {sanitizeHtml} from '../../utils/sanitize-html';
@@ -558,15 +558,8 @@ export default class OfferPage extends React.Component {
     }
 
     renderProductLabel({product, offer}) {
-        const {site} = this.context;
-
-        if (hasMultipleProductsFeature({site})) {
-            return (
-                <h4 className="gh-portal-plan-name">{product.name} - {(offer.cadence === 'month' ? t('Monthly') : t('Yearly'))}</h4>
-            );
-        }
         return (
-            <h4 className="gh-portal-plan-name">{(offer.cadence === 'month' ? t('Monthly') : t('Yearly'))}</h4>
+            <h4 className="gh-portal-plan-name">{product.name} - {(offer.cadence === 'month' ? t('Monthly') : t('Yearly'))}</h4>
         );
     }
 

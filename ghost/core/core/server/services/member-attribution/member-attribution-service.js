@@ -142,7 +142,12 @@ class MemberAttributionService {
      * @returns {Promise<import('./attribution-builder').AttributionResource|null>}
      */
     async getMemberCreatedAttribution(memberId) {
-        const memberCreatedEvent = await this.models.MemberCreatedEvent.findOne({member_id: memberId}, {require: false, withRelated: []});
+        // A member can have more than one created event row (member_id is not unique),
+        // so order deterministically to avoid non-deterministic attribution resolution.
+        const memberCreatedEvent = await this.models.MemberCreatedEvent
+            .where('member_id', memberId)
+            .query(qb => qb.orderBy('created_at', 'desc').orderBy('id', 'desc'))
+            .fetch({require: false, withRelated: []});
         if (!memberCreatedEvent) {
             return null;
         }
@@ -163,7 +168,12 @@ class MemberAttributionService {
      * @returns {Promise<import('./attribution-builder').AttributionResource|null>}
      */
     async getSubscriptionCreatedAttribution(subscriptionId) {
-        const subscriptionCreatedEvent = await this.models.SubscriptionCreatedEvent.findOne({subscription_id: subscriptionId}, {require: false, withRelated: []});
+        // A subscription can have more than one created event row (subscription_id is not unique),
+        // so order deterministically to avoid non-deterministic attribution resolution.
+        const subscriptionCreatedEvent = await this.models.SubscriptionCreatedEvent
+            .where('subscription_id', subscriptionId)
+            .query(qb => qb.orderBy('created_at', 'desc').orderBy('id', 'desc'))
+            .fetch({require: false, withRelated: []});
         if (!subscriptionCreatedEvent) {
             return null;
         }
