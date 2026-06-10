@@ -1,7 +1,11 @@
 import {PostEditorPage, PostsPage} from '@/admin-pages';
-import {PostFactory, createPostFactory} from '@/data-factory';
 import {PostPage} from '@/helpers/pages';
 import {expect, test} from '@/helpers/playwright';
+import {faker} from '@faker-js/faker';
+
+function uniqueTitle(prefix: string) {
+    return `${prefix} ${faker.string.alphanumeric(8)}`;
+}
 
 function formatFrontendDate(date: Date): string {
     return new Intl.DateTimeFormat('en-GB', {
@@ -11,9 +15,14 @@ function formatFrontendDate(date: Date): string {
     }).format(date);
 }
 
-test.describe('Ghost Admin - Updating Posts', () => {
+/**
+ * Post update/delete tests for the editor screen, shared between the Ember
+ * implementation (labs flag `editorX` off) and the React implementation
+ * (`editorX` on). Same page objects and selectors for both runs.
+ */
+export function definePostUpdatesTests() {
     test('updates a published post', async ({page}) => {
-        const title = `publish-update-post-${Date.now()}`;
+        const title = uniqueTitle('Publish update post');
         const initialBody = 'This is the initial published text.';
         const appendedBodyText = 'This is some updated text.';
         const customExcerpt = 'Short description and meta';
@@ -50,16 +59,14 @@ test.describe('Ghost Admin - Updating Posts', () => {
         await expect(publicPage.articleHeader).toContainText('7 Jan 2022');
         await expect(publicPage.metaDescription).toHaveAttribute('content', customExcerpt);
     });
-});
 
-test.describe('Ghost Admin - Deleting Posts', () => {
     test('delete a saved post - redirects to posts list', async ({page}) => {
         const postsPage = new PostsPage(page);
         await postsPage.goto();
         await postsPage.newPostButton.click();
 
         const editor = new PostEditorPage(page);
-        await editor.titleInput.fill('Delete a post test');
+        await editor.titleInput.fill(uniqueTitle('Delete a saved post'));
         await editor.titleInput.press('Enter');
         await expect(editor.postStatus).toContainText('Draft - Saved');
 
@@ -75,40 +82,11 @@ test.describe('Ghost Admin - Deleting Posts', () => {
         await postsPage.newPostButton.click();
 
         const editor = new PostEditorPage(page);
-        await editor.createDraft({title: 'Delete a post test', body: 'This is the content'});
+        await editor.createDraft({title: uniqueTitle('Delete an unsaved post'), body: 'This is the content'});
 
         await editor.settingsToggleButton.click();
         await editor.settingsMenu.deletePost();
 
         await expect(editor.screenTitle).toContainText('Posts');
     });
-});
-
-test.describe('Ghost Admin - Posts List', () => {
-    test('lists posts and reflects newly created posts', async ({page}) => {
-        const postFactory: PostFactory = createPostFactory(page.request);
-        const title = `Test Post ${Date.now()}`;
-
-        const postsPage = new PostsPage(page);
-        await postsPage.goto();
-
-        await postFactory.create({title});
-        await postsPage.refreshData();
-        await expect(postsPage.getPostByTitle(title)).toBeVisible();
-    });
-
-    test('shows correct publish date format in post settings', async ({page}) => {
-        const postFactory: PostFactory = createPostFactory(page.request);
-        const title = `Test Post ${Date.now()}`;
-        await postFactory.create({title});
-
-        const postsPage = new PostsPage(page);
-        await postsPage.goto();
-
-        await postsPage.getPostByTitle(title).click();
-        const editPage = new PostEditorPage(page);
-        await editPage.settingsToggleButton.click();
-
-        await expect(editPage.settingsMenu.publishDateInput).toHaveValue(/^\d{4}-\d{2}-\d{2}$/);
-    });
-});
+}

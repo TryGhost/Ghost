@@ -16,6 +16,7 @@ import { ResetRoute, SetupRoute, SigninRoute, SigninVerifyRoute, SignoutRoute, S
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
+import { PageEditorRoute, PostEditorRoute } from "./editor/editor-route";
 import { MemberDetailsRoute, MembersActivityRoute } from "./member-details-route";
 import { MembersRoute } from "./members-route";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
@@ -35,7 +36,6 @@ const EMBER_ROUTES: string[] = [
     "/posts/analytics/:postId/mentions",
     "/posts/analytics/:postId/debug",
     "/restore",
-    "/editor/*",
     "/explore/*",
     "/migrate/*",
     "/designsandbox",
@@ -116,6 +116,30 @@ export const routes: RouteObject[] = [
             {
                 path: "/members-activity",
                 Component: MembersActivityRoute,
+            },
+            {
+                // React editor when the editorX labs flag is on, Ember
+                // fallback otherwise. Like the other content routes, no
+                // allowInForceUpgrade handle. Bare /editor mirrors Ember's
+                // lexical-editor index route which replaces with editor/post.
+                path: "/editor",
+                loader: () => redirect("/editor/post"),
+            },
+            {
+                path: "/editor/post",
+                Component: PostEditorRoute,
+            },
+            {
+                path: "/editor/post/:postId",
+                Component: PostEditorRoute,
+            },
+            {
+                path: "/editor/page",
+                Component: PageEditorRoute,
+            },
+            {
+                path: "/editor/page/:postId",
+                Component: PageEditorRoute,
             },
             membersRoute,
             {

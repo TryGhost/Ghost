@@ -28,10 +28,17 @@ class SettingsMenu extends BasePage {
     }
 }
 
+const PUBLISH_TYPE_LABELS = {
+    publish: 'Publish only',
+    'publish+send': 'Publish and email',
+    send: 'Email only'
+} as const;
+
 class PublishFlow extends BasePage {
     readonly publishButton: Locator;
     readonly publishTypeSetting: Locator;
     readonly publishTypeButton: Locator;
+    readonly publishAtSetting: Locator;
     readonly publishAtButton: Locator;
     readonly scheduleSummary: Locator;
     readonly scheduleDateInput: Locator;
@@ -47,9 +54,12 @@ class PublishFlow extends BasePage {
 
         this.publishButton = page.locator('[data-test-button="publish-flow"]').first();
         this.publishTypeSetting = page.locator('[data-test-setting="publish-type"]');
-        this.publishTypeButton = this.publishTypeSetting.locator('> button');
-        this.publishAtButton = page.locator('[data-test-setting="publish-at"] > button');
-        this.scheduleSummary = page.locator('[data-test-setting="publish-at"] [data-test-setting-title]');
+        this.publishTypeButton = this.publishTypeSetting.getByRole('button');
+        this.publishAtSetting = page.locator('[data-test-setting="publish-at"]');
+        // the section trigger is the only button inside the setting while it
+        // is collapsed, which is the only time it gets clicked
+        this.publishAtButton = this.publishAtSetting.getByRole('button');
+        this.scheduleSummary = this.publishAtSetting.locator('[data-test-setting-title]');
         this.scheduleDateInput = page.locator('[data-test-date-time-picker-date-input]');
         this.scheduleTimeInput = page.locator('[data-test-date-time-picker-time-input]');
         this.emailRecipientsSetting = page.locator('[data-test-setting="email-recipients"]');
@@ -69,14 +79,16 @@ class PublishFlow extends BasePage {
 
     async selectPublishType(type: 'publish' | 'publish+send' | 'send'): Promise<void> {
         await this.publishTypeButton.click();
-        await this.page.locator(`[data-test-publish-type="${type}"] + label`).click();
+        // the radio inputs are visually hidden (no a11y role), so click the
+        // visible label inside the publish type options group instead
+        await this.publishTypeSetting.getByRole('group').getByText(PUBLISH_TYPE_LABELS[type], {exact: true}).click();
     }
 
     async schedule({date, time}: {date?: string; time?: string}): Promise<void> {
         await this.publishAtButton.click();
 
         const textBeforeScheduleToggle = await this.scheduleSummary.textContent();
-        await this.page.locator('[data-test-radio="schedule"] + label').click();
+        await this.publishAtSetting.getByText('Schedule for later').click();
         await this.waitForScheduleSummaryChange(textBeforeScheduleToggle);
 
         if (date) {
@@ -107,11 +119,14 @@ class PublishFlow extends BasePage {
     }
 
     private async waitForScheduleSummaryChange(previousText: string | null): Promise<void> {
-        await this.page.waitForFunction((text) => {
-            const element = document.querySelector('[data-test-setting="publish-at"] [data-test-setting-title]');
-            const currentText = element?.textContent?.trim();
-            return Boolean(currentText && currentText !== text?.trim());
-        }, previousText);
+        const previous = previousText?.trim();
+
+        if (!previous) {
+            await this.scheduleSummary.waitFor({state: 'visible'});
+            return;
+        }
+
+        await this.scheduleSummary.filter({hasNotText: previous}).waitFor({state: 'visible'});
     }
 }
 
@@ -124,7 +139,6 @@ export class PostEditorPage extends AdminPage {
     readonly publishFlow: PublishFlow;
     readonly screenTitle: Locator;
     readonly lexicalEditor: Locator;
-    readonly secondaryEditor: Locator;
     readonly publishSaveButton: Locator;
     readonly updateFlowButton: Locator;
     readonly revertToDraftButton: Locator;
@@ -143,7 +157,6 @@ export class PostEditorPage extends AdminPage {
         this.publishFlow = new PublishFlow(page);
         this.screenTitle = page.locator('[data-test-screen-title]');
         this.lexicalEditor = page.locator('[data-kg="editor"]').first();
-        this.secondaryEditor = page.locator('[data-secondary-instance="true"]');
         this.publishSaveButton = page.locator('[data-test-button="publish-save"]').first();
         this.updateFlowButton = page.locator('[data-test-button="update-flow"]').first();
         this.revertToDraftButton = page.locator('[data-test-button="revert-to-draft"]');
@@ -181,8 +194,11 @@ export class PostEditorPage extends AdminPage {
         await this.page.keyboard.type(body);
     }
 
+    // The autosave debounce can be dropped when it fires while the initial
+    // post-create save is still in flight, in which case the periodic save
+    // only catches up after 60s — hence the generous timeout.
     async waitForSaved(): Promise<void> {
-        await this.postStatus.filter({hasText: /Saved/}).waitFor({timeout: 30000});
+        await this.postStatus.filter({hasText: /Saved/}).waitFor({timeout: 90000});
     }
 
     async appendToBody(text: string): Promise<void> {

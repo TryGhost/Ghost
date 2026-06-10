@@ -184,6 +184,43 @@ flag source (see implementation notes).
   `prohibitAuthentication('home')` ran in the hidden app after the post-signin
   reload and rewrote the shared URL, clobbering React's deep-link redirect.
 
+### Slice 5: Editor (core screen)
+
+- **Fullscreen via portal, not an app.tsx layout branch.** The React editor
+  renders through `createPortal(document.body)` with `absolute inset-0 z-20`
+  (the same pattern the settings route uses) instead of adding a fullscreen
+  branch around `AdminLayout`. This keeps the flag-off path byte-identical:
+  `EmberFallback`/`EmberRoot` stay mounted inside `AdminLayout`, so the hidden
+  Ember app's DOM is never moved when entering/leaving `/editor/*`.
+- **New-post URL swap bypasses the router.** After the first save creates the
+  draft, the screen rewrites the hash to `#/editor/post/:id` with
+  `history.replaceState` (no hashchange/popstate fires), so the route component
+  never remounts — mirrors Ember's `replaceWith` new→edit transition. The
+  router's internal location stays `/editor/post` until the next navigation;
+  acceptable because the leave guard only compares pathnames.
+- **Mobiledoc→lexical conversion ported** (PUT with `?convert_to_lexical=1`,
+  minimal `{updated_at}` body); `useEditEditorPost` gained an optional
+  `convertToLexical` payload flag. The conversion promise is cached per
+  `id:updated_at` so StrictMode double-mounts don't fire a second PUT with a
+  stale `updated_at` (which would 409).
+- **Slug regeneration on title change uses a simple slugify heuristic** to
+  decide whether the current slug is still title-derived (Ember compares with
+  its slugify util); the actual slug value always comes from the `/slugs/` API.
+- **Tags are not sent in save payloads yet** (the machine models tag names, but
+  the editor UI can't edit tags until the settings-menu slice); omitting them
+  from the PUT body leaves them untouched server-side.
+- **Koenig ESM bundle doesn't inject its stylesheet** (the UMD bundle Ember
+  loads does). Added a vite alias (`koenig-lexical-styles.css` →
+  `dist/style.css`, which the package's exports map doesn't expose) and load it
+  alongside the dynamic module import.
+- **Known accepted gaps (follow-up slices):** publish flow (placeholder
+  `data-test-button="publish-flow"` button only), preview modal, settings menu
+  (toggle opens an empty Sheet so the e2e locator resolves), word count, TK
+  counts, feature image, excerpt field, snippets, unsplash/tenor/pintura card
+  integrations, local revisions (localStorage backup), post-history, contributor
+  permission redirects, and the analytics breadcrumb (`fromAnalytics`) — the
+  back link always targets `/posts` (or `/pages`).
+
 ### Upstream issues discovered during slice-2 review (pre-existing, NOT introduced here)
 
 - **Server-side bulk-action authorization gap:** `DELETE /ghost/api/admin/posts/?filter=...`

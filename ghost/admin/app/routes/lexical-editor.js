@@ -69,6 +69,21 @@ export default AuthenticatedRoute.extend({
 
     classNames: ['editor'],
 
+    beforeModel(transition) {
+        this._super(...arguments);
+
+        // The React admin owns the editor when the flag is enabled. Hand the
+        // URL over to the react-fallback catch-all so this route (and its
+        // new/edit/index children) doesn't load data or register its
+        // unsaved-changes transition guards in the hidden Ember app.
+        if (this.feature.editorX) {
+            let params = transition.to?.params || {};
+            let type = params.type || 'post';
+            let path = params.post_id ? `editor/${type}/${params.post_id}` : `editor/${type}`;
+            return this.replaceWith('react-fallback', path);
+        }
+    },
+
     activate() {
         this._super(...arguments);
         this.ui.set('isFullScreen', true);

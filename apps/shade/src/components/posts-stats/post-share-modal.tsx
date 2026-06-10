@@ -71,7 +71,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
             )}
             <ShareModal.Content>
                 <div className="sticky top-0 ml-auto size-0">
-                    <ShareModal.CloseButton className="absolute -top-5 -right-5" onClick={onClose} />
+                    <ShareModal.CloseButton className="absolute -top-5 -right-5" data-test-button="close-publish-flow" onClick={onClose} />
                 </div>
                 <ShareModal.Header className="relative -mt-5">
                     <ShareModal.Title className="text-3xl leading-[1.15em] font-bold">
@@ -85,7 +85,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
                         </ShareModal.Description>
                     )}
                 </ShareModal.Header>
-                <ShareModal.Preview className="rounded-md" href={postURL}>
+                <ShareModal.Preview className="rounded-md" data-test-complete-bookmark="" href={postURL}>
                     {featureImageURL && (
                         <div className="aspect-video bg-cover bg-center" style={{backgroundImage: `url(${featureImageURL})`}}></div>
                     )}

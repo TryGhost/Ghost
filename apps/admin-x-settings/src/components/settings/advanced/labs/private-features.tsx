@@ -84,6 +84,10 @@ const features: Feature[] = [{
     description: 'Enables the new React authentication screens',
     flag: 'authX'
 }, {
+    title: 'Editor X',
+    description: 'Enables the new React post editor',
+    flag: 'editorX'
+}, {
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'

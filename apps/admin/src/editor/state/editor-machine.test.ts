@@ -1,0 +1,796 @@
+import { describe, expect, it } from "vitest";
+import {
+    AUTOSAVE_DELAY,
+    DEFAULT_TITLE,
+    TIMED_SAVE_INTERVAL,
+    createInitialState,
+    getLeaveDecision,
+    hasDirtyAttributes,
+    transition,
+    type EditorEffect,
+    type EditorState,
+    type PostSnapshot,
+    type PostStatus,
+    type SaveError,
+    type SaveKind,
+    type SavePayload,
+} from "./editor-machine";
+
+/* helpers -------------------------------------------------------------------*/
+
+function lexicalDoc(text: string, {
+    direction = null,
+    nestedDirection = null,
+}: { direction?: string | null; nestedDirection?: string | null } = {}): string {
+    return JSON.stringify({
+        root: {
+            children: [{
+                children: [{ text, type: "text", direction: nestedDirection }],
+                direction,
+                type: "paragraph",
+                version: 1,
+            }],
+            direction: null,
+            type: "root",
+            version: 1,
+        },
+    });
+}
+
+const BLANK_LEXICAL = lexicalDoc("");
+
+function makePost(overrides: Partial<PostSnapshot> = {}): PostSnapshot {
+    return {
+        id: "post-1",
+        status: "draft",
+        title: "My post",
+        lexical: lexicalDoc("hello"),
+        customExcerpt: null,
+        slug: "my-post",
+        tags: [],
+        publishedAt: null,
+        featureImage: null,
+        updatedAt: "2026-01-01T00:00:00.000Z",
+        ...overrides,
+    };
+}
+
+function loadPost(overrides: Partial<PostSnapshot> = {}): EditorState {
+    return transition(createInitialState(), { type: "POST_LOADED", post: makePost(overrides) }).state;
+}
+
+function startManualSave(state: EditorState, pastScheduledTime?: boolean) {
+    return transition(state, { type: "SAVE_REQUESTED", kind: "manual", pastScheduledTime });
+}
+
+function savePerformEffect(effects: EditorEffect[]) {
+    return effects.find((effect): effect is { type: "save/perform"; kind: SaveKind; payload: SavePayload } => {
+        return effect.type === "save/perform";
+    });
+}
+
+function genericError(): SaveError {
+    return { type: "generic", message: "boom" };
+}
+
+function expectSaving(state: EditorState, kind: SaveKind) {
+    expect(state.save).toMatchObject({ status: "saving", kind });
+}
+
+/* dirty detection -----------------------------------------------------------*/
+
+describe("hasDirtyAttributes", () => {
+    it("is false with no post loaded", () => {
+        expect(hasDirtyAttributes(createInitialState())).toBe(false);
+    });
+
+    it("is false for a freshly loaded post", () => {
+        expect(hasDirtyAttributes(loadPost())).toBe(false);
+    });
+
+    describe("title", () => {
+        it("is true when the title scratch differs", () => {
+            const { state } = transition(loadPost(), { type: "SCRATCH_CHANGED", field: "title", value: "New title" });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is false for a whitespace-only title change (trimmed comparison)", () => {
+            const { state } = transition(loadPost({ title: "My post" }), {
+                type: "SCRATCH_CHANGED",
+                field: "title",
+                value: "  My post \n",
+            });
+            expect(hasDirtyAttributes(state)).toBe(false);
+        });
+
+        it("is true when the title is cleared", () => {
+            const { state } = transition(loadPost(), { type: "SCRATCH_CHANGED", field: "title", value: "" });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+    });
+
+    describe("lexical", () => {
+        it("is true when the lexical content differs", () => {
+            const { state } = transition(loadPost(), {
+                type: "SCRATCH_CHANGED",
+                field: "lexical",
+                value: lexicalDoc("hello world"),
+            });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is false when only top-level `direction` fields differ", () => {
+            const { state } = transition(loadPost({ lexical: lexicalDoc("hello", { direction: null }) }), {
+                type: "SCRATCH_CHANGED",
+                field: "lexical",
+                value: lexicalDoc("hello", { direction: "ltr" }),
+            });
+            expect(hasDirtyAttributes(state)).toBe(false);
+        });
+
+        it("is true when a nested `direction` field differs (Ember only normalizes top-level children)", () => {
+            const { state } = transition(loadPost({ lexical: lexicalDoc("hello") }), {
+                type: "SCRATCH_CHANGED",
+                field: "lexical",
+                value: lexicalDoc("hello", { nestedDirection: "ltr" }),
+            });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is false when the saved lexical is null (comparison requires both sides, as in Ember)", () => {
+            const { state } = transition(loadPost({ lexical: null }), {
+                type: "SCRATCH_CHANGED",
+                field: "lexical",
+                value: lexicalDoc("typed"),
+            });
+            expect(hasDirtyAttributes(state)).toBe(false);
+        });
+
+        it("is false when the scratch has not been initialized", () => {
+            const state = loadPost({ lexical: lexicalDoc("hello") });
+            expect(hasDirtyAttributes({ ...state, lexicalScratch: null })).toBe(false);
+        });
+    });
+
+    describe("tags", () => {
+        it("is true when a tag is added", () => {
+            const { state } = transition(loadPost({ tags: ["news"] }), { type: "TAGS_CHANGED", tagNames: ["news", "tech"] });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is true when a tag is removed", () => {
+            const { state } = transition(loadPost({ tags: ["news", "tech"] }), { type: "TAGS_CHANGED", tagNames: ["news"] });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is true when tags are reordered (Ember compares joined name strings)", () => {
+            const { state } = transition(loadPost({ tags: ["news", "tech"] }), { type: "TAGS_CHANGED", tagNames: ["tech", "news"] });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is false when the same tags are reassigned", () => {
+            const { state } = transition(loadPost({ tags: ["news", "tech"] }), { type: "TAGS_CHANGED", tagNames: ["news", "tech"] });
+            expect(hasDirtyAttributes(state)).toBe(false);
+        });
+    });
+
+    describe("excerpt", () => {
+        it("is true when the excerpt changes", () => {
+            const { state } = transition(loadPost(), { type: "SCRATCH_CHANGED", field: "customExcerpt", value: "An excerpt" });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is true when a saved excerpt is cleared to empty string (exact comparison)", () => {
+            const { state } = transition(loadPost({ customExcerpt: "old" }), {
+                type: "SCRATCH_CHANGED",
+                field: "customExcerpt",
+                value: "",
+            });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is false when the excerpt is restored to the saved value", () => {
+            let { state } = transition(loadPost({ customExcerpt: "old" }), {
+                type: "SCRATCH_CHANGED",
+                field: "customExcerpt",
+                value: "new",
+            });
+            ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "customExcerpt", value: "old" }));
+            expect(hasDirtyAttributes(state)).toBe(false);
+        });
+    });
+
+    describe("settings fields (slug / publish date / feature image)", () => {
+        it("is true when the slug scratch differs", () => {
+            const { state } = transition(loadPost(), { type: "SCRATCH_CHANGED", field: "slug", value: "custom-slug" });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is true when the publish date scratch differs", () => {
+            const { state } = transition(loadPost(), {
+                type: "SCRATCH_CHANGED",
+                field: "publishedAt",
+                value: "2026-01-05T10:00:00.000Z",
+            });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is true when the feature image scratch differs", () => {
+            const { state } = transition(loadPost({ featureImage: "/img/old.png" }), {
+                type: "SCRATCH_CHANGED",
+                field: "featureImage",
+                value: null,
+            });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is false when the settings fields match the snapshot", () => {
+            const state = loadPost({
+                slug: "custom",
+                publishedAt: "2026-01-05T10:00:00.000Z",
+                featureImage: "/img/cover.png",
+            });
+            expect(hasDirtyAttributes(state)).toBe(false);
+        });
+    });
+
+    describe("save errors", () => {
+        it("is true after a failed save even when scratch matches the snapshot (Ember post.isError)", () => {
+            let { state } = startManualSave(loadPost());
+            ({ state } = transition(state, { type: "SAVE_FAILED", error: genericError() }));
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+    });
+
+    describe("new posts (changedAttributes semantics)", () => {
+        it("is false for a pristine new post", () => {
+            expect(hasDirtyAttributes(loadPost({ id: null, title: "", lexical: BLANK_LEXICAL, slug: "" }))).toBe(false);
+        });
+
+        it("is true once the body is edited", () => {
+            const { state } = transition(loadPost({ id: null, title: "", lexical: BLANK_LEXICAL, slug: "" }), {
+                type: "SCRATCH_CHANGED",
+                field: "lexical",
+                value: lexicalDoc("first words"),
+            });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("is true once the excerpt is set", () => {
+            const { state } = transition(loadPost({ id: null, title: "", lexical: BLANK_LEXICAL, slug: "" }), {
+                type: "SCRATCH_CHANGED",
+                field: "customExcerpt",
+                value: "excerpt",
+            });
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+    });
+});
+
+/* scratch changes + autosave directives --------------------------------------*/
+
+describe("SCRATCH_CHANGED", () => {
+    it("updates the title scratch without touching the snapshot", () => {
+        const { state } = transition(loadPost(), { type: "SCRATCH_CHANGED", field: "title", value: "New" });
+        expect(state.titleScratch).toBe("New");
+        expect(state.post?.title).toBe("My post");
+    });
+
+    it("is a no-op when no post is loaded", () => {
+        const initial = createInitialState();
+        const { state, effects } = transition(initial, { type: "SCRATCH_CHANGED", field: "title", value: "New" });
+        expect(state).toBe(initial);
+        expect(effects).toEqual([]);
+    });
+
+    it("emits a debounce restart and ensures the timed-save timer on body edits to an existing draft", () => {
+        const { effects } = transition(loadPost(), { type: "SCRATCH_CHANGED", field: "lexical", value: lexicalDoc("x") });
+        expect(effects).toEqual([
+            { type: "timer/restart-autosave", delayMs: AUTOSAVE_DELAY },
+            { type: "timer/ensure-timed-save", intervalMs: TIMED_SAVE_INTERVAL },
+        ]);
+    });
+
+    it("emits an immediate autosave (0ms) on the first body edit of a new unsaved post", () => {
+        const { effects } = transition(loadPost({ id: null, title: "", lexical: BLANK_LEXICAL }), {
+            type: "SCRATCH_CHANGED",
+            field: "lexical",
+            value: lexicalDoc("x"),
+        });
+        expect(effects).toEqual([
+            { type: "timer/restart-autosave", delayMs: 0 },
+            { type: "timer/ensure-timed-save", intervalMs: TIMED_SAVE_INTERVAL },
+        ]);
+    });
+
+    it("emits no timer directives for body edits to a published post (no autosave outside drafts)", () => {
+        const { effects } = transition(loadPost({ status: "published" }), {
+            type: "SCRATCH_CHANGED",
+            field: "lexical",
+            value: lexicalDoc("x"),
+        });
+        expect(effects).toEqual([]);
+    });
+
+    it("emits an immediate autosave (0ms) on a title edit to a new unsaved post so the draft gets created", () => {
+        const { effects } = transition(loadPost({ id: null, title: "", lexical: BLANK_LEXICAL, slug: "" }), {
+            type: "SCRATCH_CHANGED",
+            field: "title",
+            value: "Hello",
+        });
+        expect(effects).toEqual([
+            { type: "timer/restart-autosave", delayMs: 0 },
+            { type: "timer/ensure-timed-save", intervalMs: TIMED_SAVE_INTERVAL },
+        ]);
+    });
+
+    it.each(["title", "customExcerpt", "slug", "publishedAt", "featureImage"] as const)("emits no timer directives for %s edits to an existing post", (field) => {
+        const { effects } = transition(loadPost(), { type: "SCRATCH_CHANGED", field, value: "x" });
+        expect(effects).toEqual([]);
+    });
+
+    it.each(["customExcerpt", "slug", "publishedAt", "featureImage"] as const)("emits no timer directives for %s edits to a new post", (field) => {
+        const { effects } = transition(loadPost({ id: null, title: "", lexical: BLANK_LEXICAL, slug: "" }), {
+            type: "SCRATCH_CHANGED",
+            field,
+            value: "x",
+        });
+        expect(effects).toEqual([]);
+    });
+
+    it("updates the settings scratches without touching the snapshot", () => {
+        let { state } = transition(loadPost(), { type: "SCRATCH_CHANGED", field: "slug", value: "new-slug" });
+        ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "publishedAt", value: "2026-01-05T10:00:00.000Z" }));
+        ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "featureImage", value: "/img/cover.png" }));
+
+        expect(state.slugScratch).toBe("new-slug");
+        expect(state.publishedAtScratch).toBe("2026-01-05T10:00:00.000Z");
+        expect(state.featureImageScratch).toBe("/img/cover.png");
+        expect(state.post).toEqual(makePost());
+    });
+});
+
+/* save lifecycle --------------------------------------------------------------*/
+
+describe("save lifecycle", () => {
+    it("manual save starts even when nothing is dirty", () => {
+        const { state, effects } = startManualSave(loadPost());
+        expectSaving(state, "manual");
+        expect(effects[0]).toEqual({ type: "timer/cancel-all" });
+        expect(savePerformEffect(effects)).toBeDefined();
+    });
+
+    it("background save is skipped when nothing is dirty but still cancels timers", () => {
+        const { state, effects } = transition(loadPost(), { type: "SAVE_REQUESTED", kind: "autosave" });
+        expect(state.save.status).toBe("idle");
+        expect(effects).toEqual([{ type: "timer/cancel-all" }]);
+    });
+
+    it("background save starts when dirty", () => {
+        const { state } = transition(loadPost(), { type: "SCRATCH_CHANGED", field: "lexical", value: lexicalDoc("x") });
+        const result = transition(state, { type: "SAVE_REQUESTED", kind: "autosave" });
+        expectSaving(result.state, "autosave");
+        expect(savePerformEffect(result.effects)?.payload.lexical).toBe(lexicalDoc("x"));
+    });
+
+    it("leave save bypasses the dirty check", () => {
+        const { state, effects } = transition(loadPost(), { type: "SAVE_REQUESTED", kind: "leave" });
+        expectSaving(state, "leave");
+        expect(savePerformEffect(effects)).toBeDefined();
+    });
+
+    it.each(["autosave", "timed"] as const)("%s save is ignored for non-draft posts", (kind) => {
+        const { state } = transition(loadPost({ status: "published" }), {
+            type: "SCRATCH_CHANGED",
+            field: "title",
+            value: "changed",
+        });
+        const result = transition(state, { type: "SAVE_REQUESTED", kind });
+        expect(result.state.save.status).toBe("idle");
+        expect(result.effects).toEqual([]);
+    });
+
+    it("is a no-op when no post is loaded", () => {
+        const { state, effects } = startManualSave(createInitialState());
+        expect(state.save.status).toBe("idle");
+        expect(effects).toEqual([]);
+    });
+
+    describe("payload", () => {
+        it("copies scratch values, forces a blank title to (Untitled) and normalizes empty lexical to null", () => {
+            let { state } = transition(loadPost({ title: "" }), { type: "SCRATCH_CHANGED", field: "lexical", value: "" });
+            ({ state } = transition(state, { type: "TAGS_CHANGED", tagNames: ["news"] }));
+            const result = startManualSave(state);
+            const payload = savePerformEffect(result.effects)?.payload;
+            expect(payload).toEqual({
+                id: "post-1",
+                status: "draft",
+                title: DEFAULT_TITLE,
+                lexical: null,
+                customExcerpt: null,
+                tags: ["news"],
+                slug: "my-post",
+                publishedAt: null,
+                featureImage: null,
+            });
+            // the scratch is normalized too, matching Ember beforeSaveTask
+            expect(result.state.titleScratch).toBe(DEFAULT_TITLE);
+        });
+
+        it("uses a null id for new unsaved posts so the caller performs a create", () => {
+            const { effects } = startManualSave(loadPost({ id: null }));
+            expect(savePerformEffect(effects)?.payload.id).toBeNull();
+        });
+
+        it("copies the committed settings scratches (slug / publish date / feature image)", () => {
+            let { state } = transition(loadPost(), { type: "SCRATCH_CHANGED", field: "slug", value: "custom-slug" });
+            ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "publishedAt", value: "2026-01-05T10:00:00.000Z" }));
+            ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "featureImage", value: "/img/cover.png" }));
+            const { effects } = startManualSave(state);
+            expect(savePerformEffect(effects)?.payload).toMatchObject({
+                slug: "custom-slug",
+                publishedAt: "2026-01-05T10:00:00.000Z",
+                featureImage: "/img/cover.png",
+            });
+        });
+    });
+
+    describe("concurrency", () => {
+        function savingState(kind: SaveKind = "manual"): EditorState {
+            // dirty the state first so background saves aren't skipped
+            const dirty = transition(loadPost(), { type: "SCRATCH_CHANGED", field: "lexical", value: lexicalDoc("edited") }).state;
+            const { state } = transition(dirty, { type: "SAVE_REQUESTED", kind, pastScheduledTime: false });
+            expectSaving(state, kind);
+            return state;
+        }
+
+        it("background saves never run while a save is in flight — they enqueue", () => {
+            const { state, effects } = transition(savingState(), { type: "SAVE_REQUESTED", kind: "autosave" });
+            expect(state.save).toMatchObject({ status: "saving", queued: "autosave" });
+            expect(effects).toEqual([]);
+        });
+
+        it("queued background saves are latest-wins", () => {
+            let { state } = transition(savingState(), { type: "SAVE_REQUESTED", kind: "autosave" });
+            ({ state } = transition(state, { type: "SAVE_REQUESTED", kind: "timed" }));
+            expect(state.save).toMatchObject({ status: "saving", queued: "timed" });
+        });
+
+        it("a manual save supersedes a queued autosave", () => {
+            let { state } = transition(savingState(), { type: "SAVE_REQUESTED", kind: "autosave" });
+            ({ state } = transition(state, { type: "SAVE_REQUESTED", kind: "manual" }));
+            expect(state.save).toMatchObject({ status: "saving", queued: "manual" });
+        });
+
+        it("a queued manual save is never downgraded by a later background request", () => {
+            let { state } = transition(savingState(), { type: "SAVE_REQUESTED", kind: "manual" });
+            ({ state } = transition(state, { type: "SAVE_REQUESTED", kind: "autosave" }));
+            expect(state.save).toMatchObject({ status: "saving", queued: "manual" });
+        });
+
+        it("runs a queued manual save after the in-flight save succeeds", () => {
+            const { state } = transition(savingState("autosave"), { type: "SAVE_REQUESTED", kind: "manual" });
+            const result = transition(state, { type: "SAVE_SUCCEEDED", post: makePost() });
+            expectSaving(result.state, "manual");
+            expect(savePerformEffect(result.effects)).toBeDefined();
+        });
+
+        it("drops a queued background save when the completed save left the state clean", () => {
+            const { state } = transition(savingState("manual"), { type: "SAVE_REQUESTED", kind: "autosave" });
+            // server echoes the saved content, so the state is clean afterwards
+            const result = transition(state, { type: "SAVE_SUCCEEDED", post: makePost({ lexical: lexicalDoc("edited") }) });
+            expect(result.state.save.status).toBe("idle");
+            expect(savePerformEffect(result.effects)).toBeUndefined();
+        });
+
+        it("runs a queued background save when scratch changed during the in-flight save", () => {
+            let { state } = transition(savingState("manual"), { type: "SAVE_REQUESTED", kind: "autosave" });
+            ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "lexical", value: lexicalDoc("typed during save") }));
+            const result = transition(state, { type: "SAVE_SUCCEEDED", post: makePost() });
+            expectSaving(result.state, "autosave");
+            expect(savePerformEffect(result.effects)?.payload.lexical).toBe(lexicalDoc("typed during save"));
+        });
+
+        it("drops the queue when the in-flight save fails", () => {
+            let { state } = transition(savingState("manual"), { type: "SAVE_REQUESTED", kind: "autosave" });
+            ({ state } = transition(state, { type: "SAVE_FAILED", error: genericError() }));
+            expect(state.save.status).toBe("error");
+        });
+    });
+
+    describe("SAVE_SUCCEEDED", () => {
+        it("applies the persisted snapshot and returns to idle", () => {
+            const saved = makePost({ title: "Server title", slug: "server-slug", updatedAt: "2026-06-09T00:00:00.000Z" });
+            let { state } = startManualSave(loadPost());
+            ({ state } = transition(state, { type: "SAVE_SUCCEEDED", post: saved }));
+            expect(state.post).toEqual(saved);
+            expect(state.save).toEqual({ status: "idle" });
+        });
+
+        it("keeps scratch values typed during the save (state stays dirty)", () => {
+            let { state } = startManualSave(loadPost());
+            ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "title", value: "typed during save" }));
+            ({ state } = transition(state, { type: "SAVE_SUCCEEDED", post: makePost() }));
+            expect(state.titleScratch).toBe("typed during save");
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("resyncs the settings scratches from the persisted snapshot (server may normalize them)", () => {
+            let { state } = transition(loadPost(), { type: "SCRATCH_CHANGED", field: "slug", value: "typed-slug" });
+            ({ state } = startManualSave(state));
+            const saved = makePost({
+                slug: "typed-slug-2",
+                publishedAt: "2026-01-05T10:00:00.000Z",
+                featureImage: "/img/cover.png",
+            });
+            ({ state } = transition(state, { type: "SAVE_SUCCEEDED", post: saved }));
+
+            expect(state.slugScratch).toBe("typed-slug-2");
+            expect(state.publishedAtScratch).toBe("2026-01-05T10:00:00.000Z");
+            expect(state.featureImageScratch).toBe("/img/cover.png");
+            expect(hasDirtyAttributes(state)).toBe(false);
+        });
+
+        it("assigns the id returned for a new post", () => {
+            let { state } = startManualSave(loadPost({ id: null }));
+            ({ state } = transition(state, { type: "SAVE_SUCCEEDED", post: makePost({ id: "new-id" }) }));
+            expect(state.post?.id).toBe("new-id");
+        });
+
+        it("re-derives willPublish/willSchedule from the persisted status", () => {
+            let { state } = transition(loadPost(), { type: "SET_SAVE_TYPE", saveType: "publish" });
+            ({ state } = startManualSave(state));
+            ({ state } = transition(state, { type: "SAVE_SUCCEEDED", post: makePost({ status: "published" }) }));
+            expect(state.willPublish).toBe(true);
+            expect(state.willSchedule).toBe(false);
+        });
+
+        it("is ignored when no save is in flight", () => {
+            const idle = loadPost();
+            const { state, effects } = transition(idle, { type: "SAVE_SUCCEEDED", post: makePost({ title: "stale" }) });
+            expect(state).toBe(idle);
+            expect(effects).toEqual([]);
+        });
+    });
+
+    describe("SAVE_FAILED", () => {
+        it("moves to the error state and carries the error payload", () => {
+            const error: SaveError = { type: "conflict", message: "Saving failed! Someone else is editing this post." };
+            let { state } = startManualSave(loadPost());
+            ({ state } = transition(state, { type: "SAVE_FAILED", error }));
+            expect(state.save).toEqual({ status: "error", kind: "manual", error });
+        });
+
+        it.each([
+            "conflict", "host-limit", "not-found", "offline", "generic",
+        ] as const)("preserves the %s error type for UI branching", (type) => {
+            let { state } = startManualSave(loadPost());
+            ({ state } = transition(state, { type: "SAVE_FAILED", error: { type, message: "m" } }));
+            expect(state.save).toMatchObject({ status: "error", error: { type } });
+        });
+
+        it("is ignored when no save is in flight", () => {
+            const idle = loadPost();
+            const { state, effects } = transition(idle, { type: "SAVE_FAILED", error: genericError() });
+            expect(state).toBe(idle);
+            expect(effects).toEqual([]);
+        });
+
+        it("allows a new save to start from the error state", () => {
+            let { state } = startManualSave(loadPost());
+            ({ state } = transition(state, { type: "SAVE_FAILED", error: genericError() }));
+            const result = startManualSave(state);
+            expectSaving(result.state, "manual");
+        });
+
+        it("a failed save keeps the state dirty so a retrying autosave is not skipped", () => {
+            let { state } = startManualSave(loadPost());
+            ({ state } = transition(state, { type: "SAVE_FAILED", error: genericError() }));
+            const result = transition(state, { type: "SAVE_REQUESTED", kind: "autosave" });
+            expectSaving(result.state, "autosave");
+        });
+    });
+});
+
+/* status transitions ------------------------------------------------------------*/
+
+describe("status transitions", () => {
+    function manualSaveStatus(state: EditorState, pastScheduledTime = false): PostStatus | undefined {
+        const { effects } = startManualSave(state, pastScheduledTime);
+        return savePerformEffect(effects)?.payload.status;
+    }
+
+    describe("manual saves apply willPublish/willSchedule intents", () => {
+        it("draft -> published via willPublish", () => {
+            const { state } = transition(loadPost(), { type: "SET_SAVE_TYPE", saveType: "publish" });
+            expect(manualSaveStatus(state)).toBe("published");
+        });
+
+        it("draft -> scheduled via willSchedule", () => {
+            const { state } = transition(loadPost(), { type: "SET_SAVE_TYPE", saveType: "schedule" });
+            expect(manualSaveStatus(state)).toBe("scheduled");
+        });
+
+        it("draft stays draft without intents", () => {
+            expect(manualSaveStatus(loadPost())).toBe("draft");
+        });
+
+        it("published stays published (willPublish derived from status)", () => {
+            expect(manualSaveStatus(loadPost({ status: "published" }))).toBe("published");
+        });
+
+        it("published -> draft (unpublish)", () => {
+            const { state } = transition(loadPost({ status: "published" }), { type: "SET_SAVE_TYPE", saveType: "draft" });
+            expect(manualSaveStatus(state)).toBe("draft");
+        });
+
+        it("scheduled stays scheduled (willSchedule derived from status)", () => {
+            expect(manualSaveStatus(loadPost({ status: "scheduled" }))).toBe("scheduled");
+        });
+
+        it("scheduled -> draft (unschedule)", () => {
+            const { state } = transition(loadPost({ status: "scheduled" }), { type: "SET_SAVE_TYPE", saveType: "draft" });
+            expect(manualSaveStatus(state)).toBe("draft");
+        });
+
+        it("sent is terminal", () => {
+            expect(manualSaveStatus(loadPost({ status: "sent" }))).toBe("sent");
+        });
+
+        it("past scheduled time with an intent set publishes immediately", () => {
+            expect(manualSaveStatus(loadPost({ status: "scheduled" }), true)).toBe("published");
+        });
+
+        it("past scheduled time with no intents reverts to draft", () => {
+            const { state } = transition(loadPost({ status: "scheduled" }), { type: "SET_SAVE_TYPE", saveType: "draft" });
+            expect(manualSaveStatus(state, true)).toBe("draft");
+        });
+    });
+
+    describe("background saves force draft and never transition status", () => {
+        it("autosave forces status draft even with willPublish set", () => {
+            let { state } = transition(loadPost(), { type: "SET_SAVE_TYPE", saveType: "publish" });
+            ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "lexical", value: lexicalDoc("x") }));
+            const result = transition(state, { type: "SAVE_REQUESTED", kind: "timed" });
+            expect(savePerformEffect(result.effects)?.payload.status).toBe("draft");
+        });
+    });
+
+    describe("leave saves never change status", () => {
+        it("keeps the draft status even with willPublish set", () => {
+            const { state } = transition(loadPost(), { type: "SET_SAVE_TYPE", saveType: "publish" });
+            const result = transition(state, { type: "SAVE_REQUESTED", kind: "leave" });
+            expect(savePerformEffect(result.effects)?.payload.status).toBe("draft");
+        });
+    });
+
+    describe("error revert", () => {
+        it("a failed publish reverts the in-flight status to draft", () => {
+            let { state } = transition(loadPost(), { type: "SET_SAVE_TYPE", saveType: "publish" });
+            ({ state } = startManualSave(state));
+            expect(state.post?.status).toBe("published"); // in-flight, mirrors Ember setting post.status pre-save
+            ({ state } = transition(state, { type: "SAVE_FAILED", error: genericError() }));
+            expect(state.post?.status).toBe("draft");
+            expect(state.willPublish).toBe(true); // intent survives for retry
+        });
+
+        it("a failed unschedule reverts to scheduled", () => {
+            let { state } = transition(loadPost({ status: "scheduled" }), { type: "SET_SAVE_TYPE", saveType: "draft" });
+            ({ state } = startManualSave(state));
+            expect(state.post?.status).toBe("draft");
+            ({ state } = transition(state, { type: "SAVE_FAILED", error: genericError() }));
+            expect(state.post?.status).toBe("scheduled");
+        });
+    });
+
+    describe("SET_SAVE_TYPE", () => {
+        it.each([
+            ["publish", true, false],
+            ["schedule", false, true],
+            ["draft", false, false],
+        ] as const)("%s sets willPublish=%s willSchedule=%s", (saveType, willPublish, willSchedule) => {
+            const { state } = transition(loadPost(), { type: "SET_SAVE_TYPE", saveType });
+            expect(state.willPublish).toBe(willPublish);
+            expect(state.willSchedule).toBe(willSchedule);
+        });
+
+        it("publish and schedule are mutually exclusive", () => {
+            let { state } = transition(loadPost(), { type: "SET_SAVE_TYPE", saveType: "publish" });
+            ({ state } = transition(state, { type: "SET_SAVE_TYPE", saveType: "schedule" }));
+            expect(state.willPublish).toBe(false);
+            expect(state.willSchedule).toBe(true);
+        });
+    });
+});
+
+/* leave decision ------------------------------------------------------------------*/
+
+describe("getLeaveDecision", () => {
+    function dirtyState(status: PostStatus): EditorState {
+        return transition(loadPost({ status }), { type: "SCRATCH_CHANGED", field: "title", value: "changed" }).state;
+    }
+
+    it("allows leaving silently with no post", () => {
+        expect(getLeaveDecision(createInitialState())).toEqual({ shouldSaveOnLeave: false, shouldConfirmLeave: false });
+    });
+
+    it.each(["draft", "published", "scheduled", "sent"] as const)("allows leaving a clean %s post silently", (status) => {
+        expect(getLeaveDecision(loadPost({ status }))).toEqual({ shouldSaveOnLeave: false, shouldConfirmLeave: false });
+    });
+
+    it("saves a dirty draft on leave without confirmation", () => {
+        expect(getLeaveDecision(dirtyState("draft"))).toEqual({ shouldSaveOnLeave: true, shouldConfirmLeave: false });
+    });
+
+    it.each(["published", "scheduled", "sent"] as const)("requires confirmation for a dirty %s post", (status) => {
+        expect(getLeaveDecision(dirtyState(status))).toEqual({ shouldSaveOnLeave: false, shouldConfirmLeave: true });
+    });
+
+    it("escalates a dirty draft to confirmation once a leave-save was already performed", () => {
+        const state = { ...dirtyState("draft"), saveOnLeavePerformed: true };
+        expect(getLeaveDecision(state)).toEqual({ shouldSaveOnLeave: false, shouldConfirmLeave: true });
+    });
+
+    it("does not ask again after the user confirmed leaving", () => {
+        const { state } = transition(dirtyState("published"), { type: "LEAVE_CONFIRMED" });
+        expect(getLeaveDecision(state)).toEqual({ shouldSaveOnLeave: false, shouldConfirmLeave: false });
+    });
+
+    it("a successful leave-save marks saveOnLeavePerformed and leaves cleanly", () => {
+        let { state } = transition(dirtyState("draft"), { type: "SAVE_REQUESTED", kind: "leave" });
+        ({ state } = transition(state, { type: "SAVE_SUCCEEDED", post: makePost({ title: "changed" }) }));
+        expect(state.saveOnLeavePerformed).toBe(true);
+        expect(getLeaveDecision(state)).toEqual({ shouldSaveOnLeave: false, shouldConfirmLeave: false });
+    });
+});
+
+/* lifecycle housekeeping --------------------------------------------------------*/
+
+describe("POST_LOADED / RESET / CANCEL_AUTOSAVE", () => {
+    it("POST_LOADED snapshots the post, seeds scratch values and cancels timers", () => {
+        const post = makePost({ customExcerpt: "excerpt", tags: ["news"] });
+        const { state, effects } = transition(createInitialState(), { type: "POST_LOADED", post });
+        expect(state.post).toEqual(post);
+        expect(state.titleScratch).toBe(post.title);
+        expect(state.lexicalScratch).toBe(post.lexical);
+        expect(state.customExcerptScratch).toBe("excerpt");
+        expect(state.tagNamesScratch).toEqual(["news"]);
+        expect(effects).toEqual([{ type: "timer/cancel-all" }]);
+    });
+
+    it.each([
+        ["draft", false, false],
+        ["published", true, false],
+        ["scheduled", false, true],
+        ["sent", false, false],
+    ] as const)("POST_LOADED derives intents for a %s post", (status, willPublish, willSchedule) => {
+        const state = loadPost({ status });
+        expect(state.willPublish).toBe(willPublish);
+        expect(state.willSchedule).toBe(willSchedule);
+    });
+
+    it("POST_LOADED clears state left over from a previous post", () => {
+        let { state } = transition(dirtyLoaded(), { type: "LEAVE_CONFIRMED" });
+        ({ state } = transition(state, { type: "POST_LOADED", post: makePost({ id: "post-2" }) }));
+        expect(state.leaveConfirmed).toBe(false);
+        expect(state.saveOnLeavePerformed).toBe(false);
+        expect(hasDirtyAttributes(state)).toBe(false);
+
+        function dirtyLoaded() {
+            return transition(loadPost(), { type: "SCRATCH_CHANGED", field: "title", value: "changed" }).state;
+        }
+    });
+
+    it("RESET returns to the initial state and cancels timers", () => {
+        const { state, effects } = transition(loadPost(), { type: "RESET" });
+        expect(state).toEqual(createInitialState());
+        expect(effects).toEqual([{ type: "timer/cancel-all" }]);
+    });
+
+    it("CANCEL_AUTOSAVE emits a cancel-all directive without changing state", () => {
+        const loaded = loadPost();
+        const { state, effects } = transition(loaded, { type: "CANCEL_AUTOSAVE" });
+        expect(state).toBe(loaded);
+        expect(effects).toEqual([{ type: "timer/cancel-all" }]);
+    });
+});

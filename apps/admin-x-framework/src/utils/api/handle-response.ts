@@ -1,4 +1,4 @@
-import {APIError, EmailError, ErrorResponse, HostLimitError, JSONError, MaintenanceError, RequestEntityTooLargeError, ServerUnreachableError, ThemeValidationError, UnsupportedMediaTypeError, ValidationError, VersionMismatchError} from '../errors';
+import {APIError, EmailError, ErrorResponse, HostLimitError, JSONError, MaintenanceError, RequestEntityTooLargeError, ServerUnreachableError, ThemeValidationError, UnsupportedMediaTypeError, UpdateCollisionError, ValidationError, VersionMismatchError} from '../errors';
 
 const handleResponse = async (response: Response) => {
     if (response.status === 0) {
@@ -28,6 +28,8 @@ const handleResponse = async (response: Response) => {
             throw new HostLimitError(response, data);
         } else if (data.errors?.[0]?.type === 'EmailError') {
             throw new EmailError(response, data);
+        } else if (data.errors?.[0]?.type === 'UpdateCollisionError') {
+            throw new UpdateCollisionError(response, data);
         } else {
             throw new JSONError(response, data);
         }

@@ -53,6 +53,11 @@ export default defineConfig(({ command }) => ({
     resolve: {
         alias: {
             "@ghost-cards": GHOST_CARDS_PATH,
+            // The koenig-lexical package only exports its JS entry points;
+            // its stylesheet lives next to them in dist/ (the UMD bundle
+            // injects styles itself, the ESM bundle does not), so the editor
+            // imports it through this alias.
+            "koenig-lexical-styles.css": resolve(require.resolve("@tryghost/koenig-lexical"), "../style.css"),
             // TODO: Remove this when @tryghost/nql is updated
             mingo: require.resolve("mingo/dist/mingo.js"),
         },

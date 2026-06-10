@@ -1,23 +1,26 @@
 import {PostEditorPage} from '@/admin-pages';
-import {PostFactory, createPostFactory} from '@/data-factory';
+import {createPostFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
+import {faker} from '@faker-js/faker';
 
-test.describe('Post Preview Modal', () => {
-    let postFactory: PostFactory;
-
-    test.beforeEach(async ({page}) => {
-        postFactory = createPostFactory(page.request);
-    });
-
+/**
+ * Post preview modal tests, shared between the Ember implementation (labs
+ * flag `editorX` off) and the React implementation (`editorX` on). Same page
+ * objects and selectors for both runs.
+ */
+export function definePostPreviewTests() {
     test('preview modal opens and can be closed via close button, ESC from header, and ESC from iframe', async ({page}) => {
+        const postFactory = createPostFactory(page.request);
+        const linkedPostTitle = `Clickpost ${faker.string.alphanumeric(8)}`;
+
         const post = await postFactory.create({
-            title: 'Test Post for Preview Modal',
+            title: `Preview modal post ${faker.string.alphanumeric(8)}`,
             status: 'draft'
         });
 
         // create a published post that will be in read more section of preview modal
         await postFactory.create({
-            title: 'clickpost',
+            title: linkedPostTitle,
             status: 'published'
         });
 
@@ -43,10 +46,10 @@ test.describe('Post Preview Modal', () => {
         await postEditorPage.previewButton.click();
         await expect(postEditorPage.previewModal.modal).toBeVisible();
 
-        await postEditorPage.previewModalDesktopFrame.clickPostLinkByTitle('clickpost');
+        await postEditorPage.previewModalDesktopFrame.clickPostLinkByTitle(linkedPostTitle);
         await postEditorPage.previewModalDesktopFrame.focus();
 
         await postEditorPage.pressKey('Escape');
         await expect(postEditorPage.previewModal.modal).toBeHidden();
     });
-});
+}

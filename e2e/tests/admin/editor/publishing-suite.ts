@@ -3,6 +3,15 @@ import {PageEditorPage, PostEditorPage, PostsPage} from '@/admin-pages';
 import {PostPage} from '@/helpers/pages';
 import {createMemberFactory, generateSlug} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
+import {faker} from '@faker-js/faker';
+
+function uniqueTitle(prefix: string) {
+    return `${prefix} ${faker.string.alphanumeric(8)}`;
+}
+
+function uniqueEmail(prefix: string) {
+    return `${prefix}-${faker.string.alphanumeric(8).toLowerCase()}@example.com`;
+}
 
 async function getNewsletters(request: APIRequestContext): Promise<string[]> {
     const response = await request.get('/ghost/api/admin/newsletters/?status=active&limit=all');
@@ -77,11 +86,16 @@ async function waitForScheduledSaveResponse(page: Page, resource: 'posts' | 'pag
     expect(response.status()).toBe(200);
 }
 
-test.describe('Ghost Admin - Publishing', () => {
+/**
+ * Publishing tests, shared between the Ember implementation (labs flag
+ * `editorX` off) and the React implementation (`editorX` on). Same page
+ * objects and selectors for both runs.
+ */
+export function definePublishingTests() {
     test.use({mailgunEnabled: true});
 
     test('publish only - post is visible on frontend', async ({page}) => {
-        const postData = {title: 'Publish post only', body: 'This is my post body.'};
+        const postData = {title: uniqueTitle('Publish post only'), body: 'This is my post body.'};
 
         const postsPage = new PostsPage(page);
         await postsPage.goto();
@@ -101,12 +115,12 @@ test.describe('Ghost Admin - Publishing', () => {
     });
 
     test('publish and email - post is visible on frontend', async ({page}) => {
-        const postData = {title: 'Publish and email post', body: 'This is my post body.'};
+        const postData = {title: uniqueTitle('Publish and email post'), body: 'This is my post body.'};
 
         const memberFactory = createMemberFactory(page.request);
         const newsletters = await getNewsletters(page.request);
         await memberFactory.create({
-            email: 'publish-email-test@example.com',
+            email: uniqueEmail('publish-email-test'),
             name: 'Publishing member',
             newsletters
         });
@@ -129,12 +143,12 @@ test.describe('Ghost Admin - Publishing', () => {
     });
 
     test('email only - post is not visible on frontend', async ({page}) => {
-        const postData = {title: 'Email only post', body: 'This is my post body.'};
+        const postData = {title: uniqueTitle('Email only post'), body: 'This is my post body.'};
 
         const memberFactory = createMemberFactory(page.request);
         const newsletters = await getNewsletters(page.request);
         await memberFactory.create({
-            email: 'email-only-test@example.com',
+            email: uniqueEmail('email-only-test'),
             name: 'Publishing member',
             newsletters
         });
@@ -156,7 +170,7 @@ test.describe('Ghost Admin - Publishing', () => {
     });
 
     test('unschedules a scheduled post', async ({page}) => {
-        const title = `unschedule-post-${Date.now()}`;
+        const title = uniqueTitle('Unschedule post');
         const body = 'This is my unscheduled post body.';
         const slug = generateSlug(title);
 
@@ -184,7 +198,7 @@ test.describe('Ghost Admin - Publishing', () => {
     });
 
     test('scheduled publish only - post is scheduled', async ({page}) => {
-        const title = `scheduled-publish-only-${Date.now()}`;
+        const title = uniqueTitle('Scheduled publish only');
         const body = 'This is my scheduled post body.';
         const slug = generateSlug(title);
 
@@ -210,14 +224,14 @@ test.describe('Ghost Admin - Publishing', () => {
     });
 
     test('scheduled publish and email - post is scheduled', async ({page}) => {
-        const title = `scheduled-publish-email-${Date.now()}`;
+        const title = uniqueTitle('Scheduled publish email');
         const body = 'This is my scheduled publish and email post body.';
         const slug = generateSlug(title);
 
         const memberFactory = createMemberFactory(page.request);
         const newsletters = await getNewsletters(page.request);
         await memberFactory.create({
-            email: 'scheduled-publish-email@example.com',
+            email: uniqueEmail('scheduled-publish-email'),
             name: 'Publishing member',
             newsletters
         });
@@ -246,14 +260,14 @@ test.describe('Ghost Admin - Publishing', () => {
     });
 
     test('scheduled email only - post is scheduled and not visible on frontend', async ({page}) => {
-        const title = `scheduled-email-only-${Date.now()}`;
+        const title = uniqueTitle('Scheduled email only');
         const body = 'This is my scheduled email-only post body.';
         const slug = generateSlug(title);
 
         const memberFactory = createMemberFactory(page.request);
         const newsletters = await getNewsletters(page.request);
         await memberFactory.create({
-            email: 'scheduled-email-only@example.com',
+            email: uniqueEmail('scheduled-email-only'),
             name: 'Publishing member',
             newsletters
         });
@@ -282,7 +296,7 @@ test.describe('Ghost Admin - Publishing', () => {
     });
 
     test('scheduled publish only - page is scheduled', async ({page}) => {
-        const title = `scheduled-page-only-${Date.now()}`;
+        const title = uniqueTitle('Scheduled page only');
         const body = 'This is my scheduled page body.';
         const slug = generateSlug(title);
         const editor = new PageEditorPage(page);
@@ -305,7 +319,7 @@ test.describe('Ghost Admin - Publishing', () => {
     });
 
     test('publish only - page is visible on frontend', async ({page}) => {
-        const title = `publish-page-only-${Date.now()}`;
+        const title = uniqueTitle('Publish page only');
         const body = 'This is my published page body.';
         const editor = new PageEditorPage(page);
 
@@ -326,4 +340,4 @@ test.describe('Ghost Admin - Publishing', () => {
         await expect(publicPage.articleTitle).toHaveText(title);
         await expect(publicPage.articleBody).toHaveText(body);
     });
-});
+}
