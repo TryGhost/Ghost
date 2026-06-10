@@ -16,7 +16,7 @@ export class MembersListPage extends AdminPage {
     readonly clearFiltersButton: Locator;
     readonly emptyState: Locator;
     readonly addYourselfButton: Locator;
-    readonly importCsvButton: Locator;
+    readonly importCsvLink: Locator;
     readonly noResults: Locator;
     readonly showAllButton: Locator;
 
@@ -31,8 +31,8 @@ export class MembersListPage extends AdminPage {
         this.filterButton = page.getByRole('button', {name: /^(Filter|Add filter)$/});
         this.clearFiltersButton = page.getByRole('button', {name: 'Clear'});
         this.emptyState = page.getByText('Start building your audience');
-        this.addYourselfButton = page.getByRole('button', {name: 'Add yourself as a member to test'});
-        this.importCsvButton = page.getByRole('button', {name: 'Import from CSV'});
+        this.addYourselfButton = page.getByRole('button', {name: 'Add yourself as a member'});
+        this.importCsvLink = page.getByRole('link', {name: 'Import with CSV'});
         this.noResults = page.getByText('No matching members found.');
         this.showAllButton = page.getByRole('button', {name: 'Show all members'});
     }

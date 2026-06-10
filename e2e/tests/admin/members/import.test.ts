@@ -30,7 +30,7 @@ test.describe('Ghost Admin - Members Import', () => {
         writeFileSync(csvPath, csvContent);
 
         await membersPage.goto();
-        await membersPage.importCsvButton.click();
+        await membersPage.importCsvLink.click();
 
         await importModal.fileInput.setInputFiles(csvPath);
 

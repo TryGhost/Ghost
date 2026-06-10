@@ -157,11 +157,11 @@ describe('MembersActions', () => {
         );
     });
 
-    it('can hide the member actions menu without hiding new member or import modal state', () => {
-        renderMembersActions({showMenu: false});
+    it('can hide the member header actions without hiding import modal state', () => {
+        renderMembersActions({showMenu: false, showNewMember: false});
 
         expect(screen.queryByTestId('members-actions')).not.toBeInTheDocument();
-        expect(screen.getByRole('link', {name: 'New member'})).toBeInTheDocument();
+        expect(screen.queryByRole('link', {name: 'New member'})).not.toBeInTheDocument();
         expect(importModalPropsRef.current).not.toBeNull();
     });
 });
