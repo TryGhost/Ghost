@@ -30,6 +30,7 @@ Object {
       "indexnow": true,
       "lexicalIndicators": true,
       "llmsTxt": true,
+      "memberDetailsX": true,
       "members": true,
       "pictureImageFormats": true,
       "postsListX": true,

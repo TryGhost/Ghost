@@ -48,6 +48,10 @@ const features: Feature[] = [{
     description: 'Enables the new React posts and pages list screens',
     flag: 'postsListX'
 }, {
+    title: 'Member Details X',
+    description: 'Enables the new React member detail screen and member activity',
+    flag: 'memberDetailsX'
+}, {
     title: 'Email Unique ID',
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'

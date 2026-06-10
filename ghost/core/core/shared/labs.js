@@ -49,6 +49,7 @@ const PRIVATE_FEATURES = [
     'tagsX',
     'tagDetailsX',
     'postsListX',
+    'memberDetailsX',
     'emailUniqueid',
     'themeTranslation',
     'indexnow',
