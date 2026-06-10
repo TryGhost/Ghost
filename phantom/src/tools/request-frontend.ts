@@ -6,7 +6,7 @@ const pathIndex = args.findIndex((arg) => arg === '--path');
 const path = pathIndex >= 0 ? args[pathIndex + 1] ?? '/' : '/';
 
 const run = async () => {
-    const dependencies = createAppDependencies();
+    const dependencies = await createAppDependencies();
     const app = createApp(dependencies);
     const response = await app.request(path);
     const body = await response.text();

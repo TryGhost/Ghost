@@ -49,61 +49,7 @@ export type ContentRepository = {
 };
 
 export const createContentRepository = (db: DbClient): ContentRepository => {
-    let schemaEnsured = false;
-
-    const ensureSchema = async () => {
-        if (schemaEnsured) {
-            return;
-        }
-        const postColumns = await db.all(sql.raw('PRAGMA table_info(posts)')) as Array<{name: string}>;
-        if (postColumns.length === 0) {
-            schemaEnsured = true;
-            return;
-        }
-        const columnNames = new Set(postColumns.map((column) => column.name));
-        const statements = [];
-        if (!columnNames.has('visibility')) {
-            statements.push(`ALTER TABLE posts ADD COLUMN visibility TEXT NOT NULL DEFAULT 'public'`);
-        }
-        if (!columnNames.has('custom_excerpt')) {
-            statements.push('ALTER TABLE posts ADD COLUMN custom_excerpt TEXT');
-        }
-        if (!columnNames.has('feature_image')) {
-            statements.push('ALTER TABLE posts ADD COLUMN feature_image TEXT');
-        }
-        if (!columnNames.has('feature_image_alt')) {
-            statements.push('ALTER TABLE posts ADD COLUMN feature_image_alt TEXT');
-        }
-        if (!columnNames.has('feature_image_caption')) {
-            statements.push('ALTER TABLE posts ADD COLUMN feature_image_caption TEXT');
-        }
-
-        const revisionColumns = await db.all(sql.raw('PRAGMA table_info(post_revisions)')) as Array<{name: string}>;
-        if (revisionColumns.length > 0) {
-            const revisionNames = new Set(revisionColumns.map((column) => column.name));
-            if (!revisionNames.has('visibility')) {
-                statements.push(`ALTER TABLE post_revisions ADD COLUMN visibility TEXT NOT NULL DEFAULT 'public'`);
-            }
-            if (!revisionNames.has('custom_excerpt')) {
-                statements.push('ALTER TABLE post_revisions ADD COLUMN custom_excerpt TEXT');
-            }
-            if (!revisionNames.has('feature_image')) {
-                statements.push('ALTER TABLE post_revisions ADD COLUMN feature_image TEXT');
-            }
-            if (!revisionNames.has('feature_image_alt')) {
-                statements.push('ALTER TABLE post_revisions ADD COLUMN feature_image_alt TEXT');
-            }
-            if (!revisionNames.has('feature_image_caption')) {
-                statements.push('ALTER TABLE post_revisions ADD COLUMN feature_image_caption TEXT');
-            }
-        }
-        for (const statement of statements) {
-            await db.run(sql.raw(statement));
-        }
-        schemaEnsured = true;
-    };
     const createPost = async (post: NewPostRecord) => {
-        await ensureSchema();
         await db.insert(postTable).values(post);
         const rows = await db.select().from(postTable).where(eq(postTable.id, post.id)).limit(1);
         if (!rows[0]) {
@@ -113,35 +59,22 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
     };
 
     const getPostById = async (id: string) => {
-        await ensureSchema();
         const rows = await db.select().from(postTable).where(eq(postTable.id, id)).limit(1);
         return rows[0] ?? null;
     };
 
     const getPostBySlug = async (slug: string) => {
-        await ensureSchema();
         const rows = await db.select().from(postTable).where(eq(postTable.slug, slug)).limit(1);
         return rows[0] ?? null;
     };
 
     const updatePost = async (post: PostRecord) => {
-        await ensureSchema();
+        const {id, createdAt, ...updatable} = post;
+        void createdAt;
         await db
             .update(postTable)
-            .set({
-                title: post.title,
-                slug: post.slug,
-                status: post.status,
-                lexical: post.lexical,
-                visibility: post.visibility,
-                customExcerpt: post.customExcerpt,
-                featureImage: post.featureImage,
-                featureImageAlt: post.featureImageAlt,
-                featureImageCaption: post.featureImageCaption,
-                publishedAt: post.publishedAt,
-                updatedAt: post.updatedAt
-            })
-            .where(eq(postTable.id, post.id));
+            .set(updatable)
+            .where(eq(postTable.id, id));
         const rows = await db.select().from(postTable).where(eq(postTable.id, post.id)).limit(1);
         if (!rows[0]) {
             throw new Error('Post missing after update');
@@ -150,7 +83,6 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
     };
 
     const listPublishedPosts = async ({limit, offset}: {limit: number; offset: number}) => {
-        await ensureSchema();
         return db
             .select()
             .from(postTable)
@@ -161,7 +93,6 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
     };
 
     const countPublishedPosts = async () => {
-        await ensureSchema();
         const rows = await db
             .select({value: count()})
             .from(postTable)
@@ -171,7 +102,6 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
     };
 
     const deletePost = async (id: string) => {
-        await ensureSchema();
         await db.delete(postTable).where(eq(postTable.id, id));
         await db.delete(postTagTable).where(eq(postTagTable.postId, id));
     };

@@ -3,7 +3,7 @@ import {z} from 'zod';
 export const NewsletterSchema = z.object({
     id: z.string().min(1),
     name: z.string().min(1),
-    senderEmail: z.string().email(),
+    senderEmail: z.string().email().nullable(),
     createdAt: z.number().int(),
     updatedAt: z.number().int()
 });

@@ -43,7 +43,8 @@ export {
     contentUrlEventTable,
     contentRedirectTable,
     collectionTable,
-    authorProfileTable
+    authorProfileTable,
+    postAuthorTable
 } from '../../modules/content/db.js';
 export {
     newsletterTable,

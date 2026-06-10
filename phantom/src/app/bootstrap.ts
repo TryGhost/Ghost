@@ -31,6 +31,8 @@ import {createJobsService} from '../modules/jobs/service.js';
 import {createInMemoryQueueProvider} from '../modules/jobs/queue.js';
 import {createOperationsRepository} from '../modules/operations/repo.js';
 import {createOperationsService} from '../modules/operations/service.js';
+import {createGhostImporter} from '../modules/operations/importer.js';
+import {ensureCoreSchema} from '../db/ddl.js';
 import {createBillingRepository} from '../modules/billing/repo.js';
 import {createBillingService} from '../modules/billing/service.js';
 import {createExtensionsRepository} from '../modules/extensions/repo.js';
@@ -39,9 +41,10 @@ import {createCommentRepository} from '../modules/comments/repo.js';
 import {createCommentService} from '../modules/comments/service.js';
 import {getMetricsClient} from '../platform/metrics/client.js';
 
-export const createAppDependencies = () => {
+export const createAppDependencies = async () => {
     const config = loadConfig();
     const db = createDb(config.db);
+    await ensureCoreSchema(db);
     const siteRepository = createSiteRepository(db);
     const siteService = createSiteService(siteRepository);
     const staffRepository = createStaffRepository(db);
@@ -89,7 +92,8 @@ export const createAppDependencies = () => {
         contentRepository,
         webhookRepository,
         analyticsRepository,
-        metricsClient
+        metricsClient,
+        createGhostImporter(db)
     );
     const billingRepository = createBillingRepository(db);
     const billingService = createBillingService(billingRepository);

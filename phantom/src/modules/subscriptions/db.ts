@@ -3,6 +3,13 @@ import {integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
 export const planTable = sqliteTable('plans', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
+    slug: text('slug'),
+    description: text('description'),
+    type: text('type').notNull().default('paid'),
+    active: integer('active').notNull().default(1),
+    visibility: text('visibility').notNull().default('public'),
+    trialDays: integer('trial_days').notNull().default(0),
+    welcomePageUrl: text('welcome_page_url'),
     createdAt: integer('created_at').notNull(),
     updatedAt: integer('updated_at').notNull()
 });

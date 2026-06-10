@@ -1,24 +1,31 @@
 # Status
 
 ## Summary
-- Established module architecture using Hono + `@hono/zod-openapi` typed RPC.
-- Implemented Site and Identity scaffolds with domain-first modules and thin routes.
-- Added PRD checklist and architecture conventions.
+- Module architecture on Hono + `@hono/zod-openapi`; Drizzle + libSQL.
+- Real Ghost v5 export import works end-to-end: `createGhostImporter`
+  (`src/modules/operations/importer.ts`) converts posts (mobiledoc/html-only →
+  lexical html card), tags, authors+staff/roles, newsletters/issues/
+  memberships, products→plans/prices, settings and custom theme settings,
+  atomically and idempotently. Wired into `POST /ghost/api/operations/import`
+  and the `yarn migrate:core --input <export.json>` CLI.
+- `src/db/ddl.ts` generates CREATE TABLE + additive column reconciliation from
+  the drizzle schema index; bootstrap runs it at startup. Nullability changes
+  still need the real migrations system (open checklist item).
 
-## Implemented
-- Site module: `db.ts`, `repo.ts`, `service.ts`, `contracts.ts`, `routes.ts`.
-- Identity module: staff login, session issuance, rate limiting.
-- Shared: error handling, password hashing, rate limiter, DB client.
-
-## PRD Progress
-- Staff login with rate limiting checked off in `docs/prd-checklist.md`.
+## Current focus (active goal)
+1. ✅ Slice 1: fixture-backed Ghost export importer.
+2. ⏳ Slice 2: Handlebars theme rendering parity (real theme through the
+   frontend router).
+3. ⏳ Slice 3: Admin/Content API compat facades so existing Ghost apps run
+   unmodified.
+4. ⏳ Verify admin + portal in a browser against phantom.
 
 ## Tests
-- Unit tests in `src/modules/site/site.service.test.ts` and `src/modules/identity/service.test.ts`.
-- App smoke tests in `test/app.test.ts`.
-- Latest run failed because `vitest` is not installed yet.
-  - Run `yarn --cwd phantom install` then `yarn --cwd phantom test`.
+- `yarn test` — 51 tests green, including `src/modules/operations/importer.test.ts`
+  (real `test/fixtures/ghost-v5-export.json` fixture) and `src/db/ddl.test.ts`.
 
-## Next Focus
-- Continue Identity & Access (sessions enforcement, reset tokens, invitations).
-- Add explicit domain → API DTO mappers.
+## Known gaps / next
+- v1/v2 export formats untested; amp/comment_id field mapping absent.
+- Newsletter `senderEmail` is now nullable (null = use default address);
+  send-path resolution relies on contract validation upstream.
+- posts_meta/offers/snippets tables not yet imported.

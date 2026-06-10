@@ -2,15 +2,23 @@ import {integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
 
 export const postTable = sqliteTable('posts', {
     id: text('id').primaryKey(),
+    uuid: text('uuid'),
     title: text('title').notNull(),
     slug: text('slug').notNull(),
+    type: text('type').notNull().default('post'),
     status: text('status').notNull(),
     lexical: text('lexical').notNull(),
+    html: text('html'),
     visibility: text('visibility').notNull().default('public'),
+    featured: integer('featured').notNull().default(0),
     customExcerpt: text('custom_excerpt'),
     featureImage: text('feature_image'),
     featureImageAlt: text('feature_image_alt'),
     featureImageCaption: text('feature_image_caption'),
+    codeinjectionHead: text('codeinjection_head'),
+    codeinjectionFoot: text('codeinjection_foot'),
+    canonicalUrl: text('canonical_url'),
+    customTemplate: text('custom_template'),
     publishedAt: integer('published_at'),
     createdAt: integer('created_at').notNull(),
     updatedAt: integer('updated_at').notNull()
@@ -60,7 +68,10 @@ export const contentRedirectTable = sqliteTable('content_redirects', {
 export const tagTable = sqliteTable('tags', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
-    slug: text('slug').notNull()
+    slug: text('slug').notNull(),
+    description: text('description'),
+    featureImage: text('feature_image'),
+    visibility: text('visibility').notNull().default('public')
 });
 
 export const collectionTable = sqliteTable('collections', {
@@ -74,12 +85,24 @@ export const authorProfileTable = sqliteTable('author_profiles', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
     slug: text('slug').notNull(),
-    bio: text('bio')
+    bio: text('bio'),
+    email: text('email'),
+    profileImage: text('profile_image'),
+    coverImage: text('cover_image'),
+    website: text('website'),
+    location: text('location')
 });
 
 export const postTagTable = sqliteTable('posts_tags', {
     postId: text('post_id').notNull(),
-    tagId: text('tag_id').notNull()
+    tagId: text('tag_id').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0)
+});
+
+export const postAuthorTable = sqliteTable('posts_authors', {
+    postId: text('post_id').notNull(),
+    authorId: text('author_id').notNull(),
+    sortOrder: integer('sort_order').notNull().default(0)
 });
 
 export type PostRecord = typeof postTable.$inferSelect;
@@ -98,3 +121,5 @@ export type CollectionRecord = typeof collectionTable.$inferSelect;
 export type NewCollectionRecord = typeof collectionTable.$inferInsert;
 export type AuthorProfileRecord = typeof authorProfileTable.$inferSelect;
 export type NewAuthorProfileRecord = typeof authorProfileTable.$inferInsert;
+export type PostAuthorRecord = typeof postAuthorTable.$inferSelect;
+export type NewPostAuthorRecord = typeof postAuthorTable.$inferInsert;

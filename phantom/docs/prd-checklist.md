@@ -187,10 +187,18 @@ References (all in this directory):
 ### Data export/import
 - [ ] Exporter table set output (service returns a static table set; no tests
       or file payload)
-- [ ] Import legacy formats (format contract exists; no fixture-backed import)
-- [ ] Legacy field mapping (partial amp/comment normalization in service;
+- [ ] Import legacy formats (v5 exports — wrapped `{db:[{meta,data}]}` and bare
+      `{data}` — import end-to-end with fixture-backed tests; v1/v2 formats
       untested)
-- [ ] Fixture-based importer test per restructured table
+- [ ] Legacy field mapping (mobiledoc/html-only posts → lexical html card,
+      ISO→epoch timestamps, settings key remapping, emails→issues,
+      products→plans/prices all tested; amp/comment_id mapping absent)
+- [x] Fixture-based importer test per restructured table (posts, tags,
+      posts_tags, posts_authors, users→author_profiles+staff, roles,
+      newsletters, emails→issues, members_newsletters→memberships,
+      products→plans/prices, settings, custom_theme_settings proven from a
+      real v5 export in `src/modules/operations/importer.test.ts`;
+      posts_meta/offers/snippets not yet restructured)
 
 ### Migrations and schema utilities
 - [ ] Rollback and re-apply migrations (run records only; no SQL migration

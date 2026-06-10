@@ -20,7 +20,8 @@ export const ImportRequestSchema = z.object({
 
 export const ImportResponseSchema = z.object({
     importId: z.string().min(1),
-    status: z.enum(['queued', 'completed'])
+    status: z.enum(['queued', 'completed']),
+    counts: z.record(z.number().int()).optional()
 });
 
 export const MigrationRequestSchema = z.object({

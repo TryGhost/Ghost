@@ -3,7 +3,14 @@ import {integer, sqliteTable, text} from 'drizzle-orm/sqlite-core';
 export const newsletterTable = sqliteTable('newsletters', {
     id: text('id').primaryKey(),
     name: text('name').notNull(),
-    senderEmail: text('sender_email').notNull(),
+    slug: text('slug'),
+    description: text('description'),
+    senderName: text('sender_name'),
+    senderEmail: text('sender_email'),
+    senderReplyTo: text('sender_reply_to'),
+    status: text('status').notNull().default('active'),
+    subscribeOnSignup: integer('subscribe_on_signup').notNull().default(1),
+    sortOrder: integer('sort_order').notNull().default(0),
     createdAt: integer('created_at').notNull(),
     updatedAt: integer('updated_at').notNull()
 });

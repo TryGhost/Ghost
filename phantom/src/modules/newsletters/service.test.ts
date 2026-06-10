@@ -1,16 +1,17 @@
 import {describe, expect, it} from 'vitest';
 import {createNewsletterService} from './service.js';
 import type {NewsletterRepository} from './repo.js';
+import type {NewsletterRecord} from './db.js';
 import {HttpError} from '../../platform/http/errors.js';
 
 const createRepository = (): NewsletterRepository => {
-    const newsletters: {id: string; name: string; senderEmail: string; createdAt: number; updatedAt: number}[] = [];
+    const newsletters: NewsletterRecord[] = [];
     const issues: {id: string; newsletterId: string; subject: string; status: string; sendAt: number | null; createdAt: number; updatedAt: number}[] = [];
     const jobs: {id: string}[] = [];
 
     return {
         createNewsletter: async (newsletter) => {
-            const record = newsletter as {id: string; name: string; senderEmail: string; createdAt: number; updatedAt: number};
+            const record = newsletter as NewsletterRecord;
             newsletters.push(record);
             return record;
         },

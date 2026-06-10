@@ -29,6 +29,7 @@ import type {ContentRepository} from '../content/repo.js';
 import type {WebhookRepository} from '../webhooks/repo.js';
 import type {AnalyticsRepository} from '../analytics/repo.js';
 import type {MetricsClient} from '../../platform/metrics/client.js';
+import type {GhostImporter} from './importer.js';
 
 export type OperationsService = {
     exportData: (input: ExportRequest) => Promise<ExportResponse>;
@@ -62,7 +63,8 @@ export const createOperationsService = (
     contentRepository: ContentRepository,
     webhookRepository: WebhookRepository,
     analyticsRepository?: AnalyticsRepository,
-    metricsClient?: MetricsClient
+    metricsClient?: MetricsClient,
+    ghostImporter?: GhostImporter
 ): OperationsService => {
     const exportData = async (_input: ExportRequest) => {
         const exportedAt = Date.now();
@@ -84,44 +86,31 @@ export const createOperationsService = (
     };
 
     const importData = async (input: ImportRequest) => {
-        const normalizedPayload = JSON.parse(JSON.stringify(input.payload)) as Record<string, unknown>;
-        const posts = Array.isArray(normalizedPayload.posts) ? normalizedPayload.posts : [];
-        const emptyLexical = JSON.stringify({root: {children: [], type: 'root', version: 1}});
-        for (const entry of posts) {
-            if (typeof entry !== 'object' || entry === null) {
-                continue;
-            }
-            const record = entry as Record<string, unknown>;
-            if (record.amp && !record.ampHtml) {
-                record.ampHtml = record.amp;
-            }
-            if (record.comment_id && !record.commentId) {
-                record.commentId = record.comment_id;
-            }
-            if (record.comments_enabled !== undefined && record.commentStatus === undefined) {
-                record.commentStatus = record.comments_enabled ? 'open' : 'closed';
-            }
-            if (!record.lexical) {
-                record.lexical = emptyLexical;
-            }
-            if (!record.mobiledoc) {
-                record.mobiledoc = JSON.stringify({version: '0.3.1', atoms: [], cards: [], markups: [], sections: []});
-            }
+        if (!ghostImporter) {
+            const job = await repository.createImportJob({
+                id: randomUUID(),
+                format: input.format,
+                status: 'queued',
+                createdAt: Date.now()
+            });
+            return {
+                importId: job.id,
+                status: 'queued' as const
+            };
         }
 
-        void normalizedPayload;
-
+        const counts = await ghostImporter.importExport(input.payload);
         const job = await repository.createImportJob({
             id: randomUUID(),
             format: input.format,
-            status: 'queued',
+            status: 'completed',
             createdAt: Date.now()
         });
 
-        const status: 'queued' | 'completed' = 'queued';
         return {
             importId: job.id,
-            status
+            status: 'completed' as const,
+            counts: counts as unknown as Record<string, number>
         };
     };
 

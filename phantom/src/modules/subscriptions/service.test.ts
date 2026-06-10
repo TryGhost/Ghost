@@ -1,12 +1,13 @@
 import {describe, expect, it} from 'vitest';
 import {createSubscriptionService} from './service.js';
 import type {SubscriptionRepository} from './repo.js';
+import type {PlanRecord} from './db.js';
 import type {MemberRepository} from '../members/repo.js';
 import type {MemberRecord} from '../members/db.js';
 import {HttpError} from '../../platform/http/errors.js';
 
 const createSubscriptionRepository = (): SubscriptionRepository & {state: () => {sessions: string[]; subscriptions: string[]}} => {
-    const plans: {id: string; name: string; createdAt: number; updatedAt: number}[] = [];
+    const plans: PlanRecord[] = [];
     const prices: {id: string; planId: string; cadence: string; amount: number; currency: string}[] = [];
     const offers: {id: string; code: string; amount: number; currency: string; active: number}[] = [];
     const sessions: {id: string; memberId: string; priceId: string; offerId: string | null; createdAt: number; completedAt: number | null}[] = [];
@@ -18,8 +19,8 @@ const createSubscriptionRepository = (): SubscriptionRepository & {state: () => 
 
     return {
         createPlan: async (plan) => {
-            plans.push(plan as {id: string; name: string; createdAt: number; updatedAt: number});
-            return plan as {id: string; name: string; createdAt: number; updatedAt: number};
+            plans.push(plan as PlanRecord);
+            return plan as PlanRecord;
         },
         createPrice: async (price) => {
             prices.push(price as {id: string; planId: string; cadence: string; amount: number; currency: string});
