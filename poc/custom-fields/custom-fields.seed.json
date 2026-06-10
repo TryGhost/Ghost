@@ -1,0 +1,127 @@
+{
+  "_comment": "POC seed data for the member custom-fields feature. Three collections: definitions (the global fields), forms (per-form placements with required/placeholder/order), and values (per-member values). Stored values are always nullable; 'required' is enforced only at collection time, per placement. Read/written through the async repository facade; storage underneath is localStorage. This JSON is the initial seed on first run.",
+
+  "definitions": [
+    {
+      "id": "cf_first_name",
+      "key": "first_name",
+      "label": "First name",
+      "type": "text",
+      "preset": "first_name",
+      "tier": 1,
+      "helpText": null,
+      "options": null,
+      "multiple": false,
+      "archived": false,
+      "createdAt": "2026-06-01T10:00:00.000Z"
+    },
+    {
+      "id": "cf_last_name",
+      "key": "last_name",
+      "label": "Last name",
+      "type": "text",
+      "preset": "last_name",
+      "tier": 1,
+      "helpText": null,
+      "options": null,
+      "multiple": false,
+      "archived": false,
+      "createdAt": "2026-06-01T10:01:00.000Z"
+    },
+    {
+      "id": "cf_company",
+      "key": "company",
+      "label": "Company",
+      "type": "text",
+      "preset": "company",
+      "tier": 1,
+      "helpText": null,
+      "options": null,
+      "multiple": false,
+      "archived": false,
+      "createdAt": "2026-06-02T09:00:00.000Z"
+    },
+    {
+      "id": "cf_referrals",
+      "key": "referrals",
+      "label": "Referrals",
+      "type": "number",
+      "preset": null,
+      "tier": 1,
+      "helpText": "How many people they referred.",
+      "options": null,
+      "multiple": false,
+      "archived": false,
+      "createdAt": "2026-06-02T09:30:00.000Z"
+    },
+    {
+      "id": "cf_test_account",
+      "key": "test_account",
+      "label": "Test account",
+      "type": "boolean",
+      "preset": null,
+      "tier": 1,
+      "helpText": "Internal flag, not shown to members.",
+      "options": null,
+      "multiple": false,
+      "archived": false,
+      "createdAt": "2026-06-04T14:00:00.000Z"
+    },
+    {
+      "id": "cf_role",
+      "key": "role",
+      "label": "Role",
+      "type": "select",
+      "preset": null,
+      "tier": 2,
+      "helpText": "What best describes you?",
+      "options": ["Founder", "Engineer", "Designer", "Marketer", "Other"],
+      "multiple": false,
+      "archived": false,
+      "createdAt": "2026-06-06T11:30:00.000Z"
+    },
+    {
+      "id": "cf_interests",
+      "key": "interests",
+      "label": "Interests",
+      "type": "select",
+      "preset": null,
+      "tier": 2,
+      "helpText": "Topics they want to hear about.",
+      "options": ["Product", "Engineering", "Design", "Business", "Culture"],
+      "multiple": true,
+      "archived": false,
+      "createdAt": "2026-06-06T11:45:00.000Z"
+    }
+  ],
+
+  "forms": {
+    "signup": [
+      { "fieldId": "cf_first_name", "required": true, "placeholder": "Jamie", "order": 0 },
+      { "fieldId": "cf_role", "required": false, "placeholder": null, "order": 1 }
+    ],
+    "account": [
+      { "fieldId": "cf_first_name", "required": true, "placeholder": "Jamie", "order": 0 },
+      { "fieldId": "cf_last_name", "required": false, "placeholder": "Larson", "order": 1 },
+      { "fieldId": "cf_company", "required": false, "placeholder": "Acme Inc.", "order": 2 },
+      { "fieldId": "cf_interests", "required": false, "placeholder": null, "order": 3 }
+    ]
+  },
+
+  "values": {
+    "member_1": {
+      "cf_first_name": "Jamie",
+      "cf_last_name": "Larson",
+      "cf_company": "Acme Inc.",
+      "cf_referrals": 3,
+      "cf_test_account": false,
+      "cf_role": "Founder",
+      "cf_interests": ["Product", "Business"]
+    },
+    "member_2": {
+      "cf_first_name": "Sam",
+      "cf_role": "Engineer",
+      "cf_interests": ["Engineering"]
+    }
+  }
+}
