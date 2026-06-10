@@ -17,7 +17,7 @@ Each story below targets **Tier 1** for its first demoable version. Tier 2 (sele
 
 | # | Story | Surface | Status |
 | --- | --- | --- | --- |
-| 0 | [Foundation: data model + repository facade](./stories/00-foundation.md) | shared | Not started |
+| 0 | [Foundation: data model + repository facade](./stories/00-foundation.md) | shared | Demoable (verified when Story 1 imports it) |
 | 1 | [Admin: define custom fields](./stories/01-admin-define-fields.md) | admin-x-settings | Not started |
 | 2 | [Admin: member detail values](./stories/02-admin-member-detail.md) | Ember admin | Not started |
 | 3 | [Portal: collect at signup](./stories/03-portal-signup.md) | portal | Not started |

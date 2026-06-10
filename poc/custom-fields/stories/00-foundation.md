@@ -2,7 +2,7 @@
 
 **Goal:** a single async repository that every surface uses to read/write custom-field data, seeded from `custom-fields.seed.json` and persisted to localStorage. No UI yet.
 
-**Status:** Not started
+**Status:** Demoable. Implemented in `poc/custom-fields/repo.js`. Exercised in a running app for the first time in Story 1.
 
 ## Why first
 
