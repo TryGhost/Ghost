@@ -1,4 +1,5 @@
 import MainLayout from '@components/layout/main-layout';
+import PageCanvas from '@components/layout/page-canvas';
 import {
     Button,
     Form,
@@ -166,10 +167,10 @@ export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
 
     return (
         <MainLayout data-testid="tag-details-page">
-            <div className="mx-auto w-full max-w-4xl px-6 py-8">
+            <PageCanvas>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)}>
-                        <header className="mb-8 flex items-center justify-between gap-4">
+                        <header className="mb-5 flex items-center justify-between gap-4">
                             <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 text-base">
                                 <Link className="font-semibold text-muted-foreground hover:text-foreground" data-testid="tags-back" to="/tags">
                                     Tags
@@ -329,7 +330,7 @@ export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
                     onLeave={unsavedChanges.leave}
                     onStay={unsavedChanges.stay}
                 />
-            </div>
+            </PageCanvas>
         </MainLayout>
     );
 }

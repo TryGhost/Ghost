@@ -277,13 +277,36 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
             <ListPage data-testid={`${resource}-page`}>
                 <ListPage.Header className="py-4 sidebar:py-5">
                     <PageHeader blurredBackground={false} sticky={false}>
-                        <PageHeader.Left>
+                        {/* h-auto keeps the title pinned to the first toolbar row
+                            (instead of centering against a wrapped two-row toolbar) */}
+                        <PageHeader.Left className="h-auto">
                             {/* h2 so the page title matches the heading level the Ember screen used */}
                             <h2 className="scroll-m-20 text-lg leading-[1.1em] font-semibold tracking-[0.1px] whitespace-nowrap" data-page-header="title">
                                 {headerTitle}
                             </h2>
                         </PageHeader.Left>
-                        <PageHeader.Actions>
+                        {/* flex-wrap-reverse keeps the New button on the heading
+                            row when space runs out — the filters wrap below it,
+                            right-aligned, matching Ember's toolbar */}
+                        <PageHeader.Actions className="min-w-0 shrink flex-wrap-reverse justify-end gap-2">
+                            <PostsFilters
+                                params={params}
+                                resource={resource}
+                                restricted={restricted}
+                                onParamChange={setParam}
+                            />
+                            {showSaveViewButton && (
+                                <Button variant="outline" onClick={() => setViewModalOpen(true)}>
+                                    <LucideIcon.Plus className="size-4" />
+                                    Save as view
+                                </Button>
+                            )}
+                            {showEditViewButton && (
+                                <Button variant="outline" onClick={() => setViewModalOpen(true)}>
+                                    <LucideIcon.Pencil className="size-4" />
+                                    Edit current view
+                                </Button>
+                            )}
                             <PageHeader.ActionGroup>
                                 <Button asChild>
                                     <a className="font-bold" href={getEditorHref(resource)}>
@@ -294,26 +317,6 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
                             </PageHeader.ActionGroup>
                         </PageHeader.Actions>
                     </PageHeader>
-                    <div className="flex flex-wrap items-center gap-2">
-                        <PostsFilters
-                            params={params}
-                            resource={resource}
-                            restricted={restricted}
-                            onParamChange={setParam}
-                        />
-                        {showSaveViewButton && (
-                            <Button variant="outline" onClick={() => setViewModalOpen(true)}>
-                                <LucideIcon.Plus className="size-4" />
-                                Save as view
-                            </Button>
-                        )}
-                        {showEditViewButton && (
-                            <Button variant="outline" onClick={() => setViewModalOpen(true)}>
-                                <LucideIcon.Pencil className="size-4" />
-                                Edit current view
-                            </Button>
-                        )}
-                    </div>
                 </ListPage.Header>
                 <ListPage.Body>
                     {isLoading ? (

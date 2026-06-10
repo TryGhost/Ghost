@@ -65,8 +65,10 @@
         "vitest": "catalog:"
     },
     "dependencies": {
+        "@codemirror/lang-html": "6.4.11",
         "@ebay/nice-modal-react": "catalog:",
         "@hookform/resolvers": "catalog:",
+        "@tryghost/admin-x-design-system": "workspace:*",
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/color-utils": "catalog:",
         "@tryghost/koenig-lexical": "catalog:",

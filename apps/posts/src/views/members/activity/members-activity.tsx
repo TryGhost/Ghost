@@ -1,5 +1,6 @@
 import LoadMoreButton from '@components/virtual-table/load-more-button';
 import MainLayout from '@components/layout/main-layout';
+import PageCanvas from '@components/layout/page-canvas';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActivityTable} from './components/activity-table';
 import {EventTypeFilter} from './components/event-type-filter';
@@ -126,8 +127,11 @@ const MembersActivity: React.FC = () => {
     return (
         <MainLayout data-testid="members-activity-page">
             <div className="w-full overflow-y-auto">
-                <div className="mx-auto w-full max-w-6xl px-6 py-8">
-                    <header className="mb-6 flex items-center justify-between gap-4">
+                {/* Ember's `.gh-members-activity.gh-canvas` is wider than the
+                    default canvas: 1224px content max-width with 48px side
+                    padding (see ghost/admin/app/styles/layouts/member-activity.css) */}
+                <PageCanvas className="max-w-[1320px] px-12">
+                    <header className="mb-5 flex items-center justify-between gap-4">
                         {memberRecord ? (
                             <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 text-base" data-testid="members-activity-breadcrumb">
                                 <Link
@@ -191,7 +195,7 @@ const MembersActivity: React.FC = () => {
                     ) : (
                         <NoEvents hasFilter={Boolean(memberId || excludedEvents)} />
                     )}
-                </div>
+                </PageCanvas>
             </div>
         </MainLayout>
     );

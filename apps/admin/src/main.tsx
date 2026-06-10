@@ -5,9 +5,24 @@ import App from "./app.tsx";
 import { FrameworkProvider, RouterProvider } from "@tryghost/admin-x-framework";
 import { ShadeApp } from "@tryghost/shade/app";
 
+import { getGhostPaths } from "@tryghost/admin-x-framework/helpers";
+
 import { routes } from "./routes.tsx";
 import { navigateTo } from "./utils/navigation";
 import { AppProvider } from "./providers/app-provider";
+
+// Normalize a slashless admin path (/ghost → /ghost/) before the router
+// captures the location: dev serves the admin HTML at both, and Ember's
+// location API used to normalize it. Without this, every hash-history write
+// produces /ghost#/... URLs.
+const { adminRoot } = getGhostPaths();
+if (window.location.pathname === adminRoot.slice(0, -1)) {
+    window.history.replaceState(
+        window.history.state,
+        "",
+        adminRoot + window.location.search + window.location.hash
+    );
+}
 
 const framework = {
     ghostVersion: "",

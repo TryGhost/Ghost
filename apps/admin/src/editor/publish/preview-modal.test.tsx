@@ -3,13 +3,60 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FullPost } from "@tryghost/admin-x-framework/api/editor";
 import { PreviewModal } from "./preview-modal";
 
+type MockSetting = { key: string; value: unknown };
+
+const mocks = vi.hoisted(() => ({
+    settings: [
+        { key: "members_enabled", value: true },
+        { key: "paid_members_enabled", value: true },
+        { key: "editor_default_email_recipients", value: "visibility" },
+        { key: "default_email_address", value: "noreply@example.com" },
+    ] as MockSetting[],
+    currentUser: { id: "user-1", roles: [{ name: "Administrator" }] } as { id: string; roles: Array<{ name: string }> },
+    newsletters: [
+        { id: "newsletter-1", slug: "default-newsletter", name: "Default newsletter", status: "active", sort_order: 0, sender_email: "news@example.com" },
+    ] as Array<Record<string, unknown>>,
+    emailPreview: vi.fn<(id: string, options: { searchParams: Record<string, string> }) => unknown>(),
+}));
+
 vi.mock("@tryghost/admin-x-framework/api/site", () => ({
     useBrowseSite: () => ({ data: { site: { url: "http://localhost:2368/" } } }),
 }));
 
+vi.mock("@tryghost/admin-x-framework/api/settings", () => ({
+    useBrowseSettings: () => ({ data: { settings: mocks.settings } }),
+    getSettingValue: (settings: MockSetting[] | undefined, key: string) => settings?.find(setting => setting.key === key)?.value ?? null,
+}));
+
+vi.mock("@tryghost/admin-x-framework/api/current-user", () => ({
+    useCurrentUser: () => ({ data: mocks.currentUser }),
+}));
+
+vi.mock("@tryghost/admin-x-framework/api/users", () => ({
+    isContributorUser: (user: { roles: Array<{ name: string }> }) => user.roles.some(role => role.name === "Contributor"),
+}));
+
+vi.mock("@tryghost/admin-x-framework/api/newsletters", () => ({
+    useBrowseNewsletters: () => ({ data: { newsletters: mocks.newsletters } }),
+}));
+
+vi.mock("@tryghost/admin-x-framework/api/config", () => ({
+    useBrowseConfig: () => ({ data: { config: {} } }),
+    isManagedEmail: () => false,
+    hasSendingDomain: () => false,
+    sendingDomain: () => undefined,
+}));
+
+vi.mock("@tryghost/admin-x-framework/api/email-previews", () => ({
+    getPostEmailPreview: (id: string, options: { searchParams: Record<string, string> }) => mocks.emailPreview(id, options),
+}));
+
 const post = { id: "post-1", uuid: "uuid-1" } as FullPost;
 
+const EMAIL_HTML = "<!DOCTYPE html><html><head><style>body { margin: 0; }</style></head><body>Email body</body></html>";
+
 function setup({
+    resource = "posts" as const,
     status = "draft" as const,
     isDirty = false,
     performSave = vi.fn<() => Promise<FullPost>>().mockResolvedValue(post),
@@ -20,6 +67,7 @@ function setup({
             isDirty={isDirty}
             performSave={performSave}
             post={post}
+            resource={resource}
             status={status}
             onClose={onClose}
         />,
@@ -31,9 +79,24 @@ function desktopFrame(): HTMLIFrameElement | null {
     return document.querySelector('iframe[title="Desktop browser post preview"]');
 }
 
+function emailFrame(): HTMLIFrameElement | null {
+    return document.querySelector('iframe[title="Email preview"]');
+}
+
 describe("PreviewModal", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+        mocks.settings = [
+            { key: "members_enabled", value: true },
+            { key: "paid_members_enabled", value: true },
+            { key: "editor_default_email_recipients", value: "visibility" },
+            { key: "default_email_address", value: "noreply@example.com" },
+        ];
+        mocks.currentUser = { id: "user-1", roles: [{ name: "Administrator" }] };
+        mocks.emailPreview.mockReturnValue({
+            data: { email_previews: [{ html: EMAIL_HTML, subject: "Test subject" }] },
+            isLoading: false,
+        });
     });
 
     it("renders the desktop preview iframe pointed at the post preview URL", () => {
@@ -88,5 +151,78 @@ describe("PreviewModal", () => {
 
         expect(performSave).not.toHaveBeenCalled();
         expect(desktopFrame()).not.toBeNull();
+    });
+
+    it("renders the email preview from the email-preview endpoint on the Email tab", () => {
+        setup();
+
+        fireEvent.click(screen.getByRole("button", { name: "Email" }));
+
+        expect(desktopFrame()).toBeNull();
+        expect(mocks.emailPreview).toHaveBeenCalledWith("post-1", {
+            searchParams: { memberSegment: "status:free", newsletter: "default-newsletter" },
+        });
+
+        const iframe = emailFrame();
+        expect(iframe).not.toBeNull();
+        expect(iframe?.getAttribute("srcdoc")).toContain("Email body");
+        // the scrollbar-hiding CSS is appended to the email's stylesheet
+        expect(iframe?.getAttribute("srcdoc")).toContain("scrollbar-width: none;");
+        expect(screen.getByText("Test subject")).toBeInTheDocument();
+        expect(screen.getByText(/Default newsletter/)).toBeInTheDocument();
+    });
+
+    it("previews the paid segment when selected on the Email tab", () => {
+        setup();
+
+        fireEvent.click(screen.getByRole("button", { name: "Email" }));
+        fireEvent.change(screen.getByLabelText("Preview as"), { target: { value: "paid" } });
+
+        expect(mocks.emailPreview).toHaveBeenLastCalledWith("post-1", {
+            searchParams: { memberSegment: "status:-free", newsletter: "default-newsletter" },
+        });
+    });
+
+    it("falls back from the anonymous web segment to free when switching to email", () => {
+        setup();
+
+        fireEvent.change(screen.getByLabelText("Preview as"), { target: { value: "anonymous" } });
+        expect(desktopFrame()?.src).toBe("http://localhost:2368/p/uuid-1/?member_status=anonymous");
+
+        fireEvent.click(screen.getByRole("button", { name: "Email" }));
+        expect(mocks.emailPreview).toHaveBeenCalledWith("post-1", {
+            searchParams: { memberSegment: "status:free", newsletter: "default-newsletter" },
+        });
+    });
+
+    it("hides the Email tab for pages", () => {
+        setup({ resource: "pages" });
+
+        expect(screen.queryByRole("button", { name: "Email" })).toBeNull();
+    });
+
+    it("hides the Email tab when members are disabled", () => {
+        mocks.settings = mocks.settings.map(setting => (
+            setting.key === "members_enabled" ? { ...setting, value: false } : setting
+        ));
+        setup();
+
+        expect(screen.queryByRole("button", { name: "Email" })).toBeNull();
+    });
+
+    it("hides the Email tab when email sending is disabled", () => {
+        mocks.settings = mocks.settings.map(setting => (
+            setting.key === "editor_default_email_recipients" ? { ...setting, value: "disabled" } : setting
+        ));
+        setup();
+
+        expect(screen.queryByRole("button", { name: "Email" })).toBeNull();
+    });
+
+    it("hides the Email tab for contributors", () => {
+        mocks.currentUser = { id: "user-2", roles: [{ name: "Contributor" }] };
+        setup();
+
+        expect(screen.queryByRole("button", { name: "Email" })).toBeNull();
     });
 });

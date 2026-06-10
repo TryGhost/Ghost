@@ -30,10 +30,16 @@ and issues worth reviewing at the end. Newest entries at the bottom of each sect
   `GhImageUploaderWithPreview` offers Unsplash search; the React implementation
   uses plain file upload for tag/X/Facebook images. Can be added when a shared
   Shade image-upload pattern exists.
-- **Code injection fields are plain textareas** (mono font) instead of the
-  CodeMirror editor Ember uses. Shade has no code-editor component yet and
-  pulling in admin-x-design-system's CodeEditor would contradict the
-  "phase out admin-x-design-system" direction.
+- **Code injection fields use admin-x-design-system's `CodeEditor`** (CodeMirror
+  with HTML syntax highlighting; the language pack is lazy-imported the same
+  way admin-x-settings' code-injection modal does it, and `CodeEditor` itself
+  is React.lazy so CodeMirror stays out of the main bundle). RESOLVED — this
+  originally shipped as plain mono textareas to avoid pulling in
+  admin-x-design-system (the "phase out" direction), but that stance was
+  reversed on review feedback: reuse existing AdminX components for gaps Shade
+  doesn't cover yet, rather than shipping degraded UI. apps/posts now depends
+  on `@tryghost/admin-x-design-system` + `@codemirror/lang-html`; the section
+  labels and `expand-code-injection` testid are unchanged.
 - **Ember route handover:** when `tagDetailsX` is on, the Ember tag route
   short-circuits in `beforeModel` and hands the URL to the `react-fallback`
   catch-all, so the hidden Ember app loads no data and registers no transition
@@ -245,14 +251,27 @@ flag source (see implementation notes).
   snippets, unsplash/tenor/pintura card integrations, post-history modal,
   email host-limit checks and post-send failure polling, Cmd+P/Cmd+Shift+P
   shortcuts, PSM subviews (authors, visibility/tiers, template, meta/social,
-  code injection, featured toggle), the email tab/segment picker in the
-  preview modal, the analytics breadcrumb (`fromAnalytics` — back link always
+  code injection, featured toggle), the analytics breadcrumb (`fromAnalytics` — back link always
   targets the list), Ember's secondary-editor conflict detection (the 409
   UpdateCollisionError toast covers the multi-tab case, without Ember's diff
   modal), and 409 recovery is a toast (no conflict-resolution modal).
 - **Local revisions (localStorage crash recovery) deferred to slice 6**: the
   `/restore` screen is part of the long-tail slice and is the consumer of that
   data; porting the localRevisions store belongs with it.
+- **Preview modal Email tab ported (follow-up; gap RESOLVED).** Web/Email
+  format tabs with Ember's gates (posts only, `members_enabled`,
+  `editor_default_email_recipients !== 'disabled'`, non-contributors) and
+  Ember's shared e2e hooks (`data-test-button="browser-preview"/"email-preview"`).
+  The Email pane (`apps/admin/src/editor/publish/email-preview.tsx`) renders
+  the same Admin API endpoint Ember uses via a new framework hook
+  (`getPostEmailPreview` in `admin-x-framework/api/email-previews`) in a
+  sandboxed iframe with Ember's scrollbar-CSS injection, a From/Subject mockup
+  header (sender-address rules ported from Ember's `sender-email-address`
+  helper using the framework's managed-email config helpers), a newsletter
+  selector (>1 active newsletter) and a member-segment picker (email: free/
+  paid; web also gets Ember's "Public visitor", now wired to `member_status`).
+  Still not ported from Ember's email preview: the send-test-email dropdown,
+  the editable subject line, and the email-size clip warning.
 
 ### Slice 6: Pure redirects (`/`, `/dashboard`) + dead-route cleanup
 

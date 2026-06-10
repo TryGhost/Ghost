@@ -12,9 +12,11 @@ import {
     Textarea
 } from '@tryghost/shade/components';
 import {CharCountdown} from './char-countdown';
+import {CodeEditor} from '@tryghost/admin-x-design-system';
 import {ImageUploadField} from './image-upload-field';
 import {SearchEnginePreview, SocialCardPreview} from './seo-previews';
 import {useFormContext, useWatch} from 'react-hook-form';
+import {useMemo} from 'react';
 import type {TagFormValues} from '../tag-form-schema';
 
 // Only the fields the SEO/social previews derive from — keystrokes in other
@@ -84,6 +86,10 @@ export function TagExpandableSections({siteTitle, siteUrl, tagUrl}: {
     tagUrl: string;
 }) {
     const form = useFormContext<TagFormValues>();
+    // CodeMirror's HTML language pack is loaded on demand (same pattern as
+    // admin-x-settings' code-injection modal); CodeEditor itself is React.lazy
+    // so CodeMirror stays out of the main bundle until the section is opened.
+    const htmlExtensions = useMemo(() => [import('@codemirror/lang-html').then(module => module.html())], []);
     const watched = useWatch({control: form.control, name: [...PREVIEW_FIELDS]});
     const values = Object.fromEntries(PREVIEW_FIELDS.map((field, i) => [field, watched[i]])) as Pick<TagFormValues, typeof PREVIEW_FIELDS[number]>;
 
@@ -216,7 +222,13 @@ export function TagExpandableSections({siteTitle, siteUrl, tagUrl}: {
                                 <FormItem>
                                     <FormLabel>Tag header <code className="ml-1 font-normal">{'{{ghost_head}}'}</code></FormLabel>
                                     <FormControl>
-                                        <Textarea className="min-h-32 font-mono text-sm" spellCheck={false} {...field} />
+                                        <CodeEditor
+                                            data-testid="codeinjection-head-editor"
+                                            extensions={htmlExtensions}
+                                            value={field.value}
+                                            onBlur={field.onBlur}
+                                            onChange={field.onChange}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>
@@ -229,7 +241,13 @@ export function TagExpandableSections({siteTitle, siteUrl, tagUrl}: {
                                 <FormItem>
                                     <FormLabel>Tag footer <code className="ml-1 font-normal">{'{{ghost_foot}}'}</code></FormLabel>
                                     <FormControl>
-                                        <Textarea className="min-h-32 font-mono text-sm" spellCheck={false} {...field} />
+                                        <CodeEditor
+                                            data-testid="codeinjection-foot-editor"
+                                            extensions={htmlExtensions}
+                                            value={field.value}
+                                            onBlur={field.onBlur}
+                                            onChange={field.onChange}
+                                        />
                                     </FormControl>
                                     <FormMessage />
                                 </FormItem>

@@ -11,6 +11,7 @@ import {
     type FullPost,
 } from "@tryghost/admin-x-framework/api/editor";
 import { Button } from "@tryghost/shade/components";
+import { LucideIcon } from "@tryghost/shade/utils";
 import { crossShellNavigate } from "@/utils/cross-shell-navigate";
 import { getEditorAccessRedirect } from "./editor-access";
 import { EditorKoenig, type KoenigEditorAPI } from "./editor-koenig";
@@ -167,18 +168,18 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
                 {/* deliberately not a <header>: the preview modal's banner is
                     located via getByRole('banner') and this bar contains the
                     "Preview" trigger text that would make it an ambiguous match */}
-                <div className="flex shrink-0 items-center justify-between gap-2 px-5 py-3">
-                    <div className="flex min-w-0 items-center gap-3">
+                <div className="my-6 flex h-[34px] shrink-0 items-center justify-between gap-2 px-6">
+                    <div className="flex min-w-0 items-center">
                         {/* native hash anchor (not a router Link): the click
                             must fire a real hashchange so a parked, flag-off
                             Ember list wakes; the router still sees it as a
                             POP navigation, so the leave guard applies */}
                         <a
-                            className="flex items-center gap-1 text-sm font-medium text-gray-700 hover:text-black"
+                            className="flex h-[34px] items-center gap-1.5 rounded-md px-3 text-[1.35rem] font-medium text-[#394047] hover:bg-[#F4F5F6]"
                             data-test-breadcrumb
                             href={`#/${resource}`}
                         >
-                            <span aria-hidden="true">&larr;</span>
+                            <LucideIcon.ChevronLeft aria-hidden="true" className="-ml-1 size-4" />
                             <span>{resource === "pages" ? "Pages" : "Posts"}</span>
                         </a>
                         <EditorPostStatus isDirty={isDirty} post={currentFullPost} state={state} />
@@ -188,22 +189,23 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
                             <PublishManagement editor={editor} post={currentFullPost} resource={resource} />
                         ) : null}
                         <Button
+                            className="h-[34px] w-[46px] text-[#394047] hover:bg-[#F4F5F6]"
                             data-testid="settings-menu-toggle"
                             title="Settings"
                             variant="ghost"
                             onClick={() => setSettingsOpen(open => !open)}
                         >
-                            <span aria-hidden="true">&#9776;</span>
+                            <LucideIcon.PanelRight aria-hidden="true" className="size-4" />
                             <span className="sr-only">Settings</span>
                         </Button>
                     </div>
                 </div>
-    
+
                 <main className="flex-1 overflow-y-auto">
                     {post ? (
-                        <div className="mx-auto w-full max-w-3xl px-6 py-10">
+                        <div className="mx-auto w-full max-w-[788px] px-6 pt-28 pb-16">
                             <textarea
-                                className="field-sizing-content w-full resize-none overflow-hidden border-0 bg-transparent text-4xl font-bold outline-none placeholder:text-gray-400"
+                                className="mb-4 field-sizing-content w-full resize-none overflow-hidden border-0 bg-transparent pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-[#15171A] outline-none placeholder:text-[#CED4D9]"
                                 data-test-editor-title-input
                                 placeholder={resource === "pages" ? "Page title" : "Post title"}
                                 rows={1}
@@ -239,13 +241,17 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
             {settingsOpen ? (
                 <aside
                     aria-label={resource === "pages" ? "Page settings" : "Post settings"}
-                    className="flex w-96 shrink-0 flex-col gap-4 overflow-y-auto border-l border-gray-200 p-8"
+                    className="flex w-[419px] shrink-0 flex-col overflow-y-auto border-l border-[#E6E9EB] bg-white"
                     data-testid="settings-menu"
                 >
-                    <h2 className="text-lg font-semibold">
-                        {resource === "pages" ? "Page settings" : "Post settings"}
-                    </h2>
-                    <SettingsMenu editor={editor} resource={resource} />
+                    <div className="flex h-[82px] min-h-[82px] shrink-0 items-center px-6">
+                        <h2 className="text-[1.5rem] font-semibold text-[#15171A]">
+                            {resource === "pages" ? "Page settings" : "Post settings"}
+                        </h2>
+                    </div>
+                    <div className="px-6 pb-10">
+                        <SettingsMenu editor={editor} resource={resource} />
+                    </div>
                 </aside>
             ) : null}
 

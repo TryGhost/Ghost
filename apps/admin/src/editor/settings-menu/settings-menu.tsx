@@ -507,7 +507,7 @@ export function SettingsMenu({ editor, resource }: SettingsMenuProps) {
     }
 
     return (
-        <div className="mt-6 flex flex-col gap-6">
+        <div className="flex flex-col gap-5 [&_label]:text-[1.3rem] [&_label]:font-medium [&_label]:text-[#15171A]">
             <PostUrlField editor={editor} noun={noun} />
             <PublishDateTimeFields editor={editor} />
             <TagsField editor={editor} />

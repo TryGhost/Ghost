@@ -1,4 +1,5 @@
 import MainLayout from '@components/layout/main-layout';
+import PageCanvas from '@components/layout/page-canvas';
 import {ActivityFeed} from './components/activity-feed';
 import {AddTierDialog} from './components/add-tier-dialog';
 import {
@@ -338,8 +339,8 @@ export function MemberDetailForm({member, newsletters, paidTiers, timezone, canS
     return (
         <MainLayout data-testid="member-details-page">
             <div className="w-full overflow-y-auto">
-                <div className="mx-auto w-full max-w-5xl px-6 py-8">
-                    <header className="mb-8 flex items-center justify-between gap-4">
+                <PageCanvas>
+                    <header className="mb-5 flex items-center justify-between gap-4">
                         <nav aria-label="Breadcrumb" className="flex min-w-0 items-center gap-2 text-base">
                             <Link className="font-semibold text-muted-foreground hover:text-foreground" data-testid="members-back" to={membersListPath}>
                                 Members
@@ -469,7 +470,7 @@ export function MemberDetailForm({member, newsletters, paidTiers, timezone, canS
                             <ActivityFeed memberId={member?.id} />
                         </div>
                     </div>
-                </div>
+                </PageCanvas>
             </div>
 
             {!isNew && (

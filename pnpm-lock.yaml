@@ -1315,12 +1315,18 @@ importers:
 
   apps/posts:
     dependencies:
+      '@codemirror/lang-html':
+        specifier: 6.4.11
+        version: 6.4.11
       '@ebay/nice-modal-react':
         specifier: 'catalog:'
         version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@hookform/resolvers':
         specifier: 'catalog:'
         version: 5.4.0(react-hook-form@7.72.1(react@18.3.1))
+      '@tryghost/admin-x-design-system':
+        specifier: workspace:*
+        version: link:../admin-x-design-system
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework

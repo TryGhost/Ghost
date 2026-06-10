@@ -74,7 +74,7 @@ export function EditorPostStatus({ state, isDirty, post }: {
 
     return (
         <div
-            className={`truncate text-sm ${isError ? "text-red-600" : "text-gray-600"}`}
+            className={`truncate px-3 text-[1.35rem] ${isError ? "text-red-600" : "text-[#8E9CAC]"}`}
             data-test-editor-post-status
             onMouseLeave={() => setIsHovered(false)}
             onMouseOver={() => setIsHovered(true)}

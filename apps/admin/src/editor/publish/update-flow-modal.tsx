@@ -56,18 +56,24 @@ export function UpdateFlowModal({ post, status, resource, performSave, onClose }
 
     return createPortal(
         <div className="shade shade-admin fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-white" data-test-modal="update-flow">
-            <header className="flex shrink-0 items-center justify-between px-6 py-4">
-                <h2 className="text-lg font-bold">{isScheduled ? "Unschedule" : "Unpublish"}</h2>
-                <Button variant="outline" onClick={onClose}>Close</Button>
+            <header className="mx-5 my-3 flex h-[34px] shrink-0 items-center justify-between">
+                <h2 className="text-[1.7rem] font-bold tracking-[-0.01em] text-[#15171A]">{isScheduled ? "Unschedule" : "Unpublish"}</h2>
+                <Button
+                    className="h-[34px] border-[#E6E9EB] px-4 text-[1.35rem] font-medium text-[#394047]"
+                    variant="outline"
+                    onClick={onClose}
+                >
+                    Close
+                </Button>
             </header>
 
-            <div className="mx-auto flex w-full max-w-[520px] flex-1 flex-col justify-center px-6 py-10">
-                <div className="mb-6 text-2xl font-bold" data-test-update-flow-title>
+            <div className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-6 pt-[11vw] pb-[11vw]">
+                <div className="mb-10 text-[4.6rem] leading-[1.2] font-bold tracking-[-0.017em] text-[#15171A]" data-test-update-flow-title>
                     This {noun} {isSentOnly ? "was " : "has been "}
-                    <span className="text-green-600">{isSentOnly ? `${status} by email` : status}</span>
+                    <span className="text-[#30CF43]">{isSentOnly ? `${status} by email` : status}</span>
                 </div>
 
-                <div className="text-lg text-gray-700" data-test-update-flow-confirmation>
+                <div className="text-[1.8rem] leading-[1.6] font-normal text-[#15171A]" data-test-update-flow-confirmation>
                     <p>
                         Your {noun} {isScheduled ? "will be" : "was"}{" "}
                         {emailed
@@ -77,10 +83,10 @@ export function UpdateFlowModal({ post, status, resource, performSave, onClose }
                     </p>
 
                     {isScheduled || (status === "published" && !post.email_only) ? (
-                        <p className="mt-6">
-                            Need to make a change?{" "}
+                        <p className="mt-10">
+                            {isScheduled ? <>Need to make a change?{" "}</> : null}
                             <button
-                                className="font-semibold text-green-700 hover:text-green-800 disabled:opacity-60"
+                                className="font-medium text-[#2BBA3C] hover:text-[#249E33] disabled:opacity-60"
                                 data-test-button="revert-to-draft"
                                 disabled={reverting}
                                 type="button"
@@ -94,7 +100,7 @@ export function UpdateFlowModal({ post, status, resource, performSave, onClose }
                     ) : null}
 
                     {error ? (
-                        <p className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700">{error}</p>
+                        <p className="mt-4 rounded-sm border border-red-200 bg-red-50 px-5 py-4 text-[1.45rem] text-red-700">{error}</p>
                     ) : null}
                 </div>
             </div>

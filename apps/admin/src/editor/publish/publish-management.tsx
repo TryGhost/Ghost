@@ -87,25 +87,40 @@ export function PublishManagement({ editor, post, resource }: {
 
             {isDraft ? (
                 <>
-                    <Button variant="ghost" onClick={() => openWithValidation("preview")}>
+                    <Button
+                        className="h-[34px] px-3 text-[1.35rem] text-[#394047] hover:bg-[#F4F5F6]"
+                        variant="ghost"
+                        onClick={() => openWithValidation("preview")}
+                    >
                         Preview
                     </Button>
-                    <Button data-test-button="publish-flow" variant="default" onClick={() => openWithValidation("publish")}>
+                    <Button
+                        className="h-[34px] px-3 text-[1.35rem] text-[#2BBA3C] hover:bg-[#F4F5F6] hover:text-[#2BBA3C]"
+                        data-test-button="publish-flow"
+                        variant="ghost"
+                        onClick={() => openWithValidation("publish")}
+                    >
                         Publish
                     </Button>
                 </>
             ) : (
                 <>
                     <Button
+                        className={`h-[34px] px-3 text-[1.35rem] hover:bg-[#F4F5F6] ${editor.isDirty || updateState !== "idle" ? "text-[#394047]" : "text-[#A5B0BB] hover:text-[#394047]"}`}
                         data-test-button="publish-save"
                         disabled={updateState === "running"}
-                        variant="default"
+                        variant="ghost"
                         onClick={() => void handleUpdate()}
                     >
                         {updateState === "running" ? "Updating..." : updateState === "success" ? "Updated" : "Update"}
                     </Button>
                     {status !== "sent" ? (
-                        <Button data-test-button="update-flow" variant="outline" onClick={() => openWithValidation("update")}>
+                        <Button
+                            className="h-[34px] px-3 text-[1.35rem] text-[#15171A] hover:bg-[#F4F5F6]"
+                            data-test-button="update-flow"
+                            variant="ghost"
+                            onClick={() => openWithValidation("update")}
+                        >
                             {status === "scheduled" ? "Unschedule" : "Unpublish"}
                         </Button>
                     ) : null}
@@ -136,6 +151,7 @@ export function PublishManagement({ editor, post, resource }: {
                     isDirty={editor.isDirty}
                     performSave={editor.performManualSave}
                     post={post}
+                    resource={resource}
                     status={status}
                     onClose={() => setOpenModal(null)}
                 />

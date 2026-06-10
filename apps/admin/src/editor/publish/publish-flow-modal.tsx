@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { type EditorResource, type FullPost } from "@tryghost/admin-x-framework/api/editor";
 import { Button } from "@tryghost/shade/components";
+import { LucideIcon } from "@tryghost/shade/utils";
 import { type ManualSaveOptions } from "@/editor/use-editor";
 import { crossShellNavigate } from "@/utils/cross-shell-navigate";
 import {
@@ -43,10 +44,23 @@ function capitalize(text: string): string {
 
 function SettingArrow({ expanded }: { expanded: boolean }) {
     return (
-        <span aria-hidden="true" className={`text-xs text-gray-400 transition-transform ${expanded ? "rotate-180" : ""}`}>
-            &#9662;
-        </span>
+        <LucideIcon.ChevronDown
+            aria-hidden="true"
+            className={`ml-auto size-4 shrink-0 text-[#9DA8B4] transition-transform ${expanded ? "-scale-y-100" : ""}`}
+        />
     );
+}
+
+/** Pill-styled radio label (Ember .gh-publish-types/.gh-publish-schedule labels). */
+function pillClass({ active, disabled }: { active: boolean; disabled?: boolean }): string {
+    const base = "block h-[38px] whitespace-nowrap rounded-full text-[1.4rem] font-medium tracking-[.2px]";
+    if (active) {
+        return `${base} cursor-pointer border-2 border-[#15171A] bg-[#FAFAFB] px-[17px] leading-[34px] text-[#15171A]`;
+    }
+    if (disabled) {
+        return `${base} cursor-default border border-[#DEE3E7] px-[18px] leading-[36px] text-[#ABB4BE]`;
+    }
+    return `${base} cursor-pointer border border-[#DEE3E7] px-[18px] leading-[36px] text-[#54666D] hover:text-[#394047]`;
 }
 
 function ScheduleDateTimePicker({ options, updateOptions, timezone }: {
@@ -83,9 +97,9 @@ function ScheduleDateTimePicker({ options, updateOptions, timezone }: {
     };
 
     return (
-        <div className="mt-3 flex gap-2">
+        <div className="flex gap-3">
             <input
-                className="w-36 rounded border border-gray-300 px-3 py-1.5 text-sm"
+                className="h-[38px] w-[150px] rounded-md border border-[#DEE3E7] bg-white px-3 text-[1.4rem] text-[#15171A] outline-none focus:border-[#15171A]"
                 data-test-date-time-picker-date-input
                 placeholder="YYYY-MM-DD"
                 value={dateDraft}
@@ -93,7 +107,7 @@ function ScheduleDateTimePicker({ options, updateOptions, timezone }: {
                 onChange={event => setDateDraft(event.target.value)}
             />
             <input
-                className="w-24 rounded border border-gray-300 px-3 py-1.5 text-sm"
+                className="h-[38px] w-[110px] rounded-md border border-[#DEE3E7] bg-white px-3 text-[1.4rem] text-[#15171A] outline-none focus:border-[#15171A]"
                 data-test-date-time-picker-time-input
                 placeholder="HH:MM"
                 value={timeDraft}
@@ -101,15 +115,6 @@ function ScheduleDateTimePicker({ options, updateOptions, timezone }: {
                 onChange={event => setTimeDraft(event.target.value)}
             />
         </div>
-    );
-}
-
-function RadioDot({ active }: { active: boolean }) {
-    return (
-        <span
-            aria-hidden="true"
-            className={`inline-block size-4 shrink-0 rounded-full border ${active ? "border-[5px] border-green-600" : "border-gray-300"}`}
-        />
     );
 }
 
@@ -138,29 +143,34 @@ function OptionsStep({ input, options, updateOptions, timezone, onContinue }: {
         ? `${capitalize(recipientType)} subscribers${onlyDefaultNewsletter(input) || !selectedNewsletter ? "" : ` of ${selectedNewsletter.name}`}`
         : "Not sent as newsletter";
 
-    const settingTitleClass = "flex w-full items-center justify-between gap-2 py-1 text-left text-[1.5rem] font-semibold";
+    const settingTitleClass = "flex w-full items-center pb-4 text-left text-[1.8rem] font-normal leading-[1.35] text-[#15171A]";
+    const settingIconClass = "mr-3.5 size-[1.65rem] shrink-0";
 
     return (
         <div data-test-publish-flow="options">
-            <div className="mb-8 text-2xl font-bold">
-                <div className="text-green-600">Ready, set, publish.</div>
-                <div>Share it with the world.</div>
+            <div className="mb-10 text-[4.6rem] leading-[1.2] font-bold tracking-[-0.017em]">
+                <div className="text-[#30CF43]">Ready, set, publish.</div>
+                <div className="text-[#15171A]">Share it with the world.</div>
             </div>
 
-            <div className="divide-y divide-gray-200 border-y border-gray-200">
-                <div className="py-4" data-test-setting="publish-type">
+            <div className="mt-4 mb-[5.2rem] w-full">
+                <div className="mb-4 border-b border-[#E6E9EB]" data-test-setting="publish-type">
                     {emailUnavailable ? (
-                        <div className={settingTitleClass} data-test-setting-title>Publish on site</div>
+                        <div className={settingTitleClass} data-test-setting-title>
+                            <LucideIcon.Send aria-hidden="true" className={settingIconClass} />
+                            Publish on site
+                        </div>
                     ) : (
                         <>
                             <button className={settingTitleClass} data-test-setting-title type="button" onClick={() => toggleSection("publishType")}>
+                                <LucideIcon.Send aria-hidden="true" className={settingIconClass} />
                                 <span>{selectedType.display}</span>
                                 <SettingArrow expanded={openSection === "publishType"} />
                             </button>
                             {openSection === "publishType" ? (
-                                <fieldset className="mt-3 flex flex-col gap-2">
+                                <fieldset className="mb-4 flex gap-3 pt-1 pb-6">
                                     {getPublishTypeOptions(input).map(option => (
-                                        <span key={option.value} className="flex items-center gap-2">
+                                        <span key={option.value}>
                                             <input
                                                 checked={option.value === options.publishType}
                                                 className="sr-only"
@@ -172,9 +182,8 @@ function OptionsStep({ input, options, updateOptions, timezone, onContinue }: {
                                                 value={option.value}
                                                 onChange={() => updateOptions(state => setPublishType(state, option.value))}
                                             />
-                                            <RadioDot active={option.value === options.publishType} />
                                             <label
-                                                className={option.disabled ? "text-gray-400" : "cursor-pointer"}
+                                                className={pillClass({ active: option.value === options.publishType, disabled: option.disabled })}
                                                 htmlFor={`publish-type-${option.value}`}
                                             >
                                                 {option.label}
@@ -188,26 +197,28 @@ function OptionsStep({ input, options, updateOptions, timezone, onContinue }: {
                 </div>
 
                 {!emailUnavailable ? (
-                    <div className="py-4" data-test-setting="email-recipients">
+                    <div className="mb-4 border-b border-[#E6E9EB]" data-test-setting="email-recipients">
                         {options.publishType === "publish" ? (
-                            <div className={`${settingTitleClass} text-gray-400`} data-test-setting-title>
+                            <div className={`${settingTitleClass} text-[#ABB4BE]`} data-test-setting-title>
+                                <LucideIcon.User aria-hidden="true" className={settingIconClass} />
                                 Not sent as newsletter
                             </div>
                         ) : (
                             <>
                                 <button className={settingTitleClass} data-test-setting-title type="button" onClick={() => toggleSection("emailRecipients")}>
+                                    <LucideIcon.User aria-hidden="true" className={settingIconClass} />
                                     <span>{recipientSummary}</span>
                                     <SettingArrow expanded={openSection === "emailRecipients"} />
                                 </button>
                                 {openSection === "emailRecipients" ? (
-                                    <div className="mt-3 flex flex-col gap-3 text-sm">
+                                    <div className="mb-4 flex flex-col gap-3 pt-1 pb-6 text-[1.4rem]">
                                         {newsletters.length > 1 ? (
                                             <div className="flex flex-col gap-1" data-test-select="newsletter">
-                                                <label className="text-xs font-semibold text-gray-500 uppercase" htmlFor="publish-newsletter-select">
+                                                <label className="text-[1.2rem] font-semibold tracking-wide text-[#7C8B9A] uppercase" htmlFor="publish-newsletter-select">
                                                     Newsletter
                                                 </label>
                                                 <select
-                                                    className="rounded border border-gray-300 px-2 py-1.5"
+                                                    className="h-[38px] rounded-md border border-[#DEE3E7] bg-white px-3 text-[1.4rem] text-[#15171A]"
                                                     id="publish-newsletter-select"
                                                     value={selectedNewsletter?.id ?? ""}
                                                     onChange={event => updateOptions(state => setNewsletter(state, event.target.value))}
@@ -218,7 +229,7 @@ function OptionsStep({ input, options, updateOptions, timezone, onContinue }: {
                                                 </select>
                                             </div>
                                         ) : null}
-                                        <p className="text-gray-600">
+                                        <p className="text-[#54666D]">
                                             This {input.post.isPage ? "page" : "post"} will be sent to
                                             {" "}{recipientType === "all" ? "all" : recipientType} subscribers
                                             {selectedNewsletter ? ` of ${selectedNewsletter.name}` : ""}.
@@ -230,30 +241,25 @@ function OptionsStep({ input, options, updateOptions, timezone, onContinue }: {
                     </div>
                 ) : null}
 
-                <div className="py-4" data-test-setting="publish-at">
+                <div data-test-setting="publish-at">
                     <button className={settingTitleClass} data-test-setting-title type="button" onClick={() => toggleSection("publishAt")}>
+                        <LucideIcon.Clock aria-hidden="true" className={settingIconClass} />
                         <span>
                             {options.isScheduled ? capitalize(formatRelative(options.scheduledAtUTC)) : "Right now"}
                         </span>
                         <SettingArrow expanded={openSection === "publishAt"} />
                     </button>
                     {openSection === "publishAt" ? (
-                        <div className="mt-3">
-                            <div className="flex gap-6">
-                                <div
-                                    className="flex cursor-pointer items-center gap-2"
-                                    onClick={() => updateOptions(state => toggleScheduled(state, false))}
-                                >
-                                    <span data-test-radio="publish-now"><RadioDot active={!options.isScheduled} /></span>
-                                    <label className="cursor-pointer">Set it live now</label>
-                                </div>
-                                <div
-                                    className="flex cursor-pointer items-center gap-2"
-                                    onClick={() => updateOptions(state => toggleScheduled(state, true))}
-                                >
-                                    <span data-test-radio="schedule"><RadioDot active={options.isScheduled} /></span>
-                                    <label className="cursor-pointer">Schedule for later</label>
-                                </div>
+                        <div className="mb-4 flex flex-wrap items-center gap-3 pt-1 pb-6">
+                            <div onClick={() => updateOptions(state => toggleScheduled(state, false))}>
+                                <span data-test-radio="publish-now">
+                                    <label className={pillClass({ active: !options.isScheduled })}>Set it live now</label>
+                                </span>
+                            </div>
+                            <div onClick={() => updateOptions(state => toggleScheduled(state, true))}>
+                                <span data-test-radio="schedule">
+                                    <label className={pillClass({ active: options.isScheduled })}>Schedule for later</label>
+                                </span>
                             </div>
                             {options.isScheduled ? (
                                 <ScheduleDateTimePicker options={options} timezone={timezone} updateOptions={updateOptions} />
@@ -263,8 +269,12 @@ function OptionsStep({ input, options, updateOptions, timezone, onContinue }: {
                 </div>
             </div>
 
-            <div className="mt-8">
-                <Button className="w-full" data-test-button="continue" size="lg" onClick={onContinue}>
+            <div>
+                <Button
+                    className="h-10 rounded-md bg-[#15171A] px-5 text-[1.4rem] font-medium text-white hover:bg-black"
+                    data-test-button="continue"
+                    onClick={onContinue}
+                >
                     Continue, final review &rarr;
                 </Button>
             </div>
@@ -307,12 +317,12 @@ function ConfirmStep({ input, options, timezone, saving, error, onConfirm, onBac
 
     return (
         <div data-test-publish-flow="confirm">
-            <div className="mb-8 text-2xl font-bold">
-                <div className="text-green-600">Ready, set, publish.</div>
-                <div>Share it with the world.</div>
+            <div className="mb-10 text-[4.6rem] leading-[1.2] font-bold tracking-[-0.017em]">
+                <div className="text-[#30CF43]">Ready, set, publish.</div>
+                <div className="text-[#15171A]">Share it with the world.</div>
             </div>
 
-            <p className="text-lg text-gray-700" data-test-text="confirm-details">
+            <p className="text-[1.8rem] leading-[1.6] font-normal text-[#15171A]" data-test-text="confirm-details">
                 {options.isScheduled ? (
                     <>
                         On <strong>{formatDayInTimezone(options.scheduledAtUTC, timezone)}</strong> at{" "}
@@ -332,17 +342,22 @@ function ConfirmStep({ input, options, timezone, saving, error, onConfirm, onBac
             </p>
 
             {error ? (
-                <p className="mt-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-700" data-test-confirm-error>
+                <p className="mt-4 rounded-sm border border-red-200 bg-red-50 px-5 py-4 text-[1.45rem] text-red-700" data-test-confirm-error>
                     {error}
                 </p>
             ) : null}
 
-            <div className="mt-8 flex flex-col items-center gap-3">
-                <Button className="w-full" data-test-button="confirm-publish" disabled={saving} size="lg" onClick={onConfirm}>
+            <div className="mt-[5rem] flex w-max items-center gap-8">
+                <Button
+                    className="h-10 rounded-md bg-gradient-to-r from-[#4DD831] to-[#1DC32E] px-5 text-[1.4rem] font-medium text-white hover:from-[#4DD831] hover:to-[#1DC32E] hover:opacity-90"
+                    data-test-button="confirm-publish"
+                    disabled={saving}
+                    onClick={onConfirm}
+                >
                     {saving ? runningText : confirmText}
                 </Button>
-                <button className="text-sm text-gray-600 hover:text-black" data-test-button="back-to-options" type="button" onClick={onBack}>
-                    Back to settings
+                <button className="text-[1.45rem] text-[#7C8B9A]" data-test-button="back-to-options" type="button" onClick={onBack}>
+                    <span className="text-[#394047] hover:text-[#15171A]">Back to settings</span>
                 </button>
             </div>
         </div>
@@ -428,16 +443,21 @@ export function PublishFlowModal({ post, resource, performSave, onClose }: {
 
     return createPortal(
         <div className="shade shade-admin fixed inset-0 z-[60] flex flex-col overflow-y-auto bg-white" data-test-modal="publish-flow">
-            <header className="flex shrink-0 items-center justify-between px-6 py-4">
-                <h2 className="text-lg font-bold">Publish</h2>
-                <Button data-test-button="close-publish-flow" variant="outline" onClick={onClose}>
+            <header className="mx-5 my-3 flex h-[34px] shrink-0 items-center justify-between">
+                <h2 className="text-[1.7rem] font-bold tracking-[-0.01em] text-[#15171A]">Publish</h2>
+                <Button
+                    className="h-[34px] px-3 text-[1.35rem] text-[#394047] hover:bg-[#F4F5F6]"
+                    data-test-button="close-publish-flow"
+                    variant="ghost"
+                    onClick={onClose}
+                >
                     Close
                 </Button>
             </header>
 
-            <div className="mx-auto flex w-full max-w-[520px] flex-1 flex-col justify-center px-6 py-10">
+            <div className="mx-auto flex w-full max-w-[688px] flex-1 flex-col px-6 pt-[11vw] pb-[11vw]">
                 {!input || !options ? (
-                    <div className="text-sm text-gray-600">Loading...</div>
+                    <div className="text-[1.4rem] text-[#54666D]">Loading...</div>
                 ) : step === "confirm" ? (
                     <ConfirmStep
                         error={error}
