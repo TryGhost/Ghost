@@ -436,6 +436,12 @@ const billingService = {listPrices: async () => ({prices: []})} as unknown as Bi
 const extensionsService = {listExtensions: async () => ({extensions: []})} as unknown as ExtensionsService;
 const commentService = {listComments: async () => ({comments: []})} as unknown as CommentService;
 const metricsClient = {isEnabled: () => false, render: () => ''} as unknown as MetricsClient;
+const contentReader = {
+    getEntryBySlug: async () => null,
+    listPublished: async () => ({entries: [], pagination: {page: 1, limit: 10, pages: 1, total: 0, next: null, prev: null}}),
+    getTagBySlug: async () => null,
+    getAuthorBySlug: async () => null
+} as unknown as import('../src/modules/content/frontend-reader.js').FrontendContentReader;
 
 describe('app routes', () => {
     it('returns health status', async () => {
@@ -459,7 +465,8 @@ describe('app routes', () => {
             billingService,
             extensionsService,
             commentService,
-            metricsClient
+            metricsClient,
+            contentReader
         });
 
         const response = await app.request('/ghost/api/health');
@@ -490,7 +497,8 @@ describe('app routes', () => {
             billingService,
             extensionsService,
             commentService,
-            metricsClient
+            metricsClient,
+            contentReader
         });
 
         const response = await app.request('/ghost/api/site', {
@@ -533,7 +541,8 @@ describe('app routes', () => {
             billingService,
             extensionsService,
             commentService,
-            metricsClient
+            metricsClient,
+            contentReader
         });
 
         const response = await app.request('/ghost/api/site', {

@@ -65,7 +65,8 @@ References (all in this directory):
 
 ## 5) Content authoring and publishing
 - [x] Posts/pages with Lexical content + revisions
-- [ ] Tags, collections, author profiles (collection filters never evaluated)
+- [ ] Tags, collections, author profiles (tag/author archives render with
+      post filtering; collection filters never evaluated)
 - [ ] Draft/scheduled/published states (nothing publishes scheduled posts)
 - [ ] Domain events for content lifecycle (stored, but no outbox dispatch)
 - [ ] URL routing + cache invalidation (no cache invalidation exists)
@@ -174,8 +175,11 @@ References (all in this directory):
 - [ ] Seeded welcome drip workflow
 
 ## 21) Theme rendering and public site
-- [ ] Handlebars theme compat rendering (basic fs bundle render tested; helper
-      surface parity and routes.yaml absent)
+- [ ] Handlebars theme compat rendering (the real `source` theme renders
+      home/post/page/tag/author routes from imported fixture content with
+      colocated tests in `test/frontend/theme-rendering.test.ts` and helper
+      tests in `src/frontend/rendering/helpers.test.ts`; routes.yaml,
+      timezone-aware dates, and full NQL `{{#get}}` support still absent)
 - [ ] Headless Content API completeness + Astro path
 
 ## 22) API compatibility facades

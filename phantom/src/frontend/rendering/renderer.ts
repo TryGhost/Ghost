@@ -8,7 +8,6 @@ type RenderOptions = {
 };
 
 const buildTemplate = (
-    instance: typeof Handlebars,
     bundle: ThemeBundle,
     templateName: string,
     data: Record<string, unknown>
@@ -43,16 +42,25 @@ const buildTemplate = (
 };
 
 export const createRenderer = () => {
+    // Helpers are pure functions of the render data; register them once on
+    // the shared instance instead of per request.
+    registerHelpers(Handlebars);
+    let registeredBundleKey: string | null = null;
+
     const registerBundle = (bundle: ThemeBundle) => {
+        const key = `${bundle.theme.name}@${bundle.theme.version ?? 'dev'}`;
+        if (registeredBundleKey === key) {
+            return;
+        }
         for (const [name, partial] of Object.entries(bundle.partials)) {
             Handlebars.registerPartial(name, partial);
         }
+        registeredBundleKey = key;
     };
 
     const render = ({template, data}: RenderOptions, bundle: ThemeBundle) => {
-        registerHelpers(Handlebars);
         registerBundle(bundle);
-        return buildTemplate(Handlebars, bundle, template, data);
+        return buildTemplate(bundle, template, data);
     };
 
     return {render};

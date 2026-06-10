@@ -12,6 +12,7 @@ import {createSubscriptionRepository} from '../modules/subscriptions/repo.js';
 import {createSubscriptionService} from '../modules/subscriptions/service.js';
 import {createContentRepository} from '../modules/content/repo.js';
 import {createContentService} from '../modules/content/service.js';
+import {createFrontendContentReader} from '../modules/content/frontend-reader.js';
 import {createNewsletterRepository} from '../modules/newsletters/repo.js';
 import {createNewsletterService} from '../modules/newsletters/service.js';
 import {createAnalyticsRepository} from '../modules/analytics/repo.js';
@@ -58,6 +59,7 @@ export const createAppDependencies = async () => {
     const subscriptionService = createSubscriptionService(subscriptionRepository, memberRepository);
     const contentRepository = createContentRepository(db);
     const contentService = createContentService(contentRepository);
+    const contentReader = createFrontendContentReader(contentRepository);
     const newsletterRepository = createNewsletterRepository(db);
     const newsletterService = createNewsletterService(newsletterRepository);
     const analyticsRepository = createAnalyticsRepository(db);
@@ -127,6 +129,7 @@ export const createAppDependencies = async () => {
         billingService,
         extensionsService,
         commentService,
-        metricsClient
+        metricsClient,
+        contentReader
     };
 };

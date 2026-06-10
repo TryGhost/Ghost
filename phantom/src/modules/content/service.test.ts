@@ -19,6 +19,12 @@ const createRepository = (): ContentRepository => {
         getPostBySlug: async (slug) => posts.find((post) => post.slug === slug) ?? null,
         listPublishedPosts: async () => posts.filter((post) => post.status === 'published'),
         countPublishedPosts: async () => posts.filter((post) => post.status === 'published').length,
+        listAndCountPublishedPosts: async () => {
+            const published = posts.filter((post) => post.status === 'published');
+            return {posts: published, total: published.length};
+        },
+        getTagsForPosts: async () => new Map(),
+        getAuthorsForPosts: async () => new Map(),
         createRevision: async (revision) => revision as PostRevisionRecord,
         createContentEvent: async () => undefined,
         createContentUrlEvent: async () => undefined,

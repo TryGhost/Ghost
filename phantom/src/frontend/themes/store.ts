@@ -158,12 +158,14 @@ export const createThemeStore = ({
             return typeof value === 'string' && value.trim().length > 0 ? value : 'casper';
         }
 
-        const preferred = ['casper', 'source'];
         const settings = await settingsService.listSettings();
         const value = readSetting(settings.settings, 'theme.active');
+        // The configured active theme always wins; bundled defaults are
+        // fallbacks for sites that have not picked a theme yet.
         const candidates = [
-            ...preferred,
-            typeof value === 'string' && value.trim().length > 0 ? value : null
+            typeof value === 'string' && value.trim().length > 0 ? value : null,
+            'casper',
+            'source'
         ].filter((entry): entry is string => Boolean(entry));
 
         for (const candidate of candidates) {

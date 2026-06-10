@@ -5,7 +5,8 @@ import {describe, expect, it} from 'vitest';
 import {Hono} from 'hono';
 import {createFrontendRouter} from '../../src/frontend/router.js';
 import type {AppConfig} from '../../src/platform/config/config.js';
-import type {ContentService} from '../../src/modules/content/service.js';
+import type {FrontendContentReader} from '../../src/modules/content/frontend-reader.js';
+import type {PostRecord} from '../../src/modules/content/db.js';
 import type {SettingsService} from '../../src/modules/settings/service.js';
 
 const writeThemeBundle = async (root: string, themeId: string) => {
@@ -34,6 +35,67 @@ const writeThemeBundle = async (root: string, themeId: string) => {
     await fs.writeFile(path.join(themePath, 'bundle.mjs'), moduleSource, 'utf8');
 };
 
+const post: PostRecord = {
+    id: '1',
+    uuid: null,
+    title: 'Hello',
+    slug: 'hello',
+    type: 'post',
+    status: 'published',
+    lexical: '{}',
+    html: '<p>Hello body</p>',
+    visibility: 'public',
+    featured: 0,
+    customExcerpt: null,
+    featureImage: null,
+    featureImageAlt: null,
+    featureImageCaption: null,
+    codeinjectionHead: null,
+    codeinjectionFoot: null,
+    canonicalUrl: null,
+    customTemplate: null,
+    publishedAt: null,
+    createdAt: 0,
+    updatedAt: 0
+};
+
+const contentReader: FrontendContentReader = {
+    getEntryBySlug: async (slug) => (slug === 'hello' ? {post, tags: [], authors: []} : null),
+    listPublished: async () => ({
+        entries: [{post, tags: [], authors: []}],
+        pagination: {page: 1, limit: 10, pages: 1, total: 1, next: null, prev: null}
+    }),
+    getTagBySlug: async () => null,
+    getAuthorBySlug: async () => null
+};
+
+const settingsService: SettingsService = {
+    listSettings: async () => ({
+        settings: [
+            {key: 'theme.active', group: 'theme', type: 'string', value: 'casper', updatedAt: Date.now()},
+            {key: 'site.title', group: 'site', type: 'string', value: 'Phantom', updatedAt: Date.now()},
+            {key: 'site.description', group: 'site', type: 'string', value: null, updatedAt: Date.now()},
+            {key: 'site.locale', group: 'site', type: 'string', value: 'en', updatedAt: Date.now()},
+            {key: 'feature.membership', group: 'features', type: 'boolean', value: false, updatedAt: Date.now()},
+            {key: 'feature.comments', group: 'features', type: 'boolean', value: false, updatedAt: Date.now()}
+        ]
+    }),
+    updateSettings: async () => ({settings: []}),
+    migrateSettingsToMetafields: async () => ({migration: {version: '0', direction: 'forward', createdAt: 0, rolledBackAt: null}}),
+    rollbackMetafieldMigration: async () => ({migration: {version: '0', direction: 'rollback', createdAt: 0, rolledBackAt: 0}}),
+    registerSettingsMigration: async () => ({migration: {id: '0', group: 'theme', createdAt: 0}}),
+    listCustomObjects: async () => ({customObjects: []}),
+    createCustomObject: async () => ({customObject: {id: '0', name: 'obj', slug: 'obj', fields: [], createdAt: 0, updatedAt: 0}}),
+    updateCustomObject: async () => ({customObject: {id: '0', name: 'obj', slug: 'obj', fields: [], createdAt: 0, updatedAt: 0}}),
+    getCustomObject: async () => ({customObject: {id: '0', name: 'obj', slug: 'obj', fields: [], createdAt: 0, updatedAt: 0}}),
+    deleteCustomObject: async () => {},
+    listCustomObjectRecords: async () => ({records: []}),
+    createCustomObjectRecord: async () => ({record: {id: '0', objectId: '0', data: {}, createdAt: 0, updatedAt: 0}}),
+    updateCustomObjectRecord: async () => ({record: {id: '0', objectId: '0', data: {}, createdAt: 0, updatedAt: 0}}),
+    getCustomObjectRecord: async () => ({record: {id: '0', objectId: '0', data: {}, createdAt: 0, updatedAt: 0}}),
+    deleteCustomObjectRecord: async () => {}
+};
+
 describe('frontend router', () => {
     it('renders collection and entry routes', async () => {
         const themeRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'phantom-theme-'));
@@ -56,82 +118,8 @@ describe('frontend router', () => {
             }
         };
 
-        const settingsService: SettingsService = {
-            listSettings: async () => ({
-                settings: [
-                    {key: 'theme.active', group: 'theme', type: 'string', value: 'casper', updatedAt: Date.now()},
-                    {key: 'site.title', group: 'site', type: 'string', value: 'Phantom', updatedAt: Date.now()},
-                    {key: 'site.description', group: 'site', type: 'string', value: null, updatedAt: Date.now()},
-                    {key: 'site.locale', group: 'site', type: 'string', value: 'en', updatedAt: Date.now()},
-                    {key: 'feature.membership', group: 'features', type: 'boolean', value: false, updatedAt: Date.now()},
-                    {key: 'feature.comments', group: 'features', type: 'boolean', value: false, updatedAt: Date.now()}
-                ]
-            }),
-            updateSettings: async () => ({settings: []}),
-            migrateSettingsToMetafields: async () => ({migration: {version: '0', direction: 'forward', createdAt: 0, rolledBackAt: null}}),
-            rollbackMetafieldMigration: async () => ({migration: {version: '0', direction: 'rollback', createdAt: 0, rolledBackAt: 0}}),
-            registerSettingsMigration: async () => ({migration: {id: '0', group: 'theme', createdAt: 0}}),
-            listCustomObjects: async () => ({customObjects: []}),
-            createCustomObject: async () => ({customObject: {id: '0', name: 'obj', slug: 'obj', fields: [], createdAt: 0, updatedAt: 0}}),
-            updateCustomObject: async () => ({customObject: {id: '0', name: 'obj', slug: 'obj', fields: [], createdAt: 0, updatedAt: 0}}),
-            getCustomObject: async () => ({customObject: {id: '0', name: 'obj', slug: 'obj', fields: [], createdAt: 0, updatedAt: 0}}),
-            deleteCustomObject: async () => {},
-            listCustomObjectRecords: async () => ({records: []}),
-            createCustomObjectRecord: async () => ({record: {id: '0', objectId: '0', data: {}, createdAt: 0, updatedAt: 0}}),
-            updateCustomObjectRecord: async () => ({record: {id: '0', objectId: '0', data: {}, createdAt: 0, updatedAt: 0}}),
-            getCustomObjectRecord: async () => ({record: {id: '0', objectId: '0', data: {}, createdAt: 0, updatedAt: 0}}),
-            deleteCustomObjectRecord: async () => {}
-        };
-
-        const lexical = {
-            root: {
-                children: [
-                    {
-                        children: [
-                            {
-                                detail: 0,
-                                format: 0,
-                                mode: 'normal',
-                                style: '',
-                                text: 'Hello body',
-                                type: 'extended-text',
-                                version: 1
-                            }
-                        ],
-                        direction: 'ltr',
-                        format: '',
-                        indent: 0,
-                        type: 'paragraph',
-                        version: 1
-                    }
-                ],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'root',
-                version: 1
-            }
-        };
-
-        const contentService: ContentService = {
-            createPost: async () => ({post: {id: '1', title: 'Hello', slug: 'hello', status: 'published', lexical: {}, visibility: 'public', customExcerpt: null, featureImage: null, featureImageAlt: null, featureImageCaption: null, publishedAt: null, createdAt: 0, updatedAt: 0}}),
-            getPost: async () => ({post: {id: '1', title: 'Hello', slug: 'hello', status: 'published', lexical: {}, visibility: 'public', customExcerpt: null, featureImage: null, featureImageAlt: null, featureImageCaption: null, publishedAt: null, createdAt: 0, updatedAt: 0}}),
-            getPostBySlug: async () => ({post: {id: '1', title: 'Hello', slug: 'hello', status: 'published', lexical, visibility: 'public', customExcerpt: null, featureImage: null, featureImageAlt: null, featureImageCaption: null, publishedAt: null, createdAt: 0, updatedAt: 0}}),
-            listPublishedPosts: async () => ({
-                posts: [{id: '1', title: 'Hello', slug: 'hello', status: 'published', lexical, visibility: 'public', customExcerpt: null, featureImage: null, featureImageAlt: null, featureImageCaption: null, publishedAt: null, createdAt: 0, updatedAt: 0}],
-                pagination: {page: 1, limit: 10, pages: 1, total: 1}
-            }),
-            updatePost: async () => ({post: {id: '1', title: 'Hello', slug: 'hello', status: 'published', lexical: {}, visibility: 'public', customExcerpt: null, featureImage: null, featureImageAlt: null, featureImageCaption: null, publishedAt: null, createdAt: 0, updatedAt: 0}}),
-            deletePost: async () => {},
-            createTag: async () => ({tag: {id: '1', name: 'tag', slug: 'tag'}}),
-            createCollection: async () => ({collection: {id: '1', name: 'Home', slug: 'home', filter: ''}}),
-            listCollections: async () => ({collections: []}),
-            createAuthorProfile: async () => ({author: {id: '1', name: 'Author', slug: 'author', bio: null}}),
-            listAuthorProfiles: async () => ({authors: []})
-        };
-
         const app = new Hono();
-        app.route('/', createFrontendRouter({config, contentService, settingsService}));
+        app.route('/', createFrontendRouter({config, contentReader, settingsService}));
 
         const indexResponse = await app.request('/');
         expect(indexResponse.status).toBe(200);
@@ -144,5 +132,6 @@ describe('frontend router', () => {
         const postHtml = await postResponse.text();
         expect(postHtml).toContain('POST:Hello');
         expect(postHtml).toContain('BODY:');
+        expect(postHtml).toContain('Hello body');
     });
 });

@@ -39,6 +39,7 @@ import {createExtensionsRouter} from '../modules/extensions/routes.js';
 import type {CommentService} from '../modules/comments/service.js';
 import {createCommentRouter} from '../modules/comments/routes.js';
 import type {MetricsClient} from '../platform/metrics/client.js';
+import type {FrontendContentReader} from '../modules/content/frontend-reader.js';
 import {createFrontendRouter} from '../frontend/router.js';
 
 export type AppDependencies = {
@@ -62,6 +63,7 @@ export type AppDependencies = {
     extensionsService: ExtensionsService;
     commentService: CommentService;
     metricsClient: MetricsClient;
+    contentReader: FrontendContentReader;
 };
 
 export const createApp = ({
@@ -84,7 +86,8 @@ export const createApp = ({
     billingService,
     extensionsService,
     commentService,
-    metricsClient
+    metricsClient,
+    contentReader
 }: AppDependencies) => {
     const app = new Hono();
     const api = new Hono();
@@ -125,7 +128,7 @@ export const createApp = ({
     app.route('/ghost/api', api);
     app.route('/', createFrontendRouter({
         config,
-        contentService,
+        contentReader,
         settingsService
     }));
 

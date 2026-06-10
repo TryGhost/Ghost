@@ -1,4 +1,4 @@
-import {count, desc, eq, sql} from 'drizzle-orm';
+import {and, count, desc, eq, inArray} from 'drizzle-orm';
 import type {DbClient} from '../../db/client.js';
 import {
     authorProfileTable,
@@ -6,6 +6,7 @@ import {
     contentEventTable,
     contentRedirectTable,
     contentUrlEventTable,
+    postAuthorTable,
     postRevisionTable,
     postTable,
     postTagTable,
@@ -25,13 +26,22 @@ import {
     type TagRecord
 } from './db.js';
 
+export type PublishedPostFilter = {
+    type?: 'post' | 'page';
+    tagSlug?: string;
+    authorSlug?: string;
+};
+
 export type ContentRepository = {
     createPost: (post: NewPostRecord) => Promise<PostRecord>;
     updatePost: (post: PostRecord) => Promise<PostRecord>;
     getPostById: (id: string) => Promise<PostRecord | null>;
     getPostBySlug: (slug: string) => Promise<PostRecord | null>;
-    listPublishedPosts: (options: {limit: number; offset: number}) => Promise<PostRecord[]>;
-    countPublishedPosts: () => Promise<number>;
+    listPublishedPosts: (options: {limit: number; offset: number; filter?: PublishedPostFilter}) => Promise<PostRecord[]>;
+    countPublishedPosts: (filter?: PublishedPostFilter) => Promise<number>;
+    listAndCountPublishedPosts: (options: {limit: number; offset: number; filter?: PublishedPostFilter}) => Promise<{posts: PostRecord[]; total: number}>;
+    getTagsForPosts: (postIds: string[]) => Promise<Map<string, TagRecord[]>>;
+    getAuthorsForPosts: (postIds: string[]) => Promise<Map<string, AuthorProfileRecord[]>>;
     deletePost: (id: string) => Promise<void>;
     createRevision: (revision: NewPostRevisionRecord) => Promise<PostRevisionRecord>;
     createContentEvent: (event: NewContentEventRecord) => Promise<void>;
@@ -82,23 +92,125 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         return rows[0];
     };
 
-    const listPublishedPosts = async ({limit, offset}: {limit: number; offset: number}) => {
+    const buildPublishedWhere = async (filter?: PublishedPostFilter) => {
+        const conditions = [eq(postTable.status, 'published')];
+        if (filter?.type) {
+            conditions.push(eq(postTable.type, filter.type));
+        }
+        if (filter?.tagSlug) {
+            const tag = await getTagBySlug(filter.tagSlug);
+            if (!tag) {
+                return null;
+            }
+            const links = await db.select().from(postTagTable).where(eq(postTagTable.tagId, tag.id));
+            const postIds = links.map((link) => link.postId);
+            if (postIds.length === 0) {
+                return null;
+            }
+            conditions.push(inArray(postTable.id, postIds));
+        }
+        if (filter?.authorSlug) {
+            const author = await getAuthorProfileBySlug(filter.authorSlug);
+            if (!author) {
+                return null;
+            }
+            const links = await db.select().from(postAuthorTable).where(eq(postAuthorTable.authorId, author.id));
+            const postIds = links.map((link) => link.postId);
+            if (postIds.length === 0) {
+                return null;
+            }
+            conditions.push(inArray(postTable.id, postIds));
+        }
+        return and(...conditions);
+    };
+
+    const listPublishedPosts = async ({limit, offset, filter}: {limit: number; offset: number; filter?: PublishedPostFilter}) => {
+        const where = await buildPublishedWhere(filter);
+        if (!where) {
+            return [];
+        }
         return db
             .select()
             .from(postTable)
-            .where(eq(postTable.status, 'published'))
+            .where(where)
             .orderBy(desc(postTable.publishedAt))
             .limit(limit)
             .offset(offset);
     };
 
-    const countPublishedPosts = async () => {
+    const countPublishedPosts = async (filter?: PublishedPostFilter) => {
+        const where = await buildPublishedWhere(filter);
+        if (!where) {
+            return 0;
+        }
         const rows = await db
             .select({value: count()})
             .from(postTable)
-            .where(eq(postTable.status, 'published'))
+            .where(where)
             .limit(1);
         return rows[0]?.value ?? 0;
+    };
+
+    const listAndCountPublishedPosts = async ({limit, offset, filter}: {limit: number; offset: number; filter?: PublishedPostFilter}) => {
+        // Resolves the filter (tag/author slug + link lookups) once for both
+        // the page query and the total count.
+        const where = await buildPublishedWhere(filter);
+        if (!where) {
+            return {posts: [], total: 0};
+        }
+        const [posts, countRows] = await Promise.all([
+            db
+                .select()
+                .from(postTable)
+                .where(where)
+                .orderBy(desc(postTable.publishedAt))
+                .limit(limit)
+                .offset(offset),
+            db
+                .select({value: count()})
+                .from(postTable)
+                .where(where)
+                .limit(1)
+        ]);
+        return {posts, total: countRows[0]?.value ?? 0};
+    };
+
+    const getTagsForPosts = async (postIds: string[]) => {
+        const result = new Map<string, TagRecord[]>();
+        if (postIds.length === 0) {
+            return result;
+        }
+        const rows = await db
+            .select({link: postTagTable, tag: tagTable})
+            .from(postTagTable)
+            .innerJoin(tagTable, eq(postTagTable.tagId, tagTable.id))
+            .where(inArray(postTagTable.postId, postIds))
+            .orderBy(postTagTable.sortOrder);
+        for (const row of rows) {
+            const tags = result.get(row.link.postId) ?? [];
+            tags.push(row.tag);
+            result.set(row.link.postId, tags);
+        }
+        return result;
+    };
+
+    const getAuthorsForPosts = async (postIds: string[]) => {
+        const result = new Map<string, AuthorProfileRecord[]>();
+        if (postIds.length === 0) {
+            return result;
+        }
+        const rows = await db
+            .select({link: postAuthorTable, author: authorProfileTable})
+            .from(postAuthorTable)
+            .innerJoin(authorProfileTable, eq(postAuthorTable.authorId, authorProfileTable.id))
+            .where(inArray(postAuthorTable.postId, postIds))
+            .orderBy(postAuthorTable.sortOrder);
+        for (const row of rows) {
+            const authors = result.get(row.link.postId) ?? [];
+            authors.push(row.author);
+            result.set(row.link.postId, authors);
+        }
+        return result;
     };
 
     const deletePost = async (id: string) => {
@@ -188,6 +300,9 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         getPostBySlug,
         listPublishedPosts,
         countPublishedPosts,
+        listAndCountPublishedPosts,
+        getTagsForPosts,
+        getAuthorsForPosts,
         deletePost,
         createRevision,
         createContentEvent,

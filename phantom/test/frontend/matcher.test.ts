@@ -12,4 +12,12 @@ describe('frontend route matcher', () => {
         const matcher = createRouteMatcher();
         expect(matcher.matchRoute('/hello/')).toEqual({type: 'entry', slug: 'hello'});
     });
+
+    it('matches tag and author archives with optional pagination', () => {
+        const matcher = createRouteMatcher();
+        expect(matcher.matchRoute('/tag/news/')).toEqual({type: 'tag', slug: 'news', page: 1});
+        expect(matcher.matchRoute('/tag/news/page/2/')).toEqual({type: 'tag', slug: 'news', page: 2});
+        expect(matcher.matchRoute('/author/fixture/')).toEqual({type: 'author', slug: 'fixture', page: 1});
+        expect(matcher.matchRoute('/author/fixture/page/3/')).toEqual({type: 'author', slug: 'fixture', page: 3});
+    });
 });

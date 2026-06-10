@@ -53,13 +53,14 @@ export const registerHelpers = (instance: typeof Handlebars) => {
 
     instance.registerHelper('ghost_head', (options: Handlebars.HelperOptions) => {
         const root = getRootContext(options);
-        const description = toString(root.site?.description);
-        const title = toString((root as {meta_title?: string}).meta_title ?? root.site?.title ?? '');
-        const canonical = toString((root as {canonical_url?: string}).canonical_url ?? root.site?.url ?? '');
-        const cover = toString(root.site?.cover_image);
-        const accent = toString(root.site?.accent_color ?? '#FF1A75');
-        const twitter = toString(root.site?.twitter ?? '@ghost');
-        const facebook = toString(root.site?.facebook ?? 'https://www.facebook.com/ghost');
+        const escape = Handlebars.escapeExpression;
+        const description = escape(toString(root.site?.description));
+        const title = escape(toString((root as {meta_title?: string}).meta_title ?? root.site?.title ?? ''));
+        const canonical = escape(toString((root as {canonical_url?: string}).canonical_url ?? root.site?.url ?? ''));
+        const cover = escape(toString(root.site?.cover_image));
+        const accent = escape(toString(root.site?.accent_color ?? '#FF1A75'));
+        const twitter = escape(toString(root.site?.twitter ?? '@ghost'));
+        const facebook = escape(toString(root.site?.facebook ?? 'https://www.facebook.com/ghost'));
         const tags = [
             description ? `<meta name="description" content="${description}">` : '',
             canonical ? `<link rel="canonical" href="${canonical}">` : '',
@@ -131,19 +132,56 @@ export const registerHelpers = (instance: typeof Handlebars) => {
         return `${minutes} min read`;
     });
 
-    instance.registerHelper('navigation', () => new Handlebars.SafeString(''));
+    instance.registerHelper('navigation', (options?: Handlebars.HelperOptions) => {
+        const root = getRootContext(options);
+        const isSecondary = options?.hash?.type === 'secondary';
+        const items = toArray(
+            isSecondary
+                ? (root.site as {secondary_navigation?: unknown})?.secondary_navigation
+                : (root.site as {navigation?: unknown})?.navigation
+        ) as Array<{label?: string; url?: string}>;
+        if (!items.length) {
+            return new Handlebars.SafeString('');
+        }
+        const entries = items.map((item, index) => {
+            const label = toString(item.label);
+            const url = toString(item.url);
+            const slug = label.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '');
+            const classes = [`nav-${slug}`, index === 0 ? 'nav-current' : ''].filter(Boolean).join(' ');
+            return `<li class="${classes}" role="menuitem"><a href="${Handlebars.escapeExpression(url)}">${Handlebars.escapeExpression(label)}</a></li>`;
+        });
+        return new Handlebars.SafeString(`<ul class="nav" role="menu">\n${entries.join('\n')}\n</ul>`);
+    });
 
-    instance.registerHelper('date', (options?: Handlebars.HelperOptions) => {
-        const root = options ? getRootContext(options) : null;
-        const format = options?.hash?.format as string | undefined;
-        const now = new Date();
-        if (format === 'YYYY') {
-            return String(now.getUTCFullYear());
+    const monthsShort = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+    const monthsLong = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+
+    const formatDate = (date: Date, format: string) => {
+        const pad = (value: number) => String(value).padStart(2, '0');
+        return format
+            .replace(/YYYY/g, String(date.getUTCFullYear()))
+            .replace(/MMMM/g, monthsLong[date.getUTCMonth()] ?? '')
+            .replace(/MMM/g, monthsShort[date.getUTCMonth()] ?? '')
+            .replace(/MM/g, pad(date.getUTCMonth() + 1))
+            .replace(/DD/g, pad(date.getUTCDate()))
+            .replace(/HH/g, pad(date.getUTCHours()))
+            .replace(/mm/g, pad(date.getUTCMinutes()));
+    };
+
+    instance.registerHelper('date', function dateHelper(this: unknown, ...args: unknown[]) {
+        const options = args.pop() as Handlebars.HelperOptions | undefined;
+        const explicit = args[0];
+        const contextDate = (this as {published_at?: string | null})?.published_at;
+        const raw = explicit ?? contextDate;
+        const date = raw ? new Date(raw as string | number) : new Date();
+        if (Number.isNaN(date.getTime())) {
+            return '';
         }
-        if (format === 'YYYY-MM-DD') {
-            return now.toISOString().slice(0, 10);
+        const format = (options?.hash?.format as string | undefined) ?? 'DD MMM YYYY';
+        if (options?.hash?.timeago) {
+            return date.toISOString();
         }
-        return root?.site?.date ?? now.toDateString();
+        return formatDate(date, format);
     });
 
     instance.registerHelper('img_url', (value: string) => value ?? '');
@@ -153,30 +191,66 @@ export const registerHelpers = (instance: typeof Handlebars) => {
         if (!array.length) {
             return options.inverse(this);
         }
+        const frame = options.data ? Handlebars.createFrame(options.data) : undefined;
         let result = '';
-        for (const item of array) {
-            result += options.fn(item);
-        }
+        array.forEach((item, index) => {
+            if (frame) {
+                frame.key = index;
+                frame.index = index;
+                frame.number = index + 1;
+                frame.first = index === 0;
+                frame.last = index === array.length - 1;
+                frame.even = index % 2 === 1;
+                frame.odd = index % 2 === 0;
+                frame.rowStart = false;
+                frame.rowEnd = false;
+            }
+            result += options.fn(item, {data: frame, blockParams: [item, index]});
+        });
         return result;
     });
 
-    instance.registerHelper('match', function matchHelper(this: unknown, left: unknown, operator: unknown, right: unknown, options: Handlebars.HelperOptions) {
-        let comparisonOperator = operator;
-        let comparisonRight = right;
-        let helperOptions = options;
-
-        if (arguments.length === 3) {
-            comparisonRight = operator;
-            comparisonOperator = '=';
-            helperOptions = right as Handlebars.HelperOptions;
+    instance.registerHelper('match', function matchHelper(this: unknown, ...rawArgs: unknown[]) {
+        const options = rawArgs.pop() as Handlebars.HelperOptions;
+        let [left, operator, right] = rawArgs;
+        if (rawArgs.length === 2) {
+            right = operator;
+            operator = '=';
+        } else if (rawArgs.length === 1) {
+            right = true;
+            operator = '=';
+            left = Boolean(left);
         }
 
+        const op = String(operator ?? '=');
         const leftValue = left ?? null;
-        const rightValue = comparisonRight ?? null;
-        const op = String(comparisonOperator ?? '=');
-        const isMatch = op === '!=' ? leftValue !== rightValue : leftValue === rightValue;
+        const rightValue = right ?? null;
+        let isMatch: boolean;
+        switch (op) {
+        case '!=':
+            isMatch = leftValue !== rightValue;
+            break;
+        case '>':
+            isMatch = Number(leftValue) > Number(rightValue);
+            break;
+        case '<':
+            isMatch = Number(leftValue) < Number(rightValue);
+            break;
+        case '>=':
+            isMatch = Number(leftValue) >= Number(rightValue);
+            break;
+        case '<=':
+            isMatch = Number(leftValue) <= Number(rightValue);
+            break;
+        default:
+            isMatch = leftValue === rightValue;
+        }
 
-        return isMatch ? helperOptions.fn(this) : helperOptions.inverse(this);
+        // Subexpression form `(match a b)` has no block to render.
+        if (typeof options?.fn !== 'function') {
+            return isMatch;
+        }
+        return isMatch ? options.fn(this) : options.inverse(this);
     });
 
     instance.registerHelper('is', function isHelper(this: unknown, value: string, options: Handlebars.HelperOptions) {
@@ -209,17 +283,64 @@ export const registerHelpers = (instance: typeof Handlebars) => {
         return new Handlebars.SafeString(html);
     });
 
+    // Minimal NQL subset for the {{#get}} hash: `featured:true`, `featured:false`,
+    // `tag:slug`, `author:slug`, and negated ids (`id:-X`), combined with `+`.
+    const applyGetFilter = (items: unknown[], filter: string) => {
+        const clauses = filter.split('+').map((clause) => clause.trim()).filter(Boolean);
+        return items.filter((item) => {
+            const record = item as {
+                id?: string;
+                featured?: boolean;
+                tags?: Array<{slug?: string}>;
+                authors?: Array<{slug?: string}>;
+            };
+            return clauses.every((clause) => {
+                const [key, rawValue] = clause.split(':');
+                const value = (rawValue ?? '').trim();
+                switch (key?.trim()) {
+                case 'featured':
+                    return record.featured === (value === 'true');
+                case 'tag':
+                    return (record.tags ?? []).some((tag) => tag.slug === value);
+                case 'author':
+                    return (record.authors ?? []).some((author) => author.slug === value);
+                case 'id':
+                    return value.startsWith('-') ? record.id !== value.slice(1) : record.id === value;
+                default:
+                    return true;
+                }
+            });
+        });
+    };
+
     instance.registerHelper('get', function getHelper(this: unknown, field: string, options: Handlebars.HelperOptions) {
         const root = getRootContext(options);
         if (!field || typeof field !== 'string') {
             return options.inverse(this);
         }
         const getter = root.__get;
-        const value = getter ? getter(field, options.hash ?? {}) : (root as Record<string, unknown>)[field];
-        if (!value) {
+        let value = getter ? getter(field, options.hash ?? {}) : (root as Record<string, unknown>)[field];
+        if (Array.isArray(value)) {
+            const filter = options.hash?.filter;
+            if (typeof filter === 'string' && filter.trim()) {
+                value = applyGetFilter(value, filter);
+            }
+            const limit = Number(options.hash?.limit);
+            if (Number.isFinite(limit) && limit > 0) {
+                value = (value as unknown[]).slice(0, limit);
+            }
+        }
+        if (!value || (Array.isArray(value) && value.length === 0)) {
             return options.inverse(this);
         }
-        return options.fn(value);
+        // Ghost's {{#get}} exposes the resource list as the first block param
+        // (`as |posts pages|`) and renders the block with {resource, pagination}.
+        const pagination = (root as {pagination?: unknown}).pagination ?? null;
+        const context = Array.isArray(value) ? {[field]: value, pagination} : value;
+        return options.fn(context, {
+            data: options.data,
+            blockParams: [value, pagination]
+        });
     });
 
     instance.registerHelper('url', function urlHelper(this: unknown, options: Handlebars.HelperOptions) {
