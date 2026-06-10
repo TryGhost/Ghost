@@ -101,9 +101,15 @@ module.exports = function setupMembersApp() {
             return membersService.api.middleware.verifyOTC(req, res, next);
         }
     );
-    membersApp.post('/api/create-stripe-checkout-session', function lazyCreateCheckoutSessionMw(req, res, next) {
-        return membersService.api.middleware.createCheckoutSession(req, res, next);
-    });
+    membersApp.post(
+        '/api/create-stripe-checkout-session',
+        bodyParser.json(),
+        shared.middleware.brute.checkoutSessionGlobal,
+        shared.middleware.brute.checkoutSessionEmail,
+        function lazyCreateCheckoutSessionMw(req, res, next) {
+            return membersService.api.middleware.createCheckoutSession(req, res, next);
+        }
+    );
     membersApp.post('/api/create-stripe-update-session', function lazyCreateCheckoutSetupSessionMw(req, res, next) {
         return membersService.api.middleware.createCheckoutSetupSession(req, res, next);
     });
