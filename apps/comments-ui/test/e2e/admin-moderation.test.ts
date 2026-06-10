@@ -53,6 +53,30 @@ test.describe('Admin moderation', async () => {
         await expect(iframeElement).toHaveCount(1);
     });
 
+    test('does not request an auth frame when no admin URL is configured', async ({page}) => {
+        mockedApi.addComment({html: '<p>This is comment 1</p>'});
+
+        const requestedUrls: string[] = [];
+        page.on('request', req => requestedUrls.push(req.url()));
+
+        // No `admin` option, so the app has no admin URL to authenticate against
+        await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly',
+            title: 'Member discussion',
+            count: true
+        });
+
+        // give any erroneous auth-frame request time to fire
+        await page.waitForTimeout(250);
+
+        // Regression: the app previously rendered an auth frame with src "undefinedauth-frame/",
+        // firing a broken request. With no admin URL it should request no auth frame at all.
+        expect(requestedUrls.filter(url => url.includes('undefined'))).toEqual([]);
+        expect(requestedUrls.filter(url => url.includes('auth-frame'))).toEqual([]);
+    });
+
     test('has no admin options when not signed in to Ghost admin or as member', async ({page}) => {
         mockedApi.addComment({html: '<p>This is comment 1</p>'});
 

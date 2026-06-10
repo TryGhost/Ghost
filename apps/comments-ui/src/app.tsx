@@ -377,7 +377,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             <CommentsFrame ref={iframeRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
-            {done && <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>}
+            {done && options.adminUrl && <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>}
             <PopupBox />
         </AppContext.Provider>
     );
