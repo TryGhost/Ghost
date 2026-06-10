@@ -32,6 +32,11 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
 
+# The release job pushes via an SSH deploy key and authenticates to the
+# GitHub API with a PAT, so the default GITHUB_TOKEN only needs read access.
+permissions:
+  contents: read
+
 jobs:
   release:
     if: github.repository == 'TryGhost/Ghost'
