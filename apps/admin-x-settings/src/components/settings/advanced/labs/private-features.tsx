@@ -71,10 +71,6 @@ const features: Feature[] = [{
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
-}, {
-    title: 'Multiple subscriptions filter',
-    description: 'Show a members notification and filter for multiple active Stripe subscriptions',
-    flag: 'multipleSubsFilter'
 }];
 
 const AlphaFeatures: React.FC = () => {
