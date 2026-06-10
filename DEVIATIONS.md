@@ -82,6 +82,17 @@ and issues worth reviewing at the end. Newest entries at the bottom of each sect
 
 ### Slice 3: Member detail + members-activity
 
+- **Force-upgrade:** /members/new, /members/:id and /members-activity no longer
+  carry `allowInForceUpgrade` (consistent with slices 1–2: the React shell
+  redirects to /pro, which is where Ember's own lockout landed anyway).
+- **Events cursor skips same-second tails** when a 50-event page ends mid-second
+  (`data.created_at:<cursor` is second-precision and strict) — identical
+  semantics to Ember's fetcher, so kept as-is.
+- **Email events in activity feeds render the subject as text**, not Ember's
+  clickable email-preview link — the preview modal is an editor-domain
+  component; revisit in the editor slice.
+- **Flag flips while a member form is dirty** swap implementations without an
+  unsaved-changes prompt (same accepted limitation as slices 1–2).
 - **Ember gating split:** the member route is gated via react-fallback handover
   (it registers unsaved-changes guards), which drops the `postAnalytics`/
   `backPath` query params on full-page loads — the analytics breadcrumb

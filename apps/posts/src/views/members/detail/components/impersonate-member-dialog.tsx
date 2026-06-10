@@ -44,13 +44,22 @@ export function ImpersonateMemberDialog({member, open, onOpenChange}: {
     const siteTitle = getSettingValue<string>(settingsData?.settings ?? null, 'title') ?? '';
     const blogUrl = configData?.config.blogUrl ?? '';
 
-    const {data: signinUrlsData} = getMemberSigninUrls(member.id, {
+    const {data: signinUrlsData, refetch: refetchSigninUrl} = getMemberSigninUrls(member.id, {
         enabled: open,
-        // always fetch a fresh link when the modal opens
         cacheTime: 0,
         defaultErrorHandler: false
     });
     const signinUrl = signinUrlsData?.member_signin_urls?.[0]?.url ?? '';
+
+    // The query observer stays mounted while the dialog is closed, so neither
+    // `enabled` nor `cacheTime` cause a refetch on reopen and the global
+    // staleTime would serve an old link. Force a fresh fetch on every open
+    // (refetch bypasses staleness; react-query dedupes the initial fetch).
+    useEffect(() => {
+        if (open) {
+            refetchSigninUrl();
+        }
+    }, [open, refetchSigninUrl]);
 
     const [copied, setCopied] = useState(false);
     const copyTimeoutRef = useRef<ReturnType<typeof setTimeout>>();

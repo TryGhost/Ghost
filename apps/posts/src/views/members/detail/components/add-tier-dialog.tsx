@@ -44,7 +44,7 @@ export function computeExpiryAt(duration: string, customExpiryDate?: string): st
     if (duration === 'year') {
         return moment.utc().add(1, 'year').startOf('day').toISOString();
     }
-    if (duration === 'custom' && customExpiryDate) {
+    if (duration === 'custom' && isValidCustomExpiryDate(customExpiryDate)) {
         return moment(customExpiryDate)
             .endOf('day')
             .set('milliseconds', 0) // Prevent db rounding up to the next day
@@ -52,6 +52,10 @@ export function computeExpiryAt(duration: string, customExpiryDate?: string): st
             .toISOString();
     }
     return null;
+}
+
+export function isValidCustomExpiryDate(customExpiryDate?: string): boolean {
+    return Boolean(customExpiryDate) && moment(customExpiryDate, 'YYYY-MM-DD', true).isValid();
 }
 
 /**
@@ -72,6 +76,8 @@ export function AddTierDialog({member, tiers, open, onOpenChange, onConfirm}: {
 
     const activeSubscriptions = getActiveStripeSubscriptions(member.subscriptions);
     const tierId = selectedTier ?? tiers[0]?.id;
+    // an empty/invalid custom date would silently degrade to a forever-comp
+    const hasInvalidCustomExpiry = expiryAt === 'custom' && !isValidCustomExpiryDate(customExpiryDate);
 
     const handleConfirm = async () => {
         if (!tierId) {
@@ -147,7 +153,7 @@ export function AddTierDialog({member, tiers, open, onOpenChange, onConfirm}: {
                     <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                         Cancel
                     </Button>
-                    <Button disabled={isAdding || !tierId} type="button" onClick={handleConfirm}>
+                    <Button disabled={isAdding || !tierId || hasInvalidCustomExpiry} type="button" onClick={handleConfirm}>
                         Add subscription
                     </Button>
                 </DialogFooter>

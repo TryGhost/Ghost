@@ -11,6 +11,48 @@ export const EMAIL_EVENTS = [
 
 export const NEWSLETTER_EVENTS = ['newsletter_event'];
 
+/**
+ * Every event type id that can legitimately appear in a `type:-[...]` NQL
+ * exclusion: the filterable list in member-event-types.ts, the extra ids its
+ * grouped toggles write (gift/donation events) and the always-hidden
+ * aggregated click events. Anything else is dropped before the filter is
+ * built so url params can't inject NQL.
+ */
+export const KNOWN_EVENT_TYPE_IDS: ReadonlySet<string> = new Set([
+    ...EMAIL_EVENTS,
+    ...NEWSLETTER_EVENTS,
+    'signup_event',
+    'login_event',
+    'subscription_event',
+    'gift_redemption_event',
+    'gift_ended_event',
+    'payment_event',
+    'donation_event',
+    'gift_purchase_event',
+    'email_change_event',
+    'automated_email_sent_event',
+    'feedback_event',
+    'comment_event',
+    'click_event',
+    'aggregated_click_event'
+]);
+
+const MEMBER_ID_PATTERN = /^[a-f0-9]{24}$/i;
+
+/**
+ * Returns the member id when it looks like an ObjectID, otherwise '' so the
+ * value is treated as absent (the member param comes straight from the url
+ * and is interpolated into an NQL filter).
+ */
+export function sanitizeMemberId(member?: string | null): string {
+    return member && MEMBER_ID_PATTERN.test(member) ? member : '';
+}
+
+/** Drops anything that isn't a known event type id (see KNOWN_EVENT_TYPE_IDS). */
+export function sanitizeExcludedEvents(excludedEvents: string[]): string[] {
+    return excludedEvents.filter(type => KNOWN_EVENT_TYPE_IDS.has(type));
+}
+
 export interface MembersEventFilterSettings {
     /** editor_default_email_recipients === 'disabled' */
     emailDisabled: boolean;
@@ -37,7 +79,10 @@ export function buildMembersEventFilter({excludedEvents = [], member = '', setti
         excludedEventsSet.add('comment_event');
     }
 
-    excludedEvents.forEach(type => excludedEventsSet.add(type));
+    // sanitize at the general layer so every caller is protected: both values
+    // originate from url params and end up inside an NQL filter
+    sanitizeExcludedEvents(excludedEvents).forEach(type => excludedEventsSet.add(type));
+    const safeMember = sanitizeMemberId(member);
 
     const filterParts: string[] = [];
     const excludedEventsArray = Array.from(excludedEventsSet).filter(type => type && type.trim() !== '');
@@ -46,8 +91,8 @@ export function buildMembersEventFilter({excludedEvents = [], member = '', setti
         filterParts.push(`type:-[${excludedEventsArray.join(',')}]`);
     }
 
-    if (member) {
-        filterParts.push(`data.member_id:'${member}'`);
+    if (safeMember) {
+        filterParts.push(`data.member_id:'${safeMember}'`);
     }
 
     return filterParts.join('+');

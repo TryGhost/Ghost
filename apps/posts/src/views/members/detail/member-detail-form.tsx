@@ -33,6 +33,7 @@ import {MemberLabelsInput} from './components/member-labels-input';
 import {MemberSubscriptions} from './components/member-subscriptions';
 import {NewsletterPreferences} from './components/newsletter-preferences';
 import {UnsavedChangesDialog, useUnsavedChangesBlocker} from '@components/unsaved-changes';
+import {ValidationError} from '@tryghost/admin-x-framework/errors';
 import {apiErrorMessage} from '@src/utils/api-error-message';
 import {toast} from 'sonner';
 import {
@@ -51,9 +52,38 @@ import type {Member} from '@tryghost/admin-x-framework/api/members';
 import type {MemberAction} from './components/member-actions-menu';
 import type {Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import type {Tier} from '@tryghost/admin-x-framework/api/tiers';
+import type {UseFormSetError} from 'react-hook-form';
 
 type SaveState = 'idle' | 'saved' | 'error';
 type ActiveDialog = MemberAction | 'add-tier' | null;
+
+const SERVER_VALIDATED_FIELDS = ['name', 'email', 'note'] as const;
+type ServerValidatedField = typeof SERVER_VALIDATED_FIELDS[number];
+
+function isServerValidatedField(property: string): property is ServerValidatedField {
+    return (SERVER_VALIDATED_FIELDS as readonly string[]).includes(property);
+}
+
+/**
+ * Maps API validation errors onto the form fields they belong to - the server
+ * validates more than the client schema (e.g. duplicate emails). Returns true
+ * when at least one error was attached to a field, in which case the inline
+ * message replaces the generic toast.
+ */
+function applyServerFieldErrors(error: unknown, setError: UseFormSetError<MemberFormValues>): boolean {
+    if (!(error instanceof ValidationError)) {
+        return false;
+    }
+
+    let applied = false;
+    for (const apiError of error.data?.errors ?? []) {
+        if (apiError.property && isServerValidatedField(apiError.property)) {
+            setError(apiError.property, {message: apiError.context || apiError.message});
+            applied = true;
+        }
+    }
+    return applied;
+}
 
 export function MemberDetailForm({member, newsletters, paidTiers, timezone, canShowNewsletters, paidMembersEnabled, showEngagement, initialSaveState = 'idle', refetchMember}: {
     member?: Member;
@@ -151,7 +181,9 @@ export function MemberDetailForm({member, newsletters, paidTiers, timezone, canS
         } catch (error) {
             if (!unmountedRef.current) {
                 setSaveState('error');
-                toast.error(apiErrorMessage(error, 'Failed to save member'));
+                if (!applyServerFieldErrors(error, form.setError)) {
+                    toast.error(apiErrorMessage(error, 'Failed to save member'));
+                }
             }
         } finally {
             submitInFlightRef.current = false;

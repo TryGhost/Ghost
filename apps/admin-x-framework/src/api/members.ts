@@ -1,4 +1,4 @@
-import {InfiniteData, useQueryClient} from '@tanstack/react-query';
+import {InfiniteData, Query, useQueryClient} from '@tanstack/react-query';
 import {useEffect} from 'react';
 import {Meta, createInfiniteQuery, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 import {apiUrl} from '../utils/api/fetch-api';
@@ -185,13 +185,25 @@ export type NewMember = {
     newsletters?: Array<{id: string}>;
 };
 
+// Saving a member can create labels server-side (labels sent as `{name}` are
+// created on the fly), so member create/edit must invalidate the labels cache
+// too. createMutation's `dataType` invalidation only takes a single type, so
+// we use the filters form, which only invalidates the query client - safe
+// because the Ember bridge mapping for both MembersResponseType and
+// LabelsResponseType is null (they only exist in React admin).
+const invalidateMembersAndLabels = {
+    filters: {
+        predicate: (query: Query) => [dataType, 'LabelsResponseType'].includes(query.queryKey[0] as string)
+    }
+};
+
 export const useAddMember = createMutation<MembersResponseType, NewMember>({
     method: 'POST',
     path: () => '/members/',
     body: member => ({
         members: [member]
     }),
-    invalidateQueries: {dataType}
+    invalidateQueries: invalidateMembersAndLabels
 });
 
 export type MemberEditPayload = {
@@ -213,7 +225,7 @@ export const useEditMember = createMutation<MembersResponseType, MemberEditPaylo
     body: member => ({
         members: [member]
     }),
-    invalidateQueries: {dataType}
+    invalidateQueries: invalidateMembersAndLabels
 });
 
 export const useDeleteMember = createMutation<unknown, {id: string; cancelSubscriptions?: boolean}>({

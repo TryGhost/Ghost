@@ -1,15 +1,17 @@
 import LoadMoreButton from '@components/virtual-table/load-more-button';
 import MainLayout from '@components/layout/main-layout';
-import React from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {ActivityTable} from './components/activity-table';
 import {EventTypeFilter} from './components/event-type-filter';
 import {Link, Navigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {LoadingIndicator} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {MemberContextCard} from './components/member-context-card';
+import {MemberFilter} from './components/member-filter';
 import {canManageMembers} from '@tryghost/admin-x-framework/api/users';
 import {getHiddenActivityEvents} from '../events/member-event-types';
 import {getMember} from '@tryghost/admin-x-framework/api/members';
+import {sanitizeExcludedEvents, sanitizeMemberId} from '../events/member-event-filter';
 import {useActivitySettings, useMemberEvents, useParseEventContext} from '../events/use-member-events';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 
@@ -32,8 +34,12 @@ function NoEvents({hasFilter}: {hasFilter: boolean}) {
 
 const MembersActivity: React.FC = () => {
     const [searchParams, setSearchParams] = useSearchParams();
-    const memberId = searchParams.get('member') ?? '';
-    const excludedEvents = searchParams.get('excludedEvents') ?? '';
+    // both params feed an NQL filter; anything that doesn't validate is
+    // treated as absent (buildMembersEventFilter sanitizes again internally)
+    const memberId = sanitizeMemberId(searchParams.get('member'));
+    const excludedEvents = sanitizeExcludedEvents(
+        (searchParams.get('excludedEvents') ?? '').split(',').filter(Boolean)
+    ).join(',');
 
     const {data: currentUser, isLoading: isUserLoading} = useCurrentUser();
     const {settingsLoaded, emailDisabled, commentsDisabled, emailTrackClicks} = useActivitySettings();
@@ -60,6 +66,31 @@ const MembersActivity: React.FC = () => {
     });
     const memberRecord = memberId ? memberData?.members?.[0] : undefined;
 
+    // Auto-load the next page when the sentinel below the table scrolls into
+    // view (the Load more button stays as a fallback).
+    const [sentinel, setSentinel] = useState<HTMLElement | null>(null);
+    const loadMoreRef = useRef<() => void>(() => {});
+    loadMoreRef.current = () => {
+        if (hasNextPage && !isFetchingNextPage) {
+            fetchNextPage();
+        }
+    };
+    const eventCount = events.length;
+    useEffect(() => {
+        if (!sentinel || typeof IntersectionObserver === 'undefined') {
+            return;
+        }
+        const observer = new IntersectionObserver((entries) => {
+            if (entries.some(entry => entry.isIntersecting)) {
+                loadMoreRef.current();
+            }
+        }, {rootMargin: '200px'});
+        observer.observe(sentinel);
+        return () => observer.disconnect();
+        // recreate the observer after each page loads so a sentinel that is
+        // still visible (short pages / tall viewports) keeps loading
+    }, [sentinel, eventCount]);
+
     if (isUserLoading || !currentUser) {
         return null;
     }
@@ -78,6 +109,18 @@ const MembersActivity: React.FC = () => {
             }
             return next;
         });
+    };
+
+    const handleChangeMember = (newMemberId: string | null) => {
+        setSearchParams((prev) => {
+            const next = new URLSearchParams(prev);
+            if (newMemberId) {
+                next.set('member', newMemberId);
+            } else {
+                next.delete('member');
+            }
+            return next;
+        }, {replace: true});
     };
 
     return (
@@ -104,6 +147,10 @@ const MembersActivity: React.FC = () => {
                         )}
 
                         <div className="flex shrink-0 items-center gap-2">
+                            <MemberFilter
+                                memberSelected={Boolean(memberId)}
+                                onChange={handleChangeMember}
+                            />
                             <EventTypeFilter
                                 excludedEvents={excludedEvents}
                                 hiddenEvents={hiddenEvents}
@@ -123,10 +170,18 @@ const MembersActivity: React.FC = () => {
                                 parseContext={parseContext}
                             />
                             {hasNextPage && (
-                                <LoadMoreButton
-                                    isLoading={isFetchingNextPage}
-                                    onClick={() => fetchNextPage()}
-                                />
+                                <>
+                                    <div
+                                        ref={setSentinel}
+                                        aria-hidden="true"
+                                        className="h-px"
+                                        data-testid="members-activity-load-more-sentinel"
+                                    />
+                                    <LoadMoreButton
+                                        isLoading={isFetchingNextPage}
+                                        onClick={() => fetchNextPage()}
+                                    />
+                                </>
                             )}
                         </>
                     ) : (isLoading || !settingsLoaded) ? (

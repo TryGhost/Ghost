@@ -1,14 +1,19 @@
+import {ALL_EVENT_TYPES, toggleEventType} from './member-event-types';
 import {
+    KNOWN_EVENT_TYPE_IDS,
     buildEventsPageFilter,
     buildMembersEventFilter,
     formatEventCursor,
     getNextEventsPageParams,
+    sanitizeExcludedEvents,
+    sanitizeMemberId,
     splitEventsFilter
 } from './member-event-filter';
 import {describe, expect, it} from 'vitest';
 import type {MemberEvent} from '@tryghost/admin-x-framework/api/members';
 
 const enabledSettings = {emailDisabled: false, commentsDisabled: false};
+const memberId = '6543c13c0a342baa1ed6a01b';
 
 function makeEvents(createdAts: string[]): MemberEvent[] {
     return createdAts.map((createdAt, index) => ({
@@ -31,16 +36,32 @@ describe('buildMembersEventFilter', () => {
     });
 
     it('filters by member id', () => {
-        expect(buildMembersEventFilter({member: 'member-1', settings: enabledSettings}))
-            .toBe(`data.member_id:'member-1'`);
+        expect(buildMembersEventFilter({member: memberId, settings: enabledSettings}))
+            .toBe(`data.member_id:'${memberId}'`);
     });
 
     it('combines exclusions and member filter', () => {
         expect(buildMembersEventFilter({
             excludedEvents: ['aggregated_click_event'],
-            member: 'member-1',
+            member: memberId,
             settings: enabledSettings
-        })).toBe(`type:-[aggregated_click_event]+data.member_id:'member-1'`);
+        })).toBe(`type:-[aggregated_click_event]+data.member_id:'${memberId}'`);
+    });
+
+    it('drops a member param that is not an object id', () => {
+        expect(buildMembersEventFilter({
+            member: `'+type:-[signup_event]+data.member_id:'${memberId}`,
+            settings: enabledSettings
+        })).toBe('');
+        expect(buildMembersEventFilter({member: 'admin', settings: enabledSettings})).toBe('');
+        expect(buildMembersEventFilter({member: `${memberId}ff`, settings: enabledSettings})).toBe('');
+    });
+
+    it('drops excluded events that are not known event types', () => {
+        expect(buildMembersEventFilter({
+            excludedEvents: [`signup_event]+data.member_id:'${memberId}'+type:-[login_event`, 'login_event'],
+            settings: enabledSettings
+        })).toBe('type:-[login_event]');
     });
 
     it('excludes email and newsletter events when email is disabled', () => {
@@ -68,6 +89,49 @@ describe('buildMembersEventFilter', () => {
             excludedEvents: ['', 'signup_event'],
             settings: enabledSettings
         })).toBe('type:-[signup_event]');
+    });
+});
+
+describe('sanitizeMemberId', () => {
+    it('accepts 24-char hex object ids (case-insensitive)', () => {
+        expect(sanitizeMemberId(memberId)).toBe(memberId);
+        expect(sanitizeMemberId(memberId.toUpperCase())).toBe(memberId.toUpperCase());
+    });
+
+    it('treats anything else as absent', () => {
+        expect(sanitizeMemberId(null)).toBe('');
+        expect(sanitizeMemberId(undefined)).toBe('');
+        expect(sanitizeMemberId('')).toBe('');
+        expect(sanitizeMemberId('member-1')).toBe('');
+        expect(sanitizeMemberId(`x${memberId.slice(1)}`)).toBe('');
+        expect(sanitizeMemberId(`'+data.member_id:'${memberId}`)).toBe('');
+    });
+});
+
+describe('sanitizeExcludedEvents', () => {
+    it('keeps known event type ids and drops everything else', () => {
+        expect(sanitizeExcludedEvents([
+            'signup_event',
+            'gift_purchase_event',
+            '',
+            'type:1',
+            `login_event]+data.member_id:'${memberId}'`
+        ])).toEqual(['signup_event', 'gift_purchase_event']);
+    });
+
+    it('covers every filterable event type, including grouped toggles', () => {
+        const filterableIds = ALL_EVENT_TYPES.map(type => type.event);
+        // grouped toggles also write these ids into the excludedEvents param
+        const toggledIds = [
+            ...toggleEventType('subscription_event').split(','),
+            ...toggleEventType('payment_event').split(','),
+            'comment_event',
+            'click_event'
+        ];
+
+        for (const id of [...filterableIds, ...toggledIds]) {
+            expect(KNOWN_EVENT_TYPE_IDS.has(id), id).toBe(true);
+        }
     });
 });
 
