@@ -1916,10 +1916,10 @@ importers:
         version: 4.22.2
       knex:
         specifier: 3.1.0
-        version: 3.1.0(mysql2@3.22.3(@types/node@25.9.1))
+        version: 3.1.0(mysql2@3.22.5(@types/node@25.9.1))
       mysql2:
-        specifier: 3.22.3
-        version: 3.22.3(@types/node@25.9.1)
+        specifier: 3.22.5
+        version: 3.22.5(@types/node@25.9.1)
       stripe:
         specifier: 8.222.0
         version: 8.222.0
@@ -2487,13 +2487,13 @@ importers:
         version: 1.20.5
       bookshelf:
         specifier: 1.2.0
-        version: 1.2.0(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))
+        version: 1.2.0(knex@2.4.2(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7))
       bookshelf-relations:
         specifier: 2.8.0
-        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)))
+        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7)))
       brute-knex:
         specifier: 4.0.1
-        version: 4.0.1(express@4.22.2)(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
+        version: 4.0.1(express@4.22.2)(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7)
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -2649,7 +2649,7 @@ importers:
         version: 1.0.4
       knex:
         specifier: 2.4.2
-        version: 2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
+        version: 2.4.2(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7)
       knex-migrator:
         specifier: 5.3.2
         version: 5.3.2
@@ -2708,8 +2708,8 @@ importers:
         specifier: 2.1.1
         version: 2.1.1
       mysql2:
-        specifier: 3.22.3
-        version: 3.22.3(@types/node@22.19.19)
+        specifier: 3.22.5
+        version: 3.22.5(@types/node@22.19.19)
       nconf:
         specifier: 0.13.0
         version: 0.13.0
@@ -2803,7 +2803,7 @@ importers:
         version: 2.1.0
       '@types/bookshelf':
         specifier: 1.2.9
-        version: 1.2.9(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
+        version: 1.2.9(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7)
       '@types/common-tags':
         specifier: 1.8.4
         version: 1.8.4
@@ -17285,8 +17285,8 @@ packages:
     resolution: {integrity: sha512-7ytuPQJjQB8TNAYX/H2yhL+iQOnIBjAMam361R7UAL0lOVXWjtdrmoL9HYKqKoLp/8UUTRcvo1QPvK9KL7wA8w==}
     engines: {node: '>= 8.0'}
 
-  mysql2@3.22.3:
-    resolution: {integrity: sha512-uWWxvZSRvRhtBdh2CdcuK83YcOfPdmEeEYB069bAmPnV93QApDGVPuvCQOLjlh7tYHEWdgQPrn6kosDxHBVLkA==}
+  mysql2@3.22.5:
+    resolution: {integrity: sha512-95uZ2TrPWAZdwpB3vvvDbmEMcNG8yIeNCyu6GUcr/QnWEE/wXm7+mhOCsdQfWQDTV7qYT/PDUZ4U4UPP4AsXqQ==}
     engines: {node: '>= 8.0'}
     peerDependencies:
       '@types/node': '>= 8'
@@ -29111,12 +29111,12 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/node': 25.9.1
 
-  '@types/bookshelf@1.2.9(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)':
+  '@types/bookshelf@1.2.9(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7)':
     dependencies:
       '@types/bluebird': 3.5.42
       '@types/create-error': 0.3.33
       '@types/lodash': 4.17.24
-      knex: 0.21.21(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
+      knex: 0.21.21(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7)
     transitivePeerDependencies:
       - mssql
       - mysql
@@ -31574,22 +31574,22 @@ snapshots:
       raw-body: 1.1.7
       safe-json-parse: 1.0.1
 
-  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))):
+  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7))):
     dependencies:
       '@tryghost/debug': 0.1.40
       '@tryghost/errors': 1.3.13
       bluebird: 3.7.2
-      bookshelf: 1.2.0(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7))
+      bookshelf: 1.2.0(knex@2.4.2(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7))
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
-  bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)):
+  bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7)):
     dependencies:
       bluebird: 3.7.2
       create-error: 0.3.1
       inflection: 1.13.4
-      knex: 2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
+      knex: 2.4.2(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7)
       lodash: 4.18.1
 
   boolbase@1.0.0: {}
@@ -32250,10 +32250,10 @@ snapshots:
       node-releases: 2.0.46
       update-browserslist-db: 1.2.3(browserslist@4.28.2)
 
-  brute-knex@4.0.1(express@4.22.2)(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7):
+  brute-knex@4.0.1(express@4.22.2)(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7):
     dependencies:
       express-brute: 1.0.1(express@4.22.2)
-      knex: 0.20.15(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7)
+      knex: 0.20.15(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7)
     transitivePeerDependencies:
       - express
       - mssql
@@ -39305,7 +39305,7 @@ snapshots:
       - supports-color
       - tedious
 
-  knex@0.20.15(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7):
+  knex@0.20.15(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7):
     dependencies:
       colorette: 1.1.0
       commander: 4.1.1
@@ -39323,12 +39323,12 @@ snapshots:
       uuid: 7.0.3
       v8flags: 3.2.0
     optionalDependencies:
-      mysql2: 3.22.3(@types/node@22.19.19)
+      mysql2: 3.22.5(@types/node@22.19.19)
       sqlite3: 5.1.7
     transitivePeerDependencies:
       - supports-color
 
-  knex@0.21.21(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7):
+  knex@0.21.21(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7):
     dependencies:
       colorette: 1.2.1
       commander: 6.2.1
@@ -39343,7 +39343,7 @@ snapshots:
       tildify: 2.0.0
       v8flags: 3.2.0
     optionalDependencies:
-      mysql2: 3.22.3(@types/node@22.19.19)
+      mysql2: 3.22.5(@types/node@22.19.19)
       sqlite3: 5.1.7
     transitivePeerDependencies:
       - supports-color
@@ -39370,7 +39370,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  knex@2.4.2(mysql2@3.22.3(@types/node@22.19.19))(sqlite3@5.1.7):
+  knex@2.4.2(mysql2@3.22.5(@types/node@22.19.19))(sqlite3@5.1.7):
     dependencies:
       colorette: 2.0.19
       commander: 9.5.0
@@ -39387,12 +39387,12 @@ snapshots:
       tarn: 3.0.2
       tildify: 2.0.0
     optionalDependencies:
-      mysql2: 3.22.3(@types/node@22.19.19)
+      mysql2: 3.22.5(@types/node@22.19.19)
       sqlite3: 5.1.7
     transitivePeerDependencies:
       - supports-color
 
-  knex@3.1.0(mysql2@3.22.3(@types/node@25.9.1)):
+  knex@3.1.0(mysql2@3.22.5(@types/node@25.9.1)):
     dependencies:
       colorette: 2.0.19
       commander: 10.0.1
@@ -39409,7 +39409,7 @@ snapshots:
       tarn: 3.0.2
       tildify: 2.0.0
     optionalDependencies:
-      mysql2: 3.22.3(@types/node@25.9.1)
+      mysql2: 3.22.5(@types/node@25.9.1)
     transitivePeerDependencies:
       - supports-color
 
@@ -40905,7 +40905,7 @@ snapshots:
       seq-queue: 0.0.5
       sqlstring: 2.3.3
 
-  mysql2@3.22.3(@types/node@22.19.19):
+  mysql2@3.22.5(@types/node@22.19.19):
     dependencies:
       '@types/node': 22.19.19
       aws-ssl-profiles: 1.1.2
@@ -40917,7 +40917,7 @@ snapshots:
       named-placeholders: 1.1.6
       sql-escaper: 1.3.3
 
-  mysql2@3.22.3(@types/node@25.9.1):
+  mysql2@3.22.5(@types/node@25.9.1):
     dependencies:
       '@types/node': 25.9.1
       aws-ssl-profiles: 1.1.2
