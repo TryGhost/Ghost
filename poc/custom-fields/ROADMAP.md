@@ -21,7 +21,7 @@ Each story below targets **Tier 1** for its first demoable version. Tier 2 (sele
 | 1 | [Admin: define custom fields](./stories/01-admin-define-fields.md) | admin-x-settings | ✅ Done |
 | 2 | [Admin: member detail values](./stories/02-admin-member-detail.md) | Ember admin | ✅ Done |
 | 3 | [Portal: collect at signup](./stories/03-portal-signup.md) | portal/admin-x-settings | ✅ Done (Part A + Part B) |
-| 4 | [Portal: self-edit on account page](./stories/04-portal-account.md) | portal | Not started |
+| 4 | [Portal: self-edit on account page](./stories/04-portal-account.md) | portal | ✅ Done |
 
 Status values: `Not started` / `In progress` / `Demoable` / `Done`.
 
@@ -50,7 +50,7 @@ The POC is successful if that loop feels natural to test users, independent of h
 - Types are a subset of beehiiv's, rolled out in two tiers. Date / Date & Time are dropped for now.
 - Stored values are always nullable. `required` is a per-placement, collection-time rule only.
 - **Member-visibility is implicit via form placements**: a field reaches members only if explicitly added to a Portal form. There is no separate "internal" flag.
-- **Account page is opt-in**: it starts empty and the owner adds the fields members may self-edit (the `account` placements). No field is exposed by default.
+- **Portal is connected (POC simplification)**: the account page shows the same custom fields the owner added to the **signup form** (one Portal placement list), so members self-edit whatever was collected. No separate `account` surface/configurator in the POC. (A real build could split them if collect-at-signup and self-editable need to differ.)
 - **Field descriptions (`helpText`) are dropped** for now. helpText is admin-only by design; no UI sets it.
 - **Presets deferred** (not built now, not abandoned). Name-style presets would clash with Ghost's built-in `name`, but gap-filling presets (Phone, Company, …) could be useful later. The `preset` property stays nullable in the model. See [ideas/field-formats.md](./ideas/field-formats.md).
 - **Signup uses a unified Form fields list** (Story 3): built-in Email (locked) + Name (toggle → `portal_name`) + custom-field placements in one reorderable list. Built-in = toggle/locked, custom = add/remove.

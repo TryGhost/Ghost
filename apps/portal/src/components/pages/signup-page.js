@@ -6,6 +6,7 @@ import SiteTitleBackButton from '../common/site-title-back-button';
 import NewsletterSelectionPage from './newsletter-selection-page';
 import ProductsSection from '../common/products-section';
 import InputField from '../common/input-field';
+import CustomFieldInput from '../common/custom-field-input';
 import * as customFields from '../../../../../poc/custom-fields/repo';
 import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
@@ -507,14 +508,6 @@ class SignupPage extends React.Component {
         }));
     }
 
-    toggleMultiOption(field, option) {
-        this.setState((state) => {
-            const current = Array.isArray(state.cfValues[field.name]) ? state.cfValues[field.name] : [];
-            const next = current.includes(option) ? current.filter(o => o !== option) : [...current, option];
-            return {cfValues: {...state.cfValues, [field.name]: next}};
-        });
-    }
-
     handleSelectPlan = (e, priceId) => {
         e && e.preventDefault();
         // Hack: React checkbox gets out of sync with dom state with instant update
@@ -800,11 +793,28 @@ class SignupPage extends React.Component {
 
     renderInputFields(fields) {
         return fields.map((field) => {
-            if (field.custom && field.cfType === 'boolean') {
-                return this.renderBooleanField(field);
-            }
-            if (field.custom && field.cfType === 'select') {
-                return this.renderSelectField(field);
+            // Custom boolean/select fields render through the shared control;
+            // text/number custom fields keep using InputField (below) so they
+            // retain placeholder/tabIndex/autoFocus like the built-in fields.
+            if (field.custom && (field.cfType === 'boolean' || field.cfType === 'select')) {
+                const def = {
+                    id: field.name,
+                    label: field.label,
+                    type: field.cfType,
+                    options: field.options,
+                    multiple: field.multiple
+                };
+                return (
+                    <CustomFieldInput
+                        key={field.name}
+                        field={def}
+                        value={this.state.cfValues[field.name]}
+                        errorMessage={field.errorMessage}
+                        placeholder={field.placeholder}
+                        onKeyDown={e => this.onKeyDown(e)}
+                        onChange={value => this.handleCustomChange(field, value)}
+                    />
+                );
             }
             return (
                 <InputField
@@ -824,86 +834,6 @@ class SignupPage extends React.Component {
                 />
             );
         });
-    }
-
-    renderCustomFieldError(field) {
-        if (!field.errorMessage) {
-            return null;
-        }
-        return (
-            <p style={{color: 'var(--red)', fontSize: '1.3rem', lineHeight: '1.6em', marginBottom: 0}}>
-                {field.errorMessage}
-            </p>
-        );
-    }
-
-    renderBooleanField(field) {
-        return (
-            <section className='gh-portal-input-section' key={field.name}>
-                <label style={{display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '8px'}}>
-                    <input
-                        type='checkbox'
-                        name={field.name}
-                        checked={!!field.value}
-                        onChange={e => this.handleCustomChange(field, e.target.checked)}
-                    />
-                    <span>{field.label}</span>
-                </label>
-                {this.renderCustomFieldError(field)}
-            </section>
-        );
-    }
-
-    renderSelectField(field) {
-        const options = field.options || [];
-        const header = (
-            <div className='gh-portal-input-labelcontainer'>
-                <label className='gh-portal-input-label'>{field.label}</label>
-                {this.renderCustomFieldError(field)}
-            </div>
-        );
-        if (field.multiple) {
-            const selected = Array.isArray(field.value) ? field.value : [];
-            return (
-                <section className='gh-portal-input-section' key={field.name}>
-                    {header}
-                    <div style={{display: 'flex', flexDirection: 'column', gap: '8px', marginBottom: '16px'}}>
-                        {options.map(option => (
-                            <label key={option} style={{display: 'flex', alignItems: 'center', gap: '8px'}}>
-                                <input
-                                    type='checkbox'
-                                    checked={selected.includes(option)}
-                                    onChange={() => this.toggleMultiOption(field, option)}
-                                />
-                                <span>{option}</span>
-                            </label>
-                        ))}
-                    </div>
-                </section>
-            );
-        }
-        return (
-            <section className='gh-portal-input-section' key={field.name}>
-                {header}
-                <select
-                    className={field.errorMessage ? 'gh-portal-input error' : 'gh-portal-input'}
-                    name={field.name}
-                    value={field.value || ''}
-                    style={{
-                        backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8' fill='none'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%238a8a8a' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E")`,
-                        backgroundRepeat: 'no-repeat',
-                        backgroundPosition: 'right 14px center',
-                        paddingRight: '36px'
-                    }}
-                    onChange={e => this.handleCustomChange(field, e.target.value)}
-                >
-                    <option value=''>{field.placeholder || t('Select an option')}</option>
-                    {options.map(option => (
-                        <option key={option} value={option}>{option}</option>
-                    ))}
-                </select>
-            </section>
-        );
     }
 
     renderForm() {

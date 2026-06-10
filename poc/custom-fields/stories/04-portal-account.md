@@ -10,12 +10,19 @@
 
 `apps/portal/src/components/pages/account-profile-page.js` (the Edit profile view behind the account page "Edit" action).
 
-## UX
+**Status:** Built, test pending.
 
-- **Opt-in (locked decision):** the account page shows ONLY the fields the owner placed on the `account` surface. It does not show all custom fields by default. Internal/admin-only fields never appear because they are simply never placed here.
-- The account/profile edit form lists the fields in `repo.getForm('account')`, each pre-filled with the member's current value.
-- Member edits and saves; values persist via `repo.setValue(memberId, fieldId, value)`.
-- Per-placement `required` enforced at submit. Stored values remain nullable.
+## UX (connected Portal model)
+
+- **The account page mirrors the signup form** (POC simplification): it shows the same custom fields the owner added to the signup form, so members self-edit whatever was collected. No separate `account` surface/configurator.
+- Reads `repo.getForm('signup')`, filters to the custom-field placements (built-in Email/Name entries are dropped — Name/Email are already editable above), pre-filled with the member's values (keyed by real `member.id`).
+- Renders each via the shared `CustomFieldInput` control (text/number/boolean/select), with the greyed select placeholder.
+- A placed field is required; validation reuses the page's existing error flow with a label-based message. Values persist on **Save** via `repo.setValue(member.id, …)`, alongside the existing name/email update.
+
+## Built
+
+- `apps/portal/src/components/common/custom-field-input.js` — shared per-type control (also used by signup).
+- `apps/portal/src/components/pages/account-profile-page.js` — loads signup placements + member values, renders custom fields after Name/Email, validates required, persists on Save.
 
 ## Tasks
 

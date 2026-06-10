@@ -42,7 +42,7 @@ const STORAGE_KEY = 'ghost-poc-custom-fields';
 // an older version is discarded and reseeded from the JSON, so dev browsers pick
 // up seed changes automatically (this DOES wipe local edits, which is the point
 // of a reseed).
-const SEED_VERSION = 5;
+const SEED_VERSION = 7;
 
 /** Type options for the "data type" dropdown in the create UI. */
 export const TYPES = [

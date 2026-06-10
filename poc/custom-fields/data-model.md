@@ -31,7 +31,9 @@ One entry per custom field the owner creates. This is the "schema" the owner edi
 
 ## 2. Form placements (`forms{}`)
 
-Map of `surface -> placement[]`. Surface is an **open set**: today `signup` and `account`; future surfaces (e.g. `post_signup`) slot in the same way. A placement is a field added to that surface. Whether a field appears on a surface is determined by its presence here (replaces a definition-level visibility flag), which is also how member-visibility works: a field reaches members only if placed on a member-facing surface. Mirrors beehiiv's "Add field" dialog (Action → Field → Type → Placeholder → Required).
+Map of `surface -> placement[]`. Surface is an **open set** conceptually (e.g. a future `post_signup`). A placement is a field added to that surface. Whether a field appears is determined by its presence here (replaces a definition-level visibility flag), which is also how member-visibility works: a field reaches members only if placed. Mirrors beehiiv's "Add field" dialog (Action → Field → Type → Placeholder → Required).
+
+**POC simplification:** only the `signup` surface is defined. The Portal **account page reuses the `signup` list** (the owner curates one Portal field list; members self-edit whatever was collected at signup). Built-in Email/Name entries in `signup` are dropped on the account page since Name/Email are already editable there.
 
 | Property | Meaning |
 | --- | --- |

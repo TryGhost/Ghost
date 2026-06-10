@@ -1,33 +1,7 @@
 {
-  "_comment": "POC seed data for the member custom-fields feature. Three collections: definitions (the global fields), forms (per-form placements with required/placeholder/order), and values (per-member values). Stored values are always nullable; 'required' is enforced only at collection time, per placement. Read/written through the async repository facade; storage underneath is localStorage. This JSON is the initial seed on first run.",
+  "_comment": "POC seed data for the member custom-fields feature. Three collections: definitions (the global fields), forms (placements per surface; for the POC the Portal account page reuses the 'signup' list, so only 'signup' is defined), and values (per-member values). Stored values are always nullable; 'required' is enforced only at collection time. Read/written through the async repository facade; storage underneath is localStorage. This JSON is the initial seed on first run.",
 
   "definitions": [
-    {
-      "id": "cf_first_name",
-      "key": "first_name",
-      "label": "First name",
-      "type": "text",
-      "preset": "first_name",
-      "tier": 1,
-      "helpText": null,
-      "options": null,
-      "multiple": false,
-      "archived": false,
-      "createdAt": "2026-06-01T10:00:00.000Z"
-    },
-    {
-      "id": "cf_last_name",
-      "key": "last_name",
-      "label": "Last name",
-      "type": "text",
-      "preset": "last_name",
-      "tier": 1,
-      "helpText": null,
-      "options": null,
-      "multiple": false,
-      "archived": false,
-      "createdAt": "2026-06-01T10:01:00.000Z"
-    },
     {
       "id": "cf_company",
       "key": "company",
@@ -100,19 +74,11 @@
       { "fieldId": "email", "system": true, "required": true, "placeholder": null, "order": 0 },
       { "fieldId": "name", "system": true, "required": false, "placeholder": null, "order": 1 },
       { "fieldId": "cf_role", "required": true, "placeholder": null, "order": 2 }
-    ],
-    "account": [
-      { "fieldId": "cf_first_name", "required": true, "placeholder": "Jamie", "order": 0 },
-      { "fieldId": "cf_last_name", "required": false, "placeholder": "Larson", "order": 1 },
-      { "fieldId": "cf_company", "required": false, "placeholder": "Acme Inc.", "order": 2 },
-      { "fieldId": "cf_interests", "required": false, "placeholder": null, "order": 3 }
     ]
   },
 
   "values": {
     "member_1": {
-      "cf_first_name": "Jamie",
-      "cf_last_name": "Larson",
       "cf_company": "Acme Inc.",
       "cf_referrals": 3,
       "cf_test_account": false,
@@ -120,7 +86,6 @@
       "cf_interests": ["Product", "Business"]
     },
     "member_2": {
-      "cf_first_name": "Sam",
       "cf_role": "Engineer",
       "cf_interests": ["Engineering"]
     }

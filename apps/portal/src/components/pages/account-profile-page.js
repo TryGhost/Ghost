@@ -5,8 +5,12 @@ import ActionButton from '../common/action-button';
 import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import InputForm from '../common/input-form';
+import CustomFieldInput from '../common/custom-field-input';
+import * as customFields from '../../../../../poc/custom-fields/repo';
 import {ValidateInputForm} from '../../utils/form';
 import {t} from '../../utils/i18n';
+
+const isEmpty = value => value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
 
 export default class AccountProfilePage extends React.Component {
     static contextType = AppContext;
@@ -16,7 +20,11 @@ export default class AccountProfilePage extends React.Component {
         const {name = '', email = ''} = context.member || {};
         this.state = {
             name,
-            email
+            email,
+            // POC custom fields: account-surface placements, field definitions, entered values
+            cfForm: [],
+            cfDefs: [],
+            cfValues: {}
         };
     }
 
@@ -26,7 +34,47 @@ export default class AccountProfilePage extends React.Component {
             this.context.doAction('switchPage', {
                 page: 'signin'
             });
+            return;
         }
+
+        // POC: load the account form's custom fields + this member's values, live.
+        this.loadCustomFields();
+        this.cfUnsubscribe = customFields.subscribe(() => this.loadCustomFields());
+    }
+
+    componentWillUnmount() {
+        this.cfUnsubscribe?.();
+    }
+
+    loadCustomFields() {
+        const memberId = this.context.member?.id;
+        Promise.all([
+            // POC: the account page mirrors the signup form — the member can
+            // self-edit whatever custom fields the owner added to signup.
+            customFields.getForm('signup'),
+            customFields.listFields(),
+            memberId ? customFields.getValues(memberId) : Promise.resolve({})
+        ]).then(([form, cfDefs, cfValues]) => {
+            // Keep only the custom-field placements (drop the built-in Email/Name
+            // entries; those are already shown as the editable Name/Email above).
+            const cfForm = form.filter(placement => cfDefs.some(def => def.id === placement.fieldId && !def.archived));
+            this.setState({cfForm, cfDefs, cfValues});
+        });
+    }
+
+    handleCustomChange(fieldId, value) {
+        this.setState(state => ({
+            cfValues: {...state.cfValues, [fieldId]: value}
+        }));
+    }
+
+    getCustomRows() {
+        return (this.state.cfForm || [])
+            .map((placement) => {
+                const def = (this.state.cfDefs || []).find(d => d.id === placement.fieldId);
+                return (def && !def.archived) ? def : null;
+            })
+            .filter(Boolean);
     }
 
     handleSignout(e) {
@@ -41,17 +89,46 @@ export default class AccountProfilePage extends React.Component {
     onProfileSave(e) {
         e.preventDefault();
         this.setState((state) => {
-            return {
-                errors: ValidateInputForm({fields: this.getInputFields({state})})
-            };
+            const errors = ValidateInputForm({fields: this.getInputFields({state})});
+            // POC: a custom field placed on the account form is required.
+            (state.cfForm || []).forEach((placement) => {
+                const def = (state.cfDefs || []).find(d => d.id === placement.fieldId);
+                if (def && !def.archived && isEmpty(state.cfValues[def.id])) {
+                    errors[def.id] = t('Please enter {fieldName}', {fieldName: def.label.toLowerCase()});
+                }
+            });
+            return {errors};
         }, () => {
             const {email, name, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
+                // POC: persist custom field values for this member.
+                const memberId = this.context.member?.id;
+                (this.state.cfForm || []).forEach((placement) => {
+                    customFields.setValue(memberId, placement.fieldId, this.state.cfValues[placement.fieldId]);
+                });
                 this.context.doAction('clearPopupNotification');
                 this.context.doAction('updateProfile', {email, name});
             }
         });
+    }
+
+    renderCustomFields() {
+        const rows = this.getCustomRows();
+        if (!rows.length) {
+            return null;
+        }
+        const errors = this.state.errors || {};
+        return rows.map(def => (
+            <CustomFieldInput
+                key={def.id}
+                field={def}
+                value={this.state.cfValues[def.id]}
+                errorMessage={errors[def.id] || ''}
+                onKeyDown={e => this.onKeyDown(e)}
+                onChange={value => this.handleCustomChange(def.id, value)}
+            />
+        ));
     }
 
     renderSaveButton() {
@@ -173,6 +250,7 @@ export default class AccountProfilePage extends React.Component {
                     onChange={(e, field) => this.handleInputChange(e, field)}
                     onKeyDown={(e, field) => this.onKeyDown(e, field)}
                 />
+                {this.renderCustomFields()}
             </div>
         );
     }
