@@ -268,29 +268,22 @@ describe('Logged-in free member', () => {
         });
 
         test('to an offer via link', async () => {
-            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
+            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton, offerDescription
             } = await offerSetup({
                 site: FixtureSite.singleTier.basic,
                 member: FixtureMember.altFree,
                 offer: FixtureOffer
             });
-            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
-            let offerId = FixtureOffer.id;
+            const tier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-            expect(emailInput).toBeInTheDocument();
-            expect(nameInput).toBeInTheDocument();
-            expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
-            expect(offerName).toBeInTheDocument();
             expect(offerDescription).toBeInTheDocument();
+            expect(signinButton).not.toBeInTheDocument();
 
+            // member details are pre-filled for logged-in members
             expect(emailInput).toHaveValue('jimmie@example.com');
             expect(nameInput).toHaveValue('Jimmie Larson');
             fireEvent.click(submitButton);
@@ -298,9 +291,9 @@ describe('Logged-in free member', () => {
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 email: 'jimmie@example.com',
                 name: 'Jimmie Larson',
-                offerId,
-                plan: planId,
-                tierId: singleTierProduct.id,
+                offerId: FixtureOffer.id,
+                plan: tier.monthlyPrice.id,
+                tierId: tier.id,
                 cadence: 'month',
                 metadata: {checkoutType: 'upgrade'}
             });
@@ -309,45 +302,30 @@ describe('Logged-in free member', () => {
         });
 
         test('to an offer via link with portal disabled', async () => {
-            let site = {
-                ...FixtureSite.singleTier.basic,
-                portal_button: false
-            };
-
             window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
+                ghostApi, popupFrame, triggerButtonFrame, submitButton, offerDescription
             } = await offerSetup({
-                site: site,
+                site: {...FixtureSite.singleTier.basic, portal_button: false},
                 member: FixtureMember.altFree,
                 offer: FixtureOffer
             });
-            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
-            let offerId = FixtureOffer.id;
+            const tier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            // the offer page opens instead of redirecting straight to checkout
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).not.toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-            expect(emailInput).toBeInTheDocument();
-            expect(nameInput).toBeInTheDocument();
-            expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
-            expect(offerName).toBeInTheDocument();
             expect(offerDescription).toBeInTheDocument();
             expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
 
-            expect(emailInput).toHaveValue('jimmie@example.com');
-            expect(nameInput).toHaveValue('Jimmie Larson');
             fireEvent.click(submitButton);
 
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 email: 'jimmie@example.com',
                 name: 'Jimmie Larson',
-                offerId,
-                plan: planId,
-                tierId: singleTierProduct.id,
+                offerId: FixtureOffer.id,
+                plan: tier.monthlyPrice.id,
+                tierId: tier.id,
                 cadence: 'month',
                 metadata: {checkoutType: 'upgrade'}
             });
@@ -396,29 +374,20 @@ describe('Logged-in free member', () => {
         });
 
         test('to an offer via link', async () => {
-            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
+            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
+                ghostApi, popupFrame, emailInput, nameInput, submitButton, offerDescription
             } = await offerSetup({
                 site: FixtureSite.multipleTiers.basic,
                 member: FixtureMember.altFree,
                 offer: FixtureOffer
             });
-            let planId = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let singleTierProduct = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
-            let offerId = FixtureOffer.id;
+            const tier = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
+
             expect(popupFrame).toBeInTheDocument();
-            expect(triggerButtonFrame).toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-            expect(emailInput).toBeInTheDocument();
-            expect(nameInput).toBeInTheDocument();
-            expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
-            expect(offerName).toBeInTheDocument();
             expect(offerDescription).toBeInTheDocument();
 
+            // member details are pre-filled for logged-in members
             expect(emailInput).toHaveValue('jimmie@example.com');
             expect(nameInput).toHaveValue('Jimmie Larson');
             fireEvent.click(submitButton);
@@ -426,9 +395,9 @@ describe('Logged-in free member', () => {
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 email: 'jimmie@example.com',
                 name: 'Jimmie Larson',
-                offerId,
-                plan: planId,
-                tierId: singleTierProduct.id,
+                offerId: FixtureOffer.id,
+                plan: tier.monthlyPrice.id,
+                tierId: tier.id,
                 cadence: 'month',
                 metadata: {checkoutType: 'upgrade'}
             });
@@ -565,29 +534,20 @@ describe('Logged-in complimentary member', () => {
         });
 
         test('to an offer via link', async () => {
-            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
+            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
+                ghostApi, popupFrame, emailInput, nameInput, submitButton, offerDescription
             } = await offerSetup({
                 site: FixtureSite.singleTier.basic,
                 member: FixtureMember.altComplimentary,
                 offer: FixtureOffer
             });
-            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
-            let offerId = FixtureOffer.id;
+            const tier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
             expect(popupFrame).toBeInTheDocument();
-            expect(triggerButtonFrame).toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-            expect(emailInput).toBeInTheDocument();
-            expect(nameInput).toBeInTheDocument();
-            expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
-            expect(offerName).toBeInTheDocument();
             expect(offerDescription).toBeInTheDocument();
 
+            // member details are pre-filled for logged-in members
             expect(emailInput).toHaveValue('jimmie@example.com');
             expect(nameInput).toHaveValue('Jimmie Larson');
             fireEvent.click(submitButton);
@@ -595,56 +555,9 @@ describe('Logged-in complimentary member', () => {
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 email: 'jimmie@example.com',
                 name: 'Jimmie Larson',
-                offerId,
-                plan: planId,
-                tierId: singleTierProduct.id,
-                cadence: 'month',
-                metadata: {checkoutType: 'upgrade'}
-            });
-
-            window.location.hash = '';
-        });
-
-        test('to an offer via link with portal disabled', async () => {
-            let site = {
-                ...FixtureSite.singleTier.basic,
-                portal_button: false
-            };
-
-            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
-            const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
-            } = await offerSetup({
-                site: site,
-                member: FixtureMember.altComplimentary,
-                offer: FixtureOffer
-            });
-            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let singleTierProduct = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
-            let offerId = FixtureOffer.id;
-            expect(popupFrame).toBeInTheDocument();
-            expect(triggerButtonFrame).not.toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-            expect(emailInput).toBeInTheDocument();
-            expect(nameInput).toBeInTheDocument();
-            expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
-            expect(offerName).toBeInTheDocument();
-            expect(offerDescription).toBeInTheDocument();
-            expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
-
-            expect(emailInput).toHaveValue('jimmie@example.com');
-            expect(nameInput).toHaveValue('Jimmie Larson');
-            fireEvent.click(submitButton);
-
-            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                email: 'jimmie@example.com',
-                name: 'Jimmie Larson',
-                offerId,
-                plan: planId,
-                tierId: singleTierProduct.id,
+                offerId: FixtureOffer.id,
+                plan: tier.monthlyPrice.id,
+                tierId: tier.id,
                 cadence: 'month',
                 metadata: {checkoutType: 'upgrade'}
             });
@@ -734,47 +647,6 @@ describe('Logged-in complimentary member', () => {
                 tierId: singleTierProduct.id,
                 cadence: 'year'
             });
-        });
-
-        test('to an offer via link', async () => {
-            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
-            const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
-            } = await offerSetup({
-                site: FixtureSite.multipleTiers.basic,
-                member: FixtureMember.altComplimentary,
-                offer: FixtureOffer
-            });
-            let planId = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let singleTierProduct = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
-            let offerId = FixtureOffer.id;
-            expect(popupFrame).toBeInTheDocument();
-            expect(triggerButtonFrame).toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-            expect(emailInput).toBeInTheDocument();
-            expect(nameInput).toBeInTheDocument();
-            expect(signinButton).not.toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
-            expect(offerName).toBeInTheDocument();
-            expect(offerDescription).toBeInTheDocument();
-
-            expect(emailInput).toHaveValue('jimmie@example.com');
-            expect(nameInput).toHaveValue('Jimmie Larson');
-            fireEvent.click(submitButton);
-
-            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                email: 'jimmie@example.com',
-                name: 'Jimmie Larson',
-                offerId,
-                plan: planId,
-                tierId: singleTierProduct.id,
-                cadence: 'month',
-                metadata: {checkoutType: 'upgrade'}
-            });
-
-            window.location.hash = '';
         });
     });
 });

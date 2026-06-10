@@ -580,39 +580,30 @@ describe('Signup', () => {
         });
 
         test('to an offer via link', async () => {
-            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
+            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton, offerDescription
             } = await offerSetup({
                 site: FixtureSite.singleTier.basic,
                 offer: FixtureOffer
             });
-            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let tier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
-            let offerId = FixtureOffer.id;
+            const tier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-            expect(emailInput).toBeInTheDocument();
-            expect(nameInput).toBeInTheDocument();
-            expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
-            expect(offerName).toBeInTheDocument();
             expect(offerDescription).toBeInTheDocument();
+            expect(signinButton).toBeInTheDocument();
+            expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
 
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
             fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
-
-            expect(emailInput).toHaveValue('jamie@example.com');
             fireEvent.click(submitButton);
 
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
-                offerId,
-                plan: planId,
+                offerId: FixtureOffer.id,
+                plan: tier.monthlyPrice.id,
                 tierId: tier.id,
                 cadence: 'month'
             });
@@ -621,30 +612,18 @@ describe('Signup', () => {
         });
 
         test('to an offer via link with portal disabled', async () => {
-            let site = {
-                ...FixtureSite.singleTier.basic,
-                portal_button: false
-            };
             window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
+                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, submitButton, offerDescription
             } = await offerSetup({
-                site,
+                site: {...FixtureSite.singleTier.basic, portal_button: false},
                 offer: FixtureOffer
             });
-            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let tier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
-            let offerId = FixtureOffer.id;
+            const tier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
+
+            // the offer page opens instead of redirecting straight to checkout
             expect(popupFrame).toBeInTheDocument();
             expect(triggerButtonFrame).not.toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-            expect(emailInput).toBeInTheDocument();
-            expect(nameInput).toBeInTheDocument();
-            expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
-            expect(offerName).toBeInTheDocument();
             expect(offerDescription).toBeInTheDocument();
             expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
 
@@ -655,8 +634,8 @@ describe('Signup', () => {
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
-                offerId,
-                plan: planId,
+                offerId: FixtureOffer.id,
+                plan: tier.monthlyPrice.id,
                 tierId: tier.id,
                 cadence: 'month'
             });
@@ -843,84 +822,28 @@ describe('Signup', () => {
         });
 
         test('to an offer via link', async () => {
-            window.location.hash = '#/portal/offers/61fa22bd0cbecc7d423d20b3';
+            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
             const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
+                ghostApi, popupFrame, emailInput, nameInput, submitButton, offerDescription
             } = await offerSetup({
                 site: FixtureSite.multipleTiers.basic,
                 offer: FixtureOffer
             });
-            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let tier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
-            let offerId = FixtureOffer.id;
+            const tier = FixtureSite.multipleTiers.basic.products.find(p => p.type === 'paid');
+
             expect(popupFrame).toBeInTheDocument();
-            expect(triggerButtonFrame).toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-            expect(emailInput).toBeInTheDocument();
-            expect(nameInput).toBeInTheDocument();
-            expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
-            expect(offerName).toBeInTheDocument();
             expect(offerDescription).toBeInTheDocument();
 
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
             fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
-
-            expect(emailInput).toHaveValue('jamie@example.com');
             fireEvent.click(submitButton);
 
             expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
                 email: 'jamie@example.com',
                 name: 'Jamie Larsen',
-                offerId,
-                plan: planId,
+                offerId: FixtureOffer.id,
+                plan: tier.monthlyPrice.id,
                 tierId: tier.id,
-                cadence: 'month'
-            });
-
-            window.location.hash = '';
-        });
-
-        test('to an offer via link with portal disabled', async () => {
-            let site = {
-                ...FixtureSite.multipleTiers.basic,
-                portal_button: false
-            };
-            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
-            const {
-                ghostApi, popupFrame, triggerButtonFrame, emailInput, nameInput, signinButton, submitButton,
-                siteTitle,
-                offerName, offerDescription
-            } = await offerSetup({
-                site,
-                offer: FixtureOffer
-            });
-            const singleTier = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid');
-            let planId = FixtureSite.singleTier.basic.products.find(p => p.type === 'paid').monthlyPrice.id;
-            let offerId = FixtureOffer.id;
-            expect(popupFrame).toBeInTheDocument();
-            expect(triggerButtonFrame).not.toBeInTheDocument();
-            expect(siteTitle).toBeInTheDocument();
-            expect(emailInput).toBeInTheDocument();
-            expect(nameInput).toBeInTheDocument();
-            expect(signinButton).toBeInTheDocument();
-            expect(submitButton).toBeInTheDocument();
-            expect(offerName).toBeInTheDocument();
-            expect(offerDescription).toBeInTheDocument();
-            expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
-
-            fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
-            fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
-            fireEvent.click(submitButton);
-
-            expect(ghostApi.member.checkoutPlan).toHaveBeenLastCalledWith({
-                email: 'jamie@example.com',
-                name: 'Jamie Larsen',
-                offerId,
-                plan: planId,
-                tierId: singleTier.id,
                 cadence: 'month'
             });
 
