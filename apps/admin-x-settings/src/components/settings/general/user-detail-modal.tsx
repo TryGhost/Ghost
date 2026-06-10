@@ -337,12 +337,12 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             buttonsDisabled={okProps.disabled}
             cancelLabel='Close'
             dirty={saveState === 'unsaved'}
+            hideXOnMobile={true}
             okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
             size={canAccessSettings(currentUser) ? 'md' : 'bleed'}
             stickyFooter={true}
             testId='user-detail-modal'
-            topRightContent={<></>} // override the default "×" icon.
             width={canAccessSettings(currentUser) ? 600 : 'full'}
             onOk={async () => {
                 await (handleSave({fakeWhenUnchanged: true}));
