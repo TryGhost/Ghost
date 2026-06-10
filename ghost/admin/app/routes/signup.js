@@ -20,6 +20,7 @@ class SignupDetails extends EmberObject.extend(ValidationEngine) {
 }
 
 export default class SignupRoute extends UnauthenticatedRoute {
+    @service feature;
     @service ghostPaths;
     @service notifications;
     @service session;
@@ -36,6 +37,12 @@ export default class SignupRoute extends UnauthenticatedRoute {
     }
 
     model(params) {
+        // The React signup screen (authX) validates the invite token itself,
+        // so skip the duplicate token/invitation API checks here.
+        if (this.feature.authX) {
+            return SignupDetails.create();
+        }
+
         let signupDetails = SignupDetails.create();
         let re = /^(?:[A-Za-z0-9_-]{4})*(?:[A-Za-z0-9_-]{2}|[A-Za-z0-9_-]{3})?$/;
         let email,

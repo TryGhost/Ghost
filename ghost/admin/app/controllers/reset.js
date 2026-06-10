@@ -8,6 +8,7 @@ import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 export default class ResetController extends Controller.extend(ValidationEngine) {
+    @service feature;
     @service ghostPaths;
     @service notifications;
     @service session;

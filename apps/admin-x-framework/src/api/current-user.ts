@@ -18,7 +18,14 @@ export const useCurrentUser = () => {
     const result = useQuery({
         queryKey: currentUserQueryKey,
         queryFn: () => fetchApi<UsersResponseType>(currentUserUrl),
-        select: data => data.users[0]
+        select: data => data.users[0],
+        // Signed-out state: every createQuery subscribes to this query via
+        // usePermission, so a screen full of queries mounting against the
+        // errored (403) bootstrap query must not retrigger it — the default
+        // retryOnMount refetch caused an infinite mount/refetch/unmount loop
+        // on the React auth screens. Auth flows do a full reload after login,
+        // which refetches this naturally.
+        retryOnMount: false
     });
 
     useEffect(() => {

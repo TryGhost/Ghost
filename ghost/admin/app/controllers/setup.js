@@ -15,6 +15,7 @@ export default class SetupController extends Controller.extend(ValidationEngine)
     @controller application;
 
     @service ajax;
+    @service feature;
     @service ghostPaths;
     @service notifications;
     @service onboarding;

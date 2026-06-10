@@ -55,8 +55,12 @@ export function defineTwoFactorAuthTests() {
     // Resolving the shared authenticated page applies labs flags (set via
     // test.use) server-wide before the isolated contexts are created.
     test.beforeEach(async ({page}) => {
-        const loginPage = new LoginPage(page);
-        await loginPage.goto();
+        // Resolving the shared page fixture applies labs flags server-wide.
+        // Park it on a neutral authenticated URL: visiting /signin while
+        // signed in triggers a client-side redirect whose async navigation
+        // can clobber the test's own first navigation (the React screens
+        // redirect via an effect, unlike Ember's synchronous beforeModel).
+        await page.goto('/ghost/');
     });
 
     test('authenticates with 2FA token', async ({browser, baseURL, ghostAccountOwner}) => {

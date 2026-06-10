@@ -5,6 +5,7 @@ Object {
   "site": Object {
     "accent_color": "#FF1A75",
     "allow_external_signup": true,
+    "authX": true,
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
@@ -36,6 +37,7 @@ Object {
   "site": Object {
     "accent_color": "#FF1A75",
     "allow_external_signup": false,
+    "authX": true,
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,
@@ -67,6 +69,7 @@ Object {
   "site": Object {
     "accent_color": "#FF1A75",
     "allow_external_signup": false,
+    "authX": true,
     "cover_image": "https://static.ghost.org/v5.0.0/images/publication-cover.jpg",
     "description": "Thoughts, stories and ideas",
     "icon": null,

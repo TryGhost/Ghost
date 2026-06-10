@@ -17,6 +17,7 @@ export default class SigninController extends Controller.extend(ValidationEngine
     @controller application;
 
     @service ajax;
+    @service feature;
     @service ghostPaths;
     @service notifications;
     @service router;

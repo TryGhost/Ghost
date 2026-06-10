@@ -134,6 +134,53 @@ Also: auth screens render pre-authentication, where the labs `/config`
 endpoint isn't available — the flag gate for auth screens needs a pre-auth
 flag source (see implementation notes).
 
+#### Slice 4 implementation notes (React auth screens behind `authX`)
+
+- **Pre-auth flag distribution:** `authX` is added to the public site payload
+  (`public-config/site.js` + the site output serializer), so it's also visible
+  on the members `/api/site` endpoint (same controller/serializer). Ember's
+  `config-manager.fetchUnauthenticated` copies it onto `config`, which the
+  `@feature` decorator prefers — one flag serves both shells.
+- **Post-auth bootstrap is a full page reload in place** (`window.location.reload()`
+  on the auth screen): the hidden Ember app must boot authenticated for the
+  remaining Ember screens (editor). The signin deep link
+  (`ghost-signin-redirect`) is deliberately NOT consumed before the reload —
+  after boot, the auth gate's `AuthenticatedRedirect` reads it once into
+  state, clears it, and navigates with `window.location.replace('#/<target>')`.
+  Two hard-won constraints baked into that design: (a) the target must be
+  captured once — query refetches re-render the gate after the key is cleared,
+  and re-reading would bounce home instead of to the deep link; (b) the
+  redirect must be a real location hash change, not a React Router
+  `<Navigate>` — router pushState fires no hashchange, so the parked Ember
+  app would never wake for Ember-owned targets and the content area stays
+  empty. Signout likewise DELETEs the session then reloads to `#/signin`.
+- **UX deviations from Ember (deliberate):**
+  - Signup prefills the invite email (decoded from the token) as a read-only
+    field; Ember left it blank so Chrome would remember the email/password
+    combo.
+  - Reset/signup API errors render in the on-screen flow notification instead
+    of Ember's floating alert notifications. The "you're already signed in"
+    warn alerts on signup/reset are replaced by a plain redirect to `/` (same
+    destination, no alert).
+  - The reset screen drops the legacy `emailVerificationToken` re-auth branch:
+    current core always mints a verified session in the reset response.
+  - The signin button keeps its "Sign in →" label on failure (Ember's task
+    button flips to "Retry"); e2e relies on the flow notification, not the
+    label.
+  - `/signout` is treated as an auth path by the redirect guard and is never
+    stored as (or redirected back to) a signin deep link; Ember could store
+    `/signout` as a redirect target.
+- **Ember-side gating:** templates of signin/signin-verify/signup/reset/setup
+  are wrapped in `{{#unless this.feature.authX}}`; the signup model hook,
+  setup `beforeModel` and signout `afterModel` early-return when the flag is
+  on (skips duplicate API checks and a racing double session-invalidate).
+  Both shared route bases park the hidden Ember app when the flag is on:
+  `AuthenticatedRoute.beforeModel` aborts signed-out transitions (its
+  `replaceLocation` fallback would wipe the deep-link URL before React stores
+  it), and `UnauthenticatedRoute.beforeModel` aborts as well — its
+  `prohibitAuthentication('home')` ran in the hidden app after the post-signin
+  reload and rewrote the shared URL, clobbering React's deep-link redirect.
+
 ### Upstream issues discovered during slice-2 review (pre-existing, NOT introduced here)
 
 - **Server-side bulk-action authorization gap:** `DELETE /ghost/api/admin/posts/?filter=...`

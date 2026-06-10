@@ -56,7 +56,8 @@ const PRIVATE_FEATURES = [
     'pictureImageFormats',
     'smarterCounts',
     'llmsTxt',
-    'getHelperDeduplication'
+    'getHelperDeduplication',
+    'authX'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

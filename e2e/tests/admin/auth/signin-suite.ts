@@ -18,8 +18,12 @@ export function defineSigninTests() {
     // Resolving the shared authenticated page applies labs flags (set via
     // test.use) server-wide before tests that only use isolated contexts.
     test.beforeEach(async ({page}) => {
-        const loginPage = new LoginPage(page);
-        await loginPage.goto();
+        // Resolving the shared page fixture applies labs flags server-wide.
+        // Park it on a neutral authenticated URL: visiting /signin while
+        // signed in triggers a client-side redirect whose async navigation
+        // can clobber the test's own first navigation (the React screens
+        // redirect via an effect, unlike Ember's synchronous beforeModel).
+        await page.goto('/ghost/');
     });
 
     async function logout(page: Page) {

@@ -9,6 +9,7 @@ import {tracked} from '@glimmer/tracking';
 
 export default class SignupController extends Controller {
     @service ajax;
+    @service feature;
     @service ghostPaths;
     @service notifications;
     @service session;
@@ -90,17 +91,12 @@ export default class SignupController extends Controller {
 
     _completeInvitation() {
         const authUrl = this.ghostPaths.url.api('authentication', 'invitation');
-        const signupDetails = this.signupDetails;
+        const {name, email, password, token} = this.signupDetails;
 
         return this.ajax.post(authUrl, {
             dataType: 'json',
             data: {
-                invitation: [{
-                    name: signupDetails.name,
-                    email: signupDetails.email,
-                    password: signupDetails.password,
-                    token: signupDetails.token
-                }]
+                invitation: [{name, email, password, token}]
             }
         });
     }

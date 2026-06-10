@@ -70,6 +70,7 @@ export default class FeatureService extends Service {
     @feature('tagDetailsX') tagDetailsX;
     @feature('postsListX') postsListX;
     @feature('memberDetailsX') memberDetailsX;
+    @feature('authX') authX;
     @feature('commentModeration') commentModeration;
     _user = null;
 

@@ -33,7 +33,9 @@ const handleResponse = async (response: Response) => {
         }
     } else if (response.status === 204) {
         return;
-    } else if (response.headers.get('content-type')?.includes('text/csv')) {
+    } else if (!response.headers.get('content-type')?.includes('json')) {
+        // Some endpoints respond with plain text (e.g. session creation
+        // responds 201 'Created', CSV exports respond with text/csv)
         return await response.text();
     } else {
         return await response.json();

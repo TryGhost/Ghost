@@ -80,6 +80,10 @@ const features: Feature[] = [{
     description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
     flag: 'llmsTxt'
 }, {
+    title: 'Auth X',
+    description: 'Enables the new React authentication screens',
+    flag: 'authX'
+}, {
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'

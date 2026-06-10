@@ -10,6 +10,9 @@ import { PostsAppContextProvider, routes as postRoutes } from "@tryghost/posts/a
 import { GlobalDataProvider, routes as statsRoutes } from "@tryghost/stats/api";
 import MyProfileRedirect from "./my-profile-redirect";
 
+// Auth (signin, signout, signup, reset, setup)
+import { ResetRoute, SetupRoute, SigninRoute, SigninVerifyRoute, SignoutRoute, SignupRoute } from "./auth/auth-routes";
+
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
@@ -28,11 +31,6 @@ const EMBER_ROUTES: string[] = [
     "/dashboard",
     "/site",
     "/launch",
-    "/setup",
-    "/signin/*",
-    "/signout",
-    "/signup/*",
-    "/reset/*",
     "/pro/*",
     "/posts/analytics/:postId/mentions",
     "/posts/analytics/:postId/debug",
@@ -138,6 +136,40 @@ export const routes: RouteObject[] = [
                     </OnboardingRedirect>
                 ),
                 children: statsRoutes,
+            },
+            {
+                // React auth screens when the authX labs flag is on, Ember
+                // fallbacks otherwise. They must stay reachable in
+                // force-upgrade mode (like the Ember screens were via
+                // EMBER_ROUTES), hence the allowInForceUpgrade handle.
+                path: "/signin",
+                Component: SigninRoute,
+                handle: emberFallbackHandle,
+            },
+            {
+                path: "/signin/verify",
+                Component: SigninVerifyRoute,
+                handle: emberFallbackHandle,
+            },
+            {
+                path: "/signout",
+                Component: SignoutRoute,
+                handle: emberFallbackHandle,
+            },
+            {
+                path: "/signup/:token",
+                Component: SignupRoute,
+                handle: emberFallbackHandle,
+            },
+            {
+                path: "/reset/:token",
+                Component: ResetRoute,
+                handle: emberFallbackHandle,
+            },
+            {
+                path: "/setup",
+                Component: SetupRoute,
+                handle: emberFallbackHandle,
             },
             {
                 path: "setup/onboarding",
