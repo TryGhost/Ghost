@@ -39,14 +39,8 @@ import type {PendingBulkAction} from './components/bulk-action-modals';
 import type {Post} from '@tryghost/admin-x-framework/api/posts';
 import type {PostsContextMenuAction} from './components/posts-context-menu';
 import type {PostsListAnalyticsContext} from './components/posts-list-item-analytics';
-import type {PostsResource, PostsSectionKey} from './posts-query-params';
+import type {PostsResource} from './posts-query-params';
 import type {PostsSelection} from './posts-selection';
-
-const SECTION_LABELS: Record<PostsSectionKey, string> = {
-    scheduled: 'Scheduled',
-    drafts: 'Drafts',
-    published: 'Published'
-};
 
 function isEditableTarget(target: EventTarget | null): boolean {
     if (!(target instanceof HTMLElement)) {
@@ -69,6 +63,7 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
     const selectionEnabled = !!currentUser && !restricted;
     const canDelete = !!currentUser && (isOwnerUser(currentUser) || isAdminUser(currentUser));
     const membersEnabled = getSettingValue<string>(settingsData?.settings ?? null, 'members_signup_access') !== 'none';
+    const timezone = getSettingValue<string>(settingsData?.settings ?? null, 'timezone') ?? 'Etc/UTC';
 
     const params = useMemo(() => parsePostsListParams(searchParams, resource), [searchParams, resource]);
     const queries = useMemo(() => getPostsListQueries({
@@ -359,13 +354,10 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
                         </div>
                     ) : (
                         <div className="w-full" data-testid="posts-list">
+                            {/* Ember parity: sections render in order (scheduled,
+                                drafts, published) with no group headers */}
                             {sections.map(section => section.posts.length > 0 && (
                                 <section key={section.key}>
-                                    {params.type === null && sections.length > 1 && (
-                                        <div className="border-b px-2 pt-6 pb-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-                                            {SECTION_LABELS[section.key]}
-                                        </div>
-                                    )}
                                     {section.posts.map(post => (
                                         <PostsListItem
                                             key={post.id}
@@ -374,6 +366,7 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
                                             resource={resource}
                                             selected={selectionEnabled && isSelected(selection, post.id)}
                                             selectionEnabled={selectionEnabled}
+                                            timezone={timezone}
                                             onContextMenu={handleRowContextMenu}
                                             onOpen={openInEditor}
                                             onShiftSelect={handleShiftSelect}

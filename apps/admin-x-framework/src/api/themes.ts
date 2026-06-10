@@ -3,6 +3,17 @@ import {customThemeSettingsDataType} from './custom-theme-settings';
 
 // Types
 
+// Custom template of the active theme (gscan's templates.custom entries,
+// attached to the active theme by ghost/core's themes to-json). Templates
+// with a `slug` are slug-bound (custom-about.hbs); the rest are selectable
+// in the post settings menu's template dropdown.
+export type ThemeTemplate = {
+    filename: string;
+    name?: string;
+    for?: string[];
+    slug?: string | null;
+}
+
 export type Theme = {
     active: boolean;
     name: string;
@@ -14,7 +25,7 @@ export type Theme = {
             name?: string;
         }
     };
-    templates?: string[];
+    templates?: ThemeTemplate[];
 }
 
 export type InstalledTheme = Theme & {

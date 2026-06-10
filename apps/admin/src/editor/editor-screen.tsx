@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Suspense, lazy, useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { useParams } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
@@ -17,7 +17,12 @@ import { getEditorAccessRedirect } from "./editor-access";
 import { EditorKoenig, type KoenigEditorAPI } from "./editor-koenig";
 import { EditorPostStatus } from "./publish/post-status";
 import { PublishManagement } from "./publish/publish-management";
-import { SettingsMenu } from "./settings-menu/settings-menu";
+// Lazy: the settings menu pulls in admin-x-design-system + CodeMirror —
+// loading that graph eagerly added seconds to the editor's first render
+// (Ember's PSM also only loads when opened)
+const SettingsMenu = lazy(() =>
+    import("./settings-menu/settings-menu").then(m => ({ default: m.SettingsMenu }))
+);
 import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
 import { createNewPostSnapshot, toSnapshot, useEditor } from "./use-editor";
 import { useLeaveGuard } from "./use-leave-guard";
@@ -74,7 +79,7 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
 
         if (!postId) {
             loadedKeyRef.current = loadedKey;
-            loadPost(createNewPostSnapshot());
+            loadPost(createNewPostSnapshot(resource));
             return;
         }
 
@@ -250,7 +255,7 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
                         </h2>
                     </div>
                     <div className="px-6 pb-10">
-                        <SettingsMenu editor={editor} resource={resource} />
+                        <Suspense fallback={null}><SettingsMenu editor={editor} resource={resource} /></Suspense>
                     </div>
                 </aside>
             ) : null}

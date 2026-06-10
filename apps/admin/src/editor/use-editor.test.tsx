@@ -77,6 +77,23 @@ function makeSnapshot(overrides: Partial<PostSnapshot> = {}): PostSnapshot {
     return { ...toSnapshot(makeFullPost()), ...overrides };
 }
 
+// PSM settings fields every save body carries unconditionally
+const DEFAULT_BODY_SETTINGS = {
+    featured: false,
+    custom_template: null,
+    canonical_url: null,
+    meta_title: null,
+    meta_description: null,
+    og_image: null,
+    og_title: null,
+    og_description: null,
+    twitter_image: null,
+    twitter_title: null,
+    twitter_description: null,
+    codeinjection_head: null,
+    codeinjection_foot: null,
+};
+
 async function flushSaves() {
     // let the mutateAsync promise chain settle
     await act(async () => {
@@ -143,6 +160,9 @@ describe("useEditor", () => {
                 tags: [],
                 slug: "my-post",
                 updated_at: "2026-01-01T00:00:00.000Z",
+                ...DEFAULT_BODY_SETTINGS,
+                visibility: "public",
+                tiers: [],
             },
         });
 
@@ -217,6 +237,7 @@ describe("useEditor", () => {
                 published_at: null,
                 feature_image: null,
                 tags: [],
+                ...DEFAULT_BODY_SETTINGS,
             },
         });
         expect(mocks.editPost).not.toHaveBeenCalled();

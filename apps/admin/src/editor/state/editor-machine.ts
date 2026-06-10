@@ -30,6 +30,103 @@ export interface SaveError {
     message: string;
 }
 
+/** Minimal id+name reference for relations the PSM edits (tiers, authors). */
+export interface NamedRef {
+    id: string;
+    name: string;
+}
+
+/**
+ * PSM settings fields beyond the core content fields. Grouped into one record
+ * so scratch handling, dirty detection and the post-save resync stay generic
+ * (Ember models these as individual post attributes + `*Scratch` aliases).
+ */
+export interface PostSettings {
+    /** null = not set yet (new posts inherit the site's default visibility). */
+    visibility: string | null;
+    /** Selected tiers; only meaningful when visibility === 'tiers'. */
+    tiers: NamedRef[];
+    /** Post authors in order (the first author is the primary author). */
+    authors: NamedRef[];
+    featured: boolean;
+    customTemplate: string | null;
+    canonicalUrl: string | null;
+    metaTitle: string | null;
+    metaDescription: string | null;
+    ogImage: string | null;
+    ogTitle: string | null;
+    ogDescription: string | null;
+    twitterImage: string | null;
+    twitterTitle: string | null;
+    twitterDescription: string | null;
+    codeinjectionHead: string | null;
+    codeinjectionFoot: string | null;
+    /** Pages only; null = not applicable (posts never send the field). */
+    showTitleAndFeatureImage: boolean | null;
+}
+
+export const POST_SETTINGS_KEYS = [
+    "visibility",
+    "tiers",
+    "authors",
+    "featured",
+    "customTemplate",
+    "canonicalUrl",
+    "metaTitle",
+    "metaDescription",
+    "ogImage",
+    "ogTitle",
+    "ogDescription",
+    "twitterImage",
+    "twitterTitle",
+    "twitterDescription",
+    "codeinjectionHead",
+    "codeinjectionFoot",
+    "showTitleAndFeatureImage",
+] as const satisfies ReadonlyArray<keyof PostSettings>;
+
+export function createDefaultPostSettings(): PostSettings {
+    return {
+        visibility: null,
+        tiers: [],
+        authors: [],
+        featured: false,
+        customTemplate: null,
+        canonicalUrl: null,
+        metaTitle: null,
+        metaDescription: null,
+        ogImage: null,
+        ogTitle: null,
+        ogDescription: null,
+        twitterImage: null,
+        twitterTitle: null,
+        twitterDescription: null,
+        codeinjectionHead: null,
+        codeinjectionFoot: null,
+        showTitleAndFeatureImage: null,
+    };
+}
+
+function clonePostSettings(settings: PostSettings): PostSettings {
+    return {
+        ...settings,
+        tiers: settings.tiers.map(tier => ({ ...tier })),
+        authors: settings.authors.map(author => ({ ...author })),
+    };
+}
+
+/** Relation lists compare by id sequence — reorders ARE dirty (primary tier/author). */
+function settingsValueEqual(a: PostSettings[keyof PostSettings], b: PostSettings[keyof PostSettings]): boolean {
+    if (Array.isArray(a) && Array.isArray(b)) {
+        return a.map(ref => ref.id).join(",") === b.map(ref => ref.id).join(",");
+    }
+    return a === b;
+}
+
+export function postSettingsEqual(a: PostSettings, b: PostSettings): boolean {
+    return POST_SETTINGS_KEYS.every(key => settingsValueEqual(a[key], b[key]));
+}
+
 /**
  * Minimal local snapshot of the post as last persisted. Deliberately not the
  * framework Post type — the machine only models the fields it reasons about.
@@ -47,6 +144,8 @@ export interface PostSnapshot {
     publishedAt: string | null;
     featureImage: string | null;
     updatedAt: string | null;
+    /** PSM settings fields (visibility, authors, meta data, ...). */
+    settings: PostSettings;
 }
 
 /** What the caller should send to the API when executing a `save/perform` effect. */
@@ -60,6 +159,7 @@ export interface SavePayload {
     slug: string;
     publishedAt: string | null;
     featureImage: string | null;
+    settings: PostSettings;
 }
 
 /**
@@ -81,6 +181,7 @@ export interface SentSettingsFields {
     slug: string;
     publishedAt: string | null;
     featureImage: string | null;
+    settings: PostSettings;
 }
 
 export type SavePhase =
@@ -115,6 +216,12 @@ export interface EditorState {
     slugScratch: string;
     publishedAtScratch: string | null;
     featureImageScratch: string | null;
+    /**
+     * PSM settings scratch (visibility, authors, template, meta data, code
+     * injection, ...). Same save-immediately semantics as the fields above:
+     * written on commit and resynced from the server snapshot after saves.
+     */
+    settingsScratch: PostSettings;
     /** Desired status, applied only on manual save (Ember willPublish/willSchedule). */
     willPublish: boolean;
     willSchedule: boolean;
@@ -129,6 +236,7 @@ export type EditorEvent =
     | { type: "POST_LOADED"; post: PostSnapshot }
     | { type: "SCRATCH_CHANGED"; field: "title" | "lexical" | "customExcerpt" | "slug" | "publishedAt" | "featureImage"; value: string | null }
     | { type: "TAGS_CHANGED"; tagNames: string[] }
+    | { type: "SETTINGS_CHANGED"; settings: Partial<PostSettings> }
     | { type: "SET_SAVE_TYPE"; saveType: "publish" | "schedule" | "draft" }
     | {
         type: "SAVE_REQUESTED";
@@ -174,6 +282,7 @@ export function createInitialState(): EditorState {
         slugScratch: "",
         publishedAtScratch: null,
         featureImageScratch: null,
+        settingsScratch: createDefaultPostSettings(),
         willPublish: false,
         willSchedule: false,
         save: { status: "idle" },
@@ -253,7 +362,8 @@ export function hasDirtyAttributes(state: EditorState): boolean {
     return state.customExcerptScratch !== post.customExcerpt
         || state.slugScratch !== post.slug
         || state.publishedAtScratch !== post.publishedAt
-        || state.featureImageScratch !== post.featureImage;
+        || state.featureImageScratch !== post.featureImage
+        || !postSettingsEqual(state.settingsScratch, post.settings);
 }
 
 /* Leave decision ------------------------------------------------------------*/
@@ -351,6 +461,23 @@ function computeNextStatus(state: EditorState, kind: SaveKind, pastScheduledTime
     return "draft";
 }
 
+/**
+ * Per-key analog of the slug/publishedAt/featureImage resync in
+ * SAVE_SUCCEEDED: a settings field re-syncs from the persisted snapshot only
+ * when the scratch still holds the value the save sent — edits made while
+ * the save was in flight must survive.
+ */
+function resyncSettingsScratch(scratch: PostSettings, sent: PostSettings, persisted: PostSettings): PostSettings {
+    const next = clonePostSettings(scratch);
+    for (const key of POST_SETTINGS_KEYS) {
+        if (settingsValueEqual(scratch[key], sent[key])) {
+            // the per-key loop can't preserve the key<->value type pairing
+            (next as Record<string, PostSettings[keyof PostSettings]>)[key] = persisted[key];
+        }
+    }
+    return clonePostSettings(next);
+}
+
 /* Transition -----------------------------------------------------------------*/
 
 function noop(state: EditorState): TransitionResult {
@@ -384,6 +511,7 @@ function startSave(state: EditorState, kind: SaveKind, pastScheduledTime: boolea
         slug: state.slugScratch,
         publishedAt: state.publishedAtScratch,
         featureImage: state.featureImageScratch,
+        settings: clonePostSettings(state.settingsScratch),
     };
 
     return {
@@ -399,6 +527,7 @@ function startSave(state: EditorState, kind: SaveKind, pastScheduledTime: boolea
                     slug: state.slugScratch,
                     publishedAt: state.publishedAtScratch,
                     featureImage: state.featureImageScratch,
+                    settings: clonePostSettings(state.settingsScratch),
                 },
                 queued: null,
             },
@@ -425,6 +554,7 @@ export function transition(state: EditorState, event: EditorEvent): TransitionRe
                     slugScratch: post.slug,
                     publishedAtScratch: post.publishedAt,
                     featureImageScratch: post.featureImage,
+                    settingsScratch: clonePostSettings(post.settings),
                     willPublish: post.status === "published",
                     willSchedule: post.status === "scheduled",
                 },
@@ -481,6 +611,19 @@ export function transition(state: EditorState, event: EditorEvent): TransitionRe
                 return noop(state);
             }
             return noop({ ...state, tagNamesScratch: [...event.tagNames] });
+        }
+
+        case "SETTINGS_CHANGED": {
+            if (!state.post) {
+                return noop(state);
+            }
+            // PSM settings commits never schedule autosaves: callers request
+            // an explicit manual save for existing posts and defer the save
+            // for new posts (Ember's per-field savePostTask pattern)
+            return noop({
+                ...state,
+                settingsScratch: clonePostSettings({ ...state.settingsScratch, ...event.settings }),
+            });
         }
 
         case "SET_SAVE_TYPE": {
@@ -564,6 +707,7 @@ export function transition(state: EditorState, event: EditorEvent): TransitionRe
                 slugScratch: state.slugScratch === sent.slug ? post.slug : state.slugScratch,
                 publishedAtScratch: state.publishedAtScratch === sent.publishedAt ? post.publishedAt : state.publishedAtScratch,
                 featureImageScratch: state.featureImageScratch === sent.featureImage ? post.featureImage : state.featureImageScratch,
+                settingsScratch: resyncSettingsScratch(state.settingsScratch, sent.settings, post.settings),
                 // re-derive intents from the persisted status (Ember boundOneWay)
                 willPublish: post.status === "published",
                 willSchedule: post.status === "scheduled",

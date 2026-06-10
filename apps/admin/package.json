@@ -13,7 +13,9 @@
     "typecheck": "tsc -b"
   },
   "dependencies": {
+    "@codemirror/lang-html": "6.4.11",
     "@tryghost/activitypub": "workspace:*",
+    "@tryghost/admin-x-design-system": "workspace:*",
     "@tryghost/admin-x-framework": "workspace:*",
     "@tryghost/admin-x-settings": "workspace:*",
     "@tryghost/kg-unsplash-selector": "0.4.2",

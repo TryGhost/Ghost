@@ -214,7 +214,8 @@ flag source (see implementation notes).
   its slugify util); the actual slug value always comes from the `/slugs/` API.
 - **Tags are not sent in save payloads yet** (the machine models tag names, but
   the editor UI can't edit tags until the settings-menu slice); omitting them
-  from the PUT body leaves them untouched server-side.
+  from the PUT body leaves them untouched server-side. RESOLVED — the settings
+  menu edits tags and every save body now carries the name-only tag relation.
 - **Koenig ESM bundle doesn't inject its stylesheet** (the UMD bundle Ember
   loads does). Added a vite alias (`koenig-lexical-styles.css` →
   `dist/style.css`, which the package's exports map doesn't expose) and load it
@@ -250,11 +251,39 @@ flag source (see implementation notes).
 - **Known accepted gaps (documented, deliberate):** word count + TK counts,
   snippets, unsplash/tenor/pintura card integrations, post-history modal,
   email host-limit checks and post-send failure polling, Cmd+P/Cmd+Shift+P
-  shortcuts, PSM subviews (authors, visibility/tiers, template, meta/social,
-  code injection, featured toggle), the analytics breadcrumb (`fromAnalytics` — back link always
+  shortcuts, the analytics breadcrumb (`fromAnalytics` — back link always
   targets the list), Ember's secondary-editor conflict detection (the 409
   UpdateCollisionError toast covers the multi-tab case, without Ember's diff
   modal), and 409 recovery is a toast (no conflict-resolution modal).
+- **PSM completion pass:** access/visibility (+tier multiselect), authors,
+  template, featured + show-title-and-feature-image toggles, and the meta
+  data / X card / Facebook card / code injection subviews are ported. All
+  fields flow through the editor machine: PSM settings live in one
+  `PostSettings` record (`settingsScratch` + `SETTINGS_CHANGED`), with
+  per-field dirty detection and post-save resync mirroring the
+  slug/date/image fields. Deviations from Ember:
+  - Subviews are collapsible sections (shade `Accordion`) in the same
+    column, not Ember's slide-in wide sub-panes (same approved pattern as
+    the tag detail screen). Ember's `data-test-button` testids kept.
+  - No SERP / X / Facebook previews inside the subviews (Ember renders
+    live previews); character countdowns and placeholder fallback chains
+    are ported.
+  - Social image uploads are plain file uploads (no Unsplash), consistent
+    with the slice-1 feature-image deviation.
+  - Switching access to "Specific tiers" defers the save until at least
+    one tier is picked (Ember relies on client validation to block the
+    save); the Ember validator message is shown inline.
+  - The "theme doesn't support show title and feature image" warning is
+    not ported (needs gscan warnings via themeManagement).
+  - Email-only has no PSM toggle in Ember either (publish-flow concern) —
+    matched by omission.
+  - Code injection reuses admin-x-design-system's `CodeEditor` with the
+    lazy `@codemirror/lang-html` import (same approved pattern as
+    apps/posts tag details); apps/admin now depends on
+    `@tryghost/admin-x-design-system` + `@codemirror/lang-html`.
+  - `Theme.templates` in admin-x-framework was typed `string[]` but the
+    API returns gscan custom-template objects; fixed to `ThemeTemplate[]`
+    ({filename, name, for, slug}).
 - **Local revisions (localStorage crash recovery) deferred to slice 6**: the
   `/restore` screen is part of the long-tail slice and is the consumer of that
   data; porting the localRevisions store belongs with it.

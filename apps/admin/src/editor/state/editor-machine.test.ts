@@ -3,6 +3,7 @@ import {
     AUTOSAVE_DELAY,
     DEFAULT_TITLE,
     TIMED_SAVE_INTERVAL,
+    createDefaultPostSettings,
     createInitialState,
     getLeaveDecision,
     hasDirtyAttributes,
@@ -52,6 +53,7 @@ function makePost(overrides: Partial<PostSnapshot> = {}): PostSnapshot {
         publishedAt: null,
         featureImage: null,
         updatedAt: "2026-01-01T00:00:00.000Z",
+        settings: createDefaultPostSettings(),
         ...overrides,
     };
 }
@@ -351,6 +353,155 @@ describe("SCRATCH_CHANGED", () => {
     });
 });
 
+/* PSM settings (visibility/authors/meta data/...) ----------------------------*/
+
+describe("SETTINGS_CHANGED", () => {
+    it("ignores the event when no post is loaded", () => {
+        const { state, effects } = transition(createInitialState(), {
+            type: "SETTINGS_CHANGED",
+            settings: { featured: true },
+        });
+        expect(state.settingsScratch.featured).toBe(false);
+        expect(effects).toEqual([]);
+    });
+
+    it("merges partial updates into the settings scratch without scheduling autosaves", () => {
+        const { state, effects } = transition(loadPost(), {
+            type: "SETTINGS_CHANGED",
+            settings: { metaTitle: "SEO title", featured: true },
+        });
+        expect(state.settingsScratch.metaTitle).toBe("SEO title");
+        expect(state.settingsScratch.featured).toBe(true);
+        // untouched fields keep their values
+        expect(state.settingsScratch.visibility).toBeNull();
+        expect(effects).toEqual([]);
+    });
+
+    it("makes the state dirty (scalar field)", () => {
+        const { state } = transition(loadPost(), {
+            type: "SETTINGS_CHANGED",
+            settings: { codeinjectionHead: "<style></style>" },
+        });
+        expect(hasDirtyAttributes(state)).toBe(true);
+    });
+
+    it("makes the state dirty on relation reorder (authors compare by id sequence)", () => {
+        const authors = [{ id: "a", name: "A" }, { id: "b", name: "B" }];
+        const loaded = loadPost({ settings: { ...createDefaultPostSettings(), authors } });
+        expect(hasDirtyAttributes(loaded)).toBe(false);
+
+        const { state } = transition(loaded, {
+            type: "SETTINGS_CHANGED",
+            settings: { authors: [authors[1], authors[0]] },
+        });
+        expect(hasDirtyAttributes(state)).toBe(true);
+    });
+
+    it("is not dirty when a relation is replaced by an equivalent list", () => {
+        const tiers = [{ id: "tier-1", name: "Bronze" }];
+        const loaded = loadPost({ settings: { ...createDefaultPostSettings(), visibility: "tiers", tiers } });
+        const { state } = transition(loaded, {
+            type: "SETTINGS_CHANGED",
+            settings: { tiers: [{ id: "tier-1", name: "Bronze" }] },
+        });
+        expect(hasDirtyAttributes(state)).toBe(false);
+    });
+
+    it("copies the settings scratch into the save payload", () => {
+        const { state } = transition(loadPost(), {
+            type: "SETTINGS_CHANGED",
+            settings: { visibility: "members", featured: true, ogTitle: "OG" },
+        });
+        const { effects } = startManualSave(state);
+        expect(savePerformEffect(effects)?.payload.settings).toMatchObject({
+            visibility: "members",
+            featured: true,
+            ogTitle: "OG",
+        });
+    });
+
+    it("resyncs the settings scratch from the persisted snapshot after a save", () => {
+        const { state } = transition(loadPost(), {
+            type: "SETTINGS_CHANGED",
+            settings: { canonicalUrl: "https://example.com/a" },
+        });
+        const saving = startManualSave(state).state;
+
+        // server normalized the canonical url
+        const persistedSettings = { ...createDefaultPostSettings(), canonicalUrl: "https://example.com/a/" };
+        const { state: after } = transition(saving, {
+            type: "SAVE_SUCCEEDED",
+            post: makePost({ settings: persistedSettings }),
+        });
+
+        expect(after.settingsScratch.canonicalUrl).toBe("https://example.com/a/");
+        expect(hasDirtyAttributes(after)).toBe(false);
+    });
+
+    it("keeps settings edits made while a save was in flight (per-field resync)", () => {
+        const { state } = transition(loadPost(), {
+            type: "SETTINGS_CHANGED",
+            settings: { metaTitle: "Sent title" },
+        });
+        const saving = startManualSave(state).state;
+
+        // edit a DIFFERENT field while the save is in flight
+        const { state: edited } = transition(saving, {
+            type: "SETTINGS_CHANGED",
+            settings: { metaDescription: "Typed during save" },
+        });
+
+        const { state: after } = transition(edited, {
+            type: "SAVE_SUCCEEDED",
+            post: makePost({
+                settings: { ...createDefaultPostSettings(), metaTitle: "Sent title" },
+            }),
+        });
+
+        // the sent field resynced; the in-flight edit survived
+        expect(after.settingsScratch.metaTitle).toBe("Sent title");
+        expect(after.settingsScratch.metaDescription).toBe("Typed during save");
+        expect(hasDirtyAttributes(after)).toBe(true);
+    });
+
+    it("keeps an in-flight edit to the SAME field over the persisted value", () => {
+        const { state } = transition(loadPost(), {
+            type: "SETTINGS_CHANGED",
+            settings: { metaTitle: "Sent title" },
+        });
+        const saving = startManualSave(state).state;
+
+        const { state: edited } = transition(saving, {
+            type: "SETTINGS_CHANGED",
+            settings: { metaTitle: "Newer title" },
+        });
+
+        const { state: after } = transition(edited, {
+            type: "SAVE_SUCCEEDED",
+            post: makePost({
+                settings: { ...createDefaultPostSettings(), metaTitle: "Sent title" },
+            }),
+        });
+
+        expect(after.settingsScratch.metaTitle).toBe("Newer title");
+    });
+
+    it("initializes the settings scratch from the loaded post", () => {
+        const settings = {
+            ...createDefaultPostSettings(),
+            visibility: "paid",
+            featured: true,
+            authors: [{ id: "a", name: "A" }],
+        };
+        const state = loadPost({ settings });
+        expect(state.settingsScratch).toEqual(settings);
+        // the scratch is a copy — mutating the snapshot must not leak
+        expect(state.settingsScratch).not.toBe(settings);
+        expect(state.settingsScratch.authors[0]).not.toBe(settings.authors[0]);
+        expect(hasDirtyAttributes(state)).toBe(false);
+    });
+});
+
 /* save lifecycle --------------------------------------------------------------*/
 
 describe("save lifecycle", () => {
@@ -413,6 +564,7 @@ describe("save lifecycle", () => {
                 slug: "my-post",
                 publishedAt: null,
                 featureImage: null,
+                settings: createDefaultPostSettings(),
             });
             // the scratch is normalized too, matching Ember beforeSaveTask
             expect(result.state.titleScratch).toBe(DEFAULT_TITLE);

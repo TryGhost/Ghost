@@ -15,6 +15,7 @@ import {
     UpdateCollisionError,
 } from "@tryghost/admin-x-framework/errors";
 import {
+    createDefaultPostSettings,
     createInitialState,
     getLeaveDecision,
     hasDirtyAttributes,
@@ -34,7 +35,7 @@ import {
 /** Default lexical document for a new post (ghost/admin/app/models/post.js BLANK_LEXICAL). */
 export const BLANK_LEXICAL = '{"root":{"children":[{"children":[],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}';
 
-export function createNewPostSnapshot(): PostSnapshot {
+export function createNewPostSnapshot(resource: EditorResource = "posts"): PostSnapshot {
     return {
         id: null,
         status: "draft",
@@ -46,6 +47,12 @@ export function createNewPostSnapshot(): PostSnapshot {
         publishedAt: null,
         featureImage: null,
         updatedAt: null,
+        settings: {
+            ...createDefaultPostSettings(),
+            // Ember models/post.js: showTitleAndFeatureImage defaults to true,
+            // but the serializer only sends it for pages
+            showTitleAndFeatureImage: resource === "pages" ? true : null,
+        },
     };
 }
 
@@ -61,6 +68,25 @@ export function toSnapshot(post: FullPost): PostSnapshot {
         publishedAt: post.published_at,
         featureImage: post.feature_image,
         updatedAt: post.updated_at,
+        settings: {
+            visibility: post.visibility ?? null,
+            tiers: (post.tiers ?? []).map(({ id, name }) => ({ id, name })),
+            authors: (post.authors ?? []).map(({ id, name }) => ({ id, name })),
+            featured: post.featured ?? false,
+            customTemplate: post.custom_template ?? null,
+            canonicalUrl: post.canonical_url ?? null,
+            metaTitle: post.meta_title ?? null,
+            metaDescription: post.meta_description ?? null,
+            ogImage: post.og_image ?? null,
+            ogTitle: post.og_title ?? null,
+            ogDescription: post.og_description ?? null,
+            twitterImage: post.twitter_image ?? null,
+            twitterTitle: post.twitter_title ?? null,
+            twitterDescription: post.twitter_description ?? null,
+            codeinjectionHead: post.codeinjection_head ?? null,
+            codeinjectionFoot: post.codeinjection_foot ?? null,
+            showTitleAndFeatureImage: post.show_title_and_feature_image ?? null,
+        },
     };
 }
 
@@ -228,7 +254,35 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
             // so name-only tag objects are sufficient (Ember sends the same
             // embedded relation; order determines the primary tag)
             tags: payload.tags.map(name => ({ name })) as unknown as FullPost["tags"],
+            featured: payload.settings.featured,
+            custom_template: payload.settings.customTemplate,
+            canonical_url: payload.settings.canonicalUrl,
+            meta_title: payload.settings.metaTitle,
+            meta_description: payload.settings.metaDescription,
+            og_image: payload.settings.ogImage,
+            og_title: payload.settings.ogTitle,
+            og_description: payload.settings.ogDescription,
+            twitter_image: payload.settings.twitterImage,
+            twitter_title: payload.settings.twitterTitle,
+            twitter_description: payload.settings.twitterDescription,
+            codeinjection_head: payload.settings.codeinjectionHead,
+            codeinjection_foot: payload.settings.codeinjectionFoot,
         };
+        // Ember serializers/post.js: a null visibility is never sent (the
+        // server applies the site default on create) and tiers ride along
+        // with visibility; show_title_and_feature_image is page-only
+        if (payload.settings.visibility !== null) {
+            body.visibility = payload.settings.visibility;
+            body.tiers = payload.settings.tiers.map(({ id }) => ({ id })) as unknown as FullPost["tiers"];
+        }
+        // an empty authors list is never sent (the server assigns the
+        // creating user on create; existing posts always have authors)
+        if (payload.settings.authors.length > 0) {
+            body.authors = payload.settings.authors.map(({ id }) => ({ id })) as unknown as FullPost["authors"];
+        }
+        if (payload.settings.showTitleAndFeatureImage !== null) {
+            body.show_title_and_feature_image = payload.settings.showTitleAndFeatureImage;
+        }
         // a slug regenerated from a title change wins over the scratch value;
         // an empty slug is never sent (the server generates one on create)
         const slug = pendingSlugRef.current ?? payload.slug;

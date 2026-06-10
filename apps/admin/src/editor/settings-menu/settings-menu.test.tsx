@@ -8,7 +8,7 @@ import type {
     FullPost,
 } from "@tryghost/admin-x-framework/api/editor";
 import type { GenerateSlugPayload } from "@tryghost/admin-x-framework/api/slugs";
-import type { PostSnapshot } from "@/editor/state";
+import { createDefaultPostSettings, type PostSnapshot } from "@/editor/state";
 import { useEditor } from "@/editor/use-editor";
 import { SettingsMenu } from "./settings-menu";
 
@@ -24,6 +24,21 @@ const mocks = vi.hoisted(() => ({
         { id: "tag-1", name: "News", slug: "news" },
         { id: "tag-2", name: "Tech", slug: "tech" },
     ],
+    users: [
+        { id: "user-1", name: "Admin User", roles: [{ id: "role-1", name: "Administrator" }] },
+        { id: "user-2", name: "Second Author", roles: [{ id: "role-2", name: "Author" }] },
+    ],
+    currentUserRole: { value: "Administrator" },
+    tiers: [
+        { id: "tier-1", name: "Bronze", active: true, type: "paid" },
+        { id: "tier-2", name: "Silver", active: true, type: "paid" },
+    ],
+    themeTemplates: {
+        value: [
+            { filename: "custom-full-feature-image", name: "Full feature image", for: ["page", "post"], slug: null },
+            { filename: "custom-about", name: "About", for: ["page", "post"], slug: "about" },
+        ] as Array<{ filename: string; name?: string; for?: string[]; slug?: string | null }>,
+    },
 }));
 
 vi.mock("@/utils/cross-shell-navigate", () => ({
@@ -65,6 +80,54 @@ vi.mock("@tryghost/admin-x-framework/api/tags", () => ({
     useBrowseTags: () => ({ data: { tags: mocks.tags } }),
 }));
 
+vi.mock("@tryghost/admin-x-framework/api/current-user", () => ({
+    useCurrentUser: () => ({
+        data: {
+            id: "user-1",
+            name: "Admin User",
+            roles: [{ id: "role-1", name: mocks.currentUserRole.value }],
+        },
+    }),
+}));
+
+vi.mock("@tryghost/admin-x-framework/api/users", () => ({
+    useBrowseUsers: () => ({ data: { users: mocks.users } }),
+    isContributorUser: (user: { roles?: Array<{ name: string }> }) => {
+        return user.roles?.some(role => role.name === "Contributor") ?? false;
+    },
+    isAuthorOrContributor: (user: { roles?: Array<{ name: string }> }) => {
+        return user.roles?.some(role => ["Author", "Contributor"].includes(role.name)) ?? false;
+    },
+}));
+
+vi.mock("@tryghost/admin-x-framework/api/tiers", () => ({
+    useBrowseTiers: () => ({ data: { tiers: mocks.tiers } }),
+}));
+
+vi.mock("@tryghost/admin-x-framework/api/themes", () => ({
+    useActiveTheme: () => ({
+        data: { themes: [{ active: true, name: "casper", package: {}, templates: mocks.themeTemplates.value }] },
+    }),
+}));
+
+// CodeEditor lazy-loads CodeMirror; a plain textarea keeps the tests fast
+// and lets us drive change/blur like the real component
+vi.mock("@tryghost/admin-x-design-system", () => ({
+    CodeEditor: ({ value, onChange, onBlur, ...props }: {
+        value?: string;
+        onChange?: (value: string) => void;
+        onBlur?: () => void;
+        "data-testid"?: string;
+    }) => (
+        <textarea
+            data-testid={props["data-testid"]}
+            value={value}
+            onBlur={onBlur}
+            onChange={event => onChange?.(event.target.value)}
+        />
+    ),
+}));
+
 function makeSnapshot(overrides: Partial<PostSnapshot> = {}): PostSnapshot {
     return {
         id: "post-1",
@@ -77,6 +140,11 @@ function makeSnapshot(overrides: Partial<PostSnapshot> = {}): PostSnapshot {
         publishedAt: null,
         featureImage: null,
         updatedAt: "2026-01-01T00:00:00.000Z",
+        settings: {
+            ...createDefaultPostSettings(),
+            visibility: "public",
+            authors: [{ id: "user-1", name: "Admin User" }],
+        },
         ...overrides,
     };
 }
@@ -154,8 +222,13 @@ describe("SettingsMenu", () => {
         }));
         mocks.generateSlug.mockResolvedValue("");
         mocks.upload.mockResolvedValue(null);
+        mocks.currentUserRole.value = "Administrator";
         // cmdk scrolls the selected item into view; jsdom has no implementation
         Element.prototype.scrollIntoView = vi.fn();
+        // radix-ui Select uses the pointer-capture API which jsdom lacks
+        Element.prototype.hasPointerCapture = vi.fn().mockReturnValue(false);
+        Element.prototype.setPointerCapture = vi.fn();
+        Element.prototype.releasePointerCapture = vi.fn();
     });
 
     describe("rendering", () => {
@@ -408,6 +481,294 @@ describe("SettingsMenu", () => {
                 expect(mocks.navigate).toHaveBeenCalledWith("/pages");
             });
             expect(mocks.deletePost).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("visibility", () => {
+        function visibilityTrigger(): HTMLElement {
+            const element = document.querySelector('[data-test-select="post-visibility"]');
+            expect(element).not.toBeNull();
+            return element as HTMLElement;
+        }
+
+        it("shows the saved visibility and saves a change immediately", async () => {
+            renderMenu();
+            expect(visibilityTrigger()).toHaveTextContent("Public");
+
+            fireEvent.click(visibilityTrigger());
+            fireEvent.click(await screen.findByRole("option", { name: "Members only" }));
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost()).toMatchObject({ visibility: "members", tiers: [] });
+        });
+
+        it("defers the save for specific tiers until a tier is selected", async () => {
+            renderMenu();
+
+            fireEvent.click(visibilityTrigger());
+            fireEvent.click(await screen.findByRole("option", { name: "Specific tier(s)" }));
+
+            // no save without tiers; the inline error explains why
+            expect(mocks.editPost).not.toHaveBeenCalled();
+            expect(screen.getByText("Please select at least one tier")).toBeInTheDocument();
+
+            // let the closed Select finish its async focus-return before
+            // opening the popover (it would otherwise close it again)
+            await new Promise(resolve => setTimeout(resolve, 0));
+
+            fireEvent.click(screen.getByTestId("psm-tiers"));
+            fireEvent.click(await screen.findByText("Bronze"));
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost()).toMatchObject({ visibility: "tiers", tiers: [{ id: "tier-1" }] });
+        });
+    });
+
+    describe("authors", () => {
+        it("adds an author and saves immediately", async () => {
+            renderMenu();
+
+            fireEvent.click(screen.getByTestId("psm-authors-input"));
+            fireEvent.click(await screen.findByText("Second Author"));
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost().authors).toEqual([{ id: "user-1" }, { id: "user-2" }]);
+        });
+
+        it("refuses to remove the last author", async () => {
+            renderMenu();
+
+            fireEvent.click(screen.getByTestId("psm-authors-input"));
+            fireEvent.click(await screen.findByRole("option", { name: "Admin User" }));
+
+            expect(await screen.findByText("At least one author is required.")).toBeInTheDocument();
+            expect(mocks.editPost).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("template", () => {
+        function templateTrigger(): HTMLElement {
+            const element = document.querySelector('[data-test-select="custom-template"]');
+            expect(element).not.toBeNull();
+            return element as HTMLElement;
+        }
+
+        it("selects a custom template without saving immediately (Ember parity) and sends it with the next save", async () => {
+            renderMenu();
+
+            fireEvent.click(templateTrigger());
+            fireEvent.click(await screen.findByRole("option", { name: "Full feature image" }));
+
+            // template changes ride along with the next save, like Ember's mut
+            expect(mocks.editPost).not.toHaveBeenCalled();
+
+            fireEvent.change(excerptField(), { target: { value: "Trigger a save" } });
+            fireEvent.blur(excerptField());
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost().custom_template).toBe("custom-full-feature-image");
+        });
+
+        it("is hidden when the active theme has no custom templates", () => {
+            mocks.themeTemplates.value = [];
+            renderMenu();
+
+            expect(document.querySelector('[data-test-custom-template-form]')).toBeNull();
+            mocks.themeTemplates.value = [
+                { filename: "custom-full-feature-image", name: "Full feature image", for: ["page", "post"], slug: null },
+                { filename: "custom-about", name: "About", for: ["page", "post"], slug: "about" },
+            ];
+        });
+
+        it("disables the select when the slug matches a slug template", () => {
+            renderMenu(makeSnapshot({ slug: "about" }));
+
+            expect(templateTrigger()).toBeDisabled();
+            expect(screen.getByText("Post URL matches custom-about")).toBeInTheDocument();
+        });
+    });
+
+    describe("toggles", () => {
+        it("features the post and saves immediately", async () => {
+            renderMenu();
+
+            const toggle = document.querySelector('[data-test-checkbox="featured"]');
+            expect(toggle).not.toBeNull();
+            fireEvent.click(toggle as HTMLElement);
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost().featured).toBe(true);
+        });
+
+        it("shows the show-title-and-feature-image toggle for pages with lexical content only", () => {
+            renderMenu(makeSnapshot({ lexical: "{}" }), "pages");
+            expect(document.querySelector('[data-test-checkbox="hide-title-and-feature-image"]')).not.toBeNull();
+        });
+
+        it("hides the show-title-and-feature-image toggle for posts", () => {
+            renderMenu(makeSnapshot({ lexical: "{}" }));
+            expect(document.querySelector('[data-test-checkbox="hide-title-and-feature-image"]')).toBeNull();
+        });
+
+        it("saves the show-title-and-feature-image toggle for pages", async () => {
+            renderMenu(makeSnapshot({
+                lexical: "{}",
+                settings: { ...makeSnapshot().settings, showTitleAndFeatureImage: true },
+            }), "pages");
+
+            fireEvent.click(document.querySelector('[data-test-checkbox="hide-title-and-feature-image"]') as HTMLElement);
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost().show_title_and_feature_image).toBe(false);
+        });
+    });
+
+    describe("meta data", () => {
+        function expandMetaData() {
+            fireEvent.click(screen.getByTestId("psm-meta-data"));
+        }
+
+        it("saves an edited meta title on blur", async () => {
+            renderMenu();
+            expandMetaData();
+
+            const field = document.querySelector('[data-test-field="meta-title"]') as HTMLInputElement;
+            fireEvent.change(field, { target: { value: "SEO title" } });
+            fireEvent.blur(field);
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost().meta_title).toBe("SEO title");
+        });
+
+        it("saves an edited meta description on blur", async () => {
+            renderMenu();
+            expandMetaData();
+
+            const field = document.querySelector('[data-test-field="meta-description"]') as HTMLTextAreaElement;
+            fireEvent.change(field, { target: { value: "SEO description" } });
+            fireEvent.blur(field);
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost().meta_description).toBe("SEO description");
+        });
+
+        it("rejects an invalid canonical URL and does not save", async () => {
+            renderMenu();
+            expandMetaData();
+
+            const field = document.querySelector('[data-test-field="canonicalUrl"]') as HTMLInputElement;
+            fireEvent.change(field, { target: { value: "not a url" } });
+            fireEvent.blur(field);
+
+            expect(await screen.findByText("Please enter a valid URL")).toBeInTheDocument();
+            expect(mocks.editPost).not.toHaveBeenCalled();
+        });
+
+        it("saves a valid canonical URL on blur", async () => {
+            renderMenu();
+            expandMetaData();
+
+            const field = document.querySelector('[data-test-field="canonicalUrl"]') as HTMLInputElement;
+            fireEvent.change(field, { target: { value: "https://example.com/canonical" } });
+            fireEvent.blur(field);
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost().canonical_url).toBe("https://example.com/canonical");
+        });
+    });
+
+    describe("social cards", () => {
+        it("saves the X card title and description on blur", async () => {
+            renderMenu();
+            fireEvent.click(screen.getByTestId("psm-x-card"));
+
+            const title = document.querySelector('[data-test-field="twitter-title"]') as HTMLInputElement;
+            fireEvent.change(title, { target: { value: "X title" } });
+            fireEvent.blur(title);
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost().twitter_title).toBe("X title");
+        });
+
+        it("uploads a Facebook image and saves the returned url", async () => {
+            mocks.upload.mockResolvedValue([{ url: "https://cdn.example.com/og.png", fileName: "og.png" }]);
+            renderMenu();
+            fireEvent.click(screen.getByTestId("psm-facebook-card"));
+
+            const file = new File(["binary"], "og.png", { type: "image/png" });
+            fireEvent.change(screen.getByTestId("og-image-file-input"), { target: { files: [file] } });
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost().og_image).toBe("https://cdn.example.com/og.png");
+        });
+    });
+
+    describe("code injection", () => {
+        it("saves the header injection on blur", async () => {
+            renderMenu();
+            fireEvent.click(screen.getByTestId("psm-code-injection"));
+
+            const editorField = await screen.findByTestId("codeinjection-head-editor");
+            fireEvent.change(editorField, { target: { value: "<style>.x{}</style>" } });
+            fireEvent.blur(editorField);
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(lastEditedPost().codeinjection_head).toBe("<style>.x{}</style>");
+        });
+
+        it("does not save when the code is unchanged", async () => {
+            renderMenu();
+            fireEvent.click(screen.getByTestId("psm-code-injection"));
+
+            const editorField = await screen.findByTestId("codeinjection-foot-editor");
+            fireEvent.blur(editorField);
+
+            expect(mocks.editPost).not.toHaveBeenCalled();
+        });
+    });
+
+    describe("role gating", () => {
+        it("hides tags, visibility, authors and featured for contributors", () => {
+            mocks.currentUserRole.value = "Contributor";
+            renderMenu();
+
+            expect(screen.queryByRole("button", { name: "Tags" })).toBeNull();
+            expect(document.querySelector('[data-test-select="post-visibility"]')).toBeNull();
+            expect(screen.queryByTestId("psm-authors")).toBeNull();
+            expect(document.querySelector('[data-test-checkbox="featured"]')).toBeNull();
+        });
+
+        it("hides visibility, authors and featured (but not tags) for authors", () => {
+            mocks.currentUserRole.value = "Author";
+            renderMenu();
+
+            expect(screen.getByRole("button", { name: "Tags" })).toBeInTheDocument();
+            expect(document.querySelector('[data-test-select="post-visibility"]')).toBeNull();
+            expect(screen.queryByTestId("psm-authors")).toBeNull();
+            expect(document.querySelector('[data-test-checkbox="featured"]')).toBeNull();
         });
     });
 });

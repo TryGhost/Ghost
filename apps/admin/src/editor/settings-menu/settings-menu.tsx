@@ -1,11 +1,20 @@
-import { useEffect, useRef, useState, type ChangeEvent } from "react";
+import { useMemo, useEffect, useRef, useState, type ChangeEvent, type ReactNode } from "react";
 import { useKoenigFileUpload } from "@tryghost/admin-x-framework";
+import { CodeEditor, type CodeEditorProps } from "@tryghost/admin-x-design-system";
 import { crossShellNavigate } from "@/utils/cross-shell-navigate";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import type { EditorResource } from "@tryghost/admin-x-framework/api/editor";
 import { useBulkDeletePosts, useDeletePost } from "@tryghost/admin-x-framework/api/posts";
 import { getSettingValue, useBrowseSettings } from "@tryghost/admin-x-framework/api/settings";
 import { useBrowseTags } from "@tryghost/admin-x-framework/api/tags";
+import { useActiveTheme } from "@tryghost/admin-x-framework/api/themes";
+import { useBrowseTiers } from "@tryghost/admin-x-framework/api/tiers";
+import { isAuthorOrContributor, isContributorUser, useBrowseUsers } from "@tryghost/admin-x-framework/api/users";
 import {
+    Accordion,
+    AccordionContent,
+    AccordionItem,
+    AccordionTrigger,
     AlertDialog,
     AlertDialogAction,
     AlertDialogCancel,
@@ -28,8 +37,15 @@ import {
     Popover,
     PopoverContent,
     PopoverTrigger,
+    Select,
+    SelectContent,
+    SelectItem,
+    SelectTrigger,
+    SelectValue,
+    Switch,
     Textarea,
 } from "@tryghost/shade/components";
+import type { NamedRef, PostSettings } from "@/editor/state";
 import type { UseEditorResult } from "@/editor/use-editor";
 import {
     DATE_FORMAT_PATTERN,
@@ -489,6 +505,687 @@ function DeleteField({ editor, resource, noun }: {
     );
 }
 
+/**
+ * Commit PSM settings into the machine scratch and save immediately for
+ * existing posts; new posts defer the save until the post is created
+ * (Ember's per-field `savePostTask` pattern in gh-post-settings-menu).
+ */
+function commitSettings(editor: UseEditorResult, settings: Partial<PostSettings>, { save = true } = {}) {
+    editor.dispatch({ type: "SETTINGS_CHANGED", settings });
+    if (save && editor.state.post?.id) {
+        editor.dispatch({ type: "SAVE_REQUESTED", kind: "manual" });
+    }
+}
+
+/** Ember gh-count-down-characters: used-character count, red when over. */
+function CharCountdown({ max, value }: { max: number; value: string }) {
+    const count = value.length;
+    return (
+        <p className="mt-1 text-sm text-gray-600">
+            Recommended: <b>{max}</b> characters. You&rsquo;ve used{" "}
+            <span className={count > max ? "font-semibold text-red-600" : "font-semibold text-green-600"}>{count}</span>
+        </p>
+    );
+}
+
+/**
+ * Generic multi-select combobox (same pattern as TagsField) used by the
+ * tiers and authors selects — fixed option list, no creation.
+ */
+function MultiSelectField({ id, label, placeholder, searchPlaceholder, emptyText, options, selected, testId, onChange }: {
+    id: string;
+    label: string;
+    placeholder: string;
+    searchPlaceholder: string;
+    emptyText: string;
+    options: NamedRef[];
+    selected: NamedRef[];
+    testId: string;
+    onChange: (next: NamedRef[]) => void;
+}) {
+    const [open, setOpen] = useState(false);
+
+    const toggle = (option: NamedRef) => {
+        const isSelected = selected.some(ref => ref.id === option.id);
+        onChange(isSelected ? selected.filter(ref => ref.id !== option.id) : [...selected, option]);
+    };
+
+    return (
+        <div>
+            <Label htmlFor={id}>{label}</Label>
+            <Popover open={open} onOpenChange={setOpen}>
+                <PopoverTrigger asChild>
+                    <Button
+                        className="mt-1 h-auto min-h-9 w-full flex-wrap justify-start gap-1"
+                        data-testid={testId}
+                        id={id}
+                        variant="outline"
+                    >
+                        {selected.length > 0
+                            ? selected.map(ref => <Badge key={ref.id} variant="secondary">{ref.name}</Badge>)
+                            : <span className="font-normal text-muted-foreground">{placeholder}</span>}
+                    </Button>
+                </PopoverTrigger>
+                <PopoverContent align="start" className="w-[--radix-popover-trigger-width] p-0">
+                    <Command>
+                        <CommandInput placeholder={searchPlaceholder} />
+                        <CommandList>
+                            <CommandEmpty>{emptyText}</CommandEmpty>
+                            <CommandGroup>
+                                {options.map(option => (
+                                    <CommandItem
+                                        key={option.id}
+                                        value={option.name}
+                                        onSelect={() => toggle(option)}
+                                    >
+                                        <span className={selected.some(ref => ref.id === option.id) ? "font-semibold" : undefined}>
+                                            {option.name}
+                                        </span>
+                                    </CommandItem>
+                                ))}
+                            </CommandGroup>
+                        </CommandList>
+                    </Command>
+                </PopoverContent>
+            </Popover>
+        </div>
+    );
+}
+
+// Ember gh-psm-visibility-input VISIBILITIES (+ the tiers option)
+const VISIBILITIES = [
+    { label: "Public", value: "public" },
+    { label: "Members only", value: "members" },
+    { label: "Paid-members only", value: "paid" },
+    { label: "Specific tier(s)", value: "tiers" },
+];
+
+/**
+ * Post access select + tier multi-select (Ember gh-psm-visibility-input +
+ * visibility-segment-select). Unset visibility shows the site's default
+ * content visibility; selecting a non-tiers option clears the tiers.
+ */
+function VisibilityField({ editor, noun }: { editor: UseEditorResult; noun: string }) {
+    const { state } = editor;
+    const { data: settingsData } = useBrowseSettings();
+    const defaultVisibility = getSettingValue<string>(settingsData?.settings, "default_content_visibility") ?? "public";
+    const visibility = state.settingsScratch.visibility ?? defaultVisibility;
+
+    // Ember visibility-segment-select: paid tiers only (active + archived)
+    const { data: tiersData } = useBrowseTiers({ searchParams: { filter: "type:paid", limit: "all" } });
+    const tierOptions = (tiersData?.tiers ?? []).map(({ id, name }) => ({ id, name }));
+
+    const updateVisibility = (value: string) => {
+        commitSettings(editor, {
+            visibility: value,
+            ...(value !== "tiers" ? { tiers: [] } : {}),
+            // switching INTO 'tiers' defers the save until a tier is picked
+            // (the API rejects visibility 'tiers' without tiers)
+        }, { save: value !== "tiers" });
+    };
+
+    const updateTiers = (tiers: NamedRef[]) => {
+        commitSettings(editor, { tiers }, { save: tiers.length > 0 });
+    };
+
+    const tiersSelected = visibility === "tiers";
+    // the API returns every tier for public/members posts; like Ember's
+    // visibility-segment-select `selectedOptions`, only show (and edit) the
+    // intersection with the selectable paid tiers
+    const selectedTiers = state.settingsScratch.tiers.filter(tier => (
+        tierOptions.some(option => option.id === tier.id)
+    ));
+
+    return (
+        <div data-testid="psm-visibility">
+            <Label htmlFor="visibility-input">{noun} access</Label>
+            <Select value={visibility} onValueChange={updateVisibility}>
+                <SelectTrigger className="mt-1" data-test-select="post-visibility" id="visibility-input">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    {VISIBILITIES.map(option => (
+                        <SelectItem key={option.value} value={option.value}>{option.label}</SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            {tiersSelected ? (
+                <div className="mt-3" data-test-visibility-segment-select>
+                    <MultiSelectField
+                        emptyText="No tiers found."
+                        id="tiers-input"
+                        label="Tiers"
+                        options={tierOptions}
+                        placeholder="Select tiers"
+                        searchPlaceholder="Search tiers"
+                        selected={selectedTiers}
+                        testId="psm-tiers"
+                        onChange={updateTiers}
+                    />
+                    {selectedTiers.length === 0 ? (
+                        <FieldError>Please select at least one tier</FieldError>
+                    ) : null}
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
+/**
+ * Authors multi-select (Ember gh-psm-authors-input). New unsaved posts show
+ * the current user (the server assigns the creating user on create).
+ */
+function AuthorsField({ editor }: { editor: UseEditorResult }) {
+    const { state } = editor;
+    const { data: usersData } = useBrowseUsers({ searchParams: { limit: "all", include: "roles" } });
+    const { data: currentUser } = useCurrentUser();
+    const [error, setError] = useState<string | null>(null);
+
+    const options = (usersData?.users ?? []).map(({ id, name }) => ({ id, name }));
+    const scratch = state.settingsScratch.authors;
+    // new posts have no authors yet — the creating user becomes the author
+    const selected = scratch.length === 0 && state.post?.id === null && currentUser
+        ? [{ id: currentUser.id, name: currentUser.name }]
+        : scratch;
+
+    const updateAuthors = (authors: NamedRef[]) => {
+        if (authors.length === 0) {
+            setError("At least one author is required.");
+            return;
+        }
+        setError(null);
+        commitSettings(editor, { authors });
+    };
+
+    return (
+        <div data-testid="psm-authors">
+            <MultiSelectField
+                emptyText="No staff users found."
+                id="author-list"
+                label="Authors"
+                options={options}
+                placeholder="Select authors"
+                searchPlaceholder="Search staff users"
+                selected={selected}
+                testId="psm-authors-input"
+                onChange={updateAuthors}
+            />
+            <FieldError>{error}</FieldError>
+        </div>
+    );
+}
+
+// Radix Select items can't have an empty value; the default template
+// (filename '') is mapped onto this sentinel
+const DEFAULT_TEMPLATE = "__default__";
+
+/**
+ * Custom template select (Ember gh-psm-template-select). Only rendered when
+ * the active theme has custom templates; like Ember, changing the template
+ * does NOT save immediately — it rides along with the next save.
+ */
+function TemplateField({ editor, resource }: { editor: UseEditorResult; resource: EditorResource }) {
+    const { state } = editor;
+    const { data: themesData } = useActiveTheme();
+
+    const templates = themesData?.themes?.[0]?.templates ?? [];
+    const customTemplates = templates
+        .filter(template => !template.slug)
+        .sort((a, b) => (a.name ?? a.filename).localeCompare(b.name ?? b.filename));
+
+    if (customTemplates.length === 0) {
+        return null;
+    }
+
+    // a slug-bound template (custom-about.hbs) overrides the dropdown
+    const type = resource === "pages" ? "page" : "post";
+    const matchedSlugTemplate = templates.find(template => (
+        Boolean(template.slug) && template.slug === state.slugScratch && (template.for ?? []).includes(type)
+    ));
+
+    const value = state.settingsScratch.customTemplate || DEFAULT_TEMPLATE;
+
+    const updateTemplate = (selectedValue: string) => {
+        // template changes don't auto-save in Ember either — the machine is
+        // dirty until the next (auto/manual/leave) save carries the change
+        commitSettings(editor, {
+            customTemplate: selectedValue === DEFAULT_TEMPLATE ? "" : selectedValue,
+        }, { save: false });
+    };
+
+    return (
+        <div data-test-custom-template-form data-testid="psm-template">
+            <Label htmlFor="template-select">Template</Label>
+            <Select disabled={Boolean(matchedSlugTemplate)} value={value} onValueChange={updateTemplate}>
+                <SelectTrigger className="mt-1" data-test-select="custom-template" id="template-select">
+                    <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                    <SelectItem value={DEFAULT_TEMPLATE}>Default</SelectItem>
+                    {customTemplates.map(template => (
+                        <SelectItem key={template.filename} value={template.filename}>
+                            {template.name ?? template.filename}
+                        </SelectItem>
+                    ))}
+                </SelectContent>
+            </Select>
+            {matchedSlugTemplate ? (
+                <p className="mt-1 text-sm text-gray-600">{noun(resource)} URL matches {matchedSlugTemplate.filename}</p>
+            ) : null}
+        </div>
+    );
+}
+
+function noun(resource: EditorResource): string {
+    return resource === "pages" ? "Page" : "Post";
+}
+
+/** Switch row used by the featured / show-title-and-feature-image toggles. */
+function ToggleField({ id, label, checked, testCheckbox, onChange }: {
+    id: string;
+    label: string;
+    checked: boolean;
+    testCheckbox: string;
+    onChange: (checked: boolean) => void;
+}) {
+    return (
+        <div className="flex items-center justify-between">
+            <Label className="cursor-pointer" htmlFor={id}>{label}</Label>
+            <Switch checked={checked} data-test-checkbox={testCheckbox} id={id} onCheckedChange={onChange} />
+        </div>
+    );
+}
+
+type StringSettingsKey =
+    | "canonicalUrl"
+    | "metaTitle"
+    | "metaDescription"
+    | "ogTitle"
+    | "ogDescription"
+    | "twitterTitle"
+    | "twitterDescription";
+
+/**
+ * Shared scratch-edit + blur-save text field for the meta data / social card
+ * subview fields (Ember's setMetaTitle & co: validate on blur, save existing
+ * posts, defer for new posts).
+ */
+function SettingsTextField({ editor, field, label, id, testId, placeholder, multiline, maxLength, maxLengthError, validate, hint }: {
+    editor: UseEditorResult;
+    field: StringSettingsKey;
+    label: string;
+    id: string;
+    testId: string;
+    placeholder?: string;
+    multiline?: boolean;
+    maxLength?: number;
+    maxLengthError?: string;
+    validate?: (value: string) => string | null;
+    hint?: ReactNode;
+}) {
+    const { state, dispatch } = editor;
+    const [error, setError] = useState<string | null>(null);
+
+    const value = state.settingsScratch[field] ?? "";
+
+    const handleChange = (nextValue: string) => {
+        dispatch({ type: "SETTINGS_CHANGED", settings: { [field]: nextValue || null } });
+    };
+
+    const handleBlur = () => {
+        if (state.settingsScratch[field] === state.post?.settings[field]) {
+            return;
+        }
+        if (maxLength !== undefined && value.length > maxLength) {
+            setError(maxLengthError ?? `Cannot be longer than ${maxLength} characters.`);
+            return;
+        }
+        const validationError = validate?.(value) ?? null;
+        if (validationError) {
+            setError(validationError);
+            return;
+        }
+        setError(null);
+        if (state.post?.id) {
+            dispatch({ type: "SAVE_REQUESTED", kind: "manual" });
+        }
+    };
+
+    const inputProps = {
+        className: "mt-1",
+        "data-test-field": testId,
+        id,
+        placeholder,
+        value,
+    };
+
+    return (
+        <div>
+            <Label htmlFor={id}>{label}</Label>
+            {multiline ? (
+                <Textarea
+                    {...inputProps}
+                    onBlur={handleBlur}
+                    onChange={event => handleChange(event.target.value)}
+                />
+            ) : (
+                <Input
+                    {...inputProps}
+                    onBlur={handleBlur}
+                    onChange={event => handleChange(event.target.value)}
+                    onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                            event.preventDefault();
+                            event.currentTarget.blur();
+                        }
+                    }}
+                />
+            )}
+            {hint}
+            <FieldError>{error}</FieldError>
+        </div>
+    );
+}
+
+/**
+ * Social card image upload (og/twitter image), same uploader pattern as the
+ * feature image field.
+ */
+function SettingsImageField({ editor, field, label, addText, testIdPrefix }: {
+    editor: UseEditorResult;
+    field: "ogImage" | "twitterImage";
+    label: string;
+    addText: string;
+    testIdPrefix: string;
+}) {
+    const { state } = editor;
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const { upload, isLoading, errors } = useKoenigFileUpload("image");
+
+    const image = state.settingsScratch[field];
+
+    const setImage = (url: string | null) => {
+        commitSettings(editor, { [field]: url });
+    };
+
+    const handleFileChange = async (event: ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (!files || files.length === 0) {
+            return;
+        }
+        const results = await upload(files);
+        event.target.value = "";
+        const url = results?.[0]?.url;
+        if (url) {
+            setImage(url);
+        }
+    };
+
+    return (
+        <div>
+            <Label htmlFor={`${testIdPrefix}-input`}>{label}</Label>
+            <input
+                ref={fileInputRef}
+                accept="image/gif,image/jpg,image/jpeg,image/png,image/svg+xml,image/webp"
+                className="hidden"
+                data-testid={`${testIdPrefix}-file-input`}
+                id={`${testIdPrefix}-input`}
+                type="file"
+                onChange={event => void handleFileChange(event)}
+            />
+            {image ? (
+                <div className="mt-1">
+                    <img alt={label} className="w-full rounded-md" src={image} />
+                    <Button
+                        className="mt-2"
+                        data-testid={`remove-${testIdPrefix}`}
+                        variant="outline"
+                        onClick={() => setImage(null)}
+                    >
+                        Remove
+                    </Button>
+                </div>
+            ) : (
+                <Button
+                    className="mt-1 w-full"
+                    data-testid={`add-${testIdPrefix}`}
+                    disabled={isLoading}
+                    variant="outline"
+                    onClick={() => fileInputRef.current?.click()}
+                >
+                    {isLoading ? "Uploading..." : addText}
+                </Button>
+            )}
+            {errors.map(uploadError => (
+                <FieldError key={uploadError.fileName}>{uploadError.message}</FieldError>
+            ))}
+        </div>
+    );
+}
+
+/**
+ * Code injection editor (Ember GhCmEditor): commit per keystroke into the
+ * machine scratch, save on blur. CodeMirror's HTML language pack is loaded
+ * on demand and CodeEditor itself is React.lazy, so CodeMirror stays out of
+ * the main bundle until the section is opened (same pattern as the tag
+ * details code-injection section in apps/posts).
+ */
+function CodeInjectionField({ editor, field, label, code, testId, htmlExtensions }: {
+    editor: UseEditorResult;
+    field: "codeinjectionHead" | "codeinjectionFoot";
+    label: string;
+    code: string;
+    testId: string;
+    htmlExtensions: CodeEditorProps["extensions"];
+}) {
+    const { state, dispatch } = editor;
+
+    const handleBlur = () => {
+        if (state.settingsScratch[field] === state.post?.settings[field]) {
+            return;
+        }
+        if (state.post?.id) {
+            dispatch({ type: "SAVE_REQUESTED", kind: "manual" });
+        }
+    };
+
+    return (
+        <div>
+            <Label>{label} <code className="ml-1 font-mono text-xs font-normal text-gray-600">{code}</code></Label>
+            <div className="mt-1">
+                <CodeEditor
+                    data-testid={testId}
+                    extensions={htmlExtensions}
+                    value={state.settingsScratch[field] ?? ""}
+                    onBlur={handleBlur}
+                    onChange={value => dispatch({ type: "SETTINGS_CHANGED", settings: { [field]: value || null } })}
+                />
+            </div>
+        </div>
+    );
+}
+
+// Ember validators/post.js canonicalUrl
+function validateCanonicalUrl(value: string): string | null {
+    if (!value) {
+        return null;
+    }
+    if (/\s/.test(value) || !/^(\/|[a-zA-Z0-9-]+:)/.test(value)) {
+        return "Please enter a valid URL";
+    }
+    if (value.length > 2000) {
+        return "Canonical URL is too long, max 2000 chars";
+    }
+    return null;
+}
+
+/**
+ * The Meta data / X card / Facebook card / Code injection subviews. Ember
+ * renders these as slide-in sub-panes; here they're collapsible sections in
+ * the same column (same approved pattern as the tag details screen).
+ */
+function SubviewSections({ editor, resource }: { editor: UseEditorResult; resource: EditorResource }) {
+    const { state } = editor;
+    const htmlExtensions = useMemo(() => [import("@codemirror/lang-html").then(module => module.html())], []);
+
+    // Ember's placeholder fallback chains (without the site-settings tails)
+    const seoTitle = state.settingsScratch.metaTitle || state.titleScratch || "(Untitled)";
+    const seoDescription = state.settingsScratch.metaDescription || state.customExcerptScratch || "";
+    const facebookTitle = state.settingsScratch.ogTitle || seoTitle;
+    const facebookDescription = state.settingsScratch.ogDescription || seoDescription;
+    const twitterTitle = state.settingsScratch.twitterTitle || seoTitle;
+    const twitterDescription = state.settingsScratch.twitterDescription || seoDescription;
+
+    const displayNoun = noun(resource);
+
+    return (
+        <Accordion className="border-t border-[#E6E9EB]" type="multiple">
+            <AccordionItem value="codeinjection">
+                <AccordionTrigger data-test-button="codeinjection" data-testid="psm-code-injection">
+                    Code injection
+                </AccordionTrigger>
+                <AccordionContent>
+                    <div className="flex flex-col gap-5 p-1">
+                        <CodeInjectionField
+                            code="{{ghost_head}}"
+                            editor={editor}
+                            field="codeinjectionHead"
+                            htmlExtensions={htmlExtensions}
+                            label={`${displayNoun} header`}
+                            testId="codeinjection-head-editor"
+                        />
+                        <CodeInjectionField
+                            code="{{ghost_foot}}"
+                            editor={editor}
+                            field="codeinjectionFoot"
+                            htmlExtensions={htmlExtensions}
+                            label={`${displayNoun} footer`}
+                            testId="codeinjection-foot-editor"
+                        />
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="meta-data">
+                <AccordionTrigger data-test-button="meta-data" data-testid="psm-meta-data">
+                    Meta data
+                </AccordionTrigger>
+                <AccordionContent>
+                    <div className="flex flex-col gap-5 p-1">
+                        <SettingsTextField
+                            editor={editor}
+                            field="metaTitle"
+                            hint={<CharCountdown max={60} value={state.settingsScratch.metaTitle ?? ""} />}
+                            id="meta-title"
+                            label="Meta title"
+                            maxLength={300}
+                            maxLengthError="Meta Title cannot be longer than 300 characters."
+                            placeholder={seoTitle}
+                            testId="meta-title"
+                        />
+                        <SettingsTextField
+                            multiline
+                            editor={editor}
+                            field="metaDescription"
+                            hint={<CharCountdown max={145} value={state.settingsScratch.metaDescription ?? ""} />}
+                            id="meta-description"
+                            label="Meta description"
+                            maxLength={500}
+                            maxLengthError="Meta Description cannot be longer than 500 characters."
+                            placeholder={seoDescription}
+                            testId="meta-description"
+                        />
+                        <SettingsTextField
+                            editor={editor}
+                            field="canonicalUrl"
+                            id="canonicalUrl"
+                            label="Canonical URL"
+                            testId="canonicalUrl"
+                            validate={validateCanonicalUrl}
+                        />
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="twitter-data">
+                <AccordionTrigger data-test-button="twitter-data" data-testid="psm-x-card">
+                    X card
+                </AccordionTrigger>
+                <AccordionContent>
+                    <div className="flex flex-col gap-5 p-1">
+                        <SettingsImageField
+                            addText="Add X image"
+                            editor={editor}
+                            field="twitterImage"
+                            label="X image"
+                            testIdPrefix="twitter-image"
+                        />
+                        <SettingsTextField
+                            editor={editor}
+                            field="twitterTitle"
+                            id="twitter-title"
+                            label="X title"
+                            maxLength={300}
+                            maxLengthError="Twitter Title cannot be longer than 300 characters."
+                            placeholder={twitterTitle}
+                            testId="twitter-title"
+                        />
+                        <SettingsTextField
+                            multiline
+                            editor={editor}
+                            field="twitterDescription"
+                            id="twitter-description"
+                            label="X description"
+                            maxLength={500}
+                            maxLengthError="Twitter Description cannot be longer than 500 characters."
+                            placeholder={twitterDescription}
+                            testId="twitter-description"
+                        />
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+
+            <AccordionItem value="facebook-data">
+                <AccordionTrigger data-test-button="facebook-data" data-testid="psm-facebook-card">
+                    Facebook card
+                </AccordionTrigger>
+                <AccordionContent>
+                    <div className="flex flex-col gap-5 p-1">
+                        <SettingsImageField
+                            addText="Add Facebook image"
+                            editor={editor}
+                            field="ogImage"
+                            label="Facebook image"
+                            testIdPrefix="og-image"
+                        />
+                        <SettingsTextField
+                            editor={editor}
+                            field="ogTitle"
+                            id="og-title"
+                            label="Facebook title"
+                            maxLength={300}
+                            maxLengthError="Facebook Title cannot be longer than 300 characters."
+                            placeholder={facebookTitle}
+                            testId="og-title"
+                        />
+                        <SettingsTextField
+                            multiline
+                            editor={editor}
+                            field="ogDescription"
+                            id="og-description"
+                            label="Facebook description"
+                            maxLength={500}
+                            maxLengthError="Facebook Description cannot be longer than 500 characters."
+                            placeholder={facebookDescription}
+                            testId="og-description"
+                        />
+                    </div>
+                </AccordionContent>
+            </AccordionItem>
+        </Accordion>
+    );
+}
+
 export interface SettingsMenuProps {
     editor: UseEditorResult;
     resource: EditorResource;
@@ -496,25 +1193,57 @@ export interface SettingsMenuProps {
 
 /**
  * Post settings menu contents, rendered inside the editor's settings Sheet.
- * Port of the main pane of Ember's gh-post-settings-menu (subviews like meta
- * data / code injection are follow-ups).
+ * Port of Ember's gh-post-settings-menu: the main pane fields in Ember's
+ * order, with the meta data / social card / code injection sub-panes as
+ * collapsible sections.
  */
 export function SettingsMenu({ editor, resource }: SettingsMenuProps) {
-    const noun = resource === "pages" ? "Page" : "Post";
+    const displayNoun = noun(resource);
+    const post = editor.state.post;
 
-    if (!editor.state.post) {
+    // Ember role gates: tags hidden for contributors; access (visibility),
+    // authors and the featured toggle hidden for authors + contributors
+    const { data: currentUser } = useCurrentUser();
+    const isContributor = currentUser ? isContributorUser(currentUser) : false;
+    const showStaffFields = currentUser ? !isAuthorOrContributor(currentUser) : false;
+
+    if (!post) {
         return null;
     }
 
     return (
         <div className="flex flex-col gap-5 [&_label]:text-[1.3rem] [&_label]:font-medium [&_label]:text-[#15171A]">
-            <PostUrlField editor={editor} noun={noun} />
+            <PostUrlField editor={editor} noun={displayNoun} />
             <PublishDateTimeFields editor={editor} />
-            <TagsField editor={editor} />
+            {!isContributor ? <TagsField editor={editor} /> : null}
+            {showStaffFields ? <VisibilityField editor={editor} noun={displayNoun} /> : null}
             <ExcerptField editor={editor} />
+            {showStaffFields ? <AuthorsField editor={editor} /> : null}
+            <TemplateField editor={editor} resource={resource} />
             <FeatureImageField editor={editor} />
-            {editor.state.post.id !== null ? (
-                <DeleteField editor={editor} noun={noun} resource={resource} />
+            <div className="flex flex-col gap-4" data-testid="psm-toggles">
+                {resource === "pages" && post.lexical !== null ? (
+                    <ToggleField
+                        checked={editor.state.settingsScratch.showTitleAndFeatureImage ?? true}
+                        id="show-title-and-feature-image"
+                        label="Show title and feature image"
+                        testCheckbox="hide-title-and-feature-image"
+                        onChange={checked => commitSettings(editor, { showTitleAndFeatureImage: checked })}
+                    />
+                ) : null}
+                {showStaffFields ? (
+                    <ToggleField
+                        checked={editor.state.settingsScratch.featured}
+                        id="featured"
+                        label={`Feature this ${displayNoun.toLowerCase()}`}
+                        testCheckbox="featured"
+                        onChange={checked => commitSettings(editor, { featured: checked })}
+                    />
+                ) : null}
+            </div>
+            <SubviewSections editor={editor} resource={resource} />
+            {post.id !== null ? (
+                <DeleteField editor={editor} noun={displayNoun} resource={resource} />
             ) : null}
         </div>
     );

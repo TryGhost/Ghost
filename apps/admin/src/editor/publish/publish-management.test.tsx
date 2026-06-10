@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { FullPost } from "@tryghost/admin-x-framework/api/editor";
-import { createInitialState, transition, type EditorState, type PostStatus } from "@/editor/state";
+import { createDefaultPostSettings, createInitialState, transition, type EditorState, type PostStatus } from "@/editor/state";
 import type { UseEditorResult } from "@/editor/use-editor";
 import { PublishManagement } from "./publish-management";
 
@@ -46,6 +46,7 @@ function makeState({ status = "draft" as PostStatus, id = "post-1" as string | n
             publishedAt: null,
             featureImage: null,
             updatedAt: "2026-01-01T00:00:00.000Z",
+            settings: createDefaultPostSettings(),
         },
     });
     return state;
