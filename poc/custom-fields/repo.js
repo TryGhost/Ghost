@@ -52,15 +52,10 @@ export const TYPES = [
     {value: 'select', label: 'List', tier: 2}
 ];
 
-/** Quick-create presets. A preset just pre-fills label + type (all text for now). */
-export const PRESETS = [
-    {preset: 'first_name', label: 'First name', type: 'text'},
-    {preset: 'last_name', label: 'Last name', type: 'text'},
-    {preset: 'phone', label: 'Phone', type: 'text'},
-    {preset: 'company', label: 'Company', type: 'text'},
-    {preset: 'address', label: 'Address', type: 'text'},
-    {preset: 'website', label: 'Website', type: 'text'}
-];
+// Presets (beehiiv-style quick-create chips) are deferred for the POC: Ghost's
+// built-in `name` would clash with name presets. The `preset` property on a
+// definition is kept (nullable) only to record provenance. See
+// poc/custom-fields/ideas/field-formats.md.
 
 const clone = value => JSON.parse(JSON.stringify(value));
 

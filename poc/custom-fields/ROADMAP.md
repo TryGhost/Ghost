@@ -52,6 +52,8 @@ The POC is successful if that loop feels natural to test users, independent of h
 - **Member-visibility is implicit via form placements**: a field reaches members only if explicitly added to a Portal form. There is no separate "internal" flag.
 - **Account page is opt-in**: it starts empty and the owner adds the fields members may self-edit (the `account` placements). No field is exposed by default.
 - **Field descriptions (`helpText`) are dropped** for now. helpText is admin-only by design; no UI sets it.
+- **Presets deferred** (not built now, not abandoned). Name-style presets would clash with Ghost's built-in `name`, but gap-filling presets (Phone, Company, …) could be useful later. The `preset` property stays nullable in the model. See [ideas/field-formats.md](./ideas/field-formats.md).
+- **Signup uses a unified Form fields list** (Story 3): built-in Email (locked) + Name (toggle → `portal_name`) + custom-field placements in one reorderable list. Built-in = toggle/locked, custom = add/remove.
 
 ## Future explorations (deliberately deferred)
 
@@ -60,6 +62,8 @@ Out of scope for the POC, worth revisiting for a real implementation:
 - **Admin-only Description**: an optional description on a field, shown only in admin (never to members). Dropped now for simplicity; the `helpText` property is reserved in the model.
 - **Explicit "internal" field flag**: mark a field as admin-only so it is hard-excluded from Portal form pickers and badged "Internal", rather than relying on the owner simply not placing it. Earns its keep once the form pickers exist (Stories 3/4).
 - **Post-signup survey (progressive profiling)**: collect optional fields *after* signup via a card/modal injected post-verification, instead of adding signup friction. A new `post_signup` collection surface + per-member completion state; likely lives under Growth. See [ideas/post-signup-survey.md](./ideas/post-signup-survey.md).
+- **Field formats (validated types) + presets**: validated types like email / phone / url (modeled as a `format` on text, surfaced as data types), plus deferred convenience presets. See [ideas/field-formats.md](./ideas/field-formats.md).
+- **Integration surface for a real build**: import/migration, CSV export, Admin API, NQL filtering/segmentation, email personalization, webhooks, themes, GDPR export, etc. The full checklist beyond the POC's UI surfaces. See [ideas/integration-surface.md](./ideas/integration-surface.md).
 
 ## Open questions
 

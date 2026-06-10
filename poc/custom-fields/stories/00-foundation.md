@@ -23,14 +23,14 @@ Throwaway path: delete `poc/custom-fields/` and remove the import lines. Swap pa
   - `getValues(memberId)` / `setValue(memberId, fieldId, value)`
 - Seed-on-first-run from `custom-fields.seed.json`, then persist to localStorage under one shared key.
 - A tiny key-derivation helper (`label` → `key`, snake_case, dedupe).
-- Exported constants (`TYPES`, `PRESETS`) so the admin create UI has one source for the dropdowns.
+- Exported `TYPES` constant so the admin create UI has one source for the type dropdown. (Presets were dropped, see ROADMAP.)
 
 ## Tasks
 
 - [ ] `poc/custom-fields/repo.js`: plain ESM, no deps, localStorage-backed, the interface above.
 - [ ] Seed loader from `custom-fields.seed.json` (import the JSON directly).
 - [ ] `label` → `key` derivation + uniqueness.
-- [ ] Export `TYPES` + `PRESETS` constants.
+- [ ] Export `TYPES` constant.
 - [ ] Manual sanity check from the browser console.
 
 ## Open

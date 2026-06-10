@@ -24,6 +24,22 @@ Key serialization/flow touchpoints found:
 - Members API signup path (where signup values must be captured): `services/members/members-api/controllers/router-controller.js` (`_handleSignup`, ~line 1014) — today only captures name/labels/newsletters/attribution.
 - Member update allowlist (Portal account save): the Members API `member` update only accepts name/subscribed/newsletters/enable_comment_notifications today; custom values need adding.
 
+## Built-in fields vs custom fields (unify them)
+
+Ghost already has built-in member attributes collected at signup, `email` (required) and `name` (optional, toggled by the `portal_name` setting). These "act like" custom fields, which creates a clash if you naively add name presets.
+
+What worked conceptually: treat the signup config as **one unified "Form fields" list** where built-in and custom fields coexist, distinguished by how they're controlled:
+
+- **Email** = system field: locked, always required, can't remove.
+- **Name** = built-in: an on/off **toggle** (maps to `portal_name`), not add/remove.
+- **Custom fields** = add/remove rows with per-placement Required/Optional and a `…` menu.
+
+This reconciles `portal_name` with the placement model and is the planned Story 3 approach. For a real build, the cleanest version makes `name`/`email` first-class **system fields** in the same fields model (locked type/deletion), so there's a single mental model for "things you collect about members" and the signup name toggle is just a placement of the `name` field.
+
+**Presets deferred (not dropped).** Because `name` is built-in, beehiiv-style First/Last/Full name presets would create two competing name sources, so no presets in the POC. But gap-filling presets (Phone, Company, …) could be useful later, and a preset could pre-pick a *format* (see below). Tracked in [ideas/field-formats.md](./ideas/field-formats.md). (Open question: publishers who want split first/last names that `member.name` can't store.)
+
+**Field formats (validated types).** "Phone / email / url" are not presets, they carry validation. Model them as a `format` on a base text type (mirrors HTML input types / JSON Schema), surfaced in the UI as more data types. Deferred; see the idea doc.
+
 ## Type system
 
 - **`select` is the complexity spike.** It needs an options editor in the create form and forks the value shape (string vs string[] via `multiple`) across every surface. Build trivial types first; treat select as its own milestone.
@@ -40,6 +56,7 @@ Key serialization/flow touchpoints found:
 ## Portal (still ahead, Stories 3–4)
 
 - **Portal has no design system** (TailwindCSS v3, UMD bundles). The signup/account inputs are hand-rolled in `getInputFields()`. Rendering custom fields there means hand-built controls, especially a **multi-select** for `select` + `multiple`. Budget for it.
+- **Signup field order is hardcoded.** `signup-page.js` leads with `email` and `unshift`s `Name` above it when `portal_name` is on; `tabIndex` (1/2) and `autoFocus` (`fields[0]`) are hardcoded. Data-driven order (drag-to-reorder in the unified list) requires built-in email/name to be represented as entries in one ordered list alongside custom placements, with autoFocus/tabIndex derived from position. Email stays required/locked even if moved; the honeypot stays hidden/appended.
 - Signup values must survive the magic-link round trip (they ride in the token data), not just the logged-in update path.
 
 ## i18n

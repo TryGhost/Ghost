@@ -24,7 +24,7 @@
 
 - **Descriptions dropped.** `helpText` is admin-only by design; we removed it from the seed and the list to keep the modal minimal. The property is reserved in the model for a future admin-only Description field.
 - **No explicit internal flag.** Member-visibility is implicit: a field reaches members only if placed on a Portal form (account page is opt-in). An explicit "internal" flag is a documented future enhancement (see ROADMAP).
-- **Presets** (beehiiv's "First name / Last name / Full name" chips) not built; `PRESETS` exists in the repo. Easy follow-up.
+- **Presets deferred** (not built now): name-style presets clash with the built-in `name`, but gap-filling presets could be useful later. `PRESETS` removed from the repo for now; the nullable `preset` property remains. See [ideas/field-formats.md](../ideas/field-formats.md).
 - **Orphaned values** when a select option is deleted after members have values: ignored for the POC.
 
 ## Surface
@@ -38,21 +38,19 @@
 ## UX (from beehiiv)
 
 - A list of existing fields: label + type badge, with a per-row menu (edit / archive / delete).
-- "Create new custom field" dialog: **Enter name** (label) + **Enter data type** (dropdown: Text, Number, True/False, [List in Tier 2]). `key` auto-derived, hidden.
-- Presets offered as quick-create (First name, Last name, Company, ...).
-- Tier 2: when type = List, show the options editor (add/remove/reorder) + single-vs-multi toggle.
+- "Create new custom field" dialog: **Enter name** (label) + **Enter data type** (dropdown: Text, Number, True/False, List). `key` auto-derived, hidden.
+- Tier 2: when type = List, show the options editor (add/remove) + single-vs-multi toggle.
 
 ## Tasks
 
 - [ ] Section component listing fields from `repo.listFields()`.
 - [ ] Type badge component.
 - [ ] Create dialog (name + type), Tier 1 types only.
-- [ ] Preset quick-create.
-- [ ] Edit existing field (label, helpText; type read-only once values exist).
+- [ ] Edit existing field (label; type read-only once values exist).
 - [ ] Archive + delete (with confirm).
 - [ ] Wire to repo; reflect changes live.
 - [ ] Tier 2: options editor + multi toggle for List; decide option-delete behavior.
 
 ## Done = demoable
 
-Owner can create a Text/Number/True-False field from scratch or a preset, see it in the list, edit and delete it, and it persists.
+Owner can create a Text/Number/True-False field from scratch, see it in the list, edit and delete it, and it persists.

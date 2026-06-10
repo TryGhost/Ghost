@@ -33,14 +33,7 @@ export interface TypeOption {
     tier: number;
 }
 
-export interface PresetOption {
-    preset: string;
-    label: string;
-    type: FieldType;
-}
-
 export const TYPES: TypeOption[];
-export const PRESETS: PresetOption[];
 
 export function deriveKey(label: string, existingKeys?: string[]): string;
 
