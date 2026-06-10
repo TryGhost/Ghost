@@ -408,12 +408,16 @@ export function getPublishSaveDetails(
 
 /**
  * Minimal port of the post validations Ember runs before opening the publish
- * flow (title length is the only one that can fail from the editor screen).
- * Returns an error message or null when valid.
+ * flow (title and excerpt length are the ones that can fail from the editor
+ * screen — ghost/admin/app/validators/post.js). Returns an error message or
+ * null when valid.
  */
-export function validatePost({ title }: { title: string }): string | null {
+export function validatePost({ title, customExcerpt }: { title: string; customExcerpt?: string | null }): string | null {
     if (title.length > 255) {
         return "Validation failed: Title cannot be longer than 255 characters.";
+    }
+    if ((customExcerpt ?? "").length > 300) {
+        return "Validation failed: Excerpt cannot be longer than 300 characters.";
     }
     return null;
 }

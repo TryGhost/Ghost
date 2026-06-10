@@ -17,6 +17,7 @@ import {
     createInitialState,
     getLeaveDecision,
     hasDirtyAttributes,
+    isPastScheduledTime,
     transition,
     type EditorEffect,
     type EditorEvent,
@@ -174,11 +175,18 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
         timedSave: null,
     });
     const pendingSlugRef = useRef<string | null>(null);
+    // Monotonic token so only the LATEST slug generation may write
+    // pendingSlugRef — a slow earlier request resolving last must not
+    // overwrite the slug generated for a newer title
+    const slugGenerationRef = useRef(0);
 
     // Publish extras for the next manual save plus its completion promises;
-    // all settle when the save queue drains (a manual save may be queued
-    // behind an in-flight save, and several manual saves can be pending at
-    // once — e.g. a settings field's blur-save racing the Update button)
+    // extras are consumed by the manual request that carries them (a plain
+    // manual save queued after a publish must not strip its email extras),
+    // and all promises settle when the save queue drains (a manual save may
+    // be queued behind an in-flight save, and several manual saves can be
+    // pending at once — e.g. a settings field's blur-save racing the Update
+    // button)
     const manualSaveExtrasRef = useRef<ManualSaveExtras | null>(null);
     const manualSaveDeferredsRef = useRef<Deferred[]>([]);
     const [savedPost, setSavedPost] = useState<FullPost | null>(null);
@@ -228,8 +236,12 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
         }
 
         // manual saves can carry publish extras (email_only flag plus the
-        // newsletter/email_segment query params that trigger email sending)
+        // newsletter/email_segment query params that trigger email sending);
+        // they're consumed per-request so they apply to exactly one save
         const extras = kind === "manual" ? manualSaveExtrasRef.current : null;
+        if (kind === "manual") {
+            manualSaveExtrasRef.current = null;
+        }
         if (extras?.emailOnly !== undefined) {
             body.email_only = extras.emailOnly;
         }
@@ -270,7 +282,6 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
             // queued save completes — resolving on the first manual-kind
             // success showed "Updated" while edits were still unsaved
             if (stateRef.current.save.status === "idle") {
-                manualSaveExtrasRef.current = null;
                 const deferreds = manualSaveDeferredsRef.current;
                 manualSaveDeferredsRef.current = [];
                 deferreds.forEach(deferred => deferred.resolve(saved));
@@ -324,7 +335,15 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
     }, [clearTimers, performSave]);
 
     const dispatch = useCallback((event: EditorEvent) => {
-        const { state: next, effects } = transition(stateRef.current, event);
+        // the machine is clock-free, so `post.pastScheduledTime` is computed
+        // here (the hook boundary) for every save request that didn't supply
+        // it — a manual save of a scheduled post whose time already passed
+        // must publish immediately (Ember saveTask line 621)
+        const resolved: EditorEvent = event.type === "SAVE_REQUESTED" && event.pastScheduledTime === undefined
+            ? { ...event, pastScheduledTime: isPastScheduledTime(stateRef.current, Date.now(), event.publishedAt) }
+            : event;
+
+        const { state: next, effects } = transition(stateRef.current, resolved);
         stateRef.current = next;
         setState(next);
         executeEffects(effects);
@@ -336,6 +355,8 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
 
     const loadPost = useCallback((post: PostSnapshot) => {
         pendingSlugRef.current = null;
+        // invalidate in-flight slug generations from the previous post
+        slugGenerationRef.current += 1;
         dispatch({ type: "POST_LOADED", post });
     }, [dispatch]);
 
@@ -360,24 +381,19 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
             }
 
             const previousPublishedAt = current.publishedAtScratch;
-            const publishedAtChanged = options.publishedAt !== undefined
-                && options.publishedAt !== previousPublishedAt;
+            const appliedPublishedAt = options.publishedAt;
+            const publishedAtChanged = appliedPublishedAt !== undefined
+                && appliedPublishedAt !== previousPublishedAt;
 
-            if (publishedAtChanged) {
-                dispatchRef.current({ type: "SCRATCH_CHANGED", field: "publishedAt", value: options.publishedAt ?? null });
-            }
-            if (options.saveType) {
-                dispatchRef.current({ type: "SET_SAVE_TYPE", saveType: options.saveType });
-            }
-
+            // extras don't reset when absent: pending extras belong to an
+            // earlier (queued) manual save and are consumed by the request
+            // that carries them — a plain save must not strip them
             if (options.emailOnly !== undefined || options.newsletter || options.emailSegment) {
                 manualSaveExtrasRef.current = {
                     emailOnly: options.emailOnly,
                     newsletter: options.newsletter,
                     emailSegment: options.emailSegment,
                 };
-            } else {
-                manualSaveExtrasRef.current = null;
             }
 
             manualSaveDeferredsRef.current.push({
@@ -385,15 +401,25 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
                 reject: (error: unknown) => {
                     // Ember reverts the applied model changes when a publish
                     // save fails so the editor doesn't show unsaved publish
-                    // state (_revertModelChanges)
-                    if (publishedAtChanged) {
+                    // state (_revertModelChanges) — but only when the scratch
+                    // still holds the value this save applied; an edit made
+                    // while the save was in flight must survive the revert
+                    if (publishedAtChanged && stateRef.current.publishedAtScratch === appliedPublishedAt) {
                         dispatchRef.current({ type: "SCRATCH_CHANGED", field: "publishedAt", value: previousPublishedAt });
                     }
                     reject(error instanceof Error ? error : new Error(String(error)));
                 },
             });
 
-            dispatchRef.current({ type: "SAVE_REQUESTED", kind: "manual" });
+            // the full intent rides on the save request so it survives being
+            // queued behind an in-flight save (the machine re-applies it when
+            // the queued save runs)
+            dispatchRef.current({
+                type: "SAVE_REQUESTED",
+                kind: "manual",
+                saveType: options.saveType,
+                publishedAt: options.publishedAt,
+            });
         });
     }, []);
 
@@ -424,10 +450,13 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
         // derived from the saved title (i.e. not customized by the user)
         const shouldGenerateSlug = !post.slug || looksLikeGeneratedSlug(currentTitle, post.slug);
         if (shouldGenerateSlug && newTitle) {
+            // only the latest generation may win: a slow earlier request
+            // resolving after a newer one must not overwrite its slug
+            const generation = ++slugGenerationRef.current;
             callbacksRef.current
                 .generateSlug({ type: "post", text: newTitle, modelId: post.id ?? undefined })
                 .then((slug) => {
-                    if (slug) {
+                    if (slug && generation === slugGenerationRef.current) {
                         pendingSlugRef.current = slug;
                     }
                 })
@@ -463,6 +492,13 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
             resetScratch();
             return;
         }
+
+        // commit the raw candidate into the machine scratch immediately so
+        // the editor is dirty while the async sanitize runs — the leave
+        // guard then saves/confirms instead of dropping the slug edit (Ember
+        // waited on updateSlugTask in _confirmLeave); the server result (or
+        // a reset) replaces it below
+        dispatchRef.current({ type: "SCRATCH_CHANGED", field: "slug", value: newSlug });
 
         let serverSlug = "";
         try {

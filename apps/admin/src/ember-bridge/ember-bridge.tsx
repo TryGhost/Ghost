@@ -76,6 +76,11 @@ const EMBER_TO_REACT_TYPE_MAPPING: Record<string, string> = {
     'tier': 'TiersResponseType',
     'user': 'UsersResponseType',
     'post': 'PostsResponseType',
+    // pages are a separate Ember model with their own React cache key; like
+    // posts, Ember-side edits invalidate (rather than update) the React
+    // queries — the updateQueries strategy in DEVIATIONS.md only applies to
+    // the opposite direction (React -> Ember store sync for tags)
+    'page': 'PagesResponseType',
     'member': 'MembersResponseType',
     'comment': 'CommentsResponseType',
     'tag': 'TagsResponseType',

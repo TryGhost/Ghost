@@ -44,7 +44,10 @@ export function PublishManagement({ editor, post, resource }: {
 
     // Ember validates the post before opening any of the flows
     const openWithValidation = (modal: Exclude<OpenModal, null>) => {
-        const error = validatePost({ title: editor.state.titleScratch });
+        const error = validatePost({
+            title: editor.state.titleScratch,
+            customExcerpt: editor.state.customExcerptScratch,
+        });
         if (error) {
             setValidationError(error);
             return;

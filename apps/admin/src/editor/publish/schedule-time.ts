@@ -73,20 +73,47 @@ export function timezoneOffsetMs(date: Date, timeZone: string): number {
 
 /**
  * Interpret a wall-clock date ('YYYY-MM-DD') and time ('HH:mm') in
- * `timeZone` and return the corresponding UTC instant.
+ * `timeZone` and return the corresponding UTC instant. Returns null for
+ * impossible calendar dates (e.g. Feb 30). Wall times that fall inside a
+ * DST gap (e.g. 02:30 on a spring-forward day) are shifted forward past the
+ * gap, matching moment-timezone (which Ember used).
  */
-export function zonedDateTimeToUtc(dateStr: string, timeStr: string, timeZone: string): Date {
+export function zonedDateTimeToUtc(dateStr: string, timeStr: string, timeZone: string): Date | null {
     const [year, month, day] = dateStr.split("-").map(Number);
     const [hour, minute] = timeStr.split(":").map(Number);
 
+    // reject impossible calendar dates (e.g. 2026-02-30) which Date.UTC
+    // would silently roll over into the next month
+    const probe = new Date(Date.UTC(year, month - 1, day));
+    if (probe.getUTCFullYear() !== year || probe.getUTCMonth() !== month - 1 || probe.getUTCDate() !== day) {
+        return null;
+    }
+
     const wallClockAsUtc = Date.UTC(year, month - 1, day, hour, minute, 0, 0);
 
-    // Two-pass offset resolution handles DST boundaries well enough for a
-    // scheduling picker
-    let utc = wallClockAsUtc - timezoneOffsetMs(new Date(wallClockAsUtc), timeZone);
-    utc = wallClockAsUtc - timezoneOffsetMs(new Date(utc), timeZone);
+    // Two-pass offset resolution: correct whenever the requested wall time
+    // actually exists in the zone
+    const candidate1 = wallClockAsUtc - timezoneOffsetMs(new Date(wallClockAsUtc), timeZone);
+    const candidate2 = wallClockAsUtc - timezoneOffsetMs(new Date(candidate1), timeZone);
 
-    return new Date(utc);
+    // verify the conversion is a fixpoint: formatting the candidate back
+    // must yield the requested wall time
+    const roundTrips = (utcMs: number) => {
+        const parts = getZonedParts(new Date(utcMs), timeZone);
+        return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute) === wallClockAsUtc;
+    };
+
+    if (roundTrips(candidate2)) {
+        return new Date(candidate2);
+    }
+    if (roundTrips(candidate1)) {
+        return new Date(candidate1);
+    }
+
+    // DST gap: no instant has this wall time. The later candidate applied
+    // the pre-gap offset and so lands after the transition — i.e. the wall
+    // time shifted forward by the gap, which is what moment picks
+    return new Date(Math.max(candidate1, candidate2));
 }
 
 function pad(value: number): string {

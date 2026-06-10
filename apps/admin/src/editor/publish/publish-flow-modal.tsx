@@ -69,12 +69,17 @@ function ScheduleDateTimePicker({ options, updateOptions, timezone }: {
     }, [timeValue]);
 
     const commit = (dateStr: string, timeStr: string) => {
-        if (!/^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim()) || !/^\d{1,2}:\d{2}$/.test(timeStr.trim())) {
+        // invalid formats AND impossible calendar dates (Feb 30) reset the
+        // inputs to the committed value
+        const scheduledAt = /^\d{4}-\d{2}-\d{2}$/.test(dateStr.trim()) && /^\d{1,2}:\d{2}$/.test(timeStr.trim())
+            ? zonedDateTimeToUtc(dateStr.trim(), timeStr.trim(), timezone)
+            : null;
+        if (!scheduledAt) {
             setDateDraft(dateValue);
             setTimeDraft(timeValue);
             return;
         }
-        updateOptions(state => setScheduledAt(state, zonedDateTimeToUtc(dateStr.trim(), timeStr.trim(), timezone)));
+        updateOptions(state => setScheduledAt(state, scheduledAt));
     };
 
     return (

@@ -6,6 +6,7 @@ import {
     createInitialState,
     getLeaveDecision,
     hasDirtyAttributes,
+    isPastScheduledTime,
     transition,
     type EditorEffect,
     type EditorState,
@@ -446,26 +447,26 @@ describe("save lifecycle", () => {
 
         it("background saves never run while a save is in flight — they enqueue", () => {
             const { state, effects } = transition(savingState(), { type: "SAVE_REQUESTED", kind: "autosave" });
-            expect(state.save).toMatchObject({ status: "saving", queued: "autosave" });
+            expect(state.save).toMatchObject({ status: "saving", queued: { kind: "autosave" } });
             expect(effects).toEqual([]);
         });
 
         it("queued background saves are latest-wins", () => {
             let { state } = transition(savingState(), { type: "SAVE_REQUESTED", kind: "autosave" });
             ({ state } = transition(state, { type: "SAVE_REQUESTED", kind: "timed" }));
-            expect(state.save).toMatchObject({ status: "saving", queued: "timed" });
+            expect(state.save).toMatchObject({ status: "saving", queued: { kind: "timed" } });
         });
 
         it("a manual save supersedes a queued autosave", () => {
             let { state } = transition(savingState(), { type: "SAVE_REQUESTED", kind: "autosave" });
             ({ state } = transition(state, { type: "SAVE_REQUESTED", kind: "manual" }));
-            expect(state.save).toMatchObject({ status: "saving", queued: "manual" });
+            expect(state.save).toMatchObject({ status: "saving", queued: { kind: "manual" } });
         });
 
         it("a queued manual save is never downgraded by a later background request", () => {
             let { state } = transition(savingState(), { type: "SAVE_REQUESTED", kind: "manual" });
             ({ state } = transition(state, { type: "SAVE_REQUESTED", kind: "autosave" }));
-            expect(state.save).toMatchObject({ status: "saving", queued: "manual" });
+            expect(state.save).toMatchObject({ status: "saving", queued: { kind: "manual" } });
         });
 
         it("runs a queued manual save after the in-flight save succeeds", () => {
@@ -496,6 +497,45 @@ describe("save lifecycle", () => {
             ({ state } = transition(state, { type: "SAVE_FAILED", error: genericError() }));
             expect(state.save.status).toBe("error");
         });
+
+        it("a queued publish stays a publish (the intent survives the in-flight save's status resync)", () => {
+            // autosave in flight; the publish flow requests a manual publish
+            const { state } = transition(savingState("autosave"), { type: "SAVE_REQUESTED", kind: "manual", saveType: "publish" });
+            expect(state.save).toMatchObject({ status: "saving", queued: { kind: "manual", saveType: "publish" } });
+
+            // the autosave succeeds as a draft, which resyncs willPublish to
+            // false — the queued intent must re-apply before the queued save
+            const result = transition(state, { type: "SAVE_SUCCEEDED", post: makePost() });
+            expectSaving(result.state, "manual");
+            expect(savePerformEffect(result.effects)?.payload.status).toBe("published");
+        });
+
+        it("a later plain manual request does not strip a queued publish intent", () => {
+            let { state } = transition(savingState("autosave"), { type: "SAVE_REQUESTED", kind: "manual", saveType: "publish" });
+            // e.g. a settings field blur-save while the publish is queued
+            ({ state } = transition(state, { type: "SAVE_REQUESTED", kind: "manual" }));
+            expect(state.save).toMatchObject({ queued: { kind: "manual", saveType: "publish" } });
+
+            const result = transition(state, { type: "SAVE_SUCCEEDED", post: makePost() });
+            expect(savePerformEffect(result.effects)?.payload.status).toBe("published");
+        });
+
+        it("a queued unschedule still unschedules and clears the publish date", () => {
+            const scheduled = loadPost({ status: "scheduled", publishedAt: "2050-01-01T10:00:00.000Z" });
+            // a manual save (e.g. a settings blur) is in flight
+            let { state } = transition(scheduled, { type: "SAVE_REQUESTED", kind: "manual" });
+            // the update flow queues the unschedule
+            ({ state } = transition(state, { type: "SAVE_REQUESTED", kind: "manual", saveType: "draft", publishedAt: null }));
+
+            // the in-flight save succeeds echoing the scheduled snapshot
+            const result = transition(state, {
+                type: "SAVE_SUCCEEDED",
+                post: makePost({ status: "scheduled", publishedAt: "2050-01-01T10:00:00.000Z" }),
+            });
+            const payload = savePerformEffect(result.effects)?.payload;
+            expect(payload?.status).toBe("draft");
+            expect(payload?.publishedAt).toBeNull();
+        });
     });
 
     describe("SAVE_SUCCEEDED", () => {
@@ -512,6 +552,19 @@ describe("save lifecycle", () => {
             ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "title", value: "typed during save" }));
             ({ state } = transition(state, { type: "SAVE_SUCCEEDED", post: makePost() }));
             expect(state.titleScratch).toBe("typed during save");
+            expect(hasDirtyAttributes(state)).toBe(true);
+        });
+
+        it("does not resync settings scratches edited while the save was in flight", () => {
+            let { state } = startManualSave(loadPost());
+            ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "slug", value: "typed-during-save" }));
+            ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "publishedAt", value: "2026-02-02T00:00:00.000Z" }));
+            ({ state } = transition(state, { type: "SCRATCH_CHANGED", field: "featureImage", value: "/img/new.png" }));
+            ({ state } = transition(state, { type: "SAVE_SUCCEEDED", post: makePost() }));
+
+            expect(state.slugScratch).toBe("typed-during-save");
+            expect(state.publishedAtScratch).toBe("2026-02-02T00:00:00.000Z");
+            expect(state.featureImageScratch).toBe("/img/new.png");
             expect(hasDirtyAttributes(state)).toBe(true);
         });
 
@@ -641,9 +694,41 @@ describe("status transitions", () => {
             expect(manualSaveStatus(loadPost({ status: "scheduled" }), true)).toBe("published");
         });
 
+        it("scheduled -> published when the manual save carries pastScheduledTime (willSchedule derived from status)", () => {
+            // a scheduled post whose publish date already passed: a plain
+            // manual save (Update button, settings blur) publishes it
+            const state = loadPost({ status: "scheduled", publishedAt: "2020-01-01T10:00:00.000Z" });
+            const { effects } = transition(state, { type: "SAVE_REQUESTED", kind: "manual", pastScheduledTime: true });
+            expect(savePerformEffect(effects)?.payload.status).toBe("published");
+        });
+
         it("past scheduled time with no intents reverts to draft", () => {
             const { state } = transition(loadPost({ status: "scheduled" }), { type: "SET_SAVE_TYPE", saveType: "draft" });
             expect(manualSaveStatus(state, true)).toBe("draft");
+        });
+    });
+
+    describe("isPastScheduledTime (dispatch-site helper)", () => {
+        const now = Date.parse("2026-06-10T12:00:00.000Z");
+
+        it("is true for a scheduled post whose publish date passed", () => {
+            const state = loadPost({ status: "scheduled", publishedAt: "2026-06-10T11:00:00.000Z" });
+            expect(isPastScheduledTime(state, now)).toBe(true);
+        });
+
+        it("is false for future dates, non-scheduled posts and missing dates", () => {
+            expect(isPastScheduledTime(loadPost({ status: "scheduled", publishedAt: "2026-06-10T13:00:00.000Z" }), now)).toBe(false);
+            expect(isPastScheduledTime(loadPost({ status: "published", publishedAt: "2026-06-10T11:00:00.000Z" }), now)).toBe(false);
+            expect(isPastScheduledTime(loadPost({ status: "scheduled", publishedAt: null }), now)).toBe(false);
+            expect(isPastScheduledTime(createInitialState(), now)).toBe(false);
+        });
+
+        it("uses the publishedAt carried by the request over the scratch (reschedules)", () => {
+            const state = loadPost({ status: "scheduled", publishedAt: "2026-06-10T11:00:00.000Z" });
+            // rescheduling to the future must not force an immediate publish
+            expect(isPastScheduledTime(state, now, "2026-06-10T13:00:00.000Z")).toBe(false);
+            // clearing the date (unschedule) is never "past"
+            expect(isPastScheduledTime(state, now, null)).toBe(false);
         });
     });
 
@@ -665,21 +750,43 @@ describe("status transitions", () => {
     });
 
     describe("error revert", () => {
-        it("a failed publish reverts the in-flight status to draft", () => {
+        it("a failed publish reverts the in-flight status to draft and disarms the intent", () => {
             let { state } = transition(loadPost(), { type: "SET_SAVE_TYPE", saveType: "publish" });
             ({ state } = startManualSave(state));
             expect(state.post?.status).toBe("published"); // in-flight, mirrors Ember setting post.status pre-save
             ({ state } = transition(state, { type: "SAVE_FAILED", error: genericError() }));
             expect(state.post?.status).toBe("draft");
-            expect(state.willPublish).toBe(true); // intent survives for retry
+            // intent resets to match the reverted status (Ember _revertModelChanges)
+            expect(state.willPublish).toBe(false);
         });
 
-        it("a failed unschedule reverts to scheduled", () => {
+        it("after a failed publish a plain manual save (e.g. settings blur) stays a draft save", () => {
+            let { state } = transition(loadPost(), { type: "SET_SAVE_TYPE", saveType: "publish" });
+            ({ state } = startManualSave(state));
+            ({ state } = transition(state, { type: "SAVE_FAILED", error: genericError() }));
+
+            const retry = startManualSave(state);
+            expect(savePerformEffect(retry.effects)?.payload.status).toBe("draft");
+        });
+
+        it("a failed schedule disarms willSchedule", () => {
+            let { state } = transition(loadPost(), { type: "SET_SAVE_TYPE", saveType: "schedule" });
+            ({ state } = startManualSave(state));
+            ({ state } = transition(state, { type: "SAVE_FAILED", error: genericError() }));
+            expect(state.post?.status).toBe("draft");
+            expect(state.willSchedule).toBe(false);
+        });
+
+        it("a failed unschedule reverts to scheduled and re-arms willSchedule", () => {
             let { state } = transition(loadPost({ status: "scheduled" }), { type: "SET_SAVE_TYPE", saveType: "draft" });
             ({ state } = startManualSave(state));
             expect(state.post?.status).toBe("draft");
             ({ state } = transition(state, { type: "SAVE_FAILED", error: genericError() }));
             expect(state.post?.status).toBe("scheduled");
+            // a later plain manual save must keep the post scheduled
+            expect(state.willSchedule).toBe(true);
+            const retry = startManualSave(state);
+            expect(savePerformEffect(retry.effects)?.payload.status).toBe("scheduled");
         });
     });
 

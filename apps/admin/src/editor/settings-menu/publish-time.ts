@@ -59,7 +59,10 @@ function timezoneOffsetMs(utcMs: number, timeZone: string): number {
  * ISO string. Returns null when the date is not a real calendar date.
  *
  * The offset is computed twice so DST transitions near the target instant
- * resolve to the correct offset (the classic Intl round-trip technique).
+ * resolve to the correct offset (the classic Intl round-trip technique),
+ * then the result is verified as a fixpoint: a wall time inside a DST gap
+ * (e.g. 02:30 on a spring-forward day) is shifted forward past the gap,
+ * matching moment-timezone (which Ember used).
  */
 export function zonedDateTimeToUtc(date: string, time: string, timeZone: string): string | null {
     if (!DATE_FORMAT_PATTERN.test(date) || !TIME_FORMAT_PATTERN.test(time)) {
@@ -76,8 +79,25 @@ export function zonedDateTimeToUtc(date: string, time: string, timeZone: string)
     }
 
     const wallMs = Date.UTC(year, month - 1, day, hour, minute);
-    let utcMs = wallMs - timezoneOffsetMs(wallMs, timeZone);
-    utcMs = wallMs - timezoneOffsetMs(utcMs, timeZone);
+    const candidate1 = wallMs - timezoneOffsetMs(wallMs, timeZone);
+    const candidate2 = wallMs - timezoneOffsetMs(candidate1, timeZone);
 
-    return new Date(utcMs).toISOString();
+    // verify the conversion is a fixpoint: formatting the candidate back
+    // must yield the requested wall time
+    const roundTrips = (utcMs: number) => {
+        const parts = wallClockParts(utcMs, timeZone);
+        return Date.UTC(parts.year, parts.month - 1, parts.day, parts.hour, parts.minute) === wallMs;
+    };
+
+    if (roundTrips(candidate2)) {
+        return new Date(candidate2).toISOString();
+    }
+    if (roundTrips(candidate1)) {
+        return new Date(candidate1).toISOString();
+    }
+
+    // DST gap: no instant has this wall time. The later candidate applied
+    // the pre-gap offset and so lands after the transition — i.e. the wall
+    // time shifted forward by the gap, which is what moment picks
+    return new Date(Math.max(candidate1, candidate2)).toISOString();
 }

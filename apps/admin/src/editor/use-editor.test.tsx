@@ -369,6 +369,213 @@ describe("useEditor", () => {
         void firstSave;
     });
 
+    it("keeps email extras on the publish save even when a plain manual save queues after it", async () => {
+        let releaseFirst: () => void = () => {};
+        mocks.editPost
+            .mockImplementationOnce(() => new Promise((resolve) => {
+                releaseFirst = () => resolve({ posts: [makeFullPost({ updated_at: "2026-01-02T00:00:00.000Z" })] });
+            }))
+            .mockImplementationOnce(() => Promise.resolve({
+                posts: [makeFullPost({ status: "published", updated_at: "2026-01-03T00:00:00.000Z" })],
+            }));
+
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot()));
+
+        // a plain save (e.g. a settings blur) is in flight
+        act(() => {
+            void result.current.performManualSave();
+        });
+        expect(mocks.editPost).toHaveBeenCalledTimes(1);
+
+        // the publish flow queues a publish+email save behind it...
+        let publishSave: Promise<unknown> = Promise.resolve();
+        act(() => {
+            publishSave = result.current.performManualSave({
+                saveType: "publish",
+                emailOnly: false,
+                newsletter: "weekly",
+                emailSegment: "status:free",
+            });
+        });
+        // ...and another plain manual save queues after the publish — it must
+        // not strip the publish intent or its email extras
+        act(() => {
+            void result.current.performManualSave();
+        });
+
+        await act(async () => {
+            releaseFirst();
+            await publishSave;
+        });
+
+        expect(mocks.editPost).toHaveBeenCalledTimes(2);
+        const merged = mocks.editPost.mock.calls[1][0];
+        expect(merged.newsletter).toBe("weekly");
+        expect(merged.emailSegment).toBe("status:free");
+        expect(merged.post.status).toBe("published");
+        expect(merged.post.email_only).toBe(false);
+    });
+
+    it("publishes a past-scheduled post on a plain manual save (pastScheduledTime computed at dispatch)", async () => {
+        mocks.editPost.mockResolvedValue({
+            posts: [makeFullPost({ status: "published", published_at: "2020-01-01T10:00:00.000Z" })],
+        });
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot({ status: "scheduled", publishedAt: "2020-01-01T10:00:00.000Z" })));
+
+        await act(async () => {
+            await result.current.performManualSave();
+        });
+
+        expect(mocks.editPost.mock.calls[0][0].post.status).toBe("published");
+        expect(result.current.state.post?.status).toBe("published");
+    });
+
+    it("publishes a past-scheduled post on a settings-style raw SAVE_REQUESTED dispatch", async () => {
+        mocks.editPost.mockResolvedValue({
+            posts: [makeFullPost({ status: "published", published_at: "2020-01-01T10:00:00.000Z" })],
+        });
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot({ status: "scheduled", publishedAt: "2020-01-01T10:00:00.000Z" })));
+
+        act(() => result.current.dispatch({ type: "SAVE_REQUESTED", kind: "manual" }));
+        await flushSaves();
+
+        expect(mocks.editPost.mock.calls[0][0].post.status).toBe("published");
+    });
+
+    it("rescheduling a past-scheduled post to a future date keeps it scheduled", async () => {
+        mocks.editPost.mockResolvedValue({
+            posts: [makeFullPost({ status: "scheduled", published_at: "2050-01-01T10:00:00.000Z" })],
+        });
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot({ status: "scheduled", publishedAt: "2020-01-01T10:00:00.000Z" })));
+
+        await act(async () => {
+            await result.current.performManualSave({ saveType: "schedule", publishedAt: "2050-01-01T10:00:00.000Z" });
+        });
+
+        expect(mocks.editPost.mock.calls[0][0].post).toMatchObject({
+            status: "scheduled",
+            published_at: "2050-01-01T10:00:00.000Z",
+        });
+    });
+
+    it("does not revert a publish date edited again while the failing save was in flight", async () => {
+        let rejectSave: (error: Error) => void = () => {};
+        mocks.editPost.mockImplementationOnce(() => new Promise((_resolve, reject) => {
+            rejectSave = reject;
+        }));
+
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot()));
+
+        let failingSave: Promise<unknown> = Promise.resolve();
+        act(() => {
+            failingSave = result.current.performManualSave({
+                saveType: "schedule",
+                publishedAt: "2050-01-01T10:00:00.000Z",
+            });
+            failingSave.catch(() => {});
+        });
+
+        // the user edits the date again while the save is in flight
+        act(() => result.current.dispatch({ type: "SCRATCH_CHANGED", field: "publishedAt", value: "2051-06-06T10:00:00.000Z" }));
+
+        await act(async () => {
+            rejectSave(new Error("boom"));
+            await failingSave.catch(() => {});
+        });
+
+        // the newer edit survives the failure revert
+        expect(result.current.state.publishedAtScratch).toBe("2051-06-06T10:00:00.000Z");
+        expect(result.current.state.save.status).toBe("error");
+    });
+
+    it("ignores a stale slug generation resolving after a newer one", async () => {
+        let resolveSlow: (slug: string) => void = () => {};
+        mocks.generateSlug
+            .mockImplementationOnce(() => new Promise((resolve) => {
+                resolveSlow = resolve;
+            }))
+            .mockResolvedValueOnce("title-two");
+        mocks.editPost.mockResolvedValue({ posts: [makeFullPost()] });
+
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot()));
+
+        // first rename starts a slow slug generation...
+        act(() => result.current.updateTitle("Title one"));
+        act(() => result.current.saveTitle());
+
+        // ...a second rename's generation resolves first and saves
+        act(() => result.current.updateTitle("Title two"));
+        act(() => result.current.saveTitle());
+        await flushSaves();
+        await flushSaves();
+
+        expect(mocks.editPost).toHaveBeenCalledTimes(1);
+        expect(mocks.editPost.mock.calls[0][0].post.slug).toBe("title-two");
+
+        // the slow first generation resolves last — it must not win
+        await act(async () => {
+            resolveSlow("title-one");
+            await Promise.resolve();
+        });
+        await flushSaves();
+        await flushSaves();
+
+        const sentSlugs = mocks.editPost.mock.calls.map(call => call[0].post.slug);
+        expect(sentSlugs).not.toContain("title-one");
+    });
+
+    it("updateSlug marks the editor dirty immediately so navigation can't slip past the async sanitize", async () => {
+        let resolveSlug: (slug: string) => void = () => {};
+        mocks.generateSlug.mockImplementationOnce(() => new Promise((resolve) => {
+            resolveSlug = resolve;
+        }));
+        mocks.editPost.mockResolvedValue({ posts: [makeFullPost({ slug: "typed-slug" })] });
+
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot()));
+
+        let updatePromise: Promise<void> = Promise.resolve();
+        act(() => {
+            updatePromise = result.current.updateSlug("Typed Slug");
+        });
+
+        // the typed candidate is in the machine scratch while the server
+        // sanitize is pending — the leave guard sees a dirty draft
+        expect(result.current.state.slugScratch).toBe("Typed Slug");
+        expect(result.current.isDirty).toBe(true);
+        expect(result.current.leaveDecision.shouldSaveOnLeave).toBe(true);
+
+        await act(async () => {
+            resolveSlug("typed-slug");
+            await updatePromise;
+        });
+        await flushSaves();
+
+        expect(result.current.state.slugScratch).toBe("typed-slug");
+        expect(mocks.editPost.mock.calls[0][0].post.slug).toBe("typed-slug");
+    });
+
+    it("updateSlug resets the scratch when the sanitize fails or is a no-op", async () => {
+        mocks.generateSlug.mockRejectedValueOnce(new Error("offline"));
+
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot()));
+
+        await act(async () => {
+            await result.current.updateSlug("Typed Slug");
+        });
+
+        expect(result.current.state.slugScratch).toBe("my-post");
+        expect(result.current.isDirty).toBe(false);
+        expect(mocks.editPost).not.toHaveBeenCalled();
+    });
+
     it("moves to the error state when the save fails and stays dirty", async () => {
         mocks.editPost.mockRejectedValue(new Error("boom"));
         const { result } = setup();

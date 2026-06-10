@@ -213,13 +213,46 @@ flag source (see implementation notes).
   loads does). Added a vite alias (`koenig-lexical-styles.css` →
   `dist/style.css`, which the package's exports map doesn't expose) and load it
   alongside the dynamic module import.
-- **Known accepted gaps (follow-up slices):** publish flow (placeholder
-  `data-test-button="publish-flow"` button only), preview modal, settings menu
-  (toggle opens an empty Sheet so the e2e locator resolves), word count, TK
-  counts, feature image, excerpt field, snippets, unsplash/tenor/pintura card
-  integrations, local revisions (localStorage backup), post-history, contributor
-  permission redirects, and the analytics breadcrumb (`fromAnalytics`) — the
-  back link always targets `/posts` (or `/pages`).
+- **Publish/update/preview flows, settings menu and permission gates landed in
+  follow-up passes within the slice** (publish-options ported as a pure module;
+  settings menu is an inline non-modal panel like Ember's PSM, not a Radix
+  Sheet — a modal sheet intercepted clicks on the editor header; contributor/
+  author access gates ported from Ember's edit route).
+- **Cross-shell navigations from the editor use real location hash changes**
+  (`crossShellNavigate`, the editor backlink is a native hash anchor): router
+  pushState fires no hashchange, so a parked flag-off Ember list would never
+  wake after publish-complete/delete/back navigations (same mechanism as the
+  auth slice's post-signin redirect).
+- **Publish complete step is the posts/pages list share modal**, not an
+  in-editor modal step: the flow writes Ember's `ghost-last-published/
+  scheduled-post` localStorage keys and leaves; the list's success share modal
+  (shade `PostShareModal`, which now carries the shared e2e test hooks) is the
+  complete UI for both shells.
+- **Review-pass fixes (multi-angle + Codex):** failed publish/schedule saves
+  disarm the willPublish/willSchedule intent; the save queue carries full
+  intent ({kind, saveType, publishedAt}) so a queued publish stays a publish;
+  scratch resync after a save no longer clobbers slug/date/image edits made
+  mid-flight; per-request email extras; slug-generation races guarded by a
+  token; slug blur commits scratch before the async sanitize (leave-guard
+  hole); DST-gap conversions are verified fixpoints and impossible calendar
+  dates rejected; `page` added to the Ember-bridge type mapping; excerpt ≤300
+  validated before the publish flow opens.
+- **Force-upgrade:** /editor/* no longer carries `allowInForceUpgrade` (it did
+  implicitly as part of the EMBER_ROUTES wildcard). Consistent with the
+  documented slice 1–3 decision: the React shell redirects to /pro, which is
+  where Ember's lockout landed anyway.
+- **Known accepted gaps (documented, deliberate):** word count + TK counts,
+  snippets, unsplash/tenor/pintura card integrations, post-history modal,
+  email host-limit checks and post-send failure polling, Cmd+P/Cmd+Shift+P
+  shortcuts, PSM subviews (authors, visibility/tiers, template, meta/social,
+  code injection, featured toggle), the email tab/segment picker in the
+  preview modal, the analytics breadcrumb (`fromAnalytics` — back link always
+  targets the list), Ember's secondary-editor conflict detection (the 409
+  UpdateCollisionError toast covers the multi-tab case, without Ember's diff
+  modal), and 409 recovery is a toast (no conflict-resolution modal).
+- **Local revisions (localStorage crash recovery) deferred to slice 6**: the
+  `/restore` screen is part of the long-tail slice and is the consumer of that
+  data; porting the localRevisions store belongs with it.
 
 ### Upstream issues discovered during slice-2 review (pre-existing, NOT introduced here)
 

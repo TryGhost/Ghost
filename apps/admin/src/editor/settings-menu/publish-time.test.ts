@@ -50,5 +50,20 @@ describe("publish-time", () => {
         it("rejects impossible calendar dates", () => {
             expect(zonedDateTimeToUtc("2026-02-31", "10:30", "Etc/UTC")).toBeNull();
         });
+
+        it("shifts wall times inside a DST gap forward like moment (fixpoint check)", () => {
+            // 02:30 does not exist on 2026-03-08 in New York (02:00 -> 03:00);
+            // moment-timezone picks 03:30 EDT, i.e. 07:30 UTC
+            const iso = zonedDateTimeToUtc("2026-03-08", "02:30", "America/New_York");
+            expect(iso).toBe("2026-03-08T07:30:00.000Z");
+            expect(formatDateInTimezone(iso as string, "America/New_York")).toBe("2026-03-08");
+            expect(formatTimeInTimezone(iso as string, "America/New_York")).toBe("03:30");
+        });
+
+        it("resolves ambiguous fall-back wall times to the earlier instant (like moment)", () => {
+            // 01:30 occurs twice on 2026-11-01 in New York; the first
+            // occurrence (EDT, UTC-4) wins
+            expect(zonedDateTimeToUtc("2026-11-01", "01:30", "America/New_York")).toBe("2026-11-01T05:30:00.000Z");
+        });
     });
 });

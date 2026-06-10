@@ -62,6 +62,27 @@ export interface SavePayload {
     featureImage: string | null;
 }
 
+/**
+ * A save request waiting behind an in-flight save. The full intent is queued
+ * (not just the kind) so a queued publish stays a publish and a queued
+ * unschedule still clears the publish date after the in-flight save's
+ * SAVE_SUCCEEDED resynced willPublish/willSchedule from the persisted status.
+ */
+export interface QueuedSaveIntent {
+    kind: SaveKind;
+    saveType?: "publish" | "schedule" | "draft";
+    /** publishedAt carried by the request; undefined = not touched, null = clear. */
+    publishedAt?: string | null;
+    pastScheduledTime?: boolean;
+}
+
+/** Settings-field values a save sent, used to decide whether to resync the scratch. */
+export interface SentSettingsFields {
+    slug: string;
+    publishedAt: string | null;
+    featureImage: string | null;
+}
+
 export type SavePhase =
     | { status: "idle" }
     | {
@@ -69,8 +90,10 @@ export type SavePhase =
         kind: SaveKind;
         /** Status before this save attempt; restored on SAVE_FAILED (Ember line 676). */
         prevStatus: PostStatus;
+        /** Settings values this save sent; scratches only resync from the response when unchanged since. */
+        sent: SentSettingsFields;
         /** Save requested while this one was in flight; latest-wins, manual/leave outrank background. */
-        queued: SaveKind | null;
+        queued: QueuedSaveIntent | null;
     }
     | { status: "error"; kind: SaveKind; error: SaveError };
 
@@ -110,6 +133,10 @@ export type EditorEvent =
     | {
         type: "SAVE_REQUESTED";
         kind: SaveKind;
+        /** Status intent applied with this save (Ember PublishOptions._applyModelChanges). */
+        saveType?: "publish" | "schedule" | "draft";
+        /** published_at applied with this save; undefined = keep, null = clear (unschedule). */
+        publishedAt?: string | null;
         /** Caller-computed `post.pastScheduledTime` (keeps the machine clock-free). */
         pastScheduledTime?: boolean;
     }
@@ -263,6 +290,29 @@ export function getLeaveDecision(state: EditorState): LeaveDecision {
     return { shouldSaveOnLeave, shouldConfirmLeave };
 }
 
+/* Past-scheduled-time --------------------------------------------------------*/
+
+/**
+ * Pure port of Ember's `post.pastScheduledTime` (models/post.js lines
+ * 279-292): a scheduled post whose publish date has already passed. The
+ * machine itself stays clock-free — callers compute this at dispatch time
+ * and pass it with SAVE_REQUESTED. `publishedAtOverride` lets callers apply
+ * the publishedAt carried by the same request (Ember computes the flag after
+ * `_applyModelChanges` set the model's publish date).
+ */
+export function isPastScheduledTime(
+    state: EditorState,
+    nowMs: number,
+    publishedAtOverride?: string | null,
+): boolean {
+    if (state.post?.status !== "scheduled") {
+        return false;
+    }
+
+    const publishedAt = publishedAtOverride !== undefined ? publishedAtOverride : state.publishedAtScratch;
+    return publishedAt !== null && Date.parse(publishedAt) < nowMs;
+}
+
 /* Status computation ---------------------------------------------------------*/
 
 /**
@@ -341,7 +391,17 @@ function startSave(state: EditorState, kind: SaveKind, pastScheduledTime: boolea
             ...state,
             titleScratch,
             post: { ...post, status: nextStatus },
-            save: { status: "saving", kind, prevStatus: post.status, queued: null },
+            save: {
+                status: "saving",
+                kind,
+                prevStatus: post.status,
+                sent: {
+                    slug: state.slugScratch,
+                    publishedAt: state.publishedAtScratch,
+                    featureImage: state.featureImageScratch,
+                },
+                queued: null,
+            },
         },
         effects: [
             { type: "timer/cancel-all" },
@@ -445,25 +505,44 @@ export function transition(state: EditorState, event: EditorEvent): TransitionRe
                 return noop(state);
             }
 
-            // a save is in flight: never run concurrently — enqueue with
-            // latest-wins; manual/leave saves supersede pending background
-            // saves but are never downgraded by them
-            if (state.save.status === "saving") {
-                const queued = state.save.queued;
-                if (background && (queued === "manual" || queued === "leave")) {
-                    return noop(state);
+            // apply the intent carried by the request (publish flow's
+            // saveType / publishedAt) before anything else — like Ember's
+            // PublishOptions._applyModelChanges running before post.save()
+            let next = state;
+            if (event.saveType) {
+                next = transition(next, { type: "SET_SAVE_TYPE", saveType: event.saveType }).state;
+            }
+            if (event.publishedAt !== undefined && event.publishedAt !== next.publishedAtScratch) {
+                next = transition(next, { type: "SCRATCH_CHANGED", field: "publishedAt", value: event.publishedAt }).state;
+            }
+
+            // a save is in flight: never run concurrently — enqueue the full
+            // intent with latest-wins (later requests without an explicit
+            // saveType/publishedAt inherit the queued ones so a settings
+            // blur-save can't strip a queued publish); manual/leave saves
+            // supersede pending background saves but are never downgraded
+            if (next.save.status === "saving") {
+                const queued = next.save.queued;
+                if (background && (queued?.kind === "manual" || queued?.kind === "leave")) {
+                    return noop(next);
                 }
-                return noop({ ...state, save: { ...state.save, queued: event.kind } });
+                const merged: QueuedSaveIntent = {
+                    kind: event.kind,
+                    saveType: event.saveType ?? queued?.saveType,
+                    publishedAt: event.publishedAt !== undefined ? event.publishedAt : queued?.publishedAt,
+                    pastScheduledTime: event.pastScheduledTime ?? queued?.pastScheduledTime,
+                };
+                return noop({ ...next, save: { ...next.save, queued: merged } });
             }
 
             // background saves are skipped when nothing changed; like Ember's
             // saveTask they still cancel pending timers (cancelAutosave runs
             // before the dirty check). Leave-saves bypass the dirty check.
-            if (background && !hasDirtyAttributes(state)) {
-                return { state, effects: [{ type: "timer/cancel-all" }] };
+            if (background && !hasDirtyAttributes(next)) {
+                return { state: next, effects: [{ type: "timer/cancel-all" }] };
             }
 
-            return startSave(state, event.kind, event.pastScheduledTime ?? false);
+            return startSave(next, event.kind, event.pastScheduledTime ?? false);
         }
 
         case "SAVE_SUCCEEDED": {
@@ -471,7 +550,7 @@ export function transition(state: EditorState, event: EditorEvent): TransitionRe
                 return noop(state);
             }
 
-            const { kind, queued } = state.save;
+            const { kind, queued, sent } = state.save;
             const post = event.post;
 
             const next: EditorState = {
@@ -479,10 +558,12 @@ export function transition(state: EditorState, event: EditorEvent): TransitionRe
                 post,
                 // settings fields resync from the persisted snapshot (Ember
                 // boundOneWay('post.slug') — the server may have normalized
-                // the slug for uniqueness or the publish date's precision)
-                slugScratch: post.slug,
-                publishedAtScratch: post.publishedAt,
-                featureImageScratch: post.featureImage,
+                // the slug for uniqueness or the publish date's precision),
+                // but only when the scratch still holds the value this save
+                // sent: edits made while the save was in flight must survive
+                slugScratch: state.slugScratch === sent.slug ? post.slug : state.slugScratch,
+                publishedAtScratch: state.publishedAtScratch === sent.publishedAt ? post.publishedAt : state.publishedAtScratch,
+                featureImageScratch: state.featureImageScratch === sent.featureImage ? post.featureImage : state.featureImageScratch,
                 // re-derive intents from the persisted status (Ember boundOneWay)
                 willPublish: post.status === "published",
                 willSchedule: post.status === "scheduled",
@@ -490,10 +571,18 @@ export function transition(state: EditorState, event: EditorEvent): TransitionRe
                 saveOnLeavePerformed: state.saveOnLeavePerformed || kind === "leave",
             };
 
-            // run the queued save against the fresh snapshot; queued
-            // background saves no-op if the save made the state clean
+            // run the queued save against the fresh snapshot, re-applying its
+            // full intent (the resync above re-derived willPublish/willSchedule
+            // from the persisted status); queued background saves no-op if the
+            // save made the state clean
             if (queued) {
-                return transition(next, { type: "SAVE_REQUESTED", kind: queued });
+                return transition(next, {
+                    type: "SAVE_REQUESTED",
+                    kind: queued.kind,
+                    saveType: queued.saveType,
+                    publishedAt: queued.publishedAt,
+                    pastScheduledTime: queued.pastScheduledTime,
+                });
             }
 
             return noop(next);
@@ -508,6 +597,11 @@ export function transition(state: EditorState, event: EditorEvent): TransitionRe
                 ...state,
                 // revert the in-flight status (Ember line 676)
                 post: state.post ? { ...state.post, status: state.save.prevStatus } : null,
+                // reset the intents to match the reverted status (Ember
+                // _revertModelChanges) so a later plain manual save — e.g. a
+                // settings blur — doesn't unexpectedly re-attempt the publish
+                willPublish: state.save.prevStatus === "published",
+                willSchedule: state.save.prevStatus === "scheduled",
                 save: { status: "error", kind: state.save.kind, error: event.error },
             });
         }

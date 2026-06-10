@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { useParams } from "@tryghost/admin-x-framework";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import {
     getEditorPage,
     getEditorPost,
@@ -10,6 +11,8 @@ import {
     type FullPost,
 } from "@tryghost/admin-x-framework/api/editor";
 import { Button } from "@tryghost/shade/components";
+import { crossShellNavigate } from "@/utils/cross-shell-navigate";
+import { getEditorAccessRedirect } from "./editor-access";
 import { EditorKoenig, type KoenigEditorAPI } from "./editor-koenig";
 import { EditorPostStatus } from "./publish/post-status";
 import { PublishManagement } from "./publish/publish-management";
@@ -47,13 +50,24 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
     const { mutateAsync: convertPost } = useEditEditorPost();
     const [conversionFailed, setConversionFailed] = useState(false);
 
+    // authors may only open their own posts; contributors only their own
+    // drafts (Ember edit route afterModel) — redirect to the list otherwise
+    const { data: currentUser } = useCurrentUser();
+    const accessRedirect = getEditorAccessRedirect(currentUser, loadedPost, resource);
+
+    useEffect(() => {
+        if (accessRedirect) {
+            crossShellNavigate(accessRedirect, { replace: true });
+        }
+    }, [accessRedirect]);
+
     // load each post into the machine exactly once (saves update the machine
     // snapshot directly; background query refetches must not clobber edits)
     const loadedKeyRef = useRef<string | null>(null);
     const loadedKey = postId ?? "new";
 
     useEffect(() => {
-        if (loadedKeyRef.current === loadedKey) {
+        if (loadedKeyRef.current === loadedKey || accessRedirect) {
             return;
         }
 
@@ -98,7 +112,7 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
         }
 
         loadPost(toSnapshot(loadedPost));
-    }, [loadedKey, postId, loadedPost, loadPost, convertPost, resource]);
+    }, [loadedKey, postId, loadedPost, loadPost, convertPost, resource, accessRedirect]);
 
     const koenigApiRef = useRef<KoenigEditorAPI | null>(null);
     const registerKoenigAPI = useCallback((api: KoenigEditorAPI | null) => {
@@ -140,6 +154,12 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
     // by id so a stale savedPost can never represent a different post.
     const savedFullPost = editor.savedPost && editor.savedPost.id === post?.id ? editor.savedPost : null;
     const currentFullPost = savedFullPost ?? loadedPost ?? null;
+
+    // never render a post the user may not edit (the redirect effect above
+    // navigates away; this prevents the editor flashing in the meantime)
+    if (accessRedirect) {
+        return null;
+    }
 
     return createPortal(
         <div className="shade shade-admin fixed inset-0 z-50 flex bg-white" data-test-editor>

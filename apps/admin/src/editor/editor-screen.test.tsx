@@ -9,6 +9,8 @@ import type {
     EditorResourceResponseType,
     FullPost,
 } from "@tryghost/admin-x-framework/api/editor";
+import type { User } from "@tryghost/admin-x-framework/api/users";
+import { getEditorAccessRedirect } from "./editor-access";
 import type { EditorKoenigProps } from "./editor-koenig";
 import { EditorScreen } from "./editor-screen";
 import { BLANK_LEXICAL } from "./use-editor";
@@ -22,6 +24,8 @@ const mocks = vi.hoisted(() => ({
     params: vi.fn<() => Record<string, string>>(() => ({})),
     postQuery: vi.fn<() => QueryResult<EditorPostsResponseType>>(),
     pageQuery: vi.fn<() => QueryResult<EditorPagesResponseType>>(),
+    currentUser: vi.fn<() => unknown>(() => undefined),
+    crossShellNavigate: vi.fn<(route: string, options?: { replace?: boolean }) => void>(),
     koenigProps: { current: null as EditorKoenigProps | null },
 }));
 
@@ -32,6 +36,15 @@ vi.mock("@tryghost/admin-x-framework", () => ({
     useParams: () => mocks.params(),
     useBlocker: () => ({ state: "unblocked", proceed: vi.fn(), reset: vi.fn() }),
     useConfirmUnload: () => {},
+}));
+
+vi.mock("@tryghost/admin-x-framework/api/current-user", () => ({
+    usersDataType: "UsersResponseType",
+    useCurrentUser: () => ({ data: mocks.currentUser() }),
+}));
+
+vi.mock("@/utils/cross-shell-navigate", () => ({
+    crossShellNavigate: mocks.crossShellNavigate,
 }));
 
 vi.mock("@tryghost/admin-x-framework/api/editor", () => ({
@@ -111,6 +124,10 @@ function makeFullPost(overrides: Partial<FullPost> = {}): FullPost {
     };
 }
 
+function makeUser(role: string, id = "user-1"): User {
+    return { id, roles: [{ id: `role-${role}`, name: role }] } as unknown as User;
+}
+
 function titleInput(): HTMLTextAreaElement {
     const element = document.querySelector("[data-test-editor-title-input]");
     expect(element).not.toBeNull();
@@ -130,6 +147,7 @@ describe("EditorScreen", () => {
         mocks.postQuery.mockReturnValue({ data: undefined, error: null, isLoading: true });
         mocks.pageQuery.mockReturnValue({ data: undefined, error: null, isLoading: true });
         mocks.generateSlug.mockResolvedValue("");
+        mocks.currentUser.mockReturnValue(makeUser("Administrator"));
         mocks.koenigProps.current = null;
         window.location.hash = "#/editor/post";
     });
@@ -300,6 +318,83 @@ describe("EditorScreen", () => {
         });
     });
 
+    describe("permissions gate (Ember edit route afterModel)", () => {
+        function loadPostWithAuthors(authorIds: string[], overrides: Partial<FullPost> = {}) {
+            mocks.params.mockReturnValue({ postId: "post-1" });
+            mocks.postQuery.mockReturnValue({
+                data: {
+                    posts: [makeFullPost({
+                        authors: authorIds.map(id => ({ id, name: `Author ${id}`, slug: id })),
+                        ...overrides,
+                    })],
+                },
+                error: null,
+                isLoading: false,
+            });
+        }
+
+        it("redirects a contributor away from someone else's post without rendering the editor", () => {
+            mocks.currentUser.mockReturnValue(makeUser("Contributor", "me"));
+            loadPostWithAuthors(["someone-else"]);
+
+            render(<EditorScreen resource="posts" />);
+
+            expect(mocks.crossShellNavigate).toHaveBeenCalledWith("/posts", { replace: true });
+            expect(document.querySelector("[data-test-editor]")).toBeNull();
+            // the forbidden post is never loaded into the machine
+            expect(document.querySelector("[data-test-editor-title-input]")).toBeNull();
+        });
+
+        it("redirects a contributor away from their own published post", () => {
+            mocks.currentUser.mockReturnValue(makeUser("Contributor", "me"));
+            loadPostWithAuthors(["me"], { status: "published" });
+
+            render(<EditorScreen resource="posts" />);
+
+            expect(mocks.crossShellNavigate).toHaveBeenCalledWith("/posts", { replace: true });
+        });
+
+        it("lets a contributor open their own draft", () => {
+            mocks.currentUser.mockReturnValue(makeUser("Contributor", "me"));
+            loadPostWithAuthors(["me"], { status: "draft" });
+
+            render(<EditorScreen resource="posts" />);
+
+            expect(mocks.crossShellNavigate).not.toHaveBeenCalled();
+            expect(titleInput()).toHaveValue("My post");
+        });
+
+        it("redirects an author away from someone else's post, targeting /pages for pages", () => {
+            mocks.currentUser.mockReturnValue(makeUser("Author", "me"));
+            mocks.params.mockReturnValue({ postId: "page-1" });
+            mocks.pageQuery.mockReturnValue({
+                data: {
+                    pages: [makeFullPost({
+                        id: "page-1",
+                        status: "published",
+                        authors: [{ id: "someone-else", name: "Someone", slug: "someone" }],
+                    })],
+                },
+                error: null,
+                isLoading: false,
+            });
+
+            render(<EditorScreen resource="pages" />);
+
+            expect(mocks.crossShellNavigate).toHaveBeenCalledWith("/pages", { replace: true });
+        });
+
+        it("lets an author open their own published post", () => {
+            mocks.currentUser.mockReturnValue(makeUser("Author", "me"));
+            loadPostWithAuthors(["me"], { status: "published" });
+
+            render(<EditorScreen resource="posts" />);
+
+            expect(mocks.crossShellNavigate).not.toHaveBeenCalled();
+            expect(titleInput()).toHaveValue("My post");
+        });
+    });
+
     describe("pages", () => {
         it("uses the pages query, placeholder and back link", () => {
             mocks.params.mockReturnValue({ postId: "page-1" });
@@ -315,5 +410,55 @@ describe("EditorScreen", () => {
             expect(titleInput()).toHaveAttribute("placeholder", "Page title");
             expect(screen.getByRole("link", { name: /Pages/ })).toHaveAttribute("href", "#/pages");
         });
+    });
+});
+
+describe("getEditorAccessRedirect", () => {
+    const authors = (ids: string[]) => ids.map(id => ({ id, name: `Author ${id}`, slug: id }));
+
+    it("returns null while the user or post is still loading", () => {
+        expect(getEditorAccessRedirect(undefined, makeFullPost(), "posts")).toBeNull();
+        expect(getEditorAccessRedirect(makeUser("Contributor"), undefined, "posts")).toBeNull();
+    });
+
+    it("allows admins and editors regardless of authorship or status", () => {
+        const post = makeFullPost({ status: "published", authors: authors(["someone-else"]) });
+        expect(getEditorAccessRedirect(makeUser("Administrator", "me"), post, "posts")).toBeNull();
+        expect(getEditorAccessRedirect(makeUser("Editor", "me"), post, "posts")).toBeNull();
+        expect(getEditorAccessRedirect(makeUser("Owner", "me"), post, "posts")).toBeNull();
+    });
+
+    it("redirects authors and contributors away from posts they don't author", () => {
+        const post = makeFullPost({ status: "draft", authors: authors(["someone-else"]) });
+        expect(getEditorAccessRedirect(makeUser("Author", "me"), post, "posts")).toBe("/posts");
+        expect(getEditorAccessRedirect(makeUser("Contributor", "me"), post, "posts")).toBe("/posts");
+        // missing authors behaves like not-authored
+        expect(getEditorAccessRedirect(makeUser("Author", "me"), makeFullPost({ authors: undefined }), "posts")).toBe("/posts");
+    });
+
+    it("redirects contributors away from their own non-draft posts", () => {
+        for (const status of ["published", "scheduled", "sent"]) {
+            const post = makeFullPost({ status, authors: authors(["me"]) });
+            expect(getEditorAccessRedirect(makeUser("Contributor", "me"), post, "posts")).toBe("/posts");
+        }
+    });
+
+    it("allows contributors on their own drafts and authors on all their own posts", () => {
+        expect(getEditorAccessRedirect(
+            makeUser("Contributor", "me"),
+            makeFullPost({ status: "draft", authors: authors(["me"]) }),
+            "posts",
+        )).toBeNull();
+        expect(getEditorAccessRedirect(
+            makeUser("Author", "me"),
+            makeFullPost({ status: "published", authors: authors(["me", "co-author"]) }),
+            "posts",
+        )).toBeNull();
+    });
+
+    it("mirrors Ember's redirect target per resource", () => {
+        const post = makeFullPost({ status: "published", authors: authors(["someone-else"]) });
+        expect(getEditorAccessRedirect(makeUser("Contributor", "me"), post, "posts")).toBe("/posts");
+        expect(getEditorAccessRedirect(makeUser("Contributor", "me"), post, "pages")).toBe("/pages");
     });
 });

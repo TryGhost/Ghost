@@ -150,6 +150,42 @@ describe('useEmberDataSync', () => {
         });
     });
 
+    queryTest('invalidates page queries for Ember page edits (mirrors the post mapping)', async ({ queryClient, wrapper }) => {
+        const mock = createMockStateBridge();
+        window.EmberBridge = { state: mock.stateBridge };
+
+        queryClient.setQueryDefaults(['PagesResponseType'], {cacheTime: Infinity});
+        queryClient.setQueryDefaults(['PostsResponseType'], {cacheTime: Infinity});
+        queryClient.setQueryData(['PagesResponseType', '/pages'], { pages: [] });
+        queryClient.setQueryData(['PagesResponseType', '/pages/123'], { pages: [{ id: '123' }] });
+        queryClient.setQueryData(['PostsResponseType', '/posts'], { posts: [] });
+
+        renderHook(() => useEmberDataSync(), { wrapper });
+
+        await waitFor(() => {
+            expect(mock.onSpy).toHaveBeenCalledWith('emberDataChange', expect.any(Function));
+        });
+
+        act(() => {
+            mock.emit('emberDataChange', {
+                operation: 'update',
+                modelName: 'page',
+                id: '123',
+                data: null,
+            });
+        });
+
+        await waitFor(() => {
+            const queries = queryClient.getQueryCache().getAll();
+            const pageQueries = queries.filter(q => q.queryKey[0] === 'PagesResponseType');
+            const nonPageQueries = queries.filter(q => q.queryKey[0] !== 'PagesResponseType');
+
+            expect(pageQueries.length).toBeGreaterThan(0);
+            expect(pageQueries.every(q => q.state.isInvalidated)).toBe(true);
+            expect(nonPageQueries.every(q => !q.state.isInvalidated)).toBe(true);
+        });
+    });
+
     queryTest('ignores unmapped Ember models', async ({ queryClient, wrapper }) => {
         const mock = createMockStateBridge();
         window.EmberBridge = { state: mock.stateBridge };

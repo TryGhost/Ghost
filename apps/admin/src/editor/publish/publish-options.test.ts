@@ -364,5 +364,14 @@ describe("publish-options", () => {
             expect(validatePost({ title: "Fine" })).toBeNull();
             expect(validatePost({ title: "x".repeat(256) })).toMatch(/255 characters/);
         });
+
+        it("validates the excerpt length (Ember validates before opening the flow)", () => {
+            expect(validatePost({ title: "Fine", customExcerpt: "short excerpt" })).toBeNull();
+            expect(validatePost({ title: "Fine", customExcerpt: null })).toBeNull();
+            expect(validatePost({ title: "Fine", customExcerpt: "x".repeat(300) })).toBeNull();
+            expect(validatePost({ title: "Fine", customExcerpt: "x".repeat(301) })).toMatch(/Excerpt cannot be longer than 300 characters/);
+            // the title error wins when both are invalid (Ember reports in order)
+            expect(validatePost({ title: "x".repeat(256), customExcerpt: "x".repeat(301) })).toMatch(/255 characters/);
+        });
     });
 });

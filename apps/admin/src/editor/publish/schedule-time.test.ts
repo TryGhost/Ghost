@@ -23,12 +23,34 @@ describe("schedule-time", () => {
     });
 
     it("converts wall-clock date/time in a timezone to UTC", () => {
-        expect(zonedDateTimeToUtc("2050-01-01", "10:30", "Etc/UTC").toISOString())
+        expect(zonedDateTimeToUtc("2050-01-01", "10:30", "Etc/UTC")?.toISOString())
             .toBe("2050-01-01T10:30:00.000Z");
-        expect(zonedDateTimeToUtc("2050-01-01", "10:30", "America/New_York").toISOString())
+        expect(zonedDateTimeToUtc("2050-01-01", "10:30", "America/New_York")?.toISOString())
             .toBe("2050-01-01T15:30:00.000Z");
-        expect(zonedDateTimeToUtc("2050-07-01", "10:30", "America/New_York").toISOString())
+        expect(zonedDateTimeToUtc("2050-07-01", "10:30", "America/New_York")?.toISOString())
             .toBe("2050-07-01T14:30:00.000Z");
+    });
+
+    it("shifts wall times inside a DST gap forward like moment (fixpoint check)", () => {
+        // 02:30 does not exist on 2026-03-08 in New York (02:00 -> 03:00);
+        // moment-timezone picks 03:30 EDT, i.e. 07:30 UTC
+        const gap = zonedDateTimeToUtc("2026-03-08", "02:30", "America/New_York");
+        expect(gap?.toISOString()).toBe("2026-03-08T07:30:00.000Z");
+        // the result formats back to a real wall time on the same day
+        expect(formatDateInTimezone(gap as Date, "America/New_York")).toBe("2026-03-08");
+        expect(formatTimeInTimezone(gap as Date, "America/New_York")).toBe("03:30");
+    });
+
+    it("resolves ambiguous fall-back wall times to the earlier instant (like moment)", () => {
+        // 01:30 occurs twice on 2026-11-01 in New York; moment picks the
+        // first occurrence (EDT, UTC-4)
+        expect(zonedDateTimeToUtc("2026-11-01", "01:30", "America/New_York")?.toISOString())
+            .toBe("2026-11-01T05:30:00.000Z");
+    });
+
+    it("rejects impossible calendar dates", () => {
+        expect(zonedDateTimeToUtc("2026-02-30", "10:30", "Etc/UTC")).toBeNull();
+        expect(zonedDateTimeToUtc("2026-04-31", "10:30", "America/New_York")).toBeNull();
     });
 
     it("formats dates and times in a timezone", () => {
