@@ -72,10 +72,13 @@ function PostsContextMenu({
         };
     }, [onClose]);
 
-    const canUnpublish = selectedPosts.some(post => post.status === 'published' || post.status === 'sent');
+    // Ember parity (context-menu.js): sent posts cannot be unpublished, and
+    // feature/unfeature follows the majority rule of the loaded selection
+    const canUnpublish = selectedPosts.some(post => post.status === 'published');
     const canUnschedule = selectedPosts.some(post => post.status === 'scheduled');
     const canFeature = selectedPosts.some(post => post.status !== 'sent');
-    const shouldFeature = selectedPosts.some(post => !post.featured);
+    const featuredCount = selectedPosts.filter(post => post.featured).length;
+    const shouldFeature = featuredCount <= selectedPosts.length / 2;
 
     const left = typeof window === 'undefined' ? position.x : Math.min(position.x, window.innerWidth - 200);
     const top = typeof window === 'undefined' ? position.y : Math.min(position.y, window.innerHeight - 320);

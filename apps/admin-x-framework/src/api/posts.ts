@@ -1,4 +1,4 @@
-import {InfiniteData} from '@tanstack/react-query';
+import {InfiniteData, Query} from '@tanstack/react-query';
 import {Meta, createInfiniteQuery, createQuery, createQueryWithId, createMutation} from '../utils/api/hooks';
 
 export type Email = {
@@ -103,6 +103,16 @@ export const useDeletePost = createMutation<unknown, string>({
 
 // ---- bulk operations over an NQL filter (used by the posts/pages list) ----
 
+// These mutations are resource-parameterized (posts|pages), so they need to
+// invalidate both list caches. createMutation's `dataType` invalidation is
+// static, so we use the filters form, which only invalidates the query client
+// (the Ember mapping for these bulk operations is null anyway).
+const invalidatePostsAndPages = {
+    filters: {
+        predicate: (query: Query) => ['PostsResponseType', 'PagesResponseType'].includes(query.queryKey[0] as string)
+    }
+};
+
 export type BulkEditAction = 'feature' | 'unfeature' | 'unpublish' | 'unschedule' | 'addTag' | 'access';
 
 export interface BulkEditPostsPayload {
@@ -127,19 +137,22 @@ export const useBulkEditPosts = createMutation<BulkEditPostsResponse, BulkEditPo
     method: 'PUT',
     path: ({resource = 'posts'}) => `/${resource}/bulk/`,
     searchParams: ({filter}) => ({filter}),
-    body: ({action, meta}) => ({bulk: {action, meta: meta ?? {}}})
+    body: ({action, meta}) => ({bulk: {action, meta: meta ?? {}}}),
+    invalidateQueries: invalidatePostsAndPages
 });
 
 export const useBulkDeletePosts = createMutation<unknown, {filter: string; resource?: 'posts' | 'pages'}>({
     method: 'DELETE',
     path: ({resource = 'posts'}) => `/${resource}/`,
-    searchParams: ({filter}) => ({filter})
+    searchParams: ({filter}) => ({filter}),
+    invalidateQueries: invalidatePostsAndPages
 });
 
 export const useCopyPost = createMutation<PostsResponseType, {id: string; resource?: 'posts' | 'pages'}>({
     method: 'POST',
     path: ({id, resource = 'posts'}) => `/${resource}/${id}/copy/`,
-    defaultSearchParams: {formats: 'mobiledoc,lexical'}
+    defaultSearchParams: {formats: 'mobiledoc,lexical'},
+    invalidateQueries: invalidatePostsAndPages
 });
 
 // Search index endpoints for efficient search

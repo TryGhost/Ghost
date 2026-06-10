@@ -30,7 +30,10 @@ vi.mock('@/ember-bridge', () => ({
 
 vi.mock('@tryghost/admin-x-framework', () => ({
     useLocation: () => mockLocation,
-    useSearchParams: () => [new URLSearchParams(mockLocation.search), vi.fn()]
+    useSearchParams: () => [new URLSearchParams(mockLocation.search), vi.fn()],
+    // use-posts-view-active imports @tryghost/posts/api, whose module graph
+    // calls lazyComponent at import time (routes.tsx)
+    lazyComponent: () => () => null
 }));
 
 function setUrl(pathname: string, search: string) {

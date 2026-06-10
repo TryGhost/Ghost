@@ -80,6 +80,20 @@ and issues worth reviewing at the end. Newest entries at the bottom of each sect
 - **Force-upgrade:** /posts and /pages no longer carry `allowInForceUpgrade`
   (same reasoning as the tag routes in slice 1).
 
+### Upstream issues discovered during slice-2 review (pre-existing, NOT introduced here)
+
+- **Server-side bulk-action authorization gap:** `DELETE /ghost/api/admin/posts/?filter=...`
+  and `PUT /posts/bulk/` authorize the method without resolving per-post ownership,
+  so an Author could bulk-affect posts they don't own by calling the API directly
+  (both the Ember and React UIs hide bulk actions from authors, but that's
+  client-side only). Needs a core fix; out of scope for the UI migration.
+- **Stats batch endpoints (`/stats/posts-visitor-counts`, `/stats/posts-member-counts`)
+  only require `posts: browse`**, so non-admin staff can fetch counts for posts
+  they don't own. Pre-existing; the React list mirrors the Ember admin's usage.
+- **`shared_views` writes are last-write-wins** from both Ember and React (full
+  JSON snapshot rewrite). Concurrent edits from two tabs can drop a view; same
+  behavior as Ember-only before the migration.
+
 ## Infra fixes made along the way
 
 - **Local dev-mode e2e Ghost boots exceed the 30s default test timeout** on this

@@ -5,11 +5,13 @@ import MainLayout from '@components/layout/main-layout';
 import PostsContextMenu from './components/posts-context-menu';
 import PostsFilters from './components/posts-filters';
 import PostsListItem, {getEditorHref} from './components/posts-list-item';
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
 import {ListPage} from '@tryghost/shade/page-templates';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {PageHeader} from '@tryghost/shade/patterns';
+import {PostShareModal} from '@tryghost/shade/posts-stats';
+import {apiErrorMessage} from '@utils/api-error-message';
 import {
     clearSelection,
     invertSelection,
@@ -25,8 +27,10 @@ import {findMatchingView, paramsToViewFilter} from './posts-views';
 import {getPostsListQueries, parsePostsListParams} from './posts-query-params';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {hasAdminAccess, isAdminUser, isAuthorOrContributor, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
+import {toast} from 'sonner';
 import {useBulkEditPosts, useCopyPost} from '@tryghost/admin-x-framework/api/posts';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
+import {usePostSuccessModal} from '@hooks/use-post-success-modal';
 import {usePostsAnalytics} from './hooks/use-posts-analytics';
 import {usePostsListData} from './hooks/use-posts-list-data';
 import {usePostsViews} from './hooks/use-posts-views';
@@ -87,6 +91,10 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
     const [pendingAction, setPendingAction] = useState<PendingBulkAction | null>(null);
     const [viewModalOpen, setViewModalOpen] = useState(false);
 
+    // Publish flow redirect (Ember parity: posts-list/list.js) — shows the
+    // share modal for the post that was just published/scheduled
+    const {isModalOpen: isSuccessModalOpen, modalProps: successModalProps} = usePostSuccessModal();
+
     const views = usePostsViews(resource);
     const activeView = useMemo(() => findMatchingView(views, resource, params), [views, resource, params]);
 
@@ -102,14 +110,14 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
         memberCountsEnabled: membersTrackSources
     });
 
-    const analytics: PostsListAnalyticsContext | undefined = isPages ? undefined : {
+    const analytics: PostsListAnalyticsContext | undefined = useMemo(() => (isPages ? undefined : {
         webAnalyticsEnabled,
         membersTrackSources,
         emailTrackOpens,
         membersEnabled,
         visitorCounts,
         memberCounts
-    };
+    }), [isPages, webAnalyticsEnabled, membersTrackSources, emailTrackOpens, membersEnabled, visitorCounts, memberCounts]);
     const orderedIds = useMemo(() => loadedPosts.map(post => post.id), [loadedPosts]);
     const selectedPosts = useMemo(
         () => loadedPosts.filter(post => isSelected(selection, post.id)),
@@ -117,6 +125,8 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
     );
 
     const setParam = (key: 'type' | 'visibility' | 'author' | 'tag' | 'order', value: string | null) => {
+        // Same-route transitions replace history entries (Ember parity, see
+        // TryGhost/Ghost#11057), so Back doesn't step through filter changes
         setSearchParams((previous) => {
             const next = new URLSearchParams(previous);
             if (value === null) {
@@ -125,7 +135,7 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
                 next.set(key, value);
             }
             return next;
-        });
+        }, {replace: true});
         setSelection(clearSelection());
     };
 
@@ -136,12 +146,17 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
         }
 
         const handleKeyDown = (event: KeyboardEvent) => {
+            const modalOpen = !!pendingAction || viewModalOpen;
             if (event.key === 'Escape') {
-                setContextMenu(null);
+                // Leave Escape to the context menu / open modals / editable
+                // elements instead of silently dropping the selection
+                if (contextMenu || modalOpen || isEditableTarget(event.target)) {
+                    return;
+                }
                 setSelection(clearSelection());
                 return;
             }
-            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'a' && !isEditableTarget(event.target) && !pendingAction) {
+            if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'a' && !isEditableTarget(event.target) && !modalOpen) {
                 event.preventDefault();
                 setSelection(current => invertSelection(current));
             }
@@ -149,35 +164,49 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
 
         document.addEventListener('keydown', handleKeyDown);
         return () => document.removeEventListener('keydown', handleKeyDown);
-    }, [selectionEnabled, pendingAction]);
+    }, [selectionEnabled, pendingAction, contextMenu, viewModalOpen]);
 
     const finishBulkAction = () => {
         setSelection(clearSelection());
+        // The bulk mutations already invalidate the posts/pages caches; this
+        // is belt and braces so the visible sections refresh immediately
         void refetchAll();
     };
 
-    const openInEditor = (post: Post) => {
+    const openInEditor = useCallback((post: Post) => {
         setSelection(clearSelection());
         window.location.hash = getEditorHref(resource, post.id).slice(1);
-    };
+    }, [resource]);
 
-    const handleRowContextMenu = (post: Post, event: React.MouseEvent) => {
+    const handleRowContextMenu = useCallback((post: Post, event: React.MouseEvent) => {
         if (!selectionEnabled) {
             return;
         }
         event.preventDefault();
-        if (!isSelected(selection, post.id)) {
-            setSelection(selectOnly(post.id));
-        }
+        setSelection(current => (isSelected(current, post.id) ? current : selectOnly(post.id)));
         setContextMenu({x: event.clientX, y: event.clientY});
-    };
+    }, [selectionEnabled]);
+
+    const handleToggleSelect = useCallback((id: string) => {
+        setSelection(current => toggleItem(current, id));
+    }, []);
+
+    const handleShiftSelect = useCallback((id: string) => {
+        setSelection(current => shiftItem(current, id, orderedIds));
+    }, [orderedIds]);
 
     const handleMenuAction = async (action: PostsContextMenuAction) => {
         setContextMenu(null);
 
         const filter = selectionFilter(selection, queries.allFilter);
         const count = selectedCount(selection, totalItems);
-        const singleTitle = isSingleSelection(selection) ? selectedPosts[0]?.title : undefined;
+        const isSingle = isSingleSelection(selection);
+        const singleTitle = isSingle ? selectedPosts[0]?.title : undefined;
+        const singlePost = isSingle ? selectedPosts[0] : undefined;
+        const typeWord = (capitalized: boolean) => {
+            const word = count === 1 ? (isPages ? 'page' : 'post') : (isPages ? 'pages' : 'posts');
+            return capitalized ? word.charAt(0).toUpperCase() + word.slice(1) : word;
+        };
 
         switch (action) {
         case 'copy-link':
@@ -185,36 +214,47 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
             const url = selectedPosts[0]?.url;
             if (url) {
                 void navigator.clipboard?.writeText(url);
+                toast.success(action === 'copy-link' ? 'Post link copied' : 'Preview link copied');
             }
             break;
         }
         case 'feature':
         case 'unfeature':
-            await bulkEdit.mutateAsync({action, filter, resource});
-            finishBulkAction();
+            try {
+                await bulkEdit.mutateAsync({action, filter, resource});
+                toast.success(`${typeWord(true)} ${action === 'feature' ? 'featured' : 'unfeatured'}`);
+                finishBulkAction();
+            } catch (error) {
+                toast.error(apiErrorMessage(error, `Failed to ${action} ${typeWord(false)}`));
+            }
             break;
         case 'duplicate': {
             const id = selectedPosts[0]?.id;
             if (id) {
-                await copyPost.mutateAsync({id, resource});
-                finishBulkAction();
+                try {
+                    await copyPost.mutateAsync({id, resource});
+                    toast.success(`${isPages ? 'Page' : 'Post'} duplicated`);
+                    finishBulkAction();
+                } catch (error) {
+                    toast.error(apiErrorMessage(error, `Failed to duplicate ${isPages ? 'page' : 'post'}`));
+                }
             }
             break;
         }
         case 'delete':
-            setPendingAction({kind: 'delete', filter, count, singleTitle});
+            setPendingAction({kind: 'delete', filter, count, singleTitle, singlePost});
             break;
         case 'unpublish':
-            setPendingAction({kind: 'unpublish', filter, count, singleTitle});
+            setPendingAction({kind: 'unpublish', filter, count, singleTitle, singlePost});
             break;
         case 'unschedule':
-            setPendingAction({kind: 'unschedule', filter, count, singleTitle});
+            setPendingAction({kind: 'unschedule', filter, count, singleTitle, singlePost});
             break;
         case 'add-tag':
-            setPendingAction({kind: 'add-tag', filter, count, singleTitle});
+            setPendingAction({kind: 'add-tag', filter, count, singleTitle, singlePost});
             break;
         case 'change-access':
-            setPendingAction({kind: 'change-access', filter, count, singleTitle});
+            setPendingAction({kind: 'change-access', filter, count, singleTitle, singlePost});
             break;
         }
     };
@@ -298,7 +338,7 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
                             <EmptyIndicator
                                 actions={
                                     hasActiveFilters ? (
-                                        <Button variant="outline" onClick={() => setSearchParams({})}>
+                                        <Button variant="outline" onClick={() => setSearchParams({}, {replace: true})}>
                                             Show all {typeLabel}
                                         </Button>
                                     ) : (
@@ -333,8 +373,8 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
                                             selectionEnabled={selectionEnabled}
                                             onContextMenu={handleRowContextMenu}
                                             onOpen={openInEditor}
-                                            onShiftSelect={id => setSelection(current => shiftItem(current, id, orderedIds))}
-                                            onToggleSelect={id => setSelection(current => toggleItem(current, id))}
+                                            onShiftSelect={handleShiftSelect}
+                                            onToggleSelect={handleToggleSelect}
                                         />
                                     ))}
                                     {section.hasNextPage && (
@@ -373,8 +413,11 @@ const PostsList: React.FC<PostsListProps> = ({resource = 'posts'}) => {
                     resource={resource}
                     views={views}
                     onClose={() => setViewModalOpen(false)}
-                    onDeleted={() => setSearchParams({})}
+                    onDeleted={() => setSearchParams({}, {replace: true})}
                 />
+            )}
+            {isSuccessModalOpen && successModalProps && (
+                <PostShareModal {...successModalProps} />
             )}
         </MainLayout>
     );

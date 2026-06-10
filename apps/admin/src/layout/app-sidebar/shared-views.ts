@@ -1,23 +1,11 @@
 import {useMemo} from 'react';
-import {parseAllSharedViewsJSON} from '@tryghost/posts/api';
+import {POSTS_VIEW_COLOR_HEX, parseAllSharedViewsJSON} from '@tryghost/posts/api';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 
 export type {SharedView} from '@tryghost/posts/api';
 
 export function getColorHex(color: string): string {
-    const colorMap: Record<string, string> = {
-        midgrey: '#7C8B9A',
-        blue: '#14b8ff',
-        green: '#30cf43',
-        red: '#f50b23',
-        teal: '#4dcddc',
-        purple: '#8e42ff',
-        yellow: '#ffb41f',
-        orange: '#fe8b05',
-        pink: '#fb2d8d'
-    };
-
-    return colorMap[color] || '#7C8B9A';
+    return POSTS_VIEW_COLOR_HEX[color] || POSTS_VIEW_COLOR_HEX.midgrey;
 }
 
 export function useSharedViews(route?: string) {

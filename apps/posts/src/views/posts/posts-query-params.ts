@@ -15,17 +15,22 @@ const PAGE_TYPES: string[] = ['draft', 'published', 'scheduled', 'featured'];
 const VISIBILITIES: string[] = ['public', 'members', '[paid,tiers]'];
 const ORDERS: string[] = ['published_at asc', 'updated_at desc'];
 
+/** Author/tag params are slugs; anything else would be injected into NQL filters */
+const SLUG_PATTERN = /^[a-z0-9-]+$/i;
+
 export function parsePostsListParams(searchParams: URLSearchParams, resource: PostsResource): PostsListParams {
     const validTypes = resource === 'pages' ? PAGE_TYPES : POST_TYPES;
     const rawType = searchParams.get('type');
     const rawVisibility = searchParams.get('visibility');
+    const rawAuthor = searchParams.get('author');
+    const rawTag = searchParams.get('tag');
     const rawOrder = searchParams.get('order');
 
     return {
         type: rawType && validTypes.includes(rawType) ? (rawType as PostsListType) : null,
         visibility: rawVisibility && VISIBILITIES.includes(rawVisibility) ? rawVisibility : null,
-        author: searchParams.get('author'),
-        tag: searchParams.get('tag'),
+        author: rawAuthor && SLUG_PATTERN.test(rawAuthor) ? rawAuthor : null,
+        tag: rawTag && SLUG_PATTERN.test(rawTag) ? rawTag : null,
         order: rawOrder && ORDERS.includes(rawOrder) ? rawOrder : null
     };
 }
@@ -71,13 +76,19 @@ export function getPostsListQueries({params, resource, forcedAuthorSlug}: {
 
     const withRest = (statusFilter: string) => [statusFilter, ...rest].join('+');
 
+    // The bulk edit/delete endpoints take a raw NQL filter, so the
+    // all-selected filter is explicitly scoped to the current resource type.
+    // The section browse queries don't need this — the API scopes them.
+    const typeScope = resource === 'pages' ? 'type:page' : 'type:post';
+    const scopedAllFilter = (statusFilter: string) => [typeScope, withRest(statusFilter)].join('+');
+
     const publishedOrder = params.order ?? 'published_at desc';
     const sections: Partial<Record<PostsSectionKey, PostsSectionQuery>> = {};
 
     if (params.type === 'featured') {
         // A single query across all statuses
         sections.published = {filter: withRest(`status:${statusUnion}`), order: publishedOrder};
-        return {sections, allFilter: withRest(`status:${statusUnion}`)};
+        return {sections, allFilter: scopedAllFilter(`status:${statusUnion}`)};
     }
 
     if (params.type === null || params.type === 'scheduled') {
@@ -101,5 +112,5 @@ export function getPostsListQueries({params, resource, forcedAuthorSlug}: {
 
     const allStatus = params.type === null ? statusUnion : (publishedStatus ?? params.type);
 
-    return {sections, allFilter: withRest(`status:${allStatus}`)};
+    return {sections, allFilter: scopedAllFilter(`status:${allStatus}`)};
 }

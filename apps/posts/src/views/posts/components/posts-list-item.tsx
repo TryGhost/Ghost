@@ -1,4 +1,5 @@
 import PostsListItemAnalytics from './posts-list-item-analytics';
+import React from 'react';
 import moment from 'moment-timezone';
 import {Badge} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
@@ -37,7 +38,9 @@ interface PostsListItemProps {
     onContextMenu: (post: Post, event: React.MouseEvent) => void;
 }
 
-function PostsListItem({
+// Memoized so selection changes only re-render the affected rows — the list
+// passes stable callbacks and a memoized analytics object
+const PostsListItem = React.memo(function PostsListItem({
     post,
     resource,
     selected,
@@ -112,6 +115,6 @@ function PostsListItem({
             </div>
         </div>
     );
-}
+});
 
 export default PostsListItem;

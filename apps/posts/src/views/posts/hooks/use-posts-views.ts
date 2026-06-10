@@ -6,19 +6,13 @@ import {
     buildPostsViewsForSave,
     parsePostsViewsJSON
 } from '../posts-views';
-import {getSettingValue, useBrowseSettings, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
+import {getSharedViewsJSON, useMutateSharedViews} from '../../shared/use-mutate-shared-views';
 import {isContributorUser} from '@tryghost/admin-x-framework/api/users';
-import {parseAllSharedViewsJSON} from '../../members/shared-views';
+import {useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import type {PostsResource} from '../posts-query-params';
-
-const SHARED_VIEWS_INVALID_ERROR = 'Cannot modify saved views because shared_views is invalid';
-
-function getSharedViewsJSON(settingsData: {settings: Array<{key: string; value: string | boolean | null}>} | undefined): string {
-    return getSettingValue<string>(settingsData?.settings ?? null, 'shared_views') ?? '[]';
-}
 
 /**
  * All views for the given route: built-in default views (posts route only,
@@ -56,57 +50,17 @@ export function usePostsViews(resource: PostsResource): PostsView[] {
 }
 
 export function useSavePostsView() {
-    const {data: settingsData} = useBrowseSettings();
-    const {mutateAsync: editSettings} = useEditSettings();
-    const handleError = useHandleError();
+    const mutateSharedViews = useMutateSharedViews();
 
     return useCallback(async (view: {name: string; route: PostsResource; color?: string; filter: Record<string, string>}) => {
-        const parsedSharedViews = parseAllSharedViewsJSON(getSharedViewsJSON(settingsData));
-
-        if (!parsedSharedViews.ok) {
-            const error = new Error(SHARED_VIEWS_INVALID_ERROR, {cause: parsedSharedViews.error});
-            handleError(error, {withToast: false});
-            throw error;
-        }
-
-        const updatedViews = buildPostsViewsForSave(parsedSharedViews.views, view);
-
-        try {
-            await editSettings([{
-                key: 'shared_views',
-                value: JSON.stringify(updatedViews)
-            }]);
-        } catch (error) {
-            handleError(error, {withToast: false});
-            throw error;
-        }
-    }, [settingsData, editSettings, handleError]);
+        await mutateSharedViews(allViews => buildPostsViewsForSave(allViews, view));
+    }, [mutateSharedViews]);
 }
 
 export function useDeletePostsView() {
-    const {data: settingsData} = useBrowseSettings();
-    const {mutateAsync: editSettings} = useEditSettings();
-    const handleError = useHandleError();
+    const mutateSharedViews = useMutateSharedViews();
 
     return useCallback(async (view: PostsView) => {
-        const parsedSharedViews = parseAllSharedViewsJSON(getSharedViewsJSON(settingsData));
-
-        if (!parsedSharedViews.ok) {
-            const error = new Error(SHARED_VIEWS_INVALID_ERROR, {cause: parsedSharedViews.error});
-            handleError(error, {withToast: false});
-            throw error;
-        }
-
-        const updatedViews = buildPostsViewsForDelete(parsedSharedViews.views, view);
-
-        try {
-            await editSettings([{
-                key: 'shared_views',
-                value: JSON.stringify(updatedViews)
-            }]);
-        } catch (error) {
-            handleError(error, {withToast: false});
-            throw error;
-        }
-    }, [settingsData, editSettings, handleError]);
+        await mutateSharedViews(allViews => buildPostsViewsForDelete(allViews, view));
+    }, [mutateSharedViews]);
 }

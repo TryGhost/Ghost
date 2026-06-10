@@ -118,15 +118,18 @@ describe('posts-selection', () => {
 
     describe('selectionFilter', () => {
         const allFilter = 'status:[draft,scheduled,published,sent]';
+        // Valid Mongo-style ObjectIDs, like real post ids
+        const idA = '64f1b6f3a3e1c2d4e5f6a7b8';
+        const idB = '64f1b6f3a3e1c2d4e5f6a7b9';
 
         it('returns id:nothing for an empty selection', () => {
             expect(selectionFilter(EMPTY_SELECTION, allFilter)).toBe('id:nothing');
         });
 
         it('returns an id list for a normal selection', () => {
-            const selection = toggleItem(toggleItem(EMPTY_SELECTION, 'a'), 'b');
+            const selection = toggleItem(toggleItem(EMPTY_SELECTION, idA), idB);
 
-            expect(selectionFilter(selection, allFilter)).toBe('id:[\'a\',\'b\']');
+            expect(selectionFilter(selection, allFilter)).toBe(`id:['${idA}','${idB}']`);
         });
 
         it('returns the all filter for an inverted selection without exclusions', () => {
@@ -136,14 +139,33 @@ describe('posts-selection', () => {
         });
 
         it('returns the all filter with exclusions for an inverted selection', () => {
-            const selection = toggleItem(toggleItem(invertSelection(EMPTY_SELECTION), 'a'), 'b');
+            const selection = toggleItem(toggleItem(invertSelection(EMPTY_SELECTION), idA), idB);
 
-            expect(selectionFilter(selection, allFilter)).toBe(`(${allFilter})+id:-['a','b']`);
+            expect(selectionFilter(selection, allFilter)).toBe(`(${allFilter})+id:-['${idA}','${idB}']`);
         });
 
         it('handles inverted selections without an all filter', () => {
             expect(selectionFilter(invertSelection(EMPTY_SELECTION), '')).toBe('');
-            expect(selectionFilter(toggleItem(invertSelection(EMPTY_SELECTION), 'a'), '')).toBe('id:-[\'a\']');
+            expect(selectionFilter(toggleItem(invertSelection(EMPTY_SELECTION), idA), '')).toBe(`id:-['${idA}']`);
+        });
+
+        it('drops ids that are not well-formed ObjectIDs', () => {
+            const injected = `${idA}'])+status:draft`;
+            const selection = toggleItem(toggleItem(EMPTY_SELECTION, idA), injected);
+
+            expect(selectionFilter(selection, allFilter)).toBe(`id:['${idA}']`);
+        });
+
+        it('returns id:nothing when every selected id is malformed', () => {
+            const selection = toggleItem(EMPTY_SELECTION, 'not-an-object-id');
+
+            expect(selectionFilter(selection, allFilter)).toBe('id:nothing');
+        });
+
+        it('ignores malformed exclusions in inverted selections', () => {
+            const selection = toggleItem(invertSelection(EMPTY_SELECTION), 'not-an-object-id');
+
+            expect(selectionFilter(selection, allFilter)).toBe(allFilter);
         });
     });
 

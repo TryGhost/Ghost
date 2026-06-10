@@ -54,12 +54,12 @@ export type PostsViewsParseResult =
     | {ok: false; error: Error};
 
 /** The query param keys that make up a posts/pages view filter */
-const VIEW_FILTER_KEYS = ['type', 'visibility', 'author', 'tag', 'order'] as const;
+export const POSTS_VIEW_FILTER_KEYS = ['type', 'visibility', 'author', 'tag', 'order'] as const;
 
 /** Converts the parsed list params into the filter record stored in shared_views */
 export function paramsToViewFilter(params: PostsListParams): Record<string, string> {
     const filter: Record<string, string> = {};
-    for (const key of VIEW_FILTER_KEYS) {
+    for (const key of POSTS_VIEW_FILTER_KEYS) {
         const value = params[key];
         if (value !== null) {
             filter[key] = value;
@@ -69,13 +69,13 @@ export function paramsToViewFilter(params: PostsListParams): Record<string, stri
 }
 
 /** Ember parity (customViews.cleanFilter): drop empty values before comparing */
-export function cleanViewFilter(filter: Record<string, string | null>): Record<string, string> {
+export function cleanViewFilter(filter: Record<string, string | null | undefined>): Record<string, string> {
     return Object.fromEntries(
         Object.entries(filter).filter(([, value]) => value !== null && value !== undefined && value !== '')
     ) as Record<string, string>;
 }
 
-export function isPostsViewFilterEqual(filterA: Record<string, string | null>, filterB: Record<string, string | null>): boolean {
+export function isPostsViewFilterEqual(filterA: Record<string, string | null | undefined>, filterB: Record<string, string | null | undefined>): boolean {
     return isSharedViewFilterEqual(cleanViewFilter(filterA), cleanViewFilter(filterB));
 }
 

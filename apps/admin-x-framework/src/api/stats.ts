@@ -1,4 +1,4 @@
-import {Meta, createQuery, createQueryWithId} from '../utils/api/hooks';
+import {Meta, createMutation, createQuery, createQueryWithId} from '../utils/api/hooks';
 
 // Types
 
@@ -322,6 +322,28 @@ export const useSubscriberCount = createQuery<NewsletterSubscriberStatsResponseT
     defaultSearchParams: {
         // Empty default params, will be filled by the hook
     }
+});
+
+export type PostsVisitorCountsResponseType = {
+    stats?: Array<{data?: {visitor_counts?: Record<string, number>}}>;
+};
+
+export type PostsMemberCountsResponseType = {
+    stats?: Array<Record<string, {free_members?: number; paid_members?: number}>>;
+};
+
+// Batched lookups for the posts list. These are POST requests (the uuid/id
+// lists can be too long for a query string), so they are modeled as mutations.
+export const usePostsVisitorCounts = createMutation<PostsVisitorCountsResponseType, {postUuids: string[]}>({
+    method: 'POST',
+    path: () => '/stats/posts-visitor-counts/',
+    body: ({postUuids}) => ({postUuids})
+});
+
+export const usePostsMemberCounts = createMutation<PostsMemberCountsResponseType, {postIds: string[]}>({
+    method: 'POST',
+    path: () => '/stats/posts-member-counts/',
+    body: ({postIds}) => ({postIds})
 });
 
 // Hook wrapper to accept a newsletterId parameter

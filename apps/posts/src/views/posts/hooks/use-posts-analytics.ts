@@ -1,48 +1,10 @@
-import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
-import {useCallback, useEffect, useRef, useState} from 'react';
-import {useFramework} from '@tryghost/admin-x-framework';
+import {useEffect, useRef, useState} from 'react';
+import {usePostsMemberCounts, usePostsVisitorCounts} from '@tryghost/admin-x-framework/api/stats';
 import type {Post} from '@tryghost/admin-x-framework/api/posts';
 
 export interface PostMemberCounts {
     free: number;
     paid: number;
-}
-
-interface VisitorCountsResponse {
-    stats?: Array<{data?: {visitor_counts?: Record<string, number>}}>;
-}
-
-interface MemberCountsResponse {
-    stats?: Array<Record<string, {free_members?: number; paid_members?: number}>>;
-}
-
-/**
- * Minimal POST helper for the stats endpoints. The framework's internal
- * fetch utility isn't exported, so this mirrors its essential behavior
- * (admin API root, credentials, version header).
- */
-function useStatsPost() {
-    const {ghostVersion} = useFramework();
-
-    return useCallback(async <ResponseData,>(path: string, body: unknown): Promise<ResponseData> => {
-        const {apiRoot} = getGhostPaths();
-        const response = await fetch(`${apiRoot}${path}`, {
-            method: 'POST',
-            credentials: 'include',
-            headers: {
-                'app-pragma': 'no-cache',
-                'content-type': 'application/json',
-                ...(ghostVersion ? {'x-ghost-version': ghostVersion} : {})
-            },
-            body: JSON.stringify(body)
-        });
-
-        if (!response.ok) {
-            throw new Error(`Stats request failed: ${response.status}`);
-        }
-
-        return await response.json() as ResponseData;
-    }, [ghostVersion]);
 }
 
 /**
@@ -56,7 +18,8 @@ export function usePostsAnalytics({posts, visitorCountsEnabled, memberCountsEnab
     visitorCountsEnabled: boolean;
     memberCountsEnabled: boolean;
 }) {
-    const statsPost = useStatsPost();
+    const {mutateAsync: fetchVisitorCounts} = usePostsVisitorCounts();
+    const {mutateAsync: fetchMemberCounts} = usePostsMemberCounts();
     const [visitorCounts, setVisitorCounts] = useState<Record<string, number>>({});
     const [memberCounts, setMemberCounts] = useState<Record<string, PostMemberCounts>>({});
     const fetchedUuids = useRef(new Set<string>());
@@ -77,7 +40,7 @@ export function usePostsAnalytics({posts, visitorCountsEnabled, memberCountsEnab
 
         postUuids.forEach(uuid => fetchedUuids.current.add(uuid));
 
-        statsPost<VisitorCountsResponse>('/stats/posts-visitor-counts/', {postUuids})
+        fetchVisitorCounts({postUuids})
             .then((result) => {
                 const counts = result.stats?.[0]?.data?.visitor_counts ?? {};
                 setVisitorCounts(current => ({...current, ...counts}));
@@ -85,7 +48,7 @@ export function usePostsAnalytics({posts, visitorCountsEnabled, memberCountsEnab
             .catch(() => {
                 // Silent failure — visitor counts are not critical
             });
-    }, [posts, visitorCountsEnabled, statsPost]);
+    }, [posts, visitorCountsEnabled, fetchVisitorCounts]);
 
     useEffect(() => {
         if (!memberCountsEnabled) {
@@ -102,7 +65,7 @@ export function usePostsAnalytics({posts, visitorCountsEnabled, memberCountsEnab
 
         postIds.forEach(id => fetchedIds.current.add(id));
 
-        statsPost<MemberCountsResponse>('/stats/posts-member-counts/', {postIds})
+        fetchMemberCounts({postIds})
             .then((result) => {
                 const countsById = result.stats?.[0] ?? {};
                 const next: Record<string, PostMemberCounts> = {};
@@ -117,7 +80,7 @@ export function usePostsAnalytics({posts, visitorCountsEnabled, memberCountsEnab
             .catch(() => {
                 // Silent failure — member counts are not critical
             });
-    }, [posts, memberCountsEnabled, statsPost]);
+    }, [posts, memberCountsEnabled, fetchMemberCounts]);
 
     return {visitorCounts, memberCounts};
 }

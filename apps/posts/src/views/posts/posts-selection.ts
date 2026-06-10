@@ -137,29 +137,39 @@ export function invertSelection(selection: PostsSelection): PostsSelection {
     };
 }
 
-function quoteIds(ids: ReadonlySet<string>): string {
-    return `'${[...ids].join('\',\'')}'`;
+/** Post ids are Mongo-style ObjectIDs; anything else would be injected into NQL filters */
+const OBJECT_ID_PATTERN = /^[a-f0-9]{24}$/i;
+
+function validIds(ids: ReadonlySet<string>): string[] {
+    return [...ids].filter(id => OBJECT_ID_PATTERN.test(id));
+}
+
+function quoteIds(ids: string[]): string {
+    return `'${ids.join('\',\'')}'`;
 }
 
 /**
  * NQL filter for the current selection, used by the bulk edit/delete APIs.
- * Mirrors Ember's `SelectionList.filter`.
+ * Mirrors Ember's `SelectionList.filter`. Ids that aren't well-formed
+ * ObjectIDs are dropped as a client-side NQL-injection defense.
  */
 export function selectionFilter(selection: PostsSelection, allFilter: string): string {
+    const ids = validIds(selection.selectedIds);
+
     if (selection.inverted) {
         if (allFilter) {
-            if (selection.selectedIds.size === 0) {
+            if (ids.length === 0) {
                 return allFilter;
             }
-            return `(${allFilter})+id:-[${quoteIds(selection.selectedIds)}]`;
+            return `(${allFilter})+id:-[${quoteIds(ids)}]`;
         }
-        if (selection.selectedIds.size === 0) {
+        if (ids.length === 0) {
             return '';
         }
-        return `id:-[${quoteIds(selection.selectedIds)}]`;
+        return `id:-[${quoteIds(ids)}]`;
     }
-    if (selection.selectedIds.size === 0) {
+    if (ids.length === 0) {
         return 'id:nothing';
     }
-    return `id:[${quoteIds(selection.selectedIds)}]`;
+    return `id:[${quoteIds(ids)}]`;
 }

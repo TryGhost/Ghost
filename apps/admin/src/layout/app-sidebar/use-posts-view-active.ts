@@ -1,7 +1,9 @@
 import { useCallback } from "react";
+import {
+    POSTS_VIEW_FILTER_KEYS,
+    isPostsViewFilterEqual,
+} from "@tryghost/posts/api";
 import { useLocation, useSearchParams } from "@tryghost/admin-x-framework";
-
-const FILTER_KEYS = ["type", "visibility", "author", "tag", "order"] as const;
 
 export type PostsViewFilter = Partial<Record<string, string | null>>;
 
@@ -26,13 +28,17 @@ export function usePostsViewActive(route: "posts" | "pages") {
             if (!onRoute) {
                 return false;
             }
-            // exact match over all known filter keys, mirroring Ember's
-            // customViews isFilterEqual(cleanFilter(view.filter), queryParams)
-            return FILTER_KEYS.every((key) => {
-                const filterValue = filter[key] || null;
-                const paramValue = searchParams.get(key) || null;
-                return filterValue === paramValue;
-            });
+            // exact match over the known filter keys, using the same
+            // equality the posts list uses (Ember parity: customViews
+            // isFilterEqual(cleanFilter(view.filter), queryParams))
+            const currentFilter: Record<string, string> = {};
+            for (const key of POSTS_VIEW_FILTER_KEYS) {
+                const value = searchParams.get(key);
+                if (value) {
+                    currentFilter[key] = value;
+                }
+            }
+            return isPostsViewFilterEqual(filter, currentFilter);
         },
         [onRoute, searchParams],
     );

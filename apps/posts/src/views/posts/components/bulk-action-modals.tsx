@@ -14,10 +14,15 @@ import {
     DialogTitle
 } from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {apiErrorMessage} from '@utils/api-error-message';
+import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {toast} from 'sonner';
 import {useBrowseTags} from '@tryghost/admin-x-framework/api/tags';
 import {useBulkDeletePosts, useBulkEditPosts} from '@tryghost/admin-x-framework/api/posts';
+import {useDebounce} from 'use-debounce';
 import {useState} from 'react';
-import type {PostTag} from '@tryghost/admin-x-framework/api/posts';
+import type {Post} from '@tryghost/admin-x-framework/api/posts';
 import type {PostsResource} from '../posts-query-params';
 
 export type BulkActionKind = 'delete' | 'unpublish' | 'unschedule' | 'add-tag' | 'change-access';
@@ -29,6 +34,8 @@ export interface PendingBulkAction {
     count: number;
     /** Set when exactly one post is selected */
     singleTitle?: string;
+    /** The selected post when exactly one post is selected (used to preselect access) */
+    singlePost?: Post;
 }
 
 interface BulkActionModalsProps {
@@ -74,26 +81,46 @@ function ConfirmationModal({testId, title, description, confirmLabel, isRunning,
     );
 }
 
+/** A tag chip in the add-tags modal; new tags have no id yet and are created by the API */
+export interface SelectedBulkTag {
+    id?: string;
+    name: string;
+    slug?: string;
+}
+
 function AddTagsModal({isRunning, onCancel, onConfirm}: {
     isRunning: boolean;
     onCancel: () => void;
-    onConfirm: (tags: PostTag[]) => void;
+    onConfirm: (tags: SelectedBulkTag[]) => void;
 }) {
     const [query, setQuery] = useState('');
-    const [selectedTags, setSelectedTags] = useState<PostTag[]>([]);
-    const {data: tagsData} = useBrowseTags({filter: {visibility: '[public,internal]'}});
+    const [selectedTags, setSelectedTags] = useState<SelectedBulkTag[]>([]);
 
-    const filteredTags = (tagsData?.tags ?? [])
-        .filter(tag => !selectedTags.some(selected => selected.id === tag.id))
-        .filter(tag => tag.name.toLowerCase().includes(query.trim().toLowerCase()));
+    const trimmedQuery = query.trim();
+    const [debouncedQuery] = useDebounce(trimmedQuery, 300);
+    // Mirrors Ember's tagsManager.searchTagsTask filter, including the quote escaping
+    const safeTerm = debouncedQuery.replace(/'/g, '\\\'');
+    const {data: tagsData} = useBrowseTags({
+        filter: {visibility: '[public,internal]'},
+        searchParams: debouncedQuery ? {filter: `tags.name:~'${safeTerm}'`} : undefined
+    });
 
-    const addTag = (tag: PostTag) => {
-        setSelectedTags(current => [...current, {id: tag.id, name: tag.name, slug: tag.slug}]);
+    const availableTags = (tagsData?.tags ?? [])
+        .filter(tag => !selectedTags.some(selected => selected.id === tag.id || selected.name.toLowerCase() === tag.name.toLowerCase()));
+
+    // Offer inline creation when the typed term matches no existing tag
+    // exactly (Ember parity: the power-select "Add <tag>" option)
+    const hasExactMatch = (tagsData?.tags ?? []).some(tag => tag.name.toLowerCase() === trimmedQuery.toLowerCase())
+        || selectedTags.some(tag => tag.name.toLowerCase() === trimmedQuery.toLowerCase());
+    const showCreateOption = trimmedQuery !== '' && !hasExactMatch;
+
+    const addTag = (tag: SelectedBulkTag) => {
+        setSelectedTags(current => [...current, tag]);
         setQuery('');
     };
 
-    const removeTag = (id: string) => {
-        setSelectedTags(current => current.filter(tag => tag.id !== id));
+    const removeTag = (tag: SelectedBulkTag) => {
+        setSelectedTags(current => current.filter(selected => selected !== tag));
     };
 
     return (
@@ -110,13 +137,14 @@ function AddTagsModal({isRunning, onCancel, onConfirm}: {
                     {selectedTags.length > 0 && (
                         <div className="flex flex-wrap gap-1.5">
                             {selectedTags.map(tag => (
-                                <span key={tag.id} className="flex items-center gap-1 rounded-sm bg-accent px-2 py-0.5 text-sm">
+                                <span key={tag.id ?? `new-${tag.name}`} className="flex items-center gap-1 rounded-sm bg-accent px-2 py-0.5 text-sm">
                                     {tag.name}
+                                    {!tag.id && <span className="text-xs text-muted-foreground">(new)</span>}
                                     <button
                                         aria-label={`Remove ${tag.name}`}
                                         className="cursor-pointer text-muted-foreground hover:text-foreground"
                                         type="button"
-                                        onClick={() => removeTag(tag.id)}
+                                        onClick={() => removeTag(tag)}
                                     >
                                         <LucideIcon.X className="size-3" />
                                     </button>
@@ -133,17 +161,28 @@ function AddTagsModal({isRunning, onCancel, onConfirm}: {
                         onChange={event => setQuery(event.target.value)}
                     />
                     <div className="max-h-48 overflow-y-auto" role="listbox">
-                        {filteredTags.map(tag => (
+                        {availableTags.map(tag => (
                             <div
                                 key={tag.id}
                                 aria-selected={false}
                                 className="cursor-pointer rounded-xs px-2 py-1.5 text-sm transition-colors hover:bg-accent"
                                 role="option"
-                                onClick={() => addTag(tag)}
+                                onClick={() => addTag({id: tag.id, name: tag.name, slug: tag.slug})}
                             >
                                 {tag.name}
                             </div>
                         ))}
+                        {showCreateOption && (
+                            <div
+                                aria-selected={false}
+                                className="cursor-pointer rounded-xs px-2 py-1.5 text-sm transition-colors hover:bg-accent"
+                                data-testid="create-tag-option"
+                                role="option"
+                                onClick={() => addTag({name: trimmedQuery})}
+                            >
+                                Create &quot;{trimmedQuery}&quot;
+                            </div>
+                        )}
                     </div>
                 </div>
                 <DialogFooter>
@@ -163,16 +202,44 @@ function AddTagsModal({isRunning, onCancel, onConfirm}: {
 const ACCESS_OPTIONS = [
     {label: 'Public', value: 'public'},
     {label: 'Members only', value: 'members'},
-    {label: 'Paid-members only', value: 'paid'}
+    {label: 'Paid-members only', value: 'paid'},
+    {label: 'Specific tiers', value: 'tiers'}
 ];
 
-function ChangeAccessModal({type, isRunning, onCancel, onConfirm}: {
+/** The tier shape sent in the bulk access meta, mirroring Ember's edit-posts-access modal */
+export interface SelectedAccessTier {
+    id: string;
+    name?: string;
+    slug?: string;
+}
+
+function ChangeAccessModal({type, isRunning, initialVisibility, initialTiers, onCancel, onConfirm}: {
     type: string;
     isRunning: boolean;
+    initialVisibility: string;
+    initialTiers: SelectedAccessTier[];
     onCancel: () => void;
-    onConfirm: (visibility: string) => void;
+    onConfirm: (visibility: string, tiers: SelectedAccessTier[]) => void;
 }) {
-    const [visibility, setVisibility] = useState('public');
+    const [visibility, setVisibility] = useState(initialVisibility);
+    const [selectedTiers, setSelectedTiers] = useState<SelectedAccessTier[]>(initialTiers);
+
+    // Ember parity (visibility-segment-select): the tier picker offers paid tiers
+    const {data: tiersData} = useBrowseTiers({searchParams: {filter: 'type:paid', limit: 'all'}});
+    const paidTiers = getPaidActiveTiers(tiersData?.tiers ?? []);
+
+    const isTierSelected = (id: string) => selectedTiers.some(tier => tier.id === id);
+    const toggleTier = (tier: SelectedAccessTier) => {
+        setSelectedTiers((current) => {
+            if (current.some(selected => selected.id === tier.id)) {
+                return current.filter(selected => selected.id !== tier.id);
+            }
+            return [...current, tier];
+        });
+    };
+
+    // Ember validation: visibility "tiers" requires at least one tier
+    const isInvalid = visibility === 'tiers' && selectedTiers.length === 0;
 
     return (
         <Dialog open onOpenChange={(open) => {
@@ -198,9 +265,37 @@ function ChangeAccessModal({type, isRunning, onCancel, onConfirm}: {
                         </label>
                     ))}
                 </div>
+                {visibility === 'tiers' && (
+                    <div className="flex flex-col gap-2" data-testid="visibility-segment-select">
+                        <span className="text-sm font-semibold">Tiers</span>
+                        {paidTiers.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">No paid tiers available</p>
+                        ) : (
+                            paidTiers.map(tier => (
+                                <label key={tier.id} className="flex cursor-pointer items-center gap-2 text-sm">
+                                    <input
+                                        checked={isTierSelected(tier.id)}
+                                        type="checkbox"
+                                        value={tier.id}
+                                        onChange={() => toggleTier({id: tier.id, name: tier.name, slug: tier.slug})}
+                                    />
+                                    {tier.name}
+                                </label>
+                            ))
+                        )}
+                        {isInvalid && (
+                            <p className="text-sm text-red-600">Select at least one tier</p>
+                        )}
+                    </div>
+                )}
                 <DialogFooter>
                     <Button variant="outline" onClick={onCancel}>Cancel</Button>
-                    <Button disabled={isRunning} onClick={() => onConfirm(visibility)}>Save</Button>
+                    <Button
+                        disabled={isRunning || isInvalid}
+                        onClick={() => onConfirm(visibility, selectedTiers)}
+                    >
+                        Save
+                    </Button>
                 </DialogFooter>
             </DialogContent>
         </Dialog>
@@ -210,6 +305,7 @@ function ChangeAccessModal({type, isRunning, onCancel, onConfirm}: {
 function BulkActionModals({pending, resource, onClose, onCompleted}: BulkActionModalsProps) {
     const bulkEdit = useBulkEditPosts();
     const bulkDelete = useBulkDeletePosts();
+    const {data: settingsData} = useBrowseSettings();
 
     if (!pending) {
         return null;
@@ -218,44 +314,77 @@ function BulkActionModals({pending, resource, onClose, onCompleted}: BulkActionM
     const type = resource === 'pages' ? 'page' : 'post';
     const isRunning = bulkEdit.isLoading || bulkDelete.isLoading;
 
+    const single = pending.count === 1;
+    const typeLabel = (capitalized: boolean) => {
+        const word = single ? type : `${type}s`;
+        return capitalized ? word.charAt(0).toUpperCase() + word.slice(1) : word;
+    };
+
     const finish = () => {
         onClose();
         onCompleted();
     };
 
     const handleDelete = async () => {
-        await bulkDelete.mutateAsync({filter: pending.filter, resource});
-        finish();
+        try {
+            await bulkDelete.mutateAsync({filter: pending.filter, resource});
+            toast.success(`${typeLabel(true)} deleted`);
+            finish();
+        } catch (error) {
+            toast.error(apiErrorMessage(error, `Failed to delete ${typeLabel(false)}`));
+        }
     };
 
     const handleUnpublish = async () => {
-        await bulkEdit.mutateAsync({action: 'unpublish', filter: pending.filter, resource});
-        finish();
+        try {
+            await bulkEdit.mutateAsync({action: 'unpublish', filter: pending.filter, resource});
+            toast.success(`${typeLabel(true)} unpublished`);
+            finish();
+        } catch (error) {
+            toast.error(apiErrorMessage(error, `Failed to unpublish ${typeLabel(false)}`));
+        }
     };
 
     const handleUnschedule = async () => {
-        await bulkEdit.mutateAsync({action: 'unschedule', filter: pending.filter, resource});
-        finish();
+        try {
+            await bulkEdit.mutateAsync({action: 'unschedule', filter: pending.filter, resource});
+            toast.success(`${typeLabel(true)} unscheduled`);
+            finish();
+        } catch (error) {
+            toast.error(apiErrorMessage(error, `Failed to unschedule ${typeLabel(false)}`));
+        }
     };
 
-    const handleAddTags = async (tags: PostTag[]) => {
-        await bulkEdit.mutateAsync({
-            action: 'addTag',
-            filter: pending.filter,
-            meta: {tags: tags.map(({id, name, slug}) => ({id, name, slug}))},
-            resource
-        });
-        finish();
+    const handleAddTags = async (tags: SelectedBulkTag[]) => {
+        try {
+            await bulkEdit.mutateAsync({
+                action: 'addTag',
+                filter: pending.filter,
+                // New tags are sent without an id and created by the API
+                // (Ember parity: posts-service bulk addTag)
+                meta: {tags: tags.map(({id, name, slug}) => (id ? {id, name, slug} : {name}))},
+                resource
+            });
+            toast.success(tags.length > 1 ? 'Tags added' : 'Tag added');
+            finish();
+        } catch (error) {
+            toast.error(apiErrorMessage(error, 'Failed to add tags'));
+        }
     };
 
-    const handleChangeAccess = async (visibility: string) => {
-        await bulkEdit.mutateAsync({
-            action: 'access',
-            filter: pending.filter,
-            meta: {visibility},
-            resource
-        });
-        finish();
+    const handleChangeAccess = async (visibility: string, tiers: SelectedAccessTier[]) => {
+        try {
+            await bulkEdit.mutateAsync({
+                action: 'access',
+                filter: pending.filter,
+                meta: visibility === 'tiers' ? {visibility, tiers} : {visibility},
+                resource
+            });
+            toast.success('Access updated');
+            finish();
+        } catch (error) {
+            toast.error(apiErrorMessage(error, 'Failed to update access'));
+        }
     };
 
     const thisOrThese = pending.singleTitle ? `this ${type}` : `these ${type}s`;
@@ -305,15 +434,38 @@ function BulkActionModals({pending, resource, onClose, onCompleted}: BulkActionM
                 onConfirm={tags => void handleAddTags(tags)}
             />
         );
-    case 'change-access':
+    case 'change-access': {
+        // Ember parity (edit-posts-access setup): a single selected post
+        // preselects its own access, otherwise the site default is used
+        let initialVisibility: string;
+        let initialTiers: SelectedAccessTier[];
+        if (pending.singlePost) {
+            initialVisibility = pending.singlePost.visibility ?? 'public';
+            initialTiers = (pending.singlePost.tiers ?? []).map(tier => ({id: tier.id, name: tier.name}));
+        } else {
+            initialVisibility = getSettingValue<string>(settingsData?.settings ?? null, 'default_content_visibility') ?? 'public';
+            let defaultTierIds: string[] = [];
+            try {
+                const raw = getSettingValue<string>(settingsData?.settings ?? null, 'default_content_visibility_tiers') ?? '[]';
+                const parsed: unknown = JSON.parse(raw);
+                defaultTierIds = Array.isArray(parsed) ? parsed.filter((id): id is string => typeof id === 'string') : [];
+            } catch {
+                defaultTierIds = [];
+            }
+            initialTiers = defaultTierIds.map(id => ({id}));
+        }
+
         return (
             <ChangeAccessModal
+                initialTiers={initialTiers}
+                initialVisibility={initialVisibility}
                 isRunning={isRunning}
                 type={type}
                 onCancel={onClose}
-                onConfirm={visibility => void handleChangeAccess(visibility)}
+                onConfirm={(visibility, tiers) => void handleChangeAccess(visibility, tiers)}
             />
         );
+    }
     default:
         return null;
     }

@@ -1,5 +1,6 @@
 import {useBrowsePagesInfinite} from '@tryghost/admin-x-framework/api/pages';
 import {useBrowsePostsInfinite} from '@tryghost/admin-x-framework/api/posts';
+import {useCallback, useMemo} from 'react';
 import type {Post} from '@tryghost/admin-x-framework/api/posts';
 import type {PostsListQueries, PostsResource, PostsSectionKey, PostsSectionQuery} from '../posts-query-params';
 
@@ -51,24 +52,31 @@ function useSectionQuery({resource, section, enabled}: {
     const query = resource === 'pages' ? pagesQuery : postsQuery;
     // The pages API responds with the same shape as the posts API; the Page
     // type in the framework is just a narrower view of it
-    const posts: Post[] = resource === 'pages'
-        ? ((pagesQuery.data?.pages ?? []) as unknown as Post[])
-        : (postsQuery.data?.posts ?? []);
-    const meta = resource === 'pages' ? pagesQuery.data?.meta : postsQuery.data?.meta;
+    const data = resource === 'pages' ? pagesQuery.data : postsQuery.data;
+    const posts: Post[] = useMemo(() => {
+        if (resource === 'pages') {
+            return (pagesQuery.data?.pages ?? []) as unknown as Post[];
+        }
+        return postsQuery.data?.posts ?? [];
+    }, [resource, pagesQuery.data, postsQuery.data]);
+    const meta = data?.meta;
 
-    return {
+    const {fetchNextPage: queryFetchNextPage} = query;
+    const fetchNextPage = useCallback(() => {
+        void queryFetchNextPage();
+    }, [queryFetchNextPage]);
+
+    return useMemo(() => ({
         posts,
         totalItems: meta?.pagination.total ?? posts.length,
-        isLoading: isActive && !query.data && !query.isError,
+        isLoading: isActive && !data && !query.isError,
         isError: isActive && query.isError,
         hasNextPage: query.hasNextPage ?? false,
         isFetchingNextPage: query.isFetchingNextPage,
-        fetchNextPage: () => {
-            void query.fetchNextPage();
-        },
+        fetchNextPage,
         refetch: query.refetch,
         isActive
-    };
+    }), [posts, meta, isActive, data, query.isError, query.hasNextPage, query.isFetchingNextPage, fetchNextPage, query.refetch]);
 }
 
 /**
@@ -84,30 +92,33 @@ export function usePostsListData({resource, queries, enabled}: {
     const drafts = useSectionQuery({resource, section: queries.sections.drafts, enabled});
     const published = useSectionQuery({resource, section: queries.sections.published, enabled});
 
-    const sectionResults: Array<{key: PostsSectionKey; result: SectionQueryResult}> = [
-        {key: 'scheduled', result: scheduled},
-        {key: 'drafts', result: drafts},
-        {key: 'published', result: published}
-    ].filter(({result}) => result.isActive) as Array<{key: PostsSectionKey; result: SectionQueryResult}>;
+    const sectionResults = useMemo(() => {
+        const all: Array<{key: PostsSectionKey; result: SectionQueryResult}> = [
+            {key: 'scheduled', result: scheduled},
+            {key: 'drafts', result: drafts},
+            {key: 'published', result: published}
+        ];
+        return all.filter(({result}) => result.isActive);
+    }, [scheduled, drafts, published]);
 
-    const sections: PostsListSection[] = sectionResults.map(({key, result}) => ({
+    const sections: PostsListSection[] = useMemo(() => sectionResults.map(({key, result}) => ({
         key,
         posts: result.posts,
         totalItems: result.totalItems,
         hasNextPage: result.hasNextPage,
         isFetchingNextPage: result.isFetchingNextPage,
         fetchNextPage: result.fetchNextPage
-    }));
+    })), [sectionResults]);
 
-    const refetchAll = async () => {
+    const refetchAll = useCallback(async () => {
         await Promise.all(sectionResults.map(({result}) => result.refetch()));
-    };
+    }, [sectionResults]);
 
-    return {
+    return useMemo(() => ({
         sections,
         isLoading: !enabled || sectionResults.some(({result}) => result.isLoading),
         isError: sectionResults.some(({result}) => result.isError),
         totalItems: sections.reduce((sum, section) => sum + section.totalItems, 0),
         refetchAll
-    };
+    }), [sections, sectionResults, enabled, refetchAll]);
 }

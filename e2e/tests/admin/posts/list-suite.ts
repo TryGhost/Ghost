@@ -144,7 +144,11 @@ export function definePostsListTests() {
         await postsPage.selectPost(first.title);
         await postsPage.selectPost(second.title);
         await postsPage.openContextMenu(second.title);
+        // feature has no confirmation modal, so wait for the bulk request
+        // before filtering — both implementations call the same endpoint
+        const bulkResponse = page.waitForResponse(response => response.url().includes('/bulk/') && response.ok());
         await postsPage.contextMenuButton('Feature').click();
+        await bulkResponse;
 
         await postsPage.selectType('Featured posts');
 
