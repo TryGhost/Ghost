@@ -24,7 +24,7 @@ export interface Member {
     status: 'free' | 'paid' | 'comped' | 'gift';
     last_seen_at: Date | null;
     last_commented_at: Date | null;
-    newsletters: string[];
+    newsletters: Array<string | {id: string}>;
     tiers?: Partial<Tier>[];
     created_at?: string; // ISO 8601 format for backdating
     complimentary_plan?: boolean;

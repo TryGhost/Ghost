@@ -14,6 +14,7 @@
                             id={{newsletter.forId}}
                             name="subscribed"
                             data-test-checkbox="member-subscribed"
+                            data-testid="member-subscription-checkbox"
                             {{on "click" (fn this.updateNewsletterPreference newsletter)}}
                         />
                         <span class="input-toggle-component" data-testid="member-subscription-toggle"></span>
