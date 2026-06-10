@@ -2242,24 +2242,18 @@ describe('Comments API', function () {
     });
 
     describe('When authenticated as post author', function () {
-        let getStub;
-
         before(async function () {
             await membersAgent.loginAs(postAuthorEmail);
         });
 
         beforeEach(function () {
-            getStub = sinon.stub(settingsCache, 'get');
+            const getStub = sinon.stub(settingsCache, 'get');
             getStub.callsFake((key, options) => {
                 if (key === 'comments_enabled') {
                     return 'all';
                 }
                 return getStub.wrappedMethod.call(settingsCache, key, options);
             });
-        });
-
-        afterEach(async function () {
-            sinon.restore();
         });
 
         it('does NOT notify post author when they comment on their own post', async function () {
