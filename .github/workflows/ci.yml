@@ -29,6 +29,11 @@ concurrency:
   group: ${{ startsWith(github.ref, 'refs/tags/') && format('release-{0}', github.ref) || github.head_ref || github.ref }}
   cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
+# Default least-privilege token for all jobs; jobs that need more declare
+# their own permissions block, which overrides this default.
+permissions:
+  contents: read
+
 jobs:
   job_setup:
     name: Setup
@@ -1405,6 +1410,10 @@ jobs:
     if: always() && needs.job_e2e_tests.result == 'failure'
     needs: [job_e2e_tests, job_setup]
     runs-on: ubuntu-latest
+    # Posts a comment on the PR via `gh pr comment` when E2E tests fail.
+    permissions:
+      contents: read
+      pull-requests: write
     strategy:
       fail-fast: false
     steps:
