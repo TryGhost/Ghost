@@ -23,6 +23,7 @@ export function mapPostToActivity(post: Post): Activity {
             url: post.author.avatarUrl
         },
         name: post.author.name,
+        handle: post.author.handle,
         preferredUsername: post.author.handle.split('@')[1],
         followedByMe: post.author.followedByMe,
         // These are not used but needed to comply with the ActorProperties type
@@ -55,6 +56,7 @@ export function mapPostToActivity(post: Post): Activity {
                 url: post.repostedBy.avatarUrl
             },
             name: post.repostedBy.name,
+            handle: post.repostedBy.handle,
             preferredUsername: post.repostedBy.handle.split('@')[1],
             followedByMe: post.repostedBy.followedByMe,
             // These are not used but needed to comply with the ActorProperties type
