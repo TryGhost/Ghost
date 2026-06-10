@@ -17,6 +17,8 @@ import type {
     IntegrationTokenCreateResponse,
     StaffResponse,
     StaffSessionResponse,
+    StaffAuditListRequest,
+    StaffAuditListResponse,
     StaffVerificationRequest,
     StaffVerificationResponse
 } from './contracts.js';
@@ -46,8 +48,10 @@ export type StaffAuthService = {
     revokeStaffApiToken: (staffId: string, tokenId: string) => Promise<void>;
     createIntegrationToken: (input: IntegrationTokenCreateRequest) => Promise<IntegrationTokenCreateResponse>;
     revokeIntegrationToken: (tokenId: string) => Promise<void>;
+    getIntegrationTokenByToken: (token: string) => Promise<IntegrationTokenCreateResponse['apiToken']>;
     verifyStaffAuthFactor: (input: StaffVerificationRequest) => Promise<StaffVerificationResponse>;
     getStaffRoles: (staffId: string) => Promise<string[]>;
+    listAuditEvents: (input: StaffAuditListRequest) => Promise<StaffAuditListResponse>;
 };
 
 const loginLimiter = createRateLimiter(5, 5 * 60 * 1000);
@@ -367,6 +371,18 @@ export const createStaffAuthService = (
         await repository.revokeIntegrationToken(tokenId, Date.now());
     };
 
+    const getIntegrationTokenByToken = async (token: string) => {
+        const apiToken = await repository.getIntegrationTokenByToken(token);
+        if (!apiToken || apiToken.revokedAt) {
+            throw new HttpError(401, 'invalid_integration_token', 'Integration token is invalid');
+        }
+
+        return {
+            ...toIntegrationTokenResponse(apiToken),
+            token: apiToken.token
+        };
+    };
+
     const verifyStaffAuthFactor = async (input: StaffVerificationRequest) => {
         const authFactor = await repository.getAuthFactorByToken(input.token);
         if (!authFactor || authFactor.usedAt || authFactor.invalidatedAt || authFactor.expiresAt <= Date.now()) {
@@ -401,6 +417,39 @@ export const createStaffAuthService = (
 
     const getStaffRoles = async (staffId: string) => {
         return repository.getRolesForStaff(staffId);
+    };
+
+    const listAuditEvents = async (input: StaffAuditListRequest) => {
+        const filters: Parameters<StaffRepository['listStaffAuthEvents']>[0] = {
+            limit: input.limit
+        };
+        if (input.staffId) {
+            filters.staffId = input.staffId;
+        }
+        if (input.from !== undefined) {
+            filters.from = input.from;
+        }
+        if (input.to !== undefined) {
+            filters.to = input.to;
+        }
+        if (input.cursor !== undefined) {
+            filters.cursor = input.cursor;
+        }
+
+        const events = await repository.listStaffAuthEvents(filters);
+        const nextCursor = events.length > 0 ? events[events.length - 1]?.createdAt ?? null : null;
+        return {
+            events: events.map((event) => ({
+                id: event.id,
+                staffId: event.staffId,
+                action: event.action,
+                outcome: event.outcome,
+                ipAddress: event.ipAddress ?? null,
+                deviceId: event.deviceId ?? null,
+                createdAt: event.createdAt
+            })),
+            nextCursor
+        };
     };
 
     const loginWithSso = async (input: SsoLoginRequest, ipAddress: string) => {
@@ -476,7 +525,9 @@ export const createStaffAuthService = (
         revokeStaffApiToken,
         createIntegrationToken,
         revokeIntegrationToken,
+        getIntegrationTokenByToken,
         verifyStaffAuthFactor,
-        getStaffRoles
+        getStaffRoles,
+        listAuditEvents
     };
 };

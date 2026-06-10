@@ -103,7 +103,10 @@ const createStaffRepository = (): StaffRepository => {
             throw new Error('Not implemented');
         },
         invalidateAuthFactors: async () => undefined,
-        markAuthFactorUsed: async () => undefined
+        markAuthFactorUsed: async () => undefined,
+        listStaffAuthEvents: async () => [],
+        cleanupResetTokens: async () => 0,
+        cleanupAuthFactors: async () => 0
     };
 };
 

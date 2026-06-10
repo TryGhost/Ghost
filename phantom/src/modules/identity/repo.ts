@@ -1,4 +1,4 @@
-import {and, eq, isNull} from 'drizzle-orm';
+import {and, desc, eq, gte, isNull, lt, lte, sql} from 'drizzle-orm';
 import type {DbClient} from '../../db/client.js';
 import {
     staffTable,
@@ -59,10 +59,13 @@ export type StaffRepository = {
     getIntegrationTokenByToken: (token: string) => Promise<IntegrationTokenRecord | null>;
     revokeIntegrationToken: (id: string, revokedAt: number) => Promise<void>;
     createStaffAuthEvent: (event: NewStaffAuthEventRecord) => Promise<StaffAuthEventRecord>;
+    listStaffAuthEvents: (filters: {staffId?: string; from?: number; to?: number; limit: number; cursor?: number}) => Promise<StaffAuthEventRecord[]>;
     createAuthFactor: (factor: NewStaffAuthFactorRecord) => Promise<StaffAuthFactorRecord>;
     getAuthFactorByToken: (token: string) => Promise<StaffAuthFactorRecord | null>;
     invalidateAuthFactors: (staffId: string, type: string, invalidatedAt: number) => Promise<void>;
     markAuthFactorUsed: (id: string, usedAt: number) => Promise<void>;
+    cleanupResetTokens: (before: number) => Promise<number>;
+    cleanupAuthFactors: (before: number) => Promise<number>;
 };
 
 export const createStaffRepository = (db: DbClient): StaffRepository => {
@@ -245,6 +248,34 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         return rows[0];
     };
 
+    const listStaffAuthEvents = async (filters: {staffId?: string; from?: number; to?: number; limit: number; cursor?: number}) => {
+        const clauses = [] as ReturnType<typeof eq>[];
+        if (filters.staffId) {
+            clauses.push(eq(staffAuthEventTable.staffId, filters.staffId));
+        }
+        if (filters.from !== undefined) {
+            clauses.push(gte(staffAuthEventTable.createdAt, filters.from));
+        }
+        if (filters.to !== undefined) {
+            clauses.push(lte(staffAuthEventTable.createdAt, filters.to));
+        }
+        if (filters.cursor !== undefined) {
+            clauses.push(lt(staffAuthEventTable.createdAt, filters.cursor));
+        }
+
+        const query = db
+            .select()
+            .from(staffAuthEventTable)
+            .orderBy(desc(staffAuthEventTable.createdAt))
+            .limit(filters.limit);
+
+        if (clauses.length === 0) {
+            return query;
+        }
+
+        return query.where(and(...clauses));
+    };
+
     const createAuthFactor = async (factor: NewStaffAuthFactorRecord) => {
         await db.insert(staffAuthFactorTable).values(factor);
         const rows = await db.select().from(staffAuthFactorTable).where(eq(staffAuthFactorTable.id, factor.id)).limit(1);
@@ -277,6 +308,24 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
             .where(eq(staffAuthFactorTable.id, id));
     };
 
+    const cleanupResetTokens = async (before: number) => {
+        const rows = await db
+            .select({count: sql<number>`count(*)`})
+            .from(resetTokenTable)
+            .where(lte(resetTokenTable.expiresAt, before));
+        await db.delete(resetTokenTable).where(lte(resetTokenTable.expiresAt, before));
+        return rows[0]?.count ?? 0;
+    };
+
+    const cleanupAuthFactors = async (before: number) => {
+        const rows = await db
+            .select({count: sql<number>`count(*)`})
+            .from(staffAuthFactorTable)
+            .where(lte(staffAuthFactorTable.expiresAt, before));
+        await db.delete(staffAuthFactorTable).where(lte(staffAuthFactorTable.expiresAt, before));
+        return rows[0]?.count ?? 0;
+    };
+
     return {
         getStaffByEmail,
         getStaffById,
@@ -305,9 +354,12 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         getIntegrationTokenByToken,
         revokeIntegrationToken,
         createStaffAuthEvent,
+        listStaffAuthEvents,
         createAuthFactor,
         getAuthFactorByToken,
         invalidateAuthFactors,
-        markAuthFactorUsed
+        markAuthFactorUsed,
+        cleanupResetTokens,
+        cleanupAuthFactors
     };
 };

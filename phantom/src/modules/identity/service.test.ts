@@ -163,6 +163,14 @@ const createRepository = (staff: StaffRecord) => {
             authEvents.push(record);
             return record;
         },
+        listStaffAuthEvents: async (filters) => {
+            return authEvents
+                .filter((event) => (filters.staffId ? event.staffId === filters.staffId : true))
+                .filter((event) => (filters.from !== undefined ? event.createdAt >= filters.from : true))
+                .filter((event) => (filters.to !== undefined ? event.createdAt <= filters.to : true))
+                .filter((event) => (filters.cursor !== undefined ? event.createdAt < filters.cursor : true))
+                .slice(0, filters.limit);
+        },
         createAuthFactor: async (factor) => {
             const record = {
                 ...factor,
@@ -187,7 +195,9 @@ const createRepository = (staff: StaffRecord) => {
                 return;
             }
             authFactors[index] = {...existing, usedAt};
-        }
+        },
+        cleanupResetTokens: async () => 0,
+        cleanupAuthFactors: async () => 0
     };
 
     return {

@@ -13,6 +13,10 @@ export const memberAuthTokenTable = sqliteTable('member_auth_tokens', {
     memberId: text('member_id'),
     email: text('email').notNull(),
     token: text('token').notNull(),
+    source: text('source'),
+    medium: text('medium'),
+    campaign: text('campaign'),
+    referrer: text('referrer'),
     createdAt: integer('created_at').notNull(),
     expiresAt: integer('expires_at').notNull(),
     usedAt: integer('used_at')
@@ -30,6 +34,10 @@ export const memberAuthEventTable = sqliteTable('member_auth_events', {
     id: text('id').primaryKey(),
     memberId: text('member_id').notNull(),
     action: text('action').notNull(),
+    source: text('source'),
+    medium: text('medium'),
+    campaign: text('campaign'),
+    referrer: text('referrer'),
     createdAt: integer('created_at').notNull()
 });
 

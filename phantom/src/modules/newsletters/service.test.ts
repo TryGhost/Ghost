@@ -25,7 +25,43 @@ const createRepository = (): NewsletterRepository => {
             const record = job as {id: string; issueId: string; status: string; createdAt: number};
             jobs.push(record);
             return record;
-        }
+        },
+        getDeliveryByIssueAndMember: async () => null,
+        upsertDelivery: async () => {
+            throw new Error('Not implemented');
+        },
+        createSuppression: async () => {
+            throw new Error('Not implemented');
+        },
+        getSuppressionByMember: async () => null,
+        deleteSuppression: async () => undefined,
+        createEmailEvent: async () => {
+            throw new Error('Not implemented');
+        },
+        createAutomatedEmail: async () => {
+            throw new Error('Not implemented');
+        },
+        listAutomatedEmailsByMember: async () => [],
+        upsertNewsletterMembership: async () => {
+            throw new Error('Not implemented');
+        },
+        getNewsletterMembership: async () => null,
+        createEmailTemplate: async () => {
+            throw new Error('Not implemented');
+        },
+        getEmailTemplateByType: async () => null,
+        createEmailBatch: async () => {
+            throw new Error('Not implemented');
+        },
+        listBatchesForIssue: async () => [],
+        getBatchById: async () => null,
+        updateEmailBatch: async () => {
+            throw new Error('Not implemented');
+        },
+        createBatchRecipients: async () => {
+            throw new Error('Not implemented');
+        },
+        listBatchRecipients: async () => []
     };
 };
 

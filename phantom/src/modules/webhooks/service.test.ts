@@ -14,10 +14,20 @@ const createRepository = (): WebhookRepository => {
         },
         listWebhooksByEvent: async (event) => webhooks.filter((hook) => hook.event === event) as any,
         createOutbox: async (message) => {
-            const record = message as {id: string; event: string; payload: string; createdAt: number; status: string};
+            const record = {...message, lastError: message.lastError ?? null};
             outbox.push(record);
             return record;
-        }
+        },
+        updateWebhook: async () => {
+            throw new Error('Not implemented');
+        },
+        deleteWebhook: async () => undefined,
+        getWebhookById: async () => null,
+        listWebhooksByIntegration: async () => [],
+        updateOutbox: async () => undefined,
+        getOutboxById: async () => null,
+        listPendingOutbox: async () => [],
+        deleteOutbox: async () => undefined
     };
 };
 

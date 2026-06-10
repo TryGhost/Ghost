@@ -1,9 +1,15 @@
 import {createRoute} from '@hono/zod-openapi';
 import type {AnalyticsService} from './service.js';
 import {
+    AnalyticsAggregateCreateRequestBodySchema,
+    AnalyticsAggregateResponseSchema,
     AnalyticsEventCreateRequestBodySchema,
     AnalyticsEventListRequestSchema,
-    AnalyticsEventListResponseSchema
+    AnalyticsEventListResponseSchema,
+    AnalyticsSnapshotCreateRequestBodySchema,
+    AnalyticsSnapshotResponseSchema,
+    ExploreSyncRequestBodySchema,
+    ExploreSyncResponseSchema
 } from './contracts.js';
 import {createOpenApiRouter} from '../../platform/http/openapi.js';
 
@@ -47,6 +53,78 @@ export const createAnalyticsRouter = (service: AnalyticsService) => {
         }
     });
 
+    const aggregateRoute = createRoute({
+        method: 'post',
+        path: '/aggregates',
+        request: {
+            body: {
+                content: {
+                    'application/json': {
+                        schema: AnalyticsAggregateCreateRequestBodySchema
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: 'Aggregate recorded',
+                content: {
+                    'application/json': {
+                        schema: AnalyticsAggregateResponseSchema
+                    }
+                }
+            }
+        }
+    });
+
+    const snapshotRoute = createRoute({
+        method: 'post',
+        path: '/snapshots',
+        request: {
+            body: {
+                content: {
+                    'application/json': {
+                        schema: AnalyticsSnapshotCreateRequestBodySchema
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: 'Snapshot created',
+                content: {
+                    'application/json': {
+                        schema: AnalyticsSnapshotResponseSchema
+                    }
+                }
+            }
+        }
+    });
+
+    const exploreRoute = createRoute({
+        method: 'post',
+        path: '/explore/sync',
+        request: {
+            body: {
+                content: {
+                    'application/json': {
+                        schema: ExploreSyncRequestBodySchema
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: 'Explore synced',
+                content: {
+                    'application/json': {
+                        schema: ExploreSyncResponseSchema
+                    }
+                }
+            }
+        }
+    });
+
     router.openapi(createRouteDef, async (context) => {
         const input = context.req.valid('json');
         await service.recordEvent(input);
@@ -56,6 +134,24 @@ export const createAnalyticsRouter = (service: AnalyticsService) => {
     router.openapi(listRoute, async (context) => {
         const input = context.req.valid('query');
         const result = await service.listEvents(input);
+        return context.json(result);
+    });
+
+    router.openapi(aggregateRoute, async (context) => {
+        const input = context.req.valid('json');
+        const result = await service.recordAggregate(input);
+        return context.json(result);
+    });
+
+    router.openapi(snapshotRoute, async (context) => {
+        const input = context.req.valid('json');
+        const result = await service.createSnapshot(input);
+        return context.json(result);
+    });
+
+    router.openapi(exploreRoute, async (context) => {
+        const input = context.req.valid('json');
+        const result = await service.syncExplore(input);
         return context.json(result);
     });
 

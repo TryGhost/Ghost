@@ -14,6 +14,20 @@ export type AppConfig = {
     memberAuth: {
         signupPolicy: 'open' | 'invite-only' | 'paid-only' | 'none';
     };
+    queue: {
+        provider: 'memory';
+    };
+    themes: {
+        provider: 'fs' | 'r2';
+        fs: {
+            root: string;
+        };
+        r2: {
+            baseUrl: string | null;
+            bundlePath: string;
+            assetPath: string;
+        };
+    };
 };
 
 export const loadConfig = (): AppConfig => {
@@ -35,6 +49,20 @@ export const loadConfig = (): AppConfig => {
         },
         memberAuth: {
             signupPolicy: env.GHOST_SIGNUP_POLICY
+        },
+        queue: {
+            provider: env.GHOST_QUEUE_PROVIDER
+        },
+        themes: {
+            provider: env.GHOST_THEME_STORE,
+            fs: {
+                root: env.GHOST_THEME_FS_ROOT
+            },
+            r2: {
+                baseUrl: env.GHOST_THEME_R2_BASE_URL ?? null,
+                bundlePath: env.GHOST_THEME_R2_BUNDLE_PATH,
+                assetPath: env.GHOST_THEME_R2_ASSET_PATH
+            }
         }
     };
 };

@@ -46,3 +46,12 @@ export const requireStaffRole = async (context: Context, service: StaffAuthServi
 
     return staff;
 };
+
+export const requireIntegrationToken = async (context: Context, service: StaffAuthService) => {
+    const token = getBearerToken(context);
+    if (!token) {
+        throw new HttpError(401, 'missing_token', 'Missing integration token');
+    }
+
+    return service.getIntegrationTokenByToken(token);
+};

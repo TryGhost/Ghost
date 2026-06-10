@@ -107,7 +107,8 @@ const createMemberRepository = (): MemberRepository => {
         },
         createAuthEvent: async () => {
             throw new Error('Not implemented');
-        }
+        },
+        cleanupAuthTokens: async () => 0
     };
 };
 

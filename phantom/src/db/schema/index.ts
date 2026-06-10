@@ -38,15 +38,31 @@ export {
     postTable,
     postRevisionTable,
     tagTable,
-    postTagTable
+    postTagTable,
+    contentEventTable,
+    contentUrlEventTable,
+    contentRedirectTable,
+    collectionTable,
+    authorProfileTable
 } from '../../modules/content/db.js';
 export {
     newsletterTable,
     issueTable,
-    deliveryJobTable
+    deliveryJobTable,
+    issueDeliveryTable,
+    suppressionTable,
+    emailEventTable,
+    automatedEmailTable,
+    newsletterMembershipTable,
+    emailTemplateTable,
+    emailBatchTable,
+    emailBatchRecipientTable
 } from '../../modules/newsletters/db.js';
 export {
-    analyticsEventTable
+    analyticsEventTable,
+    analyticsAggregateTable,
+    analyticsSnapshotTable,
+    exploreSyncTable
 } from '../../modules/analytics/db.js';
 export {
     linkTable,
@@ -61,3 +77,41 @@ export {
     webhookTable,
     outboxTable
 } from '../../modules/webhooks/db.js';
+export {
+    commentTable
+} from '../../modules/comments/db.js';
+export {
+    settingTable,
+    settingsEventTable,
+    metafieldTable,
+    metafieldMigrationTable,
+    settingsMigrationTable,
+    customObjectTable,
+    customObjectRecordTable
+} from '../../modules/settings/db.js';
+export {
+    notificationTable
+} from '../../modules/notifications/db.js';
+export {
+    jobDefinitionTable,
+    jobRunTable,
+    jobIdempotencyTable
+} from '../../modules/jobs/db.js';
+export {
+    exportJobTable,
+    importJobTable,
+    migrationRunTable,
+    fixtureRunTable,
+    nullableMigrationTable,
+    updateCheckTable,
+    tokenCleanupTable,
+    metricsConfigTable
+} from '../../modules/operations/db.js';
+export {
+    billingProfileTable,
+    marketplaceEntitlementTable
+} from '../../modules/billing/db.js';
+export {
+    extensionListingTable,
+    extensionInstallTable
+} from '../../modules/extensions/db.js';

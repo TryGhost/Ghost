@@ -19,7 +19,9 @@ import {
     TokenIdParamRequestSchema,
     StaffVerificationRequestBodySchema,
     StaffVerificationResponseSchema,
-    StaffMeResponseSchema
+    StaffMeResponseSchema,
+    StaffAuditListRequestQuerySchema,
+    StaffAuditListResponseSchema
 } from './contracts.js';
 import {HttpError} from '../../platform/http/errors.js';
 import {createOpenApiRouter} from '../../platform/http/openapi.js';
@@ -82,6 +84,24 @@ const meRoute = createRoute({
             content: {
                 'application/json': {
                     schema: StaffMeResponseSchema
+                }
+            }
+        }
+    }
+});
+
+const auditRoute = createRoute({
+    method: 'get',
+    path: '/audit',
+    request: {
+        query: StaffAuditListRequestQuerySchema
+    },
+    responses: {
+        200: {
+            description: 'Staff auth audit events',
+            content: {
+                'application/json': {
+                    schema: StaffAuditListResponseSchema
                 }
             }
         }
@@ -319,6 +339,13 @@ export const createIdentityRouter = (service: StaffAuthService) => {
 
         const staff = await service.getStaffBySession(token);
         return context.json({staff});
+    });
+
+    router.openapi(auditRoute, async (context) => {
+        await requireStaffRole(context, service, ['admin']);
+        const query = context.req.valid('query');
+        const result = await service.listAuditEvents(query);
+        return context.json(result);
     });
 
     router.openapi(logoutRoute, async (context) => {

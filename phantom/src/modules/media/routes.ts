@@ -1,6 +1,8 @@
 import {createRoute} from '@hono/zod-openapi';
 import type {MediaService} from './service.js';
 import {
+    LexicalRewriteRequestBodySchema,
+    LexicalRewriteResponseSchema,
     MediaUploadRequestBodySchema,
     MediaUploadResponseSchema,
     StorageConfigRequestBodySchema,
@@ -61,6 +63,30 @@ export const createMediaRouter = (service: MediaService, staffAuthService: Staff
         }
     });
 
+    const rewriteRoute = createRoute({
+        method: 'post',
+        path: '/rewrite',
+        request: {
+            body: {
+                content: {
+                    'application/json': {
+                        schema: LexicalRewriteRequestBodySchema
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: 'Lexical URLs rewritten',
+                content: {
+                    'application/json': {
+                        schema: LexicalRewriteResponseSchema
+                    }
+                }
+            }
+        }
+    });
+
     router.openapi(uploadRoute, async (context) => {
         await requireStaffRole(context, staffAuthService, ['admin', 'editor']);
         const input = context.req.valid('json');
@@ -72,6 +98,13 @@ export const createMediaRouter = (service: MediaService, staffAuthService: Staff
         await requireStaffRole(context, staffAuthService, ['admin']);
         const input = context.req.valid('json');
         const result = await service.updateStorageConfig(input);
+        return context.json(result);
+    });
+
+    router.openapi(rewriteRoute, async (context) => {
+        await requireStaffRole(context, staffAuthService, ['admin', 'editor', 'author']);
+        const input = context.req.valid('json');
+        const result = await service.rewriteLexicalUrls(input);
         return context.json(result);
     });
 

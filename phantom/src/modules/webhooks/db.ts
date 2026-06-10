@@ -13,7 +13,11 @@ export const outboxTable = sqliteTable('outbox_messages', {
     event: text('event').notNull(),
     payload: text('payload').notNull(),
     createdAt: integer('created_at').notNull(),
-    status: text('status').notNull()
+    status: text('status').notNull(),
+    attempt: integer('attempt').notNull(),
+    maxAttempts: integer('max_attempts').notNull(),
+    nextAttemptAt: integer('next_attempt_at').notNull(),
+    lastError: text('last_error')
 });
 
 export type WebhookRecord = typeof webhookTable.$inferSelect;

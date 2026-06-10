@@ -16,7 +16,13 @@ export const MemberSessionSchema = z.object({
 });
 
 export const MagicLinkRequestSchema = z.object({
-    email: z.string().email()
+    email: z.string().email(),
+    attribution: z.object({
+        source: z.string().min(1).optional(),
+        medium: z.string().min(1).optional(),
+        campaign: z.string().min(1).optional(),
+        referrer: z.string().min(1).optional()
+    }).optional()
 });
 
 export const MagicLinkResponseSchema = z.object({

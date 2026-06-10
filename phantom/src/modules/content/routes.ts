@@ -5,8 +5,16 @@ import {
     PostCreateResponseSchema,
     PostIdParamRequestSchema,
     PostResponseSchema,
+    PostUpdateRequestBodySchema,
+    PostUpdateResponseSchema,
     TagCreateRequestBodySchema,
-    TagCreateResponseSchema
+    TagCreateResponseSchema,
+    CollectionCreateRequestBodySchema,
+    CollectionResponseSchema,
+    CollectionListResponseSchema,
+    AuthorProfileCreateRequestBodySchema,
+    AuthorProfileResponseSchema,
+    AuthorProfileListResponseSchema
 } from './contracts.js';
 import {createOpenApiRouter} from '../../platform/http/openapi.js';
 import {requireStaffRole} from '../identity/auth.js';
@@ -57,6 +65,44 @@ export const createContentRouter = (service: ContentService, staffAuthService: S
         }
     });
 
+    const updatePostRoute = createRoute({
+        method: 'put',
+        path: '/posts/{id}',
+        request: {
+            params: PostIdParamRequestSchema,
+            body: {
+                content: {
+                    'application/json': {
+                        schema: PostUpdateRequestBodySchema
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: 'Post updated',
+                content: {
+                    'application/json': {
+                        schema: PostUpdateResponseSchema
+                    }
+                }
+            }
+        }
+    });
+
+    const deletePostRoute = createRoute({
+        method: 'delete',
+        path: '/posts/{id}',
+        request: {
+            params: PostIdParamRequestSchema
+        },
+        responses: {
+            204: {
+                description: 'Post deleted'
+            }
+        }
+    });
+
     const createTagRoute = createRoute({
         method: 'post',
         path: '/tags',
@@ -81,10 +127,88 @@ export const createContentRouter = (service: ContentService, staffAuthService: S
         }
     });
 
+    const createCollectionRoute = createRoute({
+        method: 'post',
+        path: '/collections',
+        request: {
+            body: {
+                content: {
+                    'application/json': {
+                        schema: CollectionCreateRequestBodySchema
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: 'Collection created',
+                content: {
+                    'application/json': {
+                        schema: CollectionResponseSchema
+                    }
+                }
+            }
+        }
+    });
+
+    const listCollectionsRoute = createRoute({
+        method: 'get',
+        path: '/collections',
+        responses: {
+            200: {
+                description: 'Collections',
+                content: {
+                    'application/json': {
+                        schema: CollectionListResponseSchema
+                    }
+                }
+            }
+        }
+    });
+
+    const createAuthorRoute = createRoute({
+        method: 'post',
+        path: '/authors',
+        request: {
+            body: {
+                content: {
+                    'application/json': {
+                        schema: AuthorProfileCreateRequestBodySchema
+                    }
+                }
+            }
+        },
+        responses: {
+            200: {
+                description: 'Author created',
+                content: {
+                    'application/json': {
+                        schema: AuthorProfileResponseSchema
+                    }
+                }
+            }
+        }
+    });
+
+    const listAuthorsRoute = createRoute({
+        method: 'get',
+        path: '/authors',
+        responses: {
+            200: {
+                description: 'Authors',
+                content: {
+                    'application/json': {
+                        schema: AuthorProfileListResponseSchema
+                    }
+                }
+            }
+        }
+    });
+
     router.openapi(createPostRoute, async (context) => {
-        await requireStaffRole(context, staffAuthService, ['admin', 'editor', 'author']);
+        const staff = await requireStaffRole(context, staffAuthService, ['admin', 'editor', 'author']);
         const input = context.req.valid('json');
-        const result = await service.createPost(input);
+        const result = await service.createPost(input, staff.id);
         return context.json(result);
     });
 
@@ -95,10 +219,51 @@ export const createContentRouter = (service: ContentService, staffAuthService: S
         return context.json(result);
     });
 
+    router.openapi(updatePostRoute, async (context) => {
+        const staff = await requireStaffRole(context, staffAuthService, ['admin', 'editor', 'author']);
+        const params = context.req.valid('param');
+        const input = context.req.valid('json');
+        const result = await service.updatePost(params.id, input, staff.id);
+        return context.json(result);
+    });
+
+    router.openapi(deletePostRoute, async (context) => {
+        const staff = await requireStaffRole(context, staffAuthService, ['admin', 'editor', 'author']);
+        const params = context.req.valid('param');
+        await service.deletePost(params.id, staff.id);
+        return context.body(null, 204);
+    });
+
     router.openapi(createTagRoute, async (context) => {
         await requireStaffRole(context, staffAuthService, ['admin', 'editor']);
         const input = context.req.valid('json');
         const result = await service.createTag(input);
+        return context.json(result);
+    });
+
+    router.openapi(createCollectionRoute, async (context) => {
+        await requireStaffRole(context, staffAuthService, ['admin', 'editor']);
+        const input = context.req.valid('json');
+        const result = await service.createCollection(input);
+        return context.json(result);
+    });
+
+    router.openapi(listCollectionsRoute, async (context) => {
+        await requireStaffRole(context, staffAuthService, ['admin', 'editor', 'author']);
+        const result = await service.listCollections();
+        return context.json(result);
+    });
+
+    router.openapi(createAuthorRoute, async (context) => {
+        await requireStaffRole(context, staffAuthService, ['admin', 'editor']);
+        const input = context.req.valid('json');
+        const result = await service.createAuthorProfile(input);
+        return context.json(result);
+    });
+
+    router.openapi(listAuthorsRoute, async (context) => {
+        await requireStaffRole(context, staffAuthService, ['admin', 'editor', 'author']);
+        const result = await service.listAuthorProfiles();
         return context.json(result);
     });
 

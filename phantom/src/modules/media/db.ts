@@ -11,7 +11,9 @@ export const mediaAssetTable = sqliteTable('media_assets', {
 export const storageConfigTable = sqliteTable('storage_configs', {
     id: text('id').primaryKey(),
     adapter: text('adapter').notNull(),
-    baseUrl: text('base_url')
+    baseUrl: text('base_url'),
+    mediaBaseUrl: text('media_base_url'),
+    fileBaseUrl: text('file_base_url')
 });
 
 export type MediaAssetRecord = typeof mediaAssetTable.$inferSelect;

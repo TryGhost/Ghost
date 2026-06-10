@@ -1,4 +1,4 @@
-import {eq} from 'drizzle-orm';
+import {eq, lte, sql} from 'drizzle-orm';
 import type {DbClient} from '../../db/client.js';
 import {
     memberAuthEventTable,
@@ -25,6 +25,7 @@ export type MemberRepository = {
     createSession: (session: NewMemberSessionRecord) => Promise<MemberSessionRecord>;
     getSessionById: (id: string) => Promise<MemberSessionRecord | null>;
     createAuthEvent: (event: NewMemberAuthEventRecord) => Promise<MemberAuthEventRecord>;
+    cleanupAuthTokens: (before: number) => Promise<number>;
 };
 
 export const createMemberRepository = (db: DbClient): MemberRepository => {
@@ -91,6 +92,15 @@ export const createMemberRepository = (db: DbClient): MemberRepository => {
         return rows[0];
     };
 
+    const cleanupAuthTokens = async (before: number) => {
+        const rows = await db
+            .select({count: sql<number>`count(*)`})
+            .from(memberAuthTokenTable)
+            .where(lte(memberAuthTokenTable.expiresAt, before));
+        await db.delete(memberAuthTokenTable).where(lte(memberAuthTokenTable.expiresAt, before));
+        return rows[0]?.count ?? 0;
+    };
+
     return {
         getMemberByEmail,
         getMemberById,
@@ -100,6 +110,7 @@ export const createMemberRepository = (db: DbClient): MemberRepository => {
         markAuthTokenUsed,
         createSession,
         getSessionById,
-        createAuthEvent
+        createAuthEvent,
+        cleanupAuthTokens
     };
 };

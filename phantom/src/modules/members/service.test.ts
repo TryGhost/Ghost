@@ -56,6 +56,7 @@ const createRepository = (): MemberRepository & {state: () => {
             events.push(record);
             return record;
         },
+        cleanupAuthTokens: async () => 0,
         state: () => ({members, tokens, sessions, events})
     };
 };

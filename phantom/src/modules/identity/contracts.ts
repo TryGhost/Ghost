@@ -137,6 +137,29 @@ export const StaffVerificationResponseSchema = z.object({
     session: StaffSessionSchema
 });
 
+export const StaffAuditEventSchema = z.object({
+    id: z.string().min(1),
+    staffId: z.string().min(1),
+    action: z.string().min(1),
+    outcome: z.string().min(1),
+    ipAddress: z.string().min(1).nullable(),
+    deviceId: z.string().min(1).nullable(),
+    createdAt: z.number().int()
+});
+
+export const StaffAuditListRequestSchema = z.object({
+    staffId: z.string().min(1).optional(),
+    from: z.number().int().optional(),
+    to: z.number().int().optional(),
+    limit: z.number().int().positive().max(100).default(50),
+    cursor: z.number().int().optional()
+});
+
+export const StaffAuditListResponseSchema = z.object({
+    events: z.array(StaffAuditEventSchema),
+    nextCursor: z.number().int().nullable()
+});
+
 export const LoginRequestBodySchema = LoginRequestSchema;
 export const SsoLoginRequestBodySchema = SsoLoginRequestSchema;
 export const PasswordResetRequestBodySchema = PasswordResetRequestSchema;
@@ -147,6 +170,7 @@ export const StaffApiTokenCreateBodySchema = StaffApiTokenCreateSchema;
 export const IntegrationTokenCreateBodySchema = IntegrationTokenCreateSchema;
 export const TokenIdParamRequestSchema = TokenIdParamSchema;
 export const StaffVerificationRequestBodySchema = StaffVerificationRequestSchema;
+export const StaffAuditListRequestQuerySchema = StaffAuditListRequestSchema;
 
 export type StaffResponse = z.infer<typeof StaffSchema>;
 export type StaffSessionResponse = z.infer<typeof StaffSessionSchema>;
@@ -167,3 +191,5 @@ export type IntegrationTokenCreateRequest = z.infer<typeof IntegrationTokenCreat
 export type IntegrationTokenCreateResponse = z.infer<typeof IntegrationTokenCreateResponseSchema>;
 export type StaffVerificationRequest = z.infer<typeof StaffVerificationRequestSchema>;
 export type StaffVerificationResponse = z.infer<typeof StaffVerificationResponseSchema>;
+export type StaffAuditListRequest = z.infer<typeof StaffAuditListRequestSchema>;
+export type StaffAuditListResponse = z.infer<typeof StaffAuditListResponseSchema>;

@@ -38,7 +38,9 @@ export const createSiteService = (repository: SiteRepository): SiteService => {
         const current = await ensureSite();
         const updated: Site = {
             ...current,
-            ...input,
+            title: input.title ?? current.title,
+            description: input.description === undefined ? current.description : input.description,
+            locale: input.locale ?? current.locale,
             updatedAt: Date.now()
         };
 

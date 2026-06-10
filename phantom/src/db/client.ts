@@ -5,7 +5,7 @@ import type {DatabaseConfig} from '../platform/config/config.js';
 export const createDb = (config: DatabaseConfig) => {
     const client = createClient({
         url: config.url,
-        authToken: config.authToken
+        ...(config.authToken !== undefined ? {authToken: config.authToken} : {})
     });
 
     return drizzle(client);

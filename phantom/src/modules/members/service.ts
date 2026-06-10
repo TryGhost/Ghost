@@ -10,6 +10,7 @@ import type {
     MemberSessionResponse
 } from './contracts.js';
 import type {MemberRepository} from './repo.js';
+import type {AnalyticsRepository} from '../analytics/repo.js';
 import {createRateLimiter} from '../../platform/auth/rate-limiter.js';
 import {HttpError} from '../../platform/http/errors.js';
 
@@ -51,7 +52,22 @@ const toMemberSessionResponse = (session: {
     expiresAt: session.expiresAt
 });
 
-export const createMemberAuthService = (repository: MemberRepository, signupPolicy: SignupPolicy): MemberAuthService => {
+export const createMemberAuthService = (
+    repository: MemberRepository,
+    signupPolicy: SignupPolicy,
+    analyticsRepository?: AnalyticsRepository
+): MemberAuthService => {
+    const recordAnalyticsEvent = async (memberId: string, type: string) => {
+        if (!analyticsRepository) {
+            return;
+        }
+        await analyticsRepository.createEvent({
+            id: randomUUID(),
+            memberId,
+            type,
+            createdAt: Date.now()
+        });
+    };
     const requestMagicLink = async (input: MagicLinkRequest, ipAddress: string) => {
         const rate = magicLinkLimiter.check(`${input.email}:${ipAddress}`);
         if (!rate.allowed) {
@@ -69,6 +85,10 @@ export const createMemberAuthService = (repository: MemberRepository, signupPoli
             memberId: member?.id ?? null,
             email: input.email,
             token: randomUUID(),
+            source: input.attribution?.source ?? null,
+            medium: input.attribution?.medium ?? null,
+            campaign: input.attribution?.campaign ?? null,
+            referrer: input.attribution?.referrer ?? null,
             createdAt: now,
             expiresAt: now + magicLinkTtlMs,
             usedAt: null
@@ -97,15 +117,25 @@ export const createMemberAuthService = (repository: MemberRepository, signupPoli
                 id: randomUUID(),
                 memberId: member.id,
                 action: 'signup',
+                source: token.source ?? null,
+                medium: token.medium ?? null,
+                campaign: token.campaign ?? null,
+                referrer: token.referrer ?? null,
                 createdAt: now
             });
+            await recordAnalyticsEvent(member.id, 'member.signup');
         } else {
             await repository.createAuthEvent({
                 id: randomUUID(),
                 memberId: member.id,
                 action: 'login',
+                source: token.source ?? null,
+                medium: token.medium ?? null,
+                campaign: token.campaign ?? null,
+                referrer: token.referrer ?? null,
                 createdAt: Date.now()
             });
+            await recordAnalyticsEvent(member.id, 'member.login');
         }
 
         const now = Date.now();
