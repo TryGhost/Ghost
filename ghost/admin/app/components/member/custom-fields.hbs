@@ -1,0 +1,22 @@
+<h4 class="gh-main-section-header small bn">Custom fields</h4>
+<div class="gh-main-section-content bordered">
+    {{#if this.rows}}
+        {{#each this.rows as |row|}}
+            <div class="gh-member-newsletter-row">
+                <div>
+                    <h4 class="gh-member-newsletter-title">{{row.field.label}} <span class="gh-member-customfield-type">{{row.typeLabel}}</span></h4>
+                    {{#if row.hasValue}}
+                        <p class="gh-member-customfield-value">{{row.displayValue}}</p>
+                    {{else}}
+                        <p class="gh-member-customfield-value midgrey">&ndash;</p>
+                    {{/if}}
+                </div>
+                <button type="button" class="gh-btn-icon" {{on "click" (fn this.editField row.field)}} aria-label="Edit {{row.field.label}}">
+                    <span>{{svg-jar "pen"}}</span>
+                </button>
+            </div>
+        {{/each}}
+    {{else}}
+        <div class="gh-members-no-data">No custom fields defined yet.</div>
+    {{/if}}
+</div>

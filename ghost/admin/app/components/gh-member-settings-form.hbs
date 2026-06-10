@@ -71,6 +71,8 @@
                 </div>
             </div>
 
+            <Member::CustomFields @member={{this.member}} @values={{@customFieldValues}} @onUpdate={{@onUpdateCustomField}} />
+
             {{#if this.canShowMultipleNewsletters}}
                 <Member::NewsletterPreference
                     @member={{this.member}}

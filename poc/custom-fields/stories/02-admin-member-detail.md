@@ -2,9 +2,16 @@
 
 **Goal:** a beehiiv-style collapsible "Custom fields" panel on the member detail page, showing each defined field (label + type badge) and the member's value, editable inline.
 
-**Status:** Not started
+**Status:** ✅ Done. Read-only rows + edit modal, keyed by real member.id, joins the member dirty/Save flow.
 
 **Depends on:** Story 1 (fields must exist to show values for).
+
+## Built
+
+- New Ember component `ghost/admin/app/components/member/custom-fields.{js,hbs}` — a "Custom fields" card listing every defined field with this member's value, editable inline by type (text/number inputs, boolean toggle, select dropdown (single) / checkboxes (multi)).
+- Inserted one line in `gh-member-settings-form.hbs` after the Name/Email/Labels/Note card.
+- **Option A bridge:** `ghost/admin/app/utils/custom-fields-poc.js` — a tiny in-app localStorage accessor sharing the same key + JSON shape as `poc/custom-fields/repo` (the Ember build can't relative-import outside its app tree). Keyed by real `member.id`. Migration to a shared workspace package (Option B) is a one-file swap later.
+- **Joins the dirty/Save flow** (not auto-save): the `member` controller holds a working copy of the values (`customFieldValues`), edits set `customFieldsDirty` (so the unsaved-changes prompt fires and Save lights up), and `saveTask` flushes to the repo after `member.save()`. Leaving without saving discards the pending edits (nothing was written). The component is a controlled view (`@values` + `@onUpdate`).
 
 ## Surface
 

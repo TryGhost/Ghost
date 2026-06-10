@@ -1954,3 +1954,22 @@ a.gh-members-emailpreview-subscription-link {
     font-weight: 500;
     font-size: 1.3rem;
 }
+
+/* POC custom fields: type badge, mirrors the grey pill on the React side */
+.gh-member-customfield-type {
+    display: inline-block;
+    margin-left: 4px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    background: var(--whitegrey);
+    color: var(--midgrey);
+    font-size: 1.2rem;
+    font-weight: 500;
+    letter-spacing: 0;
+    text-transform: none;
+    vertical-align: middle;
+}
+
+.gh-member-customfield-value {
+    margin: 2px 0 0;
+}

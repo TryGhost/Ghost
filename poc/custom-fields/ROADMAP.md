@@ -17,9 +17,9 @@ Each story below targets **Tier 1** for its first demoable version. Tier 2 (sele
 
 | # | Story | Surface | Status |
 | --- | --- | --- | --- |
-| 0 | [Foundation: data model + repository facade](./stories/00-foundation.md) | shared | Demoable (verified when Story 1 imports it) |
-| 1 | [Admin: define custom fields](./stories/01-admin-define-fields.md) | admin-x-settings | Built (Tier 1 + Tier 2); final test pending |
-| 2 | [Admin: member detail values](./stories/02-admin-member-detail.md) | Ember admin | Not started |
+| 0 | [Foundation: data model + repository facade](./stories/00-foundation.md) | shared | ✅ Done |
+| 1 | [Admin: define custom fields](./stories/01-admin-define-fields.md) | admin-x-settings | ✅ Done |
+| 2 | [Admin: member detail values](./stories/02-admin-member-detail.md) | Ember admin | ✅ Done |
 | 3 | [Portal: collect at signup](./stories/03-portal-signup.md) | portal/admin-x-settings | ✅ Done (Part A + Part B) |
 | 4 | [Portal: self-edit on account page](./stories/04-portal-account.md) | portal | Not started |
 
@@ -69,3 +69,4 @@ Out of scope for the POC, worth revisiting for a real implementation:
 
 - Multi-select control in Portal (no design system): plain checkboxes vs a hand-built dropdown. Decide in Story 3/4.
 - Orphaned values when a `select` option is deleted after members have values: ignored for the POC; needs a real answer (block, keep, or migrate) in a real implementation.
+- **Migrate the members page to React before a real custom-fields build?** Member detail is the only non-React surface and was the heaviest integration (in-app bridge + controller dirty/save wiring). See [LEARNINGS.md](./LEARNINGS.md) "Should the members page move to React first?".

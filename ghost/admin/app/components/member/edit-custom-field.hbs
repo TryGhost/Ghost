@@ -1,0 +1,49 @@
+<div class="modal-content" data-test-modal="edit-custom-field">
+    <header class="modal-header">
+        <h1>Edit {{this.field.label}}</h1>
+    </header>
+    <button type="button" class="close" title="Close" {{on "click" (fn @close undefined)}}>{{svg-jar "close"}}<span class="hidden">Close</span></button>
+
+    <div class="modal-body">
+        <div class="form-group">
+            {{#if this.isBoolean}}
+                <div class="for-switch">
+                    <label class="switch" for="cf-input-boolean">
+                        <input type="checkbox" id="cf-input-boolean" checked={{this.value}} {{on "change" this.updateBoolean}}>
+                        <span class="input-toggle-component"></span>
+                    </label>
+                </div>
+            {{else if this.isSingleSelect}}
+                <span class="gh-select">
+                    <select aria-label={{this.field.label}} {{on "change" this.updateSingleSelect}}>
+                        <option value="">Select an option</option>
+                        {{#each this.options as |opt|}}
+                            <option value={{opt.value}} selected={{opt.selected}}>{{opt.value}}</option>
+                        {{/each}}
+                    </select>
+                    {{svg-jar "arrow-down-small"}}
+                </span>
+            {{else if this.isMultiSelect}}
+                <div>
+                    {{#each this.options as |opt|}}
+                        <div>
+                            <label>
+                                <input type="checkbox" checked={{opt.selected}} {{on "change" (fn this.toggleMultiOption opt.value)}}>
+                                {{opt.value}}
+                            </label>
+                        </div>
+                    {{/each}}
+                </div>
+            {{else if this.isNumber}}
+                <input type="number" class="gh-input" aria-label={{this.field.label}} value={{this.value}} {{on "input" this.updateNumber}}>
+            {{else}}
+                <input type="text" class="gh-input" aria-label={{this.field.label}} value={{this.value}} {{on "input" this.updateText}}>
+            {{/if}}
+        </div>
+    </div>
+
+    <div class="modal-footer">
+        <button type="button" class="gh-btn" {{on "click" (fn @close undefined)}} data-test-button="cancel"><span>Cancel</span></button>
+        <button type="button" class="gh-btn gh-btn-black gh-btn-icon" {{on "click" this.save}} data-test-button="save"><span>Save</span></button>
+    </div>
+</div>

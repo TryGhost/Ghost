@@ -1,3 +1,4 @@
+import * as customFields from '../utils/custom-fields-poc';
 import Controller from '@ember/controller';
 import DeleteMemberModal from '../components/members/modals/delete-member';
 import DisableCommentingModal from '../components/members/modals/disable-commenting';
@@ -35,6 +36,11 @@ export default class MemberController extends Controller {
     @tracked showImpersonateMemberModal = false;
     @tracked modalLabel = null;
     @tracked showLabelModal = false;
+
+    // POC custom fields: working copy of this member's values + dirty flag, so
+    // edits go through the normal dirty/Save flow instead of auto-saving.
+    @tracked customFieldValues = {};
+    @tracked customFieldsDirty = false;
 
     _previousLabels = null;
     _previousNewsletters = null;
@@ -150,6 +156,21 @@ export default class MemberController extends Controller {
     setInitialRelationshipValues() {
         this._previousLabels = this._labels;
         this._previousNewsletters = this._newsletters;
+        // POC: load this member's saved custom field values into the working copy
+        this.customFieldValues = {...customFields.getValues(this.member.id)};
+        this.customFieldsDirty = false;
+    }
+
+    @action
+    updateCustomField(fieldId, value) {
+        const next = {...this.customFieldValues};
+        if (customFields.isEmptyValue(value)) {
+            delete next[fieldId];
+        } else {
+            next[fieldId] = value;
+        }
+        this.customFieldValues = next;
+        this.customFieldsDirty = true;
     }
 
     @action
@@ -257,6 +278,14 @@ export default class MemberController extends Controller {
             member.labels.forEach(label => this.labelsManager.addLabel(label));
             this.invalidateMembersCache();
 
+            // POC: persist custom field values now that the member is saved.
+            // Union of saved + working keys so cleared fields are removed too.
+            const savedCustomFields = customFields.getValues(member.id);
+            const customFieldIds = new Set([...Object.keys(savedCustomFields), ...Object.keys(this.customFieldValues)]);
+            customFieldIds.forEach((fieldId) => {
+                customFields.setValue(member.id, fieldId, this.customFieldValues[fieldId]);
+            });
+
             this.setInitialRelationshipValues();
 
             if (clearCountCache) {
@@ -323,6 +352,11 @@ export default class MemberController extends Controller {
 
         if (!member || member.isDeleted || member.isDeleting) {
             return false;
+        }
+
+        // POC: custom field edits count toward unsaved changes
+        if (this.customFieldsDirty) {
+            return true;
         }
 
         // member.labels is an array so hasDirtyAttributes doesn't pick up

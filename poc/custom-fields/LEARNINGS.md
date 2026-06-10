@@ -63,6 +63,23 @@ This reconciles `portal_name` with the placement model and is the planned Story 
 - **"Placed = required"** is enforced in the renderer (`required: true` for every custom placement), not trusted from the stored flag, so legacy/seed data can't make a placed field optional by accident.
 - **Cross-document live sync:** the same-tab subscribe/notify doesn't reach a separate bundle (admin vs Portal preview iframe). A `window 'storage'` listener in the repo bridges them so the live preview reflects admin edits. A real build gets this from the server + query invalidation.
 
+## Member detail (Ember admin)
+
+- **Ember can't relative-import outside its app tree.** The classic ember-cli build only compiles `app/`, and ember-auto-import only routes *package* (node_modules) imports through webpack, not outside-app relative paths. So the shared `poc/custom-fields/repo` is unreachable from Ember. We used an in-app accessor (`app/utils/custom-fields-poc.js`) that mirrors the same localStorage key + JSON shape (Option A). It interoperates by data contract, at the cost of duplicated read/write logic.
+- **Joining the dirty/Save flow took controller wiring.** Inline auto-save was rejected; to match the rest of the form we lifted a working copy into the `member` controller (`customFieldValues`), added it to `_hasDirtyAttributes`, and flushed in `saveTask` after `member.save()` (union of saved+working keys so cleared fields delete). The component is a controlled view (`@values` + `@onUpdate`). This is the pattern a real build would follow, except values would live on the member model / its own endpoint.
+- **Minimalist read-only rows + edit modal** (pencil → modal with the type-specific control) kept the screen clean and is the better UX than always-rendered inputs. Mirrors the label-edit affordance.
+- **Reuse existing Ember patterns, not Tailwind.** The grey type badge needed a real CSS class in `members.css` (`.gh-member-customfield-type`); inline `style` with `var(--…)` was unreliable. Native select chevron comes from the existing `gh-select` wrapper + `arrow-down-small`, not a hand-rolled arrow.
+- **`require-input-label` is strict.** Each control needs exactly one labeling method; a shared `id` across template branches plus `aria-label` reads as "multiple labels". Use unique ids or `aria-label`-only, and a wrapping `<label class="switch">` for toggles (matching Newsletters).
+
+## Should the members page move to React first?
+
+The member detail is the **only non-React surface** in the loop, and it was the heaviest integration: the in-app bridge (Ember can't import the shared module) plus controller dirty/Save wiring. That's a real signal for a production build.
+
+Trade-off, not a verdict:
+- **If a React migration of member detail is near-term planned:** doing custom fields in Ember now is throwaway work, and the React version would share admin-x's data layer (react-query) and the shared module directly (no bridge). Leaning toward doing custom fields *after* / *as part of* that migration avoids duplication.
+- **If it's not near-term:** the Ember integration is viable as shown, but a real build adds a `customFields` attribute to the Ember Data member model + serializer and saves through `member.save()`, spreading POC-shaped code across Ember that a later React migration would redo.
+- Either way the **member detail is the most expensive surface** for this feature; sequencing it with any planned React migration is worth deciding before committing to a backend build.
+
 ## i18n
 
 - Field **labels/options are user-defined** (not translatable by us), but all surrounding UI strings (titles, buttons, validation) must go through `t()` and `ghost/i18n` for a real build. The POC skipped this.
