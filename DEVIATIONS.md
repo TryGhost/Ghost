@@ -254,6 +254,72 @@ flag source (see implementation notes).
   `/restore` screen is part of the long-tail slice and is the consumer of that
   data; porting the localRevisions store belongs with it.
 
+### Slice 6: Pure redirects (`/`, `/dashboard`) + dead-route cleanup
+
+- **No labs flag (deliberate).** `/` and `/dashboard` are deterministic
+  redirects with no UI of their own — there is no screen to A/B between
+  shells, and a flag would only add a dead code path. React owns them
+  unconditionally: `/` via `HomeRedirect`
+  (`apps/admin/src/home-redirect.tsx`, role redirect + `?firstStart=true`
+  onboarding entry ported from `ghost/admin/app/routes/home.js`) and
+  `/dashboard` via a plain `loader: () => redirect("/analytics")` (Ember's
+  dashboard route redirected everyone unconditionally).
+- **Ember home route is now an inert parking spot, not a handover.** A
+  `replaceWith('react-fallback', '')` handover is impossible (route-recognizer
+  rejects an empty wildcard param), and aborting would strand Ember's internal
+  `transitionTo('home')` guards (permission checks, `routeAfterAuthentication`,
+  `prohibitAuthentication`). Since `home` already owns the `/` URL, the route
+  body was simply emptied: internal transitions land there, render nothing,
+  and React reacts to the URL change and performs the redirect. The
+  authenticated-route check is kept (signed-out visits to `/` still rewrite
+  the URL to signin, which the React shell relies on). Ember's `/dashboard`
+  does use the standard `replaceWith('react-fallback', 'dashboard')` handover.
+  Ember acceptance tests that asserted post-signin/post-guard destinations
+  (`/analytics`, `/site`, `/posts`) now assert the park on `/` instead; the
+  role matrix is covered by `home-redirect.test.tsx` and the redirects e2e
+  suite.
+- **`Navigate replace` instead of Ember's pushed `transitionTo`** for the role
+  redirects from `/` — Ember left a `/` history entry that immediately
+  re-redirected forward (back button trap); replace matches the codebase's
+  other redirect components.
+- **Dead routes removed from `EMBER_ROUTES`:** `/launch` (router.js entry but
+  no route file, template, controller or inbound link anywhere — the router.js
+  entry was removed too), `/mentions` and `/posts/analytics/:postId/mentions`
+  (no router.js entries, no route files, no inbound links from either shell;
+  only leftover `mentions.css` styles remain in ghost/admin). These URLs now
+  fall through to the React 404 screen.
+
+### Slice 6: Restore screen + local revisions crash-recovery store (`restoreX`)
+
+- **Shared localStorage schema (deliberate, load-bearing).** The React store
+  (`apps/admin/src/editor/local-revisions.ts`, framework-free) writes the exact
+  Ember schema (`post-revision-{id}-{timestamp}` keys, serialized post JSON
+  with `id`/`type`/`revisionTimestamp`, 1-minute keepLatest throttle, quota
+  eviction, newest-5-per-post filter) so revisions written by either shell are
+  restorable from either. The React editor schedules saves from
+  `updateTitle`/`updateLexical` in `use-editor.ts` (hook-level, mirrors Ember's
+  `updateScratch`/`updateTitleScratch` call sites; the editor machine doesn't
+  know about it). Revisions are built from the current scratches, so a React
+  revision's title/lexical are both current (Ember serialized last-saved
+  attributes and only overrode the field being edited).
+- **Restore navigates to the editor.** Ember's `restore()` only `console.log`s
+  the new draft's editor URL and shows a success notification; the React
+  screen opens the draft via a real hash navigation (`crossShellNavigate`), so
+  whichever shell owns `/editor` wakes up. The shared e2e suite branches on
+  this (`restoreOpensEditor`); both runs also assert the draft exists in the
+  posts list.
+- **Pre-existing Ember bug (not fixed here):** `localRevisions.restore()`
+  swallows all errors (`console.warn`) and the controller shows "Post restored
+  successfully" even when nothing was created — e.g. a revision without
+  authors serializes `authors: []`, which the posts API rejects ("At least one
+  author is required"). The React screen surfaces a "Failed to restore post"
+  error instead. The e2e suite seeds revisions with a real author id so both
+  implementations actually create the draft.
+- **Restore resolves the resource from `revision.type`** (`pages` vs `posts`
+  endpoint). Ember always created a `post` model and passed `type` as an
+  attribute, relying on the API ignoring it; the React port posts pages to the
+  pages endpoint.
+
 ### Upstream issues discovered during slice-2 review (pre-existing, NOT introduced here)
 
 - **Server-side bulk-action authorization gap:** `DELETE /ghost/api/admin/posts/?filter=...`

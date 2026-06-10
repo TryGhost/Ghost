@@ -6,7 +6,7 @@ import {
     it
 } from 'mocha';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
-import {click, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
+import {click, currentRouteName, currentURL, fillIn, find, findAll} from '@ember/test-helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
@@ -71,8 +71,9 @@ describe('Acceptance: Signin', function () {
         await authenticateSession();
         await visit('/signin');
 
-        // With analytics mocks, authors get redirected to home first, then to site
-        expect(currentURL(), 'current url').to.equal('/site');
+        // prohibitAuthentication sends authenticated users to the home
+        // route, which hands "/" over to the React shell (react-fallback)
+        expect(currentURL(), 'current url').to.equal('/');
     });
 
     describe('when attempting to signin', function () {
@@ -144,32 +145,24 @@ describe('Acceptance: Signin', function () {
             await fillIn('[name="identification"]', 'test@example.com');
             await fillIn('[name="password"]', 'thisissupersafe');
             await click('[data-test-button="sign-in"]');
-            expect(currentURL(), 'currentURL').to.equal('/analytics');
+            // the React shell owns "/" and performs the post-signin role
+            // redirect; Ember's home route parks on the react-fallback
+            expect(currentURL(), 'currentURL').to.equal('/');
             
             cleanupMockAnalyticsApps();
         });
     });
 
     describe('success routing', function () {
-        it('redirects admin user to analytics', async function () {
+        // The role-based redirect from "/" now lives in the React shell
+        // (apps/admin/src/home-redirect.tsx); Ember's home route is an inert
+        // parking spot for every role.
+        it('lands on the inert home route (React owns the redirect)', async function () {
             await setupSigninFlow(this.server, {role: 'Administrator'});
             await click('[data-test-button="sign-in"]');
 
-            expect(currentURL()).to.equal('/analytics');
-        });
-
-        it('redirects contributor user to posts', async function () {
-            await setupSigninFlow(this.server, {role: 'Contributor'});
-            await click('[data-test-button="sign-in"]');
-
-            expect(currentURL()).to.equal('/posts');
-        });
-
-        it('redirects author user to site', async function () {
-            await setupSigninFlow(this.server, {role: 'Author'});
-            await click('[data-test-button="sign-in"]');
-
-            expect(currentURL()).to.equal('/site');
+            expect(currentURL()).to.equal('/');
+            expect(currentRouteName()).to.equal('home');
         });
     });
 });

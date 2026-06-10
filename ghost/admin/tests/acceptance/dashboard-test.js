@@ -1,6 +1,6 @@
 import {authenticateSession} from 'ember-simple-auth/test-support';
 import {cleanupMockAnalyticsApps, mockAnalyticsApps} from '../helpers/mock-analytics-apps';
-import {currentURL} from '@ember/test-helpers';
+import {currentRouteName, currentURL} from '@ember/test-helpers';
 import {describe, it} from 'mocha';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -20,14 +20,17 @@ describe('Acceptance: Dashboard', function () {
     });
 
     describe('redirects', function () {
-        it('redirects to Analytics (stats-x)', async function () {
+        it('hands over to the React shell (which redirects to Analytics)', async function () {
             let role = this.server.create('role', {name: 'Owner'});
             this.server.create('user', {roles: [role]});
 
             await authenticateSession();
             await visit('/dashboard');
 
-            expect(currentURL()).to.equal('/analytics');
+            // The React admin owns /dashboard (pure redirect to /analytics);
+            // the Ember route parks on the react-fallback catch-all.
+            expect(currentURL()).to.equal('/dashboard');
+            expect(currentRouteName()).to.equal('react-fallback');
         });
     });
 });

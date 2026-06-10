@@ -9,6 +9,7 @@ import type {
 } from "@tryghost/admin-x-framework/api/editor";
 import type { GenerateSlugPayload } from "@tryghost/admin-x-framework/api/slugs";
 import { AUTOSAVE_DELAY, TIMED_SAVE_INTERVAL, type PostSnapshot } from "./state";
+import { LocalRevisionsStore, MIN_REVISION_TIME_MS } from "./local-revisions";
 import { BLANK_LEXICAL, createNewPostSnapshot, toSnapshot, useEditor } from "./use-editor";
 
 const mocks = vi.hoisted(() => ({
@@ -86,6 +87,7 @@ async function flushSaves() {
 describe("useEditor", () => {
     beforeEach(() => {
         vi.useFakeTimers();
+        window.localStorage.clear();
         mocks.addPost.mockReset();
         mocks.editPost.mockReset();
         mocks.generateSlug.mockReset();
@@ -728,6 +730,47 @@ describe("useEditor", () => {
         await vi.advanceTimersByTimeAsync(TIMED_SAVE_INTERVAL * 2);
 
         expect(mocks.editPost).not.toHaveBeenCalled();
+    });
+
+    it("scratch change schedules a local revision (throttled)", async () => {
+        mocks.editPost.mockResolvedValue({ posts: [makeFullPost()] });
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot()));
+
+        act(() => result.current.updateLexical(lexicalDoc("rev one")));
+
+        // the first edit writes a crash-recovery revision immediately, using
+        // the Ember-compatible schema
+        let revisions = new LocalRevisionsStore().findAll();
+        expect(revisions).toHaveLength(1);
+        expect(revisions[0].id).toBe("post-1");
+        expect(revisions[0].type).toBe("post");
+        expect(revisions[0].title).toBe("My post");
+        expect(revisions[0].lexical).toBe(lexicalDoc("rev one"));
+
+        // follow-up edits inside the 1-minute window are coalesced into one
+        // delayed revision carrying the latest scratch data
+        act(() => result.current.updateLexical(lexicalDoc("rev two")));
+        act(() => result.current.updateTitle("New title"));
+        expect(new LocalRevisionsStore().findAll()).toHaveLength(1);
+
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(MIN_REVISION_TIME_MS);
+        });
+
+        revisions = new LocalRevisionsStore().findAll();
+        expect(revisions).toHaveLength(2);
+        expect(revisions[0].title).toBe("New title");
+        expect(revisions[0].lexical).toBe(lexicalDoc("rev two"));
+    });
+
+    it("does not write local revisions for published posts", () => {
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot({ status: "published" })));
+
+        act(() => result.current.updateLexical(lexicalDoc("edited")));
+
+        expect(new LocalRevisionsStore().findAll()).toHaveLength(0);
     });
 
     it("createNewPostSnapshot matches Koenig's blank document so opening the editor is not dirty", () => {

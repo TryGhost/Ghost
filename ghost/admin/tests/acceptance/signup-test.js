@@ -184,10 +184,12 @@ describe('Acceptance: Signup', function () {
             'password field error is removed after text input'
         ).to.equal('');
 
-        // submitting sends correct details and redirects to content screen
+        // submitting sends correct details and lands on the inert home
+        // route — the React shell owns the post-signup role redirect
         await click('[data-test-button="signup"]');
 
-        expect(currentRouteName()).to.equal('site');
+        expect(currentRouteName()).to.equal('home');
+        expect(currentURL()).to.equal('/');
     });
 
     it('redirects if already logged in', async function () {
@@ -205,7 +207,9 @@ describe('Acceptance: Signup', function () {
         // "1470346017929|kevin+test2@ghost.org|2cDnQc3g7fQTj9nNK4iGPSGfvomkLdXf68FuWgS66Ug="
         await visit('/signup/MTQ3MDM0NjAxNzkyOXxrZXZpbit0ZXN0MkBnaG9zdC5vcmd8MmNEblFjM2c3ZlFUajluTks0aUdQU0dmdm9ta0xkWGY2OEZ1V2dTNjZVZz0');
 
-        expect(currentRouteName()).to.equal('site');
+        // prohibitAuthentication targets home, which is inert (the React
+        // shell owns the redirect from "/")
+        expect(currentRouteName()).to.equal('home');
         expect(find('.gh-alert-content').textContent).to.have.string('sign out to register');
     });
 
@@ -232,25 +236,15 @@ describe('Acceptance: Signup', function () {
     });
 
     describe('success routing', function () {
-        it('redirects admin user to analytics', async function () {
+        // The role-based redirect from "/" now lives in the React shell
+        // (apps/admin/src/home-redirect.tsx); Ember's home route is an inert
+        // parking spot for every role.
+        it('lands on the inert home route (React owns the redirect)', async function () {
             await setupSignupFlow(this.server, {role: 'Administrator'});
             await click('[data-test-button="signup"]');
 
-            expect(currentURL()).to.equal('/analytics');
-        });
-
-        it('redirects contributor user to posts', async function () {
-            await setupSignupFlow(this.server, {role: 'Contributor'});
-            await click('[data-test-button="signup"]');
-
-            expect(currentURL()).to.equal('/posts');
-        });
-
-        it('redirects author user to site', async function () {
-            await setupSignupFlow(this.server, {role: 'Author'});
-            await click('[data-test-button="signup"]');
-
-            expect(currentURL()).to.equal('/site');
+            expect(currentURL()).to.equal('/');
+            expect(currentRouteName()).to.equal('home');
         });
     });
 });

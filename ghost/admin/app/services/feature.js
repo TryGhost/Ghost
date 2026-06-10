@@ -72,6 +72,9 @@ export default class FeatureService extends Service {
     @feature('memberDetailsX') memberDetailsX;
     @feature('authX') authX;
     @feature('editorX') editorX;
+    @feature('restoreX') restoreX;
+    @feature('embedScreensX') embedScreensX;
+    @feature('postDebugX') postDebugX;
     @feature('commentModeration') commentModeration;
     _user = null;
 

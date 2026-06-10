@@ -17,10 +17,13 @@ import { ResetRoute, SetupRoute, SigninRoute, SigninVerifyRoute, SignoutRoute, S
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
 import { PageEditorRoute, PostEditorRoute } from "./editor/editor-route";
+import { ExploreRoute, MigrateRoute, ProRoute, SiteRoute } from "./embed/embed-routes";
+import { HomeRedirect } from "./home-redirect";
 import { MemberDetailsRoute, MembersActivityRoute } from "./member-details-route";
 import { MembersRoute } from "./members-route";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 import { PagesListRoute, PostsListRoute } from "./posts-list-route";
+import { RestoreRoute } from "./restore/restore-route";
 import { TagDetailsRoute } from "./tag-details-route";
 
 import { NotFound } from "./not-found";
@@ -28,18 +31,8 @@ import { NotFound } from "./not-found";
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
 const EMBER_ROUTES: string[] = [
-    "/",
-    "/dashboard",
-    "/site",
-    "/launch",
-    "/pro/*",
-    "/posts/analytics/:postId/mentions",
     "/posts/analytics/:postId/debug",
-    "/restore",
-    "/explore/*",
-    "/migrate/*",
     "/designsandbox",
-    "/mentions",
 ];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies RouteHandle;
@@ -141,6 +134,42 @@ export const routes: RouteObject[] = [
                 path: "/editor/page/:postId",
                 Component: PageEditorRoute,
             },
+            {
+                // React restore (crash recovery) screen when the restoreX
+                // labs flag is on, Ember fallback otherwise. Like the other
+                // content routes, no allowInForceUpgrade handle.
+                path: "/restore",
+                Component: RestoreRoute,
+            },
+            {
+                // React iframe-wrapper screens (site preview, Ghost(Pro)
+                // billing, Explore, migration) when the embedScreensX labs
+                // flag is on, Ember fallbacks otherwise. /site, /explore and
+                // /migrate are content routes: no allowInForceUpgrade handle,
+                // so force-upgrade mode sends them to /pro (matching Ember,
+                // whose explore/migrate services refuse to open in that
+                // state).
+                path: "/site",
+                Component: SiteRoute,
+            },
+            {
+                // /pro must stay reachable in force-upgrade mode — it IS the
+                // billing screen the ForceUpgradeGuard redirects to — hence
+                // the allowInForceUpgrade handle (same handle the route had
+                // as an Ember fallback). The owner-only guard lives inside
+                // the screen, mirroring routes/pro.js.
+                path: "/pro/*",
+                Component: ProRoute,
+                handle: emberFallbackHandle,
+            },
+            {
+                path: "/explore/*",
+                Component: ExploreRoute,
+            },
+            {
+                path: "/migrate/*",
+                Component: MigrateRoute,
+            },
             membersRoute,
             {
                 element: (
@@ -221,6 +250,23 @@ export const routes: RouteObject[] = [
                 path: `settings/*`,
                 lazy: lazyComponent(() => import("./settings/settings")),
                 handle: { allowInForceUpgrade: true } satisfies RouteHandle,
+            },
+            {
+                // Pure redirects ported from Ember's home/dashboard routes.
+                // No labs flag: they render no UI, so there is nothing to
+                // gate (see DEVIATIONS.md, slice 6). No allowInForceUpgrade
+                // handle — in force-upgrade mode the React shell sends them
+                // to /pro, which is where the Ember redirects ended up too.
+                // An index route, not path "/": a "/" child of the pathless
+                // guard root never matches in this tree.
+                index: true,
+                Component: HomeRedirect,
+            },
+            {
+                // Dashboard was retired: Ember redirected everyone to
+                // analytics unconditionally, so a plain loader redirect.
+                path: "/dashboard",
+                loader: () => redirect("/analytics"),
             },
             // Ember-handled routes
             ...emberFallbackRoutes,

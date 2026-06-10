@@ -25,7 +25,9 @@ describe('Acceptance: Members activity', function () {
 
         await authenticateSession();
         await visit('/members-activity');
-        expect(currentURL()).to.equal('/site');
+        // the permission guard targets home, which hands "/" over to the
+        // React shell (react-fallback) — React performs the role redirect
+        expect(currentURL()).to.equal('/');
     });
 
     describe('as admin', function () {

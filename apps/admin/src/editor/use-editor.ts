@@ -7,6 +7,7 @@ import {
     useEditEditorPost,
 } from "@tryghost/admin-x-framework/api/editor";
 import { useGenerateSlug } from "@tryghost/admin-x-framework/api/slugs";
+import { LocalRevisionsStore } from "./local-revisions";
 import {
     HostLimitError,
     JSONError,
@@ -353,6 +354,43 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
     // clear timers on unmount
     useEffect(() => clearTimers, [clearTimers]);
 
+    // Crash-recovery revisions, mirroring Ember's updateScratch /
+    // updateTitleScratch call sites (controllers/lexical-editor.js): every
+    // content scratch change schedules a throttled localStorage revision of
+    // the current draft. The store owns throttling/eviction; the machine
+    // deliberately doesn't know about it.
+    const localRevisionsRef = useRef<LocalRevisionsStore | null>(null);
+    if (localRevisionsRef.current === null) {
+        localRevisionsRef.current = new LocalRevisionsStore();
+    }
+    useEffect(() => () => localRevisionsRef.current?.destroy(), []);
+
+    const scheduleLocalRevision = useCallback(() => {
+        const current = stateRef.current;
+        const post = current.post;
+        if (!post) {
+            return;
+        }
+
+        try {
+            // Same revision shape as Ember's serialized post: the store and
+            // the /restore screen are shared between the two admin shells.
+            // scheduleSave itself drops anything that isn't a draft.
+            localRevisionsRef.current?.scheduleSave(resource === "pages" ? "page" : "post", {
+                id: post.id ?? undefined,
+                status: post.status,
+                title: current.titleScratch,
+                lexical: current.lexicalScratch ?? post.lexical,
+                excerpt: current.customExcerptScratch ?? post.customExcerpt,
+                custom_excerpt: current.customExcerptScratch ?? post.customExcerpt,
+                slug: current.slugScratch || post.slug,
+                tags: current.tagNamesScratch.map(name => ({ name })),
+            });
+        } catch {
+            // ignore revision save errors (same as Ember)
+        }
+    }, [resource]);
+
     const loadPost = useCallback((post: PostSnapshot) => {
         pendingSlugRef.current = null;
         // invalidate in-flight slug generations from the previous post
@@ -362,11 +400,13 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
 
     const updateTitle = useCallback((value: string) => {
         dispatch({ type: "SCRATCH_CHANGED", field: "title", value });
-    }, [dispatch]);
+        scheduleLocalRevision();
+    }, [dispatch, scheduleLocalRevision]);
 
     const updateLexical = useCallback((value: string) => {
         dispatch({ type: "SCRATCH_CHANGED", field: "lexical", value });
-    }, [dispatch]);
+        scheduleLocalRevision();
+    }, [dispatch, scheduleLocalRevision]);
 
     const requestSave = useCallback((kind: SaveKind) => {
         dispatch({ type: "SAVE_REQUESTED", kind });

@@ -58,7 +58,10 @@ const PRIVATE_FEATURES = [
     'llmsTxt',
     'getHelperDeduplication',
     'authX',
-    'editorX'
+    'editorX',
+    'restoreX',
+    'embedScreensX',
+    'postDebugX'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
