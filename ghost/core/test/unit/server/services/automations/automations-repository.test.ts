@@ -1,12 +1,14 @@
 import assert from 'node:assert/strict';
 import sinon from 'sinon';
 import ObjectId from 'bson-objectid';
+import knex, {type Knex} from 'knex';
 import {createTemporaryFakeAutomationsDatabase} from '../../../../../core/server/services/automations/temporary-fake-database';
 import {createFakeDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/fake-database-automations-repository';
 import type {AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 import type {DatabaseSync, SQLInputValue} from 'node:sqlite';
 
 const HOUR_MS = 60 * 60 * 1000;
+const queryBuilder = knex({client: 'sqlite', useNullAsDefault: true});
 
 const addHours = (dateCol: unknown, hours: number): Date => {
     assert(typeof dateCol === 'string', 'Expected date column to be a string');
@@ -15,36 +17,67 @@ const addHours = (dateCol: unknown, hours: number): Date => {
     return new Date(start + delta);
 };
 
+type ActionRow = {
+    revision_id: string;
+    [key: string]: unknown;
+};
+
+type RunRow = {
+    id: string;
+    [key: string]: unknown;
+};
+
 // These tests are partly coupled to the *fake* repository. We should be able to
 // modify it once we have the real repository.
 describe('automations repository', function () {
     let database: DatabaseSync;
     let repo: AutomationsRepository;
 
+    const toNativeQuery = (builder: Knex.QueryBuilder) => {
+        const {sql, bindings} = builder.toSQL().toNative();
+        return {
+            sql,
+            bindings: bindings as SQLInputValue[]
+        };
+    };
+
+    const getRow = (builder: Knex.QueryBuilder) => {
+        const {sql, bindings} = toNativeQuery(builder);
+        return database.prepare(sql).get(...bindings);
+    };
+
+    const getRows = (builder: Knex.QueryBuilder) => {
+        const {sql, bindings} = toNativeQuery(builder);
+        return database.prepare(sql).all(...bindings);
+    };
+
+    const runQuery = (builder: Knex.QueryBuilder) => {
+        const {sql, bindings} = toNativeQuery(builder);
+        database.prepare(sql).run(...bindings);
+    };
+
     const getRunByMemberEmail = (email: string) => (
-        database!.prepare(`
-            SELECT
-                automation_runs.*,
-                automations.slug AS automation_slug
-            FROM automation_runs
-            INNER JOIN automations ON automations.id = automation_runs.automation_id
-            WHERE automation_runs.member_email = ?
-        `).get(email)
+        getRow(queryBuilder('automation_runs')
+            .select(
+                'automation_runs.*',
+                'automations.slug as automation_slug'
+            )
+            .innerJoin('automations', 'automations.id', 'automation_runs.automation_id')
+            .where('automation_runs.member_email', email)) as RunRow
     );
 
-    const getStepByRunId = (runId: SQLInputValue) => (
-        database!.prepare(`
-            SELECT
-                automation_run_steps.*,
-                automation_actions.id AS action_id,
-                automation_actions.type AS action_type,
-                automation_action_revisions.wait_hours AS wait_hours,
-                automation_action_revisions.email_subject AS email_subject
-            FROM automation_run_steps
-            INNER JOIN automation_action_revisions ON automation_action_revisions.id = automation_run_steps.automation_action_revision_id
-            INNER JOIN automation_actions ON automation_actions.id = automation_action_revisions.action_id
-            WHERE automation_run_steps.automation_run_id = ?
-        `).get(runId)
+    const getStepByRunId = (runId: string) => (
+        getRow(queryBuilder('automation_run_steps')
+            .select(
+                'automation_run_steps.*',
+                'automation_actions.id as action_id',
+                'automation_actions.type as action_type',
+                'automation_action_revisions.wait_hours as wait_hours',
+                'automation_action_revisions.email_subject as email_subject'
+            )
+            .innerJoin('automation_action_revisions', 'automation_action_revisions.id', 'automation_run_steps.automation_action_revision_id')
+            .innerJoin('automation_actions', 'automation_actions.id', 'automation_action_revisions.action_id')
+            .where('automation_run_steps.automation_run_id', runId))
     );
 
     const getAutomationBySlug = async (slug: string) => {
@@ -56,55 +89,55 @@ describe('automations repository', function () {
         return automation;
     };
 
-    const getRunCountByAutomationId = (automationId: SQLInputValue) => {
-        const result = database!.prepare(`
-            SELECT COUNT(*) AS count
-            FROM automation_runs
-            WHERE automation_id = ?
-        `).get(automationId);
+    const getRunCountByAutomationId = (automationId: string) => {
+        const result = getRow(queryBuilder('automation_runs')
+            .count({count: '*'})
+            .where('automation_id', automationId));
         return result?.count;
     };
 
     const getRevisionCount = (actionId?: string) => {
-        const row = actionId
-            ? database.prepare('SELECT COUNT(*) AS count FROM automation_action_revisions WHERE action_id = ?').get(actionId)
-            : database.prepare('SELECT COUNT(*) AS count FROM automation_action_revisions').get();
+        const builder = queryBuilder('automation_action_revisions').count({count: '*'});
+        const row = getRow(actionId ? builder.where('action_id', actionId) : builder);
 
         return Number((row as {count: number}).count);
     };
 
     const getActionByIndex = (automationId: string, index: number) => {
-        const result = database!.prepare(`
-            SELECT
-                automation_actions.id AS action_id,
-                automation_actions.type AS action_type,
-                automation_action_revisions.id AS revision_id,
-                automation_action_revisions.wait_hours AS wait_hours
-            FROM automation_actions
-            INNER JOIN automation_action_revisions ON automation_action_revisions.action_id = automation_actions.id
-            WHERE automation_actions.automation_id = ?
-                AND automation_actions.deleted_at IS NULL
-            ORDER BY automation_actions.created_at, automation_actions.id
-            LIMIT 1 OFFSET ?
-        `).get(automationId, index);
+        const result = getRow(queryBuilder('automation_actions')
+            .select(
+                'automation_actions.id as action_id',
+                'automation_actions.type as action_type',
+                'automation_action_revisions.id as revision_id',
+                'automation_action_revisions.wait_hours as wait_hours'
+            )
+            .innerJoin('automation_action_revisions', 'automation_action_revisions.action_id', 'automation_actions.id')
+            .where('automation_actions.automation_id', automationId)
+            .whereNull('automation_actions.deleted_at')
+            .orderBy([
+                'automation_actions.created_at',
+                'automation_actions.id'
+            ])
+            .limit(1)
+            .offset(index));
         assert(result, 'Expected action to exist');
-        return result;
+        return result as ActionRow;
     };
 
-    const getLatestActionRevisionByActionId = (actionId: SQLInputValue) => {
-        const result = database!.prepare(`
-            SELECT
-                automation_actions.id AS action_id,
-                automation_actions.type AS action_type,
-                automation_action_revisions.id AS revision_id,
-                automation_action_revisions.wait_hours AS wait_hours
-            FROM automation_actions
-            INNER JOIN automation_action_revisions ON automation_action_revisions.action_id = automation_actions.id
-            WHERE automation_actions.id = ?
-                AND automation_actions.deleted_at IS NULL
-            ORDER BY automation_action_revisions.created_at DESC, automation_action_revisions.id DESC
-            LIMIT 1
-        `).get(actionId);
+    const getLatestActionRevisionByActionId = (actionId: string) => {
+        const result = getRow(queryBuilder('automation_actions')
+            .select(
+                'automation_actions.id as action_id',
+                'automation_actions.type as action_type',
+                'automation_action_revisions.id as revision_id',
+                'automation_action_revisions.wait_hours as wait_hours'
+            )
+            .innerJoin('automation_action_revisions', 'automation_action_revisions.action_id', 'automation_actions.id')
+            .where('automation_actions.id', actionId)
+            .whereNull('automation_actions.deleted_at')
+            .orderBy('automation_action_revisions.created_at', 'desc')
+            .orderBy('automation_action_revisions.id', 'desc')
+            .limit(1));
         assert(result, 'Expected action revision to exist');
         return result;
     };
@@ -120,16 +153,12 @@ describe('automations repository', function () {
             member_email: 'member@example.com'
         };
 
-        database!.prepare(`
-            INSERT INTO automation_runs
-            (id, created_at, updated_at, automation_id, member_id, member_email) VALUES
-            (:id, :created_at, :updated_at, :automation_id, :member_id, :member_email)
-        `).run(run);
+        runQuery(queryBuilder('automation_runs').insert(run));
 
         return run;
     };
 
-    const insertStep = (runId: SQLInputValue, revisionId: SQLInputValue, attrs = {}) => {
+    const insertStep = (runId: string, revisionId: string, attrs = {}) => {
         const now = new Date().toISOString();
         const step = {
             id: ObjectId().toHexString(),
@@ -147,60 +176,30 @@ describe('automations repository', function () {
             ...attrs
         };
 
-        database!.prepare(`
-            INSERT INTO automation_run_steps
-            (
-                id,
-                created_at,
-                updated_at,
-                automation_run_id,
-                automation_action_revision_id,
-                ready_at,
-                step_attempts,
-                started_at,
-                finished_at,
-                status,
-                locked_by,
-                locked_at
-            ) VALUES (
-                :id,
-                :created_at,
-                :updated_at,
-                :automation_run_id,
-                :automation_action_revision_id,
-                :ready_at,
-                :step_attempts,
-                :started_at,
-                :finished_at,
-                :status,
-                :locked_by,
-                :locked_at
-            )
-        `).run(step);
+        runQuery(queryBuilder('automation_run_steps').insert(step));
 
         return step;
     };
 
-    const getStepById = (id: SQLInputValue) => {
-        const result = database!.prepare(`
-            SELECT *
-            FROM automation_run_steps
-            WHERE id = ?
-        `).get(id);
+    const getStepById = (id: string) => {
+        const result = getRow(queryBuilder('automation_run_steps')
+            .select('*')
+            .where('id', id));
         assert(result, 'Expected step to exist');
         return result;
     };
 
-    const getStepsByRunId = (runId: SQLInputValue) => (
-        database!.prepare(`
-            SELECT *
-            FROM automation_run_steps
-            WHERE automation_run_id = ?
-            ORDER BY created_at, id
-        `).all(runId)
+    const getStepsByRunId = (runId: string) => (
+        getRows(queryBuilder('automation_run_steps')
+            .select('*')
+            .where('automation_run_id', runId)
+            .orderBy([
+                'created_at',
+                'id'
+            ]))
     );
 
-    const getLockedStep = async (stepId: SQLInputValue): Promise<AutomationStepToRun> => {
+    const getLockedStep = async (stepId: string): Promise<AutomationStepToRun> => {
         const {steps} = await repo.fetchAndLockSteps(10);
         const step = steps.find(candidate => candidate.id === stepId);
         assert(step);
@@ -436,16 +435,17 @@ describe('automations repository', function () {
     });
 
     describe('fetchAndLockSteps', function () {
-        const simulateLockRace = (contendedStepId: SQLInputValue) => {
+        const simulateLockRace = (contendedStepId: string) => {
             let hasSimulatedLock = false;
             const originalPrepare = database.prepare.bind(database);
             sinon.stub(database, 'prepare').callsFake((source) => {
                 const statement = originalPrepare(source);
+                const normalizedSource = source.toLowerCase();
 
                 const shouldSimulateLockBySomeoneElse = (
                     !hasSimulatedLock &&
-                    source.includes('SELECT id') &&
-                    source.includes('FROM automation_run_steps')
+                    normalizedSource.includes('select `id`') &&
+                    normalizedSource.includes('from `automation_run_steps`')
                 );
                 if (!shouldSimulateLockBySomeoneElse) {
                     return statement;
@@ -458,14 +458,15 @@ describe('automations repository', function () {
                     hasSimulatedLock = true;
 
                     const lockedAt = new Date().toISOString();
-                    originalPrepare(`
-                        UPDATE automation_run_steps
-                        SET locked_by = ?,
-                            locked_at = ?,
-                            started_at = ?,
-                            updated_at = ?
-                        WHERE id = ?
-                    `).run('contending-lock', lockedAt, lockedAt, lockedAt, contendedStepId);
+                    const {sql, bindings} = toNativeQuery(queryBuilder('automation_run_steps')
+                        .update({
+                            locked_by: 'contending-lock',
+                            locked_at: lockedAt,
+                            started_at: lockedAt,
+                            updated_at: lockedAt
+                        })
+                        .where('id', contendedStepId));
+                    originalPrepare(sql).run(...bindings);
 
                     return result;
                 });
@@ -770,13 +771,13 @@ describe('automations repository', function () {
             const step = await getLockedStep(stepRow.id);
             const otherLockedAt = new Date().toISOString();
 
-            database.prepare(`
-                UPDATE automation_run_steps
-                SET locked_by = ?,
-                    locked_at = ?,
-                    updated_at = ?
-                WHERE id = ?
-            `).run('other-runner-lock', otherLockedAt, otherLockedAt, stepRow.id);
+            runQuery(queryBuilder('automation_run_steps')
+                .update({
+                    locked_by: 'other-runner-lock',
+                    locked_at: otherLockedAt,
+                    updated_at: otherLockedAt
+                })
+                .where('id', stepRow.id));
 
             const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
 
@@ -902,13 +903,13 @@ describe('automations repository', function () {
             const step = await getLockedStep(stepRow.id);
             const finishedAt = new Date(Date.now() - 500).toISOString();
 
-            database!.prepare(`
-                UPDATE automation_run_steps
-                SET status = 'finished',
-                    finished_at = ?,
-                    locked_at = NULL
-                WHERE id = ?
-            `).run(finishedAt, step.id);
+            runQuery(queryBuilder('automation_run_steps')
+                .update({
+                    status: 'finished',
+                    finished_at: finishedAt,
+                    locked_at: null
+                })
+                .where('id', step.id));
 
             const didMark = await repo.markStepTerminal(step, 'member unsubscribed');
 
@@ -931,13 +932,13 @@ describe('automations repository', function () {
             const step = await getLockedStep(stepRow.id);
             const otherLockedAt = new Date().toISOString();
 
-            database.prepare(`
-                UPDATE automation_run_steps
-                SET locked_by = ?,
-                    locked_at = ?,
-                    updated_at = ?
-                WHERE id = ?
-            `).run('other-runner-lock', otherLockedAt, otherLockedAt, stepRow.id);
+            runQuery(queryBuilder('automation_run_steps')
+                .update({
+                    locked_by: 'other-runner-lock',
+                    locked_at: otherLockedAt,
+                    updated_at: otherLockedAt
+                })
+                .where('id', stepRow.id));
 
             const beforeMark = getStepById(stepRow.id);
             const didMark = await repo.markStepTerminal(step, 'member unsubscribed');
@@ -990,12 +991,12 @@ describe('automations repository', function () {
             const step = await getLockedStep(stepRow.id);
             const finishedAt = new Date(Date.now() - 500).toISOString();
 
-            database!.prepare(`
-                UPDATE automation_run_steps
-                SET status = 'finished',
-                    finished_at = ?
-                WHERE id = ?
-            `).run(finishedAt, step.id);
+            runQuery(queryBuilder('automation_run_steps')
+                .update({
+                    status: 'finished',
+                    finished_at: finishedAt
+                })
+                .where('id', step.id));
 
             const beforeRetry = getStepById(step.id);
             const didRetry = await repo.retryStep(step, new Date(Date.now() + 1000));
