@@ -313,7 +313,7 @@ overrides:
   jackspeak: 4.2.3
   moment: 2.30.1
   moment-timezone: 0.5.45
-  nwsapi: 2.2.23
+  nwsapi: 2.2.24
   broccoli-persistent-filter: ^2.3.1
   juice: 9.1.0
   ember-basic-dropdown: 6.0.2
@@ -17567,8 +17567,8 @@ packages:
   numbered@1.1.0:
     resolution: {integrity: sha512-pv/ue2Odr7IfYOO0byC1KgBI10wo5YDauLhxY6/saNzAdAs0r1SotGCPzzCLNPL0xtrAwWRialLu23AAu9xO1g==}
 
-  nwsapi@2.2.23:
-    resolution: {integrity: sha512-7wfH4sLbt4M0gCDzGE6vzQBo0bfTKjU7Sfpqy/7gs1qBfYz2vEJH6vXcBKpO3+6Yu1telwd0t9HpyOoLEQQbIQ==}
+  nwsapi@2.2.24:
+    resolution: {integrity: sha512-7YRhZ3jS45LwmSCT4b2sVFHt/WuovaktDU07QrtOBY2PXskss5a9jfmR9jptyumwXST+rFjrmppMY1KT/yn35A==}
 
   nx@22.7.5:
     resolution: {integrity: sha512-zoxsJabb33jl1QYnalDn0bicryrEBgSzdKp90d7VGGv/jDgzKrcLg/hw2ZxeYiOjWPIT/o8QNT9G9vTs4dv3AQ==}
@@ -39025,7 +39025,7 @@ snapshots:
       http-proxy-agent: 4.0.1
       https-proxy-agent: 5.0.1
       is-potential-custom-element-name: 1.0.1
-      nwsapi: 2.2.23
+      nwsapi: 2.2.24
       parse5: 6.0.1
       saxes: 5.0.1
       symbol-tree: 3.2.4
@@ -41334,7 +41334,7 @@ snapshots:
 
   numbered@1.1.0: {}
 
-  nwsapi@2.2.23: {}
+  nwsapi@2.2.24: {}
 
   nx@22.7.5(@swc/core@1.15.40(@swc/helpers@0.5.21)):
     dependencies:
