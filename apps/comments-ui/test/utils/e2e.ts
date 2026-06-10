@@ -190,6 +190,18 @@ export async function initialize({mockedApi, page, bodyStyle, labs = {}, key = '
 export async function selectText(locator: Locator, pattern: string | RegExp): Promise<void> {
     await locator.evaluate(
         (element, {pattern: p}) => {
+            // A real text selection starts with a pointer-down, which blurs any
+            // focused element outside the selection target (e.g. an open reply
+            // editor). Mirror that here: a still-focused ProseMirror editor
+            // re-asserts its own DOM selection and would wipe this one. Note:
+            // duck-typed because instanceof HTMLElement is unreliable across
+            // the evaluate/iframe realm boundary.
+            const activeElement = element.ownerDocument.activeElement as HTMLElement | null;
+
+            if (activeElement && typeof activeElement.blur === 'function' && !activeElement.contains(element)) {
+                activeElement.blur();
+            }
+
             let textNode = element.childNodes[0];
 
             while (textNode.nodeType !== Node.TEXT_NODE && textNode.childNodes.length) {
@@ -224,7 +236,7 @@ export async function setClipboard(page, text) {
 }
 
 export function getModifierKey() {
-    const os = require('os'); // eslint-disable-line @typescript-eslint/no-var-requires
+    const os = require('os'); // eslint-disable-line @typescript-eslint/no-require-imports
     const platform = os.platform();
     if (platform === 'darwin') {
         return 'Meta';

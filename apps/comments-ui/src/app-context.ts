@@ -45,6 +45,7 @@ export type OpenCommentForm = {
         id: string,
         html: string
     },
+    initialHtml?: string,
     type: 'reply' | 'edit',
     hasUnsavedChanges: boolean
 }
@@ -137,4 +138,22 @@ export const useLabs = () => {
     } catch {
         return {};
     }
+};
+
+// Shared gate for actions that require a member on a sufficient tier (Reply,
+// Quote in reply, ...). Returns a callback that opens the CTA upgrade/signup
+// popup and returns false when the visitor isn't allowed, otherwise true.
+export const useRequireMemberTier = () => {
+    const {isMember, hasRequiredTier, dispatchAction} = useAppContext();
+
+    return React.useCallback((commentId?: string) => {
+        if (!isMember || !hasRequiredTier) {
+            // Pass the comment id so the CTA's "Sign in" can return the reader to
+            // this comment after signing in (see cta-box).
+            dispatchAction('openPopup', {type: 'ctaPopup', commentId});
+            return false;
+        }
+
+        return true;
+    }, [isMember, hasRequiredTier, dispatchAction]);
 };

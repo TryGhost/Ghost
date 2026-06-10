@@ -10,13 +10,22 @@ import ReplyButton from './buttons/reply-button';
 import ReplyForm from './forms/reply-form';
 import ThreadedReplies from './threaded-replies';
 import {Avatar, BlankAvatar} from './avatar';
-import {Comment, OpenCommentForm, useAppContext} from '../../app-context';
+import {Comment, OpenCommentForm, useAppContext, useRequireMemberTier} from '../../app-context';
 import {Transition} from '@headlessui/react';
 import {buildCommentPermalink, findCommentById, formatExplicitTime, getCommentInReplyToSnippet, getMemberNameFromComment} from '../../utils/helpers';
 import {useQuoteSelection} from './hooks/use-quote-selection';
 import {useRelativeTime} from '../../utils/hooks';
 
 type CommentLayoutVariant = 'root' | 'reply';
+
+// Monotonic token that makes each quote insertion's pendingQuote id unique, so
+// ReplyForm re-inserts on every quote action (it skips ids it has already
+// inserted). A counter is deterministic and collision-free, unlike a timestamp.
+let quoteInsertionToken = 0;
+function nextQuoteInsertionToken() {
+    quoteInsertionToken += 1;
+    return quoteInsertionToken;
+}
 
 type AnimatedCommentProps = {
     comment: Comment;
@@ -113,7 +122,8 @@ type PublishedCommentProps = CommentProps & {
     useThreading: boolean;
 }
 const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, parent, openEditMode, useThreading, layoutVariant = 'root', isLastSibling = false}) => {
-    const {dispatchAction, openCommentForms, isAdmin, commentIdToHighlight, commentIdFromHash, isMember, hasRequiredTier, isCommentingDisabled, member} = useAppContext();
+    const {dispatchAction, openCommentForms, isAdmin, commentIdToHighlight, commentIdFromHash, isCommentingDisabled, member} = useAppContext();
+    const ensureReplyAccess = useRequireMemberTier();
     const memberName = member?.name;
     const hasNestedReplies = React.Children.count(children) > 0;
 
@@ -142,17 +152,31 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             parent_id: parent?.id,
             type: 'reply',
             hasUnsavedChanges: false,
+            // The id is a one-shot insertion token: ReplyForm inserts the quote
+            // exactly once per id, so it must change every time the user quotes
+            // again. A monotonic counter guarantees a fresh, collision-free id.
             pendingQuote: quoteHtml ? {
-                id: `${comment.id}-${Date.now()}`,
+                id: `${comment.id}-${nextQuoteInsertionToken()}`,
                 html: quoteHtml
             } : undefined,
             ...inReplyToDetails
         };
 
+        // Closing sibling reply forms happens here — once we're actually opening
+        // the quoted form — rather than in the quoteInReply click handler. That
+        // way, bailing out earlier (e.g. the member cancels the "add details"
+        // modal) never discards other open forms for nothing.
+        if (quoteHtml) {
+            dispatchAction('closeOtherReplyForms', comment.id);
+        }
+
         await dispatchAction('openCommentForm', newForm);
     }, [comment, parent, dispatchAction]);
 
     const openReplyForm = useCallback(async (quoteHtml?: string) => {
+        // Plain "Reply" toggles the form shut if it's already open for this
+        // comment. Quoting never toggles — it always (re)opens with the new
+        // quote, so the toggle branch is gated on there being no quoteHtml.
         if (!quoteHtml && openForm && openForm.id === comment.id) {
             dispatchAction('closeCommentForm', openForm.id);
         } else if (!memberName) {
@@ -175,16 +199,12 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
     }, [comment.id, dispatchAction, memberName, openForm, openReplyFormWithProfile]);
 
     const quoteInReply = useCallback((quoteHtml: string) => {
-        if (!isMember || !hasRequiredTier) {
-            dispatchAction('openPopup', {
-                type: 'ctaPopup'
-            });
+        if (!ensureReplyAccess()) {
             return;
         }
 
-        dispatchAction('closeOtherReplyForms', comment.id);
         openReplyForm(quoteHtml);
-    }, [comment.id, dispatchAction, hasRequiredTier, isMember, openReplyForm]);
+    }, [ensureReplyAccess, openReplyForm]);
 
     const canShowReplyAction = !isCommentingDisabled && !(isAdmin && comment.status === 'hidden');
     const hasChildReplies = hasNestedReplies || (comment.replies && comment.replies.length > 0);

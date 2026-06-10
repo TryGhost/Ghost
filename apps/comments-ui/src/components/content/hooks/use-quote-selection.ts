@@ -16,10 +16,19 @@ function getNodeElement(node: Node) {
     return node.nodeType === Node.ELEMENT_NODE ? node as Element : node.parentElement;
 }
 
+// NOTE: only <p> and <blockquote> are treated as block-level here. Any other
+// block the comment HTML might contain (lists, headings, <pre>, ...) falls
+// through to the inline branch below and gets wrapped in a <p>, which can
+// produce invalid markup. Kept narrow on the assumption comment bodies only
+// ever contain these two block types — revisit if that schema widens.
 function isBlockElement(node: Node) {
     return node.nodeType === Node.ELEMENT_NODE && ['BLOCKQUOTE', 'P'].includes((node as Element).tagName);
 }
 
+// Normalises a raw selection fragment into clean block-level HTML: loose inline
+// nodes (text, <a>, <strong>, ...) are collected into a shared <p> wrapper while
+// existing blocks are passed through untouched. This guarantees the reply
+// editor's ProseMirror schema can parse the quote as a valid blockquote body.
 function appendNormalizedSelectionNode(output: HTMLDivElement, node: Node, inlineWrapper: {current: HTMLParagraphElement | null}) {
     if (isBlockElement(node)) {
         inlineWrapper.current = null;
@@ -81,6 +90,11 @@ function isRangeInsideElement(range: Range, element: Element) {
     return !!startElement && !!endElement && element.contains(startElement) && element.contains(endElement);
 }
 
+// A single manager per document owns the global selection listeners and tracks
+// every mounted comment body as an "entry". Centralising here (rather than one
+// set of document listeners per comment) keeps listener count flat regardless of
+// thread size and lets us enforce a single active quote button across all
+// comments — and reject selections that span more than one comment body.
 function createQuoteSelectionManager(ownerDocument: Document) {
     const ownerWindow = ownerDocument.defaultView || window;
     const entries = new Set<QuoteSelectionEntry>();
@@ -114,8 +128,14 @@ function createQuoteSelectionManager(ownerDocument: Document) {
     ownerDocument.addEventListener('selectionchange', updateActiveEntry);
     ownerDocument.addEventListener('mouseup', updateAfterSelectionSettles);
     ownerDocument.addEventListener('touchend', updateAfterSelectionSettles);
-    ownerWindow.addEventListener('resize', clearActiveEntry);
-    ownerWindow.addEventListener('scroll', clearActiveEntry, true);
+    // Reposition (rather than dismiss) on scroll/resize: the button is fixed-
+    // positioned from the selection's viewport rect, so it has to track the
+    // selection as it moves. Dismissing would also be fragile — browsers scroll
+    // programmatically (focus, scrollIntoView) right around the moments users
+    // make selections, which would permanently hide the button since the
+    // selection itself never re-fires selectionchange.
+    ownerWindow.addEventListener('resize', updateActiveEntry);
+    ownerWindow.addEventListener('scroll', updateActiveEntry, true);
 
     return {
         register(entry: QuoteSelectionEntry) {
@@ -138,8 +158,8 @@ function createQuoteSelectionManager(ownerDocument: Document) {
             ownerDocument.removeEventListener('selectionchange', updateActiveEntry);
             ownerDocument.removeEventListener('mouseup', updateAfterSelectionSettles);
             ownerDocument.removeEventListener('touchend', updateAfterSelectionSettles);
-            ownerWindow.removeEventListener('resize', clearActiveEntry);
-            ownerWindow.removeEventListener('scroll', clearActiveEntry, true);
+            ownerWindow.removeEventListener('resize', updateActiveEntry);
+            ownerWindow.removeEventListener('scroll', updateActiveEntry, true);
         }
     };
 }

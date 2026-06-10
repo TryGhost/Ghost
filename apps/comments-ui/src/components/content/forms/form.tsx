@@ -31,9 +31,13 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
     useEffect(() => {
         if (editor && openForm) {
             const checkContent = () => {
-                const hasUnsavedChanges = comment && openForm.type === 'edit' ?
-                    editor.getHTML() !== comment.html :
-                    !editor.isEmpty;
+                let hasUnsavedChanges = !editor.isEmpty;
+
+                if (comment && openForm.type === 'edit') {
+                    hasUnsavedChanges = editor.getHTML() !== comment.html;
+                } else if (openForm.initialHtml !== undefined) {
+                    hasUnsavedChanges = editor.getHTML() !== openForm.initialHtml;
+                }
 
                 // avoid unnecessary state updates to prevent infinite loops
                 if (openForm.hasUnsavedChanges !== hasUnsavedChanges) {

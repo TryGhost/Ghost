@@ -49,6 +49,7 @@ test.describe('Quote replies', async () => {
         await expect(editor.locator('blockquote')).toHaveText('comment 1');
         await editor.type('Reply text');
         await replyForm.getByTestId('submit-form-button').click();
+        await expect.poll(() => mockedApi.comments[0].replies.length).toBe(1);
 
         expect(mockedApi.comments[0].replies).toHaveLength(1);
         expect(mockedApi.comments[0].replies[0].html).toBe('<blockquote><p>comment 1</p></blockquote><p>Reply text</p>');
@@ -74,7 +75,7 @@ test.describe('Quote replies', async () => {
         await expect(detailsFrame.getByTestId('profile-modal')).toBeVisible();
         await expect(frame.getByTestId('reply-form')).toHaveCount(0);
 
-        await detailsFrame.locator('button').last().click();
+        await detailsFrame.getByTestId('close-popup-button').click();
         await expect(detailsFrame.getByTestId('profile-modal')).not.toBeVisible();
         await expect(frame.getByTestId('reply-form')).toHaveCount(0);
 
@@ -140,6 +141,79 @@ test.describe('Quote replies', async () => {
         await expect(frame.getByTestId('reply-form').getByText('comment 2')).toBeVisible();
     });
 
+    test('keeps an existing quoted reply form with unsaved changes when quoting a different comment', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>'
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        const firstComment = frame.getByTestId('comment-component').filter({hasText: 'This is comment 1'});
+        await selectText(firstComment.getByTestId('comment-content'), /comment 1/);
+        await frame.getByTestId('quote-reply-button').click();
+
+        const firstReplyForm = frame.getByTestId('reply-form');
+        const firstEditor = firstReplyForm.getByTestId('form-editor');
+        await waitEditorFocused(firstEditor);
+        await firstEditor.type('Draft reply');
+        await expect(firstReplyForm).toContainText('Draft reply');
+
+        const secondComment = frame.getByTestId('comment-component').filter({hasText: 'This is comment 2'});
+        await selectText(secondComment.getByTestId('comment-content'), /comment 2/);
+        await frame.getByTestId('quote-reply-button').click();
+
+        await expect(frame.getByTestId('reply-form')).toHaveCount(2);
+        await expect(frame.getByTestId('reply-form').filter({hasText: 'Draft reply'})).toHaveCount(1);
+        await expect(frame.getByTestId('reply-form').filter({hasText: 'comment 2'})).toHaveCount(1);
+    });
+
+    test('keeps an in-progress draft when re-quoting the same comment, then quoting another', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>'
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        const firstComment = frame.getByTestId('comment-component').filter({hasText: 'This is comment 1'});
+        await selectText(firstComment.getByTestId('comment-content'), /comment 1/);
+        await frame.getByTestId('quote-reply-button').click();
+
+        const firstReplyForm = frame.getByTestId('reply-form');
+        const firstEditor = firstReplyForm.getByTestId('form-editor');
+        await waitEditorFocused(firstEditor);
+        await firstEditor.type('Draft reply');
+        await expect(firstReplyForm).toContainText('Draft reply');
+
+        // Re-quote the same comment after typing: the second quote must not fold
+        // the draft into the "saved" baseline (which previously discarded it).
+        await selectText(firstComment.getByTestId('comment-content'), /comment 1/);
+        await frame.getByTestId('quote-reply-button').click();
+        await expect(firstReplyForm).toContainText('Draft reply');
+
+        // Quoting a different comment now keeps the still-dirty first form open
+        // rather than silently auto-closing it and losing the draft.
+        const secondComment = frame.getByTestId('comment-component').filter({hasText: 'This is comment 2'});
+        await selectText(secondComment.getByTestId('comment-content'), /comment 2/);
+        await frame.getByTestId('quote-reply-button').click();
+
+        await expect(frame.getByTestId('reply-form')).toHaveCount(2);
+        await expect(frame.getByTestId('reply-form').filter({hasText: 'Draft reply'})).toHaveCount(1);
+    });
+
     test('preserves selected inline HTML when quoting', async ({page}) => {
         mockedApi.addComment({
             html: '<p>This is <a href="https://example.com">linked text</a>.</p>'
@@ -160,9 +234,13 @@ test.describe('Quote replies', async () => {
         await waitEditorFocused(editor);
         await editor.type('Reply text');
         await replyForm.getByTestId('submit-form-button').click();
+        await expect.poll(() => mockedApi.comments[0].replies.length).toBe(1);
 
-        expect(mockedApi.comments[0].replies[0].html).toContain('<blockquote><p><a target="_blank" rel="noopener noreferrer nofollow" href="https://example.com">linked text</a></p></blockquote>');
-        expect(mockedApi.comments[0].replies[0].html).toContain('<p>Reply text</p>');
+        // Assert the structure (link preserved inside the quoted blockquote) without
+        // pinning the exact serialized attribute order, which TipTap controls.
+        const replyHtml = mockedApi.comments[0].replies[0].html;
+        expect(replyHtml).toMatch(/<blockquote><p><a [^>]*href="https:\/\/example\.com"[^>]*>linked text<\/a><\/p><\/blockquote>/);
+        expect(replyHtml).toContain('<p>Reply text</p>');
     });
 
     test('does not show the quote action for selections spanning comments', async ({page}) => {
@@ -247,6 +325,7 @@ test.describe('Quote replies', async () => {
         await waitEditorFocused(editor);
         await editor.type('Replying to nested');
         await replyForm.getByTestId('submit-form-button').click();
+        await expect.poll(() => mockedApi.comments[0].replies.length).toBe(2);
 
         const newReply = mockedApi.comments[0].replies[1];
         expect(newReply.parent_id).toBe('parent-comment');

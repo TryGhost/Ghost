@@ -1,5 +1,5 @@
 import ReplyIcon from '../../../images/icons/reply.svg?react';
-import {Comment, useAppContext} from '../../../app-context';
+import {Comment, useAppContext, useRequireMemberTier} from '../../../app-context';
 
 type Props = {
     comment: Comment;
@@ -9,18 +9,13 @@ type Props = {
 };
 
 const ReplyButton: React.FC<Props> = ({comment, disabled, isReplying, openReplyForm}) => {
-    const {t, dispatchAction, isMember, hasRequiredTier} = useAppContext();
-
-    const canReply = isMember && hasRequiredTier;
+    const {t} = useAppContext();
+    const ensureReplyAccess = useRequireMemberTier();
 
     const handleClick = () => {
-        if (!canReply) {
-            // Pass the comment id so the CTA's "Sign in" can ask Portal to return
-            // the reader to this comment after signing in (see cta-box).
-            dispatchAction('openPopup', {
-                type: 'ctaPopup',
-                commentId: comment.id
-            });
+        // Pass the comment id so the CTA's "Sign in" can return the reader to
+        // this comment after signing in (see cta-box).
+        if (!ensureReplyAccess(comment.id)) {
             return;
         }
         openReplyForm();
