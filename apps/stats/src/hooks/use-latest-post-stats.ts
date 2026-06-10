@@ -2,11 +2,9 @@ import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {useMemo} from 'react';
 import {usePostStats} from '@tryghost/admin-x-framework/api/stats';
 
-// Extended Post interface that includes authors and excerpt
+// Extended Post interface that includes excerpt and click counts
+// (authors comes from Post itself as PostAuthor[])
 interface ExtendedPost extends Post {
-    authors?: {
-        name: string;
-    }[];
     excerpt?: string;
     count?: {
         clicks?: number;
