@@ -7,11 +7,14 @@ import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 interface CustomFieldModalProps {
     field?: customFields.FieldDefinition;
     refresh: () => void;
+    // Called with the newly created field (create mode only). Lets a caller, e.g.
+    // the signup Form fields list, place the new field right after creating it.
+    onCreated?: (field: customFields.FieldDefinition) => void;
 }
 
 const typeOptions: SelectOption[] = customFields.TYPES.map(t => ({value: t.value, label: t.label}));
 
-const CustomFieldModal: React.FC<CustomFieldModalProps> = ({field, refresh}) => {
+const CustomFieldModal: React.FC<CustomFieldModalProps> = ({field, refresh, onCreated}) => {
     const modal = useModal();
     const handleError = useHandleError();
     const isEdit = Boolean(field);
@@ -52,12 +55,13 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({field, refresh}) => 
                     ...(state.type === 'select' ? {options, multiple: state.multiple} : {})
                 });
             } else {
-                await customFields.createField({
+                const created = await customFields.createField({
                     label: state.label.trim(),
                     type: state.type,
                     options: state.type === 'select' ? options : null,
                     multiple: state.type === 'select' ? state.multiple : false
                 });
+                onCreated?.(created);
             }
         },
         onSaveError: handleError
@@ -113,7 +117,13 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({field, refresh}) => 
         title={isEdit ? 'Edit custom field' : 'New custom field'}
         stickyFooter
         onOk={async () => {
-            await handleSave({fakeWhenUnchanged: true});
+            // Save & close: closing after a successful save avoids re-saving (in
+            // create mode that would spawn duplicate fields on every Save click).
+            const saved = await handleSave({fakeWhenUnchanged: true});
+            if (saved) {
+                refresh();
+                modal.remove();
+            }
         }}
     >
         <Form marginBottom={false} marginTop>

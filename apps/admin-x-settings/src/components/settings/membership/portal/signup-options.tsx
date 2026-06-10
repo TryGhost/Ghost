@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useMemo} from 'react';
+import SignupFormFields from './signup-form-fields';
 import {CheckboxGroup, type CheckboxProps, Form, HtmlField, Select, type SelectOption, Toggle} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, checkStripeEnabled, getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {type Tier, getPaidActiveTiers} from '@tryghost/admin-x-framework/api/tiers';
@@ -116,12 +117,9 @@ const SignupOptions: React.FC<{
     const arePaidTiersVisible = isStripeEnabled && paidActiveTiers.length > 0 && paidActiveTiers.some(tier => tier.visibility === 'public');
 
     return <div className='mt-7'><Form>
-        <Toggle
-            checked={Boolean(portalName)}
-            direction='rtl'
-            disabled={!isSignupAllowed}
-            label='Display name in signup form'
-            onChange={e => updateSetting('portal_name', e.target.checked)}
+        <SignupFormFields
+            portalName={Boolean(portalName)}
+            updateSetting={updateSetting}
         />
 
         <CheckboxGroup

@@ -23,6 +23,7 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
 
     useEffect(() => {
         refresh();
+        return customFields.subscribe(refresh);
     }, [refresh]);
 
     const openModal = (field?: customFields.FieldDefinition) => {

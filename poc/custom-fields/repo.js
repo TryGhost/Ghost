@@ -42,7 +42,7 @@ const STORAGE_KEY = 'ghost-poc-custom-fields';
 // an older version is discarded and reseeded from the JSON, so dev browsers pick
 // up seed changes automatically (this DOES wipe local edits, which is the point
 // of a reseed).
-const SEED_VERSION = 3;
+const SEED_VERSION = 4;
 
 /** Type options for the "data type" dropdown in the create UI. */
 export const TYPES = [
@@ -58,6 +58,19 @@ export const TYPES = [
 // poc/custom-fields/ideas/field-formats.md.
 
 const clone = value => JSON.parse(JSON.stringify(value));
+
+// Tiny same-tab change notifier so any view (admin section, signup list, member
+// detail) re-fetches when the data changes elsewhere, no reload needed.
+const listeners = new Set();
+function notify() {
+    listeners.forEach(fn => fn());
+}
+
+/** Subscribe to data changes. Returns an unsubscribe function. */
+export function subscribe(listener) {
+    listeners.add(listener);
+    return () => listeners.delete(listener);
+}
 
 function read() {
     const raw = typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY);
@@ -85,6 +98,7 @@ function write(state) {
     if (typeof localStorage !== 'undefined') {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
     }
+    notify();
     return state;
 }
 

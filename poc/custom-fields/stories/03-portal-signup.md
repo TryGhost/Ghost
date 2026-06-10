@@ -14,7 +14,7 @@ Replaces the old "add a field" picker with a single ordered list in `apps/admin-
 | --- | --- | --- | --- |
 | **Email** | built-in (system) | none — **Required · Locked** | Always present, can't remove or make optional. |
 | **Name** | built-in | **on/off toggle** | Maps to today's `portal_name` setting. Toggle, not add/remove, because it's a built-in. "Short text · Optional". |
-| **Custom field** (e.g. Favorite player, Birthday) | custom | **`…` menu** (edit placement / remove) + Required/Optional | Added via "+ Add field". Each is a `signup` placement. |
+| **Custom field** (e.g. Favorite player, Birthday) | custom | **remove** (trash) | Added via "Add a field". Each is a `signup` placement. POC keeps it minimalist: a placed field is **required** (no per-field required toggle). |
 | **+ Add field** | — | dashed button | Opens the existing-field picker (or link to create a new one in Story 1's section). |
 
 - **Drag to reorder** the whole list; order persists (built-in + custom share one ordering).

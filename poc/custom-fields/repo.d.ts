@@ -25,6 +25,11 @@ export interface FormPlacement {
     required: boolean;
     placeholder: string | null;
     order: number;
+    // Built-in system fields (email, name) appear in the signup list too. They
+    // can't be removed; `system` marks them. `enabled` is only used by name
+    // (email is always on). Custom placements omit both.
+    system?: boolean;
+    enabled?: boolean;
 }
 
 export interface TypeOption {
@@ -34,6 +39,8 @@ export interface TypeOption {
 }
 
 export const TYPES: TypeOption[];
+
+export function subscribe(listener: () => void): () => void;
 
 export function deriveKey(label: string, existingKeys?: string[]): string;
 

@@ -67,3 +67,5 @@ This reconciles `portal_name` with the placement model and is the planned Story 
 
 - A single async repository facade (`repo.js`) with the shape a real API would have meant **zero call-site churn** is expected when swapping localStorage for a backend. Writing UI against the async interface from day one paid off.
 - A seed-version bump that auto-reseeds localStorage made iterating on the seed painless during review.
+- A tiny same-tab subscribe/notify in the repo kept independent views (admin section, signup list) live without reloads. A real build gets this from react-query cache invalidation, worth ensuring all surfaces share one query layer so a create/edit/delete reflects everywhere immediately.
+- The create/edit modal should **save & close**: leaving it open in create mode lets repeated Saves spawn duplicate records. Easy to miss.

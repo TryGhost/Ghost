@@ -97,8 +97,9 @@
 
   "forms": {
     "signup": [
-      { "fieldId": "cf_first_name", "required": true, "placeholder": "Jamie", "order": 0 },
-      { "fieldId": "cf_role", "required": false, "placeholder": null, "order": 1 }
+      { "fieldId": "email", "system": true, "required": true, "placeholder": null, "order": 0 },
+      { "fieldId": "name", "system": true, "required": false, "placeholder": null, "order": 1 },
+      { "fieldId": "cf_role", "required": false, "placeholder": null, "order": 2 }
     ],
     "account": [
       { "fieldId": "cf_first_name", "required": true, "placeholder": "Jamie", "order": 0 },
