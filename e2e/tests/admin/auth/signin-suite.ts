@@ -1,8 +1,27 @@
 import {LoginPage, PostsPage, TagsPage} from '@/admin-pages';
 import {Page} from '@playwright/test';
-import {expect, test} from '@/helpers/playwright';
+import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 
-test.describe('Ghost Admin - Signin Redirect', () => {
+/**
+ * Signin screen tests, shared between the Ember implementation (labs flag
+ * `authX` off) and the React implementation (`authX` on). Same page objects
+ * and selectors for both runs.
+ *
+ * Session mechanics: the shared `page` fixture is auto-authenticated and its
+ * session cookie is cached for later tests in the same file. Signing out only
+ * clears the user from the server-side session (the session row survives), so
+ * any test that logs the shared page out MUST sign back in before finishing.
+ * Tests that need to end logged out run in an isolated browser context
+ * instead.
+ */
+export function defineSigninTests() {
+    // Resolving the shared authenticated page applies labs flags (set via
+    // test.use) server-wide before tests that only use isolated contexts.
+    test.beforeEach(async ({page}) => {
+        const loginPage = new LoginPage(page);
+        await loginPage.goto();
+    });
+
     async function logout(page: Page) {
         const loginPage = new LoginPage(page);
         await loginPage.logout();
@@ -58,4 +77,28 @@ test.describe('Ghost Admin - Signin Redirect', () => {
         await expect(page.getByRole('heading', {name: 'Error verifying email address'})).toBeVisible();
         expect(page.url()).toContain('verifyEmail=fake-token-xyz');
     });
-});
+
+    test('signing in with a wrong password - shows error message', async ({browser, baseURL, ghostAccountOwner}) => {
+        await withIsolatedPage(browser, {baseURL}, async ({page}) => {
+            const loginPage = new LoginPage(page);
+            await loginPage.goto();
+
+            await loginPage.signIn(ghostAccountOwner.email, 'definitely-wrong-password');
+
+            // The sign-in button turns into "Retry" on failure, so the flow
+            // notification is the stable signal that signin was rejected.
+            await expect(loginPage.flowNotification).toContainText('Your password is incorrect.');
+        });
+    });
+
+    test('submitting the signin form with empty fields - shows validation error', async ({browser, baseURL}) => {
+        await withIsolatedPage(browser, {baseURL}, async ({page}) => {
+            const loginPage = new LoginPage(page);
+            await loginPage.goto();
+
+            await loginPage.signInButton.click();
+
+            await expect(loginPage.flowNotification).toContainText('Please fill out the form to sign in.');
+        });
+    });
+}

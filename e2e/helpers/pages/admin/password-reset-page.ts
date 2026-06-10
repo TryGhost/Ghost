@@ -6,6 +6,7 @@ export class PasswordResetPage extends AdminPage {
     readonly newPasswordField: Locator;
     readonly confirmPasswordField: Locator;
     readonly saveButton: Locator;
+    readonly flowNotification: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -15,6 +16,7 @@ export class PasswordResetPage extends AdminPage {
         this.newPasswordField = page.getByRole('textbox', {name: 'New password', exact: true});
         this.confirmPasswordField = page.getByRole('textbox', {name: 'Confirm new password', exact: true});
         this.saveButton = page.getByRole('button', {name: 'Save new password'});
+        this.flowNotification = page.getByTestId('reset-flow-notification');
     }
 
     async resetPassword(newPassword: string, confirmPassword: string) {

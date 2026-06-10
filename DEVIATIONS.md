@@ -100,6 +100,40 @@ and issues worth reviewing at the end. Newest entries at the bottom of each sect
   gated at the template level instead (no guards there, and the handover would
   strip the `member`/`excludedEvents` query params the screen depends on).
 
+### Slice 4: Auth flows — BetterAuth decision (IMPORTANT, deliberate deviation)
+
+The plan asked for BetterAuth for authentication/session management. After a
+sourced feasibility assessment (Ghost auth internals + BetterAuth docs/issues),
+**the React auth screens call Ghost's existing session/authentication endpoints
+instead**, for these reasons:
+
+- Ghost's admin session cookie is the API credential for every admin endpoint,
+  the comments auth-frame and the Ghost(Pro) SSO adapter. BetterAuth issues its
+  own session in its own table — every consumer would need a second
+  authenticator, or a hook would have to hand-mint express-session rows
+  (re-implementing express-session internals).
+- Ghost's 2FA is per-session device verification (code challenge stored in the
+  session row, `require_email_mfa`, skip-on-first-login). BetterAuth's
+  twoFactor plugin is per-user TOTP with 30-day device cookies — replicating
+  Ghost's semantics means writing a custom plugin that duplicates Ghost's
+  logic inside BetterAuth.
+- ghost/core is CommonJS; BetterAuth is ESM-only with documented CJS breakage.
+- Signup-by-invite, setup and password reset (3 of 6 screens) are not
+  BetterAuth concepts and would call Ghost endpoints regardless.
+- Estimated 4–8 weeks of backend work with real security-regression surface,
+  versus 1.5–3 weeks for the screens with zero backend risk — and the React
+  screens are a prerequisite for any later BetterAuth adoption anyway.
+
+This is *not* "rolling something bespoke": the session system remains Ghost's
+existing server implementation; the React screens are thin clients to it.
+A full BetterAuth adoption is feasible as a separate platform project (custom
+knex adapter, bcrypt verify plug-in, custom 2FA plugin, legacy-session bridge)
+— the research notes live in the slice-4 research output if wanted.
+
+Also: auth screens render pre-authentication, where the labs `/config`
+endpoint isn't available — the flag gate for auth screens needs a pre-auth
+flag source (see implementation notes).
+
 ### Upstream issues discovered during slice-2 review (pre-existing, NOT introduced here)
 
 - **Server-side bulk-action authorization gap:** `DELETE /ghost/api/admin/posts/?filter=...`

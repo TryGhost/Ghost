@@ -41,7 +41,7 @@
                 <GhTaskButton @buttonText="Save new password" @task={{this.resetPasswordTask}} @class="gh-btn gh-btn-reset gh-btn-block gh-btn-icon" @type="submit" @autoWidth="false" />
             </form>
 
-            <p class="main-error">{{this.flowErrors}}&nbsp;</p>
+            <p class="main-error" data-testid="reset-flow-notification">{{this.flowErrors}}&nbsp;</p>
         </section>
     </div>
 </div>

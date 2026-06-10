@@ -63,7 +63,7 @@
             </form>
 
             {{#let (or this.flowErrors this.verifyData.validationMessage) as |error|}}
-                <p class="{{if error "main-error" "main-notification"}}" data-test-flow-notification>{{error}}&nbsp;</p>
+                <p class="{{if error "main-error" "main-notification"}}" data-test-flow-notification data-testid="signin-verify-flow-notification">{{error}}&nbsp;</p>
             {{/let}}
         </section>
     </div>

@@ -6,6 +6,8 @@ export class LoginVerifyPage extends AdminPage{
     readonly twoFactorVerifyButton: Locator;
     readonly resendTwoFactorCodeButton:Locator;
     readonly sentTwoFactorCodeButton:Locator;
+    // Single element that shows both flow errors and validation messages
+    readonly flowNotification: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -14,5 +16,6 @@ export class LoginVerifyPage extends AdminPage{
         this.twoFactorVerifyButton = page.getByRole('button', {name: 'Verify'});
         this.resendTwoFactorCodeButton = page.getByRole('button', {name: 'Resend'});
         this.sentTwoFactorCodeButton = page.getByRole('button', {name: 'Sent'});
+        this.flowNotification = page.getByTestId('signin-verify-flow-notification');
     }
 }
