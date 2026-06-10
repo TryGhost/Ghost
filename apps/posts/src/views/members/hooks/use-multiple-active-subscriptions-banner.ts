@@ -17,6 +17,12 @@ interface UseMultipleActiveSubscriptionsBannerOptions {
     search: string;
 }
 
+/**
+ * Drives the banner warning that some members have active subscriptions across
+ * multiple Stripe customers. Dismissal is stored per-user as the member count
+ * at dismissal time, so the banner stays hidden until the count grows beyond
+ * what the user last acknowledged.
+ */
 export function useMultipleActiveSubscriptionsBanner({
     nql,
     search
@@ -28,8 +34,11 @@ export function useMultipleActiveSubscriptionsBanner({
 
     const canManageMemberList = currentUser ? canManageMembers(currentUser) : false;
     const isViewingFilter = isMultipleActiveSubscriptionsFilter(nql);
+    // Only relevant on the unfiltered member list or when viewing the
+    // affected members themselves — any other filter/search hides the banner.
     const shouldConsiderBanner = !search && (!nql || isViewingFilter);
 
+    // Count-only query: we just need pagination.total, not the members.
     const {
         data
     } = useBrowseMembers({
@@ -50,6 +59,8 @@ export function useMultipleActiveSubscriptionsBanner({
         return getMultipleActiveSubscriptionsBannerPreference(currentUser?.accessibility);
     }, [currentUser?.accessibility]);
     const dismissedCount = optimisticDismissedCount ?? preference.dismissedCount ?? 0;
+    // While viewing the filtered list the banner explains what's being shown,
+    // so it can't be dismissed and ignores any previous dismissal.
     const canDismiss = !isViewingFilter;
     const shouldShow = shouldConsiderBanner
         && (
@@ -57,6 +68,10 @@ export function useMultipleActiveSubscriptionsBanner({
             || count > dismissedCount
         );
 
+    // When the member count shrinks below the stored dismissal count, lower the
+    // stored count to match — otherwise fixing some members would leave enough
+    // headroom for new occurrences to go unnoticed until the old high-water
+    // mark is passed again.
     useEffect(() => {
         const storedDismissedCount = preference.dismissedCount;
 
@@ -96,6 +111,8 @@ export function useMultipleActiveSubscriptionsBanner({
         preference.dismissedCount
     ]);
 
+    // Hides the banner immediately via optimistic state, then persists the
+    // current count to the user's accessibility preferences.
     const handleDismiss = useCallback(() => {
         if (!currentUser || isDismissing) {
             return;

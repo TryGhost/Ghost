@@ -57,11 +57,9 @@ describe('useMembersFilterState', () => {
         expect(result.current.hasFilterOrSearch).toBe(false);
     });
 
-    it('preserves the multiple active Stripe customers raw filter', async () => {
+    it('parses the multiple active Stripe customers filter into a predicate', async () => {
         const {result} = renderHook(() => {
-            const state = useMembersFilterState('UTC', {
-                preserveMultipleActiveSubscriptionsFilter: true
-            });
+            const state = useMembersFilterState('UTC');
             const [searchParams] = useSearchParams();
 
             return {
@@ -76,12 +74,19 @@ describe('useMembersFilterState', () => {
             expect(result.current.nql).toBe('count.active_stripe_customers:>1');
         });
 
-        expect(result.current.filters).toEqual([]);
+        expect(result.current.filters).toEqual([
+            {
+                id: 'count.active_stripe_customers:1',
+                field: 'count.active_stripe_customers',
+                operator: 'is-greater',
+                values: [1]
+            }
+        ]);
         expect(result.current.query).toBe('filter=count.active_stripe_customers%3A%3E1');
         expect(result.current.hasFilterOrSearch).toBe(true);
     });
 
-    it('drops the multiple active Stripe customers raw filter when preservation is disabled', async () => {
+    it('drops unsupported multiple active Stripe customers filter values', async () => {
         const {result} = renderHook(() => {
             const state = useMembersFilterState('UTC');
             const [searchParams] = useSearchParams();
@@ -91,7 +96,7 @@ describe('useMembersFilterState', () => {
                 query: searchParams.toString()
             };
         }, {
-            wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3E1')
+            wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3E2')
         });
 
         await waitFor(() => {
