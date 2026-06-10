@@ -14,10 +14,10 @@
 
 ## Current focus (active goal)
 1. ✅ Slice 1: fixture-backed Ghost export importer.
-2. ⏳ Slice 2: Handlebars theme rendering parity (real theme through the
-   frontend router).
-3. ⏳ Slice 3: Admin/Content API compat facades so existing Ghost apps run
-   unmodified.
+2. ✅ Slice 2: real `source` theme renders imported content
+   (home/post/page/tag/author) — `test/frontend/theme-rendering.test.ts`.
+3. ✅ Slice 3: Admin/Content API compat facades at the legacy paths; native
+   v10 API moved to /ghost/api/v10 — `src/modules/compat/compat.test.ts`.
 4. ✅ Verified in a browser: the imported site renders with the real source
    theme (home/post/tag/author), and the unmodified Ember admin served at
    /ghost/ signs in (bcrypt session) and lists imported posts. Known gaps:
@@ -25,7 +25,7 @@
    admin write endpoints, embedded admin React app bundles.
 
 ## Tests
-- `yarn test` — 51 tests green, including `src/modules/operations/importer.test.ts`
+- `yarn test` — 80 tests green, including `src/modules/operations/importer.test.ts`
   (real `test/fixtures/ghost-v5-export.json` fixture) and `src/db/ddl.test.ts`.
 
 ## Known gaps / next
