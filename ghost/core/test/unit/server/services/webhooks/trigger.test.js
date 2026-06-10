@@ -141,7 +141,7 @@ describe('Webhook Service', function () {
                 data: [1]
             });
             assert.deepEqual(Object.keys(request.args[0][1].headers), ['Content-Length', 'Content-Type', 'Content-Version']);
-            assert.equal(request.args[0][1].headers['Content-Length'], 33);
+            assert.equal(request.args[0][1].headers['Content-Length'], Buffer.byteLength(request.args[0][1].body));
             assert.equal(request.args[0][1].headers['Content-Type'], 'application/json');
             assert.match(request.args[0][1].headers['Content-Version'], /v\d+\.\d+/);
         });
@@ -215,6 +215,7 @@ describe('Webhook Service', function () {
 
             clock.restore();
         });
+
         it('includes the event name in the JSON payload', async function () {
             const webhookModel = {
                 get: sinon.stub()
