@@ -111,10 +111,9 @@ export default Service.extend({
 
     _search: task(function* (term) {
         yield timeout(DEBOUNCE_MS);
-        const searchTermAtRequest = term;
 
         let url = `${API_URL}/search/photos?query=${term}&per_page=30`;
-        yield this._makeRequest(url, {searchTermAtRequest});
+        yield this._makeRequest(url, {searchTermAtRequest: term});
     }).restartable(),
 
     _addPhotosFromResponse(response, searchTermAtRequest) {
@@ -196,7 +195,7 @@ export default Service.extend({
 
         return fetch(url, {headers})
             .then(response => this._checkStatus(response))
-            .then(response => this._extractPagination(response))
+            .then(response => this._extractPagination(response, options.searchTermAtRequest))
             .then(response => response.json())
             .then(response => this._addPhotosFromResponse(response, options.searchTermAtRequest))
             .catch(() => {
@@ -240,7 +239,11 @@ export default Service.extend({
         });
     },
 
-    _extractPagination(response) {
+    _extractPagination(response, searchTermAtRequest) {
+        if (searchTermAtRequest && searchTermAtRequest !== this.searchTerm) {
+            return response;
+        }
+
         let pagination = {};
         let linkRegex = new RegExp('<(.*)>; rel="(.*)"');
         let {link: links} = response.headers.map;
