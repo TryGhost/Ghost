@@ -267,6 +267,7 @@ const MembersActions: React.FC<MembersActionsProps> = ({
             <Button asChild>
                 <a aria-label="New member" className="inline-flex items-center" href={newMemberHref}>
                     <span className="hidden sm:inline">New member</span>
+                    <span className="sm:hidden"><LucideIcon.Plus /></span>
                 </a>
             </Button>
 
