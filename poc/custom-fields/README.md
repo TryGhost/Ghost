@@ -25,3 +25,11 @@ Branch: `poc/member-custom-fields`.
 ## How we work
 
 One story at a time, in the order defined in [`ROADMAP.md`](./ROADMAP.md). Each story has its own checklist and a "done = demoable" bar. We do not start the next story until the current one is demoable.
+
+The loop for each task:
+
+1. **Build** the story against the constraints (reuse existing components, no new deps).
+2. **Hand off for manual test.** Do not commit until it is tested and approved.
+3. **Commit** locally once approved (never push without explicit permission).
+4. **Update [`LEARNINGS.md`](./LEARNINGS.md)** with anything the task surfaced that should inform a real implementation. This happens at the end of *every* task, not just once.
+5. Move to the next story.
