@@ -214,6 +214,10 @@ export class GhostManager {
             `url=http://localhost:${this.getGatewayPort()}`
         ];
 
+        if (this.config.mode === 'dev') {
+            env.push('pnpm_config_verify_deps_before_run=false');
+        }
+
         // Add Tinybird config if available
         // Static endpoints are set here; tokens are loaded from a host-generated
         // e2e/data/state/tinybird.json file when present.
@@ -318,7 +322,7 @@ export class GhostManager {
 
     /**
      * Get volume binds for Ghost container based on mode.
-     * - dev: Mount ghost directory for source code (hot reload)
+     * - dev: Mount backend workspace packages for source code (hot reload)
      * - build: No source mounts, fully self-contained image
      */
     private getGhostBinds(): string[] {
@@ -328,7 +332,11 @@ export class GhostManager {
         ];
 
         if (this.config.mode === 'dev') {
-            binds.push(`${REPO_ROOT}/ghost:/home/ghost/ghost`);
+            binds.push(
+                `${REPO_ROOT}/ghost/core:/home/ghost/ghost/core`,
+                `${REPO_ROOT}/ghost/i18n:/home/ghost/ghost/i18n`,
+                `${REPO_ROOT}/ghost/parse-email-address:/home/ghost/ghost/parse-email-address`
+            );
         }
 
         return binds;
