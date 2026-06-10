@@ -89,6 +89,7 @@
     "@faker-js/faker": "catalog:",
     "@isaacs/ttlcache": "1.4.1",
     "@sentry/node": "7.120.4",
+    "@slack/webhook": "7.0.9",
     "@tryghost/adapter-base-cache": "0.1.25",
     "@tryghost/admin-api-schema": "4.7.4",
     "@tryghost/api-framework": "catalog:",
