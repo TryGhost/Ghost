@@ -2,7 +2,14 @@
 
 The single agreed shape, stored in `custom-fields.seed.json` and read/written through the async repository facade. Three collections.
 
-The key separation (mirrors beehiiv): a field's **identity/type** lives on the definition, while **presentation and whether it is required** live on each form placement. The same field can be required on signup and optional on the account page.
+## Mental model
+
+- **Definitions** = the data primitive (*what* you collect: a field's identity + type).
+- **Surfaces** = *where / when* you collect (`signup`, `account`, and future ones like `post_signup`). The set is open, not fixed.
+- **Placements** = the binding (a field put on a surface, with per-surface `required` / `placeholder` / `order`).
+- **Values** = per-member answers.
+
+This separation is why new collection points (e.g. the [post-signup survey](./ideas/post-signup-survey.md)) are additive: add a surface, not a new primitive. The key split (mirrors beehiiv): a field's **identity/type** lives on the definition, while **presentation and whether it is required** live on each placement. The same field can be required on signup and optional on the account page.
 
 ## 1. Field definitions (`definitions[]`)
 
@@ -24,7 +31,7 @@ One entry per custom field the owner creates. This is the "schema" the owner edi
 
 ## 2. Form placements (`forms{}`)
 
-Map of `surface -> placement[]`, where surface is `signup` or `account`. A placement is a field added to that form. Whether a field appears on a form is determined by its presence here (replaces a definition-level visibility flag). Mirrors beehiiv's "Add field" dialog (Action → Field → Type → Placeholder → Required).
+Map of `surface -> placement[]`. Surface is an **open set**: today `signup` and `account`; future surfaces (e.g. `post_signup`) slot in the same way. A placement is a field added to that surface. Whether a field appears on a surface is determined by its presence here (replaces a definition-level visibility flag), which is also how member-visibility works: a field reaches members only if placed on a member-facing surface. Mirrors beehiiv's "Add field" dialog (Action → Field → Type → Placeholder → Required).
 
 | Property | Meaning |
 | --- | --- |

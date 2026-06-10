@@ -38,6 +38,12 @@ import seed from './custom-fields.seed.json';
 
 const STORAGE_KEY = 'ghost-poc-custom-fields';
 
+// Bump whenever custom-fields.seed.json changes. On load, a stored payload with
+// an older version is discarded and reseeded from the JSON, so dev browsers pick
+// up seed changes automatically (this DOES wipe local edits, which is the point
+// of a reseed).
+const SEED_VERSION = 3;
+
 /** Type options for the "data type" dropdown in the create UI. */
 export const TYPES = [
     {value: 'text', label: 'Text', tier: 1},
@@ -62,13 +68,18 @@ function read() {
     const raw = typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY);
     if (raw) {
         try {
-            return JSON.parse(raw);
+            const parsed = JSON.parse(raw);
+            if (parsed && parsed._seedVersion === SEED_VERSION) {
+                return parsed;
+            }
+            // older seed version (or corrupt): fall through and reseed
         } catch (err) {
             // corrupt payload: fall through and reseed
         }
     }
     const initial = clone(seed);
     delete initial._comment;
+    initial._seedVersion = SEED_VERSION;
     initial.definitions = initial.definitions || [];
     initial.forms = initial.forms || {};
     initial.values = initial.values || {};

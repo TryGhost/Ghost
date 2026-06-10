@@ -12,7 +12,8 @@
 
 ## UX
 
-- The account/profile edit form lists the fields placed on the `account` surface (`repo.getForm('account')`), each pre-filled with the member's current value.
+- **Opt-in (locked decision):** the account page shows ONLY the fields the owner placed on the `account` surface. It does not show all custom fields by default. Internal/admin-only fields never appear because they are simply never placed here.
+- The account/profile edit form lists the fields in `repo.getForm('account')`, each pre-filled with the member's current value.
 - Member edits and saves; values persist via `repo.setValue(memberId, fieldId, value)`.
 - Per-placement `required` enforced at submit. Stored values remain nullable.
 

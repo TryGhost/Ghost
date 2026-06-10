@@ -7,5 +7,11 @@
     "env": {
         "browser": true,
         "es2022": true
-    }
+    },
+    "overrides": [
+        {
+            "files": ["*.ts", "*.d.ts"],
+            "parser": "@typescript-eslint/parser"
+        }
+    ]
 }

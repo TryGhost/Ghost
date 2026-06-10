@@ -18,7 +18,7 @@ Each story below targets **Tier 1** for its first demoable version. Tier 2 (sele
 | # | Story | Surface | Status |
 | --- | --- | --- | --- |
 | 0 | [Foundation: data model + repository facade](./stories/00-foundation.md) | shared | Demoable (verified when Story 1 imports it) |
-| 1 | [Admin: define custom fields](./stories/01-admin-define-fields.md) | admin-x-settings | Not started |
+| 1 | [Admin: define custom fields](./stories/01-admin-define-fields.md) | admin-x-settings | Built (Tier 1 + Tier 2); final test pending |
 | 2 | [Admin: member detail values](./stories/02-admin-member-detail.md) | Ember admin | Not started |
 | 3 | [Portal: collect at signup](./stories/03-portal-signup.md) | portal | Not started |
 | 4 | [Portal: self-edit on account page](./stories/04-portal-account.md) | portal | Not started |
@@ -49,8 +49,19 @@ The POC is successful if that loop feels natural to test users, independent of h
 - `key` (machine name) is auto-derived from `label` and hidden in the create UI.
 - Types are a subset of beehiiv's, rolled out in two tiers. Date / Date & Time are dropped for now.
 - Stored values are always nullable. `required` is a per-placement, collection-time rule only.
+- **Member-visibility is implicit via form placements**: a field reaches members only if explicitly added to a Portal form. There is no separate "internal" flag.
+- **Account page is opt-in**: it starts empty and the owner adds the fields members may self-edit (the `account` placements). No field is exposed by default.
+- **Field descriptions (`helpText`) are dropped** for now. helpText is admin-only by design; no UI sets it.
+
+## Future explorations (deliberately deferred)
+
+Out of scope for the POC, worth revisiting for a real implementation:
+
+- **Admin-only Description**: an optional description on a field, shown only in admin (never to members). Dropped now for simplicity; the `helpText` property is reserved in the model.
+- **Explicit "internal" field flag**: mark a field as admin-only so it is hard-excluded from Portal form pickers and badged "Internal", rather than relying on the owner simply not placing it. Earns its keep once the form pickers exist (Stories 3/4).
+- **Post-signup survey (progressive profiling)**: collect optional fields *after* signup via a card/modal injected post-verification, instead of adding signup friction. A new `post_signup` collection surface + per-member completion state; likely lives under Growth. See [ideas/post-signup-survey.md](./ideas/post-signup-survey.md).
 
 ## Open questions
 
 - Multi-select control in Portal (no design system): plain checkboxes vs a hand-built dropdown. Decide in Story 3/4.
-- What happens to member values when a `select` option is deleted. Decide in Story 1 (Tier 2).
+- Orphaned values when a `select` option is deleted after members have values: ignored for the POC; needs a real answer (block, keep, or migrate) in a real implementation.
