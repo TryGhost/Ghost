@@ -1,5 +1,6 @@
 const debug = require('@tryghost/debug')('routing:taxonomy-router');
 const config = require('../../../shared/config');
+const getPageParam = require('./page-param-config');
 const ParentRouter = require('./parent-router');
 const RSSRouter = require('./rss-router');
 const urlUtils = require('../../../shared/url-utils');
@@ -51,8 +52,9 @@ class TaxonomyRouter extends ParentRouter {
         this.mountRoute(this.permalinks.getValue(), controllers.channel);
 
         // REGISTER: enable pagination for each taxonomy by default
-        this.router().param('page', middleware.pageParam);
-        this.mountRoute(urlUtils.urlJoin(this.permalinks.value, 'page', ':page(\\d+)'), controllers.channel);
+        const pageParam = getPageParam();
+        this.router().param(pageParam, middleware.pageParam);
+        this.mountRoute(urlUtils.urlJoin(this.permalinks.value, pageParam, `:${pageParam}(\\d+)`), controllers.channel);
 
         // REGISTER: edit redirect to admin client e.g. /tag/:slug/edit
         if (config.get('admin:redirects')) {

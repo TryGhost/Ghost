@@ -7,6 +7,7 @@ const _ = require('lodash');
 const path = require('path');
 const url = require('url');
 const config = require('../../../shared/config');
+const getPageParam = require('../routing/page-param-config');
 const themeEngine = require('../theme-engine');
 const _private = {};
 
@@ -181,10 +182,12 @@ module.exports.setTemplate = function setTemplate(req, res, data) {
         return;
     }
 
+    const pageParam = getPageParam();
+
     if (['channel', 'collection'].indexOf(res.routerOptions.type) !== -1) {
         res._template = _private.getTemplateForEntries(res.routerOptions, {
             path: url.parse(req.url).pathname,
-            page: req.params.page,
+            page: req.params[pageParam],
             slugParam: req.params.slug
         });
     } else if (res.routerOptions.type === 'custom') {

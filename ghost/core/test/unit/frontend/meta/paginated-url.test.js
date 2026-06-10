@@ -2,8 +2,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const getPaginatedUrl = require('../../../../core/frontend/meta/paginated-url');
 const configUtils = require('../../../utils/config-utils');
-const sinon = require('sinon');
-const config = require('../../../../core/shared/config');
+const {setPageParam, DEFAULT_PAGE_PARAM} = require('../../../../core/frontend/services/routing/page-param-config');
 
 describe('getPaginatedUrl', function () {
     let data;
@@ -170,16 +169,12 @@ describe('getPaginatedUrl', function () {
     });
 
     describe('custom paging page parameter', function () {
-        let configStub;
-
-        before(function () {
-            configStub = sinon.stub(config, 'get');
-            configStub.callThrough();
-            configStub.withArgs('pagination:pageParameter').returns('seite');
+        beforeAll(function () {
+            setPageParam('seite');
         });
 
-        after(function () {
-            configStub.restore();
+        afterAll(function () {
+            setPageParam(DEFAULT_PAGE_PARAM);
         });
 
         it('should calculate correct urls of an index collection', function () {

@@ -8,7 +8,7 @@ const routerManager = require('../../../../../../core/frontend/services/routing/
 const controllers = require('../../../../../../core/frontend/services/routing/controllers');
 const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
-const config = require('../../../../../../core/shared/config');
+const {setPageParam, DEFAULT_PAGE_PARAM} = require('../../../../../../core/frontend/services/routing/page-param-config');
 
 describe('Unit - services/routing/controllers/collection', function () {
     let req;
@@ -67,6 +67,7 @@ describe('Unit - services/routing/controllers/collection', function () {
 
     afterEach(function () {
         sinon.restore();
+        setPageParam(DEFAULT_PAGE_PARAM);
     });
 
     it('no params', async function () {
@@ -110,9 +111,7 @@ describe('Unit - services/routing/controllers/collection', function () {
     });
 
     it('pass custom page param', async function () {
-        const configStub = sinon.stub(config, 'get');
-        configStub.callThrough();
-        configStub.withArgs('pagination:pageParameter').returns('seite');
+        setPageParam('seite');
 
         req.params.seite = 2;
 
