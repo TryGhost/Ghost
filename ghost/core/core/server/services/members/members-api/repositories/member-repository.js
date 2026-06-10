@@ -955,7 +955,7 @@ module.exports = class MemberRepository {
     }
 
     async bulkEdit(data, options) {
-        const {all, filter, search} = options;
+        const {activeStripeCustomersCount, all, filter, search} = options;
 
         if (!['unsubscribe', 'addLabel', 'removeLabel'].includes(data.action)) {
             throw new errors.IncorrectUsageError({
@@ -963,7 +963,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        if (!filter && !search && (!all || all !== true)) {
+        if (!filter && !search && !activeStripeCustomersCount && (!all || all !== true)) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.bulkActionRequiresFilter, {action: 'bulk edit'})
             });
@@ -973,7 +973,7 @@ module.exports = class MemberRepository {
 
         if (all !== true) {
             // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
-            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
+            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer', 'activeStripeCustomersCount']));
         }
         const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
             .select('members.id')
