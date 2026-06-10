@@ -1,4 +1,9 @@
-// Vendored, trimmed-down version of mock-knex (https://github.com/TryGhost/mock-knex)
+// Vendored, trimmed-down version of mock-knex.
+//
+// Originally authored by Jason Brumwell, Copyright (c) 2014 Colony American
+// Homes, released under the MIT License
+// (https://github.com/colonyamerican/mock-knex). Ghost maintained a fork at
+// https://github.com/TryGhost/mock-knex, from which this file is derived.
 //
 // The upstream package is unmaintained. We only use it to intercept knex
 // queries in a handful of unit tests so we can assert on generated SQL/bindings
