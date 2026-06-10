@@ -86,7 +86,7 @@ describe('Unit: endpoints/utils/serializers/output/members', function () {
             }
         };
 
-        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMemberWithCommentNotificationsEnabled());
+        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMember({enable_comment_notifications: true}));
         memberSerializer.read(ctrlResponse, apiConfig, frame);
         assertExists(frame.response.members[0].enable_comment_notifications);
         assert.equal(frame.response.members[0].enable_comment_notifications, true);
