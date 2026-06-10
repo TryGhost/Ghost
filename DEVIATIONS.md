@@ -80,6 +80,15 @@ and issues worth reviewing at the end. Newest entries at the bottom of each sect
 - **Force-upgrade:** /posts and /pages no longer carry `allowInForceUpgrade`
   (same reasoning as the tag routes in slice 1).
 
+### Slice 3: Member detail + members-activity
+
+- **Ember gating split:** the member route is gated via react-fallback handover
+  (it registers unsaved-changes guards), which drops the `postAnalytics`/
+  `backPath` query params on full-page loads — the analytics breadcrumb
+  degrades to the plain Members backlink in that edge. members-activity is
+  gated at the template level instead (no guards there, and the handover would
+  strip the `member`/`excludedEvents` query params the screen depends on).
+
 ### Upstream issues discovered during slice-2 review (pre-existing, NOT introduced here)
 
 - **Server-side bulk-action authorization gap:** `DELETE /ghost/api/admin/posts/?filter=...`

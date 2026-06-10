@@ -13,6 +13,7 @@ import MyProfileRedirect from "./my-profile-redirect";
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
+import { MemberDetailsRoute, MembersActivityRoute } from "./member-details-route";
 import { MembersRoute } from "./members-route";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 import { PagesListRoute, PostsListRoute } from "./posts-list-route";
@@ -39,9 +40,6 @@ const EMBER_ROUTES: string[] = [
     "/editor/*",
     "/explore/*",
     "/migrate/*",
-    "/members/new",
-    "/members/:member_id",
-    "/members-activity",
     "/designsandbox",
     "/mentions",
 ];
@@ -106,6 +104,20 @@ export const routes: RouteObject[] = [
             {
                 path: "/pages",
                 Component: PagesListRoute,
+            },
+            {
+                // React member detail / activity when the memberDetailsX labs
+                // flag is on, Ember fallback otherwise
+                path: "/members/new",
+                Component: MemberDetailsRoute,
+            },
+            {
+                path: "/members/:memberId",
+                Component: MemberDetailsRoute,
+            },
+            {
+                path: "/members-activity",
+                Component: MembersActivityRoute,
             },
             membersRoute,
             {

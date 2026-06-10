@@ -14,8 +14,7 @@ import {
 import {CharCountdown} from './components/char-countdown';
 import {DeleteTagDialog} from './components/delete-tag-dialog';
 import {ImageUploadField} from './components/image-upload-field';
-import {JSONError} from '@tryghost/admin-x-framework/errors';
-import {Link, useBlocker, useConfirmUnload, useNavigate} from '@tryghost/admin-x-framework';
+import {Link, useNavigate} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {Tag, useAddTag, useDeleteTag, useEditTag} from '@tryghost/admin-x-framework/api/tags';
 import {TagExpandableSections} from './components/tag-expandable-sections';
@@ -26,22 +25,16 @@ import {
     tagFormSchema,
     tagToFormValues
 } from './tag-form-schema';
-import {UnsavedChangesDialog} from './components/unsaved-changes-dialog';
+import {UnsavedChangesDialog, useUnsavedChangesBlocker} from '@components/unsaved-changes';
+import {apiErrorMessage} from '@src/utils/api-error-message';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {useCallback, useEffect, useRef, useState} from 'react';
+import {useEffect, useRef, useState} from 'react';
 import {useForm} from 'react-hook-form';
 import {zodResolver} from '@hookform/resolvers/zod';
 
 type SaveState = 'idle' | 'saved' | 'error';
-
-function apiErrorMessage(error: unknown, fallback: string): string {
-    if (error instanceof JSONError && error.data?.errors?.[0]?.message) {
-        return error.data.errors[0].message;
-    }
-    return fallback;
-}
 
 export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
     tag?: Tag;
@@ -87,21 +80,7 @@ export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
         };
     }, []);
 
-    // Reads form state at navigation time (not via closed-over deps) so that
-    // form.reset(...) before a programmatic navigate immediately disarms the
-    // guard, and an in-flight save (which completes regardless) doesn't show
-    // a spurious dialog.
-    const blocker = useBlocker(
-        useCallback(({currentLocation, nextLocation}: {
-            currentLocation: {pathname: string};
-            nextLocation: {pathname: string};
-        }) => {
-            const {isDirty: dirtyNow, isSubmitting: submittingNow} = form.formState;
-            return dirtyNow && !submittingNow && currentLocation.pathname !== nextLocation.pathname;
-        }, [form])
-    );
-
-    useConfirmUnload(isDirty);
+    const unsavedChanges = useUnsavedChangesBlocker(form);
 
     const onSubmit = async (values: TagFormValues) => {
         if (submitInFlightRef.current) {
@@ -346,12 +325,9 @@ export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
                 )}
 
                 <UnsavedChangesDialog
-                    open={blocker.state === 'blocked'}
-                    onLeave={() => {
-                        form.reset();
-                        blocker.proceed?.();
-                    }}
-                    onStay={() => blocker.reset?.()}
+                    open={unsavedChanges.isBlocked}
+                    onLeave={unsavedChanges.leave}
+                    onStay={unsavedChanges.stay}
                 />
             </div>
         </MainLayout>
