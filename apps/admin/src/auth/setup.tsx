@@ -7,7 +7,7 @@ import { getFirstApiError } from "./api-errors";
 import { AuthLayout, FlowNotification } from "./auth-layout";
 import { clearSigninRedirect } from "./signin-redirect";
 import { reloadAdmin } from "./reload";
-import { isValidEmail } from "./validation";
+import { MIN_PASSWORD_LENGTH, isValidEmail } from "./validation";
 
 function decodeSetupValue(value?: string): string {
     return (value || "").replace(/&apos;/gim, "'");
@@ -51,7 +51,7 @@ export default function Setup() {
 
         setFlowError("");
 
-        if (!blogTitle.trim() || !name.trim() || !isValidEmail(email) || !password || password.length < 10) {
+        if (!blogTitle.trim() || !name.trim() || !isValidEmail(email) || !password || password.length < MIN_PASSWORD_LENGTH) {
             setFlowError("Please fill out every field correctly to set up your site.");
             return;
         }

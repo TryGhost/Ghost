@@ -24,15 +24,23 @@ export function UnauthenticatedApp({ isCurrentUserLoading }: { isCurrentUserLoad
         return <Outlet />;
     }
 
-    // Wait until we know whether the user is really signed out and whether
-    // the flag is on; redirecting (or revealing Ember) early would be wrong
-    // for signed-in users whose /users/me request is still in flight.
-    if (isCurrentUserLoading || (!siteData && isSiteLoading)) {
+    if (!siteData && isSiteLoading) {
         return null;
     }
 
+    // Flag off → Ember owns everything, exactly as before this guard
+    // existed. Shown without waiting on /users/me: Ember does its own
+    // session handling, and flag-off behavior must match the pre-slice
+    // admin, which never gated its boot on that request.
     if (!siteData?.site.authX) {
         return <EmberFallback />;
+    }
+
+    // Wait until we know the user is really signed out; redirecting early
+    // would be wrong for signed-in users whose /users/me request is still
+    // in flight.
+    if (isCurrentUserLoading) {
+        return null;
     }
 
     // Render-phase side effect, but an idempotent one: the attempted URL for

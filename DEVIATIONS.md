@@ -170,6 +170,9 @@ flag source (see implementation notes).
   - `/signout` is treated as an auth path by the redirect guard and is never
     stored as (or redirected back to) a signin deep link; Ember could store
     `/signout` as a redirect target.
+  - Invalid or expired invite links render an explanation on the signup
+    screen (with a signin link) instead of Ember's redirect-to-signin with a
+    floating alert; the redirect looked like a silent failure to invitees.
 - **Ember-side gating:** templates of signin/signin-verify/signup/reset/setup
   are wrapped in `{{#unless this.feature.authX}}`; the signup model hook,
   setup `beforeModel` and signout `afterModel` early-return when the flag is

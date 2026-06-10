@@ -87,6 +87,17 @@ describe("AuthFlagGatedRoute", () => {
         expect(screen.queryByTestId("auth-screen")).not.toBeInTheDocument();
     });
 
+    it("renders the Ember fallback when the flag is disabled without waiting for the current user", () => {
+        // flag-off behavior must match the pre-slice admin, which never
+        // gated its auth screens on /users/me settling
+        mockSite(false);
+        mockUser(undefined, true);
+
+        render(<AuthFlagGatedRoute component={Screen} />);
+
+        expect(screen.getByTestId("ember-fallback")).toBeInTheDocument();
+    });
+
     it("renders the React screen when the flag is enabled", () => {
         mockSite(true);
 

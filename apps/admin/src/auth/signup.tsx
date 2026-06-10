@@ -1,11 +1,31 @@
 import { useState, type FormEvent } from "react";
-import { Navigate, useNavigate, useParams } from "@tryghost/admin-x-framework";
+import { Link, useNavigate, useParams } from "@tryghost/admin-x-framework";
 import { getInvitationValidity, getTokenEmail, useAcceptInvitation } from "@tryghost/admin-x-framework/api/authentication";
 import { useCreateSession } from "@tryghost/admin-x-framework/api/session";
 import { Button, Input, Label } from "@tryghost/shade/components";
 import { getFirstApiError, getTwoFactorErrorCode } from "./api-errors";
 import { AuthLayout, FlowNotification } from "./auth-layout";
 import { bootstrapAdminAfterAuth } from "./reload";
+import { MIN_PASSWORD_LENGTH } from "./validation";
+
+/**
+ * Ember bounced invalid invites to signin with a floating alert; the React
+ * screen explains the problem in place instead (the silent-looking redirect
+ * left invitees wondering why they were asked to sign in).
+ */
+function InvalidInvitation({ message }: { message: string }) {
+    return (
+        <AuthLayout heading="Create your account.">
+            <FlowNotification isError testId="signup-flow-notification">
+                {message}
+            </FlowNotification>
+            <p className="text-center text-muted-foreground">
+                Ask the person who invited you to send a new invitation, or{" "}
+                <Link className="underline" to="/signin">sign in</Link> if you already have an account.
+            </p>
+        </AuthLayout>
+    );
+}
 
 export default function Signup() {
     const navigate = useNavigate();
@@ -22,14 +42,13 @@ export default function Signup() {
 
     // An unparseable token can never produce a valid invitation
     if (!email) {
-        return <Navigate replace to="/signin" />;
+        return <InvalidInvitation message="Invalid invitation link." />;
     }
 
-    // Mirrors Ember's signup route: invalid/expired invitations bounce to
-    // signin. (While the check is loading the form is shown optimistically;
-    // a failed check is treated as valid, like Ember's catch handler.)
+    // While the check is loading the form is shown optimistically; a failed
+    // check is treated as valid, like Ember's catch handler.
     if (invitation.data?.invitation?.[0]?.valid === false) {
-        return <Navigate replace to="/signin" />;
+        return <InvalidInvitation message="The invitation does not exist or is no longer valid." />;
     }
 
     const handleSubmit = async (event: FormEvent) => {
@@ -37,7 +56,7 @@ export default function Signup() {
 
         setFlowError("");
 
-        if (!name.trim() || !password || password.length < 10) {
+        if (!name.trim() || !password || password.length < MIN_PASSWORD_LENGTH) {
             setFlowError("Please fill out the form to complete your signup");
             return;
         }

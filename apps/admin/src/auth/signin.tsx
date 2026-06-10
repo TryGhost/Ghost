@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from "react";
-import { useNavigate } from "@tryghost/admin-x-framework";
-import { useRequestPasswordReset } from "@tryghost/admin-x-framework/api/authentication";
+import { Navigate, useNavigate } from "@tryghost/admin-x-framework";
+import { getSetupStatus, useRequestPasswordReset } from "@tryghost/admin-x-framework/api/authentication";
 import { useCreateSession } from "@tryghost/admin-x-framework/api/session";
 import { useBrowseSite } from "@tryghost/admin-x-framework/api/site";
 import { Button, Input, Label } from "@tryghost/shade/components";
@@ -12,6 +12,7 @@ import { isValidEmail } from "./validation";
 export default function Signin() {
     const navigate = useNavigate();
     const { data: siteData } = useBrowseSite();
+    const setupStatus = getSetupStatus();
     const createSession = useCreateSession();
     const requestPasswordReset = useRequestPasswordReset();
 
@@ -82,6 +83,14 @@ export default function Signin() {
             setFlowError(apiError?.message || "There was a problem with the reset, please try again.");
         }
     };
+
+    // Mirrors Ember's UnauthenticatedRoute setup check: a fresh install has
+    // no owner to sign in as, so /signin sends first-time visitors to /setup.
+    // The form renders optimistically while the check is in flight (set-up
+    // sites are the overwhelmingly common case).
+    if (setupStatus.data?.setup?.[0]?.status === false) {
+        return <Navigate replace to="/setup" />;
+    }
 
     if (passwordResetEmailSent) {
         return (

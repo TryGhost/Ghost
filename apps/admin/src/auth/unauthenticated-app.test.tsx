@@ -81,6 +81,16 @@ describe("UnauthenticatedApp", () => {
         expect(window.sessionStorage.getItem(SIGNIN_REDIRECT_KEY)).toBeNull();
     });
 
+    it("renders the Ember fallback when the flag is off without waiting for the current user", () => {
+        // flag-off behavior must match the pre-slice admin, which never
+        // gated its boot on /users/me settling
+        mockSite(false);
+
+        render(<UnauthenticatedApp isCurrentUserLoading={true} />);
+
+        expect(screen.getByTestId("ember-fallback")).toBeInTheDocument();
+    });
+
     it("stores the attempted URL and redirects to signin when the flag is on", () => {
         mockLocation("/settings/newsletters/", "?verifyEmail=token-xyz");
 

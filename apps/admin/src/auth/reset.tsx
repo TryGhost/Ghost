@@ -5,6 +5,7 @@ import { Button, Input } from "@tryghost/shade/components";
 import { getFirstApiError } from "./api-errors";
 import { AuthLayout, FlowNotification } from "./auth-layout";
 import { bootstrapAdminAfterAuth } from "./reload";
+import { MIN_PASSWORD_LENGTH } from "./validation";
 
 export default function Reset() {
     const { token = "" } = useParams<{ token: string }>();
@@ -29,8 +30,8 @@ export default function Reset() {
             setFlowError("The two new passwords don't match.");
             return;
         }
-        if (newPassword.length < 10) {
-            setFlowError("Password must be at least 10 characters long.");
+        if (newPassword.length < MIN_PASSWORD_LENGTH) {
+            setFlowError(`Password must be at least ${MIN_PASSWORD_LENGTH} characters long.`);
             return;
         }
 

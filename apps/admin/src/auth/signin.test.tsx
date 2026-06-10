@@ -8,9 +8,11 @@ const mocks = vi.hoisted(() => ({
     createSessionMutateAsync: vi.fn(),
     navigate: vi.fn(),
     requestPasswordResetMutateAsync: vi.fn(),
+    setupStatus: vi.fn(() => ({ data: { setup: [{ status: true }] } })),
 }));
 
 vi.mock("@tryghost/admin-x-framework", () => ({
+    Navigate: ({ to }: { to: string }) => <div data-testid="navigate" data-to={to} />,
     useNavigate: () => mocks.navigate,
 }));
 
@@ -22,6 +24,7 @@ vi.mock("@tryghost/admin-x-framework/api/session", () => ({
 }));
 
 vi.mock("@tryghost/admin-x-framework/api/authentication", () => ({
+    getSetupStatus: () => mocks.setupStatus(),
     useRequestPasswordReset: () => ({
         isLoading: false,
         mutateAsync: mocks.requestPasswordResetMutateAsync,
@@ -60,6 +63,15 @@ function submit() {
 describe("Signin", () => {
     beforeEach(() => {
         vi.clearAllMocks();
+    });
+
+    it("redirects to setup when the site has not been set up", () => {
+        mocks.setupStatus.mockReturnValueOnce({ data: { setup: [{ status: false }] } });
+
+        render(<Signin />);
+
+        expect(screen.getByTestId("navigate")).toHaveAttribute("data-to", "/setup");
+        expect(screen.queryByRole("button", { name: "Sign in →" })).not.toBeInTheDocument();
     });
 
     it("shows a validation message when the form is submitted empty", async () => {

@@ -56,12 +56,19 @@ export function AuthFlagGatedRoute({ component: Component, allowAuthenticated = 
     const { data: siteData, isLoading: isSiteLoading } = useBrowseSite();
     const { data: currentUser, isLoading: isCurrentUserLoading } = useCurrentUser();
 
-    if ((!siteData && isSiteLoading) || (!currentUser && isCurrentUserLoading)) {
+    if (!siteData && isSiteLoading) {
         return null;
     }
 
+    // Flag off → Ember owns the screen. Decided before the current-user
+    // query settles: flag-off behavior must match pre-slice Ember, which
+    // never waited on /users/me to render its auth screens.
     if (!siteData?.site.authX) {
         return <EmberFallback />;
+    }
+
+    if (!currentUser && isCurrentUserLoading) {
+        return null;
     }
 
     if (currentUser && !allowAuthenticated) {
