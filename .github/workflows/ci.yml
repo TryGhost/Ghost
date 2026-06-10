@@ -879,6 +879,13 @@ jobs:
 
       - name: Determine push strategy
         id: strategy
+        env:
+          # hashFiles is a workflow-expression function (not available in the shell),
+          # so the dependency-input hash is computed here and consumed below to build
+          # the content-addressed BuildKit cache refs.
+          DEPS_HASH: ${{ hashFiles('pnpm-lock.yaml', 'Dockerfile.production') }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           # Only the canonical repo publishes to GHCR by default.
           # Direct clones, external forks, and cross-repo PRs use artifact-based image transfer instead.
@@ -904,6 +911,7 @@ jobs:
             IMAGE_CORE_NAME="ghcr.io/${OWNER}/${REPO_NAME}-core"
             IMAGE_FULL_NAME="ghcr.io/${OWNER}/${REPO_NAME}"
           fi
+          IMAGE_E2E_NAME="${IMAGE_FULL_NAME}-e2e"
 
           # Force push on canonical tag pushes (release images must always be published)
           IS_TAG="${{ startsWith(github.ref, 'refs/tags/v') }}"
@@ -911,12 +919,50 @@ jobs:
             USE_ARTIFACT="false"
           fi
 
+          SHOULD_PUSH=$( [ "$USE_ARTIFACT" = "false" ] && echo "true" || echo "false" )
+
           echo "use-artifact=$USE_ARTIFACT" >> $GITHUB_OUTPUT
-          echo "should-push=$( [ "$USE_ARTIFACT" = "false" ] && echo "true" || echo "false" )" >> $GITHUB_OUTPUT
+          echo "should-push=$SHOULD_PUSH" >> $GITHUB_OUTPUT
           echo "owner=$OWNER" >> $GITHUB_OUTPUT
           echo "image-core-name=$IMAGE_CORE_NAME" >> $GITHUB_OUTPUT
           echo "image-full-name=$IMAGE_FULL_NAME" >> $GITHUB_OUTPUT
-          echo "image-e2e-name=${IMAGE_FULL_NAME}-e2e" >> $GITHUB_OUTPUT
+          echo "image-e2e-name=$IMAGE_E2E_NAME" >> $GITHUB_OUTPUT
+
+          # Content-addressed BuildKit cache (PLA-80).
+          # cache-from always reads the content tag first (keyed on the dependency
+          # inputs) and falls back to the mutable :cache-main ref.
+          # cache-to is only written when pushing to GHCR:
+          #   - push to main: write BOTH :cache-deps-<hash> and :cache-main (keep the
+          #     fallback warm for the first build with new deps).
+          #   - pull_request: write only a PR-scoped :cache-pr-<n> ref so PR builds
+          #     can't pollute the shared content tag.
+          emit_cache() {
+            local out_prefix="$1"
+            local img="$2"
+
+            {
+              echo "${out_prefix}-from<<EOF_CACHE"
+              echo "type=registry,ref=${img}:cache-deps-${DEPS_HASH}"
+              echo "type=registry,ref=${img}:cache-main"
+              echo "EOF_CACHE"
+            } >> $GITHUB_OUTPUT
+
+            {
+              echo "${out_prefix}-to<<EOF_CACHE"
+              if [ "$SHOULD_PUSH" = "true" ]; then
+                if [ "$IS_PR" = "true" ]; then
+                  echo "type=registry,ref=${img}:cache-pr-${PR_NUMBER},mode=max"
+                else
+                  echo "type=registry,ref=${img}:cache-deps-${DEPS_HASH},mode=max"
+                  echo "type=registry,ref=${img}:cache-main,mode=max"
+                fi
+              fi
+              echo "EOF_CACHE"
+            } >> $GITHUB_OUTPUT
+          }
+
+          emit_cache "cache-core" "$IMAGE_CORE_NAME"
+          emit_cache "cache-full" "$IMAGE_FULL_NAME"
 
       - name: Upload admin artifact for CD
         id: upload-admin
@@ -992,8 +1038,8 @@ jobs:
           load: ${{ steps.strategy.outputs.should-push == 'false' }}
           tags: ${{ steps.meta-core.outputs.tags }}
           labels: ${{ steps.meta-core.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.strategy.outputs.image-core-name }}:cache-main
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          cache-from: ${{ steps.strategy.outputs.cache-core-from }}
+          cache-to: ${{ steps.strategy.outputs.cache-core-to }}
 
       - name: Build & push full image
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
@@ -1010,8 +1056,8 @@ jobs:
           load: ${{ steps.strategy.outputs.should-push == 'false' }}
           tags: ${{ steps.meta-full.outputs.tags }}
           labels: ${{ steps.meta-full.outputs.labels }}
-          cache-from: type=registry,ref=${{ steps.strategy.outputs.image-full-name }}:cache-main
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-full-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          cache-from: ${{ steps.strategy.outputs.cache-full-from }}
+          cache-to: ${{ steps.strategy.outputs.cache-full-to }}
 
       - name: Save full image as artifact
         if: steps.strategy.outputs.use-artifact == 'true'
@@ -1172,6 +1218,13 @@ jobs:
 
       - name: Determine E2E image distribution strategy
         id: strategy
+        env:
+          # See the core/full strategy step: hashFiles must be evaluated as a
+          # workflow expression, then consumed by the shell to build cache refs.
+          DEPS_HASH: ${{ hashFiles('pnpm-lock.yaml', 'Dockerfile.production', 'e2e/Dockerfile.e2e') }}
+          IMAGE_E2E_NAME: ${{ needs.job_build_artifacts.outputs.image-e2e-name }}
+          IS_PR: ${{ github.event_name == 'pull_request' }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
         run: |
           USE_ARTIFACT="${{ needs.job_build_artifacts.outputs.use-artifact }}"
           SHOULD_PUSH="true"
@@ -1181,6 +1234,34 @@ jobs:
 
           echo "use-artifact=$USE_ARTIFACT" >> $GITHUB_OUTPUT
           echo "should-push=$SHOULD_PUSH" >> $GITHUB_OUTPUT
+
+          # Content-addressed BuildKit cache (PLA-80) — see core/full strategy step
+          # for the full rationale.
+          # cache-from stays gated on should-push: on the fork/artifact path this
+          # job overrides the buildx driver to plain `docker`, which doesn't support
+          # registry cache import. (Core/full use the default docker-container driver,
+          # so their cache-from is unconditional.)
+          {
+            echo "cache-from<<EOF_CACHE"
+            if [ "$SHOULD_PUSH" = "true" ]; then
+              echo "type=registry,ref=${IMAGE_E2E_NAME}:cache-deps-${DEPS_HASH}"
+              echo "type=registry,ref=${IMAGE_E2E_NAME}:cache-main"
+            fi
+            echo "EOF_CACHE"
+          } >> $GITHUB_OUTPUT
+
+          {
+            echo "cache-to<<EOF_CACHE"
+            if [ "$SHOULD_PUSH" = "true" ]; then
+              if [ "$IS_PR" = "true" ]; then
+                echo "type=registry,ref=${IMAGE_E2E_NAME}:cache-pr-${PR_NUMBER},mode=max"
+              else
+                echo "type=registry,ref=${IMAGE_E2E_NAME}:cache-deps-${DEPS_HASH},mode=max"
+                echo "type=registry,ref=${IMAGE_E2E_NAME}:cache-main,mode=max"
+              fi
+            fi
+            echo "EOF_CACHE"
+          } >> $GITHUB_OUTPUT
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
@@ -1216,8 +1297,8 @@ jobs:
           load: ${{ steps.strategy.outputs.use-artifact == 'true' }}
           tags: ${{ steps.meta-e2e.outputs.tags }}
           labels: ${{ steps.meta-e2e.outputs.labels }}
-          cache-from: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-main', needs.job_build_artifacts.outputs.image-e2e-name) || '' }}
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', needs.job_build_artifacts.outputs.image-e2e-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+          cache-from: ${{ steps.strategy.outputs.cache-from }}
+          cache-to: ${{ steps.strategy.outputs.cache-to }}
 
       - name: Save E2E image as artifact
         if: steps.strategy.outputs.use-artifact == 'true'
