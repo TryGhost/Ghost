@@ -187,8 +187,10 @@ References (all in this directory):
       imported fixture data: /site, /session (bcrypt-compat login + cookie),
       /users/me with roles, /config, /settings, /posts incl. drafts in
       `src/modules/compat/`; native v10 API moved to /ghost/api/v10; admin
-      HTML serving and write endpoints absent — Ember admin boot unverified
-      in browser)
+      HTML serving added at /ghost/; verified in a browser: the unmodified
+      Ember admin signs in against phantom and lists imported posts; write
+      endpoints and the embedded React apps (stats/posts/settings bundles)
+      are not served yet)
 - [ ] Content/Members API facades (Content API /posts, /pages, /settings,
       /tags, /authors, /tiers, /newsletters serve Ghost wire shapes from
       imported data with tests; Members API and key auth absent)

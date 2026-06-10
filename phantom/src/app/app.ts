@@ -147,6 +147,7 @@ export const createApp = ({
         contentReader,
         settingsService,
         staffAuthService,
+        subscriptionRepository,
         siteUrl
     }));
     app.route('/ghost/api/v10', api);

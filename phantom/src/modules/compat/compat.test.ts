@@ -56,6 +56,7 @@ describe('ghost api compat facades', () => {
             contentReader,
             settingsService,
             staffAuthService,
+            subscriptionRepository,
             siteUrl
         }));
     });

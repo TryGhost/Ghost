@@ -18,7 +18,11 @@
    frontend router).
 3. ⏳ Slice 3: Admin/Content API compat facades so existing Ghost apps run
    unmodified.
-4. ⏳ Verify admin + portal in a browser against phantom.
+4. ✅ Verified in a browser: the imported site renders with the real source
+   theme (home/post/tag/author), and the unmodified Ember admin served at
+   /ghost/ signs in (bcrypt session) and lists imported posts. Known gaps:
+   Members API facade (/members/api/* 404s, portal degrades gracefully),
+   admin write endpoints, embedded admin React app bundles.
 
 ## Tests
 - `yarn test` — 51 tests green, including `src/modules/operations/importer.test.ts`

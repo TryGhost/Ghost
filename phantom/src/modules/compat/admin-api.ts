@@ -3,14 +3,16 @@ import {getCookie, setCookie, deleteCookie} from 'hono/cookie';
 import type {FrontendContentReader} from '../content/frontend-reader.js';
 import type {SettingsService} from '../settings/service.js';
 import type {StaffAuthService} from '../identity/service.js';
+import type {SubscriptionRepository} from '../subscriptions/repo.js';
 import {HttpError} from '../../platform/http/errors.js';
-import {buildPagination, GHOST_COMPAT_VERSION, mapAdminPost} from './mappers.js';
+import {buildPagination, GHOST_COMPAT_VERSION, mapAdminPost, mapCompatTier, singlePagination} from './mappers.js';
 import {slashTolerant} from './router-utils.js';
 
 type AdminApiDependencies = {
     contentReader: FrontendContentReader;
     settingsService: SettingsService;
     staffAuthService: StaffAuthService;
+    subscriptionRepository: SubscriptionRepository;
     siteUrl: string;
 };
 
@@ -38,6 +40,7 @@ export const createAdminApiRouter = ({
     contentReader,
     settingsService,
     staffAuthService,
+    subscriptionRepository,
     siteUrl
 }: AdminApiDependencies) => {
     const router = new Hono();
@@ -54,6 +57,12 @@ export const createAdminApiRouter = ({
             return null;
         }
     };
+
+    // The signin route checks whether initial setup has completed; an
+    // imported site always has an owner.
+    on.get('/authentication/setup/', async (context) => {
+        return context.json({setup: [{status: true, title: null, name: null, email: null}]});
+    });
 
     on.get('/site/', async (context) => {
         const {settings} = await settingsService.listSettings();
@@ -212,6 +221,18 @@ export const createAdminApiRouter = ({
             {key: 'announcement_background', value: 'dark'}
         ];
         return context.json({settings: adminSettings, meta: {}});
+    });
+
+    on.get('/tiers/', async (context) => {
+        const staff = await requireStaff(context);
+        if (!staff) {
+            return notAuthorized(context);
+        }
+        const plans = await subscriptionRepository.listPlans();
+        const tiers = await Promise.all(plans.map(async (plan) => {
+            return mapCompatTier(plan, await subscriptionRepository.getPricesByPlan(plan.id));
+        }));
+        return context.json({tiers, meta: singlePagination(tiers.length)});
     });
 
     on.get('/posts/', async (context) => {
