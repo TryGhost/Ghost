@@ -175,6 +175,19 @@ const FormFieldsList: React.FC<{
             )}
             <Select
                 key={addKey}
+                formatOptionLabel={(option, meta) => {
+                    // Show the field's type badge in the dropdown, matching the placed rows.
+                    const def = definitions.find(d => d.id === option.value);
+                    if (!def) {
+                        return option.label; // "New custom field" and any non-field option
+                    }
+                    return (
+                        <span className='flex items-center gap-2'>
+                            <span>{option.label}</span>
+                            {meta.context === 'menu' && <Badge>{typeLabel(def.type)}</Badge>}
+                        </span>
+                    );
+                }}
                 options={addOptions}
                 prompt='Add a custom field'
                 title=''
