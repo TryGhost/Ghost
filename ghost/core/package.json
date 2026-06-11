@@ -64,8 +64,10 @@
     "test:e2e": "pnpm test:base ./test/e2e-* --timeout=15000",
     "test:legacy": "pnpm test:base './test/legacy' --timeout=60000",
     "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e pnpm test:e2e -b",
+    "test:ci:e2e:no-coverage": "pnpm test:e2e -b",
     "test:ci:legacy": "pnpm test:legacy -b",
     "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 73 --statements 52 pnpm test:integration -b",
+    "test:ci:integration:no-coverage": "pnpm test:integration -b",
     "test:int:slow": "pnpm test:integration --reporter=mocha-slow-test-reporter",
     "test:e2e:slow": "pnpm test:e2e --reporter=mocha-slow-test-reporter",
     "test:leg:slow": "mocha --reporter dot --require=./test/utils/overrides.js --exit --trace-warnings --recursive --extension=test.js  './test/legacy' --timeout=60000 --reporter=mocha-slow-test-reporter",
@@ -353,12 +355,22 @@
           "^build"
         ]
       },
+      "test:ci:e2e:no-coverage": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
       "test:ci:legacy": {
         "dependsOn": [
           "^build"
         ]
       },
       "test:ci:integration": {
+        "dependsOn": [
+          "^build"
+        ]
+      },
+      "test:ci:integration:no-coverage": {
         "dependsOn": [
           "^build"
         ]

@@ -658,9 +658,7 @@ async function replaceAutomationGraph(trx: Knex.Transaction, automationId: strin
 
     await deleteAutomationEdges(trx, automationId);
 
-    for (const edge of edges) {
-        await insertActionEdge(trx, edge);
-    }
+    await insertActionEdges(trx, edges);
 }
 
 async function loadAutomationActionRows(trx: Knex.Transaction, automationId: string): Promise<Array<Pick<ActionRow, 'id' | 'type'>>> {
@@ -812,11 +810,14 @@ async function deleteAutomationEdges(trx: Knex.Transaction, automationId: string
             .where('automation_id', automationId));
 }
 
-async function insertActionEdge(trx: Knex.Transaction, edge: Readonly<AutomationEdge>): Promise<void> {
-    await trx('automation_action_edges').insert({
+async function insertActionEdges(trx: Knex.Transaction, edges: ReadonlyArray<AutomationEdge>): Promise<void> {
+    if (edges.length === 0) {
+        return;
+    }
+    await trx('automation_action_edges').insert(edges.map(edge => ({
         source_action_id: edge.source_action_id,
         target_action_id: edge.target_action_id
-    });
+    })));
 }
 
 function requireAutomation(automation: AutomationRow | null, id: string): AutomationRow {
