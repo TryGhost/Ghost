@@ -435,6 +435,34 @@ describe('ghost api compat facades', () => {
             expect(afterBody.users[0]!.accessibility).toBe(accessibility);
         });
 
+        it('persists profile name edits across requests', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const me = await app.request('/ghost/api/admin/users/me/', {headers: {cookie}});
+            const meBody = await me.json() as {users: Array<{id: string; name: string}>};
+            const userId = meBody.users[0]!.id;
+            const originalName = meBody.users[0]!.name;
+
+            const update = await app.request(`/ghost/api/admin/users/${userId}/`, {
+                method: 'PUT',
+                headers: {cookie, 'content-type': 'application/json'},
+                body: JSON.stringify({users: [{name: 'Renamed Owner'}]})
+            });
+            expect(update.status).toBe(200);
+
+            const after = await app.request('/ghost/api/admin/users/me/', {headers: {cookie}});
+            const afterBody = await after.json() as {users: Array<{name: string}>};
+            expect(afterBody.users[0]!.name).toBe('Renamed Owner');
+
+            // Shared sequential DB: restore the seeded name for later tests.
+            await app.request(`/ghost/api/admin/users/${userId}/`, {
+                method: 'PUT',
+                headers: {cookie, 'content-type': 'application/json'},
+                body: JSON.stringify({users: [{name: originalName}]})
+            });
+        });
+
         it('updates settings through the wire keymap', async () => {
             const loginResponse = await login();
             const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;

@@ -51,6 +51,7 @@ const createRepository = (staff: StaffRecord) => {
             return record as StaffRecord;
         },
         updateStaffAccessibility: async () => undefined,
+        updateStaffProfile: async () => undefined,
         listInvites: async () => [],
         listRoles: async () => [],
         updateStaffPassword: async (id, passwordHash, updatedAt) => {

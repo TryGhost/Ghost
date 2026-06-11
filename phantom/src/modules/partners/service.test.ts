@@ -49,6 +49,7 @@ const createStaffRepository = (): StaffRepository => {
         },
         updateStaffPassword: async () => undefined,
         updateStaffAccessibility: async () => undefined,
+        updateStaffProfile: async () => undefined,
         listInvites: async () => [],
         listRoles: async () => [],
         setSessionVerified: async () => undefined,

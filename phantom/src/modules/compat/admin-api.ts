@@ -791,9 +791,6 @@ export const createAdminApiRouter = ({
         });
     }));
 
-    // The admin saves user state (accessibility flags, last seen) right
-    // after boot; acknowledge with the stored user. Field persistence
-    // arrives with the staff-profile work.
     const usersUpdateHandler = authed(async (context: Context, staff) => {
         // Only self-updates are supported; updating other staff would echo
         // the wrong identity back.
@@ -806,6 +803,16 @@ export const createAdminApiRouter = ({
         // JSON blob and must survive reloads.
         if ('accessibility' in submitted && (typeof submitted.accessibility === 'string' || submitted.accessibility === null)) {
             await staffRepository.updateStaffAccessibility(staff.id, submitted.accessibility, Date.now());
+        }
+        // Profile identity fields the staff table owns; everything else in
+        // the payload (slug, bio, social links) is echoed back unpersisted.
+        const name = typeof submitted.name === 'string' && submitted.name.trim() ? submitted.name.trim() : undefined;
+        const email = typeof submitted.email === 'string' && submitted.email.trim() ? submitted.email.trim() : undefined;
+        if (name !== undefined || email !== undefined) {
+            await staffRepository.updateStaffProfile(staff.id, {
+                ...(name !== undefined ? {name} : {}),
+                ...(email !== undefined ? {email} : {})
+            }, Date.now());
         }
         const updated = await staffRepository.getStaffById(staff.id) ?? staff;
         const roles = await staffAuthService.getStaffRoles(staff.id);
