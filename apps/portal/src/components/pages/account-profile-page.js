@@ -47,7 +47,8 @@ export default class AccountProfilePage extends React.Component {
     }
 
     loadCustomFields() {
-        const memberId = this.context.member?.id;
+        // The Portal member object exposes `uuid` (not `id`); used as the per-member key.
+        const memberId = this.context.member?.uuid;
         Promise.all([
             // POC: the account page mirrors the signup form — the member can
             // self-edit whatever custom fields the owner added to signup.
@@ -102,8 +103,8 @@ export default class AccountProfilePage extends React.Component {
             const {email, name, errors} = this.state;
             const hasFormErrors = (errors && Object.values(errors).filter(d => !!d).length > 0);
             if (!hasFormErrors) {
-                // POC: persist custom field values for this member.
-                const memberId = this.context.member?.id;
+                // POC: persist custom field values for this member, keyed by uuid.
+                const memberId = this.context.member?.uuid;
                 (this.state.cfForm || []).forEach((placement) => {
                     customFields.setValue(memberId, placement.fieldId, this.state.cfValues[placement.fieldId]);
                 });

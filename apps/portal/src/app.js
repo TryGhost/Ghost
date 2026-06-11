@@ -5,6 +5,7 @@ import {chooseBestErrorMessage} from './utils/errors';
 import TriggerButton from './components/trigger-button';
 import Notification from './components/notification';
 import PopupModal from './components/popup-modal';
+import LandingCard from './components/landing-card';
 import setupGhostApi from './utils/api';
 import AppContext from './app-context';
 import NotificationParser, {clearURLParams} from './utils/notifications';
@@ -1312,6 +1313,7 @@ export default class App extends React.Component {
                         <PopupModal />
                         <TriggerButton />
                         <Notification />
+                        <LandingCard />
                     </AppContext.Provider>
                 </SentryErrorBoundary>
             );

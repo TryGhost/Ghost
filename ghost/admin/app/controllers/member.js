@@ -156,8 +156,10 @@ export default class MemberController extends Controller {
     setInitialRelationshipValues() {
         this._previousLabels = this._labels;
         this._previousNewsletters = this._newsletters;
-        // POC: load this member's saved custom field values into the working copy
-        this.customFieldValues = {...customFields.getValues(this.member.id)};
+        // POC: load this member's saved custom field values into the working copy.
+        // Key by uuid (the only member id Portal also exposes) so values line up
+        // across admin and Portal.
+        this.customFieldValues = {...customFields.getValues(this.member.uuid)};
         this.customFieldsDirty = false;
     }
 
@@ -280,10 +282,11 @@ export default class MemberController extends Controller {
 
             // POC: persist custom field values now that the member is saved.
             // Union of saved + working keys so cleared fields are removed too.
-            const savedCustomFields = customFields.getValues(member.id);
+            // Key by uuid to match Portal (see setInitialRelationshipValues).
+            const savedCustomFields = customFields.getValues(member.uuid);
             const customFieldIds = new Set([...Object.keys(savedCustomFields), ...Object.keys(this.customFieldValues)]);
             customFieldIds.forEach((fieldId) => {
-                customFields.setValue(member.id, fieldId, this.customFieldValues[fieldId]);
+                customFields.setValue(member.uuid, fieldId, this.customFieldValues[fieldId]);
             });
 
             this.setInitialRelationshipValues();

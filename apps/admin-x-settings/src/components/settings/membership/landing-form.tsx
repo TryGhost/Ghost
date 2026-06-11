@@ -40,7 +40,7 @@ const LandingForm: React.FC<{keywords: string[]}> = ({keywords}) => {
         >
             <List>
                 <ListItem
-                    action={<Toggle checked={enabled} direction='rtl' testId='landing-form-toggle' onChange={onToggle} />}
+                    action={<Toggle key={enabled ? 'on' : 'off'} checked={enabled} direction='rtl' testId='landing-form-toggle' onChange={onToggle} />}
                     detail='Shown to members on their next visit'
                     hideActions={false}
                     testId='landing-form-row'

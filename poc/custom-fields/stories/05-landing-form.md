@@ -2,7 +2,7 @@
 
 **Goal:** an owner can turn on a **Landing form** that asks existing members for a chosen set of custom fields, shown as a soft card when the member next lands on the site, reaching members regardless of how they signed up.
 
-**Status:** Part A (admin) done. Part B (Portal card) next.
+**Status:** Done (Part A + Part B).
 
 **Depends on:** Stories 0 and 1 (field definitions + the shared `CustomFieldInput` control). Independent of the Portal signup/account work, it's a new surface.
 
@@ -40,14 +40,14 @@ All of these are the same check: **enabled + authenticated member + pending + no
 ## Build order
 
 - **Part A — admin (done):** repo additions + the "Landing form" section (toggle + field list) + sidebar reorder.
-- **Part B — Portal (next):** the injected card + trigger + dismiss + email-link param.
+- **Part B — Portal (done):** the injected card + trigger + dismiss + email-link param.
 
 ## Tasks
 
 - [x] Repo: `landing` placements, `enabled` setting, per-member `dismissed` state; seed + version bump.
 - [x] Admin: "Landing form" Membership section (toggle + field list, reuse the signup Form-fields component, custom fields only); sidebar reorder.
-- [ ] Portal: injected soft card (missing fields, Save / Not now), trigger on authenticated landing, dismiss persistence, email-link param.
-- [ ] Required-at-collection validation (placed = required), non-blocking.
+- [x] Portal: injected soft card (missing fields, Save / Not now), trigger on authenticated landing, dismiss persistence, email-link param.
+- [x] Required-at-collection validation (placed = required), non-blocking.
 
 ## Part A as built (admin)
 
@@ -55,6 +55,13 @@ All of these are the same check: **enabled + authenticated member + pending + no
 - The modal reuses the **Portal `PreviewModalContent`** two-pane layout: live preview left, sidebar right with **General / Segmentation** tabs (`TabView`, same as the Portal modal). General holds the shared field picker; **Segmentation is a placeholder** for Story 5.5. No intro/description copy in the sidebar (Portal/Announcement modals don't show one), and the tab body uses Portal's exact `<div className='mt-7'><Form>` wrapper for spacing.
 - The field picker is the **same `FormFieldsList` component** used by signup (`surface='landing'`, custom fields only, no built-in Email/Name rows, no `updateSetting`). One component, two surfaces, no duplicated drag-and-drop/picker logic.
 - The live preview (`landing-preview.tsx`) is a **hand-built static mock** (the signup preview is the real Portal iframe; there is no Portal iframe for an injected landing card yet). Its Save button is matched to the real `.gh-portal-btn` (44px height, 6px radius, weight 500, ~15px, accent bg) and reads `accent_color`.
+
+## Part B as built (Portal)
+
+- **`LandingCard`** (`apps/portal/src/components/landing-card.js`, wired into `App.js`) renders in its own `Frame` (isolated iframe), the same pattern as `Notification`. The show-rule: feature enabled **and** member authenticated **and** missing a placed `landing` field **and** not dismissed. `?cf_landing` force-opens it (the email route) and shows all placed fields.
+- Reuses the shared **`CustomFieldInput`** control, the real **`ActionButton`** (accent), Save persists each value, **Not now**/close sets a persisted per-member `dismissed` flag. A session `closed` guard stops a repo change-notification from reopening it after save/dismiss.
+- **Cross-surface key = `uuid`.** The Portal member exposes only `uuid` (no `id`), so the card, the account page, and the Ember member detail all key values by `member.uuid`. This was a bug fix landed with Part B (surfaces had been keying by `undefined`/hex `id`); see LEARNINGS. Signup keeps its `DEMO_MEMBER_ID` stand-in (no member exists at signup).
+- **Long forms + smooth entrance:** the card is capped to the viewport (`max-height` from `window.innerHeight`, fields scroll, header/buttons pinned), a CSS slide-up keyframe animates the card inside the fixed iframe (popup-style), and a `ResizeObserver` on the card sizes the iframe only when content changes (no polling jank). The card is bottom-anchored so frame resizes never make it jump.
 
 ## Done = demoable
 

@@ -22,7 +22,7 @@ Each story below targets **Tier 1** for its first demoable version. Tier 2 (sele
 | 2 | [Admin: member detail values](./stories/02-admin-member-detail.md) | Ember admin | ✅ Done |
 | 3 | [Portal: collect at signup](./stories/03-portal-signup.md) | portal/admin-x-settings | ✅ Done (Part A + Part B) |
 | 4 | [Portal: self-edit on account page](./stories/04-portal-account.md) | portal | ✅ Done |
-| 5 | [Landing form: collect from existing members](./stories/05-landing-form.md) | portal/admin-x-settings | In progress (Part A done) |
+| 5 | [Landing form: collect from existing members](./stories/05-landing-form.md) | portal/admin-x-settings | ✅ Done |
 | 5.5 | [Audience-targeted landing forms](./stories/05.5-audience-targeted-landing-forms.md) | portal/admin-x-settings | Not started (next) |
 
 Status values: `Not started` / `In progress` / `Demoable` / `Done`.
@@ -72,6 +72,7 @@ Out of scope for the POC, worth revisiting for a real implementation:
 - **Explicit "internal" field flag**: mark a field as admin-only so it is hard-excluded from Portal form pickers and badged "Internal", rather than relying on the owner simply not placing it. Earns its keep once the form pickers exist (Stories 3/4).
 - **Field formats (validated types) + presets**: validated types like email / phone / url (modeled as a `format` on text, surfaced as data types), plus deferred convenience presets. See [ideas/field-formats.md](./ideas/field-formats.md).
 - **Integration surface for a real build**: import/migration, CSV export, Admin API, NQL filtering/segmentation, email personalization, webhooks, themes, GDPR export, etc. The full checklist beyond the POC's UI surfaces. See [ideas/integration-surface.md](./ideas/integration-surface.md).
+- **Landing form presentation + enforcement**: let the owner pick the appearance (soft **card** vs centered **modal**, reusing Portal's popup) and whether the prompt is **skippable or required** (blocking gate). See [ideas/landing-form-presentation.md](./ideas/landing-form-presentation.md).
 
 ## Open questions
 
