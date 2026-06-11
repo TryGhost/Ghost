@@ -35,12 +35,7 @@ export class MySQLManager {
     } = {}): Promise<void> {
         debug('Setting up test database:', databaseName);
         try {
-            await this.createDatabase(databaseName);
-            await this.restoreDatabaseFromSnapshot(databaseName);
-            await this.updateSiteUuid(databaseName, siteUuid);
-            if (options.stripe) {
-                await this.updateStripeSettings(databaseName, options.stripe.secretKey, options.stripe.publishableKey);
-            }
+            await this.setupDatabaseFromSnapshot(databaseName, siteUuid, options);
 
             debug('Test database setup completed:', databaseName, 'with site_uuid:', siteUuid);
         } catch (error) {
@@ -193,6 +188,68 @@ export class MySQLManager {
         await this.exec(command);
 
         debug('Stripe settings updated in database');
+    }
+
+    private async setupDatabaseFromSnapshot(databaseName: string, siteUuid: string, options: {
+        stripe?: {
+            secretKey: string;
+            publishableKey: string;
+        };
+    } = {}, snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
+        debug('Creating database from snapshot:', databaseName);
+
+        const command = [
+            `mysql -uroot -proot -e ${this.escapeShellArg(this.getCreateDatabaseSql(databaseName))}`,
+            `mysql -uroot -proot ${this.escapeShellArg(databaseName)} < ${this.escapeShellArg(snapshotPath)}`,
+            `mysql -uroot -proot -e ${this.escapeShellArg(this.getSettingsSql(databaseName, siteUuid, options.stripe))}`
+        ].join(' && ');
+
+        await this.exec(command);
+
+        debug('Database created from snapshot:', databaseName);
+    }
+
+    private getCreateDatabaseSql(databaseName: string): string {
+        return `CREATE DATABASE IF NOT EXISTS ${this.escapeSqlIdentifier(databaseName)};`;
+    }
+
+    private getSettingsSql(databaseName: string, siteUuid: string, stripe?: {
+        secretKey: string;
+        publishableKey: string;
+    }): string {
+        const database = this.escapeSqlIdentifier(databaseName);
+        const statements = [
+            `UPDATE ${database}.settings SET value='${this.escapeSqlString(siteUuid)}' WHERE \`key\`='site_uuid';`
+        ];
+
+        if (stripe) {
+            // Use INSERT ... ON DUPLICATE KEY UPDATE so this works whether or not
+            // the settings rows already exist. In dev mode the base DB is empty
+            // (only schema, no seeded rows), so a plain UPDATE would be a no-op.
+            statements.push(
+                `INSERT INTO ${database}.settings ` +
+                '(id, `group`, `key`, value, type, flags, created_at, updated_at) VALUES ' +
+                `(SUBSTRING(REPLACE(UUID(), '-', ''), 1, 24), 'members', 'stripe_secret_key', '${this.escapeSqlString(stripe.secretKey)}', 'string', NULL, NOW(), NOW()), ` +
+                `(SUBSTRING(REPLACE(UUID(), '-', ''), 1, 24), 'members', 'stripe_publishable_key', '${this.escapeSqlString(stripe.publishableKey)}', 'string', NULL, NOW(), NOW()) ` +
+                'ON DUPLICATE KEY UPDATE value = VALUES(value), updated_at = NOW();'
+            );
+        }
+
+        return statements.join(' ');
+    }
+
+    private escapeSqlIdentifier(identifier: string): string {
+        return `\`${identifier.replace(/`/g, '``')}\``;
+    }
+
+    private escapeSqlString(value: string): string {
+        return value
+            .replace(/\\/g, '\\\\')
+            .replace(/'/g, '\\\'');
+    }
+
+    private escapeShellArg(value: string): string {
+        return `'${value.replace(/'/g, '\'\\\'\'')}'`;
     }
 
     private async exec(command: string) {
