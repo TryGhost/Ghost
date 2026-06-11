@@ -169,19 +169,19 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
                 return response;
             },
-            async replies({commentId, afterReplyId, limit}: {commentId: string; afterReplyId?: string; limit?: number | 'all'}) {
+            async replies({commentId, afterReplyId, limit, page}: {commentId: string; afterReplyId?: string; limit?: number | 'all'; page?: number}) {
                 if (limit === 'all') {
+                    // Paginate by page, not an `id:>` cursor: replies are ordered by
+                    // created_at, so an id cursor can re-fetch or skip replies (BER-3706).
                     const all: Comment[] = [];
-                    let cursor: string | undefined = afterReplyId;
+                    let currentPage = 1;
                     let hasMore = true;
 
                     while (hasMore) {
-                        const data = await this.replies({commentId, afterReplyId: cursor, limit: 100});
+                        const data = await this.replies({commentId, limit: 100, page: currentPage});
                         all.push(...data.comments);
                         hasMore = !!data.meta?.pagination?.next && data.comments.length > 0;
-                        if (data.comments.length > 0) {
-                            cursor = data.comments[data.comments.length - 1]?.id;
-                        }
+                        currentPage += 1;
                     }
 
                     return {comments: all, meta: {pagination: {next: false}}};
@@ -189,6 +189,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}: {site
 
                 const params = new URLSearchParams();
                 params.set('limit', (limit ?? 5).toString());
+
+                if (page) {
+                    params.set('page', page.toString());
+                }
 
                 if (afterReplyId) {
                     params.set('filter', `id:>'${afterReplyId}'`);
