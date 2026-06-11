@@ -22,6 +22,7 @@ export type FrontendContentReader = {
     getTagBySlug: (slug: string) => Promise<TagRecord | null>;
     getAuthorBySlug: (slug: string) => Promise<AuthorProfileRecord | null>;
     listTags: () => Promise<TagRecord[]>;
+    listTagsWithCounts: () => Promise<Array<{tag: TagRecord; postCount: number}>>;
     listAuthors: () => Promise<AuthorProfileRecord[]>;
 };
 
@@ -73,6 +74,13 @@ export const createFrontendContentReader = (repository: ContentRepository): Fron
         getTagBySlug: (slug: string) => repository.getTagBySlug(slug),
         getAuthorBySlug: (slug: string) => repository.getAuthorProfileBySlug(slug),
         listTags: () => repository.listTags(),
+        listTagsWithCounts: async () => {
+            const [tags, counts] = await Promise.all([
+                repository.listTags(),
+                repository.countPostsPerTag()
+            ]);
+            return tags.map((tag) => ({tag, postCount: counts.get(tag.id) ?? 0}));
+        },
         listAuthors: () => repository.listAuthorProfiles()
     };
 };

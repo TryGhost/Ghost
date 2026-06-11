@@ -68,6 +68,7 @@ const contentReader: FrontendContentReader = {
     getTagBySlug: async () => null,
     getAuthorBySlug: async () => null,
     listTags: async () => [],
+    listTagsWithCounts: async () => [],
     listAuthors: async () => []
 };
 

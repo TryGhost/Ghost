@@ -6,7 +6,7 @@ import type {StaffAuthService} from '../identity/service.js';
 import type {SubscriptionRepository} from '../subscriptions/repo.js';
 import type {MemberRepository} from '../members/repo.js';
 import {HttpError} from '../../platform/http/errors.js';
-import {buildPagination, GHOST_COMPAT_VERSION, mapAdminPost, mapCompatTier, singlePagination} from './mappers.js';
+import {buildPagination, GHOST_COMPAT_VERSION, mapAdminPost, mapCompatTag, mapCompatTier, singlePagination} from './mappers.js';
 import {slashTolerant} from './router-utils.js';
 
 type AdminApiDependencies = {
@@ -24,6 +24,29 @@ const SESSION_COOKIE = 'ghost-admin-api-session';
 
 const readSetting = (settings: SettingsList, key: string) => {
     return settings.find((setting) => setting.key === key)?.value;
+};
+
+// Ghost reports unset images as null; imported settings store empty strings.
+const imageSetting = (settings: SettingsList, key: string) => {
+    const value = readSetting(settings, key);
+    return typeof value === 'string' && value !== '' ? value : null;
+};
+
+// Supports the admin's NQL status clauses: `status:draft` and
+// `status:[published,sent]`. Anything else means no status restriction.
+const parseStatusFilter = (filter: string | undefined): string[] | null => {
+    if (!filter) {
+        return null;
+    }
+    const match = /status:(\[([^\]]+)\]|[a-z]+)/.exec(filter);
+    if (!match) {
+        return null;
+    }
+    const value = match[2] ?? match[1];
+    if (!value) {
+        return null;
+    }
+    return value.split(',').map((entry) => entry.trim()).filter(Boolean);
 };
 
 const notAuthorized = (context: Context) => {
@@ -84,9 +107,9 @@ export const createAdminApiRouter = ({
             site: {
                 title: readSetting(settings, 'site.title') ?? 'Ghost',
                 description: readSetting(settings, 'site.description') ?? '',
-                logo: readSetting(settings, 'site.logo') ?? null,
-                icon: readSetting(settings, 'site.icon') ?? null,
-                cover_image: readSetting(settings, 'site.cover_image') ?? null,
+                logo: imageSetting(settings, 'site.logo'),
+                icon: imageSetting(settings, 'site.icon'),
+                cover_image: imageSetting(settings, 'site.cover_image'),
                 accent_color: readSetting(settings, 'site.accent_color') ?? null,
                 locale: readSetting(settings, 'site.locale') ?? 'en',
                 url: `${siteUrl}/`,
@@ -376,15 +399,46 @@ export const createAdminApiRouter = ({
         const rawLimit = context.req.query('limit');
         const limit = rawLimit === 'all' ? 100 : Math.min(Number(rawLimit ?? '15') || 15, 100);
         // Admin browse includes drafts and scheduled posts, unlike the
-        // public surfaces.
+        // public surfaces; the status tabs arrive as an NQL filter.
+        const statuses = parseStatusFilter(context.req.query('filter'));
         const {entries, pagination} = await contentReader.listPublished({
             page,
             limit,
-            filter: {type: 'post', status: 'all'}
+            filter: statuses ? {type: 'post', statuses} : {type: 'post', status: 'all'}
         });
         const posts = await Promise.all(entries.map((entry) => mapAdminPost(entry, siteUrl)));
         return context.json({posts, meta: buildPagination(pagination)});
     });
+
+    on.get('/pages/', authed(async (context) => {
+        const page = Number(context.req.query('page') ?? '1') || 1;
+        const rawLimit = context.req.query('limit');
+        const limit = rawLimit === 'all' ? 100 : Math.min(Number(rawLimit ?? '15') || 15, 100);
+        const statuses = parseStatusFilter(context.req.query('filter'));
+        const {entries, pagination} = await contentReader.listPublished({
+            page,
+            limit,
+            filter: statuses ? {type: 'page', statuses} : {type: 'page', status: 'all'}
+        });
+        const pages = await Promise.all(entries.map((entry) => mapAdminPost(entry, siteUrl)));
+        return context.json({pages, meta: buildPagination(pagination)});
+    }));
+
+    on.get('/tags/', authed(async (context) => {
+        const visibilityFilter = context.req.query('filter');
+        const tags = await contentReader.listTagsWithCounts();
+        const filtered = visibilityFilter?.includes('visibility:public')
+            ? tags.filter(({tag}) => tag.visibility === 'public')
+            : tags;
+        filtered.sort((left, right) => left.tag.name.localeCompare(right.tag.name));
+        return context.json({
+            tags: filtered.map(({tag, postCount}) => ({
+                ...mapCompatTag(tag, siteUrl),
+                count: {posts: postCount}
+            })),
+            meta: singlePagination(filtered.length)
+        });
+    }));
 
     return router;
 };

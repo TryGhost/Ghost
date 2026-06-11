@@ -30,8 +30,10 @@ export type PublishedPostFilter = {
     type?: 'post' | 'page';
     tagSlug?: string;
     authorSlug?: string;
-    // 'all' lifts the published-only restriction (admin browse).
+    // 'all' lifts the published-only restriction (admin browse); an explicit
+    // status list serves the admin's draft/scheduled/published tabs.
     status?: 'published' | 'all';
+    statuses?: string[];
 };
 
 export type ContentRepository = {
@@ -51,6 +53,7 @@ export type ContentRepository = {
     createContentRedirect: (redirect: NewContentRedirectRecord) => Promise<void>;
     createTag: (tag: NewTagRecord) => Promise<TagRecord>;
     listTags: () => Promise<TagRecord[]>;
+    countPostsPerTag: () => Promise<Map<string, number>>;
     getTagBySlug: (slug: string) => Promise<TagRecord | null>;
     linkTagToPost: (postId: string, tagId: string) => Promise<void>;
     createCollection: (collection: NewCollectionRecord) => Promise<CollectionRecord>;
@@ -96,7 +99,11 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
     };
 
     const buildPublishedWhere = async (filter?: PublishedPostFilter) => {
-        const conditions = filter?.status === 'all' ? [] : [eq(postTable.status, 'published')];
+        const conditions = filter?.statuses && filter.statuses.length > 0
+            ? [inArray(postTable.status, filter.statuses)]
+            : filter?.status === 'all'
+                ? []
+                : [eq(postTable.status, 'published')];
         if (filter?.type) {
             conditions.push(eq(postTable.type, filter.type));
         }
@@ -255,6 +262,14 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         return db.select().from(tagTable);
     };
 
+    const countPostsPerTag = async () => {
+        const rows = await db
+            .select({tagId: postTagTable.tagId, value: count()})
+            .from(postTagTable)
+            .groupBy(postTagTable.tagId);
+        return new Map(rows.map((row) => [row.tagId, row.value]));
+    };
+
     const getTagBySlug = async (slug: string) => {
         const rows = await db.select().from(tagTable).where(eq(tagTable.slug, slug)).limit(1);
         return rows[0] ?? null;
@@ -317,6 +332,7 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         createContentRedirect,
         createTag,
         listTags,
+        countPostsPerTag,
         getTagBySlug,
         linkTagToPost,
         createCollection,

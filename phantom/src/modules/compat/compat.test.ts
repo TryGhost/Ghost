@@ -173,6 +173,10 @@ describe('ghost api compat facades', () => {
             expect(body.site.title).toBe('Testing Export Fixtures');
             expect(body.site.url).toBe('http://localhost:2369/');
             expect(typeof body.site.version).toBe('string');
+            // The fixture stores icon/logo as empty strings; Ghost's API
+            // reports unset images as null so clients fall back to defaults.
+            expect(body.site.icon).toBeNull();
+            expect(body.site.logo).toBeNull();
         });
 
         it('rejects bad credentials', async () => {
@@ -305,6 +309,48 @@ describe('ghost api compat facades', () => {
                 const body = await response.json() as {stats: unknown[]};
                 expect(Array.isArray(body.stats), path).toBe(true);
             }
+        });
+
+        it('browses pages with status filters', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const published = await app.request('/ghost/api/admin/pages/?formats=mobiledoc,lexical&limit=30&page=1&filter=status%3A%5Bpublished%2Csent%5D', {headers: {cookie}});
+            expect(published.status).toBe(200);
+            const publishedBody = await published.json() as {pages: Array<{slug: string; status: string}>};
+            expect(publishedBody.pages.some((page) => page.slug === 'about')).toBe(true);
+
+            const drafts = await app.request('/ghost/api/admin/pages/?filter=status%3Adraft', {headers: {cookie}});
+            expect(drafts.status).toBe(200);
+            const draftsBody = await drafts.json() as {pages: unknown[]};
+            expect(draftsBody.pages).toHaveLength(0);
+        });
+
+        it('filters posts by status for the admin tabs', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const drafts = await app.request('/ghost/api/admin/posts/?filter=status%3Adraft', {headers: {cookie}});
+            const draftsBody = await drafts.json() as {posts: Array<{slug: string}>};
+            expect(draftsBody.posts.some((post) => post.slug === 'a-draft')).toBe(true);
+            expect(draftsBody.posts.some((post) => post.slug === 'coming-soon')).toBe(false);
+
+            const published = await app.request('/ghost/api/admin/posts/?filter=status%3A%5Bpublished%2Csent%5D', {headers: {cookie}});
+            const publishedBody = await published.json() as {posts: Array<{slug: string}>};
+            expect(publishedBody.posts.some((post) => post.slug === 'coming-soon')).toBe(true);
+            expect(publishedBody.posts.some((post) => post.slug === 'a-draft')).toBe(false);
+        });
+
+        it('browses tags with post counts', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const response = await app.request('/ghost/api/admin/tags/?limit=100&order=name+asc&include=count.posts&filter=visibility%3Apublic', {headers: {cookie}});
+            expect(response.status).toBe(200);
+            const body = await response.json() as {tags: Array<{slug: string; count?: {posts: number}}>; meta: {pagination: {total: number}}};
+            const news = body.tags.find((tag) => tag.slug === 'news');
+            expect(news).toBeDefined();
+            expect(news?.count?.posts).toBe(1);
         });
 
         it('logs out by deleting the session', async () => {

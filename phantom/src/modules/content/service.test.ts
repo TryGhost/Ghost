@@ -37,6 +37,7 @@ const createRepository = (): ContentRepository => {
         },
         getTagBySlug: async (slug) => tags.find((tag) => tag.slug === slug) ?? null,
         listTags: async () => tags,
+        countPostsPerTag: async () => new Map(),
         linkTagToPost: async () => undefined,
         createCollection: async (collection) => collection as CollectionRecord,
         listCollections: async () => [],

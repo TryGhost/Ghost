@@ -29,6 +29,12 @@ const readSetting = (settings: SettingsList, key: string) => {
     return settings.find((setting) => setting.key === key)?.value;
 };
 
+// Ghost reports unset images as null; imported settings store empty strings.
+const imageSetting = (settings: SettingsList, key: string) => {
+    const value = readSetting(settings, key);
+    return typeof value === 'string' && value !== '' ? value : null;
+};
+
 const parsePage = (value: string | undefined) => {
     const page = Number(value ?? '1');
     return Number.isFinite(page) && page > 0 ? Math.floor(page) : 1;
@@ -102,10 +108,10 @@ export const createContentApiRouter = ({
             settings: {
                 title: readSetting(settings, 'site.title') ?? 'Ghost',
                 description: readSetting(settings, 'site.description') ?? '',
-                logo: readSetting(settings, 'site.logo') ?? null,
-                icon: readSetting(settings, 'site.icon') ?? null,
+                logo: imageSetting(settings, 'site.logo'),
+                icon: imageSetting(settings, 'site.icon'),
                 accent_color: readSetting(settings, 'site.accent_color') ?? null,
-                cover_image: readSetting(settings, 'site.cover_image') ?? null,
+                cover_image: imageSetting(settings, 'site.cover_image'),
                 facebook: readSetting(settings, 'site.facebook') ?? null,
                 twitter: readSetting(settings, 'site.twitter') ?? null,
                 lang: readSetting(settings, 'site.locale') ?? 'en',

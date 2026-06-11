@@ -23,6 +23,12 @@ const readSetting = (settings: SettingsList, key: string) => {
     return settings.find((setting) => setting.key === key)?.value;
 };
 
+// Unset images are stored as empty strings by imports; themes expect null.
+const imageSetting = (settings: SettingsList, key: string) => {
+    const value = readSetting(settings, key);
+    return typeof value === 'string' && value !== '' ? value : null;
+};
+
 const toNavigation = (value: unknown): Array<{label: string; url: string}> => {
     if (Array.isArray(value)) {
         return value.filter((item): item is {label: string; url: string} => {
@@ -48,9 +54,9 @@ const buildSiteContext = (settings: SettingsList, config: AppConfig) => {
         locale: (readSetting(settings, 'site.locale') as string | undefined) ?? 'en',
         timezone: (readSetting(settings, 'site.timezone') as string | undefined) ?? 'Etc/UTC',
         url: `http://localhost:${config.port}`,
-        cover_image: (readSetting(settings, 'site.cover_image') as string | null | undefined) ?? null,
-        logo: (readSetting(settings, 'site.logo') as string | null | undefined) ?? null,
-        icon: (readSetting(settings, 'site.icon') as string | null | undefined) ?? null,
+        cover_image: imageSetting(settings, 'site.cover_image'),
+        logo: imageSetting(settings, 'site.logo'),
+        icon: imageSetting(settings, 'site.icon'),
         accent_color: (readSetting(settings, 'site.accent_color') as string | null | undefined) ?? null,
         navigation: toNavigation(readSetting(settings, 'site.navigation')),
         secondary_navigation: toNavigation(readSetting(settings, 'site.secondary_navigation')),
