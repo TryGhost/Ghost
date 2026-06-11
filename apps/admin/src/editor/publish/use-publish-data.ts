@@ -113,10 +113,16 @@ export function usePublishOptionsInput(post: FullPost, resource: EditorResource)
     });
 
     // only Admins/Owners can browse members; Ember substitutes a count of 1
-    // for other roles so email isn't disabled for "no members"
+    // for other roles so email isn't disabled for "no members".
+    // refetchOnMount: the count gates email availability, and members may
+    // have been added since the cached count was read (Ember re-fetched it
+    // in publishOptions.setup every time the flow opened) — a stale 0 would
+    // wrongly disable the email publish types.
     const { data: membersData } = useBrowseMembers({
         searchParams: { limit: "1" },
         enabled: Boolean(currentUser) && isAdmin,
+        refetchOnMount: "always",
+        staleTime: 0,
     });
 
     const settings = settingsData?.settings;
