@@ -1,4 +1,4 @@
-import {eq, lte, sql} from 'drizzle-orm';
+import {count, eq, lte, sql} from 'drizzle-orm';
 import type {DbClient} from '../../db/client.js';
 import {
     memberAuthEventTable,
@@ -19,6 +19,8 @@ export type MemberRepository = {
     getMemberByEmail: (email: string) => Promise<MemberRecord | null>;
     getMemberById: (id: string) => Promise<MemberRecord | null>;
     createMember: (member: NewMemberRecord) => Promise<MemberRecord>;
+    listMembers: (options: {limit: number; offset: number}) => Promise<MemberRecord[]>;
+    countMembers: () => Promise<{total: number; free: number; paid: number}>;
     createAuthToken: (token: NewMemberAuthTokenRecord) => Promise<MemberAuthTokenRecord>;
     getAuthTokenByToken: (token: string) => Promise<MemberAuthTokenRecord | null>;
     markAuthTokenUsed: (id: string, usedAt: number) => Promise<void>;
@@ -37,6 +39,20 @@ export const createMemberRepository = (db: DbClient): MemberRepository => {
     const getMemberById = async (id: string) => {
         const rows = await db.select().from(memberTable).where(eq(memberTable.id, id)).limit(1);
         return rows[0] ?? null;
+    };
+
+    const listMembers = async ({limit, offset}: {limit: number; offset: number}) => {
+        return db.select().from(memberTable).orderBy(memberTable.createdAt, memberTable.id).limit(limit).offset(offset);
+    };
+
+    const countMembers = async () => {
+        const [totalRows, paidRows] = await Promise.all([
+            db.select({value: count()}).from(memberTable),
+            db.select({value: count()}).from(memberTable).where(eq(memberTable.status, 'paid'))
+        ]);
+        const total = totalRows[0]?.value ?? 0;
+        const paid = paidRows[0]?.value ?? 0;
+        return {total, paid, free: total - paid};
     };
 
     const createMember = async (member: NewMemberRecord) => {
@@ -103,6 +119,8 @@ export const createMemberRepository = (db: DbClient): MemberRepository => {
 
     return {
         getMemberByEmail,
+        listMembers,
+        countMembers,
         getMemberById,
         createMember,
         createAuthToken,

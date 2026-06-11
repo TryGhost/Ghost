@@ -1,36 +1,37 @@
 {
-  "name": "ghost-rewrite",
-  "version": "0.1.0",
-  "private": true,
-  "type": "module",
-  "packageManager": "yarn@1.22.22",
-  "scripts": {
-    "dev": "tsx watch src/index.ts",
-    "build": "tsc -p tsconfig.json",
-    "test": "vitest --config vitest.config.ts --watch=false",
-    "test:watch": "vitest --config vitest.config.ts --watch",
-    "migrate:core": "tsx src/tools/migrate-from-core.ts",
-    "build:theme": "tsx src/tools/build-theme-bundle.ts",
-    "request:frontend": "tsx src/tools/request-frontend.ts"
-  },
-  "dependencies": {
-    "@hono/node-server": "1.13.1",
-    "@hono/zod-openapi": "0.19.2",
-    "@libsql/client": "0.14.0",
-    "@tryghost/kg-default-nodes": "2.1.2",
-    "@tryghost/kg-lexical-html-renderer": "1.4.2",
-    "@types/bcryptjs": "^3.0.0",
-    "bcryptjs": "^3.0.3",
-    "drizzle-orm": "0.38.2",
-    "handlebars": "4.7.8",
-    "hono": "4.6.2",
-    "zod": "3.24.1"
-  },
-  "devDependencies": {
-    "@types/node": "22.13.4",
-    "drizzle-kit": "0.30.0",
-    "tsx": "4.19.2",
-    "typescript": "5.8.3",
-    "vitest": "2.1.5"
-  }
+    "name": "ghost-rewrite",
+    "version": "0.1.0",
+    "private": true,
+    "type": "module",
+    "packageManager": "yarn@1.22.22",
+    "scripts": {
+        "dev": "tsx watch src/index.ts",
+        "build": "tsc -p tsconfig.json",
+        "test": "vitest --config vitest.config.ts --watch=false",
+        "test:watch": "vitest --config vitest.config.ts --watch",
+        "migrate:core": "tsx src/tools/migrate-from-core.ts",
+        "build:theme": "tsx src/tools/build-theme-bundle.ts",
+        "request:frontend": "tsx src/tools/request-frontend.ts",
+        "admin:sync": "cd .. && npx nx build @tryghost/admin && rsync -a --delete ghost/core/core/built/admin/ phantom/content/admin/"
+    },
+    "dependencies": {
+        "@hono/node-server": "1.13.1",
+        "@hono/zod-openapi": "0.19.2",
+        "@libsql/client": "0.14.0",
+        "@tryghost/kg-default-nodes": "2.1.2",
+        "@tryghost/kg-lexical-html-renderer": "1.4.2",
+        "@types/bcryptjs": "^3.0.0",
+        "bcryptjs": "^3.0.3",
+        "drizzle-orm": "0.38.2",
+        "handlebars": "4.7.8",
+        "hono": "4.6.2",
+        "zod": "3.24.1"
+    },
+    "devDependencies": {
+        "@types/node": "22.13.4",
+        "drizzle-kit": "0.30.0",
+        "tsx": "4.19.2",
+        "typescript": "5.8.3",
+        "vitest": "2.1.5"
+    }
 }

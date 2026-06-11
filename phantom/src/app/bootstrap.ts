@@ -132,6 +132,7 @@ export const createAppDependencies = async () => {
         metricsClient,
         contentReader,
         subscriptionRepository,
-        newsletterRepository
+        newsletterRepository,
+        memberRepository
     };
 };

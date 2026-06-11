@@ -114,4 +114,19 @@ describe('theme rendering with imported content', () => {
         const response = await app.request('/tag/no-such-tag/');
         expect(response.status).toBe(404);
     });
+
+    it('rejects path traversal in asset routes', async () => {
+        // Raw `..` segments are normalized away by URL parsing before they
+        // reach the router; encoded variants arrive verbatim and must not
+        // resolve to files outside the asset roots.
+        for (const traversal of [
+            '/ghost/assets/..%2f..%2f..%2fetc%2fpasswd',
+            '/ghost/assets/%2e%2e/%2e%2e/package.json',
+            '/public/..%2f..%2fpackage.json',
+            '/assets/..%2f..%2f..%2fpackage.json'
+        ]) {
+            const response = await app.request(traversal);
+            expect([404, 400].includes(response.status), traversal).toBe(true);
+        }
+    });
 });

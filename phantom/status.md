@@ -19,10 +19,12 @@
 3. ✅ Slice 3: Admin/Content API compat facades at the legacy paths; native
    v10 API moved to /ghost/api/v10 — `src/modules/compat/compat.test.ts`.
 4. ✅ Verified in a browser: the imported site renders with the real source
-   theme (home/post/tag/author), and the unmodified Ember admin served at
-   /ghost/ signs in (bcrypt session) and lists imported posts. Known gaps:
-   Members API facade (/members/api/* 404s, portal degrades gracefully),
-   admin write endpoints, embedded admin React app bundles.
+   theme, and the unified admin shell (Ember + React, `yarn admin:sync` →
+   `content/admin/`, gitignored) signs in and renders posts AND the
+   analytics Overview/Growth screens with designed empty states. The
+   Members API facade answers portal (anonymous 204, magic-link 201).
+   Known gaps: member sessions, admin write endpoints beyond self-update,
+   Tinybird-backed web analytics (config.stats absent by design).
 
 ## Tests
 - `yarn test` — 80 tests green, including `src/modules/operations/importer.test.ts`

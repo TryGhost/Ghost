@@ -183,17 +183,21 @@ References (all in this directory):
 - [ ] Headless Content API completeness + Astro path
 
 ## 22) API compatibility facades
-- [ ] Admin API facade (boot-critical surface implemented and tested against
-      imported fixture data: /site, /session (bcrypt-compat login + cookie),
-      /users/me with roles, /config, /settings, /posts incl. drafts in
-      `src/modules/compat/`; native v10 API moved to /ghost/api/v10; admin
-      HTML serving added at /ghost/; verified in a browser: the unmodified
-      Ember admin signs in against phantom and lists imported posts; write
-      endpoints and the embedded React apps (stats/posts/settings bundles)
-      are not served yet)
+- [ ] Admin API facade (boot surface implemented and tested against imported
+      fixture data: /site, /session (bcrypt-compat login + cookie), /users/me
+      + self-update, /config, /settings, /posts incl. drafts, /members,
+      /tiers, /notifications, /themes/active, /tinybird/token and /stats/*
+      empty states in `src/modules/compat/`; native v10 API moved to
+      /ghost/api/v10; the unified admin shell (Ember + React, built via
+      `yarn admin:sync` into `content/admin/`) is served at /ghost/ —
+      verified in a browser: signin, posts list, and the analytics
+      Overview/Growth screens all render against phantom; write endpoints
+      beyond self-update are still absent)
 - [ ] Content/Members API facades (Content API /posts, /pages, /settings,
       /tags, /authors, /tiers, /newsletters serve Ghost wire shapes from
-      imported data with tests; Members API and key auth absent)
+      imported data with tests; Members API facade covers anonymous member
+      state + magic-link requests; member sessions/auth and content key
+      enforcement absent)
 
 ## Operations PRD
 ### Data export/import

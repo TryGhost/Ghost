@@ -4,6 +4,7 @@ import type {FrontendContentReader} from '../content/frontend-reader.js';
 import type {SettingsService} from '../settings/service.js';
 import type {StaffAuthService} from '../identity/service.js';
 import type {SubscriptionRepository} from '../subscriptions/repo.js';
+import type {MemberRepository} from '../members/repo.js';
 import {HttpError} from '../../platform/http/errors.js';
 import {buildPagination, GHOST_COMPAT_VERSION, mapAdminPost, mapCompatTier, singlePagination} from './mappers.js';
 import {slashTolerant} from './router-utils.js';
@@ -13,6 +14,7 @@ type AdminApiDependencies = {
     settingsService: SettingsService;
     staffAuthService: StaffAuthService;
     subscriptionRepository: SubscriptionRepository;
+    memberRepository: MemberRepository;
     siteUrl: string;
 };
 
@@ -41,6 +43,7 @@ export const createAdminApiRouter = ({
     settingsService,
     staffAuthService,
     subscriptionRepository,
+    memberRepository,
     siteUrl
 }: AdminApiDependencies) => {
     const router = new Hono();
@@ -56,6 +59,17 @@ export const createAdminApiRouter = ({
         } catch {
             return null;
         }
+    };
+
+    type Staff = NonNullable<Awaited<ReturnType<typeof requireStaff>>>;
+    const authed = (handler: (context: Context, staff: Staff) => Response | Promise<Response>) => {
+        return async (context: Context) => {
+            const staff = await requireStaff(context);
+            if (!staff) {
+                return notAuthorized(context);
+            }
+            return handler(context, staff);
+        };
     };
 
     // The signin route checks whether initial setup has completed; an
@@ -116,43 +130,47 @@ export const createAdminApiRouter = ({
         return context.body(null, 204);
     });
 
+    const buildUserPayload = (
+        staff: {id: string; name: string; email: string; status: string},
+        roles: string[],
+        overrides: Record<string, unknown> = {}
+    ) => ({
+        id: staff.id,
+        name: staff.name,
+        slug: staff.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        email: staff.email,
+        profile_image: null,
+        cover_image: null,
+        bio: null,
+        website: null,
+        location: null,
+        facebook: null,
+        twitter: null,
+        accessibility: (overrides.accessibility as string | undefined) ?? null,
+        status: staff.status,
+        meta_title: null,
+        meta_description: null,
+        tour: null,
+        last_seen: new Date().toISOString(),
+        created_at: new Date(0).toISOString(),
+        updated_at: new Date(0).toISOString(),
+        url: `${siteUrl}/author/${staff.id}/`,
+        roles: roles.map((role) => ({
+            id: role,
+            name: role,
+            description: null,
+            created_at: new Date(0).toISOString(),
+            updated_at: new Date(0).toISOString()
+        }))
+    });
+
     on.get('/users/me/', async (context) => {
         const staff = await requireStaff(context);
         if (!staff) {
             return notAuthorized(context);
         }
         const roles = await staffAuthService.getStaffRoles(staff.id);
-        return context.json({
-            users: [{
-                id: staff.id,
-                name: staff.name,
-                slug: staff.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-                email: staff.email,
-                profile_image: null,
-                cover_image: null,
-                bio: null,
-                website: null,
-                location: null,
-                facebook: null,
-                twitter: null,
-                accessibility: null,
-                status: staff.status,
-                meta_title: null,
-                meta_description: null,
-                tour: null,
-                last_seen: new Date().toISOString(),
-                created_at: new Date(0).toISOString(),
-                updated_at: new Date(0).toISOString(),
-                url: `${siteUrl}/author/${staff.id}/`,
-                roles: roles.map((role) => ({
-                    id: role,
-                    name: role,
-                    description: null,
-                    created_at: new Date(0).toISOString(),
-                    updated_at: new Date(0).toISOString()
-                }))
-            }]
-        });
+        return context.json({users: [buildUserPayload(staff, roles)]});
     });
 
     on.get('/config/', async (context) => {
@@ -222,6 +240,120 @@ export const createAdminApiRouter = ({
         ];
         return context.json({settings: adminSettings, meta: {}});
     });
+
+    on.get('/notifications/', authed(async (context) => {
+        return context.json({notifications: [], meta: {}});
+    }));
+
+    on.get('/themes/active/', authed(async (context) => {
+        const {settings} = await settingsService.listSettings();
+        const active = (readSetting(settings, 'theme.active') as string | undefined) ?? 'source';
+        return context.json({
+            themes: [{
+                name: active,
+                package: {name: active, version: '1.0.0'},
+                active: true,
+                templates: []
+            }]
+        });
+    }));
+
+    // The admin saves user state (accessibility flags, last seen) right
+    // after boot; acknowledge with the stored user. Field persistence
+    // arrives with the staff-profile work.
+    const usersUpdateHandler = authed(async (context: Context, staff) => {
+        // Only self-updates are supported; updating other staff would echo
+        // the wrong identity back.
+        if (context.req.param('id') !== staff.id) {
+            return context.json({errors: [{message: 'Updating other users is not supported yet', type: 'NoPermissionError'}]}, 403);
+        }
+        const body = await context.req.json<{users?: Array<Record<string, unknown>>}>().catch(() => ({} as Record<string, never>));
+        const submitted = body.users?.[0] ?? {};
+        const roles = await staffAuthService.getStaffRoles(staff.id);
+        return context.json({users: [buildUserPayload(staff, roles, submitted)]});
+    });
+    router.put('/users/:id/', usersUpdateHandler);
+    router.put('/users/:id', usersUpdateHandler);
+
+    on.get('/members/', authed(async (context) => {
+        const limit = Math.min(Number(context.req.query('limit') ?? '15') || 15, 100);
+        const page = Number(context.req.query('page') ?? '1') || 1;
+        const [members, counts] = await Promise.all([
+            memberRepository.listMembers({limit, offset: (page - 1) * limit}),
+            memberRepository.countMembers()
+        ]);
+        const pages = Math.max(1, Math.ceil(counts.total / limit));
+        return context.json({
+            members: members.map((member) => ({
+                id: member.id,
+                uuid: member.id,
+                email: member.email,
+                name: null,
+                note: null,
+                status: member.status,
+                geolocation: null,
+                subscribed: true,
+                email_count: 0,
+                email_opened_count: 0,
+                email_open_rate: null,
+                created_at: new Date(member.createdAt).toISOString(),
+                updated_at: new Date(member.updatedAt).toISOString(),
+                labels: [],
+                newsletters: [],
+                subscriptions: [],
+                avatar_image: null,
+                comped: false
+            })),
+            meta: {
+                pagination: {
+                    page,
+                    limit,
+                    pages,
+                    total: counts.total,
+                    next: page < pages ? page + 1 : null,
+                    prev: page > 1 ? page - 1 : null
+                }
+            }
+        });
+    }));
+
+    // Stats surface: phantom has no Tinybird pipeline yet, so the stats app
+    // gets a null token and empty series — its designed empty states render
+    // instead of a load error. Member counts are real.
+    on.get('/tinybird/token/', authed(async (context) => {
+        return context.json({tinybird: {token: null, exp: null}});
+    }));
+
+    on.get('/stats/member_count/', authed(async (context) => {
+        const counts = await memberRepository.countMembers();
+        return context.json({
+            stats: [{
+                date: new Date().toISOString().slice(0, 10),
+                paid: counts.paid,
+                free: counts.free,
+                comped: 0,
+                paid_subscribed: 0,
+                paid_canceled: 0
+            }],
+            meta: {totals: {paid: counts.paid, free: counts.free, comped: 0}}
+        });
+    }));
+
+    on.get('/stats/mrr/', authed(async (context) => {
+        return context.json({stats: [], meta: {totals: []}});
+    }));
+
+    on.get('/stats/subscriptions/', authed(async (context) => {
+        return context.json({stats: [], meta: {totals: []}});
+    }));
+
+    on.get('/stats/top-posts-views/', authed(async (context) => {
+        return context.json({stats: []});
+    }));
+
+    on.get('/stats/posts/:id/stats/', authed(async (context) => {
+        return context.json({stats: []});
+    }));
 
     on.get('/tiers/', async (context) => {
         const staff = await requireStaff(context);

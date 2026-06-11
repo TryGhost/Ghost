@@ -438,6 +438,7 @@ const commentService = {listComments: async () => ({comments: []})} as unknown a
 const metricsClient = {isEnabled: () => false, render: () => ''} as unknown as MetricsClient;
 const subscriptionRepository = {listPlans: async () => [], getPricesByPlan: async () => []} as unknown as import('../src/modules/subscriptions/repo.js').SubscriptionRepository;
 const newsletterRepository = {listNewsletters: async () => []} as unknown as import('../src/modules/newsletters/repo.js').NewsletterRepository;
+const memberRepository = {listMembers: async () => [], countMembers: async () => ({total: 0, free: 0, paid: 0})} as unknown as import('../src/modules/members/repo.js').MemberRepository;
 const contentReader = {
     getEntryBySlug: async () => null,
     listPublished: async () => ({entries: [], pagination: {page: 1, limit: 10, pages: 1, total: 0, next: null, prev: null}}),
@@ -470,7 +471,8 @@ describe('app routes', () => {
             metricsClient,
             contentReader,
             subscriptionRepository,
-            newsletterRepository
+            newsletterRepository,
+            memberRepository
         });
 
         const response = await app.request('/ghost/api/v10/health');
@@ -504,7 +506,8 @@ describe('app routes', () => {
             metricsClient,
             contentReader,
             subscriptionRepository,
-            newsletterRepository
+            newsletterRepository,
+            memberRepository
         });
 
         const response = await app.request('/ghost/api/v10/site', {
@@ -550,7 +553,8 @@ describe('app routes', () => {
             metricsClient,
             contentReader,
             subscriptionRepository,
-            newsletterRepository
+            newsletterRepository,
+            memberRepository
         });
 
         const response = await app.request('/ghost/api/v10/site', {

@@ -89,6 +89,8 @@ const createMemberRepository = (): MemberRepository => {
 
     return {
         getMemberByEmail: async () => null,
+        listMembers: async () => members,
+        countMembers: async () => ({total: members.length, free: members.filter((m) => m.status === 'free').length, paid: members.filter((m) => m.status === 'paid').length}),
         getMemberById: async (id) => members.find((member) => member.id === id) ?? null,
         createMember: async (member) => {
             members.push(member as MemberRecord);

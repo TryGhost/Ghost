@@ -199,13 +199,19 @@ export const createFrontendRouter = ({
     const portalAsset = path.resolve(process.cwd(), '..', 'apps', 'portal', 'umd', 'portal.min.js');
     const sodoSearchAsset = path.resolve(process.cwd(), '..', 'apps', 'sodo-search', 'umd', 'sodo-search.min.js');
     const memberAttributionAsset = path.resolve(process.cwd(), '..', 'ghost', 'core', 'core', 'frontend', 'src', 'member-attribution', 'member-attribution.js');
-    const adminRoot = path.resolve(process.cwd(), '..', 'ghost', 'core', 'core', 'built', 'admin');
+    // Prefer the admin build vendored into phantom (yarn admin:sync); fall
+    // back to ghost/core's build output for monorepo development.
+    const adminRoots = [
+        path.resolve(process.cwd(), 'content', 'admin'),
+        path.resolve(process.cwd(), '..', 'ghost', 'core', 'core', 'built', 'admin')
+    ];
 
     const adminContentType = (assetPath: string) => {
         const extension = path.extname(assetPath).toLowerCase();
         const types: Record<string, string> = {
             '.css': 'text/css; charset=utf-8',
             '.js': 'application/javascript; charset=utf-8',
+            '.mjs': 'application/javascript; charset=utf-8',
             '.json': 'application/json; charset=utf-8',
             '.ico': 'image/x-icon',
             '.png': 'image/png',
@@ -227,8 +233,18 @@ export const createFrontendRouter = ({
         }
     };
 
+    // Containment guard: request paths may carry `..` segments; anything that
+    // resolves outside the root is rejected.
+    const resolveWithin = (root: string, relativePath: string) => {
+        const resolved = path.resolve(root, relativePath);
+        return resolved.startsWith(root + path.sep) ? resolved : null;
+    };
+
     const getPublicAsset = async (assetPath: string) => {
-        const fullPath = path.resolve(publicRoot, assetPath);
+        const fullPath = resolveWithin(publicRoot, assetPath);
+        if (!fullPath) {
+            return null;
+        }
         try {
             const body = await fs.readFile(fullPath);
             const extension = path.extname(assetPath).toLowerCase();
@@ -353,21 +369,41 @@ export const createFrontendRouter = ({
         }
 
         // The unmodified Ember admin build is served under /ghost/ (decision
-        // #16).
+        // #16). Embedded React apps (stats, posts, admin-x-settings, ...) are
+        // resolved from apps/<name>/dist when the admin build doesn't bundle
+        // them — the same files asset-delivery would copy.
         if (context.req.path.startsWith('/ghost/assets/')) {
             const assetPath = context.req.path.replace('/ghost/assets/', '');
-            const asset = await readAsset(path.resolve(adminRoot, 'assets', assetPath), adminContentType(assetPath));
+            const contentType = adminContentType(assetPath);
+            let asset = null;
+            for (const adminRoot of adminRoots) {
+                const contained = resolveWithin(path.resolve(adminRoot, 'assets'), assetPath);
+                asset = contained ? await readAsset(contained, contentType) : null;
+                if (asset) {
+                    break;
+                }
+            }
+            if (!asset) {
+                const [appName, ...rest] = assetPath.split('/');
+                if (appName && rest.length > 0 && /^[a-z0-9-]+$/.test(appName)) {
+                    const appDist = path.resolve(process.cwd(), '..', 'apps', appName, 'dist');
+                    const contained = resolveWithin(appDist, rest.join('/'));
+                    asset = contained ? await readAsset(contained, contentType) : null;
+                }
+            }
             if (!asset) {
                 return context.text('Not Found', 404);
             }
             return new Response(asset.body, {status: 200, headers: {'Content-Type': asset.contentType}});
         }
         if (context.req.path === '/ghost' || context.req.path.startsWith('/ghost/')) {
-            const asset = await readAsset(path.resolve(adminRoot, 'index.html'), 'text/html; charset=utf-8');
-            if (!asset) {
-                return context.text('Admin build not found', 404);
+            for (const adminRoot of adminRoots) {
+                const asset = await readAsset(path.resolve(adminRoot, 'index.html'), 'text/html; charset=utf-8');
+                if (asset) {
+                    return new Response(asset.body, {status: 200, headers: {'Content-Type': asset.contentType}});
+                }
             }
-            return new Response(asset.body, {status: 200, headers: {'Content-Type': asset.contentType}});
+            return context.text('Admin build not found', 404);
         }
 
         const route = matcher.matchRoute(context.req.path);

@@ -14,6 +14,9 @@ import {createSettingsService} from '../settings/service.js';
 import {createStaffRepository} from '../identity/repo.js';
 import {createStaffAuthService} from '../identity/service.js';
 import {createSubscriptionRepository} from '../subscriptions/repo.js';
+import {createMemberRepository} from '../members/repo.js';
+import {createMemberAuthService} from '../members/service.js';
+import {createMembersApiRouter} from './members-api.js';
 import {createNewsletterRepository} from '../newsletters/repo.js';
 import {createContentApiRouter} from './content-api.js';
 import {createAdminApiRouter} from './admin-api.js';
@@ -41,6 +44,8 @@ describe('ghost api compat facades', () => {
         const settingsService = createSettingsService(createSettingsRepository(db));
         const staffAuthService = createStaffAuthService(createStaffRepository(db), {ssoProviders: []});
         const subscriptionRepository = createSubscriptionRepository(db);
+        const memberRepository = createMemberRepository(db);
+        const memberAuthService = createMemberAuthService(memberRepository, 'open');
         const newsletterRepository = createNewsletterRepository(db);
 
         const siteUrl = 'http://localhost:2369';
@@ -57,8 +62,10 @@ describe('ghost api compat facades', () => {
             settingsService,
             staffAuthService,
             subscriptionRepository,
+            memberRepository,
             siteUrl
         }));
+        app.route('/members/api', createMembersApiRouter({memberAuthService}));
     });
 
     describe('content api', () => {
@@ -130,6 +137,22 @@ describe('ghost api compat facades', () => {
             expect(tags.tags[0]?.slug).toBe('news');
             const authors = await (await app.request('/ghost/api/content/authors/?key=any')).json() as {authors: Array<{slug: string}>};
             expect(authors.authors[0]?.slug).toBe('fixture');
+        });
+    });
+
+    describe('members api', () => {
+        it('reports anonymous visitors with 204', async () => {
+            const response = await app.request('/members/api/member/');
+            expect(response.status).toBe(204);
+        });
+
+        it('accepts magic link requests from portal', async () => {
+            const response = await app.request('/members/api/send-magic-link/', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({email: 'reader@example.com', emailType: 'signin'})
+            });
+            expect(response.status).toBe(201);
         });
     });
 
@@ -231,6 +254,57 @@ describe('ghost api compat facades', () => {
             expect(response.status).toBe(200);
             const contentResponse = await app.request('/ghost/api/content/posts?key=any');
             expect(contentResponse.status).toBe(200);
+        });
+
+        it('serves the boot endpoints the ember admin requests after signin', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const notifications = await app.request('/ghost/api/admin/notifications/', {headers: {cookie}});
+            expect(notifications.status).toBe(200);
+            expect(await notifications.json()).toMatchObject({notifications: []});
+
+            const themes = await app.request('/ghost/api/admin/themes/active/', {headers: {cookie}});
+            expect(themes.status).toBe(200);
+            const themesBody = await themes.json() as {themes: Array<{name: string; active: boolean}>};
+            expect(themesBody.themes[0]?.name).toBe('source');
+            expect(themesBody.themes[0]?.active).toBe(true);
+
+            const userUpdate = await app.request('/ghost/api/admin/users/1/?include=roles', {
+                method: 'PUT',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({users: [{id: '1', accessibility: '{"foo":true}'}]})
+            });
+            expect(userUpdate.status).toBe(200);
+            const updated = await userUpdate.json() as {users: Array<{id: string; accessibility: string | null}>};
+            expect(updated.users[0]?.id).toBe('1');
+
+            const members = await app.request('/ghost/api/admin/members/?order=id&limit=1&page=1', {headers: {cookie}});
+            expect(members.status).toBe(200);
+            const membersBody = await members.json() as {members: unknown[]; meta: {pagination: {total: number}}};
+            expect(Array.isArray(membersBody.members)).toBe(true);
+            expect(typeof membersBody.meta.pagination.total).toBe('number');
+        });
+
+        it('serves stats endpoints with empty-state data when analytics is not configured', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const tinybird = await app.request('/ghost/api/admin/tinybird/token/', {headers: {cookie}});
+            expect(tinybird.status).toBe(200);
+            expect(await tinybird.json()).toMatchObject({tinybird: {token: null}});
+
+            const memberCount = await app.request('/ghost/api/admin/stats/member_count/?date_from=2026-05-12', {headers: {cookie}});
+            expect(memberCount.status).toBe(200);
+            const memberCountBody = await memberCount.json() as {stats: Array<{free: number; paid: number; comped: number}>};
+            expect(Array.isArray(memberCountBody.stats)).toBe(true);
+
+            for (const path of ['/ghost/api/admin/stats/mrr/', '/ghost/api/admin/stats/subscriptions/', '/ghost/api/admin/stats/top-posts-views/', '/ghost/api/admin/stats/posts/687f639878ce35708d46d05b/stats/']) {
+                const response = await app.request(path, {headers: {cookie}});
+                expect(response.status, path).toBe(200);
+                const body = await response.json() as {stats: unknown[]};
+                expect(Array.isArray(body.stats), path).toBe(true);
+            }
         });
 
         it('logs out by deleting the session', async () => {
