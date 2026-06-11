@@ -10,6 +10,7 @@ import type {SubscriptionRepository} from '../subscriptions/repo.js';
 import type {MemberRepository} from '../members/repo.js';
 import {HttpError} from '../../platform/http/errors.js';
 import {buildPagination, compatSlugify, GHOST_COMPAT_VERSION, mapAdminPost, mapCompatNewsletter, mapCompatTag, mapCompatTier, resolveEntryHtml, singlePagination} from './mappers.js';
+import {renderLexicalHtml} from '../../frontend/rendering/lexical.js';
 import {slashTolerant} from './router-utils.js';
 
 type AdminApiDependencies = {
@@ -682,6 +683,96 @@ export const createAdminApiRouter = ({
         }
         return context.json({invitation: [{message: 'Invitation accepted.'}]});
     });
+
+    // Welcome (automated) emails: the settings UI creates/edits templates;
+    // the members module sends the active free one on signup.
+    const mapAutomatedEmail = (record: {id: string; slug: string; name: string; status: string; subject: string; lexical: string | null; senderName: string | null; senderEmail: string | null; senderReplyTo: string | null; createdAt: number; updatedAt: number | null}) => ({
+        id: record.id,
+        slug: record.slug,
+        name: record.name,
+        status: record.status,
+        subject: record.subject,
+        lexical: record.lexical,
+        sender_name: record.senderName,
+        sender_email: record.senderEmail,
+        sender_reply_to: record.senderReplyTo,
+        created_at: new Date(record.createdAt).toISOString(),
+        updated_at: record.updatedAt ? new Date(record.updatedAt).toISOString() : null
+    });
+
+    on.get('/automated_emails/', authed(async (context) => {
+        const records = await newsletterRepository.listAutomatedEmailDefinitions();
+        return context.json({automated_emails: records.map(mapAutomatedEmail), meta: singlePagination(records.length)});
+    }));
+
+    on.post('/automated_emails/', authed(async (context) => {
+        const body = await context.req.json<{automated_emails?: Array<Record<string, unknown>>}>().catch(() => ({} as Record<string, never>));
+        const wire = body.automated_emails?.[0];
+        if (!wire?.slug || !wire.subject) {
+            return context.json({errors: [{message: 'Slug and subject are required', type: 'ValidationError'}]}, 422);
+        }
+        const now = Date.now();
+        const record = await newsletterRepository.createAutomatedEmailDefinition({
+            id: crypto.randomUUID(),
+            slug: String(wire.slug),
+            name: asWireString(wire.name) ?? String(wire.slug),
+            status: asWireString(wire.status) ?? 'inactive',
+            subject: String(wire.subject),
+            lexical: asWireString(wire.lexical) ?? null,
+            senderName: asWireString(wire.sender_name) ?? null,
+            senderEmail: asWireString(wire.sender_email) ?? null,
+            senderReplyTo: asWireString(wire.sender_reply_to) ?? null,
+            createdAt: now,
+            updatedAt: now
+        });
+        return context.json({automated_emails: [mapAutomatedEmail(record)]}, 201);
+    }));
+
+    const automatedEmailUpdateHandler = authed(async (context: Context) => {
+        const existing = await newsletterRepository.getAutomatedEmailDefinitionById(context.req.param('id'));
+        if (!existing) {
+            return notFoundJson(context, 'Automated email');
+        }
+        const body = await context.req.json<{automated_emails?: Array<Record<string, unknown>>}>().catch(() => ({} as Record<string, never>));
+        const wire = body.automated_emails?.[0] ?? {};
+        const updated = await newsletterRepository.updateAutomatedEmailDefinition({
+            ...existing,
+            name: asWireString(wire.name) ?? existing.name,
+            status: asWireString(wire.status) ?? existing.status,
+            subject: asWireString(wire.subject) ?? existing.subject,
+            lexical: 'lexical' in wire ? asWireString(wire.lexical) ?? null : existing.lexical,
+            senderName: 'sender_name' in wire ? asWireString(wire.sender_name) ?? null : existing.senderName,
+            senderEmail: 'sender_email' in wire ? asWireString(wire.sender_email) ?? null : existing.senderEmail,
+            senderReplyTo: 'sender_reply_to' in wire ? asWireString(wire.sender_reply_to) ?? null : existing.senderReplyTo,
+            updatedAt: Date.now()
+        });
+        return context.json({automated_emails: [mapAutomatedEmail(updated)]});
+    });
+    router.put('/automated_emails/:id/', automatedEmailUpdateHandler);
+    router.put('/automated_emails/:id', automatedEmailUpdateHandler);
+
+    // Renders an unsaved draft for the modal's preview tab.
+    const automatedEmailPreviewHandler = authed(async (context: Context) => {
+        // The settings app posts the draft at the top level ({subject, lexical}).
+        const body = await context.req.json<{subject?: string; lexical?: string | null; automated_emails?: Array<{subject?: string; lexical?: string | null}>}>().catch(() => ({} as Record<string, never>));
+        const wire = body.automated_emails?.[0] ?? body;
+        let html = '';
+        if (wire.lexical) {
+            try {
+                html = await renderLexicalHtml(JSON.parse(wire.lexical) as Record<string, unknown>);
+            } catch {
+                html = '';
+            }
+        }
+        const document = `<!DOCTYPE html><html><body>${html}</body></html>`;
+        return context.json({automated_emails: [{
+            subject: wire.subject ?? '',
+            html: document,
+            plaintext: html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()
+        }]});
+    });
+    router.post('/automated_emails/:id/preview/', automatedEmailPreviewHandler);
+    router.post('/automated_emails/:id/preview', automatedEmailPreviewHandler);
 
     on.get('/notifications/', authed(async (context) => {
         return context.json({notifications: [], meta: {}});

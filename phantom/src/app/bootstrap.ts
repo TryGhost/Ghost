@@ -44,6 +44,7 @@ import {createCommentRepository} from '../modules/comments/repo.js';
 import {createCommentService} from '../modules/comments/service.js';
 import {getMetricsClient} from '../platform/metrics/client.js';
 import {createMemoryMailbox} from '../platform/mail/memory.js';
+import {renderLexicalHtml} from '../frontend/rendering/lexical.js';
 
 export const createAppDependencies = async () => {
     const config = loadConfig();
@@ -71,6 +72,11 @@ export const createAppDependencies = async () => {
     const metricsClient = getMetricsClient();
     const mailbox = createMemoryMailbox();
     const siteUrl = `http://localhost:${config.port}`;
+    const siteTitle = async () => {
+        const {settings} = await settingsService.listSettings();
+        const title = settings.find((setting) => setting.key === 'site.title')?.value;
+        return typeof title === 'string' ? title : 'Ghost';
+    };
     const memberAuthService = createMemberAuthService(
         memberRepository,
         config.memberAuth.signupPolicy,
@@ -79,10 +85,34 @@ export const createAppDependencies = async () => {
             send: mailbox.provider.send,
             siteUrl,
             // Resolved per send, after settingsService below is initialized.
-            siteTitle: async () => {
-                const {settings} = await settingsService.listSettings();
-                const title = settings.find((setting) => setting.key === 'site.title')?.value;
-                return typeof title === 'string' ? title : 'Ghost';
+            siteTitle,
+            // Welcome email: the active free template goes out as soon as a
+            // new member completes signup.
+            onMemberCreated: async (member) => {
+                const template = await newsletterRepository.getAutomatedEmailDefinitionBySlug('member-welcome-email-free');
+                if (!template || template.status !== 'active') {
+                    return;
+                }
+                let html = '';
+                if (template.lexical) {
+                    try {
+                        html = await renderLexicalHtml(JSON.parse(template.lexical) as Record<string, unknown>);
+                    } catch {
+                        html = '';
+                    }
+                }
+                const title = await siteTitle();
+                // Personalization tokens: {first_name} falls back to 'there'.
+                const firstName = member.name?.trim().split(/\s+/)[0] || 'there';
+                const subject = template.subject.replaceAll('{first_name}', firstName);
+                await mailbox.provider.send({
+                    to: member.email,
+                    from: template.senderEmail ?? `noreply@${new URL(siteUrl).hostname}`,
+                    fromName: template.senderName ?? title,
+                    subject,
+                    text: html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
+                    html: `<!DOCTYPE html><html><body>${html}</body></html>`
+                });
             }
         }
     );

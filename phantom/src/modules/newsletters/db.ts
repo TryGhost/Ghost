@@ -68,6 +68,22 @@ export const automatedEmailTable = sqliteTable('automated_emails', {
     createdAt: integer('created_at').notNull()
 });
 
+// Automated email templates (welcome emails); the per-member send log
+// stays in automated_emails above.
+export const automatedEmailDefinitionTable = sqliteTable('automated_email_definitions', {
+    id: text('id').primaryKey(),
+    slug: text('slug').notNull(),
+    name: text('name').notNull(),
+    status: text('status').notNull().default('inactive'),
+    subject: text('subject').notNull(),
+    lexical: text('lexical'),
+    senderName: text('sender_name'),
+    senderEmail: text('sender_email'),
+    senderReplyTo: text('sender_reply_to'),
+    createdAt: integer('created_at').notNull(),
+    updatedAt: integer('updated_at')
+});
+
 export const newsletterMembershipTable = sqliteTable('newsletter_memberships', {
     id: text('id').primaryKey(),
     newsletterId: text('newsletter_id').notNull(),
@@ -132,6 +148,8 @@ export type EmailEventRecord = typeof emailEventTable.$inferSelect;
 export type NewEmailEventRecord = typeof emailEventTable.$inferInsert;
 export type AutomatedEmailRecord = typeof automatedEmailTable.$inferSelect;
 export type NewAutomatedEmailRecord = typeof automatedEmailTable.$inferInsert;
+export type AutomatedEmailDefinitionRecord = typeof automatedEmailDefinitionTable.$inferSelect;
+export type NewAutomatedEmailDefinitionRecord = typeof automatedEmailDefinitionTable.$inferInsert;
 export type NewsletterMembershipRecord = typeof newsletterMembershipTable.$inferSelect;
 export type NewNewsletterMembershipRecord = typeof newsletterMembershipTable.$inferInsert;
 export type EmailTemplateRecord = typeof emailTemplateTable.$inferSelect;

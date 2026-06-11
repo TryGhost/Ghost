@@ -48,6 +48,11 @@ const createRepository = (): NewsletterRepository => {
             throw new Error('Not implemented');
         },
         listNewsletterSubscriberIds: async () => [],
+        listAutomatedEmailDefinitions: async () => [],
+        getAutomatedEmailDefinitionBySlug: async () => null,
+        getAutomatedEmailDefinitionById: async () => null,
+        createAutomatedEmailDefinition: async (r) => r as never,
+        updateAutomatedEmailDefinition: async (r) => r,
         getNewsletterMembership: async () => null,
         createEmailTemplate: async () => {
             throw new Error('Not implemented');

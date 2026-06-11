@@ -56,6 +56,7 @@ export {
     suppressionTable,
     emailEventTable,
     automatedEmailTable,
+    automatedEmailDefinitionTable,
     newsletterMembershipTable,
     emailTemplateTable,
     emailBatchTable,

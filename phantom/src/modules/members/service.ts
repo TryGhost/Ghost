@@ -53,9 +53,11 @@ const toMemberSessionResponse = (session: {
 });
 
 export type MemberMailContext = {
-    send: (message: {to: string; from: string; subject: string; html: string; text: string}) => Promise<void>;
+    send: (message: {to: string; from: string; fromName?: string; subject: string; html: string; text: string}) => Promise<void>;
     siteUrl: string;
     siteTitle: () => Promise<string>;
+    // Fired after a brand-new member finishes signup (welcome emails etc).
+    onMemberCreated?: (member: {id: string; email: string; name: string | null}) => Promise<void>;
 };
 
 export const createMemberAuthService = (
@@ -160,6 +162,9 @@ export const createMemberAuthService = (
                 createdAt: now
             });
             await recordAnalyticsEvent(member.id, 'member.signup');
+            if (mail?.onMemberCreated) {
+                await mail.onMemberCreated({id: member.id, email: member.email, name: member.name ?? null});
+            }
         } else {
             await repository.createAuthEvent({
                 id: randomUUID(),

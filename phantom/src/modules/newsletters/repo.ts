@@ -2,6 +2,9 @@ import {and, eq, inArray} from 'drizzle-orm';
 import type {DbClient} from '../../db/client.js';
 import {
     automatedEmailTable,
+    automatedEmailDefinitionTable,
+    type AutomatedEmailDefinitionRecord,
+    type NewAutomatedEmailDefinitionRecord,
     deliveryJobTable,
     emailEventTable,
     emailBatchRecipientTable,
@@ -53,6 +56,11 @@ export type NewsletterRepository = {
     listAutomatedEmailsByMember: (memberId: string, type: string) => Promise<AutomatedEmailRecord[]>;
     upsertNewsletterMembership: (membership: NewNewsletterMembershipRecord) => Promise<NewsletterMembershipRecord>;
     listNewsletterSubscriberIds: (newsletterId: string) => Promise<string[]>;
+    listAutomatedEmailDefinitions: () => Promise<AutomatedEmailDefinitionRecord[]>;
+    getAutomatedEmailDefinitionBySlug: (slug: string) => Promise<AutomatedEmailDefinitionRecord | null>;
+    getAutomatedEmailDefinitionById: (id: string) => Promise<AutomatedEmailDefinitionRecord | null>;
+    createAutomatedEmailDefinition: (record: NewAutomatedEmailDefinitionRecord) => Promise<AutomatedEmailDefinitionRecord>;
+    updateAutomatedEmailDefinition: (record: AutomatedEmailDefinitionRecord) => Promise<AutomatedEmailDefinitionRecord>;
     getNewsletterMembership: (newsletterId: string, memberId: string) => Promise<NewsletterMembershipRecord | null>;
     createEmailTemplate: (template: NewEmailTemplateRecord) => Promise<EmailTemplateRecord>;
     getEmailTemplateByType: (type: string) => Promise<EmailTemplateRecord | null>;
@@ -180,6 +188,39 @@ export const createNewsletterRepository = (db: DbClient): NewsletterRepository =
             .where(and(eq(automatedEmailTable.memberId, memberId), eq(automatedEmailTable.type, type)));
     };
 
+    const listAutomatedEmailDefinitions = async () => {
+        return db.select().from(automatedEmailDefinitionTable);
+    };
+
+    const getAutomatedEmailDefinitionBySlug = async (slug: string) => {
+        const rows = await db.select().from(automatedEmailDefinitionTable).where(eq(automatedEmailDefinitionTable.slug, slug)).limit(1);
+        return rows[0] ?? null;
+    };
+
+    const getAutomatedEmailDefinitionById = async (id: string) => {
+        const rows = await db.select().from(automatedEmailDefinitionTable).where(eq(automatedEmailDefinitionTable.id, id)).limit(1);
+        return rows[0] ?? null;
+    };
+
+    const createAutomatedEmailDefinition = async (record: NewAutomatedEmailDefinitionRecord) => {
+        await db.insert(automatedEmailDefinitionTable).values(record);
+        const created = await getAutomatedEmailDefinitionById(record.id);
+        if (!created) {
+            throw new Error('Automated email definition missing after insert');
+        }
+        return created;
+    };
+
+    const updateAutomatedEmailDefinition = async (record: AutomatedEmailDefinitionRecord) => {
+        const {id, ...updatable} = record;
+        await db.update(automatedEmailDefinitionTable).set(updatable).where(eq(automatedEmailDefinitionTable.id, id));
+        const updated = await getAutomatedEmailDefinitionById(id);
+        if (!updated) {
+            throw new Error('Automated email definition missing after update');
+        }
+        return updated;
+    };
+
     const listNewsletterSubscriberIds = async (newsletterId: string) => {
         const rows = await db
             .select()
@@ -300,6 +341,11 @@ export const createNewsletterRepository = (db: DbClient): NewsletterRepository =
         listAutomatedEmailsByMember,
         upsertNewsletterMembership,
         listNewsletterSubscriberIds,
+        listAutomatedEmailDefinitions,
+        getAutomatedEmailDefinitionBySlug,
+        getAutomatedEmailDefinitionById,
+        createAutomatedEmailDefinition,
+        updateAutomatedEmailDefinition,
         getNewsletterMembership,
         createEmailTemplate,
         getEmailTemplateByType,
