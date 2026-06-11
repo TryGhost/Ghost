@@ -17,7 +17,6 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
         openCommentForms: [],
         capabilities: {},
         member: null,
-        pageUrl: 'https://example.com/post',
         commentIdToScrollTo: null,
         t: str => str,
         ...appContext
@@ -149,7 +148,6 @@ describe('<CommentComponent>', function () {
                 openCommentForms: [],
                 capabilities: {dislikes: true},
                 member: null,
-                pageUrl: 'https://example.com/post',
                 commentIdToScrollTo: null,
                 t: str => str,
                 ...appContext
@@ -320,7 +318,7 @@ describe('<CommentComponent>', function () {
 
         const label = screen.getByTestId('pinned-comment-label');
         expect(label.parentElement).toHaveClass('ml-2');
-        expect(label.parentElement?.parentElement?.querySelector('a')).toHaveAttribute('href', `https://example.com/post#ghost-comments-${comment.id}`);
+        expect(label.parentElement?.parentElement?.querySelector('a')).toHaveAttribute('href', `#ghost-comments-${comment.id}`);
     });
 
     it('renders pinned badge as an unpin button for admins', function () {

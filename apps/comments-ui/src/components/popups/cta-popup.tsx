@@ -2,7 +2,7 @@ import CTABox from '../content/cta-box';
 import CloseButton from './close-button';
 import {useAppContext} from '../../app-context';
 
-const CTAPopup = () => {
+const CTAPopup = ({commentId}: {commentId?: string}) => {
     const {dispatchAction, isMember, isPaidOnly} = useAppContext();
 
     const stopPropagation = (event: React.MouseEvent) => {
@@ -19,7 +19,7 @@ const CTAPopup = () => {
         <div className="shadow-modal relative h-screen w-screen rounded-none bg-white p-[28px] text-center sm:h-auto sm:w-[500px] sm:rounded-xl sm:p-8 sm:text-left" onClick={close} onMouseDown={stopPropagation}>
             <div className="flex h-full flex-col justify-center pt-10 sm:justify-normal sm:pt-0">
                 <div className="flex flex-col items-center pb-3 pt-6" data-testid="cta-box">
-                    <CTABox isFirst={isFirst} isPaid={isPaidOnly} />
+                    <CTABox commentId={commentId} isFirst={isFirst} isPaid={isPaidOnly} />
                 </div>
                 <CloseButton close={close} />
             </div>

@@ -738,11 +738,20 @@ export default class App extends React.Component {
                 productYearlyPriceQueryRegex.test(pageQuery) ||
                 offersRegex.test(pageQuery)
             ) ? false : true;
+
+            // External callers (e.g. comments-ui) can request a post-sign-in redirect
+            // via #/portal/signin?redirect=<url>. Passed through unvalidated — the
+            // members middleware only honours same-site redirects at magic-link exchange.
+            const requestedRedirect = hashQuery.get('redirect');
+            const resolvedPageData = (page === 'signin' && requestedRedirect)
+                ? {...(pageData || {}), redirect: requestedRedirect}
+                : pageData;
+
             return {
                 showPopup,
                 ...(page ? {page} : {}),
                 ...(pageQuery ? {pageQuery} : {}),
-                ...(pageData ? {pageData} : {}),
+                ...(resolvedPageData ? {pageData: resolvedPageData} : {}),
                 ...(lastPage ? {lastPage} : {})
             };
         }

@@ -98,7 +98,6 @@ export type EditableAppContext = {
     commentIdToScrollTo: string | null,
     commentIdFromHash: string | null,
     showMissingCommentNotice: boolean,
-    pageUrl: string,
     supportEmail: string | null,
     isMember: boolean,
     isAdmin: boolean,

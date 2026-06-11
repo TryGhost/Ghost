@@ -1,11 +1,15 @@
 import reactStringReplace from 'react-string-replace';
+import {buildCommentPermalink} from '../../utils/helpers';
 import {useAppContext} from '../../app-context';
 
 type Props = {
     isFirst: boolean,
-    isPaid: boolean
+    isPaid: boolean,
+    // When the CTA was opened by clicking "Reply" on a comment, this is that
+    // comment's id — used to return the reader to it after signing in.
+    commentId?: string
 };
-const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
+const CTABox: React.FC<Props> = ({isFirst, isPaid, commentId}) => {
     const {accentColor, publication, member, t, commentCount} = useAppContext();
 
     const buttonStyle = {
@@ -23,6 +27,15 @@ const CTABox: React.FC<Props> = ({isFirst, isPaid}) => {
     };
 
     const handleSignInClick = () => {
+        // Ask Portal to return the reader to this comment after signing in. The
+        // redirect must be absolute (it is emailed as part of the magic link),
+        // so it is built from the live page URL at click time.
+        if (commentId) {
+            const redirect = new URL(window.location.href);
+            redirect.hash = buildCommentPermalink(commentId);
+            window.location.href = `#/portal/signin?redirect=${encodeURIComponent(redirect.toString())}`;
+            return;
+        }
         window.location.href = '#/portal/signin';
     };
 

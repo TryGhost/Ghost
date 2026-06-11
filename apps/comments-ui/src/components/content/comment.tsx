@@ -344,7 +344,7 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
 };
 
 export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
-    const {comments, t, pageUrl} = useAppContext();
+    const {comments, t} = useAppContext();
     const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
 
     let inReplyToSnippet = comment.in_reply_to_snippet;
@@ -363,7 +363,7 @@ export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
     }
 
     return (
-        <a className={linkClassName} data-testid="comment-in-reply-to" href={buildCommentPermalink(pageUrl, comment.in_reply_to_id)} target="_parent">{inReplyToSnippet}</a>
+        <a className={linkClassName} data-testid="comment-in-reply-to" href={buildCommentPermalink(comment.in_reply_to_id)} target="_parent">{inReplyToSnippet}</a>
     );
 };
 
@@ -374,7 +374,7 @@ type CommentHeaderProps = {
 }
 
 const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', useThreading}) => {
-    const {member, t, pageUrl} = useAppContext();
+    const {member, t} = useAppContext();
     const createdAtRelative = useRelativeTime(comment.created_at);
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
     const showReplyContext = !useThreading && comment.in_reply_to_id && comment.in_reply_to_snippet;
@@ -382,7 +382,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', u
     const timestampElement = (
         <a
             className="hover:underline"
-            href={buildCommentPermalink(pageUrl, comment.id)}
+            href={buildCommentPermalink(comment.id)}
             target="_parent"
             title={formatExplicitTime(comment.created_at)}
         >
@@ -493,7 +493,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highli
                 : <LikeCount count={comment.count.likes} liked={comment.liked} />
             }
             {showDislikeButton && <DislikeButton comment={comment} disabled={voteDisabled} setDisabled={setVoteDisabled} />}
-            {showReplyButton && <ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
+            {showReplyButton && <ReplyButton comment={comment} isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
             {showMoreButton && <MoreButton comment={comment} toggleEdit={openEditMode} />}
         </div>
     );
