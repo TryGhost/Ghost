@@ -1,9 +1,27 @@
 import * as Sentry from '@sentry/react';
 import {showToast} from '@tryghost/admin-x-design-system';
+import {toast as sonnerToast} from 'sonner';
 import {useCallback} from 'react';
 import toast from 'react-hot-toast';
 import {useFramework} from '../providers/framework-provider';
 import {APIError, ValidationError} from '../utils/errors';
+
+// There are two toast outlets: admin-x-design-system's DesignSystemProvider
+// renders react-hot-toast (marked with this class), shade's ShadeProvider
+// renders sonner - and the React shell can mount both at once. The marker's
+// presence in the DOM picks the library to emit to.
+function showErrorToast(message: React.ReactNode) {
+    if (document.querySelector('.toast-outlet-react-hot-toast')) {
+        toast.remove();
+        showToast({
+            message,
+            type: 'error'
+        });
+    } else {
+        sonnerToast.dismiss();
+        sonnerToast.error(message);
+    }
+}
 
 /**
  * Generic error handling for API calls. This is enabled by default for queries (can be disabled by
@@ -38,26 +56,15 @@ const useHandleError = () => {
             return;
         }
 
-        toast.remove();
-
         if (error instanceof APIError && error.response?.status === 418) {
             // We use this status in tests to indicate the API request was not mocked -
             // don't show a toast because it may block clicking things in the test
         } else if (error instanceof ValidationError && error.data?.errors[0]) {
-            showToast({
-                message: error.data.errors[0].context || error.data.errors[0].message,
-                type: 'error'
-            });
+            showErrorToast(error.data.errors[0].context || error.data.errors[0].message);
         } else if (error instanceof APIError) {
-            showToast({
-                message: error.message,
-                type: 'error'
-            });
+            showErrorToast(error.message);
         } else {
-            showToast({
-                message: 'Something went wrong, please try again.',
-                type: 'error'
-            });
+            showErrorToast('Something went wrong, please try again.');
         }
     }, [sentryDSN]);
 

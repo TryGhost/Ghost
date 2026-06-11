@@ -107,6 +107,7 @@
         "react": "catalog:",
         "react-dom": "catalog:",
         "react-hot-toast": "catalog:",
+        "sonner": "catalog:",
         "react-router": "catalog:"
     },
     "peerDependencies": {

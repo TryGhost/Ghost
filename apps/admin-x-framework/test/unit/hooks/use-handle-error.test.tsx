@@ -24,11 +24,19 @@ vi.mock('react-hot-toast', () => ({
     }
 }));
 
+vi.mock('sonner', () => ({
+    toast: {
+        error: vi.fn(),
+        dismiss: vi.fn()
+    }
+}));
+
 const mockShowToast = vi.fn();
 const mockToastRemove = vi.fn();
 
 import * as Sentry from '@sentry/react';
 import {showToast} from '@tryghost/admin-x-design-system';
+import {toast as sonnerToast} from 'sonner';
 import toast from 'react-hot-toast';
 
 const createWrapper = (sentryDSN?: string): React.FC<{children: ReactNode}> => {
@@ -151,7 +159,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(toast.remove).toHaveBeenCalled();
+        expect(sonnerToast.dismiss).toHaveBeenCalled();
     });
 
     it('does not show toast when withToast is false', () => {
@@ -162,6 +170,7 @@ describe('useHandleError', () => {
         result.current(error, {withToast: false});
 
         expect(showToast).not.toHaveBeenCalled();
+        expect(sonnerToast.error).not.toHaveBeenCalled();
     });
 
     it('does not show toast for 418 status (test indicator)', () => {
@@ -174,6 +183,28 @@ describe('useHandleError', () => {
         result.current(error);
 
         expect(showToast).not.toHaveBeenCalled();
+        expect(sonnerToast.error).not.toHaveBeenCalled();
+    });
+
+    it('routes toasts to react-hot-toast when its outlet is mounted', () => {
+        const outlet = document.createElement('div');
+        outlet.className = 'toast-outlet-react-hot-toast';
+        document.body.appendChild(outlet);
+
+        try {
+            const wrapper = createWrapper();
+            const {result} = renderHook(() => useHandleError(), {wrapper});
+
+            result.current(new Error('Test error'));
+
+            expect(showToast).toHaveBeenCalledWith({
+                message: 'Something went wrong, please try again.',
+                type: 'error'
+            });
+            expect(sonnerToast.error).not.toHaveBeenCalled();
+        } finally {
+            outlet.remove();
+        }
     });
 
     it('shows validation error message from context', () => {
@@ -199,10 +230,8 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'This field must be filled out',
-            type: 'error'
-        });
+        expect(sonnerToast.error).toHaveBeenCalledWith('This field must be filled out');
+        expect(showToast).not.toHaveBeenCalled();
     });
 
     it('shows validation error message when no context available', () => {
@@ -228,10 +257,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'Field is required',
-            type: 'error'
-        });
+        expect(sonnerToast.error).toHaveBeenCalledWith('Field is required');
     });
 
     it('shows API error message', () => {
@@ -242,10 +268,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'API Error occurred',
-            type: 'error'
-        });
+        expect(sonnerToast.error).toHaveBeenCalledWith('API Error occurred');
     });
 
     it('shows generic error message for unknown errors', () => {
@@ -256,10 +279,7 @@ describe('useHandleError', () => {
 
         result.current(error);
 
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'Something went wrong, please try again.',
-            type: 'error'
-        });
+        expect(sonnerToast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
     });
 
     it('handles string errors', () => {
@@ -269,10 +289,7 @@ describe('useHandleError', () => {
         result.current('String error');
 
         expect(console.error).toHaveBeenCalledWith('String error'); // eslint-disable-line no-console
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'Something went wrong, please try again.',
-            type: 'error'
-        });
+        expect(sonnerToast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
     });
 
     it('handles null/undefined errors', () => {
@@ -282,9 +299,6 @@ describe('useHandleError', () => {
         result.current(null);
 
         expect(console.error).toHaveBeenCalledWith(null); // eslint-disable-line no-console
-        expect(showToast).toHaveBeenCalledWith({
-            message: 'Something went wrong, please try again.',
-            type: 'error'
-        });
+        expect(sonnerToast.error).toHaveBeenCalledWith('Something went wrong, please try again.');
     });
 });
