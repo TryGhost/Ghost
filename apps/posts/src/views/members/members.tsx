@@ -30,7 +30,6 @@ interface MembersPageProps {
     emailAnalyticsEnabled: boolean;
     hasStripeEnabled: boolean;
     membershipsEnabled: boolean;
-    multipleSubsFilterEnabled: boolean;
     timezone: string;
 }
 
@@ -38,7 +37,6 @@ const MembersPage: React.FC<MembersPageProps> = ({
     emailAnalyticsEnabled,
     hasStripeEnabled,
     membershipsEnabled,
-    multipleSubsFilterEnabled,
     timezone
 }) => {
     const headerRef = useRef<HTMLDivElement | null>(null);
@@ -212,7 +210,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                                 )}
                             </FilterBar>
                         )}
-                        {hasStripeEnabled && multipleSubsFilterEnabled && (
+                        {hasStripeEnabled && (
                             <MultipleActiveSubscriptionsBanner
                                 nql={nql}
                                 search={search}
@@ -322,14 +320,12 @@ const Members: React.FC = () => {
     const membershipsEnabled = membersSignupAccess !== 'none';
     const emailAnalyticsEnabled = configData.config.emailAnalytics === true;
     const hasStripeEnabled = checkStripeEnabled(settingsData.settings, configData.config);
-    const multipleSubsFilterEnabled = configData.config.labs?.multipleSubsFilter === true;
 
     return (
         <MembersPage
             emailAnalyticsEnabled={emailAnalyticsEnabled}
             hasStripeEnabled={hasStripeEnabled}
             membershipsEnabled={membershipsEnabled}
-            multipleSubsFilterEnabled={multipleSubsFilterEnabled}
             timezone={timezone}
         />
     );
