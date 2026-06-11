@@ -15,6 +15,28 @@ export function parseFilterToAst(filter: string): AstNode | undefined {
     }
 }
 
+/**
+ * Joins clauses back into a single NQL filter. AND binds tighter than OR in
+ * NQL, so clauses with a root-level OR are parenthesized before joining.
+ */
+export function combineNqlAndClauses(clauses: Array<string | undefined>): string | undefined {
+    const present = clauses.filter((clause): clause is string => Boolean(clause));
+
+    if (present.length === 0) {
+        return undefined;
+    }
+
+    if (present.length === 1) {
+        return present[0];
+    }
+
+    return present.map((clause) => {
+        const ast = parseFilterToAst(clause);
+
+        return ast && Array.isArray(ast.$or) ? `(${clause})` : clause;
+    }).join('+');
+}
+
 export function stampPredicates(predicates: ParsedPredicate[]): FilterPredicate[] {
     return predicates.map((predicate, index) => ({
         ...predicate,

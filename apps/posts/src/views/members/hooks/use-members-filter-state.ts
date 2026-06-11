@@ -1,6 +1,7 @@
 import {Filter} from '@tryghost/shade/patterns';
+import {combineNqlAndClauses} from '../../filters/filter-query-core';
 import {getMemberFields} from '../member-fields';
-import {hasTimezoneSensitiveMemberFilter, isPredicateEnabled, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
+import {hasTimezoneSensitiveMemberFilter, isPredicateEnabled, parseMemberFilterState, serializeMemberFilters} from '../member-filter-query';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useSearchParams} from 'react-router';
 import type {MemberFields} from '../member-fields';
@@ -18,11 +19,13 @@ interface UseMembersFilterStateReturn {
     clearFilters: (options?: SetFiltersOptions) => void;
     clearAll: (options?: SetFiltersOptions) => void;
     hasFilterOrSearch: boolean;
+    hasUnknownFilters: boolean;
 }
 
 interface ToSearchParamsOptions {
     baseSearchParams: URLSearchParams;
     filters: Filter[];
+    unknownClauses: string[];
     search: string;
     timezone: string;
     fields: MemberFields;
@@ -47,9 +50,16 @@ function getEnabledFilters(filters: Filter[], fields: MemberFields): Filter[] {
     return filters.filter(predicate => isPredicateEnabled(predicate, fields));
 }
 
-function toSearchParams({baseSearchParams, filters, search, timezone, fields}: ToSearchParamsOptions): URLSearchParams {
+function buildFilterNql(filters: Filter[], unknownClauses: string[], timezone: string, fields: MemberFields): string | undefined {
+    return combineNqlAndClauses([
+        serializeMemberFilters(getEnabledFilters(filters, fields), timezone),
+        ...unknownClauses
+    ]);
+}
+
+function toSearchParams({baseSearchParams, filters, unknownClauses, search, timezone, fields}: ToSearchParamsOptions): URLSearchParams {
     const params = new URLSearchParams(baseSearchParams);
-    const filter = serializeMemberFilters(getEnabledFilters(filters, fields), timezone);
+    const filter = buildFilterNql(filters, unknownClauses, timezone, fields);
 
     params.delete('filter');
     params.delete('search');
@@ -65,6 +75,13 @@ function toSearchParams({baseSearchParams, filters, search, timezone, fields}: T
     return params;
 }
 
+/**
+ * Filter state for the members list, synced with the `filter`/`search` URL
+ * params. NQL clauses the filter UI can't represent (unknown fields, OR
+ * groups, operators the field map doesn't advertise) are preserved: they stay
+ * in the URL and in `nql` alongside any chips the user edits, and are only
+ * removed by `clearFilters`/`clearAll`.
+ */
 export function useMembersFilterState(timezone: string): UseMembersFilterStateReturn {
     const fields = useMemo(() => getMemberFields(), []);
     const [searchParams, setSearchParams] = useSearchParams();
@@ -72,8 +89,8 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
     const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
     const currentQuery = useMemo(() => searchParams.toString(), [searchParams]);
 
-    const parsedFilters = useMemo(() => {
-        return getEnabledFilters(parseMemberFilter(filterParam, timezone), fields);
+    const {predicates: parsedFilters, unknownClauses} = useMemo(() => {
+        return parseMemberFilterState(filterParam, timezone, fields);
     }, [filterParam, timezone, fields]);
     const [filters, setDraftFilters] = useState<Filter[]>(parsedFilters);
 
@@ -82,8 +99,8 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
     }, [searchParams]);
 
     const nql = useMemo(() => {
-        return serializeMemberFilters(getEnabledFilters(filters, fields), timezone);
-    }, [filters, timezone, fields]);
+        return buildFilterNql(filters, unknownClauses, timezone, fields);
+    }, [filters, unknownClauses, timezone, fields]);
 
     useEffect(() => {
         if (currentQuery !== lastWrittenQueryRef.current) {
@@ -100,6 +117,7 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
         const nextParams = toSearchParams({
             baseSearchParams: searchParams,
             filters,
+            unknownClauses,
             search,
             timezone,
             fields
@@ -110,13 +128,14 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
             lastWrittenQueryRef.current = nextQuery;
             setSearchParams(nextParams, {replace: true});
         }
-    }, [currentQuery, filters, search, searchParams, setSearchParams, timezone, fields]);
+    }, [currentQuery, filters, unknownClauses, search, searchParams, setSearchParams, timezone, fields]);
 
     const setFilters = useCallback((nextFilters: Filter[], setOptions: SetFiltersOptions = {}) => {
         const replace = setOptions.replace ?? true;
         const nextParams = toSearchParams({
             baseSearchParams: searchParams,
             filters: nextFilters,
+            unknownClauses,
             search,
             timezone,
             fields
@@ -125,13 +144,14 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
         setDraftFilters(nextFilters);
         lastWrittenQueryRef.current = nextParams.toString();
         setSearchParams(nextParams, {replace});
-    }, [search, searchParams, setSearchParams, timezone, fields]);
+    }, [search, searchParams, setSearchParams, timezone, fields, unknownClauses]);
 
     const setSearch = useCallback((nextSearch: string, setOptions: SetFiltersOptions = {}) => {
         const replace = setOptions.replace ?? true;
         const nextParams = toSearchParams({
             baseSearchParams: searchParams,
             filters,
+            unknownClauses,
             search: nextSearch,
             timezone,
             fields
@@ -139,12 +159,13 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
 
         lastWrittenQueryRef.current = nextParams.toString();
         setSearchParams(nextParams, {replace});
-    }, [filters, searchParams, setSearchParams, timezone, fields]);
+    }, [filters, unknownClauses, searchParams, setSearchParams, timezone, fields]);
 
     const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {
         const nextParams = toSearchParams({
             baseSearchParams: searchParams,
             filters: [],
+            unknownClauses: [],
             search,
             timezone,
             fields
@@ -159,6 +180,7 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
         const nextParams = toSearchParams({
             baseSearchParams: searchParams,
             filters: [],
+            unknownClauses: [],
             search: '',
             timezone,
             fields
@@ -177,6 +199,7 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
         setSearch,
         clearFilters,
         clearAll,
-        hasFilterOrSearch: Boolean(nql) || search.length > 0
+        hasFilterOrSearch: Boolean(nql) || search.length > 0,
+        hasUnknownFilters: unknownClauses.length > 0
     };
 }

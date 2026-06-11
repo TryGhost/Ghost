@@ -41,8 +41,7 @@ describe('memberFields', () => {
             'opened_emails.post_id',
             'clicked_links.post_id',
             'newsletter_feedback',
-            'offer_redemptions',
-            'count.active_stripe_customers'
+            'offer_redemptions'
         ]);
     });
 

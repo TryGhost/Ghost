@@ -1,6 +1,6 @@
+import {combineNqlAndClauses, dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates} from './filter-query-core';
 import {defineFields} from './filter-types';
 import {describe, expect, it} from 'vitest';
-import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates} from './filter-query-core';
 import {numberCodec, scalarCodec} from './filter-codecs';
 import type {AstNode} from './filter-ast';
 import type {FilterPredicate} from './filter-types';
@@ -118,5 +118,20 @@ describe('filter-query-core', () => {
 
         expect([...fieldKeys]).toEqual(['created_at', 'created_at_utc']);
         expect(hasFieldKey(ast, fieldKeys)).toBe(true);
+    });
+});
+
+describe('combineNqlAndClauses', () => {
+    it('joins clauses with AND and skips empty entries', () => {
+        expect(combineNqlAndClauses(['status:paid', undefined, 'label:vip'])).toBe('status:paid+label:vip');
+    });
+
+    it('parenthesizes clauses with a top-level OR so precedence survives the join', () => {
+        expect(combineNqlAndClauses(['status:paid', 'label:vip,name:jamie'])).toBe('status:paid+(label:vip,name:jamie)');
+    });
+
+    it('returns a single clause verbatim and undefined when nothing remains', () => {
+        expect(combineNqlAndClauses(['status:paid,label:vip'])).toBe('status:paid,label:vip');
+        expect(combineNqlAndClauses([undefined])).toBeUndefined();
     });
 });

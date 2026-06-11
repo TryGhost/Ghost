@@ -1,20 +1,23 @@
-import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD} from './multiple-active-subscriptions';
-
 const BULK_DELETE_RESTRICTED_FILTERS = [
     'subscriptions.plan_interval',
     'subscriptions.status',
     'subscriptions.start_date',
     'subscriptions.current_period_end',
     'conversion',
-    'offer_redemptions',
-    MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD
+    'offer_redemptions'
 ];
 
 type FilterLike = {
     field: string;
 };
 
-export function canBulkDeleteMembers(filters: FilterLike[], _nql?: string): boolean {
+export function canBulkDeleteMembers(filters: FilterLike[], _nql?: string, hasUnknownFilters = false): boolean {
+    // Unknown NQL clauses have no filter UI representation, so we can't vouch
+    // for the bulk-destroy endpoint supporting them.
+    if (hasUnknownFilters) {
+        return false;
+    }
+
     if (_nql && filters.length === 0) {
         return false;
     }

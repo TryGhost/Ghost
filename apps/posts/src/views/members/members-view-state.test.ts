@@ -13,7 +13,8 @@ describe('members-view-state', () => {
         expect(canBulkDeleteMembers([], '(subscriptions.status:active,status:free)')).toBe(false);
     });
 
-    it('disables bulk delete for the multiple active subscriptions filter', () => {
-        expect(canBulkDeleteMembers([{field: 'count.active_stripe_customers'}], 'count.active_stripe_customers:>1')).toBe(false);
+    it('disables bulk delete for filters preserved as unknown NQL clauses', () => {
+        expect(canBulkDeleteMembers([], 'count.active_stripe_customers:>1')).toBe(false);
+        expect(canBulkDeleteMembers([{field: 'status'}], 'status:paid+count.active_stripe_customers:>1', true)).toBe(false);
     });
 });

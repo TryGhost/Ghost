@@ -1,4 +1,5 @@
 import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
+import {extractAndClauses, serializeAstToNql} from '../filters/filter-ast';
 import {memberFields} from './member-fields';
 import {resolveField} from '../filters/resolve-field';
 import type {AstNode} from '../filters/filter-ast';
@@ -189,13 +190,23 @@ const MEMBER_COMPOUND_MATCHERS: CompoundMatcher[] = [
     matchFeedbackGroupedNode
 ];
 
-function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
+function matchMemberCompoundNode(node: AstNode): ParsedPredicate | null {
     for (const matcher of MEMBER_COMPOUND_MATCHERS) {
         const parsed = matcher(node);
 
         if (parsed) {
-            return [parsed];
+            return parsed;
         }
+    }
+
+    return null;
+}
+
+function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
+    const matched = matchMemberCompoundNode(node);
+
+    if (matched) {
+        return [matched];
     }
 
     const compound = getCompoundChildren(node);
@@ -207,18 +218,74 @@ function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
     return dispatchSimpleNodes([node], memberFields, timezone);
 }
 
+export interface ParsedMemberFilterState {
+    predicates: FilterPredicate[];
+    unknownClauses: string[];
+}
+
+interface MemberFilterClause {
+    node: AstNode;
+    predicates: ParsedPredicate[];
+}
+
 /**
- * Parses NQL into predicates. Pure: callers are responsible for filtering the
- * output via `isPredicateEnabled` against the field map they want to enforce.
+ * Parses NQL and splits the AST into its top-level AND clauses, each parsed
+ * independently. Clauses the member field map can't represent come back with
+ * an empty `predicates` array, so callers can preserve their NQL instead of
+ * silently dropping properties they don't understand.
  */
-export function parseMemberFilter(filter: string | undefined, timezone: string): FilterPredicate[] {
+function parseMemberFilterClauses(filter: string | undefined, timezone: string): MemberFilterClause[] {
     const ast = parseFilterToAst(filter ?? '');
 
     if (!ast) {
         return [];
     }
 
-    return stampPredicates(parseMemberNode(ast, timezone));
+    // Legacy Ember compounds can span the whole filter without parentheses
+    // (e.g. `subscribed:true+email_disabled:0`), so the matchers get a shot
+    // at the root before the filter is split into clauses.
+    const rootCompound = matchMemberCompoundNode(ast);
+
+    if (rootCompound) {
+        return [{node: ast, predicates: [rootCompound]}];
+    }
+
+    return extractAndClauses(ast).map(node => ({node, predicates: parseMemberNode(node, timezone)}));
+}
+
+/**
+ * Parses NQL into the state the filter UI works with: predicates for every
+ * clause the field map can represent (enforced via `isPredicateEnabled`),
+ * plus the re-serialized NQL of every clause it cannot. Unknown clauses
+ * still filter the member list — they just have no UI representation.
+ */
+export function parseMemberFilterState(filter: string | undefined, timezone: string, fields: MemberFields): ParsedMemberFilterState {
+    const known: ParsedPredicate[] = [];
+    const unknownClauses: string[] = [];
+
+    for (const clause of parseMemberFilterClauses(filter, timezone)) {
+        const enabled = clause.predicates.filter(predicate => isPredicateEnabled(predicate, fields));
+
+        if (enabled.length > 0) {
+            known.push(...enabled);
+        } else {
+            const nql = serializeAstToNql(clause.node);
+
+            if (nql !== undefined) {
+                unknownClauses.push(nql);
+            }
+        }
+    }
+
+    return {predicates: stampPredicates(known), unknownClauses};
+}
+
+/**
+ * Parses NQL into predicates. Pure: callers are responsible for filtering the
+ * output via `isPredicateEnabled` against the field map they want to enforce.
+ */
+export function parseMemberFilter(filter: string | undefined, timezone: string): FilterPredicate[] {
+    return stampPredicates(parseMemberFilterClauses(filter, timezone).flatMap(clause => clause.predicates));
 }
 
 export function hasTimezoneSensitiveMemberFilter(filter: string | undefined): boolean {

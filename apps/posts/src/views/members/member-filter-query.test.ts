@@ -1,6 +1,6 @@
 import {describe, expect, it} from 'vitest';
 import {getMemberFields} from './member-fields';
-import {hasTimezoneSensitiveMemberFilter, isPredicateEnabled, parseMemberFilter, serializeMemberFilters} from './member-filter-query';
+import {hasTimezoneSensitiveMemberFilter, isPredicateEnabled, parseMemberFilter, parseMemberFilterState, serializeMemberFilters} from './member-filter-query';
 import type {FilterPredicate} from '../filters/filter-types';
 
 function stripIds(predicates: FilterPredicate[]) {
@@ -309,5 +309,57 @@ describe('isPredicateEnabled', () => {
             {field: 'not_a_real_field', operator: 'is', values: ['anything']},
             fields
         )).toBe(false);
+    });
+});
+
+describe('parseMemberFilterState', () => {
+    const fields = getMemberFields();
+
+    it('partitions a filter into enabled predicates and unknown clauses', () => {
+        const state = parseMemberFilterState(
+            'count.active_stripe_customers:>1+status:paid+(label:vip,name:jamie)',
+            'UTC',
+            fields
+        );
+
+        expect(stripIds(state.predicates)).toEqual([
+            {field: 'status', operator: 'is', values: ['paid']}
+        ]);
+        expect(state.unknownClauses).toEqual([
+            'count.active_stripe_customers:>1',
+            'label:vip,name:jamie'
+        ]);
+    });
+
+    it('treats clauses with only disabled predicates as unknown', () => {
+        // `subscriptions.current_period_end` only advertises the future
+        // direction, so the past form has no UI representation.
+        const state = parseMemberFilterState('subscriptions.current_period_end:>=now-7d', 'UTC', fields);
+
+        expect(state.predicates).toEqual([]);
+        expect(state.unknownClauses).toEqual(['subscriptions.current_period_end:>=now-7d']);
+    });
+
+    it('keeps unwrapped root compounds as predicates rather than unknown clauses', () => {
+        const state = parseMemberFilterState('subscribed:true+email_disabled:0', 'UTC', fields);
+
+        expect(stripIds(state.predicates)).toEqual([
+            {field: 'subscribed', operator: 'is', values: ['subscribed']}
+        ]);
+        expect(state.unknownClauses).toEqual([]);
+    });
+
+    it('drops filters that are not valid NQL', () => {
+        expect(parseMemberFilterState('status:+label:vip', 'UTC', fields)).toEqual({
+            predicates: [],
+            unknownClauses: []
+        });
+    });
+
+    it('returns empty state for empty input', () => {
+        expect(parseMemberFilterState(undefined, 'UTC', fields)).toEqual({
+            predicates: [],
+            unknownClauses: []
+        });
     });
 });
