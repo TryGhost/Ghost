@@ -379,6 +379,27 @@
             ]
         },
 
+        // These are published by us but live outside the @tryghost/ npm scope,
+        // so they miss the shared preset's "0 days" trusted-package exemption
+        // and would otherwise soak for 72h like third-party releases. Mirrors
+        // the pnpm-workspace.yaml minimumReleaseAgeExclude list. knex-migrator
+        // is currently in ignoreDeps, but is listed for when that's lifted.
+        // Deliberately NOT listed: sqlite3 — TryGhost stewards it, but legacy
+        // (Mapbox-era) npm maintainer accounts can still publish, so the soak
+        // retains value there.
+        {
+            "description": "No release-age soak for unscoped TryGhost-published packages",
+            "matchPackageNames": [
+                "bookshelf-relations",
+                "eslint-plugin-ghost",
+                "express-hbs",
+                "ghost-storage-base",
+                "gscan",
+                "knex-migrator"
+            ],
+            "minimumReleaseAge": "0 days"
+        },
+
         // Group each pinned-version pnpm catalog into a single PR per catalog.
         //
         // The named catalogs in pnpm-workspace.yaml (react17, eslint9,
