@@ -48,8 +48,8 @@ catalog:
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
   '@tryghost/api-framework': 3.2.3
-  '@tryghost/color-utils': 0.2.18
-  '@tryghost/custom-fonts': 1.0.10
+  '@tryghost/color-utils': 0.2.19
+  '@tryghost/custom-fonts': 1.0.11
   '@tryghost/debug': 2.2.1
   '@tryghost/domain-events': 3.2.3
   '@tryghost/helpers': 1.1.105
