@@ -15,7 +15,7 @@ const BUILTIN_LABELS: Record<string, string> = {email: 'Email', name: 'Name'};
 const typeLabel = (type: customFields.FieldType) => customFields.TYPES.find(t => t.value === type)?.label || type;
 
 const Badge: React.FC<{children: React.ReactNode}> = ({children}) => (
-    <span className='inline-flex items-center rounded-sm bg-grey-200 px-1.5 py-0.5 text-xs font-medium text-grey-700 dark:bg-grey-900 dark:text-grey-500'>
+    <span className='inline-flex shrink-0 items-center rounded-sm bg-grey-200 px-1.5 py-0.5 text-xs font-medium whitespace-nowrap text-grey-700 dark:bg-grey-900 dark:text-grey-500'>
         {children}
     </span>
 );
@@ -163,7 +163,7 @@ const FormFieldsList: React.FC<{
                         return (
                             <>
                                 <span className='inline-flex min-w-0 flex-1 items-center gap-2'>
-                                    <span className='font-medium'>{label}</span>
+                                    <span className='min-w-0 truncate font-medium'>{label}</span>
                                     {badge && <Badge>{badge}</Badge>}
                                 </span>
                                 {renderControl(item)}
@@ -182,8 +182,8 @@ const FormFieldsList: React.FC<{
                         return option.label; // "New custom field" and any non-field option
                     }
                     return (
-                        <span className='flex items-center gap-2'>
-                            <span>{option.label}</span>
+                        <span className='flex min-w-0 items-center gap-2'>
+                            <span className='min-w-0 truncate'>{option.label}</span>
                             {meta.context === 'menu' && <Badge>{typeLabel(def.type)}</Badge>}
                         </span>
                     );

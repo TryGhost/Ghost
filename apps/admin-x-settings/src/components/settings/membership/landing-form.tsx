@@ -22,7 +22,7 @@ const LogoMark: React.FC<{accent: string; icon?: string; size: number; className
         <div className={`rounded-sm bg-cover bg-center ${className}`} style={{width: size, height: size, backgroundImage: `url(${icon})`}} />
     ) : (
         <div className={`flex items-center justify-center overflow-hidden rounded-full p-1 ${className}`} style={{width: size, height: size, backgroundColor: accent}}>
-            <img alt='' className='h-auto w-1/2' src={FakeLogo} />
+            <img alt='' className='h-auto w-5/6' src={FakeLogo} />
         </div>
     )
 );
