@@ -111,6 +111,85 @@ describe('Labels API', function () {
             });
     });
 
+    it('Errors when editing label to a name that already exists', async function () {
+        const loggingStub = sinon.stub(logging, 'error');
+
+        const {body: targetBody} = await agent
+            .post('labels')
+            .body({labels: [{
+                name: 'rename-target'
+            }]})
+            .expectStatus(201);
+
+        const {body} = await agent
+            .post('labels')
+            .body({labels: [{
+                name: 'rename-me'
+            }]})
+            .expectStatus(201);
+
+        const id = body.labels[0].id;
+
+        await agent
+            .put(`labels/${id}`)
+            .body({labels: [{name: 'rename-target'}]})
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+        sinon.assert.calledOnce(loggingStub);
+
+        await agent
+            .delete(`labels/${id}`)
+            .expectStatus(204);
+
+        await agent
+            .delete(`labels/${targetBody.labels[0].id}`)
+            .expectStatus(204);
+    });
+
+    it('Errors when adding label with a name over the schema limit', async function () {
+        const loggingStub = sinon.stub(logging, 'error');
+        await agent
+            .post('labels')
+            .body({labels: [{
+                name: 'a'.repeat(192)
+            }]})
+            .expectStatus(422)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+        sinon.assert.calledOnce(loggingStub);
+    });
+
+    it('Errors when editing non-existent label', async function () {
+        await agent
+            .put('labels/abcd1234abcd1234abcd1234')
+            .body({labels: [{name: 'does not matter'}]})
+            .expectStatus(404)
+            .matchBodySnapshot({
+                errors: [{
+                    id: anyErrorId
+                }]
+            })
+            .matchHeaderSnapshot({
+                'content-version': anyContentVersion,
+                etag: anyEtag
+            });
+    });
+
     it('Can destroy', async function () {
         const {body} = await agent
             .get('labels/slug/test/')
