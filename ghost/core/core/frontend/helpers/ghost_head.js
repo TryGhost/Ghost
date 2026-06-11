@@ -125,7 +125,7 @@ function getAnnouncementBarHelper(data) {
         const announcementVisibility = searchParam.has('announcement_vis');
 
         if (!announcement || !announcementVisibility) {
-            return;
+            return '';
         }
         attrs.announcement = escapeExpression(announcement);
         attrs['announcement-background'] = escapeExpression(announcementBackground);
@@ -385,10 +385,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (options.data.site.accent_color) {
             const accentColor = escapeExpression(options.data.site.accent_color);
             const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
-            const existingStyleIndex = _.findLastIndex(head, str => /<\/style>/.test(str));
+            const existingScriptIndex = _.findLastIndex(head, str => typeof str === 'string' && /<\/(style|script)>/.test(str));
 
-            if (existingStyleIndex !== -1) {
-                head[existingStyleIndex] = head[existingStyleIndex] + styleTag;
+            if (existingScriptIndex !== -1) {
+                head[existingScriptIndex] = head[existingScriptIndex] + styleTag;
             } else {
                 head.push(styleTag);
             }
