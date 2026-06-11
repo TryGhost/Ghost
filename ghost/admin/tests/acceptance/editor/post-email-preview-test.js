@@ -130,6 +130,5 @@ describe('Acceptance: Post email preview', function () {
         expect(iframeDocument, 'iframe document is available').to.exist;
         expect(iframeDocument.activeElement, 'iframe body receives focus').to.equal(iframeDocument.body);
         expect(iframeDocument.body.getAttribute('tabindex')).to.equal('-1');
-
     });
 });

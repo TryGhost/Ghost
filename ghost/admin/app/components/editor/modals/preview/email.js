@@ -90,30 +90,18 @@ export default class ModalPostPreviewEmailComponent extends Component {
     @action
     focusPreviewFrame(event) {
         const iframe = event?.target;
+        const body = iframe?.contentDocument?.body;
 
-        if (!iframe) {
+        if (!body) {
+            iframe?.contentWindow?.focus();
             return;
         }
 
-        try {
-            const body = iframe.contentDocument?.body;
-
-            if (body && !body.hasAttribute('tabindex')) {
-                body.setAttribute('tabindex', '-1');
-            }
-
-            try {
-                body?.focus({preventScroll: true});
-            } catch (focusError) {
-                body?.focus();
-            }
-        
-            if (!body) {
-                iframe.contentWindow?.focus();
-            }
-        } catch (error) {
-            iframe.contentWindow?.focus();
+        if (!body.hasAttribute('tabindex')) {
+            body.setAttribute('tabindex', '-1');
         }
+
+        body.focus({preventScroll: true});
     }
 
     @task({drop: true})
