@@ -8,6 +8,13 @@ export const memberTable = sqliteTable('members', {
     note: text('note'),
     geolocation: text('geolocation'),
     lastSeenAt: integer('last_seen_at'),
+    // Signup attribution (PRD section 16): the page that converted and the
+    // referrer source, resolved from the portal's url history.
+    attributionSource: text('attribution_source'),
+    attributionMedium: text('attribution_medium'),
+    attributionUrl: text('attribution_url'),
+    attributionTitle: text('attribution_title'),
+    attributionType: text('attribution_type'),
     createdAt: integer('created_at').notNull(),
     updatedAt: integer('updated_at').notNull()
 });
@@ -34,6 +41,11 @@ export const memberAuthTokenTable = sqliteTable('member_auth_tokens', {
     medium: text('medium'),
     campaign: text('campaign'),
     referrer: text('referrer'),
+    // Carried from signup to member creation when the link is used.
+    name: text('name'),
+    attributionUrl: text('attribution_url'),
+    attributionTitle: text('attribution_title'),
+    attributionType: text('attribution_type'),
     createdAt: integer('created_at').notNull(),
     expiresAt: integer('expires_at').notNull(),
     usedAt: integer('used_at')

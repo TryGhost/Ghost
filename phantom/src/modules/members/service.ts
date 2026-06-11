@@ -96,6 +96,10 @@ export const createMemberAuthService = (
             medium: input.attribution?.medium ?? null,
             campaign: input.attribution?.campaign ?? null,
             referrer: input.attribution?.referrer ?? null,
+            name: input.name ?? null,
+            attributionUrl: input.attribution?.url ?? null,
+            attributionTitle: input.attribution?.title ?? null,
+            attributionType: input.attribution?.type ?? null,
             createdAt: now,
             expiresAt: now + magicLinkTtlMs,
             usedAt: null
@@ -136,6 +140,12 @@ export const createMemberAuthService = (
                 id: randomUUID(),
                 email: token.email,
                 status: 'free',
+                name: token.name ?? null,
+                attributionSource: token.source ?? null,
+                attributionMedium: token.medium ?? null,
+                attributionUrl: token.attributionUrl ?? null,
+                attributionTitle: token.attributionTitle ?? null,
+                attributionType: token.attributionType ?? null,
                 createdAt: now,
                 updatedAt: now
             });

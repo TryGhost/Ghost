@@ -17,11 +17,16 @@ export const MemberSessionSchema = z.object({
 
 export const MagicLinkRequestSchema = z.object({
     email: z.string().email(),
+    name: z.string().min(1).optional(),
     attribution: z.object({
         source: z.string().min(1).optional(),
         medium: z.string().min(1).optional(),
         campaign: z.string().min(1).optional(),
-        referrer: z.string().min(1).optional()
+        referrer: z.string().min(1).optional(),
+        // The converting page, resolved from the portal's url history.
+        url: z.string().min(1).optional(),
+        title: z.string().min(1).optional(),
+        type: z.string().min(1).optional()
     }).optional()
 });
 

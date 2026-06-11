@@ -180,6 +180,12 @@ const settingDefinitions: SettingDefinition[] = [
         defaultValue: 'all'
     },
     {
+        key: 'members.track_sources',
+        group: 'members',
+        type: 'boolean',
+        defaultValue: true
+    },
+    {
         key: 'members.default_content_visibility',
         group: 'members',
         type: 'string',

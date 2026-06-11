@@ -170,7 +170,7 @@ export const createApp = ({
         hostSettings: config.hostSettings,
         ...(mailbox ? {mailer: {send: mailbox.provider.send}} : {})
     }));
-    app.route('/members/api', createMembersApiRouter({memberAuthService}));
+    app.route('/members/api', createMembersApiRouter({memberAuthService, contentReader, siteUrl}));
     if (e2eReset) {
         app.post('/__e2e__/reset', async (context) => {
             await e2eReset();

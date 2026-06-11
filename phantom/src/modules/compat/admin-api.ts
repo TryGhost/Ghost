@@ -351,6 +351,7 @@ export const createAdminApiRouter = ({
             {key: 'members_signup_access', value: value('members.signup_access', 'all')},
             {key: 'default_content_visibility', value: value('members.default_content_visibility', 'public')},
             {key: 'members_support_address', value: 'noreply'},
+            {key: 'members_track_sources', value: Boolean(value('members.track_sources', true))},
             {key: 'members_enabled', value: Boolean(value('feature.membership', true))},
             {key: 'paid_members_enabled', value: false},
             {key: 'comments_enabled', value: value('feature.comments') ? 'all' : 'off'},
@@ -398,6 +399,7 @@ export const createAdminApiRouter = ({
         labs: {key: 'labs.flags', decode: (value) => (typeof value === 'string' ? JSON.parse(value) : value)},
         social_web_enabled: {key: 'social_web.enabled'},
         members_signup_access: {key: 'members.signup_access'},
+        members_track_sources: {key: 'members.track_sources'},
         default_content_visibility: {key: 'members.default_content_visibility'}
     };
 
@@ -564,7 +566,17 @@ export const createAdminApiRouter = ({
         })),
         newsletters: [],
         subscriptions: [],
-        attribution: null,
+        // The member details screen renders "Source — Direct" (and the
+        // converting page) from this; null referrer_source means Direct.
+        attribution: member.attributionUrl || member.attributionSource || member.attributionTitle ? {
+            id: null,
+            type: member.attributionType ?? 'url',
+            url: member.attributionUrl ?? null,
+            title: member.attributionTitle ?? null,
+            referrer_source: member.attributionSource ?? null,
+            referrer_medium: member.attributionMedium ?? null,
+            referrer_url: null
+        } : null,
         avatar_image: null,
         comped: false
     });

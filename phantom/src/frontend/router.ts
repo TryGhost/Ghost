@@ -213,6 +213,27 @@ export const createFrontendRouter = ({
     const portalAsset = path.resolve(process.cwd(), '..', 'apps', 'portal', 'umd', 'portal.min.js');
     const sodoSearchAsset = path.resolve(process.cwd(), '..', 'apps', 'sodo-search', 'umd', 'sodo-search.min.js');
     const memberAttributionAsset = path.resolve(process.cwd(), '..', 'ghost', 'core', 'core', 'frontend', 'src', 'member-attribution', 'member-attribution.js');
+    const urlAttributionAsset = path.resolve(process.cwd(), '..', 'ghost', 'core', 'core', 'frontend', 'src', 'utils', 'url-attribution.js');
+
+    // The attribution script in ghost/core is unbundled source (require +
+    // ES-module dep); compose a browser-runnable bundle once.
+    let memberAttributionBundle: string | null = null;
+    const getMemberAttributionBundle = async () => {
+        if (memberAttributionBundle) {
+            return memberAttributionBundle;
+        }
+        const [dep, script] = await Promise.all([
+            fs.readFile(urlAttributionAsset, 'utf8'),
+            fs.readFile(memberAttributionAsset, 'utf8')
+        ]);
+        const depInline = dep.replaceAll('export function', 'function');
+        const scriptInline = script
+            .replace("const urlAttribution = require('../utils/url-attribution');", '')
+            .replace('const parseReferrerData = urlAttribution.parseReferrerData;', '')
+            .replace('const getReferrer = urlAttribution.getReferrer;', '');
+        memberAttributionBundle = `(function () {\n${depInline}\n${scriptInline}\n})();`;
+        return memberAttributionBundle;
+    };
     const announcementBarAsset = path.resolve(process.cwd(), '..', 'apps', 'announcement-bar', 'umd', 'announcement-bar.min.js');
     // Prefer the admin build vendored into phantom (yarn admin:sync); fall
     // back to ghost/core's build output for monorepo development.
@@ -301,14 +322,14 @@ export const createFrontendRouter = ({
             return context.text('Not Found', 404);
         }
         if (assetPath === 'member-attribution.min.js') {
-            const asset = await readAsset(memberAttributionAsset, 'application/javascript; charset=utf-8');
-            if (!asset) {
+            const bundle = await getMemberAttributionBundle().catch(() => null);
+            if (!bundle) {
                 return context.text('Not Found', 404);
             }
-            return new Response(asset.body, {
+            return new Response(bundle, {
                 status: 200,
                 headers: {
-                    'Content-Type': asset.contentType
+                    'Content-Type': 'application/javascript; charset=utf-8'
                 }
             });
         }

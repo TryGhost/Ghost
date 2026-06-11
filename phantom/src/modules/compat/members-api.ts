@@ -1,18 +1,22 @@
 import {Hono} from 'hono';
 import {getCookie, deleteCookie} from 'hono/cookie';
 import type {MemberAuthService} from '../members/service.js';
+import type {FrontendContentReader} from '../content/frontend-reader.js';
+import {resolveAttribution, type UrlHistoryEntry} from '../members/attribution.js';
 import {HttpError} from '../../platform/http/errors.js';
 import {slashTolerant} from './router-utils.js';
 
 type MembersApiDependencies = {
     memberAuthService: MemberAuthService;
+    contentReader?: FrontendContentReader;
+    siteUrl?: string;
 };
 
 const MEMBER_SESSION_COOKIE = 'phantom-members-session';
 
 // Ghost Members API compat surface (decision #16): portal, comments and
 // signup-form talk to /members/api/* unmodified.
-export const createMembersApiRouter = ({memberAuthService}: MembersApiDependencies) => {
+export const createMembersApiRouter = ({memberAuthService, contentReader, siteUrl}: MembersApiDependencies) => {
     const router = new Hono();
     const on = slashTolerant(router);
 
@@ -57,13 +61,38 @@ export const createMembersApiRouter = ({memberAuthService}: MembersApiDependenci
     });
 
     on.post('/send-magic-link/', async (context) => {
-        const body = await context.req.json<{email?: string; emailType?: string}>().catch(() => ({} as Record<string, never>));
+        const body = await context.req.json<{email?: string; name?: string; emailType?: string; urlHistory?: UrlHistoryEntry[]}>().catch(() => ({} as Record<string, never>));
         if (!body.email) {
             return context.json({errors: [{message: 'No email provided', type: 'BadRequestError'}]}, 400);
         }
         const ipAddress = context.req.header('x-forwarded-for') ?? 'unknown';
+        // Signup attribution: resolve the portal's url history into the
+        // converting page + referrer source before issuing the link.
+        let attribution: Record<string, string> | undefined;
+        if (Array.isArray(body.urlHistory) && body.urlHistory.length > 0) {
+            const resolved = await resolveAttribution(body.urlHistory, async (path) => {
+                const slug = path.replaceAll('/', '');
+                if (!slug || !contentReader) {
+                    return null;
+                }
+                const entry = await contentReader.getEntryBySlug(slug);
+                return entry ? {title: entry.post.title, type: entry.post.type} : null;
+            }, siteUrl);
+            attribution = {
+                ...(resolved.source ? {source: resolved.source} : {}),
+                ...(resolved.medium ? {medium: resolved.medium} : {}),
+                ...(resolved.referrerUrl ? {referrer: resolved.referrerUrl} : {}),
+                ...(resolved.url ? {url: resolved.url} : {}),
+                ...(resolved.title ? {title: resolved.title} : {}),
+                ...(resolved.type ? {type: resolved.type} : {})
+            };
+        }
         try {
-            await memberAuthService.requestMagicLink({email: body.email}, ipAddress);
+            await memberAuthService.requestMagicLink({
+                email: body.email,
+                ...(body.name ? {name: body.name} : {}),
+                ...(attribution && Object.keys(attribution).length > 0 ? {attribution} : {})
+            }, ipAddress);
             return context.text('Created.', 201);
         } catch (error) {
             if (error instanceof HttpError) {
