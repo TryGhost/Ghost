@@ -29,7 +29,9 @@
    analytics (config.stats absent by design).
 
 ## Tests
-- `yarn test` — 98 tests green, including `src/modules/operations/importer.test.ts`
+- `yarn test` — 100 unit tests green; `yarn test:e2e` — 14 vendored Ghost
+  e2e tests green (signin deep-links, posts list, full tags suites,
+  public homepage) against a seeded phantom server, including `src/modules/operations/importer.test.ts`
   (real `test/fixtures/ghost-v5-export.json` fixture) and `src/db/ddl.test.ts`.
 
 ## Known gaps / next

@@ -473,9 +473,11 @@ export const createAdminApiRouter = ({
     on.get('/tags/', authed(async (context) => {
         const visibilityFilter = context.req.query('filter');
         const tags = await contentReader.listTagsWithCounts();
-        const filtered = visibilityFilter?.includes('visibility:public')
-            ? tags.filter(({tag}) => tag.visibility === 'public')
-            : tags;
+        const filtered = visibilityFilter?.includes('visibility:internal')
+            ? tags.filter(({tag}) => tag.visibility === 'internal')
+            : visibilityFilter?.includes('visibility:public')
+                ? tags.filter(({tag}) => tag.visibility === 'public')
+                : tags;
         filtered.sort((left, right) => left.tag.name.localeCompare(right.tag.name));
         return context.json({
             tags: filtered.map(({tag, postCount}) => ({
@@ -488,6 +490,34 @@ export const createAdminApiRouter = ({
 
 
     // --- Editor surface: read, create and save posts/pages ---
+
+    // Posts arrive with tags as [{id} | {name, slug}]; the content service
+    // links by slug.
+    const resolveWireTags = async (wire: WirePost): Promise<string[] | undefined> => {
+        if (!Array.isArray(wire.tags)) {
+            return undefined;
+        }
+        const tags = await contentReader.listTags();
+        const bySlug = new Map(tags.map((tag) => [tag.slug, tag]));
+        const byId = new Map(tags.map((tag) => [tag.id, tag]));
+        const slugs: string[] = [];
+        for (const entry of wire.tags as Array<Record<string, unknown>>) {
+            if (typeof entry !== 'object' || entry === null) {
+                continue;
+            }
+            const id = asWireString(entry.id);
+            const slug = asWireString(entry.slug);
+            const name = asWireString(entry.name);
+            if (id && byId.has(id)) {
+                slugs.push(byId.get(id)!.slug);
+            } else if (slug) {
+                slugs.push(slug);
+            } else if (name) {
+                slugs.push(bySlug.has(name) ? name : name.toLowerCase().replace(/[^a-z0-9]+/g, '-'));
+            }
+        }
+        return slugs;
+    };
 
     const wireToCreateInput = (wire: WirePost, type: 'post' | 'page') => ({
         title: asWireString(wire.title)?.trim() || '(Untitled)',
@@ -545,7 +575,8 @@ export const createAdminApiRouter = ({
                 return context.json({errors: [{message: 'No resource provided', type: 'ValidationError'}]}, 422);
             }
             try {
-                const input = wireToCreateInput(wire, type);
+                const tags = await resolveWireTags(wire);
+                const input = {...wireToCreateInput(wire, type), ...(tags ? {tags} : {})};
                 const created = await contentService.createPost(input, staff.id);
                 return respondWithEntry(context, created.post.id, key, 201);
             } catch (error) {
@@ -582,7 +613,8 @@ export const createAdminApiRouter = ({
                 }, 409);
             }
             try {
-                const input = wireToUpdateInput(wire);
+                const tags = await resolveWireTags(wire);
+                const input = {...wireToUpdateInput(wire), ...(tags ? {tags} : {})};
                 await contentService.updatePost(id, input, staff.id);
                 return respondWithEntry(context, id, key);
             } catch (error) {
@@ -687,6 +719,81 @@ export const createAdminApiRouter = ({
         const newsletters = await newsletterRepository.listNewsletters();
         return context.json({newsletters: newsletters.map(mapCompatNewsletter), meta: singlePagination(newsletters.length)});
     }));
+
+    const mapAdminTag = async (tagId: string) => {
+        const tags = await contentReader.listTagsWithCounts();
+        const match = tags.find(({tag}) => tag.id === tagId);
+        if (!match) {
+            return null;
+        }
+        return {...mapCompatTag(match.tag, siteUrl), count: {posts: match.postCount}};
+    };
+
+    on.get('/tags/slug/:slug/', authed(async (context) => {
+        const tag = await contentReader.getTagBySlug(context.req.param('slug'));
+        if (!tag) {
+            return context.json({errors: [{message: 'Tag not found.', type: 'NotFoundError'}]}, 404);
+        }
+        const mapped = await mapAdminTag(tag.id);
+        return context.json({tags: [mapped]});
+    }));
+
+    on.post('/tags/', authed(async (context) => {
+        const body = await context.req.json<{tags?: Array<Record<string, unknown>>}>().catch(() => ({} as Record<string, never>));
+        const wire = body.tags?.[0];
+        if (!wire || typeof wire.name !== 'string') {
+            return context.json({errors: [{message: 'Name is required', type: 'ValidationError'}]}, 422);
+        }
+        try {
+            const created = await contentService.createTag({
+                name: wire.name,
+                ...(typeof wire.slug === 'string' ? {slug: wire.slug} : {}),
+                ...(typeof wire.description === 'string' ? {description: wire.description} : {})
+            });
+            const mapped = await mapAdminTag(created.tag.id);
+            return context.json({tags: [mapped]}, 201);
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return context.json({errors: [{message: error.message, type: 'ValidationError'}]}, error.status as 422);
+            }
+            throw error;
+        }
+    }));
+
+    const tagUpdateHandler = authed(async (context: Context) => {
+        const body = await context.req.json<{tags?: Array<Record<string, unknown>>}>().catch(() => ({} as Record<string, never>));
+        const wire = body.tags?.[0] ?? {};
+        try {
+            const updated = await contentService.updateTag(context.req.param('id'), {
+                ...(typeof wire.name === 'string' ? {name: wire.name} : {}),
+                ...(typeof wire.slug === 'string' ? {slug: wire.slug} : {}),
+                ...(wire.description !== undefined ? {description: typeof wire.description === 'string' ? wire.description : null} : {})
+            });
+            const mapped = await mapAdminTag(updated.tag.id);
+            return context.json({tags: [mapped]});
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return context.json({errors: [{message: error.message, type: error.status === 404 ? 'NotFoundError' : 'ValidationError'}]}, error.status as 404);
+            }
+            throw error;
+        }
+    });
+    router.put('/tags/:id/', tagUpdateHandler);
+    router.put('/tags/:id', tagUpdateHandler);
+
+    const tagDeleteHandler = authed(async (context: Context) => {
+        try {
+            await contentService.deleteTag(context.req.param('id'));
+            return context.body(null, 204);
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return context.json({errors: [{message: error.message, type: 'NotFoundError'}]}, error.status as 404);
+            }
+            throw error;
+        }
+    });
+    router.delete('/tags/:id/', tagDeleteHandler);
+    router.delete('/tags/:id', tagDeleteHandler);
 
     return router;
 };

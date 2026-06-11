@@ -13,6 +13,7 @@ import type {
     AuthorProfileListResponse,
     AuthorProfileResponse,
     TagCreateRequest,
+    TagUpdateRequest,
     TagCreateResponse
 } from './contracts.js';
 import {HttpError} from '../../platform/http/errors.js';
@@ -35,6 +36,8 @@ export type ContentService = {
     updatePost: (id: string, input: PostUpdateRequest, editorId: string) => Promise<PostUpdateResponse>;
     deletePost: (id: string, editorId: string) => Promise<void>;
     createTag: (input: TagCreateRequest) => Promise<TagCreateResponse>;
+    updateTag: (id: string, input: TagUpdateRequest) => Promise<TagCreateResponse>;
+    deleteTag: (id: string) => Promise<void>;
     createCollection: (input: CollectionCreateRequest) => Promise<CollectionResponse>;
     listCollections: () => Promise<CollectionListResponse>;
     createAuthorProfile: (input: AuthorProfileCreateRequest) => Promise<AuthorProfileResponse>;
@@ -395,8 +398,19 @@ export const createContentService = (repository: ContentRepository): ContentServ
         });
     };
 
+    const toTagResponse = (tag: {id: string; name: string; slug: string; description: string | null; visibility: string}) => ({
+        tag: {
+            id: tag.id,
+            name: tag.name,
+            slug: tag.slug,
+            description: tag.description ?? null,
+            visibility: tag.visibility === 'internal' ? 'internal' as const : 'public' as const
+        }
+    });
+
     const createTag = async (input: TagCreateRequest) => {
-        const existing = await repository.getTagBySlug(input.slug);
+        const slug = input.slug ?? slugify(input.name);
+        const existing = await repository.getTagBySlug(slug);
         if (existing) {
             throw new HttpError(422, 'tag_exists', 'Tag slug already exists');
         }
@@ -404,16 +418,37 @@ export const createContentService = (repository: ContentRepository): ContentServ
         const tag = await repository.createTag({
             id: randomUUID(),
             name: input.name,
-            slug: input.slug
+            slug,
+            description: input.description ?? null,
+            // Ghost convention: hash-prefixed names are internal tags.
+            visibility: input.visibility ?? (input.name.startsWith('#') ? 'internal' : 'public')
         });
 
-        return {
-            tag: {
-                id: tag.id,
-                name: tag.name,
-                slug: tag.slug
-            }
-        };
+        return toTagResponse(tag);
+    };
+
+    const updateTag = async (id: string, input: TagUpdateRequest) => {
+        const existing = await repository.getTagById(id);
+        if (!existing) {
+            throw new HttpError(404, 'tag_not_found', 'Tag not found');
+        }
+        const name = input.name ?? existing.name;
+        const updated = await repository.updateTag({
+            ...existing,
+            name,
+            slug: input.slug ?? existing.slug,
+            description: input.description !== undefined ? input.description : existing.description,
+            visibility: input.visibility ?? (name.startsWith('#') ? 'internal' : existing.visibility)
+        });
+        return toTagResponse(updated);
+    };
+
+    const deleteTag = async (id: string) => {
+        const existing = await repository.getTagById(id);
+        if (!existing) {
+            throw new HttpError(404, 'tag_not_found', 'Tag not found');
+        }
+        await repository.deleteTag(id);
     };
 
     const createCollection = async (input: CollectionCreateRequest) => {
@@ -494,6 +529,8 @@ export const createContentService = (repository: ContentRepository): ContentServ
         updatePost,
         deletePost,
         createTag,
+        updateTag,
+        deleteTag,
         createCollection,
         listCollections,
         createAuthorProfile,

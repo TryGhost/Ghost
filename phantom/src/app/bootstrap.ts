@@ -34,6 +34,8 @@ import {createOperationsRepository} from '../modules/operations/repo.js';
 import {createOperationsService} from '../modules/operations/service.js';
 import {createGhostImporter} from '../modules/operations/importer.js';
 import {ensureCoreSchema} from '../db/ddl.js';
+import {createE2eReset} from '../modules/operations/e2e-seed.js';
+import {resolve as resolvePath} from 'node:path';
 import {createBillingRepository} from '../modules/billing/repo.js';
 import {createBillingService} from '../modules/billing/service.js';
 import {createExtensionsRepository} from '../modules/extensions/repo.js';
@@ -134,6 +136,9 @@ export const createAppDependencies = async () => {
         subscriptionRepository,
         newsletterRepository,
         memberRepository,
-        staffRepository
+        staffRepository,
+        ...(process.env.GHOST_E2E_RESET === '1'
+            ? {e2eReset: createE2eReset(db, resolvePath(process.cwd(), 'test', 'fixtures', 'ghost-v5-export.json'))}
+            : {})
     };
 };

@@ -71,6 +71,8 @@ export type AppDependencies = {
     commentService: CommentService;
     metricsClient: MetricsClient;
     contentReader: FrontendContentReader;
+    // Test-only: wired by bootstrap when GHOST_E2E_RESET=1.
+    e2eReset?: () => Promise<void>;
     subscriptionRepository: SubscriptionRepository;
     newsletterRepository: NewsletterRepository;
     memberRepository: MemberRepository;
@@ -102,7 +104,8 @@ export const createApp = ({
     subscriptionRepository,
     newsletterRepository,
     memberRepository,
-    staffRepository
+    staffRepository,
+    e2eReset
 }: AppDependencies) => {
     const app = new Hono();
     const api = new Hono();
@@ -162,6 +165,12 @@ export const createApp = ({
         siteUrl
     }));
     app.route('/members/api', createMembersApiRouter({memberAuthService}));
+    if (e2eReset) {
+        app.post('/__e2e__/reset', async (context) => {
+            await e2eReset();
+            return context.json({reset: true});
+        });
+    }
     app.route('/ghost/api/v10', api);
     app.route('/', createFrontendRouter({
         config,

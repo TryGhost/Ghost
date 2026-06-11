@@ -12,7 +12,8 @@
         "migrate:core": "tsx src/tools/migrate-from-core.ts",
         "build:theme": "tsx src/tools/build-theme-bundle.ts",
         "request:frontend": "tsx src/tools/request-frontend.ts",
-        "admin:sync": "cd .. && npx nx build @tryghost/admin && rsync -a --delete ghost/core/core/built/admin/ phantom/content/admin/"
+        "admin:sync": "cd .. && npx nx build @tryghost/admin && rsync -a --delete ghost/core/core/built/admin/ phantom/content/admin/",
+        "test:e2e": "playwright test -c e2e/playwright.config.ts"
     },
     "dependencies": {
         "@hono/node-server": "1.13.1",
@@ -28,6 +29,7 @@
         "zod": "3.24.1"
     },
     "devDependencies": {
+        "@playwright/test": "^1.60.0",
         "@types/node": "22.13.4",
         "drizzle-kit": "0.30.0",
         "tsx": "4.19.2",

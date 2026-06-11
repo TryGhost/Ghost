@@ -4,7 +4,9 @@
 at least one colocated test exercises them. Scaffolding (schema + routes
 without the behavior) does not qualify. UI-flow items (sections 16-19,
 Admin Settings) additionally require browser e2e tests running the existing
-apps against phantom.
+apps against phantom — the vendored suite lives in `e2e/`
+(`yarn test:e2e`), mirroring `/e2e`'s page objects and test bodies against
+a phantom server seeded from the real v5 export.
 
 Binding design rulings live in `decisions.md` — read it before grading or
 designing. This checklist reflects the 2026-06-10 source-grounded review
@@ -150,10 +152,12 @@ References (all in this directory):
 - [ ] Comment author controls
 
 ## 17) Admin content workflows
-- [ ] Posts app loads and refreshes
+- [ ] Posts app loads and refreshes (e2e: posts list shows imported post)
 - [ ] Custom views CRUD
 - [ ] Post preview/settings
-- [ ] Tag management
+- [x] Tag management (vendored upstream suites pass: tags list with
+      public/internal tabs and post counts, create/edit/dedupe/delete via
+      the real tags UI — `e2e/tests/admin/tags/`)
 - [ ] Member management
 - [ ] Comment moderation
 

@@ -510,6 +510,84 @@ describe('ghost api compat facades', () => {
             }
         });
 
+        it('creates, reads, updates and deletes tags', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const create = await app.request('/ghost/api/admin/tags/', {
+                method: 'POST',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({tags: [{name: 'Public Tag Name', slug: 'public-tag', description: 'Public Tag description'}]})
+            });
+            expect(create.status).toBe(201);
+            const created = await create.json() as {tags: Array<{id: string; slug: string; description: string | null; visibility: string}>};
+            expect(created.tags[0]?.slug).toBe('public-tag');
+            expect(created.tags[0]?.description).toBe('Public Tag description');
+            expect(created.tags[0]?.visibility).toBe('public');
+            const tagId = created.tags[0]!.id;
+
+            // Hash-prefixed names are internal tags.
+            const internal = await app.request('/ghost/api/admin/tags/', {
+                method: 'POST',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({tags: [{name: '#Internal Tag Name', slug: 'internal-tag', description: 'Internal Tag description'}]})
+            });
+            const internalBody = await internal.json() as {tags: Array<{visibility: string}>};
+            expect(internalBody.tags[0]?.visibility).toBe('internal');
+
+            const internalList = await app.request('/ghost/api/admin/tags/?filter=visibility%3Ainternal', {headers: {cookie}});
+            const internalListBody = await internalList.json() as {tags: Array<{slug: string}>};
+            expect(internalListBody.tags.some((tag) => tag.slug === 'internal-tag')).toBe(true);
+            expect(internalListBody.tags.some((tag) => tag.slug === 'public-tag')).toBe(false);
+
+            const bySlug = await app.request('/ghost/api/admin/tags/slug/public-tag/', {headers: {cookie}});
+            expect(bySlug.status).toBe(200);
+            const bySlugBody = await bySlug.json() as {tags: Array<{id: string}>};
+            expect(bySlugBody.tags[0]?.id).toBe(tagId);
+
+            const update = await app.request(`/ghost/api/admin/tags/${tagId}/`, {
+                method: 'PUT',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({tags: [{name: 'Renamed Tag', slug: 'renamed-tag', description: 'Updated'}]})
+            });
+            expect(update.status).toBe(200);
+            const updated = await update.json() as {tags: Array<{name: string; slug: string}>};
+            expect(updated.tags[0]?.name).toBe('Renamed Tag');
+
+            const remove = await app.request(`/ghost/api/admin/tags/${tagId}/`, {
+                method: 'DELETE',
+                headers: {cookie}
+            });
+            expect(remove.status).toBe(204);
+            const afterDelete = await app.request('/ghost/api/admin/tags/slug/renamed-tag/', {headers: {cookie}});
+            expect(afterDelete.status).toBe(404);
+
+            // Cleanup the internal tag to keep later assertions stable.
+            const internalId = internalBody.tags[0] as unknown as {id: string};
+            await app.request(`/ghost/api/admin/tags/${internalId.id}/`, {method: 'DELETE', headers: {cookie}});
+        });
+
+        it('links tags sent with post writes', async ({}) => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const tagCreate = await app.request('/ghost/api/admin/tags/', {
+                method: 'POST',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({tags: [{name: 'Linked Tag', slug: 'linked-tag'}]})
+            });
+            const tag = (await tagCreate.json() as {tags: Array<{id: string}>}).tags[0]!;
+
+            const postCreate = await app.request('/ghost/api/admin/posts/', {
+                method: 'POST',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({posts: [{title: 'Tagged post', status: 'published', lexical: JSON.stringify({root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}}), tags: [{id: tag.id}]}]})
+            });
+            expect(postCreate.status).toBe(201);
+            const created = await postCreate.json() as {posts: Array<{tags: Array<{slug: string}>}>};
+            expect(created.posts[0]?.tags.some((entry) => entry.slug === 'linked-tag')).toBe(true);
+        });
+
         it('serves the search index', async () => {
             const loginResponse = await login();
             const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;

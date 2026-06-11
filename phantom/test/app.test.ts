@@ -285,9 +285,21 @@ const contentService: ContentService = {
         tag: {
             id: 'tag',
             name: 'News',
-            slug: 'news'
+            slug: 'news',
+            description: null,
+            visibility: 'public' as const
         }
     }),
+    updateTag: async () => ({
+        tag: {
+            id: 'tag',
+            name: 'News',
+            slug: 'news',
+            description: null,
+            visibility: 'public' as const
+        }
+    }),
+    deleteTag: async () => undefined,
     updatePost: async () => ({
         post: {
             id: 'post',

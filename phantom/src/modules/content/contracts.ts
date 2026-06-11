@@ -19,7 +19,9 @@ export const PostSchema = z.object({
 export const TagSchema = z.object({
     id: z.string().min(1),
     name: z.string().min(1),
-    slug: z.string().min(1)
+    slug: z.string().min(1),
+    description: z.string().nullable().optional(),
+    visibility: z.enum(['public', 'internal']).optional()
 });
 
 export const CollectionSchema = z.object({
@@ -79,7 +81,16 @@ export const PostUpdateResponseSchema = PostResponseSchema;
 
 export const TagCreateRequestSchema = z.object({
     name: z.string().min(1),
-    slug: z.string().min(1)
+    slug: z.string().min(1).optional(),
+    description: z.string().nullable().optional(),
+    visibility: z.enum(['public', 'internal']).optional()
+});
+
+export const TagUpdateRequestSchema = z.object({
+    name: z.string().min(1).optional(),
+    slug: z.string().min(1).optional(),
+    description: z.string().nullable().optional(),
+    visibility: z.enum(['public', 'internal']).optional()
 });
 
 export const TagCreateResponseSchema = z.object({
@@ -131,6 +142,7 @@ export type PostResponse = z.infer<typeof PostResponseSchema>;
 export type PostUpdateRequest = z.infer<typeof PostUpdateRequestSchema>;
 export type PostUpdateResponse = z.infer<typeof PostUpdateResponseSchema>;
 export type TagCreateRequest = z.infer<typeof TagCreateRequestSchema>;
+export type TagUpdateRequest = z.infer<typeof TagUpdateRequestSchema>;
 export type TagCreateResponse = z.infer<typeof TagCreateResponseSchema>;
 export type CollectionCreateRequest = z.infer<typeof CollectionCreateRequestSchema>;
 export type CollectionResponse = z.infer<typeof CollectionResponseSchema>;

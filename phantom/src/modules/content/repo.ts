@@ -55,6 +55,9 @@ export type ContentRepository = {
     listTags: () => Promise<TagRecord[]>;
     countPostsPerTag: () => Promise<Map<string, number>>;
     getTagBySlug: (slug: string) => Promise<TagRecord | null>;
+    getTagById: (id: string) => Promise<TagRecord | null>;
+    updateTag: (tag: TagRecord) => Promise<TagRecord>;
+    deleteTag: (id: string) => Promise<void>;
     linkTagToPost: (postId: string, tagId: string) => Promise<void>;
     createCollection: (collection: NewCollectionRecord) => Promise<CollectionRecord>;
     listCollections: () => Promise<CollectionRecord[]>;
@@ -275,6 +278,26 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         return rows[0] ?? null;
     };
 
+    const getTagById = async (id: string) => {
+        const rows = await db.select().from(tagTable).where(eq(tagTable.id, id)).limit(1);
+        return rows[0] ?? null;
+    };
+
+    const updateTag = async (tag: TagRecord) => {
+        const {id, ...updatable} = tag;
+        await db.update(tagTable).set(updatable).where(eq(tagTable.id, id));
+        const rows = await db.select().from(tagTable).where(eq(tagTable.id, id)).limit(1);
+        if (!rows[0]) {
+            throw new Error('Tag missing after update');
+        }
+        return rows[0];
+    };
+
+    const deleteTag = async (id: string) => {
+        await db.delete(postTagTable).where(eq(postTagTable.tagId, id));
+        await db.delete(tagTable).where(eq(tagTable.id, id));
+    };
+
     const linkTagToPost = async (postId: string, tagId: string) => {
         await db.insert(postTagTable).values({postId, tagId});
     };
@@ -334,6 +357,9 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         listTags,
         countPostsPerTag,
         getTagBySlug,
+        getTagById,
+        updateTag,
+        deleteTag,
         linkTagToPost,
         createCollection,
         listCollections,
