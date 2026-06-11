@@ -111,6 +111,48 @@ describe('signup action', () => {
         });
         expect(result).not.toHaveProperty('action', 'signup:failed');
     });
+
+    test('shows an error when a logged-in member checkout finds an existing subscription', async () => {
+        const checkoutError = new Error('A subscription exists for this Member.') as Error & {code: string};
+        checkoutError.code = 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION';
+
+        const mockApi = {
+            member: {
+                checkoutPlan: vi.fn(() => Promise.reject(checkoutError))
+            }
+        };
+        const state = {
+            site: {},
+            member: {
+                name: 'Jamie Larson',
+                email: 'jamie@example.com',
+                paid: true
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'signup',
+            data: {
+                plan: 'price_123',
+                tierId: 'tier_123',
+                cadence: 'month'
+            },
+            state,
+            api: mockApi
+        });
+
+        // No sign-in email is sent for authenticated members, so the
+        // check-your-email page would be misleading.
+        expect(result).not.toHaveProperty('page', 'magiclink');
+        expect(result).toMatchObject({
+            action: 'signup:failed',
+            popupNotification: {
+                type: 'signup:failed',
+                status: 'error',
+                message: 'You already have an active subscription.'
+            }
+        });
+    });
 });
 
 describe('redeemGift action', () => {

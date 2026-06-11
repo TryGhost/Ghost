@@ -285,9 +285,9 @@ export default class App extends React.Component {
                 locale: i18nLanguage
             };
 
-            this.handleSignupQuery({site, pageQuery, member});
-
-            this.setState(state);
+            this.setState(state, () => {
+                this.handleSignupQuery({site, pageQuery, member});
+            });
 
             // Listen to preview mode changes
             this.hashHandler = () => {

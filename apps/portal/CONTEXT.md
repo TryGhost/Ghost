@@ -20,4 +20,4 @@ A site control that starts checkout for a membership plan, sending visitors dire
 
 An attempt to start checkout for a membership plan. Checkout attempts are protected by request limits across checkout traffic and repeated attempts against one email address.
 
-When a checkout attempt indicates that the submitted email should sign in instead, Portal continues with the sign-in email flow rather than asking the visitor to retry checkout.
+When a checkout attempt is rejected because an active paid subscription already exists: a signed-out visitor is continued into the sign-in email flow, while a signed-in member is told they already have an active subscription — no sign-in email is sent.
