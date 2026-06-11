@@ -521,21 +521,23 @@ jobs:
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
-        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
+        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> "$GITHUB_ENV"
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
         run: |
-          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
-          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
-          echo "database__connection__password=root" >> $GITHUB_ENV
+          {
+            echo "database__connection__host=127.0.0.1"
+            echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}"
+            echo "database__connection__password=root"
+          } >> "$GITHUB_ENV"
 
       - name: E2E tests
         run: |
           if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
-            pnpm nx run ghost:test:ci:e2e:no-coverage
-          else
             pnpm nx run ghost:test:ci:e2e
+          else
+            pnpm nx run ghost:test:ci:e2e:no-coverage
           fi
 
       - name: Start MinIO for integration tests
@@ -560,9 +562,9 @@ jobs:
       - name: Integration tests
         run: |
           if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
-            pnpm nx run ghost:test:ci:integration:no-coverage
-          else
             pnpm nx run ghost:test:ci:integration
+          else
+            pnpm --dir ghost/core test:ci:integration:no-coverage
           fi
 
       - name: Check for unexpected file changes
@@ -575,7 +577,7 @@ jobs:
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
+        if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'sqlite')
         with:
           name: e2e-coverage
           path: |

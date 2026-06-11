@@ -12,6 +12,7 @@ const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 
 const HOUR_MS = 60 * 60 * 1000;
+const WAIT_BOUNDARY_BUFFER_MS = 1000;
 const AUTOMATION_EMAIL_REPLY_TO = 'support@example.com';
 
 let agent;
@@ -173,7 +174,7 @@ describe('Members Automations', function () {
         try {
             for (const action of automation.actions) {
                 if (action.type === 'wait') {
-                    clock.setSystemTime(new Date(Date.now() + action.data.wait_hours * HOUR_MS));
+                    clock.setSystemTime(new Date(Date.now() + action.data.wait_hours * HOUR_MS + WAIT_BOUNDARY_BUFFER_MS));
                 }
 
                 await runSchedulerPoll();
