@@ -71,13 +71,13 @@ const editAutomationDataSchema = z.object({
     edges: z.array(edgeSchema)
 }).strict();
 
-let testDatabase: Knex | null = null;
+let testDatabasePromise: Promise<Knex> | null = null;
 
 const repository = createFakeDatabaseAutomationsRepository({
     getDatabase: async () => {
         if (process.env.NODE_ENV?.startsWith('testing')) {
-            testDatabase ??= await temporaryFakeAutomationsDatabase.createTemporaryFakeAutomationsDatabase();
-            return testDatabase;
+            testDatabasePromise ??= temporaryFakeAutomationsDatabase.createTemporaryFakeAutomationsDatabase();
+            return await testDatabasePromise;
         }
         return await temporaryFakeAutomationsDatabase.getTemporaryFakeAutomationsDatabase();
     }
@@ -320,6 +320,6 @@ export async function retryStep(...args: Parameters<AutomationsRepository['retry
 
 export function _resetTestDatabase() {
     if (process.env.NODE_ENV?.startsWith('testing')) {
-        testDatabase = null;
+        testDatabasePromise = null;
     }
 }
