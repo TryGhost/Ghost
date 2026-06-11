@@ -15,7 +15,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import {getGiftRedemptionErrorMessage} from './utils/gift-redemption-notification';
 import './app.css';
-import {hasRecommendations, arePaidMembersEnabled, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSameOriginUrl, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, arePaidMembersEnabled, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
 
@@ -739,12 +739,11 @@ export default class App extends React.Component {
                 offersRegex.test(pageQuery)
             ) ? false : true;
 
-            // Allow an external caller (e.g. comments-ui clicking "Reply") to request
-            // a post-sign-in redirect back to a specific URL via
-            // #/portal/signin?redirect=<url>. Restricted to same-origin URLs (origin
-            // compared, not a string prefix) so we never send a member off-site.
+            // External callers (e.g. comments-ui) can request a post-sign-in redirect
+            // via #/portal/signin?redirect=<url>. Passed through unvalidated — the
+            // members middleware only honours same-site redirects at magic-link exchange.
             const requestedRedirect = hashQuery.get('redirect');
-            const resolvedPageData = (page === 'signin' && requestedRedirect && isSameOriginUrl(requestedRedirect, site.url))
+            const resolvedPageData = (page === 'signin' && requestedRedirect)
                 ? {...(pageData || {}), redirect: requestedRedirect}
                 : pageData;
 

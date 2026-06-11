@@ -33,8 +33,7 @@ import {
     isComplimentaryMember,
     subscriptionHasFreeTrial,
     addMonths,
-    formatPrice,
-    isSameOriginUrl
+    formatPrice
 } from '../../src/utils/helpers';
 import * as Fixtures from '../../src/utils/fixtures-generator';
 import {site as FixturesSite, member as FixtureMember, offer as FixtureOffer, transformTierFixture as TransformFixtureTiers} from './test-fixtures';
@@ -989,37 +988,6 @@ describe('Helpers - ', () => {
         test('returns true when editor default email recipients is set to filter', () => {
             const site = {editor_default_email_recipients: 'filter'};
             expect(hasNewsletterSendingEnabled({site})).toBe(true);
-        });
-    });
-
-    describe('isSameOriginUrl -', () => {
-        test('accepts a same-origin url (e.g. a comment permalink on the site)', () => {
-            expect(isSameOriginUrl('https://example.com/my-post/#ghost-comments-abc', 'https://example.com/')).toBe(true);
-        });
-
-        test('accepts a same-origin url even when siteUrl has no trailing slash', () => {
-            expect(isSameOriginUrl('https://example.com/my-post/#ghost-comments-abc', 'https://example.com')).toBe(true);
-        });
-
-        test('rejects a cross-origin url', () => {
-            expect(isSameOriginUrl('https://evil.com/phish', 'https://example.com/')).toBe(false);
-        });
-
-        test('rejects a look-alike host that only shares a string prefix', () => {
-            // This is the case a `startsWith(siteUrl)` check would wrongly allow.
-            expect(isSameOriginUrl('https://example.com.evil.com/', 'https://example.com')).toBe(false);
-        });
-
-        test('rejects a protocol-relative url', () => {
-            expect(isSameOriginUrl('//evil.com/', 'https://example.com/')).toBe(false);
-        });
-
-        test('rejects a different scheme on the same host', () => {
-            expect(isSameOriginUrl('http://example.com/post/', 'https://example.com/')).toBe(false);
-        });
-
-        test('rejects an unparseable url', () => {
-            expect(isSameOriginUrl('not a url', 'https://example.com/')).toBe(false);
         });
     });
 });

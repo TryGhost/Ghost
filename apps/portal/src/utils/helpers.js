@@ -738,21 +738,6 @@ export const getSiteDomain = ({site}) => {
     }
 };
 
-/**
- * Whether `url` is on the same origin as `siteUrl`. Used to validate
- * externally-supplied redirect targets so we never send a member off-site after
- * authenticating. Compares parsed origins rather than a string prefix, so it is
- * not fooled by look-alike hosts (e.g. `site.url.attacker.com`) or by `siteUrl`
- * missing a trailing slash.
- */
-export const isSameOriginUrl = (url, siteUrl) => {
-    try {
-        return new URL(url).origin === new URL(siteUrl).origin;
-    } catch (e) {
-        return false;
-    }
-};
-
 export const getCurrencySymbol = (currency) => {
     return Intl.NumberFormat('en', {currency, style: 'currency'}).format(0).replace(/[\d\s.]/g, '');
 };
