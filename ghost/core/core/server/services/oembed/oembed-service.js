@@ -180,7 +180,7 @@ class OEmbedService {
                     'user-agent': USER_AGENT
                 },
                 timeout: {
-                    request: 10000
+                    request: 5000
                 },
                 followRedirect: true,
                 ...options
