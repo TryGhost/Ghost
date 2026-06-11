@@ -216,6 +216,16 @@ async function signup({data, state, api}) {
         };
     } catch (e) {
         if (e.code === CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION) {
+            if (state.member) {
+                return {
+                    action: 'signup:failed',
+                    popupNotification: createPopupNotification({
+                        type: 'signup:failed', autoHide: false, closeable: true, state, status: 'error',
+                        message: t('You already have an active subscription.')
+                    })
+                };
+            }
+
             return {
                 page: 'magiclink',
                 lastPage: 'signin',
