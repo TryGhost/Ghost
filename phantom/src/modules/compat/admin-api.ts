@@ -221,8 +221,33 @@ export const createAdminApiRouter = ({
         const ipAddress = context.req.header('x-forwarded-for') ?? 'unknown';
         try {
             const result = await staffAuthService.login({email: body.username, password: body.password}, ipAddress);
+            if ('verification' in result && result.verification) {
+                // Device verification: the unverified session rides the same
+                // cookie; the emailed code completes it via /session/verify.
+                const pending = (result as {pendingSession?: {id: string}}).pendingSession;
+                if (pending) {
+                    setCookie(context, SESSION_COOKIE, pending.id, {
+                        path: '/ghost',
+                        httpOnly: true,
+                        sameSite: 'Lax'
+                    });
+                }
+                if (mailer) {
+                    const {settings} = await settingsService.listSettings();
+                    const siteTitle = (readSetting(settings, 'site.title') as string | undefined) ?? 'Ghost';
+                    const code = result.verification.token;
+                    await mailer.send({
+                        to: body.username,
+                        from: `noreply@${new URL(siteUrl).hostname}`,
+                        subject: `${code} is your Ghost sign in verification code`,
+                        text: `Use this code to complete signing in to ${siteTitle}:\n\n${code}\n\nIf you did not try to sign in, you can ignore this email.`,
+                        html: `<p>Use this code to complete signing in to ${siteTitle}:</p><h2>${code}</h2>`
+                    });
+                }
+                return context.json({errors: [{message: 'User must verify session to login. Verification message with login link and token has been sent to your email.', type: 'Needs2FAError', code: '2FA_TOKEN_REQUIRED'}]}, 403);
+            }
             if (!('session' in result) || !result.session) {
-                return context.json({errors: [{message: 'Two factor verification required', type: 'Needs2FAError'}]}, 403);
+                return context.json({errors: [{message: 'Two factor verification required', type: 'Needs2FAError', code: '2FA_TOKEN_REQUIRED'}]}, 403);
             }
             setCookie(context, SESSION_COOKIE, result.session.id, {
                 path: '/ghost',
@@ -237,6 +262,56 @@ export const createAdminApiRouter = ({
             throw error;
         }
     });
+
+    // Device verification: PUT confirms the emailed code for the pending
+    // session cookie; POST resends a fresh code.
+    const sessionVerifyPut = async (context: Context) => {
+        const sessionId = getCookie(context, SESSION_COOKIE);
+        const body = await context.req.json<{token?: string}>().catch(() => ({} as Record<string, never>));
+        if (!sessionId || !body.token) {
+            return context.json({errors: [{message: 'Verification token required', type: 'UnauthorizedError'}]}, 401);
+        }
+        try {
+            await staffAuthService.verifySessionFactor(sessionId, String(body.token));
+            return context.body(null, 201);
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return context.json({errors: [{message: error.message, type: 'UnauthorizedError'}]}, error.status as 401);
+            }
+            throw error;
+        }
+    };
+    router.put('/session/verify', sessionVerifyPut);
+    router.put('/session/verify/', sessionVerifyPut);
+
+    const sessionVerifyResend = async (context: Context) => {
+        const sessionId = getCookie(context, SESSION_COOKIE);
+        if (!sessionId) {
+            return context.json({errors: [{message: 'Session required', type: 'UnauthorizedError'}]}, 401);
+        }
+        try {
+            const {staff, verification} = await staffAuthService.resendSessionFactor(sessionId);
+            if (mailer) {
+                const {settings} = await settingsService.listSettings();
+                const siteTitle = (readSetting(settings, 'site.title') as string | undefined) ?? 'Ghost';
+                await mailer.send({
+                    to: staff.email,
+                    from: `noreply@${new URL(siteUrl).hostname}`,
+                    subject: `${verification.token} is your Ghost sign in verification code`,
+                    text: `Use this code to complete signing in to ${siteTitle}:\n\n${verification.token}`,
+                    html: `<p>Use this code to complete signing in to ${siteTitle}:</p><h2>${verification.token}</h2>`
+                });
+            }
+            return context.text('OK', 200);
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return context.json({errors: [{message: error.message, type: 'UnauthorizedError'}]}, error.status as 401);
+            }
+            throw error;
+        }
+    };
+    router.post('/session/verify', sessionVerifyResend);
+    router.post('/session/verify/', sessionVerifyResend);
 
     on.delete('/session/', async (context) => {
         const sessionId = getCookie(context, SESSION_COOKIE);

@@ -43,7 +43,8 @@ describe('theme rendering with imported content', () => {
                     assetPath: 'themes/{themeId}/assets/{path}'
                 }
             },
-            hostSettings: {}
+            hostSettings: {},
+            security: {staffDeviceVerification: false}
         };
 
         const contentReader = createFrontendContentReader(createContentRepository(db));

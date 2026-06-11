@@ -51,6 +51,7 @@ const createStaffRepository = (): StaffRepository => {
         updateStaffAccessibility: async () => undefined,
         listInvites: async () => [],
         listRoles: async () => [],
+        setSessionVerified: async () => undefined,
         createSession: async () => {
             throw new Error('Not implemented');
         },

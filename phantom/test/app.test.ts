@@ -56,7 +56,8 @@ const config: AppConfig = {
             assetPath: 'themes/{themeId}/assets/{path}'
         }
     },
-    hostSettings: {}
+    hostSettings: {},
+    security: {staffDeviceVerification: false}
 };
 
 const staffAuthService: StaffAuthService = {
@@ -125,7 +126,9 @@ const staffAuthService: StaffAuthService = {
             status: 'active'
         },
         session: {id: 'session', staffId: 'staff', createdAt: 1, expiresAt: 2}
-    })
+    }),
+    verifySessionFactor: async () => ({staff: {id: 'staff', email: 'jamie@example.com', name: 'Jamie', status: 'active' as const}}),
+    resendSessionFactor: async () => ({staff: {id: 'staff', email: 'jamie@example.com', name: 'Jamie', status: 'active' as const}, verification: {token: '123456', expiresAt: 1}})
 };
 
 const memberAuthService: MemberAuthService = {

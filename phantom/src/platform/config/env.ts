@@ -14,7 +14,9 @@ const envSchema = z.object({
     GHOST_THEME_R2_ASSET_PATH: z.string().default('themes/{themeId}/assets/{path}'),
     // Host-managed settings (billing, force upgrade, limits) as JSON —
     // exposed verbatim via the admin config endpoint.
-    GHOST_HOST_SETTINGS: z.string().optional()
+    GHOST_HOST_SETTINGS: z.string().optional(),
+    // Staff device verification: logins email a code before the session works.
+    GHOST_STAFF_DEVICE_VERIFICATION: z.string().optional()
 });
 
 export type Env = z.infer<typeof envSchema>;

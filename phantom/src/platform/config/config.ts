@@ -29,6 +29,9 @@ export type AppConfig = {
         };
     };
     hostSettings: Record<string, unknown>;
+    security: {
+        staffDeviceVerification: boolean;
+    };
 };
 
 export const loadConfig = (): AppConfig => {
@@ -65,6 +68,9 @@ export const loadConfig = (): AppConfig => {
                 assetPath: env.GHOST_THEME_R2_ASSET_PATH
             }
         },
-        hostSettings: env.GHOST_HOST_SETTINGS ? JSON.parse(env.GHOST_HOST_SETTINGS) as Record<string, unknown> : {}
+        hostSettings: env.GHOST_HOST_SETTINGS ? JSON.parse(env.GHOST_HOST_SETTINGS) as Record<string, unknown> : {},
+        security: {
+            staffDeviceVerification: env.GHOST_STAFF_DEVICE_VERIFICATION === '1' || env.GHOST_STAFF_DEVICE_VERIFICATION === 'true'
+        }
     };
 };

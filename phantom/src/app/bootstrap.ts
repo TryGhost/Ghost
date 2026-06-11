@@ -53,7 +53,8 @@ export const createAppDependencies = async () => {
     const siteService = createSiteService(siteRepository);
     const staffRepository = createStaffRepository(db);
     const staffAuthService = createStaffAuthService(staffRepository, {
-        ssoProviders: config.identity.ssoProviders
+        ssoProviders: config.identity.ssoProviders,
+        deviceVerification: config.security.staffDeviceVerification
     });
     const memberRepository = createMemberRepository(db);
     const partnerRepository = createPartnerRepository(db);

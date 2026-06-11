@@ -31,7 +31,10 @@ export const staffSessionTable = sqliteTable('staff_sessions', {
     staffId: text('staff_id').notNull(),
     createdAt: integer('created_at').notNull(),
     expiresAt: integer('expires_at').notNull(),
-    revokedAt: integer('revoked_at')
+    revokedAt: integer('revoked_at'),
+    // Device verification: unverified sessions can't authenticate until the
+    // emailed code is confirmed.
+    verifiedAt: integer('verified_at')
 });
 
 export const staffInviteTable = sqliteTable('staff_invites', {

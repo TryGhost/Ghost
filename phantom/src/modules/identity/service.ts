@@ -1,4 +1,4 @@
-import {randomUUID} from 'node:crypto';
+import {randomInt, randomUUID} from 'node:crypto';
 import type {
     LoginRequest,
     LoginResponse,
@@ -50,6 +50,8 @@ export type StaffAuthService = {
     revokeIntegrationToken: (tokenId: string) => Promise<void>;
     getIntegrationTokenByToken: (token: string) => Promise<IntegrationTokenCreateResponse['apiToken']>;
     verifyStaffAuthFactor: (input: StaffVerificationRequest) => Promise<StaffVerificationResponse>;
+    verifySessionFactor: (sessionId: string, token: string) => Promise<{staff: StaffResponse}>;
+    resendSessionFactor: (sessionId: string) => Promise<{staff: StaffResponse; verification: {token: string; expiresAt: number}}>;
     getStaffRoles: (staffId: string) => Promise<string[]>;
     listAuditEvents: (input: StaffAuditListRequest) => Promise<StaffAuditListResponse>;
 };
@@ -78,9 +80,10 @@ const createAuthEvent = async (repository: StaffRepository, input: {
 
 export const createStaffAuthService = (
     repository: StaffRepository,
-    options: {ssoProviders?: string[]} = {}
+    options: {ssoProviders?: string[]; deviceVerification?: boolean} = {}
 ): StaffAuthService => {
     const ssoProviders = options.ssoProviders ?? [];
+    const deviceVerification = options.deviceVerification === true;
 
     const validateSsoProvider = (provider: string, providers: string[]) => {
         if (!providers.includes(provider)) {
@@ -120,18 +123,29 @@ export const createStaffAuthService = (
 
         loginLimiter.reset(key);
 
-        if (staff.twoFactorEnabled === 1) {
+        if (staff.twoFactorEnabled === 1 || deviceVerification) {
             const now = Date.now();
             await repository.invalidateAuthFactors(staff.id, 'device', now);
             const authFactor = await repository.createAuthFactor({
                 id: randomUUID(),
                 staffId: staff.id,
                 type: 'device',
-                token: randomUUID(),
+                // Verification codes are typed from an email: short numeric.
+                token: String(randomInt(100000, 1000000)),
                 createdAt: now,
                 expiresAt: now + resetTokenTtlMs,
                 usedAt: null,
                 invalidatedAt: null
+            });
+
+            // The session exists immediately but can't authenticate until
+            // the code confirms it (Ghost's device verification shape).
+            const session = await repository.createSession({
+                id: randomUUID(),
+                staffId: staff.id,
+                createdAt: now,
+                expiresAt: now + 1000 * 60 * 60 * 24 * 7,
+                verifiedAt: null
             });
 
             await createAuthEvent(repository, {
@@ -143,6 +157,7 @@ export const createStaffAuthService = (
 
             return {
                 staff: toStaffResponse(staff),
+                pendingSession: toStaffSessionResponse(session),
                 verification: toVerificationResponse(authFactor)
             };
         }
@@ -152,7 +167,8 @@ export const createStaffAuthService = (
             id: randomUUID(),
             staffId: staff.id,
             createdAt: now,
-            expiresAt: now + 1000 * 60 * 60 * 24 * 7
+            expiresAt: now + 1000 * 60 * 60 * 24 * 7,
+            verifiedAt: now
         });
 
         await createAuthEvent(repository, {
@@ -170,7 +186,7 @@ export const createStaffAuthService = (
 
     const getStaffBySession = async (sessionId: string) => {
         const session = await repository.getSession(sessionId);
-        if (!session || session.revokedAt || session.expiresAt <= Date.now()) {
+        if (!session || session.revokedAt || session.expiresAt <= Date.now() || session.verifiedAt === null) {
             throw new HttpError(401, 'invalid_session', 'Session is invalid');
         }
 
@@ -383,6 +399,56 @@ export const createStaffAuthService = (
         };
     };
 
+    // Device verification (Ghost's signin-verify): the unverified session
+    // cookie identifies the login; the emailed code confirms it.
+    const verifySessionFactor = async (sessionId: string, token: string) => {
+        const session = await repository.getSession(sessionId);
+        if (!session || session.revokedAt || session.expiresAt <= Date.now()) {
+            throw new HttpError(401, 'invalid_session', 'Session is invalid');
+        }
+        const authFactor = await repository.getAuthFactorByToken(token);
+        if (!authFactor || authFactor.staffId !== session.staffId || authFactor.usedAt || authFactor.invalidatedAt || authFactor.expiresAt <= Date.now()) {
+            throw new HttpError(401, 'invalid_verification', 'Verification token is invalid or expired');
+        }
+        const now = Date.now();
+        await repository.markAuthFactorUsed(authFactor.id, now);
+        await repository.setSessionVerified(session.id, now);
+        await createAuthEvent(repository, {
+            staffId: session.staffId,
+            action: 'verification_completed',
+            outcome: 'success'
+        });
+        const staff = await repository.getStaffById(session.staffId);
+        if (!staff) {
+            throw new HttpError(401, 'invalid_session', 'Session is invalid');
+        }
+        return {staff: toStaffResponse(staff)};
+    };
+
+    const resendSessionFactor = async (sessionId: string) => {
+        const session = await repository.getSession(sessionId);
+        if (!session || session.revokedAt || session.expiresAt <= Date.now()) {
+            throw new HttpError(401, 'invalid_session', 'Session is invalid');
+        }
+        const staff = await repository.getStaffById(session.staffId);
+        if (!staff) {
+            throw new HttpError(401, 'invalid_session', 'Session is invalid');
+        }
+        const now = Date.now();
+        await repository.invalidateAuthFactors(staff.id, 'device', now);
+        const authFactor = await repository.createAuthFactor({
+            id: randomUUID(),
+            staffId: staff.id,
+            type: 'device',
+            token: String(randomInt(100000, 1000000)),
+            createdAt: now,
+            expiresAt: now + resetTokenTtlMs,
+            usedAt: null,
+            invalidatedAt: null
+        });
+        return {staff: toStaffResponse(staff), verification: toVerificationResponse(authFactor)};
+    };
+
     const verifyStaffAuthFactor = async (input: StaffVerificationRequest) => {
         const authFactor = await repository.getAuthFactorByToken(input.token);
         if (!authFactor || authFactor.usedAt || authFactor.invalidatedAt || authFactor.expiresAt <= Date.now()) {
@@ -464,18 +530,29 @@ export const createStaffAuthService = (
             throw new HttpError(403, 'staff_suspended', 'Staff account is suspended');
         }
 
-        if (staff.twoFactorEnabled === 1) {
+        if (staff.twoFactorEnabled === 1 || deviceVerification) {
             const now = Date.now();
             await repository.invalidateAuthFactors(staff.id, 'device', now);
             const authFactor = await repository.createAuthFactor({
                 id: randomUUID(),
                 staffId: staff.id,
                 type: 'device',
-                token: randomUUID(),
+                // Verification codes are typed from an email: short numeric.
+                token: String(randomInt(100000, 1000000)),
                 createdAt: now,
                 expiresAt: now + resetTokenTtlMs,
                 usedAt: null,
                 invalidatedAt: null
+            });
+
+            // The session exists immediately but can't authenticate until
+            // the code confirms it (Ghost's device verification shape).
+            const session = await repository.createSession({
+                id: randomUUID(),
+                staffId: staff.id,
+                createdAt: now,
+                expiresAt: now + 1000 * 60 * 60 * 24 * 7,
+                verifiedAt: null
             });
 
             await createAuthEvent(repository, {
@@ -487,6 +564,7 @@ export const createStaffAuthService = (
 
             return {
                 staff: toStaffResponse(staff),
+                pendingSession: toStaffSessionResponse(session),
                 verification: toVerificationResponse(authFactor)
             };
         }
@@ -496,7 +574,8 @@ export const createStaffAuthService = (
             id: randomUUID(),
             staffId: staff.id,
             createdAt: now,
-            expiresAt: now + 1000 * 60 * 60 * 24 * 7
+            expiresAt: now + 1000 * 60 * 60 * 24 * 7,
+            verifiedAt: now
         });
 
         await createAuthEvent(repository, {
@@ -527,6 +606,8 @@ export const createStaffAuthService = (
         revokeIntegrationToken,
         getIntegrationTokenByToken,
         verifyStaffAuthFactor,
+        verifySessionFactor,
+        resendSessionFactor,
         getStaffRoles,
         listAuditEvents
     };

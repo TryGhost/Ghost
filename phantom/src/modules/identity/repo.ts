@@ -41,6 +41,7 @@ export type StaffRepository = {
     createSession: (session: NewStaffSessionRecord) => Promise<StaffSessionRecord>;
     getSession: (id: string) => Promise<StaffSessionRecord | null>;
     revokeSession: (id: string, revokedAt: number) => Promise<void>;
+    setSessionVerified: (id: string, verifiedAt: number) => Promise<void>;
     revokeSessionsForStaff: (staffId: string, revokedAt: number) => Promise<void>;
     createResetToken: (token: NewResetTokenRecord) => Promise<ResetTokenRecord>;
     getResetTokenByToken: (token: string) => Promise<ResetTokenRecord | null>;
@@ -122,6 +123,13 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
     const getSession = async (id: string) => {
         const rows = await db.select().from(staffSessionTable).where(eq(staffSessionTable.id, id)).limit(1);
         return rows[0] ?? null;
+    };
+
+    const setSessionVerified = async (id: string, verifiedAt: number) => {
+        await db
+            .update(staffSessionTable)
+            .set({verifiedAt})
+            .where(eq(staffSessionTable.id, id));
     };
 
     const revokeSession = async (id: string, revokedAt: number) => {
@@ -359,6 +367,7 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         createSession,
         getSession,
         revokeSession,
+        setSessionVerified,
         revokeSessionsForStaff,
         createResetToken,
         getResetTokenByToken,

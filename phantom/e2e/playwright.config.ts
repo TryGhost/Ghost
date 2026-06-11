@@ -13,6 +13,7 @@ const DB_PATH = process.env.PHANTOM_E2E_DB ?? '/tmp/phantom-e2e-playwright.db';
 // server configs, so they run as separate projects against extra servers.
 const BILLING_PORT = PORT + 1;
 const FORCE_UPGRADE_PORT = PORT + 2;
+const TWO_FACTOR_PORT = PORT + 3;
 const MOCK_BILLING_URL = 'https://billing.mock.test';
 
 const serverCommand = (dbPath: string, port: number) => (
@@ -65,6 +66,13 @@ export default defineConfig({
             use: {
                 baseURL: `http://localhost:${FORCE_UPGRADE_PORT}`
             }
+        },
+        {
+            name: 'two-factor',
+            testMatch: ['**/host-settings/two-factor-auth.test.ts'],
+            use: {
+                baseURL: `http://localhost:${TWO_FACTOR_PORT}`
+            }
         }
     ],
     webServer: [
@@ -88,6 +96,14 @@ export default defineConfig({
             command: serverCommand('/tmp/phantom-e2e-force-upgrade.db', FORCE_UPGRADE_PORT),
             env: {GHOST_HOST_SETTINGS: JSON.stringify({forceUpgrade: true, billing: {enabled: true, url: MOCK_BILLING_URL}})},
             url: `http://127.0.0.1:${FORCE_UPGRADE_PORT}/ghost/api/admin/site/`,
+            reuseExistingServer: false,
+            timeout: 60 * 1000
+        },
+        {
+            cwd: phantomRoot,
+            command: serverCommand('/tmp/phantom-e2e-two-factor.db', TWO_FACTOR_PORT),
+            env: {GHOST_STAFF_DEVICE_VERIFICATION: '1'},
+            url: `http://127.0.0.1:${TWO_FACTOR_PORT}/ghost/api/admin/site/`,
             reuseExistingServer: false,
             timeout: 60 * 1000
         }

@@ -60,11 +60,15 @@ const createRepository = (staff: StaffRecord) => {
         },
         createSession: async (session) => {
             const record: StaffSessionRecord = {
-                ...session,
-                revokedAt: null
-            };
+                revokedAt: null,
+                verifiedAt: session.verifiedAt ?? null,
+                ...session
+            } as StaffSessionRecord;
             sessions = [...sessions, record];
             return record;
+        },
+        setSessionVerified: async (id, verifiedAt) => {
+            sessions = sessions.map((session) => (session.id === id ? {...session, verifiedAt} : session));
         },
         getSession: async (id) => sessions.find((session) => session.id === id) ?? null,
         revokeSession: async () => undefined,

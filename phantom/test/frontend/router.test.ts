@@ -124,7 +124,8 @@ describe('frontend router', () => {
                     assetPath: 'themes/{themeId}/assets/{path}'
                 }
             },
-            hostSettings: {}
+            hostSettings: {},
+            security: {staffDeviceVerification: false}
         };
 
         const app = new Hono();
@@ -171,7 +172,8 @@ describe('frontend router', () => {
                     assetPath: 'themes/{themeId}/assets/{path}'
                 }
             },
-            hostSettings: {}
+            hostSettings: {},
+            security: {staffDeviceVerification: false}
         };
 
         const privateSettingsService: SettingsService = {
