@@ -1,0 +1,76 @@
+// # llms.txt Frontend Routing Tests
+// The llms service fetches content through the public Posts/Pages API with
+// narrowed `fields` + `formats` options. These tests boot a full Ghost
+// instance so the request runs through the real controllers and serializers,
+// covering the fields/formats/url interaction the unit tests mock away.
+const assert = require('node:assert/strict');
+const sinon = require('sinon');
+const supertest = require('supertest');
+const testUtils = require('../utils');
+const configUtils = require('../utils/config-utils');
+const settingsCache = require('../../core/shared/settings-cache');
+
+describe('llms.txt routing', function () {
+    let request;
+    let siteUrl;
+
+    before(async function () {
+        await testUtils.startGhost();
+        siteUrl = configUtils.config.get('url').replace(/\/$/, '');
+        request = supertest.agent(configUtils.config.get('url'));
+    });
+
+    beforeEach(function () {
+        const originalGet = settingsCache.get;
+        sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
+            if (key === 'labs') {
+                return {llmsTxt: true};
+            }
+
+            return originalGet(key, options);
+        });
+    });
+
+    afterEach(function () {
+        sinon.restore();
+    });
+
+    it('serves llms.txt with published public entries and absolute urls', async function () {
+        const res = await request.get('/llms.txt')
+            .expect('Content-Type', /text\/plain/)
+            .expect(200);
+
+        // entries are linked via absolute urls resolved by the public API serializer
+        assert.match(res.text, new RegExp(`\\[About this site\\]\\(${siteUrl}/about\\.md\\)`));
+        assert.match(res.text, new RegExp(`\\[Start here for a quick overview of everything you need to know\\]\\(${siteUrl}/welcome\\.md\\)`));
+
+        // descriptions come from plaintext, which is requested via `formats`
+        // on top of the narrowed `fields`
+        assert.match(res.text, /\[Start here for a quick overview of everything you need to know\]\([^)]+\) - We've crammed the most important information/);
+    });
+
+    it('serves llms-full.txt with entry bodies and absolute urls', async function () {
+        const res = await request.get('/llms-full.txt')
+            .expect('Content-Type', /text\/plain/)
+            .expect(200);
+
+        assert.match(res.text, /### About this site/);
+        assert.match(res.text, /### Start here for a quick overview of everything you need to know/);
+        assert.match(res.text, new RegExp(`URL: ${siteUrl}/about/`));
+
+        // entry bodies are rendered from html, which is requested via
+        // `formats` on top of the narrowed `fields`
+        assert.match(res.text, /An about page is a great example of one you might want to set up early on/);
+    });
+
+    it('does not serve llms.txt when the labs flag is disabled', async function () {
+        sinon.restore();
+
+        // with the flag off the handler defers to the rest of the routing
+        // stack, which treats the path like any other unknown frontend route
+        // (the trailing-slash middleware redirects it)
+        const res = await request.get('/llms.txt');
+
+        assert.equal(res.status, 302);
+    });
+});
