@@ -24,6 +24,8 @@ type AdminApiDependencies = {
     siteUrl: string;
     // Host-managed settings (billing, force upgrade) surfaced via /config/.
     hostSettings?: Record<string, unknown>;
+    // Outbound mail (password resets, invites); absent in minimal setups.
+    mailer?: {send: (message: {to: string; from: string; subject: string; html: string; text: string}) => Promise<void>};
 };
 
 type WirePost = Record<string, unknown>;
@@ -158,7 +160,8 @@ export const createAdminApiRouter = ({
     memberRepository,
     newsletterRepository,
     siteUrl,
-    hostSettings = {}
+    hostSettings = {},
+    mailer
 }: AdminApiDependencies) => {
     const router = new Hono();
     const on = slashTolerant(router);
@@ -431,6 +434,69 @@ export const createAdminApiRouter = ({
     });
     router.put('/settings/', settingsUpdateHandler);
     router.put('/settings', settingsUpdateHandler);
+
+    // Staff password reset: POST issues the email (always 200 to avoid
+    // account enumeration), PUT consumes the token and changes the password.
+    on.post('/authentication/password_reset/', async (context) => {
+        const body = await context.req.json<{password_reset?: Array<{email?: string}>}>().catch(() => ({} as Record<string, never>));
+        const email = body.password_reset?.[0]?.email;
+        if (!email) {
+            return context.json({errors: [{message: 'Email is required', type: 'ValidationError'}]}, 422);
+        }
+        const result = await staffAuthService.requestPasswordReset({email});
+        if (result.issued && result.resetToken && mailer) {
+            // Ghost admin decodes the URL token as base64("expires|email|hash")
+            // to prefill the email; wrap the raw token the same way.
+            const wireToken = Buffer.from(`${result.resetToken.expiresAt}|${email}|${result.resetToken.token}`).toString('base64');
+            const resetUrl = `${siteUrl}/ghost/reset/${encodeURIComponent(wireToken)}/`;
+            await mailer.send({
+                to: email,
+                from: `noreply@${new URL(siteUrl).hostname}`,
+                subject: 'Reset Password',
+                text: `A request has been made to reset the password for your account.\n\n${resetUrl}\n\nIf you did not ask for your password to be reset, ignore this email.`,
+                html: `<p>A request has been made to reset the password for your account.</p><p><a href="${resetUrl}">Click here to reset your password</a></p><p>${resetUrl}</p>`
+            });
+        }
+        return context.json({password_reset: [{message: 'Check your email for further instructions.'}]});
+    });
+
+    const passwordResetConfirmHandler = async (context: Context) => {
+        const body = await context.req.json<{password_reset?: Array<{token?: string; newPassword?: string; ne2Password?: string}>}>().catch(() => ({} as Record<string, never>));
+        const wire = body.password_reset?.[0];
+        if (!wire?.token || !wire.newPassword || wire.newPassword !== wire.ne2Password) {
+            return context.json({errors: [{message: 'Invalid password reset', type: 'ValidationError'}]}, 422);
+        }
+        let email = '';
+        let rawToken = '';
+        try {
+            const decoded = Buffer.from(decodeURIComponent(wire.token), 'base64').toString('utf8').split('|');
+            email = decoded[1] ?? '';
+            rawToken = decoded[2] ?? '';
+        } catch {
+            return context.json({errors: [{message: 'Invalid password reset token', type: 'ValidationError'}]}, 422);
+        }
+        try {
+            await staffAuthService.resetPassword({token: rawToken, password: wire.newPassword});
+            // The admin expects the reset to leave it signed in (no legacy
+            // emailVerificationToken round trip).
+            const login = await staffAuthService.login({email, password: wire.newPassword}, context.req.header('x-forwarded-for') ?? 'unknown');
+            if ('session' in login && login.session) {
+                setCookie(context, SESSION_COOKIE, login.session.id, {
+                    path: '/ghost',
+                    httpOnly: true,
+                    sameSite: 'Lax'
+                });
+            }
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return context.json({errors: [{message: error.message, type: 'UnauthorizedError'}]}, error.status as 400);
+            }
+            throw error;
+        }
+        return context.json({password_reset: [{message: 'Password changed successfully.'}]});
+    };
+    router.put('/authentication/password_reset/', passwordResetConfirmHandler);
+    router.put('/authentication/password_reset', passwordResetConfirmHandler);
 
     on.get('/notifications/', authed(async (context) => {
         return context.json({notifications: [], meta: {}});

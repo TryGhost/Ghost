@@ -48,6 +48,8 @@ import {createMembersApiRouter} from '../modules/compat/members-api.js';
 import type {MemberRepository} from '../modules/members/repo.js';
 import type {StaffRepository} from '../modules/identity/repo.js';
 import {createFrontendRouter} from '../frontend/router.js';
+import {createMailSinkRouter} from '../platform/mail/sink-router.js';
+import type {MemoryMailbox} from '../platform/mail/memory.js';
 
 export type AppDependencies = {
     config: AppConfig;
@@ -73,6 +75,7 @@ export type AppDependencies = {
     contentReader: FrontendContentReader;
     // Test-only: wired by bootstrap when GHOST_E2E_RESET=1.
     e2eReset?: () => Promise<void>;
+    mailbox?: MemoryMailbox;
     subscriptionRepository: SubscriptionRepository;
     newsletterRepository: NewsletterRepository;
     memberRepository: MemberRepository;
@@ -105,6 +108,7 @@ export const createApp = ({
     newsletterRepository,
     memberRepository,
     staffRepository,
+    mailbox,
     e2eReset
 }: AppDependencies) => {
     const app = new Hono();
@@ -163,20 +167,28 @@ export const createApp = ({
         memberRepository,
         newsletterRepository,
         siteUrl,
-        hostSettings: config.hostSettings
+        hostSettings: config.hostSettings,
+        ...(mailbox ? {mailer: {send: mailbox.provider.send}} : {})
     }));
     app.route('/members/api', createMembersApiRouter({memberAuthService}));
     if (e2eReset) {
         app.post('/__e2e__/reset', async (context) => {
             await e2eReset();
+            mailbox?.clear();
             return context.json({reset: true});
         });
+        // Mailpit-compatible read API over the in-memory mailbox so the
+        // vendored email assertions work without an SMTP catcher.
+        if (mailbox) {
+            app.route('/__mail__', createMailSinkRouter(mailbox));
+        }
     }
     app.route('/ghost/api/v10', api);
     app.route('/', createFrontendRouter({
         config,
         contentReader,
-        settingsService
+        settingsService,
+        memberAuthService
     }));
 
     app.onError(handleError);

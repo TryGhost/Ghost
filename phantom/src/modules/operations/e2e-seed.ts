@@ -42,6 +42,9 @@ export const createE2eReset = (db: DbClient, fixturePath: string) => {
         for (const name of tableNames) {
             await db.run(sql.raw(`DELETE FROM "${name}"`));
         }
+        // Flows like password reset revoke sessions server-side; the seeded
+        // baseline has the suite's shared session active, so restore it.
+        await db.run(sql.raw('UPDATE "staff_sessions" SET revoked_at = NULL'));
         await seedFromFixture(db, fixturePath);
     };
 };

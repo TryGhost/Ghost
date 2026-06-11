@@ -7,6 +7,7 @@ import type {AppConfig} from '../platform/config/config.js';
 import type {FrontendContentReader, FrontendEntry} from '../modules/content/frontend-reader.js';
 import type {AuthorProfileRecord, TagRecord} from '../modules/content/db.js';
 import type {SettingsService} from '../modules/settings/service.js';
+import type {MemberAuthService} from '../modules/members/service.js';
 import {createRouteMatcher} from './routing/matcher.js';
 import {createThemeStore} from './themes/store.js';
 import {createRenderer} from './rendering/renderer.js';
@@ -17,6 +18,7 @@ type FrontendDependencies = {
     config: AppConfig;
     contentReader: FrontendContentReader;
     settingsService: SettingsService;
+    memberAuthService?: MemberAuthService;
 };
 
 type SettingsList = Awaited<ReturnType<SettingsService['listSettings']>>['settings'];
@@ -200,7 +202,8 @@ const pickTemplate = (bundle: ThemeBundle, candidates: string[]) => {
 export const createFrontendRouter = ({
     config,
     contentReader,
-    settingsService
+    settingsService,
+    memberAuthService
 }: FrontendDependencies) => {
     const router = new Hono();
     const matcher = createRouteMatcher();
@@ -454,6 +457,30 @@ export const createFrontendRouter = ({
     router.post('/private/', privateSubmitHandler);
     router.post('/private', privateSubmitHandler);
 
+    // Magic-link landing: /members/?token=... verifies the token, starts a
+    // member session and bounces to the site root (mirroring Ghost).
+    const MEMBER_SESSION_COOKIE = 'phantom-members-session';
+    const memberLandingHandler = async (context: Context) => {
+        const token = context.req.query('token');
+        if (!token || !memberAuthService) {
+            return context.redirect('/', 302);
+        }
+        try {
+            const {session} = await memberAuthService.verifyMagicLink({token});
+            setCookie(context, MEMBER_SESSION_COOKIE, session.id, {
+                path: '/',
+                httpOnly: true,
+                sameSite: 'Lax',
+                expires: new Date(session.expiresAt)
+            });
+        } catch {
+            // Expired or reused links still land on the site, just signed out.
+        }
+        return context.redirect('/', 302);
+    };
+    router.get('/members/', memberLandingHandler);
+    router.get('/members', memberLandingHandler);
+
     // POST is accepted alongside GET: the settings apps preview unsaved
     // changes by POSTing site URLs with an x-ghost-preview header.
     router.on(['GET', 'POST'], '*', async (context) => {
@@ -595,7 +622,27 @@ export const createFrontendRouter = ({
             ...(previewHeader ? {_preview: previewHeader} : {})
         };
         const custom = buildCustomContext(settingsResponse.settings, bundle.theme.config as Record<string, unknown> | undefined);
-        const base = {site, custom, member: null};
+
+        // Signed-in members render with @member (themes gate Account links
+        // and gated content on it).
+        let member: Record<string, unknown> | null = null;
+        const memberSessionId = getCookie(context, MEMBER_SESSION_COOKIE);
+        if (memberSessionId && memberAuthService) {
+            try {
+                const verified = await memberAuthService.verifySession({sessionId: memberSessionId});
+                member = {
+                    uuid: verified.member.id,
+                    email: verified.member.email,
+                    name: null,
+                    firstname: null,
+                    paid: verified.member.status === 'paid',
+                    subscriptions: []
+                };
+            } catch {
+                member = null;
+            }
+        }
+        const base = {site, custom, member};
 
         const renderEntryResponse = async (entry: NonNullable<Awaited<ReturnType<typeof contentReader.getEntryBySlug>>>) => {
             const post = await mapEntry(entry, null);

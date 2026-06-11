@@ -43,6 +43,7 @@ import {createExtensionsService} from '../modules/extensions/service.js';
 import {createCommentRepository} from '../modules/comments/repo.js';
 import {createCommentService} from '../modules/comments/service.js';
 import {getMetricsClient} from '../platform/metrics/client.js';
+import {createMemoryMailbox} from '../platform/mail/memory.js';
 
 export const createAppDependencies = async () => {
     const config = loadConfig();
@@ -67,10 +68,22 @@ export const createAppDependencies = async () => {
     const analyticsRepository = createAnalyticsRepository(db);
     const analyticsService = createAnalyticsService(analyticsRepository);
     const metricsClient = getMetricsClient();
+    const mailbox = createMemoryMailbox();
+    const siteUrl = `http://localhost:${config.port}`;
     const memberAuthService = createMemberAuthService(
         memberRepository,
         config.memberAuth.signupPolicy,
-        analyticsRepository
+        analyticsRepository,
+        {
+            send: mailbox.provider.send,
+            siteUrl,
+            // Resolved per send, after settingsService below is initialized.
+            siteTitle: async () => {
+                const {settings} = await settingsService.listSettings();
+                const title = settings.find((setting) => setting.key === 'site.title')?.value;
+                return typeof title === 'string' ? title : 'Ghost';
+            }
+        }
     );
     const linkRepository = createLinkRepository(db);
     const linkService = createLinkService(linkRepository, analyticsRepository);
@@ -137,6 +150,7 @@ export const createAppDependencies = async () => {
         newsletterRepository,
         memberRepository,
         staffRepository,
+        mailbox,
         ...(process.env.GHOST_E2E_RESET === '1'
             ? {e2eReset: createE2eReset(db, resolvePath(process.cwd(), 'test', 'fixtures', 'ghost-v5-export.json'))}
             : {})

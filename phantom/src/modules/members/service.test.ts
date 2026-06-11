@@ -83,6 +83,26 @@ describe('member auth service', () => {
         expect(result.token).toBeTruthy();
     });
 
+    it('sends a signup email with the magic link when a mailer is wired', async () => {
+        const repository = createRepository();
+        const sent: Array<{to: string; subject: string; text: string}> = [];
+        const service = createMemberAuthService(repository, 'open', undefined, {
+            send: async (message) => {
+                sent.push(message);
+            },
+            siteUrl: 'http://localhost:2369',
+            siteTitle: async () => 'Testing Site'
+        });
+
+        const result = await service.requestMagicLink({email: 'member@example.com'}, '127.0.0.1');
+
+        expect(sent).toHaveLength(1);
+        expect(sent[0]!.to).toBe('member@example.com');
+        expect(sent[0]!.subject.toLowerCase()).toContain('complete');
+        expect(sent[0]!.text).toContain('complete the signup process');
+        expect(sent[0]!.text).toContain(`http://localhost:2369/members/?token=${result.token}&action=signup`);
+    });
+
     it('blocks magic links when signup is closed', async () => {
         const repository = createRepository();
         const service = createMemberAuthService(repository, 'invite-only');

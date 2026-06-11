@@ -52,10 +52,17 @@ const toMemberSessionResponse = (session: {
     expiresAt: session.expiresAt
 });
 
+export type MemberMailContext = {
+    send: (message: {to: string; from: string; subject: string; html: string; text: string}) => Promise<void>;
+    siteUrl: string;
+    siteTitle: () => Promise<string>;
+};
+
 export const createMemberAuthService = (
     repository: MemberRepository,
     signupPolicy: SignupPolicy,
-    analyticsRepository?: AnalyticsRepository
+    analyticsRepository?: AnalyticsRepository,
+    mail?: MemberMailContext
 ): MemberAuthService => {
     const recordAnalyticsEvent = async (memberId: string, type: string) => {
         if (!analyticsRepository) {
@@ -93,6 +100,25 @@ export const createMemberAuthService = (
             expiresAt: now + magicLinkTtlMs,
             usedAt: null
         });
+
+        if (mail) {
+            const siteTitle = await mail.siteTitle();
+            const action = member ? 'signin' : 'signup';
+            const magicUrl = `${mail.siteUrl}/members/?token=${authToken.token}&action=${action}`;
+            const subject = member
+                ? `🔑 Secure sign in link for ${siteTitle}`
+                : `🙌 Complete your sign up to ${siteTitle}!`;
+            const intro = member
+                ? `Tap the link below to sign in to ${siteTitle}.`
+                : `Tap the link below to complete the signup process for ${siteTitle}, and be automatically signed in:`;
+            await mail.send({
+                to: input.email,
+                from: `noreply@${new URL(mail.siteUrl).hostname}`,
+                subject,
+                text: `Hey there!\n\n${intro}\n\n${magicUrl}\n\nFor your security, the link will expire in 24 hours time.\n\nAll the best!\n${siteTitle}`,
+                html: `<p>Hey there!</p><p>${intro}</p><p><a href="${magicUrl}">${action === 'signup' ? 'Confirm signup' : 'Sign in'}</a></p><p>${magicUrl}</p>`
+            });
+        }
 
         return {issued: true, token: authToken.token};
     };
