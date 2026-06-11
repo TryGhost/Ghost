@@ -1,5 +1,5 @@
 import loginAsRole from '../../helpers/login-as-role';
-import {click, find, findAll, triggerEvent, waitFor, waitUntil} from '@ember/test-helpers';
+import {click, find, findAll, focus, waitFor, waitUntil} from '@ember/test-helpers';
 import {clickTrigger, selectChoose} from 'ember-power-select/test-support/helpers';
 import {disableMembers, disablePaidMembers, enableMembers, enablePaidMembers} from '../../helpers/members';
 import {enableMailgun} from '../../helpers/mailgun';
@@ -121,7 +121,7 @@ describe('Acceptance: Post email preview', function () {
         expect(iframe, 'email preview iframe exists').to.exist;
         expect(iframe.getAttribute('tabindex')).to.equal('0');
 
-        await triggerEvent(iframe, 'focusin');
+        await focus(iframe);
         await waitUntil(() => {
             return iframe.contentDocument && iframe.contentDocument.activeElement === iframe.contentDocument.body;
         });
