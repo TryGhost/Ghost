@@ -51,6 +51,8 @@ const createRepository = (staff: StaffRecord) => {
             return record as StaffRecord;
         },
         updateStaffAccessibility: async () => undefined,
+        listInvites: async () => [],
+        listRoles: async () => [],
         updateStaffPassword: async (id, passwordHash, updatedAt) => {
             staffRecords = staffRecords.map((record) =>
                 record.id === id ? {...record, passwordHash, updatedAt} : record

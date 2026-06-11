@@ -500,6 +500,110 @@ export const createAdminApiRouter = ({
     router.put('/authentication/password_reset/', passwordResetConfirmHandler);
     router.put('/authentication/password_reset', passwordResetConfirmHandler);
 
+    // Staff invites: the staff settings screen lists roles + pending
+    // invites and creates invites that email a signup link.
+    on.get('/roles/', authed(async (context) => {
+        const roles = await staffRepository.listRoles();
+        return context.json({
+            roles: roles.map((role) => ({
+                id: role.id,
+                name: role.name,
+                description: null,
+                created_at: new Date(0).toISOString(),
+                updated_at: new Date(0).toISOString()
+            })),
+            meta: singlePagination(roles.length)
+        });
+    }));
+
+    const mapInviteWire = (invite: {id: string; email: string; role: string; expiresAt: number}, roleIdByName: Map<string, string>) => ({
+        id: invite.id,
+        email: invite.email,
+        role_id: roleIdByName.get(invite.role) ?? invite.role,
+        status: 'sent',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+        expires: invite.expiresAt
+    });
+
+    on.get('/invites/', authed(async (context) => {
+        const [invites, roles] = await Promise.all([
+            staffRepository.listInvites(),
+            staffRepository.listRoles()
+        ]);
+        const roleIdByName = new Map(roles.map((role) => [role.name, role.id]));
+        const pending = invites.filter((invite) => !invite.acceptedAt && invite.expiresAt > Date.now());
+        return context.json({
+            invites: pending.map((invite) => mapInviteWire(invite, roleIdByName)),
+            meta: singlePagination(pending.length)
+        });
+    }));
+
+    on.post('/invites/', authed(async (context, staff) => {
+        const body = await context.req.json<{invites?: Array<{email?: string; role_id?: string}>}>().catch(() => ({} as Record<string, never>));
+        const wire = body.invites?.[0];
+        if (!wire?.email) {
+            return context.json({errors: [{message: 'Email is required', type: 'ValidationError'}]}, 422);
+        }
+        const roles = await staffRepository.listRoles();
+        const role = roles.find((entry) => entry.id === wire.role_id) ?? roles.find((entry) => entry.name === 'Contributor');
+        try {
+            const {invite} = await staffAuthService.createStaffInvite({email: wire.email, role: role?.name ?? 'Contributor'});
+            if (mailer) {
+                const {settings} = await settingsService.listSettings();
+                const siteTitle = (readSetting(settings, 'site.title') as string | undefined) ?? 'Ghost';
+                // The signup route only accepts unpadded base64url tokens.
+                const wireToken = Buffer.from(`${invite.expiresAt}|${invite.email}|${invite.token}`).toString('base64url');
+                const signupUrl = `${siteUrl}/ghost/signup/${wireToken}/`;
+                await mailer.send({
+                    to: invite.email,
+                    from: `noreply@${new URL(siteUrl).hostname}`,
+                    subject: `📝 ${staff.name} has invited you to join ${siteTitle}`,
+                    text: `${staff.name} has invited you to join ${siteTitle}.\n\nAccept the invitation: ${signupUrl}`,
+                    html: `<p>${staff.name} has invited you to join ${siteTitle}.</p><p><a href="${signupUrl}">Accept the invitation</a></p><p>${signupUrl}</p>`
+                });
+            }
+            const roleIdByName = new Map(roles.map((entry) => [entry.name, entry.id]));
+            return context.json({invites: [mapInviteWire(invite, roleIdByName)]}, 201);
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return context.json({errors: [{message: error.message, type: 'ValidationError'}]}, error.status as 409);
+            }
+            throw error;
+        }
+    }));
+
+    // The signup screen probes invite validity by email before rendering.
+    on.get('/authentication/invitation/', async (context) => {
+        const email = context.req.query('email');
+        const invites = await staffRepository.listInvites();
+        const valid = invites.some((invite) => invite.email === email && !invite.acceptedAt && invite.expiresAt > Date.now());
+        return context.json({invitation: [{valid}]});
+    });
+
+    on.post('/authentication/invitation/', async (context) => {
+        const body = await context.req.json<{invitation?: Array<{name?: string; email?: string; password?: string; token?: string}>}>().catch(() => ({} as Record<string, never>));
+        const wire = body.invitation?.[0];
+        if (!wire?.token || !wire.name || !wire.password) {
+            return context.json({errors: [{message: 'Invalid invitation', type: 'ValidationError'}]}, 422);
+        }
+        let rawToken = '';
+        try {
+            rawToken = Buffer.from(decodeURIComponent(wire.token), 'base64url').toString('utf8').split('|')[2] ?? '';
+        } catch {
+            return context.json({errors: [{message: 'Invalid invitation token', type: 'ValidationError'}]}, 422);
+        }
+        try {
+            await staffAuthService.acceptStaffInvite({token: rawToken, name: wire.name, password: wire.password});
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return context.json({errors: [{message: error.message, type: 'UnauthorizedError'}]}, error.status as 400);
+            }
+            throw error;
+        }
+        return context.json({invitation: [{message: 'Invitation accepted.'}]});
+    });
+
     on.get('/notifications/', authed(async (context) => {
         return context.json({notifications: [], meta: {}});
     }));

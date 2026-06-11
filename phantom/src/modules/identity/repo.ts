@@ -47,6 +47,8 @@ export type StaffRepository = {
     markResetTokenUsed: (id: string, usedAt: number) => Promise<void>;
     createInvite: (invite: NewStaffInviteRecord) => Promise<StaffInviteRecord>;
     getInviteByToken: (token: string) => Promise<StaffInviteRecord | null>;
+    listInvites: () => Promise<StaffInviteRecord[]>;
+    listRoles: () => Promise<RoleRecord[]>;
     markInviteAccepted: (id: string, acceptedAt: number) => Promise<void>;
     getRoleByName: (name: string) => Promise<RoleRecord | null>;
     createRole: (role: NewRoleRecord) => Promise<void>;
@@ -164,6 +166,14 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
             throw new Error('Invite record missing after insert');
         }
         return rows[0];
+    };
+
+    const listInvites = async () => {
+        return db.select().from(staffInviteTable);
+    };
+
+    const listRoles = async () => {
+        return db.select().from(roleTable);
     };
 
     const getInviteByToken = async (token: string) => {
@@ -355,6 +365,8 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         markResetTokenUsed,
         createInvite,
         getInviteByToken,
+        listInvites,
+        listRoles,
         markInviteAccepted,
         getRoleByName,
         createRole,

@@ -113,11 +113,37 @@ export class AnnouncementBarSection extends BasePage {
     }
 }
 
+export class StaffSection extends BasePage {
+    readonly ownerUser: Locator;
+    readonly inviteStaffButton: Locator;
+
+    constructor(page: Page) {
+        super(page, '/ghost/#/settings/staff');
+        this.ownerUser = this.page.getByTestId('owner-user');
+        this.inviteStaffButton = page.getByRole('button', {name: 'Invite people'});
+    }
+
+    async inviteUser(email: string): Promise<void> {
+        await this.inviteStaffButton.click();
+        await this.page.getByPlaceholder('jamie@example.com').fill(email);
+
+        const responsePromise = this.page.waitForResponse(
+            response => response.url().includes('/api/admin/invites/') &&
+                       response.request().method() === 'POST'
+        );
+
+        await this.page.getByRole('button', {name: 'Send invitation'}).click();
+        await responsePromise;
+        await this.page.getByText('Invitation sent', {exact: true}).waitFor({state: 'visible'});
+    }
+}
+
 export class SettingsPage extends BasePage {
     readonly searchInput: Locator;
     readonly searchClearButton: Locator;
 
     readonly labsSection: LabsSection;
+    readonly staffSection: StaffSection;
 
     readonly sidebar: Locator;
     readonly labsSidebarLink: Locator;
@@ -134,6 +160,7 @@ export class SettingsPage extends BasePage {
         this.searchClearButton = page.locator('button[aria-label="close"]').first();
 
         this.labsSection = new LabsSection(page);
+        this.staffSection = new StaffSection(page);
     }
 
     async searchByInput(text: string) {
