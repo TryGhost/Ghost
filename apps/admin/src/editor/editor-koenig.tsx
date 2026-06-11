@@ -136,3 +136,59 @@ export function EditorKoenig(props: EditorKoenigProps) {
         </div>
     );
 }
+
+export interface KoenigHtmlInputProps {
+    /** Current HTML value (uncontrolled afterwards, like the main editor). */
+    html: string | null;
+    placeholderText: string;
+    className?: string;
+    onChangeHtml: (html: string) => void;
+    onBlur?: () => void;
+    onFocus?: () => void;
+}
+
+/**
+ * Single-paragraph rich-text input with HTML in/out — the React port of
+ * Ember's KoenigLexicalEditorInput (used for the feature image caption).
+ * Uses Koenig's minimal nodes/transformers + HtmlOutputPlugin.
+ */
+function KoenigHtmlInputInner({ html, placeholderText, className, onChangeHtml, onBlur, onFocus }: KoenigHtmlInputProps) {
+    const koenig = readKoenig();
+    const KoenigComposer = koenig.KoenigComposer;
+    const KoenigComposableEditor = koenig.KoenigComposableEditor;
+    const HtmlOutputPlugin = koenig.HtmlOutputPlugin;
+
+    return (
+        <KoenigComposer
+            isTKEnabled={false}
+            nodes={koenig.MINIMAL_NODES}
+            onError={(error: unknown) => console.error(error)}
+        >
+            <KoenigComposableEditor
+                className={className}
+                darkMode={false}
+                isSnippetsEnabled={false}
+                markdownTransformers={koenig.MINIMAL_TRANSFORMERS}
+                placeholderClassName="koenig-lexical-editor-input-placeholder"
+                placeholderText={placeholderText}
+                singleParagraph={true}
+                onBlur={onBlur}
+                onFocus={onFocus}
+            >
+                <HtmlOutputPlugin html={html ?? undefined} setHtml={onChangeHtml} />
+            </KoenigComposableEditor>
+        </KoenigComposer>
+    );
+}
+
+export function KoenigHtmlInput(props: KoenigHtmlInputProps) {
+    return (
+        <div className="koenig-react-editor koenig-lexical-editor-input">
+            <KoenigErrorBoundary>
+                <Suspense fallback={null}>
+                    <KoenigHtmlInputInner {...props} />
+                </Suspense>
+            </KoenigErrorBoundary>
+        </div>
+    );
+}

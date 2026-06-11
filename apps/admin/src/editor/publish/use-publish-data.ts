@@ -1,9 +1,11 @@
 import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { type EditorResource, type FullPost } from "@tryghost/admin-x-framework/api/editor";
+import { useBrowseLabels } from "@tryghost/admin-x-framework/api/labels";
 import { useBrowseMembers } from "@tryghost/admin-x-framework/api/members";
 import { useBrowseNewsletters } from "@tryghost/admin-x-framework/api/newsletters";
-import { getSettingValue, useBrowseSettings } from "@tryghost/admin-x-framework/api/settings";
+import { checkStripeEnabled, getSettingValue, useBrowseSettings } from "@tryghost/admin-x-framework/api/settings";
+import { useBrowseTiers } from "@tryghost/admin-x-framework/api/tiers";
 import { isAdminUser, isContributorUser, isOwnerUser } from "@tryghost/admin-x-framework/api/users";
 import { type PublishOptionsInput } from "./publish-options";
 
@@ -11,6 +13,76 @@ import { type PublishOptionsInput } from "./publish-options";
 export function useSiteTimezone(): string {
     const { data } = useBrowseSettings();
     return getSettingValue<string>(data?.settings, "timezone") ?? "Etc/UTC";
+}
+
+export interface RecipientSegmentOption {
+    name: string;
+    segment: string;
+}
+
+export interface RecipientSegmentGroup {
+    name: string;
+    options: RecipientSegmentOption[];
+}
+
+export interface RecipientSelectData {
+    /** Paid toggle availability (Ember membersUtils.isStripeEnabled). */
+    stripeEnabled: boolean;
+    /** "Specific people" option groups: labels + tiers (Ember gh-members-recipient-select). */
+    segmentGroups: RecipientSegmentGroup[];
+}
+
+/**
+ * Data for the publish flow's recipients selector, mirroring what Ember's
+ * GhMembersRecipientSelect/GhSegmentTokenInput fetch: the label list and the
+ * paid tiers (tier options only appear when there's more than one paid tier,
+ * since a single tier is equivalent to the Paid toggle).
+ *
+ * Deviation from Ember: labels are fetched in one `limit=all` request instead
+ * of the labelsManager's infinite scroll + server-side search.
+ */
+export function useRecipientSelectData(enabled: boolean): RecipientSelectData {
+    const { data: settingsData } = useBrowseSettings();
+    const { data: configData } = useBrowseConfig();
+    const { data: labelsData } = useBrowseLabels({
+        searchParams: { limit: "all" },
+        enabled,
+        defaultErrorHandler: false,
+    });
+    const { data: tiersData } = useBrowseTiers({
+        searchParams: { filter: "type:paid", limit: "all" },
+        enabled,
+        defaultErrorHandler: false,
+    });
+
+    const stripeEnabled = settingsData?.settings && configData?.config
+        ? checkStripeEnabled(settingsData.settings, configData.config)
+        : false;
+
+    const segmentGroups: RecipientSegmentGroup[] = [];
+
+    const labels = labelsData?.labels ?? [];
+    if (labels.length > 0) {
+        segmentGroups.push({
+            name: "Labels",
+            options: labels.map(label => ({ name: label.name, segment: `label:${label.slug}` })),
+        });
+    }
+
+    const tiers = tiersData?.tiers ?? [];
+    if (tiers.length > 1) {
+        const activeTiers = tiers.filter(tier => tier.active);
+        const archivedTiers = tiers.filter(tier => !tier.active);
+        segmentGroups.push(
+            { name: "Active tiers", options: activeTiers.map(tier => ({ name: tier.name, segment: `tier:${tier.slug}` })) },
+            { name: "Archived tiers", options: archivedTiers.map(tier => ({ name: tier.name, segment: `tier:${tier.slug}` })) },
+        );
+    }
+
+    return {
+        stripeEnabled,
+        segmentGroups: segmentGroups.filter(group => group.options.length > 0),
+    };
 }
 
 // Ember's default email-verification message (PublishOptions._checkSendingLimit)

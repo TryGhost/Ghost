@@ -15,6 +15,7 @@ import { LucideIcon } from "@tryghost/shade/utils";
 import { crossShellNavigate } from "@/utils/cross-shell-navigate";
 import { getEditorAccessRedirect } from "./editor-access";
 import { EditorKoenig, type KoenigEditorAPI } from "./editor-koenig";
+import { EditorFeatureImage } from "./feature-image";
 import { EditorPostStatus } from "./publish/post-status";
 import { PublishManagement } from "./publish/publish-management";
 // Lazy: the settings menu pulls in admin-x-design-system + CodeMirror —
@@ -234,6 +235,7 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
                 <main className="flex-1 overflow-y-auto">
                     {post ? (
                         <div className="mx-auto w-full max-w-[788px] px-6 pt-28 pb-16">
+                            <EditorFeatureImage editor={editor} />
                             {/* max-w-none: Ember's global `textarea { max-width: 500px }`
                                 (styles/patterns/forms.css) leaks into this portal and
                                 capped the title; the title must span the same 740px

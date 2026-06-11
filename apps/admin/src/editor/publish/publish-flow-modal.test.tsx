@@ -7,6 +7,10 @@ import type { PublishOptionsInput } from "./publish-options";
 const mocks = vi.hoisted(() => ({
     navigate: vi.fn<(to: string) => void>(),
     input: vi.fn<() => PublishOptionsInput | null>(),
+    recipientSelectData: vi.fn(() => ({
+        stripeEnabled: true,
+        segmentGroups: [] as Array<{ name: string; options: Array<{ name: string; segment: string }> }>,
+    })),
 }));
 
 vi.mock("@/utils/cross-shell-navigate", () => ({
@@ -19,6 +23,7 @@ vi.mock("@tryghost/admin-x-framework", () => ({
 vi.mock("./use-publish-data", () => ({
     useSiteTimezone: () => "Etc/UTC",
     usePublishOptionsInput: () => mocks.input(),
+    useRecipientSelectData: () => mocks.recipientSelectData(),
 }));
 
 function makeInput(overrides: Partial<PublishOptionsInput> = {}): PublishOptionsInput {
@@ -196,6 +201,135 @@ describe("PublishFlowModal", () => {
         fireEvent.click(expectElement('[data-test-publish-type="publish"]'));
 
         expect(expectElement('[data-test-setting="email-recipients"]')).toHaveTextContent("Not sent as newsletter");
+    });
+
+    describe("email recipients selector", () => {
+        function openRecipients() {
+            fireEvent.click(expectElement('[data-test-setting="email-recipients"] [data-test-setting-title]'));
+        }
+
+        it("narrows the send to paid subscribers and persists it as the email segment", async () => {
+            const { performSave } = setup();
+
+            openRecipients();
+            // default 'all' = free + paid checked
+            expect(expectElement('[data-test-checkbox="free-members"]')).toBeChecked();
+            expect(expectElement('[data-test-checkbox="paid-members"]')).toBeChecked();
+
+            fireEvent.click(expectElement('[data-test-checkbox="free-members"]'));
+
+            expect(expectElement('[data-test-setting="email-recipients"]')).toHaveTextContent("Paid subscribers");
+
+            await goToConfirm();
+            fireEvent.click(expectElement('[data-test-button="confirm-publish"]'));
+
+            await waitFor(() => {
+                expect(performSave).toHaveBeenCalledWith(expect.objectContaining({
+                    emailSegment: "status:-free",
+                }));
+            });
+        });
+
+        it("treats an empty selection as not sending the newsletter", () => {
+            setup();
+
+            openRecipients();
+            fireEvent.click(expectElement('[data-test-checkbox="free-members"]'));
+            fireEvent.click(expectElement('[data-test-checkbox="paid-members"]'));
+
+            expect(expectElement('[data-test-setting="email-recipients"]')).toHaveTextContent("Not sent as newsletter");
+        });
+
+        it("hides the paid toggle when Stripe is not enabled", () => {
+            mocks.recipientSelectData.mockReturnValue({ stripeEnabled: false, segmentGroups: [] });
+            setup();
+
+            openRecipients();
+
+            expect(expectElement('[data-test-checkbox="free-members"]')).toBeInTheDocument();
+            expect(query('[data-test-checkbox="paid-members"]')).toBeNull();
+            expect(query('[data-test-checkbox="specific-members"]')).toBeNull();
+        });
+
+        it("selects specific label/tier segments and persists them as the email segment", async () => {
+            mocks.recipientSelectData.mockReturnValue({
+                stripeEnabled: true,
+                segmentGroups: [
+                    { name: "Labels", options: [{ name: "VIP", segment: "label:vip" }] },
+                    { name: "Active tiers", options: [{ name: "Gold", segment: "tier:gold" }] },
+                ],
+            });
+            const { performSave } = setup();
+
+            openRecipients();
+            // drop the base toggles so only the specific segment remains
+            fireEvent.click(expectElement('[data-test-checkbox="free-members"]'));
+            fireEvent.click(expectElement('[data-test-checkbox="paid-members"]'));
+            fireEvent.click(expectElement('[data-test-checkbox="specific-members"]'));
+            expect(expectElement('[data-test-select="specific-members"]')).toBeInTheDocument();
+
+            fireEvent.click(expectElement('[data-test-segment="label:vip"]'));
+
+            expect(expectElement('[data-test-setting="email-recipients"]')).toHaveTextContent("Specific subscribers");
+
+            await goToConfirm();
+            fireEvent.click(expectElement('[data-test-button="confirm-publish"]'));
+
+            await waitFor(() => {
+                expect(performSave).toHaveBeenCalledWith(expect.objectContaining({
+                    emailSegment: "label:vip",
+                }));
+            });
+        });
+
+        it("keeps the base toggles alongside specific segments in the email segment (Ember reports 'all')", async () => {
+            mocks.recipientSelectData.mockReturnValue({
+                stripeEnabled: true,
+                segmentGroups: [{ name: "Labels", options: [{ name: "VIP", segment: "label:vip" }] }],
+            });
+            const { performSave } = setup();
+
+            openRecipients();
+            fireEvent.click(expectElement('[data-test-checkbox="specific-members"]'));
+            fireEvent.click(expectElement('[data-test-segment="label:vip"]'));
+
+            // free + paid + a segment still summarizes as "all" (Ember recipientType)
+            expect(expectElement('[data-test-setting="email-recipients"]')).toHaveTextContent("All subscribers");
+
+            await goToConfirm();
+            fireEvent.click(expectElement('[data-test-button="confirm-publish"]'));
+
+            await waitFor(() => {
+                expect(performSave).toHaveBeenCalledWith(expect.objectContaining({
+                    emailSegment: "status:free,status:-free,label:vip",
+                }));
+            });
+        });
+
+        it("restores the previous specific selection when toggling specific people off and on", () => {
+            mocks.recipientSelectData.mockReturnValue({
+                stripeEnabled: true,
+                segmentGroups: [{ name: "Labels", options: [{ name: "VIP", segment: "label:vip" }] }],
+            });
+            setup();
+
+            openRecipients();
+            fireEvent.click(expectElement('[data-test-checkbox="free-members"]'));
+            fireEvent.click(expectElement('[data-test-checkbox="paid-members"]'));
+            fireEvent.click(expectElement('[data-test-checkbox="specific-members"]'));
+            fireEvent.click(expectElement('[data-test-segment="label:vip"]'));
+            expect(expectElement('[data-test-checkbox="specific-members"]')).toBeChecked();
+            expect(expectElement('[data-test-setting="email-recipients"]')).toHaveTextContent("Specific subscribers");
+
+            // off: the segment is removed from the filter
+            fireEvent.click(expectElement('[data-test-checkbox="specific-members"]'));
+            expect(query('[data-test-select="specific-members"]')).toBeNull();
+            expect(expectElement('[data-test-setting="email-recipients"]')).toHaveTextContent("Not sent as newsletter");
+
+            // on: the stored selection is restored
+            fireEvent.click(expectElement('[data-test-checkbox="specific-members"]'));
+            expect(expectElement('[data-test-setting="email-recipients"]')).toHaveTextContent("Specific subscribers");
+        });
     });
 
     it("schedules with a published_at timestamp and leaves with the scheduled storage key", async () => {

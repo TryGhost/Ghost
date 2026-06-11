@@ -49,6 +49,10 @@ export interface PostSettings {
     /** Post authors in order (the first author is the primary author). */
     authors: NamedRef[];
     featured: boolean;
+    /** Alt text for the feature image (edited in the editor canvas). */
+    featureImageAlt: string | null;
+    /** HTML caption for the feature image (edited in the editor canvas). */
+    featureImageCaption: string | null;
     customTemplate: string | null;
     canonicalUrl: string | null;
     metaTitle: string | null;
@@ -70,6 +74,8 @@ export const POST_SETTINGS_KEYS = [
     "tiers",
     "authors",
     "featured",
+    "featureImageAlt",
+    "featureImageCaption",
     "customTemplate",
     "canonicalUrl",
     "metaTitle",
@@ -91,6 +97,8 @@ export function createDefaultPostSettings(): PostSettings {
         tiers: [],
         authors: [],
         featured: false,
+        featureImageAlt: null,
+        featureImageCaption: null,
         customTemplate: null,
         canonicalUrl: null,
         metaTitle: null,

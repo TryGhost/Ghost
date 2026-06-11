@@ -74,6 +74,8 @@ export function toSnapshot(post: FullPost): PostSnapshot {
             tiers: (post.tiers ?? []).map(({ id, name }) => ({ id, name })),
             authors: (post.authors ?? []).map(({ id, name }) => ({ id, name })),
             featured: post.featured ?? false,
+            featureImageAlt: post.feature_image_alt ?? null,
+            featureImageCaption: post.feature_image_caption ?? null,
             customTemplate: post.custom_template ?? null,
             canonicalUrl: post.canonical_url ?? null,
             metaTitle: post.meta_title ?? null,
@@ -303,6 +305,8 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
             status: payload.status,
             published_at: payload.publishedAt,
             feature_image: payload.featureImage,
+            feature_image_alt: payload.settings.featureImageAlt,
+            feature_image_caption: payload.settings.featureImageCaption,
             // the API matches existing tags by name and creates missing ones,
             // so name-only tag objects are sufficient (Ember sends the same
             // embedded relation; order determines the primary tag)
@@ -496,6 +500,8 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
                 authors: settings.authors.map(({ id, name }) => ({ id, name })),
                 published_at: current.publishedAtScratch,
                 feature_image: current.featureImageScratch,
+                feature_image_alt: settings.featureImageAlt,
+                feature_image_caption: settings.featureImageCaption,
                 featured: settings.featured,
                 custom_template: settings.customTemplate,
                 canonical_url: settings.canonicalUrl,

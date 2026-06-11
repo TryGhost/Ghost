@@ -80,6 +80,8 @@ function makeSnapshot(overrides: Partial<PostSnapshot> = {}): PostSnapshot {
 // PSM settings fields every save body carries unconditionally
 const DEFAULT_BODY_SETTINGS = {
     featured: false,
+    feature_image_alt: null,
+    feature_image_caption: null,
     custom_template: null,
     canonical_url: null,
     meta_title: null,

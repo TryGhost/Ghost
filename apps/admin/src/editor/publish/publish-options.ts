@@ -241,6 +241,71 @@ export function getFullRecipientFilter(
     return filter;
 }
 
+/* Recipient filter parsing/building (Ember gh-members-recipient-select) ------*/
+
+/** The free/paid toggles; everything else in a filter is a "specific" segment. */
+export const BASE_RECIPIENT_FILTERS = ["status:free", "status:-free"] as const;
+
+export type BaseRecipientFilter = (typeof BASE_RECIPIENT_FILTERS)[number];
+
+function splitFilter(filter: string | null): string[] {
+    return (filter ?? "")
+        .split(",")
+        .map(item => item.trim())
+        .filter(item => item !== "");
+}
+
+/** The base (free/paid) parts of a recipient filter, in appearance order. */
+export function getBaseRecipientFilters(filter: string | null): string[] {
+    return splitFilter(filter).filter(item => (BASE_RECIPIENT_FILTERS as readonly string[]).includes(item));
+}
+
+/** The specific-segment parts (label:..., tier:...) of a recipient filter. */
+export function getSpecificRecipientFilters(filter: string | null): string[] {
+    return splitFilter(filter).filter(item => !(BASE_RECIPIENT_FILTERS as readonly string[]).includes(item));
+}
+
+/**
+ * Join base + specific selections back into a filter string (Ember
+ * GhMembersRecipientSelect.updateFilter): paid is dropped when Stripe isn't
+ * enabled, an empty selection becomes null ("not sent as newsletter").
+ */
+export function buildRecipientFilter(
+    base: Iterable<string>,
+    specific: Iterable<string>,
+    paidAvailable: boolean,
+): string | null {
+    const selected = new Set([...base, ...specific]);
+    if (!paidAvailable) {
+        selected.delete("status:-free");
+    }
+    return Array.from(selected).join(",") || null;
+}
+
+/** Toggle a free/paid base filter on/off (Ember toggleFilter). */
+export function toggleBaseRecipientFilter(
+    filter: string | null,
+    baseFilter: BaseRecipientFilter,
+    paidAvailable: boolean,
+): string | null {
+    const base = new Set(getBaseRecipientFilters(filter));
+    if (base.has(baseFilter)) {
+        base.delete(baseFilter);
+    } else {
+        base.add(baseFilter);
+    }
+    return buildRecipientFilter(base, getSpecificRecipientFilters(filter), paidAvailable);
+}
+
+/** Replace the specific-segment selection, keeping the base toggles (Ember selectSpecificOptions). */
+export function setSpecificRecipientFilters(
+    filter: string | null,
+    segments: Iterable<string>,
+    paidAvailable: boolean,
+): string | null {
+    return buildRecipientFilter(getBaseRecipientFilters(filter), segments, paidAvailable);
+}
+
 export type RecipientType = "none" | "free" | "paid" | "all" | "specific";
 
 export function getRecipientType(filter: string | null): RecipientType {

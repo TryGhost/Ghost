@@ -1,10 +1,13 @@
 import { describe, expect, it } from "vitest";
 import {
+    buildRecipientFilter,
     createPublishOptions,
     defaultScheduledAt,
     getActiveNewsletters,
+    getBaseRecipientFilters,
     getDefaultRecipientFilter,
     getFullRecipientFilter,
+    getSpecificRecipientFilters,
     getPublishSaveDetails,
     getPublishTypeOptions,
     getRecipientFilter,
@@ -18,6 +21,8 @@ import {
     setPublishType,
     setRecipientFilter,
     setScheduledAt,
+    setSpecificRecipientFilters,
+    toggleBaseRecipientFilter,
     toggleScheduled,
     validatePost,
     willEmail,
@@ -363,6 +368,36 @@ describe("publish-options", () => {
         it("validates the title length", () => {
             expect(validatePost({ title: "Fine" })).toBeNull();
             expect(validatePost({ title: "x".repeat(256) })).toMatch(/255 characters/);
+        });
+
+        it("splits a recipient filter into base toggles and specific segments", () => {
+            expect(getBaseRecipientFilters("status:free,status:-free,label:vip")).toEqual(["status:free", "status:-free"]);
+            expect(getSpecificRecipientFilters("status:free,status:-free,label:vip,tier:gold")).toEqual(["label:vip", "tier:gold"]);
+            expect(getBaseRecipientFilters(null)).toEqual([]);
+            expect(getSpecificRecipientFilters(null)).toEqual([]);
+        });
+
+        it("toggles base recipient filters and drops paid when Stripe is disabled (Ember updateFilter)", () => {
+            expect(toggleBaseRecipientFilter("status:free,status:-free", "status:free", true)).toBe("status:-free");
+            expect(toggleBaseRecipientFilter("status:-free", "status:free", true)).toBe("status:-free,status:free");
+            // the last toggle off yields null = "not sent as newsletter"
+            expect(toggleBaseRecipientFilter("status:free", "status:free", true)).toBeNull();
+            // paid never survives without Stripe
+            expect(toggleBaseRecipientFilter("status:free,status:-free", "status:free", false)).toBeNull();
+        });
+
+        it("replaces the specific segments while keeping the base toggles", () => {
+            expect(setSpecificRecipientFilters("status:free,label:old", ["label:vip", "tier:gold"], true))
+                .toBe("status:free,label:vip,tier:gold");
+            expect(setSpecificRecipientFilters("status:free,label:vip", [], true)).toBe("status:free");
+            expect(setSpecificRecipientFilters("label:vip", [], true)).toBeNull();
+        });
+
+        it("builds recipient filters that round-trip through getRecipientType", () => {
+            expect(getRecipientType(buildRecipientFilter(["status:free"], [], true))).toBe("free");
+            expect(getRecipientType(buildRecipientFilter(["status:free", "status:-free"], [], true))).toBe("all");
+            expect(getRecipientType(buildRecipientFilter([], ["label:vip"], true))).toBe("specific");
+            expect(getRecipientType(buildRecipientFilter([], [], true))).toBe("none");
         });
 
         it("validates the excerpt length (Ember validates before opening the flow)", () => {

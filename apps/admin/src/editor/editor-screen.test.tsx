@@ -73,6 +73,12 @@ vi.mock("./settings-menu/settings-menu", () => ({
     SettingsMenu: () => <div data-testid="mock-settings-menu" />,
 }));
 
+// The canvas feature image pulls in the framework uploader; it has dedicated
+// tests in feature-image.test.tsx.
+vi.mock("./feature-image", () => ({
+    EditorFeatureImage: () => <div data-testid="mock-feature-image" />,
+}));
+
 // The publish controls pull in their own framework hooks (settings, config,
 // newsletters, members, current user); they have dedicated tests in
 // publish/publish-management.test.tsx and publish/publish-flow-modal.test.tsx.

@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { type EditorResource, type FullPost } from "@tryghost/admin-x-framework/api/editor";
 import { Button } from "@tryghost/shade/components";
@@ -8,20 +8,26 @@ import { crossShellNavigate } from "@/utils/cross-shell-navigate";
 import {
     createPublishOptions,
     getActiveNewsletters,
+    getBaseRecipientFilters,
     getPublishSaveDetails,
     getPublishTypeOptions,
     getRecipientFilter,
     getRecipientType,
     getSelectedNewsletter,
     getSelectedPublishTypeOption,
+    getSpecificRecipientFilters,
     isEmailUnavailable,
     onlyDefaultNewsletter,
     setNewsletter,
     setPublishType,
+    setRecipientFilter,
     setScheduledAt,
+    setSpecificRecipientFilters,
+    toggleBaseRecipientFilter,
     toggleScheduled,
     willEmail,
     willPublish,
+    type BaseRecipientFilter,
     type PublishOptionsInput,
     type PublishOptionsState,
     type PublishSaveDetails,
@@ -34,7 +40,12 @@ import {
     formatTimeInTimezone,
     zonedDateTimeToUtc,
 } from "./schedule-time";
-import { usePublishOptionsInput, useSiteTimezone } from "./use-publish-data";
+import {
+    usePublishOptionsInput,
+    useRecipientSelectData,
+    useSiteTimezone,
+    type RecipientSelectData,
+} from "./use-publish-data";
 
 type UpdateOptions = (updater: (state: PublishOptionsState) => PublishOptionsState) => void;
 
@@ -118,6 +129,139 @@ function ScheduleDateTimePicker({ options, updateOptions, timezone }: {
     );
 }
 
+/**
+ * Free/Paid/Specific-people recipients selector (Ember
+ * GhMembersRecipientSelect): the toggles add/remove parts of the recipient
+ * filter, "Specific people" reveals a label/tier segment picker. Restyled to
+ * the publish flow's pill toggles instead of Ember's checkbox rows.
+ */
+function RecipientsSelect({ recipientFilter, selectData, onChange }: {
+    recipientFilter: string | null;
+    selectData: RecipientSelectData;
+    onChange: (filter: string | null) => void;
+}) {
+    const { stripeEnabled, segmentGroups } = selectData;
+
+    // Ember's forceSpecificChecked: keeps the segment picker open while the
+    // specific selection is empty; previousSpecificFilters restores the last
+    // selection when toggling Specific people back on
+    const [forceSpecificChecked, setForceSpecificChecked] = useState(false);
+    const previousSpecificRef = useRef<string[] | null>(null);
+
+    const baseFilters = getBaseRecipientFilters(recipientFilter);
+    const specificFilters = getSpecificRecipientFilters(recipientFilter);
+
+    const isFreeChecked = baseFilters.includes("status:free");
+    const isPaidChecked = baseFilters.includes("status:-free");
+    const isSpecificChecked = forceSpecificChecked || specificFilters.length > 0;
+    const hasSpecificOptions = segmentGroups.length > 0;
+
+    const toggleBase = (filter: BaseRecipientFilter) => {
+        onChange(toggleBaseRecipientFilter(recipientFilter, filter, stripeEnabled));
+    };
+
+    const toggleSpecific = () => {
+        // on->off, forced with an empty selection
+        if (forceSpecificChecked && specificFilters.length === 0) {
+            setForceSpecificChecked(false);
+            return;
+        }
+
+        setForceSpecificChecked(false);
+
+        // on->off, store the current selection for re-use when toggled back on
+        if (isSpecificChecked) {
+            previousSpecificRef.current = specificFilters;
+            onChange(setSpecificRecipientFilters(recipientFilter, [], stripeEnabled));
+            return;
+        }
+
+        // off->on, re-use the stored selection
+        if (previousSpecificRef.current) {
+            onChange(setSpecificRecipientFilters(recipientFilter, previousSpecificRef.current, stripeEnabled));
+            return;
+        }
+
+        // off->on, show the segment picker even though the filter is empty
+        setForceSpecificChecked(true);
+    };
+
+    const toggleSegment = (segment: string) => {
+        const next = specificFilters.includes(segment)
+            ? specificFilters.filter(item => item !== segment)
+            : [...specificFilters, segment];
+        if (next.length === 0) {
+            // keep the picker visible after deselecting everything (Ember
+            // selectSpecificOptions, refs TryGhost/Team#2859)
+            previousSpecificRef.current = null;
+            setForceSpecificChecked(true);
+        }
+        onChange(setSpecificRecipientFilters(recipientFilter, next, stripeEnabled));
+    };
+
+    const toggles: Array<{ key: string; label: string; checked: boolean; testCheckbox: string; onToggle: () => void }> = [
+        { key: "free", label: "Free", checked: isFreeChecked, testCheckbox: "free-members", onToggle: () => toggleBase("status:free") },
+    ];
+    if (stripeEnabled) {
+        toggles.push({ key: "paid", label: "Paid", checked: isPaidChecked, testCheckbox: "paid-members", onToggle: () => toggleBase("status:-free") });
+    }
+    if (hasSpecificOptions) {
+        toggles.push({ key: "specific", label: "Specific people", checked: isSpecificChecked, testCheckbox: "specific-members", onToggle: toggleSpecific });
+    }
+
+    return (
+        <div className="flex flex-col gap-4">
+            <div className="flex flex-wrap items-center gap-3">
+                {toggles.map(toggle => (
+                    <span key={toggle.key}>
+                        <input
+                            checked={toggle.checked}
+                            className="sr-only"
+                            data-test-checkbox={toggle.testCheckbox}
+                            id={`recipient-toggle-${toggle.key}`}
+                            type="checkbox"
+                            onChange={toggle.onToggle}
+                        />
+                        <label
+                            className={pillClass({ active: toggle.checked })}
+                            htmlFor={`recipient-toggle-${toggle.key}`}
+                        >
+                            {toggle.label}
+                        </label>
+                    </span>
+                ))}
+            </div>
+
+            {isSpecificChecked ? (
+                <div className="flex flex-col gap-3" data-test-select="specific-members">
+                    <span className="text-[1.2rem] font-semibold tracking-wide text-[#7C8B9A] uppercase">Selection</span>
+                    {segmentGroups.map(group => (
+                        <div key={group.name} className="flex flex-col gap-2">
+                            <span className="text-[1.2rem] text-[#7C8B9A]">{group.name}</span>
+                            <div className="flex flex-wrap items-center gap-2">
+                                {group.options.map((option) => {
+                                    const selected = specificFilters.includes(option.segment);
+                                    return (
+                                        <button
+                                            key={option.segment}
+                                            className={pillClass({ active: selected })}
+                                            data-test-segment={option.segment}
+                                            type="button"
+                                            onClick={() => toggleSegment(option.segment)}
+                                        >
+                                            {option.name}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            ) : null}
+        </div>
+    );
+}
+
 type Section = "publishType" | "emailRecipients" | "publishAt" | null;
 
 function OptionsStep({ input, options, updateOptions, timezone, onContinue }: {
@@ -138,6 +282,7 @@ function OptionsStep({ input, options, updateOptions, timezone, onContinue }: {
     const recipientType = getRecipientType(recipientFilter);
     const newsletters = getActiveNewsletters(input);
     const selectedNewsletter = getSelectedNewsletter(input, options);
+    const recipientSelectData = useRecipientSelectData(!emailUnavailable);
 
     const recipientSummary = recipientFilter
         ? `${capitalize(recipientType)} subscribers${onlyDefaultNewsletter(input) || !selectedNewsletter ? "" : ` of ${selectedNewsletter.name}`}`
@@ -211,7 +356,12 @@ function OptionsStep({ input, options, updateOptions, timezone, onContinue }: {
                                     <SettingArrow expanded={openSection === "emailRecipients"} />
                                 </button>
                                 {openSection === "emailRecipients" ? (
-                                    <div className="mb-4 flex flex-col gap-3 pt-1 pb-6 text-[1.4rem]">
+                                    <div className="mb-4 flex flex-col gap-4 pt-1 pb-6 text-[1.4rem]">
+                                        <RecipientsSelect
+                                            recipientFilter={recipientFilter}
+                                            selectData={recipientSelectData}
+                                            onChange={filter => updateOptions(state => setRecipientFilter(state, filter))}
+                                        />
                                         {newsletters.length > 1 ? (
                                             <div className="flex flex-col gap-1" data-test-select="newsletter">
                                                 <label className="text-[1.2rem] font-semibold tracking-wide text-[#7C8B9A] uppercase" htmlFor="publish-newsletter-select">
@@ -229,11 +379,6 @@ function OptionsStep({ input, options, updateOptions, timezone, onContinue }: {
                                                 </select>
                                             </div>
                                         ) : null}
-                                        <p className="text-[#54666D]">
-                                            This {input.post.isPage ? "page" : "post"} will be sent to
-                                            {" "}{recipientType === "all" ? "all" : recipientType} subscribers
-                                            {selectedNewsletter ? ` of ${selectedNewsletter.name}` : ""}.
-                                        </p>
                                     </div>
                                 ) : null}
                             </>

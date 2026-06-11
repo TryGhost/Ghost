@@ -486,6 +486,94 @@ describe("SETTINGS_CHANGED", () => {
         expect(after.settingsScratch.metaTitle).toBe("Newer title");
     });
 
+    describe("feature image alt/caption (canvas feature image)", () => {
+        it("makes the state dirty when the alt text or caption changes", () => {
+            const altChanged = transition(loadPost(), {
+                type: "SETTINGS_CHANGED",
+                settings: { featureImageAlt: "A skyline" },
+            }).state;
+            expect(hasDirtyAttributes(altChanged)).toBe(true);
+
+            const captionChanged = transition(loadPost(), {
+                type: "SETTINGS_CHANGED",
+                settings: { featureImageCaption: "Photo by <b>someone</b>" },
+            }).state;
+            expect(hasDirtyAttributes(captionChanged)).toBe(true);
+        });
+
+        it("is not dirty when alt/caption are loaded from the snapshot", () => {
+            const settings = {
+                ...createDefaultPostSettings(),
+                featureImageAlt: "A skyline",
+                featureImageCaption: "Photo by someone",
+            };
+            const state = loadPost({ featureImage: "https://example.com/image.jpg", settings });
+            expect(state.settingsScratch.featureImageAlt).toBe("A skyline");
+            expect(state.settingsScratch.featureImageCaption).toBe("Photo by someone");
+            expect(hasDirtyAttributes(state)).toBe(false);
+        });
+
+        it("carries alt + caption in the save payload settings", () => {
+            const { state } = transition(loadPost(), {
+                type: "SETTINGS_CHANGED",
+                settings: { featureImageAlt: "Alt text", featureImageCaption: "Caption" },
+            });
+            const { effects } = startManualSave(state);
+            expect(savePerformEffect(effects)?.payload.settings).toMatchObject({
+                featureImageAlt: "Alt text",
+                featureImageCaption: "Caption",
+            });
+        });
+
+        it("clears image + alt + caption together without dirty leftovers (Ember clearFeatureImage)", () => {
+            const settings = {
+                ...createDefaultPostSettings(),
+                featureImageAlt: "Alt",
+                featureImageCaption: "Caption",
+            };
+            const loaded = loadPost({ featureImage: "https://example.com/image.jpg", settings });
+
+            let state = transition(loaded, { type: "SCRATCH_CHANGED", field: "featureImage", value: null }).state;
+            state = transition(state, {
+                type: "SETTINGS_CHANGED",
+                settings: { featureImageAlt: null, featureImageCaption: null },
+            }).state;
+            expect(hasDirtyAttributes(state)).toBe(true);
+
+            const saving = transition(state, { type: "SAVE_REQUESTED", kind: "autosave" });
+            const payload = savePerformEffect(saving.effects)?.payload;
+            expect(payload?.featureImage).toBeNull();
+            expect(payload?.settings.featureImageAlt).toBeNull();
+            expect(payload?.settings.featureImageCaption).toBeNull();
+
+            const { state: after } = transition(saving.state, {
+                type: "SAVE_SUCCEEDED",
+                post: makePost({ featureImage: null }),
+            });
+            expect(hasDirtyAttributes(after)).toBe(false);
+        });
+
+        it("resyncs alt/caption from the persisted snapshot only when unchanged since the save", () => {
+            const { state } = transition(loadPost(), {
+                type: "SETTINGS_CHANGED",
+                settings: { featureImageAlt: "Sent alt" },
+            });
+            const saving = startManualSave(state).state;
+
+            // the user keeps typing while the save is in flight
+            const { state: edited } = transition(saving, {
+                type: "SETTINGS_CHANGED",
+                settings: { featureImageAlt: "Newer alt" },
+            });
+
+            const { state: after } = transition(edited, {
+                type: "SAVE_SUCCEEDED",
+                post: makePost({ settings: { ...createDefaultPostSettings(), featureImageAlt: "Sent alt" } }),
+            });
+            expect(after.settingsScratch.featureImageAlt).toBe("Newer alt");
+        });
+    });
+
     it("initializes the settings scratch from the loaded post", () => {
         const settings = {
             ...createDefaultPostSettings(),
