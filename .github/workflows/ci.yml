@@ -488,15 +488,48 @@ jobs:
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql
+        e2e:
+          - name: API Admin 1
+            id: api-admin-1
+          - name: API Admin 2
+            id: api-admin-2
+          - name: API Public
+            id: api-public
+          - name: Site
+            id: site
         include:
           - node: ${{ needs.job_setup.outputs.node_version }}
             env:
               DB: sqlite3
               NODE_ENV: testing
+            e2e:
+              name: API Admin 1
+              id: api-admin-1
+          - node: ${{ needs.job_setup.outputs.node_version }}
+            env:
+              DB: sqlite3
+              NODE_ENV: testing
+            e2e:
+              name: API Admin 2
+              id: api-admin-2
+          - node: ${{ needs.job_setup.outputs.node_version }}
+            env:
+              DB: sqlite3
+              NODE_ENV: testing
+            e2e:
+              name: API Public
+              id: api-public
+          - node: ${{ needs.job_setup.outputs.node_version }}
+            env:
+              DB: sqlite3
+              NODE_ENV: testing
+            e2e:
+              name: Site
+              id: site
     env:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
-    name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+    name: Acceptance tests / ${{ matrix.e2e.name }} (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
@@ -533,7 +566,9 @@ jobs:
           } >> "$GITHUB_ENV"
 
       - name: E2E tests
-        run: pnpm nx run ghost:test:ci:e2e
+        env:
+          GHOST_E2E_SHARD_ID: ${{ matrix.e2e.id }}
+        run: pnpm nx run ghost:test:ci:e2e:shard
 
       - name: Check for unexpected file changes
         run: |
@@ -546,6 +581,58 @@ jobs:
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
+        with:
+          name: e2e-v8-coverage-${{ matrix.e2e.id }}
+          path: |
+            ghost/core/coverage-e2e/raw/${{ matrix.e2e.id }}
+
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  job_acceptance-coverage:
+    runs-on: ubuntu-latest
+    needs: [job_setup, job_acceptance-tests]
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
+    name: Acceptance coverage
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Restore E2E V8 coverage
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          pattern: e2e-v8-coverage-*
+          path: ghost/core/coverage-e2e/raw
+
+      - name: Prepare merged coverage
+        run: |
+          mkdir -p ghost/core/coverage-e2e/tmp
+          if ! find ghost/core/coverage-e2e/raw -name '*.json' | grep -q .; then
+            echo "No E2E V8 coverage files were downloaded" >&2
+            exit 1
+          fi
+          find ghost/core/coverage-e2e/raw -name '*.json' | while IFS= read -r coverage_file; do
+            shard_dir="$(basename "$(dirname "$coverage_file")")"
+            cp "$coverage_file" "ghost/core/coverage-e2e/tmp/${shard_dir}-$(basename "$coverage_file")"
+          done
+
+      - name: Build E2E coverage report
+        run: pnpm nx run ghost:test:ci:e2e:coverage-report
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: e2e-coverage
           path: |
@@ -1589,7 +1676,7 @@ jobs:
     name: Coverage
     needs: [
       job_admin-tests,
-      job_acceptance-tests,
+      job_acceptance-coverage,
       job_integration-tests,
       job_unit-tests
     ]
@@ -1614,7 +1701,7 @@ jobs:
           flags: admin-tests
 
       - name: Restore E2E coverage
-        if: contains(needs.job_acceptance-tests.result, 'success')
+        if: contains(needs.job_acceptance-coverage.result, 'success')
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: e2e-coverage
@@ -1626,12 +1713,12 @@ jobs:
           name: integration-coverage
 
       - name: Move coverage
-        if: contains(needs.job_acceptance-tests.result, 'success') || contains(needs.job_integration-tests.result, 'success')
+        if: contains(needs.job_acceptance-coverage.result, 'success') || contains(needs.job_integration-tests.result, 'success')
         run: |
           rsync -av --remove-source-files core/* ghost/core
 
       - name: Upload E2E test coverage
-        if: contains(needs.job_acceptance-tests.result, 'success') || contains(needs.job_integration-tests.result, 'success')
+        if: contains(needs.job_acceptance-coverage.result, 'success') || contains(needs.job_integration-tests.result, 'success')
         uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
         with:
           flags: e2e-tests
@@ -1650,6 +1737,7 @@ jobs:
         job_admin-tests,
         job_unit-tests,
         job_acceptance-tests,
+        job_acceptance-coverage,
         job_integration-tests,
         job_legacy-tests,
         job_apps_acceptance-tests,
