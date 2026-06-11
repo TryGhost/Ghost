@@ -11,10 +11,10 @@ type FocusedThreadProps = {
 };
 
 const FocusedThread: React.FC<FocusedThreadProps> = ({focusedThread}) => {
-    const {pageUrl, t} = useAppContext();
+    const {t} = useAppContext();
     const {navigateBackToParent} = useNavActions();
     const {backComment, focusedComment, topLevelComment} = focusedThread;
-    const backPermalink = buildCommentPermalink(pageUrl, backComment.id);
+    const backPermalink = buildCommentPermalink(backComment.id);
     const handleBackClick = useCallback((event: React.MouseEvent<HTMLAnchorElement>) => {
         event.preventDefault();
         navigateBackToParent(backComment.id, backPermalink);
@@ -35,7 +35,7 @@ const FocusedThread: React.FC<FocusedThreadProps> = ({focusedThread}) => {
                 <a
                     className="font-sans text-[1.3rem] font-medium text-neutral-900/55 transition-colors hover:text-neutral-900/80 dark:text-white/45 dark:hover:text-white/70"
                     data-testid="see-full-discussion"
-                    href={buildCommentsRootPermalink(pageUrl)}
+                    href={buildCommentsRootPermalink()}
                     target="_parent"
                 >
                     {t('See full discussion')}

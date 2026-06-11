@@ -399,7 +399,7 @@
     "X (Twitter)": "Share button in Portal share modal",
     "Yearly": "A label indicating an annual payment cadence",
     "Yesterday": "Time a comment was placed",
-    "You already have an active subscription.": "Notification shown to a member who tries to redeem a gift subscription while they already have an active paid subscription",
+    "You already have an active subscription.": "Notification shown to a member who tries to redeem a gift subscription or start a paid checkout while they already have an active paid subscription",
     "You are receiving this because you are a <strong>%%{status}%% subscriber</strong> to {site}.": "Shown at the bottom of the newsletter.  Status will be one of free/paid/trialing/complimentary - see those strings below.",
     "You can also copy & paste this URL into your browser:": "Descriptive text displayed underneath the buttons in login/signup emails, right before authentication URLs which can be copy/pasted",
     "You can unsubscribe from these notifications at {profileUrl}.": "Footer text in comments email to manage notification preferences for users",

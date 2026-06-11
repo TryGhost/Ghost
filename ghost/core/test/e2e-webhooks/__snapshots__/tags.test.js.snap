@@ -13,6 +13,7 @@ Object {
 
 exports[`tag.* events tag.added event is triggered 2: [body] 1`] = `
 Object {
+  "event": "tag.added",
   "tag": Object {
     "current": Object {
       "accent_color": null,
@@ -55,6 +56,7 @@ Object {
 
 exports[`tag.* events tag.deleted event is triggered 2: [body] 1`] = `
 Object {
+  "event": "tag.deleted",
   "tag": Object {
     "current": Object {},
     "previous": Object {
@@ -96,6 +98,7 @@ Object {
 
 exports[`tag.* events tag.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "tag.edited",
   "tag": Object {
     "current": Object {
       "accent_color": null,

@@ -337,6 +337,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             buttonsDisabled={okProps.disabled}
             cancelLabel='Close'
             dirty={saveState === 'unsaved'}
+            hideXOnMobile={true}
             okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
             size={canAccessSettings(currentUser) ? 'md' : 'bleed'}

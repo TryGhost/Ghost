@@ -1,58 +1,60 @@
 import React from 'react';
-import membersAudienceImage from '../../../assets/members/members-1.jpg';
-import membersSubscribersImage from '../../../assets/members/members-2.jpg';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
+
+interface MembersHelpCardProps {
+    children: React.ReactNode;
+    description: string;
+    title: string;
+    url: string;
+}
+
+const MembersHelpCard: React.FC<MembersHelpCardProps> = ({children, description, title, url}) => {
+    return (
+        <a
+            className="group/card block rounded-xl border bg-card p-6 transition-all hover:bg-accent/50 hover:shadow-xs"
+            href={url}
+            rel="noopener noreferrer"
+            target="_blank"
+        >
+            <div className="flex items-center gap-6">
+                {children}
+                <div className="flex flex-col leading-tight">
+                    <h4 className="text-md font-medium tracking-normal text-pretty text-foreground">
+                        {title}
+                    </h4>
+                    <p className="mt-1.5 text-sm leading-tight text-pretty text-muted-foreground">
+                        {description}
+                    </p>
+                </div>
+            </div>
+        </a>
+    );
+};
+
+const iconCardClass = 'flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md p-4 opacity-80 transition-all group-hover/card:opacity-100';
 
 const MembersHelpCards: React.FC = () => {
     return (
-        <div className="mx-auto grid w-full max-w-lg grid-cols-1 gap-4 sm:grid-cols-2">
-            <a
-                className="group flex flex-col overflow-hidden rounded-xl border bg-card transition-all hover:shadow-sm"
-                href="https://ghost.org/resources/build-audience-subscriber-signups/"
-                rel="noopener noreferrer"
-                target="_blank"
+        <div className="grid w-full grid-cols-1 gap-4 lg:grid-cols-2">
+            <MembersHelpCard
+                description="Learn how to turn anonymous visitors into logged-in members with memberships in Ghost."
+                title="Building your audience with subscriber signups"
+                url="https://ghost.org/resources/build-audience-subscriber-signups/"
             >
-                <div
-                    className="h-36 w-full bg-cover bg-center"
-                    style={{backgroundImage: `url(${membersAudienceImage})`}}
-                />
-                <div className="flex grow flex-col p-5">
-                    <h4 className="text-sm font-semibold">
-                        Building your audience with subscriber signups
-                    </h4>
-                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                        Learn how to turn anonymous visitors into logged-in members with memberships in Ghost.
-                    </p>
-                    <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-foreground">
-                        Start building
-                        <LucideIcon.ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-                    </span>
+                <div className={cn(iconCardClass, 'bg-gradient-to-tr from-[#22C55E]/20 to-[#84CC16]/20')}>
+                    <LucideIcon.UserPlus className="text-[#16A34A]" size={20} strokeWidth={1.5} />
                 </div>
-            </a>
+            </MembersHelpCard>
 
-            <a
-                className="group flex flex-col overflow-hidden rounded-xl border bg-card transition-all hover:shadow-sm"
-                href="https://ghost.org/resources/first-100-email-subscribers/"
-                rel="noopener noreferrer"
-                target="_blank"
+            <MembersHelpCard
+                description="Starting from zero? Use this guide to find your founding audience members."
+                title="Get your first 100 email subscribers"
+                url="https://ghost.org/resources/first-100-email-subscribers/"
             >
-                <div
-                    className="h-36 w-full bg-cover bg-center"
-                    style={{backgroundImage: `url(${membersSubscribersImage})`}}
-                />
-                <div className="flex grow flex-col p-5">
-                    <h4 className="text-sm font-semibold">
-                        Get your first 100 email subscribers
-                    </h4>
-                    <p className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
-                        Starting from zero? Use this guide to find your founding audience members.
-                    </p>
-                    <span className="mt-3 inline-flex items-center gap-1 text-sm font-medium text-foreground">
-                        Become an expert
-                        <LucideIcon.ArrowRight className="size-3.5 transition-transform group-hover:translate-x-0.5" />
-                    </span>
+                <div className={cn(iconCardClass, 'bg-gradient-to-tl from-[#A855F7]/20 to-[#EC4899]/20')}>
+                    <LucideIcon.Mail className="text-[#DB2777]" size={20} strokeWidth={1.5} />
                 </div>
-            </a>
+            </MembersHelpCard>
         </div>
     );
 };

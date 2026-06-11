@@ -22,6 +22,7 @@ describe('Comments Service: CommentsController', function () {
 
     function createController({comment = {post_id: 'post-id', parent_id: 'parent-id'}} = {}) {
         const commentModel = comment && {
+            id: 'comment-id',
             get: key => comment[key]
         };
         const service = {
@@ -73,7 +74,7 @@ describe('Comments Service: CommentsController', function () {
         sinon.assert.calledWith(
             frame.setHeader,
             'X-Cache-Invalidate',
-            '/api/members/comments/post/post-id/, /api/members/comments/parent-id/replies/'
+            '/api/members/comments/post/post-id/, /api/members/comments/parent-id/replies/, /api/members/comments/comment-id/'
         );
     });
 
@@ -92,7 +93,24 @@ describe('Comments Service: CommentsController', function () {
         sinon.assert.calledWith(
             frame.setHeader,
             'X-Cache-Invalidate',
-            '/api/members/comments/post/post-id/, /api/members/comments/parent-id/replies/'
+            '/api/members/comments/post/post-id/, /api/members/comments/parent-id/replies/, /api/members/comments/comment-id/'
+        );
+    });
+
+    it('invalidates the single-comment read path for top-level comments', function () {
+        const {controller} = createController();
+        const frame = createFrame();
+        const model = {
+            id: 'comment-id',
+            get: key => ({post_id: 'post-id', parent_id: null})[key]
+        };
+
+        controller.setCacheInvalidationHeaders(model, frame);
+
+        sinon.assert.calledWith(
+            frame.setHeader,
+            'X-Cache-Invalidate',
+            '/api/members/comments/post/post-id/, /api/members/comments/comment-id/'
         );
     });
 

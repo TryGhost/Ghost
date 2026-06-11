@@ -208,8 +208,8 @@ module.exports = class CommentsController {
 
     /**
      * Sets the X-Cache-Invalidate response header so the public/member-facing
-     * comments endpoints get evicted when an admin mutates a comment. Shared
-     * with the comments endpoint module so both sites stay in sync.
+     * comments endpoints get evicted when a comment is mutated. Shared with
+     * the comments endpoint module so both sites stay in sync.
      */
     setCacheInvalidationHeaders(model, frame) {
         if (!model) {
@@ -220,7 +220,8 @@ module.exports = class CommentsController {
         const parentId = model.get('parent_id');
         const pathsToInvalidate = [
             postId ? `/api/members/comments/post/${postId}/` : null,
-            parentId ? `/api/members/comments/${parentId}/replies/` : null
+            parentId ? `/api/members/comments/${parentId}/replies/` : null,
+            `/api/members/comments/${model.id}/`
         ].filter(path => path !== null);
 
         frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
@@ -289,15 +290,7 @@ module.exports = class CommentsController {
             );
         }
 
-        if (result) {
-            const postId = result.get('post_id');
-            const parentId = result.get('parent_id');
-            const pathsToInvalidate = [
-                postId ? `/api/members/comments/post/${postId}/` : null,
-                parentId ? `/api/members/comments/${parentId}/replies/` : null
-            ].filter(path => path !== null);
-            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
-        }
+        this.setCacheInvalidationHeaders(result, frame);
 
         return result;
     }
@@ -327,15 +320,7 @@ module.exports = class CommentsController {
             );
         }
 
-        if (result) {
-            const postId = result.get('post_id');
-            const parentId = result.get('parent_id');
-            const pathsToInvalidate = [
-                postId ? `/api/members/comments/post/${postId}/` : null,
-                parentId ? `/api/members/comments/${parentId}/replies/` : null
-            ].filter(path => path !== null);
-            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
-        }
+        this.setCacheInvalidationHeaders(result, frame);
 
         return result;
     }
@@ -370,15 +355,7 @@ module.exports = class CommentsController {
 
         const comment = await this.service.getCommentByID(frame.options.id, frame.options);
 
-        if (comment) {
-            const postId = comment.get('post_id');
-            const parentId = comment.get('parent_id');
-            const pathsToInvalidate = [
-                postId ? `/api/members/comments/post/${postId}/` : null,
-                parentId ? `/api/members/comments/${parentId}/replies/` : null
-            ].filter(path => path !== null);
-            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
-        }
+        this.setCacheInvalidationHeaders(comment, frame);
 
         return result;
     }
@@ -397,15 +374,7 @@ module.exports = class CommentsController {
 
         const comment = await this.service.getCommentByID(frame.options.id, frame.options);
 
-        if (comment) {
-            const postId = comment.get('post_id');
-            const parentId = comment.get('parent_id');
-            const pathsToInvalidate = [
-                postId ? `/api/members/comments/post/${postId}/` : null,
-                parentId ? `/api/members/comments/${parentId}/replies/` : null
-            ].filter(path => path !== null);
-            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
-        }
+        this.setCacheInvalidationHeaders(comment, frame);
 
         return result;
     }
@@ -461,15 +430,7 @@ module.exports = class CommentsController {
 
         const comment = await this.service.getCommentByID(frame.options.id, frame.options);
 
-        if (comment) {
-            const postId = comment.get('post_id');
-            const parentId = comment.get('parent_id');
-            const pathsToInvalidate = [
-                postId ? `/api/members/comments/post/${postId}/` : null,
-                parentId ? `/api/members/comments/${parentId}/replies/` : null
-            ].filter(path => path !== null);
-            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
-        }
+        this.setCacheInvalidationHeaders(comment, frame);
 
         return result;
     }
@@ -488,15 +449,7 @@ module.exports = class CommentsController {
 
         const comment = await this.service.getCommentByID(frame.options.id, frame.options);
 
-        if (comment) {
-            const postId = comment.get('post_id');
-            const parentId = comment.get('parent_id');
-            const pathsToInvalidate = [
-                postId ? `/api/members/comments/post/${postId}/` : null,
-                parentId ? `/api/members/comments/${parentId}/replies/` : null
-            ].filter(path => path !== null);
-            frame.setHeader('X-Cache-Invalidate', pathsToInvalidate.join(', '));
-        }
+        this.setCacheInvalidationHeaders(comment, frame);
 
         return result;
     }

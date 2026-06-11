@@ -13,6 +13,7 @@ Object {
 
 exports[`member.* events member.added event is triggered 2: [body] 1`] = `
 Object {
+  "event": "member.added",
   "member": Object {
     "current": Object {
       "avatar_image": null,
@@ -69,6 +70,7 @@ Object {
 
 exports[`member.* events member.deleted event is triggered 2: [body] 1`] = `
 Object {
+  "event": "member.deleted",
   "member": Object {
     "current": Object {},
     "previous": Object {
@@ -118,6 +120,7 @@ Object {
 
 exports[`member.* events member.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "member.edited",
   "member": Object {
     "current": Object {
       "avatar_image": null,

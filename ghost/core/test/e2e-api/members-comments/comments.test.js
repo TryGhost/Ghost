@@ -186,10 +186,10 @@ function testBasicErrorResponse(method, url, status, errors) {
  * @param {number} status
  * @returns {any} ExpectRequest
  */
-function testBasicEmptyResponse(method, url, status) {
+function testBasicEmptyResponse(method, url, status, headerMatchers = {}) {
     return membersAgent[method](url)
         .expectStatus(status)
-        .matchHeaderSnapshot({etag: anyEtag})
+        .matchHeaderSnapshot({etag: anyEtag, ...headerMatchers})
         .expectEmptyBody();
 }
 
@@ -1522,7 +1522,10 @@ describe('Comments API', function () {
                     .post(`/api/comments/${comment.get('id')}/like/`)
                     .expectStatus(204)
                     .matchHeaderSnapshot({
-                        etag: anyEtag
+                        etag: anyEtag,
+                        'x-cache-invalidate': stringMatching(
+                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                        )
                     })
                     .expectEmptyBody();
 
@@ -1543,7 +1546,10 @@ describe('Comments API', function () {
                     .post(`/api/comments/${comment.get('id')}/dislike/`)
                     .expectStatus(204)
                     .matchHeaderSnapshot({
-                        etag: anyEtag
+                        etag: anyEtag,
+                        'x-cache-invalidate': stringMatching(
+                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                        )
                     })
                     .expectEmptyBody();
 
@@ -1563,7 +1569,11 @@ describe('Comments API', function () {
                     member_id: loggedInMember.id
                 });
 
-                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/dislike/`, 204);
+                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/dislike/`, 204, {
+                    'x-cache-invalidate': stringMatching(
+                        new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                    )
+                });
 
                 await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
                     .expect(({body}) => {
@@ -1709,7 +1719,11 @@ describe('Comments API', function () {
                 });
 
                 // Unlike
-                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/like/`, 204);
+                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/like/`, 204, {
+                    'x-cache-invalidate': stringMatching(
+                        new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                    )
+                });
 
                 // Check not liked
                 await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
@@ -1805,7 +1819,10 @@ describe('Comments API', function () {
                     }]})
                     .expectStatus(200)
                     .matchHeaderSnapshot({
-                        etag: anyEtag
+                        etag: anyEtag,
+                        'x-cache-invalidate': stringMatching(
+                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                        )
                     })
                     .matchBodySnapshot({
                         comments: [{
