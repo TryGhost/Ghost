@@ -25,7 +25,7 @@ function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
                 to={to}
                 isActive={isActive}
             >
-                <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" />
+                <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" />
                 <NavMenuItem.Label>Posts</NavMenuItem.Label>
             </NavMenuItem.Link>
             <a href="#/editor/post"
@@ -58,7 +58,7 @@ function MembersNavItemContent({
                 to={to}
                 isActive={isActive}
             >
-                <LucideIcon.Users className={collapsible ? "pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" : ""} />
+                <LucideIcon.Users className={collapsible ? "pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" : ""} />
                 <NavMenuItem.Label>Members</NavMenuItem.Label>
             </NavMenuItem.Link>
             {count != null && (
