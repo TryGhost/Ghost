@@ -23,6 +23,7 @@ const buildTemplate = (
         site: data.site,
         custom: data.custom,
         member: data.member,
+        page: data.page,
         context: data.context
     };
     const body = template(data, {data: templateData});

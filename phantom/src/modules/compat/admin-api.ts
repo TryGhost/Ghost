@@ -61,8 +61,8 @@ const parseWireDate = (value: unknown): number | undefined => {
     return Number.isNaN(parsed) ? undefined : parsed;
 };
 
-const wireStatus = (value: unknown): 'draft' | 'published' | 'scheduled' | undefined => {
-    return value === 'draft' || value === 'published' || value === 'scheduled' ? value : undefined;
+const wireStatus = (value: unknown): 'draft' | 'published' | 'scheduled' | 'sent' | undefined => {
+    return value === 'draft' || value === 'published' || value === 'scheduled' || value === 'sent' ? value : undefined;
 };
 
 type SettingsList = Awaited<ReturnType<SettingsService['listSettings']>>['settings'];
@@ -383,7 +383,7 @@ export const createAdminApiRouter = ({
                 clientExtensions: {},
                 enableDeveloperExperiments: false,
                 stripeDirect: false,
-                mailgunIsConfigured: false,
+                mailgunIsConfigured: true,
                 emailAnalytics: false,
                 hostSettings,
                 tenor: {googleApiKey: null},
@@ -427,6 +427,10 @@ export const createAdminApiRouter = ({
             {key: 'default_content_visibility', value: value('members.default_content_visibility', 'public')},
             {key: 'members_support_address', value: 'noreply'},
             {key: 'members_track_sources', value: Boolean(value('members.track_sources', true))},
+            // The publish flow derives email recipients from these; without
+            // them it silently downgrades publish+send to publish-only.
+            {key: 'editor_default_email_recipients', value: 'visibility'},
+            {key: 'editor_default_email_recipients_filter', value: 'all'},
             {key: 'members_enabled', value: Boolean(value('feature.membership', true))},
             {key: 'paid_members_enabled', value: false},
             {key: 'comments_enabled', value: value('feature.comments') ? 'all' : 'off'},
@@ -1143,7 +1147,9 @@ export const createAdminApiRouter = ({
             },
             ...(parseBrowseOrder(context.req.query('order')) ? {order: parseBrowseOrder(context.req.query('order'))!} : {})
         });
-        const posts = await Promise.all(entries.map((entry) => mapAdminPost(entry, siteUrl)));
+        const newsletters = await newsletterRepository.listNewsletters();
+        const newsletterById = new Map(newsletters.map((entry) => [entry.id, entry]));
+        const posts = await Promise.all(entries.map((entry) => mapAdminPost(entry, siteUrl, entry.post.newsletterId ? newsletterById.get(entry.post.newsletterId) ?? null : null)));
         return context.json({posts, meta: buildPagination(pagination)});
     });
 
@@ -1238,11 +1244,23 @@ export const createAdminApiRouter = ({
         status: wireStatus(wire.status) ?? 'draft',
         ...(parseWireDate(wire.published_at) !== undefined ? {publishedAt: parseWireDate(wire.published_at)} : {}),
         ...(typeof wire.featured === 'boolean' ? {featured: wire.featured} : {}),
+        ...(typeof wire.email_only === 'boolean' ? {emailOnly: wire.email_only} : {}),
         ...(wire.visibility === 'public' || wire.visibility === 'members' || wire.visibility === 'paid' ? {visibility: wire.visibility as 'public' | 'members' | 'paid'} : {}),
         lexical: parseWireLexical(wire.lexical) ?? {root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}},
         ...(asWireString(wire.custom_excerpt) ? {customExcerpt: asWireString(wire.custom_excerpt)} : {}),
         ...(asWireString(wire.feature_image) ? {featureImage: asWireString(wire.feature_image)} : {})
     });
+
+    // The publish flow names the newsletter as a query param; intent fields
+    // ride the post body.
+    const resolveNewsletterParam = async (context: Context): Promise<string | null | undefined> => {
+        const slug = context.req.query('newsletter');
+        if (!slug) {
+            return undefined;
+        }
+        const newsletters = await newsletterRepository.listNewsletters();
+        return newsletters.find((entry) => entry.slug === slug || entry.id === slug)?.id ?? undefined;
+    };
 
     const wireToUpdateInput = (wire: WirePost) => {
         const lexical = parseWireLexical(wire.lexical);
@@ -1256,6 +1274,8 @@ export const createAdminApiRouter = ({
             ...(wireStatus(wire.status) ? {status: wireStatus(wire.status)} : {}),
             ...(publishedAt !== undefined ? {publishedAt} : {}),
             ...(typeof wire.featured === 'boolean' ? {featured: wire.featured} : {}),
+            ...(typeof wire.email_only === 'boolean' ? {emailOnly: wire.email_only} : {}),
+            ...(typeof wire.email_recipient_filter === 'string' ? {emailRecipientFilter: wire.email_recipient_filter} : {}),
             ...(wire.visibility === 'public' || wire.visibility === 'members' || wire.visibility === 'paid' ? {visibility: wire.visibility as 'public' | 'members' | 'paid'} : {}),
             ...(lexical ? {lexical} : {}),
             ...(customExcerpt !== undefined ? {customExcerpt} : {}),
@@ -1272,7 +1292,8 @@ export const createAdminApiRouter = ({
         if (!entry) {
             return notFoundJson(context, key === 'posts' ? 'Post' : 'Page');
         }
-        return context.json({[key]: [await mapAdminPost(entry, siteUrl)]}, status);
+        const newsletter = entry.post.newsletterId ? await newsletterRepository.getNewsletterById(entry.post.newsletterId) : null;
+        return context.json({[key]: [await mapAdminPost(entry, siteUrl, newsletter)]}, status);
     };
 
     const registerEntryRoutes = (key: 'posts' | 'pages', type: 'post' | 'page') => {
@@ -1330,7 +1351,12 @@ export const createAdminApiRouter = ({
             }
             try {
                 const tags = await resolveWireTags(wire);
-                const input = {...wireToUpdateInput(wire), ...(tags ? {tags} : {})};
+                const newsletterId = await resolveNewsletterParam(context);
+                const input = {
+                    ...wireToUpdateInput(wire),
+                    ...(tags ? {tags} : {}),
+                    ...(newsletterId !== undefined ? {newsletterId} : {})
+                };
                 await contentService.updatePost(id, input, staff.id);
                 return respondWithEntry(context, id, key);
             } catch (error) {

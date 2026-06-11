@@ -80,11 +80,9 @@ export const createContentService = (repository: ContentRepository): ContentServ
         featureImageAlt: string | null;
         featureImageCaption: string | null;
     }) => {
-        const status: 'draft' | 'published' | 'scheduled' = post.status === 'published'
-            ? 'published'
-            : post.status === 'scheduled'
-                ? 'scheduled'
-                : 'draft';
+        const status: 'draft' | 'published' | 'scheduled' | 'sent' = post.status === 'published' || post.status === 'scheduled' || post.status === 'sent'
+            ? post.status
+            : 'draft';
         const visibility: 'public' | 'members' | 'paid' = post.visibility === 'members' || post.visibility === 'paid'
             ? post.visibility
             : 'public';
@@ -111,9 +109,11 @@ export const createContentService = (repository: ContentRepository): ContentServ
 
     const createPost = async (input: PostCreateRequest, editorId: string) => {
         const now = Date.now();
-        const status = input.status;
+        // Email-only posts never reach the site: publishing one means 'sent'.
+        const status = input.emailOnly && input.status === 'published' ? 'sent' : input.status;
         // Imports and API clients may publish with an explicit backdate.
-        const publishedAt = status === 'published' ? input.publishedAt ?? now : input.publishedAt ?? null;
+        // Email-only posts ('sent') get a delivery timestamp the same way.
+        const publishedAt = status === 'published' || status === 'sent' ? input.publishedAt ?? now : input.publishedAt ?? null;
         if (status === 'scheduled' && !input.publishedAt) {
             throw new HttpError(422, 'scheduled_requires_date', 'Scheduled posts require publishedAt');
         }
@@ -130,6 +130,9 @@ export const createContentService = (repository: ContentRepository): ContentServ
             lexical: JSON.stringify(lexical),
             visibility: input.visibility ?? 'public',
             featured: input.featured ? 1 : 0,
+            emailOnly: input.emailOnly ? 1 : 0,
+            newsletterId: input.newsletterId ?? null,
+            emailRecipientFilter: input.emailRecipientFilter ?? null,
             customExcerpt: input.customExcerpt ?? null,
             featureImage: input.featureImage ?? null,
             featureImageAlt: input.featureImageAlt ?? null,
@@ -247,8 +250,11 @@ export const createContentService = (repository: ContentRepository): ContentServ
             throw new HttpError(404, 'post_not_found', 'Post not found');
         }
 
-        const status = input.status ?? existing.status;
-        const publishedAt = status === 'published'
+        const requestedStatus = input.status ?? existing.status;
+        const emailOnly = input.emailOnly !== undefined ? input.emailOnly : Boolean(existing.emailOnly);
+        // Email-only posts never reach the site: publishing one means 'sent'.
+        const status = emailOnly && requestedStatus === 'published' ? 'sent' : requestedStatus;
+        const publishedAt = status === 'published' || status === 'sent'
             ? input.publishedAt ?? existing.publishedAt ?? Date.now()
             : status === 'scheduled'
                 ? input.publishedAt ?? existing.publishedAt
@@ -271,6 +277,9 @@ export const createContentService = (repository: ContentRepository): ContentServ
             lexical: JSON.stringify(lexical),
             visibility: input.visibility ?? existing.visibility,
             featured: input.featured !== undefined ? (input.featured ? 1 : 0) : existing.featured,
+            emailOnly: input.emailOnly !== undefined ? (input.emailOnly ? 1 : 0) : existing.emailOnly,
+            newsletterId: input.newsletterId !== undefined ? input.newsletterId : existing.newsletterId,
+            emailRecipientFilter: input.emailRecipientFilter !== undefined ? input.emailRecipientFilter : existing.emailRecipientFilter,
             // Explicit null clears nullable fields; only undefined keeps them.
             customExcerpt: input.customExcerpt !== undefined ? input.customExcerpt : existing.customExcerpt,
             featureImage: input.featureImage !== undefined ? input.featureImage : existing.featureImage,

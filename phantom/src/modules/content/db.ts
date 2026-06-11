@@ -11,6 +11,11 @@ export const postTable = sqliteTable('posts', {
     html: text('html'),
     visibility: text('visibility').notNull().default('public'),
     featured: integer('featured').notNull().default(0),
+    // Email-only posts: delivered to subscribers, never on the site.
+    emailOnly: integer('email_only').notNull().default(0),
+    // Newsletter delivery intent: which newsletter and which audience.
+    newsletterId: text('newsletter_id'),
+    emailRecipientFilter: text('email_recipient_filter'),
     customExcerpt: text('custom_excerpt'),
     featureImage: text('feature_image'),
     featureImageAlt: text('feature_image_alt'),

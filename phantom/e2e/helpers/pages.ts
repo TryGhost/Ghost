@@ -827,6 +827,22 @@ export class MemberDetailsPage extends AdminPage {
     }
 }
 
+export class PageEditorPage extends PostEditorPage {
+    readonly newPageButton: Locator;
+
+    constructor(page: Page) {
+        super(page);
+        this.pageUrl = '/ghost/#/pages';
+        this.newPageButton = page.locator('[data-test-new-page-button]');
+    }
+
+    async gotoNew(): Promise<void> {
+        await this.page.goto(this.pageUrl);
+        await this.newPageButton.click();
+        await this.titleInput.waitFor({state: 'visible'});
+    }
+}
+
 export class PostPage extends BasePage {
     readonly postTitle: Locator;
     readonly postContent: Locator;

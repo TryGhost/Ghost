@@ -170,6 +170,8 @@ const mapEntry = async (entry: FrontendEntry, member: {status?: string} | null =
         html: access ? html : '',
         excerpt,
         featured: Boolean(post.featured),
+        // posts_meta default: themes hide titles when this is false.
+        show_title_and_feature_image: true,
         visibility: post.visibility ?? 'public',
         access,
         custom_excerpt: post.customExcerpt ?? null,

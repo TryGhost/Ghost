@@ -124,16 +124,17 @@ export const mapCompatPost = async (entry: FrontendEntry, siteUrl: string) => {
     };
 };
 
-export const mapAdminPost = async (entry: FrontendEntry, siteUrl: string) => {
+export const mapAdminPost = async (entry: FrontendEntry, siteUrl: string, newsletter: NewsletterRecord | null = null) => {
     const base = await mapCompatPost(entry, siteUrl);
     return {
         ...base,
         status: entry.post.status,
         lexical: entry.post.lexical,
         mobiledoc: null,
-        email_only: false,
+        email_only: Boolean(entry.post.emailOnly),
         email_segment: 'all',
-        newsletter: null,
+        email_recipient_filter: entry.post.emailRecipientFilter ?? null,
+        newsletter: newsletter ? mapCompatNewsletter(newsletter) : null,
         email: null,
         count: {clicks: 0, positive_feedback: 0, negative_feedback: 0},
         tiers: [],
