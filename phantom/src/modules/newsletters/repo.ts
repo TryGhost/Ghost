@@ -52,6 +52,7 @@ export type NewsletterRepository = {
     createAutomatedEmail: (record: NewAutomatedEmailRecord) => Promise<AutomatedEmailRecord>;
     listAutomatedEmailsByMember: (memberId: string, type: string) => Promise<AutomatedEmailRecord[]>;
     upsertNewsletterMembership: (membership: NewNewsletterMembershipRecord) => Promise<NewsletterMembershipRecord>;
+    listNewsletterSubscriberIds: (newsletterId: string) => Promise<string[]>;
     getNewsletterMembership: (newsletterId: string, memberId: string) => Promise<NewsletterMembershipRecord | null>;
     createEmailTemplate: (template: NewEmailTemplateRecord) => Promise<EmailTemplateRecord>;
     getEmailTemplateByType: (type: string) => Promise<EmailTemplateRecord | null>;
@@ -179,6 +180,14 @@ export const createNewsletterRepository = (db: DbClient): NewsletterRepository =
             .where(and(eq(automatedEmailTable.memberId, memberId), eq(automatedEmailTable.type, type)));
     };
 
+    const listNewsletterSubscriberIds = async (newsletterId: string) => {
+        const rows = await db
+            .select()
+            .from(newsletterMembershipTable)
+            .where(eq(newsletterMembershipTable.newsletterId, newsletterId));
+        return rows.filter((row) => row.status === 'subscribed').map((row) => row.memberId);
+    };
+
     const upsertNewsletterMembership = async (membership: NewNewsletterMembershipRecord) => {
         await db
             .insert(newsletterMembershipTable)
@@ -290,6 +299,7 @@ export const createNewsletterRepository = (db: DbClient): NewsletterRepository =
         createAutomatedEmail,
         listAutomatedEmailsByMember,
         upsertNewsletterMembership,
+        listNewsletterSubscriberIds,
         getNewsletterMembership,
         createEmailTemplate,
         getEmailTemplateByType,

@@ -67,6 +67,7 @@ export interface Member {
     email: string;
     note?: string | null;
     labels?: string[];
+    newsletters?: Array<{id: string}>;
     status: string;
     created_at?: string;
 }
@@ -95,6 +96,7 @@ export class MemberFactory {
                 email: options.email ?? `member-${unique()}@example.com`,
                 note: options.note ?? null,
                 labels: options.labels ?? [],
+                ...(options.newsletters ? {newsletters: options.newsletters} : {}),
                 ...(options.created_at ? {created_at: options.created_at} : {})
             }]}
         });

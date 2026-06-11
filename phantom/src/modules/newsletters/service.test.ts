@@ -47,6 +47,7 @@ const createRepository = (): NewsletterRepository => {
         upsertNewsletterMembership: async () => {
             throw new Error('Not implemented');
         },
+        listNewsletterSubscriberIds: async () => [],
         getNewsletterMembership: async () => null,
         createEmailTemplate: async () => {
             throw new Error('Not implemented');

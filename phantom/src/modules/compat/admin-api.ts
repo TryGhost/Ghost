@@ -895,6 +895,24 @@ export const createAdminApiRouter = ({
         if (labelIds && labelIds.length > 0) {
             await memberRepository.setMemberLabels(member.id, labelIds);
         }
+        // Newsletter subscriptions arrive as [{id}] (or bare ids).
+        if (Array.isArray(wire.newsletters)) {
+            for (const entry of wire.newsletters) {
+                const newsletterId = typeof entry === 'string' ? entry : asWireString((entry as Record<string, unknown>)?.id);
+                if (!newsletterId) {
+                    continue;
+                }
+                const subscribedAt = Date.now();
+                await newsletterRepository.upsertNewsletterMembership({
+                    id: crypto.randomUUID(),
+                    newsletterId,
+                    memberId: member.id,
+                    status: 'subscribed',
+                    createdAt: subscribedAt,
+                    updatedAt: subscribedAt
+                });
+            }
+        }
         return context.json({members: [await memberWithLabels(member)]}, 201);
     }));
 
@@ -1296,6 +1314,43 @@ export const createAdminApiRouter = ({
         return context.json({[key]: [await mapAdminPost(entry, siteUrl, newsletter)]}, status);
     };
 
+    // Renders the post and sends it to every subscribed member through the
+    // mail provider. Synchronous for now; queue-backed batching is the
+    // operations-PRD follow-up.
+    const deliverPostToNewsletter = async (postId: string, newsletterId: string) => {
+        if (!mailer) {
+            return;
+        }
+        const entry = await contentReader.getEntryById(postId);
+        const newsletter = await newsletterRepository.getNewsletterById(newsletterId);
+        if (!entry || !newsletter) {
+            return;
+        }
+        const subscriberIds = await newsletterRepository.listNewsletterSubscriberIds(newsletterId);
+        if (subscriberIds.length === 0) {
+            return;
+        }
+        const {settings} = await settingsService.listSettings();
+        const siteTitle = (readSetting(settings, 'site.title') as string | undefined) ?? 'Ghost';
+        const html = await resolveEntryHtml(entry);
+        const senderName = newsletter.senderName ?? siteTitle;
+        const from = newsletter.senderEmail ?? `noreply@${new URL(siteUrl).hostname}`;
+        const body = `<!DOCTYPE html><html><body><h1>${entry.post.title}</h1>${html ?? ''}<p>—</p><p>${senderName}</p></body></html>`;
+        for (const memberId of subscriberIds) {
+            const member = await memberRepository.getMemberById(memberId);
+            if (!member) {
+                continue;
+            }
+            await mailer.send({
+                to: member.email,
+                from,
+                subject: entry.post.title,
+                text: `${entry.post.title}\n\n${(html ?? '').replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim()}`,
+                html: body
+            });
+        }
+    };
+
     const registerEntryRoutes = (key: 'posts' | 'pages', type: 'post' | 'page') => {
         on.get(`/${key}/:id/`, authed(async (context) => {
             const entry = await contentReader.getEntryById(context.req.param('id'));
@@ -1357,7 +1412,13 @@ export const createAdminApiRouter = ({
                     ...(tags ? {tags} : {}),
                     ...(newsletterId !== undefined ? {newsletterId} : {})
                 };
-                await contentService.updatePost(id, input, staff.id);
+                const wasUnpublished = existing.post.status === 'draft' || existing.post.status === 'scheduled';
+                const updated = await contentService.updatePost(id, input, staff.id);
+                // Publish+send delivers the rendered post to the chosen
+                // newsletter's subscribers right away (no scheduler yet).
+                if (newsletterId && wasUnpublished && (updated.post.status === 'published' || updated.post.status === 'sent')) {
+                    await deliverPostToNewsletter(id, newsletterId);
+                }
                 return respondWithEntry(context, id, key);
             } catch (error) {
                 if (error instanceof MalformedLexicalError) {
