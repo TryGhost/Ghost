@@ -439,6 +439,7 @@ const metricsClient = {isEnabled: () => false, render: () => ''} as unknown as M
 const subscriptionRepository = {listPlans: async () => [], getPricesByPlan: async () => []} as unknown as import('../src/modules/subscriptions/repo.js').SubscriptionRepository;
 const newsletterRepository = {listNewsletters: async () => []} as unknown as import('../src/modules/newsletters/repo.js').NewsletterRepository;
 const memberRepository = {listMembers: async () => [], countMembers: async () => ({total: 0, free: 0, paid: 0})} as unknown as import('../src/modules/members/repo.js').MemberRepository;
+const staffRepositoryDep = {listStaff: async () => []} as unknown as import('../src/modules/identity/repo.js').StaffRepository;
 const contentReader = {
     getEntryBySlug: async () => null,
     listPublished: async () => ({entries: [], pagination: {page: 1, limit: 10, pages: 1, total: 0, next: null, prev: null}}),
@@ -472,7 +473,8 @@ describe('app routes', () => {
             contentReader,
             subscriptionRepository,
             newsletterRepository,
-            memberRepository
+            memberRepository,
+            staffRepository: staffRepositoryDep
         });
 
         const response = await app.request('/ghost/api/v10/health');
@@ -507,7 +509,8 @@ describe('app routes', () => {
             contentReader,
             subscriptionRepository,
             newsletterRepository,
-            memberRepository
+            memberRepository,
+            staffRepository: staffRepositoryDep
         });
 
         const response = await app.request('/ghost/api/v10/site', {
@@ -554,7 +557,8 @@ describe('app routes', () => {
             contentReader,
             subscriptionRepository,
             newsletterRepository,
-            memberRepository
+            memberRepository,
+            staffRepository: staffRepositoryDep
         });
 
         const response = await app.request('/ghost/api/v10/site', {

@@ -1,21 +1,64 @@
 import {Hono, type Context} from 'hono';
 import {getCookie, setCookie, deleteCookie} from 'hono/cookie';
 import type {FrontendContentReader} from '../content/frontend-reader.js';
+import type {ContentService} from '../content/service.js';
+import type {StaffRepository} from '../identity/repo.js';
+import type {NewsletterRepository} from '../newsletters/repo.js';
 import type {SettingsService} from '../settings/service.js';
 import type {StaffAuthService} from '../identity/service.js';
 import type {SubscriptionRepository} from '../subscriptions/repo.js';
 import type {MemberRepository} from '../members/repo.js';
 import {HttpError} from '../../platform/http/errors.js';
-import {buildPagination, GHOST_COMPAT_VERSION, mapAdminPost, mapCompatTag, mapCompatTier, singlePagination} from './mappers.js';
+import {buildPagination, compatSlugify, GHOST_COMPAT_VERSION, mapAdminPost, mapCompatNewsletter, mapCompatTag, mapCompatTier, singlePagination} from './mappers.js';
 import {slashTolerant} from './router-utils.js';
 
 type AdminApiDependencies = {
     contentReader: FrontendContentReader;
+    contentService: ContentService;
     settingsService: SettingsService;
     staffAuthService: StaffAuthService;
+    staffRepository: StaffRepository;
     subscriptionRepository: SubscriptionRepository;
     memberRepository: MemberRepository;
+    newsletterRepository: NewsletterRepository;
     siteUrl: string;
+};
+
+type WirePost = Record<string, unknown>;
+
+const asWireString = (value: unknown) => (typeof value === 'string' ? value : undefined);
+
+class MalformedLexicalError extends Error {}
+
+const parseWireLexical = (value: unknown): Record<string, unknown> | undefined => {
+    if (typeof value !== 'string' || !value.trim()) {
+        return undefined;
+    }
+    try {
+        return JSON.parse(value) as Record<string, unknown>;
+    } catch {
+        throw new MalformedLexicalError('Invalid lexical payload');
+    }
+};
+
+const nullableWireString = (wire: WirePost, key: string): string | null | undefined => {
+    if (!(key in wire)) {
+        return undefined;
+    }
+    const value = wire[key];
+    return typeof value === 'string' ? value : null;
+};
+
+const parseWireDate = (value: unknown): number | undefined => {
+    if (typeof value !== 'string') {
+        return undefined;
+    }
+    const parsed = Date.parse(value);
+    return Number.isNaN(parsed) ? undefined : parsed;
+};
+
+const wireStatus = (value: unknown): 'draft' | 'published' | 'scheduled' | undefined => {
+    return value === 'draft' || value === 'published' || value === 'scheduled' ? value : undefined;
 };
 
 type SettingsList = Awaited<ReturnType<SettingsService['listSettings']>>['settings'];
@@ -63,10 +106,13 @@ const notAuthorized = (context: Context) => {
 // boots against these paths with cookie sessions.
 export const createAdminApiRouter = ({
     contentReader,
+    contentService,
     settingsService,
     staffAuthService,
+    staffRepository,
     subscriptionRepository,
     memberRepository,
+    newsletterRepository,
     siteUrl
 }: AdminApiDependencies) => {
     const router = new Hono();
@@ -438,6 +484,208 @@ export const createAdminApiRouter = ({
             })),
             meta: singlePagination(filtered.length)
         });
+    }));
+
+
+    // --- Editor surface: read, create and save posts/pages ---
+
+    const wireToCreateInput = (wire: WirePost, type: 'post' | 'page') => ({
+        title: asWireString(wire.title)?.trim() || '(Untitled)',
+        type,
+        ...(asWireString(wire.slug) ? {slug: asWireString(wire.slug)} : {}),
+        status: wireStatus(wire.status) ?? 'draft',
+        ...(parseWireDate(wire.published_at) !== undefined ? {publishedAt: parseWireDate(wire.published_at)} : {}),
+        lexical: parseWireLexical(wire.lexical) ?? {root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}},
+        ...(asWireString(wire.custom_excerpt) ? {customExcerpt: asWireString(wire.custom_excerpt)} : {}),
+        ...(asWireString(wire.feature_image) ? {featureImage: asWireString(wire.feature_image)} : {})
+    });
+
+    const wireToUpdateInput = (wire: WirePost) => {
+        const lexical = parseWireLexical(wire.lexical);
+        const publishedAt = parseWireDate(wire.published_at);
+        const title = asWireString(wire.title)?.trim();
+        const customExcerpt = nullableWireString(wire, 'custom_excerpt');
+        const featureImage = nullableWireString(wire, 'feature_image');
+        return {
+            ...(title ? {title} : {}),
+            ...(asWireString(wire.slug) ? {slug: asWireString(wire.slug)} : {}),
+            ...(wireStatus(wire.status) ? {status: wireStatus(wire.status)} : {}),
+            ...(publishedAt !== undefined ? {publishedAt} : {}),
+            ...(lexical ? {lexical} : {}),
+            ...(customExcerpt !== undefined ? {customExcerpt} : {}),
+            ...(featureImage !== undefined ? {featureImage} : {})
+        };
+    };
+
+    const notFoundJson = (context: Context, resource: string) => {
+        return context.json({errors: [{message: `${resource} not found.`, type: 'NotFoundError'}]}, 404);
+    };
+
+    const respondWithEntry = async (context: Context, id: string, key: 'posts' | 'pages', status: 200 | 201 = 200) => {
+        const entry = await contentReader.getEntryById(id);
+        if (!entry) {
+            return notFoundJson(context, key === 'posts' ? 'Post' : 'Page');
+        }
+        return context.json({[key]: [await mapAdminPost(entry, siteUrl)]}, status);
+    };
+
+    const registerEntryRoutes = (key: 'posts' | 'pages', type: 'post' | 'page') => {
+        on.get(`/${key}/:id/`, authed(async (context) => {
+            const entry = await contentReader.getEntryById(context.req.param('id'));
+            if (!entry || entry.post.type !== type) {
+                return notFoundJson(context, key === 'posts' ? 'Post' : 'Page');
+            }
+            return context.json({[key]: [await mapAdminPost(entry, siteUrl)]});
+        }));
+
+        on.post(`/${key}/`, authed(async (context, staff) => {
+            const body = await context.req.json<{posts?: WirePost[]; pages?: WirePost[]}>().catch(() => ({} as Record<string, never>));
+            const wire = (key === 'posts' ? body.posts : body.pages)?.[0];
+            if (!wire) {
+                return context.json({errors: [{message: 'No resource provided', type: 'ValidationError'}]}, 422);
+            }
+            try {
+                const input = wireToCreateInput(wire, type);
+                const created = await contentService.createPost(input, staff.id);
+                return respondWithEntry(context, created.post.id, key, 201);
+            } catch (error) {
+                if (error instanceof MalformedLexicalError) {
+                    return context.json({errors: [{message: error.message, type: 'ValidationError'}]}, 422);
+                }
+                if (error instanceof HttpError) {
+                    return context.json({errors: [{message: error.message, type: 'ValidationError'}]}, error.status as 422);
+                }
+                throw error;
+            }
+        }));
+
+        const updateHandler = authed(async (context, staff) => {
+            const id = context.req.param('id');
+            const existing = await contentReader.getEntryById(id);
+            if (!existing || existing.post.type !== type) {
+                return notFoundJson(context, key === 'posts' ? 'Post' : 'Page');
+            }
+            const body = await context.req.json<{posts?: WirePost[]; pages?: WirePost[]}>().catch(() => ({} as Record<string, never>));
+            const wire = (key === 'posts' ? body.posts : body.pages)?.[0];
+            if (!wire) {
+                return context.json({errors: [{message: 'No resource provided', type: 'ValidationError'}]}, 422);
+            }
+            // Ghost rejects saves based on a stale copy so concurrent edits
+            // are not silently overwritten.
+            const clientUpdatedAt = parseWireDate(wire.updated_at);
+            if (clientUpdatedAt !== undefined && clientUpdatedAt !== existing.post.updatedAt) {
+                return context.json({
+                    errors: [{
+                        message: 'Saving failed! Someone else is editing this post.',
+                        type: 'UpdateCollisionError'
+                    }]
+                }, 409);
+            }
+            try {
+                const input = wireToUpdateInput(wire);
+                await contentService.updatePost(id, input, staff.id);
+                return respondWithEntry(context, id, key);
+            } catch (error) {
+                if (error instanceof MalformedLexicalError) {
+                    return context.json({errors: [{message: error.message, type: 'ValidationError'}]}, 422);
+                }
+                if (error instanceof HttpError) {
+                    return context.json({errors: [{message: error.message, type: 'ValidationError'}]}, error.status as 422);
+                }
+                throw error;
+            }
+        });
+        router.put(`/${key}/:id/`, updateHandler);
+        router.put(`/${key}/:id`, updateHandler);
+    };
+
+    registerEntryRoutes('posts', 'post');
+    registerEntryRoutes('pages', 'page');
+
+    on.get('/slugs/:type/:slug/', authed(async (context) => {
+        const base = compatSlugify(decodeURIComponent(context.req.param('slug')));
+        let candidate = base;
+        let suffix = 2;
+        while (await contentReader.isSlugTaken(candidate)) {
+            candidate = `${base}-${suffix}`;
+            suffix += 1;
+        }
+        return context.json({slugs: [{slug: candidate}]});
+    }));
+
+    on.get('/users/', authed(async (context) => {
+        const staffAccounts = await staffRepository.listStaff();
+        const users = await Promise.all(staffAccounts.map(async (account) => {
+            const roles = await staffAuthService.getStaffRoles(account.id);
+            return buildUserPayload(account, roles);
+        }));
+        return context.json({users, meta: singlePagination(users.length)});
+    }));
+
+    // Minimal search index for the admin's command palette.
+    on.get('/search-index/posts/', authed(async (context) => {
+        const {entries} = await contentReader.listPublished({page: 1, limit: 100, filter: {type: 'post', status: 'all'}});
+        return context.json({posts: entries.map(({post}) => ({
+            id: post.id,
+            title: post.title,
+            slug: post.slug,
+            status: post.status,
+            published_at: post.publishedAt ? new Date(post.publishedAt).toISOString() : null,
+            visibility: post.visibility,
+            url: `${siteUrl}/${post.slug}/`
+        }))});
+    }));
+
+    on.get('/search-index/pages/', authed(async (context) => {
+        const {entries} = await contentReader.listPublished({page: 1, limit: 100, filter: {type: 'page', status: 'all'}});
+        return context.json({pages: entries.map(({post}) => ({
+            id: post.id,
+            title: post.title,
+            slug: post.slug,
+            status: post.status,
+            published_at: post.publishedAt ? new Date(post.publishedAt).toISOString() : null,
+            visibility: post.visibility,
+            url: `${siteUrl}/${post.slug}/`
+        }))});
+    }));
+
+    on.get('/search-index/tags/', authed(async (context) => {
+        const tags = await contentReader.listTags();
+        return context.json({tags: tags.map((tag) => ({
+            id: tag.id,
+            slug: tag.slug,
+            name: tag.name,
+            url: `${siteUrl}/tag/${tag.slug}/`
+        }))});
+    }));
+
+    on.get('/search-index/users/', authed(async (context) => {
+        const staffAccounts = await staffRepository.listStaff();
+        return context.json({users: staffAccounts.map((account) => ({
+            id: account.id,
+            slug: account.name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+            name: account.name,
+            url: `${siteUrl}/author/${account.id}/`,
+            profile_image: null
+        }))});
+    }));
+
+    // Editor sidebar collections phantom has no data for yet.
+    on.get('/offers/', authed(async (context) => {
+        return context.json({offers: [], meta: singlePagination(0)});
+    }));
+    on.get('/labels/', authed(async (context) => {
+        return context.json({labels: [], meta: singlePagination(0)});
+    }));
+    on.get('/snippets/', authed(async (context) => {
+        return context.json({snippets: [], meta: singlePagination(0)});
+    }));
+    on.get('/comments/', authed(async (context) => {
+        return context.json({comments: [], meta: singlePagination(0)});
+    }));
+    on.get('/newsletters/', authed(async (context) => {
+        const newsletters = await newsletterRepository.listNewsletters();
+        return context.json({newsletters: newsletters.map(mapCompatNewsletter), meta: singlePagination(newsletters.length)});
     }));
 
     return router;

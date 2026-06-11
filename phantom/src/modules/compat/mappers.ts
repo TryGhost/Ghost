@@ -8,6 +8,15 @@ export const GHOST_COMPAT_VERSION = '5.130.2';
 
 const toIso = (value: number | null) => (value === null ? null : new Date(value).toISOString());
 
+export const compatSlugify = (value: string) => {
+    return value
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-') || 'untitled';
+};
+
 const toExcerpt = (html: string, words = 50) => {
     const text = html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim();
     return text ? text.split(' ').slice(0, words).join(' ') : '';

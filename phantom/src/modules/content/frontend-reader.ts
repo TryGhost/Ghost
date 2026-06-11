@@ -18,6 +18,9 @@ export type FrontendPagination = {
 
 export type FrontendContentReader = {
     getEntryBySlug: (slug: string) => Promise<FrontendEntry | null>;
+    // Any-status lookups for the admin surfaces.
+    getEntryById: (id: string) => Promise<FrontendEntry | null>;
+    isSlugTaken: (slug: string) => Promise<boolean>;
     listPublished: (options: {page: number; limit: number; filter?: PublishedPostFilter}) => Promise<{entries: FrontendEntry[]; pagination: FrontendPagination}>;
     getTagBySlug: (slug: string) => Promise<TagRecord | null>;
     getAuthorBySlug: (slug: string) => Promise<AuthorProfileRecord | null>;
@@ -40,6 +43,19 @@ export const createFrontendContentReader = (repository: ContentRepository): Fron
             tags: tagsByPost.get(post.id) ?? [],
             authors: authorsByPost.get(post.id) ?? []
         }));
+    };
+
+    const getEntryById = async (id: string) => {
+        const post = await repository.getPostById(id);
+        if (!post) {
+            return null;
+        }
+        const [entry] = await attach([post]);
+        return entry ?? null;
+    };
+
+    const isSlugTaken = async (slug: string) => {
+        return Boolean(await repository.getPostBySlug(slug));
     };
 
     const getEntryBySlug = async (slug: string) => {
@@ -70,6 +86,8 @@ export const createFrontendContentReader = (repository: ContentRepository): Fron
 
     return {
         getEntryBySlug,
+        getEntryById,
+        isSlugTaken,
         listPublished,
         getTagBySlug: (slug: string) => repository.getTagBySlug(slug),
         getAuthorBySlug: (slug: string) => repository.getAuthorProfileBySlug(slug),

@@ -191,8 +191,11 @@ References (all in this directory):
       /ghost/api/v10; the unified admin shell (Ember + React, built via
       `yarn admin:sync` into `content/admin/`) is served at /ghost/ —
       verified in a browser: signin, posts list, and the analytics
-      Overview/Growth screens all render against phantom; write endpoints
-      beyond self-update are still absent)
+      Overview/Growth screens all render against phantom; the editor reads,
+      creates and saves posts/pages (revisions kept, stale imported html
+      invalidated, updated_at collisions 409, malformed lexical 422) with
+      slug generation, users list, search-index and sidebar collections;
+      tags/authors assignment from the editor is not persisted yet)
 - [ ] Content/Members API facades (Content API /posts, /pages, /settings,
       /tags, /authors, /tiers, /newsletters serve Ghost wire shapes from
       imported data with tests; Members API facade covers anonymous member

@@ -43,6 +43,7 @@ const createRepository = (staff: StaffRecord) => {
     }[] = [];
 
     const repository: StaffRepository = {
+        listStaff: async () => staffRecords,
         getStaffByEmail: async (email) => staffRecords.find((record) => record.email === email) ?? null,
         getStaffById: async (id) => staffRecords.find((record) => record.id === id) ?? null,
         createStaff: async (record) => {

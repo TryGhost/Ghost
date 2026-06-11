@@ -33,6 +33,7 @@ import {
 
 export type StaffRepository = {
     getStaffByEmail: (email: string) => Promise<StaffRecord | null>;
+    listStaff: () => Promise<StaffRecord[]>;
     getStaffById: (id: string) => Promise<StaffRecord | null>;
     createStaff: (staff: NewStaffRecord) => Promise<StaffRecord>;
     updateStaffPassword: (id: string, passwordHash: string, updatedAt: number) => Promise<void>;
@@ -69,6 +70,10 @@ export type StaffRepository = {
 };
 
 export const createStaffRepository = (db: DbClient): StaffRepository => {
+    const listStaff = async () => {
+        return db.select().from(staffTable);
+    };
+
     const getStaffByEmail = async (email: string) => {
         const rows = await db.select().from(staffTable).where(eq(staffTable.email, email)).limit(1);
         return rows[0] ?? null;
@@ -328,6 +333,7 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
 
     return {
         getStaffByEmail,
+        listStaff,
         getStaffById,
         createStaff,
         updateStaffPassword,

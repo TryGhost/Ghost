@@ -117,6 +117,7 @@ export const createContentService = (repository: ContentRepository): ContentServ
 
         const post = await repository.createPost({
             id: randomUUID(),
+            type: input.type ?? 'post',
             title: input.title,
             slug,
             status,
@@ -247,15 +248,19 @@ export const createContentService = (repository: ContentRepository): ContentServ
         const now = Date.now();
         const updated = await repository.updatePost({
             ...existing,
+            // Stored html snapshots (from import) go stale the moment the
+            // lexical source changes; renderers fall back to lexical.
+            html: input.lexical ? null : existing.html,
             title: input.title ?? existing.title,
             slug,
             status,
             lexical: JSON.stringify(lexical),
             visibility: input.visibility ?? existing.visibility,
-            customExcerpt: input.customExcerpt ?? existing.customExcerpt,
-            featureImage: input.featureImage ?? existing.featureImage,
-            featureImageAlt: input.featureImageAlt ?? existing.featureImageAlt,
-            featureImageCaption: input.featureImageCaption ?? existing.featureImageCaption,
+            // Explicit null clears nullable fields; only undefined keeps them.
+            customExcerpt: input.customExcerpt !== undefined ? input.customExcerpt : existing.customExcerpt,
+            featureImage: input.featureImage !== undefined ? input.featureImage : existing.featureImage,
+            featureImageAlt: input.featureImageAlt !== undefined ? input.featureImageAlt : existing.featureImageAlt,
+            featureImageCaption: input.featureImageCaption !== undefined ? input.featureImageCaption : existing.featureImageCaption,
             publishedAt,
             updatedAt: now
         });

@@ -8,6 +8,7 @@ import bcrypt from 'bcryptjs';
 import {ensureCoreSchema} from '../../db/ddl.js';
 import {createGhostImporter} from '../operations/importer.js';
 import {createContentRepository} from '../content/repo.js';
+import {createContentService} from '../content/service.js';
 import {createFrontendContentReader} from '../content/frontend-reader.js';
 import {createSettingsRepository} from '../settings/repo.js';
 import {createSettingsService} from '../settings/service.js';
@@ -40,9 +41,12 @@ describe('ghost api compat facades', () => {
             .set({passwordHash: bcrypt.hashSync('Sl1m3rson99', 10)})
             .where(eq(staffTable.email, 'test@ghost.org'));
 
-        const contentReader = createFrontendContentReader(createContentRepository(db));
+        const contentRepository = createContentRepository(db);
+        const contentReader = createFrontendContentReader(contentRepository);
+        const contentService = createContentService(contentRepository);
         const settingsService = createSettingsService(createSettingsRepository(db));
-        const staffAuthService = createStaffAuthService(createStaffRepository(db), {ssoProviders: []});
+        const staffRepository = createStaffRepository(db);
+        const staffAuthService = createStaffAuthService(staffRepository, {ssoProviders: []});
         const subscriptionRepository = createSubscriptionRepository(db);
         const memberRepository = createMemberRepository(db);
         const memberAuthService = createMemberAuthService(memberRepository, 'open');
@@ -59,10 +63,13 @@ describe('ghost api compat facades', () => {
         }));
         app.route('/ghost/api/admin', createAdminApiRouter({
             contentReader,
+            contentService,
             settingsService,
             staffAuthService,
+            staffRepository,
             subscriptionRepository,
             memberRepository,
+            newsletterRepository,
             siteUrl
         }));
         app.route('/members/api', createMembersApiRouter({memberAuthService}));
@@ -351,6 +358,178 @@ describe('ghost api compat facades', () => {
             const news = body.tags.find((tag) => tag.slug === 'news');
             expect(news).toBeDefined();
             expect(news?.count?.posts).toBe(1);
+        });
+
+        it('reads a single post by id for the editor', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const response = await app.request('/ghost/api/admin/posts/687f639878ce35708d46d05b/?formats=mobiledoc,lexical&include=tags,authors', {headers: {cookie}});
+            expect(response.status).toBe(200);
+            const body = await response.json() as {posts: Array<Record<string, unknown>>};
+            expect(body.posts[0]?.slug).toBe('coming-soon');
+            expect(typeof body.posts[0]?.lexical).toBe('string');
+            expect(body.posts[0]?.status).toBe('published');
+
+            const missing = await app.request('/ghost/api/admin/posts/nope/', {headers: {cookie}});
+            expect(missing.status).toBe(404);
+        });
+
+        it('saves edits to an existing post and invalidates stale html', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            // The editor echoes back the updated_at it fetched.
+            const current = await app.request('/ghost/api/admin/posts/687f639878ce35708d46d05b/', {headers: {cookie}});
+            const currentBody = await current.json() as {posts: Array<{updated_at: string}>};
+
+            const lexical = JSON.stringify({root: {children: [{children: [{text: 'Edited body text', type: 'extended-text', version: 1}], type: 'paragraph', version: 1}], direction: null, format: '', indent: 0, type: 'root', version: 1}});
+            const response = await app.request('/ghost/api/admin/posts/687f639878ce35708d46d05b/?formats=mobiledoc,lexical', {
+                method: 'PUT',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({posts: [{title: 'Coming soon (edited)', lexical, updated_at: currentBody.posts[0]!.updated_at}]})
+            });
+            expect(response.status).toBe(200);
+            const body = await response.json() as {posts: Array<Record<string, unknown>>};
+            expect(body.posts[0]?.title).toBe('Coming soon (edited)');
+
+            // The public surface must reflect the edit, not the stale
+            // imported html snapshot.
+            const publicResponse = await app.request('/ghost/api/content/posts/slug/coming-soon/?key=any');
+            const publicBody = await publicResponse.json() as {posts: Array<{title: string; html: string}>};
+            expect(publicBody.posts[0]?.title).toBe('Coming soon (edited)');
+            expect(publicBody.posts[0]?.html).toContain('Edited body text');
+        });
+
+        it('clears nullable fields when the editor sends null', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+            const id = '687f639878ce35708d46d05b';
+
+            const set = await app.request(`/ghost/api/admin/posts/${id}/`, {
+                method: 'PUT',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({posts: [{custom_excerpt: 'A custom excerpt'}]})
+            });
+            const setBody = await set.json() as {posts: Array<{custom_excerpt: string | null}>};
+            expect(setBody.posts[0]?.custom_excerpt).toBe('A custom excerpt');
+
+            const clear = await app.request(`/ghost/api/admin/posts/${id}/`, {
+                method: 'PUT',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({posts: [{custom_excerpt: null}]})
+            });
+            const clearBody = await clear.json() as {posts: Array<{custom_excerpt: string | null}>};
+            expect(clearBody.posts[0]?.custom_excerpt).toBeNull();
+        });
+
+        it('rejects malformed lexical payloads instead of dropping them', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const response = await app.request('/ghost/api/admin/posts/687f639878ce35708d46d05b/', {
+                method: 'PUT',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({posts: [{lexical: '{not valid json'}]})
+            });
+            expect(response.status).toBe(422);
+        });
+
+        it('detects update collisions via updated_at', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const response = await app.request('/ghost/api/admin/posts/687f639878ce35708d46d05b/', {
+                method: 'PUT',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({posts: [{title: 'Stale edit', updated_at: '2020-01-01T00:00:00.000Z'}]})
+            });
+            expect(response.status).toBe(409);
+            const body = await response.json() as {errors: Array<{type: string}>};
+            expect(body.errors[0]?.type).toBe('UpdateCollisionError');
+        });
+
+        it('creates new draft posts from the editor', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const response = await app.request('/ghost/api/admin/posts/?formats=mobiledoc,lexical', {
+                method: 'POST',
+                headers: {cookie, 'Content-Type': 'application/json'},
+                body: JSON.stringify({posts: [{title: 'Brand new post', status: 'draft', lexical: JSON.stringify({root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}})}]})
+            });
+            expect(response.status).toBe(201);
+            const body = await response.json() as {posts: Array<{id: string; status: string; slug: string}>};
+            expect(body.posts[0]?.status).toBe('draft');
+            expect(body.posts[0]?.slug).toBe('brand-new-post');
+
+            const drafts = await app.request('/ghost/api/admin/posts/?filter=status%3Adraft', {headers: {cookie}});
+            const draftsBody = await drafts.json() as {posts: Array<{slug: string}>};
+            expect(draftsBody.posts.some((post) => post.slug === 'brand-new-post')).toBe(true);
+        });
+
+        it('generates unique slugs', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const taken = await app.request('/ghost/api/admin/slugs/post/coming-soon/', {headers: {cookie}});
+            expect(taken.status).toBe(200);
+            const takenBody = await taken.json() as {slugs: Array<{slug: string}>};
+            expect(takenBody.slugs[0]?.slug).toBe('coming-soon-2');
+
+            const fresh = await app.request('/ghost/api/admin/slugs/post/Some New Title/', {headers: {cookie}});
+            const freshBody = await fresh.json() as {slugs: Array<{slug: string}>};
+            expect(freshBody.slugs[0]?.slug).toBe('some-new-title');
+        });
+
+        it('lists staff users for the editor author picker', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const response = await app.request('/ghost/api/admin/users/?limit=100&page=1&include=roles', {headers: {cookie}});
+            expect(response.status).toBe(200);
+            const body = await response.json() as {users: Array<{email: string; roles: Array<{name: string}>}>};
+            expect(body.users.some((user) => user.email === 'test@ghost.org')).toBe(true);
+        });
+
+        it('serves the editor sidebar collections', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            for (const [path, key] of [
+                ['/ghost/api/admin/offers/', 'offers'],
+                ['/ghost/api/admin/labels/?limit=100', 'labels'],
+                ['/ghost/api/admin/snippets/?limit=100', 'snippets'],
+                ['/ghost/api/admin/comments/?limit=100', 'comments'],
+                ['/ghost/api/admin/newsletters/?limit=100', 'newsletters']
+            ] as const) {
+                const response = await app.request(path, {headers: {cookie}});
+                expect(response.status, path).toBe(200);
+                const body = await response.json() as Record<string, unknown>;
+                expect(Array.isArray(body[key]), path).toBe(true);
+            }
+        });
+
+        it('serves the search index', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const posts = await app.request('/ghost/api/admin/search-index/posts/', {headers: {cookie}});
+            expect(posts.status).toBe(200);
+            const postsBody = await posts.json() as {posts: Array<{title: string}>};
+            expect(postsBody.posts.some((post) => post.title.startsWith('Coming soon'))).toBe(true);
+
+            for (const [path, key] of [
+                ['/ghost/api/admin/search-index/pages/', 'pages'],
+                ['/ghost/api/admin/search-index/tags/', 'tags'],
+                ['/ghost/api/admin/search-index/users/', 'users']
+            ] as const) {
+                const response = await app.request(path, {headers: {cookie}});
+                expect(response.status, path).toBe(200);
+                const body = await response.json() as Record<string, unknown[]>;
+                expect(Array.isArray(body[key]), path).toBe(true);
+                expect(body[key]!.length, path).toBeGreaterThan(0);
+            }
         });
 
         it('logs out by deleting the session', async () => {

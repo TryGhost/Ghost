@@ -46,6 +46,7 @@ import {createContentApiRouter} from '../modules/compat/content-api.js';
 import {createAdminApiRouter} from '../modules/compat/admin-api.js';
 import {createMembersApiRouter} from '../modules/compat/members-api.js';
 import type {MemberRepository} from '../modules/members/repo.js';
+import type {StaffRepository} from '../modules/identity/repo.js';
 import {createFrontendRouter} from '../frontend/router.js';
 
 export type AppDependencies = {
@@ -73,6 +74,7 @@ export type AppDependencies = {
     subscriptionRepository: SubscriptionRepository;
     newsletterRepository: NewsletterRepository;
     memberRepository: MemberRepository;
+    staffRepository: StaffRepository;
 };
 
 export const createApp = ({
@@ -99,7 +101,8 @@ export const createApp = ({
     contentReader,
     subscriptionRepository,
     newsletterRepository,
-    memberRepository
+    memberRepository,
+    staffRepository
 }: AppDependencies) => {
     const app = new Hono();
     const api = new Hono();
@@ -149,10 +152,13 @@ export const createApp = ({
     }));
     app.route('/ghost/api/admin', createAdminApiRouter({
         contentReader,
+        contentService,
         settingsService,
         staffAuthService,
+        staffRepository,
         subscriptionRepository,
         memberRepository,
+        newsletterRepository,
         siteUrl
     }));
     app.route('/members/api', createMembersApiRouter({memberAuthService}));

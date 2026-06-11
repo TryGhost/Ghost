@@ -38,6 +38,7 @@ export const AuthorProfileSchema = z.object({
 
 export const PostCreateRequestSchema = z.object({
     title: z.string().min(1),
+    type: z.enum(['post', 'page']).optional(),
     slug: z.string().min(1).optional(),
     status: z.enum(['draft', 'published', 'scheduled']).default('draft'),
     publishedAt: z.number().int().nullable().optional(),

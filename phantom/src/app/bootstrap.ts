@@ -133,6 +133,7 @@ export const createAppDependencies = async () => {
         contentReader,
         subscriptionRepository,
         newsletterRepository,
-        memberRepository
+        memberRepository,
+        staffRepository
     };
 };

@@ -23,11 +23,13 @@
    `content/admin/`, gitignored) signs in and renders posts AND the
    analytics Overview/Growth screens with designed empty states. The
    Members API facade answers portal (anonymous 204, magic-link 201).
-   Known gaps: member sessions, admin write endpoints beyond self-update,
-   Tinybird-backed web analytics (config.stats absent by design).
+   The editor saves posts/pages end-to-end (verified in browser: edit →
+   Update → change visible on the public site). Known gaps: member
+   sessions, tag/author assignment from the editor, Tinybird-backed web
+   analytics (config.stats absent by design).
 
 ## Tests
-- `yarn test` — 80 tests green, including `src/modules/operations/importer.test.ts`
+- `yarn test` — 98 tests green, including `src/modules/operations/importer.test.ts`
   (real `test/fixtures/ghost-v5-export.json` fixture) and `src/db/ddl.test.ts`.
 
 ## Known gaps / next

@@ -65,6 +65,8 @@ const contentReader: FrontendContentReader = {
         entries: [{post, tags: [], authors: []}],
         pagination: {page: 1, limit: 10, pages: 1, total: 1, next: null, prev: null}
     }),
+    getEntryById: async () => null,
+    isSlugTaken: async () => false,
     getTagBySlug: async () => null,
     getAuthorBySlug: async () => null,
     listTags: async () => [],
