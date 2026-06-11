@@ -3,28 +3,15 @@ import {Comment, Member, TranslationFunction} from '../app-context';
 // Canonical source for comment permalink hash format
 export const COMMENT_HASH_PREFIX = 'ghost-comments-';
 
-export function buildCommentPermalink(baseUrl: string, commentId: string): string {
-    const cleanUrl = baseUrl.replace(/#.*$/, '');
-    return `${cleanUrl}#${COMMENT_HASH_PREFIX}${commentId}`;
+// Fragment-only on purpose: the browser resolves these against the live page
+// URL, keeping thread navigation a reload-free hashchange even after the page
+// URL changes (e.g. Portal scrubbing auth params via history.replaceState).
+export function buildCommentPermalink(commentId: string): string {
+    return `#${COMMENT_HASH_PREFIX}${commentId}`;
 }
 
-export function cleanPageUrl(href: string): string {
-    const url = new URL(href);
-    url.hash = '';
-    // Drop the auth round-trip markers Ghost appends after sign-in so they don't
-    // leak into comment permalinks built from this URL. Ghost only ever sets
-    // `action` alongside `success`, so gate on `success` to avoid stripping a
-    // publisher's own standalone `?action=…` param.
-    if (url.searchParams.has('success')) {
-        url.searchParams.delete('success');
-        url.searchParams.delete('action');
-    }
-    return url.toString();
-}
-
-export function buildCommentsRootPermalink(baseUrl: string): string {
-    const cleanUrl = baseUrl.replace(/#.*$/, '');
-    return `${cleanUrl}#ghost-comments`;
+export function buildCommentsRootPermalink(): string {
+    return '#ghost-comments';
 }
 
 export function parseCommentIdFromHash(hash: string): string | null {

@@ -2,7 +2,7 @@ import App from './app';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {ROOT_DIV_ID} from './utils/constants';
-import {cleanPageUrl, parseCommentIdFromHash} from './utils/helpers';
+import {parseCommentIdFromHash} from './utils/helpers';
 
 function getScriptTag(): HTMLElement {
     let scriptTag = document.currentScript as HTMLElement | null;
@@ -45,22 +45,17 @@ function handleTokenUrl() {
     }
 }
 
-function getPageUrl(): string {
-    return cleanPageUrl(window.location.href);
-}
-
 function init() {
     const scriptTag = getScriptTag();
     const root = getRootDiv(scriptTag);
     const initialCommentId = parseCommentIdFromHash(window.location.hash);
-    const pageUrl = getPageUrl();
 
     try {
         handleTokenUrl();
 
         ReactDOM.render(
             <React.StrictMode>
-                {<App initialCommentId={initialCommentId} pageUrl={pageUrl} scriptTag={scriptTag} />}
+                {<App initialCommentId={initialCommentId} scriptTag={scriptTag} />}
             </React.StrictMode>,
             root
         );

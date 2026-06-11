@@ -15,7 +15,6 @@ import {useOptions} from './utils/options';
 type AppProps = {
     scriptTag: HTMLElement;
     initialCommentId: string | null;
-    pageUrl: string;
 };
 
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
@@ -33,7 +32,7 @@ function isCommentLoaded(comments: Comment[], targetId: string): boolean {
     return comments.some(c => c.id === targetId || c.replies?.some(r => r.id === targetId));
 }
 
-const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
+const App: React.FC<AppProps> = ({scriptTag, initialCommentId}) => {
     const options = useOptions(scriptTag);
     const [state, setFullState] = useState<EditableAppContext>({
         initStatus: 'running',
@@ -53,7 +52,6 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         commentIdToScrollTo: initialCommentId,
         commentIdFromHash: initialCommentId,
         showMissingCommentNotice: false,
-        pageUrl,
         supportEmail: null,
         isMember: false,
         isAdmin: false,

@@ -10,7 +10,7 @@ type Props = {
     commentId?: string
 };
 const CTABox: React.FC<Props> = ({isFirst, isPaid, commentId}) => {
-    const {accentColor, publication, member, t, commentCount, pageUrl} = useAppContext();
+    const {accentColor, publication, member, t, commentCount} = useAppContext();
 
     const buttonStyle = {
         backgroundColor: accentColor
@@ -27,14 +27,13 @@ const CTABox: React.FC<Props> = ({isFirst, isPaid, commentId}) => {
     };
 
     const handleSignInClick = () => {
-        // If the reader got here by clicking "Reply" on a comment, ask Portal to
-        // return them to that comment after signing in. Portal carries this
-        // redirect through the magic-link round trip, and the comment permalink's
-        // fragment brings them back to the right place (scrolled + highlighted by
-        // the existing permalink handling) — no client-side storage needed.
+        // Ask Portal to return the reader to this comment after signing in. The
+        // redirect must be absolute (it is emailed as part of the magic link),
+        // so it is built from the live page URL at click time.
         if (commentId) {
-            const redirect = buildCommentPermalink(pageUrl, commentId);
-            window.location.href = `#/portal/signin?redirect=${encodeURIComponent(redirect)}`;
+            const redirect = new URL(window.location.href);
+            redirect.hash = buildCommentPermalink(commentId);
+            window.location.href = `#/portal/signin?redirect=${encodeURIComponent(redirect.toString())}`;
             return;
         }
         window.location.href = '#/portal/signin';
