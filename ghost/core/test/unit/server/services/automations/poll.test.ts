@@ -17,9 +17,6 @@ type StepSpecificField =
     | 'wait_hours'
     | 'email_subject'
     | 'email_lexical'
-    | 'email_sender_name'
-    | 'email_sender_email'
-    | 'email_sender_reply_to'
     | 'email_design_setting_id';
 type StepBase = Omit<AutomationStepToRun, StepSpecificField>;
 type PollOptions = Parameters<typeof poll>[0];
@@ -105,9 +102,6 @@ function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
         type: 'send_email',
         email_subject: 'Welcome!',
         email_lexical: JSON.stringify({root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}}),
-        email_sender_name: null,
-        email_sender_email: null,
-        email_sender_reply_to: null,
         email_design_setting_id: null,
         ...attrs
     } satisfies SendEmailStep;
@@ -275,12 +269,7 @@ describe('automations poll', function () {
 
     it('sends email revision content and enqueues the next step', async function () {
         const nextReadyAt = new Date(Date.now() + 60 * 1000);
-        const step = buildEmailStep({
-            email_design_setting_id: 'design-id',
-            email_sender_email: 'sender@example.com',
-            email_sender_name: 'Sender',
-            email_sender_reply_to: 'reply@example.com'
-        });
+        const step = buildEmailStep({email_design_setting_id: 'design-id'});
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
         automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
 
@@ -291,9 +280,6 @@ describe('automations poll', function () {
             email: {
                 designSettingId: 'design-id',
                 lexical: step.email_lexical,
-                senderEmail: 'sender@example.com',
-                senderName: 'Sender',
-                senderReplyTo: 'reply@example.com',
                 subject: 'Welcome!'
             },
             memberStatus: 'free'

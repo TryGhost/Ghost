@@ -27,6 +27,14 @@ const EMAIL_VALIDATION_TYPE_BY_FIELD = {
  */
 const trimValue = value => value?.trim() || '';
 
+const getSenderDetailsFromDesignSettings = (designSettingsJson) => {
+    return {
+        senderName: designSettingsJson?.sender_name,
+        senderEmail: designSettingsJson?.sender_email,
+        senderReplyTo: designSettingsJson?.sender_reply_to
+    };
+};
+
 class MemberWelcomeEmailService {
     #mailer;
     #renderer;
@@ -363,9 +371,11 @@ class MemberWelcomeEmailService {
                 subject: email.get('subject'),
                 status: row.get('status'),
                 designSettings: designSettings?.id ? designSettings.toJSON() : null,
-                senderName: email.get('sender_name'),
-                senderEmail: email.get('sender_email'),
-                senderReplyTo: email.get('sender_reply_to')
+                senderDetails: {
+                    senderName: email.get('sender_name'),
+                    senderEmail: email.get('sender_email'),
+                    senderReplyTo: email.get('sender_reply_to')
+                }
             };
         }
     }
@@ -381,9 +391,10 @@ class MemberWelcomeEmailService {
      * @param {string} options.email.lexical
      * @param {string} options.email.subject
      * @param {null | object} options.email.designSettings
-     * @param {undefined | null | string} options.email.senderName
-     * @param {undefined | null | string} options.email.senderEmail
-     * @param {undefined | null | string} options.email.senderReplyTo
+     * @param {object} options.email.senderDetails
+     * @param {undefined | null | string} options.email.senderDetails.senderName
+     * @param {undefined | null | string} options.email.senderDetails.senderEmail
+     * @param {undefined | null | string} options.email.senderDetails.senderReplyTo
      * @param {'welcome' | 'automation'} options.emailType
      * @returns {Promise<void>}
      */
@@ -414,7 +425,7 @@ class MemberWelcomeEmailService {
             siteSettings: this.#getSiteSettings()
         });
 
-        const senderOptions = await this.#getEffectiveSenderOptions(email);
+        const senderOptions = await this.#getEffectiveSenderOptions(email.senderDetails);
 
         await this.#mailer.send({
             to: member.email,
@@ -457,9 +468,6 @@ class MemberWelcomeEmailService {
      * @param {object} options.email
      * @param {null | string} options.email.designSettingId
      * @param {string} options.email.lexical
-     * @param {null | string} options.email.senderEmail
-     * @param {null | string} options.email.senderName
-     * @param {null | string} options.email.senderReplyTo
      * @param {string} options.email.subject
      * @param {object} options.member
      * @param {string} options.member.email
@@ -472,6 +480,7 @@ class MemberWelcomeEmailService {
         const designSettings = email.designSettingId ?
             await EmailDesignSetting.findOne({id: email.designSettingId}) :
             null;
+        const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
 
         await this.#sendEmail({
             member,
@@ -480,10 +489,8 @@ class MemberWelcomeEmailService {
             email: {
                 lexical: email.lexical,
                 subject: email.subject,
-                designSettings: designSettings?.id ? designSettings.toJSON() : null,
-                senderName: email.senderName,
-                senderEmail: email.senderEmail,
-                senderReplyTo: email.senderReplyTo
+                designSettings: designSettingsJson,
+                senderDetails: getSenderDetailsFromDesignSettings(designSettingsJson)
             }
         });
     }

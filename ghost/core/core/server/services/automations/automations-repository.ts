@@ -30,9 +30,6 @@ export interface SendEmailAction {
     data: {
         email_subject: string;
         email_lexical: string;
-        email_sender_name: string | null;
-        email_sender_email: string | null;
-        email_sender_reply_to: string | null;
         email_design_setting_id: string;
     };
 }
@@ -88,9 +85,6 @@ export type AutomationStepToRun = ReadonlyDeep<AutomationStepBase & (
         type: 'send_email';
         email_subject: string;
         email_lexical: string;
-        email_sender_name: string | null;
-        email_sender_email: string | null;
-        email_sender_reply_to: string | null;
         email_design_setting_id: string | null;
     }
 )>;
