@@ -45,25 +45,35 @@ back to the Sonnet default if unset.
 
 ## 2. What fires the workflow
 
-The workflow runs on three events, all gated on `affects:i18n`:
+The workflow is gated on a `paths` filter — the PR must touch a file under
+`ghost/i18n/locales/**` — and runs on these events:
 
 | Event | Trigger | Notes |
 |---|---|---|
-| `pull_request_target.labeled` | When a maintainer adds the `affects:i18n` label | The most common path. Fires once per label-add. |
-| `pull_request_target.synchronize` | When new commits are pushed to a PR that already has the label | The bot re-runs and posts a fresh advisory review. Prior runs are not auto-deleted — GitHub does not allow deleting a submitted review. |
+| `pull_request_target.opened` / `.reopened` | When a PR touching a locale file is opened/reopened | The most common path. Fires from a real PR-author event, so it is not subject to the `GITHUB_TOKEN` suppression below. |
+| `pull_request_target.synchronize` | When new commits are pushed to a PR touching a locale file | The bot re-runs and posts a fresh advisory review. Prior runs are not auto-deleted — GitHub does not allow deleting a submitted review. |
+| `pull_request_target.labeled` | When a maintainer adds the `affects:i18n` label | Kept purely as a **manual re-trigger** — a human removing + re-adding the label fires a fresh run. |
 | `workflow_dispatch` | Manual run from the Actions tab with PR number + optional model override | Used to retroactively review existing PRs (see §3) or to A/B compare models. |
+
+> **Why not key off the `affects:i18n` label?** The label is applied
+> automatically by the label-actions workflow using the default
+> `GITHUB_TOKEN`. GitHub deliberately does **not** start new workflow runs
+> from events triggered by `GITHUB_TOKEN`, so a `labeled`-only trigger
+> silently never fired on auto-labelled contributor PRs. Keying off the
+> `paths` filter on PR-author events avoids that trap entirely. The final,
+> precise gate is still the script itself, which only reviews
+> `ghost/i18n/locales/<locale>/<namespace>.json` files (excluding `en/`).
 
 Concurrency is set to `cancel-in-progress` per PR, so rapid pushes only
 result in one live run reviewing the latest commit.
 
 ## 3. Retroactively review existing labelled PRs
 
-PRs that already have the `affects:i18n` label when this workflow lands
-**will not auto-trigger** — GitHub doesn't replay the `labeled` event.
-They'll start being reviewed when:
+PRs opened before this workflow landed **will not auto-trigger** — GitHub
+doesn't replay past `opened` events. They'll start being reviewed when:
 
 - A new commit is pushed (fires `synchronize`), or
-- A maintainer removes and re-adds the label, or
+- A maintainer removes and re-adds the `affects:i18n` label, or
 - A maintainer kicks them off manually.
 
 To kick one off manually:

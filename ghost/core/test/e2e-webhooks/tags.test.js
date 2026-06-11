@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
-const {anyGhostAgent, anyObjectId, anyISODateTime, anyString, anyContentVersion, anyNumber, anyLocalURL} = matchers;
+const {anyGhostAgent, anyObjectId, anyISODateTime, anyString, anyContentVersion, anyContentLength, anyLocalURL} = matchers;
 
 const tagSnapshot = {
     created_at: anyISODateTime,
@@ -50,7 +50,7 @@ describe('tag.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -90,7 +90,7 @@ describe('tag.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -138,7 +138,7 @@ describe('tag.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({

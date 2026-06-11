@@ -176,3 +176,54 @@ describe('Portal API gift checkout', () => {
         expect(window.location.assign).toHaveBeenCalledWith('https://checkout.stripe.com/gift-session');
     });
 });
+
+describe('Portal API member checkout', () => {
+    let originalLocation;
+
+    beforeEach(() => {
+        vi.restoreAllMocks();
+        originalLocation = window.location;
+        delete window.location;
+        window.location = {
+            href: 'https://example.com/#/portal/offers/offer_123',
+            assign: vi.fn()
+        };
+    });
+
+    afterEach(() => {
+        window.location = originalLocation;
+    });
+
+    test('preserves checkout session error code', async () => {
+        const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
+
+        vi.spyOn(window, 'fetch').mockImplementation((url) => {
+            if (url.includes('/members/api/session/')) {
+                return Promise.resolve(new Response('identity-token', {status: 200}));
+            }
+
+            return Promise.resolve(new Response(JSON.stringify({
+                errors: [{
+                    message: 'A subscription exists for this Member.',
+                    code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
+                }]
+            }), {
+                status: 403,
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            }));
+        });
+
+        await expect(ghostApi.member.checkoutPlan({
+            plan: 'price_123',
+            tierId: 'tier_123',
+            cadence: 'month',
+            email: 'jamie@example.com',
+            offerId: 'offer_123'
+        })).rejects.toMatchObject({
+            message: 'A subscription exists for this Member.',
+            code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'
+        });
+    });
+});

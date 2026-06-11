@@ -3,6 +3,13 @@ const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const nock = require('nock');
 
+// nock 14 can't intercept the Stripe SDK's default NodeHttpClient (it flushes
+// the request body on a socket 'connect' event the mocked socket never emits,
+// so every Stripe call hangs). Force the fetch-based client, which nock 14 can
+// intercept. Loaded via overrides.js before Ghost boots.
+const {Stripe} = require('stripe');
+Stripe.createNodeHttpClient = () => Stripe.createFetchHttpClient();
+
 // Helper services
 const configUtils = require('./config-utils');
 const WebhookMockReceiver = require('@tryghost/webhook-mock-receiver');

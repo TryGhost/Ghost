@@ -1,6 +1,7 @@
 name: Translation Review
 
-# Posts an advisory (non-approving) review on translation PRs labelled `affects:i18n`.
+# Posts an advisory (non-approving) review on PRs that touch per-locale
+# translation files.
 #
 # The job runs from `main` (NOT the PR head) and never executes any code
 # from the PR — it only reads the PR's locale-file changes via the GitHub
@@ -12,10 +13,20 @@ name: Translation Review
 #
 # The bot uses a `COMMENT`-event review — it cannot approve a PR and the
 # review never blocks merge.
+#
+# Triggering: we key off the `paths` filter below (the PR touches a locale
+# file) on real PR-author events — `opened`/`reopened`/`synchronize` — rather
+# than the `affects:i18n` label. That label is applied automatically by the
+# label-actions workflow via the default `GITHUB_TOKEN`, and GitHub does NOT
+# start new workflow runs from events triggered by `GITHUB_TOKEN`, so a
+# `labeled`-only trigger silently never fired on auto-labelled PRs. The
+# `labeled` type is kept purely as a manual re-trigger for maintainers.
 
 on:
   pull_request_target:
-    types: [labeled, synchronize]
+    types: [opened, reopened, synchronize, labeled]
+    paths:
+      - 'ghost/i18n/locales/**'
   workflow_dispatch:
     inputs:
       pr_number:
@@ -48,12 +59,12 @@ jobs:
     if: |
       github.repository_owner == 'TryGhost' && (
         github.event_name == 'workflow_dispatch' ||
-        (github.event_name == 'pull_request_target' && github.event.action == 'labeled' && github.event.label.name == 'affects:i18n') ||
-        (github.event_name == 'pull_request_target' && github.event.action == 'synchronize' && contains(github.event.pull_request.labels.*.name, 'affects:i18n'))
+        (github.event_name == 'pull_request_target' && github.event.action != 'labeled') ||
+        (github.event_name == 'pull_request_target' && github.event.action == 'labeled' && github.event.label.name == 'affects:i18n')
       )
     steps:
       - name: Checkout main (trusted ref — never the PR head)
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           persist-credentials: false
           ref: main

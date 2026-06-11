@@ -142,7 +142,19 @@
         // tooling (broccoli-templater, sourcemap-validator) plus old @tryghost/*
         // packages, so it can't be removed from the tree here. Ignore it to stop
         // the unactionable dashboard noise.
-        "lodash.template"
+        "lodash.template",
+
+        // https://linear.app/ghost/issue/PLA-78
+        // https://github.com/TryGhost/Ghost/pull/28180
+        // knex 2.5.x breaks migrations: 2.5.0's password-masking mutates the
+        // shared `config.get('database')` object, which we hand to BOTH knex()
+        // and knex-migrator. With core ahead of knex-migrator's pinned knex
+        // (2.4.2), the password is stripped before knex-migrator connects →
+        // "Access denied (using password: NO)". 2.x is EOL; the real move is
+        // knex 3.x, gated on publishing a knex-3 knex-migrator
+        // (TryGhost/knex-migrator#86, unreleased), bumped in lockstep with core.
+        // Ignore until we do that coordinated upgrade.
+        "knex"
     ],
     "ignorePaths": [
         "test",
@@ -177,6 +189,108 @@
                 "major"
             ],
             "dependencyDashboardApproval": true
+        },
+
+        // Keep `@types/*` aligned with the runtime major they describe. Type defs
+        // for a different major than what actually runs are silently wrong at best
+        // (e.g. @types/express 5 vs Express 4) and build-breaking at worst
+        // (@types/react 19 fails the @tryghost/shade build under React 18) — this
+        // is what stalled the grouped "Update Types packages (major)" PR (#28307).
+        // Two mechanisms, with the major-dashboard-approval rule above as the human
+        // backstop for any types-ahead major that still slips through:
+        //
+        // 1. @types/node has no `node` npm package to pair with — it tracks the
+        //    Node.js runtime declared in `engines`, not a dependency — so a hard
+        //    version cap is the only lever. Raise it when we bump the Node engine.
+        {
+            "description": "Cap @types/node at the installed Node major (engines: ^22.13.1)",
+            "matchPackageNames": [
+                "@types/node"
+            ],
+            "allowedVersions": "<23"
+        },
+
+        // 2. Every other @types/* is grouped WITH the runtime package it describes
+        //    (rules below) so a runtime major and its type-definition major travel
+        //    in the same PR and land together, instead of the types racing ahead.
+        //    This is self-maintaining — no per-package caps to hand-raise on each
+        //    upgrade (a stale cap silently flips from guard to blocker once the
+        //    runtime moves, as happened with supertest 6 -> 7).
+        //
+        // Any @types/* with NO managed runtime peer is left as its own individual
+        // PR rather than lumped into one mega "Types packages (major)" PR (so one
+        // breaking type can't block the rest). Ordering matters: this ungroup
+        // default comes BEFORE the pairings so the pairings (later) win for paired
+        // packages, and the pairings come BEFORE the react17/eslint9/tailwind3
+        // catalog rules below so those version-lane groups still win for their own
+        // depTypes (e.g. react@17 in the react17 catalog stays in its own PR).
+        {
+            "description": "Unpaired @types/* majors get their own PR, not one mega Types group",
+            "matchPackageNames": [
+                "@types/**"
+            ],
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "groupName": null
+        },
+        {
+            "description": "React runtime + its type defs bump together",
+            "groupName": "React",
+            "matchPackageNames": [
+                "react",
+                "react-dom",
+                "@types/react",
+                "@types/react-dom"
+            ]
+        },
+        {
+            "description": "Express runtime + its type defs bump together",
+            "groupName": "Express",
+            "matchPackageNames": [
+                "express",
+                "@types/express"
+            ]
+        },
+        {
+            "description": "jest runtime + its type defs bump together",
+            "groupName": "jest",
+            "matchPackageNames": [
+                "jest",
+                "@types/jest"
+            ]
+        },
+        {
+            "description": "supertest runtime + its type defs bump together",
+            "groupName": "supertest",
+            "matchPackageNames": [
+                "supertest",
+                "@types/supertest"
+            ]
+        },
+        {
+            "description": "dockerode runtime + its type defs bump together",
+            "groupName": "dockerode",
+            "matchPackageNames": [
+                "dockerode",
+                "@types/dockerode"
+            ]
+        },
+        {
+            "description": "nodemailer runtime + its type defs bump together",
+            "groupName": "nodemailer",
+            "matchPackageNames": [
+                "nodemailer",
+                "@types/nodemailer"
+            ]
+        },
+        {
+            "description": "sinon runtime + its type defs bump together",
+            "groupName": "sinon",
+            "matchPackageNames": [
+                "sinon",
+                "@types/sinon"
+            ]
         },
 
         // Group NQL packages separately from other TryGhost packages

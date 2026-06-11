@@ -154,8 +154,8 @@ const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
                 <Icon className='size-4' />
             </div>
             <div className='flex min-w-0 flex-col text-left'>
-                <span className='text-xs text-text-secondary'>{data.label}</span>
-                {data.value && <span className={cn('truncate font-medium', data.isPlaceholderValue && 'opacity-50')}>{data.value}</span>}
+                <span className='text-sm text-text-secondary'>{data.label}</span>
+                {data.value && <span className={cn('truncate text-base font-medium', data.isPlaceholderValue && 'opacity-50')}>{data.value}</span>}
                 {data.errorMessage && <span className='mt-1 text-xs text-destructive'>{data.errorMessage}</span>}
                 {!data.errorMessage && data.warningMessage && <span className='mt-1 text-xs text-yellow-600'>{data.warningMessage}</span>}
             </div>

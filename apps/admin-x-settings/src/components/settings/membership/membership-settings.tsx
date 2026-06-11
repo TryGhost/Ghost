@@ -17,7 +17,7 @@ export const searchKeywords = {
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
     giftSubscriptions: ['membership', 'gift', 'gifts', 'gift subscriptions', 'present', 'share', 'shareable link'],
     memberEmails: ['membership', 'signup', 'welcome email', 'welcome emails', 'email', 'new user', 'new member', 'account'],
-    tips: ['growth', 'tips', 'donations', 'one time', 'payment']
+    tips: ['membership', 'tips', 'donations', 'one time', 'payment']
 };
 
 const MembershipSettings: React.FC = () => {
@@ -31,7 +31,7 @@ const MembershipSettings: React.FC = () => {
         searchKeywords.portal,
         ...(paidMembersEnabled ? [searchKeywords.giftSubscriptions] : []),
         ...(hasAutomations ? [] : [searchKeywords.memberEmails]),
-        searchKeywords.tips
+        ...(hasTipsAndDonations && hasStripeEnabled ? [searchKeywords.tips] : [])
     ].flat();
 
     return (

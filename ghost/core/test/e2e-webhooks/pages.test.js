@@ -13,7 +13,7 @@ const {
     anyISODateTime,
     anyObjectId,
     anyContentVersion,
-    anyNumber
+    anyContentLength
 } = matchers;
 
 const tierSnapshot = {
@@ -155,7 +155,7 @@ describe('page.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -196,7 +196,7 @@ describe('page.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -242,7 +242,7 @@ describe('page.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -291,7 +291,7 @@ describe('page.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -343,7 +343,7 @@ describe('page.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -394,7 +394,7 @@ describe('page.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -445,7 +445,7 @@ describe('page.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -503,7 +503,7 @@ describe('page.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -559,7 +559,7 @@ describe('page.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -617,7 +617,7 @@ describe('page.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -672,7 +672,7 @@ describe('page.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({

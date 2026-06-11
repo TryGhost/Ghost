@@ -535,8 +535,11 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }).then(async function (res) {
                 if (!res.ok) {
                     const errData = await res.json();
-                    const errMssg = errData?.errors?.[0]?.message || 'Failed to signup, please try again.';
-                    throw new Error(errMssg);
+                    const err = errData?.errors?.[0] || {};
+                    const errMssg = err.message || 'Failed to signup, please try again.';
+                    const error = new Error(errMssg);
+                    error.code = err.code;
+                    throw error;
                 }
                 return res.json();
             }).then(function (responseBody) {

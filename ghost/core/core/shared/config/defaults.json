@@ -130,6 +130,18 @@
             "lifetime": 43200,
             "freeRetries": 8
         },
+        "checkout_session_global": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "checkout_session_email": {
+            "minWait": 600000,
+            "maxWait": 43200000,
+            "lifetime": 43200,
+            "freeRetries": 8
+        },
         "webmentions_block": {
             "minWait": 10,
             "maxWait": 100,
@@ -262,7 +274,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.68"
+        "version": "2.69"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",

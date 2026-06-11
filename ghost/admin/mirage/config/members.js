@@ -19,7 +19,7 @@ export function mockMembersStats(server) {
     server.get('/members/stats/count', withPermissionsCheck(ALLOWED_ROLES, function (db, {queryParams}) {
         let {days} = queryParams;
 
-        let firstSubscriberDays = faker.datatype.number({min: 30, max: 600});
+        let firstSubscriberDays = faker.number.int({min: 30, max: 600});
 
         if (days === 'all-time') {
             days = firstSubscriberDays;
@@ -29,7 +29,7 @@ export function mockMembersStats(server) {
 
         let total = 0;
         if (firstSubscriberDays > days) {
-            total += faker.datatype.number({max: 1000});
+            total += faker.number.int({max: 1000});
         }
 
         // simulate sql GROUP BY where days with 0 subscribers are missing
@@ -37,7 +37,7 @@ export function mockMembersStats(server) {
         let i = 0;
         while (i < days) {
             let date = moment().subtract(i, 'days').format('YYYY-MM-DD');
-            let count = faker.datatype.number({min: 0, max: 30});
+            let count = faker.number.int({min: 0, max: 30});
 
             if (count !== 0) {
                 dateCounts[date] = count;
