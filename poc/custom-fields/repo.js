@@ -42,7 +42,7 @@ const STORAGE_KEY = 'ghost-poc-custom-fields';
 // an older version is discarded and reseeded from the JSON, so dev browsers pick
 // up seed changes automatically (this DOES wipe local edits, which is the point
 // of a reseed).
-const SEED_VERSION = 7;
+const SEED_VERSION = 8;
 
 /** Type options for the "data type" dropdown in the create UI. */
 export const TYPES = [
@@ -102,6 +102,8 @@ function read() {
     initial.definitions = initial.definitions || [];
     initial.forms = initial.forms || {};
     initial.values = initial.values || {};
+    initial.settings = initial.settings || {};
+    initial.dismissed = initial.dismissed || {};
     return write(initial);
 }
 
@@ -227,6 +229,42 @@ export async function setValue(memberId, fieldId, value) {
     }
     write(state);
     return state.values[memberId];
+}
+
+// --- Feature settings (e.g. the Landing form on/off) -----------------------
+
+/** @returns {Promise<unknown>} a feature setting value. */
+export async function getSetting(key) {
+    return (read().settings || {})[key];
+}
+
+/** Set a feature setting value. */
+export async function setSetting(key, value) {
+    const state = read();
+    state.settings = state.settings || {};
+    state.settings[key] = value;
+    write(state);
+    return value;
+}
+
+// --- Per-member dismissal (e.g. the Landing form prompt) -------------------
+
+/** @returns {Promise<boolean>} whether a member dismissed a given prompt. */
+export async function isDismissed(memberId, key) {
+    return Boolean(((read().dismissed || {})[memberId] || {})[key]);
+}
+
+/** Mark (or clear) a prompt as dismissed for a member. */
+export async function setDismissed(memberId, key, value = true) {
+    const state = read();
+    state.dismissed = state.dismissed || {};
+    state.dismissed[memberId] = state.dismissed[memberId] || {};
+    if (value) {
+        state.dismissed[memberId][key] = true;
+    } else {
+        delete state.dismissed[memberId][key];
+    }
+    write(state);
 }
 
 // --- POC helpers -----------------------------------------------------------

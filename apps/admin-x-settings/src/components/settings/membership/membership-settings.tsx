@@ -1,6 +1,7 @@
 import Access from './access';
 import CustomFields from './custom-fields/custom-fields';
 import GiftSubscriptions from './gift-subscriptions';
+import LandingForm from './landing-form';
 import MemberEmails from './member-emails';
 import Portal from './portal';
 import React from 'react';
@@ -16,6 +17,7 @@ export const searchKeywords = {
     access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email', 'password protection', 'lock site', 'private site', 'private site mode', 'make this site private'],
     tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
     customFields: ['membership', 'custom fields', 'custom field', 'metadata', 'attributes', 'properties'],
+    landingForm: ['membership', 'landing form', 'survey', 'collect', 'profile', 'audience', 'custom fields', 'post signup'],
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
     giftSubscriptions: ['membership', 'gift', 'gifts', 'gift subscriptions', 'present', 'share', 'shareable link'],
     memberEmails: ['membership', 'signup', 'welcome email', 'welcome emails', 'email', 'new user', 'new member', 'account'],
@@ -30,8 +32,9 @@ const MembershipSettings: React.FC = () => {
     const visibleSearchKeywords = [
         searchKeywords.access,
         searchKeywords.tiers,
-        searchKeywords.customFields,
         searchKeywords.portal,
+        searchKeywords.customFields,
+        searchKeywords.landingForm,
         ...(paidMembersEnabled ? [searchKeywords.giftSubscriptions] : []),
         ...(hasAutomations ? [] : [searchKeywords.memberEmails]),
         searchKeywords.tips
@@ -42,8 +45,9 @@ const MembershipSettings: React.FC = () => {
             <Access keywords={searchKeywords.access} />
             <SpamFilters keywords={searchKeywords.access} />
             <Tiers keywords={searchKeywords.tiers} />
-            <CustomFields keywords={searchKeywords.customFields} />
             <Portal keywords={searchKeywords.portal} />
+            <CustomFields keywords={searchKeywords.customFields} />
+            <LandingForm keywords={searchKeywords.landingForm} />
             {paidMembersEnabled && <GiftSubscriptions keywords={searchKeywords.giftSubscriptions} />}
             {!hasAutomations && <MemberEmails keywords={searchKeywords.memberEmails} />}
             {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}

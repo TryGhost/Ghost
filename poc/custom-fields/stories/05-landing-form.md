@@ -2,7 +2,7 @@
 
 **Goal:** an owner can turn on a **Landing form** that asks existing members for a chosen set of custom fields, shown as a soft card when the member next lands on the site, reaching members regardless of how they signed up.
 
-**Status:** Not started (next).
+**Status:** Part A (admin) done. Part B (Portal card) next.
 
 **Depends on:** Stories 0 and 1 (field definitions + the shared `CustomFieldInput` control). Independent of the Portal signup/account work, it's a new surface.
 
@@ -39,15 +39,22 @@ All of these are the same check: **enabled + authenticated member + pending + no
 
 ## Build order
 
-- **Part A — admin:** repo additions + the "Landing form" section (toggle + field list) + sidebar reorder.
-- **Part B — Portal:** the injected card + trigger + dismiss + email-link param.
+- **Part A — admin (done):** repo additions + the "Landing form" section (toggle + field list) + sidebar reorder.
+- **Part B — Portal (next):** the injected card + trigger + dismiss + email-link param.
 
 ## Tasks
 
-- [ ] Repo: `landing` placements, `enabled` setting, per-member `dismissed` state; seed + version bump.
-- [ ] Admin: "Landing form" Membership section (toggle + field list, reuse the signup Form-fields component, custom fields only); sidebar reorder.
+- [x] Repo: `landing` placements, `enabled` setting, per-member `dismissed` state; seed + version bump.
+- [x] Admin: "Landing form" Membership section (toggle + field list, reuse the signup Form-fields component, custom fields only); sidebar reorder.
 - [ ] Portal: injected soft card (missing fields, Save / Not now), trigger on authenticated landing, dismiss persistence, email-link param.
 - [ ] Required-at-collection validation (placed = required), non-blocking.
+
+## Part A as built (admin)
+
+- The section follows the **Welcome-emails** pattern: a top-right **"Customize"** button opens the modal, and a single `List` row ("All members", detail "Shown to members on their next visit") carries the enable `Toggle` (bound to the repo `landingFormEnabled` setting). In Story 5.5 the row becomes a per-form list and "Customize" becomes "Add landing form".
+- The modal reuses the **Portal `PreviewModalContent`** two-pane layout: live preview left, sidebar right with **General / Segmentation** tabs (`TabView`, same as the Portal modal). General holds the shared field picker; **Segmentation is a placeholder** for Story 5.5. No intro/description copy in the sidebar (Portal/Announcement modals don't show one), and the tab body uses Portal's exact `<div className='mt-7'><Form>` wrapper for spacing.
+- The field picker is the **same `FormFieldsList` component** used by signup (`surface='landing'`, custom fields only, no built-in Email/Name rows, no `updateSetting`). One component, two surfaces, no duplicated drag-and-drop/picker logic.
+- The live preview (`landing-preview.tsx`) is a **hand-built static mock** (the signup preview is the real Portal iframe; there is no Portal iframe for an injected landing card yet). Its Save button is matched to the real `.gh-portal-btn` (44px height, 6px radius, weight 500, ~15px, accent bg) and reads `accent_color`.
 
 ## Done = demoable
 

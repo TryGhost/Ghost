@@ -56,4 +56,10 @@ export function setForm(surface: string, placements: FormPlacement[]): Promise<F
 export function getValues(memberId: string): Promise<Record<string, unknown>>;
 export function setValue(memberId: string, fieldId: string, value: unknown): Promise<Record<string, unknown>>;
 
+export function getSetting(key: string): Promise<unknown>;
+export function setSetting(key: string, value: unknown): Promise<unknown>;
+
+export function isDismissed(memberId: string, key: string): Promise<boolean>;
+export function setDismissed(memberId: string, key: string, value?: boolean): Promise<void>;
+
 export function resetToSeed(): Promise<unknown>;

@@ -74,8 +74,19 @@
       { "fieldId": "email", "system": true, "required": true, "placeholder": null, "order": 0 },
       { "fieldId": "name", "system": true, "required": false, "placeholder": null, "order": 1 },
       { "fieldId": "cf_role", "required": true, "placeholder": null, "order": 2 }
+    ],
+    "landing": [
+      { "fieldId": "cf_company", "required": true, "placeholder": null, "order": 0 },
+      { "fieldId": "cf_interests", "required": true, "placeholder": null, "order": 1 }
     ]
   },
+
+  "settings": {
+    "landingFormEnabled": true
+  },
+
+  "dismissed": {},
+
 
   "values": {
     "member_1": {

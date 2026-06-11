@@ -1,17 +1,15 @@
 import * as customFields from '../../../../../../../poc/custom-fields/repo';
-import CustomFieldModal from '../custom-fields/custom-field-modal';
+import CustomFieldModal from './custom-field-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import {Button, DragIndicator, Select, type SelectOption, type SortableItemContainerProps, SortableList, Toggle} from '@tryghost/admin-x-design-system';
 
-// POC Story 3: a single ordered "Form fields" list for the signup form, mixing
-// built-in fields (Email locked, Name toggle) with custom-field placements.
-// Order + custom placements live in poc/custom-fields/repo; Name on/off maps to
-// the real `portal_name` setting so the live preview stays accurate.
+// POC: an ordered "Form fields" list for a collection surface. Used by the
+// signup form (with built-in Email/Name rows) and the Landing form (custom
+// fields only). Placements live in poc/custom-fields/repo; the signup Name
+// toggle maps to the real `portal_name` setting.
 
-const SIGNUP = 'signup';
 const CREATE_NEW = '__create_new_field__';
-
 const BUILTIN_LABELS: Record<string, string> = {email: 'Email', name: 'Name'};
 
 const typeLabel = (type: customFields.FieldType) => customFields.TYPES.find(t => t.value === type)?.label || type;
@@ -22,7 +20,7 @@ const Badge: React.FC<{children: React.ReactNode}> = ({children}) => (
     </span>
 );
 
-interface SignupEntry extends customFields.FormPlacement {
+interface FormEntry extends customFields.FormPlacement {
     id: string;
 }
 
@@ -38,30 +36,32 @@ const FieldRowContainer: React.FC<Partial<SortableItemContainerProps>> = ({setRe
     </div>
 );
 
-const SignupFormFields: React.FC<{
-    portalName: boolean
-    updateSetting: (key: string, value: boolean) => void
-}> = ({portalName, updateSetting}) => {
-    const [items, setItems] = useState<SignupEntry[]>([]);
+const FormFieldsList: React.FC<{
+    surface: string
+    title?: string
+    portalName?: boolean
+    updateSetting?: (key: string, value: boolean) => void
+}> = ({surface, title = 'Form fields', portalName = false, updateSetting}) => {
+    const [items, setItems] = useState<FormEntry[]>([]);
     const [definitions, setDefinitions] = useState<customFields.FieldDefinition[]>([]);
     const [addKey, setAddKey] = useState(0);
 
     const refresh = useCallback(async () => {
-        const [form, defs] = await Promise.all([customFields.getForm(SIGNUP), customFields.listFields()]);
+        const [form, defs] = await Promise.all([customFields.getForm(surface), customFields.listFields()]);
         setItems(form.map(p => ({...p, id: p.fieldId})));
         setDefinitions(defs);
-    }, []);
+    }, [surface]);
 
     useEffect(() => {
         refresh();
         return customFields.subscribe(refresh);
     }, [refresh]);
 
-    const persist = (next: SignupEntry[]) => {
+    const persist = (next: FormEntry[]) => {
         const ordered = next.map((entry, index) => ({...entry, order: index}));
         setItems(ordered);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        customFields.setForm(SIGNUP, ordered.map(({id, ...placement}) => placement));
+        customFields.setForm(surface, ordered.map(({id, ...placement}) => placement));
     };
 
     const onMove = (id: string, overId: string) => {
@@ -110,8 +110,8 @@ const SignupFormFields: React.FC<{
         }
     };
 
-    const renderControl = (item: SignupEntry) => {
-        if (item.fieldId === 'name') {
+    const renderControl = (item: FormEntry) => {
+        if (item.fieldId === 'name' && updateSetting) {
             return (
                 <Toggle
                     checked={portalName}
@@ -120,7 +120,7 @@ const SignupFormFields: React.FC<{
                 />
             );
         }
-        if (item.fieldId !== 'email') {
+        if (item.fieldId !== 'email' && item.fieldId !== 'name') {
             return (
                 <Button
                     icon='trash'
@@ -138,7 +138,7 @@ const SignupFormFields: React.FC<{
 
     return (
         <div className='flex flex-col gap-3'>
-            <span className='text-sm font-semibold text-grey-900 dark:text-grey-300'>Form fields</span>
+            <span className='text-sm font-semibold text-grey-900 dark:text-grey-300'>{title}</span>
             {items.length > 0 && (
                 <SortableList
                     container={props => <FieldRowContainer {...props} />}
@@ -174,4 +174,4 @@ const SignupFormFields: React.FC<{
     );
 };
 
-export default SignupFormFields;
+export default FormFieldsList;

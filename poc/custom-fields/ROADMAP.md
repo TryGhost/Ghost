@@ -22,7 +22,8 @@ Each story below targets **Tier 1** for its first demoable version. Tier 2 (sele
 | 2 | [Admin: member detail values](./stories/02-admin-member-detail.md) | Ember admin | ✅ Done |
 | 3 | [Portal: collect at signup](./stories/03-portal-signup.md) | portal/admin-x-settings | ✅ Done (Part A + Part B) |
 | 4 | [Portal: self-edit on account page](./stories/04-portal-account.md) | portal | ✅ Done |
-| 5 | [Landing form: collect from existing members](./stories/05-landing-form.md) | portal/admin-x-settings | In progress |
+| 5 | [Landing form: collect from existing members](./stories/05-landing-form.md) | portal/admin-x-settings | In progress (Part A done) |
+| 5.5 | [Audience-targeted landing forms](./stories/05.5-audience-targeted-landing-forms.md) | portal/admin-x-settings | Not started (next) |
 
 Status values: `Not started` / `In progress` / `Demoable` / `Done`.
 

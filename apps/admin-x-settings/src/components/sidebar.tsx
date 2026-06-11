@@ -222,8 +222,9 @@ const Sidebar: React.FC = () => {
                         onClick={handleSectionClick}
                     />
                     <NavItem icon='bills' keywords={membershipSearchKeywords.tiers} navid='tiers' title="Tiers" onClick={handleSectionClick} />
-                    <NavItem icon='textfield' keywords={membershipSearchKeywords.customFields} navid='custom-fields' title="Custom fields" onClick={handleSectionClick} />
                     <NavItem icon='portal' keywords={membershipSearchKeywords.portal} navid='portal' title="Signup portal" onClick={handleSectionClick} />
+                    <NavItem icon='textfield' keywords={membershipSearchKeywords.customFields} navid='custom-fields' title="Custom fields" onClick={handleSectionClick} />
+                    <NavItem icon='card-list' keywords={membershipSearchKeywords.landingForm} navid='landing-form' title="Landing form" onClick={handleSectionClick} />
                     {paidMembersEnabled && <NavItem icon='gift' keywords={membershipSearchKeywords.giftSubscriptions} navid='gift-subscriptions' title="Gift subscriptions" onClick={handleSectionClick} />}
                     {!hasAutomations && <NavItem icon='mailplus' keywords={membershipSearchKeywords.memberEmails} navid='memberemails' title="Welcome emails" onClick={handleSectionClick} />}
                     {hasTipsAndDonations && hasStripeEnabled && <NavItem icon='piggybank' keywords={membershipSearchKeywords.tips} navid='tips-and-donations' title="Tips & donations" onClick={handleSectionClick} />}
