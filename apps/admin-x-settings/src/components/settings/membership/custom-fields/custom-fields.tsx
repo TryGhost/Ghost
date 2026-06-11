@@ -37,7 +37,7 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
     return (
         <TopLevelGroup
             customButtons={buttons}
-            description='Collect and store extra information about your members'
+            description='Create and manage custom fields to store extra information about your members'
             keywords={keywords}
             navid='custom-fields'
             testId='custom-fields'
