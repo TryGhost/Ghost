@@ -6,7 +6,7 @@ packages:
 strictDepBuilds: true
 catalogMode: strict
 
-minimumReleaseAge: 1440 # 1 day in minutes; pnpm 11 default
+minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
 
 allowBuilds:
@@ -197,3 +197,13 @@ packageExtensions:
 minimumReleaseAgeExclude:
   # Our own packages are published by us, so the release-age delay doesn't apply
   - "@tryghost/*"
+  # TryGhost-published packages that live outside the @tryghost/ npm scope.
+  # Deliberately NOT listed: sqlite3 — TryGhost stewards it, but legacy
+  # (Mapbox-era) npm maintainer accounts can still publish, so the soak
+  # retains value there.
+  - "bookshelf-relations"
+  - "eslint-plugin-ghost"
+  - "express-hbs"
+  - "ghost-storage-base"
+  - "gscan"
+  - "knex-migrator"
