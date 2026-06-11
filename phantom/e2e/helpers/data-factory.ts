@@ -60,5 +60,71 @@ export class PostFactory {
     }
 }
 
+export interface Member {
+    id: string;
+    uuid: string;
+    name: string | null;
+    email: string;
+    note?: string | null;
+    labels?: string[];
+    status: string;
+    created_at?: string;
+}
+
+export class MemberFactory {
+    constructor(private readonly request: APIRequestContext) {}
+
+    build(options: Partial<Member> = {}): Member {
+        const name = options.name ?? `Member ${unique()}`;
+        return {
+            id: '',
+            uuid: '',
+            name,
+            email: options.email ?? `member-${unique()}@example.com`,
+            note: options.note ?? `Note about ${name}`,
+            labels: options.labels ?? [],
+            status: options.status ?? 'free'
+        };
+    }
+
+    async create(options: Partial<Member> = {}): Promise<Member> {
+        const name = options.name ?? `Member ${unique()}`;
+        const response = await this.request.post('/ghost/api/admin/members/', {
+            data: {members: [{
+                name,
+                email: options.email ?? `member-${unique()}@example.com`,
+                note: options.note ?? null,
+                labels: options.labels ?? [],
+                ...(options.created_at ? {created_at: options.created_at} : {})
+            }]}
+        });
+        if (!response.ok()) {
+            throw new Error(`Failed to create member: ${response.status()} ${await response.text()}`);
+        }
+        const body = await response.json() as {members: Member[]};
+        return body.members[0]!;
+    }
+
+    async createMany(optionsList: Array<Partial<Member>>): Promise<Member[]> {
+        const members: Member[] = [];
+        for (const options of optionsList) {
+            members.push(await this.create(options));
+        }
+        return members;
+    }
+}
+
+export class MembersService {
+    constructor(private readonly request: APIRequestContext) {}
+
+    async deleteAll(): Promise<void> {
+        const response = await this.request.delete('/ghost/api/admin/members?all=true');
+        if (!response.ok()) {
+            throw new Error(`Failed to delete members: ${response.status()}`);
+        }
+    }
+}
+
 export const createTagFactory = (request: APIRequestContext) => new TagFactory(request);
 export const createPostFactory = (request: APIRequestContext) => new PostFactory(request);
+export const createMemberFactory = (request: APIRequestContext) => new MemberFactory(request);

@@ -90,6 +90,15 @@ const createMemberRepository = (): MemberRepository => {
     return {
         getMemberByEmail: async () => null,
         listMembers: async () => members,
+        countFilteredMembers: async () => members.length,
+        updateMember: async (member) => member,
+        deleteMember: async () => undefined,
+        deleteAllMembers: async () => undefined,
+        upsertLabel: async (label) => label as never,
+        getLabelBySlug: async () => null,
+        listLabels: async () => [],
+        setMemberLabels: async () => undefined,
+        getLabelsForMembers: async () => new Map(),
         countMembers: async () => ({total: members.length, free: members.filter((m) => m.status === 'free').length, paid: members.filter((m) => m.status === 'paid').length}),
         getMemberById: async (id) => members.find((member) => member.id === id) ?? null,
         createMember: async (member) => {

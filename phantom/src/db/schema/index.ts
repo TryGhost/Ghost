@@ -13,6 +13,8 @@ export {
 } from '../../modules/identity/db.js';
 export {
     memberTable,
+    memberLabelTable,
+    memberLabelLinkTable,
     memberAuthTokenTable,
     memberSessionTable,
     memberAuthEventTable

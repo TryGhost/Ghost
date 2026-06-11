@@ -303,6 +303,117 @@ describe('ghost api compat facades', () => {
             expect(read.status).toBe(404);
         });
 
+        it('manages members with labels through the admin facade', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+            const headers = {cookie, 'content-type': 'application/json'};
+
+            // Clean slate (the e2e harness does the same between tests).
+            const wipe = await app.request('/ghost/api/admin/members/?all=true', {method: 'DELETE', headers: {cookie}});
+            expect(wipe.status).toBe(200);
+
+            const create = await app.request('/ghost/api/admin/members/', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({members: [{name: 'Alice Anderson', email: 'alice@example.com', labels: ['VIP']}]})
+            });
+            expect(create.status).toBe(201);
+            const created = await create.json() as {members: Array<{id: string; name: string; labels: Array<{slug: string}>}>};
+            expect(created.members[0]!.name).toBe('Alice Anderson');
+            expect(created.members[0]!.labels[0]?.slug).toBe('vip');
+            const memberId = created.members[0]!.id;
+
+            await app.request('/ghost/api/admin/members/', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({members: [{name: 'Bob Baker', email: 'bob@example.com'}]})
+            });
+
+            // Duplicate emails are rejected.
+            const duplicate = await app.request('/ghost/api/admin/members/', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({members: [{email: 'alice@example.com'}]})
+            });
+            expect(duplicate.status).toBe(422);
+
+            const byLabel = await app.request('/ghost/api/admin/members/?filter=label%3A%5BVIP%5D', {headers: {cookie}});
+            const byLabelBody = await byLabel.json() as {members: Array<{email: string}>; meta: {pagination: {total: number}}};
+            expect(byLabelBody.members).toHaveLength(1);
+            expect(byLabelBody.members[0]!.email).toBe('alice@example.com');
+
+            const bySearch = await app.request('/ghost/api/admin/members/?search=bob', {headers: {cookie}});
+            const bySearchBody = await bySearch.json() as {members: Array<{email: string}>};
+            expect(bySearchBody.members).toHaveLength(1);
+            expect(bySearchBody.members[0]!.email).toBe('bob@example.com');
+
+            const update = await app.request(`/ghost/api/admin/members/${memberId}/`, {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({members: [{name: 'Alice Updated', labels: []}]})
+            });
+            expect(update.status).toBe(200);
+            const updated = await update.json() as {members: Array<{name: string; labels: unknown[]}>};
+            expect(updated.members[0]!.name).toBe('Alice Updated');
+            expect(updated.members[0]!.labels).toHaveLength(0);
+
+            const remove = await app.request(`/ghost/api/admin/members/${memberId}/`, {method: 'DELETE', headers: {cookie}});
+            expect(remove.status).toBe(204);
+            const gone = await app.request(`/ghost/api/admin/members/${memberId}/`, {headers: {cookie}});
+            expect(gone.status).toBe(404);
+        });
+
+        it('exports members as csv and applies bulk label actions', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+            const headers = {cookie, 'content-type': 'application/json'};
+
+            await app.request('/ghost/api/admin/members/?all=true', {method: 'DELETE', headers: {cookie}});
+            await app.request('/ghost/api/admin/members/', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({members: [{name: 'Export One', email: 'export1@example.com', labels: ['dog']}]})
+            });
+            await app.request('/ghost/api/admin/members/', {
+                method: 'POST',
+                headers,
+                body: JSON.stringify({members: [{name: 'Export Two', email: 'export2@example.com'}]})
+            });
+
+            const exportResponse = await app.request('/ghost/api/admin/members/upload/?limit=all', {headers: {cookie}});
+            expect(exportResponse.status).toBe(200);
+            expect(exportResponse.headers.get('content-disposition')).toMatch(/ghost\.members\.\d{4}-\d{2}-\d{2}\.csv/);
+            const csv = await exportResponse.text();
+            expect(csv.split('\n')[0]).toContain('id,email,name,note');
+            expect(csv).toContain('export1@example.com');
+            expect(csv).toContain('dog');
+
+            const filteredExport = await app.request('/ghost/api/admin/members/upload/?filter=label%3Adog', {headers: {cookie}});
+            const filteredCsv = await filteredExport.text();
+            expect(filteredCsv).toContain('export1@example.com');
+            expect(filteredCsv).not.toContain('export2@example.com');
+
+            const bulk = await app.request('/ghost/api/admin/members/bulk/?all=true', {
+                method: 'PUT',
+                headers,
+                body: JSON.stringify({bulk: {action: 'addLabel', meta: {label: {name: 'newlabel'}}}})
+            });
+            expect(bulk.status).toBe(200);
+            const bulkBody = await bulk.json() as {bulk: {meta: {stats: {successful: number}}}};
+            expect(bulkBody.bulk.meta.stats.successful).toBe(2);
+
+            const relabelled = await app.request('/ghost/api/admin/members/?filter=label%3Anewlabel', {headers: {cookie}});
+            const relabelledBody = await relabelled.json() as {members: unknown[]};
+            expect(relabelledBody.members).toHaveLength(2);
+
+            const bulkDelete = await app.request('/ghost/api/admin/members/?filter=label%3Adog', {method: 'DELETE', headers: {cookie}});
+            expect(bulkDelete.status).toBe(200);
+            const remaining = await app.request('/ghost/api/admin/members/', {headers: {cookie}});
+            const remainingBody = await remaining.json() as {members: Array<{email: string}>};
+            expect(remainingBody.members).toHaveLength(1);
+            expect(remainingBody.members[0]!.email).toBe('export2@example.com');
+        });
+
         it('persists user accessibility state across requests', async () => {
             const loginResponse = await login();
             const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;

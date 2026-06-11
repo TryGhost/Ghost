@@ -1,6 +1,12 @@
 // Page objects vendored from /e2e/helpers/pages — selectors kept identical to
 // upstream so the suites stay comparable. Keep edits minimal and upstream-ish.
-import type {FrameLocator, Locator, Page, Response} from '@playwright/test';
+import type {Download, FrameLocator, JSHandle, Locator, Page, Response} from '@playwright/test';
+import {readFileSync} from 'node:fs';
+
+export interface ExportedFile {
+    suggestedFilename: string;
+    content: string;
+}
 
 export interface pageGotoOptions {
     referer?: string;
@@ -520,6 +526,274 @@ export class PostEditorPage extends AdminPage {
 
     get previewModalDesktopFrame(): DesktopPreviewFrame {
         return this.previewModal.desktopPreview;
+    }
+}
+
+export class MembersListPage extends AdminPage {
+    readonly memberRows: Locator;
+    readonly searchInput: Locator;
+    readonly actionsButton: Locator;
+    readonly newMemberButton: Locator;
+    readonly filterButton: Locator;
+    readonly clearFiltersButton: Locator;
+    readonly emptyState: Locator;
+    readonly addYourselfButton: Locator;
+    readonly noResults: Locator;
+    readonly showAllButton: Locator;
+
+    constructor(page: Page) {
+        super(page);
+        this.pageUrl = '/ghost/#/members';
+
+        this.memberRows = page.getByTestId('members-list-item');
+        this.searchInput = page.getByTestId('members-search-input');
+        this.actionsButton = page.getByTestId('members-actions');
+        this.newMemberButton = page.getByRole('link', {name: 'New member'});
+        this.filterButton = page.getByRole('button', {name: /^(Filter|Add filter)$/});
+        this.clearFiltersButton = page.getByRole('button', {name: 'Clear'});
+        this.emptyState = page.getByText('Start building your audience');
+        this.addYourselfButton = page.getByRole('button', {name: 'Add yourself as a member to test'});
+        this.noResults = page.getByText('No matching members found.');
+        this.showAllButton = page.getByRole('button', {name: 'Show all members'});
+    }
+
+    getMemberByName(name: string): Locator {
+        return this.memberRows.filter({
+            has: this.page.getByRole('link', {name, exact: true})
+        });
+    }
+
+    getMemberLinkByName(name: string): Locator {
+        return this.getMemberByName(name).getByRole('link', {name, exact: true});
+    }
+
+    async openMemberByName(name: string): Promise<void> {
+        await this.getMemberLinkByName(name).click();
+    }
+
+    async openActionsMenu(): Promise<void> {
+        await this.actionsButton.click();
+    }
+
+    async getVisibleMemberCount(): Promise<number> {
+        return await this.memberRows.count();
+    }
+
+    getMenuItem(name: string | RegExp): Locator {
+        return this.page.getByRole('menuitem', {name});
+    }
+
+    async addFilter(fieldName: string, value: string): Promise<void> {
+        await this.filterButton.click();
+        await this.page.getByRole('option', {name: fieldName, exact: true}).click();
+
+        if (fieldName === 'Name' || fieldName === 'Email') {
+            const placeholder = fieldName === 'Name' ? 'Enter name...' : 'Enter email...';
+            await this.page.getByRole('textbox', {name: placeholder}).fill(value);
+        } else {
+            // For select-based filters (Label, Status, etc.)
+            await this.page.getByRole('option', {name: value, exact: true}).click();
+        }
+    }
+
+    async addSearchableFilter(fieldName: string, searchText: string, optionName: string): Promise<void> {
+        await this.filterButton.click();
+        await this.page.getByRole('option', {name: fieldName, exact: true}).click();
+        await this.page.getByPlaceholder(`Search ${fieldName.toLowerCase()}...`).pressSequentially(searchText);
+        await this.page.getByRole('option', {name: optionName}).click();
+    }
+
+    async applyLabelFilter(labelName: string): Promise<void> {
+        await this.addSearchableFilter('Label', labelName, labelName);
+    }
+
+    async exportMembers(): Promise<ExportedFile> {
+        const download = await this.exportMembersData();
+        const suggestedFilename = download.suggestedFilename();
+        const downloadPath = await download.path();
+        const downloadContent = readFileSync(downloadPath as string, 'utf-8');
+
+        return {
+            suggestedFilename,
+            content: downloadContent
+        };
+    }
+
+    async exportMembersData(): Promise<Download> {
+        const downloadPromise = this.page.waitForEvent('download');
+        await this.getMenuItem(/Export/).click();
+        return await downloadPromise;
+    }
+
+    async saveCurrentView(name: string): Promise<void> {
+        await this.page.getByRole('button', {name: 'Save view'}).click();
+        const dialog = this.page.getByRole('dialog');
+        await dialog.waitFor({state: 'visible'});
+        await dialog.getByRole('textbox', {name: 'View name'}).fill(name);
+        await dialog.getByRole('button', {name: 'Save'}).click();
+        await dialog.waitFor({state: 'hidden'});
+    }
+}
+
+export class MembersPage extends AdminPage {
+    readonly newMemberButton: Locator;
+    public readonly loadMoreButton: Locator;
+    public readonly membersListScrollRoot: Locator;
+    readonly memberListItems: Locator;
+
+    constructor(page: Page, {route = 'members'}: {route?: string} = {}) {
+        super(page);
+        this.pageUrl = `/ghost/#/${route}`;
+
+        this.newMemberButton = page.getByRole('link', {name: 'New member'});
+
+        this.loadMoreButton = page.getByRole('button', {name: 'Load more'});
+        this.membersListScrollRoot = page.getByTestId('members-list-scroll-root');
+        this.memberListItems = page.getByTestId('members-list-item');
+    }
+
+    async clickMemberByEmail(email: string): Promise<void> {
+        await this.memberListItems.filter({hasText: email}).click();
+    }
+
+    async getMaxRenderedIndex(): Promise<number> {
+        return await this.memberListItems.evaluateAll((rows) => {
+            return rows.reduce((maxIndex, row) => {
+                return Math.max(maxIndex, Number(row.getAttribute('data-index') || '-1'));
+            }, -1);
+        });
+    }
+
+    private async getMembersScrollParentHandle(): Promise<JSHandle<HTMLElement>> {
+        return await this.membersListScrollRoot.evaluateHandle((element) => {
+            let node: Node | null = element;
+
+            while (node) {
+                if (node instanceof HTMLElement) {
+                    const overflowY = window.getComputedStyle(node).overflowY;
+                    const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
+
+                    if (isScrollable && node.scrollHeight >= node.clientHeight) {
+                        return node;
+                    }
+                }
+
+                node = node.parentNode;
+            }
+
+            return document.body;
+        }) as JSHandle<HTMLElement>;
+    }
+
+    async getScrollParentScrollTop(): Promise<number> {
+        const scrollParent = await this.getMembersScrollParentHandle();
+
+        try {
+            return await scrollParent.evaluate(element => element.scrollTop);
+        } finally {
+            await scrollParent.dispose();
+        }
+    }
+
+    async scrollScrollParentBy(deltaY: number): Promise<void> {
+        const scrollParent = await this.getMembersScrollParentHandle();
+
+        try {
+            await scrollParent.evaluate((element, pixels) => {
+                element.scrollBy(0, pixels);
+            }, deltaY);
+        } finally {
+            await scrollParent.dispose();
+        }
+    }
+
+    async scrollUntilMaxRenderedIndexAtLeast(targetIndex: number): Promise<number> {
+        let maxRenderedIndex = await this.getMaxRenderedIndex();
+
+        for (let i = 0; i < 30 && maxRenderedIndex < targetIndex; i += 1) {
+            await this.scrollScrollParentBy(4000);
+            await this.page.waitForFunction((previousMaxIndex) => {
+                const rows = Array.from(document.querySelectorAll('[data-testid="members-list-item"]'));
+
+                return rows.some(row => Number(row.getAttribute('data-index') || '-1') > previousMaxIndex);
+            }, maxRenderedIndex);
+            maxRenderedIndex = await this.getMaxRenderedIndex();
+        }
+
+        return maxRenderedIndex;
+    }
+
+    getMemberByName(name: string): Locator {
+        return this.memberListItems.filter({hasText: name});
+    }
+}
+
+class MemberSettingsSection extends BasePage {
+    readonly memberActionsButton: Locator;
+    readonly impersonateButton: Locator;
+    readonly deleteButton: Locator;
+    readonly confirmDeleteButton: Locator;
+    readonly cancelDeleteButton: Locator;
+
+    constructor(page: Page) {
+        super(page);
+        this.memberActionsButton = page.getByTestId('member-actions');
+        this.impersonateButton = page.getByRole('button', {name: 'Impersonate'});
+        this.deleteButton = page.getByRole('button', {name: 'Delete member'});
+        this.confirmDeleteButton = page.getByTestId('confirm-delete-member');
+        this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
+    }
+}
+
+export class MemberDetailsPage extends AdminPage {
+    readonly nameInput: Locator;
+    readonly emailInput: Locator;
+    readonly noteInput: Locator;
+    readonly labelsInput: Locator;
+    readonly labels: Locator;
+
+    readonly saveButton: Locator;
+    readonly savedButton: Locator;
+    readonly retryButton: Locator;
+    readonly membersBackLink: Locator;
+    readonly settingsSection: MemberSettingsSection;
+
+    constructor(page: Page) {
+        super(page);
+        this.pageUrl = '/ghost/#/members/';
+
+        this.nameInput = page.getByRole('textbox', {name: 'Name'});
+        this.emailInput = page.getByRole('textbox', {name: 'Email'});
+        this.noteInput = page.getByRole('textbox', {name: 'Note'});
+        this.labelsInput = page.getByText('Labels').locator('+ div');
+        this.labels = this.labelsInput.getByRole('listitem');
+
+        this.saveButton = page.getByRole('button', {name: 'Save'});
+        this.savedButton = page.getByRole('button', {name: 'Saved'});
+        this.retryButton = page.getByRole('button', {name: 'Retry'});
+        this.membersBackLink = page.locator('[data-test-link="members-back"]');
+        this.settingsSection = new MemberSettingsSection(page);
+    }
+
+    async fillMemberDetails(name: string, email: string, note: string): Promise<void> {
+        await this.nameInput.fill(name);
+        await this.emailInput.fill(email);
+        await this.noteInput.fill(note);
+    }
+
+    async labelNames() {
+        return await this.labels.allInnerTexts();
+    }
+
+    async addLabel(label: string): Promise<void> {
+        await this.labelsInput.click();
+        await this.page.keyboard.type(label);
+        await this.page.keyboard.press('Tab');
+    }
+
+    async save(): Promise<void> {
+        await this.saveButton.click();
+        await this.savedButton.waitFor({state: 'visible'});
     }
 }
 

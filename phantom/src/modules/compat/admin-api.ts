@@ -461,45 +461,342 @@ export const createAdminApiRouter = ({
     router.put('/users/:id/', usersUpdateHandler);
     router.put('/users/:id', usersUpdateHandler);
 
+    type MemberWithLabels = {member: Awaited<ReturnType<MemberRepository['listMembers']>>[number]; labels: Awaited<ReturnType<MemberRepository['listLabels']>>};
+
+    const mapMember = ({member, labels}: MemberWithLabels) => ({
+        id: member.id,
+        uuid: member.id,
+        email: member.email,
+        name: member.name ?? null,
+        note: member.note ?? null,
+        status: member.status,
+        geolocation: member.geolocation ?? null,
+        subscribed: true,
+        email_count: 0,
+        email_opened_count: 0,
+        email_open_rate: null,
+        last_seen_at: member.lastSeenAt ? new Date(member.lastSeenAt).toISOString() : null,
+        created_at: new Date(member.createdAt).toISOString(),
+        updated_at: new Date(member.updatedAt).toISOString(),
+        labels: labels.map((label) => ({
+            id: label.id,
+            name: label.name,
+            slug: label.slug,
+            created_at: new Date(label.createdAt).toISOString(),
+            updated_at: new Date(label.updatedAt).toISOString()
+        })),
+        newsletters: [],
+        subscriptions: [],
+        attribution: null,
+        avatar_image: null,
+        comped: false
+    });
+
+    // Members filter NQL subset: `label:VIP` / `label:[VIP]` (repeated
+    // labels AND together), `email:'x@y.com'`, `name:~'Alice'` (contains).
+    const parseMemberFilter = (filter: string | undefined): {email?: string; emailContains?: string; labelSlugs?: string[]; nameContains?: string} => {
+        if (!filter) {
+            return {};
+        }
+        const parsed: {email?: string; emailContains?: string; labelSlugs?: string[]; nameContains?: string} = {};
+        const labelSlugs: string[] = [];
+        for (const label of filter.matchAll(/label:(\[([^\]]+)\]|'([^']+)'|([^+\s]+))/g)) {
+            const value = label[2] ?? label[3] ?? label[4];
+            if (value) {
+                labelSlugs.push(compatSlugify(value.split(',')[0]!.trim()));
+            }
+        }
+        if (labelSlugs.length > 0) {
+            parsed.labelSlugs = labelSlugs;
+        }
+        const emailContains = /email:~'([^']+)'/.exec(filter);
+        if (emailContains?.[1]) {
+            parsed.emailContains = emailContains[1];
+        } else {
+            const email = /email:(?:'([^']+)'|([^+\s]+))/.exec(filter);
+            if (email) {
+                const value = email[1] ?? email[2];
+                if (value) {
+                    parsed.email = value;
+                }
+            }
+        }
+        const name = /name:~'([^']+)'/.exec(filter);
+        if (name?.[1]) {
+            parsed.nameContains = name[1];
+        }
+        return parsed;
+    };
+
+    const memberWithLabels = async (member: Awaited<ReturnType<MemberRepository['listMembers']>>[number]) => {
+        const labelsByMember = await memberRepository.getLabelsForMembers([member.id]);
+        return mapMember({member, labels: labelsByMember.get(member.id) ?? []});
+    };
+
+    // Wire labels arrive as strings or {name} objects; they upsert by slug.
+    const resolveWireLabels = async (raw: unknown): Promise<string[] | undefined> => {
+        if (!Array.isArray(raw)) {
+            return undefined;
+        }
+        const labelIds: string[] = [];
+        for (const entry of raw) {
+            const name = typeof entry === 'string' ? entry : asWireString((entry as Record<string, unknown>)?.name);
+            if (!name) {
+                continue;
+            }
+            const now = Date.now();
+            const label = await memberRepository.upsertLabel({
+                id: crypto.randomUUID(),
+                name,
+                slug: compatSlugify(name),
+                createdAt: now,
+                updatedAt: now
+            });
+            labelIds.push(label.id);
+        }
+        return labelIds;
+    };
+
     on.get('/members/', authed(async (context) => {
         const limit = Math.min(Number(context.req.query('limit') ?? '15') || 15, 100);
         const page = Number(context.req.query('page') ?? '1') || 1;
-        const [members, counts] = await Promise.all([
-            memberRepository.listMembers({limit, offset: (page - 1) * limit}),
-            memberRepository.countMembers()
+        const search = context.req.query('search');
+        const filter = {
+            ...parseMemberFilter(context.req.query('filter')),
+            ...(search ? {search} : {})
+        };
+        const [members, total] = await Promise.all([
+            memberRepository.listMembers({limit, offset: (page - 1) * limit, filter}),
+            memberRepository.countFilteredMembers(filter)
         ]);
-        const pages = Math.max(1, Math.ceil(counts.total / limit));
+        const labelsByMember = await memberRepository.getLabelsForMembers(members.map((member) => member.id));
+        const pages = Math.max(1, Math.ceil(total / limit));
         return context.json({
-            members: members.map((member) => ({
-                id: member.id,
-                uuid: member.id,
-                email: member.email,
-                name: null,
-                note: null,
-                status: member.status,
-                geolocation: null,
-                subscribed: true,
-                email_count: 0,
-                email_opened_count: 0,
-                email_open_rate: null,
-                created_at: new Date(member.createdAt).toISOString(),
-                updated_at: new Date(member.updatedAt).toISOString(),
-                labels: [],
-                newsletters: [],
-                subscriptions: [],
-                avatar_image: null,
-                comped: false
-            })),
+            members: members.map((member) => mapMember({member, labels: labelsByMember.get(member.id) ?? []})),
             meta: {
                 pagination: {
                     page,
                     limit,
                     pages,
-                    total: counts.total,
+                    total,
                     next: page < pages ? page + 1 : null,
                     prev: page > 1 ? page - 1 : null
                 }
             }
+        });
+    }));
+
+    const isValidEmail = (email: string) => /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email);
+    const invalidEmailError = (context: Context) => context.json({
+        errors: [{
+            message: 'Validation error, cannot save member.',
+            context: 'Invalid Email.',
+            type: 'ValidationError'
+        }]
+    }, 422);
+
+    on.post('/members/', authed(async (context) => {
+        const body = await context.req.json<{members?: Array<Record<string, unknown>>}>().catch(() => ({} as Record<string, never>));
+        const wire = body.members?.[0];
+        const email = asWireString(wire?.email);
+        if (!wire || !email) {
+            return context.json({errors: [{message: 'Email is required', type: 'ValidationError'}]}, 422);
+        }
+        if (!isValidEmail(email)) {
+            return invalidEmailError(context);
+        }
+        if (await memberRepository.getMemberByEmail(email)) {
+            return context.json({errors: [{message: 'Member already exists. Attempting to add member with existing email address', type: 'ValidationError'}]}, 422);
+        }
+        const now = Date.now();
+        const member = await memberRepository.createMember({
+            id: crypto.randomUUID(),
+            email,
+            status: 'free',
+            name: asWireString(wire.name) ?? null,
+            note: asWireString(wire.note) ?? null,
+            geolocation: asWireString(wire.geolocation) ?? null,
+            createdAt: parseWireDate(wire.created_at) ?? now,
+            updatedAt: now
+        });
+        const labelIds = await resolveWireLabels(wire.labels);
+        if (labelIds && labelIds.length > 0) {
+            await memberRepository.setMemberLabels(member.id, labelIds);
+        }
+        return context.json({members: [await memberWithLabels(member)]}, 201);
+    }));
+
+    // CSV export behind the actions menu; `filter`/`search` narrow the set
+    // exactly like the browse endpoint.
+    on.get('/members/upload/', authed(async (context) => {
+        const search = context.req.query('search');
+        const filter = {
+            ...parseMemberFilter(context.req.query('filter')),
+            ...(search ? {search} : {})
+        };
+        const members = await memberRepository.listMembers({limit: 100000, offset: 0, filter});
+        const labelsByMember = await memberRepository.getLabelsForMembers(members.map((member) => member.id));
+        const csvField = (value: string | null | undefined) => {
+            const text = value ?? '';
+            return /[",\n]/.test(text) ? `"${text.replaceAll('"', '""')}"` : text;
+        };
+        const header = 'id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id';
+        const rows = members.map((member) => [
+            member.id,
+            csvField(member.email),
+            csvField(member.name),
+            csvField(member.note),
+            'true',
+            'false',
+            '',
+            new Date(member.createdAt).toISOString(),
+            '',
+            csvField((labelsByMember.get(member.id) ?? []).map((label) => label.name).join(',')),
+            '',
+            ''
+        ].join(','));
+        const today = new Date().toISOString().slice(0, 10);
+        return new Response([header, ...rows].join('\n'), {
+            status: 200,
+            headers: {
+                'Content-Type': 'text/csv',
+                'Content-Disposition': `attachment; filename="ghost.members.${today}.csv"`
+            }
+        });
+    }));
+
+    // Bulk actions from the members actions menu. Unsubscribe succeeds as a
+    // no-op: phantom has no per-member newsletter subscription state yet.
+    const memberBulkHandler = authed(async (context: Context) => {
+        const search = context.req.query('search');
+        const filter = {
+            ...parseMemberFilter(context.req.query('filter')),
+            ...(search ? {search} : {})
+        };
+        const body = await context.req.json<{bulk?: {action?: string; meta?: {label?: {id?: string; name?: string}}}}>().catch(() => ({} as Record<string, never>));
+        const action = body.bulk?.action;
+        if (!action) {
+            return context.json({errors: [{message: 'Bulk action required', type: 'ValidationError'}]}, 422);
+        }
+        const members = await memberRepository.listMembers({limit: 100000, offset: 0, filter});
+        let successful = members.length;
+        if (action === 'addLabel' || action === 'removeLabel') {
+            const labelName = body.bulk?.meta?.label?.name;
+            const labelId = body.bulk?.meta?.label?.id;
+            let label = null;
+            if (labelName) {
+                const now = Date.now();
+                label = await memberRepository.upsertLabel({
+                    id: crypto.randomUUID(),
+                    name: labelName,
+                    slug: compatSlugify(labelName),
+                    createdAt: now,
+                    updatedAt: now
+                });
+            } else if (labelId) {
+                label = (await memberRepository.listLabels()).find((entry) => entry.id === labelId) ?? null;
+            }
+            if (!label) {
+                return context.json({errors: [{message: 'Label not found', type: 'ValidationError'}]}, 422);
+            }
+            const labelsByMember = await memberRepository.getLabelsForMembers(members.map((member) => member.id));
+            for (const member of members) {
+                const current = (labelsByMember.get(member.id) ?? []).map((entry) => entry.id);
+                const next = action === 'addLabel'
+                    ? [...new Set([...current, label.id])]
+                    : current.filter((id) => id !== label.id);
+                await memberRepository.setMemberLabels(member.id, next);
+            }
+        } else if (action !== 'unsubscribe') {
+            successful = 0;
+        }
+        return context.json({bulk: {action, meta: {stats: {successful, unsuccessful: 0}, errors: [], unsuccessfulData: []}}});
+    });
+    router.put('/members/bulk/', memberBulkHandler);
+    router.put('/members/bulk', memberBulkHandler);
+
+    on.get('/members/:id/', authed(async (context) => {
+        const member = await memberRepository.getMemberById(context.req.param('id'));
+        if (!member) {
+            return notFoundJson(context, 'Member');
+        }
+        return context.json({members: [await memberWithLabels(member)]});
+    }));
+
+    const memberUpdateHandler = authed(async (context: Context) => {
+        const member = await memberRepository.getMemberById(context.req.param('id'));
+        if (!member) {
+            return notFoundJson(context, 'Member');
+        }
+        const body = await context.req.json<{members?: Array<Record<string, unknown>>}>().catch(() => ({} as Record<string, never>));
+        const wire = body.members?.[0] ?? {};
+        const wireEmail = asWireString(wire.email);
+        if (wireEmail !== undefined && !isValidEmail(wireEmail)) {
+            return invalidEmailError(context);
+        }
+        const updated = await memberRepository.updateMember({
+            ...member,
+            email: asWireString(wire.email) ?? member.email,
+            name: 'name' in wire ? asWireString(wire.name) ?? null : member.name,
+            note: 'note' in wire ? asWireString(wire.note) ?? null : member.note,
+            updatedAt: Date.now()
+        });
+        const labelIds = await resolveWireLabels(wire.labels);
+        if (labelIds) {
+            await memberRepository.setMemberLabels(updated.id, labelIds);
+        }
+        return context.json({members: [await memberWithLabels(updated)]});
+    });
+    router.put('/members/:id/', memberUpdateHandler);
+    router.put('/members/:id', memberUpdateHandler);
+
+    const memberDeleteHandler = authed(async (context: Context) => {
+        const id = context.req.param('id');
+        if (id === undefined) {
+            // Bulk deletion: ?all=true wipes the directory (also the e2e
+            // harness reset), ?filter= deletes the filtered set.
+            if (context.req.query('all') === 'true') {
+                const {total} = await memberRepository.countMembers();
+                await memberRepository.deleteAllMembers();
+                return context.json({meta: {stats: {successful: total}}});
+            }
+            const filterQuery = context.req.query('filter');
+            if (filterQuery) {
+                const filter = parseMemberFilter(filterQuery);
+                const members = await memberRepository.listMembers({limit: 100000, offset: 0, filter});
+                for (const member of members) {
+                    await memberRepository.deleteMember(member.id);
+                }
+                return context.json({meta: {stats: {successful: members.length}}});
+            }
+        }
+        if (!id) {
+            return context.json({errors: [{message: 'Member id required', type: 'ValidationError'}]}, 422);
+        }
+        const member = await memberRepository.getMemberById(id);
+        if (!member) {
+            return notFoundJson(context, 'Member');
+        }
+        await memberRepository.deleteMember(id);
+        return context.body(null, 204);
+    });
+    router.delete('/members/:id/', memberDeleteHandler);
+    router.delete('/members/:id', memberDeleteHandler);
+    router.delete('/members/', memberDeleteHandler);
+    router.delete('/members', memberDeleteHandler);
+
+    on.get('/labels/', authed(async (context) => {
+        const labels = await memberRepository.listLabels();
+        return context.json({
+            labels: labels.map((label) => ({
+                id: label.id,
+                name: label.name,
+                slug: label.slug,
+                created_at: new Date(label.createdAt).toISOString(),
+                updated_at: new Date(label.updatedAt).toISOString(),
+                count: {members: 0}
+            })),
+            meta: singlePagination(labels.length)
         });
     }));
 
@@ -885,9 +1182,6 @@ export const createAdminApiRouter = ({
     // Editor sidebar collections phantom has no data for yet.
     on.get('/offers/', authed(async (context) => {
         return context.json({offers: [], meta: singlePagination(0)});
-    }));
-    on.get('/labels/', authed(async (context) => {
-        return context.json({labels: [], meta: singlePagination(0)});
     }));
     on.get('/snippets/', authed(async (context) => {
         return context.json({snippets: [], meta: singlePagination(0)});
