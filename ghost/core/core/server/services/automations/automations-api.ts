@@ -2,7 +2,7 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
-import type {DatabaseSync} from 'node:sqlite';
+import type {Knex} from 'knex';
 import {z} from 'zod';
 import {createFakeDatabaseAutomationsRepository} from './fake-database-automations-repository';
 import type {
@@ -71,15 +71,15 @@ const editAutomationDataSchema = z.object({
     edges: z.array(edgeSchema)
 }).strict();
 
-let testDatabase: DatabaseSync | null = null;
+let testDatabase: Knex | null = null;
 
 const repository = createFakeDatabaseAutomationsRepository({
-    getDatabase: () => {
+    getDatabase: async () => {
         if (process.env.NODE_ENV?.startsWith('testing')) {
-            testDatabase ??= temporaryFakeAutomationsDatabase.createTemporaryFakeAutomationsDatabase();
+            testDatabase ??= await temporaryFakeAutomationsDatabase.createTemporaryFakeAutomationsDatabase();
             return testDatabase;
         }
-        return temporaryFakeAutomationsDatabase.getTemporaryFakeAutomationsDatabase();
+        return await temporaryFakeAutomationsDatabase.getTemporaryFakeAutomationsDatabase();
     }
 });
 
