@@ -516,41 +516,96 @@ describe("useEditor", () => {
         expect(result.current.state.save.status).toBe("error");
     });
 
-    it("ignores a stale slug generation resolving after a newer one", async () => {
-        let resolveSlow: (slug: string) => void = () => {};
-        mocks.generateSlug
-            .mockImplementationOnce(() => new Promise((resolve) => {
-                resolveSlow = resolve;
-            }))
-            .mockResolvedValueOnce("title-two");
-        mocks.editPost.mockResolvedValue({ posts: [makeFullPost()] });
+    // Audit regression: the editor creates new posts from the first title
+    // keystrokes, so the create-save races ahead with a partial title and the
+    // server derives the slug from it ("Au..." -> slug "au"). Every draft save
+    // with a changed title must re-generate the slug from the title it
+    // persists (Ember beforeSaveTask), so the slug converges onto the full
+    // title instead of staying stuck at the partial one.
+    it("re-generates the slug from the full title when the create-save raced ahead with a partial one", async () => {
+        const slugify = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        mocks.generateSlug.mockImplementation(({ text }) => Promise.resolve(slugify(text)));
+
+        let releaseCreate: () => void = () => {};
+        mocks.addPost.mockImplementationOnce(() => new Promise((resolve) => {
+            releaseCreate = () => resolve({ posts: [makeFullPost({ id: "new-id", title: "Au", slug: "au" })] });
+        }));
+        mocks.editPost.mockResolvedValue({
+            posts: [makeFullPost({ id: "new-id", title: "Audit probe", slug: "audit-probe" })],
+        });
 
         const { result } = setup();
-        act(() => result.current.loadPost(makeSnapshot()));
+        act(() => result.current.loadPost(createNewPostSnapshot()));
 
-        // first rename starts a slow slug generation...
-        act(() => result.current.updateTitle("Title one"));
-        act(() => result.current.saveTitle());
-
-        // ...a second rename's generation resolves first and saves
-        act(() => result.current.updateTitle("Title two"));
-        act(() => result.current.saveTitle());
-        await flushSaves();
-        await flushSaves();
-
-        expect(mocks.editPost).toHaveBeenCalledTimes(1);
-        expect(mocks.editPost.mock.calls[0][0].post.slug).toBe("title-two");
-
-        // the slow first generation resolves last — it must not win
+        // first keystrokes -> 0ms autosave creates the post from the partial title
+        act(() => result.current.updateTitle("Au"));
         await act(async () => {
-            resolveSlow("title-one");
+            await vi.advanceTimersByTimeAsync(0);
+        });
+        expect(mocks.addPost).toHaveBeenCalledTimes(1);
+        expect(mocks.addPost.mock.calls[0][0].post).toMatchObject({ title: "Au", slug: "au" });
+
+        // the user finishes the title while the create is still in flight;
+        // the follow-up autosave queues behind it
+        act(() => result.current.updateTitle("Audit probe"));
+        await act(async () => {
+            await vi.advanceTimersByTimeAsync(0);
+        });
+
+        await act(async () => {
+            releaseCreate();
             await Promise.resolve();
         });
         await flushSaves();
         await flushSaves();
 
+        // the queued save re-slugs from the full title
+        expect(mocks.generateSlug).toHaveBeenLastCalledWith({ type: "post", text: "Audit probe", modelId: "new-id" });
+        expect(mocks.editPost).toHaveBeenCalledTimes(1);
+        expect(mocks.editPost.mock.calls[0][0].post).toMatchObject({ title: "Audit probe", slug: "audit-probe" });
+        expect(result.current.state.post?.slug).toBe("audit-probe");
+    });
+
+    it("treats a server-incremented slug as title-derived and keeps regenerating it", async () => {
+        // the partial-title save collided with an existing slug, so the
+        // server returned "aud-3" — the next title change must still re-slug
+        mocks.generateSlug.mockResolvedValue("audit-probe");
+        mocks.editPost.mockResolvedValue({ posts: [makeFullPost({ title: "Audit probe", slug: "audit-probe" })] });
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot({ title: "Aud", slug: "aud-3" })));
+
+        act(() => result.current.updateTitle("Audit probe"));
+        act(() => result.current.saveTitle());
+        await flushSaves();
+        await flushSaves();
+
+        expect(mocks.generateSlug).toHaveBeenCalledWith({ type: "post", text: "Audit probe", modelId: "post-1" });
+        expect(mocks.editPost.mock.calls[0][0].post.slug).toBe("audit-probe");
+    });
+
+    it("slug regeneration follows the title across successive draft saves", async () => {
+        const slugify = (text: string) => text.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "");
+        mocks.generateSlug.mockImplementation(({ text }) => Promise.resolve(slugify(text)));
+        mocks.editPost
+            .mockResolvedValueOnce({ posts: [makeFullPost({ title: "Title one", slug: "title-one", updated_at: "2026-01-02T00:00:00.000Z" })] })
+            .mockResolvedValueOnce({ posts: [makeFullPost({ title: "Title two", slug: "title-two", updated_at: "2026-01-03T00:00:00.000Z" })] });
+
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot()));
+
+        act(() => result.current.updateTitle("Title one"));
+        act(() => result.current.saveTitle());
+        await flushSaves();
+        await flushSaves();
+
+        act(() => result.current.updateTitle("Title two"));
+        act(() => result.current.saveTitle());
+        await flushSaves();
+        await flushSaves();
+
         const sentSlugs = mocks.editPost.mock.calls.map(call => call[0].post.slug);
-        expect(sentSlugs).not.toContain("title-one");
+        expect(sentSlugs).toEqual(["title-one", "title-two"]);
+        expect(result.current.state.slugScratch).toBe("title-two");
     });
 
     it("updateSlug marks the editor dirty immediately so navigation can't slip past the async sanitize", async () => {
@@ -631,6 +686,21 @@ describe("useEditor", () => {
         expect(mocks.generateSlug).toHaveBeenCalledWith({ type: "post", text: "New title", modelId: "post-1" });
         expect(mocks.editPost).toHaveBeenCalledTimes(1);
         expect(mocks.editPost.mock.calls[0][0].post).toMatchObject({ title: "New title", slug: "new-title" });
+    });
+
+    it("clearing the title saves '(Untitled)' but keeps the existing slug (untitled slugs are set once)", async () => {
+        mocks.editPost.mockResolvedValue({ posts: [makeFullPost({ title: "(Untitled)" })] });
+        const { result } = setup();
+        act(() => result.current.loadPost(makeSnapshot()));
+
+        act(() => result.current.updateTitle(""));
+        act(() => result.current.saveTitle());
+        await flushSaves();
+        await flushSaves();
+
+        expect(mocks.generateSlug).not.toHaveBeenCalled();
+        expect(mocks.editPost).toHaveBeenCalledTimes(1);
+        expect(mocks.editPost.mock.calls[0][0].post).toMatchObject({ title: "(Untitled)", slug: "my-post" });
     });
 
     it("saveTitle keeps a customized slug", async () => {

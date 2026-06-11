@@ -15,6 +15,7 @@ import {
     UpdateCollisionError,
 } from "@tryghost/admin-x-framework/errors";
 import {
+    DEFAULT_TITLE,
     createDefaultPostSettings,
     createInitialState,
     getLeaveDecision,
@@ -122,7 +123,44 @@ function looksLikeGeneratedSlug(title: string, slug: string): boolean {
         .toLowerCase()
         .replace(/[^a-z0-9]+/g, "-")
         .replace(/^-+|-+$/g, "");
-    return simpleSlugified === slug;
+    if (simpleSlugified === slug) {
+        return true;
+    }
+    // the server appends a uniqueness incrementor to generated slugs
+    // (my-title -> my-title-2); without recognizing it, one collision would
+    // make the slug look custom and freeze it at a partial/stale title
+    const incrementorMatch = /^(.*)-\d+$/.exec(slug);
+    return incrementorMatch !== null && incrementorMatch[1] === simpleSlugified;
+}
+
+/** Title suffix of duplicated posts (Ember DUPLICATED_POST_TITLE_SUFFIX). */
+const DUPLICATED_POST_TITLE_SUFFIX = "(Copy)";
+
+/**
+ * Port of Ember's generateSlugTask guards (controllers/lexical-editor.js):
+ * sync the slug with the title being saved, except when the slug was
+ * customized by the user or the post only ever had an "untitled" slug.
+ *
+ * @param newTitle title this save is about to persist (the title scratch)
+ * @param currentTitle last-persisted title
+ * @param currentSlug current slug (last persisted or committed scratch)
+ */
+export function shouldRegenerateSlug(newTitle: string, currentTitle: string, currentSlug: string): boolean {
+    // Only set an "untitled" slug once per post
+    if (newTitle === DEFAULT_TITLE && currentSlug) {
+        return false;
+    }
+
+    // Update the slug unless the slug looks to be a custom slug or the
+    // title is a default/has been cleared out
+    if (
+        currentSlug && !looksLikeGeneratedSlug(currentTitle, currentSlug)
+        && !(currentTitle === DEFAULT_TITLE || currentTitle.endsWith(DUPLICATED_POST_TITLE_SUFFIX))
+    ) {
+        return false;
+    }
+
+    return true;
 }
 
 export interface UseEditorOptions {
@@ -201,12 +239,6 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
         autosave: null,
         timedSave: null,
     });
-    const pendingSlugRef = useRef<string | null>(null);
-    // Monotonic token so only the LATEST slug generation may write
-    // pendingSlugRef — a slow earlier request resolving last must not
-    // overwrite the slug generated for a newer title
-    const slugGenerationRef = useRef(0);
-
     // Publish extras for the next manual save plus its completion promises;
     // extras are consumed by the manual request that carries them (a plain
     // manual save queued after a publish must not strip its email extras),
@@ -241,7 +273,28 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
     const dispatchRef = useRef<(event: EditorEvent) => void>(() => {});
 
     const performSave = useCallback(async (kind: SaveKind, payload: SavePayload) => {
-        const { addPost: add, editPost: edit, onPostCreated: created } = callbacksRef.current;
+        const { addPost: add, editPost: edit, generateSlug: generate, onPostCreated: created } = callbacksRef.current;
+
+        // Ember beforeSaveTask: every save that keeps the post a draft and
+        // carries a changed title re-generates the slug from the new title
+        // first (unless it was customized — generateSlugTask's guards). This
+        // runs per-save, so a new post created from the first few title
+        // keystrokes converges onto the full title as the background saves
+        // drain — regenerating only on title blur left the slug stuck at the
+        // partial title the create-save happened to carry.
+        let slug = payload.slug;
+        const lastSavedTitle = stateRef.current.post?.title ?? "";
+        if (payload.status === "draft" && payload.title !== lastSavedTitle
+            && shouldRegenerateSlug(payload.title, lastSavedTitle, slug)) {
+            try {
+                const generated = await generate({ type: "post", text: payload.title, modelId: payload.id ?? undefined });
+                if (generated) {
+                    slug = generated;
+                }
+            } catch {
+                // slug generation is best-effort (Ember swallows errors too)
+            }
+        }
 
         const body: Partial<FullPost> = {
             title: payload.title,
@@ -283,9 +336,7 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
         if (payload.settings.showTitleAndFeatureImage !== null) {
             body.show_title_and_feature_image = payload.settings.showTitleAndFeatureImage;
         }
-        // a slug regenerated from a title change wins over the scratch value;
         // an empty slug is never sent (the server generates one on create)
-        const slug = pendingSlugRef.current ?? payload.slug;
         if (slug) {
             body.slug = slug;
         }
@@ -323,7 +374,6 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
                 throw new Error("Save response did not include the saved post.");
             }
 
-            pendingSlugRef.current = null;
             setSavedPost(saved);
             dispatchRef.current({ type: "SAVE_SUCCEEDED", post: toSnapshot(saved) });
             if (payload.id === null) {
@@ -477,9 +527,6 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
     }, [resource]);
 
     const loadPost = useCallback((post: PostSnapshot) => {
-        pendingSlugRef.current = null;
-        // invalidate in-flight slug generations from the previous post
-        slugGenerationRef.current += 1;
         dispatch({ type: "POST_LOADED", post });
     }, [dispatch]);
 
@@ -564,34 +611,14 @@ export function useEditor({ resource, onPostCreated }: UseEditorOptions): UseEdi
         }
 
         // drafts save automatically on title change; published/scheduled wait
-        // for a manual save
+        // for a manual save. The slug regeneration itself happens inside the
+        // save (performSave's beforeSaveTask port), so it also covers title
+        // changes persisted by background autosaves without a blur.
         if (post.status !== "draft") {
             return;
         }
 
-        const save = () => dispatchRef.current({ type: "SAVE_REQUESTED", kind: "autosave" });
-
-        // Ember generateSlugTask: re-slug drafts whose slug is empty or still
-        // derived from the saved title (i.e. not customized by the user)
-        const shouldGenerateSlug = !post.slug || looksLikeGeneratedSlug(currentTitle, post.slug);
-        if (shouldGenerateSlug && newTitle) {
-            // only the latest generation may win: a slow earlier request
-            // resolving after a newer one must not overwrite its slug
-            const generation = ++slugGenerationRef.current;
-            callbacksRef.current
-                .generateSlug({ type: "post", text: newTitle, modelId: post.id ?? undefined })
-                .then((slug) => {
-                    if (slug && generation === slugGenerationRef.current) {
-                        pendingSlugRef.current = slug;
-                    }
-                })
-                .catch(() => {
-                    // slug generation is best-effort (Ember swallows errors too)
-                })
-                .finally(save);
-        } else {
-            save();
-        }
+        dispatchRef.current({ type: "SAVE_REQUESTED", kind: "autosave" });
     }, []);
 
     /**

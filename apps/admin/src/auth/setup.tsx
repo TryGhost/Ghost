@@ -1,7 +1,9 @@
 import { useEffect, useState, type FormEvent } from "react";
 import { Navigate } from "@tryghost/admin-x-framework";
 import { getSetupStatus, useCompleteSetup } from "@tryghost/admin-x-framework/api/authentication";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useCreateSession } from "@tryghost/admin-x-framework/api/session";
+import { isOwnerUser, useEditUser } from "@tryghost/admin-x-framework/api/users";
 import { Button, Input, Label } from "@tryghost/shade/components";
 import { getFirstApiError } from "./api-errors";
 import { AuthLayout, FlowNotification } from "./auth-layout";
@@ -17,6 +19,8 @@ export default function Setup() {
     const setupStatus = getSetupStatus();
     const completeSetup = useCompleteSetup();
     const createSession = useCreateSession();
+    const { refetch: refetchCurrentUser } = useCurrentUser();
+    const { mutateAsync: editUser } = useEditUser();
 
     const [blogTitle, setBlogTitle] = useState("");
     const [name, setName] = useState("");
@@ -75,6 +79,37 @@ export default function Setup() {
             const apiError = getFirstApiError(error);
             setFlowError(apiError ? [apiError.message, apiError.context].filter(Boolean).join(" ") : "There was a problem on the server.");
             return;
+        }
+
+        // Ember's setup _afterAuthentication starts the owner's onboarding
+        // checklist (services/onboarding.js startChecklist) before sending
+        // them onward — without it the onboarding route sees the default
+        // "pending" state and bounces to /analytics. Like home-redirect.tsx's
+        // firstStart handling it must COMPLETE before the navigation, but a
+        // failure never strands the new owner on the setup screen.
+        try {
+            // the session only exists since createSession above, so the
+            // current-user query (mounted signed-out) must be refetched first
+            const { data: user } = await refetchCurrentUser();
+            if (user && isOwnerUser(user)) {
+                let accessibility: Record<string, unknown> = {};
+                try {
+                    const parsed: unknown = JSON.parse(user.accessibility || "{}");
+                    if (parsed && typeof parsed === "object") {
+                        accessibility = parsed as Record<string, unknown>;
+                    }
+                } catch {
+                    // unreadable settings are overwritten, like Ember would throw away
+                }
+                accessibility.onboarding = {
+                    completedSteps: [],
+                    checklistState: "started",
+                    startedAt: new Date().toISOString(),
+                };
+                await editUser({ ...user, accessibility: JSON.stringify(accessibility) });
+            }
+        } catch (error) {
+            console.error(error);
         }
 
         // Same destination Ember uses after setup completes

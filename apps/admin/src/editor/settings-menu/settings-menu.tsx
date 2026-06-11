@@ -146,6 +146,18 @@ function PublishDateTimeFields({ editor }: { editor: UseEditorResult }) {
     const label = !isScheduled || pastScheduledTime ? "Publish date" : "Scheduled date";
 
     const commit = (date: string, time: string) => {
+        // Ember gh-date-time-picker only fires on actual changes: committing
+        // an unchanged display must be a no-op. A never-published draft only
+        // shows "now" as a fallback and must keep published_at null, and a
+        // published post's display is minute precision — re-committing it
+        // would rebuild the date with :00 seconds and rewrite published_at
+        // up to 59s earlier.
+        if (date === formatDateInTimezone(baseInstant, timezone) && time === formatTimeInTimezone(baseInstant, timezone)) {
+            setDateError(null);
+            setTimeError(null);
+            return;
+        }
+
         const utcIso = zonedDateTimeToUtc(date, time, timezone);
         if (!utcIso) {
             setDateError("Invalid date");

@@ -180,7 +180,12 @@ export function MemberDetailForm({member, newsletters, paidTiers, timezone, canS
                 setSaveState('saved');
             }
         } catch (error) {
-            if (!unmountedRef.current) {
+            // the toast is global (sonner), so a failure surfaces even if the
+            // form unmounted while the save was in flight — only the local
+            // save-state/field-error updates need the mounted guard
+            if (unmountedRef.current) {
+                toast.error(apiErrorMessage(error, 'Failed to save member'));
+            } else {
                 setSaveState('error');
                 if (!applyServerFieldErrors(error, form.setError)) {
                     toast.error(apiErrorMessage(error, 'Failed to save member'));

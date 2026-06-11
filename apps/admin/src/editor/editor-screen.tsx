@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useRef, useState, type KeyboardEvent } from "react";
+import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent } from "react";
 import { createPortal } from "react-dom";
 import { useParams } from "@tryghost/admin-x-framework";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
@@ -23,6 +23,7 @@ import { PublishManagement } from "./publish/publish-management";
 const SettingsMenu = lazy(() =>
     import("./settings-menu/settings-menu").then(m => ({ default: m.SettingsMenu }))
 );
+import { DEFAULT_TITLE } from "./state";
 import { UnsavedChangesDialog } from "./unsaved-changes-dialog";
 import { createNewPostSnapshot, toSnapshot, useEditor } from "./use-editor";
 import { useLeaveGuard } from "./use-leave-guard";
@@ -30,6 +31,19 @@ import { useLeaveGuard } from "./use-leave-guard";
 // Deduplicates the mobiledoc -> lexical conversion PUT across StrictMode
 // double-mounts (a second PUT would carry a stale updated_at and 409)
 const conversionPromises = new Map<string, Promise<EditorResourceResponseType>>();
+
+/**
+ * Ember gh-post-settings-menu setSidebarWidthVariable: Koenig's wide/full
+ * breakout cards size themselves against the viewport, so when the settings
+ * panel is open its width must be published as CSS variables — Koenig
+ * subtracts --kg-breakout-adjustment from its breakout widths and the editor
+ * column respects --editor-sidebar-width. Reset to 0 when the panel closes
+ * (Ember willDestroyElement).
+ */
+function setEditorSidebarWidthVariable(width: number) {
+    document.documentElement.style.setProperty("--editor-sidebar-width", `${width}px`);
+    document.documentElement.style.setProperty("--kg-breakout-adjustment", `${width}px`);
+}
 
 export function EditorScreen({ resource }: { resource: EditorResource }) {
     const { postId } = useParams<{ postId: string }>();
@@ -134,6 +148,17 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
 
     const [settingsOpen, setSettingsOpen] = useState(false);
 
+    // publish the open panel's width so Koenig breakout cards shrink instead
+    // of sliding under it (see setEditorSidebarWidthVariable above)
+    const settingsPanelRef = useRef<HTMLElement | null>(null);
+    useLayoutEffect(() => {
+        if (!settingsOpen) {
+            return;
+        }
+        setEditorSidebarWidthVariable(settingsPanelRef.current?.getBoundingClientRect().width ?? 0);
+        return () => setEditorSidebarWidthVariable(0);
+    }, [settingsOpen]);
+
     // The editor portals to document.body and covers the viewport, but the
     // admin shell (sidebar, mobile nav) would still be left in the
     // accessibility tree and tab order behind it — and its fixed-positioned
@@ -209,13 +234,22 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
                 <main className="flex-1 overflow-y-auto">
                     {post ? (
                         <div className="mx-auto w-full max-w-[788px] px-6 pt-28 pb-16">
+                            {/* max-w-none: Ember's global `textarea { max-width: 500px }`
+                                (styles/patterns/forms.css) leaks into this portal and
+                                capped the title; the title must span the same 740px
+                                content column as the Koenig body.
+                                value: saving a blank-title post normalizes the scratch to
+                                "(Untitled)" (Ember beforeSaveTask); the input keeps showing
+                                empty (gh-koenig-editor-lexical.js line 25) so the
+                                placeholder stays and typing doesn't append to the injected
+                                default */}
                             <textarea
-                                className="mb-4 field-sizing-content w-full resize-none overflow-hidden border-0 bg-transparent pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-[#15171A] outline-none placeholder:text-[#CED4D9]"
+                                className="mb-4 field-sizing-content w-full max-w-none resize-none overflow-hidden border-0 bg-transparent pb-1 text-[4.8rem] leading-[1.1] font-bold tracking-[-0.017em] text-[#15171A] outline-none placeholder:text-[#CED4D9]"
                                 data-test-editor-title-input
                                 placeholder={resource === "pages" ? "Page title" : "Post title"}
                                 rows={1}
                                 tabIndex={1}
-                                value={state.titleScratch}
+                                value={state.titleScratch === DEFAULT_TITLE ? "" : state.titleScratch}
                                 onBlur={saveTitle}
                                 onChange={event => updateTitle(event.target.value)}
                                 onKeyDown={handleTitleKeyDown}
@@ -245,6 +279,7 @@ export function EditorScreen({ resource }: { resource: EditorResource }) {
                 settings are open */}
             {settingsOpen ? (
                 <aside
+                    ref={settingsPanelRef}
                     aria-label={resource === "pages" ? "Page settings" : "Post settings"}
                     className="flex w-[419px] shrink-0 flex-col overflow-y-auto border-l border-[#E6E9EB] bg-white"
                     data-testid="settings-menu"

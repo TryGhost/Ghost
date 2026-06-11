@@ -9,6 +9,23 @@ const mocks = vi.hoisted(() => ({
     publishFlowProps: { current: null as Record<string, unknown> | null },
     updateFlowProps: { current: null as Record<string, unknown> | null },
     previewProps: { current: null as Record<string, unknown> | null },
+    currentUserRole: { value: "Administrator" },
+}));
+
+vi.mock("@tryghost/admin-x-framework/api/current-user", () => ({
+    useCurrentUser: () => ({
+        data: {
+            id: "user-1",
+            name: "Current User",
+            roles: [{ id: "role-1", name: mocks.currentUserRole.value }],
+        },
+    }),
+}));
+
+vi.mock("@tryghost/admin-x-framework/api/users", () => ({
+    isContributorUser: (user: { roles?: Array<{ name: string }> }) => {
+        return user.roles?.some(role => role.name === "Contributor") ?? false;
+    },
 }));
 
 vi.mock("./publish-flow-modal", () => ({
@@ -72,6 +89,7 @@ describe("PublishManagement", () => {
         mocks.publishFlowProps.current = null;
         mocks.updateFlowProps.current = null;
         mocks.previewProps.current = null;
+        mocks.currentUserRole.value = "Administrator";
     });
 
     it("renders Preview and Publish for drafts", () => {
@@ -152,5 +170,46 @@ describe("PublishManagement", () => {
 
         expect(query('[data-test-button="publish-save"]')).not.toBeNull();
         expect(query('[data-test-button="update-flow"]')).toBeNull();
+    });
+
+    // Ember publish-buttons.hbs contributor branch: contributors never see
+    // the publish/update flows — drafts get Preview + a plain Save button
+    describe("contributors", () => {
+        beforeEach(() => {
+            mocks.currentUserRole.value = "Contributor";
+        });
+
+        it("renders Preview and Save (no Publish/Update/Unpublish) for drafts", () => {
+            render(<PublishManagement editor={makeEditor(makeState())} post={fullPost} resource="posts" />);
+
+            expect(screen.getByRole("button", { name: "Preview" })).toBeInTheDocument();
+            expect(query('[data-test-button="contributor-save"]')).toHaveTextContent("Save");
+            expect(query('[data-test-button="publish-flow"]')).toBeNull();
+            expect(query('[data-test-button="publish-save"]')).toBeNull();
+            expect(query('[data-test-button="update-flow"]')).toBeNull();
+        });
+
+        it("saves explicitly from the Save button", async () => {
+            const performManualSave = vi.fn<() => Promise<FullPost>>().mockResolvedValue(fullPost);
+            const editor = makeEditor(makeState(), performManualSave);
+            render(<PublishManagement editor={editor} post={fullPost} resource="posts" />);
+
+            const saveButton = query('[data-test-button="contributor-save"]') as HTMLElement;
+            fireEvent.click(saveButton);
+            await act(async () => {
+                await Promise.resolve();
+            });
+
+            expect(performManualSave).toHaveBeenCalledTimes(1);
+            expect(saveButton).toHaveTextContent("Saved");
+        });
+
+        it("still opens the preview modal for drafts", () => {
+            render(<PublishManagement editor={makeEditor(makeState())} post={fullPost} resource="posts" />);
+
+            fireEvent.click(screen.getByRole("button", { name: "Preview" }));
+
+            expect(screen.getByTestId("mock-preview-modal")).toBeInTheDocument();
+        });
     });
 });

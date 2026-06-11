@@ -115,9 +115,12 @@ export function TagDetailsForm({tag, initialSaveState = 'idle'}: {
                 }
             }
         } catch (error) {
+            // the toast is global (sonner), so a failure surfaces even if the
+            // form unmounted while the save was in flight — only the local
+            // save-state update needs the mounted guard
+            toast.error(apiErrorMessage(error, 'Failed to save tag'));
             if (!unmountedRef.current) {
                 setSaveState('error');
-                toast.error(apiErrorMessage(error, 'Failed to save tag'));
             }
         } finally {
             submitInFlightRef.current = false;

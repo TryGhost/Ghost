@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { type EditorResource, type FullPost } from "@tryghost/admin-x-framework/api/editor";
+import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
+import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
 import { Button } from "@tryghost/shade/components";
 import { type UseEditorResult } from "@/editor/use-editor";
 import { PreviewModal } from "./preview-modal";
@@ -15,7 +17,9 @@ type OpenModal = "publish" | "update" | "preview" | null;
  * Editor header publish controls (Ember's Editor::PublishManagement +
  * publish-buttons): Preview + Publish for drafts; Update + Unpublish/
  * Unschedule for published/scheduled posts; Update only for sent posts.
- * Owns the publish, update and preview modals.
+ * Contributors cannot publish: they only get Preview + a plain Save button
+ * (publish-buttons.hbs contributor branch). Owns the publish, update and
+ * preview modals.
  */
 export function PublishManagement({ editor, post, resource }: {
     editor: UseEditorResult;
@@ -23,6 +27,7 @@ export function PublishManagement({ editor, post, resource }: {
     post: FullPost | null;
     resource: EditorResource;
 }) {
+    const { data: currentUser } = useCurrentUser();
     const [openModal, setOpenModal] = useState<OpenModal>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
     const [updateState, setUpdateState] = useState<"idle" | "running" | "success">("idle");
@@ -41,6 +46,7 @@ export function PublishManagement({ editor, post, resource }: {
 
     const status = machinePost.status;
     const isDraft = status === "draft";
+    const isContributor = currentUser ? isContributorUser(currentUser) : false;
 
     // Ember validates the post before opening any of the flows
     const openWithValidation = (modal: Exclude<OpenModal, null>) => {
@@ -77,6 +83,16 @@ export function PublishManagement({ editor, post, resource }: {
         }
     };
 
+    const previewButton = (
+        <Button
+            className="h-[34px] px-3 text-[1.35rem] text-[#394047] hover:bg-[#F4F5F6]"
+            variant="ghost"
+            onClick={() => openWithValidation("preview")}
+        >
+            Preview
+        </Button>
+    );
+
     return (
         <>
             {validationError ? (
@@ -85,15 +101,25 @@ export function PublishManagement({ editor, post, resource }: {
                 </span>
             ) : null}
 
-            {isDraft ? (
+            {isContributor ? (
+                // Ember publish-buttons.hbs contributor branch: contributors
+                // can't open the publish/update flows — only preview drafts
+                // and save explicitly (the confirm would 403 server-side)
                 <>
+                    {isDraft ? previewButton : null}
                     <Button
                         className="h-[34px] px-3 text-[1.35rem] text-[#394047] hover:bg-[#F4F5F6]"
+                        data-test-button="contributor-save"
+                        disabled={updateState === "running"}
                         variant="ghost"
-                        onClick={() => openWithValidation("preview")}
+                        onClick={() => void handleUpdate()}
                     >
-                        Preview
+                        {updateState === "running" ? "Saving" : updateState === "success" ? "Saved" : "Save"}
                     </Button>
+                </>
+            ) : isDraft ? (
+                <>
+                    {previewButton}
                     <Button
                         className="h-[34px] px-3 text-[1.35rem] text-[#2BBA3C] hover:bg-[#F4F5F6] hover:text-[#2BBA3C]"
                         data-test-button="publish-flow"

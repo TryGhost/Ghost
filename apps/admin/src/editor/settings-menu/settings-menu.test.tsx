@@ -350,6 +350,45 @@ describe("SettingsMenu", () => {
             expect(lastEditedPost().published_at).toBe("2026-01-05T08:15:00.000Z");
         });
 
+        // Audit regression: blurring the untouched fields committed the
+        // displayed fallback/minute-precision value — writing published_at
+        // to never-published drafts and rewriting a published post's seconds
+        it("does not write published_at to a draft when the untouched fields blur", () => {
+            renderMenu(makeSnapshot({ status: "draft", publishedAt: null }));
+
+            fireEvent.focus(screen.getByLabelText("Date Picker"));
+            fireEvent.blur(screen.getByLabelText("Date Picker"));
+            fireEvent.focus(screen.getByLabelText("Time Picker"));
+            fireEvent.blur(screen.getByLabelText("Time Picker"));
+
+            expect(mocks.editPost).not.toHaveBeenCalled();
+            expect(screen.getByTestId("editor-is-dirty")).toHaveTextContent("false");
+        });
+
+        it("preserves the stored seconds when a published post's fields blur unchanged", () => {
+            renderMenu(makeSnapshot({ status: "published", publishedAt: "2026-01-05T10:30:45.000Z" }));
+
+            // the inputs render minute precision; re-committing the display
+            // must not rebuild the date with :00 seconds
+            expect(screen.getByLabelText("Time Picker")).toHaveValue("10:30");
+            fireEvent.blur(screen.getByLabelText("Date Picker"));
+            fireEvent.blur(screen.getByLabelText("Time Picker"));
+
+            expect(mocks.editPost).not.toHaveBeenCalled();
+        });
+
+        it("still saves a backdated publish date typed into a draft", async () => {
+            renderMenu(makeSnapshot({ status: "draft", publishedAt: null }));
+
+            fireEvent.change(screen.getByLabelText("Date Picker"), { target: { value: "2020-01-01" } });
+            fireEvent.blur(screen.getByLabelText("Date Picker"));
+
+            await waitFor(() => {
+                expect(mocks.editPost).toHaveBeenCalledTimes(1);
+            });
+            expect(String(lastEditedPost().published_at)).toMatch(/^2020-01-01T/);
+        });
+
         it("disables the date fields for scheduled posts and points at the publish menu", () => {
             renderMenu(makeSnapshot({ status: "scheduled", publishedAt: "2999-01-01T10:00:00.000Z" }));
 

@@ -214,6 +214,41 @@ describe("EditorScreen", () => {
             expect(String(replaceState.mock.calls.at(-1)?.[2])).toContain("#/editor/post/new-id");
         });
 
+        // Ember maps the saved "(Untitled)" default back to an empty input
+        // (gh-koenig-editor-lexical.js); without it the first autosave of an
+        // untitled post injected the literal "(Untitled)" into the visible
+        // title and further typing appended to it
+        it("keeps the title input empty after the first autosave of an untitled post", async () => {
+            const bodyDoc = '{"root":{"children":[{"children":[{"text":"hi","type":"text"}],"type":"paragraph","version":1}],"type":"root","version":1}}';
+            mocks.addPost.mockResolvedValue({
+                posts: [makeFullPost({ id: "new-id", title: "(Untitled)", slug: "untitled", lexical: bodyDoc })],
+            });
+
+            render(<EditorScreen resource="posts" />);
+
+            act(() => {
+                mocks.koenigProps.current!.onChange(bodyDoc);
+            });
+            await waitFor(() => {
+                expect(postStatus()).toHaveTextContent("Draft - Saved");
+            });
+
+            expect(titleInput()).toHaveValue("");
+
+            // typing afterwards must not append to the injected default
+            fireEvent.change(titleInput(), { target: { value: "Hello" } });
+            expect(titleInput()).toHaveValue("Hello");
+        });
+
+        // Ember's global `textarea { max-width: 500px }` leaks into the
+        // editor portal; the explicit utility keeps the title on the same
+        // content column as the Koenig body
+        it("does not cap the title column below the body width", () => {
+            render(<EditorScreen resource="posts" />);
+
+            expect(titleInput()).toHaveClass("w-full", "max-w-none");
+        });
+
         it("covers the viewport and hides the admin shell from the accessibility tree while open", () => {
             const appRoot = document.createElement("div");
             appRoot.id = "root";
@@ -294,6 +329,29 @@ describe("EditorScreen", () => {
 
             expect(await screen.findByText("Post settings")).toBeInTheDocument();
             expect(screen.getByTestId("mock-settings-menu")).toBeInTheDocument();
+        });
+
+        // Ember gh-post-settings-menu publishes the open panel's width as CSS
+        // vars so Koenig's wide/full breakout cards shrink instead of sliding
+        // under the panel (and reset when it closes)
+        it("publishes the settings panel width as the editor sidebar / breakout CSS vars", () => {
+            const getBoundingClientRect = vi
+                .spyOn(Element.prototype, "getBoundingClientRect")
+                .mockReturnValue({ width: 419 } as DOMRect);
+            try {
+                render(<EditorScreen resource="posts" />);
+                const rootStyle = document.documentElement.style;
+
+                fireEvent.click(screen.getByTestId("settings-menu-toggle"));
+                expect(rootStyle.getPropertyValue("--editor-sidebar-width")).toBe("419px");
+                expect(rootStyle.getPropertyValue("--kg-breakout-adjustment")).toBe("419px");
+
+                fireEvent.click(screen.getByTestId("settings-menu-toggle"));
+                expect(rootStyle.getPropertyValue("--editor-sidebar-width")).toBe("0px");
+                expect(rootStyle.getPropertyValue("--kg-breakout-adjustment")).toBe("0px");
+            } finally {
+                getBoundingClientRect.mockRestore();
+            }
         });
 
         it("converts mobiledoc posts to lexical via the convert_to_lexical save", async () => {
