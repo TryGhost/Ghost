@@ -490,6 +490,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // At this point logging is required, so we can handle errors better
 
+        // Surface config loader warnings now that logging is available
+        if (config.unmatchedGhostEnvVars && config.unmatchedGhostEnvVars.length > 0) {
+            config.unmatchedGhostEnvVars.forEach(({envVar, configKey}) => {
+                logging.warn(`Environment variable ${envVar} does not match any known config key and was applied as "${configKey}". Custom config keys with camelCase parts must be set with exact casing, e.g. GHOST_storage__s3__accessKeyId or storage__s3__accessKeyId.`);
+            });
+        }
+
         // Add a process handler to capture and log unhandled rejections
         debug('Begin: Add unhandled rejection handler');
         process.on('unhandledRejection', (error) => {

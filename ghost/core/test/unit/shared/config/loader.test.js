@@ -103,6 +103,114 @@ describe('Config Loader', function () {
         });
     });
 
+    describe('GHOST_ prefixed environment variables', function () {
+        let originalEnv;
+        let originalArgv;
+        let customConfig;
+        let loader;
+
+        function loadConfig() {
+            return loader.loadNconf({
+                baseConfigPath: path.join(__dirname, '../../../utils/fixtures/config'),
+                customConfigPath: path.join(__dirname, '../../../utils/fixtures/config')
+            });
+        }
+
+        beforeEach(function () {
+            originalEnv = _.clone(process.env);
+            originalArgv = _.clone(process.argv);
+            loader = rewire('../../../../core/shared/config/loader');
+            sinon.stub(localUtils, 'getNodeEnv').returns('testing');
+            process.env.paths__contentPath = 'content/';
+            delete process.env.logging__level;
+        });
+
+        afterEach(function () {
+            process.env = originalEnv;
+            process.argv = originalArgv;
+            sinon.restore();
+        });
+
+        it('maps uppercase variables to canonical camelCase config keys', function () {
+            process.env.GHOST_SPAM__USER_LOGIN__MINWAIT = '123';
+
+            customConfig = loadConfig();
+
+            assert.equal(customConfig.get('spam:user_login:minWait'), 123);
+        });
+
+        it('recovers canonical casing regardless of the given casing', function () {
+            process.env.GHOST_spam__user_login__minwait = '456';
+
+            customConfig = loadConfig();
+
+            assert.equal(customConfig.get('spam:user_login:minWait'), 456);
+        });
+
+        it('maps uppercase variables for documented keys without defaults', function () {
+            process.env.GHOST_MAIL__OPTIONS__AUTH__USER = 'mailuser';
+
+            customConfig = loadConfig();
+
+            assert.equal(customConfig.get('mail:options:auth:user'), 'mailuser');
+        });
+
+        it('lowercases unknown all-uppercase variables', function () {
+            process.env.GHOST_CUSTOMSECTION__VALUE = 'custom';
+
+            customConfig = loadConfig();
+
+            assert.equal(customConfig.get('customsection:value'), 'custom');
+        });
+
+        it('passes exact-case variables through without the prefix', function () {
+            process.env.GHOST_storage__s3__accessKeyId = 'abc123';
+
+            customConfig = loadConfig();
+
+            assert.equal(customConfig.get('storage:s3:accessKeyId'), 'abc123');
+            assert.equal(customConfig.unmatchedGhostEnvVars.find(entry => entry.envVar === 'GHOST_storage__s3__accessKeyId'), undefined);
+        });
+
+        it('leaves non-prefixed variables untouched', function () {
+            process.env.storage__s3__secretAccessKey = 'shh';
+
+            customConfig = loadConfig();
+
+            assert.equal(customConfig.get('storage:s3:secretAccessKey'), 'shh');
+        });
+
+        it('prefers the GHOST_ prefixed form when both forms are set', function () {
+            process.env.spam__user_login__minWait = '1';
+            process.env.GHOST_SPAM__USER_LOGIN__MINWAIT = '2';
+
+            customConfig = loadConfig();
+
+            assert.equal(customConfig.get('spam:user_login:minWait'), 2);
+        });
+
+        it('collects unmatched all-uppercase variables for warning', function () {
+            process.env.GHOST_STORAGE__S3__ACCESSKEYID = 'abc';
+
+            customConfig = loadConfig();
+
+            assert.equal(customConfig.get('storage:s3:accesskeyid'), 'abc');
+            assert.deepEqual(customConfig.unmatchedGhostEnvVars.find(entry => entry.envVar === 'GHOST_STORAGE__S3__ACCESSKEYID'), {
+                envVar: 'GHOST_STORAGE__S3__ACCESSKEYID',
+                configKey: 'storage__s3__accesskeyid'
+            });
+        });
+
+        it('does not transform internal GHOST_ environment variables', function () {
+            process.env.GHOST_DEV_IS_DOCKER = 'false';
+
+            customConfig = loadConfig();
+
+            assert.equal(customConfig.get('dev_is_docker'), undefined);
+            assert.equal(customConfig.unmatchedGhostEnvVars.find(entry => entry.envVar === 'GHOST_DEV_IS_DOCKER'), undefined);
+        });
+    });
+
     describe('Index', function () {
         it('should have exactly the right keys', function () {
             const pathConfig = configUtils.config.get('paths');

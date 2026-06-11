@@ -1,9 +1,11 @@
 const Nconf = require('nconf');
+const fs = require('fs');
 const path = require('path');
 const _debug = require('@tryghost/debug')._base;
 const debug = _debug('ghost:config');
 const localUtils = require('./utils');
 const helpers = require('./helpers');
+const envKeys = require('./env-keys');
 const urlHelpers = require('@tryghost/config-url-helpers');
 
 /**
@@ -26,22 +28,17 @@ function loadNconf(options) {
 
     // command line arguments take precedence, then environment variables
     nconf.argv();
-    nconf.env({
-        // handle uppercase GHOST_ environment variables, like GHOST_MAIL_OPTIONS_HOST
-        separator: '_',
-        parseValues: true,
-        transform(obj) {
-            const prefix = /^GHOST_/;
-            if (!prefix.test(obj.key)) {
-                return false;
-            }
-            
-            // strip prefix and convert to lower case
-            obj.key = obj.key.replace(prefix, '').toLowerCase();
-            return obj;
-        }
-    });
-    nconf.env({separator: '__', parseValues: true});
+
+    // GHOST_-prefixed environment variables are mapped to config keys via the
+    // canonical key index built from defaults.json
+    let defaults = {};
+    try {
+        defaults = JSON.parse(fs.readFileSync(path.join(baseConfigPath, 'defaults.json'), 'utf8'));
+    } catch (err) {
+        debug('could not read defaults.json for the env key index', err);
+    }
+    const envTransform = envKeys.createEnvTransform(defaults);
+    nconf.env({separator: '__', parseValues: true, transform: envTransform.transform});
 
     // Now load various config json files
     nconf.file('custom-env', path.join(customConfigPath, 'config.' + env + '.json'));
@@ -84,6 +81,10 @@ function loadNconf(options) {
 
     // Manually set values
     nconf.set('env', env);
+
+    // GHOST_-prefixed all-uppercase variables that didn't match any known config key,
+    // exposed so the boot logger can warn about them once logging is available
+    nconf.unmatchedGhostEnvVars = Array.from(envTransform.unmatchedKeys, ([envVar, configKey]) => ({envVar, configKey}));
 
     // Wrap this in a check, because else nconf.get() is executed unnecessarily
     // To output this, use DEBUG=ghost:*,ghost-config
