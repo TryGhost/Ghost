@@ -29,21 +29,28 @@
    analytics (config.stats absent by design).
 
 ## Tests
-- `yarn test` — 107 unit tests green; `yarn test:e2e` — 54 vendored Ghost
-  e2e tests green (signin deep-links, deep-link redirects, sidebar
-  navigation, posts list/update/delete + publish flow, lexical editor,
-  post preview modal, all custom-views suites, full tags suites incl.
-  pagination, public homepage) against a seeded phantom server, including
-  `src/modules/operations/importer.test.ts` (real
-  `test/fixtures/ghost-v5-export.json` fixture) and `src/db/ddl.test.ts`.
-- Backend grown by the suites: settings write surface (PUT /settings/ with
-  wire keymap incl. shared_views/labs), posts browse filters (tag/author/
-  visibility/featured + order), post DELETE, author auto-linking on create,
-  /p/<uuid> draft previews, /email_previews/, users.accessibility
-  persistence, paginated tag browse, /ghost deep-link redirects.
+- `yarn test` — 112 unit tests green; `yarn test:e2e` — 124 vendored Ghost
+  e2e tests green across four playwright projects (main + billing +
+  force-upgrade host-settings servers). Suites: signin/deep links, sidebar
+  navigation + theme errors, posts list/editor/publish/preview/custom
+  views, full tags incl. pagination, members directory (list/filter/
+  export/bulk/saved views/virtual window), settings search, private mode,
+  announcement bar, what's new, onboarding, hosted billing, member
+  magic-link signup, staff password reset, public homepage.
+- Mail: in-memory MailProvider + Mailpit-compatible /__mail__ sink (e2e
+  mode); magic-link and password-reset emails flow through it.
 
-## Known gaps / next
-- v1/v2 export formats untested; amp/comment_id field mapping absent.
-- Newsletter `senderEmail` is now nullable (null = use default address);
-  send-path resolution relies on contract validation upstream.
-- posts_meta/offers/snippets tables not yet imported.
+## Known gaps / next (e2e goal: all upstream suites green)
+- 2FA suite: device-verification flow must NOT break API logins used by
+  every other suite; needs conditional flow (twoFactorEnabled per staff).
+- member-signup-types: member attribution (source/page) capture + admin
+  member detail attribution display + portal name persistence.
+- staff invites + welcome emails + posts publishing/newsletter-send:
+  invite emails, newsletter delivery pipeline to mail sink.
+- Analytics suites (8): need native traffic stats (Tinybird pipes facade
+  over the local analytics event store) — task #18.
+- Stripe suites (16): vendor /e2e fake-stripe-server; billing module per
+  PRD section 4.
+- Comments suites: comments module + comments-ui serving + member
+  impersonation.
+- v1/v2 export formats untested; posts_meta/offers/snippets not imported.

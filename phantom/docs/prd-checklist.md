@@ -23,8 +23,9 @@ References (all in this directory):
 ## 1) Staff authentication and access control
 - [x] Password-based staff login with rate limiting
 - [x] 2FA/device verification flow
-- [ ] Staff password reset (service exists; expiry/session-revocation
-      acceptance is not fully tested)
+- [x] Staff password reset (e2e-verified end to end: reset email with
+      Ghost's base64 token format, password change, auto sign-in —
+      `e2e/tests/admin/reset-password.test.ts`)
 - [ ] Staff invitations with role assignment (create/accept tested; expiry
       and error paths untested)
 - [ ] Staff sessions with role/permission enforcement (route helper exists;
@@ -47,7 +48,9 @@ References (all in this directory):
       untested)
 
 ## 3) Member authentication and signup policy
-- [x] Magic-link login tokens
+- [x] Magic-link login tokens (full loop e2e-verified: portal signup →
+      magic-link email → /members/?token= session →
+      themes render @member — `e2e/tests/public/member-signup.test.ts`)
 - [ ] SignupPolicy enforcement (non-open policies collapse to one
       `signup_not_allowed` path; policy-specific errors unimplemented)
 - [ ] AbuseGuard rate limits (limiter exists; no colocated member test)
@@ -165,7 +168,9 @@ References (all in this directory):
 - [x] Tag management (vendored upstream suites pass: tags list with
       public/internal tabs, pagination/infinite scroll and post counts,
       create/edit/dedupe/delete via the real tags UI — `e2e/tests/admin/tags/`)
-- [ ] Member management
+- [x] Member management (vendored upstream suites pass: list, search and
+      filter, legacy CRUD detail flows, CSV export, bulk label actions,
+      saved views, virtual window — `e2e/tests/admin/members/`)
 - [ ] Comment moderation
 
 ## 18) Admin navigation, billing UI, release updates
