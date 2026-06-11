@@ -4,6 +4,9 @@ const envSchema = z.object({
     GHOST_DB_URL: z.string().default('file:./ghost.db'),
     GHOST_DB_AUTH_TOKEN: z.string().optional(),
     GHOST_PORT: z.coerce.number().int().positive().default(2369),
+    // Public origin of the deployment; absolute URLs (magic links, config
+    // blogUrl, attribution) derive from it. Defaults to localhost:port.
+    GHOST_SITE_URL: z.string().url().optional(),
     GHOST_SIGNUP_POLICY: z.enum(['open', 'invite-only', 'paid-only', 'none']).default('open'),
     GHOST_SSO_PROVIDERS: z.string().optional(),
     GHOST_QUEUE_PROVIDER: z.enum(['memory']).default('memory'),

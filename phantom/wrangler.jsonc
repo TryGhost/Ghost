@@ -25,11 +25,24 @@
     "dev": {
         "port": 8788
     },
+    "d1_databases": [
+        {
+            // Replaces the GHOST_DB_URL libSQL client when bound (worker.ts);
+            // `wrangler dev` uses a local miniflare copy, `--remote`/deploys
+            // use the real database.
+            "binding": "DB",
+            "database_name": "phantom",
+            "database_id": "fcb0b399-f7ce-416e-ae07-d0c5b8324fbc"
+        }
+    ],
     "vars": {
-        // siteUrl derives from the port; keep in sync with dev.port above.
+        // Public origin of the deployment; .dev.vars overrides this with
+        // localhost for `wrangler dev`.
+        "GHOST_SITE_URL": "https://phantom.jonatansberg.workers.dev",
+        // siteUrl fallback derives from the port; keep in sync with dev.port.
         "GHOST_PORT": "8788",
-        // Workers cannot open SQLite files: point at a libSQL server over
-        // HTTP (e.g. `turso dev --port 8880` or sqld) for local development.
+        // Only used when the D1 binding above is removed: a libSQL server
+        // over HTTP (e.g. `turso dev --port 8880` or sqld).
         "GHOST_DB_URL": "http://127.0.0.1:8880"
     }
 }

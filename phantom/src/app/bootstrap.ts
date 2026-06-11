@@ -1,4 +1,4 @@
-import {createDb} from '../db/client.js';
+import {createDb, type DbClient} from '../db/client.js';
 import {loadConfig} from '../platform/config/config.js';
 import {createSiteRepository} from '../modules/site/repo.js';
 import {createSiteService} from '../modules/site/service.js';
@@ -46,24 +46,32 @@ import {renderLexicalHtml} from '../frontend/rendering/lexical.js';
 import type {FileStore} from '../platform/files/store.js';
 import type {ThemeBundleProvider} from '../frontend/themes/bundles.js';
 
-// Platform-specific pieces (static files, theme bundles) default to the Node
-// implementations via lazy imports so the Workers entry point can inject its
-// own without pulling node:fs into the bundle's startup path.
+// Platform-specific pieces (static files, theme bundles, the database
+// client) default to the Node implementations via lazy imports so the
+// Workers entry point can inject its own without pulling node:fs into the
+// bundle's startup path.
 export type PlatformOverrides = {
     fileStore?: FileStore;
     themeBundles?: ThemeBundleProvider;
+    // An injected drizzle client (e.g. D1 on Workers) replaces the
+    // GHOST_DB_URL-based libSQL client entirely.
+    db?: DbClient;
+    // Whether the importer may wrap writes in a manual transaction; injected
+    // databases that can't (D1, remote libSQL) pass false.
+    atomicImport?: boolean;
 };
 
 export const createAppDependencies = async (platform: PlatformOverrides = {}) => {
     const config = loadConfig();
-    const db = createDb(config.db);
+    const db = platform.db ?? createDb(config.db);
     const fileStore = platform.fileStore
         ?? (await import('../platform/files/node.js')).createNodeFileStore({themesRoot: config.themes.fs.root});
     const themeBundles = platform.themeBundles
         ?? (await import('../frontend/themes/node-bundles.js')).createNodeThemeBundles(config);
     // Remote libSQL can't span a manual transaction across statements; the
     // importer falls back to non-atomic statement-by-statement writes there.
-    const atomicImport = !/^(https?|libsql|wss?):/.test(config.db.url);
+    const atomicImport = platform.atomicImport
+        ?? !/^(https?|libsql|wss?):/.test(config.db.url);
     await ensureCoreSchema(db);
     const siteRepository = createSiteRepository(db);
     const siteService = createSiteService(siteRepository);
@@ -86,7 +94,7 @@ export const createAppDependencies = async (platform: PlatformOverrides = {}) =>
     const analyticsService = createAnalyticsService(analyticsRepository);
     const metricsClient = getMetricsClient();
     const mailbox = createMemoryMailbox();
-    const siteUrl = `http://localhost:${config.port}`;
+    const siteUrl = config.siteUrl;
     const siteTitle = async () => {
         const {settings} = await settingsService.listSettings();
         const title = settings.find((setting) => setting.key === 'site.title')?.value;

@@ -116,6 +116,7 @@ describe('frontend router', () => {
 
         const config: AppConfig = {
             port: 2369,
+            siteUrl: 'http://localhost:2369',
             db: {url: 'file:./ghost.db'},
             identity: {ssoProviders: []},
             memberAuth: {signupPolicy: 'open'},
@@ -164,6 +165,7 @@ describe('frontend router', () => {
 
         const config: AppConfig = {
             port: 2369,
+            siteUrl: 'http://localhost:2369',
             db: {url: 'file:./ghost.db'},
             identity: {ssoProviders: []},
             memberAuth: {signupPolicy: 'open'},

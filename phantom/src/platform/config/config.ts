@@ -7,6 +7,7 @@ export type DatabaseConfig = {
 
 export type AppConfig = {
     port: number;
+    siteUrl: string;
     db: DatabaseConfig;
     identity: {
         ssoProviders: string[];
@@ -47,6 +48,7 @@ export const loadConfig = (): AppConfig => {
 
     return {
         port: env.GHOST_PORT,
+        siteUrl: env.GHOST_SITE_URL?.replace(/\/$/, '') ?? `http://localhost:${env.GHOST_PORT}`,
         db,
         identity: {
             ssoProviders

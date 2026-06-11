@@ -59,7 +59,7 @@ const buildSiteContext = (settings: SettingsList, config: AppConfig) => {
         description: (readSetting(settings, 'site.description') as string | null | undefined) ?? null,
         locale: (readSetting(settings, 'site.locale') as string | undefined) ?? 'en',
         timezone: (readSetting(settings, 'site.timezone') as string | undefined) ?? 'Etc/UTC',
-        url: `http://localhost:${config.port}`,
+        url: config.siteUrl,
         cover_image: imageSetting(settings, 'site.cover_image'),
         logo: imageSetting(settings, 'site.logo'),
         icon: imageSetting(settings, 'site.icon'),

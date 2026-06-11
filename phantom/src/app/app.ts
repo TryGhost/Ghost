@@ -155,7 +155,7 @@ export const createApp = ({
 
     // Ghost compat facades own the legacy API paths so existing apps run
     // unmodified (decision #16); the native v10 API lives under /ghost/api/v10.
-    const siteUrl = `http://localhost:${config.port}`;
+    const siteUrl = config.siteUrl;
     app.route('/ghost/api/content', createContentApiRouter({
         contentReader,
         settingsService,
