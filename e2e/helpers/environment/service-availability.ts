@@ -3,6 +3,7 @@ import baseDebug from '@tryghost/debug';
 import {DEV_ENVIRONMENT, TINYBIRD} from './constants';
 
 const debug = baseDebug('e2e:ServiceAvailability');
+let tinybirdAvailability: Promise<boolean> | null = null;
 
 async function isServiceAvailable(docker: Docker, serviceName: string) {
     const containers = await docker.listContainers({
@@ -26,8 +27,17 @@ export async function isTinybirdAvailable(): Promise<boolean> {
         return false;
     }
 
-    const docker = new Docker();
-    const tinybirdAvailable = await isServiceAvailable(docker, TINYBIRD.LOCAL_HOST);
-    debug(`Tinybird availability for compose project ${DEV_ENVIRONMENT.projectNamespace}:`, tinybirdAvailable);
-    return tinybirdAvailable;
+    if (!tinybirdAvailability) {
+        tinybirdAvailability = (async () => {
+            const docker = new Docker();
+            const tinybirdAvailable = await isServiceAvailable(docker, TINYBIRD.LOCAL_HOST);
+            debug(`Tinybird availability for compose project ${DEV_ENVIRONMENT.projectNamespace}:`, tinybirdAvailable);
+            return tinybirdAvailable;
+        })().catch((error) => {
+            tinybirdAvailability = null;
+            throw error;
+        });
+    }
+
+    return tinybirdAvailability;
 }
