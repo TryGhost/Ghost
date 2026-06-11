@@ -88,8 +88,8 @@ catalogs:
       specifier: 3.2.3
       version: 3.2.3
     '@tryghost/helpers':
-      specifier: 1.1.105
-      version: 1.1.105
+      specifier: 1.1.106
+      version: 1.1.106
     '@tryghost/kg-clean-basic-html':
       specifier: 4.3.2
       version: 4.3.2
@@ -109,8 +109,8 @@ catalogs:
       specifier: 0.6.5
       version: 0.6.5
     '@tryghost/string':
-      specifier: 0.3.4
-      version: 0.3.4
+      specifier: 0.3.5
+      version: 0.3.5
     '@tryghost/timezone-data':
       specifier: 1.0.0
       version: 1.0.0
@@ -980,7 +980,7 @@ importers:
         version: 0.12.11
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.4
+        version: 0.3.5
       '@tryghost/timezone-data':
         specifier: 'catalog:'
         version: 1.0.0
@@ -1998,7 +1998,7 @@ importers:
         version: 2.0.1(ember-source@3.24.0(@babel/core@7.29.7))(postcss@8.5.15)
       '@tryghost/helpers':
         specifier: 'catalog:'
-        version: 1.1.105
+        version: 1.1.106
       '@tryghost/kg-clean-basic-html':
         specifier: 'catalog:'
         version: 4.3.2
@@ -2016,7 +2016,7 @@ importers:
         version: 0.12.11
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.4
+        version: 0.3.5
       '@tryghost/timezone-data':
         specifier: 'catalog:'
         version: 1.0.0
@@ -2342,8 +2342,8 @@ importers:
         specifier: 'catalog:'
         version: 0.2.18
       '@tryghost/config-url-helpers':
-        specifier: 1.0.25
-        version: 1.0.25
+        specifier: 1.0.26
+        version: 1.0.26
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
         version: 1.0.10
@@ -2364,10 +2364,10 @@ importers:
         version: 1.3.13
       '@tryghost/helpers':
         specifier: 'catalog:'
-        version: 1.1.105
+        version: 1.1.106
       '@tryghost/html-to-plaintext':
-        specifier: 1.0.10
-        version: 1.0.10
+        specifier: 1.0.11
+        version: 1.0.11
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../i18n
@@ -2429,8 +2429,8 @@ importers:
         specifier: 1.0.6
         version: 1.0.6
       '@tryghost/nodemailer':
-        specifier: 2.2.2
-        version: 2.2.2(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
+        specifier: 2.2.3
+        version: 2.2.3(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       '@tryghost/nql':
         specifier: 'catalog:'
         version: 0.12.11
@@ -2466,13 +2466,13 @@ importers:
         version: 0.1.62
       '@tryghost/string':
         specifier: 'catalog:'
-        version: 0.3.4
+        version: 0.3.5
       '@tryghost/tpl':
         specifier: 2.2.1
         version: 2.2.1
       '@tryghost/url-utils':
-        specifier: 5.2.4
-        version: 5.2.4
+        specifier: 5.2.6
+        version: 5.2.6
       '@tryghost/validator':
         specifier: 0.2.22
         version: 0.2.22
@@ -8570,8 +8570,8 @@ packages:
   '@tryghost/color-utils@0.2.18':
     resolution: {integrity: sha512-Y1Q5/Pde5KGAFuBWgXtbCG4NAm2t1RjaiGoet7EUwYRB/8ePZqylpB9G8wDZkJbDX7b6z4fUlu3iMcJ5FNhNPg==}
 
-  '@tryghost/config-url-helpers@1.0.25':
-    resolution: {integrity: sha512-hrC0XUYqxGVxoCD+ENjW5tU/Up3BGHGzDWGT0AgFxKKr0FEZ6MQC84aSjp4uf/22NXHguD65eqHz4gIKvQWQZA==}
+  '@tryghost/config-url-helpers@1.0.26':
+    resolution: {integrity: sha512-DVy317doKseE4gdgmUYqWvPyOPRDyd8HBMVBEra7fr+ranD43nb1Q36lmRCCQFQ4srfC9ZOds3uHpDvGSQfT1w==}
 
   '@tryghost/config@2.2.1':
     resolution: {integrity: sha512-Tu3vVd65O9XaR7h7SJH5yzfKF4R3hOFgA0jJE55r78TPSSHXuez0LQaGTCdoJj60NAhC7+3rcVOPUnu2v0Glrg==}
@@ -8621,14 +8621,14 @@ packages:
     peerDependencies:
       express: ^4.0.0 || ^5.0.0
 
-  '@tryghost/helpers@1.1.105':
-    resolution: {integrity: sha512-I6+1xjBX3QjihDjmkFl7i+VEauu7vxMr/vuN5q0p2GY4CY/eKt+IyAoUo7KY6kHO2y1Z2WBcvNDYeUJ9RKDFRA==}
+  '@tryghost/helpers@1.1.106':
+    resolution: {integrity: sha512-Yjrb/VLvRqgtMsiKXvuSRoVvAm2HJ6SJakdo25va4sU9sA7yXBSWWHkukE8q27Ty9R2fE5jEEWziIhrZy+Tkog==}
 
   '@tryghost/html-to-mobiledoc@3.3.2':
     resolution: {integrity: sha512-fCf4aHPV7hmF0AugRMfADiFJRh2ZxlhaQsUQSm0iVV5Kof7PgRIt8V7AYphV++aVLm8sXCU8rQkcDr5VMm9T+Q==}
 
-  '@tryghost/html-to-plaintext@1.0.10':
-    resolution: {integrity: sha512-kMg2knP6r8NP980WkXq13CV1fUc7bnLoMJRprXHEIcpiuHh2wcT74qJvP76tnofJ7EP7G5gRga4aZ3WCG2i0jg==}
+  '@tryghost/html-to-plaintext@1.0.11':
+    resolution: {integrity: sha512-pCmCQLrZN+IqTUli07I+1oZGkZN4a6PDU/lqJ2DTe6Up86OmPOKePWUH43zzOGM5RO3aaRP1I3zUzfOW1iCFxA==}
 
   '@tryghost/http-cache-utils@0.1.25':
     resolution: {integrity: sha512-OJAD1ESvV+F81w6IOTKCX0JLGIiJqNn87HVFMskpUC3IUGpqcDP1pCM79d72khxLWy5oRQDYu8xIqicHJ9ST1Q==}
@@ -8731,8 +8731,8 @@ packages:
   '@tryghost/mw-vhost@1.0.6':
     resolution: {integrity: sha512-FKoSdBw5+fZNbzC58LD3ZLbMEj2UI5+4XOnEau7xINuYBP/c4wN0TXHuJT8y6H1wnYvO4Qu9L+PwHxe1yHBA+Q==}
 
-  '@tryghost/nodemailer@2.2.2':
-    resolution: {integrity: sha512-8Eo6jl01Y3LE7XJMbQ8ui/qa4CdBwx+toL/IAC8aCAHnpcylIXKbU6XIoqCYW4S3idEioQ8khrADbAqIO3kA0g==}
+  '@tryghost/nodemailer@2.2.3':
+    resolution: {integrity: sha512-91t/mVCpY9XvHIdNZIib5L5qbeFKlV6NuwdwbCgq2DyURf+mzKKVgJMPiYmqFKPa1bI+CZTHGG2zfkP8ktkJcA==}
 
   '@tryghost/nql-lang@0.6.5':
     resolution: {integrity: sha512-13Loz2yH7GCMAfpVawD6KNWNPIVTc4STnP+MeCwbrWg8htv/CPOB0u+i9Eap0qEi8h6TC2aoOvbQV0EvjidQaQ==}
@@ -8801,6 +8801,9 @@ packages:
   '@tryghost/string@0.3.4':
     resolution: {integrity: sha512-eI8B3lEgfv8RQFbQnP7H4KnlhrDkqrh+lAcNLXHyUAoqb5MwqlrHAIAQZxpl5CLW9agBJ8w1UO7ZrcseHEL8Ww==}
 
+  '@tryghost/string@0.3.5':
+    resolution: {integrity: sha512-Ov2UYOuU5QutDo/UECtkhHR3jdT4R/aNxzKFk0iaH0yiwxLnlqEB4QBBVnYYIN8zECNAazRzkygtdFSlSkuaoA==}
+
   '@tryghost/timezone-data@1.0.0':
     resolution: {integrity: sha512-A9483jAxE13ivnHdLK1kQYRaQYW+BcrKz33Nkdb59erNXiJYoaWx0HBAQoXKlySvrVX+wvVd9g1LzF44LgqidQ==}
     engines: {node: '>=18.0.0'}
@@ -8819,6 +8822,9 @@ packages:
 
   '@tryghost/url-utils@5.2.4':
     resolution: {integrity: sha512-Q/8D3/+d9I/SF2XCIUR0mBDeKbeEz8VchtgiasOCzuKPddUvACZ6O1DnEosxlDQ+2B9BjPyVp15VoqAkgWRR/Q==}
+
+  '@tryghost/url-utils@5.2.6':
+    resolution: {integrity: sha512-3TQRcseZW/rq3UsSMP94n6WgKYZJqufreNdv9wJT5P4Fm5bNQ04rEHvL8i1AggXWa2kUPmwt2ed7KzNY6xx7zA==}
 
   '@tryghost/validator@0.2.22':
     resolution: {integrity: sha512-dmobNVEKXMi3K4OdAXLBFwa78hVgy8cYvCPJgfV4h3NtYIyRHqwARr3upT3/ASpVBpKGVBu7XexfSv+tibzsuQ==}
@@ -17449,8 +17455,8 @@ packages:
     resolution: {integrity: sha512-BLFuSth7QtHOkBzyqTehWWyub0NTRDuK2Q2SQfnGLsrJnzyU+Yeh4WpV1eZGuARFj1xQJHIdnTuJZLP+b9R1GQ==}
     engines: {node: '>=6.0.0'}
 
-  nodemailer@8.0.7:
-    resolution: {integrity: sha512-pkjE4mkBzQjdJT4/UmlKl3pX0rC9fZmjh7c6C9o7lv66Ac6w9WCnzPzhbPNxwZAzlF4mdq4CSWB5+FbK6FWCow==}
+  nodemailer@8.0.8:
+    resolution: {integrity: sha512-p+XsnzXGdtIHXUu2ugxdfG+eX2nehsGhMjW9h0CWj1BhE30hrFz0kh0yIM0/VjUgVsRrDj+80ZO+I1nSkGE4tA==}
     engines: {node: '>=6.0.0'}
 
   nodemon@3.1.14:
@@ -28440,7 +28446,7 @@ snapshots:
       '@types/color': 4.2.1
       color: 3.2.1
 
-  '@tryghost/config-url-helpers@1.0.25': {}
+  '@tryghost/config-url-helpers@1.0.26': {}
 
   '@tryghost/config@2.2.1':
     dependencies:
@@ -28540,7 +28546,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/helpers@1.1.105':
+  '@tryghost/helpers@1.1.106':
     dependencies:
       lodash-es: 4.18.1
 
@@ -28554,7 +28560,7 @@ snapshots:
       - canvas
     optional: true
 
-  '@tryghost/html-to-plaintext@1.0.10':
+  '@tryghost/html-to-plaintext@1.0.11':
     dependencies:
       html-to-text: 8.2.1
       lodash: 4.18.1
@@ -28798,11 +28804,11 @@ snapshots:
 
   '@tryghost/mw-vhost@1.0.6': {}
 
-  '@tryghost/nodemailer@2.2.2(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)':
+  '@tryghost/nodemailer@2.2.3(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)':
     dependencies:
       '@aws-sdk/client-sesv2': 3.1053.0
       '@tryghost/errors': 1.3.13
-      nodemailer: 8.0.7
+      nodemailer: 8.0.8
       nodemailer-mailgun-transport: 2.1.5(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       nodemailer-stub-transport: 1.1.0
     transitivePeerDependencies:
@@ -28986,6 +28992,10 @@ snapshots:
     dependencies:
       unidecode: 1.1.0
 
+  '@tryghost/string@0.3.5':
+    dependencies:
+      unidecode: 1.1.0
+
   '@tryghost/timezone-data@1.0.0': {}
 
   '@tryghost/tpl@0.1.40':
@@ -28999,6 +29009,16 @@ snapshots:
   '@tryghost/tpl@2.2.2': {}
 
   '@tryghost/url-utils@5.2.4':
+    dependencies:
+      cheerio: 1.2.0
+      lodash: 4.18.1
+      moment: 2.30.1
+      moment-timezone: 0.5.45
+      remark: 11.0.2
+      remark-footnotes: 1.0.0
+      unist-util-visit: 2.0.3
+
+  '@tryghost/url-utils@5.2.6':
     dependencies:
       cheerio: 1.2.0
       lodash: 4.18.1
@@ -41214,7 +41234,7 @@ snapshots:
 
   nodemailer@8.0.10: {}
 
-  nodemailer@8.0.7: {}
+  nodemailer@8.0.8: {}
 
   nodemon@3.1.14:
     dependencies:
