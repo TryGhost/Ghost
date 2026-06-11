@@ -2,7 +2,7 @@ import App from './app';
 import React from 'react';
 import ReactDOM from 'react-dom';
 import {ROOT_DIV_ID} from './utils/constants';
-import {parseCommentIdFromHash} from './utils/helpers';
+import {cleanPageUrl, parseCommentIdFromHash} from './utils/helpers';
 
 function getScriptTag(): HTMLElement {
     let scriptTag = document.currentScript as HTMLElement | null;
@@ -46,13 +46,7 @@ function handleTokenUrl() {
 }
 
 function getPageUrl(): string {
-    const url = new URL(window.location.href);
-    url.hash = '';
-    // Drop the auth round-trip markers Ghost appends after sign-in so they don't
-    // leak into comment permalinks built from this URL.
-    url.searchParams.delete('success');
-    url.searchParams.delete('action');
-    return url.toString();
+    return cleanPageUrl(window.location.href);
 }
 
 function init() {

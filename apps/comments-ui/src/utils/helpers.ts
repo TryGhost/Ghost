@@ -8,6 +8,20 @@ export function buildCommentPermalink(baseUrl: string, commentId: string): strin
     return `${cleanUrl}#${COMMENT_HASH_PREFIX}${commentId}`;
 }
 
+export function cleanPageUrl(href: string): string {
+    const url = new URL(href);
+    url.hash = '';
+    // Drop the auth round-trip markers Ghost appends after sign-in so they don't
+    // leak into comment permalinks built from this URL. Ghost only ever sets
+    // `action` alongside `success`, so gate on `success` to avoid stripping a
+    // publisher's own standalone `?action=…` param.
+    if (url.searchParams.has('success')) {
+        url.searchParams.delete('success');
+        url.searchParams.delete('action');
+    }
+    return url.toString();
+}
+
 export function buildCommentsRootPermalink(baseUrl: string): string {
     const cleanUrl = baseUrl.replace(/#.*$/, '');
     return `${cleanUrl}#ghost-comments`;

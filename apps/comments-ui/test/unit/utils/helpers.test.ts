@@ -36,6 +36,33 @@ describe('buildCommentPermalink', function () {
     });
 });
 
+describe('cleanPageUrl', function () {
+    it('removes the hash', function () {
+        expect(helpers.cleanPageUrl('https://example.com/post/#ghost-comments-abc123'))
+            .toEqual('https://example.com/post/');
+    });
+
+    it('strips the auth round-trip markers Ghost appends after sign-in', function () {
+        expect(helpers.cleanPageUrl('https://example.com/post/?success=true&action=signin'))
+            .toEqual('https://example.com/post/');
+    });
+
+    it('preserves other query parameters when stripping auth markers', function () {
+        expect(helpers.cleanPageUrl('https://example.com/post/?ref=twitter&success=true&action=signin'))
+            .toEqual('https://example.com/post/?ref=twitter');
+    });
+
+    it('preserves a standalone action param a publisher may use themselves', function () {
+        expect(helpers.cleanPageUrl('https://example.com/post/?action=subscribe'))
+            .toEqual('https://example.com/post/?action=subscribe');
+    });
+
+    it('leaves a plain URL untouched', function () {
+        expect(helpers.cleanPageUrl('https://example.com/post/?ref=twitter'))
+            .toEqual('https://example.com/post/?ref=twitter');
+    });
+});
+
 describe('buildCommentsRootPermalink', function () {
     it('builds permalink with comments root hash', function () {
         expect(helpers.buildCommentsRootPermalink('https://example.com/post'))
