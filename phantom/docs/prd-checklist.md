@@ -152,17 +152,27 @@ References (all in this directory):
 - [ ] Comment author controls
 
 ## 17) Admin content workflows
-- [ ] Posts app loads and refreshes (e2e: posts list shows imported post)
-- [ ] Custom views CRUD
-- [ ] Post preview/settings
+- [x] Posts app loads and refreshes (vendored upstream suites pass: list
+      reflects API-created posts, create/publish/update/delete from the
+      editor, publish date + custom excerpt round-trip to the public site —
+      `e2e/tests/admin/posts/`)
+- [x] Custom views CRUD (all three vendored upstream suites pass: create/
+      edit/delete/navigate with filters persisted in the `shared_views`
+      setting — `e2e/tests/admin/posts/custom-views*.test.ts`)
+- [x] Post preview/settings (vendored preview-modal suite passes: web tab
+      iframes /p/<uuid>, email tab served by /email_previews/, ESC handling —
+      `e2e/tests/admin/posts/post-preview.test.ts`)
 - [x] Tag management (vendored upstream suites pass: tags list with
-      public/internal tabs and post counts, create/edit/dedupe/delete via
-      the real tags UI — `e2e/tests/admin/tags/`)
+      public/internal tabs, pagination/infinite scroll and post counts,
+      create/edit/dedupe/delete via the real tags UI — `e2e/tests/admin/tags/`)
 - [ ] Member management
 - [ ] Comment moderation
 
 ## 18) Admin navigation, billing UI, release updates
-- [ ] Sidebar navigation behavior
+- [x] Sidebar navigation behavior (vendored upstream suite passes: nav
+      items incl. Network with active states, posts submenu, footer user
+      menu, night shift persisted via users.accessibility, notification
+      badge — `e2e/tests/admin/sidebar/navigation.test.ts`)
 - [ ] Force upgrade mode gating
 - [ ] Upgrade banner routing
 - [ ] What's New release updates

@@ -9,7 +9,7 @@ import type {StaffAuthService} from '../identity/service.js';
 import type {SubscriptionRepository} from '../subscriptions/repo.js';
 import type {MemberRepository} from '../members/repo.js';
 import {HttpError} from '../../platform/http/errors.js';
-import {buildPagination, compatSlugify, GHOST_COMPAT_VERSION, mapAdminPost, mapCompatNewsletter, mapCompatTag, mapCompatTier, singlePagination} from './mappers.js';
+import {buildPagination, compatSlugify, GHOST_COMPAT_VERSION, mapAdminPost, mapCompatNewsletter, mapCompatTag, mapCompatTier, resolveEntryHtml, singlePagination} from './mappers.js';
 import {slashTolerant} from './router-utils.js';
 
 type AdminApiDependencies = {
@@ -75,21 +75,63 @@ const imageSetting = (settings: SettingsList, key: string) => {
     return typeof value === 'string' && value !== '' ? value : null;
 };
 
-// Supports the admin's NQL status clauses: `status:draft` and
-// `status:[published,sent]`. Anything else means no status restriction.
-const parseStatusFilter = (filter: string | undefined): string[] | null => {
+// Parses the admin's NQL browse filter: `+`-joined `key:value` clauses where
+// value may be `[a,b]`. Covers the posts screen filter dropdowns (type, tag,
+// visibility, author, featured); unknown clauses are ignored.
+type BrowseFilter = {
+    statuses: string[] | null;
+    tagSlug?: string;
+    authorSlug?: string;
+    visibilities?: string[];
+    featured?: boolean;
+};
+
+const parseBrowseFilter = (filter: string | undefined): BrowseFilter => {
+    const parsed: BrowseFilter = {statuses: null};
     if (!filter) {
-        return null;
+        return parsed;
     }
-    const match = /status:(\[([^\]]+)\]|[a-z]+)/.exec(filter);
-    if (!match) {
-        return null;
+    for (const clause of filter.split('+')) {
+        const separator = clause.indexOf(':');
+        if (separator === -1) {
+            continue;
+        }
+        const key = clause.slice(0, separator).trim();
+        const raw = clause.slice(separator + 1).trim();
+        const values = (raw.startsWith('[') && raw.endsWith(']') ? raw.slice(1, -1) : raw)
+            .split(',').map((entry) => entry.trim()).filter(Boolean);
+        if (values.length === 0) {
+            continue;
+        }
+        switch (key) {
+        case 'status':
+            parsed.statuses = values;
+            break;
+        case 'tag':
+            parsed.tagSlug = values[0]!;
+            break;
+        case 'authors':
+        case 'author':
+            parsed.authorSlug = values[0]!;
+            break;
+        case 'visibility':
+            parsed.visibilities = values;
+            break;
+        case 'featured':
+            parsed.featured = values[0] === 'true';
+            break;
+        default:
+            break;
+        }
     }
-    const value = match[2] ?? match[1];
-    if (!value) {
-        return null;
-    }
-    return value.split(',').map((entry) => entry.trim()).filter(Boolean);
+    return parsed;
+};
+
+const parseBrowseOrder = (order: string | undefined) => {
+    return order === 'published_at asc' || order === 'published_at desc' ||
+        order === 'updated_at asc' || order === 'updated_at desc'
+        ? order
+        : undefined;
 };
 
 const notAuthorized = (context: Context) => {
@@ -200,7 +242,7 @@ export const createAdminApiRouter = ({
     });
 
     const buildUserPayload = (
-        staff: {id: string; name: string; email: string; status: string},
+        staff: {id: string; name: string; email: string; status: string; accessibility?: string | null},
         roles: string[],
         overrides: Record<string, unknown> = {}
     ) => ({
@@ -215,7 +257,7 @@ export const createAdminApiRouter = ({
         location: null,
         facebook: null,
         twitter: null,
-        accessibility: (overrides.accessibility as string | undefined) ?? null,
+        accessibility: (overrides.accessibility as string | null | undefined) ?? staff.accessibility ?? null,
         status: staff.status,
         meta_title: null,
         meta_description: null,
@@ -238,8 +280,11 @@ export const createAdminApiRouter = ({
         if (!staff) {
             return notAuthorized(context);
         }
+        // The session DTO is trimmed; the full record carries persisted UI
+        // state (accessibility).
+        const record = await staffRepository.getStaffById(staff.id) ?? staff;
         const roles = await staffAuthService.getStaffRoles(staff.id);
-        return context.json({users: [buildUserPayload(staff, roles)]});
+        return context.json({users: [buildUserPayload(record, roles)]});
     });
 
     on.get('/config/', async (context) => {
@@ -249,6 +294,8 @@ export const createAdminApiRouter = ({
                 environment: 'development',
                 database: 'sqlite3',
                 mail: 'SMTP',
+                // The editor builds draft preview URLs as {blogUrl}/p/{uuid}.
+                blogUrl: siteUrl,
                 useGravatar: false,
                 labs: {},
                 clientExtensions: {},
@@ -266,14 +313,9 @@ export const createAdminApiRouter = ({
         });
     });
 
-    on.get('/settings/', async (context) => {
-        const staff = await requireStaff(context);
-        if (!staff) {
-            return notAuthorized(context);
-        }
-        const {settings} = await settingsService.listSettings();
+    const buildAdminSettings = (settings: SettingsList) => {
         const value = (key: string, fallback: unknown = null) => readSetting(settings, key) ?? fallback;
-        const adminSettings = [
+        return [
             {key: 'title', value: value('site.title', 'Ghost')},
             {key: 'description', value: value('site.description', '')},
             {key: 'logo', value: value('site.logo')},
@@ -292,7 +334,8 @@ export const createAdminApiRouter = ({
             {key: 'meta_description', value: null},
             {key: 'active_theme', value: value('theme.active', 'source')},
             {key: 'unsplash', value: true},
-            {key: 'labs', value: '{}'},
+            {key: 'shared_views', value: JSON.stringify(value('site.shared_views', []))},
+            {key: 'labs', value: JSON.stringify(value('labs.flags', {}))},
             // Gates the shell's Network nav item; Ghost 6 defaults the
             // social web to enabled.
             {key: 'social_web_enabled', value: Boolean(value('social_web.enabled', true))},
@@ -310,8 +353,73 @@ export const createAdminApiRouter = ({
             {key: 'announcement_visibility', value: '[]'},
             {key: 'announcement_background', value: 'dark'}
         ];
-        return context.json({settings: adminSettings, meta: {}});
+    };
+
+    on.get('/settings/', authed(async (context) => {
+        const {settings} = await settingsService.listSettings();
+        return context.json({settings: buildAdminSettings(settings), meta: {}});
+    }));
+
+    // Wire settings key → native settings key, with the wire value decoded
+    // where the wire carries JSON-as-string. Keys phantom doesn't model yet
+    // are skipped: the settings app saves whole groups at once and a hard
+    // error would block the keys we do support.
+    const WIRE_SETTINGS_WRITES: Record<string, {key: string; decode?: (value: unknown) => unknown}> = {
+        title: {key: 'site.title'},
+        description: {key: 'site.description'},
+        logo: {key: 'site.logo'},
+        icon: {key: 'site.icon'},
+        cover_image: {key: 'site.cover_image'},
+        accent_color: {key: 'site.accent_color'},
+        locale: {key: 'site.locale'},
+        timezone: {key: 'site.timezone'},
+        facebook: {key: 'site.facebook'},
+        twitter: {key: 'site.twitter'},
+        codeinjection_head: {key: 'site.codeinjection_head'},
+        codeinjection_foot: {key: 'site.codeinjection_foot'},
+        navigation: {key: 'site.navigation', decode: (value) => (typeof value === 'string' ? JSON.parse(value) : value)},
+        shared_views: {key: 'site.shared_views', decode: (value) => (typeof value === 'string' ? JSON.parse(value) : value)},
+        secondary_navigation: {key: 'site.secondary_navigation', decode: (value) => (typeof value === 'string' ? JSON.parse(value) : value)},
+        active_theme: {key: 'theme.active'},
+        labs: {key: 'labs.flags', decode: (value) => (typeof value === 'string' ? JSON.parse(value) : value)},
+        social_web_enabled: {key: 'social_web.enabled'},
+        members_signup_access: {key: 'members.signup_access'},
+        default_content_visibility: {key: 'members.default_content_visibility'}
+    };
+
+    const settingsUpdateHandler = authed(async (context: Context) => {
+        const body = await context.req.json<{settings?: Array<{key?: string; value?: unknown}>}>().catch(() => ({} as Record<string, never>));
+        const updates: Array<{key: string; value: unknown}> = [];
+        for (const entry of body.settings ?? []) {
+            const mapping = entry.key ? WIRE_SETTINGS_WRITES[entry.key] : undefined;
+            if (!mapping) {
+                continue;
+            }
+            let decoded = entry.value;
+            if (mapping.decode) {
+                try {
+                    decoded = mapping.decode(entry.value);
+                } catch {
+                    return context.json({errors: [{message: `Invalid value for setting ${entry.key}`, type: 'ValidationError'}]}, 422);
+                }
+            }
+            updates.push({key: mapping.key, value: decoded});
+        }
+        try {
+            if (updates.length > 0) {
+                await settingsService.updateSettings({settings: updates} as Parameters<SettingsService['updateSettings']>[0]);
+            }
+        } catch (error) {
+            if (error instanceof HttpError) {
+                return context.json({errors: [{message: error.message, type: 'ValidationError'}]}, 422);
+            }
+            throw error;
+        }
+        const {settings} = await settingsService.listSettings();
+        return context.json({settings: buildAdminSettings(settings), meta: {}});
     });
+    router.put('/settings/', settingsUpdateHandler);
+    router.put('/settings', settingsUpdateHandler);
 
     on.get('/notifications/', authed(async (context) => {
         return context.json({notifications: [], meta: {}});
@@ -341,8 +449,14 @@ export const createAdminApiRouter = ({
         }
         const body = await context.req.json<{users?: Array<Record<string, unknown>>}>().catch(() => ({} as Record<string, never>));
         const submitted = body.users?.[0] ?? {};
+        // UI state (custom views, night shift) lives in the accessibility
+        // JSON blob and must survive reloads.
+        if ('accessibility' in submitted && (typeof submitted.accessibility === 'string' || submitted.accessibility === null)) {
+            await staffRepository.updateStaffAccessibility(staff.id, submitted.accessibility, Date.now());
+        }
+        const updated = await staffRepository.getStaffById(staff.id) ?? staff;
         const roles = await staffAuthService.getStaffRoles(staff.id);
-        return context.json({users: [buildUserPayload(staff, roles, submitted)]});
+        return context.json({users: [buildUserPayload(updated, roles, submitted)]});
     });
     router.put('/users/:id/', usersUpdateHandler);
     router.put('/users/:id', usersUpdateHandler);
@@ -448,12 +562,21 @@ export const createAdminApiRouter = ({
         const rawLimit = context.req.query('limit');
         const limit = rawLimit === 'all' ? 100 : Math.min(Number(rawLimit ?? '15') || 15, 100);
         // Admin browse includes drafts and scheduled posts, unlike the
-        // public surfaces; the status tabs arrive as an NQL filter.
-        const statuses = parseStatusFilter(context.req.query('filter'));
+        // public surfaces; the status tabs and filter dropdowns arrive as an
+        // NQL filter plus an order param.
+        const browse = parseBrowseFilter(context.req.query('filter'));
         const {entries, pagination} = await contentReader.listPublished({
             page,
             limit,
-            filter: statuses ? {type: 'post', statuses} : {type: 'post', status: 'all'}
+            filter: {
+                type: 'post',
+                ...(browse.statuses ? {statuses: browse.statuses} : {status: 'all'}),
+                ...(browse.tagSlug ? {tagSlug: browse.tagSlug} : {}),
+                ...(browse.authorSlug ? {authorSlug: browse.authorSlug} : {}),
+                ...(browse.visibilities ? {visibilities: browse.visibilities} : {}),
+                ...(browse.featured !== undefined ? {featured: browse.featured} : {})
+            },
+            ...(parseBrowseOrder(context.req.query('order')) ? {order: parseBrowseOrder(context.req.query('order'))!} : {})
         });
         const posts = await Promise.all(entries.map((entry) => mapAdminPost(entry, siteUrl)));
         return context.json({posts, meta: buildPagination(pagination)});
@@ -463,11 +586,15 @@ export const createAdminApiRouter = ({
         const page = Number(context.req.query('page') ?? '1') || 1;
         const rawLimit = context.req.query('limit');
         const limit = rawLimit === 'all' ? 100 : Math.min(Number(rawLimit ?? '15') || 15, 100);
-        const statuses = parseStatusFilter(context.req.query('filter'));
+        const browse = parseBrowseFilter(context.req.query('filter'));
         const {entries, pagination} = await contentReader.listPublished({
             page,
             limit,
-            filter: statuses ? {type: 'page', statuses} : {type: 'page', status: 'all'}
+            filter: {
+                type: 'page',
+                ...(browse.statuses ? {statuses: browse.statuses} : {status: 'all'})
+            },
+            ...(parseBrowseOrder(context.req.query('order')) ? {order: parseBrowseOrder(context.req.query('order'))!} : {})
         });
         const pages = await Promise.all(entries.map((entry) => mapAdminPost(entry, siteUrl)));
         return context.json({pages, meta: buildPagination(pagination)});
@@ -545,6 +672,8 @@ export const createAdminApiRouter = ({
         ...(asWireString(wire.slug) ? {slug: asWireString(wire.slug)} : {}),
         status: wireStatus(wire.status) ?? 'draft',
         ...(parseWireDate(wire.published_at) !== undefined ? {publishedAt: parseWireDate(wire.published_at)} : {}),
+        ...(typeof wire.featured === 'boolean' ? {featured: wire.featured} : {}),
+        ...(wire.visibility === 'public' || wire.visibility === 'members' || wire.visibility === 'paid' ? {visibility: wire.visibility as 'public' | 'members' | 'paid'} : {}),
         lexical: parseWireLexical(wire.lexical) ?? {root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}},
         ...(asWireString(wire.custom_excerpt) ? {customExcerpt: asWireString(wire.custom_excerpt)} : {}),
         ...(asWireString(wire.feature_image) ? {featureImage: asWireString(wire.feature_image)} : {})
@@ -561,6 +690,8 @@ export const createAdminApiRouter = ({
             ...(asWireString(wire.slug) ? {slug: asWireString(wire.slug)} : {}),
             ...(wireStatus(wire.status) ? {status: wireStatus(wire.status)} : {}),
             ...(publishedAt !== undefined ? {publishedAt} : {}),
+            ...(typeof wire.featured === 'boolean' ? {featured: wire.featured} : {}),
+            ...(wire.visibility === 'public' || wire.visibility === 'members' || wire.visibility === 'paid' ? {visibility: wire.visibility as 'public' | 'members' | 'paid'} : {}),
             ...(lexical ? {lexical} : {}),
             ...(customExcerpt !== undefined ? {customExcerpt} : {}),
             ...(featureImage !== undefined ? {featureImage} : {})
@@ -649,10 +780,39 @@ export const createAdminApiRouter = ({
         });
         router.put(`/${key}/:id/`, updateHandler);
         router.put(`/${key}/:id`, updateHandler);
+
+        const deleteHandler = authed(async (context, staff) => {
+            const id = context.req.param('id');
+            const existing = await contentReader.getEntryById(id);
+            if (!existing || existing.post.type !== type) {
+                return notFoundJson(context, key === 'posts' ? 'Post' : 'Page');
+            }
+            await contentService.deletePost(id, staff.id);
+            return context.body(null, 204);
+        });
+        router.delete(`/${key}/:id/`, deleteHandler);
+        router.delete(`/${key}/:id`, deleteHandler);
     };
 
     registerEntryRoutes('posts', 'post');
     registerEntryRoutes('pages', 'page');
+
+    // The editor's preview modal runs an email size check on open and the
+    // Email tab renders from this; a 404 crashes the whole modal.
+    on.get('/email_previews/posts/:id/', authed(async (context) => {
+        const entry = await contentReader.getEntryById(context.req.param('id'));
+        if (!entry) {
+            return notFoundJson(context, 'Post');
+        }
+        const html = await resolveEntryHtml(entry);
+        return context.json({
+            email_previews: [{
+                html: `<!DOCTYPE html><html><body data-testid="email-preview-body"><h1>${entry.post.title}</h1>${html ?? ''}</body></html>`,
+                subject: entry.post.title,
+                plaintext: entry.post.customExcerpt ?? entry.post.title
+            }]
+        });
+    }));
 
     on.get('/slugs/:type/:slug/', authed(async (context) => {
         const base = compatSlugify(decodeURIComponent(context.req.param('slug')));

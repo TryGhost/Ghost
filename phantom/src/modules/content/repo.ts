@@ -1,4 +1,4 @@
-import {and, count, desc, eq, inArray, sql} from 'drizzle-orm';
+import {and, asc, count, desc, eq, inArray, sql} from 'drizzle-orm';
 import type {DbClient} from '../../db/client.js';
 import {
     authorProfileTable,
@@ -34,16 +34,23 @@ export type PublishedPostFilter = {
     // status list serves the admin's draft/scheduled/published tabs.
     status?: 'published' | 'all';
     statuses?: string[];
+    visibilities?: string[];
+    featured?: boolean;
 };
+
+// Admin browse sort orders ("Newest first", "Oldest first", drafts by
+// recency). Public listings always use the published_at desc default.
+export type PostOrder = 'published_at desc' | 'published_at asc' | 'updated_at desc' | 'updated_at asc';
 
 export type ContentRepository = {
     createPost: (post: NewPostRecord) => Promise<PostRecord>;
     updatePost: (post: PostRecord) => Promise<PostRecord>;
     getPostById: (id: string) => Promise<PostRecord | null>;
+    getPostByUuid: (uuid: string) => Promise<PostRecord | null>;
     getPostBySlug: (slug: string) => Promise<PostRecord | null>;
-    listPublishedPosts: (options: {limit: number; offset: number; filter?: PublishedPostFilter}) => Promise<PostRecord[]>;
+    listPublishedPosts: (options: {limit: number; offset: number; filter?: PublishedPostFilter; order?: PostOrder}) => Promise<PostRecord[]>;
     countPublishedPosts: (filter?: PublishedPostFilter) => Promise<number>;
-    listAndCountPublishedPosts: (options: {limit: number; offset: number; filter?: PublishedPostFilter}) => Promise<{posts: PostRecord[]; total: number}>;
+    listAndCountPublishedPosts: (options: {limit: number; offset: number; filter?: PublishedPostFilter; order?: PostOrder}) => Promise<{posts: PostRecord[]; total: number}>;
     getTagsForPosts: (postIds: string[]) => Promise<Map<string, TagRecord[]>>;
     getAuthorsForPosts: (postIds: string[]) => Promise<Map<string, AuthorProfileRecord[]>>;
     deletePost: (id: string) => Promise<void>;
@@ -59,6 +66,8 @@ export type ContentRepository = {
     updateTag: (tag: TagRecord) => Promise<TagRecord>;
     deleteTag: (id: string) => Promise<void>;
     linkTagToPost: (postId: string, tagId: string) => Promise<void>;
+    linkAuthorToPost: (postId: string, authorId: string) => Promise<void>;
+    getAuthorProfileById: (id: string) => Promise<AuthorProfileRecord | null>;
     createCollection: (collection: NewCollectionRecord) => Promise<CollectionRecord>;
     listCollections: () => Promise<CollectionRecord[]>;
     getCollectionBySlug: (slug: string) => Promise<CollectionRecord | null>;
@@ -80,6 +89,16 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
     const getPostById = async (id: string) => {
         const rows = await db.select().from(postTable).where(eq(postTable.id, id)).limit(1);
         return rows[0] ?? null;
+    };
+
+    // Preview links carry the uuid; ids double as uuids for editor-created
+    // posts that never got an explicit one.
+    const getPostByUuid = async (uuid: string) => {
+        const rows = await db.select().from(postTable).where(eq(postTable.uuid, uuid)).limit(1);
+        if (rows[0]) {
+            return rows[0];
+        }
+        return getPostById(uuid);
     };
 
     const getPostBySlug = async (slug: string) => {
@@ -134,10 +153,21 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
             }
             conditions.push(inArray(postTable.id, postIds));
         }
+        if (filter?.visibilities && filter.visibilities.length > 0) {
+            conditions.push(inArray(postTable.visibility, filter.visibilities));
+        }
+        if (filter?.featured !== undefined) {
+            conditions.push(eq(postTable.featured, filter.featured ? 1 : 0));
+        }
         return conditions.length > 0 ? and(...conditions) : sql`1 = 1`;
     };
 
-    const listPublishedPosts = async ({limit, offset, filter}: {limit: number; offset: number; filter?: PublishedPostFilter}) => {
+    const orderColumn = (order?: PostOrder) => {
+        const column = order?.startsWith('updated_at') ? postTable.updatedAt : postTable.publishedAt;
+        return order?.endsWith('asc') ? asc(column) : desc(column);
+    };
+
+    const listPublishedPosts = async ({limit, offset, filter, order}: {limit: number; offset: number; filter?: PublishedPostFilter; order?: PostOrder}) => {
         const where = await buildPublishedWhere(filter);
         if (!where) {
             return [];
@@ -146,7 +176,7 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
             .select()
             .from(postTable)
             .where(where)
-            .orderBy(desc(postTable.publishedAt))
+            .orderBy(orderColumn(order))
             .limit(limit)
             .offset(offset);
     };
@@ -164,7 +194,7 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         return rows[0]?.value ?? 0;
     };
 
-    const listAndCountPublishedPosts = async ({limit, offset, filter}: {limit: number; offset: number; filter?: PublishedPostFilter}) => {
+    const listAndCountPublishedPosts = async ({limit, offset, filter, order}: {limit: number; offset: number; filter?: PublishedPostFilter; order?: PostOrder}) => {
         // Resolves the filter (tag/author slug + link lookups) once for both
         // the page query and the total count.
         const where = await buildPublishedWhere(filter);
@@ -176,7 +206,7 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
                 .select()
                 .from(postTable)
                 .where(where)
-                .orderBy(desc(postTable.publishedAt))
+                .orderBy(orderColumn(order))
                 .limit(limit)
                 .offset(offset),
             db
@@ -302,6 +332,15 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         await db.insert(postTagTable).values({postId, tagId});
     };
 
+    const linkAuthorToPost = async (postId: string, authorId: string) => {
+        await db.insert(postAuthorTable).values({postId, authorId});
+    };
+
+    const getAuthorProfileById = async (id: string) => {
+        const rows = await db.select().from(authorProfileTable).where(eq(authorProfileTable.id, id)).limit(1);
+        return rows[0] ?? null;
+    };
+
     const createCollection = async (collection: NewCollectionRecord) => {
         await db.insert(collectionTable).values(collection);
         const rows = await db.select().from(collectionTable).where(eq(collectionTable.id, collection.id)).limit(1);
@@ -342,6 +381,7 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         createPost,
         updatePost,
         getPostById,
+        getPostByUuid,
         getPostBySlug,
         listPublishedPosts,
         countPublishedPosts,
@@ -361,6 +401,8 @@ export const createContentRepository = (db: DbClient): ContentRepository => {
         updateTag,
         deleteTag,
         linkTagToPost,
+        linkAuthorToPost,
+        getAuthorProfileById,
         createCollection,
         listCollections,
         getCollectionBySlug,

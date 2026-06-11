@@ -105,12 +105,90 @@ const settingDefinitions: SettingDefinition[] = [
         group: 'theme',
         type: 'string',
         defaultValue: 'casper'
+    },
+    {
+        key: 'site.timezone',
+        group: 'site',
+        type: 'string',
+        defaultValue: 'Etc/UTC'
+    },
+    {
+        key: 'site.facebook',
+        group: 'site',
+        type: 'string',
+        defaultValue: null,
+        allowNull: true
+    },
+    {
+        key: 'site.twitter',
+        group: 'site',
+        type: 'string',
+        defaultValue: null,
+        allowNull: true
+    },
+    {
+        key: 'site.navigation',
+        group: 'site',
+        type: 'json',
+        defaultValue: []
+    },
+    {
+        key: 'site.secondary_navigation',
+        group: 'site',
+        type: 'json',
+        defaultValue: []
+    },
+    {
+        key: 'site.codeinjection_head',
+        group: 'site',
+        type: 'string',
+        defaultValue: null,
+        allowNull: true
+    },
+    {
+        key: 'site.codeinjection_foot',
+        group: 'site',
+        type: 'string',
+        defaultValue: null,
+        allowNull: true
+    },
+    {
+        // The admin's saved post-list views, shared across staff.
+        key: 'site.shared_views',
+        group: 'site',
+        type: 'json',
+        defaultValue: []
+    },
+    {
+        key: 'members.signup_access',
+        group: 'members',
+        type: 'string',
+        defaultValue: 'all'
+    },
+    {
+        key: 'members.default_content_visibility',
+        group: 'members',
+        type: 'string',
+        defaultValue: 'public'
+    },
+    {
+        key: 'social_web.enabled',
+        group: 'social_web',
+        type: 'boolean',
+        defaultValue: true
+    },
+    {
+        key: 'labs.flags',
+        group: 'labs',
+        type: 'json',
+        defaultValue: {}
     }
 ];
 
 const settingsByKey = new Map(settingDefinitions.map((definition) => [definition.key, definition]));
 const coreSettingAllowlist = new Set(settingDefinitions.filter((definition) => definition.group === 'core').map((definition) => definition.key));
-const migratedSettingGroups = new Set(['site', 'features', 'theme']);
+// Groups born in the v10 schema baseline — no metafield migration to wait on.
+const migratedSettingGroups = new Set(['site', 'features', 'theme', 'members', 'social_web', 'labs']);
 
 const parseSettingValue = (value: string) => JSON.parse(value) as SettingResponse['value'];
 

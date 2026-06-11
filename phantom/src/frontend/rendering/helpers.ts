@@ -54,7 +54,7 @@ export const registerHelpers = (instance: typeof Handlebars) => {
     instance.registerHelper('ghost_head', (options: Handlebars.HelperOptions) => {
         const root = getRootContext(options);
         const escape = Handlebars.escapeExpression;
-        const description = escape(toString(root.site?.description));
+        const description = escape(toString((root as {meta_description?: string}).meta_description ?? root.site?.description));
         const title = escape(toString((root as {meta_title?: string}).meta_title ?? root.site?.title ?? ''));
         const canonical = escape(toString((root as {canonical_url?: string}).canonical_url ?? root.site?.url ?? ''));
         const cover = escape(toString(root.site?.cover_image));
@@ -313,6 +313,24 @@ export const registerHelpers = (instance: typeof Handlebars) => {
         });
     };
 
+    // Ghost resolves {{expr}} placeholders inside {{#get}} filter strings
+    // (e.g. filter="id:-{{post.id}}") against the rendering context.
+    const resolveFilterPlaceholders = (filter: string, current: unknown, root: Record<string, unknown>) => {
+        return filter.replace(/\{\{([^}]+)\}\}/g, (_match, rawPath: string) => {
+            const path = rawPath.trim().split('.');
+            for (const source of [current, root]) {
+                let value: unknown = source;
+                for (const segment of path) {
+                    value = (value as Record<string, unknown> | null | undefined)?.[segment];
+                }
+                if (value !== undefined && value !== null) {
+                    return String(value);
+                }
+            }
+            return '';
+        });
+    };
+
     instance.registerHelper('get', function getHelper(this: unknown, field: string, options: Handlebars.HelperOptions) {
         const root = getRootContext(options);
         if (!field || typeof field !== 'string') {
@@ -323,7 +341,7 @@ export const registerHelpers = (instance: typeof Handlebars) => {
         if (Array.isArray(value)) {
             const filter = options.hash?.filter;
             if (typeof filter === 'string' && filter.trim()) {
-                value = applyGetFilter(value, filter);
+                value = applyGetFilter(value, resolveFilterPlaceholders(filter, this, root as Record<string, unknown>));
             }
             const limit = Number(options.hash?.limit);
             if (Number.isFinite(limit) && limit > 0) {

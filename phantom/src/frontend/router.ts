@@ -427,8 +427,12 @@ export const createFrontendRouter = ({
             return context.text('Admin build not found', 404);
         }
 
+        // Draft/scheduled previews: /p/<uuid> renders the entry regardless of
+        // status — the editor's preview modal iframes this same-origin.
+        const previewUuid = /^\/p\/([0-9a-zA-Z-]+)\/?$/.exec(context.req.path)?.[1] ?? null;
+
         const route = matcher.matchRoute(context.req.path);
-        if (!route) {
+        if (!route && !previewUuid) {
             return context.text('Not Found', 404);
         }
 
@@ -437,6 +441,42 @@ export const createFrontendRouter = ({
         const site = buildSiteContext(settingsResponse.settings, config);
         const custom = buildCustomContext(settingsResponse.settings, bundle.theme.config as Record<string, unknown> | undefined);
         const base = {site, custom, member: null};
+
+        const renderEntryResponse = async (entry: NonNullable<Awaited<ReturnType<typeof contentReader.getEntryBySlug>>>) => {
+            const post = await mapEntry(entry, null);
+            const isPage = entry.post.type === 'page';
+            const templateCandidates = [
+                entry.post.customTemplate ?? '',
+                ...(isPage ? [`page-${entry.post.slug}`, 'page', 'post'] : ['post'])
+            ];
+            // Themes use {{#get "posts"}} for read-more sections; rendering is
+            // synchronous, so recent published posts are fetched up front.
+            const recent = await contentReader.listPublished({page: 1, limit: 20, filter: {type: 'post'}});
+            const recentPosts = await Promise.all(recent.entries.map((other) => mapEntry(other, null)));
+            const data = {
+                ...base,
+                context: [isPage ? 'page' : 'post'],
+                post,
+                page: isPage ? post : undefined,
+                posts: recentPosts,
+                meta_title: entry.post.title,
+                meta_description: entry.post.customExcerpt || site.description,
+                canonical_url: `${site.url}/${entry.post.slug}/`
+            };
+            const html = renderer.render({template: pickTemplate(bundle, templateCandidates), data}, bundle);
+            return context.html(html);
+        };
+
+        if (previewUuid) {
+            const entry = await contentReader.getEntryByUuid(previewUuid);
+            if (!entry) {
+                return context.text('Not Found', 404);
+            }
+            return renderEntryResponse(entry);
+        }
+        if (!route) {
+            return context.text('Not Found', 404);
+        }
 
         if (route.type === 'collection' || route.type === 'tag' || route.type === 'author') {
             const filter = route.type === 'tag'
@@ -500,23 +540,7 @@ export const createFrontendRouter = ({
         if (!entry) {
             return context.text('Not Found', 404);
         }
-        const post = await mapEntry(entry, null);
-        const isPage = entry.post.type === 'page';
-        const templateCandidates = [
-            entry.post.customTemplate ?? '',
-            ...(isPage ? [`page-${entry.post.slug}`, 'page', 'post'] : ['post'])
-        ];
-        const data = {
-            ...base,
-            context: [isPage ? 'page' : 'post'],
-            post,
-            page: isPage ? post : undefined,
-            meta_title: entry.post.title,
-            meta_description: site.description,
-            canonical_url: `${site.url}/${entry.post.slug}/`
-        };
-        const html = renderer.render({template: pickTemplate(bundle, templateCandidates), data}, bundle);
-        return context.html(html);
+        return renderEntryResponse(entry);
     });
 
     return router;

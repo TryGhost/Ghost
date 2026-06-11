@@ -37,6 +37,7 @@ export type StaffRepository = {
     getStaffById: (id: string) => Promise<StaffRecord | null>;
     createStaff: (staff: NewStaffRecord) => Promise<StaffRecord>;
     updateStaffPassword: (id: string, passwordHash: string, updatedAt: number) => Promise<void>;
+    updateStaffAccessibility: (id: string, accessibility: string | null, updatedAt: number) => Promise<void>;
     createSession: (session: NewStaffSessionRecord) => Promise<StaffSessionRecord>;
     getSession: (id: string) => Promise<StaffSessionRecord | null>;
     revokeSession: (id: string, revokedAt: number) => Promise<void>;
@@ -106,6 +107,13 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         await db
             .update(staffTable)
             .set({passwordHash, updatedAt})
+            .where(eq(staffTable.id, id));
+    };
+
+    const updateStaffAccessibility = async (id: string, accessibility: string | null, updatedAt: number) => {
+        await db
+            .update(staffTable)
+            .set({accessibility, updatedAt})
             .where(eq(staffTable.id, id));
     };
 
@@ -337,6 +345,7 @@ export const createStaffRepository = (db: DbClient): StaffRepository => {
         getStaffById,
         createStaff,
         updateStaffPassword,
+        updateStaffAccessibility,
         createSession,
         getSession,
         revokeSession,

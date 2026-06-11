@@ -236,6 +236,130 @@ describe('ghost api compat facades', () => {
             expect(socialWeb?.value).toBe(true);
         });
 
+        it('filters the posts browse by tag, visibility and featured with ordering', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+            const post = (overrides: Record<string, unknown>) => ({
+                title: 'x',
+                lexical: '{"root":{"children":[],"direction":null,"format":"","indent":0,"type":"root","version":1}}',
+                ...overrides
+            });
+
+            const make = async (body: Record<string, unknown>) => {
+                const response = await app.request('/ghost/api/admin/posts/', {
+                    method: 'POST',
+                    headers: {cookie, 'content-type': 'application/json'},
+                    body: JSON.stringify({posts: [body]})
+                });
+                expect(response.status).toBe(201);
+                return (await response.json() as {posts: Array<{id: string}>}).posts[0]!;
+            };
+
+            const tagged = await make(post({title: 'Tagged draft', tags: [{slug: 'browse-filter-tag'}]}));
+            await make(post({title: 'Plain draft'}));
+            const featured = await make(post({title: 'Featured one', featured: true, status: 'published', published_at: '2020-01-01T00:00:00.000Z'}));
+            await make(post({title: 'Later one', status: 'published', published_at: '2021-01-01T00:00:00.000Z'}));
+
+            const byTag = await app.request('/ghost/api/admin/posts/?filter=tag%3Abrowse-filter-tag%2Bstatus%3Adraft', {headers: {cookie}});
+            const byTagBody = await byTag.json() as {posts: Array<{id: string; title: string}>};
+            expect(byTagBody.posts.some((entry) => entry.id === tagged.id)).toBe(true);
+            expect(byTagBody.posts.some((entry) => entry.title === 'Plain draft')).toBe(false);
+
+            const byFeatured = await app.request('/ghost/api/admin/posts/?filter=featured%3Atrue', {headers: {cookie}});
+            const byFeaturedBody = await byFeatured.json() as {posts: Array<{id: string}>};
+            expect(byFeaturedBody.posts.map((entry) => entry.id)).toContain(featured.id);
+            expect(byFeaturedBody.posts).toHaveLength(1);
+
+            const byVisibility = await app.request('/ghost/api/admin/posts/?filter=visibility%3Apublic%2Bstatus%3Apublished', {headers: {cookie}});
+            const byVisibilityBody = await byVisibility.json() as {posts: Array<{title: string}>};
+            expect(byVisibilityBody.posts.length).toBeGreaterThan(0);
+
+            const ordered = await app.request('/ghost/api/admin/posts/?filter=status%3Apublished&order=published_at%20asc', {headers: {cookie}});
+            const orderedBody = await ordered.json() as {posts: Array<{published_at: string}>};
+            const stamps = orderedBody.posts.map((entry) => Date.parse(entry.published_at));
+            expect([...stamps].sort((a, b) => a - b)).toEqual(stamps);
+        });
+
+        it('deletes a post from the editor', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const create = await app.request('/ghost/api/admin/posts/', {
+                method: 'POST',
+                headers: {cookie, 'content-type': 'application/json'},
+                body: JSON.stringify({posts: [{title: 'Delete me', lexical: '{"root":{"children":[],"direction":null,"format":"","indent":0,"type":"root","version":1}}'}]})
+            });
+            expect(create.status).toBe(201);
+            const created = await create.json() as {posts: Array<{id: string; authors: Array<{slug: string}>}>};
+            const postId = created.posts[0]!.id;
+            // The creating staff member becomes the author — the editor
+            // refuses to work with author-less posts.
+            expect(created.posts[0]!.authors.length).toBeGreaterThan(0);
+
+            const remove = await app.request(`/ghost/api/admin/posts/${postId}/`, {method: 'DELETE', headers: {cookie}});
+            expect(remove.status).toBe(204);
+
+            const read = await app.request(`/ghost/api/admin/posts/${postId}/`, {headers: {cookie}});
+            expect(read.status).toBe(404);
+        });
+
+        it('persists user accessibility state across requests', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const me = await app.request('/ghost/api/admin/users/me/', {headers: {cookie}});
+            const meBody = await me.json() as {users: Array<{id: string}>};
+            const userId = meBody.users[0]!.id;
+
+            const accessibility = JSON.stringify({nightShift: true, views: [{name: 'Featured Drafts', route: 'posts', color: 'blue', filter: {type: 'draft', tag: 'featured'}}]});
+            const update = await app.request(`/ghost/api/admin/users/${userId}/`, {
+                method: 'PUT',
+                headers: {cookie, 'content-type': 'application/json'},
+                body: JSON.stringify({users: [{accessibility}]})
+            });
+            expect(update.status).toBe(200);
+
+            const after = await app.request('/ghost/api/admin/users/me/', {headers: {cookie}});
+            const afterBody = await after.json() as {users: Array<{accessibility: string | null}>};
+            expect(afterBody.users[0]!.accessibility).toBe(accessibility);
+        });
+
+        it('updates settings through the wire keymap', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            const update = await app.request('/ghost/api/admin/settings/', {
+                method: 'PUT',
+                headers: {cookie, 'content-type': 'application/json'},
+                body: JSON.stringify({settings: [
+                    {key: 'members_signup_access', value: 'none'},
+                    {key: 'shared_views', value: JSON.stringify([{route: 'posts', name: 'My View', color: 'blue', filter: 'type=draft'}])},
+                    {key: 'labs', value: JSON.stringify({testFlag: true})},
+                    // Keys phantom doesn't support yet are ignored, not errors:
+                    // the settings app saves whole groups at once.
+                    {key: 'some_unsupported_key', value: 'x'}
+                ]})
+            });
+            expect(update.status).toBe(200);
+            const updated = await update.json() as {settings: Array<{key: string; value: unknown}>};
+            const get = (key: string) => updated.settings.find((setting) => setting.key === key)?.value;
+            expect(get('members_signup_access')).toBe('none');
+            expect(JSON.parse(get('labs') as string)).toMatchObject({testFlag: true});
+            expect(JSON.parse(get('shared_views') as string)).toEqual([{route: 'posts', name: 'My View', color: 'blue', filter: 'type=draft'}]);
+
+            // The change is durable, not just echoed.
+            const settingsResponse = await app.request('/ghost/api/admin/settings/', {headers: {cookie}});
+            const settings = await settingsResponse.json() as {settings: Array<{key: string; value: unknown}>};
+            expect(settings.settings.find((setting) => setting.key === 'members_signup_access')?.value).toBe('none');
+
+            const reset = await app.request('/ghost/api/admin/settings/', {
+                method: 'PUT',
+                headers: {cookie, 'content-type': 'application/json'},
+                body: JSON.stringify({settings: [{key: 'members_signup_access', value: 'all'}]})
+            });
+            expect(reset.status).toBe(200);
+        });
+
         it('browses posts with admin shapes, including drafts', async () => {
             const {postTable} = await import('../content/db.js');
             await db.insert(postTable).values({
@@ -379,27 +503,31 @@ describe('ghost api compat facades', () => {
                 expect(create.status).toBe(201);
             }
 
+            // Earlier tests in this suite leave tags behind; anchor on the
+            // unpaged total instead of a fixed count.
+            const all = await app.request('/ghost/api/admin/tags/?limit=all', {headers: {cookie}});
+            const allBody = await all.json() as {tags: Array<{slug: string}>};
+            const total = allBody.tags.length;
+            expect(total).toBeGreaterThanOrEqual(26);
+            const lastPage = Math.ceil(total / 20);
+            const remainder = total - (lastPage - 1) * 20;
+
             const firstPage = await app.request('/ghost/api/admin/tags/?limit=20&page=1', {headers: {cookie}});
             const firstBody = await firstPage.json() as {tags: Array<{slug: string}>; meta: {pagination: {page: number; limit: number; pages: number; total: number; next: number | null; prev: number | null}}};
             expect(firstBody.tags).toHaveLength(20);
             expect(firstBody.meta.pagination.page).toBe(1);
             expect(firstBody.meta.pagination.limit).toBe(20);
-            expect(firstBody.meta.pagination.total).toBe(26);
-            expect(firstBody.meta.pagination.pages).toBe(2);
+            expect(firstBody.meta.pagination.total).toBe(total);
+            expect(firstBody.meta.pagination.pages).toBe(lastPage);
             expect(firstBody.meta.pagination.next).toBe(2);
             expect(firstBody.meta.pagination.prev).toBeNull();
 
-            const secondPage = await app.request('/ghost/api/admin/tags/?limit=20&page=2', {headers: {cookie}});
+            const secondPage = await app.request(`/ghost/api/admin/tags/?limit=20&page=${lastPage}`, {headers: {cookie}});
             const secondBody = await secondPage.json() as {tags: Array<{slug: string}>; meta: {pagination: {page: number; next: number | null; prev: number | null}}};
-            expect(secondBody.tags).toHaveLength(6);
-            expect(secondBody.meta.pagination.page).toBe(2);
+            expect(secondBody.tags).toHaveLength(remainder);
+            expect(secondBody.meta.pagination.page).toBe(lastPage);
             expect(secondBody.meta.pagination.next).toBeNull();
-            expect(secondBody.meta.pagination.prev).toBe(1);
-
-            // The default browse without limit keeps returning everything.
-            const all = await app.request('/ghost/api/admin/tags/?limit=all', {headers: {cookie}});
-            const allBody = await all.json() as {tags: Array<{slug: string}>};
-            expect(allBody.tags.length).toBe(26);
+            expect(secondBody.meta.pagination.prev).toBe(lastPage - 1);
         });
 
         it('reads a single post by id for the editor', async () => {

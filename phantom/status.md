@@ -29,10 +29,18 @@
    analytics (config.stats absent by design).
 
 ## Tests
-- `yarn test` — 100 unit tests green; `yarn test:e2e` — 14 vendored Ghost
-  e2e tests green (signin deep-links, posts list, full tags suites,
-  public homepage) against a seeded phantom server, including `src/modules/operations/importer.test.ts`
-  (real `test/fixtures/ghost-v5-export.json` fixture) and `src/db/ddl.test.ts`.
+- `yarn test` — 107 unit tests green; `yarn test:e2e` — 54 vendored Ghost
+  e2e tests green (signin deep-links, deep-link redirects, sidebar
+  navigation, posts list/update/delete + publish flow, lexical editor,
+  post preview modal, all custom-views suites, full tags suites incl.
+  pagination, public homepage) against a seeded phantom server, including
+  `src/modules/operations/importer.test.ts` (real
+  `test/fixtures/ghost-v5-export.json` fixture) and `src/db/ddl.test.ts`.
+- Backend grown by the suites: settings write surface (PUT /settings/ with
+  wire keymap incl. shared_views/labs), posts browse filters (tag/author/
+  visibility/featured + order), post DELETE, author auto-linking on create,
+  /p/<uuid> draft previews, /email_previews/, users.accessibility
+  persistence, paginated tag browse, /ghost deep-link redirects.
 
 ## Known gaps / next
 - v1/v2 export formats untested; amp/comment_id field mapping absent.

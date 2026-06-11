@@ -74,6 +74,7 @@ export const createContentService = (repository: ContentRepository): ContentServ
         updatedAt: number;
         lexical: string;
         visibility: string;
+        featured: number;
         customExcerpt: string | null;
         featureImage: string | null;
         featureImageAlt: string | null;
@@ -96,6 +97,7 @@ export const createContentService = (repository: ContentRepository): ContentServ
                 status,
                 lexical: JSON.parse(post.lexical) as Record<string, unknown>,
                 visibility,
+                featured: Boolean(post.featured),
                 customExcerpt: post.customExcerpt ?? null,
                 featureImage: post.featureImage ?? null,
                 featureImageAlt: post.featureImageAlt ?? null,
@@ -110,7 +112,8 @@ export const createContentService = (repository: ContentRepository): ContentServ
     const createPost = async (input: PostCreateRequest, editorId: string) => {
         const now = Date.now();
         const status = input.status;
-        const publishedAt = status === 'published' ? now : input.publishedAt ?? null;
+        // Imports and API clients may publish with an explicit backdate.
+        const publishedAt = status === 'published' ? input.publishedAt ?? now : input.publishedAt ?? null;
         if (status === 'scheduled' && !input.publishedAt) {
             throw new HttpError(422, 'scheduled_requires_date', 'Scheduled posts require publishedAt');
         }
@@ -126,6 +129,7 @@ export const createContentService = (repository: ContentRepository): ContentServ
             status,
             lexical: JSON.stringify(lexical),
             visibility: input.visibility ?? 'public',
+            featured: input.featured ? 1 : 0,
             customExcerpt: input.customExcerpt ?? null,
             featureImage: input.featureImage ?? null,
             featureImageAlt: input.featureImageAlt ?? null,
@@ -188,6 +192,13 @@ export const createContentService = (repository: ContentRepository): ContentServ
                 });
                 await repository.linkTagToPost(post.id, tag.id);
             }
+        }
+
+        // The creating staff member becomes the primary author (staff and
+        // author profiles share ids for imported users). Ghost admin rejects
+        // posts without at least one author.
+        if (await repository.getAuthorProfileById(editorId)) {
+            await repository.linkAuthorToPost(post.id, editorId);
         }
 
         return buildPostResponse(post);
@@ -259,6 +270,7 @@ export const createContentService = (repository: ContentRepository): ContentServ
             status,
             lexical: JSON.stringify(lexical),
             visibility: input.visibility ?? existing.visibility,
+            featured: input.featured !== undefined ? (input.featured ? 1 : 0) : existing.featured,
             // Explicit null clears nullable fields; only undefined keeps them.
             customExcerpt: input.customExcerpt !== undefined ? input.customExcerpt : existing.customExcerpt,
             featureImage: input.featureImage !== undefined ? input.featureImage : existing.featureImage,

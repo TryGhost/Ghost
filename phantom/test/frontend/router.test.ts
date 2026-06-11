@@ -66,6 +66,9 @@ const contentReader: FrontendContentReader = {
         pagination: {page: 1, limit: 10, pages: 1, total: 1, next: null, prev: null}
     }),
     getEntryById: async () => null,
+    getEntryByUuid: async (uuid) => (uuid === 'draft-uuid'
+        ? {post: {...post, id: '2', uuid: 'draft-uuid', title: 'Draft preview', slug: 'draft-preview', status: 'draft'}, tags: [], authors: []}
+        : null),
     isSlugTaken: async () => false,
     getTagBySlug: async () => null,
     getAuthorBySlug: async () => null,
@@ -138,5 +141,13 @@ describe('frontend router', () => {
         expect(postHtml).toContain('POST:Hello');
         expect(postHtml).toContain('BODY:');
         expect(postHtml).toContain('Hello body');
+
+        // /p/<uuid> renders drafts for the editor's preview modal.
+        const previewResponse = await app.request('/p/draft-uuid/');
+        expect(previewResponse.status).toBe(200);
+        expect(await previewResponse.text()).toContain('POST:Draft preview');
+
+        const missingPreview = await app.request('/p/unknown-uuid/');
+        expect(missingPreview.status).toBe(404);
     });
 });

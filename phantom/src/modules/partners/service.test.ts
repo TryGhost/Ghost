@@ -48,6 +48,7 @@ const createStaffRepository = (): StaffRepository => {
             return record as StaffRecord;
         },
         updateStaffPassword: async () => undefined,
+        updateStaffAccessibility: async () => undefined,
         createSession: async () => {
             throw new Error('Not implemented');
         },

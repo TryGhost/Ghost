@@ -1,6 +1,6 @@
 // Page objects vendored from /e2e/helpers/pages — selectors kept identical to
 // upstream so the suites stay comparable. Keep edits minimal and upstream-ish.
-import type {Locator, Page, Response} from '@playwright/test';
+import type {FrameLocator, Locator, Page, Response} from '@playwright/test';
 
 export interface pageGotoOptions {
     referer?: string;
@@ -72,6 +72,19 @@ export class PostsPage extends AdminPage {
     public readonly postsListItem: Locator;
     public readonly newPostButton: Locator;
 
+    public readonly postsFilters: Locator;
+
+    public readonly typeFilter: Locator;
+    public readonly visibilityFilter: Locator;
+    public readonly authorFilter: Locator;
+    public readonly tagFilter: Locator;
+    public readonly orderFilter: Locator;
+
+    public readonly saveViewButton: Locator;
+    public readonly editViewButton: Locator;
+
+    public readonly pageTitle: Locator;
+
     constructor(page: Page) {
         super(page);
         this.pageUrl = '/ghost/#/posts';
@@ -79,6 +92,18 @@ export class PostsPage extends AdminPage {
         this.postsList = page.getByTestId('posts-list');
         this.postsListItem = this.postsList.getByTestId('posts-list-item');
         this.newPostButton = page.getByRole('link', {name: 'New post', exact: true});
+
+        this.postsFilters = page.getByTestId('posts-filters');
+        this.typeFilter = this.postsFilters.getByRole('button', {name: 'Type filter'});
+        this.visibilityFilter = this.postsFilters.getByRole('button', {name: 'Visibility filter'});
+        this.authorFilter = this.postsFilters.getByRole('button', {name: 'Author filter'});
+        this.tagFilter = this.postsFilters.getByRole('button', {name: 'Tag filter'});
+        this.orderFilter = this.postsFilters.getByRole('button', {name: 'Sort filter'});
+
+        this.saveViewButton = page.getByRole('button', {name: /save as view/i});
+        this.editViewButton = page.getByRole('button', {name: /edit current view/i});
+
+        this.pageTitle = page.getByRole('heading', {level: 2});
     }
 
     getPostByTitle(title: string): Locator {
@@ -88,6 +113,441 @@ export class PostsPage extends AdminPage {
     async waitForPageToFullyLoad() {
         await this.page.waitForURL(this.pageUrl);
         await this.postsList.waitFor({state: 'visible'});
+    }
+
+    async refreshData() {
+        await this.page.reload();
+    }
+
+    async selectType(typeName: string): Promise<void> {
+        await this.typeFilter.click();
+        await this.page.getByRole('option', {name: typeName, exact: true}).click();
+    }
+
+    async selectVisibility(visibilityName: string): Promise<void> {
+        await this.visibilityFilter.click();
+        await this.page.getByRole('option', {name: visibilityName, exact: true}).click();
+    }
+
+    async selectAuthor(authorName: string): Promise<void> {
+        await this.authorFilter.click();
+        await this.page.getByRole('option', {name: authorName, exact: true}).click();
+    }
+
+    async selectTag(tagName: string): Promise<void> {
+        await this.tagFilter.click();
+        await this.page.getByRole('option', {name: tagName, exact: true}).click();
+    }
+
+    async selectOrder(orderName: string): Promise<void> {
+        await this.orderFilter.click();
+        await this.page.getByRole('option', {name: orderName, exact: true}).click();
+    }
+
+    async openSaveViewModal(): Promise<void> {
+        await this.saveViewButton.waitFor({state: 'visible'});
+        await this.saveViewButton.click();
+    }
+
+    async openEditViewModal(): Promise<void> {
+        await this.editViewButton.waitFor({state: 'visible'});
+        await this.editViewButton.click();
+    }
+
+    async getActiveViewName(): Promise<string | null> {
+        return await this.pageTitle.textContent();
+    }
+}
+
+export class CustomViewModal {
+    private readonly page: Page;
+    public readonly modal: Locator;
+    public readonly nameInput: Locator;
+    public readonly nameError: Locator;
+    public readonly saveButton: Locator;
+    public readonly deleteButton: Locator;
+    public readonly cancelButton: Locator;
+
+    constructor(page: Page) {
+        this.page = page;
+        this.modal = page.getByRole('dialog');
+        this.nameInput = page.getByLabel('View name');
+        this.nameError = page.locator('[data-test-error="custom-view-name"]');
+        this.saveButton = this.modal.getByRole('button', {name: 'Save'});
+        this.deleteButton = this.modal.getByRole('button', {name: 'Delete'});
+        this.cancelButton = this.modal.getByRole('button', {name: 'Cancel'});
+    }
+
+    async waitForModal(): Promise<void> {
+        await this.modal.waitFor({state: 'visible'});
+    }
+
+    async enterName(name: string): Promise<void> {
+        await this.nameInput.fill(name);
+    }
+
+    async selectColor(color: string): Promise<void> {
+        await this.page.getByLabel(color).click();
+    }
+
+    async save(): Promise<void> {
+        await this.saveButton.click();
+        await this.modal.waitFor({state: 'hidden'});
+    }
+
+    async delete(): Promise<void> {
+        await this.deleteButton.click();
+        await this.modal.waitFor({state: 'hidden'});
+    }
+
+    async cancel(): Promise<void> {
+        await this.cancelButton.click();
+        await this.modal.waitFor({state: 'hidden'});
+    }
+}
+
+class PreviewFrame {
+    protected readonly page: Page;
+
+    constructor(page: Page) {
+        this.page = page;
+    }
+
+    protected async waitForEscapeScriptToBeReady(): Promise<void> {
+        await this.page.waitForFunction(
+            () => {
+                const iframe = document.querySelector('iframe[title*="preview"]') as HTMLIFrameElement;
+                if (!iframe?.contentWindow) {
+                    return false;
+                }
+
+                try {
+                    const iframeWindow = iframe.contentWindow as Window & {
+                        ghostPreviewEscapeHandlerReady?: boolean;
+                    };
+                    return iframeWindow.ghostPreviewEscapeHandlerReady === true;
+                } catch {
+                    return false;
+                }
+            },
+            {timeout: 5000}
+        );
+    }
+}
+
+export class EmailPreviewFrame extends PreviewFrame {
+    readonly frame: FrameLocator;
+    readonly previewBody: Locator;
+    readonly frameBody: Locator;
+
+    constructor(page: Page) {
+        super(page);
+        this.frame = this.page.frameLocator('iframe[title="Email preview"]');
+
+        this.previewBody = this.frame.getByTestId('email-preview-body');
+        this.frameBody = this.frame.locator('body');
+    }
+
+    async content(): Promise<string | null> {
+        await this.previewBody.waitFor({state: 'visible'});
+        return await this.previewBody.textContent();
+    }
+}
+
+export class DesktopPreviewFrame extends PreviewFrame {
+    readonly desktopPreviewFrame: FrameLocator;
+
+    constructor(page: Page) {
+        super(page);
+        this.desktopPreviewFrame = page.frameLocator('iframe[title="Desktop browser post preview"]');
+    }
+
+    async focus(): Promise<void> {
+        await this.desktopPreviewFrame.getByRole('heading', {level: 1}).click();
+    }
+
+    async clickPostLinkByTitle(title: string): Promise<void> {
+        await this.waitForPreviewModalFrame();
+
+        await this.desktopPreviewFrame.getByRole('link', {name: new RegExp(title, 'i')}).click();
+        await this.desktopPreviewFrame.getByRole('heading', {level: 1, name: new RegExp(title, 'i')}).waitFor({state: 'visible', timeout: 10000});
+
+        await this.waitForEscapeScriptToBeReady();
+    }
+
+    async waitForPreviewModalFrame(): Promise<void> {
+        await this.waitForPreviewContentToLoad();
+        await this.waitForEscapeScriptToBeReady();
+    }
+
+    private async waitForPreviewContentToLoad(): Promise<void> {
+        await this.desktopPreviewFrame.getByRole('heading', {level: 1}).waitFor({state: 'visible', timeout: 20000});
+        await this.desktopPreviewFrame.getByRole('article').first().waitFor({state: 'visible', timeout: 20000});
+    }
+}
+
+export class PostPreviewModal {
+    private readonly page: Page;
+    readonly modal: Locator;
+    readonly header: Locator;
+    readonly closeButton: Locator;
+
+    readonly webTabButton: Locator;
+    readonly emailTabButton: Locator;
+
+    public readonly desktopPreview: DesktopPreviewFrame;
+    public readonly emailPreview: EmailPreviewFrame;
+
+    constructor(page: Page) {
+        this.page = page;
+        this.modal = this.page.getByRole('banner').filter({hasText: 'Preview'});
+        this.header = this.modal.getByRole('heading', {name: 'Preview'});
+        this.closeButton = this.modal.getByRole('button', {name: 'Close'});
+
+        this.desktopPreview = new DesktopPreviewFrame(page);
+        this.emailPreview = new EmailPreviewFrame(page);
+
+        this.webTabButton = this.modal.getByRole('button', {name: 'Web'});
+        this.emailTabButton = this.modal.getByRole('button', {name: 'Email'});
+    }
+
+    async switchToEmailTab(): Promise<void> {
+        await this.emailTabButton.click();
+        await this.emailPreview.frameBody.waitFor({state: 'visible'});
+    }
+
+    async emailPreviewContent(): Promise<string | null> {
+        return await this.emailPreview.content();
+    }
+
+    async close(): Promise<void> {
+        await this.closeButton.click();
+        await this.modal.waitFor({state: 'hidden'});
+    }
+}
+
+class SettingsMenu extends BasePage {
+    readonly postUrlInput: Locator;
+    readonly publishDateInput: Locator;
+    readonly publishTimeInput: Locator;
+    readonly customExcerptInput: Locator;
+    readonly deletePostButton: Locator;
+    readonly deletePostConfirmButton: Locator;
+
+    constructor(page: Page) {
+        super(page);
+
+        this.postUrlInput = page.getByRole('textbox', {name: 'Post URL'});
+        this.publishDateInput = page.getByLabel('Date Picker');
+        this.publishTimeInput = page.getByLabel('Time Picker');
+        this.customExcerptInput = page.locator('[data-test-field="custom-excerpt"]');
+        this.deletePostButton = page.locator('[data-test-button="delete-post"]');
+        this.deletePostConfirmButton = page.locator('[data-test-button="delete-post-confirm"]');
+    }
+
+    async deletePost(): Promise<void> {
+        await this.deletePostButton.click();
+        await this.deletePostConfirmButton.click();
+    }
+}
+
+class PublishFlow extends BasePage {
+    readonly publishButton: Locator;
+    readonly publishTypeSetting: Locator;
+    readonly publishTypeButton: Locator;
+    readonly publishAtButton: Locator;
+    readonly scheduleSummary: Locator;
+    readonly scheduleDateInput: Locator;
+    readonly scheduleTimeInput: Locator;
+    readonly emailRecipientsSetting: Locator;
+    readonly continueButton: Locator;
+    readonly confirmButton: Locator;
+    readonly closeButton: Locator;
+    readonly completeBookmark: Locator;
+
+    constructor(page: Page) {
+        super(page);
+
+        this.publishButton = page.locator('[data-test-button="publish-flow"]').first();
+        this.publishTypeSetting = page.locator('[data-test-setting="publish-type"]');
+        this.publishTypeButton = this.publishTypeSetting.locator('> button');
+        this.publishAtButton = page.locator('[data-test-setting="publish-at"] > button');
+        this.scheduleSummary = page.locator('[data-test-setting="publish-at"] [data-test-setting-title]');
+        this.scheduleDateInput = page.locator('[data-test-date-time-picker-date-input]');
+        this.scheduleTimeInput = page.locator('[data-test-date-time-picker-time-input]');
+        this.emailRecipientsSetting = page.locator('[data-test-setting="email-recipients"]');
+        this.continueButton = page.locator('[data-test-modal="publish-flow"] [data-test-button="continue"]');
+        this.confirmButton = page.locator('[data-test-modal="publish-flow"] [data-test-button="confirm-publish"]');
+        this.closeButton = page.locator('[data-test-button="close-publish-flow"]');
+        this.completeBookmark = page.locator('[data-test-complete-bookmark]');
+    }
+
+    async open(): Promise<void> {
+        await this.publishButton.click();
+    }
+
+    async close(): Promise<void> {
+        await this.closeButton.click();
+    }
+
+    async selectPublishType(type: 'publish' | 'publish+send' | 'send'): Promise<void> {
+        await this.publishTypeButton.click();
+        await this.page.locator(`[data-test-publish-type="${type}"] + label`).click();
+    }
+
+    async schedule({date, time}: {date?: string; time?: string}): Promise<void> {
+        await this.publishAtButton.click();
+
+        const textBeforeScheduleToggle = await this.scheduleSummary.textContent();
+        await this.page.locator('[data-test-radio="schedule"] + label').click();
+        await this.waitForScheduleSummaryChange(textBeforeScheduleToggle);
+
+        if (date) {
+            const textBeforeDateChange = await this.scheduleSummary.textContent();
+            await this.scheduleDateInput.fill(date);
+            await this.scheduleDateInput.blur();
+            await this.waitForScheduleSummaryChange(textBeforeDateChange);
+        }
+
+        if (time) {
+            await this.scheduleTimeInput.fill(time);
+            await this.scheduleTimeInput.blur();
+        }
+    }
+
+    async confirm(): Promise<void> {
+        await this.continueButton.click();
+        await this.confirmButton.click({force: true});
+        await this.confirmButton.waitFor({state: 'hidden'});
+    }
+
+    async openPublishedPost(): Promise<Page> {
+        const [frontendPage] = await Promise.all([
+            this.page.waitForEvent('popup'),
+            this.completeBookmark.click()
+        ]);
+        return frontendPage;
+    }
+
+    private async waitForScheduleSummaryChange(previousText: string | null): Promise<void> {
+        await this.page.waitForFunction((text) => {
+            const element = document.querySelector('[data-test-setting="publish-at"] [data-test-setting-title]');
+            const currentText = element?.textContent?.trim();
+            return Boolean(currentText && currentText !== text?.trim());
+        }, previousText);
+    }
+}
+
+export class PostEditorPage extends AdminPage {
+    readonly titleInput: Locator;
+    readonly postStatus: Locator;
+    readonly previewButton: Locator;
+    readonly previewModal: PostPreviewModal;
+    readonly settingsToggleButton: Locator;
+    readonly publishFlow: PublishFlow;
+    readonly screenTitle: Locator;
+    readonly lexicalEditor: Locator;
+    readonly secondaryEditor: Locator;
+    readonly publishSaveButton: Locator;
+    readonly updateFlowButton: Locator;
+    readonly revertToDraftButton: Locator;
+
+    readonly settingsMenu: SettingsMenu;
+
+    constructor(page: Page) {
+        super(page);
+        this.pageUrl = '/ghost/#/editor/post/';
+
+        this.titleInput = page.locator('[data-test-editor-title-input]');
+        this.postStatus = page.locator('[data-test-editor-post-status]');
+        this.previewButton = page.getByRole('button', {name: 'Preview'});
+        this.previewModal = new PostPreviewModal(page);
+        this.settingsToggleButton = page.getByTestId('settings-menu-toggle');
+        this.publishFlow = new PublishFlow(page);
+        this.screenTitle = page.locator('[data-test-screen-title]');
+        this.lexicalEditor = page.locator('[data-kg="editor"]').first();
+        this.secondaryEditor = page.locator('[data-secondary-instance="true"]');
+        this.publishSaveButton = page.locator('[data-test-button="publish-save"]').first();
+        this.updateFlowButton = page.locator('[data-test-button="update-flow"]').first();
+        this.revertToDraftButton = page.locator('[data-test-button="revert-to-draft"]');
+
+        this.settingsMenu = new SettingsMenu(page);
+    }
+
+    async gotoPost(postId: string): Promise<void> {
+        await this.page.goto(`/ghost/#/editor/post/${postId}`);
+        await this.titleInput.waitFor({state: 'visible'});
+    }
+
+    async createDraft({title = 'Hello world', body = 'This is my post body.'} = {}): Promise<void> {
+        const editor = this.page.locator('[data-lexical-editor="true"]').first();
+
+        await this.titleInput.click();
+        await this.titleInput.fill(title);
+        await editor.waitFor({state: 'visible'});
+        await this.page.keyboard.press('Enter');
+
+        await this.page.waitForFunction(() => {
+            const element = document.querySelector('[data-lexical-editor="true"]');
+            if (!element) {
+                return false;
+            }
+
+            const activeElement = document.activeElement;
+
+            return Boolean(
+                activeElement &&
+                (activeElement === element || element.contains(activeElement))
+            );
+        });
+
+        await this.page.keyboard.type(body);
+    }
+
+    async waitForSaved(): Promise<void> {
+        await this.postStatus.filter({hasText: /Saved/}).waitFor({timeout: 30000});
+    }
+
+    async appendToBody(text: string): Promise<void> {
+        await this.lexicalEditor.click();
+        await this.page.keyboard.type(text);
+    }
+
+    async revertToDraft(): Promise<void> {
+        await this.updateFlowButton.click();
+        await this.revertToDraftButton.click();
+    }
+
+    get previewModalDesktopFrame(): DesktopPreviewFrame {
+        return this.previewModal.desktopPreview;
+    }
+}
+
+export class PostPage extends BasePage {
+    readonly postTitle: Locator;
+    readonly postContent: Locator;
+    readonly articleTitle: Locator;
+    readonly articleHeader: Locator;
+    readonly articleBody: Locator;
+    readonly metaDescription: Locator;
+
+    constructor(page: Page) {
+        super(page);
+        this.postTitle = page.locator('article h1').first();
+        this.postContent = page.locator('article.gh-article');
+        this.articleTitle = page.locator('.gh-article-title');
+        this.articleHeader = page.locator('main > article > header');
+        this.articleBody = page.locator('.gh-content.gh-canvas > p');
+        this.metaDescription = page.locator('meta[name="description"]');
+    }
+
+    async gotoPost(slug: string): Promise<void> {
+        await this.goto(`/${slug}/`);
+        await this.waitForPostToLoad();
+    }
+
+    async waitForPostToLoad(): Promise<void> {
+        await this.postTitle.waitFor({state: 'visible'});
     }
 }
 

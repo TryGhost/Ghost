@@ -29,12 +29,37 @@ describe('theme helpers', () => {
         expect(output).toBe('A,C,');
     });
 
+    it('resolves placeholders in {{#get}} filters against the context', () => {
+        const posts = [
+            {id: '1', title: 'Current'},
+            {id: '2', title: 'Other'}
+        ];
+        const output = render(
+            '{{#get "posts" filter="id:-{{post.id}}" as |next|}}{{#foreach next}}{{title}},{{/foreach}}{{/get}}',
+            {posts, post: {id: '1'}}
+        );
+        expect(output).toBe('Other,');
+    });
+
     it('renders the inverse block when {{#get}} filters everything out', () => {
         const output = render(
             '{{#get "posts" filter="featured:true" as |featured|}}{{#foreach featured}}{{title}}{{/foreach}}{{else}}none{{/get}}',
             {posts: [{id: '1', title: 'A', featured: false}]}
         );
         expect(output).toBe('none');
+    });
+
+    it('prefers the rendered entry description in ghost_head', () => {
+        const output = render('{{ghost_head}}', {
+            site: {
+                title: 'Site',
+                description: 'site description',
+                url: 'http://localhost:2369'
+            },
+            meta_description: 'Short description and meta'
+        });
+        expect(output).toContain('<meta name="description" content="Short description and meta">');
+        expect(output).not.toContain('content="site description"');
     });
 
     it('escapes html in ghost_head meta values', () => {

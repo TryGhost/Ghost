@@ -7,6 +7,9 @@ export const staffTable = sqliteTable('staff_accounts', {
     status: text('status').notNull(),
     passwordHash: text('password_hash').notNull(),
     twoFactorEnabled: integer('two_factor_enabled').notNull(),
+    // Ghost-admin UI state (custom views, night shift, ...) as a JSON blob,
+    // mirroring Ghost's users.accessibility column.
+    accessibility: text('accessibility'),
     externalSubjectId: text('external_subject_id'),
     externallyManaged: integer('externally_managed').notNull(),
     createdAt: integer('created_at').notNull(),

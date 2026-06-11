@@ -1,4 +1,4 @@
-import type {ContentRepository, PublishedPostFilter} from './repo.js';
+import type {ContentRepository, PostOrder, PublishedPostFilter} from './repo.js';
 import type {AuthorProfileRecord, PostRecord, TagRecord} from './db.js';
 
 export type FrontendEntry = {
@@ -20,8 +20,10 @@ export type FrontendContentReader = {
     getEntryBySlug: (slug: string) => Promise<FrontendEntry | null>;
     // Any-status lookups for the admin surfaces.
     getEntryById: (id: string) => Promise<FrontendEntry | null>;
+    // Any-status lookup for /p/<uuid> draft previews.
+    getEntryByUuid: (uuid: string) => Promise<FrontendEntry | null>;
     isSlugTaken: (slug: string) => Promise<boolean>;
-    listPublished: (options: {page: number; limit: number; filter?: PublishedPostFilter}) => Promise<{entries: FrontendEntry[]; pagination: FrontendPagination}>;
+    listPublished: (options: {page: number; limit: number; filter?: PublishedPostFilter; order?: PostOrder}) => Promise<{entries: FrontendEntry[]; pagination: FrontendPagination}>;
     getTagBySlug: (slug: string) => Promise<TagRecord | null>;
     getAuthorBySlug: (slug: string) => Promise<AuthorProfileRecord | null>;
     listTags: () => Promise<TagRecord[]>;
@@ -54,6 +56,15 @@ export const createFrontendContentReader = (repository: ContentRepository): Fron
         return entry ?? null;
     };
 
+    const getEntryByUuid = async (uuid: string) => {
+        const post = await repository.getPostByUuid(uuid);
+        if (!post) {
+            return null;
+        }
+        const [entry] = await attach([post]);
+        return entry ?? null;
+    };
+
     const isSlugTaken = async (slug: string) => {
         return Boolean(await repository.getPostBySlug(slug));
     };
@@ -67,10 +78,10 @@ export const createFrontendContentReader = (repository: ContentRepository): Fron
         return entry ?? null;
     };
 
-    const listPublished = async ({page, limit, filter}: {page: number; limit: number; filter?: PublishedPostFilter}) => {
+    const listPublished = async ({page, limit, filter, order}: {page: number; limit: number; filter?: PublishedPostFilter; order?: PostOrder}) => {
         const offset = (page - 1) * limit;
         const {posts, total} = await repository.listAndCountPublishedPosts(
-            filter ? {limit, offset, filter} : {limit, offset}
+            {limit, offset, ...(filter ? {filter} : {}), ...(order ? {order} : {})}
         );
         const pages = Math.max(1, Math.ceil(total / limit));
         const pagination: FrontendPagination = {
@@ -87,6 +98,7 @@ export const createFrontendContentReader = (repository: ContentRepository): Fron
     return {
         getEntryBySlug,
         getEntryById,
+        getEntryByUuid,
         isSlugTaken,
         listPublished,
         getTagBySlug: (slug: string) => repository.getTagBySlug(slug),
