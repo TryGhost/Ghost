@@ -1,4 +1,6 @@
 import {Hono, type Context} from 'hono';
+import {getCookie, setCookie, deleteCookie} from 'hono/cookie';
+import {createHash} from 'node:crypto';
 import {promises as fs} from 'node:fs';
 import path from 'node:path';
 import type {AppConfig} from '../platform/config/config.js';
@@ -67,6 +69,9 @@ const buildSiteContext = (settings: SettingsList, config: AppConfig) => {
         members_enabled: Boolean(readSetting(settings, 'feature.membership')),
         members_invite_only: false,
         comments_enabled: Boolean(readSetting(settings, 'feature.comments')),
+        announcement_content: (readSetting(settings, 'announcement.content') as string | null | undefined) ?? null,
+        announcement_visibility: (readSetting(settings, 'announcement.visibility') as string[] | undefined) ?? [],
+        announcement_background: (readSetting(settings, 'announcement.background') as string | undefined) ?? 'dark',
         date: new Date().toDateString()
     };
 };
@@ -205,6 +210,7 @@ export const createFrontendRouter = ({
     const portalAsset = path.resolve(process.cwd(), '..', 'apps', 'portal', 'umd', 'portal.min.js');
     const sodoSearchAsset = path.resolve(process.cwd(), '..', 'apps', 'sodo-search', 'umd', 'sodo-search.min.js');
     const memberAttributionAsset = path.resolve(process.cwd(), '..', 'ghost', 'core', 'core', 'frontend', 'src', 'member-attribution', 'member-attribution.js');
+    const announcementBarAsset = path.resolve(process.cwd(), '..', 'apps', 'announcement-bar', 'umd', 'announcement-bar.min.js');
     // Prefer the admin build vendored into phantom (yarn admin:sync); fall
     // back to ghost/core's build output for monorepo development.
     const adminRoots = [
@@ -303,6 +309,18 @@ export const createFrontendRouter = ({
                 }
             });
         }
+        if (assetPath === 'announcement-bar.min.js') {
+            const asset = await readAsset(announcementBarAsset, 'application/javascript; charset=utf-8');
+            if (!asset) {
+                return context.text('Not Found', 404);
+            }
+            return new Response(asset.body, {
+                status: 200,
+                headers: {
+                    'Content-Type': asset.contentType
+                }
+            });
+        }
         const asset = await getPublicAsset(assetPath);
         if (!asset) {
             return context.text('Not Found', 404);
@@ -315,7 +333,130 @@ export const createFrontendRouter = ({
         });
     });
 
-    router.get('*', async (context) => {
+    // --- Private mode (site access control) ---
+    // The access-code cookie is a hash of the site password, so flipping the
+    // password (or disabling private mode) invalidates existing sessions.
+    const PRIVATE_COOKIE = 'phantom-private';
+    const privateHash = (password: string) => createHash('sha256').update(`phantom-private:${password}`).digest('hex');
+
+    const readPrivateState = async () => {
+        const {settings} = await settingsService.listSettings();
+        const isPrivate = Boolean(readSetting(settings, 'site.is_private'));
+        const password = (readSetting(settings, 'site.password') as string | undefined) ?? '';
+        return {settings, isPrivate, password};
+    };
+
+    const hasPrivateAccess = (context: Context, password: string) => {
+        return getCookie(context, PRIVATE_COOKIE) === privateHash(password);
+    };
+
+    // Trimmed port of ghost/core's private-blogging view: same structure,
+    // headings and labels so the upstream e2e selectors hold.
+    const renderPrivatePage = (site: {title: string; description: string | null; url: string}, options: {selfSignup: boolean; error?: string; returnTo: string}) => {
+        const escape = (value: string) => value.replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
+        const action = `/private/?r=${encodeURIComponent(options.returnTo)}`;
+        const accessForm = `
+            <form class="gh-signin gh-private-signin gh-private-access-form" method="post" action="${action}" novalidate="novalidate">
+                <div class="gh-private-signup-fields">
+                    <div class="form-group gh-private-access-input-wrap${options.error ? ' error' : ''}">
+                        <input class="gh-input gh-private-signup-input" type="password" name="password" placeholder="Access code" data-1p-ignore="true">
+                        ${options.error ? `<p class="main-error">${escape(options.error)}</p>` : ''}
+                    </div>
+                    <button class="gh-btn gh-private-signup-btn" type="submit"><span>Enter &rarr;</span></button>
+                </div>
+            </form>`;
+        return `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>${escape(site.title)}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+</head>
+<body>
+    <div class="gh-app">
+        <main class="gh-main" role="main">
+            <section class="gh-flow-content private">
+                <header>
+                    <h1>${escape(site.title)}</h1>
+                    ${site.description ? `<p class="gh-private-description">${escape(site.description)}</p>` : ''}
+                </header>
+                ${options.selfSignup ? '' : accessForm}
+            </section>
+            ${options.selfSignup ? `
+            <dialog class="gh-private-dialog" id="access" aria-labelledby="private-access-title"${options.error ? ' data-auto-open="true"' : ''}>
+                <div class="gh-private-dialog-panel">
+                    <header class="gh-private-dialog-header">
+                        <h2 id="private-access-title">Enter access code</h2>
+                    </header>
+                    ${accessForm}
+                </div>
+            </dialog>` : ''}
+            <div class="gh-private-trigger-wrap">
+                <div class="gh-private-footer-links">
+                    ${options.selfSignup ? '<a class="gh-private-trigger" href="#access" data-ghost-private-trigger>Enter access code</a>' : ''}
+                    <a href="${escape(site.url)}/ghost/">Site owner login</a>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script>
+        document.querySelectorAll('[data-ghost-private-trigger]').forEach(function (trigger) {
+            trigger.addEventListener('click', function (event) {
+                event.preventDefault();
+                document.getElementById('access').showModal();
+            });
+        });
+        var dialog = document.querySelector('dialog[data-auto-open="true"]');
+        if (dialog) {
+            dialog.showModal();
+        }
+    </script>
+</body>
+</html>`;
+    };
+
+    const privateReturnTo = (context: Context) => {
+        const raw = context.req.query('r') ?? '/';
+        return raw.startsWith('/') && !raw.startsWith('//') ? raw : '/';
+    };
+
+    const privatePageHandler = async (context: Context) => {
+        const {settings, isPrivate, password} = await readPrivateState();
+        if (!isPrivate) {
+            return context.redirect('/', 302);
+        }
+        if (hasPrivateAccess(context, password)) {
+            return context.redirect(privateReturnTo(context), 302);
+        }
+        const site = buildSiteContext(settings, config);
+        const selfSignup = ((readSetting(settings, 'members.signup_access') as string | undefined) ?? 'all') === 'all';
+        return context.html(renderPrivatePage(site, {selfSignup, returnTo: privateReturnTo(context)}));
+    };
+    router.get('/private/', privatePageHandler);
+    router.get('/private', privatePageHandler);
+
+    const privateSubmitHandler = async (context: Context) => {
+        const {settings, isPrivate, password} = await readPrivateState();
+        if (!isPrivate) {
+            return context.redirect('/', 302);
+        }
+        const form = await context.req.parseBody();
+        const submitted = typeof form.password === 'string' ? form.password : '';
+        if (password && submitted === password) {
+            setCookie(context, PRIVATE_COOKIE, privateHash(password), {path: '/', httpOnly: true, sameSite: 'Lax'});
+            return context.redirect(privateReturnTo(context), 302);
+        }
+        deleteCookie(context, PRIVATE_COOKIE, {path: '/'});
+        const site = buildSiteContext(settings, config);
+        const selfSignup = ((readSetting(settings, 'members.signup_access') as string | undefined) ?? 'all') === 'all';
+        return context.html(renderPrivatePage(site, {selfSignup, error: 'Wrong access code, please try again', returnTo: privateReturnTo(context)}), 401);
+    };
+    router.post('/private/', privateSubmitHandler);
+    router.post('/private', privateSubmitHandler);
+
+    // POST is accepted alongside GET: the settings apps preview unsaved
+    // changes by POSTing site URLs with an x-ghost-preview header.
+    router.on(['GET', 'POST'], '*', async (context) => {
         if (context.req.path.startsWith('/assets/')) {
             return serveAsset(context, '/assets/');
         }
@@ -437,8 +578,22 @@ export const createFrontendRouter = ({
         }
 
         const settingsResponse = await settingsService.listSettings();
+
+        // Private sites funnel everything public through /private/ until the
+        // access-code cookie matches the current password.
+        if (readSetting(settingsResponse.settings, 'site.is_private')) {
+            const password = (readSetting(settingsResponse.settings, 'site.password') as string | undefined) ?? '';
+            if (!hasPrivateAccess(context, password)) {
+                return context.redirect(`/private/?r=${encodeURIComponent(context.req.path)}`, 302);
+            }
+        }
+
         const bundle = await themeStore.getActiveBundle();
-        const site = buildSiteContext(settingsResponse.settings, config);
+        const previewHeader = context.req.method === 'POST' ? context.req.header('x-ghost-preview') : undefined;
+        const site = {
+            ...buildSiteContext(settingsResponse.settings, config),
+            ...(previewHeader ? {_preview: previewHeader} : {})
+        };
         const custom = buildCustomContext(settingsResponse.settings, bundle.theme.config as Record<string, unknown> | undefined);
         const base = {site, custom, member: null};
 

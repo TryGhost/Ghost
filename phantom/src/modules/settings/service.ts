@@ -153,6 +153,20 @@ const settingDefinitions: SettingDefinition[] = [
         allowNull: true
     },
     {
+        // Site access control: private sites funnel through /private/.
+        key: 'site.is_private',
+        group: 'site',
+        type: 'boolean',
+        defaultValue: false
+    },
+    {
+        key: 'site.password',
+        group: 'site',
+        type: 'string',
+        defaultValue: '',
+        allowNull: true
+    },
+    {
         // The admin's saved post-list views, shared across staff.
         key: 'site.shared_views',
         group: 'site',
@@ -182,13 +196,33 @@ const settingDefinitions: SettingDefinition[] = [
         group: 'labs',
         type: 'json',
         defaultValue: {}
+    },
+    {
+        key: 'announcement.content',
+        group: 'announcement',
+        type: 'string',
+        defaultValue: null,
+        allowNull: true
+    },
+    {
+        // Audience segments the bar shows for: visitors/free_members/paid_members.
+        key: 'announcement.visibility',
+        group: 'announcement',
+        type: 'json',
+        defaultValue: []
+    },
+    {
+        key: 'announcement.background',
+        group: 'announcement',
+        type: 'string',
+        defaultValue: 'dark'
     }
 ];
 
 const settingsByKey = new Map(settingDefinitions.map((definition) => [definition.key, definition]));
 const coreSettingAllowlist = new Set(settingDefinitions.filter((definition) => definition.group === 'core').map((definition) => definition.key));
 // Groups born in the v10 schema baseline — no metafield migration to wait on.
-const migratedSettingGroups = new Set(['site', 'features', 'theme', 'members', 'social_web', 'labs']);
+const migratedSettingGroups = new Set(['site', 'features', 'theme', 'members', 'social_web', 'labs', 'announcement']);
 
 const parseSettingValue = (value: string) => JSON.parse(value) as SettingResponse['value'];
 

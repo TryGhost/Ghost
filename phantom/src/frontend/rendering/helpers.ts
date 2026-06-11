@@ -51,6 +51,35 @@ export const registerHelpers = (instance: typeof Handlebars) => {
         return `/assets/${assetPath}`;
     });
 
+    // Mirrors ghost/core's getAnnouncementBarHelper: the bar script renders
+    // either saved announcement settings or, in the settings modal's preview
+    // (x-ghost-preview POST), the unsaved values from the header.
+    const announcementBarTag = (root: {site?: {url?: string; _preview?: string; announcement_content?: string | null; announcement_visibility?: string[]}}) => {
+        const escape = Handlebars.escapeExpression;
+        const preview = root.site?._preview;
+        const isFilled = Boolean(root.site?.announcement_content) && (root.site?.announcement_visibility ?? []).length > 0;
+        if (!isFilled && !preview) {
+            return '';
+        }
+        const siteUrl = toString(root.site?.url);
+        const attrs: Record<string, string> = {
+            'announcement-bar': siteUrl,
+            'api-url': `${siteUrl.replace(/\/$/, '')}/members/api/announcement/`
+        };
+        if (preview) {
+            const params = new URLSearchParams(preview);
+            const announcement = params.get('announcement');
+            if (!announcement || !params.has('announcement_vis')) {
+                return '';
+            }
+            attrs.announcement = announcement;
+            attrs['announcement-background'] = params.get('announcement_bg') ?? '';
+            attrs.preview = 'true';
+        }
+        const dataAttrs = Object.entries(attrs).map(([key, value]) => `data-${key}="${escape(value)}"`).join(' ');
+        return `<script defer src="/public/announcement-bar.min.js" ${dataAttrs} crossorigin="anonymous"></script>`;
+    };
+
     instance.registerHelper('ghost_head', (options: Handlebars.HelperOptions) => {
         const root = getRootContext(options);
         const escape = Handlebars.escapeExpression;
@@ -113,7 +142,8 @@ export const registerHelpers = (instance: typeof Handlebars) => {
             `<script defer src="/public/cards.min.js"></script>`,
             `<link rel="stylesheet" type="text/css" href="/public/cards.min.css">`,
             `<script defer src="/public/member-attribution.min.js"></script>`,
-            `<style>:root {--ghost-accent-color: ${accent};}</style>`
+            `<style>:root {--ghost-accent-color: ${accent};}</style>`,
+            announcementBarTag(root)
         ].filter(Boolean);
         return new Handlebars.SafeString(tags.join('\n'));
     });

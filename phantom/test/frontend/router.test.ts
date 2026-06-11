@@ -150,4 +150,72 @@ describe('frontend router', () => {
         const missingPreview = await app.request('/p/unknown-uuid/');
         expect(missingPreview.status).toBe(404);
     });
+
+    it('gates the site behind /private/ when private mode is on', async () => {
+        const themeRoot = await fs.mkdtemp(path.join(os.tmpdir(), 'phantom-theme-'));
+        await writeThemeBundle(themeRoot, 'casper');
+
+        const config: AppConfig = {
+            port: 2369,
+            db: {url: 'file:./ghost.db'},
+            identity: {ssoProviders: []},
+            memberAuth: {signupPolicy: 'open'},
+            queue: {provider: 'memory'},
+            themes: {
+                provider: 'fs',
+                fs: {root: themeRoot},
+                r2: {
+                    baseUrl: null,
+                    bundlePath: 'themes/{themeId}/bundle.mjs',
+                    assetPath: 'themes/{themeId}/assets/{path}'
+                }
+            }
+        };
+
+        const privateSettingsService: SettingsService = {
+            ...settingsService,
+            listSettings: async () => {
+                const {settings} = await settingsService.listSettings();
+                return {
+                    settings: [
+                        ...settings,
+                        {key: 'site.is_private', group: 'site', type: 'boolean', value: true, updatedAt: Date.now()},
+                        {key: 'site.password', group: 'site', type: 'string', value: 'cat', updatedAt: Date.now()}
+                    ]
+                };
+            }
+        };
+
+        const app = new Hono();
+        app.route('/', createFrontendRouter({config, contentReader, settingsService: privateSettingsService}));
+
+        const gated = await app.request('/');
+        expect(gated.status).toBe(302);
+        expect(gated.headers.get('location')).toBe('/private/?r=%2F');
+
+        const privatePage = await app.request('/private/?r=%2F');
+        expect(privatePage.status).toBe(200);
+        const privateHtml = await privatePage.text();
+        expect(privateHtml).toContain('Enter access code');
+
+        const wrong = await app.request('/private/?r=%2F', {
+            method: 'POST',
+            headers: {'content-type': 'application/x-www-form-urlencoded'},
+            body: 'password=dog'
+        });
+        expect(wrong.status).toBe(401);
+
+        const right = await app.request('/private/?r=%2F', {
+            method: 'POST',
+            headers: {'content-type': 'application/x-www-form-urlencoded'},
+            body: 'password=cat'
+        });
+        expect(right.status).toBe(302);
+        expect(right.headers.get('location')).toBe('/');
+        const cookie = right.headers.get('set-cookie')!.split(';')[0]!;
+
+        const unlocked = await app.request('/', {headers: {cookie}});
+        expect(unlocked.status).toBe(200);
+        expect(await unlocked.text()).toContain('TITLE:Phantom');
+    });
 });

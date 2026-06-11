@@ -62,6 +62,25 @@ describe('theme helpers', () => {
         expect(output).not.toContain('content="site description"');
     });
 
+    it('injects the announcement bar script for previews and saved settings', () => {
+        const base = {title: 'Site', description: null, url: 'http://localhost:2369'};
+
+        const idle = render('{{ghost_head}}', {site: base});
+        expect(idle).not.toContain('announcement-bar.min.js');
+
+        const preview = render('{{ghost_head}}', {
+            site: {...base, _preview: 'announcement_bg=dark&announcement=%3Cp%3EHi%3C%2Fp%3E&announcement_vis=visitors'}
+        });
+        expect(preview).toContain('announcement-bar.min.js');
+        expect(preview).toContain('data-preview="true"');
+
+        const saved = render('{{ghost_head}}', {
+            site: {...base, announcement_content: '<p>Hello</p>', announcement_visibility: ['visitors']}
+        });
+        expect(saved).toContain('announcement-bar.min.js');
+        expect(saved).not.toContain('data-preview');
+    });
+
     it('escapes html in ghost_head meta values', () => {
         const output = render('{{ghost_head}}', {
             site: {

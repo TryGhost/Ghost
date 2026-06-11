@@ -334,6 +334,8 @@ export const createAdminApiRouter = ({
             {key: 'meta_description', value: null},
             {key: 'active_theme', value: value('theme.active', 'source')},
             {key: 'unsplash', value: true},
+            {key: 'is_private', value: Boolean(value('site.is_private', false))},
+            {key: 'password', value: value('site.password', '')},
             {key: 'shared_views', value: JSON.stringify(value('site.shared_views', []))},
             {key: 'labs', value: JSON.stringify(value('labs.flags', {}))},
             // Gates the shell's Network nav item; Ghost 6 defaults the
@@ -349,9 +351,9 @@ export const createAdminApiRouter = ({
             {key: 'portal_name', value: true},
             {key: 'portal_plans', value: '["free"]'},
             {key: 'portal_button_style', value: 'icon-and-text'},
-            {key: 'announcement_content', value: null},
-            {key: 'announcement_visibility', value: '[]'},
-            {key: 'announcement_background', value: 'dark'}
+            {key: 'announcement_content', value: value('announcement.content')},
+            {key: 'announcement_visibility', value: JSON.stringify(value('announcement.visibility', []))},
+            {key: 'announcement_background', value: value('announcement.background', 'dark')}
         ];
     };
 
@@ -381,6 +383,11 @@ export const createAdminApiRouter = ({
         shared_views: {key: 'site.shared_views', decode: (value) => (typeof value === 'string' ? JSON.parse(value) : value)},
         secondary_navigation: {key: 'site.secondary_navigation', decode: (value) => (typeof value === 'string' ? JSON.parse(value) : value)},
         active_theme: {key: 'theme.active'},
+        is_private: {key: 'site.is_private'},
+        password: {key: 'site.password'},
+        announcement_content: {key: 'announcement.content'},
+        announcement_visibility: {key: 'announcement.visibility', decode: (value) => (typeof value === 'string' ? JSON.parse(value) : value)},
+        announcement_background: {key: 'announcement.background'},
         labs: {key: 'labs.flags', decode: (value) => (typeof value === 'string' ? JSON.parse(value) : value)},
         social_web_enabled: {key: 'social_web.enabled'},
         members_signup_access: {key: 'members.signup_access'},
