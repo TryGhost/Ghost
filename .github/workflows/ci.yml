@@ -535,7 +535,12 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
-        run: pnpm nx run ghost:test:ci:e2e
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm nx run ghost:test:ci:e2e:no-coverage
+          else
+            pnpm nx run ghost:test:ci:e2e
+          fi
 
       - name: Start MinIO for integration tests
         run: |
@@ -557,7 +562,12 @@ jobs:
           exit 1
 
       - name: Integration tests
-        run: pnpm nx run ghost:test:ci:integration
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm nx run ghost:test:ci:integration:no-coverage
+          else
+            pnpm nx run ghost:test:ci:integration
+          fi
 
       - name: Check for unexpected file changes
         run: |
