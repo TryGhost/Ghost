@@ -11,6 +11,8 @@ import {createFrontendContentReader} from '../../src/modules/content/frontend-re
 import {createSettingsRepository} from '../../src/modules/settings/repo.js';
 import {createSettingsService} from '../../src/modules/settings/service.js';
 import {createFrontendRouter} from '../../src/frontend/router.js';
+import {createNodeFileStore} from '../../src/platform/files/node.js';
+import {createNodeThemeBundles} from '../../src/frontend/themes/node-bundles.js';
 import type {AppConfig} from '../../src/platform/config/config.js';
 
 const fixturePath = path.resolve(__dirname, '../fixtures/ghost-v5-export.json');
@@ -51,7 +53,7 @@ describe('theme rendering with imported content', () => {
         const settingsService = createSettingsService(createSettingsRepository(db));
 
         app = new Hono();
-        app.route('/', createFrontendRouter({config, contentReader, settingsService}));
+        app.route('/', createFrontendRouter({config, contentReader, settingsService, fileStore: createNodeFileStore(), themeBundles: createNodeThemeBundles(config)}));
     });
 
     it('renders the home collection with imported site identity and posts', async () => {

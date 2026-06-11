@@ -34,8 +34,6 @@ import {createOperationsRepository} from '../modules/operations/repo.js';
 import {createOperationsService} from '../modules/operations/service.js';
 import {createGhostImporter} from '../modules/operations/importer.js';
 import {ensureCoreSchema} from '../db/ddl.js';
-import {createE2eReset} from '../modules/operations/e2e-seed.js';
-import {resolve as resolvePath} from 'node:path';
 import {createBillingRepository} from '../modules/billing/repo.js';
 import {createBillingService} from '../modules/billing/service.js';
 import {createExtensionsRepository} from '../modules/extensions/repo.js';
@@ -45,10 +43,27 @@ import {createCommentService} from '../modules/comments/service.js';
 import {getMetricsClient} from '../platform/metrics/client.js';
 import {createMemoryMailbox} from '../platform/mail/memory.js';
 import {renderLexicalHtml} from '../frontend/rendering/lexical.js';
+import type {FileStore} from '../platform/files/store.js';
+import type {ThemeBundleProvider} from '../frontend/themes/bundles.js';
 
-export const createAppDependencies = async () => {
+// Platform-specific pieces (static files, theme bundles) default to the Node
+// implementations via lazy imports so the Workers entry point can inject its
+// own without pulling node:fs into the bundle's startup path.
+export type PlatformOverrides = {
+    fileStore?: FileStore;
+    themeBundles?: ThemeBundleProvider;
+};
+
+export const createAppDependencies = async (platform: PlatformOverrides = {}) => {
     const config = loadConfig();
     const db = createDb(config.db);
+    const fileStore = platform.fileStore
+        ?? (await import('../platform/files/node.js')).createNodeFileStore({themesRoot: config.themes.fs.root});
+    const themeBundles = platform.themeBundles
+        ?? (await import('../frontend/themes/node-bundles.js')).createNodeThemeBundles(config);
+    // Remote libSQL can't span a manual transaction across statements; the
+    // importer falls back to non-atomic statement-by-statement writes there.
+    const atomicImport = !/^(https?|libsql|wss?):/.test(config.db.url);
     await ensureCoreSchema(db);
     const siteRepository = createSiteRepository(db);
     const siteService = createSiteService(siteRepository);
@@ -141,7 +156,7 @@ export const createAppDependencies = async () => {
         webhookRepository,
         analyticsRepository,
         metricsClient,
-        createGhostImporter(db)
+        createGhostImporter(db, {atomic: atomicImport})
     );
     const billingRepository = createBillingRepository(db);
     const billingService = createBillingService(billingRepository);
@@ -154,6 +169,18 @@ export const createAppDependencies = async () => {
         settingsRepository,
         analyticsRepository
     );
+
+    // Test-only reset endpoint; lazy so the fixture reader (node:fs) stays
+    // out of runtimes that never set the flag.
+    const e2eReset = process.env.GHOST_E2E_RESET === '1'
+        ? await (async () => {
+            const [{createE2eReset}, {resolve: resolvePath}] = await Promise.all([
+                import('../modules/operations/e2e-seed.js'),
+                import('node:path')
+            ]);
+            return createE2eReset(db, resolvePath(process.cwd(), 'test', 'fixtures', 'ghost-v5-export.json'), {atomic: atomicImport});
+        })()
+        : undefined;
 
     return {
         config,
@@ -181,9 +208,9 @@ export const createAppDependencies = async () => {
         newsletterRepository,
         memberRepository,
         staffRepository,
+        fileStore,
+        themeBundles,
         mailbox,
-        ...(process.env.GHOST_E2E_RESET === '1'
-            ? {e2eReset: createE2eReset(db, resolvePath(process.cwd(), 'test', 'fixtures', 'ghost-v5-export.json'))}
-            : {})
+        ...(e2eReset ? {e2eReset} : {})
     };
 };

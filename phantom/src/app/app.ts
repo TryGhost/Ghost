@@ -50,6 +50,8 @@ import type {StaffRepository} from '../modules/identity/repo.js';
 import {createFrontendRouter} from '../frontend/router.js';
 import {createMailSinkRouter} from '../platform/mail/sink-router.js';
 import type {MemoryMailbox} from '../platform/mail/memory.js';
+import type {FileStore} from '../platform/files/store.js';
+import type {ThemeBundleProvider} from '../frontend/themes/bundles.js';
 
 export type AppDependencies = {
     config: AppConfig;
@@ -80,6 +82,8 @@ export type AppDependencies = {
     newsletterRepository: NewsletterRepository;
     memberRepository: MemberRepository;
     staffRepository: StaffRepository;
+    fileStore: FileStore;
+    themeBundles: ThemeBundleProvider;
 };
 
 export const createApp = ({
@@ -108,6 +112,8 @@ export const createApp = ({
     newsletterRepository,
     memberRepository,
     staffRepository,
+    fileStore,
+    themeBundles,
     mailbox,
     e2eReset
 }: AppDependencies) => {
@@ -188,7 +194,9 @@ export const createApp = ({
         config,
         contentReader,
         settingsService,
-        memberAuthService
+        memberAuthService,
+        fileStore,
+        themeBundles
     }));
 
     app.onError(handleError);

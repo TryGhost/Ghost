@@ -13,6 +13,8 @@
         "build:theme": "tsx src/tools/build-theme-bundle.ts",
         "request:frontend": "tsx src/tools/request-frontend.ts",
         "admin:sync": "cd .. && npx nx build @tryghost/admin && rsync -a --delete ghost/core/core/built/admin/ phantom/content/admin/",
+        "worker:assets": "tsx src/tools/stage-worker-assets.ts",
+        "worker:dev": "wrangler dev",
         "test:e2e": "playwright test -c e2e/playwright.config.ts"
     },
     "dependencies": {
@@ -26,6 +28,7 @@
         "drizzle-orm": "0.38.2",
         "handlebars": "4.7.8",
         "hono": "4.6.2",
+        "linkedom": "^0.18.12",
         "zod": "3.24.1"
     },
     "devDependencies": {
@@ -34,6 +37,7 @@
         "drizzle-kit": "0.30.0",
         "tsx": "4.19.2",
         "typescript": "5.8.3",
-        "vitest": "2.1.5"
+        "vitest": "2.1.5",
+        "wrangler": "^4.99.0"
     }
 }

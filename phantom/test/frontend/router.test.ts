@@ -4,6 +4,8 @@ import path from 'node:path';
 import {describe, expect, it} from 'vitest';
 import {Hono} from 'hono';
 import {createFrontendRouter} from '../../src/frontend/router.js';
+import {createNodeFileStore} from '../../src/platform/files/node.js';
+import {createNodeThemeBundles} from '../../src/frontend/themes/node-bundles.js';
 import type {AppConfig} from '../../src/platform/config/config.js';
 import type {FrontendContentReader} from '../../src/modules/content/frontend-reader.js';
 import type {PostRecord} from '../../src/modules/content/db.js';
@@ -132,7 +134,7 @@ describe('frontend router', () => {
         };
 
         const app = new Hono();
-        app.route('/', createFrontendRouter({config, contentReader, settingsService}));
+        app.route('/', createFrontendRouter({config, contentReader, settingsService, fileStore: createNodeFileStore(), themeBundles: createNodeThemeBundles(config)}));
 
         const indexResponse = await app.request('/');
         expect(indexResponse.status).toBe(200);
@@ -194,7 +196,7 @@ describe('frontend router', () => {
         };
 
         const app = new Hono();
-        app.route('/', createFrontendRouter({config, contentReader, settingsService: privateSettingsService}));
+        app.route('/', createFrontendRouter({config, contentReader, settingsService: privateSettingsService, fileStore: createNodeFileStore(), themeBundles: createNodeThemeBundles(config)}));
 
         const gated = await app.request('/');
         expect(gated.status).toBe(302);

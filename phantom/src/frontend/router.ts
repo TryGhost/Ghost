@@ -1,9 +1,9 @@
 import {Hono, type Context} from 'hono';
 import {getCookie, setCookie, deleteCookie} from 'hono/cookie';
 import {createHash} from 'node:crypto';
-import {promises as fs} from 'node:fs';
-import path from 'node:path';
 import type {AppConfig} from '../platform/config/config.js';
+import type {FileStore} from '../platform/files/store.js';
+import type {ThemeBundleProvider} from './themes/bundles.js';
 import type {FrontendContentReader, FrontendEntry} from '../modules/content/frontend-reader.js';
 import type {AuthorProfileRecord, TagRecord} from '../modules/content/db.js';
 import type {SettingsService} from '../modules/settings/service.js';
@@ -19,6 +19,8 @@ type FrontendDependencies = {
     contentReader: FrontendContentReader;
     settingsService: SettingsService;
     memberAuthService?: MemberAuthService;
+    fileStore: FileStore;
+    themeBundles: ThemeBundleProvider;
 };
 
 type SettingsList = Awaited<ReturnType<SettingsService['listSettings']>>['settings'];
@@ -205,17 +207,14 @@ export const createFrontendRouter = ({
     config,
     contentReader,
     settingsService,
-    memberAuthService
+    memberAuthService,
+    fileStore,
+    themeBundles
 }: FrontendDependencies) => {
     const router = new Hono();
     const matcher = createRouteMatcher();
     const renderer = createRenderer();
-    const themeStore = createThemeStore({config, settingsService});
-    const publicRoot = path.resolve(process.cwd(), '..', 'ghost', 'core', 'content', 'public');
-    const portalAsset = path.resolve(process.cwd(), '..', 'apps', 'portal', 'umd', 'portal.min.js');
-    const sodoSearchAsset = path.resolve(process.cwd(), '..', 'apps', 'sodo-search', 'umd', 'sodo-search.min.js');
-    const memberAttributionAsset = path.resolve(process.cwd(), '..', 'ghost', 'core', 'core', 'frontend', 'src', 'member-attribution', 'member-attribution.js');
-    const urlAttributionAsset = path.resolve(process.cwd(), '..', 'ghost', 'core', 'core', 'frontend', 'src', 'utils', 'url-attribution.js');
+    const themeStore = createThemeStore({config, settingsService, bundles: themeBundles, fileStore});
 
     // The attribution script in ghost/core is unbundled source (require +
     // ES-module dep); compose a browser-runnable bundle once.
@@ -225,9 +224,12 @@ export const createFrontendRouter = ({
             return memberAttributionBundle;
         }
         const [dep, script] = await Promise.all([
-            fs.readFile(urlAttributionAsset, 'utf8'),
-            fs.readFile(memberAttributionAsset, 'utf8')
+            fileStore.readText('attribution/url-attribution.js'),
+            fileStore.readText('attribution/member-attribution.js')
         ]);
+        if (!dep || !script) {
+            throw new Error('Member attribution sources not found');
+        }
         const depInline = dep.replaceAll('export function', 'function');
         const scriptInline = script
             .replace("const urlAttribution = require('../utils/url-attribution');", '')
@@ -236,16 +238,14 @@ export const createFrontendRouter = ({
         memberAttributionBundle = `(function () {\n${depInline}\n${scriptInline}\n})();`;
         return memberAttributionBundle;
     };
-    const announcementBarAsset = path.resolve(process.cwd(), '..', 'apps', 'announcement-bar', 'umd', 'announcement-bar.min.js');
-    // Prefer the admin build vendored into phantom (yarn admin:sync); fall
-    // back to ghost/core's build output for monorepo development.
-    const adminRoots = [
-        path.resolve(process.cwd(), 'content', 'admin'),
-        path.resolve(process.cwd(), '..', 'ghost', 'core', 'core', 'built', 'admin')
-    ];
+
+    const extensionOf = (assetPath: string) => {
+        const dotIndex = assetPath.lastIndexOf('.');
+        return dotIndex === -1 ? '' : assetPath.slice(dotIndex).toLowerCase();
+    };
 
     const adminContentType = (assetPath: string) => {
-        const extension = path.extname(assetPath).toLowerCase();
+        const extension = extensionOf(assetPath);
         const types: Record<string, string> = {
             '.css': 'text/css; charset=utf-8',
             '.js': 'application/javascript; charset=utf-8',
@@ -262,41 +262,27 @@ export const createFrontendRouter = ({
         return types[extension] ?? 'application/octet-stream';
     };
 
-    const readAsset = async (assetPath: string, contentType: string) => {
-        try {
-            const body = await fs.readFile(assetPath);
-            return {body, contentType};
-        } catch {
-            return null;
-        }
-    };
-
-    // Containment guard: request paths may carry `..` segments; anything that
-    // resolves outside the root is rejected.
-    const resolveWithin = (root: string, relativePath: string) => {
-        const resolved = path.resolve(root, relativePath);
-        return resolved.startsWith(root + path.sep) ? resolved : null;
+    // Traversal containment lives in the file store: keys with `..` segments
+    // are rejected before any lookup happens.
+    const readAsset = async (key: string, contentType: string) => {
+        const body = await fileStore.read(key);
+        return body ? {body, contentType} : null;
     };
 
     const getPublicAsset = async (assetPath: string) => {
-        const fullPath = resolveWithin(publicRoot, assetPath);
-        if (!fullPath) {
+        const body = await fileStore.read(`public/${assetPath}`);
+        if (!body) {
             return null;
         }
-        try {
-            const body = await fs.readFile(fullPath);
-            const extension = path.extname(assetPath).toLowerCase();
-            const contentType = extension === '.css'
-                ? 'text/css; charset=utf-8'
-                : extension === '.js'
-                    ? 'application/javascript; charset=utf-8'
-                    : extension === '.ico'
-                        ? 'image/x-icon'
-                        : 'application/octet-stream';
-            return {body, contentType};
-        } catch {
-            return null;
-        }
+        const extension = extensionOf(assetPath);
+        const contentType = extension === '.css'
+            ? 'text/css; charset=utf-8'
+            : extension === '.js'
+                ? 'application/javascript; charset=utf-8'
+                : extension === '.ico'
+                    ? 'image/x-icon'
+                    : 'application/octet-stream';
+        return {body, contentType};
     };
 
     const serveAsset = async (context: Context, prefix: string) => {
@@ -336,7 +322,7 @@ export const createFrontendRouter = ({
             });
         }
         if (assetPath === 'announcement-bar.min.js') {
-            const asset = await readAsset(announcementBarAsset, 'application/javascript; charset=utf-8');
+            const asset = await readAsset('announcement-bar/announcement-bar.min.js', 'application/javascript; charset=utf-8');
             if (!asset) {
                 return context.text('Not Found', 404);
             }
@@ -514,7 +500,7 @@ export const createFrontendRouter = ({
             return serveAsset(context, '/content/themes/assets/');
         }
         if (context.req.path.startsWith('/ghost/assets/portal/')) {
-            const asset = await readAsset(portalAsset, 'application/javascript; charset=utf-8');
+            const asset = await readAsset('portal/portal.min.js', 'application/javascript; charset=utf-8');
             if (!asset) {
                 return context.text('Not Found', 404);
             }
@@ -534,7 +520,7 @@ export const createFrontendRouter = ({
                     }
                 });
             }
-            const asset = await readAsset(sodoSearchAsset, 'application/javascript; charset=utf-8');
+            const asset = await readAsset('sodo-search/sodo-search.min.js', 'application/javascript; charset=utf-8');
             if (!asset) {
                 return context.text('Not Found', 404);
             }
@@ -572,20 +558,11 @@ export const createFrontendRouter = ({
         if (context.req.path.startsWith('/ghost/assets/')) {
             const assetPath = context.req.path.replace('/ghost/assets/', '');
             const contentType = adminContentType(assetPath);
-            let asset = null;
-            for (const adminRoot of adminRoots) {
-                const contained = resolveWithin(path.resolve(adminRoot, 'assets'), assetPath);
-                asset = contained ? await readAsset(contained, contentType) : null;
-                if (asset) {
-                    break;
-                }
-            }
+            let asset = await readAsset(`admin/assets/${assetPath}`, contentType);
             if (!asset) {
                 const [appName, ...rest] = assetPath.split('/');
                 if (appName && rest.length > 0 && /^[a-z0-9-]+$/.test(appName)) {
-                    const appDist = path.resolve(process.cwd(), '..', 'apps', appName, 'dist');
-                    const contained = resolveWithin(appDist, rest.join('/'));
-                    asset = contained ? await readAsset(contained, contentType) : null;
+                    asset = await readAsset(`apps/${appName}/${rest.join('/')}`, contentType);
                 }
             }
             if (!asset) {
@@ -609,11 +586,9 @@ export const createFrontendRouter = ({
             return context.redirect(`/ghost/#/${hashPath}`, 302);
         }
         if (context.req.path === '/ghost/') {
-            for (const adminRoot of adminRoots) {
-                const asset = await readAsset(path.resolve(adminRoot, 'index.html'), 'text/html; charset=utf-8');
-                if (asset) {
-                    return new Response(asset.body, {status: 200, headers: {'Content-Type': asset.contentType}});
-                }
+            const asset = await readAsset('admin/index.html', 'text/html; charset=utf-8');
+            if (asset) {
+                return new Response(asset.body, {status: 200, headers: {'Content-Type': asset.contentType}});
             }
             return context.text('Admin build not found', 404);
         }

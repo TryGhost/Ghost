@@ -1,0 +1,35 @@
+// Cloudflare Workers configuration (decision #13: Workers-first runtime).
+// Run `yarn worker:assets` before `yarn worker:dev` to stage static files.
+{
+    "name": "phantom",
+    "main": "src/worker.ts",
+    "compatibility_date": "2025-10-01",
+    // nodejs_compat provides node:crypto/node:path and mirrors worker vars
+    // onto process.env (compatibility_date >= 2025-04-01), so the shared
+    // config loader works unchanged.
+    "compatibility_flags": ["nodejs_compat"],
+    "assets": {
+        // Staged by src/tools/stage-worker-assets.ts using the FileStore
+        // logical key namespace; handling is disabled so the binding acts as
+        // a plain file lookup behind src/platform/files/workers.ts.
+        "directory": "./dist-worker/assets",
+        "binding": "ASSETS",
+        "html_handling": "none",
+        "not_found_handling": "none",
+        "run_worker_first": true
+    },
+    "alias": {
+        // Never reached at runtime: the lexical renderer injects linkedom.
+        "jsdom": "./src/platform/workers/jsdom-stub.ts"
+    },
+    "dev": {
+        "port": 8788
+    },
+    "vars": {
+        // siteUrl derives from the port; keep in sync with dev.port above.
+        "GHOST_PORT": "8788",
+        // Workers cannot open SQLite files: point at a libSQL server over
+        // HTTP (e.g. `turso dev --port 8880` or sqld) for local development.
+        "GHOST_DB_URL": "http://127.0.0.1:8880"
+    }
+}

@@ -40,6 +40,29 @@
 - Mail: in-memory MailProvider + Mailpit-compatible /__mail__ sink (e2e
   mode); magic-link and password-reset emails flow through it.
 
+## Cloudflare Workers (decision #13: workers-first)
+- The server runs on Workers: `src/worker.ts` + `wrangler.jsonc`
+  (nodejs_compat; vars mirror onto process.env so loadConfig is shared).
+  `yarn worker:assets` stages static files into dist-worker/assets for the
+  wrangler assets binding; `yarn worker:dev` serves on :8788.
+- Platform adapters: FileStore (src/platform/files/{node,workers}.ts —
+  logical key namespace; Node = monorepo fallback chains, Workers = ASSETS
+  binding) and ThemeBundleProvider (node-bundles.ts fs/r2 loaders vs static
+  imports of content/themes/*/bundle.mjs — precompiled handlebars, no eval).
+- Lexical rendering on workerd injects linkedom ({window} dom option);
+  jsdom is aliased to a stub in wrangler.jsonc and never loads. Node keeps
+  the CJS/jsdom path via createRequire.
+- DB over HTTP: local dev uses a libsql-server docker container
+  (ghcr.io/tursodatabase/libsql-server, :8880); the importer/e2e-seed run
+  non-atomically over remote libSQL (manual BEGIN can't span hrana streams)
+  — atomic flag threaded from bootstrap by URL scheme.
+- Verified on `wrangler dev`: theme SSR (casper bundle), all asset routes,
+  bcrypt owner login, admin post create, lexical post page render, full
+  Ember admin boot + signin + analytics screen in a real browser (seeded
+  via Node server pointed at the same libsql container, /__e2e__/reset).
+- Remaining for production: in-memory rate-limit/queue/mailbox state,
+  real mail provider, siteUrl config for non-localhost, Queues adapter.
+
 ## Known gaps / next (e2e goal: all upstream suites green)
 - 2FA suite: run in its own playwright project/server (like billing) with
   a GHOST_STAFF_DEVICE_VERIFICATION env. Design: staff_sessions gains

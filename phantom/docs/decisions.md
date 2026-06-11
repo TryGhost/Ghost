@@ -51,9 +51,12 @@ governing docs, all in this directory (`prd.md`, `prd-operations.md`,
     mandatory.
 13. **Runtime** — Node AND modern JS runtimes (e.g. Cloudflare Workers);
     stateless servers, queue-driven workers. Enforcement: Workers-FIRST
-    development (workerd/wrangler primary, Node verified in CI). Known
-    violations to fix: in-memory rate limiter/queue state and Node filesystem
-    reads for theme/public assets.
+    development (workerd/wrangler primary, Node verified in CI). Static
+    files and theme bundles sit behind platform adapters (FileStore +
+    ThemeBundleProvider; Node fs vs wrangler assets binding + statically
+    imported precompiled bundles) and the worker runs via src/worker.ts +
+    wrangler.jsonc. Remaining violations to fix: in-memory rate
+    limiter/queue/mailbox state.
 14. **Workflows** — new Automation & Workflows bounded context
     (WorkflowDefinition/WorkflowRun/StepRun) on the job primitives.
     AutomatedEmail is superseded; the welcome series becomes a seeded

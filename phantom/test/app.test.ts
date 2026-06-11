@@ -1,5 +1,7 @@
 import {describe, expect, it} from 'vitest';
 import {createApp} from '../src/app/app.js';
+import {createNodeFileStore} from '../src/platform/files/node.js';
+import {createNodeThemeBundles} from '../src/frontend/themes/node-bundles.js';
 import type {SiteService} from '../src/modules/site/service.js';
 import type {StaffAuthService} from '../src/modules/identity/service.js';
 import type {SiteUpdateInput} from '../src/modules/site/contracts.js';
@@ -461,6 +463,8 @@ const subscriptionRepository = {listPlans: async () => [], getPricesByPlan: asyn
 const newsletterRepository = {listNewsletters: async () => []} as unknown as import('../src/modules/newsletters/repo.js').NewsletterRepository;
 const memberRepository = {listMembers: async () => [], countMembers: async () => ({total: 0, free: 0, paid: 0})} as unknown as import('../src/modules/members/repo.js').MemberRepository;
 const staffRepositoryDep = {listStaff: async () => []} as unknown as import('../src/modules/identity/repo.js').StaffRepository;
+const fileStore = createNodeFileStore();
+const themeBundles = createNodeThemeBundles(config);
 const contentReader = {
     getEntryBySlug: async () => null,
     listPublished: async () => ({entries: [], pagination: {page: 1, limit: 10, pages: 1, total: 0, next: null, prev: null}}),
@@ -495,7 +499,9 @@ describe('app routes', () => {
             subscriptionRepository,
             newsletterRepository,
             memberRepository,
-            staffRepository: staffRepositoryDep
+            staffRepository: staffRepositoryDep,
+            fileStore,
+            themeBundles
         });
 
         const response = await app.request('/ghost/api/v10/health');
@@ -531,7 +537,9 @@ describe('app routes', () => {
             subscriptionRepository,
             newsletterRepository,
             memberRepository,
-            staffRepository: staffRepositoryDep
+            staffRepository: staffRepositoryDep,
+            fileStore,
+            themeBundles
         });
 
         const response = await app.request('/ghost/api/v10/site', {
@@ -579,7 +587,9 @@ describe('app routes', () => {
             subscriptionRepository,
             newsletterRepository,
             memberRepository,
-            staffRepository: staffRepositoryDep
+            staffRepository: staffRepositoryDep,
+            fileStore,
+            themeBundles
         });
 
         const response = await app.request('/ghost/api/v10/site', {

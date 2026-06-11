@@ -286,9 +286,13 @@ To support edge and horizontal scale:
 - File storage and media rely on external object storage in managed hosting.
 - Self-hosted retains local storage options with compatible adapters.
 - Workers-first development is the target: workerd/wrangler is the primary
-  dev runtime and Node is the secondary target, verified in CI. Current source
-  still has Node filesystem reads for theme/public assets and in-memory
-  rate-limit and queue state.
+  dev runtime and Node is the secondary target, verified in CI. The server
+  runs on Workers via src/worker.ts + wrangler.jsonc: static files resolve
+  through the FileStore adapter (Node fs fallback chains vs the wrangler
+  assets binding staged by `yarn worker:assets`), precompiled theme bundles
+  are imported statically into the worker bundle (no runtime eval), and the
+  lexical renderer injects linkedom on workerd in place of jsdom. Current
+  source still has in-memory rate-limit, queue, and mailbox state.
 - Stateful concerns (rate limits, storage, queues, env) live behind platform
   adapters with implementations for both runtimes; no in-process state.
 - Database is libSQL-family only (libSQL/Turso/D1), one per site. Storage

@@ -16,9 +16,9 @@ export const E2E_OWNER = {
 // One bcrypt round of this is ~100ms; cache it across resets.
 let cachedPasswordHash: string | null = null;
 
-export const seedFromFixture = async (db: DbClient, fixturePath: string) => {
+export const seedFromFixture = async (db: DbClient, fixturePath: string, options: {atomic?: boolean} = {}) => {
     const payload = JSON.parse(await readFile(fixturePath, 'utf8')) as unknown;
-    const counts = await createGhostImporter(db).importExport(payload);
+    const counts = await createGhostImporter(db, options).importExport(payload);
 
     cachedPasswordHash ??= bcrypt.hashSync(E2E_OWNER.password, 10);
     // The owner "joins" at seed time, not at the fixture's export date —
@@ -32,7 +32,7 @@ export const seedFromFixture = async (db: DbClient, fixturePath: string) => {
 
 // Returns the database to the freshly-seeded state between e2e tests.
 // Staff sessions survive so the suite's shared auth cookie stays valid.
-export const createE2eReset = (db: DbClient, fixturePath: string) => {
+export const createE2eReset = (db: DbClient, fixturePath: string, options: {atomic?: boolean} = {}) => {
     const tableNames = Object.values(schema as Record<string, unknown>)
         .filter((table): table is SQLiteTable => table instanceof SQLiteTable)
         .map((table) => getTableConfig(table).name)
@@ -45,6 +45,6 @@ export const createE2eReset = (db: DbClient, fixturePath: string) => {
         // Flows like password reset revoke sessions server-side; the seeded
         // baseline has the suite's shared session active, so restore it.
         await db.run(sql.raw('UPDATE "staff_sessions" SET revoked_at = NULL'));
-        await seedFromFixture(db, fixturePath);
+        await seedFromFixture(db, fixturePath, options);
     };
 };

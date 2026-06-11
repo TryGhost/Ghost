@@ -189,7 +189,15 @@ const upsertAll = async (
     return rows.length;
 };
 
-export const createGhostImporter = (db: DbClient): GhostImporter => {
+export type ImporterOptions = {
+    // Remote libSQL (HTTP) runs every statement on its own stream, so a
+    // manual BEGIN never spans the following statements; callers with a
+    // remote database disable the transaction and import non-atomically.
+    atomic?: boolean;
+};
+
+export const createGhostImporter = (db: DbClient, options: ImporterOptions = {}): GhostImporter => {
+    const atomic = options.atomic ?? true;
     const importExport = async (payload: unknown): Promise<ImportCounts> => {
         const data = unwrapExport(payload);
 
@@ -464,7 +472,9 @@ export const createGhostImporter = (db: DbClient): GhostImporter => {
         // connection — drizzle's transaction() opens a new libSQL connection,
         // which would see a different database for in-memory clients.
         const tx = db;
-        await db.run(sql.raw('BEGIN'));
+        if (atomic) {
+            await db.run(sql.raw('BEGIN'));
+        }
         try {
             const counts: ImportCounts = {
                 posts: await upsertAll(tx, postTable, posts, postTable.id, postUpdateColumns),
@@ -526,10 +536,20 @@ export const createGhostImporter = (db: DbClient): GhostImporter => {
                 await tx.insert(staffRoleTable).values(batch);
             }
 
-            await db.run(sql.raw('COMMIT'));
+            if (atomic) {
+                await db.run(sql.raw('COMMIT'));
+            }
             return counts;
         } catch (error) {
-            await db.run(sql.raw('ROLLBACK'));
+            if (atomic) {
+                // A failed rollback (e.g. the connection dropped) must not
+                // mask the error that aborted the import.
+                try {
+                    await db.run(sql.raw('ROLLBACK'));
+                } catch {
+                    // ignore
+                }
+            }
             throw error;
         }
     };
