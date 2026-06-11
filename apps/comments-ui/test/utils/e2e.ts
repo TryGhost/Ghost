@@ -235,6 +235,8 @@ export async function setClipboard(page, text) {
     await page.keyboard.press(`${modifier}+KeyC`);
 }
 
+// Modifier for native browser shortcuts (clipboard etc.), which follow the
+// host OS. For editor keymap shortcuts use getEditorModifierKey() instead.
 export function getModifierKey() {
     const os = require('os'); // eslint-disable-line @typescript-eslint/no-require-imports
     const platform = os.platform();
@@ -243,6 +245,15 @@ export function getModifierKey() {
     } else {
         return 'Control';
     }
+}
+
+// Modifier for ProseMirror/TipTap keymap shortcuts (Mod-). The editor derives
+// its platform from navigator.userAgent (vite-plugin-strip-fingerprinting
+// rewrites ProseMirror's platform checks to use the UA), and Playwright's
+// Desktop Chrome descriptor pins a Windows UA on every host — so the editor
+// always binds Mod to Control, regardless of the OS running the tests.
+export function getEditorModifierKey() {
+    return 'Control';
 }
 
 export function addMultipleComments(api, numComments) {

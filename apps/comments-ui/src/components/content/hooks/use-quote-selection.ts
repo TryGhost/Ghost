@@ -1,7 +1,6 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 
 export type QuoteSelection = {
-    html: string;
     left: number;
     top: number;
 };
@@ -9,7 +8,7 @@ export type QuoteSelection = {
 type QuoteSelectionEntry = {
     clear: () => void;
     contentElement: HTMLDivElement;
-    update: () => void;
+    update: (range: Range) => void;
 };
 
 function getNodeElement(node: Node) {
@@ -36,7 +35,10 @@ function appendNormalizedSelectionNode(output: HTMLDivElement, node: Node, inlin
         return;
     }
 
-    if (node.nodeType === Node.TEXT_NODE && !node.textContent?.trim()) {
+    // Drop whitespace-only text nodes between blocks (e.g. the newline between
+    // two <p>s), but keep them while an inline wrapper is open: the space
+    // between two adjacent inline elements (<a>x</a> <a>y</a>) is significant.
+    if (node.nodeType === Node.TEXT_NODE && !node.textContent?.trim() && !inlineWrapper.current) {
         return;
     }
 
@@ -78,9 +80,11 @@ function getEntryForSelection(entries: Set<QuoteSelectionEntry>, ownerDocument: 
         return null;
     }
 
-    return Array.from(entries).find(({contentElement}) => (
+    const entry = Array.from(entries).find(({contentElement}) => (
         contentElement.contains(startElement) && contentElement.contains(endElement)
-    )) ?? null;
+    ));
+
+    return entry ? {entry, range} : null;
 }
 
 function isRangeInsideElement(range: Range, element: Element) {
@@ -106,23 +110,33 @@ function createQuoteSelectionManager(ownerDocument: Document) {
     };
 
     const updateActiveEntry = () => {
-        const nextActiveEntry = getEntryForSelection(entries, ownerDocument);
+        const match = getEntryForSelection(entries, ownerDocument);
 
-        if (!nextActiveEntry) {
+        if (!match) {
             clearActiveEntry();
             return;
         }
 
-        if (activeEntry && activeEntry !== nextActiveEntry) {
+        if (activeEntry && activeEntry !== match.entry) {
             activeEntry.clear();
         }
 
-        activeEntry = nextActiveEntry;
-        activeEntry.update();
+        activeEntry = match.entry;
+        activeEntry.update(match.range);
     };
 
     const updateAfterSelectionSettles = () => {
         ownerWindow.setTimeout(updateActiveEntry, 0);
+    };
+
+    // Scrolling/resizing can move an existing selection but never create one, so
+    // skip the selection validation and entry scan entirely while no button is up.
+    const repositionActiveEntry = () => {
+        if (!activeEntry) {
+            return;
+        }
+
+        updateActiveEntry();
     };
 
     ownerDocument.addEventListener('selectionchange', updateActiveEntry);
@@ -134,8 +148,8 @@ function createQuoteSelectionManager(ownerDocument: Document) {
     // programmatically (focus, scrollIntoView) right around the moments users
     // make selections, which would permanently hide the button since the
     // selection itself never re-fires selectionchange.
-    ownerWindow.addEventListener('resize', updateActiveEntry);
-    ownerWindow.addEventListener('scroll', updateActiveEntry, true);
+    ownerWindow.addEventListener('resize', repositionActiveEntry);
+    ownerWindow.addEventListener('scroll', repositionActiveEntry, true);
 
     return {
         register(entry: QuoteSelectionEntry) {
@@ -158,8 +172,8 @@ function createQuoteSelectionManager(ownerDocument: Document) {
             ownerDocument.removeEventListener('selectionchange', updateActiveEntry);
             ownerDocument.removeEventListener('mouseup', updateAfterSelectionSettles);
             ownerDocument.removeEventListener('touchend', updateAfterSelectionSettles);
-            ownerWindow.removeEventListener('resize', updateActiveEntry);
-            ownerWindow.removeEventListener('scroll', updateActiveEntry, true);
+            ownerWindow.removeEventListener('resize', repositionActiveEntry);
+            ownerWindow.removeEventListener('scroll', repositionActiveEntry, true);
         }
     };
 }
@@ -186,32 +200,13 @@ export function useQuoteSelection({disabled}: {disabled: boolean}) {
         setQuoteSelection(null);
     }, []);
 
-    const updateQuoteSelection = useCallback(() => {
+    // Runs on every selection/scroll event while a selection is active, so it
+    // only reads the selection rect. Serializing the selected HTML is deferred
+    // to getQuoteHtml (called once, on button click).
+    const updateQuoteSelection = useCallback((range: Range) => {
         const contentElement = contentRef.current;
 
         if (!contentElement || disabled) {
-            clearQuoteSelection();
-            return;
-        }
-
-        const ownerDocument = contentElement.ownerDocument;
-        const selection = ownerDocument.getSelection();
-
-        if (!selection || selection.isCollapsed || selection.rangeCount !== 1 || !selection.toString().trim()) {
-            clearQuoteSelection();
-            return;
-        }
-
-        const range = selection.getRangeAt(0);
-
-        if (!isRangeInsideElement(range, contentElement)) {
-            clearQuoteSelection();
-            return;
-        }
-
-        const quoteHtml = getSelectionHtml(range);
-
-        if (!quoteHtml) {
             clearQuoteSelection();
             return;
         }
@@ -227,12 +222,41 @@ export function useQuoteSelection({disabled}: {disabled: boolean}) {
             return;
         }
 
-        setQuoteSelection({
-            html: quoteHtml,
-            left: rect.left + (rect.width / 2),
-            top: rect.top - 8
-        });
+        const left = rect.left + (rect.width / 2);
+        const top = rect.top - 8;
+
+        // Keep the previous object when the position is unchanged so React can
+        // bail out of re-rendering the comment body.
+        setQuoteSelection(previous => (
+            previous && previous.left === left && previous.top === top
+                ? previous
+                : {left, top}
+        ));
     }, [clearQuoteSelection, disabled]);
+
+    // Serializes the current selection into normalized quote HTML. Returns null
+    // when there is no valid selection inside this comment body.
+    const getQuoteHtml = useCallback(() => {
+        const contentElement = contentRef.current;
+
+        if (!contentElement || disabled) {
+            return null;
+        }
+
+        const selection = contentElement.ownerDocument.getSelection();
+
+        if (!selection || selection.isCollapsed || selection.rangeCount !== 1 || !selection.toString().trim()) {
+            return null;
+        }
+
+        const range = selection.getRangeAt(0);
+
+        if (!isRangeInsideElement(range, contentElement)) {
+            return null;
+        }
+
+        return getSelectionHtml(range) || null;
+    }, [disabled]);
 
     useEffect(() => {
         const contentElement = contentRef.current;
@@ -269,6 +293,7 @@ export function useQuoteSelection({disabled}: {disabled: boolean}) {
     return {
         clearQuoteSelection,
         contentRef,
+        getQuoteHtml,
         quoteSelection
     };
 }

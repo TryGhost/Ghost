@@ -703,32 +703,9 @@ function setCommentFormHasUnsavedChanges({data: {id, hasUnsavedChanges}, state}:
     return {openCommentForms: updatedForms};
 }
 
-function setCommentFormInitialHtml({data: {id, initialHtml}, state}: {data: {id: string, initialHtml: string}, state: EditableAppContext}) {
-    const updatedForms = state.openCommentForms.map((f) => {
-        if (f.id === id) {
-            return {...f, initialHtml, hasUnsavedChanges: false};
-        }
-
-        // Return the same reference for untouched forms to preserve referential
-        // equality and avoid needless re-renders.
-        return f;
-    });
-
-    return {openCommentForms: updatedForms};
-}
-
 function closeCommentForm({data: id, state}: {data: string, state: EditableAppContext}) {
     return {openCommentForms: state.openCommentForms.filter(f => f.id !== id)};
 };
-
-// When starting a quoted reply we close any other open reply forms to keep the
-// thread tidy, but preserve the one being quoted into (f.id === id) and any form
-// the user has actually edited (hasUnsavedChanges) so we never silently discard
-// an in-progress draft. A freshly auto-quoted form reports no unsaved changes
-// (see setCommentFormInitialHtml), so it is still eligible to be closed.
-function closeOtherReplyForms({data: id, state}: {data: string, state: EditableAppContext}) {
-    return {openCommentForms: state.openCommentForms.filter(f => f.type !== 'reply' || f.id === id || f.hasUnsavedChanges)};
-}
 
 function setScrollTarget({data: commentId}: {data: string | null}) {
     return {commentIdToScrollTo: commentId};
@@ -743,9 +720,7 @@ export const SyncActions = {
     openPopup,
     closePopup,
     closeCommentForm,
-    closeOtherReplyForms,
     setCommentFormHasUnsavedChanges,
-    setCommentFormInitialHtml,
     setScrollTarget,
     setHashCommentId
 };

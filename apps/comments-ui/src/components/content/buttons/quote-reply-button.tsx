@@ -7,36 +7,48 @@ type Props = {
     quoteInReply: () => void;
 };
 
-function getClampedPosition(button: HTMLButtonElement, quoteSelection: QuoteSelection) {
-    const ownerWindow = button.ownerDocument.defaultView || window;
-    const {width, height} = button.getBoundingClientRect();
+function getClampedPosition(ownerWindow: Window, size: {width: number, height: number}, quoteSelection: QuoteSelection) {
     const horizontalMargin = 8;
     const verticalMargin = 8;
-    const halfWidth = width / 2;
+    const halfWidth = size.width / 2;
 
     return {
         left: Math.min(
             Math.max(quoteSelection.left, halfWidth + horizontalMargin),
             ownerWindow.innerWidth - halfWidth - horizontalMargin
         ),
-        top: Math.max(quoteSelection.top, height + verticalMargin)
+        top: Math.max(quoteSelection.top, size.height + verticalMargin)
     };
 }
 
 const QuoteReplyButton: React.FC<Props> = ({quoteSelection, quoteInReply}) => {
     const {t} = useAppContext();
     const buttonRef = useRef<HTMLButtonElement | null>(null);
+    // The button's label never changes, so measure it once instead of forcing a
+    // synchronous layout on every selection/scroll tick.
+    const sizeRef = useRef<{width: number, height: number} | null>(null);
     const [position, setPosition] = useState(() => ({
         left: quoteSelection.left,
         top: quoteSelection.top
     }));
 
     useLayoutEffect(() => {
-        if (!buttonRef.current) {
+        const button = buttonRef.current;
+
+        if (!button) {
             return;
         }
 
-        setPosition(getClampedPosition(buttonRef.current, quoteSelection));
+        if (!sizeRef.current) {
+            const {width, height} = button.getBoundingClientRect();
+            sizeRef.current = {width, height};
+        }
+
+        const ownerWindow = button.ownerDocument.defaultView || window;
+        const next = getClampedPosition(ownerWindow, sizeRef.current, quoteSelection);
+        setPosition(previous => (
+            previous.left === next.left && previous.top === next.top ? previous : next
+        ));
     }, [quoteSelection]);
 
     return (

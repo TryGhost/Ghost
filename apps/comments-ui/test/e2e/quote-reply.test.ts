@@ -1,5 +1,5 @@
 import {Locator, expect, test} from '@playwright/test';
-import {MockedApi, initialize, selectText, waitEditorFocused} from '../utils/e2e';
+import {MockedApi, getEditorModifierKey, initialize, selectText, waitEditorFocused} from '../utils/e2e';
 import {buildReply} from '../utils/fixtures';
 
 async function selectElement(locator: Locator) {
@@ -111,7 +111,7 @@ test.describe('Quote replies', async () => {
         await expect(quoteButton).toHaveCSS('color', 'rgb(23, 23, 23)');
     });
 
-    test('closes an existing quoted reply form when quoting a different comment', async ({page}) => {
+    test('keeps an existing quoted reply form open when quoting a different comment', async ({page}) => {
         mockedApi.addComment({
             html: '<p>This is comment 1</p>'
         });
@@ -132,12 +132,78 @@ test.describe('Quote replies', async () => {
         await expect(frame.getByTestId('reply-form')).toHaveCount(1);
         await expect(frame.getByTestId('reply-form').getByText('comment 1')).toBeVisible();
 
+        // A quoted form contains content the user explicitly created, so it
+        // counts as having unsaved changes and is never silently auto-closed.
+        const secondComment = frame.getByTestId('comment-component').filter({hasText: 'This is comment 2'});
+        await selectText(secondComment.getByTestId('comment-content'), /comment 2/);
+        await frame.getByTestId('quote-reply-button').click();
+
+        await expect(frame.getByTestId('reply-form')).toHaveCount(2);
+        await expect(frame.getByTestId('reply-form').getByText('comment 1')).toBeVisible();
+        await expect(frame.getByTestId('reply-form').getByText('comment 2')).toBeVisible();
+    });
+
+    test('keeps a quoted reply form open when replying to a different comment', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>'
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        const firstComment = frame.getByTestId('comment-component').filter({hasText: 'This is comment 1'});
+        await selectText(firstComment.getByTestId('comment-content'), /comment 1/);
+        await frame.getByTestId('quote-reply-button').click();
+
+        await expect(frame.getByTestId('reply-form')).toHaveCount(1);
+        await expect(frame.getByTestId('reply-form').getByText('comment 1')).toBeVisible();
+
+        // Opening a plain reply elsewhere must not destroy the visible quote.
+        const secondComment = frame.getByTestId('comment-component').filter({hasText: 'This is comment 2'});
+        await secondComment.getByTestId('reply-button').click();
+
+        await expect(frame.getByTestId('reply-form')).toHaveCount(2);
+        await expect(frame.getByTestId('reply-form').getByText('comment 1')).toBeVisible();
+    });
+
+    test('auto-closes a quoted reply form once it has been emptied', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is comment 1</p>'
+        });
+        mockedApi.addComment({
+            html: '<p>This is comment 2</p>'
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        const firstComment = frame.getByTestId('comment-component').filter({hasText: 'This is comment 1'});
+        await selectText(firstComment.getByTestId('comment-content'), /comment 1/);
+        await frame.getByTestId('quote-reply-button').click();
+
+        const firstEditor = frame.getByTestId('reply-form').getByTestId('form-editor');
+        await waitEditorFocused(firstEditor);
+        // Use the editor's own select-all binding (Mod-a) rather than the
+        // browser-native one, which handles the blockquote boundary unreliably.
+        await firstEditor.press(`${getEditorModifierKey()}+KeyA`);
+        await firstEditor.press('Backspace');
+
+        // An emptied form has no content worth preserving, so quoting elsewhere
+        // tidies it away like any other empty form.
         const secondComment = frame.getByTestId('comment-component').filter({hasText: 'This is comment 2'});
         await selectText(secondComment.getByTestId('comment-content'), /comment 2/);
         await frame.getByTestId('quote-reply-button').click();
 
         await expect(frame.getByTestId('reply-form')).toHaveCount(1);
-        await expect(frame.getByTestId('reply-form').getByText('comment 1')).not.toBeVisible();
         await expect(frame.getByTestId('reply-form').getByText('comment 2')).toBeVisible();
     });
 
@@ -198,14 +264,14 @@ test.describe('Quote replies', async () => {
         await firstEditor.type('Draft reply');
         await expect(firstReplyForm).toContainText('Draft reply');
 
-        // Re-quote the same comment after typing: the second quote must not fold
-        // the draft into the "saved" baseline (which previously discarded it).
+        // Re-quote the same comment after typing: the draft must survive the
+        // second insertion.
         await selectText(firstComment.getByTestId('comment-content'), /comment 1/);
         await frame.getByTestId('quote-reply-button').click();
         await expect(firstReplyForm).toContainText('Draft reply');
 
-        // Quoting a different comment now keeps the still-dirty first form open
-        // rather than silently auto-closing it and losing the draft.
+        // Quoting a different comment keeps the first form open rather than
+        // silently auto-closing it and losing the draft.
         const secondComment = frame.getByTestId('comment-component').filter({hasText: 'This is comment 2'});
         await selectText(secondComment.getByTestId('comment-content'), /comment 2/);
         await frame.getByTestId('quote-reply-button').click();
@@ -241,6 +307,44 @@ test.describe('Quote replies', async () => {
         const replyHtml = mockedApi.comments[0].replies[0].html;
         expect(replyHtml).toMatch(/<blockquote><p><a [^>]*href="https:\/\/example\.com"[^>]*>linked text<\/a><\/p><\/blockquote>/);
         expect(replyHtml).toContain('<p>Reply text</p>');
+    });
+
+    test('preserves whitespace between adjacent inline elements when quoting', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>See <a href="https://a.example">first link</a> <a href="https://b.example">second link</a></p>'
+        });
+
+        const {frame} = await initialize({
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        // Select from inside the first link through the second link, so the
+        // whitespace-only text node between them sits at the top level of the
+        // cloned selection fragment.
+        await frame.getByTestId('comment-content').nth(0).evaluate((element) => {
+            const links = element.querySelectorAll('a');
+            const range = element.ownerDocument.createRange();
+            range.setStart(links[0].firstChild!, 0);
+            range.setEnd(links[1].firstChild!, links[1].firstChild!.textContent!.length);
+
+            const selection = element.ownerDocument.getSelection();
+            selection?.removeAllRanges();
+            selection?.addRange(range);
+        });
+
+        const replyForm = frame.getByTestId('reply-form');
+        await frame.getByTestId('quote-reply-button').click();
+        const editor = replyForm.getByTestId('form-editor');
+        await waitEditorFocused(editor);
+        await editor.type('Reply text');
+        await replyForm.getByTestId('submit-form-button').click();
+        await expect.poll(() => mockedApi.comments[0].replies.length).toBe(1);
+
+        // The space between the two links must survive into the quote.
+        const replyHtml = mockedApi.comments[0].replies[0].html;
+        expect(replyHtml).toMatch(/first link<\/a> <a [^>]*>second link/);
     });
 
     test('does not show the quote action for selections spanning comments', async ({page}) => {

@@ -35,8 +35,6 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
 
                 if (comment && openForm.type === 'edit') {
                     hasUnsavedChanges = editor.getHTML() !== comment.html;
-                } else if (openForm.initialHtml !== undefined) {
-                    hasUnsavedChanges = editor.getHTML() !== openForm.initialHtml;
                 }
 
                 // avoid unnecessary state updates to prevent infinite loops

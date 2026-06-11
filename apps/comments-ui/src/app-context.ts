@@ -45,7 +45,6 @@ export type OpenCommentForm = {
         id: string,
         html: string
     },
-    initialHtml?: string,
     type: 'reply' | 'edit',
     hasUnsavedChanges: boolean
 }

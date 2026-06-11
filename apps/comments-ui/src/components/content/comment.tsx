@@ -162,14 +162,6 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             ...inReplyToDetails
         };
 
-        // Closing sibling reply forms happens here — once we're actually opening
-        // the quoted form — rather than in the quoteInReply click handler. That
-        // way, bailing out earlier (e.g. the member cancels the "add details"
-        // modal) never discards other open forms for nothing.
-        if (quoteHtml) {
-            dispatchAction('closeOtherReplyForms', comment.id);
-        }
-
         await dispatchAction('openCommentForm', newForm);
     }, [comment, parent, dispatchAction]);
 
@@ -198,12 +190,16 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
         }
     }, [comment.id, dispatchAction, memberName, openForm, openReplyFormWithProfile]);
 
+    // Returns whether the quote was acted on: when the tier gate bails into the
+    // CTA popup the caller keeps the selection (and the quote button) alive, so
+    // dismissing the popup doesn't force the visitor to re-select the text.
     const quoteInReply = useCallback((quoteHtml: string) => {
         if (!ensureReplyAccess()) {
-            return;
+            return false;
         }
 
         openReplyForm(quoteHtml);
+        return true;
     }, [ensureReplyAccess, openReplyForm]);
 
     const canShowReplyAction = !isCommentingDisabled && !(isAdmin && comment.status === 'hidden');
@@ -361,7 +357,10 @@ const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({openForm, parent, useThreadi
     if (!useThreading) {
         return (
             <div className="my-8 sm:my-10">
-                <ReplyForm openForm={openForm} parent={parent} />
+                {/* Keyed so switching the form target (e.g. autoclose swapping in a
+                    form for a sibling reply rendered in this same slot) remounts the
+                    editor instead of reusing it with the previous form's content. */}
+                <ReplyForm key={openForm.id} openForm={openForm} parent={parent} />
             </div>
         );
     }
@@ -382,7 +381,7 @@ const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({openForm, parent, useThreadi
                 data-testid="reply-form-elbow"
                 aria-hidden
             />
-            <ReplyForm openForm={openForm} parent={parent} threadedLayout={true} />
+            <ReplyForm key={openForm.id} openForm={openForm} parent={parent} threadedLayout={true} />
         </div>
     );
 };
@@ -479,24 +478,33 @@ type CommentBodyProps = {
     canQuoteInReply: boolean;
     className?: string;
     isHighlighted?: boolean;
-    onQuoteInReply: (quoteHtml: string) => void;
+    onQuoteInReply: (quoteHtml: string) => boolean;
 }
 
 const CommentBody: React.FC<CommentBodyProps> = ({html, canQuoteInReply, className = '', isHighlighted, onQuoteInReply}) => {
-    const {clearQuoteSelection, contentRef, quoteSelection} = useQuoteSelection({disabled: !canQuoteInReply});
+    const {clearQuoteSelection, contentRef, getQuoteHtml, quoteSelection} = useQuoteSelection({disabled: !canQuoteInReply});
 
     const quoteInReply = React.useCallback(() => {
-        if (!quoteSelection) {
+        // The quote HTML is serialized lazily from the live selection here, on
+        // click, rather than on every selection change (see use-quote-selection).
+        const quoteHtml = getQuoteHtml();
+
+        if (!quoteHtml) {
             return;
         }
 
-        onQuoteInReply(quoteSelection.html);
-        clearQuoteSelection();
-    }, [clearQuoteSelection, onQuoteInReply, quoteSelection]);
+        if (onQuoteInReply(quoteHtml)) {
+            clearQuoteSelection();
+        }
+    }, [clearQuoteSelection, getQuoteHtml, onQuoteInReply]);
 
-    let commentHtml = html;
+    // Memoized: this re-parses and re-serializes the whole comment body, and
+    // CommentBody re-renders on every quote-selection position change.
+    const commentHtml = React.useMemo(() => {
+        if (!isHighlighted) {
+            return html;
+        }
 
-    if (isHighlighted) {
         const parser = new DOMParser();
         const doc = parser.parseFromString(html, 'text/html');
 
@@ -514,8 +522,8 @@ const CommentBody: React.FC<CommentBodyProps> = ({html, canQuoteInReply, classNa
         });
 
         // Serialize the modified html back to a string
-        commentHtml = doc.body.innerHTML;
-    }
+        return doc.body.innerHTML;
+    }, [html, isHighlighted]);
 
     const dangerouslySetInnerHTML = {__html: commentHtml};
 
