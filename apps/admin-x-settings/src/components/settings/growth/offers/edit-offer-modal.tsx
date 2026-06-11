@@ -105,18 +105,18 @@ const Sidebar: React.FC<{
                         <section>
                             <div className='flex flex-col gap-5 rounded-md border border-grey-300 p-4 pb-3.5 dark:border-grey-800'>
                                 <div className='flex flex-col gap-1.5'>
-                                    <span className='text-xs leading-none font-semibold text-grey-700'>Created on</span>
+                                    <span className='text-sm leading-none font-semibold text-grey-700'>Created on</span>
                                     <span>{formatTimestamp(offer?.created_at ? offer.created_at : '')}</span>
                                 </div>
                                 <div className='flex items-end justify-between'>
                                     <div className='flex flex-col gap-5'>
                                         <div className='flex flex-col gap-1.5'>
-                                            <span className='text-xs leading-none font-semibold text-grey-700'>Performance</span>
+                                            <span className='text-sm leading-none font-semibold text-grey-700'>Performance</span>
                                             <span>{offer?.redemption_count} {offer?.redemption_count === 1 ? 'redemption' : 'redemptions'}</span>
                                         </div>
                                         {offer?.redemption_count > 0 && offer?.last_redeemed ?
                                             <div className='flex flex-col gap-1.5'>
-                                                <span className='text-xs leading-none font-semibold text-grey-700'>Last redemption</span>
+                                                <span className='text-sm leading-none font-semibold text-grey-700'>Last redemption</span>
                                                 <span>{formatTimestamp(offer?.last_redeemed)}</span>
                                             </div> :
                                             null

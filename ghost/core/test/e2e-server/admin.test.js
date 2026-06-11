@@ -86,7 +86,7 @@ describe('Admin Routing', function () {
             urlUtils.stubUrlUtilsFromConfig();
 
             await testUtils.startGhost();
-            request = supertest.agent(config.get('server:host') + ':' + config.get('server:port'));
+            request = supertest.agent(configUtils.getServerUrl());
         });
 
         after(async function () {

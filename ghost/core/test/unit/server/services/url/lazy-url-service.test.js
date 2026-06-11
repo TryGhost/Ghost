@@ -1,6 +1,13 @@
+// Preserved as a parity spec for the LazyUrlService re-implementation (HKG-1817).
+// The implementation module was removed in the experimental revert (HKG-1816);
+// the suite is kept skipped (not deleted) so the behaviour contract stays visible
+// in-tree. `LazyUrlService` is stubbed to null because the module no longer
+// exists. To revive: restore the require, drop the eslint-disable, and switch
+// describe.skip back to describe.
+/* eslint-disable ghost/mocha/no-skipped-tests */
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const LazyUrlService = require('../../../../../core/server/services/url/lazy-url-service');
+const LazyUrlService = null; // require('../../../../../core/server/services/url/lazy-url-service');
 
 function makeUrlUtils() {
     // Just enough of url-utils to satisfy the service. createUrl returns the
@@ -33,7 +40,7 @@ function makeUrlUtils() {
     };
 }
 
-describe('LazyUrlService', function () {
+describe.skip('LazyUrlService', function () {
     let urlUtils;
 
     beforeEach(function () {

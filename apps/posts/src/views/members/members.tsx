@@ -5,6 +5,7 @@ import MembersFilters from './components/members-filters';
 import MembersHeaderSearch from './components/members-header-search';
 import MembersHelpCards from './components/members-help-cards';
 import MembersList from './components/members-list';
+import MultipleActiveSubscriptionsBanner from './components/multiple-active-subscriptions-banner';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Button, EmptyIndicator, LoadingIndicator} from '@tryghost/shade/components';
 import {FilterBar, PageHeader} from '@tryghost/shade/patterns';
@@ -12,8 +13,9 @@ import {ListPage} from '@tryghost/shade/page-templates';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 import {buildMemberListSearchParams, getMemberActiveColumns} from './member-query-params';
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
-import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import {checkStripeEnabled, getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {isMultipleActiveSubscriptionsPredicate} from './multiple-active-subscriptions';
 import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
 import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
@@ -24,14 +26,25 @@ import {useLocation, useSearchParams} from 'react-router';
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
 
-const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = ({timezone, membershipsEnabled}) => {
+interface MembersPageProps {
+    emailAnalyticsEnabled: boolean;
+    hasStripeEnabled: boolean;
+    membershipsEnabled: boolean;
+    timezone: string;
+}
+
+const MembersPage: React.FC<MembersPageProps> = ({
+    emailAnalyticsEnabled,
+    hasStripeEnabled,
+    membershipsEnabled,
+    timezone
+}) => {
     const headerRef = useRef<HTMLDivElement | null>(null);
     const setHeaderContentRef = useCallback((node: HTMLDivElement | null) => {
         headerRef.current = node?.closest('[data-list-page="header"]') as HTMLDivElement | null;
     }, []);
     const {filters, nql, search, setFilters, setSearch, hasFilterOrSearch, clearAll} = useMembersFilterState(timezone);
     const location = useLocation();
-    const {data: configData} = useBrowseConfig();
     const savedViews = useMemberViews();
     const activeView = useActiveMemberView(savedViews, nql);
     const [showMobileSearch, setShowMobileSearch] = useState(false);
@@ -39,7 +52,11 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
     const [searchInput, setSearchInput] = useState(search);
     const [debouncedSearch] = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
 
-    const emailAnalyticsEnabled = configData?.config?.emailAnalytics === true;
+    // The multiple active subscriptions predicate is applied via the banner's
+    // "View members" link and has no filter UI, so keep it out of the filter bar.
+    const visibleFilters = useMemo(() => {
+        return filters.filter(filter => !isMultipleActiveSubscriptionsPredicate(filter));
+    }, [filters]);
 
     const activeColumns = useMemo(() => {
         return getMemberActiveColumns(filters);
@@ -76,9 +93,10 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
     });
 
     const totalMembers = data?.meta?.pagination?.total ?? 0;
-    const hasFilters = filters.length > 0;
+    const hasFilters = visibleFilters.length > 0;
     const shouldShowMobileSearchRow = showMobileSearch;
     const shouldShowFiltersRow = hasFilters;
+    const shouldShowMemberControls = hasFilterOrSearch || totalMembers > 0;
     const shouldShowMembersHelpCards = !hasFilterOrSearch && !shouldShowLoading && !isError && totalMembers < MEMBERS_HELP_CARDS_LIMIT;
 
     useEffect(() => {
@@ -107,7 +125,7 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
     return (
         <MainLayout>
             <ListPage data-testid="members-page">
-                <ListPage.Header className="py-4 sidebar:py-6">
+                <ListPage.Header className="py-4 sidebar:py-5">
                     <div ref={setHeaderContentRef} className="flex flex-col gap-4 sidebar:gap-6">
                         <PageHeader
                             blurredBackground={false}
@@ -116,7 +134,7 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
                             <PageHeader.Left>
                                 <PageHeader.Title>
                                     Members{' '}
-                                    {!shouldShowLoading && (
+                                    {!shouldShowLoading && totalMembers > 0 && (
                                         <PageHeader.Count className="hidden sm:inline">
                                             {formatNumber(totalMembers)}
                                         </PageHeader.Count>
@@ -125,29 +143,33 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
                             </PageHeader.Left>
                             <PageHeader.Actions>
                                 <PageHeader.ActionGroup className="ml-auto flex-wrap justify-end sm:ml-0 sm:flex-nowrap">
-                                    <div className="hidden lg:flex">
-                                        <MembersHeaderSearch
-                                            search={searchInput}
-                                            onSearchChange={setSearchInput}
-                                        />
-                                    </div>
-                                    <Button
-                                        aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
-                                        className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
-                                        variant="outline"
-                                        onClick={handleMobileSearchToggle}
-                                    >
-                                        <LucideIcon.Search className="size-4" />
-                                    </Button>
-                                    {!hasFilters && (
-                                        <MembersFilters
-                                            activeView={activeView}
-                                            filters={filters}
-                                            iconOnly={true}
-                                            nql={nql}
-                                            savedViews={savedViews}
-                                            onFiltersChange={setFilters}
-                                        />
+                                    {shouldShowMemberControls && (
+                                        <>
+                                            <div className="hidden lg:flex">
+                                                <MembersHeaderSearch
+                                                    search={searchInput}
+                                                    onSearchChange={setSearchInput}
+                                                />
+                                            </div>
+                                            <Button
+                                                aria-label={showMobileSearch ? 'Hide member search' : 'Show member search'}
+                                                className={cn('lg:hidden', showMobileSearch && 'bg-secondary hover:bg-secondary')}
+                                                variant="outline"
+                                                onClick={handleMobileSearchToggle}
+                                            >
+                                                <LucideIcon.Search className="size-4" />
+                                            </Button>
+                                            {!hasFilters && (
+                                                <MembersFilters
+                                                    activeView={activeView}
+                                                    filters={visibleFilters}
+                                                    iconOnly={true}
+                                                    nql={nql}
+                                                    savedViews={savedViews}
+                                                    onFiltersChange={setFilters}
+                                                />
+                                            )}
+                                        </>
                                     )}
                                     <MembersActions
                                         canBulkDelete={canBulkDelete}
@@ -155,6 +177,8 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
                                         memberCount={totalMembers}
                                         nql={nql}
                                         search={search}
+                                        showMenu={shouldShowMemberControls}
+                                        showNewMember={shouldShowMemberControls}
                                         onImportComplete={() => {
                                             void refetch();
                                         }}
@@ -163,7 +187,7 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
                             </PageHeader.Actions>
                         </PageHeader>
 
-                        {(shouldShowFiltersRow || shouldShowMobileSearchRow) && (
+                        {shouldShowMemberControls && (shouldShowFiltersRow || shouldShowMobileSearchRow) && (
                             <FilterBar className={cn(filtersClassName, !shouldShowFiltersRow && 'lg:hidden')}>
                                 {shouldShowMobileSearchRow && (
                                     <div className="w-full lg:hidden">
@@ -178,13 +202,19 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
                                 {shouldShowFiltersRow && (
                                     <MembersFilters
                                         activeView={activeView}
-                                        filters={filters}
+                                        filters={visibleFilters}
                                         nql={nql}
                                         savedViews={savedViews}
                                         onFiltersChange={setFilters}
                                     />
                                 )}
                             </FilterBar>
+                        )}
+                        {hasStripeEnabled && (
+                            <MultipleActiveSubscriptionsBanner
+                                nql={nql}
+                                search={search}
+                            />
                         )}
                     </div>
                 </ListPage.Header>
@@ -242,7 +272,11 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
                             totalItems={totalMembers}
                         />
                     )}
-                    {shouldShowMembersHelpCards && <MembersHelpCards />}
+                    {shouldShowMembersHelpCards && (
+                        <div className={cn(data?.members.length && 'mt-8')}>
+                            <MembersHelpCards />
+                        </div>
+                    )}
                 </ListPage.Body>
             </ListPage>
         </MainLayout>
@@ -252,11 +286,12 @@ const MembersPage: React.FC<{timezone: string; membershipsEnabled: boolean}> = (
 const Members: React.FC = () => {
     const [searchParams] = useSearchParams();
     const {data: settingsData, isLoading: isSettingsLoading} = useBrowseSettings({});
+    const {data: configData, isLoading: isConfigLoading} = useBrowseConfig();
     const filterParam = searchParams.get('filter') ?? undefined;
     const hasResolvedSettings = Boolean(settingsData?.settings);
     const shouldDelayHydration = shouldDelayMembersDateFilterHydration(filterParam, hasResolvedSettings, isSettingsLoading);
 
-    if (isSettingsLoading || !settingsData?.settings || shouldDelayHydration) {
+    if (isSettingsLoading || isConfigLoading || !settingsData?.settings || !configData?.config || shouldDelayHydration) {
         return (
             <MainLayout>
                 <ListPage>
@@ -283,8 +318,17 @@ const Members: React.FC = () => {
     const timezone = getSiteTimezone(settingsData.settings);
     const membersSignupAccess = getSettingValue<string>(settingsData.settings, 'members_signup_access');
     const membershipsEnabled = membersSignupAccess !== 'none';
+    const emailAnalyticsEnabled = configData.config.emailAnalytics === true;
+    const hasStripeEnabled = checkStripeEnabled(settingsData.settings, configData.config);
 
-    return <MembersPage membershipsEnabled={membershipsEnabled} timezone={timezone} />;
+    return (
+        <MembersPage
+            emailAnalyticsEnabled={emailAnalyticsEnabled}
+            hasStripeEnabled={hasStripeEnabled}
+            membershipsEnabled={membershipsEnabled}
+            timezone={timezone}
+        />
+    );
 };
 
 export default Members;

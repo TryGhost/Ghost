@@ -399,15 +399,14 @@ html[dir="rtl"] .gh-portal-btn-site-title-back span {
 .gh-portal-popup-container.preview.offer,
 .gh-portal-popup-container.preview.account-plan {
     max-width: 420px;
-    transform: scale(0.9);
-    margin: 3.2vw auto 0;
+    margin: 3.2vw auto 32px;
+    zoom: 0.9;
 }
 
 @media (max-width: 480px) {
     .gh-portal-popup-container.preview.offer,
     .gh-portal-popup-container.preview.account-plan {
-        transform-origin: top;
-        margin-top: 0;
+        margin: 0 auto 32px;
     }
 }
 
@@ -956,9 +955,9 @@ const MobileStyles = `
         max-width: 420px;
         width: auto;
         height: auto;
-        margin: 3.2vw auto 0;
+        margin: 3.2vw auto 32px;
         padding-bottom: 24px;
-        transform: scale(0.9);
+        zoom: 0.9;
     }
 }
 
@@ -1038,7 +1037,7 @@ const MobileStyles = `
         margin-bottom: 16px;
     }
 
-    .preview .gh-portal-btn-container.sticky {
+    .gh-portal-popup-wrapper.preview:not(.offer):not(.account-plan) .gh-portal-btn-container.sticky {
         margin-bottom: 32px;
         padding-bottom: 0;
     }

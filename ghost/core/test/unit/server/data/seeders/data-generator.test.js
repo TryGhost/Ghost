@@ -83,7 +83,8 @@ describe('Data Generator', function () {
             schemaTables,
             logger: {
                 info: () => { },
-                ok: () => { }
+                ok: () => { },
+                warn: () => { }
             },
             tables: [{
                 name: 'members',
@@ -104,7 +105,8 @@ describe('Data Generator', function () {
             schemaTables,
             logger: {
                 info: () => {},
-                ok: () => {}
+                ok: () => {},
+                warn: () => {}
             },
             tables: [{
                 name: 'offers',

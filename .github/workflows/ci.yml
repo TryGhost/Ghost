@@ -29,6 +29,11 @@ concurrency:
   group: ${{ startsWith(github.ref, 'refs/tags/') && format('release-{0}', github.ref) || github.head_ref || github.ref }}
   cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
+# Default least-privilege token for all jobs; jobs that need more declare
+# their own permissions block, which overrides this default.
+permissions:
+  contents: read
+
 jobs:
   job_setup:
     name: Setup
@@ -50,7 +55,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 0
@@ -241,7 +246,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR head commit
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -262,7 +267,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR head commit
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -282,7 +287,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 1000
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
@@ -322,7 +327,7 @@ jobs:
       needs.job_setup.outputs.is_tag == 'true'
       || needs.job_setup.outputs.changed_i18n_apps == 'true'
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
@@ -348,7 +353,7 @@ jobs:
       CI: true
       COVERAGE: true
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
@@ -387,7 +392,7 @@ jobs:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 1000
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
@@ -493,7 +498,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
@@ -507,11 +512,7 @@ jobs:
         # installing/linking it when restoring from a cached store. --force
         # ensures all optional deps are installed regardless.
         run: |
-          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
-            pnpm install --frozen-lockfile --force
-          else
-            pnpm install --frozen-lockfile
-          fi
+          pnpm install --frozen-lockfile --force
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -530,7 +531,12 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: E2E tests
-        run: pnpm nx run ghost:test:ci:e2e
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm nx run ghost:test:ci:e2e:no-coverage
+          else
+            pnpm nx run ghost:test:ci:e2e
+          fi
 
       - name: Start MinIO for integration tests
         run: |
@@ -552,7 +558,12 @@ jobs:
           exit 1
 
       - name: Integration tests
-        run: pnpm nx run ghost:test:ci:integration
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm nx run ghost:test:ci:integration:no-coverage
+          else
+            pnpm nx run ghost:test:ci:integration
+          fi
 
       - name: Check for unexpected file changes
         run: |
@@ -612,7 +623,7 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           submodules: true
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
@@ -676,7 +687,7 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
@@ -727,11 +738,11 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:2f8317aceba18ce20dc4105b0b712b2701bb477a4d9a25477e2aa72bdf9d1423
+        image: tinybirdco/tinybird-local:latest@sha256:49f65a4197ae7ff4aa923ec53e969c03220fbc1ddc38fba5edfe6832aacbb5db
         ports:
           - 7181:7181
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Install Tinybird CLI
         run: curl -fsSL https://tinybird.co/install.sh | sh
       - name: Build project
@@ -827,7 +838,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           submodules: true
 
@@ -880,11 +891,11 @@ jobs:
       - name: Determine push strategy
         id: strategy
         run: |
-          # Same-org repos (e.g. TryGhost/Ghost, TryGhost/Ghost-Security) push to GHCR.
-          # External forks and cross-repo PRs use artifact-based image transfer instead.
+          # Only the canonical repo publishes to GHCR by default.
+          # Direct clones, external forks, and cross-repo PRs use artifact-based image transfer instead.
           USE_ARTIFACT="false"
-          if [ "${{ github.repository_owner }}" != "TryGhost" ]; then
-            # External fork — no GHCR push
+          if [ "${{ github.repository }}" != "TryGhost/Ghost" ]; then
+            # Non-canonical repo - no GHCR push
             USE_ARTIFACT="true"
           elif [ "${{ github.event_name }}" = "pull_request" ] && \
                [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
@@ -905,9 +916,9 @@ jobs:
             IMAGE_FULL_NAME="ghcr.io/${OWNER}/${REPO_NAME}"
           fi
 
-          # Force push on tag pushes (release images must always be published)
+          # Force push on canonical tag pushes (release images must always be published)
           IS_TAG="${{ startsWith(github.ref, 'refs/tags/v') }}"
-          if [ "$IS_TAG" = "true" ]; then
+          if [ "$IS_TAG" = "true" ] && [ "${{ github.repository }}" = "TryGhost/Ghost" ]; then
             USE_ARTIFACT="false"
           fi
 
@@ -1093,7 +1104,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
 
@@ -1117,7 +1128,8 @@ jobs:
             apps/comments-ui/umd \
             apps/sodo-search/umd \
             apps/signup-form/umd \
-            apps/announcement-bar/umd
+            apps/announcement-bar/umd \
+            apps/admin-toolbar/umd
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
@@ -1139,7 +1151,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Download public app artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -1311,7 +1323,7 @@ jobs:
             shardTotal: 2
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
@@ -1404,11 +1416,15 @@ jobs:
     if: always() && needs.job_e2e_tests.result == 'failure'
     needs: [job_e2e_tests, job_setup]
     runs-on: ubuntu-latest
+    # Posts a comment on the PR via `gh pr comment` when E2E tests fail.
+    permissions:
+      contents: read
+      pull-requests: write
     strategy:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -1492,7 +1508,7 @@ jobs:
     ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
@@ -1506,9 +1522,12 @@ jobs:
           rsync -av --remove-source-files admin/* ghost/admin
 
       - name: Upload Admin test coverage
-        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
+        if: contains(needs.job_admin-tests.result, 'success')
+        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
         with:
           flags: admin-tests
+          files: ghost/admin/coverage/cobertura-coverage.xml
+          disable_search: true
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
@@ -1523,9 +1542,11 @@ jobs:
 
       - name: Upload E2E test coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
+        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
         with:
           flags: e2e-tests
+          files: ghost/core/coverage-e2e/cobertura-coverage.xml,ghost/core/coverage-integration/cobertura-coverage.xml
+          disable_search: true
 
   job_required_tests:
     name: All required tests passed or skipped
@@ -1591,9 +1612,11 @@ jobs:
             package_path: 'apps/signup-form'
           - package_name: '@tryghost/announcement-bar'
             package_path: 'apps/announcement-bar'
+          - package_name: '@tryghost/admin-toolbar'
+            package_path: 'apps/admin-toolbar'
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - name: Set up Node.js
@@ -1653,9 +1676,12 @@ jobs:
           - package_name: '@tryghost/announcement-bar'
             package_path: 'apps/announcement-bar'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
+          - package_name: '@tryghost/admin-toolbar'
+            package_path: 'apps/admin-toolbar'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-toolbar@~CURRENT_MINOR/umd/admin-toolbar.min.js'
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - name: Set up Node.js
@@ -1745,7 +1771,7 @@ jobs:
     ]
     if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird_datafiles == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Trigger and watch traffic analytics infra Tinybird workflow
         if: github.repository == 'TryGhost/Ghost'
         env:
@@ -1866,7 +1892,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
 

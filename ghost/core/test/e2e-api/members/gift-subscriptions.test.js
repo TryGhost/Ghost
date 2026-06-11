@@ -135,7 +135,6 @@ describe('Gift Subscriptions', function () {
     beforeEach(function () {
         mockManager.mockStripe();
         mockManager.mockMail();
-        mockManager.mockLabsEnabled('giftSubscriptions');
     });
 
     afterEach(async function () {
@@ -334,12 +333,6 @@ describe('Gift Subscriptions', function () {
             });
 
             assert.equal(gifts.length, 1, 'Should have exactly one gift record');
-        });
-
-        it('Rejects purchase when labs flag is disabled', async function () {
-            mockManager.mockLabsDisabled('giftSubscriptions');
-
-            await expectGiftCheckoutError();
         });
 
         it('Rejects purchase with an offer', async function () {

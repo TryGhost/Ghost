@@ -1,10 +1,13 @@
+import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD} from './multiple-active-subscriptions';
+
 const BULK_DELETE_RESTRICTED_FILTERS = [
     'subscriptions.plan_interval',
     'subscriptions.status',
     'subscriptions.start_date',
     'subscriptions.current_period_end',
     'conversion',
-    'offer_redemptions'
+    'offer_redemptions',
+    MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD
 ];
 
 type FilterLike = {

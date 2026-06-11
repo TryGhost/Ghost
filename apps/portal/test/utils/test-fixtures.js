@@ -107,7 +107,7 @@ const baseSingleTierSite = getSiteData({
     membersSignupAccess: 'all',
     freePriceName: 'Free',
     freePriceDescription: 'Free preview',
-    isStripeConfigured: true,
+    paidMembersEnabled: true,
     portalButton: true,
     portalName: true,
     portalPlans: ['free', 'monthly', 'yearly'],
@@ -137,7 +137,7 @@ const baseMultiTierSite = getSiteData({
     membersSignupAccess: 'all',
     freePriceName: 'Free',
     freePriceDescription: 'Free preview',
-    isStripeConfigured: true,
+    paidMembersEnabled: true,
     portalButton: true,
     portalName: true,
     portalPlans: ['free', 'monthly', 'yearly'],
@@ -170,12 +170,12 @@ export const site = {
         },
         withoutStripe: {
             ...baseSingleTierSite,
-            is_stripe_configured: false
+            paid_members_enabled: false
         },
         onlyFreePlanWithoutStripe: {
             ...baseSingleTierSite,
             portal_plans: ['free'],
-            is_stripe_configured: false,
+            paid_members_enabled: false,
             newsletters: newsletters
         },
         membersInviteOnly: {

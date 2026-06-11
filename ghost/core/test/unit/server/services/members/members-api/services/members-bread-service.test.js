@@ -279,6 +279,7 @@ describe('MemberBreadService', function () {
             'stripeSubscriptions.stripePrice',
             'stripeSubscriptions.stripePrice.stripeProduct',
             'stripeSubscriptions.stripePrice.stripeProduct.product',
+            'currentSubscription',
             'products',
             'newsletters',
             'productEvents'

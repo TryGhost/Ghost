@@ -15,7 +15,7 @@ import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
 import {getGiftRedemptionErrorMessage} from './utils/gift-redemption-notification';
 import './app.css';
-import {hasRecommendations, hasGiftSubscriptions, canPurchaseGift, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, arePaidMembersEnabled, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
 
@@ -189,7 +189,7 @@ export default class App extends React.Component {
             }
             const {page, pageQuery, pageData} = linkData;
             if (this.state.initStatus === 'success') {
-                if (page === 'gift' && !canPurchaseGift({site: this.state.site})) {
+                if (page === 'gift' && !arePaidMembersEnabled({site: this.state.site})) {
                     this.invalidateGiftRedemptionRequest();
                     removePortalLinkFromUrl();
 
@@ -198,7 +198,6 @@ export default class App extends React.Component {
                 if (page === 'giftRedemption' && pageData?.token) {
                     const redemptionRequest = this.startGiftRedemptionRequest(pageData.token);
                     const giftLinkData = await this.fetchGiftRedemptionData({
-                        site: this.state.site,
                         token: pageData.token
                     });
 
@@ -286,9 +285,9 @@ export default class App extends React.Component {
                 locale: i18nLanguage
             };
 
-            this.handleSignupQuery({site, pageQuery, member});
-
-            this.setState(state);
+            this.setState(state, () => {
+                this.handleSignupQuery({site, pageQuery, member});
+            });
 
             // Listen to preview mode changes
             this.hashHandler = () => {
@@ -553,13 +552,7 @@ export default class App extends React.Component {
     }
 
     /** Fetch state from Portal Links */
-    async fetchGiftRedemptionData({site, token}) {
-        if (!hasGiftSubscriptions({site})) {
-            removePortalLinkFromUrl();
-
-            return {};
-        }
-
+    async fetchGiftRedemptionData({token}) {
         try {
             const response = await this.GhostApi.gift.fetchRedemptionData({token});
 
@@ -699,7 +692,6 @@ export default class App extends React.Component {
 
             const redemptionRequest = this.startGiftRedemptionRequest(decodedToken);
             const giftLinkData = await this.fetchGiftRedemptionData({
-                site,
                 token: decodedToken
             });
 
@@ -733,7 +725,7 @@ export default class App extends React.Component {
                 };
             }
 
-            if (page === 'gift' && !canPurchaseGift({site})) {
+            if (page === 'gift' && !arePaidMembersEnabled({site})) {
                 removePortalLinkFromUrl();
 
                 return {};
@@ -746,11 +738,20 @@ export default class App extends React.Component {
                 productYearlyPriceQueryRegex.test(pageQuery) ||
                 offersRegex.test(pageQuery)
             ) ? false : true;
+
+            // External callers (e.g. comments-ui) can request a post-sign-in redirect
+            // via #/portal/signin?redirect=<url>. Passed through unvalidated — the
+            // members middleware only honours same-site redirects at magic-link exchange.
+            const requestedRedirect = hashQuery.get('redirect');
+            const resolvedPageData = (page === 'signin' && requestedRedirect)
+                ? {...(pageData || {}), redirect: requestedRedirect}
+                : pageData;
+
             return {
                 showPopup,
                 ...(page ? {page} : {}),
                 ...(pageQuery ? {pageQuery} : {}),
-                ...(pageData ? {pageData} : {}),
+                ...(resolvedPageData ? {pageData: resolvedPageData} : {}),
                 ...(lastPage ? {lastPage} : {})
             };
         }
@@ -762,10 +763,15 @@ export default class App extends React.Component {
         const [, qs] = window.location.hash.substr(1).split('?');
         if (hasMode(['preview'])) {
             let data = {};
-            if (hasMode(['offerPreview'])) {
-                data = this.fetchOfferQueryStrData(qs);
-            } else {
-                data = this.fetchQueryStrData(qs);
+            try {
+                if (hasMode(['offerPreview'])) {
+                    data = this.fetchOfferQueryStrData(qs);
+                } else {
+                    data = this.fetchQueryStrData(qs);
+                }
+            } catch (error) {
+                Sentry.captureException(error);
+                return {};
             }
             return {
                 ...data,
@@ -952,7 +958,6 @@ export default class App extends React.Component {
 
     /** Handle Portal offer urls */
     async handleOfferQuery({site, offerId, member = this.state.member}) {
-        const {portal_button: portalButton} = site;
         removePortalLinkFromUrl();
 
         if (!isPaidMember({member}) || isComplimentaryMember({member})) {
@@ -973,25 +978,10 @@ export default class App extends React.Component {
                     return;
                 }
 
-                if (!portalButton) {
-                    const product = getProductFromId({site, productId: offer.tier.id});
-                    const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
-                    this.dispatchAction('openPopup', {
-                        page: 'loading'
-                    });
-                    if (member) {
-                        const {tierId, cadence} = getProductCadenceFromPrice({site, priceId: price.id});
-                        this.dispatchAction('checkoutPlan', {plan: price.id, offerId, tierId, cadence});
-                    } else {
-                        const {tierId, cadence} = getProductCadenceFromPrice({site, priceId: price.id});
-                        this.dispatchAction('signup', {plan: price.id, offerId, tierId, cadence});
-                    }
-                } else {
-                    this.dispatchAction('openPopup', {
-                        page: 'offer',
-                        pageData: offerData?.offers[0]
-                    });
-                }
+                this.dispatchAction('openPopup', {
+                    page: 'offer',
+                    pageData: offer
+                });
             } catch (e) {
                 // ignore invalid portal url
             }

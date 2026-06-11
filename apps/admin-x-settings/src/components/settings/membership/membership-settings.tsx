@@ -17,22 +17,21 @@ export const searchKeywords = {
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
     giftSubscriptions: ['membership', 'gift', 'gifts', 'gift subscriptions', 'present', 'share', 'shareable link'],
     memberEmails: ['membership', 'signup', 'welcome email', 'welcome emails', 'email', 'new user', 'new member', 'account'],
-    tips: ['growth', 'tips', 'donations', 'one time', 'payment']
+    tips: ['membership', 'tips', 'donations', 'one time', 'payment']
 };
 
 const MembershipSettings: React.FC = () => {
     const {config, settings} = useGlobalData();
-    const [hasTipsAndDonations] = getSettingValues(settings, ['donations_enabled']) as [boolean];
+    const [hasTipsAndDonations, paidMembersEnabled] = getSettingValues(settings, ['donations_enabled', 'paid_members_enabled']) as [boolean, boolean];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
     const hasAutomations = useFeatureFlag('automations');
-    const hasGiftSubscriptions = useFeatureFlag('giftSubscriptions');
     const visibleSearchKeywords = [
         searchKeywords.access,
         searchKeywords.tiers,
         searchKeywords.portal,
-        ...(hasGiftSubscriptions && hasStripeEnabled ? [searchKeywords.giftSubscriptions] : []),
+        ...(paidMembersEnabled ? [searchKeywords.giftSubscriptions] : []),
         ...(hasAutomations ? [] : [searchKeywords.memberEmails]),
-        searchKeywords.tips
+        ...(hasTipsAndDonations && hasStripeEnabled ? [searchKeywords.tips] : [])
     ].flat();
 
     return (
@@ -41,7 +40,7 @@ const MembershipSettings: React.FC = () => {
             <SpamFilters keywords={searchKeywords.access} />
             <Tiers keywords={searchKeywords.tiers} />
             <Portal keywords={searchKeywords.portal} />
-            {hasGiftSubscriptions && hasStripeEnabled && <GiftSubscriptions keywords={searchKeywords.giftSubscriptions} />}
+            {paidMembersEnabled && <GiftSubscriptions keywords={searchKeywords.giftSubscriptions} />}
             {!hasAutomations && <MemberEmails keywords={searchKeywords.memberEmails} />}
             {hasTipsAndDonations && hasStripeEnabled && <TipsAndDonations keywords={searchKeywords.tips} />}
         </SearchableSection>

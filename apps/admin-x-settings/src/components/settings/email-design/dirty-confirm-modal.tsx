@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/dirty-confirm-modal.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button} from '@tryghost/shade/components';

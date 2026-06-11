@@ -9,15 +9,19 @@
 
 .gh-member-detail-avatar {
     box-shadow: none;
-    width: 80px;
-    height: 80px;
-    min-width: 80px;
+    width: 60px;
+    height: 60px;
+    min-width: 60px;
 }
 
 .gh-member-avatar-label {
     display: block;
     color: #fff;
     font-weight: 500;
+}
+
+.gh-member-details-identity .gh-member-avatar-label {
+    font-size: 2.1rem;
 }
 
 .gh-member-avatar-image {
@@ -94,22 +98,25 @@ label[for="member-description"] + p {
 
 .gh-member-details {
     position: sticky;
-    top: 158px;
+    top: 0px;
     left: 0;
     height: max-content;
+    margin-top: 20px;
+    max-width: 320px;
 }
 
 .gh-member-details h3 {
     margin: 0;
     padding: 0;
-    font-size: 1.6rem;
+    font-size: 2.1rem;
     font-weight: 600;
+    letter-spacing: -0.03em;
 }
 
 .gh-member-details p {
     margin: 0;
     padding: 0;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: var(--darkgrey-l1);
 }
 

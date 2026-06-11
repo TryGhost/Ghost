@@ -62,6 +62,25 @@ const buildLinearEdges = actions => actions.slice(1).map((action, index) => ({
     target_action_id: action.id
 }));
 
+const EMPTY_EMAIL_LEXICAL = JSON.stringify({
+    root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}
+});
+
+const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
+    root: {children: [{type: 'paragraph', children: [{type: 'text', text: 'Lorem ipsum.'}]}], direction: null, format: '', indent: 0, type: 'root', version: 1}
+});
+
+const buildSendEmailAction = (dataOverrides = {}) => ({
+    id: ObjectId().toHexString(),
+    type: 'send_email',
+    data: {
+        email_subject: 'Welcome',
+        email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+        email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7',
+        ...dataOverrides
+    }
+});
+
 describe('Automations API', function () {
     let agent;
     let schedulerKey;
@@ -168,9 +187,6 @@ describe('Automations API', function () {
                             data: {
                                 email_subject: 'Hello from the editor',
                                 email_lexical: emailLexical,
-                                email_sender_name: null,
-                                email_sender_email: null,
-                                email_sender_reply_to: null,
                                 email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7'
                             }
                         }],
@@ -331,6 +347,112 @@ describe('Automations API', function () {
                 .expect(cacheInvalidateHeaderNotSet());
         });
 
+        it('allows saving an inactive draft with an empty email subject and body', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const emailAction = buildSendEmailAction({email_subject: '', email_lexical: EMPTY_EMAIL_LEXICAL});
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [emailAction],
+                        edges: []
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            assert.equal(editBody.automations[0].status, 'inactive');
+            assert.equal(editBody.automations[0].actions[0].data.email_subject, '');
+        });
+
+        it('rejects activating an automation with an empty email subject', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'active',
+                        actions: [buildSendEmailAction({email_subject: ''})],
+                        edges: []
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects activating an automation with an empty email body', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'active',
+                        actions: [buildSendEmailAction({email_lexical: EMPTY_EMAIL_LEXICAL})],
+                        edges: []
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('allows activating an automation with complete email steps', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'active',
+                        actions: [buildSendEmailAction()],
+                        edges: []
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            assert.equal(editBody.automations[0].status, 'active');
+        });
+
         it('rejects an empty edit payload', async function () {
             const {body: browseBody} = await agent
                 .get('automations')
@@ -431,9 +553,6 @@ describe('Automations API', function () {
                 data: {
                     email_subject: 'Changed type',
                     email_lexical: JSON.stringify({root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}}),
-                    email_sender_name: null,
-                    email_sender_email: null,
-                    email_sender_reply_to: null,
                     email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7'
                 }
             } : {

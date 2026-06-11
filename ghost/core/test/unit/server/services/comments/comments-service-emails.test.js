@@ -180,6 +180,16 @@ describe('Comments Service: CommentsServiceEmails', function () {
             assert.equal(templateData.postUrl, POST_URL_FOR_COMMENT);
         });
 
+        it('notifyPostAuthors: skips an author whose email matches the commenting member', async function () {
+            const {instance, comment, renderStub} = buildHarness({
+                authors: [makeAuthor({email: 'reader@example.com', slug: 'author'})]
+            });
+
+            await instance.notifyPostAuthors(comment);
+
+            sinon.assert.notCalled(renderStub);
+        });
+
         // notifyParentCommentAuthor is intentionally not exercised here: the
         // function reaches into emailService.renderer.createUnsubscribeUrl,
         // which is only populated after the email-service module is

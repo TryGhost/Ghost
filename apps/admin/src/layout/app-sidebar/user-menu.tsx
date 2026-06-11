@@ -12,6 +12,7 @@ import { UserMenuItem } from "./user-menu-item";
 import { UserMenuAvatar } from "./user-menu-avatar";
 import { UserMenuHeader } from "./user-menu-header";
 import { Link } from "@tryghost/admin-x-framework";
+import { getAdminToolbarUrl } from "@/utils/admin-toolbar-url";
 
 function UserMenuProfile() {
     const currentUser = useCurrentUser();
@@ -45,7 +46,6 @@ function UserMenuDarkMode() {
             <LucideIcon.Moon />
             <UserMenuItem.Label className="flex-1">Dark mode</UserMenuItem.Label>
             <Switch
-                size='sm'
                 checked={preferences?.nightShift ?? false}
                 disabled={isEditingPreferences}
                 onCheckedChange={setNightShift}
@@ -110,7 +110,7 @@ function UserMenu(props: UserMenuProps) {
                     </div>
                     <div className="grid flex-1 text-left text-base leading-tight">
                         <span className="truncate font-semibold">{currentUser.data?.name}</span>
-                        <span className="-mt-px truncate text-xs text-muted-foreground">
+                        <span className="-mt-px truncate text-sm text-muted-foreground">
                             {currentUser.data?.email}
                         </span>
                     </div>
@@ -188,7 +188,7 @@ function UserMenu(props: UserMenuProps) {
 function ContributorUserMenu() {
     const currentUser = useCurrentUser();
     const site = useBrowseSite();
-    const siteUrl = site.data?.site.url ?? "";
+    const siteUrl = getAdminToolbarUrl(site.data?.site.url ?? "");
 
     return (
         <DropdownMenu>

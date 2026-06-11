@@ -154,6 +154,39 @@ test.describe('Access settings', async () => {
         await expect(accessCode).toHaveValue('fake-456');
     });
 
+    test('Does not clip dropdown options off the Access card in pre-launch mode', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseConfig: createConfigWithLimits({
+                publicSiteAccess: {
+                    disabled: true,
+                    error: 'This plan does not include public site access'
+                }
+            })
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('access');
+
+        await expect(section.getByText('Pre-launch mode')).toBeVisible();
+
+        await section.getByTestId('commenting-select').click();
+
+        const lastOption = page.locator('[data-testid="select-option"]', {hasText: 'Nobody'});
+        await expect(lastOption).toBeVisible();
+
+        const box = await lastOption.boundingBox();
+        expect(box).not.toBeNull();
+
+        const optionIsActuallyPainted = await page.evaluate(({x, y, width, height}) => {
+            const el = document.elementFromPoint(x + width / 2, y + height / 2);
+            return Boolean(el?.closest('[data-testid="select-option"]'));
+        }, box!);
+
+        expect(optionIsActuallyPainted).toBe(true);
+    });
+
     test('Disables other sections when signup is disabled', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,

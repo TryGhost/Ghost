@@ -9,7 +9,7 @@ export function parseFilterToAst(filter: string): AstNode | undefined {
     }
 
     try {
-        return nql.parse(filter) as AstNode;
+        return nql.parse(filter, {preserveRelativeDates: true}) as AstNode;
     } catch {
         return undefined;
     }

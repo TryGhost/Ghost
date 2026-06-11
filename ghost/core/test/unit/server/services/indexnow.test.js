@@ -3,10 +3,12 @@ const sinon = require('sinon');
 const _ = require('lodash');
 const nock = require('nock');
 const rewire = require('rewire');
+const errors = require('@tryghost/errors');
 const testUtils = require('../../../utils');
 const indexnow = rewire('../../../../core/server/services/indexnow');
 const events = require('../../../../core/server/lib/common/events');
 const settingsCache = require('../../../../core/shared/settings-cache');
+const config = require('../../../../core/shared/config');
 const labs = require('../../../../core/shared/labs');
 const logging = require('@tryghost/logging');
 const urlService = require('../../../../core/server/services/url');
@@ -16,16 +18,19 @@ describe('IndexNow', function () {
     let loggingStub;
     let settingsCacheStub;
     let labsStub;
+    let privacyDisabledStub;
 
     beforeEach(function () {
         eventStub = sinon.stub(events, 'on');
         settingsCacheStub = sinon.stub(settingsCache, 'get');
         labsStub = sinon.stub(labs, 'isSet');
+        privacyDisabledStub = sinon.stub(config, 'isPrivacyDisabled');
 
-        // Default: IndexNow enabled, site not private, API key set
+        // Default: IndexNow enabled, site not private, API key set, privacy not disabled
         labsStub.withArgs('indexnow').returns(true);
         settingsCacheStub.withArgs('is_private').returns(false);
         settingsCacheStub.withArgs('indexnow_api_key').returns('a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4');
+        privacyDisabledStub.withArgs('useIndexNow').returns(false);
     });
 
     afterEach(function () {
@@ -251,6 +256,11 @@ describe('IndexNow', function () {
 
     describe('ping()', function () {
         const ping = indexnow.__get__('ping');
+        let urlStub;
+
+        beforeEach(function () {
+            urlStub = sinon.stub(urlService.facade, 'getUrlForResource').returns('https://example.com/my-post/');
+        });
 
         it('with a post should execute ping', async function () {
             loggingStub = sinon.stub(logging, 'info');
@@ -262,6 +272,27 @@ describe('IndexNow', function () {
             await ping(testPost);
 
             sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.pinged');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 200);
+        });
+
+        it('does not ping when the post has no resolvable URL (/404/)', async function () {
+            urlStub.returns('https://example.com/404/');
+            loggingStub = sinon.stub(logging, 'warn');
+            const pingRequest = nock('https://api.indexnow.org')
+                .get(/\/indexnow/)
+                .reply(200);
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await ping(testPost);
+
+            assert.equal(pingRequest.isDone(), false);
+            sinon.assert.calledOnce(loggingStub);
+            const logged = loggingStub.args[0][0];
+            assert.equal(logged.event.name, 'indexnow.unresolved_url');
+            assert.equal(logged.post.url, 'https://example.com/404/');
+            assert.equal(logged.post.id, testPost.id);
+            assert.equal(logged.post.slug, testPost.slug);
         });
 
         it('with default post should not execute ping', async function () {
@@ -301,6 +332,19 @@ describe('IndexNow', function () {
             assert.equal(pingRequest.isDone(), false);
         });
 
+        it('when privacy.useIndexNow is disabled should not execute ping', async function () {
+            privacyDisabledStub.withArgs('useIndexNow').returns(true);
+
+            const pingRequest = nock('https://api.indexnow.org')
+                .get(/\/indexnow/)
+                .reply(200);
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await ping(testPost);
+
+            assert.equal(pingRequest.isDone(), false);
+        });
+
         it('when site is private should not execute ping', async function () {
             settingsCacheStub.withArgs('is_private').returns(true);
 
@@ -327,9 +371,10 @@ describe('IndexNow', function () {
 
             // Should NOT have made the ping request
             assert.equal(pingRequest.isDone(), false);
-            // Should have logged a warning
+            // Should have logged a warning with a structured event
             sinon.assert.calledOnce(loggingStub);
-            assert(loggingStub.args[0][0].includes('API key not available'));
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.api_key_missing');
+            assert(loggingStub.args[0][1].includes('API key not available'));
         });
 
         it('should handle 202 response as success', async function () {
@@ -343,6 +388,8 @@ describe('IndexNow', function () {
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.pinged');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 202);
         });
 
         it('captures && logs errors from 400 requests', async function () {
@@ -356,6 +403,8 @@ describe('IndexNow', function () {
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.ping_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 400);
         });
 
         it('captures && logs validation errors from 422 requests', async function () {
@@ -369,7 +418,8 @@ describe('IndexNow', function () {
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
-            assert(loggingStub.args[0][0].message.includes('key validation failed'));
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.key_validation_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 422);
         });
 
         it('should behave correctly when getting a 429', async function () {
@@ -383,6 +433,100 @@ describe('IndexNow', function () {
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.rate_limited');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 429);
+        });
+
+        it('logs the real status code for an unexpected 2xx response', async function () {
+            loggingStub = sinon.stub(logging, 'warn');
+            // 204 is a 2xx that request() does not throw on, so it hits the
+            // manual unexpected-status check rather than an HTTP error
+            const pingRequest = nock('https://api.indexnow.org')
+                .get(/\/indexnow/)
+                .reply(204);
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await ping(testPost);
+
+            assert.equal(pingRequest.isDone(), true);
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.ping_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 204);
+        });
+    });
+
+    describe('ping() error classification (got HTTPError shape)', function () {
+        const ping = indexnow.__get__('ping');
+        let resetIndexNow;
+
+        beforeEach(function () {
+            sinon.stub(urlService.facade, 'getUrlForResource').returns('https://example.com/my-post/');
+            loggingStub = sinon.stub(logging, 'warn');
+        });
+
+        afterEach(function () {
+            if (resetIndexNow) {
+                resetIndexNow();
+                resetIndexNow = null;
+            }
+        });
+
+        function makeHttpError(statusCode) {
+            const err = new Error(`Response code ${statusCode}`);
+            err.name = 'HTTPError';
+            err.code = 'ERR_NON_2XX_3XX_RESPONSE';
+            err.response = {statusCode};
+            return err;
+        }
+
+        async function pingWithHttpError(statusCode) {
+            resetIndexNow = indexnow.__set__('request', sinon.stub().rejects(makeHttpError(statusCode)));
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            await ping(testPost);
+        }
+
+        it('classifies a 429 (status on err.response.statusCode) as rate_limited', async function () {
+            await pingWithHttpError(429);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.rate_limited');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 429);
+        });
+
+        it('classifies a 422 (status on err.response.statusCode) as key_validation_failed', async function () {
+            await pingWithHttpError(422);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.key_validation_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 422);
+        });
+
+        it('classifies a 403 (key not valid) as key_validation_failed', async function () {
+            await pingWithHttpError(403);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.key_validation_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 403);
+        });
+
+        it('classifies other 5xx errors (status on err.response.statusCode) as ping_failed', async function () {
+            await pingWithHttpError(503);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.ping_failed');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 503);
+        });
+
+        it('still classifies a GhostError carrying err.statusCode (manual throw) correctly', async function () {
+            const err = new errors.TooManyRequestsError({message: 'manual', statusCode: 429});
+            resetIndexNow = indexnow.__set__('request', sinon.stub().rejects(err));
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await ping(testPost);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.rate_limited');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 429);
         });
     });
 

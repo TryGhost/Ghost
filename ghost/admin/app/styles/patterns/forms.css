@@ -199,12 +199,12 @@ input[type=number] {
 select {
     display: block;
     width: 100%;
-    height: 38px;
+    height: 36px;
     padding: 6px 12px;
     border: var(--input-border);
     background: var(--input-bg-color);
     color: var(--darkgrey);
-    font-size: 1.5rem;
+    font-size: 1.3rem;
     letter-spacing: 0;
     font-weight: 400;
     user-select: text;
@@ -282,13 +282,13 @@ textarea {
 
 .gh-input-x {
     width: 100%;
-    min-height: 38px;
+    min-height: 32px;
     height: auto;
     padding: 4px 12px;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: var(--black);
-    background-color: var(--grey-150);
-    border: 1px solid transparent;
+    background-color: var(--white);
+    border: 1px solid var(--whitegrey);
     border-radius: 8px;
 }
 

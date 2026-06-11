@@ -23,12 +23,10 @@ on:
     # duration, giving each merge a fresh rebase + green CI window.
     #
     # Times are UTC; matches renovate.json5's `schedule` block.
-    # Monday morning window (Mon 00:00-12:59 UTC)
-    - cron: '17 0-12 * * 1'
-    # Weekday early-morning window (Tue-Sat 00:00-04:59 UTC)
-    - cron: '17 0-4 * * 2-6'
-    # Weekday evening window (Mon-Fri 21:00-23:59 UTC)
-    - cron: '17 21-23 * * 1-5'
+    # Weekday early-morning window (Mon-Sat 00:00-04:59 UTC)
+    - cron: '17 0-4 * * 1-6'
+    # Weekday evening window (Mon-Fri 23:00-23:59 UTC)
+    - cron: '17 23 * * 1-5'
     # Weekend - every 2h is plenty; no automerge urgency, just batch creation
     - cron: '17 */2 * * 0,6'
     # Weekday daytime CVE pickup tick (Mon-Fri 14:17 UTC)
@@ -50,6 +48,11 @@ permissions:
 
 jobs:
   renovate:
+    # Never run on forks: both `schedule` and `workflow_dispatch` can fire on a
+    # fork that has Actions enabled, and this job mints the Renovate GitHub App
+    # token. Matches the fork guard used across the rest of the repo's
+    # privileged workflows.
+    if: github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-latest
     timeout-minutes: 45
 
@@ -64,7 +67,7 @@ jobs:
           repositories: Ghost
 
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
       # Enforce a live cap on open Renovate PRs while still letting Renovate
       # maintain and automerge the PRs that already exist.
@@ -123,7 +126,7 @@ jobs:
           echo "RENOVATE_FORCE=$force" >> "$GITHUB_ENV"
 
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@693b9ef15eec82123529a37c782242f091365961 # v46.1.14
+        uses: renovatebot/github-action@8217b3fc286df088d7c27f3255fe8414463bc0fd # v46.1.15
         with:
           token: ${{ steps.app-token.outputs.token }}
         env:
