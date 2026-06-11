@@ -650,11 +650,10 @@ async function replaceAutomationGraph(trx: Knex.Transaction, automationId: strin
         }
     }
 
-    for (const existingAction of existingActions) {
-        if (!submittedActionIds.has(existingAction.id)) {
-            await softDeleteAction(trx, existingAction.id, now);
-        }
-    }
+    const actionIdsToSoftDelete = existingActions
+        .filter(existingAction => !submittedActionIds.has(existingAction.id))
+        .map(existingAction => existingAction.id);
+    await softDeleteActions(trx, actionIdsToSoftDelete, now);
 
     await deleteAutomationEdges(trx, automationId);
 
@@ -740,17 +739,20 @@ async function loadLatestActionRevision(
     return row ?? null;
 }
 
-async function softDeleteAction(
+async function softDeleteActions(
     trx: Knex.Transaction,
-    actionId: string,
+    actionIds: ReadonlyArray<string>,
     deletedAt: string
 ): Promise<void> {
+    if (actionIds.length === 0) {
+        return;
+    }
     await trx('automation_actions')
         .update({
             deleted_at: deletedAt,
             updated_at: deletedAt
         })
-        .where('id', actionId);
+        .whereIn('id', actionIds);
 }
 
 async function insertActionRevision(
