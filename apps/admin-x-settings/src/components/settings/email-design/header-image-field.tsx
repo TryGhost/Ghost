@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/header-image-field.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import React from 'react';
 import {Dropzone} from '@tryghost/shade/components';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';

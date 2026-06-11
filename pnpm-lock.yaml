@@ -100,8 +100,8 @@ catalogs:
       specifier: 1.8.2
       version: 1.8.2
     '@tryghost/limit-service':
-      specifier: 1.5.5
-      version: 1.5.5
+      specifier: 1.5.6
+      version: 1.5.6
     '@tryghost/nql':
       specifier: 0.12.11
       version: 0.12.11
@@ -301,11 +301,11 @@ catalogs:
       version: 17.0.2
   tailwind3:
     eslint-plugin-tailwindcss:
-      specifier: 3.18.2
-      version: 3.18.2
+      specifier: 3.18.3
+      version: 3.18.3
     tailwindcss:
-      specifier: 3.4.18
-      version: 3.4.18
+      specifier: 3.4.19
+      version: 3.4.19
 
 overrides:
   '@tryghost/errors': ^1.3.7
@@ -974,7 +974,7 @@ importers:
         version: 0.4.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/limit-service':
         specifier: 'catalog:'
-        version: 1.5.5
+        version: 1.5.6
       '@tryghost/nql':
         specifier: 'catalog:'
         version: 0.12.11
@@ -1205,7 +1205,7 @@ importers:
         version: 6.1.4
       eslint-plugin-tailwindcss:
         specifier: catalog:tailwind3
-        version: 3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.9.0))
+        version: 3.18.3(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.9.0))
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -1223,7 +1223,7 @@ importers:
         version: 22.0.0
       tailwindcss:
         specifier: catalog:tailwind3
-        version: 3.4.18(tsx@4.21.0)(yaml@2.9.0)
+        version: 3.4.19(tsx@4.21.0)(yaml@2.9.0)
       vite:
         specifier: 'catalog:'
         version: 7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
@@ -1671,7 +1671,7 @@ importers:
         version: 10.3.5(esbuild@0.28.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))
       '@tailwindcss/line-clamp':
         specifier: 0.4.4
-        version: 0.4.4(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.9.0))
+        version: 0.4.4(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.9.0))
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../ghost/i18n
@@ -1695,7 +1695,7 @@ importers:
         version: 8.57.1
       eslint-plugin-tailwindcss:
         specifier: catalog:tailwind3
-        version: 3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.9.0))
+        version: 3.18.3(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.9.0))
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -1710,7 +1710,7 @@ importers:
         version: 10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tailwindcss:
         specifier: catalog:tailwind3
-        version: 3.4.18(tsx@4.21.0)(yaml@2.9.0)
+        version: 3.4.19(tsx@4.21.0)(yaml@2.9.0)
       vite:
         specifier: 'catalog:'
         version: 7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
@@ -1768,7 +1768,7 @@ importers:
         version: 14.0.15
       tailwindcss:
         specifier: catalog:tailwind3
-        version: 3.4.18(tsx@4.21.0)(yaml@2.9.0)
+        version: 3.4.19(tsx@4.21.0)(yaml@2.9.0)
       vite:
         specifier: 'catalog:'
         version: 7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
@@ -2010,7 +2010,7 @@ importers:
         version: 1.8.2
       '@tryghost/limit-service':
         specifier: 'catalog:'
-        version: 1.5.5
+        version: 1.5.6
       '@tryghost/nql':
         specifier: 'catalog:'
         version: 0.12.11
@@ -2409,7 +2409,7 @@ importers:
         version: 7.2.2
       '@tryghost/limit-service':
         specifier: 'catalog:'
-        version: 1.5.5
+        version: 1.5.6
       '@tryghost/logging':
         specifier: 4.2.1
         version: 4.2.1
@@ -8701,8 +8701,8 @@ packages:
   '@tryghost/koenig-lexical@1.8.2':
     resolution: {integrity: sha512-pnb3jcrksqimtE8wWo2Rd95Fmi6a1D5St9BqkeE/rpETMAg7e3cYVyssK9+fbT0zvlL6W3n396Yp4nuL+tbtbA==}
 
-  '@tryghost/limit-service@1.5.5':
-    resolution: {integrity: sha512-WQ2+avaWQR+kVjwt5b8h8dLzYuHf/xnfJP5oBRltrVkYxzJId14MS83xPIux+z5Cw28yaYFfFsaPiwi18lFCZA==}
+  '@tryghost/limit-service@1.5.6':
+    resolution: {integrity: sha512-wR+Hm2v5k2FjOUhLhfPZ0p0acCfaTQoSEhuw96uw8c15CLZtm/HKsLnxA5d3AXwYmjRo5gkYskP8UYxrCKNcoQ==}
 
   '@tryghost/logging@4.2.1':
     resolution: {integrity: sha512-yZ83IIZtTbTThBAIc12y+uFSoItZ70Yiek3I8lWHK4p2jX2Nes+G1RwEkKmODw3gRq9SH4NhdHJn/BHD80n2Xw==}
@@ -13628,11 +13628,11 @@ packages:
       eslint: '>=8'
       storybook: ^10.3.5
 
-  eslint-plugin-tailwindcss@3.18.2:
-    resolution: {integrity: sha512-QbkMLDC/OkkjFQ1iz/5jkMdHfiMu/uwujUHLAJK5iwNHD8RTxVTlsUezE0toTZ6VhybNBsk+gYGPDq2agfeRNA==}
+  eslint-plugin-tailwindcss@3.18.3:
+    resolution: {integrity: sha512-lqjNX7mt1Ip2qR236hvhbZ9ff2TFLUWou+tBHz82SA1nWFzOZSoEOI+9UBZmuf2977r2MMp9/y3/broyz8AYig==}
     engines: {node: '>=18.12.0'}
     peerDependencies:
-      tailwindcss: ^3.4.0
+      tailwindcss: ^3.4.0 || ^4.0.0
 
   eslint-plugin-tailwindcss@4.0.0-beta.0:
     resolution: {integrity: sha512-WWCajZgQu38Sd67ZCl2W6i3MRzqB0d+H8s4qV9iB6lBJbsDOIpIlj6R1Fj2FXkoWErbo05pZnZYbCGIU9o/DsA==}
@@ -20536,8 +20536,8 @@ packages:
   tailwind-merge@3.5.0:
     resolution: {integrity: sha512-I8K9wewnVDkL1NTGoqWmVEIlUcB9gFriAEkXkfCjX5ib8ezGxtR3xD7iZIxrfArjEsH7F1CHD4RFUtxefdqV/A==}
 
-  tailwindcss@3.4.18:
-    resolution: {integrity: sha512-6A2rnmW5xZMdw11LYjhcI5846rt9pbLSabY5XPxo+XWdxwZaFEn47Go4NzFiHu9sNNmr/kXivP1vStfvMaK1GQ==}
+  tailwindcss@3.4.19:
+    resolution: {integrity: sha512-3ofp+LL8E+pK/JuPLPggVAIaEuhvIz4qNcf3nA1Xn2o/7fb7s/TYpHhwGDv1ZU3PkBluUVaF8PyCHcm48cKLWQ==}
     engines: {node: '>=14.0.0'}
     hasBin: true
 
@@ -28043,9 +28043,9 @@ snapshots:
 
   '@tabby_ai/hijri-converter@1.0.5': {}
 
-  '@tailwindcss/line-clamp@0.4.4(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.9.0))':
+  '@tailwindcss/line-clamp@0.4.4(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.9.0))':
     dependencies:
-      tailwindcss: 3.4.18(tsx@4.21.0)(yaml@2.9.0)
+      tailwindcss: 3.4.19(tsx@4.21.0)(yaml@2.9.0)
 
   '@tailwindcss/node@4.2.2':
     dependencies:
@@ -28723,7 +28723,7 @@ snapshots:
 
   '@tryghost/koenig-lexical@1.8.2': {}
 
-  '@tryghost/limit-service@1.5.5':
+  '@tryghost/limit-service@1.5.6':
     dependencies:
       '@tryghost/errors': 1.3.13
       lodash: 4.18.1
@@ -35971,11 +35971,13 @@ snapshots:
       - supports-color
       - typescript
 
-  eslint-plugin-tailwindcss@3.18.2(tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.9.0)):
+  eslint-plugin-tailwindcss@3.18.3(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.9.0)):
     dependencies:
       fast-glob: 3.3.3
       postcss: 8.5.15
-      tailwindcss: 3.4.18(tsx@4.21.0)(yaml@2.9.0)
+      synckit: 0.11.12
+      tailwind-api-utils: 1.0.3(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.9.0))
+      tailwindcss: 3.4.19(tsx@4.21.0)(yaml@2.9.0)
 
   eslint-plugin-tailwindcss@4.0.0-beta.0(tailwindcss@4.2.2):
     dependencies:
@@ -44990,6 +44992,13 @@ snapshots:
 
   tagged-tag@1.0.0: {}
 
+  tailwind-api-utils@1.0.3(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.9.0)):
+    dependencies:
+      enhanced-resolve: 5.22.0
+      jiti: 2.7.0
+      local-pkg: 1.2.1
+      tailwindcss: 3.4.19(tsx@4.21.0)(yaml@2.9.0)
+
   tailwind-api-utils@1.0.3(tailwindcss@4.2.2):
     dependencies:
       enhanced-resolve: 5.22.0
@@ -44999,7 +45008,7 @@ snapshots:
 
   tailwind-merge@3.5.0: {}
 
-  tailwindcss@3.4.18(tsx@4.21.0)(yaml@2.9.0):
+  tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.9.0):
     dependencies:
       '@alloc/quick-lru': 5.2.0
       arg: 5.0.2

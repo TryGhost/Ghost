@@ -41,7 +41,7 @@ const ReplyTreeNode: React.FC<{
                 onClick={() => requestFocusedThreadView(nextReply.id)}
             >
                 <span
-                    className="pointer-events-none absolute -left-4 top-0 h-5 w-3 border-b border-l border-neutral-300 [border-bottom-left-radius:12px_16px] sm:-left-5 sm:w-4 sm:[border-bottom-left-radius:16px_16px] dark:border-neutral-700"
+                    className="pointer-events-none absolute -left-4 top-0 h-5 w-3 border-b border-l border-neutral-300 [border-bottom-left-radius:12px_16px] dark:border-neutral-700 sm:-left-5 sm:w-4 sm:[border-bottom-left-radius:16px_16px]"
                     aria-hidden
                 />
                 <span>{t('Read more replies')} &rsaquo;</span>

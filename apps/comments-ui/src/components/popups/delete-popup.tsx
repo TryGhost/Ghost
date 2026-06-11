@@ -64,15 +64,15 @@ const DeletePopup = ({comment}: {comment: Comment}) => {
     };
 
     return (
-        <div className="shadow-modal relative h-screen w-screen rounded-none bg-white p-[28px] text-center sm:h-auto sm:w-[500px] sm:rounded-xl sm:p-8 sm:text-left" data-testid="delete-popup" onMouseDown={stopPropagation}>
+        <div className="rounded-none relative h-screen w-screen bg-white p-[28px] text-center shadow-modal sm:h-auto sm:w-[500px] sm:rounded-xl sm:p-8 sm:text-left" data-testid="delete-popup" onMouseDown={stopPropagation}>
             <div className="flex h-full flex-col justify-center pt-10 sm:justify-normal sm:pt-0">
                 <h1 className="mb-1.5 font-sans text-[2.2rem] font-bold tracking-tight text-black">
                     <span>{t('Are you sure?')}</span>
                 </h1>
-                <p className="text-md px-4 font-sans leading-9 text-black sm:pl-0 sm:pr-4">{t('Once deleted, this comment can’t be recovered.')}</p>
+                <p className="px-4 font-sans text-md leading-9 text-black sm:pl-0 sm:pr-4">{t('Once deleted, this comment can’t be recovered.')}</p>
                 <div className="mt-auto flex flex-col items-center justify-start gap-4 sm:mt-8 sm:flex-row">
                     <button
-                        className={`text-md flex h-[44px] w-full items-center justify-center rounded-md px-4 font-sans font-medium text-white transition duration-200 ease-linear sm:w-fit ${buttonColor} opacity-100 hover:opacity-90`}
+                        className={`flex h-[44px] w-full items-center justify-center rounded-md px-4 font-sans text-md font-medium text-white transition duration-200 ease-linear sm:w-fit ${buttonColor} opacity-100 hover:opacity-90`}
                         data-testid="delete-popup-confirm"
                         disabled={isSubmitting}
                         type="button"
@@ -85,7 +85,7 @@ const DeletePopup = ({comment}: {comment: Comment}) => {
                         </span>
                         <span className='absolute flex h-[44px] items-center justify-center whitespace-nowrap'>{buttonIcon}{buttonText}</span>
                     </button>
-                    <button className="text-md h-[44px] w-full px-2 font-sans font-medium text-neutral-500 sm:w-fit dark:text-neutral-400" type="button" onClick={close}>{t('Cancel')}</button>
+                    <button className="h-[44px] w-full px-2 font-sans text-md font-medium text-neutral-500 dark:text-neutral-400 sm:w-fit" type="button" onClick={close}>{t('Cancel')}</button>
                 </div>
                 <CloseButton close={close} />
             </div>
