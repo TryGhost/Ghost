@@ -348,7 +348,8 @@
 
 @media (max-width: 1024px) {
     .gh-publish-settings-container {
-        padding-top: 10vh;
+        /* clear the 64px fixed mobile header (.gh-publish-header) before the 10vh airy spacing kicks in on taller viewports */
+        padding-top: max(10vh, 6rem);
     }
 }
 
@@ -657,7 +658,8 @@
 
 .gh-publish-cta {
     display: flex;
-    gap: 3.2rem;
+    flex-wrap: wrap;
+    gap: 1.2rem 3.2rem;
     width: 100%;
 }
 
@@ -717,6 +719,8 @@
 
 .gh-publish-cta-secondary {
     display: block;
+    flex-shrink: 0;
+    max-width: 100%;
     overflow: hidden;
     color: var(--midgrey);
     font-weight: 400;
@@ -732,6 +736,13 @@
     color: var(--darkgrey);
     font-size: 1.45rem;
     text-align: left;
+}
+
+/* once the secondary wraps below the button on narrow screens, indent it to align with the button's label text (.gh-btn-large span has 20px inline padding) */
+@media (max-width: 500px) {
+    .gh-publish-cta-secondary {
+        padding-left: 0.5rem;
+    }
 }
 
 .gh-publish-confirmation {
