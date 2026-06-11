@@ -293,6 +293,9 @@ export const createAdminApiRouter = ({
             {key: 'active_theme', value: value('theme.active', 'source')},
             {key: 'unsplash', value: true},
             {key: 'labs', value: '{}'},
+            // Gates the shell's Network nav item; Ghost 6 defaults the
+            // social web to enabled.
+            {key: 'social_web_enabled', value: Boolean(value('social_web.enabled', true))},
             {key: 'members_signup_access', value: value('members.signup_access', 'all')},
             {key: 'default_content_visibility', value: value('members.default_content_visibility', 'public')},
             {key: 'members_support_address', value: 'noreply'},
@@ -479,12 +482,29 @@ export const createAdminApiRouter = ({
                 ? tags.filter(({tag}) => tag.visibility === 'public')
                 : tags;
         filtered.sort((left, right) => left.tag.name.localeCompare(right.tag.name));
+
+        const rawLimit = context.req.query('limit');
+        const limit = rawLimit && rawLimit !== 'all' ? Math.max(Number(rawLimit) || 15, 1) : null;
+        const page = Math.max(Number(context.req.query('page') ?? '1') || 1, 1);
+        const sliced = limit === null
+            ? filtered
+            : filtered.slice((page - 1) * limit, page * limit);
+        const meta = limit === null
+            ? singlePagination(filtered.length)
+            : buildPagination({
+                page,
+                limit,
+                pages: Math.max(Math.ceil(filtered.length / limit), 1),
+                total: filtered.length,
+                next: page * limit < filtered.length ? page + 1 : null,
+                prev: page > 1 ? page - 1 : null
+            });
         return context.json({
-            tags: filtered.map(({tag, postCount}) => ({
+            tags: sliced.map(({tag, postCount}) => ({
                 ...mapCompatTag(tag, siteUrl),
                 count: {posts: postCount}
             })),
-            meta: singlePagination(filtered.length)
+            meta
         });
     }));
 

@@ -229,6 +229,11 @@ describe('ghost api compat facades', () => {
             const settings = await settingsResponse.json() as {settings: Array<{key: string; value: unknown}>};
             const title = settings.settings.find((setting) => setting.key === 'title');
             expect(title?.value).toBe('Testing Export Fixtures');
+
+            // The shell's Network nav item is gated on this setting; Ghost 6
+            // defaults the social web to enabled.
+            const socialWeb = settings.settings.find((setting) => setting.key === 'social_web_enabled');
+            expect(socialWeb?.value).toBe(true);
         });
 
         it('browses posts with admin shapes, including drafts', async () => {
@@ -358,6 +363,43 @@ describe('ghost api compat facades', () => {
             const news = body.tags.find((tag) => tag.slug === 'news');
             expect(news).toBeDefined();
             expect(news?.count?.posts).toBe(1);
+        });
+
+        it('paginates the tags browse with limit and page', async () => {
+            const loginResponse = await login();
+            const cookie = loginResponse.headers.get('set-cookie')!.split(';')[0]!;
+
+            for (let index = 1; index <= 25; index += 1) {
+                const num = String(index).padStart(2, '0');
+                const create = await app.request('/ghost/api/admin/tags/', {
+                    method: 'POST',
+                    headers: {cookie, 'content-type': 'application/json'},
+                    body: JSON.stringify({tags: [{name: `Paged Tag ${num}`, slug: `paged-tag-${num}`}]})
+                });
+                expect(create.status).toBe(201);
+            }
+
+            const firstPage = await app.request('/ghost/api/admin/tags/?limit=20&page=1', {headers: {cookie}});
+            const firstBody = await firstPage.json() as {tags: Array<{slug: string}>; meta: {pagination: {page: number; limit: number; pages: number; total: number; next: number | null; prev: number | null}}};
+            expect(firstBody.tags).toHaveLength(20);
+            expect(firstBody.meta.pagination.page).toBe(1);
+            expect(firstBody.meta.pagination.limit).toBe(20);
+            expect(firstBody.meta.pagination.total).toBe(26);
+            expect(firstBody.meta.pagination.pages).toBe(2);
+            expect(firstBody.meta.pagination.next).toBe(2);
+            expect(firstBody.meta.pagination.prev).toBeNull();
+
+            const secondPage = await app.request('/ghost/api/admin/tags/?limit=20&page=2', {headers: {cookie}});
+            const secondBody = await secondPage.json() as {tags: Array<{slug: string}>; meta: {pagination: {page: number; next: number | null; prev: number | null}}};
+            expect(secondBody.tags).toHaveLength(6);
+            expect(secondBody.meta.pagination.page).toBe(2);
+            expect(secondBody.meta.pagination.next).toBeNull();
+            expect(secondBody.meta.pagination.prev).toBe(1);
+
+            // The default browse without limit keeps returning everything.
+            const all = await app.request('/ghost/api/admin/tags/?limit=all', {headers: {cookie}});
+            const allBody = await all.json() as {tags: Array<{slug: string}>};
+            expect(allBody.tags.length).toBe(26);
         });
 
         it('reads a single post by id for the editor', async () => {

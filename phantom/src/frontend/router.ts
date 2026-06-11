@@ -402,7 +402,22 @@ export const createFrontendRouter = ({
             }
             return new Response(asset.body, {status: 200, headers: {'Content-Type': asset.contentType}});
         }
-        if (context.req.path === '/ghost' || context.req.path.startsWith('/ghost/')) {
+        // The shell's asset URLs are relative ("./assets/..."), so it only
+        // boots at /ghost/ — at bare /ghost they resolve to /assets/ and 404.
+        // Mirror Ghost core and bounce to the canonical trailing-slash URL
+        // (the fragment survives redirects client-side).
+        if (context.req.path === '/ghost') {
+            return context.redirect('/ghost/', 302);
+        }
+        // Deep links like /ghost/members/import are server-side URLs only on
+        // first navigation; the admin router lives behind the hash. Mirror
+        // Ghost core: 302 to /ghost/#/<path> (no trailing slash) and only
+        // serve the shell HTML at /ghost/ itself.
+        if (context.req.path.startsWith('/ghost/') && context.req.path !== '/ghost/') {
+            const hashPath = context.req.path.slice('/ghost/'.length).replace(/\/+$/, '');
+            return context.redirect(`/ghost/#/${hashPath}`, 302);
+        }
+        if (context.req.path === '/ghost/') {
             for (const adminRoot of adminRoots) {
                 const asset = await readAsset(path.resolve(adminRoot, 'index.html'), 'text/html; charset=utf-8');
                 if (asset) {

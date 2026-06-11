@@ -19,7 +19,10 @@ export default defineConfig({
     testDir: './tests',
     testMatch: ['**/*.test.ts'],
     use: {
-        baseURL: `http://127.0.0.1:${PORT}`,
+        // Must match the site URL phantom announces (http://localhost:<port>):
+        // the shell builds absolute URLs (e.g. ActivityPub) from it, and a
+        // 127.0.0.1 origin would make those cross-origin.
+        baseURL: `http://localhost:${PORT}`,
         trace: 'retain-on-failure',
         browserName: 'chromium',
         viewport: {width: 1920, height: 1080}
