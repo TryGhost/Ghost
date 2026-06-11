@@ -22,6 +22,9 @@
   },
   "license": "MIT",
   "main": "./lib/BaseStorage",
+  "files": [
+    "lib"
+  ],
   "dependencies": {
     "moment": "2.30.1"
   },

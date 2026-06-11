@@ -1,4 +1,0 @@
-.git*
-.idea
-node_modules/**
-test
