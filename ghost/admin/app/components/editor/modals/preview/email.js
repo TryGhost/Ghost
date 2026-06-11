@@ -8,9 +8,20 @@ import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const INJECTED_CSS = `
-html,
-body {
-    overflow-y: auto;
+html {
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+html::-webkit-scrollbar {
+    width: 8px;
+    background: transparent;
+}
+html::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+html::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
 }
 `;
 
