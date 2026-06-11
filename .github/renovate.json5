@@ -466,6 +466,48 @@
             "automergeType": "pr"
         },
 
+        // Digest and pin updates (Docker image digests, action SHAs) usually
+        // have no release timestamp — Docker Hub library images skip label
+        // lookup entirely — so the 72h soak can never be satisfied. Worse,
+        // digest updates bypass internalChecksFilter's lookup-time pending
+        // state (it only filters version releases), so the PR opens
+        // immediately anyway and then sits unmergeable forever on a pending
+        // renovate/stability-days status, getting rebased every run. A time
+        // gate is unmeasurable here, so exempt these update types from the
+        // soak; the automerge rules around this one decide what merges on
+        // green CI vs what waits for a human.
+        {
+            "description": "No release-age soak for digest/pin updates (no usable release timestamp)",
+            "matchUpdateTypes": [
+                "digest",
+                "pin",
+                "pinDigest"
+            ],
+            "minimumReleaseAge": "0 days"
+        },
+
+        // The shared preset automerges all `action`-type deps, which would
+        // quietly convert our SHA pins on third-party actions back into
+        // "trust whatever upstream publishes next" — the exact attack class
+        // SHA-pinning defends against (codecov 2021, tj-actions 2025). Keep
+        // own-org and GitHub-owned actions automerging; bumps to everything
+        // else (codecov, docker, pnpm, peter-evans, ...) wait for a human
+        // review per GitHub's Actions hardening guidance. Placed before the
+        // security-update rule below so vulnerability-alert action bumps can
+        // still automerge.
+        {
+            "description": "Third-party action bumps require human merge",
+            "matchDepTypes": [
+                "action"
+            ],
+            "matchPackageNames": [
+                "!tryghost/**",
+                "!actions/**",
+                "!github/**"
+            ],
+            "automerge": false
+        },
+
         // Security patches and minors automerge after CI passes regardless
         // of any other automerge exclusion (e.g. the CSS preprocessor rule
         // in the shared preset). Security majors are intentionally left
