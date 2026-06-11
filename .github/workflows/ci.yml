@@ -521,17 +521,114 @@ jobs:
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
-        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
+        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> "$GITHUB_ENV"
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
         run: |
-          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
-          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
-          echo "database__connection__password=root" >> $GITHUB_ENV
+          {
+            echo "database__connection__host=127.0.0.1"
+            echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}"
+            echo "database__connection__password=root"
+          } >> "$GITHUB_ENV"
 
       - name: E2E tests
         run: pnpm nx run ghost:test:ci:e2e
+
+      - name: Check for unexpected file changes
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            echo "Tests generated unexpected file changes. Commit them before merging:"
+            git status
+            git diff
+            exit 1
+          fi
+
+      - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
+        with:
+          name: e2e-coverage
+          path: |
+            ghost/*/coverage-e2e/cobertura-coverage.xml
+
+      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
+  job_integration-tests:
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
+    services:
+      mysql:
+        image: ${{ matrix.env.DB == 'mysql8' && 'mysql:8.0' || '' }}
+        env:
+          MYSQL_DATABASE: ghost_testing
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306
+        options: >-
+          --tmpfs /var/lib/mysql
+          --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+      redis:
+        image: redis:7.0@sha256:352c1fdadc91926edda08f45aeb3f27f37194c2f14101229c0523a11195c96e3
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd "redis-cli ping"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    strategy:
+      matrix:
+        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
+        env:
+          - DB: mysql8
+            NODE_ENV: testing-mysql
+        include:
+          - node: ${{ needs.job_setup.outputs.node_version }}
+            env:
+              DB: sqlite3
+              NODE_ENV: testing
+    env:
+      DB: ${{ matrix.env.DB }}
+      NODE_ENV: ${{ matrix.env.NODE_ENV }}
+    name: Integration tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ matrix.node }}
+          cache: pnpm
+
+      - name: Install dependencies
+        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+        # installing/linking it when restoring from a cached store. --force
+        # ensures all optional deps are installed regardless.
+        run: |
+          pnpm install --frozen-lockfile --force
+
+      - name: Set env vars (SQLite)
+        if: contains(matrix.env.DB, 'sqlite')
+        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> "$GITHUB_ENV"
+
+      - name: Set env vars (MySQL)
+        if: contains(matrix.env.DB, 'mysql')
+        run: |
+          {
+            echo "database__connection__host=127.0.0.1"
+            echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}"
+            echo "database__connection__password=root"
+          } >> "$GITHUB_ENV"
 
       - name: Start MinIO for integration tests
         run: |
@@ -567,9 +664,8 @@ jobs:
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
         with:
-          name: e2e-coverage
+          name: integration-coverage
           path: |
-            ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
       - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
@@ -1494,6 +1590,7 @@ jobs:
     needs: [
       job_admin-tests,
       job_acceptance-tests,
+      job_integration-tests,
       job_unit-tests
     ]
     runs-on: ubuntu-latest
@@ -1522,13 +1619,19 @@ jobs:
         with:
           name: e2e-coverage
 
+      - name: Restore integration coverage
+        if: contains(needs.job_integration-tests.result, 'success')
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: integration-coverage
+
       - name: Move coverage
-        if: contains(needs.job_acceptance-tests.result, 'success')
+        if: contains(needs.job_acceptance-tests.result, 'success') || contains(needs.job_integration-tests.result, 'success')
         run: |
           rsync -av --remove-source-files core/* ghost/core
 
       - name: Upload E2E test coverage
-        if: contains(needs.job_acceptance-tests.result, 'success')
+        if: contains(needs.job_acceptance-tests.result, 'success') || contains(needs.job_integration-tests.result, 'success')
         uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
         with:
           flags: e2e-tests
@@ -1547,6 +1650,7 @@ jobs:
         job_admin-tests,
         job_unit-tests,
         job_acceptance-tests,
+        job_integration-tests,
         job_legacy-tests,
         job_apps_acceptance-tests,
         job_tinybird-tests,
