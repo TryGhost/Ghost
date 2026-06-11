@@ -28,6 +28,7 @@ export type AppConfig = {
             assetPath: string;
         };
     };
+    hostSettings: Record<string, unknown>;
 };
 
 export const loadConfig = (): AppConfig => {
@@ -63,6 +64,7 @@ export const loadConfig = (): AppConfig => {
                 bundlePath: env.GHOST_THEME_R2_BUNDLE_PATH,
                 assetPath: env.GHOST_THEME_R2_ASSET_PATH
             }
-        }
+        },
+        hostSettings: env.GHOST_HOST_SETTINGS ? JSON.parse(env.GHOST_HOST_SETTINGS) as Record<string, unknown> : {}
     };
 };

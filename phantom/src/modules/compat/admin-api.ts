@@ -22,6 +22,8 @@ type AdminApiDependencies = {
     memberRepository: MemberRepository;
     newsletterRepository: NewsletterRepository;
     siteUrl: string;
+    // Host-managed settings (billing, force upgrade) surfaced via /config/.
+    hostSettings?: Record<string, unknown>;
 };
 
 type WirePost = Record<string, unknown>;
@@ -155,7 +157,8 @@ export const createAdminApiRouter = ({
     subscriptionRepository,
     memberRepository,
     newsletterRepository,
-    siteUrl
+    siteUrl,
+    hostSettings = {}
 }: AdminApiDependencies) => {
     const router = new Hono();
     const on = slashTolerant(router);
@@ -242,7 +245,7 @@ export const createAdminApiRouter = ({
     });
 
     const buildUserPayload = (
-        staff: {id: string; name: string; email: string; status: string; accessibility?: string | null},
+        staff: {id: string; name: string; email: string; status: string; accessibility?: string | null; createdAt?: number; updatedAt?: number},
         roles: string[],
         overrides: Record<string, unknown> = {}
     ) => ({
@@ -263,8 +266,9 @@ export const createAdminApiRouter = ({
         meta_description: null,
         tour: null,
         last_seen: new Date().toISOString(),
-        created_at: new Date(0).toISOString(),
-        updated_at: new Date(0).toISOString(),
+        // The shell compares changelog dates against when the user joined.
+        created_at: new Date(staff.createdAt ?? 0).toISOString(),
+        updated_at: new Date(staff.updatedAt ?? 0).toISOString(),
         url: `${siteUrl}/author/${staff.id}/`,
         roles: roles.map((role) => ({
             id: role,
@@ -303,7 +307,7 @@ export const createAdminApiRouter = ({
                 stripeDirect: false,
                 mailgunIsConfigured: false,
                 emailAnalytics: false,
-                hostSettings: {},
+                hostSettings,
                 tenor: {googleApiKey: null},
                 pintura: {},
                 signupForm: {url: '', version: ''},

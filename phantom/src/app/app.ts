@@ -162,7 +162,8 @@ export const createApp = ({
         subscriptionRepository,
         memberRepository,
         newsletterRepository,
-        siteUrl
+        siteUrl,
+        hostSettings: config.hostSettings
     }));
     app.route('/members/api', createMembersApiRouter({memberAuthService}));
     if (e2eReset) {

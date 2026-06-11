@@ -11,7 +11,10 @@ const envSchema = z.object({
     GHOST_THEME_FS_ROOT: z.string().default('./content/themes'),
     GHOST_THEME_R2_BASE_URL: z.string().optional(),
     GHOST_THEME_R2_BUNDLE_PATH: z.string().default('themes/{themeId}/bundle.mjs'),
-    GHOST_THEME_R2_ASSET_PATH: z.string().default('themes/{themeId}/assets/{path}')
+    GHOST_THEME_R2_ASSET_PATH: z.string().default('themes/{themeId}/assets/{path}'),
+    // Host-managed settings (billing, force upgrade, limits) as JSON —
+    // exposed verbatim via the admin config endpoint.
+    GHOST_HOST_SETTINGS: z.string().optional()
 });
 
 export type Env = z.infer<typeof envSchema>;

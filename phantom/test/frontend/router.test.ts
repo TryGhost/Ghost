@@ -123,7 +123,8 @@ describe('frontend router', () => {
                     bundlePath: 'themes/{themeId}/bundle.mjs',
                     assetPath: 'themes/{themeId}/assets/{path}'
                 }
-            }
+            },
+            hostSettings: {}
         };
 
         const app = new Hono();
@@ -169,7 +170,8 @@ describe('frontend router', () => {
                     bundlePath: 'themes/{themeId}/bundle.mjs',
                     assetPath: 'themes/{themeId}/assets/{path}'
                 }
-            }
+            },
+            hostSettings: {}
         };
 
         const privateSettingsService: SettingsService = {

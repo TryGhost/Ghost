@@ -42,7 +42,8 @@ describe('theme rendering with imported content', () => {
                     bundlePath: 'themes/{themeId}/bundle.mjs',
                     assetPath: 'themes/{themeId}/assets/{path}'
                 }
-            }
+            },
+            hostSettings: {}
         };
 
         const contentReader = createFrontendContentReader(createContentRepository(db));

@@ -21,8 +21,10 @@ export const seedFromFixture = async (db: DbClient, fixturePath: string) => {
     const counts = await createGhostImporter(db).importExport(payload);
 
     cachedPasswordHash ??= bcrypt.hashSync(E2E_OWNER.password, 10);
+    // The owner "joins" at seed time, not at the fixture's export date —
+    // what's-new banners compare changelog dates against created_at.
     await db.update(staffTable)
-        .set({passwordHash: cachedPasswordHash})
+        .set({passwordHash: cachedPasswordHash, createdAt: Date.now()})
         .where(eq(staffTable.email, E2E_OWNER.email));
 
     return counts;

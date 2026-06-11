@@ -55,7 +55,8 @@ const config: AppConfig = {
             bundlePath: 'themes/{themeId}/bundle.mjs',
             assetPath: 'themes/{themeId}/assets/{path}'
         }
-    }
+    },
+    hostSettings: {}
 };
 
 const staffAuthService: StaffAuthService = {
