@@ -22,8 +22,11 @@ Each story below targets **Tier 1** for its first demoable version. Tier 2 (sele
 | 2 | [Admin: member detail values](./stories/02-admin-member-detail.md) | Ember admin | ✅ Done |
 | 3 | [Portal: collect at signup](./stories/03-portal-signup.md) | portal/admin-x-settings | ✅ Done (Part A + Part B) |
 | 4 | [Portal: self-edit on account page](./stories/04-portal-account.md) | portal | ✅ Done |
+| 5 | [Landing form: collect from existing members](./stories/05-landing-form.md) | portal/admin-x-settings | In progress |
 
 Status values: `Not started` / `In progress` / `Demoable` / `Done`.
+
+Stories 0–4 prove the *new-signup* loop. **Story 5** extends collection to **all existing members** via a separate "Landing form" surface, the second collection surface, reinforcing the "define once, collect anywhere" thesis.
 
 ## The loop we are validating
 
@@ -56,6 +59,9 @@ The POC is successful if that loop feels natural to test users, independent of h
 - **Field descriptions (`helpText`) are dropped** for now. helpText is admin-only by design; no UI sets it.
 - **Presets deferred** (not built now, not abandoned). Name-style presets would clash with Ghost's built-in `name`, but gap-filling presets (Phone, Company, …) could be useful later. The `preset` property stays nullable in the model. See [ideas/field-formats.md](./ideas/field-formats.md).
 - **Signup uses a unified Form fields list** (Story 3): built-in Email (locked) + Name (toggle → `portal_name`) + custom-field placements in one reorderable list. Built-in = toggle/locked, custom = add/remove.
+- **Two collection surfaces** (Story 5): (1) **Portal** = signup form + account page, one connected list, targets new signups; (2) **Landing form** = a separate Membership section + its own field list, targets *all existing members* via a soft card on their next authenticated landing. Each surface is independently curated.
+- **Landing form is its own Membership section** (not folded into Custom fields): sidebar order is Access → Tiers → Signup portal → Custom fields → **Landing form** → Welcome emails → Newsletters. It's a member-facing experience (toggle + card + trigger + dismissal), not a field attribute.
+- **Landing prompt = soft & non-blocking**: pending is *implicit* (member missing a placed value) plus a per-member *dismiss* flag. Keyed off member state, so it reaches members regardless of signup source. A forced/blocking gate is a v2 path.
 
 ## Future explorations (deliberately deferred)
 
@@ -63,7 +69,6 @@ Out of scope for the POC, worth revisiting for a real implementation:
 
 - **Admin-only Description**: an optional description on a field, shown only in admin (never to members). Dropped now for simplicity; the `helpText` property is reserved in the model.
 - **Explicit "internal" field flag**: mark a field as admin-only so it is hard-excluded from Portal form pickers and badged "Internal", rather than relying on the owner simply not placing it. Earns its keep once the form pickers exist (Stories 3/4).
-- **Post-signup survey (progressive profiling)**: collect optional fields *after* signup via a card/modal injected post-verification, instead of adding signup friction. A new `post_signup` collection surface + per-member completion state; likely lives under Growth. See [ideas/post-signup-survey.md](./ideas/post-signup-survey.md).
 - **Field formats (validated types) + presets**: validated types like email / phone / url (modeled as a `format` on text, surfaced as data types), plus deferred convenience presets. See [ideas/field-formats.md](./ideas/field-formats.md).
 - **Integration surface for a real build**: import/migration, CSV export, Admin API, NQL filtering/segmentation, email personalization, webhooks, themes, GDPR export, etc. The full checklist beyond the POC's UI surfaces. See [ideas/integration-surface.md](./ideas/integration-surface.md).
 

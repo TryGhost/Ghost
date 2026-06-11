@@ -1,6 +1,6 @@
 # Idea / future task: post-signup survey (progressive profiling)
 
-**Status:** Backlog. Not part of the current 5-story POC. Captured for later exploration.
+**Status:** Promoted to **[Story 5 — Landing form](../stories/05-landing-form.md)** (in progress). This doc is the original thinking; the story is canonical. Note: the POC build keeps it simple (no per-question titles; field label = prompt) and names it "Landing form".
 
 ## The idea
 
