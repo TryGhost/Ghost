@@ -36,21 +36,27 @@ const FieldRowContainer: React.FC<Partial<SortableItemContainerProps>> = ({setRe
     </div>
 );
 
+// The list reads/writes either a Portal surface (`surface`, e.g. signup) or a
+// specific landing form's fields (`formId`, Story 5.5). Exactly one is used.
 const FormFieldsList: React.FC<{
-    surface: string
+    surface?: string
+    formId?: string
     title?: string
     portalName?: boolean
     updateSetting?: (key: string, value: boolean) => void
-}> = ({surface, title = 'Form fields', portalName = false, updateSetting}) => {
+}> = ({surface = '', formId, title = 'Form fields', portalName = false, updateSetting}) => {
     const [items, setItems] = useState<FormEntry[]>([]);
     const [definitions, setDefinitions] = useState<customFields.FieldDefinition[]>([]);
     const [addKey, setAddKey] = useState(0);
 
     const refresh = useCallback(async () => {
-        const [form, defs] = await Promise.all([customFields.getForm(surface), customFields.listFields()]);
+        const [form, defs] = await Promise.all([
+            formId ? customFields.getLandingFormFields(formId) : customFields.getForm(surface),
+            customFields.listFields()
+        ]);
         setItems(form.map(p => ({...p, id: p.fieldId})));
         setDefinitions(defs);
-    }, [surface]);
+    }, [surface, formId]);
 
     useEffect(() => {
         refresh();
@@ -61,7 +67,12 @@ const FormFieldsList: React.FC<{
         const ordered = next.map((entry, index) => ({...entry, order: index}));
         setItems(ordered);
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        customFields.setForm(surface, ordered.map(({id, ...placement}) => placement));
+        const placements = ordered.map(({id, ...placement}) => placement);
+        if (formId) {
+            customFields.setLandingFormFields(formId, placements);
+        } else {
+            customFields.setForm(surface, placements);
+        }
     };
 
     const onMove = (id: string, overId: string) => {

@@ -53,6 +53,27 @@ export function deleteField(id: string): Promise<boolean>;
 export function getForm(surface: string): Promise<FormPlacement[]>;
 export function setForm(surface: string, placements: FormPlacement[]): Promise<FormPlacement[]>;
 
+export interface LandingForm {
+    id: string;
+    name: string;
+    description: string;
+    audience: string;
+    enabled: boolean;
+    order: number;
+    fields: FormPlacement[];
+}
+
+export function listLandingForms(): Promise<LandingForm[]>;
+export function getLandingForm(id: string): Promise<LandingForm | null>;
+export function createLandingForm(input: {name: string; description?: string; audience?: string}): Promise<LandingForm>;
+export function updateLandingForm(id: string, patch: Partial<LandingForm>): Promise<LandingForm | null>;
+export function deleteLandingForm(id: string): Promise<boolean>;
+export function setLandingForms(forms: LandingForm[]): Promise<LandingForm[]>;
+export function getLandingFormFields(id: string): Promise<FormPlacement[]>;
+export function setLandingFormFields(id: string, placements: FormPlacement[]): Promise<FormPlacement[]>;
+export function audienceSummary(audience: string): string;
+export function matchAudience(audience: string, member?: {paid?: boolean; status?: string; tiers?: {id?: string; slug?: string}[]}): boolean;
+
 export function getValues(memberId: string): Promise<Record<string, unknown>>;
 export function setValue(memberId: string, fieldId: string, value: unknown): Promise<Record<string, unknown>>;
 

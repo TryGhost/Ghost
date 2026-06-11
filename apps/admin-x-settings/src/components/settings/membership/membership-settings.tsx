@@ -17,7 +17,7 @@ export const searchKeywords = {
     access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email', 'password protection', 'lock site', 'private site', 'private site mode', 'make this site private'],
     tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
     customFields: ['membership', 'custom fields', 'custom field', 'metadata', 'attributes', 'properties'],
-    landingForm: ['membership', 'landing form', 'survey', 'collect', 'profile', 'audience', 'custom fields', 'post signup'],
+    landingForm: ['membership', 'landing forms', 'landing form', 'survey', 'collect', 'profile', 'audience', 'segment', 'custom fields', 'post signup'],
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
     giftSubscriptions: ['membership', 'gift', 'gifts', 'gift subscriptions', 'present', 'share', 'shareable link'],
     memberEmails: ['membership', 'signup', 'welcome email', 'welcome emails', 'email', 'new user', 'new member', 'account'],
@@ -32,8 +32,8 @@ const MembershipSettings: React.FC = () => {
     const visibleSearchKeywords = [
         searchKeywords.access,
         searchKeywords.tiers,
-        searchKeywords.portal,
         searchKeywords.customFields,
+        searchKeywords.portal,
         searchKeywords.landingForm,
         ...(paidMembersEnabled ? [searchKeywords.giftSubscriptions] : []),
         ...(hasAutomations ? [] : [searchKeywords.memberEmails]),
@@ -45,8 +45,8 @@ const MembershipSettings: React.FC = () => {
             <Access keywords={searchKeywords.access} />
             <SpamFilters keywords={searchKeywords.access} />
             <Tiers keywords={searchKeywords.tiers} />
-            <Portal keywords={searchKeywords.portal} />
             <CustomFields keywords={searchKeywords.customFields} />
+            <Portal keywords={searchKeywords.portal} />
             <LandingForm keywords={searchKeywords.landingForm} />
             {paidMembersEnabled && <GiftSubscriptions keywords={searchKeywords.giftSubscriptions} />}
             {!hasAutomations && <MemberEmails keywords={searchKeywords.memberEmails} />}

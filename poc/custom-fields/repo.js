@@ -42,7 +42,7 @@ const STORAGE_KEY = 'ghost-poc-custom-fields';
 // an older version is discarded and reseeded from the JSON, so dev browsers pick
 // up seed changes automatically (this DOES wipe local edits, which is the point
 // of a reseed).
-const SEED_VERSION = 8;
+const SEED_VERSION = 9;
 
 /** Type options for the "data type" dropdown in the create UI. */
 export const TYPES = [
@@ -101,6 +101,7 @@ function read() {
     initial._seedVersion = SEED_VERSION;
     initial.definitions = initial.definitions || [];
     initial.forms = initial.forms || {};
+    initial.landingForms = initial.landingForms || [];
     initial.values = initial.values || {};
     initial.settings = initial.settings || {};
     initial.dismissed = initial.dismissed || {};
@@ -265,6 +266,129 @@ export async function setDismissed(memberId, key, value = true) {
         delete state.dismissed[memberId][key];
     }
     write(state);
+}
+
+// --- Landing forms (Story 5.5: multiple audience-targeted forms) -----------
+//
+// Each form: { id, name, description, audience, enabled, order, fields: placement[] }.
+// `audience` is a comma-joined NQL-style filter string, the same shape the
+// Newsletter recipient picker emits ('status:free,status:-free' = all,
+// 'status:-free' = paid, tier ids / 'label:slug' for specific people). A real
+// build resolves it server-side; the POC matches a subset client-side (below).
+
+const AUDIENCE_ALL = 'status:free,status:-free';
+const AUDIENCE_PAID = 'status:-free';
+const AUDIENCE_FREE = 'status:free';
+
+/** @returns {Promise<object[]>} landing forms, ordered (priority order). */
+export async function listLandingForms() {
+    return [...(read().landingForms || [])].sort((a, b) => a.order - b.order);
+}
+
+/** @returns {Promise<object|null>} */
+export async function getLandingForm(id) {
+    return (read().landingForms || []).find(f => f.id === id) || null;
+}
+
+/** Create a landing form. `name` required; defaults fill the rest. @returns {Promise<object>} */
+export async function createLandingForm({name, description = '', audience = AUDIENCE_ALL} = {}) {
+    const state = read();
+    state.landingForms = state.landingForms || [];
+    const id = `lf_${deriveKey(name, state.landingForms.map(f => f.id.replace(/^lf_/, '')))}`;
+    const form = {id, name: name || 'Landing form', description, audience, enabled: true, order: state.landingForms.length, fields: []};
+    state.landingForms.push(form);
+    write(state);
+    return form;
+}
+
+/** Patch a landing form's metadata (name/description/audience/enabled). @returns {Promise<object|null>} */
+export async function updateLandingForm(id, patch) {
+    const state = read();
+    const form = (state.landingForms || []).find(f => f.id === id);
+    if (!form) {
+        return null;
+    }
+    Object.assign(form, patch);
+    write(state);
+    return form;
+}
+
+/** Remove a landing form (and its per-member dismissals). @returns {Promise<boolean>} */
+export async function deleteLandingForm(id) {
+    const state = read();
+    state.landingForms = (state.landingForms || []).filter(f => f.id !== id);
+    for (const memberId of Object.keys(state.dismissed || {})) {
+        delete state.dismissed[memberId][id];
+    }
+    write(state);
+    return true;
+}
+
+/** Replace the whole list (used for drag-to-reorder). @returns {Promise<object[]>} */
+export async function setLandingForms(forms) {
+    const state = read();
+    state.landingForms = forms.map((f, index) => ({...f, order: index}));
+    write(state);
+    return state.landingForms;
+}
+
+/** @returns {Promise<FormPlacement[]>} a landing form's fields, ordered. */
+export async function getLandingFormFields(id) {
+    const form = (read().landingForms || []).find(f => f.id === id);
+    return [...((form && form.fields) || [])].sort((a, b) => a.order - b.order);
+}
+
+/** Replace a landing form's fields. @returns {Promise<FormPlacement[]>} */
+export async function setLandingFormFields(id, placements) {
+    const state = read();
+    const form = (state.landingForms || []).find(f => f.id === id);
+    if (form) {
+        form.fields = placements;
+        write(state);
+    }
+    return placements;
+}
+
+/** A short human label for an audience filter (for the admin row badge). */
+export function audienceSummary(audience) {
+    if (!audience || audience === AUDIENCE_ALL) {
+        return 'All members';
+    }
+    if (audience === AUDIENCE_PAID) {
+        return 'Paid members';
+    }
+    if (audience === AUDIENCE_FREE) {
+        return 'Free members';
+    }
+    return 'Specific people';
+}
+
+/**
+ * Does an audience filter match a member? Pure, shared by the Portal card.
+ * Subset of NQL: status:free / status:-free, tier id/slug, label:slug. Tokens
+ * are OR'd (like the recipient picker). Labels are inert in the POC, the Portal
+ * member object has no labels; a real build matches them server-side.
+ * @param {string} audience
+ * @param {{paid?: boolean, status?: string, tiers?: {id?: string, slug?: string}[]}} member
+ */
+export function matchAudience(audience, member = {}) {
+    if (!audience) {
+        return true;
+    }
+    const isPaid = Boolean(member.paid) || (member.status && member.status !== 'free');
+    const tiers = member.tiers || [];
+    return audience.split(',').map(t => t.trim()).filter(Boolean).some((token) => {
+        if (token === 'status:free') {
+            return !isPaid;
+        }
+        if (token === 'status:-free') {
+            return isPaid;
+        }
+        if (token.startsWith('label:') || token.startsWith('offer_redemptions:')) {
+            return false; // labels/offers aren't on the Portal member object (POC limit)
+        }
+        return tiers.some(tier => tier.id === token || tier.slug === token);
+    });
 }
 
 // --- POC helpers -----------------------------------------------------------

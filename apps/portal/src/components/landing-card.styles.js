@@ -30,7 +30,7 @@ const LandingCardStyles = `
         overflow: hidden;
         background: var(--white);
         border-radius: 10px;
-        padding: 28px 28px 24px;
+        padding: 32px;
         box-shadow: 0 8px 20px rgba(0, 0, 0, 0.16), 0 2px 8px rgba(0, 0, 0, 0.08);
         animation: gh-portal-landingcard-slideup 0.25s ease-in-out;
         will-change: transform, opacity;
@@ -51,19 +51,22 @@ const LandingCardStyles = `
         flex-shrink: 0;
     }
 
-    .gh-portal-landingcard-title {
-        font-size: 1.9rem;
-        font-weight: 700;
-        line-height: 1.25em;
-        margin: 0 36px 4px 0;
-        color: var(--grey0);
+    .gh-portal-landingcard-logo {
+        display: block;
+        width: 56px;
+        height: 56px;
+        margin: 0 auto 12px;
+        border-radius: 4px;
+        object-fit: cover;
     }
 
-    .gh-portal-landingcard-subtitle {
-        font-size: 1.4rem;
-        line-height: 1.5em;
-        color: var(--grey6);
-        margin: 0 0 20px;
+    .gh-portal-landingcard-title {
+        font-size: 2.2rem;
+        font-weight: 700;
+        line-height: 1.25em;
+        text-align: center;
+        margin: 0 0 28px;
+        color: var(--grey0);
     }
 
     /* Only the fields scroll when the card is capped to the viewport. The negative

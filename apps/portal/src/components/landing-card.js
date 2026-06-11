@@ -10,16 +10,17 @@ import {clearURLParams} from '../utils/notifications';
 import {getFrameStyles} from './frame.styles';
 import {t} from '../utils/i18n';
 
-// POC Story 5 Part B: the member-facing Landing card. A soft, dismissible prompt
-// shown over whatever page a logged-in member lands on, asking for the custom
-// fields placed on the `landing` surface that they haven't answered yet.
+// POC Story 5.5: the member-facing Landing card. A soft, dismissible prompt shown
+// over whatever page a logged-in member lands on, asking for the custom fields of
+// the landing form that targets them.
 //
-// One rule drives every trigger (magic-link / Stripe / any authenticated visit /
-// email link): feature enabled + authenticated member + missing a placed field +
-// not dismissed → show. The `?cf_landing` URL param force-opens it (the email
-// "complete your profile" route). Save persists values; Not now / close dismisses.
-const LANDING = 'landing';
-const SETTING_KEY = 'landingFormEnabled';
+// A member is assigned the FIRST enabled form whose audience matches them (order
+// = priority; one form per member). The card shows when: that form has a field
+// they haven't answered AND they haven't dismissed it. `?cf_landing` force-opens
+// the matched form (the email "complete your profile" route). Save persists
+// values; Not now / close dismisses (per form). Audience matching here is a
+// client-side NQL subset (status/paid/tier); labels resolve server-side in a
+// real build.
 const FORCE_PARAM = 'cf_landing';
 
 const isEmpty = value => value === null || value === undefined || value === '' || (Array.isArray(value) && value.length === 0);
@@ -32,6 +33,7 @@ export default class LandingCard extends React.Component {
         this.state = {
             active: false,
             forced: false,
+            formId: null,
             fields: [],
             values: {},
             errors: {},
@@ -80,27 +82,44 @@ export default class LandingCard extends React.Component {
 
         const forced = new URLSearchParams(window.location.search).get(FORCE_PARAM) !== null;
 
-        const [enabled, form, defs, values, dismissed] = await Promise.all([
-            customFields.getSetting(SETTING_KEY),
-            customFields.getForm(LANDING),
+        const [forms, defs, values] = await Promise.all([
+            customFields.listLandingForms(),
             customFields.listFields(),
-            customFields.getValues(memberId),
-            customFields.isDismissed(memberId, LANDING)
+            customFields.getValues(memberId)
         ]);
 
-        // Resolve placements to live (non-archived) field definitions, preserving order.
-        const placed = form
+        // Assign the member to the first enabled form whose audience matches them.
+        const member = this.context.member || {};
+        const matchMember = {
+            paid: member.paid,
+            status: member.status,
+            tiers: (member.subscriptions || []).map(sub => sub.tier || (sub.price && sub.price.tier)).filter(Boolean)
+        };
+        const matched = forms.find(form => form.enabled && customFields.matchAudience(form.audience, matchMember));
+
+        if (!matched) {
+            this.setState({active: false});
+            return;
+        }
+
+        const dismissed = await customFields.isDismissed(memberId, matched.id);
+
+        // Resolve the form's placements to live (non-archived) definitions, ordered.
+        const placed = (matched.fields || [])
+            .slice()
+            .sort((a, b) => a.order - b.order)
             .map(placement => defs.find(def => def.id === placement.fieldId && !def.archived))
             .filter(Boolean);
 
-        // Forced (email link) shows every placed field; otherwise only the unanswered ones.
+        // Forced (email link) shows every field; otherwise only the unanswered ones.
         const fields = forced ? placed : placed.filter(def => isEmpty(values[def.id]));
 
-        const active = Boolean(enabled) && fields.length > 0 && (forced || !dismissed);
+        const active = fields.length > 0 && (forced || !dismissed);
 
         this.setState(state => ({
             active,
             forced,
+            formId: matched.id,
             fields,
             // Keep any edits the member already typed; seed the rest from stored values.
             values: {...values, ...state.values},
@@ -180,8 +199,8 @@ export default class LandingCard extends React.Component {
     };
 
     handleDismiss = () => {
-        if (this.memberId) {
-            customFields.setDismissed(this.memberId, LANDING, true);
+        if (this.memberId && this.state.formId) {
+            customFields.setDismissed(this.memberId, this.state.formId, true);
         }
         this.close();
     };
@@ -238,8 +257,8 @@ export default class LandingCard extends React.Component {
                             <CloseIcon />
                         </button>
                         <div className="gh-portal-landingcard-header">
+                            {this.context.site?.icon && <img alt={this.context.site.title} className="gh-portal-landingcard-logo" src={this.context.site.icon} />}
                             <h2 className="gh-portal-landingcard-title">{t('Tell us a bit more about you')}</h2>
-                            <p className="gh-portal-landingcard-subtitle">{t('Help us tailor your experience.')}</p>
                         </div>
                         <div className="gh-portal-landingcard-fields">
                             {this.state.fields.map(field => (

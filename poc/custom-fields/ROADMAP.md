@@ -23,7 +23,7 @@ Each story below targets **Tier 1** for its first demoable version. Tier 2 (sele
 | 3 | [Portal: collect at signup](./stories/03-portal-signup.md) | portal/admin-x-settings | ✅ Done (Part A + Part B) |
 | 4 | [Portal: self-edit on account page](./stories/04-portal-account.md) | portal | ✅ Done |
 | 5 | [Landing form: collect from existing members](./stories/05-landing-form.md) | portal/admin-x-settings | ✅ Done |
-| 5.5 | [Audience-targeted landing forms](./stories/05.5-audience-targeted-landing-forms.md) | portal/admin-x-settings | Not started (next) |
+| 5.5 | [Audience-targeted landing forms](./stories/05.5-audience-targeted-landing-forms.md) | portal/admin-x-settings | ✅ Done |
 
 Status values: `Not started` / `In progress` / `Demoable` / `Done`.
 

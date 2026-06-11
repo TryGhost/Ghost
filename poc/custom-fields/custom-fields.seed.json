@@ -74,16 +74,35 @@
       { "fieldId": "email", "system": true, "required": true, "placeholder": null, "order": 0 },
       { "fieldId": "name", "system": true, "required": false, "placeholder": null, "order": 1 },
       { "fieldId": "cf_role", "required": true, "placeholder": null, "order": 2 }
-    ],
-    "landing": [
-      { "fieldId": "cf_company", "required": true, "placeholder": null, "order": 0 },
-      { "fieldId": "cf_interests", "required": true, "placeholder": null, "order": 1 }
     ]
   },
 
-  "settings": {
-    "landingFormEnabled": true
-  },
+  "landingForms": [
+    {
+      "id": "lf_paid_members",
+      "name": "Paid members",
+      "description": "Ask paying members about their company",
+      "audience": "status:-free",
+      "enabled": true,
+      "order": 0,
+      "fields": [
+        { "fieldId": "cf_company", "required": true, "placeholder": null, "order": 0 }
+      ]
+    },
+    {
+      "id": "lf_all_members",
+      "name": "All members",
+      "description": "Get to know everyone who visits",
+      "audience": "status:free,status:-free",
+      "enabled": true,
+      "order": 1,
+      "fields": [
+        { "fieldId": "cf_interests", "required": true, "placeholder": null, "order": 0 }
+      ]
+    }
+  ],
+
+  "settings": {},
 
   "dismissed": {},
 

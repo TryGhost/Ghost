@@ -4,9 +4,8 @@ import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
 // POC: a live (non-interactive) preview of the member-facing Landing card,
-// rendering the fields currently placed on the `landing` surface. Subscribes so
-// it updates as the picker is edited. Proportions mirror the signup form.
-const LANDING = 'landing';
+// rendering the fields placed on one landing form. Subscribes so it updates as
+// the picker is edited. Proportions mirror the signup form.
 
 const PreviewField: React.FC<{field: customFields.FieldDefinition}> = ({field}) => {
     if (field.type === 'boolean') {
@@ -56,21 +55,21 @@ const PreviewField: React.FC<{field: customFields.FieldDefinition}> = ({field}) 
     );
 };
 
-const LandingPreview: React.FC = () => {
+const LandingPreview: React.FC<{formId: string}> = ({formId}) => {
     const {settings} = useGlobalData();
-    const [accentColor] = getSettingValues<string>(settings, ['accent_color']);
+    const [accentColor, icon] = getSettingValues<string>(settings, ['accent_color', 'icon']);
     const accent = accentColor || '#F6414E';
 
     const [fields, setFields] = useState<customFields.FieldDefinition[]>([]);
 
     const refresh = useCallback(async () => {
-        const [form, defs] = await Promise.all([customFields.getForm(LANDING), customFields.listFields()]);
+        const [form, defs] = await Promise.all([customFields.getLandingFormFields(formId), customFields.listFields()]);
         setFields(
             form
                 .map(p => defs.find(d => d.id === p.fieldId && !d.archived))
                 .filter((d): d is customFields.FieldDefinition => Boolean(d))
         );
-    }, []);
+    }, [formId]);
 
     useEffect(() => {
         refresh();
@@ -80,6 +79,8 @@ const LandingPreview: React.FC = () => {
     return (
         <div className='flex h-full w-full items-center justify-center p-8'>
             <div className='w-full max-w-[400px] rounded-xl bg-white p-10 shadow-xl dark:bg-black'>
+                {/* Like the signup portal: show the site icon only if set, nothing otherwise. */}
+                {icon && <img alt='' className='mx-auto mb-4 block size-[60px] rounded' src={icon} />}
                 <h4 className='mb-8 text-center text-2xl font-bold'>Tell us a bit more about you</h4>
                 {fields.length ? (
                     <div className='flex flex-col gap-5'>
