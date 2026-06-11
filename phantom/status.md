@@ -29,7 +29,7 @@
    analytics (config.stats absent by design).
 
 ## Tests
-- `yarn test` — 112 unit tests green; `yarn test:e2e` — 124 vendored Ghost
+- `yarn test` — 112 unit tests green; `yarn test:e2e` — 130 vendored Ghost
   e2e tests green across four playwright projects (main + billing +
   force-upgrade host-settings servers). Suites: signin/deep links, sidebar
   navigation + theme errors, posts list/editor/publish/preview/custom
@@ -41,12 +41,19 @@
   mode); magic-link and password-reset emails flow through it.
 
 ## Known gaps / next (e2e goal: all upstream suites green)
-- 2FA suite: device-verification flow must NOT break API logins used by
-  every other suite; needs conditional flow (twoFactorEnabled per staff).
-- member-signup-types: member attribution (source/page) capture + admin
-  member detail attribution display + portal name persistence.
-- staff invites + welcome emails + posts publishing/newsletter-send:
-  invite emails, newsletter delivery pipeline to mail sink.
+- 2FA suite: run in its own playwright project/server (like billing) with
+  a GHOST_STAFF_DEVICE_VERIFICATION env. Design: staff_sessions gains
+  verifiedAt; login with verification on creates an UNVERIFIED session
+  cookie + emails a 6-digit code (code in the subject) + 403
+  {code: '2FA_TOKEN_REQUIRED', type: 'Needs2FAError'}; getStaffBySession
+  rejects unverified sessions; PUT /session/verify {token} marks the
+  cookie session verified (201); POST /session/verify resends ('OK' text).
+  Sessions created with verification off get verifiedAt=createdAt.
+- welcome emails + posts publishing/newsletter-send: newsletter delivery
+  pipeline (publish+send → batches → mail sink); staff invites are done.
+- members/import (CSV upload), tier-filter-search (tier creation),
+  design (external Unsplash), publication-language (email i18n),
+  integrations(-host-settings), danger-zone/transistor (labs flags).
 - Analytics suites (8): need native traffic stats (Tinybird pipes facade
   over the local analytics event store) — task #18.
 - Stripe suites (16): vendor /e2e fake-stripe-server; billing module per
