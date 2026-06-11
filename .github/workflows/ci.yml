@@ -1512,9 +1512,12 @@ jobs:
           rsync -av --remove-source-files admin/* ghost/admin
 
       - name: Upload Admin test coverage
+        if: contains(needs.job_admin-tests.result, 'success')
         uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
         with:
           flags: admin-tests
+          files: ghost/admin/coverage/cobertura-coverage.xml
+          disable_search: true
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
@@ -1532,6 +1535,8 @@ jobs:
         uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
         with:
           flags: e2e-tests
+          files: ghost/core/coverage-e2e/cobertura-coverage.xml,ghost/core/coverage-integration/cobertura-coverage.xml
+          disable_search: true
 
   job_required_tests:
     name: All required tests passed or skipped
