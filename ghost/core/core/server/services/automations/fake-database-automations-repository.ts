@@ -3,8 +3,7 @@ import tpl from '@tryghost/tpl';
 import crypto from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import {dequal} from 'dequal';
-import knex, {type Knex} from 'knex';
-import type {DatabaseSync, SQLInputValue} from 'node:sqlite';
+import {type Knex} from 'knex';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import type {
     Automation,
@@ -21,7 +20,6 @@ import {LOCK_TIMEOUT_MS} from './constants';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
 const HOUR_MS = 60 * 60 * 1000;
-const queryBuilder = knex({client: 'sqlite', useNullAsDefault: true});
 
 const messages = {
     invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".',
@@ -97,43 +95,19 @@ type RevisionDataFor<ActionDataT> = {
 type WaitRevisionData = RevisionDataFor<WaitActionData>;
 type SendEmailRevisionData = RevisionDataFor<SendEmailActionData>;
 
-function toNativeQuery(builder: Knex.QueryBuilder) {
-    const {sql, bindings} = builder.toSQL().toNative();
-    return {
-        sql,
-        bindings: bindings as SQLInputValue[]
-    };
-}
-
-function getRow(database: DatabaseSync, builder: Knex.QueryBuilder) {
-    const {sql, bindings} = toNativeQuery(builder);
-    return database.prepare(sql).get(...bindings);
-}
-
-function getRows(database: DatabaseSync, builder: Knex.QueryBuilder) {
-    const {sql, bindings} = toNativeQuery(builder);
-    return database.prepare(sql).all(...bindings);
-}
-
-function runQuery(database: DatabaseSync, builder: Knex.QueryBuilder) {
-    const {sql, bindings} = toNativeQuery(builder);
-    return database.prepare(sql).run(...bindings);
-}
-
 export function createFakeDatabaseAutomationsRepository({
     getDatabase
 }: {
-    getDatabase: () => DatabaseSync;
+    getDatabase: () => Promise<Knex>;
 }): AutomationsRepository {
     return {
         async browse(): Promise<Page<AutomationSummary>> {
-            const database = getDatabase();
+            const knex = await getDatabase();
 
-            return withTransaction(database, () => {
-                const rows = loadAutomations(database).map(row => buildAutomationSummary(row));
-
+            return await knex.transaction(async (trx) => {
+                const rows = await loadAutomations(trx);
                 return {
-                    data: rows,
+                    data: rows.map(row => buildAutomationSummary(row)),
                     meta: {
                         pagination: buildPagination(rows.length)
                     }
@@ -142,37 +116,36 @@ export function createFakeDatabaseAutomationsRepository({
         },
 
         async getById(id: string): Promise<Automation | null> {
-            const database = getDatabase();
-            return withTransaction(database, () => {
-                const automation = loadAutomation(database, id);
+            const knex = await getDatabase();
+            return await knex.transaction(async (trx) => {
+                const automation = await loadAutomation(trx, id);
 
                 if (!automation) {
                     return null;
                 }
 
-                return buildAutomation(database, automation);
+                return await buildAutomation(trx, automation);
             });
         },
 
         async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
-            const database = getDatabase();
-
-            return withTransaction(database, () => {
-                const automation = loadAutomation(database, id);
+            const knex = await getDatabase();
+            return await knex.transaction(async (trx) => {
+                const automation = await loadAutomation(trx, id);
 
                 if (!automation) {
                     return null;
                 }
 
-                const updatedAutomation = updateAutomation(database, {
+                const updatedAutomation = await updateAutomation(trx, {
                     ...automation,
                     status: data.status,
                     updated_at: new Date().toISOString()
                 });
 
-                replaceAutomationGraph(database, updatedAutomation.id, data.actions, data.edges);
+                await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
 
-                return buildAutomation(database, updatedAutomation);
+                return await buildAutomation(trx, updatedAutomation);
             });
         },
 
@@ -181,54 +154,41 @@ export function createFakeDatabaseAutomationsRepository({
             memberId: string;
             memberStatus: 'free' | 'paid';
         }): Promise<void> {
-            const database = getDatabase();
+            const knex = await getDatabase();
 
-            return withTransaction(database, () => trigger(database, options));
+            return await knex.transaction(trx => trigger(trx, options));
         },
 
         async fetchAndLockSteps(limit: number): Promise<{
             steps: AutomationStepToRun[],
             nextStepReadyAt: null | Date;
         }> {
-            const database = getDatabase();
+            const knex = await getDatabase();
 
-            return withTransaction(database, () => fetchAndLockSteps(database, limit));
+            return await knex.transaction(trx => fetchAndLockSteps(trx, limit));
         },
 
         async finishStepAndEnqueueNext(step: AutomationStepToRun): Promise<Date | null> {
-            const database = getDatabase();
+            const knex = await getDatabase();
 
-            return withTransaction(database, () => finishStepAndEnqueueNext(database, step));
+            return await knex.transaction(trx => finishStepAndEnqueueNext(trx, step));
         },
 
         async markStepTerminal(step: AutomationStepToRun, status: AutomationStepTerminalStatus): Promise<boolean> {
-            const database = getDatabase();
+            const knex = await getDatabase();
 
-            return withTransaction(database, () => markStepTerminal(database, step, status));
+            return await knex.transaction(trx => markStepTerminal(trx, step, status));
         },
 
         async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
-            const database = getDatabase();
+            const knex = await getDatabase();
 
-            return withTransaction(database, () => retryStep(database, step, retryAt));
+            return await knex.transaction(trx => retryStep(trx, step, retryAt));
         }
     };
 }
 
-function withTransaction<T>(database: DatabaseSync, operation: () => T): T {
-    database.exec('BEGIN TRANSACTION');
-
-    try {
-        const result = operation();
-        database.exec('COMMIT');
-        return result;
-    } catch (error) {
-        database.exec('ROLLBACK');
-        throw error;
-    }
-}
-
-function trigger(database: DatabaseSync, {
+async function trigger(trx: Knex.Transaction, {
     memberEmail,
     memberId,
     memberStatus
@@ -236,8 +196,8 @@ function trigger(database: DatabaseSync, {
     memberEmail: string;
     memberId: string;
     memberStatus: 'free' | 'paid';
-}>): void {
-    const firstAction = findFirstActionRevision(database, memberStatus);
+}>): Promise<void> {
+    const firstAction = await findFirstActionRevision(trx, memberStatus);
     if (!firstAction) {
         return;
     }
@@ -256,8 +216,8 @@ function trigger(database: DatabaseSync, {
         member_email: memberEmail
     };
 
-    runQuery(database, queryBuilder('automation_runs').insert(run));
-    insertRunStep(database, {
+    await trx('automation_runs').insert(run);
+    await insertRunStep(trx, {
         automationRunId: run.id,
         automationActionRevisionId: firstAction.automation_action_revision_id,
         now,
@@ -265,7 +225,7 @@ function trigger(database: DatabaseSync, {
     });
 }
 
-function insertRunStep(database: DatabaseSync, {
+async function insertRunStep(trx: Knex.Transaction, {
     automationRunId,
     automationActionRevisionId,
     now,
@@ -275,23 +235,23 @@ function insertRunStep(database: DatabaseSync, {
     automationActionRevisionId: string;
     now: Date;
     readyAt: Date;
-}>): void {
+}>): Promise<void> {
     const nowString = now.toISOString();
 
-    runQuery(database, queryBuilder('automation_run_steps').insert({
+    await trx('automation_run_steps').insert({
         id: ObjectId().toHexString(),
         created_at: nowString,
         updated_at: nowString,
         automation_run_id: automationRunId,
         automation_action_revision_id: automationActionRevisionId,
         ready_at: readyAt.toISOString()
-    }));
+    });
 }
 
-function fetchAndLockSteps(database: DatabaseSync, limit: number): {
+async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<{
     steps: AutomationStepToRun[],
     nextStepReadyAt: null | Date;
-} {
+}> {
     // Two things make this tricky:
     //
     // - We want to do row-level locking, so multiple calls don't step on each other.
@@ -310,7 +270,7 @@ function fetchAndLockSteps(database: DatabaseSync, limit: number): {
     const lockId = crypto.randomUUID();
 
     // 1. Select up to `limit` candidate rows.
-    const candidates = getRows(database, queryBuilder('automation_run_steps')
+    const candidates: ReadonlyArray<{id: string}> = await trx('automation_run_steps')
         .select('id')
         .where('status', 'pending')
         .where('ready_at', '<=', nowString)
@@ -324,18 +284,18 @@ function fetchAndLockSteps(database: DatabaseSync, limit: number): {
             'created_at',
             'id'
         ])
-        .limit(limit)) as unknown as ReadonlyArray<{id: string}>;
+        .limit(limit);
     if (candidates.length === 0) {
         return {
             steps: [],
-            nextStepReadyAt: findNextPendingReadyAt(database, staleLockCutoff)
+            nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff)
         };
     }
 
     const candidateIds = candidates.map(candidate => candidate.id);
 
     // 2. Try to lock those rows.
-    runQuery(database, queryBuilder('automation_run_steps')
+    await trx('automation_run_steps')
         .update({
             locked_by: lockId,
             locked_at: nowString,
@@ -350,10 +310,10 @@ function fetchAndLockSteps(database: DatabaseSync, limit: number): {
             builder
                 .whereNull('locked_by')
                 .orWhere('locked_at', '<', staleLockCutoffString);
-        }));
+        });
 
     // 3. Select any rows we successfully locked.
-    const rows = getRows(database, queryBuilder('automation_run_steps as step')
+    const rows: StepToRunRow[] = await trx('automation_run_steps as step')
         .select(
             'step.id as id',
             'step.locked_by as locked_by',
@@ -382,23 +342,24 @@ function fetchAndLockSteps(database: DatabaseSync, limit: number): {
             'step.ready_at',
             'step.created_at',
             'step.id'
-        ])) as unknown as StepToRunRow[];
+        ]);
 
     return {
         steps: rows.map(row => buildStepToRun(row)),
-        nextStepReadyAt: findNextPendingReadyAt(database, staleLockCutoff)
+        nextStepReadyAt: await findNextPendingReadyAt(trx, staleLockCutoff)
     };
 }
 
-function findNextPendingReadyAt(database: DatabaseSync, staleLockCutoff: Readonly<Date>): Date | null {
-    const row = getRow(database, queryBuilder('automation_run_steps')
+async function findNextPendingReadyAt(trx: Knex.Transaction, staleLockCutoff: Readonly<Date>): Promise<Date | null> {
+    const row = await trx('automation_run_steps')
         .min({next_ready_at: 'ready_at'})
         .where('status', 'pending')
         .where((builder) => {
             builder
                 .whereNull('locked_by')
                 .orWhere('locked_at', '<', staleLockCutoff.toISOString());
-        })) as {next_ready_at: string | null} | undefined;
+        })
+        .first();
     return row?.next_ready_at ? new Date(row.next_ready_at) : null;
 }
 
@@ -440,10 +401,10 @@ function buildStepToRun(row: ReadonlyDeep<StepToRunRow>): AutomationStepToRun {
     }
 }
 
-function findFirstActionRevision(database: DatabaseSync, memberStatus: 'free' | 'paid'): NextActionRevisionRow | null {
+async function findFirstActionRevision(trx: Knex.Transaction, memberStatus: 'free' | 'paid'): Promise<NextActionRevisionRow | null> {
     const automationSlug: NonNullable<string> = MEMBER_WELCOME_EMAIL_SLUGS[memberStatus];
 
-    const row = getRow(database, queryBuilder('automations as automation')
+    const row = await trx('automations as automation')
         .select(
             'automation.id as automation_id',
             'actions.id as action_id',
@@ -456,33 +417,33 @@ function findFirstActionRevision(database: DatabaseSync, memberStatus: 'free' | 
         .where('automation.slug', automationSlug)
         .where('automation.status', 'active')
         .whereNull('actions.deleted_at')
-        .whereNotExists(queryBuilder('automation_action_edges as edge')
+        .whereNotExists(trx('automation_action_edges as edge')
             .select('edge.target_action_id')
             .innerJoin('automation_actions as source_actions', 'source_actions.id', 'edge.source_action_id')
             .whereNull('source_actions.deleted_at')
-            .where('edge.target_action_id', queryBuilder.ref('actions.id')))
-        .where('revisions.created_at', queryBuilder('automation_action_revisions')
+            .where('edge.target_action_id', trx.ref('actions.id')))
+        .where('revisions.created_at', trx('automation_action_revisions')
             .max('created_at')
-            .where('action_id', queryBuilder.ref('actions.id')))
+            .where('action_id', trx.ref('actions.id')))
         .orderBy([
             'actions.created_at',
             'actions.id'
         ])
-        .limit(1)) as NextActionRevisionRow | undefined;
+        .first();
 
     return row ?? null;
 }
 
-function finishStepAndEnqueueNext(
-    database: DatabaseSync,
+async function finishStepAndEnqueueNext(
+    trx: Knex.Transaction,
     step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>
-): Date | null {
-    const didFinish = markStepTerminal(database, step, 'finished');
+): Promise<Date | null> {
+    const didFinish = await markStepTerminal(trx, step, 'finished');
     if (!didFinish) {
         return null;
     }
 
-    const next = findNextActionRevision(database, step.action_id);
+    const next = await findNextActionRevision(trx, step.action_id);
 
     if (!next) {
         return null;
@@ -491,7 +452,7 @@ function finishStepAndEnqueueNext(
     const now = new Date();
     const nextReadyAt = getReadyAtForAction(next, now);
 
-    insertRunStep(database, {
+    await insertRunStep(trx, {
         automationRunId: step.automation_run_id,
         automationActionRevisionId: next.automation_action_revision_id,
         now,
@@ -501,8 +462,8 @@ function finishStepAndEnqueueNext(
     return nextReadyAt;
 }
 
-function findNextActionRevision(database: DatabaseSync, sourceActionId: string): NextActionRevisionRow | null {
-    const row = getRow(database, queryBuilder('automation_action_edges as edge')
+async function findNextActionRevision(trx: Knex.Transaction, sourceActionId: string): Promise<NextActionRevisionRow | null> {
+    const row = await trx('automation_action_edges as edge')
         .select(
             'action.id as action_id',
             'revision.id as automation_action_revision_id',
@@ -513,36 +474,36 @@ function findNextActionRevision(database: DatabaseSync, sourceActionId: string):
         .innerJoin('automation_action_revisions as revision', 'revision.action_id', 'action.id')
         .where('edge.source_action_id', sourceActionId)
         .whereNull('action.deleted_at')
-        .where('revision.created_at', queryBuilder('automation_action_revisions')
+        .where('revision.created_at', trx('automation_action_revisions')
             .max('created_at')
-            .where('action_id', queryBuilder.ref('action.id')))
+            .where('action_id', trx.ref('action.id')))
         .orderBy('revision.created_at', 'desc')
         .orderBy('revision.id', 'desc')
-        .limit(1)) as NextActionRevisionRow | undefined;
+        .first();
 
     return row ?? null;
 }
 
-function markStepTerminal(
-    database: DatabaseSync,
+async function markStepTerminal(
+    trx: Knex.Transaction,
     step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
     status: AutomationStepTerminalStatus
-): boolean {
+): Promise<boolean> {
     const nowString = new Date().toISOString();
-    return updateStep(database, step, {
+    return await updateStep(trx, step, {
         status,
         finished_at: nowString,
         updated_at: nowString
     });
 }
 
-function retryStep(
-    database: DatabaseSync,
+async function retryStep(
+    trx: Knex.Transaction,
     step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
     retryAt: Readonly<Date>
-): boolean {
+): Promise<boolean> {
     const nowString = new Date().toISOString();
-    return updateStep(database, step, {
+    return await updateStep(trx, step, {
         status: 'pending',
         started_at: null,
         finished_at: null,
@@ -587,8 +548,8 @@ function getReadyAtForAction(
  *
  * Worker A has lost its lock, so it shouldn't be updating the step any more.
  */
-function updateStep(
-    database: DatabaseSync,
+async function updateStep(
+    trx: Knex.Transaction,
     step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
     attrs: {
         status: string;
@@ -597,10 +558,10 @@ function updateStep(
         ready_at?: string;
         updated_at: string;
     }
-): boolean {
+): Promise<boolean> {
     /* eslint-disable camelcase */
     const {started_at, finished_at, ready_at} = attrs;
-    const result = runQuery(database, queryBuilder('automation_run_steps')
+    const changes = await trx('automation_run_steps')
         .update({
             status: attrs.status,
             updated_at: attrs.updated_at,
@@ -612,41 +573,42 @@ function updateStep(
         })
         .where('id', step.id)
         .where('status', 'pending')
-        .where('locked_by', step.locked_by)) as unknown as {changes: number};
+        .where('locked_by', step.locked_by);
     /* eslint-enable camelcase */
-    return result.changes >= 1;
+    return changes >= 1;
 }
 
-function loadAutomation(database: DatabaseSync, automationId: string): AutomationRow | null {
-    const automation = getRow(database, queryBuilder('automations')
+async function loadAutomation(trx: Knex.Transaction, automationId: string): Promise<AutomationRow | null> {
+    const row = await trx('automations')
         .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
-        .where('id', automationId)) as AutomationRow | undefined;
-
-    return automation ?? null;
+        .where('id', automationId)
+        .first();
+    return row ?? null;
 }
 
-function loadAutomations(database: DatabaseSync): AutomationRow[] {
-    return getRows(database, queryBuilder('automations')
+async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
+    return await trx('automations')
         .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
         .orderBy([
             'created_at',
             'id'
-        ])) as unknown as AutomationRow[];
+        ]);
 }
 
-function updateAutomation(database: DatabaseSync, automation: AutomationRow): AutomationRow {
-    runQuery(database, queryBuilder('automations')
+async function updateAutomation(trx: Knex.Transaction, automation: AutomationRow): Promise<AutomationRow> {
+    await trx('automations')
         .update({
             status: automation.status,
             updated_at: automation.updated_at
         })
-        .where('id', automation.id));
+        .where('id', automation.id);
 
-    return requireAutomation(loadAutomation(database, automation.id), automation.id);
+    return requireAutomation(await loadAutomation(trx, automation.id), automation.id);
 }
 
-function replaceAutomationGraph(database: DatabaseSync, automationId: string, actions: AutomationAction[], edges: AutomationEdge[]) {
-    const existingActions = loadAutomationActionRows(database, automationId);
+async function replaceAutomationGraph(trx: Knex.Transaction, automationId: string, actions: AutomationAction[], edges: AutomationEdge[]): Promise<void> {
+    // TODO(NY-1340): This makes too many round-trips to the database. We should improve that.
+    const existingActions = await loadAutomationActionRows(trx, automationId);
     const existingActionIds = new Set(existingActions.map(action => action.id));
     const submittedActionIds = new Set(actions.map(action => action.id));
     const now = new Date().toISOString();
@@ -664,7 +626,7 @@ function replaceAutomationGraph(database: DatabaseSync, automationId: string, ac
                 });
             }
         } else {
-            if (loadActionOwner(database, action.id)) {
+            if (await loadActionOwner(trx, action.id)) {
                 throw new errors.ValidationError({
                     message: tpl(messages.conflictingAutomationActionId, {
                         actionId: action.id
@@ -673,7 +635,7 @@ function replaceAutomationGraph(database: DatabaseSync, automationId: string, ac
                 });
             }
 
-            insertAction(database, {
+            await insertAction(trx, {
                 id: action.id,
                 created_at: now,
                 updated_at: now,
@@ -682,48 +644,49 @@ function replaceAutomationGraph(database: DatabaseSync, automationId: string, ac
             });
         }
 
-        const latestRevision = loadLatestActionRevision(database, action.id);
+        const latestRevision = await loadLatestActionRevision(trx, action.id);
         if (shouldInsertActionRevision(action, latestRevision)) {
-            insertActionRevision(database, action.id, action, now, latestRevision);
+            await insertActionRevision(trx, action.id, action, now, latestRevision);
         }
     }
 
     for (const existingAction of existingActions) {
         if (!submittedActionIds.has(existingAction.id)) {
-            softDeleteAction(database, existingAction.id, now);
+            await softDeleteAction(trx, existingAction.id, now);
         }
     }
 
-    deleteAutomationEdges(database, automationId);
+    await deleteAutomationEdges(trx, automationId);
 
     for (const edge of edges) {
-        insertActionEdge(database, edge);
+        await insertActionEdge(trx, edge);
     }
 }
 
-function loadAutomationActionRows(database: DatabaseSync, automationId: string): Array<Pick<ActionRow, 'id' | 'type'>> {
-    return getRows(database, queryBuilder('automation_actions')
+async function loadAutomationActionRows(trx: Knex.Transaction, automationId: string): Promise<Array<Pick<ActionRow, 'id' | 'type'>>> {
+    return await trx('automation_actions')
         .select('id', 'type')
         .where('automation_id', automationId)
-        .whereNull('deleted_at')) as unknown as Array<Pick<ActionRow, 'id' | 'type'>>;
+        .whereNull('deleted_at');
 }
 
-function loadActionOwner(database: DatabaseSync, actionId: string): string | null {
-    const row = getRow(database, queryBuilder('automation_actions')
+async function loadActionOwner(trx: Knex.Transaction, actionId: string): Promise<string | null> {
+    const row = await trx('automation_actions')
         .select('automation_id')
-        .where('id', actionId)) as {automation_id: string} | undefined;
+        .where('id', actionId)
+        .first();
 
     return row?.automation_id ?? null;
 }
 
-function insertAction(database: DatabaseSync, action: {
+async function insertAction(trx: Knex.Transaction, action: {
     id: string;
     created_at: string;
     updated_at: string;
     automation_id: string;
     type: string;
 }) {
-    runQuery(database, queryBuilder('automation_actions').insert(action));
+    await trx('automation_actions').insert(action);
 }
 
 function shouldInsertActionRevision(action: AutomationAction, latestRevision: ActionRevisionRow | null): boolean {
@@ -755,8 +718,11 @@ function buildRevisionActionData(action: AutomationAction, revision: ActionRevis
     }
 }
 
-function loadLatestActionRevision(database: DatabaseSync, actionId: string): ActionRevisionRow | null {
-    const row = getRow(database, queryBuilder('automation_action_revisions')
+async function loadLatestActionRevision(
+    trx: Knex.Transaction,
+    actionId: string
+): Promise<ActionRevisionRow | null> {
+    const row = await trx('automation_action_revisions')
         .select(
             'action_id',
             'created_at',
@@ -766,26 +732,37 @@ function loadLatestActionRevision(database: DatabaseSync, actionId: string): Act
             'email_design_setting_id'
         )
         .where('action_id', actionId)
-        .where('created_at', queryBuilder('automation_action_revisions')
+        .where('created_at', trx('automation_action_revisions')
             .max('created_at')
-            .where('action_id', actionId))) as ActionRevisionRow | undefined;
+            .where('action_id', actionId))
+        .first();
 
     return row ?? null;
 }
 
-function softDeleteAction(database: DatabaseSync, actionId: string, deletedAt: string) {
-    runQuery(database, queryBuilder('automation_actions')
+async function softDeleteAction(
+    trx: Knex.Transaction,
+    actionId: string,
+    deletedAt: string
+): Promise<void> {
+    await trx('automation_actions')
         .update({
             deleted_at: deletedAt,
             updated_at: deletedAt
         })
-        .where('id', actionId));
+        .where('id', actionId);
 }
 
-function insertActionRevision(database: DatabaseSync, actionId: string, action: AutomationAction, createdAt: string, latestRevision: ActionRevisionRow | null) {
+async function insertActionRevision(
+    trx: Knex.Transaction,
+    actionId: string,
+    action: AutomationAction,
+    createdAt: string,
+    latestRevision: ActionRevisionRow | null
+): Promise<void> {
     const revision = buildActionRevision(actionId, action, getNextRevisionCreatedAt(latestRevision?.created_at ?? null, createdAt));
 
-    runQuery(database, queryBuilder('automation_action_revisions').insert(revision));
+    await trx('automation_action_revisions').insert(revision);
 }
 
 function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreatedAt: string) {
@@ -827,19 +804,19 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
     };
 }
 
-function deleteAutomationEdges(database: DatabaseSync, automationId: string) {
-    runQuery(database, queryBuilder('automation_action_edges')
+async function deleteAutomationEdges(trx: Knex.Transaction, automationId: string): Promise<void> {
+    await trx('automation_action_edges')
         .delete()
-        .whereIn('source_action_id', queryBuilder('automation_actions')
+        .whereIn('source_action_id', trx('automation_actions')
             .select('id')
-            .where('automation_id', automationId)));
+            .where('automation_id', automationId));
 }
 
-function insertActionEdge(database: DatabaseSync, edge: AutomationEdge) {
-    runQuery(database, queryBuilder('automation_action_edges').insert({
+async function insertActionEdge(trx: Knex.Transaction, edge: Readonly<AutomationEdge>): Promise<void> {
+    await trx('automation_action_edges').insert({
         source_action_id: edge.source_action_id,
         target_action_id: edge.target_action_id
-    }));
+    });
 }
 
 function requireAutomation(automation: AutomationRow | null, id: string): AutomationRow {
@@ -852,11 +829,13 @@ function requireAutomation(automation: AutomationRow | null, id: string): Automa
     return automation;
 }
 
-function buildAutomation(database: DatabaseSync, automation: AutomationRow): Automation {
+async function buildAutomation(trx: Knex.Transaction, automation: AutomationRow): Promise<Automation> {
+    const actionRows = await loadActionRows(trx, automation.id);
+    const edgeRows = await loadEdgeRows(trx, automation.id);
     return {
         ...buildAutomationSummary(automation),
-        actions: loadActionRows(database, automation.id).map(row => buildActionPayload(row)),
-        edges: loadEdgeRows(database, automation.id).map(row => buildEdgePayload(row))
+        actions: actionRows.map(row => buildActionPayload(row)),
+        edges: edgeRows.map(row => buildEdgePayload(row))
     };
 }
 
@@ -877,8 +856,8 @@ function serializeDate(date: string) {
     return normalizedDate.toISOString();
 }
 
-function loadActionRows(database: DatabaseSync, automationId: string): ActionRow[] {
-    return getRows(database, queryBuilder('automation_actions as a')
+async function loadActionRows(trx: Knex.Transaction, automationId: string): Promise<ActionRow[]> {
+    return await trx('automation_actions as a')
         .select(
             'a.id as id',
             'a.type as type',
@@ -890,17 +869,17 @@ function loadActionRows(database: DatabaseSync, automationId: string): ActionRow
         .innerJoin('automation_action_revisions as r', 'r.action_id', 'a.id')
         .where('a.automation_id', automationId)
         .whereNull('a.deleted_at')
-        .where('r.created_at', queryBuilder('automation_action_revisions')
+        .where('r.created_at', trx('automation_action_revisions')
             .max('created_at')
-            .where('action_id', queryBuilder.ref('a.id')))
+            .where('action_id', trx.ref('a.id')))
         .orderBy([
             'a.created_at',
             'a.id'
-        ])) as unknown as ActionRow[];
+        ]);
 }
 
-function loadEdgeRows(database: DatabaseSync, automationId: string): EdgeRow[] {
-    return getRows(database, queryBuilder('automation_action_edges as e')
+async function loadEdgeRows(trx: Knex.Transaction, automationId: string): Promise<EdgeRow[]> {
+    return await trx('automation_action_edges as e')
         .select('e.source_action_id', 'e.target_action_id')
         .innerJoin('automation_actions as source_action', (join) => {
             join
@@ -917,7 +896,7 @@ function loadEdgeRows(database: DatabaseSync, automationId: string): EdgeRow[] {
         .orderBy([
             'e.source_action_id',
             'e.target_action_id'
-        ])) as unknown as EdgeRow[];
+        ]);
 }
 
 function buildActionPayload(row: ActionRow): AutomationAction {
