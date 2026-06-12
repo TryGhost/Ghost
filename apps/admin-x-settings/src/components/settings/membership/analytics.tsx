@@ -17,8 +17,8 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange
     } = useSettingGroup();
 
-    const [trackEmailOpens, trackEmailClicks, trackMemberSources, outboundLinkTagging, isWebAnalyticsConfigured, isWebAnalyticsEnabled] = getSettingValues(localSettings, [
-        'email_track_opens', 'email_track_clicks', 'members_track_sources', 'outbound_link_tagging', 'web_analytics_configured', 'web_analytics_enabled'
+    const [trackEmailOpens, trackEmailClicks, trackMemberSources, outboundLinkTagging, didUserEnableWebAnalytics, isWebAnalyticsConfigured] = getSettingValues(localSettings, [
+        'email_track_opens', 'email_track_clicks', 'members_track_sources', 'outbound_link_tagging', 'web_analytics', 'web_analytics_configured'
     ]) as boolean[];
     const isEmailTrackClicksReadOnly = isSettingReadOnly(localSettings, 'email_track_clicks');
 
@@ -43,14 +43,16 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange(true);
     };
 
+    const isWebAnalyticsAvailable = isWebAnalyticsConfigured && !isWebAnalyticsLimited;
+
     const inputs = (
-        <SettingGroupContent className="analytics-settings !gap-y-0" columns={1}>
+        <SettingGroupContent className="analytics-settings gap-y-0!" columns={1}>
             <Toggle
                 align='center'
-                checked={isWebAnalyticsEnabled}
+                checked={didUserEnableWebAnalytics && isWebAnalyticsAvailable}
                 containerClasses='py-4'
                 direction='rtl'
-                disabled={!isWebAnalyticsConfigured || isWebAnalyticsLimited}
+                disabled={!isWebAnalyticsAvailable}
                 gap='gap-0'
                 hint={
                     !isWebAnalyticsConfigured ?
@@ -69,7 +71,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
             />
             {(
                 isWebAnalyticsLimited ? (
-                    <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 text-sm dark:border-grey-900 dark:bg-grey-925'>
+                    <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 dark:border-grey-900 dark:bg-grey-900'>
                         <span className='flex items-start gap-2'>
                             <span>
                             Web analytics is available on the Publisher plan and above. <span className='cursor-pointer text-green' onClick={() => updateRoute({route: '/pro', isExternal: true})}>Upgrade now &rarr;</span>
@@ -77,10 +79,10 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         </span>
                     </div>
                 ) : !isWebAnalyticsConfigured ? (
-                    <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 text-sm dark:border-grey-900 dark:bg-grey-925'>
+                    <div className='mb-5 rounded-md border border-grey-200 bg-grey-50 px-4 py-2.5 dark:border-grey-900 dark:bg-grey-900'>
                         <span className='flex items-start gap-2'>
                             <span>
-                                Web analytics in Ghost is powered by <a className='text-green' href="https://tbrd.co/ghost" rel="noopener noreferrer" target='_blank'>Tinybird</a> and requires configuration to start collecting data. <a className='text-green' href="https://docs.ghost.org/install/docker#tinybird-integration" rel="noopener noreferrer" target='_blank'>Get started &rarr;</a>
+                                Web analytics in Ghost is powered by <a className='font-medium text-green' href="https://tbrd.co/ghost" rel="noopener noreferrer" target='_blank'>Tinybird</a> and requires configuration to start collecting data. <a className='font-medium text-green' href="https://docs.ghost.org/install/docker#tinybird-integration" rel="noopener noreferrer" target='_blank'>Get started &rarr;</a>
                             </span>
                         </span>
                     </div>
@@ -159,7 +161,7 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         >
             {inputs}
             <div className='items-center-mt-1 flex justify-between'>
-                <a className='text-sm text-green' href="https://ghost.org/help/post-analytics/" rel="noopener noreferrer" target="_blank">Learn about analytics</a>
+                <a className='font-medium text-green' href="https://ghost.org/help/post-analytics/" rel="noopener noreferrer" target="_blank">Learn about analytics</a>
             </div>
         </TopLevelGroup>
     );

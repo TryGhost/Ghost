@@ -8,6 +8,7 @@ const errors = require('@tryghost/errors');
 const config = require('../../../../shared/config');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
+const {reportThemeUploadSizeLimitError} = require('../../../services/themes/upload-size-limit-reporter');
 
 const gunzip = util.promisify(zlib.gunzip);
 const gzip = util.promisify(zlib.gzip);
@@ -52,11 +53,48 @@ const messages = {
     thumbnail: {
         missingFile: 'Please select a thumbnail.',
         invalidFile: 'Please select a valid thumbnail.'
+    },
+    files: {
+        missingFile: 'Please select a file.',
+        invalidFile: 'The file type you uploaded is not supported. You can zip your file and upload it as a .zip.'
     }
 };
 
 const enabledClear = config.get('uploadClear') || true;
 const upload = multer({dest: os.tmpdir()});
+const themeUpload = multer({
+    dest: os.tmpdir(),
+    limits: {
+        fileSize: config.get('theme:uploadLimits:compressedBytes')
+    }
+});
+
+const getContentLength = (req) => {
+    const contentLengthHeader = req.get?.('content-length') ?? req.headers?.['content-length'];
+    const contentLength = Number(contentLengthHeader);
+
+    if (Number.isFinite(contentLength)) {
+        return contentLength;
+    }
+
+    return undefined;
+};
+
+const getCompressedSizeLimitError = (err, req) => {
+    const observedBytes = getContentLength(req);
+    const limitBytes = config.get('theme:uploadLimits:compressedBytes');
+
+    return new errors.UnsupportedMediaTypeError({
+        message: 'Theme upload exceeds maximum compressed size.',
+        context: 'Theme upload exceeds the maximum compressed size.',
+        code: 'COMPRESSED_TOO_LARGE',
+        errorDetails: {
+            observedBytes,
+            limitBytes,
+            fieldName: err.field
+        }
+    });
+};
 
 const deleteSingleFile = (file) => {
     if (!file.path) {
@@ -66,11 +104,21 @@ const deleteSingleFile = (file) => {
     fs.unlink(file.path).catch(err => logging.error(err));
 };
 
-const single = name => function singleUploadFunction(req, res, next) {
-    const singleUpload = upload.single(name);
+const single = (name, uploader = upload, options = {}) => function singleUploadFunction(req, res, next) {
+    const singleUpload = uploader.single(name);
 
     singleUpload(req, res, (err) => {
         if (err) {
+            if (options.isThemeUpload && err instanceof multer.MulterError && err.code === 'LIMIT_FILE_SIZE') {
+                const sizeLimitError = getCompressedSizeLimitError(err, req);
+
+                reportThemeUploadSizeLimitError(sizeLimitError, {
+                    zip: {size: sizeLimitError.errorDetails.observedBytes}
+                });
+
+                return next(sizeLimitError);
+            }
+
             // Busboy, Multer or Dicer errors are usually caused by invalid file uploads
             if (err instanceof multer.MulterError || err.stack?.includes('dicer') || err.stack?.includes('busboy')) {
                 return next(new errors.BadRequestError({
@@ -102,6 +150,8 @@ const single = name => function singleUploadFunction(req, res, next) {
         next();
     });
 };
+
+const themeZip = name => single(name, themeUpload, {isThemeUpload: true});
 
 const media = (fileName, thumbName) => function mediaUploadFunction(req, res, next) {
     const mediaUpload = upload.fields([{
@@ -163,7 +213,7 @@ const checkFileIsValid = (fileData, types, extensions) => {
 
 /**
  *
- * @param {String} filepath
+ * @param {string} filepath
  * @returns {Promise<String | null>}
  *
  * Reads the SVG file, sanitizes it, and writes the sanitized content back to the file.
@@ -189,7 +239,7 @@ const sanitizeSvg = async (filepath, isZipped = false) => {
 
 /**
  *
- * @param {String} content
+ * @param {string} content
  * @returns {String | null}
  *
  * Returns sanitized SVG content, or null if the content is invalid.
@@ -214,8 +264,8 @@ const sanitizeSvgContent = (content) => {
 
 /**
  *
- * @param {String} filepath
- * @param {Boolean} isZipped
+ * @param {string} filepath
+ * @param {boolean} isZipped
  * @returns {Promise<String | null>}
  *
  * Reads .svg or .svgz files and returns the content as a string.
@@ -232,9 +282,9 @@ const readSvg = async (filepath, isZipped = false) => {
 
 /**
  *
- * @param {String} filepath
- * @param {String} content
- * @param {Boolean} isZipped
+ * @param {string} filepath
+ * @param {string} content
+ * @param {boolean} isZipped
  *
  * Writes SVG content to a .svg or .svgz file.
  */
@@ -249,7 +299,7 @@ const writeSvg = async (filepath, content, isZipped = false) => {
 /**
  *
  * @param {Object} options
- * @param {String} options.type - type of the file
+ * @param {string} options.type - type of the file
  * @returns {import('express').RequestHandler}
  */
 const validation = function ({type}) {
@@ -302,7 +352,7 @@ const validation = function ({type}) {
 /**
  *
  * @param {Object} options
- * @param {String} options.type - type of the file
+ * @param {string} options.type - type of the file
  * @returns {import('express').RequestHandler}
  */
 const mediaValidation = function ({type}) {
@@ -356,16 +406,55 @@ const mediaValidation = function ({type}) {
     };
 };
 
+/**
+ * Extension-only validation for file uploads.
+ * This validates the extension against the allowlist. 
+ * We are not validating the MIME type because it is unreliable and irrelevant as 
+ * we derive the storage content type from the extension via getStorageContentType().
+ *
+ * @param {Object} options
+ * @param {string} options.type - config key under uploads (e.g. 'files')
+ * @returns {import('express').RequestHandler}
+ */
+const fileValidation = function ({type}) {
+    return function fileUploadValidation(req, res, next) {
+        const extensions = (config.get('uploads')[type] && config.get('uploads')[type].extensions) || [];
+
+        req.file = req.file || {};
+        req.file.name = req.file.originalname;
+        req.file.type = req.file.mimetype;
+
+        if (!checkFileExists(req.file)) {
+            return next(new errors.ValidationError({
+                message: tpl(messages[type].missingFile)
+            }));
+        }
+
+        req.file.ext = path.extname(req.file.name).toLowerCase();
+
+        if (!extensions.includes(req.file.ext)) {
+            return next(new errors.UnsupportedMediaTypeError({
+                message: tpl(messages[type].invalidFile, {extensions: extensions})
+            }));
+        }
+
+        next();
+    };
+};
+
 module.exports = {
     single,
+    themeZip,
     media,
     validation,
-    mediaValidation
+    mediaValidation,
+    fileValidation
 };
 
 // Exports for testing only
 module.exports._test = {
     checkFileExists,
     checkFileIsValid,
+    getCompressedSizeLimitError,
     sanitizeSvgContent
 };

@@ -1,10 +1,10 @@
-const dns = require('dns');
-const should = require('should');
 const sinon = require('sinon');
+const deferred = require('../../../../utils/deferred');
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/config-utils');
 const urlUtils = require('../../../../../core/shared/url-utils');
+const logging = require('@tryghost/logging');
 let mailer;
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
@@ -43,7 +43,7 @@ const mailDataIncomplete = {
 const sandbox = sinon.createSandbox();
 
 describe('Mail: Ghostmailer', function () {
-    before(function () {
+    beforeAll(function () {
         emailAddress.init();
         sinon.restore();
     });
@@ -58,7 +58,7 @@ describe('Mail: Ghostmailer', function () {
         mailer = new mail.GhostMailer();
 
         assertExists(mailer);
-        mailer.should.have.property('send').and.be.a.Function();
+        assert.equal(typeof mailer.send, 'function');
     });
 
     it('should setup SMTP transport on initialization', function () {
@@ -67,7 +67,7 @@ describe('Mail: Ghostmailer', function () {
 
         assert('transport' in mailer);
         assert.equal(mailer.transport.transporter.name, 'SMTP');
-        mailer.transport.sendMail.should.be.a.Function();
+        assert.equal(typeof mailer.transport.sendMail, 'function');
     });
 
     it('should fallback to direct if config is empty', function () {
@@ -76,10 +76,12 @@ describe('Mail: Ghostmailer', function () {
         mailer = new mail.GhostMailer();
 
         assert('transport' in mailer);
-        assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+        assert.equal(mailer.transport.transporter.name, 'SMTP');
+        assert.equal(mailer.transport.transporter.options.direct, true);
     });
 
-    it('sends valid message successfully ', function (done) {
+    it('sends valid message successfully ', function () {
+        const {promise, done} = deferred();
         configUtils.set({mail: {transport: 'stub'}});
 
         mailer = new mail.GhostMailer();
@@ -93,9 +95,11 @@ describe('Mail: Ghostmailer', function () {
 
             done();
         }).catch(done);
+        return promise;
     });
 
-    it('handles failure', function (done) {
+    it('handles failure', function () {
+        const {promise, done} = deferred();
         configUtils.set({mail: {transport: 'stub', options: {error: 'Stub made a boo boo :('}}});
 
         mailer = new mail.GhostMailer();
@@ -108,6 +112,7 @@ describe('Mail: Ghostmailer', function () {
             assert(error.message.includes('Stub made a boo boo :('));
             done();
         }).catch(done);
+        return promise;
     });
 
     it('should fail to send messages when given insufficient data', async function () {
@@ -123,8 +128,6 @@ describe('Mail: Ghostmailer', function () {
             configUtils.set({mail: {}});
 
             mailer = new mail.GhostMailer();
-
-            sinon.stub(dns, 'resolveMx').yields(null, []);
         });
 
         afterEach(function () {
@@ -133,17 +136,20 @@ describe('Mail: Ghostmailer', function () {
         });
 
         it('return correct failure message for domain doesn\'t exist', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataNoDomain), /Failed to send email/);
         });
 
         it('return correct failure message for no mail server at this address', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataNoServer), /Failed to send email/);
         });
 
         it('return correct failure message for incomplete data', async function () {
-            assert.equal(mailer.transport.transporter.name, 'SMTP (direct)');
+            assert.equal(mailer.transport.transporter.name, 'SMTP');
+            assert.equal(mailer.transport.transporter.options.direct, true);
             await assert.rejects(mailer.send(mailDataIncomplete), /Incomplete message data/);
         });
     });
@@ -399,6 +405,91 @@ describe('Mail: Ghostmailer', function () {
             const sentMessage = sendMailSpy.firstCall.args[0];
             assert(sentMessage['o:tag'].includes('transactional-email'));
             assert(!sentMessage['o:tag'].includes('blog-123123'));
+        });
+
+        it('should include custom tags passed by the caller', async function () {
+            configUtils.set({
+                hostSettings: {siteId: '123123'}
+            });
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
+
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content',
+                tags: ['member-welcome-email']
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert(sentMessage['o:tag'].includes('transactional-email'));
+            assert(sentMessage['o:tag'].includes('member-welcome-email'));
+            assert.equal(sentMessage.tags, undefined);
+            assert.equal(sentMessage.forceTextContent, undefined);
+        });
+
+        it('should truncate tags to Mailgun maximum and log warning', async function () {
+            configUtils.set({
+                hostSettings: {siteId: '123123'}
+            });
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
+            const warnStub = sandbox.stub(logging, 'warn');
+
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content',
+                tags: [
+                    'tag-1',
+                    'tag-2',
+                    'tag-3',
+                    'tag-4',
+                    'tag-5',
+                    'tag-6',
+                    'tag-7',
+                    'tag-8',
+                    'tag-9'
+                ]
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert.deepEqual(sentMessage['o:tag'], [
+                'ghost-email',
+                'transactional-email',
+                'blog-123123',
+                'tag-1',
+                'tag-2',
+                'tag-3',
+                'tag-4',
+                'tag-5',
+                'tag-6',
+                'tag-7'
+            ]);
+            sinon.assert.called(warnStub);
+        });
+
+        it('should copy headers to h: prefixed keys for Mailgun transport', async function () {
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+            sandbox.stub(settingsCache, 'get').returns(false);
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content'
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert.ok(sentMessage['h:Sender'], 'h:Sender should be set');
+            assert.equal(sentMessage['h:Sender'], sentMessage.from);
         });
 
         it('should not add tag when not using Mailgun transport', async function () {

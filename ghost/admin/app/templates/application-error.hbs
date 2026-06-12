@@ -2,8 +2,8 @@
     <section class="error-content error-404 js-error-container">
         <section class="error-details">
             <section class="error-message">
-                <h1 class="error-code">{{this.model.code}}</h1>
-                {{#if this.model.code}}
+                <h1 class="error-code">{{or this.model.status this.model.code}}</h1>
+                {{#if (or this.model.status this.model.code)}}
                     <span>|</span>
                 {{/if}}
                 <h2 class="error-description">

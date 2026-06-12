@@ -7,12 +7,9 @@ const moment = require('moment');
 const models = require('../../models');
 const urlUtils = require('../../../shared/url-utils');
 const mail = require('../mail');
-const otp = require('./otp');
-const settingsCache = require('../../../shared/settings-cache');
 
 const messages = {
     userNotFound: 'User not found.',
-    tokenLocked: 'Token locked',
     resetPassword: 'Reset Password',
     expired: {
         message: 'Cannot reset password.',
@@ -30,8 +27,6 @@ const messages = {
         help: 'Check if password reset link has been fully copied or request new password reset via the login form.'
     }
 };
-
-const tokenSecurity = {};
 
 function generateToken(email, settingsAPI, transaction) {
     const options = {context: {internal: true}, transacting: transaction};
@@ -75,18 +70,6 @@ function extractTokenParts(options) {
             message: tpl(messages.corruptedToken.message),
             context: tpl(messages.corruptedToken.context),
             help: tpl(messages.corruptedToken.help)
-        }));
-    }
-
-    return Promise.resolve({options, tokenParts});
-}
-
-// @TODO: use brute force middleware (see https://github.com/TryGhost/Ghost/pull/7579)
-function protectBruteForce({options, tokenParts}) {
-    if (tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`] &&
-        tokenSecurity[`${tokenParts.email}+${tokenParts.expires}`].count >= 10) {
-        return Promise.reject(new errors.NoPermissionError({
-            message: tpl(messages.tokenLocked)
         }));
     }
 
@@ -146,12 +129,8 @@ function doReset(options, tokenParts, settingsAPI) {
         .then((updatedUser) => {
             updatedUser.set('status', 'active');
             return updatedUser.save(options);
-        })
-        .then((savedUser) => {
-            // Generate email verification token for 2FA bypass on login
-            const secret = settingsCache.get('admin_session_secret');
-            const emailVerificationToken = otp.generate(savedUser.id, secret);
-            return {emailVerificationToken};
+        }).then((savedUser) => {
+            return {user: savedUser};
         })
         .catch((err) => {
             if (errors.utils.isGhostError(err)) {
@@ -193,7 +172,6 @@ async function sendResetNotification(data, mailAPI) {
 module.exports = {
     generateToken,
     extractTokenParts,
-    protectBruteForce,
     doReset,
     sendResetNotification
 };

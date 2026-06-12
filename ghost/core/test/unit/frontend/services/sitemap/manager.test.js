@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
@@ -33,7 +32,7 @@ describe('Unit: sitemap/manager', function () {
         return new SiteMapManager({posts: posts, pages: pages, tags: tags, authors: authors});
     };
 
-    before(function () {
+    beforeAll(function () {
         eventsToRemember = {};
 
         // @NOTE: the pattern of faking event call is not great, we should be
@@ -48,14 +47,14 @@ describe('Unit: sitemap/manager', function () {
         sinon.stub(IndexGenerator.prototype, 'getXml');
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
     describe('SiteMapManager', function () {
         let manager;
 
-        before(function () {
+        beforeAll(function () {
             manager = makeStubManager();
         });
 
@@ -83,7 +82,7 @@ describe('Unit: sitemap/manager', function () {
                     }
                 });
 
-                assert.equal(PostGenerator.prototype.addUrl.calledOnce, true);
+                sinon.assert.calledOnce(PostGenerator.prototype.addUrl);
             });
 
             it('url.removed', function () {
@@ -100,7 +99,7 @@ describe('Unit: sitemap/manager', function () {
                     }
                 });
 
-                assert.equal(PostGenerator.prototype.removeUrl.calledOnce, true);
+                sinon.assert.calledOnce(PostGenerator.prototype.removeUrl);
             });
 
             it('Listens to URLResourceUpdatedEvent event', async function () {
@@ -111,20 +110,20 @@ describe('Unit: sitemap/manager', function () {
                 }));
                 await DomainEvents.allSettled();
 
-                assert.ok(PostGenerator.prototype.updateURL.calledOnce);
+                sinon.assert.calledOnce(PostGenerator.prototype.updateURL);
             });
         });
 
         it('fn: getSiteMapXml', function () {
             PostGenerator.prototype.getXml.returns('xml');
             assert.equal(manager.getSiteMapXml('posts'), 'xml');
-            assert.equal(PostGenerator.prototype.getXml.calledOnce, true);
+            sinon.assert.calledOnce(PostGenerator.prototype.getXml);
         });
 
         it('fn: getIndexXml', function () {
             IndexGenerator.prototype.getXml.returns('xml');
             assert.equal(manager.getIndexXml(), 'xml');
-            assert.equal(IndexGenerator.prototype.getXml.calledOnce, true);
+            sinon.assert.calledOnce(IndexGenerator.prototype.getXml);
         });
     });
 });

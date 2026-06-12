@@ -7,7 +7,11 @@ import StatsLayout from '../layout/stats-layout';
 import StatsView from '../layout/stats-view';
 import TopPosts from './components/top-posts';
 import {ALL_AUDIENCES} from '@src/utils/constants';
-import {GhAreaChartDataItem, H3, LucideIcon, NavbarActions, centsToDollars, cn, formatNumber, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade';
+import {GhAreaChartDataItem} from '@tryghost/shade/patterns';
+import {H3} from '@tryghost/shade/primitives';
+import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
+import {NavbarActions} from '@tryghost/shade/components';
+import {centsToDollars, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade/app';
 import {getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -58,6 +62,7 @@ type GrowthChartDataItem = {
     free: number;
     paid: number;
     comped: number;
+    gift: number;
     mrr: number;
     formattedValue: string;
     label?: string;
@@ -220,7 +225,7 @@ const Overview: React.FC = () => {
                     topPostsData={topPostsData}
                 />
                 <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
-                    <H3 className='-mb-4 mt-4 lg:col-span-2'>Grow your audience</H3>
+                    <H3 className='mt-4 -mb-4 lg:col-span-2'>Grow your audience</H3>
                     <HelpCard
                         description='Find out how to review the performance of your content and get the most out of post analytics in Ghost.'
                         title='Understanding analytics in Ghost'

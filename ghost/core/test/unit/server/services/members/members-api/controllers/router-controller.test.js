@@ -1,4 +1,3 @@
-require('should');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
@@ -17,11 +16,17 @@ describe('RouterController', function () {
     let settingsCache;
     let settingsHelpers;
     let emailAddressService;
+    let urlUtils;
 
     beforeEach(async function () {
         // Mock emailAddressService for inbox links sender address transformation
         emailAddressService = {
             getMembersSupportAddress: sinon.stub().returns('noreply@example.com')
+        };
+
+        // Default urlUtils used by createCheckoutSession to validate return URLs
+        urlUtils = {
+            getSiteUrl: sinon.stub().returns('https://example.com/')
         };
 
         getPaymentLinkSpy = sinon.spy();
@@ -79,7 +84,9 @@ describe('RouterController', function () {
             get: sinon.stub().withArgs('all_blocked_email_domains').returns(['spam.xyz'])
         };
         settingsHelpers = {
-            getMembersSupportAddress: sinon.stub().returns('noreply@example.com')
+            getMembersSupportAddress: sinon.stub().returns('noreply@example.com'),
+            arePaidMembersEnabled: sinon.stub().returns(true),
+            areDonationsEnabled: sinon.stub().returns(true)
         };
     });
 
@@ -97,6 +104,7 @@ describe('RouterController', function () {
                 labsService,
                 settingsCache,
                 settingsHelpers,
+                urlUtils,
                 emailAddressService
             });
 
@@ -109,12 +117,12 @@ describe('RouterController', function () {
                 end: () => {}
             });
 
-            assert.equal(getPaymentLinkSpy.calledOnce, true);
+            sinon.assert.calledOnce(getPaymentLinkSpy);
 
             // Payment link is called with the offer id in metadata
-            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+            sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
                 metadata: {offer: 'offer_123'}
-            })), true);
+            }));
         });
 
         it('parses newsletters from the request body', async function () {
@@ -133,6 +141,7 @@ describe('RouterController', function () {
                 labsService,
                 settingsCache,
                 settingsHelpers,
+                urlUtils,
                 newslettersService: newslettersServiceStub,
                 emailAddressService
             });
@@ -158,13 +167,13 @@ describe('RouterController', function () {
 
             const expectedNewsletters = JSON.stringify([{id: 'abc123'}, {id: 'def456'}]);
 
-            assert.equal(getPaymentLinkSpy.calledOnce, true);
+            sinon.assert.calledOnce(getPaymentLinkSpy);
 
-            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+            sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
                 metadata: {
                     newsletters: expectedNewsletters
                 }
-            })), true);
+            }));
         });
 
         it('sets ghostSignupContext to has_precheckout_magic_link when checkout creates a signup magic link', async function () {
@@ -182,6 +191,7 @@ describe('RouterController', function () {
                 labsService,
                 settingsCache,
                 settingsHelpers,
+                urlUtils,
                 magicLinkService,
                 memberRepository
             });
@@ -200,13 +210,13 @@ describe('RouterController', function () {
                 end: () => {}
             });
 
-            assert.equal(magicLinkService.getMagicLink.calledOnce, true);
-            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+            sinon.assert.calledOnce(magicLinkService.getMagicLink);
+            sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
                 successUrl: 'https://example.com/members/?token=abc123&action=signup',
                 metadata: {
                     ghostSignupContext: 'has_precheckout_magic_link'
                 }
-            })), true);
+            }));
         });
 
         it('sets ghostSignupContext to already_authenticated for authenticated members', async function () {
@@ -227,6 +237,7 @@ describe('RouterController', function () {
                 labsService,
                 settingsCache,
                 settingsHelpers,
+                urlUtils,
                 tokenService,
                 memberRepository
             });
@@ -245,11 +256,11 @@ describe('RouterController', function () {
                 end: () => {}
             });
 
-            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+            sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
                 metadata: {
                     ghostSignupContext: 'already_authenticated'
                 }
-            })), true);
+            }));
         });
 
         it('sets ghostSignupContext to needs_magic_link_email when there is no member context or customer email', async function () {
@@ -260,7 +271,8 @@ describe('RouterController', function () {
                 stripeAPIService,
                 labsService,
                 settingsCache,
-                settingsHelpers
+                settingsHelpers,
+                urlUtils
             });
 
             await routerController.createCheckoutSession({
@@ -276,11 +288,11 @@ describe('RouterController', function () {
                 end: () => {}
             });
 
-            assert.equal(getPaymentLinkSpy.calledWith(sinon.match({
+            sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
                 metadata: {
                     ghostSignupContext: 'needs_magic_link_email'
                 }
-            })), true);
+            }));
         });
 
         describe('_getSubscriptionCheckoutData', function () {
@@ -453,6 +465,7 @@ describe('RouterController', function () {
                     labsService,
                     settingsCache,
                     settingsHelpers,
+                    urlUtils,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -481,16 +494,16 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                assert.equal(getDonationLinkSpy.calledOnce, true);
+                sinon.assert.calledOnce(getDonationLinkSpy);
 
-                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: 'SVP leave a note here',
                     metadata: {
                         test: 'hello'
                     }
-                })), true);
+                }));
             });
             it('accepts requests without a personalNote included', async function () {
                 const routerController = new RouterController({
@@ -501,6 +514,7 @@ describe('RouterController', function () {
                     labsService,
                     settingsCache,
                     settingsHelpers,
+                    urlUtils,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -528,16 +542,16 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                assert.equal(getDonationLinkSpy.calledOnce, true);
+                sinon.assert.calledOnce(getDonationLinkSpy);
 
-                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: '',
                     metadata: {
                         test: 'hello'
                     }
-                })), true);
+                }));
             });
             it('silently discards too-long personal notes', async function () {
                 const routerController = new RouterController({
@@ -548,6 +562,7 @@ describe('RouterController', function () {
                     labsService,
                     settingsCache,
                     settingsHelpers,
+                    urlUtils,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -576,15 +591,15 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                assert.equal(getDonationLinkSpy.calledOnce, true);
-                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
+                sinon.assert.calledOnce(getDonationLinkSpy);
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: '',
                     metadata: {
                         test: 'hello'
                     }
-                })), true);
+                }));
             });
             it('silently discards invalid personal notes', async function () {
                 const routerController = new RouterController({
@@ -595,6 +610,7 @@ describe('RouterController', function () {
                     labsService,
                     settingsCache,
                     settingsHelpers,
+                    urlUtils,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -623,15 +639,15 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                assert.equal(getDonationLinkSpy.calledOnce, true);
-                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
+                sinon.assert.calledOnce(getDonationLinkSpy);
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: '',
                     metadata: {
                         test: 'hello'
                     }
-                })), true);
+                }));
             });
             it('strips any html from the personal note', async function () {
                 const routerController = new RouterController({
@@ -642,6 +658,7 @@ describe('RouterController', function () {
                     labsService,
                     settingsCache,
                     settingsHelpers,
+                    urlUtils,
                     memberAttributionService: {
                         getAttribution: sinon.stub().resolves({})
                     }
@@ -670,15 +687,502 @@ describe('RouterController', function () {
                     writeHead: () => {},
                     end: () => {}
                 });
-                assert.equal(getDonationLinkSpy.calledOnce, true);
-                assert.equal(getDonationLinkSpy.calledWith(sinon.match({
+                sinon.assert.calledOnce(getDonationLinkSpy);
+                sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
                     successUrl: 'https://example.com/?type=success',
                     cancelUrl: 'https://example.com/?type=cancel',
                     personalNote: 'Leave a note here',
                     metadata: {
                         test: 'hello'
                     }
-                })), true);
+                }));
+            });
+
+            it('throws DisabledFeatureError when donations are not enabled', async function () {
+                const routerController = new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    settingsHelpers: {
+                        ...settingsHelpers,
+                        areDonationsEnabled: sinon.stub().returns(false)
+                    },
+                    urlUtils,
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    }
+                });
+
+                try {
+                    await routerController.createCheckoutSession({
+                        body: {
+                            type: 'donation',
+                            successUrl: 'https://example.com/?type=success',
+                            cancelUrl: 'https://example.com/?type=cancel',
+                            metadata: {}
+                        }
+                    }, {
+                        writeHead: () => {},
+                        end: () => {}
+                    });
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.DisabledFeatureError);
+                    sinon.assert.notCalled(getDonationLinkSpy);
+                }
+            });
+        });
+
+        describe('gift checkout', function () {
+            let getGiftLinkSpy;
+
+            beforeEach(function () {
+                getGiftLinkSpy = sinon.stub().resolves('https://checkout.stripe.com/gift');
+                paymentsService.getGiftPaymentLink = getGiftLinkSpy;
+            });
+
+            function createGiftController(overrides = {}) {
+                return new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    settingsHelpers,
+                    memberRepository: {get: sinon.stub().resolves(null)},
+                    urlUtils: {getSiteUrl: sinon.stub().returns('https://example.com/')},
+                    memberAttributionService: {getAttribution: sinon.stub().resolves({})},
+                    emailAddressService,
+                    ...overrides
+                });
+            }
+
+            const mockRes = {writeHead: () => {}, end: () => {}};
+
+            function paidTierService(price = 5000) {
+                return {
+                    api: {
+                        read: sinon.stub().resolves({
+                            id: {toHexString: () => 'tier_123'},
+                            status: 'active',
+                            getPrice: sinon.stub().returns(price)
+                        })
+                    }
+                };
+            }
+
+            it('calls getGiftPaymentLink with correct options', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledOnce(getGiftLinkSpy);
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    successUrl: 'https://example.com/',
+                    cancelUrl: 'https://example.com/'
+                }));
+            });
+
+            it('uses cancelUrl from the request body when provided', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {
+                        type: 'gift',
+                        tierId: 'tier_123',
+                        cadence: 'month',
+                        metadata: {},
+                        cancelUrl: 'https://example.com/post/#/portal/gift'
+                    }
+                }, mockRes);
+
+                sinon.assert.calledOnce(getGiftLinkSpy);
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    successUrl: 'https://example.com/',
+                    cancelUrl: 'https://example.com/post/#/portal/gift'
+                }));
+            });
+
+            it('passes customerEmail through for logged-out gift checkout', async function () {
+                const controller = createGiftController({tiersService: paidTierService()});
+
+                await controller.createCheckoutSession({
+                    body: {
+                        type: 'gift',
+                        tierId: 'tier_123',
+                        cadence: 'month',
+                        customerEmail: 'jamie@example.com',
+                        metadata: {}
+                    }
+                }, mockRes);
+
+                sinon.assert.calledOnce(getGiftLinkSpy);
+                sinon.assert.calledWith(getGiftLinkSpy, sinon.match({
+                    email: 'jamie@example.com',
+                    isAuthenticated: false
+                }));
+            });
+
+            it('rejects when offerId is provided', async function () {
+                const controller = createGiftController();
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', offerId: 'offer_123', metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.BadRequestError);
+                    assert.equal(error.context, 'Offers cannot be applied to gift subscriptions');
+                }
+            });
+
+            it('throws DisabledFeatureError when paid members are not enabled', async function () {
+                const controller = createGiftController({
+                    tiersService: paidTierService(),
+                    settingsHelpers: {
+                        ...settingsHelpers,
+                        arePaidMembersEnabled: sinon.stub().returns(false)
+                    }
+                });
+
+                try {
+                    await controller.createCheckoutSession({
+                        body: {type: 'gift', tierId: 'tier_123', cadence: 'month', metadata: {}}
+                    }, mockRes);
+                    assert.fail('Should have thrown');
+                } catch (error) {
+                    assert(error instanceof errors.DisabledFeatureError);
+                    sinon.assert.notCalled(getGiftLinkSpy);
+                }
+            });
+
+            it('does not block paid members from purchasing gifts', async function () {
+                const controller = createGiftController({
+                    tiersService: paidTierService(),
+                    tokenService: {decodeToken: sinon.stub().resolves({sub: 'member@example.com'})},
+                    memberRepository: {
+                        get: sinon.stub().resolves({
+                            id: 'member_123',
+                            get: sinon.stub().returns('paid'),
+                            related: sinon.stub().returns({
+                                query: sinon.stub().returns({
+                                    fetch: sinon.stub().resolves([])
+                                })
+                            })
+                        })
+                    }
+                });
+
+                await controller.createCheckoutSession({
+                    body: {type: 'gift', tierId: 'tier_123', cadence: 'month', identity: 'valid-token', metadata: {}}
+                }, mockRes);
+
+                sinon.assert.calledOnce(getGiftLinkSpy);
+            });
+        });
+
+        describe('return URL validation', function () {
+            // Any successUrl/cancelUrl posted to the public checkout endpoint that
+            // doesn't point back to the configured site is discarded before being
+            // forwarded to Stripe, so the downstream Stripe service falls back to its
+            // built-in same-origin defaults.
+
+            const mockRes = {writeHead: () => {}, end: () => {}};
+
+            function createSubscriptionController(overrides = {}) {
+                return new RouterController({
+                    tiersService,
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    settingsHelpers,
+                    urlUtils,
+                    memberAttributionService: {getAttribution: sinon.stub().resolves({})},
+                    ...overrides
+                });
+            }
+
+            function createGiftReturnController(overrides = {}) {
+                return new RouterController({
+                    tiersService: {
+                        api: {
+                            read: sinon.stub().resolves({
+                                id: {toHexString: () => 'tier_123'},
+                                status: 'active',
+                                getPrice: sinon.stub().returns(5000)
+                            })
+                        }
+                    },
+                    paymentsService,
+                    offersAPI,
+                    stripeAPIService,
+                    labsService,
+                    settingsCache,
+                    settingsHelpers,
+                    memberRepository: {get: sinon.stub().resolves(null)},
+                    memberAttributionService: {getAttribution: sinon.stub().resolves({})},
+                    urlUtils,
+                    ...overrides
+                });
+            }
+
+            describe('subscription checkout', function () {
+                it('passes through same-origin successUrl and cancelUrl unchanged', async function () {
+                    const controller = createSubscriptionController();
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            successUrl: 'https://example.com/welcome?foo=bar',
+                            cancelUrl: 'https://example.com/checkout-cancelled',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
+                        successUrl: 'https://example.com/welcome?foo=bar',
+                        cancelUrl: 'https://example.com/checkout-cancelled'
+                    }));
+                });
+
+                it('drops cross-origin cancelUrl', async function () {
+                    const controller = createSubscriptionController();
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            successUrl: 'https://example.com/welcome',
+                            cancelUrl: 'https://external.example/steal',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
+                        successUrl: 'https://example.com/welcome',
+                        cancelUrl: undefined
+                    }));
+                });
+
+                it('drops cross-origin successUrl', async function () {
+                    const controller = createSubscriptionController();
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            successUrl: 'https://external.example/welcome',
+                            cancelUrl: 'https://example.com/cancel',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
+                        successUrl: undefined,
+                        cancelUrl: 'https://example.com/cancel'
+                    }));
+                });
+
+                it('drops URLs that share a hostname suffix but a different origin', async function () {
+                    const controller = createSubscriptionController();
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            // example.com.external.example would pass a naive .includes/startsWith check
+                            successUrl: 'https://example.com.external.example/welcome',
+                            cancelUrl: 'https://examplecom.example/cancel',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
+                        successUrl: undefined,
+                        cancelUrl: undefined
+                    }));
+                });
+
+                it('drops malformed return URLs', async function () {
+                    const controller = createSubscriptionController();
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            successUrl: 'not a url',
+                            cancelUrl: '//external.example/cancel',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
+                        successUrl: undefined,
+                        cancelUrl: undefined
+                    }));
+                });
+
+                it('passes undefined when successUrl/cancelUrl are missing', async function () {
+                    const controller = createSubscriptionController();
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
+                        successUrl: undefined,
+                        cancelUrl: undefined
+                    }));
+                });
+
+                it('respects the site subpath when validating return URLs', async function () {
+                    const subpathUrlUtils = {
+                        getSiteUrl: sinon.stub().returns('https://example.com/blog/')
+                    };
+                    const controller = createSubscriptionController({urlUtils: subpathUrlUtils});
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            // Same origin but outside the /blog/ subpath
+                            successUrl: 'https://example.com/welcome',
+                            // Inside the subpath
+                            cancelUrl: 'https://example.com/blog/cancelled',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
+                        successUrl: undefined,
+                        cancelUrl: 'https://example.com/blog/cancelled'
+                    }));
+                });
+
+                it('accepts subpath URLs without a trailing slash as equivalent to the subpath', async function () {
+                    const subpathUrlUtils = {
+                        getSiteUrl: sinon.stub().returns('https://example.com/blog/')
+                    };
+                    const controller = createSubscriptionController({urlUtils: subpathUrlUtils});
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            // No trailing slash — should be treated as equivalent to /blog/
+                            successUrl: 'https://example.com/blog',
+                            // /blogger is *not* the same as /blog/ — must be rejected
+                            cancelUrl: 'https://example.com/blogger/oops',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledWith(getPaymentLinkSpy, sinon.match({
+                        successUrl: 'https://example.com/blog',
+                        cancelUrl: undefined
+                    }));
+                });
+            });
+
+            describe('donation checkout', function () {
+                it('drops cross-origin successUrl and cancelUrl', async function () {
+                    const controller = createSubscriptionController();
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            type: 'donation',
+                            successUrl: 'https://external.example/win',
+                            cancelUrl: 'https://external.example/oops',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
+                        successUrl: undefined,
+                        cancelUrl: undefined
+                    }));
+                });
+
+                it('passes through same-origin URLs unchanged', async function () {
+                    const controller = createSubscriptionController();
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            type: 'donation',
+                            successUrl: 'https://example.com/donate/thanks',
+                            cancelUrl: 'https://example.com/donate/cancel',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledWith(getDonationLinkSpy, sinon.match({
+                        successUrl: 'https://example.com/donate/thanks',
+                        cancelUrl: 'https://example.com/donate/cancel'
+                    }));
+                });
+            });
+
+            describe('gift checkout', function () {
+                let giftLinkSpy;
+
+                beforeEach(function () {
+                    giftLinkSpy = sinon.stub().resolves('https://checkout.stripe.com/gift');
+                    paymentsService.getGiftPaymentLink = giftLinkSpy;
+                });
+
+                it('falls back to the site URL when cancelUrl is cross-origin (Stripe requires cancel_url for gifts)', async function () {
+                    const controller = createGiftReturnController();
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            type: 'gift',
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            cancelUrl: 'https://external.example/cancel',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledOnce(giftLinkSpy);
+                    sinon.assert.calledWith(giftLinkSpy, sinon.match({
+                        successUrl: 'https://example.com/',
+                        cancelUrl: 'https://example.com/'
+                    }));
+                });
+
+                it('passes same-origin cancelUrl through unchanged', async function () {
+                    const controller = createGiftReturnController();
+
+                    await controller.createCheckoutSession({
+                        body: {
+                            type: 'gift',
+                            tierId: 'tier_123',
+                            cadence: 'month',
+                            cancelUrl: 'https://example.com/post/#/portal/gift',
+                            metadata: {}
+                        }
+                    }, mockRes);
+
+                    sinon.assert.calledOnce(giftLinkSpy);
+                    sinon.assert.calledWith(giftLinkSpy, sinon.match({
+                        successUrl: 'https://example.com/',
+                        cancelUrl: 'https://example.com/post/#/portal/gift'
+                    }));
+                });
             });
         });
 
@@ -736,7 +1240,7 @@ describe('RouterController', function () {
 
             await routerController.createCheckoutSession(req, res);
 
-            assert.equal(res.end.calledOnce, true);
+            sinon.assert.calledOnce(res.end);
             const responseBody = JSON.parse(res.end.firstCall.args[0]);
             assert.equal(responseBody.welcomePageUrl, '/welcome-page/');
         });
@@ -794,13 +1298,152 @@ describe('RouterController', function () {
 
             await routerController.createCheckoutSession(req, res);
 
-            assert.equal(res.end.calledOnce, true);
+            sinon.assert.calledOnce(res.end);
             const responseBody = JSON.parse(res.end.firstCall.args[0]);
             assert.equal(responseBody.welcomePageUrl, undefined);
         });
 
         afterEach(function () {
             sinon.restore();
+        });
+    });
+
+    describe('createCheckoutSetupSession return URL validation', function () {
+        // The setup session endpoint requires an authenticated identity token, but the
+        // successUrl/cancelUrl values still come from the request body. We validate
+        // their origin server-side and drop any URL that doesn't point back to the site.
+
+        let createSetupSessionStub;
+        let mockReq;
+        let mockRes;
+
+        function createController() {
+            createSetupSessionStub = sinon.stub().resolves({id: 'cs_test_setup'});
+            const memberStub = {
+                related: sinon.stub().returns({
+                    fetch: sinon.stub().resolves({models: []})
+                })
+            };
+            return new RouterController({
+                stripeAPIService: {
+                    createCheckoutSetupSession: createSetupSessionStub,
+                    getCustomerForMemberCheckoutSession: sinon.stub().resolves({id: 'cus_test'}),
+                    getPublicKey: sinon.stub().returns('pk_test')
+                },
+                tokenService: {decodeToken: sinon.stub().resolves({sub: 'member@example.com'})},
+                memberRepository: {get: sinon.stub().resolves(memberStub)},
+                urlUtils
+            });
+        }
+
+        beforeEach(function () {
+            mockReq = body => ({body: {identity: 'valid-token', ...body}});
+            mockRes = {writeHead: sinon.stub(), end: sinon.stub()};
+        });
+
+        it('passes same-origin successUrl and cancelUrl through unchanged', async function () {
+            const controller = createController();
+
+            await controller.createCheckoutSetupSession(mockReq({
+                successUrl: 'https://example.com/account/billing?ok=1',
+                cancelUrl: 'https://example.com/account'
+            }), mockRes);
+
+            sinon.assert.calledWith(createSetupSessionStub, sinon.match.any, sinon.match({
+                successUrl: 'https://example.com/account/billing?ok=1',
+                cancelUrl: 'https://example.com/account'
+            }));
+        });
+
+        it('drops cross-origin successUrl and cancelUrl', async function () {
+            const controller = createController();
+
+            await controller.createCheckoutSetupSession(mockReq({
+                successUrl: 'https://external.example/success',
+                cancelUrl: 'https://external.example/cancel'
+            }), mockRes);
+
+            sinon.assert.calledWith(createSetupSessionStub, sinon.match.any, sinon.match({
+                successUrl: undefined,
+                cancelUrl: undefined
+            }));
+        });
+
+        it('passes undefined when URLs are missing', async function () {
+            const controller = createController();
+
+            await controller.createCheckoutSetupSession(mockReq({}), mockRes);
+
+            sinon.assert.calledWith(createSetupSessionStub, sinon.match.any, sinon.match({
+                successUrl: undefined,
+                cancelUrl: undefined
+            }));
+        });
+    });
+
+    describe('createBillingPortalSession return URL validation', function () {
+        let createPortalSessionStub;
+        let mockReq;
+        let mockRes;
+
+        function createController() {
+            createPortalSessionStub = sinon.stub().resolves({url: 'https://billing.stripe.com/'});
+            const memberStub = {
+                related: sinon.stub().returns({
+                    fetch: sinon.stub().resolves({models: []})
+                })
+            };
+            return new RouterController({
+                stripeAPIService: {
+                    createBillingPortalSession: createPortalSessionStub,
+                    getCustomerForMemberCheckoutSession: sinon.stub().resolves({id: 'cus_test'})
+                },
+                tokenService: {decodeToken: sinon.stub().resolves({sub: 'member@example.com'})},
+                memberRepository: {get: sinon.stub().resolves(memberStub)},
+                settingsCache: {
+                    get: sinon.stub().withArgs('stripe_billing_portal_configuration_id').returns(null)
+                },
+                urlUtils
+            });
+        }
+
+        beforeEach(function () {
+            mockReq = body => ({body: {identity: 'valid-token', ...body}});
+            mockRes = {writeHead: sinon.stub(), end: sinon.stub()};
+        });
+
+        it('passes same-origin returnUrl through unchanged', async function () {
+            const controller = createController();
+
+            await controller.createBillingPortalSession(mockReq({
+                returnUrl: 'https://example.com/account'
+            }), mockRes);
+
+            sinon.assert.calledWith(createPortalSessionStub, sinon.match.any, sinon.match({
+                returnUrl: 'https://example.com/account'
+            }));
+        });
+
+        it('drops cross-origin returnUrl', async function () {
+            const controller = createController();
+
+            await controller.createBillingPortalSession(mockReq({
+                returnUrl: 'https://external.example/return'
+            }), mockRes);
+
+            sinon.assert.calledWith(createPortalSessionStub, sinon.match.any, sinon.match({
+                returnUrl: undefined
+            }));
+        });
+
+        it('passes undefined when returnUrl is missing', async function () {
+            const controller = createController();
+
+            await controller.createBillingPortalSession(mockReq({}), mockRes);
+
+            sinon.assert.calledWith(createPortalSessionStub, sinon.match.any, sinon.match({
+                returnUrl: undefined
+            }));
         });
     });
 
@@ -881,7 +1524,7 @@ describe('RouterController', function () {
                 assert.equal(res.writeHead.calledOnceWith(201), true);
                 assert.equal(res.end.calledOnceWith('{}'), true);
 
-                assert.equal(sendEmailWithMagicLinkStub.calledOnce, true);
+                sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
                 assert.deepEqual(sendEmailWithMagicLinkStub.args[0][0].tokenData.newsletters, [
                     {id: newsletters[0].id},
                     {id: newsletters[1].id},
@@ -961,6 +1604,65 @@ describe('RouterController', function () {
             });
         });
 
+        describe('gift token forwarding', function () {
+            let req, res, sendEmailWithMagicLinkStub, memberRepositoryStub;
+
+            const createRouterController = (deps = {}) => {
+                return new RouterController({
+                    allowSelfSignup: sinon.stub().returns(true),
+                    memberAttributionService: {
+                        getAttribution: sinon.stub().resolves({})
+                    },
+                    sendEmailWithMagicLink: sendEmailWithMagicLinkStub,
+                    settingsCache,
+                    settingsHelpers,
+                    emailAddressService,
+                    memberRepository: memberRepositoryStub,
+                    ...deps
+                });
+            };
+
+            beforeEach(function () {
+                req = {
+                    body: {
+                        email: 'jamie@example.com',
+                        emailType: 'subscribe',
+                        giftToken: 'gift-token-123'
+                    },
+                    get: sinon.stub()
+                };
+                res = {
+                    writeHead: sinon.stub(),
+                    end: sinon.stub()
+                };
+                sendEmailWithMagicLinkStub = sinon.stub().resolves({});
+                memberRepositoryStub = {
+                    get: sinon.stub().resolves({
+                        id: 'member_1'
+                    })
+                };
+            });
+
+            it('forwards giftToken for signup and subscribe flows', async function () {
+                const controller = createRouterController();
+
+                await controller.sendMagicLink(req, res);
+
+                sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+                assert.equal(sendEmailWithMagicLinkStub.firstCall.args[0].tokenData.giftToken, 'gift-token-123');
+            });
+
+            it('forwards giftToken for signin flows', async function () {
+                req.body.emailType = 'signin';
+                const controller = createRouterController();
+
+                await controller.sendMagicLink(req, res);
+
+                sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
+                assert.equal(sendEmailWithMagicLinkStub.firstCall.args[0].tokenData.giftToken, 'gift-token-123');
+            });
+        });
+
         describe('honeypot', function () {
             let req, res, sendEmailWithMagicLinkStub;
 
@@ -997,7 +1699,7 @@ describe('RouterController', function () {
                 const controller = createRouterController();
 
                 await controller.sendMagicLink(req, res);
-                assert.equal(sendEmailWithMagicLinkStub.calledOnce, true);
+                sinon.assert.calledOnce(sendEmailWithMagicLinkStub);
             });
 
             it('Does not send emails when honeypot is filled', async function () {
@@ -1061,8 +1763,8 @@ describe('RouterController', function () {
 
                 await routerController.sendMagicLink(req, res);
 
-                assert.equal(res.writeHead.calledWith(201, {'Content-Type': 'application/json'}), true);
-                assert.equal(res.end.calledWith(JSON.stringify({otc_ref: 'test-token-123'})), true);
+                sinon.assert.calledWith(res.writeHead, 201, {'Content-Type': 'application/json'});
+                sinon.assert.calledWith(res.end, JSON.stringify({otc_ref: 'test-token-123'}));
             });
 
             it('should not return otc_ref when no otcRef', async function () {
@@ -1070,8 +1772,8 @@ describe('RouterController', function () {
 
                 await routerController.sendMagicLink(req, res);
 
-                assert.equal(res.writeHead.calledWith(201), true);
-                assert.equal(res.end.calledWith('{}'), true);
+                sinon.assert.calledWith(res.writeHead, 201);
+                sinon.assert.calledWith(res.end, '{}');
             });
 
             it('should not return otc_ref when otcRef is undefined', async function () {
@@ -1079,8 +1781,8 @@ describe('RouterController', function () {
 
                 await routerController.sendMagicLink(req, res);
 
-                assert.equal(res.writeHead.calledWith(201), true);
-                assert.equal(res.end.calledWith('{}'), true);
+                sinon.assert.calledWith(res.writeHead, 201);
+                sinon.assert.calledWith(res.end, '{}');
             });
         });
     });
@@ -1396,7 +2098,7 @@ describe('RouterController', function () {
 
                 await assert.rejects(
                     routerController.verifyOTC(req, res),
-                    {code: 'INVALID_OTC_REF'}
+                    {code: 'INVALID_OTC'}
                 );
             });
 
@@ -1513,20 +2215,31 @@ describe('RouterController', function () {
         let res;
         let responseData;
 
-        function createMockSubscription({id = 'sub_123', status = 'active', offerId = null, trialEndAt = null} = {}) {
+        function createMockSubscription({
+            id = 'sub_123',
+            status = 'active',
+            offerId = null,
+            trialEndAt = null,
+            discountStart = null,
+            discountEnd = null,
+            startDate = null,
+            currentPeriodEnd = new Date('2025-06-01T00:00:00.000Z'),
+            cancelAtPeriodEnd = false
+        } = {}) {
             return {
                 id,
                 get: sinon.stub().callsFake((key) => {
-                    if (key === 'status') {
-                        return status;
-                    }
-                    if (key === 'offer_id') {
-                        return offerId;
-                    }
-                    if (key === 'trial_end_at') {
-                        return trialEndAt;
-                    }
-                    return null;
+                    const values = {
+                        status,
+                        offer_id: offerId,
+                        trial_end_at: trialEndAt,
+                        discount_start: discountStart,
+                        discount_end: discountEnd,
+                        start_date: startDate,
+                        current_period_end: currentPeriodEnd,
+                        cancel_at_period_end: cancelAtPeriodEnd
+                    };
+                    return values[key] ?? null;
                 }),
                 related: sinon.stub().withArgs('stripePrice').returns(mockStripePrice)
             };
@@ -1555,7 +2268,8 @@ describe('RouterController', function () {
 
         beforeEach(function () {
             mockOffersAPI = {
-                listOffersAvailableToSubscription: sinon.stub().resolves([])
+                listOffersAvailableToSubscription: sinon.stub().resolves([]),
+                getOffer: sinon.stub().resolves(null)
             };
 
             tokenService = {
@@ -1600,12 +2314,18 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: []});
-            assert(offersAPIWithError.listOffersAvailableToSubscription.calledOnce);
+            sinon.assert.calledOnce(offersAPIWithError.listOffersAvailableToSubscription);
         });
 
-        it('returns empty offers when subscription already has an offer applied', async function () {
+        it('returns empty offers when subscription has an active discount', async function () {
+            mockOffersAPI.getOffer.resolves({id: 'existing_offer_123', duration: 'forever'});
+
             const routerController = createRouterController({
-                subscriptions: createMockSubscription({offerId: 'existing_offer_123'})
+                subscriptions: createMockSubscription({
+                    offerId: 'existing_offer_123',
+                    discountStart: new Date('2026-01-01')
+                    // discountEnd: null means forever
+                })
             });
 
             await routerController.getMemberOffers({
@@ -1613,7 +2333,76 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: []});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
+            sinon.assert.notCalled(mockOffersAPI.listOffersAvailableToSubscription);
+        });
+
+        it('returns offers when subscription has an expired discount', async function () {
+            const mockOffer = {id: 'retention_offer'};
+            mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
+            mockOffersAPI.getOffer.resolves({id: 'expired_offer_123', duration: 'once'});
+
+            const pastDate = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({
+                    offerId: 'expired_offer_123',
+                    discountStart: new Date('2025-01-01'),
+                    discountEnd: pastDate
+                })
+            });
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: [mockOffer]});
+            sinon.assert.calledOnce(mockOffersAPI.listOffersAvailableToSubscription);
+        });
+
+        it('returns offers when a one-month repeating signup offer no longer applies to the next payment', async function () {
+            const mockOffer = {id: 'retention_offer'};
+            mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
+            mockOffersAPI.getOffer.resolves({
+                id: 'expiring_repeating_offer',
+                duration: 'repeating',
+                duration_in_months: 1
+            });
+
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({
+                    offerId: 'expiring_repeating_offer',
+                    startDate: new Date('2025-05-01T00:00:00.000Z'),
+                    discountStart: new Date('2025-05-01T00:00:00.000Z'),
+                    discountEnd: new Date('2025-06-01T00:00:00.000Z'),
+                    currentPeriodEnd: new Date('2025-06-01T00:00:00.000Z')
+                })
+            });
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: [mockOffer]});
+            sinon.assert.calledOnce(mockOffersAPI.listOffersAvailableToSubscription);
+        });
+
+        it('returns offers when subscription has expired once offer (legacy data, no discount_start)', async function () {
+            const mockOffer = {id: 'retention_offer'};
+            mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
+            mockOffersAPI.getOffer.resolves({duration: 'once'});
+
+            const routerController = createRouterController({
+                subscriptions: createMockSubscription({
+                    offerId: 'expired_once_offer'
+                    // No discountStart — legacy data
+                })
+            });
+
+            await routerController.getMemberOffers({
+                body: {identity: 'valid-token'}
+            }, res);
+
+            assert.deepEqual(responseData, {offers: [mockOffer]});
+            sinon.assert.calledOnce(mockOffersAPI.listOffersAvailableToSubscription);
         });
 
         it('returns empty offers when member has multiple active subscriptions', async function () {
@@ -1629,7 +2418,7 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: []});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
+            sinon.assert.notCalled(mockOffersAPI.listOffersAvailableToSubscription);
         });
 
         it('returns empty offers when subscription has an active trial period', async function () {
@@ -1645,11 +2434,11 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: []});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.notCalled);
+            sinon.assert.notCalled(mockOffersAPI.listOffersAvailableToSubscription);
         });
 
         it('returns offers when subscription trial has ended', async function () {
-            const mockOffer = {id: 'offer_123', name: 'Test Offer'};
+            const mockOffer = {id: 'offer_123'};
             mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
 
             const pastDate = new Date();
@@ -1664,11 +2453,11 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: [mockOffer]});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
+            sinon.assert.calledOnce(mockOffersAPI.listOffersAvailableToSubscription);
         });
 
         it('returns offers when subscription has no trial period', async function () {
-            const mockOffer = {id: 'offer_123', name: 'Test Offer'};
+            const mockOffer = {id: 'offer_123'};
             mockOffersAPI.listOffersAvailableToSubscription.resolves([mockOffer]);
 
             const routerController = createRouterController({
@@ -1680,7 +2469,7 @@ describe('RouterController', function () {
             }, res);
 
             assert.deepEqual(responseData, {offers: [mockOffer]});
-            assert(mockOffersAPI.listOffersAvailableToSubscription.calledOnce);
+            sinon.assert.calledOnce(mockOffersAPI.listOffersAvailableToSubscription);
         });
     });
 });

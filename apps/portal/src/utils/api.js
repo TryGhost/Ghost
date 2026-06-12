@@ -167,6 +167,50 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
         }
     };
 
+    const handleGiftResponse = async (res, fallbackMessage) => {
+        if (res.ok) {
+            return res.json();
+        }
+
+        const humanError = await HumanReadableError.fromApiResponse(res);
+        if (humanError) {
+            throw humanError;
+        }
+
+        throw new Error(fallbackMessage);
+    };
+
+    api.gift = {
+        async fetchRedemptionData({token}) {
+            const url = endpointFor({type: 'members', resource: `gifts/${encodeURIComponent(token)}/redeem`});
+            const res = await makeRequest({
+                url,
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin'
+            });
+
+            return handleGiftResponse(res, 'Failed to load gift data');
+        },
+
+        async redeem({token}) {
+            const url = endpointFor({type: 'members', resource: `gifts/${encodeURIComponent(token)}/redeem`});
+            const res = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'same-origin',
+                body: JSON.stringify({})
+            });
+
+            return handleGiftResponse(res, 'Failed to redeem gift');
+        }
+    };
+
     api.recommendations = {
         trackClicked({recommendationId}) {
             let url = endpointFor({type: 'members', resource: 'recommendations/' + recommendationId + '/clicked'});
@@ -275,7 +319,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
          *     otc_ref?: string;
          * }}
          */
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, autoRedirect = true, includeOTC}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, giftToken, autoRedirect = true, includeOTC}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -290,6 +334,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 // we don't actually use a phone #, this is from a hidden field to prevent bot activity
                 honeypot: phonenumber,
                 token,
+                giftToken,
                 autoRedirect,
                 includeOTC
             };
@@ -490,7 +535,63 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             }).then(async function (res) {
                 if (!res.ok) {
                     const errData = await res.json();
-                    const errMssg = errData?.errors?.[0]?.message || 'Failed to signup, please try again.';
+                    const err = errData?.errors?.[0] || {};
+                    const errMssg = err.message || 'Failed to signup, please try again.';
+                    const error = new Error(errMssg);
+                    error.code = err.code;
+                    throw error;
+                }
+                return res.json();
+            }).then(function (responseBody) {
+                if (responseBody.url) {
+                    return window.location.assign(responseBody.url);
+                }
+                const stripe = window.Stripe(responseBody.publicKey);
+                return stripe.redirectToCheckout({
+                    sessionId: responseBody.sessionId
+                }).then(function (redirectResult) {
+                    if (redirectResult.error) {
+                        throw new Error(redirectResult.error.message);
+                    }
+                });
+            });
+        },
+
+        async continueGiftCheckout() {
+            const siteUrlObj = new URL(siteUrl);
+            const identity = await api.member.identity();
+            const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
+
+            const checkoutSuccessUrl = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
+            checkoutSuccessUrl.searchParams.set('stripe', 'success');
+
+            const checkoutCancelUrl = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
+            checkoutCancelUrl.searchParams.set('stripe', 'cancel');
+
+            const body = {
+                type: 'subscription',
+                continueFromGift: true,
+                identity,
+                successUrl: checkoutSuccessUrl.href,
+                cancelUrl: checkoutCancelUrl.href,
+                metadata: {
+                    checkoutType: 'upgrade',
+                    requestSrc: 'portal',
+                    urlHistory: getUrlHistory()
+                }
+            };
+
+            return makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            }).then(async function (res) {
+                if (!res.ok) {
+                    const errData = await res.json();
+                    const errMssg = errData?.errors?.[0]?.message || 'Failed to continue gift subscription, please try again.';
                     throw new Error(errMssg);
                 }
                 return res.json();
@@ -507,6 +608,68 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                     }
                 });
             });
+        },
+
+        async checkoutGift({tierId, cadence, email: customerEmail} = {}) {
+            const siteUrlObj = new URL(siteUrl);
+            const url = endpointFor({type: 'members', resource: 'create-stripe-checkout-session'});
+
+            let identity = null;
+            try {
+                identity = await api.member.identity();
+            } catch (e) {
+                // Not authenticated - that's fine for gift purchases
+            }
+
+            const cancelUrlObj = window.location.href.startsWith(siteUrlObj.href) ? new URL(window.location.href) : new URL(siteUrl);
+            cancelUrlObj.hash = '#/portal/gift';
+
+            const body = {
+                identity,
+                metadata: {
+                    requestSrc: 'portal'
+                },
+                type: 'gift',
+                tierId,
+                cadence,
+                cancelUrl: cancelUrlObj.href
+            };
+
+            if (customerEmail) {
+                body.customerEmail = customerEmail;
+            }
+
+            const response = await makeRequest({
+                url,
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(body)
+            });
+
+            let responseJson = {};
+            try {
+                responseJson = await response.json();
+            } catch (e) {
+                // response may not be JSON (e.g. HTML error page from proxy)
+            }
+
+            if (!response.ok) {
+                const error = responseJson?.errors?.[0];
+
+                if (error) {
+                    throw error;
+                }
+
+                throw new Error('Failed to process gift checkout, please try again.');
+            }
+
+            if (responseJson.url) {
+                return window.location.assign(responseJson.url);
+            }
+
+            throw new Error('Failed to process gift checkout, please try again.');
         },
 
         async checkoutDonation({successUrl, cancelUrl, metadata = {}, personalNote = ''} = {}) {

@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 
@@ -12,10 +11,6 @@ const fixtures = require('../../../../../utils/fixtures/fixtures.json');
 const fixtureManager = new FixtureManager(fixtures);
 
 describe('Migration Fixture Utils', function () {
-    beforeEach(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
@@ -250,63 +245,63 @@ describe('Migration Fixture Utils', function () {
 
         it('should match undefined with no args', function () {
             assert.equal(matchFunc()({get: getStub}), true);
-            assert.equal(getStub.calledOnce, true);
-            assert.equal(getStub.calledWith(undefined), true);
+            sinon.assert.calledOnce(getStub);
+            sinon.assert.calledWith(getStub, undefined);
         });
 
         it('should match key with match string', function () {
             assert.equal(matchFunc('foo', 'bar')({get: getStub}), true);
-            assert.equal(getStub.calledOnce, true);
-            assert.equal(getStub.calledWith('foo'), true);
+            sinon.assert.calledOnce(getStub);
+            sinon.assert.calledWith(getStub, 'foo');
 
             assert.equal(matchFunc('foo', 'buz')({get: getStub}), false);
-            assert.equal(getStub.calledTwice, true);
-            assert.equal(getStub.secondCall.calledWith('foo'), true);
+            sinon.assert.calledTwice(getStub);
+            sinon.assert.calledWith(getStub.secondCall, 'foo');
         });
 
         it('should match value when key is 0', function () {
             assert.equal(matchFunc('foo', 0, 'bar')({get: getStub}), true);
-            assert.equal(getStub.calledOnce, true);
-            assert.equal(getStub.calledWith('foo'), true);
+            sinon.assert.calledOnce(getStub);
+            sinon.assert.calledWith(getStub, 'foo');
 
             assert.equal(matchFunc('foo', 0, 'buz')({get: getStub}), false);
-            assert.equal(getStub.calledTwice, true);
-            assert.equal(getStub.secondCall.calledWith('foo'), true);
+            sinon.assert.calledTwice(getStub);
+            sinon.assert.calledWith(getStub.secondCall, 'foo');
         });
 
         it('should match key & value when match is array', function () {
             assert.equal(matchFunc(['foo', 'fun'], 'bar', 'baz')({get: getStub}), true);
-            assert.equal(getStub.calledTwice, true);
-            assert.equal(getStub.getCall(0).calledWith('fun'), true);
-            assert.equal(getStub.getCall(1).calledWith('foo'), true);
+            sinon.assert.calledTwice(getStub);
+            sinon.assert.calledWith(getStub.getCall(0), 'fun');
+            sinon.assert.calledWith(getStub.getCall(1), 'foo');
 
             assert.equal(matchFunc(['foo', 'fun'], 'baz', 'bar')({get: getStub}), false);
-            assert.equal(getStub.callCount, 4);
-            assert.equal(getStub.getCall(2).calledWith('fun'), true);
-            assert.equal(getStub.getCall(3).calledWith('foo'), true);
+            sinon.assert.callCount(getStub, 4);
+            sinon.assert.calledWith(getStub.getCall(2), 'fun');
+            sinon.assert.calledWith(getStub.getCall(3), 'foo');
         });
 
         it('should match key only when match is array, but value is all', function () {
             assert.equal(matchFunc(['foo', 'fun'], 'bar', 'all')({get: getStub}), true);
-            assert.equal(getStub.calledOnce, true);
-            assert.equal(getStub.calledWith('foo'), true);
+            sinon.assert.calledOnce(getStub);
+            sinon.assert.calledWith(getStub, 'foo');
 
             assert.equal(matchFunc(['foo', 'fun'], 'all', 'bar')({get: getStub}), false);
-            assert.equal(getStub.callCount, 3);
-            assert.equal(getStub.getCall(1).calledWith('fun'), true);
-            assert.equal(getStub.getCall(2).calledWith('foo'), true);
+            sinon.assert.calledThrice(getStub);
+            sinon.assert.calledWith(getStub.getCall(1), 'fun');
+            sinon.assert.calledWith(getStub.getCall(2), 'foo');
         });
 
         it('should match key & value when match and value are arrays', function () {
             assert.equal(matchFunc(['foo', 'fun'], 'bar', ['baz', 'buz'])({get: getStub}), true);
-            assert.equal(getStub.calledTwice, true);
-            assert.equal(getStub.getCall(0).calledWith('fun'), true);
-            assert.equal(getStub.getCall(1).calledWith('foo'), true);
+            sinon.assert.calledTwice(getStub);
+            sinon.assert.calledWith(getStub.getCall(0), 'fun');
+            sinon.assert.calledWith(getStub.getCall(1), 'foo');
 
             assert.equal(matchFunc(['foo', 'fun'], 'bar', ['biz', 'buz'])({get: getStub}), false);
-            assert.equal(getStub.callCount, 4);
-            assert.equal(getStub.getCall(2).calledWith('fun'), true);
-            assert.equal(getStub.getCall(3).calledWith('foo'), true);
+            sinon.assert.callCount(getStub, 4);
+            sinon.assert.calledWith(getStub.getCall(2), 'fun');
+            sinon.assert.calledWith(getStub.getCall(3), 'foo');
         });
     });
 
@@ -317,8 +312,8 @@ describe('Migration Fixture Utils', function () {
 
             await fixtureManager.addAllFixtures();
 
-            assert.equal(addFixturesForModelStub.callCount, fixtures.models.length);
-            assert.equal(addFixturesForRelationStub.callCount, fixtures.relations.length);
+            sinon.assert.callCount(addFixturesForModelStub, fixtures.models.length);
+            sinon.assert.callCount(addFixturesForRelationStub, fixtures.relations.length);
 
             // NOTE: users and roles have to be initialized first for the post fixtures to work
             assert.equal(addFixturesForModelStub.firstCall.args[0].name, 'Role');
@@ -329,7 +324,7 @@ describe('Migration Fixture Utils', function () {
     });
 
     describe('Add Fixtures For Model', function () {
-        it('should call add for main post fixture', function (done) {
+        it('should call add for main post fixture', async function () {
             const postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve());
             const postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
 
@@ -337,20 +332,17 @@ describe('Migration Fixture Utils', function () {
                 return modelFixture.name === 'Post';
             });
 
-            fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, 11);
-                assert.equal(result.done, 11);
+            const result = await fixtureManager.addFixturesForModel(postFixtures);
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, 11);
+            assert.equal(result.done, 11);
 
-                assert.equal(postOneStub.callCount, 11);
-                assert.equal(postAddStub.callCount, 11);
-
-                done();
-            }).catch(done);
+            sinon.assert.callCount(postOneStub, 11);
+            sinon.assert.callCount(postAddStub, 11);
         });
 
-        it('should call add for main newsletter fixture', function (done) {
+        it('should call add for main newsletter fixture', async function () {
             const newsletterOneStub = sinon.stub(models.Newsletter, 'findOne').returns(Promise.resolve());
             const newsletterAddStub = sinon.stub(models.Newsletter, 'add').returns(Promise.resolve({}));
 
@@ -358,20 +350,17 @@ describe('Migration Fixture Utils', function () {
                 return modelFixture.name === 'Newsletter';
             });
 
-            fixtureManager.addFixturesForModel(newsletterFixtures).then(function (result) {
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, 1);
-                assert.equal(result.done, 1);
+            const result = await fixtureManager.addFixturesForModel(newsletterFixtures);
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, 1);
+            assert.equal(result.done, 1);
 
-                assert.equal(newsletterOneStub.callCount, 1);
-                assert.equal(newsletterAddStub.callCount, 1);
-
-                done();
-            }).catch(done);
+            sinon.assert.calledOnce(newsletterOneStub);
+            sinon.assert.calledOnce(newsletterAddStub);
         });
 
-        it('should not call add for main post fixture if it is already found', function (done) {
+        it('should not call add for main post fixture if it is already found', async function () {
             const postOneStub = sinon.stub(models.Post, 'findOne').returns(Promise.resolve({}));
             const postAddStub = sinon.stub(models.Post, 'add').returns(Promise.resolve({}));
 
@@ -379,22 +368,19 @@ describe('Migration Fixture Utils', function () {
                 return modelFixture.name === 'Post';
             });
 
-            fixtureManager.addFixturesForModel(postFixtures).then(function (result) {
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, 11);
-                assert.equal(result.done, 0);
+            const result = await fixtureManager.addFixturesForModel(postFixtures);
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, 11);
+            assert.equal(result.done, 0);
 
-                assert.equal(postOneStub.callCount, 11);
-                assert.equal(postAddStub.callCount, 0);
-
-                done();
-            }).catch(done);
+            sinon.assert.callCount(postOneStub, 11);
+            sinon.assert.notCalled(postAddStub);
         });
     });
 
     describe('Add Fixtures For Relation', function () {
-        it('should call attach for permissions-roles', function (done) {
+        it('should call attach for permissions-roles', async function () {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
                 find: sinon.stub().returns()
@@ -411,28 +397,25 @@ describe('Migration Fixture Utils', function () {
             const permsAllStub = sinon.stub(models.Permission, 'findAll').returns(Promise.resolve(dataMethodStub));
             const rolesAllStub = sinon.stub(models.Role, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureManager.addFixturesForRelation(fixtures.relations[0]).then(function (result) {
-                const FIXTURE_COUNT = 137;
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, FIXTURE_COUNT);
-                assert.equal(result.done, FIXTURE_COUNT);
+            const result = await fixtureManager.addFixturesForRelation(fixtures.relations[0]);
+            const FIXTURE_COUNT = 143;
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, FIXTURE_COUNT);
+            assert.equal(result.done, FIXTURE_COUNT);
 
-                // Permissions & Roles
-                assert.equal(permsAllStub.calledOnce, true);
-                assert.equal(rolesAllStub.calledOnce, true);
-                assert.equal(dataMethodStub.filter.callCount, FIXTURE_COUNT);
-                assert.equal(dataMethodStub.find.callCount, 10);
-                assert.equal(baseUtilAttachStub.callCount, FIXTURE_COUNT);
+            // Permissions & Roles
+            sinon.assert.calledOnce(permsAllStub);
+            sinon.assert.calledOnce(rolesAllStub);
+            sinon.assert.callCount(dataMethodStub.filter, FIXTURE_COUNT);
+            sinon.assert.callCount(dataMethodStub.find, 10);
+            sinon.assert.callCount(baseUtilAttachStub, FIXTURE_COUNT);
 
-                assert.equal(fromItem.related.callCount, FIXTURE_COUNT);
-                assert.equal(fromItem.find.callCount, FIXTURE_COUNT);
-
-                done();
-            }).catch(done);
+            sinon.assert.callCount(fromItem.related, FIXTURE_COUNT);
+            sinon.assert.callCount(fromItem.find, FIXTURE_COUNT);
         });
 
-        it('should call attach for posts-tags', function (done) {
+        it('should call attach for posts-tags', async function () {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
                 find: sinon.stub().returns()
@@ -449,26 +432,23 @@ describe('Migration Fixture Utils', function () {
             const postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub));
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, 7);
-                assert.equal(result.done, 7);
+            const result = await fixtureManager.addFixturesForRelation(fixtures.relations[1]);
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, 7);
+            assert.equal(result.done, 7);
 
-                // Posts & Tags
-                assert.equal(postsAllStub.calledOnce, true);
-                assert.equal(tagsAllStub.calledOnce, true);
-                assert.equal(dataMethodStub.filter.callCount, 7);
-                assert.equal(dataMethodStub.find.callCount, 7);
-                assert.equal(fromItem.related.callCount, 7);
-                assert.equal(fromItem.find.callCount, 7);
-                assert.equal(baseUtilAttachStub.callCount, 7);
-
-                done();
-            }).catch(done);
+            // Posts & Tags
+            sinon.assert.calledOnce(postsAllStub);
+            sinon.assert.calledOnce(tagsAllStub);
+            sinon.assert.callCount(dataMethodStub.filter, 7);
+            sinon.assert.callCount(dataMethodStub.find, 7);
+            sinon.assert.callCount(fromItem.related, 7);
+            sinon.assert.callCount(fromItem.find, 7);
+            sinon.assert.callCount(baseUtilAttachStub, 7);
         });
 
-        it('will not call attach for posts-tags if already present', function (done) {
+        it('will not call attach for posts-tags if already present', async function () {
             const fromItem = {
                 related: sinon.stub().returnsThis(),
                 find: sinon.stub().returns({}),
@@ -486,26 +466,23 @@ describe('Migration Fixture Utils', function () {
             const postsAllStub = sinon.stub(models.Post, 'findAll').returns(Promise.resolve(dataMethodStub));
             const tagsAllStub = sinon.stub(models.Tag, 'findAll').returns(Promise.resolve(dataMethodStub));
 
-            fixtureManager.addFixturesForRelation(fixtures.relations[1]).then(function (result) {
-                assertExists(result);
-                assert(_.isPlainObject(result));
-                assert.equal(result.expected, 7);
-                assert.equal(result.done, 0);
+            const result = await fixtureManager.addFixturesForRelation(fixtures.relations[1]);
+            assertExists(result);
+            assert(_.isPlainObject(result));
+            assert.equal(result.expected, 7);
+            assert.equal(result.done, 0);
 
-                // Posts & Tags
-                assert.equal(postsAllStub.calledOnce, true);
-                assert.equal(tagsAllStub.calledOnce, true);
-                assert.equal(dataMethodStub.filter.callCount, 7);
-                assert.equal(dataMethodStub.find.callCount, 7);
+            // Posts & Tags
+            sinon.assert.calledOnce(postsAllStub);
+            sinon.assert.calledOnce(tagsAllStub);
+            sinon.assert.callCount(dataMethodStub.filter, 7);
+            sinon.assert.callCount(dataMethodStub.find, 7);
 
-                assert.equal(fromItem.related.callCount, 7);
-                assert.equal(fromItem.find.callCount, 7);
+            sinon.assert.callCount(fromItem.related, 7);
+            sinon.assert.callCount(fromItem.find, 7);
 
-                assert.equal(fromItem.tags.called, false);
-                assert.equal(fromItem.attach.called, false);
-
-                done();
-            }).catch(done);
+            sinon.assert.notCalled(fromItem.tags);
+            sinon.assert.notCalled(fromItem.attach);
         });
     });
 

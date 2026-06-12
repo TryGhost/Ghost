@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const getContextObject = require('../../../../core/frontend/meta/context-object.js');
 const settingsCache = require('../../../../core/shared/settings-cache');
@@ -42,7 +41,7 @@ describe('getContextObject', function () {
     });
 
     describe('override blog', function () {
-        before(function () {
+        beforeAll(function () {
             sinon.stub(settingsCache, 'get').callsFake(function (key) {
                 return {
                     cover_image: 'test.png'
@@ -50,7 +49,7 @@ describe('getContextObject', function () {
             });
         });
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 

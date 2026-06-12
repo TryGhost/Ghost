@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const meta_description = require('../../../../core/frontend/helpers/meta_description');
 const settingsCache = require('../../../../core/shared/settings-cache');
@@ -8,18 +7,18 @@ const settingsCache = require('../../../../core/shared/settings-cache');
 describe('{{meta_description}} helper', function () {
     const localSettingsCache = {};
 
-    before(function () {
+    beforeAll(function () {
         sinon.stub(settingsCache, 'get').callsFake(function (key) {
             return localSettingsCache[key];
         });
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
     describe('no meta_description', function () {
-        before(function () {
+        beforeAll(function () {
             localSettingsCache.description = 'The professional publishing platform';
         });
 
@@ -135,7 +134,7 @@ describe('{{meta_description}} helper', function () {
     });
 
     describe('with meta_description', function () {
-        before(function () {
+        beforeAll(function () {
             localSettingsCache.meta_description = 'Meta description of the professional publishing platform';
         });
 

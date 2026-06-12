@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const _ = require('lodash');
 const foreach = require('../../../../core/frontend/helpers/foreach');
@@ -48,7 +47,7 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            assert.equal(options.fn.called, true);
+            sinon.assert.called(options.fn);
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
@@ -73,7 +72,7 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            assert.equal(options.fn.called, true);
+            sinon.assert.called(options.fn);
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
@@ -99,7 +98,7 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            assert.equal(options.fn.called, true);
+            sinon.assert.called(options.fn);
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
@@ -141,7 +140,7 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            assert.equal(options.fn.called, true);
+            sinon.assert.called(options.fn);
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
@@ -176,7 +175,7 @@ describe('{{#foreach}} helper', function () {
             context = 'hello world this is ghost'.split(' ');
             runTest(_this, context, options);
 
-            assert.equal(options.fn.called, true);
+            sinon.assert.called(options.fn);
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(context, function (value, index) {
@@ -218,7 +217,7 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            assert.equal(options.fn.called, true);
+            sinon.assert.called(options.fn);
             sinon.assert.callCount(options.fn, _.size(context));
 
             _.each(_.keys(context), function (value, index) {
@@ -245,9 +244,9 @@ describe('{{#foreach}} helper', function () {
 
             runTest(_this, context, options);
 
-            assert.equal(options.fn.called, false);
-            assert.equal(options.inverse.called, true);
-            assert.equal(options.inverse.calledOnce, true);
+            sinon.assert.notCalled(options.fn);
+            sinon.assert.called(options.inverse);
+            sinon.assert.calledOnce(options.inverse);
         });
     });
 
@@ -291,7 +290,7 @@ describe('{{#foreach}} helper', function () {
             world: 'world'
         };
 
-        before(function () {
+        beforeAll(function () {
             registerHelper('foreach');
         });
 

@@ -1,16 +1,16 @@
 import * as Sentry from '@sentry/ember';
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import windowProxy from 'ghost-admin/utils/window-proxy';
+import {NotFoundError} from 'ember-ajax/errors';
 import {action} from '@ember/object';
 import {scheduleOnce} from '@ember/runloop';
 
 export default class NewRoute extends AuthenticatedRoute {
-    model(params, transition) {
+    model(params) {
         let {type: modelName} = params;
 
         if (!['post','page'].includes(modelName)) {
-            let path = transition.intent.url.replace(/^\//, '');
-            return this.replaceWith('error404', {path, status: 404});
+            throw new NotFoundError();
         }
 
         return this.store.createRecord(modelName, {authors: [this.session.user]});

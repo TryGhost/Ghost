@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const resolveAdapterOptions = require('../../../../../core/server/services/adapter-manager/options-resolver');
 

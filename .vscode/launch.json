@@ -5,64 +5,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "type": "node",
-            "request": "launch",
-            "name": "Backend",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/.github/scripts/dev.js",
-            "args": [
-                "--ghost"
-            ],
-            "autoAttachChildProcesses": true,
-            "outputCapture": "std",
-            "console": "integratedTerminal",
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Ghost core + Admin",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/.github/scripts/dev.js",
-            "autoAttachChildProcesses": true,
-            "outputCapture": "std",
-            "console": "integratedTerminal",
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Full Dev",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/.github/scripts/dev.js",
-            "args": [
-                "--all"
-            ],
-            "autoAttachChildProcesses": true,
-            "outputCapture": "std",
-            "console": "integratedTerminal",
-        },
-        {
-            "type": "node",
-            "request": "launch",
-            "name": "Full Offline Dev",
-            "skipFiles": [
-                "<node_internals>/**"
-            ],
-            "program": "${workspaceFolder}/.github/scripts/dev.js",
-            "args": [
-                "--all",
-                "--offline"
-            ],
-            "autoAttachChildProcesses": true,
-            "outputCapture": "std",
-            "console": "integratedTerminal",
-        },
-        {
             "args": [
                 "--require",
                 "./test/utils/overrides.js",

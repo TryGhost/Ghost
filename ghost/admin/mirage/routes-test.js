@@ -9,7 +9,6 @@ import mockIntegrations from './config/integrations';
 import mockInvites from './config/invites';
 import mockLabels from './config/labels';
 import mockMembers from './config/members';
-import mockMentions from './config/mentions';
 import mockNewsletters from './config/newsletters';
 import mockOffers from './config/offers';
 import mockPages from './config/pages';
@@ -60,7 +59,6 @@ export default function () {
     mockSnippets(this);
     mockNewsletters(this);
     mockStats(this);
-    mockMentions(this);
 
     /* Notifications -------------------------------------------------------- */
 
@@ -87,12 +85,8 @@ export default function () {
         const url = new URL(request.url, window.location.origin);
         const limit = url.searchParams.get('limit');
 
-        const ALLOWED_LIMIT_ALL = [
-            '/api/admin/members/upload/'
-        ];
-
         // limit=all is completely blocked, we shouldn't have any requests reach the server with this
-        if (limit === 'all' && !ALLOWED_LIMIT_ALL.some(allowed => path.includes(allowed))) {
+        if (limit === 'all') {
             throw new Error(`Blocked mirage request with limit=all: ${verb} ${path}.`);
         }
 

@@ -1,14 +1,9 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const {knex} = require('../../../../core/server/data/db');
 
 describe('Unit: models/integration', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
@@ -34,15 +29,15 @@ describe('Unit: models/integration', function () {
     });
 
     describe('findOne', function () {
-        const mockDb = require('mock-knex');
+        const mockDb = require('../../../utils/mock-knex');
         let tracker;
 
-        before(function () {
+        beforeAll(function () {
             mockDb.mock(knex);
             tracker = mockDb.getTracker();
         });
 
-        after(function () {
+        afterAll(function () {
             mockDb.unmock(knex);
         });
 
@@ -67,33 +62,45 @@ describe('Unit: models/integration', function () {
         });
     });
 
-    describe('getInternalFrontendKey', function () {
-        const mockDb = require('mock-knex');
+    describe('getApiKeyBySlug', function () {
+        const mockDb = require('../../../utils/mock-knex');
         let tracker;
 
-        before(function () {
+        beforeAll(function () {
             mockDb.mock(knex);
             tracker = mockDb.getTracker();
         });
 
-        after(function () {
+        afterAll(function () {
             mockDb.unmock(knex);
         });
 
-        it('generates correct query', function () {
+        it('returns the matching API key as a flat DTO', async function () {
             const queries = [];
             tracker.install();
-
             tracker.on('query', (query) => {
                 queries.push(query);
+                query.response([{id: 'key-admin', secret: 'admin-secret'}]);
+            });
+
+            const apiKey = await models.Integration.getApiKeyBySlug('ghost-scheduler', 'admin');
+            assert.deepEqual(apiKey, {id: 'key-admin', secret: 'admin-secret'});
+            assert.equal(queries.length, 1);
+            assert.equal(queries[0].sql, 'select `api_keys`.`id`, `api_keys`.`secret` from `api_keys` inner join `integrations` on `api_keys`.`integration_id` = `integrations`.`id` where `integrations`.`slug` = ? and `api_keys`.`type` = ? limit ?');
+            assert.deepEqual(queries[0].bindings, ['ghost-scheduler', 'admin', 1]);
+        });
+
+        it('throws NotFoundError when no matching key exists', async function () {
+            tracker.install();
+            tracker.on('query', (query) => {
                 query.response([]);
             });
 
-            return models.Integration.getInternalFrontendKey().then(() => {
-                assert.equal(queries.length, 1);
-                assert.equal(queries[0].sql, 'select `integrations`.* from `integrations` where `integrations`.`slug` = ? limit ?');
-                assert.deepEqual(queries[0].bindings, ['ghost-internal-frontend', 1]);
-            });
+            const errors = require('@tryghost/errors');
+            await assert.rejects(
+                models.Integration.getApiKeyBySlug('ghost-scheduler', 'admin'),
+                err => err instanceof errors.NotFoundError
+            );
         });
     });
 });

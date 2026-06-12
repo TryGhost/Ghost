@@ -1,13 +1,14 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const rewire = require('rewire');
+const {captureLoggerOutput, findByEvent} = require('../../../../../utils/logging-utils');
 
 describe('member-created handler', function () {
     let handler;
     let memberWelcomeEmailServiceStub;
-    let loggingStub;
-    let AutomatedEmailStub;
+    let AutomationStub;
     let AutomatedEmailRecipientStub;
+    let logCapture;
 
     beforeEach(function () {
         handler = rewire('../../../../../../core/server/services/outbox/handlers/member-created.js');
@@ -18,26 +19,30 @@ describe('member-created handler', function () {
             }
         };
 
-        loggingStub = {
-            warn: sinon.stub(),
-            error: sinon.stub()
-        };
-
-        AutomatedEmailStub = {
-            findOne: sinon.stub().resolves({id: 'ae123'})
+        AutomationStub = {
+            findOne: sinon.stub().resolves({
+                id: 'automation123',
+                related: sinon.stub().callsFake((relation) => {
+                    if (relation === 'welcomeEmailAutomatedEmail') {
+                        return {id: 'ae123'};
+                    }
+                })
+            })
         };
 
         AutomatedEmailRecipientStub = {
             add: sinon.stub().resolves()
         };
 
+        logCapture = captureLoggerOutput();
+
         handler.__set__('memberWelcomeEmailService', memberWelcomeEmailServiceStub);
-        handler.__set__('logging', loggingStub);
-        handler.__set__('AutomatedEmail', AutomatedEmailStub);
+        handler.__set__('Automation', AutomationStub);
         handler.__set__('AutomatedEmailRecipient', AutomatedEmailRecipientStub);
     });
 
     afterEach(function () {
+        logCapture.restore();
         sinon.restore();
     });
 
@@ -55,7 +60,6 @@ describe('member-created handler', function () {
         });
 
         sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
-        sinon.assert.calledOnce(loggingStub.error);
     });
 
     it('logs error when tracking fails', async function () {
@@ -72,10 +76,8 @@ describe('member-created handler', function () {
             }
         });
 
-        sinon.assert.calledOnce(loggingStub.error);
-        const errorCall = loggingStub.error.getCall(0);
-        assert.ok(errorCall.args[0].message.includes('Failed to track automated email send'));
-        assert.equal(errorCall.args[0].err, dbError);
+        const errorLog = findByEvent(logCapture.output, 'outbox.member_created.track_send_failed');
+        assert.ok(errorLog);
     });
 
     it('logs warning when status has no slug mapping', async function () {
@@ -90,8 +92,35 @@ describe('member-created handler', function () {
         });
 
         sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
-        sinon.assert.calledOnce(loggingStub.warn);
-        assert.ok(loggingStub.warn.getCall(0).args[0].includes('No automated email slug found'));
+        const warningLog = findByEvent(logCapture.output, 'outbox.member_created.no_slug_mapping');
+        assert.ok(warningLog);
+        assert.deepEqual(warningLog.system, {
+            event: 'outbox.member_created.no_slug_mapping',
+            member_status: 'comped'
+        });
+        sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
+    });
+
+    it('logs warning when no automated email found for slug', async function () {
+        AutomationStub.findOne.resolves(null);
+
+        await handler.handle({
+            payload: {
+                memberId: 'member123',
+                uuid: 'uuid-123',
+                email: 'test@example.com',
+                name: 'Test Member',
+                status: 'free'
+            }
+        });
+
+        sinon.assert.calledOnce(memberWelcomeEmailServiceStub.api.send);
+        const warningLog = findByEvent(logCapture.output, 'outbox.member_created.no_automated_email');
+        assert.ok(warningLog);
+        assert.deepEqual(warningLog.system, {
+            event: 'outbox.member_created.no_automated_email',
+            slug: 'member-welcome-email-free'
+        });
         sinon.assert.notCalled(AutomatedEmailRecipientStub.add);
     });
 });

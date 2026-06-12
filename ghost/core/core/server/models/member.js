@@ -126,10 +126,10 @@ const Member = ghostBookshelf.Model.extend({
                 tableName: 'members_stripe_customers_subscriptions',
                 tableNameAs: 'subscriptions',
                 type: 'manyToMany',
-                joinTable: 'members_stripe_customers',
+                joinTable: 'members_current_subscription',
                 joinFrom: 'member_id',
-                joinTo: 'customer_id',
-                joinToForeign: 'customer_id'
+                joinTo: 'subscription_id',
+                joinToForeign: 'id'
             },
             signups: {
                 tableName: 'members_created_events',
@@ -198,6 +198,26 @@ const Member = ghostBookshelf.Model.extend({
         offers: 'offers'
     },
 
+    applyCustomQuery(options) {
+        if (!options.activeStripeCustomersCount) {
+            return;
+        }
+
+        this.query((qb) => {
+            qb.innerJoin(function () {
+                this
+                    .select('members_stripe_customers.member_id')
+                    .from('members_stripe_customers')
+                    .innerJoin('members_stripe_customers_subscriptions', 'members_stripe_customers_subscriptions.customer_id', 'members_stripe_customers.customer_id')
+                    .where('members_stripe_customers_subscriptions.status', 'active')
+                    .where('members_stripe_customers_subscriptions.cancel_at_period_end', false)
+                    .groupBy('members_stripe_customers.member_id')
+                    .havingRaw('COUNT(DISTINCT members_stripe_customers_subscriptions.customer_id) > 1')
+                    .as('multiple_active_stripe_customers');
+            }, 'multiple_active_stripe_customers.member_id', 'members.id');
+        });
+    },
+
     productEvents() {
         return this.hasMany('MemberProductEvent', 'member_id', 'id')
             .query('orderBy', 'created_at', 'DESC');
@@ -245,6 +265,13 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     stripeSubscriptions() {
+        // Bookshelf belongsToMany positional args:
+        //   1: target model — StripeCustomerSubscription
+        //   2: join table   — members_stripe_customers (one row per customer)
+        //   3: foreignKey   — joinTable.member_id refs the parent (members)
+        //   4: otherKey     — joinTable.customer_id is what target rows match against
+        //   5: parentKey    — column on `members` matched by foreignKey (members.id)
+        //   6: targetKey    — column on `members_stripe_customers_subscriptions` matched by otherKey (mscs.customer_id)
         return this.belongsToMany(
             'StripeCustomerSubscription',
             'members_stripe_customers',
@@ -252,6 +279,24 @@ const Member = ghostBookshelf.Model.extend({
             'customer_id',
             'id',
             'customer_id'
+        );
+    },
+
+    currentSubscription() {
+        // Bookshelf belongsToMany positional args:
+        //   1: target model — StripeCustomerSubscription
+        //   2: join table   — members_current_subscription (1:1 lookup)
+        //   3: foreignKey   — joinTable.member_id refs the parent (members)
+        //   4: otherKey     — joinTable.subscription_id refs the target sub
+        //   5: parentKey    — column on `members` matched by foreignKey (members.id)
+        //   6: targetKey    — column on `members_stripe_customers_subscriptions` matched by otherKey (mscs.id)
+        return this.belongsToMany(
+            'StripeCustomerSubscription',
+            'members_current_subscription',
+            'member_id',
+            'subscription_id',
+            'id',
+            'id'
         );
     },
 
@@ -277,6 +322,17 @@ const Member = ghostBookshelf.Model.extend({
         if (defaultSerializedObject.stripeSubscriptions) {
             defaultSerializedObject.subscriptions = defaultSerializedObject.stripeSubscriptions;
             delete defaultSerializedObject.stripeSubscriptions;
+        }
+
+        // `currentSubscription` is conceptually 1:1 (members_current_subscription
+        // has member_id as its primary key) but bookshelf has no through-table
+        // 1:1 relation type — `belongsToMany` always returns a Collection.
+        // Flatten to a single object (or null) for the wire shape.
+        if (defaultSerializedObject.currentSubscription !== undefined) {
+            defaultSerializedObject.current_subscription = Array.isArray(defaultSerializedObject.currentSubscription)
+                ? (defaultSerializedObject.currentSubscription[0] || null)
+                : defaultSerializedObject.currentSubscription;
+            delete defaultSerializedObject.currentSubscription;
         }
 
         return defaultSerializedObject;
@@ -312,32 +368,29 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     onSaving: function onSaving(model, attr, options) {
-        let labelsToSave = [];
+        const rawLabels = this.get('labels');
 
-        if (_.isUndefined(this.get('labels'))) {
+        if (_.isUndefined(rawLabels)) {
             this.unset('labels');
             return;
         }
 
-        // CASE: detect lowercase/uppercase label slugs
-        if (!_.isUndefined(this.get('labels')) && !_.isNull(this.get('labels'))) {
-            labelsToSave = [];
+        // CASE: trim, drop nameless, and dedupe by case-insensitive name (first wins)
+        const seen = new Set();
+        const labelsToSave = (rawLabels || []).filter((item) => {
+            item.name = item.name && item.name.trim();
+            if (!item.name) {
+                return false;
+            }
+            const key = item.name.toLowerCase();
+            if (seen.has(key)) {
+                return false;
+            }
+            seen.add(key);
+            return true;
+        });
 
-            //  and deduplicate upper/lowercase tags
-            _.each(this.get('labels'), function each(item) {
-                item.name = item.name && item.name.trim();
-                for (let i = 0; i < labelsToSave.length; i = i + 1) {
-                    if (labelsToSave[i].name && item.name && labelsToSave[i].name.toLocaleLowerCase() === item.name.toLocaleLowerCase()) {
-                        return;
-                    }
-                }
-
-                labelsToSave.push(item);
-            });
-
-            this.set('labels', labelsToSave);
-        }
-
+        this.set('labels', labelsToSave);
         this.handleAttachedModels(model);
 
         // CASE: Detect existing labels with same case-insensitive name and replace
@@ -346,12 +399,20 @@ const Member = ghostBookshelf.Model.extend({
                 columns: ['id', 'name']
             }, _.pick(options, 'transacting')))
             .then((labels) => {
+                const existingByName = new Map();
+                for (const lab of labels.models) {
+                    const name = lab.get('name');
+                    if (name) {
+                        existingByName.set(name.toLowerCase(), lab);
+                    }
+                }
+
                 labelsToSave.forEach((label) => {
-                    let existingLabel = labels.find((lab) => {
-                        return label.name.toLowerCase() === lab.get('name').toLowerCase();
-                    });
-                    label.name = (existingLabel && existingLabel.get('name')) || label.name;
-                    label.id = (existingLabel && existingLabel.id) || label.id;
+                    const match = existingByName.get(label.name.toLowerCase());
+                    if (match) {
+                        label.name = match.get('name');
+                        label.id = match.id;
+                    }
                 });
 
                 model.set('labels', labelsToSave);
@@ -448,14 +509,14 @@ const Member = ghostBookshelf.Model.extend({
 }, {
     /**
      * Returns an array of keys permitted in a method's `options` hash, depending on the current method.
-     * @param {String} methodName The name of the method to check valid options for.
+     * @param {string} methodName The name of the method to check valid options for.
      * @return {Array} Keys allowed in the `options` hash of the model's method.
      */
     permittedOptions: function permittedOptions(methodName) {
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
 
         if (['findPage', 'findAll'].includes(methodName)) {
-            options = options.concat(['search']);
+            options = options.concat(['search', 'activeStripeCustomersCount']);
         }
 
         return options;

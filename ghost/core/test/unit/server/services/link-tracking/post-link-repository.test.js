@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 
 const PostLinkRepository = require('../../../../../core/server/services/link-tracking/post-link-repository');
@@ -7,7 +6,7 @@ const PostLinkRepository = require('../../../../../core/server/services/link-tra
 describe('UNIT: PostLinkRepository class', function () {
     let postLinkRepository;
 
-    before(function () {
+    beforeAll(function () {
         postLinkRepository = new PostLinkRepository({
             LinkRedirect: {
                 getFilteredCollectionQuery: sinon.stub().returns({
@@ -24,9 +23,6 @@ describe('UNIT: PostLinkRepository class', function () {
             },
             linkRedirectRepository: {}
         });
-    });
-
-    beforeEach(function () {
     });
 
     afterEach(function () {

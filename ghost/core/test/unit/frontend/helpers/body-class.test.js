@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const themeList = require('../../../../core/server/services/themes/list');
 const sinon = require('sinon');
 
@@ -13,7 +12,7 @@ const {settingsCache} = proxy;
 
 describe('{{body_class}} helper', function () {
     let options = {};
-    before(function () {
+    beforeAll(function () {
         themeList.init({
             casper: {
                 assets: null,
@@ -38,7 +37,7 @@ describe('{{body_class}} helper', function () {
         };
     });
 
-    after(function () {
+    afterAll(function () {
         themeList.init();
     });
 

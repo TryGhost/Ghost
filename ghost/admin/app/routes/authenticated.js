@@ -4,16 +4,20 @@ import windowProxy from 'ghost-admin/utils/window-proxy';
 import {inject as service} from '@ember/service';
 
 export default class AuthenticatedRoute extends Route {
-    @service feature;
     @service session;
 
     async beforeModel(transition) {
-        if (this.feature.inAdminForward) {
-            this.session.requireAuthentication(transition, () => {
-                windowProxy.replaceLocation(AuthConfiguration.rootURL);
-            });
+        if (!this.session.isAuthenticated) {
+            const url = transition.intent?.url;
+            if (url) {
+                window.sessionStorage.setItem('ghost-signin-redirect', url);
+            }
         } else {
-            this.session.requireAuthentication(transition, 'signin');
+            window.sessionStorage.removeItem('ghost-signin-redirect');
         }
+
+        this.session.requireAuthentication(transition, () => {
+            windowProxy.replaceLocation(AuthConfiguration.rootURL);
+        });
     }
 }

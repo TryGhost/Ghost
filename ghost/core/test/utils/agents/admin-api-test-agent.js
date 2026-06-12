@@ -48,8 +48,8 @@ const createValidAPIToken = (apiKeyId, apiKeySecret) => {
  * @constructor
  * @param {Object} app  Ghost express app instance
  * @param {Object} options
- * @param {String} options.apiURL
- * @param {String} options.originURL
+ * @param {string} options.apiURL
+ * @param {string} options.originURL
  */
 class AdminAPITestAgent extends TestAgent {
     constructor(app, options) {
@@ -112,8 +112,8 @@ class AdminAPITestAgent extends TestAgent {
 
     /**
      * Use
-     * @param {String} apiKeyId
-     * @param {String} apiKeySecret
+     * @param {string} apiKeyId
+     * @param {string} apiKeySecret
      */
     async useToken(apiKeyId, apiKeySecret) {
         this.resetAuthentication();
@@ -129,7 +129,7 @@ class AdminAPITestAgent extends TestAgent {
 
     /**
      * Gets a staff token for the specified role and sets it as the Authorization header
-     * @param {String} role - The role to get a token for (owner, admin, editor, etc.)
+     * @param {string} role - The role to get a token for (owner, admin, editor, etc.)
      * @returns {Promise<void>}
      */
     async useStaffTokenFor(role) {

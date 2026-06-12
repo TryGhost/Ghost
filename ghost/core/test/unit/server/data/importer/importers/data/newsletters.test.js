@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const NewslettersImporter = require('../../../../../../../core/server/data/importer/importers/data/newsletters-importer');
 
 const fakeNewsletters = [{

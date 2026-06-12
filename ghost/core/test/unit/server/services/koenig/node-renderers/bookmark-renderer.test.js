@@ -176,12 +176,27 @@ describe('services/koenig/node-renderers/bookmark-renderer', function () {
 
             // Check that text fields are escaped
             assert.ok(result.html.includes('Ghost: Independent technology &lt;script&gt;alert("XSS")&lt;/script&gt; for modern publishing.'));
-            assert.ok(result.html.includes('doing &amp;quot;kewl&amp;quot; stuff'));
+            assert.ok(result.html.includes('doing &quot;kewl&quot; stuff'));
             assert.ok(result.html.includes('fa\'ker'));
             assert.ok(result.html.includes('Fake &lt;script&gt;alert("XSS")&lt;/script&gt;'));
 
             // Check that caption is not escaped
             assert.ok(result.html.includes('<p dir="ltr"><span style="white-space: pre-wrap;">This is a </span><b><strong style="white-space: pre-wrap;">caption</strong></b></p>'));
+        });
+
+        it('decodes pre-encoded entities before escaping', function () {
+            const result = renderForEmail(getTestData({
+                title: 'Q&amp;A with Bernardo Kastrup',
+                description: '13th Jan Q&amp;A with Bernardo Kastrup',
+                publisher: 'Research &amp; Development'
+            }));
+
+            assert.ok(result.html.includes('Q&amp;A with Bernardo Kastrup'));
+            assert.ok(!result.html.includes('Q&amp;amp;A with Bernardo Kastrup'));
+            assert.ok(result.html.includes('13th Jan Q&amp;A with Bernardo Kastrup'));
+            assert.ok(!result.html.includes('13th Jan Q&amp;amp;A with Bernardo Kastrup'));
+            assert.ok(result.html.includes('Research &amp; Development'));
+            assert.ok(!result.html.includes('Research &amp;amp; Development'));
         });
     });
 });

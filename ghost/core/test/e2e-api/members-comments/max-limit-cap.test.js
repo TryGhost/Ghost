@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
-const should = require('should');
 const sinon = require('sinon');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sharedMiddleware = require('../../../core/server/web/shared/middleware');
@@ -44,7 +43,7 @@ describe('Comments API - Max Limit Cap', function () {
             .expectStatus(200);
 
         // Verify the middleware was called
-        assert.equal(middlewareSpy.called, true);
+        sinon.assert.called(middlewareSpy);
 
         // Verify it modified the req.query param by reference
         const req = middlewareSpy.firstCall.args[0];

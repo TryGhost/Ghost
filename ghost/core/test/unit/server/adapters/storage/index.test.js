@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const fs = require('fs-extra');
 const StorageBase = require('ghost-storage-base');
 const configUtils = require('../../../../utils/config-utils');
@@ -11,7 +10,7 @@ const storagePath = configUtils.config.getContentPath('adapters') + 'storage/';
 describe('storage: index_spec', function () {
     const scope = {adapter: null};
 
-    before(function () {
+    beforeAll(function () {
         if (!fs.existsSync(storagePath)) {
             fs.mkdirSync(storagePath);
         }
@@ -69,11 +68,9 @@ describe('storage: index_spec', function () {
         configUtils.set({
             storage: {
                 active: 'broken-storage'
-            },
-            paths: {
-                storage: __dirname + '/broken-storage.js'
             }
         });
+        configUtils.set('paths:storage', __dirname + '/broken-storage.js');
 
         const jsFile = '' +
             '\'use strict\';' +

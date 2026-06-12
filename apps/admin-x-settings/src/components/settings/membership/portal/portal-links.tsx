@@ -2,6 +2,7 @@ import React, {useEffect, useId, useState} from 'react';
 import {Button, List, ListItem, ModalPage, Select, TextField} from '@tryghost/admin-x-design-system';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getPaidActiveTiers, useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
+import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../../providers/global-data-provider';
 
 interface PortalLinkPrefs {
@@ -26,7 +27,7 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
         >
             <div className='flex w-full grow flex-col py-3 lg:flex-row lg:items-center lg:gap-5'>
                 <label className='inline-block whitespace-nowrap lg:w-[180px] lg:min-w-[180px]' htmlFor={id}>{name}:</label>
-                <TextField className='border-b-500 grow bg-transparent py-1 text-grey-700 lg:p-1' id={id} value={value} disabled unstyled />
+                <TextField className='grow border-b-grey-500 bg-transparent py-1 text-grey-700 lg:p-1' id={id} value={value} disabled unstyled />
             </div>
         </ListItem>
     );
@@ -35,9 +36,10 @@ const PortalLink: React.FC<PortalLinkPrefs> = ({name, value}) => {
 const PortalLinks: React.FC = () => {
     const [isDataAttributes, setIsDataAttributes] = useState(false);
     const [selectedTier, setSelectedTier] = useState('');
-    const {siteData} = useGlobalData();
+    const {siteData, settings} = useGlobalData();
     const {data: {tiers: allTiers} = {}} = useBrowseTiers();
     const tiers = getPaidActiveTiers(allTiers || []);
+    const [paidMembersEnabled] = getSettingValues(settings, ['paid_members_enabled']) as [boolean];
 
     const toggleIsDataAttributes = () => {
         setIsDataAttributes(!isDataAttributes);
@@ -66,6 +68,7 @@ const PortalLinks: React.FC = () => {
                 <PortalLink name='Default' value={isDataAttributes ? 'data-portal' : `${homePageURL}#/portal`} />
                 <PortalLink name='Sign in' value={isDataAttributes ? 'data-portal="signin"' : `${homePageURL}#/portal/signin`} />
                 <PortalLink name='Sign up' value={isDataAttributes ? 'data-portal="signup"' : `${homePageURL}#/portal/signup`} />
+                {paidMembersEnabled && <PortalLink name='Gift subscriptions' value={isDataAttributes ? 'data-portal="gift"' : `${homePageURL}#/portal/gift`} />}
             </List>
 
             <List className='mt-14' title='Tiers' titleSize='lg'>

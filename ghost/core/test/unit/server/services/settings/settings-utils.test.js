@@ -1,8 +1,41 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const should = require('should');
 
 describe('Unit: services/settings/settings-utils', function () {
+    describe('isSecretSetting', function () {
+        const {isSecretSetting} = require('../../../../../core/server/services/settings/settings-utils');
+
+        it('identifies settings containing "secret" as secret', function () {
+            assert.equal(isSecretSetting({key: 'admin_secret'}), true);
+            assert.equal(isSecretSetting({key: 'stripe_secret_key'}), true);
+        });
+
+        it('identifies settings containing "api_key" as secret', function () {
+            assert.equal(isSecretSetting({key: 'ghost_admin_api_key'}), true);
+            assert.equal(isSecretSetting({key: 'content_api_key'}), true);
+        });
+
+        it('does not flag non-secret settings', function () {
+            assert.equal(isSecretSetting({key: 'title'}), false);
+            assert.equal(isSecretSetting({key: 'description'}), false);
+            assert.equal(isSecretSetting({key: 'navigation'}), false);
+        });
+    });
+
+    describe('hideValueIfSecret', function () {
+        const {hideValueIfSecret, obfuscatedSetting} = require('../../../../../core/server/services/settings/settings-utils');
+
+        it('obfuscates the value of secret settings', function () {
+            const result = hideValueIfSecret({key: 'admin_api_key', value: 'real-key-value'});
+            assert.equal(result.value, obfuscatedSetting);
+        });
+
+        it('does not obfuscate non-secret settings', function () {
+            const result = hideValueIfSecret({key: 'title', value: 'My Blog'});
+            assert.equal(result.value, 'My Blog');
+        });
+    });
+
     describe('getOrGenerateSiteUuid', function () {
         const config = require('../../../../../core/shared/config');
         const logging = require('@tryghost/logging');
@@ -31,8 +64,8 @@ describe('Unit: services/settings/settings-utils', function () {
             const result = getOrGenerateSiteUuid();
 
             assert.equal(result, testUuid.toLowerCase());
-            assert.equal(configGetStub.calledOnce, true);
-            assert.equal(loggingInfoStub.calledOnce, true);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config value is not a valid UUID', function () {
@@ -42,8 +75,8 @@ describe('Unit: services/settings/settings-utils', function () {
 
             // Should be a valid UUID v4
             assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            assert.equal(configGetStub.calledOnce, true);
-            assert.equal(loggingInfoStub.calledOnce, true);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config value is null', function () {
@@ -53,8 +86,8 @@ describe('Unit: services/settings/settings-utils', function () {
 
             // Should be a valid UUID v4
             assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            assert.equal(configGetStub.calledOnce, true);
-            assert.equal(loggingInfoStub.calledOnce, true);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config value is undefined', function () {
@@ -64,8 +97,8 @@ describe('Unit: services/settings/settings-utils', function () {
 
             // Should be a valid UUID v4
             assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            assert.equal(configGetStub.calledOnce, true);
-            assert.equal(loggingInfoStub.calledOnce, true);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingInfoStub);
         });
 
         it('generates new UUID when config throws an error', function () {
@@ -76,8 +109,8 @@ describe('Unit: services/settings/settings-utils', function () {
 
             // Should be a valid UUID v4
             assert.match(result, /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/);
-            assert.equal(configGetStub.calledOnce, true);
-            assert.equal(loggingErrorStub.calledOnce, true);
+            sinon.assert.calledOnce(configGetStub);
+            sinon.assert.calledOnce(loggingErrorStub);
         });
 
         it('converts uppercase UUID to lowercase', function () {
@@ -110,7 +143,7 @@ describe('Unit: services/settings/settings-utils', function () {
             assert.equal(result1, result2);
             assert.equal(result1, testUuid.toLowerCase());
             // Config should only be called once due to caching
-            assert.equal(configGetStub.calledOnce, true);
+            sinon.assert.calledOnce(configGetStub);
         });
     });
 });

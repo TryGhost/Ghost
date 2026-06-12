@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const urlService = require('../../../../core/server/services/url');
@@ -8,10 +7,10 @@ const getAuthorUrl = require('../../../../core/frontend/meta/author-url');
 
 describe('getAuthorUrl', function () {
     /** @type {import('sinon').SinonStub} */
-    let urlServiceGetUrlByResourceIdStub;
+    let urlServiceGetUrlForResourceStub;
 
     beforeEach(function () {
-        urlServiceGetUrlByResourceIdStub = sinon.stub(urlService, 'getUrlByResourceId');
+        urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
     });
 
     afterEach(function () {
@@ -26,7 +25,7 @@ describe('getAuthorUrl', function () {
             }
         };
 
-        urlServiceGetUrlByResourceIdStub.withArgs(post.primary_author.id, {absolute: undefined, withSubdirectory: true})
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: post.primary_author.id, type: 'authors'}), {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
         assertExists(getAuthorUrl({
@@ -43,7 +42,7 @@ describe('getAuthorUrl', function () {
             }
         };
 
-        urlServiceGetUrlByResourceIdStub.withArgs(post.primary_author.id, {absolute: true, withSubdirectory: true})
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: post.primary_author.id, type: 'authors'}), {absolute: true, withSubdirectory: true})
             .returns('absolute author url');
 
         assertExists(getAuthorUrl({
@@ -58,7 +57,7 @@ describe('getAuthorUrl', function () {
             slug: 'test-author'
         };
 
-        urlServiceGetUrlByResourceIdStub.withArgs(author.id, {absolute: undefined, withSubdirectory: true})
+        urlServiceGetUrlForResourceStub.withArgs(sinon.match({id: author.id, type: 'authors'}), {absolute: undefined, withSubdirectory: true})
             .returns('author url');
 
         assertExists(getAuthorUrl({

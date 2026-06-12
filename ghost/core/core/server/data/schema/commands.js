@@ -330,8 +330,8 @@ async function hasForeignSQLite({fromTable, fromColumn, toTable, toColumn, trans
  * @param {string} configuration.toTable - name of the table to point the foreign key to
  * @param {string} configuration.toColumn - column of the table to point the foreign key to
  * @param {string} [configuration.constraintName] - name of the FK to create
- * @param {Boolean} [configuration.cascadeDelete] - adds the "on delete cascade" option if true
- * @param {Boolean} [configuration.setNullDelete] - adds the "on delete SET NULL" option if true
+ * @param {boolean} [configuration.cascadeDelete] - adds the "on delete cascade" option if true
+ * @param {boolean} [configuration.setNullDelete] - adds the "on delete SET NULL" option if true
  * @param {import('knex').Knex} [configuration.transaction] - connection object containing knex reference
  */
 async function addForeign({fromTable, fromColumn, toTable, toColumn, constraintName, cascadeDelete = false, setNullDelete = false, transaction = db.knex}) {
@@ -487,7 +487,7 @@ async function addPrimaryKey(tableName, columns, transaction = db.knex) {
  * NOTE: this function does NOT check if the table already exists - use the migration
  * utils if you want that
  *
- * @param {String} table - name of the table to create
+ * @param {string} table - name of the table to create
  * @param {import('knex').Knex} [transaction] - connection to the DB
  * @param {Object} [tableSpec] - table schema to generate table with
  */
@@ -524,8 +524,8 @@ async function getTables(transaction = db.knex) {
         const response = await transaction.raw('select * from sqlite_master where type = "table"');
         return _.reject(_.map(response, 'tbl_name'), name => name === 'sqlite_sequence');
     } else if (client === 'mysql2') {
-        const response = await transaction.raw('show tables');
-        return _.flatten(_.map(response[0], entry => _.values(entry)));
+        const response = await transaction.raw('show full tables where Table_type = \'BASE TABLE\'');
+        return _.map(response[0], entry => _.values(entry)[0]);
     }
 
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));

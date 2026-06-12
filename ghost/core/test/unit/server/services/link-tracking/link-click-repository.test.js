@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const ObjectID = require('bson-objectid').default;
 const configUtils = require('../../../../utils/config-utils');

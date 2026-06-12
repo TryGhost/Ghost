@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const OfferTitle = require('../../../../../../../core/server/services/offers/domain/models/offer-title');
 

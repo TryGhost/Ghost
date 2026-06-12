@@ -2,24 +2,23 @@ import {
     CommentFactory,
     MemberFactory,
     PostFactory,
+    TierFactory,
     createFactories
 } from '@/data-factory';
 import {PostPage} from '@/public-pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {TiersService} from '@/helpers/services/tiers/tiers-service';
 import {expect, signInAsMember, test} from '@/helpers/playwright';
 
 test.describe('Ghost Public - Comments - Replies', () => {
     let commentFactory: CommentFactory;
     let postFactory: PostFactory;
     let memberFactory: MemberFactory;
+    let tierFactory: TierFactory;
     let settingsService: SettingsService;
-    let tiersService: TiersService;
 
     test.beforeEach(async ({page}) => {
-        ({postFactory, memberFactory, commentFactory} = createFactories(page.request));
+        ({postFactory, memberFactory, commentFactory, tierFactory} = createFactories(page.request));
         settingsService = new SettingsService(page.request);
-        tiersService = new TiersService(page.request);
     });
 
     test.beforeEach(async () => {
@@ -29,7 +28,7 @@ test.describe('Ghost Public - Comments - Replies', () => {
     test('reply to top comment', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
         const member = await memberFactory.create({status: 'free'});
-        const paidTier = await tiersService.getFirstPaidTier();
+        const paidTier = await tierFactory.getFirstPaidTier();
         const paidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
 
         const comment = await commentFactory.create({
@@ -62,11 +61,10 @@ test.describe('Ghost Public - Comments - Replies', () => {
         await expect(postCommentsSection.comments.last()).toContainText('Reply to main comment 2');
     });
 
-    test('reply to reply comment', async ({page}) => {
-        test.skip(true, 'Race condition fix in #26247');
+    test('reply to reply comment in threaded layout', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
         const member = await memberFactory.create({status: 'free'});
-        const paidTier = await tiersService.getFirstPaidTier();
+        const paidTier = await tierFactory.getFirstPaidTier();
         const paidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
 
         const comment = await commentFactory.create({
@@ -95,10 +93,9 @@ test.describe('Ghost Public - Comments - Replies', () => {
         await expect(postCommentsSection.comments).toHaveCount(3);
         await expect(postCommentsSection.comments.first()).toContainText('Main comment');
         await expect(postCommentsSection.comments.last()).toContainText('My reply');
-        await expect(postCommentsSection.comments.last()).toContainText('Replied to: Reply to main comment');
     });
 
-    test('show replies and load more replies', async ({page}) => {
+    test('show replies in threaded layout', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
         const member = await memberFactory.create({status: 'free'});
 
@@ -124,13 +121,7 @@ test.describe('Ghost Public - Comments - Replies', () => {
         await postPage.waitForCommentsToLoad();
         const postCommentsSection = postPage.commentsSection;
 
-        await expect(postCommentsSection.comments).toHaveCount(4);
-        await expect(postCommentsSection.comments.last()).toContainText('reply 3 to comment 1');
-        await expect(postCommentsSection.showMoreRepliesButton).toBeVisible();
-        await expect(postCommentsSection.showMoreRepliesButton).toContainText('Show 2 more replies');
-
-        await postCommentsSection.showMoreRepliesButton.click();
-        await expect(postCommentsSection.comments.last()).toContainText('reply 5 to comment 1');
         await expect(postCommentsSection.comments).toHaveCount(6);
+        await expect(postCommentsSection.comments.last()).toContainText('reply 5 to comment 1');
     });
 });

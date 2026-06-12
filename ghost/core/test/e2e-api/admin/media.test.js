@@ -1,12 +1,13 @@
 const assert = require('node:assert/strict');
+const {Blob} = require('node:buffer');
 const path = require('path');
 const fs = require('fs-extra');
-const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
 const logging = require('@tryghost/logging');
+const storage = require('../../../core/server/adapters/storage');
 
 describe('Media API', function () {
     // NOTE: holds paths to media that need to be cleaned up after the tests are run
@@ -77,6 +78,21 @@ describe('Media API', function () {
             media.push(new URL(res.body.media[0].url).pathname);
         });
 
+        it('Can upload an Ogg audio with application/ogg content type', async function () {
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .field('ref', 'https://ghost.org/sample.ogg')
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.ogg'), {filename: 'sample.ogg', contentType: 'application/ogg'})
+                .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
+                .expect(201);
+
+            assert.match(new URL(res.body.media[0].url).pathname, /\/content\/media\/\d+\/\d+\/sample\.ogg/);
+            assert.equal(res.body.media[0].ref, 'https://ghost.org/sample.ogg');
+
+            media.push(new URL(res.body.media[0].url).pathname);
+        });
+
         it('Can upload an mp3', async function () {
             const res = await request.post(localUtils.API.getApiQuery('media/upload'))
                 .set('Origin', config.get('url'))
@@ -119,6 +135,45 @@ describe('Media API', function () {
             media.push(new URL(res.body.media[0].url).pathname);
         });
 
+        it('Passes the content type to the storage adapter when uploading an MP4', async function () {
+            const store = storage.getStorage('media');
+            const saveSpy = sinon.spy(store, 'save');
+
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample_640x360.mp4'))
+                .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
+                .expect(201);
+
+            media.push(new URL(res.body.media[0].url).pathname);
+            media.push(new URL(res.body.media[0].thumbnail_url).pathname);
+
+            // save() is called twice: first for the thumbnail, then for the media file
+            assert.equal(saveSpy.callCount, 2, 'save() should have been called twice (thumbnail + media)');
+            const thumbnailArg = saveSpy.firstCall.args[0];
+            assert.equal(thumbnailArg.type, 'image/png', 'save() should receive the correct content type for the thumbnail');
+            const mediaArg = saveSpy.secondCall.args[0];
+            assert.equal(mediaArg.type, 'video/mp4', 'save() should receive the correct content type for the media file');
+        });
+
+        it('Passes the content type to the storage adapter when uploading an MP3', async function () {
+            const store = storage.getStorage('media');
+            const saveSpy = sinon.spy(store, 'save');
+
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.mp3'))
+                .expect(201);
+
+            media.push(new URL(res.body.media[0].url).pathname);
+
+            assert.ok(saveSpy.calledOnce, 'save() should have been called once');
+            const fileArg = saveSpy.firstCall.args[0];
+            assert.equal(fileArg.type, 'audio/mpeg', 'save() should receive the correct content type for audio files');
+        });
+
         it('Rejects non-media file type', async function () {
             const loggingStub = sinon.stub(logging, 'error');
             const res = await request.post(localUtils.API.getApiQuery('media/upload'))
@@ -137,10 +192,9 @@ describe('Media API', function () {
 
             // Note: still using png mime type here but it doesn't matter because we're sending an invalid
             // request body anyway
-            const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+            const blob = new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==', 'base64')], {type: 'image/png'});
             const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n\r\n';
 
-            // eslint-disable-next-line no-undef
             const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
                 type: 'multipart/form-data; boundary=boundary'
             })).text();
@@ -159,12 +213,11 @@ describe('Media API', function () {
 
             // Note: still using png mime type here but it doesn't matter because we're sending an invalid
             // request body anyway
-            const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+            const blob = new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==', 'base64')], {type: 'image/png'});
 
             // Note: this differs from above test by not including the boundary at the end of the payload
             const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n';
 
-            // eslint-disable-next-line no-undef
             const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
                 type: 'multipart/form-data; boundary=boundary'
             })).text();

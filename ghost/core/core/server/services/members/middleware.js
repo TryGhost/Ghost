@@ -44,8 +44,9 @@ const setAccessCookies = function setAccessCookies(member, req, res, freeTier) {
             return;
         }
         // If there are cookies sent with the request, set them to null and expire them immediately
-        const accessCookie = `ghost-access=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
-        const hmacCookie = `ghost-access-hmac=null; Max-Age=0; Path=/; HttpOnly; SameSite=Strict;`;
+        const cookiePath = urlUtils.getSubdir() || '/';
+        const accessCookie = `ghost-access=null; Max-Age=0; Path=${cookiePath}; HttpOnly; SameSite=Strict;`;
+        const hmacCookie = `ghost-access-hmac=null; Max-Age=0; Path=${cookiePath}; HttpOnly; SameSite=Strict;`;
         const existingCookies = res.getHeader('Set-Cookie') || [];
         const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
 
@@ -68,8 +69,9 @@ const setAccessCookies = function setAccessCookies(member, req, res, freeTier) {
     const memberTierHmac = crypto.createHmac('sha256', hmacSecretBuffer).update(memberTierAndTimestamp).digest('hex');
 
     const maxAge = 3600;
-    const accessCookie = `ghost-access=${memberTierAndTimestamp}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
-    const hmacCookie = `ghost-access-hmac=${memberTierHmac}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Strict;`;
+    const cookiePath = urlUtils.getSubdir() || '/';
+    const accessCookie = `ghost-access=${memberTierAndTimestamp}; Max-Age=${maxAge}; Path=${cookiePath}; HttpOnly; SameSite=Strict;`;
+    const hmacCookie = `ghost-access-hmac=${memberTierHmac}; Max-Age=${maxAge}; Path=${cookiePath}; HttpOnly; SameSite=Strict;`;
 
     const existingCookies = res.getHeader('Set-Cookie') || [];
     const cookiesToSet = [accessCookie, hmacCookie].concat(existingCookies);
@@ -96,6 +98,22 @@ const loadMemberSession = async function loadMemberSession(req, res, next) {
         Object.assign(req, {member: null});
         next();
     }
+};
+
+const getRedirectUrl = function getRedirectUrl({action, referrer, searchParams, success}) {
+    const redirectUrl = new URL(referrer);
+
+    searchParams.forEach((value, key) => {
+        redirectUrl.searchParams.set(key, value);
+    });
+    redirectUrl.searchParams.set('success', String(success));
+
+    if (action === 'signin') {
+        // Not sure if we can delete this, this is a legacy param
+        redirectUrl.searchParams.set('action', 'signin');
+    }
+
+    return redirectUrl.href;
 };
 
 /**
@@ -149,6 +167,17 @@ const authMemberByUuid = async function authMemberByUuid(req, res, next) {
 const getIdentityToken = async function getIdentityToken(req, res) {
     try {
         const token = await membersService.ssr.getIdentityTokenForMemberFromSession(req, res);
+        res.writeHead(200);
+        res.end(token);
+    } catch (err) {
+        res.writeHead(204);
+        res.end();
+    }
+};
+
+const getEntitlementToken = async function getEntitlementToken(req, res) {
+    try {
+        const token = await membersService.ssr.getEntitlementTokenForMemberFromSession(req, res);
         res.writeHead(200);
         res.end(token);
     } catch (err) {
@@ -391,24 +420,11 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
             }
         }
 
-        // If a custom referrer/redirect was passed, redirect the user to that URL
         const referrer = req.query.r;
         const siteUrl = urlUtils.getSiteUrl();
-
         if (referrer && referrer.startsWith(siteUrl)) {
-            const redirectUrl = new URL(referrer);
-
-            // Copy search params
-            searchParams.forEach((value, key) => {
-                redirectUrl.searchParams.set(key, value);
-            });
-            redirectUrl.searchParams.set('success', 'true');
-
-            if (action === 'signin') {
-                // Not sure if we can delete this, this is a legacy param
-                redirectUrl.searchParams.set('action', 'signin');
-            }
-            return res.redirect(redirectUrl.href);
+            const redirectUrl = getRedirectUrl({action, referrer, searchParams, success: true});
+            return res.redirect(redirectUrl);
         }
 
         // Do a standard 302 redirect to the homepage, with success=true
@@ -416,6 +432,22 @@ const createSessionFromMagicLink = async function createSessionFromMagicLink(req
         res.redirect(`${urlUtils.getSubdir()}/?${searchParams.toString()}`);
     } catch (err) {
         logging.warn(err.message);
+
+        if (err.code && typeof err.code === 'string') {
+            searchParams.set('errorCode', err.code);
+        }
+
+        const referrer = req.query.r;
+        const siteUrl = urlUtils.getSiteUrl();
+        if (referrer && referrer.startsWith(siteUrl)) {
+            const redirectUrl = getRedirectUrl({
+                action: req.query.action,
+                referrer,
+                searchParams,
+                success: false
+            });
+            return res.redirect(redirectUrl);
+        }
 
         // Do a standard 302 redirect to the homepage, with success=false
         searchParams.set('success', false);
@@ -429,6 +461,7 @@ module.exports = {
     authMemberByUuid,
     createSessionFromMagicLink,
     getIdentityToken,
+    getEntitlementToken,
     getMemberNewsletters,
     getMemberData,
     updateMemberData,

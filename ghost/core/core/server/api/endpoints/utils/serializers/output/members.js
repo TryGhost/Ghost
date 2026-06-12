@@ -5,6 +5,7 @@ const {unparse} = require('@tryghost/members-csv');
 const mappers = require('./mappers');
 const {Transform} = require('stream');
 const papaparse = require('papaparse');
+const {createCSVStreamResponse} = require('./stream-csv-response');
 module.exports = {
     browse: createSerializer('browse', paginatedMembers),
     read: createSerializer('read', singleMember),
@@ -36,7 +37,8 @@ const CSV_HEADERS = [
     'created_at',
     'deleted_at',
     'labels',
-    'tiers'
+    'tiers',
+    'gift_id'
 ];
 
 /**
@@ -62,7 +64,11 @@ function formatMemberForCSV(member) {
     // Convert boolean 'false' to empty string for tests to pass
     // Only comped = true should result in 'true', otherwise empty string
     const complimentaryPlan = member.comped === true ? 'true' : '';
-    
+
+    // Gift members carry the gift id so an exported CSV can be re-imported and reassigned
+    // back to a (possibly new) member record via the gifts table
+    const giftId = member.gift_id || '';
+
     // Convert subscribed boolean to string representation
     const subscribedToEmails = member.subscribed === true ? 'true' : 'false';
 
@@ -77,7 +83,8 @@ function formatMemberForCSV(member) {
         created_at: member.created_at,
         deleted_at: member.deleted_at || null,
         labels: labels,
-        tiers: tiers
+        tiers: tiers,
+        gift_id: giftId
     };
 }
 
@@ -178,6 +185,7 @@ function serializeMember(member, options) {
         status: json.status,
         last_seen_at: json.last_seen_at,
         attribution: serializeAttribution(json.attribution),
+        enable_comment_notifications: json.enable_comment_notifications,
         unsubscribe_url: json.unsubscribe_url,
         can_comment: json.can_comment,
         commenting: json.commenting
@@ -186,6 +194,8 @@ function serializeMember(member, options) {
     if (json.products) {
         serialized.tiers = json.products;
     }
+
+    serialized.current_subscription = json.current_subscription || null;
 
     // Rename subscriptions.price.product to subscriptions.price.tier
     for (const subscription of serialized.subscriptions) {
@@ -264,7 +274,8 @@ function createSerializer(debugString, serialize) {
  * @prop {number} email_opened_count
  * @prop {number} email_open_rate
  * @prop {null|SerializedEmailRecipient[]} email_recipients
- * @prop {'free'|'paid'|'comped'} status
+ * @prop {boolean} enable_comment_notifications
+ * @prop {'free'|'paid'|'comped'|'gift'} status
  * @prop {boolean} can_comment
  * @prop {null|{disabled: boolean, disabled_reason: string, disabled_until: string|null}} commenting
  */
@@ -456,37 +467,28 @@ function createCSVTransform() {
 /**
  * @template PageMeta
  *
- * @param {{data: any[]|Object}} data
+ * @param {{data: any[]|Object, filename?: string}} data
  *
  * @returns {string|Function} - A CSV string or response handler function
  */
 function exportCSV(data) {
     debug('exportCSV');
-    
+
     // Check if data.data is a stream (has the pipe method)
     if (data.data && typeof data.data.pipe === 'function') {
-        // Return a function that will handle the response
-        return function streamResponse(req, res, next) {
-            debug('CSV stream response');
-            
-            // Create transform to convert objects to CSV
-            const csvTransform = createCSVTransform();
-            
-            // Handle stream errors
-            data.data.on('error', (err) => {
-                next(err);
-            });
-            
-            // Set required headers for CSV downloads
-            const datetime = (new Date()).toJSON().substring(0, 10);
-            res.setHeader('Content-Type', 'text/csv; charset=utf-8');
-            res.setHeader('Content-Disposition', `attachment; filename="members.${datetime}.csv"`);
-            
-            // Pipe the data through the transform and to the response
-            data.data.pipe(csvTransform).pipe(res);
-        };
+        debug('CSV stream response');
+
+        // Fall back to the legacy filename if the endpoint didn't provide one
+        const datetime = (new Date()).toJSON().substring(0, 10);
+        const filename = data.filename || `members.${datetime}.csv`;
+
+        return createCSVStreamResponse({
+            source: data.data,
+            transform: createCSVTransform(),
+            filename
+        });
     }
-    
+
     // Otherwise use the unparse function for array data
     return unparse(data.data);
 }

@@ -1,4 +1,4 @@
-import {ReactComponent as LeftArrowIcon} from '../../images/icons/arrow-left.svg';
+import LeftArrowIcon from '../../images/icons/arrow-left.svg?react';
 import {t} from '../../utils/i18n';
 
 export const BackButtonStyles = `

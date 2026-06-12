@@ -103,8 +103,19 @@ mochaHooks.afterEach = async function () {
 
     clearTimeout(timeout);
 
-    if (originalAfterEach) {
-        await originalAfterEach();
+    try {
+        if (originalAfterEach) {
+            await originalAfterEach();
+        }
+    } finally {
+        // Re-apply network disabling after each test. Individual test afterEach hooks
+        // often call sinon.restore() which removes the DNS stubs set up by
+        // disableNetwork() in beforeAll. Without re-applying, subsequent tests make
+        // real DNS lookups on nocked domains which can be slow on CI, causing flaky
+        // timeouts (e.g. ExternalMediaInliner CDN storage adapter tests).
+        // Wrapped in finally so DNS stubs are restored even if a previous afterEach
+        // hook throws.
+        mockManager.disableNetwork();
     }
 };
 

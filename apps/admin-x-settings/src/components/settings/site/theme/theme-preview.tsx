@@ -93,8 +93,7 @@ const ThemePreview: React.FC<{
                     <span className='hidden md:!visible md:!block'>–</span>
                     <Select
                         border={false}
-                        containerClassName='text-sm font-bold'
-                        controlClasses={{menu: 'w-24'}}
+                        controlClasses={{menu: 'min-w-max'}}
                         fullWidth={false}
                         options={variantOptions}
                         selectedOption={selectedVariant}

@@ -189,7 +189,7 @@ describe('UNIT: LinkRedirectRepository class', function () {
             assert.equal(result.to.href, 'https://google.com/');
             assert.equal(result.edited, true);
             assert.equal(ObjectID.isValid(result.link_id), true);
-            assert.equal(cacheAdapterStub.set.calledOnce, true);
+            sinon.assert.calledOnce(cacheAdapterStub.set);
         });
     });
 
@@ -207,7 +207,7 @@ describe('UNIT: LinkRedirectRepository class', function () {
                 to: new URL('https://google.com')
             });
             await linkRedirectRepository.save(linkRedirect);
-            assert.equal(cacheAdapterStub.set.calledOnce, true);
+            sinon.assert.calledOnce(cacheAdapterStub.set);
         });
 
         it('should clear cache on site.changed event', function () {
@@ -222,7 +222,7 @@ describe('UNIT: LinkRedirectRepository class', function () {
             });
 
             EventRegistry.emit('site.changed');
-            assert.equal(reset.calledOnce, true);
+            sinon.assert.calledOnce(reset);
         });
     });
 });

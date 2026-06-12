@@ -1,15 +1,13 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const testUtils = require('../../utils');
 const db = require('../../../core/server/data/db');
 
 // Stuff we are testing
 const models = require('../../../core/server/models');
 
-const SETTINGS_LENGTH = 104;
+const SETTINGS_LENGTH = 112;
 
 describe('Settings Model', function () {
-    before(models.init);
     afterEach(testUtils.teardownDb);
 
     describe('defaults', function () {

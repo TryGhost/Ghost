@@ -3,8 +3,7 @@ const assert = require('node:assert/strict');
 const fs = require('fs/promises');
 const path = require('path');
 const {ESLint} = require('eslint');
-const glob = require('glob');
-const {promisify} = require('util');
+const {glob} = require('glob');
 const {readFileSync, writeFileSync} = require('fs');
 
 const LOCALES_ROOT = path.join(__dirname, '..', 'locales');
@@ -376,9 +375,7 @@ function parseTranslationString(string) {
 }
 
 async function *getTranslationFiles() {
-    // TODO: use fs.glob when Node 22 is used in CI. Once it's available this function
-    // can be converted to an async function instead of async generator.
-    const globs = await promisify(glob)(`${LOCALES_ROOT}/*/*.json`);
+    const globs = await glob(`${LOCALES_ROOT}/*/*.json`);
     for (const translationFile of globs) {
         yield translationFile;
     }

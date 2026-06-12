@@ -1,6 +1,6 @@
 import Component from '@glimmer/component';
-import cleanBasicHtml from '@tryghost/kg-clean-basic-html';
 import {action} from '@ember/object';
+import {cleanBasicHtml} from '@tryghost/kg-clean-basic-html';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
 
@@ -9,6 +9,30 @@ function hasParagraphWrapper(html) {
     const doc = domParser.parseFromString(html, 'text/html');
 
     return doc.body?.firstElementChild?.tagName === 'P';
+}
+
+function cleanCaptionHtml(html) {
+    return cleanBasicHtml(html || '', {firstChildInnerContent: true});
+}
+
+function isLexicalPlainTextSpan(element) {
+    return element.tagName === 'SPAN' && element.style.length === 1 && element.style.whiteSpace === 'pre-wrap';
+}
+
+function normalizeCaptionHtml(html) {
+    // Lexical wraps plain text in spans with `white-space: pre-wrap` on load.
+    // Ignore those wrappers so API-loaded captions do not mark the post as unsaved.
+    const cleanedHtml = cleanCaptionHtml(html);
+    const domParser = new DOMParser();
+    const doc = domParser.parseFromString(cleanedHtml, 'text/html');
+
+    doc.body.querySelectorAll('span').forEach((element) => {
+        if (isLexicalPlainTextSpan(element)) {
+            element.replaceWith(...element.childNodes);
+        }
+    });
+
+    return doc.body.innerHTML.trim();
 }
 
 export default class GhEditorFeatureImageComponent extends Component {
@@ -31,7 +55,11 @@ export default class GhEditorFeatureImageComponent extends Component {
 
     @action
     setCaption(html) {
-        const cleanedHtml = cleanBasicHtml(html || '', {firstChildInnerContent: true});
+        const cleanedHtml = cleanCaptionHtml(html);
+        if (normalizeCaptionHtml(cleanedHtml) === normalizeCaptionHtml(this.caption)) {
+            return;
+        }
+
         this.args.updateCaption(cleanedHtml);
     }
 

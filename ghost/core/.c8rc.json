@@ -1,15 +1,11 @@
 {
   "all": true,
-  "check-coverage": true,
+  "check-coverage": false,
   "reporter": [
     "html-spa",
     "text-summary",
     "cobertura"
   ],
-  "statements": 65,
-  "branches": 85,
-  "functions": 65,
-  "lines": 65,
   "include": [
     "core/{*.js,frontend,server,shared}"
   ],

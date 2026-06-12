@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const rewire = require('rewire');
 const templates = rewire('../../../../../core/frontend/services/rendering/templates');
@@ -410,10 +409,10 @@ describe('templates', function () {
             assert.equal(res._template, 'thing');
 
             // And nothing got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, false);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.notCalled(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
         });
 
         it('defaults to index', function () {
@@ -426,10 +425,10 @@ describe('templates', function () {
             assert.equal(res._template, 'index');
 
             // And nothing got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, false);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.notCalled(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
         });
 
         it('calls pickTemplate for custom routes', function () {
@@ -446,12 +445,12 @@ describe('templates', function () {
             assert.equal(res._template, 'testFromPickTemplate');
 
             // Only pickTemplate got called
-            assert.equal(stubs.pickTemplate.called, true);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, false);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.called(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.notCalled(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
 
-            assert.equal(stubs.pickTemplate.calledWith('test', 'path/to/local/test.hbs'), true);
+            sinon.assert.calledWith(stubs.pickTemplate, 'test', 'path/to/local/test.hbs');
         });
 
         it('calls getTemplateForEntry for entry routes', function () {
@@ -469,12 +468,12 @@ describe('templates', function () {
             assert.equal(res._template, 'testFromEntry');
 
             // Only pickTemplate got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, true);
-            assert.equal(stubs.getTemplateForEntries.called, false);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.called(stubs.getTemplateForEntry);
+            sinon.assert.notCalled(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
 
-            assert.equal(stubs.getTemplateForEntry.calledWith({slug: 'test'}), true);
+            sinon.assert.calledWith(stubs.getTemplateForEntry, {slug: 'test'});
         });
 
         it('calls getTemplateForEntries for type collection', function () {
@@ -492,12 +491,12 @@ describe('templates', function () {
             assert.equal(res._template, 'testFromEntries');
 
             // Only pickTemplate got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, true);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.called(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
 
-            assert.equal(stubs.getTemplateForEntries.calledWith({testCollection: 'test', type: 'collection'}), true);
+            sinon.assert.calledWith(stubs.getTemplateForEntries, {testCollection: 'test', type: 'collection'});
         });
 
         it('calls getTemplateForEntries for type channel', function () {
@@ -515,12 +514,12 @@ describe('templates', function () {
             assert.equal(res._template, 'testFromEntries');
 
             // Only pickTemplate got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, true);
-            assert.equal(stubs.getTemplateForError.called, false);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.called(stubs.getTemplateForEntries);
+            sinon.assert.notCalled(stubs.getTemplateForError);
 
-            assert.equal(stubs.getTemplateForEntries.calledWith({testChannel: 'test', type: 'channel'}), true);
+            sinon.assert.calledWith(stubs.getTemplateForEntries, {testChannel: 'test', type: 'channel'});
         });
 
         it('calls getTemplateForError if there is an error', function () {
@@ -542,12 +541,12 @@ describe('templates', function () {
             assert.equal(res._template, 'testFromError');
 
             // Only pickTemplate got called
-            assert.equal(stubs.pickTemplate.called, false);
-            assert.equal(stubs.getTemplateForEntry.called, false);
-            assert.equal(stubs.getTemplateForEntries.called, false);
-            assert.equal(stubs.getTemplateForError.called, true);
+            sinon.assert.notCalled(stubs.pickTemplate);
+            sinon.assert.notCalled(stubs.getTemplateForEntry);
+            sinon.assert.notCalled(stubs.getTemplateForEntries);
+            sinon.assert.called(stubs.getTemplateForError);
 
-            assert.equal(stubs.getTemplateForError.calledWith(404), true);
+            sinon.assert.calledWith(stubs.getTemplateForError, 404);
         });
     });
 });

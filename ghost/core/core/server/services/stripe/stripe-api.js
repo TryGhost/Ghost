@@ -2,7 +2,9 @@
 const {VersionMismatchError} = require('@tryghost/errors');
 // @ts-ignore
 const debug = require('@tryghost/debug')('stripe');
+const ghostConfig = require('../../../shared/config');
 const Stripe = require('stripe').Stripe;
+const {t} = require('../i18n');
 
 /* Stripe has the following rate limits:
 *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -125,9 +127,22 @@ module.exports = class StripeAPI {
         // Lazyloaded to protect sites without Stripe configured
         const LeakyBucket = require('leaky-bucket');
 
-        this._stripe = new Stripe(config.secretKey, {
+        const stripeConfig = {
             apiVersion: STRIPE_API_VERSION
-        });
+        };
+        const stripeApiHost = ghostConfig.get('STRIPE_API_HOST');
+        if (stripeApiHost) {
+            stripeConfig.host = stripeApiHost;
+        }
+        const stripeApiPort = ghostConfig.get('STRIPE_API_PORT');
+        if (stripeApiPort !== undefined && stripeApiPort !== null && stripeApiPort !== '') {
+            stripeConfig.port = parseInt(stripeApiPort, 10);
+        }
+        const stripeApiProtocol = ghostConfig.get('STRIPE_API_PROTOCOL');
+        if (stripeApiProtocol) {
+            stripeConfig.protocol = stripeApiProtocol;
+        }
+        this._stripe = new Stripe(config.secretKey, stripeConfig);
         this._config = config;
         this._testMode = config.secretKey && config.secretKey.startsWith('sk_test_');
         if (this._testMode) {
@@ -614,11 +629,9 @@ module.exports = class StripeAPI {
          * @type {Stripe.Checkout.SessionCreateParams}
          */
 
-        // TODO - add it higher up the stack to the metadata object.
-        // add ghost_donation key to metadata object
         metadata = {
-            ghost_donation: true,
-            ...metadata
+            ...metadata,
+            ghost_donation: true
         };
 
         const stripeSessionOptions = {
@@ -635,11 +648,8 @@ module.exports = class StripeAPI {
             invoice_creation: {
                 enabled: true,
                 invoice_data: {
-                    // Make sure we pass the data through to the invoice
-                    metadata: {
-                        ghost_donation: true,
-                        ...metadata
-                    }
+                    // Stripe does not inherit Checkout Session metadata for invoice records
+                    metadata
                 }
             },
             line_items: [{
@@ -665,6 +675,66 @@ module.exports = class StripeAPI {
 
         // @ts-ignore
         const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+        return session;
+    }
+
+    /**
+     * Create a new Stripe Checkout Session for a gift subscription.
+     *
+     * @param {object} options
+     * @param {number} options.amount
+     * @param {string} options.currency
+     * @param {string} options.tierName
+     * @param {'month'|'year'} options.cadence
+     * @param {number} options.duration
+     * @param {object} options.metadata
+     * @param {string} options.successUrl
+     * @param {string} options.cancelUrl
+     * @param {ICustomer|null} options.customer
+     * @param {string} [options.customerEmail]
+     *
+     * @returns {Promise<ICheckoutSession>}
+     */
+    async createGiftCheckoutSession({amount, currency, tierName, cadence, duration, metadata, successUrl, cancelUrl, customer, customerEmail}) {
+        await this._rateLimitBucket.throttle();
+
+        const cadenceLabel = cadence === 'year' ?
+            t('{count} year', {count: duration}) :
+            t('{count} month', {count: duration});
+
+        const stripeSessionOptions = {
+            mode: 'payment',
+            success_url: successUrl,
+            cancel_url: cancelUrl,
+            automatic_tax: {
+                enabled: this._config.enableAutomaticTax
+            },
+            metadata,
+            customer: customer ? customer.id : undefined,
+            customer_email: !customer && customerEmail ? customerEmail : undefined,
+            submit_type: 'pay',
+            invoice_creation: {
+                enabled: true
+            },
+            line_items: [{
+                price_data: {
+                    currency,
+                    unit_amount: amount,
+                    product_data: {
+                        name: `${t('Gift subscription')} — ${tierName} (${cadenceLabel})`
+                    }
+                },
+                quantity: 1
+            }]
+        };
+
+        if (customer && this._config.enableAutomaticTax) {
+            stripeSessionOptions.customer_update = {address: 'auto'};
+        }
+
+        // @ts-ignore
+        const session = await this._stripe.checkout.sessions.create(stripeSessionOptions);
+
         return session;
     }
 
@@ -855,25 +925,6 @@ module.exports = class StripeAPI {
         await this._rateLimitBucket.throttle();
         const subscription = await this._stripe.subscriptions.update(id, {
             coupon: couponId
-        });
-        return subscription;
-    }
-
-    /**
-     * Update the trial end for a Stripe Subscription by ID.
-     *
-     * @param {string} id - The ID of the subscription to update
-     * @param {number} trialEnd - Unix timestamp in seconds
-     * @param {object} [options={}]
-     * @param {('always_invoice'|'create_prorations'|'none')} [options.prorationBehavior='none']
-     *
-     * @returns {Promise<ISubscription>}
-     */
-    async updateSubscriptionTrialEnd(id, trialEnd, options = {}) {
-        await this._rateLimitBucket.throttle();
-        const subscription = await this._stripe.subscriptions.update(id, {
-            trial_end: trialEnd,
-            proration_behavior: options.prorationBehavior || 'none'
         });
         return subscription;
     }

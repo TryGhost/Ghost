@@ -8,7 +8,7 @@ import ProductsSection from '../common/products-section';
 import InputForm from '../common/input-form';
 import {ValidateInputForm} from '../../utils/form';
 import {getSiteProducts, getSitePrices, hasAvailablePrices, hasOnlyFreePlan, isInviteOnly, isFreeSignupAllowed, isPaidMembersOnly, freeHasBenefitsOrDescription, hasMultipleNewsletters, hasFreeTrialTier, isSignupAllowed, isSigninAllowed} from '../../utils/helpers';
-import {ReactComponent as InvitationIcon} from '../../images/icons/invitation.svg';
+import InvitationIcon from '../../images/icons/invitation.svg?react';
 import {interceptAnchorClicks} from '../../utils/links';
 import {sanitizeHtml} from '../../utils/sanitize-html';
 import {t} from '../../utils/i18n';
@@ -190,7 +190,7 @@ footer.gh-portal-signup-footer.invite-only .gh-portal-signup-message {
     margin-top: 0;
 }
 
-.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification, .gh-portal-paid-members-only-notification {
+.gh-portal-invite-only-notification, .gh-portal-members-disabled-notification, .gh-portal-paid-members-only-notification, .gh-portal-no-plans-available-notification {
     margin: 8px 32px 24px;
     padding: 0;
     text-align: center;

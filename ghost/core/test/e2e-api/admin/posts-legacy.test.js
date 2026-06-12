@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const should = require('should');
 const nock = require('nock');
 const path = require('path');
 const supertest = require('supertest');
@@ -301,8 +300,8 @@ describe('Posts API', function () {
         assert.equal(modelJson.title, post.title);
         assert.equal(modelJson.status, post.status);
         assert.equal(modelJson.published_at.toISOString(), '2016-05-30T07:00:00.000Z');
-        modelJson.created_at.toISOString().should.not.eql(post.created_at.toISOString());
-        modelJson.updated_at.toISOString().should.not.eql(post.updated_at.toISOString());
+        assert.notEqual(modelJson.created_at.toISOString(), post.created_at.toISOString());
+        assert.notEqual(modelJson.updated_at.toISOString(), post.updated_at.toISOString());
 
         assert.equal(modelJson.posts_meta.feature_image_alt, post.feature_image_alt);
         assert.equal(modelJson.posts_meta.feature_image_caption, post.feature_image_caption);
@@ -1556,6 +1555,41 @@ describe('Posts API', function () {
         assert.equal(email.get('newsletter_id'), newsletterId);
         assert.equal(email.get('recipient_filter'), 'all');
         assert(['pending', 'submitted', 'submitting'].includes(email.get('status')));
+    });
+
+    it('Cannot schedule an email only post without newsletter reference', async function () {
+        const post = {
+            title: 'My scheduled email only post without newsletter',
+            status: 'draft',
+            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post')
+        };
+
+        const res = await request.post(localUtils.API.getApiQuery('posts'))
+            .set('Origin', config.get('url'))
+            .send({posts: [post]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const id = res.body.posts[0].id;
+        const updatedPost = res.body.posts[0];
+
+        updatedPost.status = 'scheduled';
+        updatedPost.email_only = true;
+        updatedPost.published_at = moment().add(2, 'days').toDate();
+
+        // Attempt to schedule without newsletter reference should fail
+        await request
+            .put(localUtils.API.getApiQuery('posts/' + id + '/'))
+            .set('Origin', config.get('url'))
+            .send({posts: [updatedPost]})
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(422)
+            .expect((result) => {
+                assert.equal(result.body.errors[0].message, 'Validation error, cannot edit post.');
+                assert.equal(result.body.errors[0].context, 'Scheduling an email requires a newsletter reference.');
+            });
     });
 
     it('Can\'t change the newsletter once it has been sent', async function () {

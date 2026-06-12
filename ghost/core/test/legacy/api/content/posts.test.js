@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const supertest = require('supertest');
 const _ = require('lodash');
 const testUtils = require('../../../utils');
@@ -102,17 +101,53 @@ describe('api/endpoints/content/posts', function () {
         }
     });
 
-    it('browse posts', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
+    it('can not filter posts by authors.password.x (3-segment bypass)', async function () {
+        const hashedPassword = '$2a$10$FxFlCsNBgXw42cBj0l1GFu39jffibqTqyAGBz7uCLwetYAdBYJEe6';
+        const userId = '644fd18ca1f0b764b0279b2d';
+
+        await testUtils.knex('users').insert({
+            id: userId,
+            slug: 'brute-force-password-test-user',
+            name: 'Brute Force Password Test User',
+            email: 'bruteforcepasswordtestuseremail@example.com',
+            password: hashedPassword,
+            status: 'active',
+            created_at: '2019-01-01 00:00:00'
+        });
+
+        const {id: postId} = await testUtils.knex('posts').first('id').where('slug', 'welcome');
+
+        await testUtils.knex('posts_authors').insert({
+            id: '644fd18ca1f0b764b0279b2f',
+            post_id: postId,
+            author_id: userId
+        });
+
+        try {
+            const res = await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=authors.password.x:'${hashedPassword}'`))
+                .set('Origin', testUtils.API.getURL())
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.public)
+                .expect(200);
+
+            const data = JSON.parse(res.text);
+
+            if (data.posts.length === 1) {
+                throw new Error('3-segment key bypass should not return filtered results');
+            }
+        } finally {
+            await testUtils.knex('posts_authors').where('id', '644fd18ca1f0b764b0279b2f').del();
+            await testUtils.knex('users').where('id', userId).del();
+        }
+    });
+
+    it('browse posts', async function () {
+        await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
+            .expect(function (res) {
                 assert.equal(res.headers.vary, 'Accept-Version, Accept-Encoding');
                 assertExists(res.headers['access-control-allow-origin']);
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
@@ -138,22 +173,16 @@ describe('api/endpoints/content/posts', function () {
                 assert.equal(jsonResponse.meta.pagination.hasOwnProperty('prev'), true);
                 assert.equal(jsonResponse.meta.pagination.next, null);
                 assert.equal(jsonResponse.meta.pagination.prev, null);
-
-                done();
             });
     });
 
-    it('browse posts with related authors/tags also returns primary_author/primary_tag', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&include=authors,tags`))
+    it('browse posts with related authors/tags also returns primary_author/primary_tag', async function () {
+        await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&include=authors,tags`))
             .set('Origin', testUtils.API.getURL())
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
+            .expect(function (res) {
                 assert.equal(res.headers.vary, 'Accept-Version, Accept-Encoding');
                 assertExists(res.headers['access-control-allow-origin']);
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
@@ -185,8 +214,6 @@ describe('api/endpoints/content/posts', function () {
                 assert.equal(jsonResponse.meta.pagination.hasOwnProperty('prev'), true);
                 assert.equal(jsonResponse.meta.pagination.next, null);
                 assert.equal(jsonResponse.meta.pagination.prev, null);
-
-                done();
             });
     });
 
@@ -197,21 +224,16 @@ describe('api/endpoints/content/posts', function () {
             .expect(400);
     });
 
-    it('browse posts with published and draft status, should not return drafts', function (done) {
-        request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=status:published,status:draft`))
+    it('browse posts with published and draft status, should not return drafts', async function () {
+        await request.get(localUtils.API.getApiQuery(`posts/?key=${validKey}&filter=status:published,status:draft`))
             .expect('Content-Type', /json/)
             .expect('Cache-Control', testUtils.cacheRules.public)
             .expect(200)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
+            .expect(function (res) {
                 const jsonResponse = res.body;
 
                 assert(Array.isArray(jsonResponse.posts));
                 assert.equal(jsonResponse.posts.length, 13);
-
-                done();
             });
     });
 
@@ -247,26 +269,21 @@ describe('api/endpoints/content/posts', function () {
             });
     });
 
-    it('ensure origin header on redirect is not getting lost', function (done) {
+    it('ensure origin header on redirect is not getting lost', async function () {
         // NOTE: force a redirect to the admin url
         configUtils.set('admin:url', 'http://localhost:9999');
         urlUtils.stubUrlUtilsFromConfig();
 
-        request.get(localUtils.API.getApiQuery(`posts?key=${validKey}`))
+        await request.get(localUtils.API.getApiQuery(`posts?key=${validKey}`))
             .set('Origin', 'https://example.com')
             // 301 Redirects _should_ be cached
             .expect('Cache-Control', testUtils.cacheRules.year)
             .expect(301)
-            .end(function (err, res) {
-                if (err) {
-                    return done(err);
-                }
-
+            .expect(function (res) {
                 assert.equal(res.headers.vary, 'Accept-Version, Accept, Accept-Encoding');
                 assert.equal(res.headers.location, `http://localhost:9999/ghost/api/content/posts/?key=${validKey}`);
                 assertExists(res.headers['access-control-allow-origin']);
                 assert.equal(res.headers['x-cache-invalidate'], undefined);
-                done();
             });
     });
 

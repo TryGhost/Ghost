@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 
 import Toggle from './toggle';
 
@@ -19,7 +19,8 @@ export const Default: Story = {
 
 export const Checked: Story = {
     args: {
-        checked: true
+        checked: true,
+        onChange: () => {}
     }
 };
 

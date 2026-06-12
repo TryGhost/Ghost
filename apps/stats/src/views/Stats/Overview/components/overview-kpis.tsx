@@ -1,6 +1,9 @@
 import React from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, EmptyIndicator, GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, LucideIcon, centsToDollars, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyCard, EmptyIndicator} from '@tryghost/shade/components';
+import {GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from '@tryghost/shade/patterns';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {STATS_RANGES} from '@src/utils/constants';
+import {centsToDollars} from '@tryghost/shade/app';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -130,11 +133,11 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     const limiter = useLimiter();
     const isWebAnalyticsLimited = limiter.isLimited('limitAnalytics');
 
-    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:!cursor-pointer';
+    const areaChartClassName = '-mb-3 h-[10vw] max-h-[200px] min-h-[100px] hover:cursor-pointer!';
 
     if (isLoading) {
         return (
-            <EmptyCard className='flex h-[calc(10vw+116px)] max-h-[416px] min-h-20 items-center justify-center hover:!cursor-pointer'>
+            <EmptyCard className='flex h-[calc(10vw+116px)] max-h-[416px] min-h-20 items-center justify-center hover:cursor-pointer!'>
                 <BarChartLoadingIndicator />
             </EmptyCard>
         );
@@ -172,7 +175,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 >
                     <GhAreaChart
                         className={areaChartClassName}
-                        color='hsl(var(--chart-blue))'
+                        color='var(--chart-blue)'
                         data={visitorsChartData}
                         id="visitors"
                         range={range}
@@ -223,7 +226,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 >
                     <GhAreaChart
                         className={areaChartClassName}
-                        color='hsl(var(--chart-darkblue))'
+                        color='var(--chart-darkblue)'
                         data={membersChartData}
                         id="members"
                         range={range}
@@ -250,7 +253,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
                 >
                     <GhAreaChart
                         className={areaChartClassName}
-                        color='hsl(var(--chart-teal))'
+                        color='var(--chart-teal)'
                         data={mrrChartData}
                         id="mrr"
                         range={range}

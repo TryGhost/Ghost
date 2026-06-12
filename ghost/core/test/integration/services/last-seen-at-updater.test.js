@@ -1,4 +1,3 @@
-require('should');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
@@ -76,7 +75,8 @@ describe('Last Seen At Updater', function () {
 
             mockManager.mockSetting('timezone', 'CET');
 
-            const clock = sinon.useFakeTimers(firstDate);
+            // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
+            const clock = sinon.useFakeTimers({now: firstDate, shouldAdvanceTime: true});
 
             await membersEvents.lastSeenAtUpdater.cachedUpdateLastSeenAt(memberId, previousLastSeen, firstDate);
 
@@ -108,7 +108,8 @@ describe('Last Seen At Updater', function () {
 
             mockManager.mockSetting('timezone', 'CET');
 
-            const clock = sinon.useFakeTimers(firstDate);
+            // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
+            const clock = sinon.useFakeTimers({now: firstDate, shouldAdvanceTime: true});
 
             const spy = sinon.spy(membersEvents.lastSeenAtUpdater, 'updateLastSeenAt');
 
@@ -119,7 +120,7 @@ describe('Last Seen At Updater', function () {
                 membersEvents.lastSeenAtUpdater.cachedUpdateLastSeenAt(memberId, previousLastSeen, firstDate)
             ]);
 
-            assert.equal(spy.callCount, 1);
+            sinon.assert.calledOnce(spy);
 
             clock.restore();
         });

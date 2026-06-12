@@ -1,7 +1,6 @@
-const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
+const deferred = require('../../../../../utils/deferred');
 
 const api = require('../../../../../../core/frontend/services/proxy').api;
 const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
@@ -77,17 +76,20 @@ describe('Unit - services/routing/controllers/static', function () {
         sinon.restore();
     });
 
-    it('no extra data to fetch', function (done) {
+    it('no extra data to fetch', function () {
+        const {promise, done} = deferred();
         renderer.renderer.callsFake(function () {
-            assert.equal(renderer.formatResponse.entries.calledOnce, true);
-            assert.equal(tagsReadStub.called, false);
+            sinon.assert.calledOnce(renderer.formatResponse.entries);
+            sinon.assert.notCalled(tagsReadStub);
             done();
         });
 
         controllers.static(req, res, failTest(done));
+        return promise;
     });
 
-    it('extra data to fetch', function (done) {
+    it('extra data to fetch', function () {
+        const {promise, done} = deferred();
         res.routerOptions.data = {
             tag: {
                 controller: 'tagsPublic',
@@ -102,11 +104,12 @@ describe('Unit - services/routing/controllers/static', function () {
         tagsReadStub = sinon.stub().resolves({tags: [{slug: 'bacon'}]});
 
         renderer.renderer.callsFake(function () {
-            assert.equal(tagsReadStub.called, true);
-            assert.equal(renderer.formatResponse.entries.calledOnce, true);
+            sinon.assert.called(tagsReadStub);
+            sinon.assert.calledOnce(renderer.formatResponse.entries);
             done();
         });
 
         controllers.static(req, res, failTest(done));
+        return promise;
     });
 });

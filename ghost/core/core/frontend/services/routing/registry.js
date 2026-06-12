@@ -8,8 +8,8 @@ let routers = {};
 module.exports = {
     /**
      * @description Get's called if you register a url pattern in express.
-     * @param {String} routerName
-     * @param {String} route
+     * @param {string} routerName
+     * @param {string} route
      */
     setRoute(routerName, route) {
         routes.push({route: route, from: routerName});
@@ -72,7 +72,7 @@ module.exports = {
      * More context: https://github.com/TryGhost/Team/issues/65#issuecomment-393622816
      *
      * @param {Object} options
-     * @returns {String}
+     * @returns {string}
      */
     getRssUrl(options) {
         let rssUrl = null;

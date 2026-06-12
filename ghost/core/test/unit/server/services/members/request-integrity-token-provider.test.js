@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const should = require('should');
 
 const RequestIntegrityTokenProvider = require('../../../../../core/server/services/members/request-integrity-token-provider');
 
@@ -22,7 +21,7 @@ describe('RequestIntegrityTokenProvider', function () {
         it('should create a HMAC digest from the secret', function () {
             const token = tokenProvider.create();
 
-            token.should.be.a.String();
+            assert.equal(typeof token, 'string');
             assert(Array.isArray(token.split(':')));
             assert.equal(token.split(':').length, 3);
             const [timestamp, nonce, digest] = token.split(':');
@@ -31,7 +30,8 @@ describe('RequestIntegrityTokenProvider', function () {
 
             assert.match(nonce, /[0-9a-f]{16}/);
 
-            digest.should.be.a.String().with.lengthOf(64);
+            assert.equal(typeof digest, 'string');
+            assert.equal(digest.length, 64);
         });
     });
 

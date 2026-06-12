@@ -7,7 +7,7 @@ import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import i18nLib from '@tryghost/i18n';
 import setupGhostApi from './utils/api';
 import {ActionHandler, SyncActionHandler, isSyncAction} from './actions';
-import {AppContext, Comment, DispatchActionType, EditableAppContext} from './app-context';
+import {AppContext, CapabilitiesContextType, Comment, DispatchActionType, EditableAppContext} from './app-context';
 import {CommentsFrame} from './components/frame';
 import {setupAdminAPI} from './utils/admin-api';
 import {useOptions} from './utils/options';
@@ -15,10 +15,15 @@ import {useOptions} from './utils/options';
 type AppProps = {
     scriptTag: HTMLElement;
     initialCommentId: string | null;
-    pageUrl: string;
 };
 
 const ALLOWED_MODERATORS = ['Owner', 'Administrator', 'Super Editor'];
+const LIKES_ORDER = 'count__likes desc, created_at desc';
+const NET_SCORE_ORDER = 'count__net_score desc, created_at desc';
+
+function getDefaultOrder(capabilities: CapabilitiesContextType) {
+    return capabilities.dislikes === true ? NET_SCORE_ORDER : LIKES_ORDER;
+}
 
 /**
  * Check if a comment ID exists in the comments array (either as a top-level comment or reply)
@@ -27,7 +32,7 @@ function isCommentLoaded(comments: Comment[], targetId: string): boolean {
     return comments.some(c => c.id === targetId || c.replies?.some(r => r.id === targetId));
 }
 
-const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
+const App: React.FC<AppProps> = ({scriptTag, initialCommentId}) => {
     const options = useOptions(scriptTag);
     const [state, setFullState] = useState<EditableAppContext>({
         initStatus: 'running',
@@ -39,13 +44,14 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         openCommentForms: [],
         popup: null,
         labs: {},
-        order: 'count__likes desc, created_at desc',
+        capabilities: {},
+        order: LIKES_ORDER,
         adminApi: null,
         commentsIsLoading: false,
         commentIdToHighlight: null,
         commentIdToScrollTo: initialCommentId,
+        commentIdFromHash: initialCommentId,
         showMissingCommentNotice: false,
-        pageUrl,
         supportEmail: null,
         isMember: false,
         isAdmin: false,
@@ -156,7 +162,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                             admin,
                             isAdmin: true,
                             comments: adminComments.comments,
-                            pagination: adminComments.meta.pagination
+                            pagination: adminComments.meta.pagination,
+                            capabilities: adminComments.meta?.capabilities ?? currentState.capabilities
                         };
                     });
                 }
@@ -178,8 +185,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     };
 
     /** Fetch first few comments  */
-    const fetchComments = async () => {
-        const dataPromise = api.comments.browse({page: 1, postId: options.postId, order: state.order});
+    const fetchComments = async (order = state.order) => {
+        const dataPromise = api.comments.browse({page: 1, postId: options.postId, order});
         const countPromise = api.comments.count({postId: options.postId});
 
         const [data, count] = await Promise.all([dataPromise, countPromise]);
@@ -187,7 +194,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         return {
             comments: data.comments,
             pagination: data.meta.pagination,
-            count: count
+            count: count,
+            capabilities: data.meta?.capabilities ?? {}
         };
     };
 
@@ -212,7 +220,8 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
         targetId: string,
         parentId: string | undefined,
         initialComments: Comment[],
-        initialPagination: {page: number; pages: number}
+        initialPagination: {page: number; pages: number},
+        order = state.order
     ): Promise<{comments: Comment[]; pagination: typeof initialPagination}> => {
         let comments = initialComments;
         let pagination = initialPagination;
@@ -225,7 +234,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             const nextPage = await api.comments.browse({
                 page: pagination.page + 1,
                 postId: options.postId,
-                order: state.order
+                order
             });
             comments = [...comments, ...nextPage.comments];
             pagination = nextPage.meta.pagination;
@@ -235,61 +244,26 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     };
 
     /**
-     * Load all replies for a parent comment if the target reply isn't already loaded.
-     */
-    const loadRepliesForComment = async (
-        parentId: string,
-        comments: Comment[]
-    ): Promise<Comment[]> => {
-        const parent = comments.find(c => c.id === parentId);
-        const hasMoreReplies = parent && parent.count.replies > parent.replies.length;
-
-        if (!hasMoreReplies) {
-            return comments;
-        }
-
-        let allReplies: Comment[] = [];
-        let hasMore = true;
-        let afterReplyId: string | undefined;
-
-        while (hasMore) {
-            const response = await api.comments.replies({
-                commentId: parentId,
-                afterReplyId,
-                limit: 100
-            });
-            allReplies = [...allReplies, ...response.comments];
-            hasMore = !!response.meta?.pagination?.next;
-
-            if (response.comments.length > 0) {
-                afterReplyId = response.comments[response.comments.length - 1]?.id;
-            } else {
-                hasMore = false;
-            }
-        }
-
-        return comments.map(c => (c.id === parentId
-            ? {...c, replies: allReplies}
-            : c
-        ));
-    };
-
-    /**
-     * Load additional comment pages and/or replies until the scroll target is found.
+     * Load additional comment pages and/or replies until the scroll
+     * target is found. After paginating to the parent comment, if the
+     * target reply isn't in the inline replies (partial API response),
+     * fetch all replies from the server.
      */
     const loadScrollTarget = async (
         targetId: string,
         targetComment: Comment,
         initialComments: Comment[],
-        initialPagination: {page: number; pages: number}
+        initialPagination: {page: number; pages: number},
+        order = state.order
     ): Promise<{comments: Comment[]; pagination: typeof initialPagination; found: boolean}> => {
         const parentId = targetComment.parent_id;
 
-        const {comments: paginatedComments, pagination} = await paginateToComment(targetId, parentId, initialComments, initialPagination);
+        const {comments: paginatedComments, pagination} = await paginateToComment(targetId, parentId, initialComments, initialPagination, order);
         let comments = paginatedComments;
 
         if (parentId && !isCommentLoaded(comments, targetId)) {
-            comments = await loadRepliesForComment(parentId, comments);
+            const {comments: allReplies} = await api.comments.replies({commentId: parentId, limit: 'all'});
+            comments = comments.map(c => (c.id === parentId ? {...c, replies: allReplies} : c));
         }
 
         return {comments, pagination, found: isCommentLoaded(comments, targetId)};
@@ -299,7 +273,16 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
     const initSetup = async () => {
         try {
             const {member, labs, supportEmail} = await api.init();
-            const {count, comments: initialComments, pagination: initialPagination} = await fetchComments();
+            let {count, comments: initialComments, pagination: initialPagination, capabilities} = await fetchComments(LIKES_ORDER);
+            const defaultOrder = getDefaultOrder(capabilities);
+
+            if (defaultOrder !== LIKES_ORDER) {
+                const sortedData = await fetchComments(defaultOrder);
+                count = sortedData.count;
+                initialComments = sortedData.comments;
+                initialPagination = sortedData.pagination;
+                capabilities = sortedData.capabilities.dislikes === true ? sortedData.capabilities : capabilities;
+            }
 
             let comments = initialComments;
             let pagination = initialPagination;
@@ -309,7 +292,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             if (shouldFindScrollTarget) {
                 const targetComment = await fetchScrollTarget(initialCommentId);
                 if (targetComment) {
-                    const result = await loadScrollTarget(initialCommentId, targetComment, comments, pagination);
+                    const result = await loadScrollTarget(initialCommentId, targetComment, comments, pagination, defaultOrder);
                     comments = result.comments;
                     pagination = result.pagination;
                     scrollTargetFound = result.found;
@@ -328,11 +311,13 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
                 comments,
                 pagination,
                 commentCount: count,
-                order: 'count__likes desc, created_at desc',
+                order: defaultOrder,
                 labs: labs,
+                capabilities,
                 commentsIsLoading: false,
                 commentIdToHighlight: null,
                 commentIdToScrollTo: scrollTargetFound ? initialCommentId : null,
+                commentIdFromHash: scrollTargetFound ? initialCommentId : null,
                 showMissingCommentNotice: !!initialCommentId && !scrollTargetFound,
                 supportEmail,
                 isMember,
@@ -390,7 +375,7 @@ const App: React.FC<AppProps> = ({scriptTag, initialCommentId, pageUrl}) => {
             <CommentsFrame ref={iframeRef}>
                 <ContentBox done={done} />
             </CommentsFrame>
-            {state.comments.length > 0 ? <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/> : null}
+            {done && options.adminUrl && <AuthFrame adminUrl={options.adminUrl} onLoad={initAdminAuth}/>}
             <PopupBox />
         </AppContext.Provider>
     );

@@ -52,6 +52,17 @@ describe('error messages are set correctly', () => {
         expect(chooseBestErrorMessage(humanReadableError, null)).toEqual('translated A server error occurred');
     });
 
+    test('handles a 404 json api error', async () => {
+        const error = new Response('{"errors":[{"message":"Gift not found."}]}', {
+            status: 404,
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        });
+        const humanReadableError = await HumanReadableError.fromApiResponse(error);
+        expect(chooseBestErrorMessage(humanReadableError, null)).toEqual('translated Gift not found.');
+    });
+
     test('gets the magic link error message correctly', async () => {
         const error = new Response('{"errors":[{"message":"Failed to send magic link email"}]}', {status: 400});
         const humanReadableError = await HumanReadableError.fromApiResponse(error);

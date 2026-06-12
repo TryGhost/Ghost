@@ -1,5 +1,5 @@
 import AppContext from '../../../../app-context';
-import {getCompExpiry, getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
+import {getSubscriptionExpiry, getMemberSubscription, hasOnlyFreePlan, isComplimentaryMember, isGiftMember, subscriptionHasFreeTrial} from '../../../../utils/helpers';
 import {getDateString} from '../../../../utils/date-time';
 import {useContext} from 'react';
 
@@ -8,9 +8,9 @@ import {t} from '../../../../utils/i18n';
 
 const AccountWelcome = () => {
     const {member, site} = useContext(AppContext);
-    const {is_stripe_configured: isStripeConfigured} = site;
+    const {paid_members_enabled: paidMembersEnabled} = site;
 
-    if (!isStripeConfigured || hasOnlyFreePlan({site})) {
+    if (!paidMembersEnabled || hasOnlyFreePlan({site})) {
         return null;
     }
     const subscription = getMemberSubscription({member});
@@ -20,12 +20,21 @@ const AccountWelcome = () => {
     }
     if (subscription) {
         const currentPeriodEnd = subscription?.current_period_end;
-        if (isComplimentary && getCompExpiry({member})) {
-            const expiryDate = getCompExpiry({member});
-            const expiryAt = getDateString(expiryDate);
+        const subscriptionExpiry = getSubscriptionExpiry({member});
+        if (isGiftMember({member})) {
+            if (subscriptionExpiry) {
+                return (
+                    <div className='gh-portal-section' style={{marginBottom: 24}}>
+                        <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your gift subscription will expire on {expiryDate}`, {expiryDate: subscriptionExpiry})}</p>
+                    </div>
+                );
+            }
+            return null;
+        }
+        if (isComplimentary && subscriptionExpiry) {
             return (
                 <div className='gh-portal-section'>
-                    <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will expire on {expiryDate}`, {expiryDate: expiryAt})}</p>
+                    <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will expire on {expiryDate}`, {expiryDate: subscriptionExpiry})}</p>
                 </div>
             );
         }
@@ -45,6 +54,7 @@ const AccountWelcome = () => {
                 </div>
             );
         }
+
         return (
             <div className='gh-portal-section'>
                 <p className='gh-portal-text-center gh-portal-free-ctatext'>{t(`Your subscription will renew on {renewalDate}`, {renewalDate: getDateString(currentPeriodEnd)})}</p>

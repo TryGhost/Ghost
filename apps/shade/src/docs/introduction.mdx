@@ -1,116 +1,33 @@
 import { Meta } from '@storybook/addon-docs/blocks';
 
-<Meta title="Introduction" />
+<Meta title="Overview / Introduction" />
 
 <div className="sb-doc">
 
-# Shade Design System
+# Shade
 
-<p className="excerpt">Shade is Ghost's design system for product design. Built on ShadCN/UI and TailwindCSS, it provides a complete set of components and patterns for building consistent user experiences.</p>
+<p className="excerpt">Shade is the design system that powers Ghost Admin. Tokens, layout primitives, generic UI controls, and product-shaped patterns — all in one place so designers, engineers, and AI agents stop reinventing them.</p>
 
-## Overview
+## In one screen
 
-Shade is built on three powerful foundations:
-- [ShadCN/UI](https://ui.shadcn.com/) - Reusable components built with Radix UI
-- [TailwindCSS](https://tailwindcss.com/) - Utility-first CSS framework
-- [Radix UI](https://www.radix-ui.com/) - Accessible component primitives
+- **[Tokens](?path=/docs/tokens-tokens-guide--docs)** — colour, type, spacing, radius, motion. Visual galleries in the sidebar.
+- **[Primitives](?path=/docs/primitives-primitives-guide--docs)** — `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text`. Layout, not chrome.
+- **Components** — `Button`, `Input`, `Dialog`, `Tabs`… Generic and accessible. Built on Radix + ShadCN.
+- **Patterns** — `PageHeader`, `ListPage`, `KpiCard`, `Filters`. Product-shaped compositions.
 
-### Scope & Reuse
+The boundaries between those layers are the whole point. See **[Layers](?path=/docs/overview-layers--docs)** for the decision flow.
 
-Shade contains reusable, system-wide components and patterns. Keep one-off, app-specific components in the consuming application rather than adding them to Shade.
+## Working in Shade
 
-### Target Audience
-
-- **Designers**: Understand our design language and component capabilities
-- **Engineers**: Find implementation details and integration examples
-- **AI Agents**: Access machine-readable metadata for automation
-
-### Core Surfaces
-
-Shade components are used across:
-- Admin interfaces
-- Settings panels
-- Portal experiences
-- Email templates
-- Documentation sites
-
-## Getting Started
-
-### Installation
-
-```bash
-# Install Shade
-yarn add @tryghost/shade
-
-# Install peer dependencies
-yarn add react react-dom tailwindcss
-```
-
-> Note: The package is currently private and primarily consumed internally in the monorepo. The snippet above reflects usage once published.
-
-### Basic Usage
+Shade is the **default source for Ghost Admin UI**. It's already wired into every admin app — just import:
 
 ```tsx
-import { Button } from '@tryghost/shade';
-
-function MyComponent() {
-    return (
-        <Button variant="solid">
-            Continue
-        </Button>
-    );
-}
+import {Button} from '@tryghost/shade/components';
+import {Stack} from '@tryghost/shade/primitives';
 ```
 
-### Configure TailwindCSS
+If a control exists, use it. If it doesn't and you'll reuse it, [Layers](?path=/docs/overview-layers--docs) tells you which folder to add it to.
 
-Add Shade's preset to your `tailwind.config.js`:
-
-```js
-module.exports = {
-    presets: [require('@tryghost/shade/tailwind')],
-    // Your custom config...
-}
-```
-
-### Scope Styles & Dark Mode
-
-Shade scopes all styles to a `.shade` container and toggles dark mode with a `.dark` class inside that scope.
-
-Use `ShadeApp` to handle scoping and provide context:
-
-```tsx
-import ShadeApp from '@tryghost/shade';
-import {Button} from '@tryghost/shade';
-
-export default function App() {
-    // Toggle dark mode by switching the `darkMode` prop
-    return (
-        <ShadeApp darkMode={false}>
-            <div>
-                <Button>Continue</Button>
-            </div>
-        </ShadeApp>
-    );
-}
-```
-
-Alternatively, wrap your UI in a div with `className="shade"` and toggle a nested `.dark` class when needed.
-
-## Documentation Structure
-
-Our documentation is organized into:
-
-1. **Components** - Individual UI elements with variants and usage
-2. **Patterns** - Common UI patterns and compositions
-3. **Tokens** - Design tokens via TailwindCSS
-4. **Guidelines** - Best practices and standards
-
-## Resources
-
-- [GitHub Repository](https://github.com/TryGhost/Ghost)
-- [ShadCN/UI Documentation](https://ui.shadcn.com)
-- [TailwindCSS Documentation](https://tailwindcss.com/docs)
-- [Radix UI Documentation](https://www.radix-ui.com/docs/primitives)
+For AI-assisted work, see `apps/shade/AGENTS.md` — the canonical rules for where new code goes.
 
 </div>

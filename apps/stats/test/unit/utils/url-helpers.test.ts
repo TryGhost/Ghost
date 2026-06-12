@@ -223,10 +223,10 @@ describe('url-helpers', () => {
     });
 
     describe('getClickHandler', () => {
-        let mockNavigate: ReturnType<typeof vi.fn>;
+        let mockNavigate: ReturnType<typeof vi.fn<(path: string, options?: {crossApp?: boolean}) => void>>;
 
         beforeEach(() => {
-            mockNavigate = vi.fn();
+            mockNavigate = vi.fn<(path: string, options?: {crossApp?: boolean}) => void>();
             mockWindowOpen.mockClear();
         });
 

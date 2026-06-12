@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const getMetaDescription = require('../../../../core/frontend/meta/description');
 const settingsCache = require('../../../../core/shared/settings-cache');
@@ -7,13 +6,13 @@ const settingsCache = require('../../../../core/shared/settings-cache');
 describe('getMetaDescription', function () {
     let localSettingsCache = {};
 
-    before(function () {
+    beforeAll(function () {
         sinon.stub(settingsCache, 'get').callsFake(function (key) {
             return localSettingsCache[key];
         });
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 

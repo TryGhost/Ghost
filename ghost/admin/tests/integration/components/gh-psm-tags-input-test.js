@@ -79,6 +79,28 @@ describe('Integration: Component: gh-psm-tags-input', function () {
         expect(options[3]).to.contain.text('Tag 4');
     });
 
+    it('shows a removed tag in the options list again', async function () {
+        await assignPostWithTags(this, 'one', 'three');
+        await render(hbs`<GhPsmTagsInput @post={{post}} />`);
+        await clickTrigger();
+        await settled();
+        await waitUntil(() => findAll('.ember-power-select-option').length >= 2);
+
+        let options = findAll('.ember-power-select-option');
+        expect(options.length).to.equal(2);
+        expect(options[0]).to.contain.text('#Tag 2');
+        expect(options[1]).to.contain.text('Tag 4');
+
+        // remove the "Tag 1" token then re-open the dropdown
+        await click('.ember-power-select-multiple-remove-btn');
+        await clickTrigger();
+        await settled();
+
+        options = findAll('.ember-power-select-option');
+        expect(options.length).to.equal(3);
+        expect(options[0]).to.contain.text('Tag 1');
+    });
+
     it('uses local search if all tags have been loaded in first page', async function () {
         this.set('post', this.store.findRecord('post', 1));
         await settled();
@@ -185,7 +207,20 @@ describe('Integration: Component: gh-psm-tags-input', function () {
     });
 
     describe('server-side search', function () {
+        it('excludes selected tags from search results', async function () {
+            server.create('tag', {name: 'Alpha', slug: 'alpha'});
+            server.createList('tag', 150, {name: i => `Search ${i.toString().padStart(3, '0')}`});
 
+            await assignPostWithTags(this, 'alpha');
+            await render(hbs`<GhPsmTagsInput @post={{post}} />`);
+            await clickTrigger();
+            await typeInSearch('Alph');
+            await settled();
+
+            let options = findAll('.ember-power-select-option');
+            expect(options.length).to.equal(1);
+            expect(options[0]).to.contain.text('Add "Alph"...');
+        });
     });
 
     it('highlights internal tags', async function () {

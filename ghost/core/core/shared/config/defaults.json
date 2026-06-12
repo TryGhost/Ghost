@@ -8,12 +8,19 @@
     "admin": {
         "redirects": true
     },
+    "externalRequest": {
+        "keepAlive": true,
+        "keepAliveMsecs": 60000,
+        "maxSockets": 256,
+        "maxFreeSockets": 256
+    },
     "updateCheck": {
         "url": "https://updates.ghost.org",
         "forceUpdate": false
     },
     "privacy": false,
     "security": {
+        "allowWebhookInternalIPs": false,
         "staffDeviceVerification": true
     },
     "useMinFiles": true,
@@ -32,6 +39,11 @@
             "settings": {},
             "imageSizes": {},
             "gscan": {}
+        },
+        "redirects": {
+            "active": "FileStore",
+            "FileStore": {},
+            "S3RedirectsStore": {}
         }
     },
     "storage": {
@@ -118,6 +130,18 @@
             "lifetime": 43200,
             "freeRetries": 8
         },
+        "checkout_session_global": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "checkout_session_email": {
+            "minWait": 600000,
+            "maxWait": 43200000,
+            "lifetime": 43200,
+            "freeRetries": 8
+        },
         "webmentions_block": {
             "minWait": 10,
             "maxWait": 100,
@@ -166,6 +190,9 @@
         "sitemapXSL": {
             "maxAge": 86400
         },
+        "llms": {
+            "maxAge": 3600
+        },
         "robotstxt": {
             "maxAge": 3600
         },
@@ -211,6 +238,13 @@
             "skipBootChecks": false
         }
     },
+    "theme": {
+        "uploadLimits": {
+            "compressedBytes": 1073741824,
+            "entryUncompressedBytes": 536870912,
+            "totalUncompressedBytes": 4294967296
+        }
+    },
     "imageOptimization": {
         "resize": true,
         "srcsets": true
@@ -240,7 +274,7 @@
     },
     "portal": {
         "url": "https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js",
-        "version": "2.64"
+        "version": "2.69"
     },
     "sodoSearch": {
         "url": "https://cdn.jsdelivr.net/ghost/sodo-search@~{version}/umd/sodo-search.min.js",
@@ -253,7 +287,11 @@
     },
     "comments": {
         "url": "https://cdn.jsdelivr.net/ghost/comments-ui@~{version}/umd/comments-ui.min.js",
-        "version": "1.3"
+        "version": "1.5"
+    },
+    "adminToolbar": {
+        "url": "https://cdn.jsdelivr.net/ghost/admin-toolbar@~{version}/umd/admin-toolbar.min.js",
+        "version": "0.1"
     },
     "signupForm": {
         "url": "https://cdn.jsdelivr.net/ghost/signup-form@~{version}/umd/signup-form.min.js",
@@ -261,6 +299,10 @@
     },
     "tenor": {
         "googleApiKey": null,
+        "contentFilter": "off"
+    },
+    "klipy": {
+        "apiKey": null,
         "contentFilter": "off"
     },
     "opensea": {
@@ -308,6 +350,5 @@
         "batchSize": 1000,
         "captureLinkClickBadMemberUuid": false
     },
-    "disableJSBackups": false,
-    "memberWelcomeEmailTestInbox": ""
+    "disableJSBackups": false
 }

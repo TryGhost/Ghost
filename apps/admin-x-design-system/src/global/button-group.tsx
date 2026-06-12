@@ -24,7 +24,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({size = 'md', buttons, link, li
     let groupColorClasses = clsx(
         'flex items-center justify-start rounded',
         link ? 'gap-4' : 'gap-2',
-        !link && !clearBg && '!gap-0 rounded-lg bg-grey-100 dark:bg-grey-900',
+        !link && !clearBg && 'gap-0! rounded-lg bg-grey-100 dark:bg-grey-900',
         className
     );
 
@@ -43,7 +43,7 @@ const ButtonGroup: React.FC<ButtonGroupProps> = ({size = 'md', buttons, link, li
                 const buttonProps = {...props};
 
                 if (!link && !clearBg) {
-                    buttonProps.className = clsx(props.className, 'w-8 rounded-lg border !px-0');
+                    buttonProps.className = clsx(props.className, 'w-8 rounded-lg border px-0!');
 
                     if (key === activeKey) {
                         buttonProps.color = 'white';

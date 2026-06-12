@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const errors = require('@tryghost/errors');
 
 const commands = require('../../../../../core/server/data/schema/commands');

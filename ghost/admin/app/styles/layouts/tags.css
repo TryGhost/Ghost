@@ -125,6 +125,28 @@ a.gh-tag-list-posts-count:hover {
 /* Tag details
 /* ---------------------------------------------------------- */
 
+.gh-tag-header .gh-canvas-header-content > .flex {
+    min-width: 0;
+}
+
+.gh-tag-header .gh-canvas-breadcrumb {
+    min-width: 0;
+    max-width: 100%;
+    overflow: hidden;
+}
+
+.gh-tag-header .gh-canvas-breadcrumb a,
+.gh-tag-header .gh-canvas-breadcrumb svg {
+    flex: 0 0 auto;
+}
+
+.gh-tag-header .gh-canvas-breadcrumb span {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
 .gh-tag-basic-settings-form {
     display: flex;
     align-items: flex-start;
@@ -182,7 +204,7 @@ label.gh-tag-setting-codeheader {
 .input-color:after {
     content: "#";
     position: absolute;
-    top: 9px;
+    top: 6px;
     left: 43px;
     color: var(--black);
     font-family: "Consolas", monaco, monospace;
@@ -196,7 +218,7 @@ label.gh-tag-setting-codeheader {
 .input-color input {
     padding-left: 52px;
     width: 112px;
-    height: 38px;
+    height: 32px;
     padding-right: 8px;
     font-family: "Consolas", monaco, monospace;
     font-size: 13px;
@@ -237,8 +259,8 @@ label.gh-tag-setting-codeheader {
 }
 
 .gh-tag-settings-colorcontainer .color-box-container {
-    height: 32px;
-    width: 32px;
+    height: 26px;
+    width: 26px;
     position: absolute;
     overflow: hidden;
     top: 2px;

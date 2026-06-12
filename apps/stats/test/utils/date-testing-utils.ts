@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {MockInstance, vi} from 'vitest';
 
 /**
@@ -60,26 +61,26 @@ export const createDateRange = (startDaysAgo: number, endDaysAgo: number = 0, ba
 };
 
 /**
- * Mock the getRangeDates function from @tryghost/shade
+ * Mock the getRangeDates function from @tryghost/shade/app
  * Provides consistent date ranges for testing
  */
 export const mockGetRangeDates = () => {
     return (range: number) => {
         const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
         return {
-            startDate: new Date(expectedDateFrom + 'T00:00:00.000Z'),
-            endDate: new Date(expectedDateTo + 'T23:59:59.999Z'),
+            startDate: moment.utc(expectedDateFrom).startOf('day'),
+            endDate: moment.utc(expectedDateTo).startOf('day'),
             timezone: 'UTC'
         };
     };
 };
 
 /**
- * Mock the formatQueryDate function from @tryghost/shade
+ * Mock the formatQueryDate function from @tryghost/shade/app
  * Provides consistent date formatting
  */
 export const mockFormatQueryDate = () => {
-    return (date: Date) => date.toISOString().split('T')[0];
+    return (date: moment.Moment) => date.format('YYYY-MM-DD');
 };
 
 /**
@@ -101,8 +102,8 @@ export const setupDateMocking = () => {
     const mockDate = mockSystemDate();
 
     // Mock external date functions
-    vi.mock('@tryghost/shade', async () => {
-        const actual = await vi.importActual('@tryghost/shade') as Record<string, unknown>;
+    vi.mock('@tryghost/shade/app', async () => {
+        const actual = await vi.importActual('@tryghost/shade/app') as Record<string, unknown>;
         return {
             ...actual,
             getRangeDates: vi.fn().mockImplementation(mockGetRangeDates()),

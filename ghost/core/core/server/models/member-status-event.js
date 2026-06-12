@@ -33,6 +33,11 @@ const MemberStatusEvent = ghostBookshelf.Model.extend({
                     WHEN from_status='free' THEN -1
                     ELSE 0 END
                 ) as free_delta`))
+                .select(knex.raw(`SUM(
+                    CASE WHEN to_status='gift' THEN 1
+                    WHEN from_status='gift' THEN -1
+                    ELSE 0 END
+                ) as gift_delta`))
                 .groupByRaw('DATE(created_at)')
                 .orderByRaw('DATE(created_at)');
         }

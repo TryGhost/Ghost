@@ -1,21 +1,25 @@
-import {ReactComponent as ReplyIcon} from '../../../images/icons/reply.svg';
-import {useAppContext} from '../../../app-context';
+import ReplyIcon from '../../../images/icons/reply.svg?react';
+import {Comment, useAppContext} from '../../../app-context';
 
 type Props = {
+    comment: Comment;
     disabled?: boolean;
     isReplying: boolean;
     openReplyForm: () => void;
 };
 
-const ReplyButton: React.FC<Props> = ({disabled, isReplying, openReplyForm}) => {
+const ReplyButton: React.FC<Props> = ({comment, disabled, isReplying, openReplyForm}) => {
     const {t, dispatchAction, isMember, hasRequiredTier} = useAppContext();
 
     const canReply = isMember && hasRequiredTier;
 
     const handleClick = () => {
         if (!canReply) {
+            // Pass the comment id so the CTA's "Sign in" can ask Portal to return
+            // the reader to this comment after signing in (see cta-box).
             dispatchAction('openPopup', {
-                type: 'ctaPopup'
+                type: 'ctaPopup',
+                commentId: comment.id
             });
             return;
         }

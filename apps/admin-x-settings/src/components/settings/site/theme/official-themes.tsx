@@ -92,18 +92,18 @@ const OfficialThemes: React.FC<{
                                 <Heading level={4}>{theme.name}</Heading>
                                 {showVariants ?
                                     variants.map((variant, idx) => (
-                                        <span className={clsx('absolute left-0 translate-y-px text-sm text-grey-700 opacity-0', {
+                                        <span className={clsx('absolute left-0 translate-y-px text-grey-700 opacity-0', {
                                             'opacity-100': idx === visibleVariantIdx && isVariantLooping || !isVariantLooping && idx === 0
                                         })}>{variant.category}</span>
                                     )) :
-                                    <span className='text-sm text-grey-700'>{theme.category}</span>
+                                    <span className='text-grey-700'>{theme.category}</span>
                                 }
                             </div>
                         </button>
                     );
                 })}
             </div>
-            <div className='mx-[-8vmin] mb-[-8vmin] mt-[8vmin] bg-black px-[8vmin] py-16 text-center text-lg text-white' style={
+            <div className='mx-[-8vmin] mt-[8vmin] mb-[-8vmin] bg-black px-[8vmin] py-16 text-center text-lg text-white' style={
                 {
                     background: `#15171a url(${MarketplaceBgImage}) 100% 100% / 35vw no-repeat`
                 }

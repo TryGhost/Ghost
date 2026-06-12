@@ -24,6 +24,7 @@ class CommentsImporter extends TableImporter {
 
     setReferencedModel(model) {
         this.model = model;
+        const publishedAt = dateToDatabaseString.parse(model.published_at);
 
         this.commentIds = []; // Store [id, parent_id, timestamp] tuples for reply-to-reply
 
@@ -31,12 +32,12 @@ class CommentsImporter extends TableImporter {
             shape: 'ease-out',
             trend: 'negative',
             // Use commentsPerPost as a baseline with some variance (+/- 20%)
-            total: Math.round(this.commentsPerPost * faker.datatype.float({min: 0.8, max: 1.2})),
-            startTime: new Date(model.published_at),
+            total: Math.round(this.commentsPerPost * faker.number.float({min: 0.8, max: 1.2})),
+            startTime: publishedAt,
             endTime: new Date()
         }).sort((a, b) => a.getTime() - b.getTime()); // Sort chronologically so replies always come after their targets
 
-        this.possibleMembers = this.members.filter(member => new Date(member.created_at) < new Date(model.published_at));
+        this.possibleMembers = this.members.filter(member => dateToDatabaseString.parse(member.created_at) < publishedAt);
     }
 
     generate() {
@@ -67,11 +68,11 @@ class CommentsImporter extends TableImporter {
                 let replyTarget;
                 if (preferReplyToReply) {
                     // Pick from existing replies to create a reply-to-reply
-                    const replyToIndex = faker.datatype.number(existingReplies.length - 1);
+                    const replyToIndex = faker.number.int(existingReplies.length - 1);
                     replyTarget = existingReplies[replyToIndex];
                 } else {
                     // Pick any random eligible comment
-                    const replyToIndex = faker.datatype.number(eligibleComments.length - 1);
+                    const replyToIndex = faker.number.int(eligibleComments.length - 1);
                     replyTarget = eligibleComments[replyToIndex];
                 }
                 const [replyToId, replyToParentId] = replyTarget;
@@ -92,7 +93,7 @@ class CommentsImporter extends TableImporter {
         const event = {
             id: this.fastFakeObjectId(),
             post_id: this.model.id,
-            member_id: this.possibleMembers[faker.datatype.number(this.possibleMembers.length - 1)].id,
+            member_id: this.possibleMembers[faker.number.int(this.possibleMembers.length - 1)].id,
             parent_id: parentId,
             in_reply_to_id: inReplyToId,
             status: 'published',

@@ -32,7 +32,7 @@ export default class SearchService extends Service {
         }
 
         // start loading immediately in the background
-        this.refreshContentTask.perform();
+        this.refreshContentTask.unlinked().perform();
 
         // debounce searches to 200ms to avoid thrashing CPU
         yield timeout(200);

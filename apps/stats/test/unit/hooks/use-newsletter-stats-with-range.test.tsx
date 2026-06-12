@@ -1,3 +1,4 @@
+import moment from 'moment';
 import {TestWrapper} from '@tryghost/admin-x-framework/test/test-utils';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
@@ -27,12 +28,12 @@ const mockUseNewsletterClickStats = vi.mocked(useNewsletterClickStats);
 const mockUseBrowseNewsletters = vi.mocked(useBrowseNewsletters);
 
 // Mock external date functions
-vi.mock('@tryghost/shade', () => ({
+vi.mock('@tryghost/shade/app', () => ({
     formatQueryDate: vi.fn(),
     getRangeDates: vi.fn()
 }));
 
-const {formatQueryDate, getRangeDates} = await import('@tryghost/shade');
+const {formatQueryDate, getRangeDates} = await import('@tryghost/shade/app');
 const mockFormatQueryDate = vi.mocked(formatQueryDate);
 const mockGetRangeDates = vi.mocked(getRangeDates);
 
@@ -50,13 +51,13 @@ describe('Newsletter Stats Hooks', () => {
         mockGetRangeDates.mockImplementation((range: number) => {
             const {expectedDateFrom, expectedDateTo} = getExpectedDateRange(range);
             return {
-                startDate: new Date(expectedDateFrom + 'T00:00:00.000Z'),
-                endDate: new Date(expectedDateTo + 'T23:59:59.999Z'),
+                startDate: moment.utc(expectedDateFrom).startOf('day'),
+                endDate: moment.utc(expectedDateTo).startOf('day'),
                 timezone: 'UTC'
             };
         });
 
-        mockFormatQueryDate.mockImplementation((date: Date) => date.toISOString().split('T')[0]);
+        mockFormatQueryDate.mockImplementation(date => date.format('YYYY-MM-DD'));
 
         // Apply the mocks to the actual imported modules with default return values
         mockSuccess(mockUseNewsletterStats, mockDataFactories.statsResponse([]));

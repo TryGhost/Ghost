@@ -55,10 +55,10 @@ const TextArea: React.FC<TextAreaProps> = ({
     };
 
     let styles = clsx(
-        'order-2 rounded-lg border bg-grey-150 px-3 py-2 transition-all dark:bg-grey-900 dark:text-white',
-        error ? 'border-red bg-white' : 'border-transparent placeholder:text-grey-500 hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] dark:placeholder:text-grey-800 dark:hover:bg-grey-925 dark:focus:bg-grey-950',
+        'order-2 w-full max-w-none rounded-lg border bg-grey-100 px-3 py-2 transition-all dark:bg-grey-900 dark:text-white',
+        error ? 'border-red bg-white' : 'border-transparent placeholder:text-grey-500 hover:bg-grey-100 focus:border-green focus:bg-white focus:shadow-[0_0_0_2px_rgba(48,207,67,0.25)] dark:placeholder:text-grey-800 dark:hover:bg-grey-900 dark:focus:bg-grey-950',
         title && 'mt-1.5',
-        fontStyle === 'mono' && 'font-mono text-sm',
+        fontStyle === 'mono' && 'font-mono',
         className
     );
 
@@ -101,7 +101,7 @@ const TextArea: React.FC<TextAreaProps> = ({
                     </FormPrimitive.Control>
                 </FormPrimitive.Field>
                 {title && <Heading className={'order-1'} htmlFor={id} useLabelTag={true}>{title}</Heading>}
-                {hint && <Hint className='order-3' color={error ? 'red' : ''}>{hint}</Hint>}
+                {hint && <Hint className='order-3 mt-1' color={error ? 'red' : ''}>{hint}</Hint>}
             </div>
         </FormPrimitive.Root>
     );

@@ -4,6 +4,13 @@ module.exports = {
         node: true,
         mocha: true
     },
+    globals: {
+        // Vitest globals used by files that have migrated off mocha
+        // (vitest.config.ts has globals: true). Mocha env covers
+        // before/after/etc; these are the vitest-only names.
+        beforeAll: 'readonly',
+        afterAll: 'readonly'
+    },
     plugins: [
         'ghost'
     ],
@@ -32,7 +39,8 @@ module.exports = {
         'no-unused-vars': [
             'error',
             {
-                varsIgnorePattern: '^should$'
+                varsIgnorePattern: '^should$',
+                argsIgnorePattern: '^_'
             }
         ],
         'no-useless-escape': 'off',

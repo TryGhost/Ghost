@@ -9,6 +9,7 @@ const membersService = require('../../services/members');
 const settingsCache = require('../../../shared/settings-cache');
 const tpl = require('@tryghost/tpl');
 const _ = require('lodash');
+const {getCSVExportFileName} = require('./utils/csv-export-filename');
 
 const messages = {
     memberNotFound: 'Member not found.',
@@ -377,8 +378,7 @@ const controller = {
             disposition: {
                 type: 'csv',
                 value() {
-                    const datetime = (new Date()).toJSON().substring(0, 10);
-                    return `members.${datetime}.csv`;
+                    return getCSVExportFileName('members');
                 }
             },
             contentType: 'text/csv',
@@ -394,7 +394,8 @@ const controller = {
         validation: {},
         async query(frame) {
             return {
-                data: await membersService.export(frame.options)
+                data: await membersService.export(frame.options),
+                filename: getCSVExportFileName('members')
             };
         }
     },
@@ -453,16 +454,17 @@ const controller = {
         },
         async query() {
             const memberStats = await membersService.api.events.getStatuses();
-            let totalMembers = _.last(memberStats) ? (_.last(memberStats).paid + _.last(memberStats).free + _.last(memberStats).comped) : 0;
+            const last = _.last(memberStats);
+            let totalMembers = last ? (last.paid + last.free + last.comped + last.gift) : 0;
 
             return {
                 resource: 'members',
                 total: totalMembers,
                 data: memberStats.map((d) => {
-                    const {paid, free, comped} = d;
+                    const {paid, free, comped, gift} = d;
                     return {
                         date: moment(d.date).format('YYYY-MM-DD'),
-                        paid, free, comped
+                        paid, free, comped, gift
                     };
                 })
             };

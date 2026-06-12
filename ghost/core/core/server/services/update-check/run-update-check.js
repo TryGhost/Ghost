@@ -32,9 +32,6 @@ if (parentPort) {
     const updateCheck = require('./');
 
     // INIT required services
-    const models = require('../../models');
-    models.init();
-
     const permissions = require('../permissions');
     await permissions.init();
 
@@ -43,6 +40,9 @@ if (parentPort) {
 
     const tiers = require('../tiers');
     await tiers.init();
+
+    const emailAddress = require('../email-address');
+    emailAddress.init();
     // Finished INIT
 
     await updateCheck({

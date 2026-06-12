@@ -1,14 +1,22 @@
-import Component from '@ember/component';
-import classic from 'ember-classic-decorator';
-import {computed} from '@ember/object';
+import Component from '@glimmer/component';
 import {inject as service} from '@ember/service';
 
-@classic
 export default class GhBillingModal extends Component {
     @service billing;
 
-    @computed('billingWindowOpen')
     get visibilityClass() {
-        return this.billingWindowOpen ? 'gh-billing' : 'gh-billing closed';
+        return this.args.billingWindowOpen ? 'gh-billing' : 'gh-billing closed';
+    }
+
+    get showLoadingState() {
+        return this.args.billingWindowOpen
+            && !this.billing.billingAppLoaded
+            && !this.billing.billingAppLoadFailureReported;
+    }
+
+    get showErrorState() {
+        return this.args.billingWindowOpen
+            && this.billing.billingAppLoadFailureReported
+            && !this.billing.billingAppLoaded;
     }
 }

@@ -8,7 +8,6 @@ const htmlToPlaintext = (html) => {
     return html.replace(/<[^>]+>/g, '').replace(/\s+/g, ' ').trim();
 };
 
-
 export class MockedApi {
     comments: any[];
     postId: string;
@@ -16,6 +15,7 @@ export class MockedApi {
     settings: any;
     members: any[];
     delay: number;
+    capabilities: any;
 
     labs: any;
 
@@ -27,13 +27,14 @@ export class MockedApi {
         return this.comments.flatMap(c => c.replies).find(r => r.id === id);
     }
 
-    constructor({postId = 'ABC', comments = [], member = undefined, settings = {}, members = [], labs = {}}: {postId?: string, comments?: any[], member?: any, settings?: any, members?: any[], labs?: any}) {
+    constructor({postId = 'ABC', comments = [], member = undefined, settings = {}, members = [], labs = {}, capabilities = {}}: {postId?: string, comments?: any[], member?: any, settings?: any, members?: any[], labs?: any, capabilities?: any}) {
         this.postId = postId;
         this.comments = comments;
         this.member = member;
         this.settings = settings;
-        this.members = [];
+        this.members = members;
         this.delay = 0;
+        this.capabilities = capabilities;
         this.labs = labs;
         this.failures = new Map();
     }
@@ -66,7 +67,19 @@ export class MockedApi {
             ...overrides,
             post_id: this.postId
         });
+
+        // If this is a reply, add it to the parent's replies array (not top-level)
+        if (overrides.parent_id) {
+            const parent = this.comments.find(c => c.id === overrides.parent_id);
+            if (parent) {
+                parent.replies.push(fixture);
+                parent.count.replies = parent.replies.length;
+                return fixture;
+            }
+        }
+
         this.comments.push(fixture);
+        return fixture;
     }
 
     buildReply(overrides: any = {}) {
@@ -113,6 +126,10 @@ export class MockedApi {
         this.labs = overrides;
     }
 
+    setCapabilities(overrides) {
+        this.capabilities = overrides;
+    }
+
     commentsCounts() {
         // get total number of published comments and replies in this.comments
         const count = flattenComments(this.comments).filter(c => c.status === 'published').length;
@@ -126,10 +143,10 @@ export class MockedApi {
         // Sort comments on created at + id
         const setOrder = order || 'default';
 
-        if (setOrder === 'count__likes desc, created_at desc') {
-            // Sort by likes (desc) first, then by created_at (asc)
+        if (setOrder === 'count__net_score desc, created_at desc') {
+            // Sort by net score (likes - dislikes, desc) first, then by created_at (asc)
             this.comments.sort((a, b) => {
-                const likesDiff = b.count.likes - a.count.likes;
+                const likesDiff = (b.count.likes - (b.count.dislikes ?? 0)) - (a.count.likes - (a.count.dislikes ?? 0));
                 if (likesDiff !== 0) {
                     return likesDiff;
                 } // Prioritize by likes
@@ -137,6 +154,20 @@ export class MockedApi {
                 const aDate = new Date(a.created_at).getTime();
                 const bDate = new Date(b.created_at).getTime();
                 return aDate - bDate; // For the rest, sort by date asc
+            });
+        }
+
+        if (setOrder === 'count__likes desc, created_at desc') {
+            // Sort by likes (desc) first, then by created_at (asc)
+            this.comments.sort((a, b) => {
+                const likesDiff = b.count.likes - a.count.likes;
+                if (likesDiff !== 0) {
+                    return likesDiff;
+                }
+
+                const aDate = new Date(a.created_at).getTime();
+                const bDate = new Date(b.created_at).getTime();
+                return aDate - bDate;
             });
         }
 
@@ -207,7 +238,7 @@ export class MockedApi {
             comments: comments.map((comment) => {
                 return {
                     ...comment,
-                    replies: comment.replies ? comment.replies?.slice(0, 3) : [],
+                    replies: comment.replies ? comment.replies : [],
                     count: {
                         ...comment.count,
                         replies: comment.replies ? comment.replies?.length : 0
@@ -215,6 +246,7 @@ export class MockedApi {
                 };
             }),
             meta: {
+                ...(Object.keys(this.capabilities).length > 0 ? {capabilities: this.capabilities} : {}),
                 pagination: {
                     pages: Math.ceil(filteredComments.length / limit),
                     total: filteredComments.length,
@@ -225,7 +257,7 @@ export class MockedApi {
         };
     }
 
-    browseReplies({commentId, filter, limit = 5}: {commentId: string, filter?: string, limit?: number}) {
+    browseReplies({commentId, filter, limit = 5, page = 1}: {commentId: string, filter?: string, limit?: number, page?: number}) {
         const comment = this.comments.find(c => c.id === commentId);
         if (!comment) {
             return {
@@ -256,18 +288,19 @@ export class MockedApi {
             });
         }
 
-        const limitedReplies = filteredReplies.slice(0, limit);
-        const hasMore = filteredReplies.length > limit;
+        const startIndex = (page - 1) * limit;
+        const limitedReplies = filteredReplies.slice(startIndex, startIndex + limit);
+        const hasMore = filteredReplies.length > startIndex + limit;
 
         return {
             comments: limitedReplies,
             meta: {
                 pagination: {
-                    page: 1,
+                    page,
                     pages: Math.ceil(filteredReplies.length / limit),
                     total: filteredReplies.length,
                     limit,
-                    next: hasMore ? 2 : null,
+                    next: hasMore ? page + 1 : null,
                     prev: null
                 }
             }
@@ -330,7 +363,7 @@ export class MockedApi {
             const payload = JSON.parse(route.request().postData());
 
             this.#lastCommentDate = new Date();
-            this.addComment({
+            const comment = this.addComment({
                 ...payload.comments[0],
                 member: this.member
             });
@@ -338,7 +371,7 @@ export class MockedApi {
                 status: 200,
                 body: JSON.stringify({
                     comments: [
-                        this.comments[this.comments.length - 1]
+                        comment
                     ]
                 })
             });
@@ -412,6 +445,11 @@ export class MockedApi {
             }
 
             if (route.request().method() === 'POST') {
+                // Mutual exclusivity: remove dislike if exists
+                if (comment.disliked) {
+                    comment.count.dislikes = Math.max(0, (comment.count.dislikes ?? 0) - 1);
+                    comment.disliked = false;
+                }
                 comment.count.likes += 1;
                 comment.liked = true;
             }
@@ -419,6 +457,56 @@ export class MockedApi {
             if (route.request().method() === 'DELETE') {
                 comment.count.likes -= 1;
                 comment.liked = false;
+            }
+
+            await route.fulfill({
+                status: 200,
+                body: JSON.stringify(this.browseComments({
+                    limit: 1,
+                    filter: `id:'${commentId}'`,
+                    page: 1,
+                    order: ''
+                }))
+            });
+        },
+
+        async dislikeComment(route) {
+            if (this.capabilities?.dislikes !== true) {
+                return route.fulfill({
+                    status: 404,
+                    body: 'Dislike capability not enabled'
+                });
+            }
+
+            const failureResponse = await this.#handleFailure('dislikeComment');
+            if (failureResponse) {
+                return route.fulfill(failureResponse);
+            }
+            await this.#delayResponse();
+            const url = new URL(route.request().url());
+            const commentId = url.pathname.split('/').reverse()[2];
+
+            const comment = flattenComments(this.comments).find(c => c.id === commentId);
+            if (!comment) {
+                return await route.fulfill({
+                    status: 404,
+                    body: 'Comment not found'
+                });
+            }
+
+            if (route.request().method() === 'POST') {
+                // Mutual exclusivity: remove like if exists
+                if (comment.liked) {
+                    comment.count.likes = Math.max(0, (comment.count.likes ?? 0) - 1);
+                    comment.liked = false;
+                }
+                comment.count.dislikes = (comment.count.dislikes ?? 0) + 1;
+                comment.disliked = true;
+            }
+
+            if (route.request().method() === 'DELETE') {
+                comment.count.dislikes = Math.max(0, (comment.count.dislikes ?? 0) - 1);
+                comment.disliked = false;
             }
 
             await route.fulfill({
@@ -441,6 +529,7 @@ export class MockedApi {
             const url = new URL(route.request().url());
 
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
+            const page = parseInt(url.searchParams.get('page') ?? '1');
             const commentId = url.pathname.split('/').reverse()[2];
             const filter = url.searchParams.get('filter') ?? '';
 
@@ -448,6 +537,7 @@ export class MockedApi {
                 status: 200,
                 body: JSON.stringify(this.browseReplies({
                     limit,
+                    page,
                     filter,
                     commentId
                 }))
@@ -606,6 +696,7 @@ export class MockedApi {
         await page.route(`${path}/members/api/comments/post/*/*`, this.requestHandlers.browseComments.bind(this));
         await page.route(`${path}/members/api/comments/*/`, this.requestHandlers.getOrDeleteComment.bind(this));
         await page.route(`${path}/members/api/comments/*/like/`, this.requestHandlers.likeComment.bind(this));
+        await page.route(`${path}/members/api/comments/*/dislike/`, this.requestHandlers.dislikeComment.bind(this));
         await page.route(`${path}/members/api/comments/*/replies/*`, this.requestHandlers.getReplies.bind(this));
         await page.route(`${path}/members/api/comments/counts/*`, this.requestHandlers.getCommentCounts.bind(this));
         await page.route(`${path}/settings/*`, this.requestHandlers.getSettings.bind(this));

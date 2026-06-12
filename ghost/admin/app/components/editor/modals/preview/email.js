@@ -8,13 +8,20 @@ import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
 const INJECTED_CSS = `
-html::-webkit-scrollbar {
-    display: none;
-    width: 0;
-    background: transparent
-}
 html {
-    scrollbar-width: none;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(0, 0, 0, 0.2) transparent;
+}
+html::-webkit-scrollbar {
+    width: 8px;
+    background: transparent;
+}
+html::-webkit-scrollbar-thumb {
+    border-radius: 4px;
+    background-color: rgba(0, 0, 0, 0.2);
+}
+html::-webkit-scrollbar-thumb:hover {
+    background-color: rgba(0, 0, 0, 0.3);
 }
 `;
 
@@ -78,6 +85,23 @@ export default class ModalPostPreviewEmailComponent extends Component {
             iframe.contentWindow.document.write(this.html);
             iframe.contentWindow.document.close();
         }
+    }
+
+    @action
+    focusPreviewFrame(event) {
+        const iframe = event?.target;
+        const body = iframe?.contentDocument?.body;
+
+        if (!body) {
+            iframe?.contentWindow?.focus();
+            return;
+        }
+
+        if (!body.hasAttribute('tabindex')) {
+            body.setAttribute('tabindex', '-1');
+        }
+
+        body.focus({preventScroll: true});
     }
 
     @task({drop: true})
@@ -155,7 +179,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
             subject = emailPreview.subject;
         }
 
-        // inject extra CSS into the html for disabling links and scrollbars etc
+        // inject extra CSS so the preview behaves consistently inside the iframe
         let domParser = new DOMParser();
         let htmlDoc = domParser.parseFromString(html, 'text/html');
         let stylesheet = htmlDoc.querySelector('style');

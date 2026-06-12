@@ -1,15 +1,13 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const OfferDuration = require('../../../../../../../core/server/services/offers/domain/models/offer-duration');
 
 describe('OfferDuration', function () {
     describe('OfferDuration.create factory', function () {
-        it('Will only allow creating a once, repeating, forever, trial or free_months duration', function () {
+        it('Will only allow creating a once, repeating, forever or trial duration', function () {
             OfferDuration.create('once');
             OfferDuration.create('forever');
             OfferDuration.create('trial');
-            OfferDuration.create('free_months');
             OfferDuration.create('repeating', 2);
 
             try {

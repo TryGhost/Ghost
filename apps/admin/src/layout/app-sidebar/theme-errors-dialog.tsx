@@ -1,13 +1,6 @@
 import {useState} from 'react';
-import {
-    Button,
-    Dialog,
-    DialogContent,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    LucideIcon
-} from '@tryghost/shade';
+import {Button, Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import type {ThemeProblem} from '@tryghost/admin-x-framework/api/themes';
 
 interface ThemeErrorsDialogProps {
@@ -35,7 +28,7 @@ function ThemeErrorItem({error}: {error: ThemeProblem}) {
                     <p dangerouslySetInnerHTML={{__html: error.details}} />
                     {error.failures?.length > 0 && (
                         <div className="mt-2">
-                            <h6 className="text-xs font-semibold uppercase text-muted-foreground">Affected files:</h6>
+                            <h6 className="text-xs font-semibold text-muted-foreground uppercase">Affected files:</h6>
                             <ul className="mt-1 list-disc pl-4">
                                 {error.failures.map((failure, i) => (
                                     <li key={i}>
@@ -55,14 +48,14 @@ function ThemeErrorItem({error}: {error: ThemeProblem}) {
 function ThemeErrorsDialog({open, onOpenChange, errors, warnings}: ThemeErrorsDialogProps) {
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-lg max-h-[85vh] flex flex-col">
+            <DialogContent className="flex max-h-[85vh] max-w-lg flex-col">
                 <DialogHeader>
                     <DialogTitle className="text-2xl tracking-tighter">
                         Theme errors
                     </DialogTitle>
                 </DialogHeader>
 
-                <section className="flex-1 overflow-y-auto -mx-6 px-6">
+                <section className="-mx-6 flex-1 overflow-y-auto px-6">
                     {errors.length > 0 && (
                         <div>
                             <h2 className="mb-1 text-sm font-semibold">Errors</h2>

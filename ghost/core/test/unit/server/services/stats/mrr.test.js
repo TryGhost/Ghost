@@ -3,7 +3,6 @@ const MrrStatsService = require('../../../../../core/server/services/stats/mrr-s
 const moment = require('moment');
 const sinon = require('sinon');
 const knex = require('knex').default;
-const should = require('should');
 
 describe('MrrStatsService', function () {
     describe('getHistory', function () {
@@ -96,12 +95,12 @@ describe('MrrStatsService', function () {
             };
         }
 
-        before(function () {
+        beforeAll(function () {
             // Set fake timers to our test "today"
             sinon.useFakeTimers(testToday.toDate().getTime());
         });
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 

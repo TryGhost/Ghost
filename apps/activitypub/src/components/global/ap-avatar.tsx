@@ -1,8 +1,9 @@
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
-import getUsername from '@utils/get-username';
+import getHandle from '@utils/get-handle';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
-import {Button, LucideIcon, Skeleton} from '@tryghost/shade';
+import {Button, Skeleton} from '@tryghost/shade/components';
+import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 import {useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
@@ -45,9 +46,9 @@ const FollowButton: React.FC<FollowButtonProps> = ({onFollow, onUnfollow, author
             onClick={handleClick}
         >
             {showCheckmark ? (
-                <LucideIcon.Check className='-mb-px !size-3 !stroke-[2.4]' />
+                <LucideIcon.Check className='-mb-px size-3! stroke-[2.4]!' />
             ) : (
-                <LucideIcon.Plus className='!size-[14px] !stroke-2' />
+                <LucideIcon.Plus className='size-[14px]! stroke-2!' />
             )}
         </Button>
     );
@@ -139,7 +140,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
         return <Skeleton className={imageClass} containerClassName={containerClass} />;
     }
 
-    const handle = author?.handle || getUsername(author as ActorProperties);
+    const handle = getHandle(author as ActorProperties);
 
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();

@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 
 // Stuff we are testing
 const date = require('../../../../core/frontend/helpers/date');

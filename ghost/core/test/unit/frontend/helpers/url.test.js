@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../utils');
 
@@ -30,11 +29,11 @@ describe('{{url}} helper', function () {
     });
 
     describe('no subdir', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({url: 'http://localhost:65535/'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
@@ -241,11 +240,11 @@ describe('{{url}} helper', function () {
     });
 
     describe('with subdir', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set({url: 'http://localhost:65535/blog'});
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 

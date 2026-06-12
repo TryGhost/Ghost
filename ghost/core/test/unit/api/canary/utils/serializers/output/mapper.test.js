@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const testUtils = require('../../../../../../utils');
 const dateUtil = require('../../../../../../../core/server/api/endpoints/utils/serializers/output/utils/date');
@@ -67,17 +66,17 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             await mappers.posts(post, frame);
 
-            assert.equal(dateUtil.forPost.callCount, 1);
+            sinon.assert.calledOnce(dateUtil.forPost);
 
-            assert.equal(extraAttrsUtils.forPost.callCount, 1);
+            sinon.assert.calledOnce(extraAttrsUtils.forPost);
 
-            assert.equal(cleanUtil.post.callCount, 1);
-            assert.equal(cleanUtil.tag.callCount, 1);
-            assert.equal(cleanUtil.author.callCount, 1);
+            sinon.assert.calledOnce(cleanUtil.post);
+            sinon.assert.calledOnce(cleanUtil.tag);
+            sinon.assert.calledOnce(cleanUtil.author);
 
-            assert.equal(urlUtil.forPost.callCount, 1);
-            assert.equal(urlUtil.forTag.callCount, 1);
-            assert.equal(urlUtil.forUser.callCount, 1);
+            sinon.assert.calledOnce(urlUtil.forPost);
+            sinon.assert.calledOnce(urlUtil.forTag);
+            sinon.assert.calledOnce(urlUtil.forUser);
 
             assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', {id: 'id3', feature_image: 'value'}, frame.options]);
             assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id4', {name: 'Ghosty', id: 'id4'}, frame.options]);
@@ -104,9 +103,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             mappers.users(user, frame);
 
-            assert.equal(urlUtil.forUser.callCount, 1);
+            sinon.assert.calledOnce(urlUtil.forUser);
             assert.deepEqual(urlUtil.forUser.getCall(0).args, ['id1', user, frame.options]);
-            assert.equal(cleanUtil.author.callCount, 1);
+            sinon.assert.calledOnce(cleanUtil.author);
         });
     });
 
@@ -130,9 +129,9 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             mappers.tags(tag, frame);
 
-            assert.equal(urlUtil.forTag.callCount, 1);
+            sinon.assert.calledOnce(urlUtil.forTag);
             assert.deepEqual(urlUtil.forTag.getCall(0).args, ['id3', tag, frame.options]);
-            assert.equal(cleanUtil.tag.callCount, 1);
+            sinon.assert.calledOnce(cleanUtil.tag);
         });
     });
 
@@ -422,6 +421,7 @@ describe('Unit: utils/serializers/output/mappers', function () {
                     html: 'html1',
                     created_at: 'created_at1',
                     edited_at: 'edited_at1',
+                    pinned: false,
                     member: {
                         id: 'id1',
                         uuid: 'uuid1',
@@ -681,10 +681,12 @@ describe('Unit: utils/serializers/output/mappers', function () {
                         }
                     },
                     in_reply_to_id: null,
-                    in_reply_to_snippet: null
+                    in_reply_to_snippet: null,
+                    pinned: false
                 },
                 in_reply_to_id: 'comment2',
-                in_reply_to_snippet: 'comment 2'
+                in_reply_to_snippet: 'comment 2',
+                pinned: false
             });
         });
 
@@ -706,7 +708,8 @@ describe('Unit: utils/serializers/output/mappers', function () {
 
             assert.deepEqual(mapped, {
                 in_reply_to_snippet: 'First paragraph with link, and new line. Second paragraph',
-                member: null
+                member: null,
+                pinned: false
             });
         });
 
@@ -726,7 +729,8 @@ describe('Unit: utils/serializers/output/mappers', function () {
                 html: '<p>comment 1</p>',
                 member: null,
                 in_reply_to_id: null,
-                in_reply_to_snippet: null
+                in_reply_to_snippet: null,
+                pinned: false
             });
         });
     });

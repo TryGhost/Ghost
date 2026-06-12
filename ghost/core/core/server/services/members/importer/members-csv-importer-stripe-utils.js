@@ -45,8 +45,8 @@ module.exports = class MembersCSVImporterStripeUtils {
      * flexibility and reduce duplication
      *
      * @param {Object} data
-     * @param {String} data.customer_id - Stripe customer ID
-     * @param {String} data.product_id - Ghost product ID
+     * @param {string} data.customer_id - Stripe customer ID
+     * @param {string} data.product_id - Ghost product ID
      * @param {Object} options
      * @returns {Promise<Object>}
      */
@@ -185,7 +185,7 @@ module.exports = class MembersCSVImporterStripeUtils {
     /**
      * Archive a price in Stripe
      *
-     * @param {Number} stripePriceId
+     * @param {number} stripePriceId
      * @returns {Promise<void>}
      */
     async archivePrice(stripePriceId) {

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const path = require('path');
 const t = require('../../../../core/frontend/helpers/t');
 const themeI18n = require('../../../../core/frontend/services/theme-engine/i18n');
@@ -7,11 +6,11 @@ const themeI18n = require('../../../../core/frontend/services/theme-engine/i18n'
 describe('{{t}} helper', function () {
     let ogBasePath = themeI18n.basePath;
 
-    before(function () {
+    beforeAll(function () {
         themeI18n.basePath = path.join(__dirname, '../../../utils/fixtures/themes/');
     });
 
-    after(function () {
+    afterAll(function () {
         themeI18n.basePath = ogBasePath;
     });
 

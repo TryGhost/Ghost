@@ -10,8 +10,8 @@ describe('ViewHeader Components', () => {
             <ViewHeader>
                 <div>Header Content</div>
                 <ViewHeaderActions>
-                    <button>Action 1</button>
-                    <button>Action 2</button>
+                    <button type="button">Action 1</button>
+                    <button type="button">Action 2</button>
                 </ViewHeaderActions>
             </ViewHeader>
         );
@@ -47,7 +47,7 @@ describe('ViewHeader Components', () => {
     it('renders ViewHeaderActions with correct styling', () => {
         render(
             <ViewHeaderActions>
-                <button>Action</button>
+                <button type="button">Action</button>
             </ViewHeaderActions>
         );
         
@@ -79,9 +79,9 @@ describe('ViewHeader Components', () => {
             <ViewHeader>
                 <div>Header Content</div>
                 <ViewHeaderActions>
-                    <button>Action 1</button>
+                    <button type="button">Action 1</button>
                     <span>Separator</span>
-                    <button>Action 2</button>
+                    <button type="button">Action 2</button>
                 </ViewHeaderActions>
             </ViewHeader>
         );

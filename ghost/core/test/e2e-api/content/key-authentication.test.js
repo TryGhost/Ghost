@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');

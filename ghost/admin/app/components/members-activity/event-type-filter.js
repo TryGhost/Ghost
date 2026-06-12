@@ -5,10 +5,9 @@ import {inject as service} from '@ember/service';
 
 export default class MembersActivityEventTypeFilter extends Component {
     @service settings;
-    @service feature;
 
     getAvailableEventTypes() {
-        return getAvailableEventTypes(this.settings, this.feature, this.args.hiddenEvents);
+        return getAvailableEventTypes(this.settings, this.args.hiddenEvents);
     }
 
     get eventTypes() {
@@ -26,7 +25,7 @@ export default class MembersActivityEventTypeFilter extends Component {
 
     @action
     toggleEventType(eventType) {
-        const newExcludedEvents = toggleEventType(eventType, this.eventTypes);
+        const newExcludedEvents = toggleEventType(eventType, this.args.excludedEvents);
         this.args.onChange(newExcludedEvents || null);
     }
 }

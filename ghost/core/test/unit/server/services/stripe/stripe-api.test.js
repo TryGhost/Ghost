@@ -1,8 +1,10 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const should = require('should');
 const rewire = require('rewire');
+
+require('../../../../../core/server/services/i18n').init();
+const {t: i18nT} = require('../../../../../core/server/services/i18n');
 const StripeAPI = rewire('../../../../../core/server/services/stripe/stripe-api');
 
 describe('StripeAPI', function () {
@@ -376,7 +378,7 @@ describe('StripeAPI', function () {
         it('cancels a subscription trial', async function () {
             const result = await api.cancelSubscriptionTrial(mockSubscription.id);
 
-            assert.equal(mockStripe.subscriptions.update.callCount, 1);
+            sinon.assert.calledOnce(mockStripe.subscriptions.update);
 
             assert.equal(mockStripe.subscriptions.update.args[0][0], mockSubscription.id);
             assert.deepEqual(mockStripe.subscriptions.update.args[0][1], {trial_end: 'now'});
@@ -416,49 +418,9 @@ describe('StripeAPI', function () {
         it('adds a coupon to a subscription', async function () {
             const result = await api.addCouponToSubscription('sub_123', 'coupon_abc');
 
-            assert.equal(mockStripe.subscriptions.update.callCount, 1);
+            sinon.assert.calledOnce(mockStripe.subscriptions.update);
             assert.equal(mockStripe.subscriptions.update.args[0][0], 'sub_123');
             assert.deepEqual(mockStripe.subscriptions.update.args[0][1], {coupon: 'coupon_abc'});
-
-            assert.deepEqual(result, mockSubscription);
-        });
-    });
-
-    describe('updateSubscriptionTrialEnd', function () {
-        const mockSubscription = {
-            id: 'sub_456',
-            status: 'active',
-            trial_end: 1735689600
-        };
-
-        beforeEach(function () {
-            mockStripe = {
-                subscriptions: {
-                    update: sinon.stub().resolves(mockSubscription)
-                }
-            };
-            const mockStripeConstructor = sinon.stub().returns(mockStripe);
-            StripeAPI.__set__('Stripe', mockStripeConstructor);
-            api.configure({
-                secretKey: ''
-            });
-        });
-
-        afterEach(function () {
-            sinon.restore();
-        });
-
-        it('updates trial_end with proration_behavior', async function () {
-            const result = await api.updateSubscriptionTrialEnd('sub_456', 1735689600, {
-                prorationBehavior: 'none'
-            });
-
-            assert.equal(mockStripe.subscriptions.update.callCount, 1);
-            assert.equal(mockStripe.subscriptions.update.args[0][0], 'sub_456');
-            assert.deepEqual(mockStripe.subscriptions.update.args[0][1], {
-                trial_end: 1735689600,
-                proration_behavior: 'none'
-            });
 
             assert.deepEqual(result, mockSubscription);
         });
@@ -694,6 +656,277 @@ describe('StripeAPI', function () {
             });
 
             assert(mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields.length <= 3);
+        });
+    });
+
+    describe('createGiftCheckoutSession', function () {
+        beforeEach(function () {
+            mockStripe = {
+                checkout: {
+                    sessions: {
+                        create: sinon.stub().resolves({url: 'https://checkout.stripe.com/session'})
+                    }
+                }
+            };
+
+            sinon.stub(mockLabs, 'isSet');
+
+            const mockStripeConstructor = sinon.stub().returns(mockStripe);
+
+            StripeAPI.__set__('Stripe', mockStripeConstructor);
+            StripeAPI.__set__('t', i18nT);
+
+            api.configure({
+                checkoutSessionSuccessUrl: '/success',
+                checkoutSessionCancelUrl: '/cancel',
+                checkoutSetupSessionSuccessUrl: '/setup-success',
+                checkoutSetupSessionCancelUrl: '/setup-cancel',
+                secretKey: ''
+            });
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('creates a session with mode payment and inline price_data', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {ghost_gift: 'true', gift_token: 'abc-123'}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.mode, 'payment');
+            assert.equal(args.submit_type, 'pay');
+            assert.equal(args.success_url, '/gift-success');
+            assert.equal(args.cancel_url, '/gift-cancel');
+            assert.equal(args.line_items[0].quantity, 1);
+            assert.equal(args.line_items[0].price_data.unit_amount, 5000);
+            assert.equal(args.line_items[0].price_data.currency, 'usd');
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift subscription — Pro (1 year)');
+        });
+
+        it('uses 1 month label for monthly cadence', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 1000,
+                currency: 'usd',
+                tierName: 'Basic',
+                cadence: 'month',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift subscription — Basic (1 month)');
+        });
+
+        it('pluralises cadence label when duration is greater than 1', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 3000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'month',
+                duration: 3,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Gift subscription — Pro (3 months)');
+        });
+
+        it('uses translated title and cadence labels', async function () {
+            StripeAPI.__set__('t', (key, options = {}) => {
+                if (key === 'Gift subscription') {
+                    return 'Abonnement offert';
+                }
+
+                if (key === '{count} month') {
+                    return `${options.count} mois`;
+                }
+
+                return key;
+            });
+
+            await api.createGiftCheckoutSession({
+                amount: 3000,
+                currency: 'eur',
+                tierName: 'Pro',
+                cadence: 'month',
+                duration: 3,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.line_items[0].price_data.product_data.name, 'Abonnement offert — Pro (3 mois)');
+        });
+
+        it('passes metadata through directly', async function () {
+            const metadata = {
+                ghost_gift: 'true',
+                gift_token: 'token-xyz',
+                tier_id: 'tier_123',
+                cadence: 'month'
+            };
+
+            await api.createGiftCheckoutSession({
+                amount: 1000,
+                currency: 'usd',
+                tierName: 'Basic',
+                cadence: 'month',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.deepEqual(args.metadata, metadata);
+        });
+
+        it('passes customer ID when customer is provided', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {},
+                customer: {id: mockCustomerId}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.customer, mockCustomerId);
+        });
+
+        it('passes customer email when no customer is provided', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {},
+                customerEmail: mockCustomerEmail
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.customer, undefined);
+            assert.equal(args.customer_email, mockCustomerEmail);
+        });
+
+        it('uses only customer when both customer and customer email are provided', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {},
+                customer: {id: mockCustomerId},
+                customerEmail: mockCustomerEmail
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.customer, mockCustomerId);
+            assert.equal(args.customer_email, undefined);
+        });
+
+        it('enables invoice_creation and does not include custom_fields', async function () {
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.deepEqual(args.invoice_creation, {enabled: true});
+            assert.equal(args.custom_fields, undefined);
+        });
+
+        it('sets customer_update when customer and automatic tax are enabled', async function () {
+            api.configure({
+                checkoutSessionSuccessUrl: '/success',
+                checkoutSessionCancelUrl: '/cancel',
+                checkoutSetupSessionSuccessUrl: '/setup-success',
+                checkoutSetupSessionCancelUrl: '/setup-cancel',
+                secretKey: '',
+                enableAutomaticTax: true
+            });
+
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {},
+                customer: {id: mockCustomerId}
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.deepEqual(args.customer_update, {address: 'auto'});
+        });
+
+        it('does not set customer_update without customer', async function () {
+            api.configure({
+                checkoutSessionSuccessUrl: '/success',
+                checkoutSessionCancelUrl: '/cancel',
+                checkoutSetupSessionSuccessUrl: '/setup-success',
+                checkoutSetupSessionCancelUrl: '/setup-cancel',
+                secretKey: '',
+                enableAutomaticTax: true
+            });
+
+            await api.createGiftCheckoutSession({
+                amount: 5000,
+                currency: 'usd',
+                tierName: 'Pro',
+                cadence: 'year',
+                duration: 1,
+                successUrl: '/gift-success',
+                cancelUrl: '/gift-cancel',
+                metadata: {},
+                customerEmail: mockCustomerEmail
+            });
+
+            const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
+
+            assert.equal(args.customer_update, undefined);
         });
     });
 });

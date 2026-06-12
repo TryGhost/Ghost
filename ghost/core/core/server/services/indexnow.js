@@ -27,6 +27,7 @@ const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const settingsCache = require('../../shared/settings-cache');
+const config = require('../../shared/config');
 const labs = require('../../shared/labs');
 const events = require('../lib/common/events');
 
@@ -34,6 +35,8 @@ const messages = {
     requestFailedError: 'The {service} service was unable to send a ping request, your site will continue to function.',
     requestFailedHelp: 'If you get this error repeatedly, please seek help on {url}.'
 };
+
+const INDEXNOW_LOG_KEY = '[indexnow]';
 
 const defaultPostSlugs = [
     'welcome',
@@ -73,6 +76,11 @@ async function ping(post) {
         return;
     }
 
+    // Skip if IndexNow pings are disabled via privacy config
+    if (config.isPrivacyDisabled('useIndexNow')) {
+        return;
+    }
+
     // Skip if IndexNow is not enabled in labs
     if (!labs.isSet('indexnow')) {
         return;
@@ -83,13 +91,25 @@ async function ping(post) {
         return;
     }
 
+    let url = null;
     try {
-        const url = urlService.getUrlByResourceId(post.id, {absolute: true});
+        url = urlService.facade.getUrlForResource({...post, type: 'posts'}, {absolute: true});
+
+        if (!url || url.endsWith('/404/')) {
+            logging.warn({
+                event: {name: 'indexnow.unresolved_url'},
+                post: {id: post.id, slug: post.slug, url}
+            }, `${INDEXNOW_LOG_KEY} Skipped ping - post has no resolvable URL`);
+            return;
+        }
 
         // Get the API key (auto-generated on boot by settings service)
         const key = getApiKey();
         if (!key) {
-            logging.warn('IndexNow: API key not available');
+            logging.warn({
+                event: {name: 'indexnow.api_key_missing'},
+                post: {id: post.id, slug: post.slug}
+            }, `${INDEXNOW_LOG_KEY} API key not available`);
             return;
         }
 
@@ -112,23 +132,33 @@ async function ping(post) {
 
         if (response.statusCode !== 200 && response.statusCode !== 202) {
             throw new errors.InternalServerError({
-                message: `IndexNow returned unexpected status: ${response.statusCode}`
+                message: `IndexNow returned unexpected status: ${response.statusCode}`,
+                statusCode: response.statusCode
             });
         }
 
-        logging.info(`IndexNow: Successfully pinged ${url}`);
+        logging.info({
+            event: {name: 'indexnow.pinged'},
+            post: {id: post.id, slug: post.slug, url},
+            http: {response: {status_code: response.statusCode}}
+        }, `${INDEXNOW_LOG_KEY} Successfully pinged ${url}`);
     } catch (err) {
         // Log errors but don't throw - IndexNow failures shouldn't disrupt publishing
+        const statusCode = err.statusCode ?? err.response?.statusCode ?? null;
+
+        let eventName;
         let error;
-        if (err.statusCode === 429) {
+        if (statusCode === 429) {
+            // Rate limited by IndexNow - we have no retry/backoff, so the ping is dropped
+            eventName = 'indexnow.rate_limited';
             error = new errors.TooManyRequestsError({
                 err,
                 message: err.message,
                 context: tpl(messages.requestFailedError, {service: 'IndexNow'}),
                 help: tpl(messages.requestFailedHelp, {url: 'https://ghost.org/docs/'})
             });
-        } else if (err.statusCode === 422) {
-            // 422 means the URL is invalid or key doesn't match
+        } else if (statusCode === 422 || statusCode === 403) {
+            eventName = 'indexnow.key_validation_failed';
             error = new errors.ValidationError({
                 err,
                 message: 'IndexNow key validation failed',
@@ -136,6 +166,7 @@ async function ping(post) {
                 help: 'Ensure your IndexNow API key file is accessible at the correct URL'
             });
         } else {
+            eventName = 'indexnow.ping_failed';
             error = new errors.InternalServerError({
                 err: err,
                 message: err.message,
@@ -143,7 +174,13 @@ async function ping(post) {
                 help: tpl(messages.requestFailedHelp, {url: 'https://ghost.org/docs/'})
             });
         }
-        logging.warn(error);
+
+        logging.warn({
+            event: {name: eventName},
+            post: {id: post.id, slug: post.slug, url},
+            http: {response: {status_code: statusCode}},
+            err: error
+        }, `${INDEXNOW_LOG_KEY} ${error.message}`);
     }
 }
 

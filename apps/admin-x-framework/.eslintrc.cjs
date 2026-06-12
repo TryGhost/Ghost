@@ -19,6 +19,12 @@ module.exports = {
         'react/react-in-jsx-scope': 'off',
         // ignore prop-types for now
         'react/prop-types': 'off',
+        'no-restricted-imports': ['error', {
+            paths: [{
+                name: '@tryghost/shade',
+                message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).'
+            }]
+        }],
 
         'react/jsx-sort-props': ['error', {
             reservedFirst: true,

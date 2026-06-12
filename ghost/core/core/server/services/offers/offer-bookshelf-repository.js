@@ -93,22 +93,33 @@ class OfferBookshelfRepository {
      * @private
      * @param {import('bookshelf').Model<any>} model
      * @param {BaseOptions} options
+     * @param {object} [queryOptions]
+     * @param {boolean} [queryOptions.withRedemptionStats]
      * @returns {Promise<import('./domain/models/offer')>}
      */
-    async mapToOffer(model, options) {
+    async mapToOffer(model, options, {withRedemptionStats = true} = {}) {
         const json = model.toJSON();
-        const count = await this.OfferRedemptionModel.where({offer_id: json.id}).count('id', {
-            transacting: options.transacting
-        });
 
-        const lastRedeemed = await this.OfferRedemptionModel.where({offer_id: json.id}).orderBy('created_at', 'DESC').fetchAll({
-            transacting: options.transacting,
-            limit: 1
-        });
+        let count = 0;
+        let lastRedeemed = null;
+
+        if (withRedemptionStats) {
+            count = await this.OfferRedemptionModel.where({offer_id: json.id}).count('id', {
+                transacting: options.transacting
+            });
+
+            const lastRedeemedResult = await this.OfferRedemptionModel
+                .where({offer_id: json.id})
+                .orderBy('created_at', 'DESC')
+                .fetch({
+                    transacting: options.transacting,
+                    require: false
+                });
+
+            lastRedeemed = lastRedeemedResult ? lastRedeemedResult.get('created_at') : null;
+        }
 
         try {
-            const lastRedeemedObject = lastRedeemed.toJSON();
-
             return await Offer.create({
                 id: json.id,
                 name: json.name,
@@ -129,7 +140,7 @@ class OfferBookshelfRepository {
                     ? {id: json.product.id, name: json.product.name}
                     : null,
                 created_at: json.created_at,
-                last_redeemed: lastRedeemedObject.length > 0 ? lastRedeemedObject[0].created_at : null
+                last_redeemed: lastRedeemed
             }, null);
         } catch (err) {
             logger.error(err);
@@ -176,9 +187,11 @@ class OfferBookshelfRepository {
 
     /**
      * @param {ListOptions} options
+     * @param {object} [queryOptions]
+     * @param {boolean} [queryOptions.withRedemptionStats]
      * @returns {Promise<import('./domain/models/offer')[]>}
      */
-    async getAll(options) {
+    async getAll(options, {withRedemptionStats = true} = {}) {
         const models = await this.OfferModel.findAll({
             ...options,
             mongoTransformer,
@@ -189,23 +202,42 @@ class OfferBookshelfRepository {
             transacting: options && options.transacting
         };
 
-        const offers = models.map(model => this.mapToOffer(model, mapOptions));
+        const offers = models.map(model => this.mapToOffer(model, mapOptions, {withRedemptionStats}));
 
         return (await Promise.all(offers)).filter(offer => offer !== null);
     }
 
     /**
-     * @param {object} options
-     * @param {string} options.subscriptionId
-     * @param {import('knex').Knex.Transaction} [options.transacting]
+     * @param {string} subscriptionId
+     * @param {BaseOptions} [options]
      * @returns {Promise<string[]>}
      */
-    async getRedeemedOfferIdsForSubscription({subscriptionId, transacting}) {
+    async getRedeemedOfferIdsForSubscription(subscriptionId, options = {}) {
         const redemptions = await this.OfferRedemptionModel.where({
             subscription_id: subscriptionId
-        }).fetchAll({transacting, columns: ['offer_id']});
+        }).fetchAll({transacting: options.transacting, columns: ['offer_id']});
 
         return redemptions.map(r => r.get('offer_id'));
+    }
+
+    /**
+     * @param {string[]} subscriptionIds
+     * @param {BaseOptions} [options]
+     * @returns {Promise<Array<{subscription_id: string, offer_id: string}>>}
+     */
+    async getRedeemedOfferIdsForSubscriptions(subscriptionIds, options = {}) {
+        if (subscriptionIds.length === 0) {
+            return [];
+        }
+
+        const redemptions = await this.OfferRedemptionModel
+            .query(qb => qb.whereIn('subscription_id', subscriptionIds))
+            .fetchAll({transacting: options.transacting, columns: ['subscription_id', 'offer_id']});
+
+        return redemptions.map(r => ({
+            subscription_id: r.get('subscription_id'),
+            offer_id: r.get('offer_id')
+        }));
     }
 
     /**

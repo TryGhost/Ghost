@@ -3,12 +3,17 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * *'
+# actions/stale labels, comments on, and closes stale issues and PRs.
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 jobs:
   stale:
     if: github.repository_owner == 'TryGhost'
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/stale@v9
+      - uses: actions/stale@eb5cf3af3ac0a1aa4c9c45633dd1ae542a27a899 # v10
         with:
           stale-issue-message: |
             Our bot has automatically marked this issue as stale because there has not been any activity here in some time.

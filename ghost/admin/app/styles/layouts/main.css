@@ -8,13 +8,8 @@
 /* ---------------------------------------------------------- */
 
 /* Main viewport, contains main content, and alerts */
-/* Use `position: fixed`, covering full window area so scrolling on mobile doesn't trigger elastic scroll */
 .gh-app {
-    position: fixed;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    position: static;
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -35,10 +30,7 @@
     display: flex;
     flex-direction: column;
     background: var(--main-bg-color);
-    overflow-y: auto;
-    /* prevent horizontal scroll in IE11 */
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
+    overflow: hidden;
 }
 
 body:not(.gh-body-fullscreen) .gh-viewport {
@@ -231,12 +223,11 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    height: 34px;
-    color: var(--midgrey-l2);
-    font-size: 1.3rem;
-    font-weight: 500;
-    line-height: 34px;
-    letter-spacing: .2px;
+    height: 32px;
+    color: var(--darkgrey);
+    font-size: 1.5rem;
+    font-weight: 600;
+    line-height: 32px;
     background: none;
     white-space: nowrap;
 }
@@ -246,8 +237,12 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 }
 
 .gh-canvas-header .gh-canvas-breadcrumb a {
-    color: var(--darkgrey);
+    color: var(--midgrey-l2);
     line-height: 24px;
+}
+
+.gh-canvas-header .gh-canvas-breadcrumb a:hover {
+    color: var(--darkgrey);
 }
 
 .gh-canvas-header .gh-canvas-breadcrumb svg {
@@ -495,9 +490,9 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 }
 
 .gh-expandable-header .gh-expandable-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
     letter-spacing: 0;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--black);
     margin: 0;
     padding: 0;
@@ -575,8 +570,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
 
 /* Canvas */
 .gh-canvas-title-container {
-    display: flex;
-    flex-direction: column;
+    display: block;
 }
 
 .gh-canvas-title {
@@ -592,7 +586,7 @@ body:not(.gh-body-fullscreen) .gh-viewport {
     font-weight: 700;
     letter-spacing: -0.02em;
     /* match button height to avoid jump on navigation between screens*/
-    min-height: 35px;
+    min-height: 32px;
     color: var(--black);
 }
 

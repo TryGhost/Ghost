@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const security = require('@tryghost/security');
 const models = require('../../../../../core/server/models');
@@ -7,10 +6,6 @@ const urlUtils = require('../../../../../core/shared/url-utils');
 const testUtils = require('../../../../utils');
 
 describe('Models: base', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
@@ -160,23 +155,23 @@ describe('Models: base', function () {
         it('expect date transformation', function () {
             const data = testUtils.DataGenerator.forKnex.createPost({updated_at: '2018-04-01 07:53:07'});
 
-            data.updated_at.should.be.a.String();
+            assert.equal(typeof data.updated_at, 'string');
 
             models.Base.Model.sanitizeData
                 .bind({prototype: {tableName: 'posts'}})(data);
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
         });
 
         it('date is JS date, ignore', function () {
             const data = testUtils.DataGenerator.forKnex.createPost({updated_at: new Date()});
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
 
             models.Base.Model.sanitizeData
                 .bind({prototype: {tableName: 'posts'}})(data);
 
-            data.updated_at.should.be.a.Date();
+            assert(data.updated_at instanceof Date);
         });
 
         it('expect date transformation for nested relations', function () {
@@ -187,7 +182,7 @@ describe('Models: base', function () {
                 }]
             });
 
-            data.authors[0].updated_at.should.be.a.String();
+            assert.equal(typeof data.authors[0].updated_at, 'string');
 
             models.Base.Model.sanitizeData
                 .bind({
@@ -199,7 +194,7 @@ describe('Models: base', function () {
                 })(data);
 
             assert.equal(data.authors[0].name, 'Thomas');
-            data.authors[0].updated_at.should.be.a.Date();
+            assert(data.authors[0].updated_at instanceof Date);
         });
     });
 

@@ -5,6 +5,7 @@ const TierPriceChangeEvent = require('../../../tiers/tier-price-change-event');
 const TierNameChangeEvent = require('../../../tiers/tier-name-change-event');
 const OfferCreatedEvent = require('../../../offers/domain/events/offer-created-event');
 const {BadRequestError} = require('@tryghost/errors');
+const {t} = require('../../../i18n');
 
 class PaymentsService {
     /**
@@ -13,6 +14,7 @@ class PaymentsService {
      * @param {import('../../../offers/application/offers-api')} deps.offersAPI
      * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      * @param {{get(key: string): any}} deps.settingsCache
+     * @param {{service: import('../../../gifts/gift-service').GiftService}} deps.giftService
      */
     constructor(deps) {
         /** @private */
@@ -29,6 +31,8 @@ class PaymentsService {
         this.stripeAPIService = deps.stripeAPIService;
         /** @private */
         this.settingsCache = deps.settingsCache;
+        /** @private */
+        this.giftService = deps.giftService;
 
         DomainEvents.subscribe(OfferCreatedEvent, async (event) => {
             await this.getCouponForOffer(event.data.offer.id);
@@ -61,6 +65,7 @@ class PaymentsService {
      * @param {Tier.Cadence} params.cadence
      * @param {Offer} [params.offer]
      * @param {Member} [params.member]
+     * @param {import('../../../gifts/gift').Gift} [params.gift]
      * @param {Object.<string, any>} [params.metadata]
      * @param {string} params.successUrl
      * @param {string} params.cancelUrl
@@ -68,7 +73,7 @@ class PaymentsService {
      *
      * @returns {Promise<URL>}
      */
-    async getPaymentLink({tier, cadence, offer, member, metadata, successUrl, cancelUrl, email}) {
+    async getPaymentLink({tier, cadence, offer, member, gift, metadata, successUrl, cancelUrl, email}) {
         let coupon = null;
         let trialDays = null;
         if (offer) {
@@ -86,6 +91,14 @@ class PaymentsService {
                 trialDays = offer.amount;
             } else {
                 coupon = await this.getCouponForOffer(offer.id);
+            }
+        }
+
+        // If continuing from a gift subscription, add gift remaining days as trial
+        if (trialDays === null && gift) {
+            const remainingDays = this.giftService.service.getRemainingActiveDays(gift);
+            if (remainingDays > 0) {
+                trialDays = Math.min(remainingDays, 730); // Stripe max trial period
             }
         }
 
@@ -147,6 +160,62 @@ class PaymentsService {
         };
 
         const session = await this.stripeAPIService.createDonationCheckoutSession(data);
+        return session.url;
+    }
+
+    /**
+     * @param {object} params
+     * @param {import('../../../tiers/tier')} params.tier
+     * @param {'month'|'year'} params.cadence
+     * @param {number} params.duration
+     * @param {string} params.successUrl
+     * @param {string} params.cancelUrl
+     * @param {object} params.metadata
+     * @param {object} [params.member]
+     * @param {boolean} params.isAuthenticated
+     * @param {string} [params.email]
+     *
+     * @returns {Promise<string>}
+     */
+    async getGiftPaymentLink({tier, cadence, duration, metadata, successUrl, cancelUrl, member, isAuthenticated, email}) {
+        let customer = null;
+        if (member && isAuthenticated) {
+            customer = await this.getCustomerForMember(member);
+        }
+
+        const amount = tier.getPrice(cadence);
+        const currency = tier.currency.toLowerCase();
+
+        const token = this.giftService.service.generateToken();
+
+        const successUrlObj = new URL(successUrl);
+        successUrlObj.searchParams.set('stripe', 'gift-purchase-success');
+        successUrlObj.searchParams.set('gift_token', token);
+        successUrlObj.searchParams.set('gift_tier', tier.id.toHexString());
+        successUrlObj.searchParams.set('gift_cadence', cadence);
+
+        const data = {
+            amount,
+            currency,
+            tierName: tier.name,
+            cadence,
+            duration,
+            metadata: {
+                ...metadata,
+                ghost_gift: 'true',
+                gift_token: token,
+                tier_id: tier.id.toHexString(),
+                cadence,
+                duration: String(duration)
+            },
+            successUrl: successUrlObj.toString(),
+            cancelUrl,
+            customer,
+            customerEmail: !customer && email ? email : null
+        };
+
+        const session = await this.stripeAPIService.createGiftCheckoutSession(data);
+
         return session.url;
     }
 
@@ -290,7 +359,10 @@ class PaymentsService {
      * @returns {string}
      */
     getDonationPriceNickname() {
-        const nickname = 'Support ' + this.settingsCache.get('title');
+        const nickname = t('Support {siteTitle}', {
+            siteTitle: this.settingsCache.get('title'),
+            interpolation: {escapeValue: false}
+        });
         return nickname.substring(0, 250);
     }
 
@@ -482,7 +554,7 @@ class PaymentsService {
      */
     async getCouponForOffer(offerId) {
         const row = await this.OfferModel.where({id: offerId}).query().select('stripe_coupon_id', 'discount_type').first();
-        if (!row || row.discount_type === 'trial' || row.discount_type === 'free_months') {
+        if (!row || row.discount_type === 'trial') {
             return null;
         }
         if (!row.stripe_coupon_id) {
@@ -496,7 +568,7 @@ class PaymentsService {
     }
 
     /**
-     * @param {import('@tryghost/members-offers/lib/application/OfferMapper').OfferDTO} offer
+     * @param {import('../../../offers/application/offer-mapper').OfferDTO} offer
      */
     async createCouponForOffer(offer) {
         /** @type {import('stripe').Stripe.CouponCreateParams} */

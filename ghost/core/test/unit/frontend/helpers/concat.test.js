@@ -1,4 +1,3 @@
-const should = require('should');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 
 const concat = require('../../../../core/frontend/helpers/concat');
@@ -14,7 +13,7 @@ let defaultGlobals;
 const draftPostData = {title: 'My Draft Post', slug: 'my-post', html: '<p>My Post</p>', uuid: '1234'};
 
 describe('{{concat}} helper', function () {
-    before(function () {
+    beforeAll(function () {
         handlebars.registerHelper('concat', concat);
         handlebars.registerHelper('url', url);
         handlebars.registerHelper('split', split);

@@ -25,23 +25,29 @@ const messages = {
  */
 
 /**
- * @typedef {import('@tryghost/members-offers/lib/application/OfferMapper').OfferDTO} OfferDTO
+ * @typedef {import('../../../offers/application/offer-mapper').OfferDTO} OfferDTO
+ */
+
+/**
+ * @typedef {object} IGiftServiceWrapper
+ * @prop {{getActiveByMembers: (memberIds: string[]) => Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>}} service
  */
 
 module.exports = class MemberBREADService {
     /**
      * @param {object} deps
      * @param {import('../repositories/member-repository')} deps.memberRepository
-     * @param {import('@tryghost/members-offers/lib/application/OffersAPI')} deps.offersAPI
+     * @param {import('../../../offers/application/offers-api')} deps.offersAPI
      * @param {ILabsService} deps.labsService
      * @param {IEmailService} deps.emailService
      * @param {IStripeService} deps.stripeService
-     * @param {import('@tryghost/member-attribution/lib/service')} deps.memberAttributionService
-     * @param {import('@tryghost/email-suppression-list/lib/email-suppression-list').IEmailSuppressionList} deps.emailSuppressionList
-     * @param {import('@tryghost/settings-helpers')} deps.settingsHelpers
+     * @param {import('../../../member-attribution/member-attribution-service')} deps.memberAttributionService
+     * @param {import('../../../email-suppression-list/email-suppression-list').IEmailSuppressionList} deps.emailSuppressionList
+     * @param {import('../../../settings-helpers/settings-helpers')} deps.settingsHelpers
      * @param {import('./next-payment-calculator')} deps.nextPaymentCalculator
+     * @param {IGiftServiceWrapper} deps.giftService
      */
-    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService}) {
+    constructor({memberRepository, labsService, emailService, stripeService, offersAPI, memberAttributionService, emailSuppressionList, settingsHelpers, nextPaymentCalculator, commentsService, giftService}) {
         this.offersAPI = offersAPI;
         /** @private */
         this.memberRepository = memberRepository;
@@ -61,13 +67,17 @@ module.exports = class MemberBREADService {
         this.nextPaymentCalculator = nextPaymentCalculator;
         /** @private */
         this.commentsService = commentsService;
+        /** @private */
+        this.giftService = giftService;
     }
 
     /**
      * @private
      * Adds missing complimentary subscriptions to a member and makes sure the tier of all subscriptions is set correctly.
+     * @param {Object} member JSON serialized member
+     * @param {Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>} [giftMap] Map of memberId → active redeemed gift, used to populate real price details on synthetic gift subscriptions
      */
-    attachSubscriptionsToMember(member) {
+    attachSubscriptionsToMember(member, giftMap = new Map()) {
         if (!member.products || !Array.isArray(member.products)) {
             return member;
         }
@@ -79,50 +89,76 @@ module.exports = class MemberBREADService {
         // Remove incomplete subscriptions from the API
         member.subscriptions = member.subscriptions.filter(sub => sub.status !== 'incomplete' && sub.status !== 'incomplete_expired');
 
-        for (const product of member.products) {
-            if (!subscriptionProducts.includes(product.id)) {
-                const productAddEvent = member.productEvents.find(event => event.product_id === product.id);
-                let startDate;
-                if (!productAddEvent || productAddEvent.action !== 'added') {
-                    startDate = moment();
+        // Attach non-Stripe complimentary or gifted subscriptions to member
+        // These subscriptions are either granted by the publisher for free (complimentary) or paid by someone else (gift)
+        // They are not backed by a Stripe subscription as there isn't any recurring charges
+        //
+        // In the logic below, we construct Stripe-alike member subscription API responses, so that the client does not need to handle Stripe vs non-Stripe subscriptions separately.
+        // Note: a complimentary or gift subscription should always be the current member subscription and match its status,
+        // as non-Stripe subscriptions are removed when a member continues with a Stripe paid subscription
+        if (member.status === 'comped' || member.status === 'gift') {
+            let interval = 'year';
+            let currency = 'USD';
+            let amount = 0;
+            const nickname = member.status === 'gift' ? 'Gift subscription' : 'Complimentary';
+
+            if (member.status === 'gift') {
+                const gift = giftMap.get(member.id);
+                if (gift) {
+                    interval = gift.cadence;
+                    currency = gift.currency;
+                    amount = gift.amount;
                 } else {
-                    startDate = moment(productAddEvent.created_at);
+                    logging.warn(`No active gift found for gift member ${member.id} — falling back to default subscription price details.`);
                 }
-                member.subscriptions.push({
-                    id: '',
-                    tier: product,
-                    customer: {
-                        id: '',
-                        name: member.name,
-                        email: member.email
-                    },
-                    plan: {
-                        id: '',
-                        nickname: 'Complimentary',
-                        interval: 'year',
-                        currency: 'USD',
-                        amount: 0
-                    },
-                    status: 'active',
-                    start_date: startDate,
-                    default_payment_card_last4: '****',
-                    cancel_at_period_end: false,
-                    cancellation_reason: null,
-                    current_period_end: moment(product.expiry_at),
-                    price: {
-                        id: '',
-                        price_id: '',
-                        nickname: 'Complimentary',
-                        amount: 0,
-                        interval: 'year',
-                        type: 'recurring',
-                        currency: 'USD',
-                        product: {
-                            id: '',
-                            product_id: product.id
-                        }
+            }
+
+            for (const product of member.products) {
+                if (!subscriptionProducts.includes(product.id)) {
+                    const productAddEvent = member.productEvents.find(event => event.product_id === product.id && event.action === 'added');
+                    let startDate;
+                    if (!productAddEvent) {
+                        startDate = moment();
+                    } else {
+                        startDate = moment(productAddEvent.created_at);
                     }
-                });
+
+                    member.subscriptions.push({
+                        id: '',
+                        tier: product,
+                        customer: {
+                            id: '',
+                            name: member.name,
+                            email: member.email
+                        },
+                        plan: {
+                            id: '',
+                            nickname,
+                            interval,
+                            currency,
+                            amount
+                        },
+                        status: 'active',
+                        start_date: startDate,
+                        default_payment_card_last4: '****',
+                        cancel_at_period_end: false,
+                        cancellation_reason: null,
+                        current_period_end: product.expiry_at ? moment(product.expiry_at) : null,
+                        price: {
+                            id: '',
+                            price_id: '',
+                            nickname,
+                            amount,
+                            interval,
+                            type: 'recurring',
+                            currency,
+                            product: {
+                                id: '',
+                                product_id: product.id
+                            }
+                        }
+                    });
+                }
             }
         }
 
@@ -166,18 +202,71 @@ module.exports = class MemberBREADService {
     }
 
     /**
+     * @private Builds a map between Stripe subscription IDs and their redeemed offers (from offer_redemptions)
+     * @param {import('bookshelf').Model[]} subscriptions - Bookshelf subscription models
+     * @returns {Promise<Map<string, OfferDTO[]>>}
+     */
+    async fetchSubscriptionOfferRedemptions(subscriptions) {
+        const subscriptionOfferRedemptions = new Map();
+
+        if (subscriptions.length === 0) {
+            return subscriptionOfferRedemptions;
+        }
+
+        try {
+            const subscriptionIdMap = new Map();
+            const subscriptionIds = [];
+
+            for (const subscription of subscriptions) {
+                subscriptionIdMap.set(subscription.id, subscription.get('subscription_id'));
+
+                subscriptionIds.push(subscription.id);
+            }
+
+            const redemptions = await this.offersAPI.getRedeemedOfferIdsForSubscriptions({
+                subscriptionIds
+            });
+
+            const fetchedOffers = new Map();
+
+            for (const redemption of redemptions) {
+                const stripeSubId = subscriptionIdMap.get(redemption.subscription_id);
+
+                let offer = fetchedOffers.get(redemption.offer_id);
+
+                if (!offer) {
+                    offer = await this.offersAPI.getOffer({id: redemption.offer_id});
+
+                    fetchedOffers.set(redemption.offer_id, offer);
+                }
+
+                if (offer && stripeSubId) {
+                    if (!subscriptionOfferRedemptions.has(stripeSubId)) {
+                        subscriptionOfferRedemptions.set(stripeSubId, []);
+                    }
+
+                    subscriptionOfferRedemptions.get(stripeSubId).push(offer);
+                }
+            }
+        } catch (e) {
+            logging.error(`Failed to load offer redemptions for subscriptions - ${subscriptions.map(s => s.id).join(', ')}.`);
+            logging.error(e);
+        }
+
+        return subscriptionOfferRedemptions;
+    }
+
+    /**
      * @private
      * @param {Object} member JSON serialized member
      * @param {Map<string, OfferDTO>} subscriptionOffers result from fetchSubscriptionOffers
+     * @param {Map<string, OfferDTO[]>} subscriptionOfferRedemptions result from fetchSubscriptionOfferRedemptions
      */
-    attachOffersToSubscriptions(member, subscriptionOffers) {
+    attachOffersToSubscriptions(member, subscriptionOffers, subscriptionOfferRedemptions) {
         member.subscriptions = member.subscriptions.map((subscription) => {
             const offer = subscriptionOffers.get(subscription.id);
-            if (offer) {
-                subscription.offer = offer;
-            } else {
-                subscription.offer = null;
-            }
+            subscription.offer = offer || null;
+            subscription.offer_redemptions = subscriptionOfferRedemptions.get(subscription.id) || [];
             return subscription;
         });
     }
@@ -218,6 +307,30 @@ module.exports = class MemberBREADService {
         }
     }
 
+    /**
+     * @private
+     * Fetches active redeemed gifts for any gift-status members in the input list.
+     * @param {import('bookshelf').Model[]} members - Bookshelf member models
+     * @returns {Promise<Map<string, {cadence: 'month' | 'year', currency: string, amount: number}>>} keyed by member.id → active Gift
+     */
+    async fetchActiveGiftsForMembers(members) {
+        const giftMemberIds = members
+            .filter(m => m.get('status') === 'gift')
+            .map(m => m.id);
+
+        if (giftMemberIds.length === 0) {
+            return new Map();
+        }
+
+        try {
+            return await this.giftService.service.getActiveByMembers(giftMemberIds);
+        } catch (e) {
+            logging.error(`Failed to load active gifts for members - ${giftMemberIds.join(', ')}.`);
+            logging.error(e);
+            return new Map();
+        }
+    }
+
     async read(data, options = {}) {
         const defaultWithRelated = [
             'labels',
@@ -226,6 +339,10 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.stripePrice',
             'stripeSubscriptions.stripePrice.stripeProduct',
             'stripeSubscriptions.stripePrice.stripeProduct.product',
+            // The resolved subscription itself — no nested loads, since the
+            // FE finds price/product details in the already-loaded
+            // `subscriptions` array via the matching id.
+            'currentSubscription',
             'products',
             'newsletters'
         ];
@@ -234,10 +351,6 @@ module.exports = class MemberBREADService {
 
         if (!withRelated.has('productEvents')) {
             withRelated.add('productEvents');
-        }
-
-        if (withRelated.has('email_recipients')) {
-            withRelated.add('email_recipients.email');
         }
 
         const model = await this.memberRepository.get(data, {
@@ -256,10 +369,17 @@ module.exports = class MemberBREADService {
         }
 
         const member = model.toJSON(options);
+        const stripeSubscriptions = model.related('stripeSubscriptions');
 
         member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
-        this.attachSubscriptionsToMember(member);
-        this.attachOffersToSubscriptions(member, await this.fetchSubscriptionOffers(model.related('stripeSubscriptions')));
+
+        const [offerMap, offerRedemptionsMap, giftMap] = await Promise.all([
+            this.fetchSubscriptionOffers(stripeSubscriptions),
+            this.fetchSubscriptionOfferRedemptions(stripeSubscriptions),
+            this.fetchActiveGiftsForMembers([model])
+        ]);
+        this.attachSubscriptionsToMember(member, giftMap);
+        this.attachOffersToSubscriptions(member, offerMap, offerRedemptionsMap);
         this.attachNextPaymentToSubscriptions(member);
         await this.attachAttributionsToMember(member, subscriptionIdMap);
 
@@ -289,6 +409,11 @@ module.exports = class MemberBREADService {
         let model;
 
         try {
+            if (data.email && data.email_disabled === undefined) {
+                const isSuppressed = (await this.emailSuppressionList.getSuppressionData(data.email))?.suppressed;
+                data.email_disabled = !!isSuppressed;
+            }
+
             const attribution = await this.memberAttributionService.getAttributionFromContext(options?.context);
             if (attribution) {
                 data.attribution = attribution;
@@ -344,7 +469,7 @@ module.exports = class MemberBREADService {
         }
 
         if (data.comped) {
-            await this.memberRepository.setComplimentarySubscription(model, options);
+            await this.memberRepository.setComplimentarySubscription(model, sharedOptions);
         }
 
         return this.read({id: model.id}, options);
@@ -469,6 +594,10 @@ module.exports = class MemberBREADService {
             'stripeSubscriptions.stripePrice',
             'stripeSubscriptions.stripePrice.stripeProduct',
             'stripeSubscriptions.stripePrice.stripeProduct.product',
+            // The resolved subscription itself — no nested loads, since the
+            // FE finds price/product details in the already-loaded
+            // `subscriptions` array via the matching id.
+            'currentSubscription',
             'products',
             'newsletters'
         ];
@@ -485,10 +614,6 @@ module.exports = class MemberBREADService {
             withRelated.add('productEvents');
         }
 
-        if (withRelated.has('email_recipients')) {
-            withRelated.add('email_recipients.email');
-        }
-
         //option param to skip distinct from count query, distinct adds a lot of latency and in this case the result set will always be unique.
         options.useBasicCount = true;
 
@@ -502,15 +627,19 @@ module.exports = class MemberBREADService {
         }
 
         const subscriptions = page.data.flatMap(model => model.related('stripeSubscriptions').slice());
-        const offerMap = await this.fetchSubscriptionOffers(subscriptions);
+        const [offerMap, offerRedemptionsMap, giftMap] = await Promise.all([
+            this.fetchSubscriptionOffers(subscriptions),
+            this.fetchSubscriptionOfferRedemptions(subscriptions),
+            this.fetchActiveGiftsForMembers(page.data)
+        ]);
 
         const bulkSuppressionData = await this.emailSuppressionList.getBulkSuppressionData(page.data.map(member => member.get('email')));
 
         const data = page.data.map((model, index) => {
             const member = model.toJSON(options);
             member.subscriptions = member.subscriptions.filter(sub => !!sub.price);
-            this.attachSubscriptionsToMember(member);
-            this.attachOffersToSubscriptions(member, offerMap);
+            this.attachSubscriptionsToMember(member, giftMap);
+            this.attachOffersToSubscriptions(member, offerMap, offerRedemptionsMap);
             this.attachNextPaymentToSubscriptions(member);
             if (!originalWithRelated.includes('products')) {
                 delete member.products;

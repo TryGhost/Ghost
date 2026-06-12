@@ -1,5 +1,6 @@
 import {
     type Account,
+    type AccountAliasesResponse,
     type AccountFollowsType,
     type AccountSearchResult,
     ActivityPubAPI,
@@ -74,6 +75,7 @@ const QUERY_KEYS = {
         return ['profile_posts', profileHandle];
     },
     account: (handle: string) => ['account', handle],
+    accountAliases: (handle: string) => ['account_aliases', handle],
     accountFollows: (handle: string, type: AccountFollowsType) => ['account_follows', handle, type],
     searchResults: (query: string) => ['search_results', query],
     suggestedProfiles: (handle: string, limit: number) => ['suggested_profiles', handle, limit],
@@ -1650,6 +1652,50 @@ export function useAccountFollowsForUser(profileHandle: string, type: AccountFol
         },
         getNextPageParam(prevPage) {
             return prevPage.next;
+        }
+    });
+}
+
+export function useAccountAliasesForUser(handle: string) {
+    return useQuery({
+        queryKey: QUERY_KEYS.accountAliases(handle),
+        async queryFn() {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.getAccountAliases();
+        }
+    });
+}
+
+export function useAddAccountAliasMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(sourceHandle: string) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.addAccountAlias(sourceHandle);
+        },
+        onSuccess(response: AccountAliasesResponse) {
+            queryClient.setQueryData(QUERY_KEYS.accountAliases(handle), response);
+        }
+    });
+}
+
+export function useRemoveAccountAliasMutationForUser(handle: string) {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(actorUri: string) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI(handle, siteUrl);
+
+            return api.removeAccountAlias(actorUri);
+        },
+        onSuccess(response: AccountAliasesResponse) {
+            queryClient.setQueryData(QUERY_KEYS.accountAliases(handle), response);
         }
     });
 }

@@ -17,9 +17,8 @@ module.exports = {
             frame.options.id = frame.options.context.user;
         }
 
-        if (frame.data.users[0].password) {
-            delete frame.data.users[0].password;
-        }
+        delete frame.data.users[0].password;
+        delete frame.data.users[0].last_seen;
 
         frame.data.users[0] = url.forUser(Object.assign({}, frame.data.users[0]));
     }

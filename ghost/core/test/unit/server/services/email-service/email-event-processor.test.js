@@ -101,7 +101,7 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(eventStorage.handleDelivered.callCount, 1);
+            sinon.assert.calledOnce(eventStorage.handleDelivered);
             const event = eventStorage.handleDelivered.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'EmailDeliveredEvent');
@@ -114,7 +114,7 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(eventStorage.handleOpened.callCount, 1);
+            sinon.assert.calledOnce(eventStorage.handleOpened);
             const event = eventStorage.handleOpened.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'EmailOpenedEvent');
@@ -127,7 +127,7 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(eventStorage.handleTemporaryFailed.callCount, 1);
+            sinon.assert.calledOnce(eventStorage.handleTemporaryFailed);
             const event = eventStorage.handleTemporaryFailed.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'EmailTemporaryBouncedEvent');
@@ -140,7 +140,7 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(eventStorage.handlePermanentFailed.callCount, 1);
+            sinon.assert.calledOnce(eventStorage.handlePermanentFailed);
             const event = eventStorage.handlePermanentFailed.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'EmailBouncedEvent');
@@ -153,7 +153,7 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(eventStorage.handleUnsubscribed.callCount, 1);
+            sinon.assert.calledOnce(eventStorage.handleUnsubscribed);
             const event = eventStorage.handleUnsubscribed.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'EmailUnsubscribedEvent');
@@ -166,7 +166,7 @@ describe('Email Event Processor', function () {
                 memberId: 'member-id',
                 emailId: 'email-id'
             });
-            assert.equal(eventStorage.handleComplained.callCount, 1);
+            sinon.assert.calledOnce(eventStorage.handleComplained);
             const event = eventStorage.handleComplained.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'SpamComplaintEvent');
@@ -184,7 +184,7 @@ describe('Email Event Processor', function () {
                 prometheusClient
             });
             eventProcessor.recordEventProcessed('delivered');
-            assert(incStub.calledOnce);
+            sinon.assert.calledOnce(incStub);
         });
 
         it('does not throw if recording the event metric fails', function () {

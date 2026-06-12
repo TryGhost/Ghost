@@ -66,7 +66,10 @@ const DropdownIndicator: React.FC<DropdownIndicatorProps<MultiSelectOption, true
     }
     return (
         <components.DropdownIndicator {...props}>
-            <div className={`absolute top-[14px] block h-2 w-2 rotate-45 border-[1px] border-l-0 border-t-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-0' : 'right-4'} `}></div>
+            <div
+                className={`absolute top-[14px] block size-2 border-[1px] border-t-0 border-l-0 border-grey-900 content-[''] dark:border-grey-400 ${clearBg ? 'right-0' : 'right-4'} `}
+                style={{transform: 'rotate(45deg)'}}
+            ></div>
         </components.DropdownIndicator>
     );
 };
@@ -100,11 +103,11 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
     const controlClasses = clsx(
         'w-full cursor-pointer appearance-none rounded-md border border-transparent transition-all dark:text-white',
-        size === 'sm' ? 'min-h-[36px] py-1 text-sm' : 'min-h-[40px] py-2',
+        size === 'sm' ? 'min-h-[var(--control-height)] py-1 text-sm' : 'min-h-[40px] py-2',
         fieldStyle === 'dropdown' ? 'cursor-pointer' : 'cursor-text',
-        !clearBg && 'bg-grey-150 px-[10px] dark:bg-grey-900',
-        'outline-none',
-        error ? 'border-red' : 'hover:bg-grey-100 dark:hover:bg-grey-925',
+        !clearBg && 'bg-grey-100 px-[10px] dark:bg-grey-900',
+        'outline-hidden',
+        error ? 'border-red' : 'hover:bg-grey-100 dark:hover:bg-grey-900',
         (title && !clearBg) && 'mt-2'
     );
 
@@ -121,7 +124,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
         option: optionClasses,
         multiValue: (optionColor?: MultiSelectColor) => `rounded-sm items-center text-[14px] py-px pl-2 pr-1 gap-1.5 ${multiValueColor(optionColor || color)}`,
         noOptionsMessage: 'p-3 text-grey-600',
-        groupHeading: 'py-[6px] px-3 text-2xs font-semibold uppercase tracking-wide text-grey-700'
+        groupHeading: 'py-[6px] px-3 text-xs font-semibold uppercase tracking-wide text-grey-700'
     };
 
     const dropdownIndicatorComponent = useMemo(() => {

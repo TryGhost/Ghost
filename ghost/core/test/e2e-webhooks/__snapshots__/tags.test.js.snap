@@ -1,9 +1,10 @@
-// Jest Snapshot v1, https://goo.gl/fbAQLP
+// Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
 exports[`tag.* events tag.added event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -12,6 +13,7 @@ Object {
 
 exports[`tag.* events tag.added event is triggered 2: [body] 1`] = `
 Object {
+  "event": "tag.added",
   "tag": Object {
     "current": Object {
       "accent_color": null,
@@ -43,8 +45,9 @@ Object {
 
 exports[`tag.* events tag.deleted event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -53,6 +56,7 @@ Object {
 
 exports[`tag.* events tag.deleted event is triggered 2: [body] 1`] = `
 Object {
+  "event": "tag.deleted",
   "tag": Object {
     "current": Object {},
     "previous": Object {
@@ -83,8 +87,9 @@ Object {
 
 exports[`tag.* events tag.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -93,6 +98,7 @@ Object {
 
 exports[`tag.* events tag.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "tag.edited",
   "tag": Object {
     "current": Object {
       "accent_color": null,

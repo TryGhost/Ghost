@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const UrlUtils = require('@tryghost/url-utils');
 
@@ -29,6 +28,8 @@ function createUrlUtilsMock() {
 }
 
 describe('Stripe - config', function () {
+    const ignoreCustomerConfigKey = 'stripeWebhookCustomerIgnoreList';
+
     beforeEach(function () {
         configUtils.set({
             url: 'http://domain.tld/subdir',
@@ -37,6 +38,7 @@ describe('Stripe - config', function () {
     });
 
     afterEach(async function () {
+        configUtils.set(ignoreCustomerConfigKey, null);
         await configUtils.restore();
     });
 
@@ -71,5 +73,15 @@ describe('Stripe - config', function () {
         assertExists(config.checkoutSetupSessionSuccessUrl);
         assertExists(config.checkoutSetupSessionCancelUrl);
         assertExists(config.billingPortalReturnUrl);
+    });
+
+    it('Parses Stripe webhook customer ignore list from config', function () {
+        configUtils.set(ignoreCustomerConfigKey, ['cust_123', ' cust_456 ']);
+        const settingsHelpers = createSettingsHelpersMock();
+        const fakeUrlUtils = createUrlUtilsMock();
+
+        const config = getConfig({settingsHelpers, config: configUtils.config, urlUtils: fakeUrlUtils});
+
+        assert.deepEqual(config.webhookCustomerIgnoreList, ['cust_123', 'cust_456']);
     });
 });

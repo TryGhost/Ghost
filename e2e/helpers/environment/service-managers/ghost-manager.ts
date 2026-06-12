@@ -1,206 +1,483 @@
 import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
-import {DOCKER_COMPOSE_CONFIG, GHOST_DEFAULTS, MAILPIT, MYSQL, PORTAL, TINYBIRD} from '@/helpers/environment/constants';
-import {DockerCompose} from '@/helpers/environment/docker-compose';
-import {TinybirdManager} from './tinybird-manager';
+import {
+    BASE_GHOST_ENV,
+    BUILD_GATEWAY_IMAGE,
+    BUILD_IMAGE,
+    CADDYFILE_PATHS,
+    DEV_ENVIRONMENT,
+    DEV_SHARED_CONFIG_VOLUME,
+    REPO_ROOT,
+    TEST_ENVIRONMENT,
+    TINYBIRD
+} from '@/helpers/environment/constants';
+import {isTinybirdAvailable} from '@/helpers/environment/service-availability';
+import {readFile} from 'fs/promises';
 import type {Container, ContainerCreateOptions} from 'dockerode';
+import type {EnvironmentMode} from '@/helpers/environment/environment-manager';
+import type {GhostConfig} from '@/helpers/playwright/fixture';
 
 const debug = baseDebug('e2e:GhostManager');
 
+type GhostEnvOverrides = GhostConfig | Record<string, string>;
+const READINESS_POLL_INTERVAL_MS = 250;
+
+interface TinybirdConfigFile {
+    workspaceId?: string;
+    adminToken?: string;
+    trackerToken?: string;
+}
+/**
+ * Represents a running Ghost instance for E2E tests.
+ */
 export interface GhostInstance {
-    containerId: string; // docker container ID
-    instanceId: string; // unique instance name (e.g. ghost_<siteUuid>)
+    containerId: string;
+    instanceId: string;
     database: string;
     port: number;
     baseUrl: string;
     siteUuid: string;
 }
 
-export interface GhostStartConfig {
-    instanceId: string;
-    siteUuid: string;
-    workingDir?: string;
-    command?: string[];
-    portalUrl?: string;
-    config?: unknown;
+export interface GhostManagerConfig {
+    workerIndex: number;
+    mode: EnvironmentMode;
 }
 
+/**
+ * Manages Ghost and Gateway containers for E2E tests across dev/build modes.
+ * Creates worker-scoped containers that persist across tests.
+ */
 export class GhostManager {
-    private docker: Docker;
-    private dockerCompose: DockerCompose;
-    private tinybird: TinybirdManager;
+    private readonly docker: Docker;
+    private readonly config: GhostManagerConfig;
+    private ghostContainer: Container | null = null;
+    private gatewayContainer: Container | null = null;
 
-    constructor(docker: Docker, dockerCompose: DockerCompose, tinybird: TinybirdManager) {
-        this.docker = docker;
-        this.dockerCompose = dockerCompose;
-        this.tinybird = tinybird;
+    constructor(config: GhostManagerConfig) {
+        this.docker = new Docker();
+        this.config = config;
     }
 
-    private async createAndStart(config: GhostStartConfig): Promise<Container> {
+    get ghostContainerId(): string | null {
+        return this.ghostContainer?.id ?? null;
+    }
+
+    getGatewayPort(): number {
+        return 30000 + this.config.workerIndex;
+    }
+
+    /**
+     * Set up Ghost and Gateway containers for this worker.
+     * 
+     * @param database Optional database name to use. If not provided, uses 'ghost_testing'.
+     */
+    async setup(database?: string): Promise<void> {
+        debug(`Setting up containers for worker ${this.config.workerIndex}...`);
+
+        // For build mode, verify the image exists before proceeding
+        if (this.config.mode === 'build') {
+            await this.verifyBuildImageExists();
+        }
+
+        const ghostName = `ghost-e2e-worker-${this.config.workerIndex}`;
+        const gatewayName = `ghost-e2e-gateway-${this.config.workerIndex}`;
+
+        // Try to reuse existing containers (handles process restarts after test failures)
+        this.gatewayContainer = await this.getOrCreateContainer(gatewayName, () => this.createGatewayContainer(gatewayName, ghostName));
+        this.ghostContainer = await this.getOrCreateContainer(ghostName, () => this.createGhostContainer(ghostName, database));
+
+        debug(`Worker ${this.config.workerIndex} containers ready`);
+    }
+
+    /**
+     * Verify the build image exists locally.
+     * Fails early with a helpful error message if the image is not available.
+     */
+    async verifyBuildImageExists(): Promise<void> {
         try {
-            const network = await this.dockerCompose.getNetwork();
-            const tinyBirdConfig = this.tinybird.loadConfig();
+            const image = this.docker.getImage(BUILD_IMAGE);
+            await image.inspect();
+            debug(`Build image verified: ${BUILD_IMAGE}`);
+        } catch {
+            throw new Error(
+                `Build image not found: ${BUILD_IMAGE}\n\n` +
+                `You are running in "build" mode, which requires a pre-built Docker image.\n` +
+                `For local development, "dev" mode is recommended instead.\n\n` +
+                `To fix this, either:\n` +
+                `  1. (Recommended) Run "pnpm dev" first, then re-run tests — dev mode is auto-detected and doesn't need this image\n` +
+                `  2. Build locally: pnpm --filter @tryghost/e2e build:docker (with GHOST_E2E_BASE_IMAGE set)\n` +
+                `  3. Pull from registry: docker pull ${BUILD_IMAGE}\n` +
+                `  4. Use a different image: GHOST_E2E_MODE=build GHOST_E2E_IMAGE=<image> pnpm --filter @tryghost/e2e test`
+            );
+        }
 
-            // Use deterministic port based on worker index (or 0 if not in parallel)
-            const hostPort = 30000 + parseInt(process.env.TEST_PARALLEL_INDEX || '0', 10);
-
-            const environment = {
-                server__host: '0.0.0.0',
-                server__port: String(GHOST_DEFAULTS.PORT),
-                url: `http://localhost:${hostPort}`,
-                NODE_ENV: 'development',
-                // Db configuration
-                database__client: 'mysql2',
-                database__connection__host: MYSQL.HOST,
-                database__connection__port: String(MYSQL.PORT),
-                database__connection__user: MYSQL.USER,
-                database__connection__password: MYSQL.PASSWORD,
-                database__connection__database: config.instanceId,
-                // Tinybird configuration
-                TB_HOST: `http://${TINYBIRD.LOCAL_HOST}:${TINYBIRD.PORT}`,
-                TB_LOCAL_HOST: TINYBIRD.LOCAL_HOST,
-                tinybird__stats__endpoint: `http://${TINYBIRD.LOCAL_HOST}:${TINYBIRD.PORT}`,
-                tinybird__stats__endpointBrowser: 'http://localhost:7181',
-                tinybird__tracker__endpoint: 'http://localhost:8080/.ghost/analytics/api/v1/page_hit',
-                tinybird__tracker__datasource: 'analytics_events',
-                tinybird__workspaceId: tinyBirdConfig.workspaceId,
-                tinybird__adminToken: tinyBirdConfig.adminToken,
-                // Email configuration
-                mail__transport: 'SMTP',
-                mail__options__host: 'mailpit',
-                mail__options__port: `${MAILPIT.PORT}`,
-                mail__options__secure: 'false',
-                // other services configuration
-                portal__url: config.portalUrl || `http://localhost:${PORTAL.PORT}/portal.min.js`,
-                ...(config.config ? config.config : {})
-            } as Record<string, string>;
-
-            const containerConfig: ContainerCreateOptions = {
-                Image: GHOST_DEFAULTS.IMAGE,
-                Env: Object.entries(environment).map(([key, value]) => `${key}=${value}`),
-                NetworkingConfig: {
-                    EndpointsConfig: {
-                        [network.id]: {
-                            Aliases: [config.instanceId]
-                        }
-                    }
-                },
-                ExposedPorts: {
-                    [`${GHOST_DEFAULTS.PORT}/tcp`]: {}
-                },
-                HostConfig: {
-                    PortBindings: {
-                        [`${GHOST_DEFAULTS.PORT}/tcp`]: [{HostPort: String(hostPort)}]
-                    }
-                },
-                Labels: {
-                    'com.docker.compose.project': DOCKER_COMPOSE_CONFIG.PROJECT,
-                    'com.docker.compose.service': `ghost-${config.siteUuid}`,
-                    'tryghost/e2e': 'ghost'
-                },
-                WorkingDir: config.workingDir || GHOST_DEFAULTS.WORKDIR,
-                Cmd: config.command || ['yarn', 'dev'],
-                AttachStdout: true,
-                AttachStderr: true
-            };
-
-            debug('Ghost environment variables:', JSON.stringify(environment, null, 2));
-            debug('Full Docker container config:', JSON.stringify(containerConfig, null, 2));
-            debug('Starting Ghost container...');
-
-            const container = await this.docker.createContainer(containerConfig);
-            await container.start();
-
-            debug('Ghost container started:', container.id);
-            return container;
-        } catch (error) {
-            logging.error('Failed to create Ghost container:', error);
-            throw new Error(`Failed to create Ghost container: ${error}`);
+        try {
+            const gatewayImage = this.docker.getImage(BUILD_GATEWAY_IMAGE);
+            await gatewayImage.inspect();
+            debug(`Build gateway image verified: ${BUILD_GATEWAY_IMAGE}`);
+        } catch {
+            throw new Error(
+                `Build gateway image not found: ${BUILD_GATEWAY_IMAGE}\n\n` +
+                `To fix this, either:\n` +
+                `  1. Pull gateway image: docker pull ${BUILD_GATEWAY_IMAGE}\n` +
+                `  2. Use a different gateway image: GHOST_E2E_MODE=build GHOST_E2E_GATEWAY_IMAGE=<image> pnpm --filter @tryghost/e2e test`
+            );
         }
     }
 
-    async createAndStartInstance(instanceId: string, siteUuid: string, portalUrl?: string, config?: unknown): Promise<GhostInstance> {
-        const container = await this.createAndStart({instanceId, siteUuid, portalUrl, config});
-        const containerInfo = await container.inspect();
-        const hostPort = parseInt(containerInfo.NetworkSettings.Ports[`${GHOST_DEFAULTS.PORT}/tcp`][0].HostPort, 10);
-        await this.waitReady(hostPort, 30000);
+    /**
+     * Get existing container if running, otherwise create new one.
+     * This handles Playwright respawning processes after test failures.
+     */
+    private async getOrCreateContainer(name: string, create: () => Promise<Container>): Promise<Container> {
+        try {
+            const existing = this.docker.getContainer(name);
+            const info = await existing.inspect();
+            
+            if (info.State.Running) {
+                debug(`Reusing running container: ${name}`);
+                return existing;
+            }
+            
+            // Exists but stopped - start it
+            debug(`Starting stopped container: ${name}`);
+            await existing.start();
+            return existing;
+        } catch (error) {
+            const statusCode = (error as {statusCode?: number})?.statusCode;
+            const message = error instanceof Error ? error.message : String(error);
+            const isNotFound = statusCode === 404 || /No such container/i.test(message);
 
-        return {
-            containerId: container.id,
-            instanceId,
-            database: instanceId,
-            port: hostPort,
-            baseUrl: `http://localhost:${hostPort}`,
-            siteUuid
-        };
+            if (!isNotFound) {
+                debug(`Unexpected error inspecting container ${name}:`, error);
+                throw error;
+            }
+
+            debug(`Creating new container: ${name}`);
+            const container = await create();
+            await container.start();
+            return container;
+        }
     }
 
-    async removeAll(): Promise<void> {
+    async teardown(): Promise<void> {
+        debug(`Tearing down worker ${this.config.workerIndex} containers...`);
+
+        if (this.gatewayContainer) {
+            await this.removeContainer(this.gatewayContainer);
+            this.gatewayContainer = null;
+        }
+        if (this.ghostContainer) {
+            await this.removeContainer(this.ghostContainer);
+            this.ghostContainer = null;
+        }
+
+        debug(`Worker ${this.config.workerIndex} containers removed`);
+    }
+
+    async restartWithDatabase(databaseName: string, extraConfig?: GhostEnvOverrides): Promise<void> {
+        if (!this.ghostContainer) {
+            throw new Error('Ghost container not initialized');
+        }
+
+        debug('Restarting Ghost with database:', databaseName);
+
+        const info = await this.ghostContainer.inspect();
+        const containerName = info.Name.replace(/^\//, '');
+
+        // Remove old and create new with updated database
+        await this.removeContainer(this.ghostContainer);
+        this.ghostContainer = await this.createGhostContainer(containerName, databaseName, extraConfig);
+        await this.ghostContainer.start();
+
+        debug('Ghost restarted with database:', databaseName);
+    }
+
+    /**
+     * Wait for Ghost to become reachable through the same gateway path used by tests.
+     */
+    async waitForReady(timeoutMs: number = 120000): Promise<void> {
+        if (!this.ghostContainer) {
+            throw new Error('Ghost container not initialized');
+        }
+        await this.waitForHostReadiness(this.ghostContainer, timeoutMs);
+    }
+
+    private async buildEnvWithSchedulerUrl(
+        database: string = 'ghost_testing',
+        extraConfig?: GhostEnvOverrides
+    ): Promise<string[]> {
+        const env = [
+            ...BASE_GHOST_ENV,
+            `database__connection__database=${database}`,
+            `url=http://localhost:${this.getGatewayPort()}`
+        ];
+
+        if (this.config.mode === 'dev') {
+            env.push('pnpm_config_verify_deps_before_run=false');
+        }
+
+        // Add Tinybird config if available
+        // Static endpoints are set here; tokens are loaded from a host-generated
+        // e2e/data/state/tinybird.json file when present.
+        if (await isTinybirdAvailable()) {
+            env.push(
+                `TB_HOST=http://${TINYBIRD.LOCAL_HOST}:${TINYBIRD.PORT}`,
+                `TB_LOCAL_HOST=${TINYBIRD.LOCAL_HOST}`,
+                `tinybird__stats__endpoint=http://${TINYBIRD.LOCAL_HOST}:${TINYBIRD.PORT}`,
+                `tinybird__stats__endpointBrowser=http://localhost:${TINYBIRD.PORT}`,
+                `tinybird__tracker__endpoint=http://localhost:${this.getGatewayPort()}/.ghost/analytics/api/v1/page_hit`,
+                'tinybird__tracker__datasource=analytics_events'
+            );
+
+            const tinybirdConfig = await this.loadTinybirdConfig();
+            if (tinybirdConfig?.workspaceId) {
+                env.push(`tinybird__workspaceId=${tinybirdConfig.workspaceId}`);
+            }
+            if (tinybirdConfig?.adminToken) {
+                env.push(`tinybird__adminToken=${tinybirdConfig.adminToken}`);
+            }
+            if (tinybirdConfig?.trackerToken) {
+                env.push(`TINYBIRD_TRACKER_TOKEN=${tinybirdConfig.trackerToken}`);
+            }
+        }
+
+        if (extraConfig) {
+            for (const [key, value] of Object.entries(extraConfig)) {
+                if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') {
+                    env.push(`${key}=${String(value)}`);
+                } else {
+                    debug(`buildEnv: skipping non-scalar extraConfig key '${key}' (type: ${typeof value})`);
+                }
+            }
+        }
+
+        return env;
+    }
+
+    private async loadTinybirdConfig(): Promise<TinybirdConfigFile | null> {
         try {
-            debug('Finding all Ghost containers...');
+            const raw = await readFile(TINYBIRD.JSON_PATH, 'utf8');
+            const parsed = JSON.parse(raw) as TinybirdConfigFile;
+
+            if (!parsed.workspaceId || !parsed.adminToken) {
+                debug(`Tinybird config file is missing required fields: ${TINYBIRD.JSON_PATH}`);
+                return null;
+            }
+
+            return parsed;
+        } catch (error) {
+            debug(`Tinybird config not available at ${TINYBIRD.JSON_PATH}:`, error);
+            return null;
+        }
+    }
+
+    private async createGhostContainer(
+        name: string,
+        database: string = 'ghost_testing',
+        extraConfig?: GhostEnvOverrides
+    ): Promise<Container> {
+        const mode = this.config.mode;
+        debug(`Creating Ghost container for mode: ${mode}`);
+
+        // Determine image based on mode
+        // - build: Build image (local or registry, controlled by GHOST_E2E_IMAGE)
+        // - dev: Dev image from compose.dev.yaml
+        const image = mode === 'build' ? BUILD_IMAGE : TEST_ENVIRONMENT.ghost.image;
+
+        // Build volume mounts based on mode
+        const binds = this.getGhostBinds();
+
+        const config: ContainerCreateOptions = {
+            name,
+            Image: image,
+            Env: await this.buildEnvWithSchedulerUrl(database, extraConfig),
+            ExposedPorts: {[`${TEST_ENVIRONMENT.ghost.port}/tcp`]: {}},
+            Healthcheck: {
+                // Same health check as compose.dev.yaml - Ghost is ready when it responds
+                Test: ['CMD', 'node', '-e', `fetch('http://localhost:${TEST_ENVIRONMENT.ghost.port}',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))`],
+                Interval: 1000000000, // 1s in nanoseconds
+                Timeout: 5000000000, // 5s in nanoseconds
+                Retries: 60,
+                StartPeriod: 5000000000 // 5s in nanoseconds
+            },
+            HostConfig: {
+                Binds: binds,
+                ExtraHosts: ['host.docker.internal:host-gateway']
+            },
+            NetworkingConfig: {
+                EndpointsConfig: {
+                    [DEV_ENVIRONMENT.networkName]: {Aliases: [name]}
+                }
+            },
+            Labels: {
+                'com.docker.compose.project': TEST_ENVIRONMENT.projectNamespace,
+                'tryghost/e2e': `ghost-${mode}`
+            }
+        };
+
+        return this.docker.createContainer(config);
+    }
+
+    /**
+     * Get volume binds for Ghost container based on mode.
+     * - dev: Mount backend workspace packages for source code (hot reload)
+     * - build: No source mounts, fully self-contained image
+     */
+    private getGhostBinds(): string[] {
+        const binds: string[] = [
+            // Shared config volume for Tinybird credentials (all modes)
+            `${DEV_SHARED_CONFIG_VOLUME}:/mnt/shared-config:ro`
+        ];
+
+        if (this.config.mode === 'dev') {
+            binds.push(
+                `${REPO_ROOT}/ghost/core:/home/ghost/ghost/core`,
+                `${REPO_ROOT}/ghost/i18n:/home/ghost/ghost/i18n`,
+                `${REPO_ROOT}/ghost/parse-email-address:/home/ghost/ghost/parse-email-address`
+            );
+        }
+
+        return binds;
+    }
+
+    private async createGatewayContainer(name: string, ghostBackend: string): Promise<Container> {
+        const mode = this.config.mode;
+        debug(`Creating Gateway container for mode: ${mode}`);
+
+        // Use caddy image and mount appropriate Caddyfile based on mode
+        // - dev: Proxies to host dev servers for HMR
+        // - build: Minimal passthrough (assets served by Ghost or default CDN)
+        const caddyfilePath = mode === 'dev' ? CADDYFILE_PATHS.dev : CADDYFILE_PATHS.build;
+        
+        const binds: string[] = [
+            `${caddyfilePath}:/etc/caddy/Caddyfile:ro`
+        ];
+
+        // Environment variables for Caddy
+        const env = [
+            `GHOST_BACKEND=${ghostBackend}:${TEST_ENVIRONMENT.ghost.port}`,
+            'ANALYTICS_PROXY_TARGET=ghost-dev-analytics:3000'
+        ];
+
+        // Build mode can use stock Caddy (no custom plugin/image build required)
+        const image = mode === 'build' ? BUILD_GATEWAY_IMAGE : TEST_ENVIRONMENT.gateway.image;
+
+        const config: ContainerCreateOptions = {
+            name,
+            Image: image,
+            Env: env,
+            ExposedPorts: {'80/tcp': {}},
+            HostConfig: {
+                Binds: binds,
+                PortBindings: {'80/tcp': [{HostPort: String(this.getGatewayPort())}]},
+                ExtraHosts: ['host.docker.internal:host-gateway']
+            },
+            NetworkingConfig: {
+                EndpointsConfig: {
+                    [DEV_ENVIRONMENT.networkName]: {Aliases: [name]}
+                }
+            },
+            Labels: {
+                'com.docker.compose.project': TEST_ENVIRONMENT.projectNamespace,
+                'tryghost/e2e': `gateway-${mode}`
+            }
+        };
+
+        return this.docker.createContainer(config);
+    }
+
+    private async removeContainer(container: Container): Promise<void> {
+        try {
+            await container.remove({force: true});
+        } catch {
+            debug('Failed to remove container:', container.id);
+        }
+    }
+
+    /**
+     * Remove all e2e containers by project label.
+     */
+    async cleanupAllContainers(): Promise<void> {
+        try {
             const containers = await this.docker.listContainers({
                 all: true,
                 filters: {
-                    label: ['tryghost/e2e=ghost']
+                    label: [`com.docker.compose.project=${TEST_ENVIRONMENT.projectNamespace}`]
                 }
             });
 
-            if (containers.length === 0) {
-                debug('No Ghost containers found');
+            const results = await Promise.allSettled(
+                containers.map(c => this.docker.getContainer(c.Id).remove({force: true}))
+            );
+
+            for (const [index, result] of results.entries()) {
+                if (result.status === 'rejected') {
+                    debug('cleanupAllContainers: failed to remove container', containers[index]?.Id, result.reason);
+                }
+            }
+        } catch (error) {
+            debug('cleanupAllContainers: failed to list/remove containers', error);
+        }
+    }
+
+    private async waitForHostReadiness(container: Container, timeoutMs: number): Promise<void> {
+        const startTime = Date.now();
+
+        while (Date.now() - startTime < timeoutMs) {
+            const info = await container.inspect();
+            const health = info.State.Health;
+            const status = health?.Status;
+
+            if (info.State.Running && await this.probeHostReadiness()) {
+                debug('Host readiness probe passed');
                 return;
             }
 
-            debug(`Found ${containers.length} Ghost container(s) to remove`);
-            for (const containerInfo of containers) {
-                await this.stopAndRemoveInstance(containerInfo.Id);
+            if (status === 'unhealthy') {
+                const logs = await container.logs({stdout: true, stderr: true, tail: 100});
+                logging.error(`Container became unhealthy:\n${logs.toString()}`);
+                throw new Error('Ghost container became unhealthy during initialization');
             }
-            debug('All Ghost containers removed');
-        } catch (error) {
-            // Don't throw - we want to continue with setup even if cleanup fails
-            logging.error('Failed to remove all Ghost containers:', error);
-        }
-    }
 
-    async stopAndRemoveInstance(containerId: string): Promise<void> {
-        try {
-            const container = this.docker.getContainer(containerId);
-            try {
-                await container.stop({t: 10});
-            } catch (error) {
-                debug('Error stopping container:', error);
-                debug('Container already stopped or stop failed, forcing removal:', containerId);
+            if (!info.State.Running) {
+                const logs = await container.logs({stdout: true, stderr: true, tail: 100});
+                logging.error(`Container stopped unexpectedly:\n${logs.toString()}`);
+                throw new Error('Ghost container stopped during initialization');
             }
-            await container.remove({force: true});
-            debug('Container removed:', containerId);
-        } catch (error) {
-            debug('Failed to remove container:', error);
-        }
-    }
 
-    private async waitReady(port: number, timeoutMs: number = 60000): Promise<void> {
-        const startTime = Date.now();
-        const healthUrl = `http://localhost:${port}/ghost/api/admin/site/`;
-
-        while (Date.now() - startTime < timeoutMs) {
-            try {
-                const response = await fetch(healthUrl, {
-                    method: 'GET',
-                    signal: AbortSignal.timeout(5000)
-                });
-                if (response.status < 500) {
-                    debug('Ghost is ready, responded with status:', response.status);
-                    return;
-                }
-                debug('Ghost not ready yet, status:', response.status);
-            } catch (error) {
-                debug('Ghost health check failed, retrying...', error instanceof Error ? error.message : String(error));
-            }
-            await new Promise<void>((resolve) => {
-                setTimeout(resolve, 200);
+            // Still starting - wait and check again
+            await new Promise((r) => {
+                setTimeout(r, READINESS_POLL_INTERVAL_MS);
             });
         }
 
-        throw new Error(`Timeout waiting for Ghost to start on port ${port}`);
+        // Timeout
+        const logs = await container.logs({stdout: true, stderr: true, tail: 100});
+        logging.error(`Timeout waiting for container. Last logs:\n${logs.toString()}`);
+        throw new Error('Timeout waiting for Ghost to become ready');
+    }
+
+    private async probeHostReadiness(): Promise<boolean> {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 500);
+
+        try {
+            const response = await fetch(`http://localhost:${this.getGatewayPort()}/ghost/api/admin/authentication/setup`, {
+                method: 'GET',
+                headers: {Accept: 'application/json'},
+                signal: controller.signal
+            });
+            const body = await response.json().catch(() => null) as {setup?: Array<{status?: unknown}>} | null;
+
+            return response.ok && Array.isArray(body?.setup) && typeof body.setup[0]?.status === 'boolean';
+        } catch (error) {
+            debug('Host readiness probe failed:', error);
+            return false;
+        } finally {
+            clearTimeout(timeout);
+        }
     }
 }

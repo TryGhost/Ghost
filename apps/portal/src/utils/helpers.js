@@ -1,9 +1,12 @@
 import {getDateString} from './date-time';
+import {t} from './i18n';
 
 export function removePortalLinkFromUrl() {
     const [path] = window.location.hash.substr(1).split('?');
-    const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
-    if (path && linkRegex.test(path)) {
+    const portalLinkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+    const giftRedemptionLinkRegex = /^\/portal\/gift\/redeem\/([^/?#]+)\/?$/;
+    const shareLinkRegex = /^\/share\/?$/;
+    if (path && (portalLinkRegex.test(path) || giftRedemptionLinkRegex.test(path) || shareLinkRegex.test(path))) {
         window.history.pushState('', document.title, window.location.pathname + window.location.search);
     }
 }
@@ -68,6 +71,10 @@ export function isPaidMember({member = {}}) {
     return (member && member.paid);
 }
 
+export function isGiftMember({member = {}}) {
+    return member?.status === 'gift';
+}
+
 export function getProductCurrency({product}) {
     if (!product?.monthlyPrice) {
         return null;
@@ -90,12 +97,24 @@ export function hasNewsletterSendingEnabled({site}) {
     return site?.editor_default_email_recipients !== 'disabled';
 }
 
-export function getCompExpiry({member}) {
+export function getSubscriptionExpiry({member}) {
     const subscription = getMemberSubscription({member});
     if (subscription?.tier?.expiry_at) {
         return getDateString(subscription.tier.expiry_at);
     }
     return '';
+}
+
+export function isArchivedTier({member, site}) {
+    const subscription = getMemberSubscription({member});
+    const tierId = subscription?.tier?.id;
+
+    if (!tierId) {
+        return false;
+    }
+
+    // Archived tiers are filtered out of site.products
+    return !getProductFromId({site, productId: tierId});
 }
 
 export function getUpgradeProducts({site, member}) {
@@ -251,13 +270,17 @@ export function hasRecommendations({site}) {
     return site?.recommendations_enabled === true;
 }
 
+export function arePaidMembersEnabled({site}) {
+    return site?.paid_members_enabled === true;
+}
+
 export function isSigninAllowed({site}) {
     return site?.members_signup_access !== 'none';
 }
 
 export function isSignupAllowed({site}) {
     const hasSignupAccess = site?.members_signup_access === 'all' || site?.members_signup_access === 'paid';
-    const hasSignupConfigured = site?.is_stripe_configured || hasOnlyFreePlan({site});
+    const hasSignupConfigured = site?.paid_members_enabled || hasOnlyFreePlan({site});
 
     return hasSignupAccess && hasSignupConfigured;
 }
@@ -278,11 +301,6 @@ export function hasMultipleProducts({site}) {
 export function getRefDomain() {
     const referrerSource = window.location.hostname.replace(/^www\./, '');
     return referrerSource;
-}
-
-export function hasMultipleProductsFeature({site}) {
-    const {portal_products: portalProducts} = site || {};
-    return !!portalProducts;
 }
 
 export function hasCommentsEnabled({site}) {
@@ -306,8 +324,6 @@ export function transformApiSiteData({site}) {
                 yearlyPrice: product.yearly_price
             };
         });
-
-        site.is_stripe_configured = !!site.paid_members_enabled;
 
         // Map tier visibility to old settings
         if (site.products?.[0]?.visibility) {
@@ -341,7 +357,7 @@ export function getAvailableProducts({site}) {
     }
 
     return products.filter(product => !!product).filter((product) => {
-        if (site.is_stripe_configured) {
+        if (site.paid_members_enabled) {
             return true;
         }
         return product.type !== 'paid';
@@ -397,18 +413,6 @@ export function getAllProductsForSite({site}) {
             currency_symbol: getCurrencySymbol(product.yearlyPrice.currency)
         };
         return product;
-    });
-}
-
-export function hasBenefits({prices, site}) {
-    if (!hasMultipleProductsFeature({site})) {
-        return false;
-    }
-    if (!prices?.length) {
-        return false;
-    }
-    return prices.some((price) => {
-        return price?.benefits?.length;
     });
 }
 
@@ -540,11 +544,11 @@ export function subscriptionHasFreeTrial({sub} = {}) {
     return isTrialActive;
 }
 
-export function subscriptionHasFreeMonthsOffer({sub} = {}) {
-    const isFreeMonths = sub?.offer?.type === 'free_months';
-    const isFreeMonthsActive = isFreeMonths && sub?.trial_end_at && !isInThePast(new Date(sub?.trial_end_at));
-
-    return isFreeMonthsActive;
+export function isFreeMonthsOffer(offer) {
+    return offer?.type === 'percent'
+        && offer?.amount === 100
+        && offer?.duration === 'repeating'
+        && offer?.redemption_type === 'retention';
 }
 
 export function isInThePast(date) {
@@ -581,11 +585,10 @@ export function getProductCadenceFromPrice({site, priceId}) {
 
 export function getAvailablePrices({site, products = null}) {
     const {
-        portal_plans: portalPlans = [],
-        is_stripe_configured: isStripeConfigured
+        portal_plans: portalPlans = []
     } = site || {};
 
-    if (!isStripeConfigured) {
+    if (!arePaidMembersEnabled({site})) {
         return [];
     }
 
@@ -759,6 +762,23 @@ export const formatNumber = (amount) => {
     return amount.toLocaleString();
 };
 
+export const formatPrice = (amount, locale) => {
+    if (amount === undefined || amount === null) {
+        return '';
+    }
+
+    const normalizedAmount = Number(amount);
+    if (Number.isNaN(normalizedAmount)) {
+        return '';
+    }
+
+    const options = Number.isInteger(normalizedAmount)
+        ? undefined
+        : {minimumFractionDigits: 2, maximumFractionDigits: 2};
+
+    return normalizedAmount.toLocaleString(locale, options);
+};
+
 export const createPopupNotification = ({type, status, autoHide, duration = 2600, closeable, state, message, meta = {}}) => {
     let count = 0;
     if (state && state.popupNotification) {
@@ -771,6 +791,23 @@ export const createPopupNotification = ({type, status, autoHide, duration = 2600
         closeable,
         duration,
         meta,
+        message,
+        count
+    };
+};
+
+export const createNotification = ({type, status, autoHide, duration = 2600, closeable, state, message}) => {
+    const previousCount = Number.isInteger(state?.notificationSequence)
+        ? state.notificationSequence
+        : state?.notification?.count;
+    const count = Number.isInteger(previousCount) ? previousCount + 1 : 0;
+
+    return {
+        type,
+        status,
+        autoHide,
+        closeable,
+        duration,
         message,
         count
     };
@@ -795,30 +832,35 @@ export function getPriceIdFromPageQuery({site, pageQuery}) {
     return null;
 }
 
-// TODO: Add i18n once copy is finalized
 export const getOfferOffAmount = ({offer}) => {
-    if (offer.type === 'fixed') {
-        return `${getCurrencySymbol(offer.currency)}${offer.amount / 100}`;
+    if (isFreeMonthsOffer(offer)) {
+        const months = offer.duration_in_months;
+        if (months === 1) {
+            return t('1 month');
+        }
+
+        return t('{months} months', {months});
+    } else if (offer.type === 'fixed') {
+        return `${getCurrencySymbol(offer.currency)}${formatPrice(offer.amount / 100)}`;
     } else if (offer.type === 'percent') {
         return `${offer.amount}%`;
-    } else if (offer.type === 'free_months') {
-        return `${offer.amount === 1 ? '1 month' : `${offer.amount} months`}`;
     }
     return '';
 };
 
 export const getUpdatedOfferPrice = ({offer, price, useFormatted = false}) => {
-    const originalAmount = price.amount;
-    let updatedAmount;
+    const originalAmountInCents = price.amount;
+    let updatedAmountInCents = originalAmountInCents;
 
     if (offer.type === 'fixed' && isSameCurrency(offer.currency, price.currency)) {
-        updatedAmount = ((originalAmount - offer.amount)) / 100;
-        updatedAmount = updatedAmount > 0 ? updatedAmount : 0;
+        updatedAmountInCents = Math.max(0, (originalAmountInCents - offer.amount));
     } else if (offer.type === 'percent') {
-        updatedAmount = (originalAmount - ((originalAmount * offer.amount) / 100)) / 100;
-    } else {
-        updatedAmount = originalAmount / 100;
+        const discountInCents = Math.round(originalAmountInCents * (offer.amount / 100));
+        updatedAmountInCents = Math.max(0, (originalAmountInCents - discountInCents));
     }
+
+    const updatedAmount = updatedAmountInCents / 100;
+
     if (useFormatted) {
         return Intl.NumberFormat('en', {currency: price?.currency, style: 'currency'}).format(updatedAmount);
     }
@@ -928,6 +970,38 @@ export function getUrlHistory() {
     }
 }
 
+export function addMonths(date, numberOfMonths = 1) {
+    const originalDate = new Date(date);
+
+    if (isNaN(originalDate.getTime())) {
+        return null;
+    }
+
+    if (!Number.isInteger(numberOfMonths) || numberOfMonths < 1) {
+        return originalDate;
+    }
+
+    const originalDay = originalDate.getUTCDate();
+    const originalHours = originalDate.getUTCHours();
+    const originalMinutes = originalDate.getUTCMinutes();
+    const originalSeconds = originalDate.getUTCSeconds();
+    const originalMilliseconds = originalDate.getUTCMilliseconds();
+    let targetMonth = originalDate.getUTCMonth() + numberOfMonths;
+    let targetYear = originalDate.getUTCFullYear() + Math.floor(targetMonth / 12);
+    targetMonth = targetMonth % 12;
+    const daysInTargetMonth = new Date(Date.UTC(targetYear, targetMonth + 1, 0)).getUTCDate();
+
+    return new Date(Date.UTC(
+        targetYear,
+        targetMonth,
+        Math.min(originalDay, daysInTargetMonth),
+        originalHours,
+        originalMinutes,
+        originalSeconds,
+        originalMilliseconds
+    ));
+}
+
 // Check if member is a recent member, i.e. created in last 24 hours
 export function isRecentMember({member}) {
     if (!member?.created_at) {
@@ -940,4 +1014,40 @@ export function isRecentMember({member}) {
     const diffHours = Math.round(diff / (1000 * 60 * 60));
 
     return diffHours < 24;
+}
+
+export function getActiveInterval({portalPlans, portalDefaultPlan, selectedInterval}) {
+    if (selectedInterval === 'month' && portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    if (selectedInterval === 'year' && portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalDefaultPlan) {
+        if (portalDefaultPlan === 'monthly' && portalPlans.includes('monthly')) {
+            return 'month';
+        }
+    }
+
+    if (portalPlans.includes('yearly')) {
+        return 'year';
+    }
+
+    if (portalPlans.includes('monthly')) {
+        return 'month';
+    }
+
+    return undefined;
+}
+
+// Translate cadence to human readable string
+export function translateCadence(cadence) {
+    if (cadence === 'month') {
+        return t('month');
+    } else if (cadence === 'year') {
+        return t('year');
+    }
+    return cadence;
 }

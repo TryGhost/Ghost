@@ -244,6 +244,9 @@ export default class GhKoenigEditorLexical extends Component {
     @action
     focusEditor(event) {
         if (!this.skipFocusEditor && event.target.classList.contains('gh-koenig-editor-pane') && this.editorAPI) {
+            // In the future, we'd like to use `focusKoenigEditorOnBottomClick`
+            // from `admin-x-framework`, but we can't import it without more
+            // changes.
             let editorCanvas = this.editorAPI.editorInstance.getRootElement();
             let {bottom} = editorCanvas.getBoundingClientRect();
 

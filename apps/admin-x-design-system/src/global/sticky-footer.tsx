@@ -17,7 +17,7 @@ const StickyFooter: React.FC<StickyFooterProps> = ({
     children
 }) => {
     const containerClasses = clsx(
-        'w-100 sticky bottom-[-24px] z-[297] m-0 box-border p-0'
+        'sticky bottom-[-24px] z-[297] m-0 box-border w-100 p-0'
     );
     const containerBottom = shiftY ? `calc(${shiftY} - 24px)` : '-24px';
     const containerHeight = `${height + 24}px`;

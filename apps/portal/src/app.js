@@ -7,16 +7,29 @@ import Notification from './components/notification';
 import PopupModal from './components/popup-modal';
 import setupGhostApi from './utils/api';
 import AppContext from './app-context';
-import NotificationParser from './utils/notifications';
+import NotificationParser, {clearURLParams} from './utils/notifications';
 import * as Fixtures from './utils/fixtures';
 import {hasMode} from './utils/check-mode';
 import {transformPortalAnchorToRelative} from './utils/transform-portal-anchor-to-relative';
 import {getActivePage, isAccountPage, isOfferPage} from './pages';
 import ActionHandler from './actions';
+import {getGiftRedemptionErrorMessage} from './utils/gift-redemption-notification';
 import './app.css';
-import {hasRecommendations, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
+import {hasRecommendations, arePaidMembersEnabled, createNotification, createPopupNotification, hasAvailablePrices, getCurrencySymbol, getFirstpromoterId, getPriceIdFromPageQuery, getProductCadenceFromPrice, getProductFromId, getQueryPrice, getSiteDomain, isActiveOffer, isRetentionOffer, isComplimentaryMember, isInviteOnly, isPaidMember, isRecentMember, isSentryEventAllowed, removePortalLinkFromUrl} from './utils/helpers';
 import {validateHexColor} from './utils/sanitize-html';
 import {handleDataAttributes} from './data-attributes';
+
+const safeDecodeURIComponent = (value) => {
+    try {
+        return decodeURIComponent(value);
+    } catch (error) {
+        return null;
+    }
+};
+
+const staleGiftRedemptionRequestResult = {
+    staleGiftRedemptionRequest: true
+};
 
 const DEV_MODE_DATA = {
     showPopup: true,
@@ -59,10 +72,15 @@ export default class App extends React.Component {
             actionErrorMessage: null,
             initStatus: 'running',
             lastPage: null,
+            notification: null,
+            notificationSequence: -1,
             customSiteUrl: props.customSiteUrl,
             locale: props.locale,
             scrollbarWidth: 0
         };
+
+        this._redemptionRequestId = 0;
+        this.currentRedemptionToken = null;
     }
 
     componentDidMount() {
@@ -94,6 +112,9 @@ export default class App extends React.Component {
                         window.document.body.style.marginRight = '';
                     } else {
                         window.document.body.style.marginRight = this.bodyMargin;
+                    }
+                    if (this.state.reloadOnPopupClose) {
+                        window.location.reload();
                     }
                 }
             } catch (e) {
@@ -158,12 +179,37 @@ export default class App extends React.Component {
     /** Setup custom trigger buttons handling on page */
     setupCustomTriggerButton() {
         // Handler for custom buttons
-        this.clickHandler = (event) => {
+        this.clickHandler = async (event) => {
             event.preventDefault();
             const target = event.currentTarget;
             const pagePath = (target && target.dataset.portal);
-            const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath) || {};
+            const linkData = this.getPageFromLinkPath(pagePath);
+            if (!linkData) {
+                return;
+            }
+            const {page, pageQuery, pageData} = linkData;
             if (this.state.initStatus === 'success') {
+                if (page === 'gift' && !arePaidMembersEnabled({site: this.state.site})) {
+                    this.invalidateGiftRedemptionRequest();
+                    removePortalLinkFromUrl();
+
+                    return;
+                }
+                if (page === 'giftRedemption' && pageData?.token) {
+                    const redemptionRequest = this.startGiftRedemptionRequest(pageData.token);
+                    const giftLinkData = await this.fetchGiftRedemptionData({
+                        token: pageData.token
+                    });
+
+                    if (!this.isCurrentGiftRedemptionRequest(redemptionRequest)) {
+                        return;
+                    }
+
+                    this.setState(giftLinkData);
+                    return;
+                }
+
+                this.invalidateGiftRedemptionRequest();
                 if (pageQuery && pageQuery !== 'free') {
                     this.handleSignupQuery({site: this.state.site, pageQuery});
                 } else {
@@ -194,11 +240,30 @@ export default class App extends React.Component {
         });
     }
 
+    startGiftRedemptionRequest(token) {
+        this._redemptionRequestId += 1;
+        this.currentRedemptionToken = token;
+
+        return {
+            requestId: this._redemptionRequestId,
+            token
+        };
+    }
+
+    invalidateGiftRedemptionRequest() {
+        this._redemptionRequestId += 1;
+        this.currentRedemptionToken = null;
+    }
+
+    isCurrentGiftRedemptionRequest({requestId, token}) {
+        return this._redemptionRequestId === requestId && this.currentRedemptionToken === token;
+    }
+
     /** Initialize portal setup on load, fetch data and setup state*/
     async initSetup() {
         try {
             // Fetch data from API, links, preview, dev sources
-            const {site, member, offers, page, showPopup, popupNotification, lastPage, pageQuery, pageData} = await this.fetchData();
+            const {site, member, offers, page, showPopup, popupNotification, notification, notificationSequence, lastPage, pageQuery, pageData} = await this.fetchData();
             const i18nLanguage = this.props.siteI18nEnabled ? this.props.locale || site.locale || 'en' : 'en';
             i18n.changeLanguage(i18nLanguage);
 
@@ -212,15 +277,17 @@ export default class App extends React.Component {
                 showPopup,
                 pageData,
                 popupNotification,
+                notification,
+                notificationSequence,
                 dir: i18n.dir() || 'ltr',
                 action: 'init:success',
                 initStatus: 'success',
                 locale: i18nLanguage
             };
 
-            this.handleSignupQuery({site, pageQuery, member});
-
-            this.setState(state);
+            this.setState(state, () => {
+                this.handleSignupQuery({site, pageQuery, member});
+            });
 
             // Listen to preview mode changes
             this.hashHandler = () => {
@@ -258,7 +325,8 @@ export default class App extends React.Component {
     async fetchData() {
         const {site: apiSiteData, member, offers} = await this.fetchApiData();
         const {site: devSiteData, ...restDevData} = this.fetchDevData();
-        const {site: linkSiteData, ...restLinkData} = this.fetchLinkData(apiSiteData, member);
+        const linkData = await this.fetchLinkData(apiSiteData, member);
+        const {site: linkSiteData, ...restLinkData} = linkData?.staleGiftRedemptionRequest ? {} : linkData;
         const {site: previewSiteData, ...restPreviewData} = this.fetchPreviewData();
         const {site: notificationSiteData, ...restNotificationData} = this.fetchNotificationData();
         let page = '';
@@ -335,8 +403,24 @@ export default class App extends React.Component {
                 data.tier = {
                     id: value || Fixtures.offer.tier.id
                 };
+            } else if (key === 'redemption_type') {
+                data.redemption_type = value || 'signup';
             }
         }
+
+        if (data.redemption_type === 'retention') {
+            const previewSubscriptionId = Fixtures.member.preview?.subscriptions?.[0]?.id;
+
+            return {
+                page: 'accountPlan',
+                offers: [data],
+                pageData: {
+                    action: 'cancel',
+                    subscriptionId: previewSubscriptionId
+                }
+            };
+        }
+
         return {
             page: 'offer',
             pageData: data
@@ -468,8 +552,63 @@ export default class App extends React.Component {
     }
 
     /** Fetch state from Portal Links */
-    fetchLinkData(site, member) {
+    async fetchGiftRedemptionData({token}) {
+        try {
+            const response = await this.GhostApi.gift.fetchRedemptionData({token});
+
+            return {
+                showPopup: true,
+                notification: null,
+                page: 'giftRedemption',
+                pageData: {
+                    token,
+                    gift: response?.gifts?.[0] || null
+                }
+            };
+        } catch (error) {
+            removePortalLinkFromUrl();
+
+            const notification = createNotification({
+                type: 'giftRedemption:failed',
+                status: 'error',
+                autoHide: false,
+                closeable: true,
+                state: this.state,
+                message: getGiftRedemptionErrorMessage(error)
+            });
+
+            return {
+                showPopup: false,
+                pageData: null,
+                notification,
+                notificationSequence: notification.count
+            };
+        }
+    }
+
+    async fetchLinkData(site, member) {
+        this.invalidateGiftRedemptionRequest();
+
         const qParams = new URLSearchParams(window.location.search);
+
+        if (qParams.get('stripe') === 'gift-purchase-success') {
+            const token = qParams.get('gift_token');
+            const tierId = qParams.get('gift_tier');
+            const cadence = qParams.get('gift_cadence');
+            clearURLParams(['stripe', 'gift_token', 'gift_tier', 'gift_cadence']);
+            if (token) {
+                return {
+                    showPopup: true,
+                    page: 'giftSuccess',
+                    pageData: {
+                        token,
+                        tierId,
+                        cadence
+                    }
+                };
+            }
+        }
+
         if (qParams.get('action') === 'unsubscribe') {
             // if the user is unsubscribing from a newsletter with an old unsubscribe link that we can't validate, push them to newsletter mgmt where they have to log in
             if (qParams.get('key') && qParams.get('uuid')) {
@@ -512,7 +651,9 @@ export default class App extends React.Component {
         const productMonthlyPriceQueryRegex = /^(?:(\w+?))?\/monthly$/;
         const productYearlyPriceQueryRegex = /^(?:(\w+?))?\/yearly$/;
         const offersRegex = /^offers\/(\w+?)\/?$/;
+        const giftRedemptionRegex = /^\/portal\/gift\/redeem\/([^/?#]+)\/?$/;
         const linkRegex = /^\/portal\/?(?:\/(\w+(?:\/\w+)*))?\/?$/;
+        const shareRegex = /^\/share\/?$/;
         const feedbackRegex = /^\/feedback\/(\w+?)\/(\w+?)\/?$/;
 
         if (path && feedbackRegex.test(path)) {
@@ -542,8 +683,34 @@ export default class App extends React.Component {
                 }
             }
         }
+        if (path && giftRedemptionRegex.test(path)) {
+            const [, token] = path.match(giftRedemptionRegex);
+            const decodedToken = safeDecodeURIComponent(token);
+            if (!decodedToken) {
+                return {};
+            }
+
+            const redemptionRequest = this.startGiftRedemptionRequest(decodedToken);
+            const giftLinkData = await this.fetchGiftRedemptionData({
+                token: decodedToken
+            });
+
+            if (!this.isCurrentGiftRedemptionRequest(redemptionRequest)) {
+                return staleGiftRedemptionRequestResult;
+            }
+
+            return giftLinkData;
+        }
+        if (path && shareRegex.test(path)) {
+            return {
+                showPopup: true,
+                page: 'share'
+            };
+        }
+
         if (path && linkRegex.test(path)) {
             const [,pagePath] = path.match(linkRegex);
+
             const {page, pageQuery, pageData} = this.getPageFromLinkPath(pagePath, site) || {};
 
             // If user is not logged in and trying to access an account page,
@@ -558,6 +725,12 @@ export default class App extends React.Component {
                 };
             }
 
+            if (page === 'gift' && !arePaidMembersEnabled({site})) {
+                removePortalLinkFromUrl();
+
+                return {};
+            }
+
             const lastPage = ['accountPlan', 'accountProfile'].includes(page) ? 'accountHome' : null;
             const showPopup = (
                 ['monthly', 'yearly'].includes(pageQuery) ||
@@ -565,11 +738,20 @@ export default class App extends React.Component {
                 productYearlyPriceQueryRegex.test(pageQuery) ||
                 offersRegex.test(pageQuery)
             ) ? false : true;
+
+            // External callers (e.g. comments-ui) can request a post-sign-in redirect
+            // via #/portal/signin?redirect=<url>. Passed through unvalidated — the
+            // members middleware only honours same-site redirects at magic-link exchange.
+            const requestedRedirect = hashQuery.get('redirect');
+            const resolvedPageData = (page === 'signin' && requestedRedirect)
+                ? {...(pageData || {}), redirect: requestedRedirect}
+                : pageData;
+
             return {
                 showPopup,
                 ...(page ? {page} : {}),
                 ...(pageQuery ? {pageQuery} : {}),
-                ...(pageData ? {pageData} : {}),
+                ...(resolvedPageData ? {pageData: resolvedPageData} : {}),
                 ...(lastPage ? {lastPage} : {})
             };
         }
@@ -581,10 +763,15 @@ export default class App extends React.Component {
         const [, qs] = window.location.hash.substr(1).split('?');
         if (hasMode(['preview'])) {
             let data = {};
-            if (hasMode(['offerPreview'])) {
-                data = this.fetchOfferQueryStrData(qs);
-            } else {
-                data = this.fetchQueryStrData(qs);
+            try {
+                if (hasMode(['offerPreview'])) {
+                    data = this.fetchOfferQueryStrData(qs);
+                } else {
+                    data = this.fetchQueryStrData(qs);
+                }
+            } catch (error) {
+                Sentry.captureException(error);
+                return {};
             }
             return {
                 ...data,
@@ -742,9 +929,14 @@ export default class App extends React.Component {
     }
 
     /**Handle state update for preview url and Portal Link changes */
-    updateStateForPreviewLinks() {
+    async updateStateForPreviewLinks() {
         const {site: previewSite, ...restPreviewData} = this.fetchPreviewData();
-        const {site: linkSite, ...restLinkData} = this.fetchLinkData();
+        const linkData = await this.fetchLinkData(this.state.site, this.state.member);
+        if (linkData?.staleGiftRedemptionRequest) {
+            return;
+        }
+
+        const {site: linkSite, ...restLinkData} = linkData;
 
         const updatedState = {
             site: {
@@ -766,7 +958,6 @@ export default class App extends React.Component {
 
     /** Handle Portal offer urls */
     async handleOfferQuery({site, offerId, member = this.state.member}) {
-        const {portal_button: portalButton} = site;
         removePortalLinkFromUrl();
 
         if (!isPaidMember({member}) || isComplimentaryMember({member})) {
@@ -787,25 +978,10 @@ export default class App extends React.Component {
                     return;
                 }
 
-                if (!portalButton) {
-                    const product = getProductFromId({site, productId: offer.tier.id});
-                    const price = offer.cadence === 'month' ? product.monthlyPrice : product.yearlyPrice;
-                    this.dispatchAction('openPopup', {
-                        page: 'loading'
-                    });
-                    if (member) {
-                        const {tierId, cadence} = getProductCadenceFromPrice({site, priceId: price.id});
-                        this.dispatchAction('checkoutPlan', {plan: price.id, offerId, tierId, cadence});
-                    } else {
-                        const {tierId, cadence} = getProductCadenceFromPrice({site, priceId: price.id});
-                        this.dispatchAction('signup', {plan: price.id, offerId, tierId, cadence});
-                    }
-                } else {
-                    this.dispatchAction('openPopup', {
-                        page: 'offer',
-                        pageData: offerData?.offers[0]
-                    });
-                }
+                this.dispatchAction('openPopup', {
+                    page: 'offer',
+                    pageData: offer
+                });
             } catch (e) {
                 // ignore invalid portal url
             }
@@ -846,10 +1022,24 @@ export default class App extends React.Component {
         const customMonthlyProductSignup = /^signup\/?(?:\/(\w+?))\/monthly\/?$/;
         const customYearlyProductSignup = /^signup\/?(?:\/(\w+?))\/yearly\/?$/;
         const customOfferRegex = /^offers\/(\w+?)\/?$/;
+        const giftRedemptionRegex = /^gift\/redeem\/([^/?#]+)\/?$/;
 
         if (path === undefined || path === '') {
             return {
                 page: 'default'
+            };
+        } else if (giftRedemptionRegex.test(path)) {
+            const [, token] = path.match(giftRedemptionRegex);
+            const decodedToken = safeDecodeURIComponent(token);
+            if (!decodedToken) {
+                return null;
+            }
+
+            return {
+                page: 'giftRedemption',
+                pageData: {
+                    token: decodedToken
+                }
             };
         } else if (customOfferRegex.test(path)) {
             return {
@@ -931,6 +1121,14 @@ export default class App extends React.Component {
                     signup: false
                 }
             };
+        } else if (path === 'gift') {
+            return {
+                page: 'gift'
+            };
+        } else if (path === 'share') {
+            return {
+                page: 'share'
+            };
         } else if (path === 'account/newsletters/help') {
             return {
                 page: 'emailReceivingFAQ',
@@ -958,6 +1156,44 @@ export default class App extends React.Component {
         return validateHexColor(accentColor);
     }
 
+    getRetentionPreviewMember({site, offers}) {
+        const retentionOffer = (offers || []).find(offer => isRetentionOffer({offer}));
+        const productId = retentionOffer?.tier?.id;
+        const product = productId ? getProductFromId({site, productId}) : null;
+        const price = product ? (retentionOffer.cadence === 'year' ? product.yearlyPrice : product.monthlyPrice) : null;
+        const previewMember = Fixtures.member.preview;
+        const previewSubscription = previewMember?.subscriptions?.[0];
+
+        if (!previewSubscription || !product || !price) {
+            return previewMember;
+        }
+
+        return {
+            ...previewMember,
+            subscriptions: [{
+                ...previewSubscription,
+                plan: {
+                    ...previewSubscription.plan,
+                    amount: price.amount,
+                    interval: price.interval,
+                    currency: price.currency.toUpperCase()
+                },
+                price: {
+                    ...previewSubscription.price,
+                    price_id: price.id,
+                    amount: price.amount,
+                    interval: price.interval,
+                    currency: price.currency,
+                    product: {
+                        ...previewSubscription.price?.product,
+                        product_id: product.id
+                    }
+                },
+                tier: {id: product.id, name: product.name}
+            }]
+        };
+    }
+
     /**Get final page set in App context from state data*/
     getContextPage({site, page, member}) {
         /**Set default page based on logged-in status */
@@ -970,13 +1206,17 @@ export default class App extends React.Component {
     }
 
     /**Get final member set in App context from state data*/
-    getContextMember({page, member, customSiteUrl}) {
+    getContextMember({site, page, member, offers, pageData, customSiteUrl}) {
         if (hasMode(['dev', 'preview'], {customSiteUrl})) {
             /** Use dummy member(free or paid) for account pages in dev/preview mode*/
             if (isAccountPage({page}) || isOfferPage({page})) {
                 if (hasMode(['dev'], {customSiteUrl})) {
                     return member || Fixtures.member.free;
                 } else if (hasMode(['preview'])) {
+                    if (page === 'accountPlan' && pageData?.action === 'cancel') {
+                        return this.getRetentionPreviewMember({site, offers});
+                    }
+
                     return Fixtures.member.preview;
                 } else {
                     return Fixtures.member.paid;
@@ -991,9 +1231,9 @@ export default class App extends React.Component {
 
     /**Get final App level context from App state*/
     getContextFromState() {
-        const {site, member, offers, action, actionErrorMessage, page, lastPage, showPopup, pageQuery, pageData, popupNotification, customSiteUrl, dir, scrollbarWidth, otcRef, inboxLinks} = this.state;
+        const {site, member, offers, action, actionErrorMessage, page, lastPage, showPopup, pageQuery, pageData, popupNotification, notification, customSiteUrl, dir, scrollbarWidth, otcRef, inboxLinks} = this.state;
         const contextPage = this.getContextPage({site, page, member});
-        const contextMember = this.getContextMember({page: contextPage, member, customSiteUrl});
+        const contextMember = this.getContextMember({site, page: contextPage, member, offers, pageData, customSiteUrl});
         return {
             api: this.GhostApi,
             site,
@@ -1008,6 +1248,7 @@ export default class App extends React.Component {
             lastPage,
             showPopup,
             popupNotification,
+            notification,
             customSiteUrl,
             dir,
             scrollbarWidth,
@@ -1053,7 +1294,7 @@ export default class App extends React.Component {
      * portal. Especially useful for copy/pasted links from Admin screens.
      */
     transformPortalLinksToRelative() {
-        document.querySelectorAll('a[href*="#/portal"]').forEach(transformPortalAnchorToRelative);
+        document.querySelectorAll('a[href*="#/portal"], a[href*="#/share"]').forEach(transformPortalAnchorToRelative);
     }
 
     render() {

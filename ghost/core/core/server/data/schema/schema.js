@@ -43,6 +43,7 @@ module.exports = {
         show_comment_cta: {type: 'boolean', nullable: false, defaultTo: true},
         show_subscription_details: {type: 'boolean', nullable: false, defaultTo: false},
         show_latest_posts: {type: 'boolean', nullable: false, defaultTo: false},
+        show_share_button: {type: 'boolean', nullable: false, defaultTo: false},
         background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'light'},
         post_title_color: {type: 'string', maxlength: 50, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
@@ -181,6 +182,7 @@ module.exports = {
         recommendation_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         milestone_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         donation_notifications: {type: 'boolean', nullable: false, defaultTo: true},
+        gift_subscription_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
@@ -421,7 +423,7 @@ module.exports = {
         email: {type: 'string', maxlength: 191, nullable: false, unique: true, validations: {isEmail: true}},
         status: {
             type: 'string', maxlength: 50, nullable: false, defaultTo: 'free', validations: {
-                isIn: [['free', 'paid', 'comped']]
+                isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
         name: {type: 'string', maxlength: 191, nullable: true},
@@ -439,7 +441,8 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
-            ['email_disabled']
+            ['email_disabled'],
+            ['created_at', 'id']
         ]
     },
     // NOTE: this is the tiers table
@@ -487,9 +490,9 @@ module.exports = {
         stripe_coupon_id: {type: 'string', maxlength: 255, nullable: true, unique: true},
         interval: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['month', 'year']]}},
         currency: {type: 'string', maxlength: 50, nullable: true},
-        discount_type: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['percent', 'amount', 'trial', 'free_months']]}},
+        discount_type: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['percent', 'amount', 'trial']]}},
         discount_amount: {type: 'integer', nullable: false},
-        duration: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['trial', 'free_months', 'once', 'repeating', 'forever']]}},
+        duration: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['trial', 'once', 'repeating', 'forever']]}},
         duration_in_months: {type: 'integer', nullable: true},
         portal_title: {type: 'string', maxlength: 191, nullable: true},
         portal_description: {type: 'string', maxlength: 2000, nullable: true},
@@ -585,15 +588,16 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', cascadeDelete: true},
         from_status: {
             type: 'string', maxlength: 50, nullable: true, validations: {
-                isIn: [['free', 'paid', 'comped']]
+                isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
         to_status: {
             type: 'string', maxlength: 50, nullable: true, validations: {
-                isIn: [['free', 'paid', 'comped']]
+                isIn: [['free', 'paid', 'comped', 'gift']]
             }
         },
-        created_at: {type: 'dateTime', nullable: false}
+        created_at: {type: 'dateTime', nullable: false},
+        batch_id: {type: 'string', maxlength: 24, nullable: true}
     },
     members_product_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -711,6 +715,10 @@ module.exports = {
         // @note: this is longer than originally intended due to a bug - https://github.com/TryGhost/Ghost/pull/15606
         // so we should decide whether we should reduce it down in the future
         plan_currency: {type: 'string', maxlength: 191, nullable: false}
+    },
+    members_current_subscription: {
+        member_id: {type: 'string', maxlength: 24, nullable: false, primary: true, references: 'members.id', cascadeDelete: true},
+        subscription_id: {type: 'string', maxlength: 24, nullable: false, unique: true, references: 'members_stripe_customers_subscriptions.id', cascadeDelete: true}
     },
     members_subscription_created_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -979,13 +987,18 @@ module.exports = {
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'published', validations: {isIn: [['published', 'hidden', 'deleted']]}},
         html: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         edited_at: {type: 'dateTime', nullable: true},
+        pinned_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: false}
+        updated_at: {type: 'dateTime', nullable: false},
+        '@@INDEXES@@': [
+            ['post_id', 'parent_id', 'pinned_at']
+        ]
     },
     comment_likes: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         comment_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'comments.id', cascadeDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'members.id', cascadeDelete: true},
+        score: {type: 'integer', nullable: false, defaultTo: 1},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false}
     },
@@ -1071,7 +1084,8 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         payload: {type: 'text', maxlength: 65535, nullable: true},
         deleted: {type: 'boolean', nullable: false, defaultTo: false},
-        verified: {type: 'boolean', nullable: false, defaultTo: false}
+        verified: {type: 'boolean', nullable: false, defaultTo: false},
+        revalidation_failure_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     milestones: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -1125,7 +1139,13 @@ module.exports = {
     outbox: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         event_type: {type: 'string', maxlength: 50, nullable: false},
-        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending'},
+        status: {
+            type: 'string',
+            maxlength: 50,
+            nullable: false,
+            defaultTo: 'pending',
+            validations: {isIn: [['pending', 'processing', 'failed', 'completed']]}
+        },
         payload: {type: 'text', maxlength: 65535, nullable: false},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
@@ -1136,31 +1156,121 @@ module.exports = {
             ['event_type', 'status', 'created_at']
         ]
     },
-    automated_emails: {
+    email_design_settings: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'light'},
+        header_background_color: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'transparent'},
+        header_image: {type: 'string', maxlength: 2000, nullable: true},
+        show_header_icon: {type: 'boolean', nullable: false, defaultTo: true},
+        show_header_title: {type: 'boolean', nullable: false, defaultTo: true},
+        footer_content: {type: 'text', maxlength: 1000000000, nullable: true},
+        button_color: {type: 'string', maxlength: 50, nullable: true, defaultTo: 'accent'},
+        button_corners: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'rounded', validations: {isIn: [['square', 'rounded', 'pill']]}},
+        button_style: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'fill', validations: {isIn: [['fill', 'outline']]}},
+        link_color: {type: 'string', maxlength: 50, nullable: true, defaultTo: 'accent'},
+        link_style: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'underline', validations: {isIn: [['underline', 'regular', 'bold']]}},
+        body_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
+        // Named "title_*" to match the newsletters table; applies to headings (and post title in newsletters)
+        title_font_category: {type: 'string', maxlength: 191, nullable: false, defaultTo: 'sans_serif', validations: {isIn: [['serif', 'sans_serif']]}},
+        title_font_weight: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'bold', validations: {isIn: [['normal', 'medium', 'semibold', 'bold']]}},
+        image_corners: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'square', validations: {isIn: [['square', 'rounded']]}},
+        divider_color: {type: 'string', maxlength: 50, nullable: true},
+        section_title_color: {type: 'string', maxlength: 50, nullable: true},
+        show_badge: {type: 'boolean', nullable: false, defaultTo: true},
+        sender_name: {type: 'string', maxlength: 191, nullable: true},
+        sender_email: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
+        sender_reply_to: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
+    automations: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'inactive', validations: {isIn: [['active', 'inactive']]}},
         name: {type: 'string', maxlength: 191, nullable: false, unique: true},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
+    welcome_email_automated_emails: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', constraintName: 'weae_automation_id_foreign', cascadeDelete: true},
+        next_welcome_email_automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id', constraintName: 'weae_next_email_id_foreign', cascadeDelete: false},
+        delay_days: {type: 'integer', nullable: false, unsigned: true},
         subject: {type: 'string', maxlength: 300, nullable: false},
         lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         sender_name: {type: 'string', maxlength: 191, nullable: true},
         sender_email: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
         sender_reply_to: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
+        email_design_setting_id: {type: 'string', maxlength: 24, nullable: false, references: 'email_design_settings.id'},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
+    welcome_email_automation_runs: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        welcome_email_automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', constraintName: 'wear_automation_id_foreign', cascadeDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: false, references: 'members.id', constraintName: 'wear_member_id_foreign', cascadeDelete: true},
+        next_welcome_email_automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id', constraintName: 'wear_next_email_id_foreign', cascadeDelete: false},
+        ready_at: {type: 'dateTime', nullable: true},
+        step_started_at: {type: 'dateTime', nullable: true},
+        step_attempts: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
+        exit_reason: {type: 'string', maxlength: 50, nullable: true, validations: {isIn: [['email send failed', 'member unsubscribed', 'member changed status', 'finished', 'automation disabled']]}},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true},
         '@@INDEXES@@': [
-            ['slug'],
-            ['status']
+            ['ready_at']
         ]
     },
     automated_email_recipients: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        automated_email_id: {type: 'string', maxlength: 24, nullable: false, references: 'automated_emails.id'},
+        automated_email_id: {type: 'string', maxlength: 24, nullable: false, references: 'welcome_email_automated_emails.id'},
         member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},
         member_name: {type: 'string', maxlength: 191, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
+    },
+    gifts: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        token: {type: 'string', maxlength: 48, nullable: false, unique: true},
+
+        buyer_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}},
+        buyer_member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
+
+        redeemer_member_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'members.id', setNullDelete: true},
+
+        tier_id: {type: 'string', maxlength: 24, nullable: false, unique: false, references: 'products.id'},
+        cadence: {
+            type: 'string', maxlength: 50, nullable: false, validations: {
+                isIn: [['month', 'year']]
+            }
+        },
+        duration: {type: 'integer', nullable: false, unsigned: true},
+
+        currency: {type: 'string', maxlength: 50, nullable: false},
+        amount: {type: 'integer', nullable: false, unsigned: true},
+
+        stripe_checkout_session_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
+        stripe_payment_intent_id: {type: 'string', maxlength: 255, nullable: false, unique: true},
+
+        consumes_at: {type: 'dateTime', nullable: true},
+        expires_at: {type: 'dateTime', nullable: false},
+
+        status: {
+            type: 'string', maxlength: 50, nullable: false, validations: {
+                isIn: [['purchased', 'redeemed', 'consumed', 'expired', 'refunded']]
+            }
+        },
+        purchased_at: {type: 'dateTime', nullable: false},
+        redeemed_at: {type: 'dateTime', nullable: true},
+        consumed_at: {type: 'dateTime', nullable: true},
+        expired_at: {type: 'dateTime', nullable: true},
+        refunded_at: {type: 'dateTime', nullable: true},
+        consumes_soon_reminder_sent_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['status', 'consumes_at'],
+            ['status', 'expires_at']
+        ]
     }
 };

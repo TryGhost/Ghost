@@ -1,32 +1,27 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const {knex} = require('../../../../core/server/data/db');
 
 describe('Unit: models/tag', function () {
-    before(function () {
-        models.init();
-    });
-
     afterEach(function () {
         sinon.restore();
     });
 
     describe('SQL', function () {
-        const mockDb = require('mock-knex');
+        const mockDb = require('../../../utils/mock-knex');
         let tracker;
 
-        before(function () {
+        beforeAll(function () {
             mockDb.mock(knex);
             tracker = mockDb.getTracker();
         });
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 
-        after(function () {
+        afterAll(function () {
             mockDb.unmock(knex);
         });
 

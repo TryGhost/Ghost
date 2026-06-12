@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
@@ -784,7 +783,7 @@ describe('migrations/utils/schema nullable functions', function () {
             try {
                 const runDownMigration = await runUpMigration(knex, migration);
 
-                assert(logSpy.calledWith(sinon.match('skipping as column is already nullable')), 'Should log skip message');
+                sinon.assert.calledWith(logSpy, sinon.match('skipping as column is already nullable'));
 
                 // Column should still be nullable
                 const isNullableAfter = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);
@@ -840,7 +839,7 @@ describe('migrations/utils/schema nullable functions', function () {
             try {
                 const runDownMigration = await runUpMigration(knex, migration);
 
-                assert(logSpy.calledWith(sinon.match('skipping as column is already not nullable')), 'Should log skip message');
+                sinon.assert.calledWith(logSpy, sinon.match('skipping as column is already not nullable'));
 
                 // Column should still be not nullable
                 const isNotNullableAfter = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);

@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const concat = require('../../../../core/frontend/helpers/concat');
 const link_class = require('../../../../core/frontend/helpers/link_class');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
@@ -20,7 +19,7 @@ function compile(templateString) {
 }
 
 describe('{{link_class}} helper', function () {
-    before(function () {
+    beforeAll(function () {
         handlebars.registerHelper('link_class', link_class);
         handlebars.registerHelper('concat', concat);
         configUtils.config.set('url', 'https://siteurl.com');
@@ -33,7 +32,7 @@ describe('{{link_class}} helper', function () {
         };
     });
 
-    after(async function () {
+    afterAll(async function () {
         await configUtils.restore();
     });
 

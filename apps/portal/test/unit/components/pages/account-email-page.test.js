@@ -23,6 +23,13 @@ const setup = (overrides) => {
     };
 };
 
+const getEmailPreferenceToggles = ({queryAllByTestId}) => {
+    return [
+        ...queryAllByTestId('newsletter-toggle'),
+        ...queryAllByTestId('comment-toggle')
+    ];
+};
+
 describe('Account Email Page', () => {
     test('renders', () => {
         const newsletterData = getNewslettersData({numOfNewsletters: 2});
@@ -30,8 +37,8 @@ describe('Account Email Page', () => {
             newsletters: newsletterData,
             member: getMemberData({newsletters: newsletterData})
         });
-        const {unsubscribeAllBtn, getAllByTestId, getByText} = setup({site: siteData});
-        const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
+        const {unsubscribeAllBtn, queryAllByTestId, getByText} = setup({site: siteData});
+        const unsubscribeBtns = getEmailPreferenceToggles({queryAllByTestId});
         expect(getByText('Email preferences')).toBeInTheDocument();
         // one for each newsletter and one for comments
         expect(unsubscribeBtns).toHaveLength(3);
@@ -126,8 +133,8 @@ describe('Account Email Page', () => {
             member: getMemberData({newsletters: newsletterData})
         });
 
-        const {getAllByTestId, getByText} = setup({site: siteData});
-        const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
+        const {queryAllByTestId, getByText} = setup({site: siteData});
+        const unsubscribeBtns = getEmailPreferenceToggles({queryAllByTestId});
 
         expect(getByText('Email preferences')).toBeInTheDocument();
 
@@ -142,8 +149,8 @@ describe('Account Email Page', () => {
             editorDefaultEmailRecipients: 'visibility',
             member: getMemberData({newsletters: newsletterData})
         });
-        const {getAllByTestId} = setup({site: siteData});
-        const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
+        const {queryAllByTestId} = setup({site: siteData});
+        const unsubscribeBtns = getEmailPreferenceToggles({queryAllByTestId});
         expect(unsubscribeBtns).toHaveLength(3);
     });
 
@@ -154,8 +161,8 @@ describe('Account Email Page', () => {
             editorDefaultEmailRecipients: 'filter',
             member: getMemberData({newsletters: newsletterData})
         });
-        const {getAllByTestId} = setup({site: siteData});
-        const unsubscribeBtns = getAllByTestId(`toggle-wrapper`);
+        const {queryAllByTestId} = setup({site: siteData});
+        const unsubscribeBtns = getEmailPreferenceToggles({queryAllByTestId});
         expect(unsubscribeBtns).toHaveLength(3);
     });
 });

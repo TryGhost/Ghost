@@ -2,7 +2,7 @@ import GlobalDataProvider from './providers/global-data-provider';
 import StatsErrorBoundary from '@components/errors/stats-error-boundary';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
 import {AppProvider, BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
-import {ShadeApp} from '@tryghost/shade';
+import {ShadeApp} from '@tryghost/shade/app';
 
 export {useAppContext} from '@tryghost/admin-x-framework';
 

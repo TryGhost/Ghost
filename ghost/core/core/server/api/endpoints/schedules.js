@@ -1,5 +1,4 @@
-const models = require('../../models');
-const postSchedulingService = require('../../services/posts/post-scheduling-service')();
+const postScheduling = require('../../services/posts/post-scheduling');
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -39,8 +38,8 @@ const controller = {
                 }
             };
 
-            const {scheduledResource, preScheduledResource} = await postSchedulingService.publish(resourceType, frame.options.id, frame.data.force, options);
-            const cacheInvalidation = postSchedulingService.handleCacheInvalidation(scheduledResource, preScheduledResource);
+            const {scheduledResource, preScheduledResource} = await postScheduling.publish(resourceType, frame.options.id, frame.data.force, options);
+            const cacheInvalidation = postScheduling.handleCacheInvalidation(scheduledResource, preScheduledResource);
 
             if (cacheInvalidation === true) {
                 frame.setHeader('X-Cache-Invalidate', '/*');
@@ -50,35 +49,6 @@ const controller = {
 
             const response = {};
             response[resourceType] = [scheduledResource];
-            return response;
-        }
-    },
-
-    getScheduled: {
-        // NOTE: this method is for internal use only by DefaultScheduler
-        //       it is not exposed anywhere!
-        headers: {
-            cacheInvalidate: false
-        },
-        permissions: false,
-        validation: {
-            options: {
-                resource: {
-                    required: true,
-                    values: ['posts', 'pages']
-                }
-            }
-        },
-        async query(frame) {
-            const resourceModel = 'Post';
-            const resourceType = (frame.options.resource === 'post') ? 'post' : 'page';
-            const cleanOptions = {};
-            cleanOptions.filter = `status:scheduled+type:${resourceType}`;
-            cleanOptions.columns = ['id', 'published_at', 'created_at', 'type'];
-
-            const result = await models[resourceModel].findAll(cleanOptions);
-            let response = {};
-            response[resourceType] = result;
             return response;
         }
     }

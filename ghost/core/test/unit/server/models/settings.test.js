@@ -1,8 +1,7 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
-const mockDb = require('mock-knex');
+const mockDb = require('../../../utils/mock-knex');
 const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
 const {knex} = require('../../../../core/server/data/db');
@@ -10,10 +9,6 @@ const events = require('../../../../core/server/lib/common/events');
 const errors = require('@tryghost/errors');
 
 describe('Unit: models/settings', function () {
-    before(function () {
-        models.init();
-    });
-
     describe('events', function () {
         let tracker;
         let eventSpy;
@@ -52,9 +47,9 @@ describe('Unit: models/settings', function () {
                 type: 'string'
             })
                 .then(() => {
-                    assert.equal(eventSpy.calledTwice, true);
-                    assert.equal(eventSpy.firstCall.calledWith('settings.added'), true);
-                    assert.equal(eventSpy.secondCall.calledWith('settings.description.added'), true);
+                    sinon.assert.calledTwice(eventSpy);
+                    sinon.assert.calledWith(eventSpy.firstCall, 'settings.added');
+                    sinon.assert.calledWith(eventSpy.secondCall, 'settings.description.added');
                 });
         });
 
@@ -76,9 +71,9 @@ describe('Unit: models/settings', function () {
                 value: 'edited value'
             })
                 .then(() => {
-                    assert.equal(eventSpy.calledTwice, true);
-                    assert.equal(eventSpy.firstCall.calledWith('settings.edited'), true);
-                    assert.equal(eventSpy.secondCall.calledWith('settings.description.edited'), true);
+                    sinon.assert.calledTwice(eventSpy);
+                    sinon.assert.calledWith(eventSpy.firstCall, 'settings.edited');
+                    sinon.assert.calledWith(eventSpy.secondCall, 'settings.description.edited');
                 });
         });
     });

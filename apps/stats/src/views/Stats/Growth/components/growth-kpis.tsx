@@ -1,7 +1,10 @@
 import React, {useEffect, useMemo, useState} from 'react';
-import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue, Separator, Tabs, TabsList, centsToDollars, formatDisplayDateWithRange, formatNumber} from '@tryghost/shade';
+import {BarChartLoadingIndicator, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Separator, Tabs, TabsList} from '@tryghost/shade/components';
 import {DiffDirection} from '@hooks/use-growth-stats';
+import {GhAreaChart, GhAreaChartDataItem, KpiDropdownButton, KpiTabTrigger, KpiTabValue} from '@tryghost/shade/patterns';
 import {STATS_RANGES} from '@src/utils/constants';
+import {centsToDollars, formatDisplayDateWithRange} from '@tryghost/shade/app';
+import {formatNumber} from '@tryghost/shade/utils';
 import {sanitizeChartData} from '@src/utils/chart-helpers';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
@@ -13,6 +16,7 @@ type ChartDataItem = {
     free: number;
     paid: number;
     comped: number;
+    gift: number;
     mrr: number;
     paid_subscribed?: number;
     paid_canceled?: number;
@@ -48,6 +52,7 @@ const isValidTab = (tab: string | null | undefined): tab is KpiTab => {
 // Extended data type for paid members chart with additional tooltip fields
 type PaidMembersChartDataItem = GhAreaChartDataItem & {
     comped: number;
+    gift: number;
     paid_subscribed?: number;
 };
 
@@ -64,8 +69,8 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
     }
 
     const data = payload[0].payload;
-    const {date, formattedValue, label, comped} = data;
-    const paidSubscriptions = data.value - (comped || 0);
+    const {date, formattedValue, label, comped, gift} = data;
+    const paidSubscriptions = data.value - (comped || 0) - (gift || 0);
 
     return (
         <div className="min-w-[200px] rounded-lg border bg-background px-3 py-2 shadow-lg">
@@ -81,6 +86,12 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
                         </div>
                         <div className='flex items-center gap-2'>
                             <div className='flex grow items-center justify-between gap-5'>
+                                <div className="text-sm text-muted-foreground">Gift subscriptions</div>
+                                <div className="font-mono text-xs">{(gift !== undefined && gift > 0) ? (formatNumber(gift)) : '0'}</div>
+                            </div>
+                        </div>
+                        <div className='flex items-center gap-2'>
+                            <div className='flex grow items-center justify-between gap-5'>
                                 <div className="text-sm text-muted-foreground">Complimentary</div>
                                 <div className="font-mono text-xs">{(comped !== undefined && comped > 0) ? (formatNumber(comped)) : '0'}</div>
                             </div>
@@ -89,7 +100,7 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
                     </>
                 )}
                 <div className='flex items-center gap-2'>
-                    <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'hsl(var(--chart-purple))'}}></span>
+                    <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color || 'var(--chart-purple)'}}></span>
                     <div className='flex grow items-center justify-between gap-5'>
                         {label && <div className="text-sm text-muted-foreground">{label}</div>}
                         <div className="font-mono font-medium">{formattedValue}</div>
@@ -183,6 +194,7 @@ const GrowthKPIs: React.FC<{
                     formattedValue: formatNumber(item.paid),
                     label: 'Paid members',
                     comped: item.comped,
+                    gift: item.gift,
                     paid_subscribed: item.paid_subscribed
                 };
             });
@@ -215,16 +227,16 @@ const GrowthKPIs: React.FC<{
 
     const tabConfig = {
         'total-members': {
-            color: 'hsl(var(--chart-darkblue))'
+            color: 'var(--chart-darkblue)'
         },
         'free-members': {
-            color: 'hsl(var(--chart-blue))'
+            color: 'var(--chart-blue)'
         },
         'paid-members': {
-            color: 'hsl(var(--chart-purple))'
+            color: 'var(--chart-purple)'
         },
         mrr: {
-            color: 'hsl(var(--chart-teal))'
+            color: 'var(--chart-teal)'
         }
     };
 
@@ -240,14 +252,14 @@ const GrowthKPIs: React.FC<{
 
     return (
         <Tabs defaultValue={validatedInitialTab} variant='kpis'>
-            <TabsList className={`-mx-6 ${appSettings?.paidMembersEnabled ? 'hidden grid-cols-4 lg:!visible lg:!grid' : 'grid grid-cols-4'}`}>
+            <TabsList className={`-mx-6 ${appSettings?.paidMembersEnabled ? 'hidden grid-cols-4 lg:visible! lg:grid!' : 'grid grid-cols-4'}`}>
                 <KpiTabTrigger className={!appSettings?.paidMembersEnabled ? 'cursor-auto after:hidden' : ''} value="total-members" onClick={() => {
                     if (appSettings?.paidMembersEnabled) {
                         handleTabChange('total-members');
                     }
                 }}>
                     <KpiTabValue
-                        color='hsl(var(--chart-darkblue))'
+                        color='var(--chart-darkblue)'
                         diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                         diffValue={percentChanges.total}
                         label="Total members"
@@ -261,7 +273,7 @@ const GrowthKPIs: React.FC<{
                         handleTabChange('free-members');
                     }}>
                         <KpiTabValue
-                            color='hsl(var(--chart-blue))'
+                            color='var(--chart-blue)'
                             diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.free}
                             diffValue={percentChanges.free}
                             label="Free members"
@@ -272,7 +284,7 @@ const GrowthKPIs: React.FC<{
                         handleTabChange('paid-members');
                     }}>
                         <KpiTabValue
-                            color='hsl(var(--chart-purple))'
+                            color='var(--chart-purple)'
                             diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.paid}
                             diffValue={percentChanges.paid}
                             label="Paid members"
@@ -283,7 +295,7 @@ const GrowthKPIs: React.FC<{
                         handleTabChange('mrr');
                     }}>
                         <KpiTabValue
-                            color='hsl(var(--chart-teal))'
+                            color='var(--chart-teal)'
                             diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.mrr}
                             diffValue={percentChanges.mrr}
                             label="MRR"
@@ -299,7 +311,7 @@ const GrowthKPIs: React.FC<{
                         <KpiDropdownButton>
                             {currentTab === 'total-members' &&
                                 <KpiTabValue
-                                    color='hsl(var(--chart-darkblue))'
+                                    color='var(--chart-darkblue)'
                                     diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.total}
                                     diffValue={percentChanges.total}
                                     label="Total members"
@@ -308,7 +320,7 @@ const GrowthKPIs: React.FC<{
                             }
                             {currentTab === 'free-members' &&
                                 <KpiTabValue
-                                    color='hsl(var(--chart-blue))'
+                                    color='var(--chart-blue)'
                                     diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.free}
                                     diffValue={percentChanges.free}
                                     label="Free members"
@@ -317,7 +329,7 @@ const GrowthKPIs: React.FC<{
                             }
                             {currentTab === 'paid-members' &&
                                 <KpiTabValue
-                                    color='hsl(var(--chart-purple))'
+                                    color='var(--chart-purple)'
                                     diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.paid}
                                     diffValue={percentChanges.paid}
                                     label="Paid members"
@@ -326,7 +338,7 @@ const GrowthKPIs: React.FC<{
                             }
                             {currentTab === 'mrr' &&
                                 <KpiTabValue
-                                    color='hsl(var(--chart-teal))'
+                                    color='var(--chart-teal)'
                                     diffDirection={range === STATS_RANGES.allTime.value ? 'hidden' : directions.mrr}
                                     diffValue={percentChanges.mrr}
                                     label="MRR"

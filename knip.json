@@ -1,0 +1,9 @@
+{
+    "$schema": "https://unpkg.com/knip@6/schema.json",
+    "ignoreWorkspaces": [
+        "ghost/admin"
+    ],
+    "ignore": [
+        "ghost/core/test/utils/fixtures/themes/**/assets/built/**"
+    ]
+}

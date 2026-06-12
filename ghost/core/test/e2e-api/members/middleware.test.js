@@ -1,10 +1,8 @@
 const assert = require('node:assert/strict');
-const {assertExists} = require('../../utils/assertions');
 const crypto = require('crypto');
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = require('../../utils/e2e-framework');
 const {anyEtag, anyObjectId, anyUuid, anyISODateTime, stringMatching} = matchers;
 const models = require('../../../core/server/models');
-const should = require('should');
 const sinon = require('sinon');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 
@@ -286,8 +284,8 @@ describe('Comments API', function () {
             await membersAgent
                 .get('/api/member/')
                 .expect(({headers}) => {
-                    assertExists(headers['set-cookie']);
-                    headers['set-cookie'].should.matchAny(/ghost-access=null;/);
+                    assert(Array.isArray(headers['set-cookie']));
+                    assert(headers['set-cookie'].some(h => /ghost-access=null;/.test(h)));
                 })
                 .expectStatus(204)
                 .expectEmptyBody();

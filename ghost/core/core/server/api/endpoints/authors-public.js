@@ -1,23 +1,13 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
-const {mapQuery} = require('@tryghost/mongo-utils');
 const models = require('../../models');
+const {rejectContentApiRestrictedFieldsTransformer} = require('./utils/api-filter-utils');
+
 const ALLOWED_INCLUDES = ['count.posts'];
 
 const messages = {
     notFound: 'Author not found.'
 };
-
-const rejectPrivateFieldsTransformer = input => mapQuery(input, function (value, key) {
-    const lowerCaseKey = key.toLowerCase();
-    if (lowerCaseKey.startsWith('password') || lowerCaseKey.startsWith('email')) {
-        return;
-    }
-
-    return {
-        [key]: value
-    };
-});
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -46,7 +36,7 @@ const controller = {
         query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
             return models.Author.findPage(options);
         }
@@ -78,7 +68,7 @@ const controller = {
         async query(frame) {
             const options = {
                 ...frame.options,
-                mongoTransformer: rejectPrivateFieldsTransformer
+                mongoTransformer: rejectContentApiRestrictedFieldsTransformer
             };
 
             const model = await models.Author.findOne(frame.data, options);

@@ -2,28 +2,29 @@ import {
     CommentFactory,
     MemberFactory,
     PostFactory,
+    TierFactory,
     createCommentFactory,
     createMemberFactory,
-    createPostFactory
+    createPostFactory,
+    createTierFactory
 } from '@/data-factory';
 import {PostPage} from '@/public-pages';
 import {SettingsService} from '@/helpers/services/settings/settings-service';
-import {TiersService} from '@/helpers/services/tiers/tiers-service';
 import {expect, test} from '@/helpers/playwright';
 
 test.describe('Ghost Public - Comments - Sorting', () => {
     let commentFactory: CommentFactory;
     let postFactory: PostFactory;
     let memberFactory: MemberFactory;
+    let tierFactory: TierFactory;
     let settingsService: SettingsService;
-    let tiersService: TiersService;
 
     test.beforeEach(async ({page}) => {
         postFactory = createPostFactory(page.request);
         memberFactory = createMemberFactory(page.request);
         commentFactory = createCommentFactory(page.request);
+        tierFactory = createTierFactory(page.request);
         settingsService = new SettingsService(page.request);
-        tiersService = new TiersService(page.request);
     });
 
     test.beforeEach(async () => {
@@ -33,7 +34,7 @@ test.describe('Ghost Public - Comments - Sorting', () => {
     test('sort comments by date and show more', async ({page}) => {
         const post = await postFactory.create({status: 'published'});
         const member = await memberFactory.create({status: 'free'});
-        const paidTier = await tiersService.getFirstPaidTier();
+        const paidTier = await tierFactory.getFirstPaidTier();
         const paidMember = await memberFactory.create({status: 'comped', tiers: [{id: paidTier.id}]});
 
         const comments = Array.from({length: 25}, (_, index) => {

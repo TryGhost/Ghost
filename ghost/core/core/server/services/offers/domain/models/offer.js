@@ -307,8 +307,7 @@ class Offer {
         const stripeCouponId = data.stripe_coupon_id ?? null;
 
         if (isNew && data.redemptionCount !== undefined) {
-            // TODO correct error
-            throw new errors.InvalidOfferCode({
+            throw new errors.InvalidOfferRedemptionCount({
                 message: 'An Offer cannot be created with redemptionCount'
             });
         }
@@ -328,20 +327,12 @@ class Offer {
             });
         }
 
-        if (type.value === 'free_months' && duration.value.type !== 'free_months') {
-            throw new errors.InvalidOfferDuration({
-                message: 'Offer `duration` must be "free_months" for offer type "free_months".'
-            });
-        }
-
         let currency = null;
         let amount;
         if (type.equals(OfferType.Percentage)) {
             amount = OfferAmount.OfferPercentageAmount.create(data.amount);
         } else if (type.equals(OfferType.Trial)) {
             amount = OfferAmount.OfferTrialAmount.create(data.amount);
-        } else if (type.equals(OfferType.FreeMonths)) {
-            amount = OfferAmount.OfferFreeMonthsAmount.create(data.amount);
         } else if (type.equals(OfferType.Fixed)) {
             amount = OfferAmount.OfferFixedAmount.create(data.amount);
             currency = OfferCurrency.create(data.currency);

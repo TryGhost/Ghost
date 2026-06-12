@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const _ = require('lodash');
-const should = require('should');
 const supertest = require('supertest');
 const sinon = require('sinon');
 const moment = require('moment-timezone');
@@ -17,8 +16,6 @@ describe('Schedules API', function () {
     let request;
 
     before(function () {
-        models.init();
-
         // @NOTE: mock the post scheduler, otherwise it will auto publish the post
         sinon.stub(SchedulingDefault.prototype, '_pingUrl').resolves();
     });

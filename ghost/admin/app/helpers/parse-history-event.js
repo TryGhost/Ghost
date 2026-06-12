@@ -1,10 +1,7 @@
 import Helper from '@ember/component/helper';
-import config from 'ghost-admin/config/environment';
-import {inject as service} from '@ember/service';
+import {prefixAssetUrl} from 'ghost-admin/utils/asset-base';
 
 export default class ParseHistoryEvent extends Helper {
-    @service ghostPaths;
-
     compute([ev]) {
         const action = getAction(ev);
         const actionIcon = getActionIcon(ev);
@@ -14,8 +11,7 @@ export default class ParseHistoryEvent extends Helper {
         const actor = getActor(ev);
         const actorLinkTarget = getActorLinkTarget(ev);
 
-        const assetRoot = (config.cdnUrl ? '' : this.ghostPaths.assetRoot.replace(/\/$/, ''));
-        const actorIcon = getActorIcon(ev, assetRoot);
+        const actorIcon = getActorIcon(ev);
 
         return {
             contextResource,
@@ -39,12 +35,11 @@ function getActor(ev) {
     return ev.actor;
 }
 
-function getActorIcon(ev, assetRoot) {
-    const defaultImage = `/img/user-image.png`;
-    let defaultImageUrl = `${assetRoot}${defaultImage}`;
-
+function getActorIcon(ev) {
     if (!ev.actor.id || !ev.actor.image) {
-        return defaultImageUrl;
+        // keep path separate so asset rewriting correctly picks it up
+        const defaultImage = '/img/user-image.png';
+        return prefixAssetUrl(`assets${defaultImage}`);
     }
 
     return ev.actor.image;

@@ -1,15 +1,10 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const models = require('../../../../core/server/models');
 const configUtils = require('../../../utils/config-utils');
 
 describe('Unit: models/permission', function () {
-    before(function () {
-        models.init();
-    });
-
-    after(async function () {
+    afterAll(async function () {
         sinon.restore();
         await configUtils.restore();
     });

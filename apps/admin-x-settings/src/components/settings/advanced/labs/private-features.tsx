@@ -12,6 +12,10 @@ type Feature = {
 };
 
 const features: Feature[] = [{
+    title: 'Automations',
+    description: 'Enable automations management interface.',
+    flag: 'automations'
+}, {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
@@ -23,6 +27,10 @@ const features: Feature[] = [{
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
+}, {
+    title: 'Admin UI Refresh',
+    description: 'Enable Admin UI refresh (exploration)',
+    flag: 'adminUIRefresh'
 }, {
     title: 'Explore',
     description: 'Enables keeping in touch with the new Explore API',
@@ -48,17 +56,21 @@ const features: Feature[] = [{
     description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
     flag: 'featurebaseFeedback'
 }, {
-    title: 'Transistor',
-    description: 'Enable Transistor podcast integration',
-    flag: 'transistor'
+    title: 'Picture Element',
+    description: 'Use the HTML picture element to serve modern image formats (AVIF, WebP) with automatic fallbacks',
+    flag: 'pictureImageFormats'
 }, {
-    title: 'Inbox Links',
-    description: 'Enable mail app links on signup/signin',
-    flag: 'inboxlinks'
+    title: 'Smarter Counts',
+    description: 'Use optimized COUNT queries for API pagination when safe',
+    flag: 'smarterCounts'
 }, {
-    title: 'Retention Offers',
-    description: 'Enable retention offers for canceling members',
-    flag: 'retentionOffers'
+    title: 'LLMs.txt',
+    description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
+    flag: 'llmsTxt'
+}, {
+    title: 'Get helper deduplication',
+    description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
+    flag: 'getHelperDeduplication'
 }];
 
 const AlphaFeatures: React.FC = () => {

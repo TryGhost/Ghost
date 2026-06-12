@@ -1,11 +1,6 @@
 import {RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
-// import {withFeatureFlag} from './hooks/withFeatureFlag';
 
 export const APP_ROUTE_PREFIX = '/';
-
-// Wrap all components with feature flag protection
-//  e.g.
-// const ProtectedOverview = withFeatureFlag(Overview, 'trafficAnalyticsAlpha', '/', 'Overview');
 
 export const routes: RouteObject[] = [
     {

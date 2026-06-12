@@ -60,8 +60,8 @@ class ThemeStorage extends LocalStorageBase {
     /**
      * Rename a file / folder
      *
-     * @param {String} srcName
-     * @param {String} destName
+     * @param {string} srcName
+     * @param {string} destName
      */
     rename(srcName, destName) {
         let src = path.join(this.getTargetDir(), srcName);
@@ -73,7 +73,7 @@ class ThemeStorage extends LocalStorageBase {
     /**
      * Remove a file / folder
      *
-     * @param {String} fileName
+     * @param {string} fileName
      * @returns {Promise<void>}
      */
     delete(fileName) {

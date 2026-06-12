@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const getOgImage = require('../../../../core/frontend/meta/og-image');
 const settingsCache = require('../../../../core/shared/settings-cache');
@@ -22,13 +21,11 @@ describe('getOgImage', function () {
         localSettingsCache.og_image = '/content/images/settings-og.jpg';
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
-        getOgImage({context: ['home'], home: {}})
-            .should.endWith('/content/images/settings-og.jpg');
+        assert(getOgImage({context: ['home'], home: {}}).endsWith('/content/images/settings-og.jpg'));
 
         localSettingsCache.og_image = '';
 
-        getOgImage({context: ['home'], home: {}})
-            .should.endWith('/content/images/settings-cover.jpg');
+        assert(getOgImage({context: ['home'], home: {}}).endsWith('/content/images/settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
@@ -44,13 +41,11 @@ describe('getOgImage', function () {
             feature_image: '/content/images/post-feature.jpg'
         };
 
-        getOgImage({context: ['post'], post})
-            .should.endWith('post-og.jpg');
+        assert(getOgImage({context: ['post'], post}).endsWith('post-og.jpg'));
 
         post.og_image = '';
 
-        getOgImage({context: ['post'], post})
-            .should.endWith('post-feature.jpg');
+        assert(getOgImage({context: ['post'], post}).endsWith('post-feature.jpg'));
 
         post.feature_image = '';
 
@@ -74,13 +69,11 @@ describe('getOgImage', function () {
             feature_image: '/content/images/page-feature.jpg'
         };
 
-        getOgImage({context: ['page'], page})
-            .should.endWith('page-og.jpg');
+        assert(getOgImage({context: ['page'], page}).endsWith('page-og.jpg'));
 
         page.og_image = '';
 
-        getOgImage({context: ['page'], page})
-            .should.endWith('page-feature.jpg');
+        assert(getOgImage({context: ['page'], page}).endsWith('page-feature.jpg'));
 
         page.feature_image = '';
 
@@ -104,13 +97,11 @@ describe('getOgImage', function () {
             feature_image: '/content/images/page-feature.jpg'
         };
 
-        getOgImage({context: ['page'], post})
-            .should.endWith('page-og.jpg');
+        assert(getOgImage({context: ['page'], post}).endsWith('page-og.jpg'));
 
         post.og_image = '';
 
-        getOgImage({context: ['page'], post})
-            .should.endWith('page-feature.jpg');
+        assert(getOgImage({context: ['page'], post}).endsWith('page-feature.jpg'));
 
         post.feature_image = '';
 
@@ -133,8 +124,7 @@ describe('getOgImage', function () {
             cover_image: '/content/images/author-cover.jpg'
         };
 
-        getOgImage({context: ['author'], author})
-            .should.endWith('author-cover.jpg');
+        assert(getOgImage({context: ['author'], author}).endsWith('author-cover.jpg'));
 
         author.cover_image = '';
 
@@ -149,8 +139,7 @@ describe('getOgImage', function () {
             cover_image: '/content/images/author-cover.jpg'
         };
 
-        getOgImage({context: ['author', 'paged'], author})
-            .should.endWith('author-cover.jpg');
+        assert(getOgImage({context: ['author', 'paged'], author}).endsWith('author-cover.jpg'));
 
         author.cover_image = '';
 
@@ -165,13 +154,11 @@ describe('getOgImage', function () {
             feature_image: '/content/images/tag-feature.jpg'
         };
 
-        getOgImage({context: ['tag'], tag})
-            .should.endWith('tag-feature.jpg');
+        assert(getOgImage({context: ['tag'], tag}).endsWith('tag-feature.jpg'));
 
         tag.feature_image = '';
 
-        getOgImage({context: ['tag'], tag})
-            .should.endWith('settings-cover.jpg');
+        assert(getOgImage({context: ['tag'], tag}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
@@ -186,16 +173,60 @@ describe('getOgImage', function () {
             feature_image: '/content/images/tag-feature.jpg'
         };
 
-        getOgImage({context: ['tag', 'paged'], tag})
-            .should.endWith('tag-feature.jpg');
+        assert(getOgImage({context: ['tag', 'paged'], tag}).endsWith('tag-feature.jpg'));
 
         tag.feature_image = '';
 
-        getOgImage({context: ['tag', 'paged'], tag})
-            .should.endWith('settings-cover.jpg');
+        assert(getOgImage({context: ['tag', 'paged'], tag}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
         assert.equal(getOgImage({context: ['tag', 'paged'], tag}), null);
+    });
+
+    describe('CDN image URLs', function () {
+        it('returns CDN og_image for home context', function () {
+            localSettingsCache.og_image = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/og.jpg';
+
+            const result = getOgImage({context: ['home'], home: {}});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('/content/images/2026/02/og.jpg'));
+        });
+
+        it('returns CDN og_image for post context', function () {
+            const post = {
+                og_image: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/post-og.jpg',
+                feature_image: '/content/images/post-feature.jpg'
+            };
+
+            const result = getOgImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('post-og.jpg'));
+        });
+
+        it('falls back to CDN feature_image when post og_image is empty', function () {
+            const post = {
+                og_image: '',
+                feature_image: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/feature.jpg'
+            };
+
+            const result = getOgImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('feature.jpg'));
+        });
+
+        it('falls back to CDN cover_image for settings', function () {
+            localSettingsCache.og_image = '';
+            localSettingsCache.cover_image = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/cover.jpg';
+
+            const post = {
+                og_image: '',
+                feature_image: ''
+            };
+
+            const result = getOgImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('cover.jpg'));
+        });
     });
 });

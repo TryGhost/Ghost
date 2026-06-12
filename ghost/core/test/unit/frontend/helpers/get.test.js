@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const {SafeString} = require('../../../../core/frontend/services/handlebars');
 const configUtils = require('../../../utils/config-utils');
@@ -7,8 +6,7 @@ const loggingLib = require('@tryghost/logging');
 
 // Stuff we are testing
 const get = require('../../../../core/frontend/helpers/get');
-const {querySimplePath} = require('../../../../core/frontend/helpers/get');
-const models = require('../../../../core/server/models');
+const {querySimplePath} = get;
 const api = require('../../../../core/server/api').endpoints;
 const maxLimitCap = require('../../../../core/shared/max-limit-cap');
 
@@ -17,10 +15,6 @@ describe('{{#get}} helper', function () {
     let inverse;
     let locals = {};
     let logging;
-
-    before(function () {
-        models.init();
-    });
 
     beforeEach(function () {
         fn = sinon.spy();
@@ -92,19 +86,18 @@ describe('{{#get}} helper', function () {
             });
         });
 
-        it('converts html strings to SafeString', function (done) {
-            get.call(
+        it('converts html strings to SafeString', async function () {
+            await get.call(
                 {},
                 'posts',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert.equal(fn.called, true);
-                fn.firstCall.args[0].should.be.an.Object().with.property('posts');
+            );
+            sinon.assert.called(fn);
+            const args = fn.firstCall.args[0];
+            assert(args && typeof args === 'object');
+            assert('posts' in args);
 
-                assert(fn.firstCall.args[0].posts[0].feature_image_caption instanceof SafeString);
-
-                done();
-            }).catch(done);
+            assert(fn.firstCall.args[0].posts[0].feature_image_caption instanceof SafeString);
         });
     });
 
@@ -121,19 +114,18 @@ describe('{{#get}} helper', function () {
             });
         });
 
-        it('browse authors', function (done) {
-            get.call(
+        it('browse authors', async function () {
+            await get.call(
                 {},
                 'authors',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert.equal(fn.called, true);
-                fn.firstCall.args[0].should.be.an.Object().with.property('authors');
-                assert.deepEqual(fn.firstCall.args[0].authors, []);
-                assert.equal(inverse.called, false);
-
-                done();
-            }).catch(done);
+            );
+            sinon.assert.called(fn);
+            const args = fn.firstCall.args[0];
+            assert(args && typeof args === 'object');
+            assert('authors' in args);
+            assert.deepEqual(fn.firstCall.args[0].authors, []);
+            sinon.assert.notCalled(inverse);
         });
     });
 
@@ -150,66 +142,64 @@ describe('{{#get}} helper', function () {
             });
         });
 
-        it('browse newsletters', function (done) {
-            get.call(
+        it('browse newsletters', async function () {
+            await get.call(
                 {},
                 'newsletters',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert.equal(fn.called, true);
-                fn.firstCall.args[0].should.be.an.Object().with.property('newsletters');
-                assert.deepEqual(fn.firstCall.args[0].newsletters, []);
-                assert.equal(inverse.called, false);
-
-                done();
-            }).catch(done);
+            );
+            sinon.assert.called(fn);
+            const args = fn.firstCall.args[0];
+            assert(args && typeof args === 'object');
+            assert('newsletters' in args);
+            assert.deepEqual(fn.firstCall.args[0].newsletters, []);
+            sinon.assert.notCalled(inverse);
         });
     });
 
     describe('general error handling', function () {
-        it('should return an error for an unknown resource', function (done) {
-            get.call(
+        it('should return an error for an unknown resource', async function () {
+            await get.call(
                 {},
                 'magic',
                 {hash: {}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert.equal(fn.called, false);
-                assert.equal(inverse.calledOnce, true);
-                inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
-                assert.equal(inverse.firstCall.args[1].data.error, 'Invalid "magic" resource given to get helper');
-
-                done();
-            }).catch(done);
+            );
+            sinon.assert.notCalled(fn);
+            sinon.assert.calledOnce(inverse);
+            const args = inverse.firstCall.args[1];
+            assert(args && typeof args === 'object');
+            assert('data' in args);
+            const data = args.data;
+            assert(data && typeof data === 'object');
+            assert('error' in data);
+            assert.equal(data.error, 'Invalid "magic" resource given to get helper');
         });
 
-        it('should handle error from the API', function (done) {
-            get.call(
+        it('should handle error from the API', async function () {
+            await get.call(
                 {},
                 'posts',
                 {hash: {slug: 'thing!'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert.equal(fn.called, false);
-                assert.equal(inverse.calledOnce, true);
-                inverse.firstCall.args[1].should.be.an.Object().and.have.property('data');
-                inverse.firstCall.args[1].data.should.be.an.Object().and.have.property('error');
-                assert.match(inverse.firstCall.args[1].data.error, /^Validation/);
-
-                done();
-            }).catch(done);
+            );
+            sinon.assert.notCalled(fn);
+            sinon.assert.calledOnce(inverse);
+            const args = inverse.firstCall.args[1];
+            assert(args && typeof args === 'object');
+            assert('data' in args);
+            const data = args.data;
+            assert(data && typeof data === 'object');
+            assert('error' in data);
+            assert.match(data.error, /^Validation/);
         });
 
-        it('should show warning for call without any options', function (done) {
-            get.call(
+        it('should show warning for call without any options', async function () {
+            await get.call(
                 {},
                 'posts',
                 {data: locals}
-            ).then(function () {
-                assert.equal(fn.called, false);
-                assert.equal(inverse.called, false);
-
-                done();
-            }).catch(done);
+            );
+            sinon.assert.notCalled(fn);
+            sinon.assert.notCalled(inverse);
         });
     });
 
@@ -233,109 +223,102 @@ describe('{{#get}} helper', function () {
             });
         });
 
-        it('should resolve post.tags alias', function (done) {
-            get.call(
+        it('should resolve post.tags alias', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'tags:[{{post.tags}}]'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'tags:[test,magic]');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'tags:[test,magic]');
         });
 
-        it('should resolve post.author alias', function (done) {
-            get.call(
+        it('should resolve post.author alias', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'author:{{post.author}}'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'author:cameron');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'author:cameron');
         });
 
-        it('should resolve basic path', function (done) {
-            get.call(
+        it('should resolve basic path', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'id:-{{post.id}}'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'id:-3');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'id:-3');
         });
 
-        it('should handle arrays the same as handlebars', function (done) {
-            get.call(
+        it('should handle arrays the same as handlebars', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'tags:{{post.tags.[0].slug}}'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'tags:test');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'tags:test');
         });
 
-        it('should handle dates', function (done) {
-            get.call(
+        it('should handle dates', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'published_at:<=\'{{post.published_at}}\''}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, `published_at:<='${pubDate.toISOString()}'`);
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, `published_at:<='${pubDate.toISOString()}'`);
         });
 
-        it('should output nothing if path does not resolve', function (done) {
-            get.call(
+        it('should output nothing if path does not resolve', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'id:{{post.thing}}'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'id:');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'id:');
         });
 
-        it('should resolve global props', function (done) {
-            get.call(
+        it('should resolve global props', async function () {
+            await get.call(
                 resource,
                 'posts',
                 {hash: {filter: 'slug:{{@globalProp.foo}}'}, data: locals, fn: fn, inverse: inverse}
-            ).then(function () {
-                assert(Array.isArray(browseStub.firstCall.args));
-                assert.equal(browseStub.firstCall.args.length, 1);
-                browseStub.firstCall.args[0].should.be.an.Object().with.property('filter');
-                assert.equal(browseStub.firstCall.args[0].filter, 'slug:bar');
-
-                done();
-            }).catch(done);
+            );
+            assert(Array.isArray(browseStub.firstCall.args));
+            assert.equal(browseStub.firstCall.args.length, 1);
+            const options = browseStub.firstCall.args[0];
+            assert(options && typeof options === 'object');
+            assert('filter' in options);
+            assert.equal(options.filter, 'slug:bar');
         });
     });
 
@@ -389,8 +372,8 @@ describe('{{#get}} helper', function () {
 
         it('handles Date values', function () {
             const result = querySimplePath(data, 'post.published_at');
-            result.should.have.length(1);
-            result[0].should.be.a.Date();
+            assert.equal(result.length, 1);
+            assert(result[0] instanceof Date);
         });
 
         it('throws on recursive descent syntax', function () {
@@ -557,30 +540,262 @@ describe('{{#get}} helper', function () {
             );
 
             // A log message will be output
-            assert.equal(logging.warn.calledOnce, true);
+            sinon.assert.calledOnce(logging.warn);
             // The get helper will return as per usual
-            assert.equal(fn.calledOnce, true);
-            fn.firstCall.args[0].should.be.an.Object().with.property('posts');
-            assert(Array.isArray(fn.firstCall.args[0].posts));
-            assert.equal(fn.firstCall.args[0].posts.length, 1);
+            sinon.assert.calledOnce(fn);
+            const args = fn.firstCall.args[0];
+            assert(args && typeof args === 'object');
+            assert('posts' in args);
+            assert(Array.isArray(args.posts));
+            assert.equal(args.posts.length, 1);
         });
 
         it('should log an error and return safely if it hits the timeout threshold', async function () {
-            configUtils.set('optimization:getHelper:timeout:threshold', 1);
+            const clock = sinon.useFakeTimers({toFake: ['setTimeout', 'clearTimeout']});
+            try {
+                configUtils.set('optimization:getHelper:timeout:threshold', 1);
 
-            const result = await get.call(
+                const resultPromise = get.call(
+                    {},
+                    'posts',
+                    {hash: {}, data: locals, fn: fn, inverse: inverse}
+                );
+                // 2 > threshold (1), < stub's 5 — fires only the helper's timer.
+                await clock.tickAsync(2);
+                const result = await resultPromise;
+
+                assert(result.toString().includes('data-aborted-get-helper'));
+                sinon.assert.calledOnce(logging.error);
+                sinon.assert.calledOnce(fn);
+                const args = fn.firstCall.args[0];
+                assert(args && typeof args === 'object');
+                assert('posts' in args);
+                assert.deepEqual(args.posts, []);
+            } finally {
+                clock.restore();
+            }
+        });
+    });
+
+    describe('per-request deduplication', function () {
+        let browseStub;
+        const meta = {pagination: {}};
+
+        beforeEach(function () {
+            browseStub = sinon.stub().resolves({posts: [{id: 'post1', title: 'Test Post'}], meta: meta});
+            sinon.stub(api, 'postsPublic').get(() => {
+                return {
+                    browse: browseStub
+                };
+            });
+        });
+
+        afterEach(async function () {
+            await configUtils.restore();
+        });
+
+        it('should make duplicate API calls when deduplication is disabled', async function () {
+            // Deduplication disabled by default
+            locals = {root: {_locals: {}}};
+
+            // First call
+            await get.call(
                 {},
                 'posts',
-                {hash: {}, data: locals, fn: fn, inverse: inverse}
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
             );
 
-            assert(result.toString().includes('data-aborted-get-helper'));
-            // A log message will be output
-            assert.equal(logging.error.calledOnce, true);
-            // The get helper gets called with an empty array of results
-            assert.equal(fn.calledOnce, true);
-            fn.firstCall.args[0].should.be.an.Object().with.property('posts');
-            assert.deepEqual(fn.firstCall.args[0].posts, []);
+            // Second call with same query
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Should make two API calls since deduplication is disabled
+            sinon.assert.calledTwice(browseStub);
+        });
+
+        it('should deduplicate identical queries when enabled', async function () {
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
+
+            // First call
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Second call with same query
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Should only make one API call
+            sinon.assert.calledOnce(browseStub);
+            // But both calls should have rendered
+            sinon.assert.calledTwice(fn);
+        });
+
+        it('should make separate API calls for different queries when enabled', async function () {
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
+
+            // First call
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Second call with different filter
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:false'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Should make two API calls for different queries
+            sinon.assert.calledTwice(browseStub);
+        });
+
+        it('should include member uuid in cache key', async function () {
+            // Call with member A
+            const localsA = {root: {_locals: {}}, _queryCache: new Map(), member: {uuid: 'member-a'}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: localsA, fn: fn, inverse: inverse}
+            );
+
+            // Call with member B (same query but different member)
+            const localsB = {root: {_locals: {}}, _queryCache: localsA._queryCache, member: {uuid: 'member-b'}};
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: localsB, fn: fn, inverse: inverse}
+            );
+
+            // Should make two API calls because member context is different
+            sinon.assert.calledTwice(browseStub);
+        });
+
+        it('should not cache failed API requests', async function () {
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
+
+            // Set up stub to fail first, then succeed
+            browseStub.onFirstCall().rejects(new Error('API Error'));
+            browseStub.onSecondCall().resolves({posts: [{id: 'post1'}], meta: meta});
+
+            // First call - should fail
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Second call with same query - should retry since first failed
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Should make two API calls because first one failed
+            sinon.assert.calledTwice(browseStub);
+        });
+
+        it('should work without _queryCache in data', async function () {
+            // No _queryCache in locals
+            locals = {root: {_locals: {}}};
+
+            // Should not throw and should make API call
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            sinon.assert.calledOnce(browseStub);
+            sinon.assert.calledOnce(fn);
+        });
+
+        it('should deduplicate queries with same parameters in different order', async function () {
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
+
+            // First call
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true', limit: 5}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Second call with equivalent params in different insertion order
+            await get.call(
+                {},
+                'posts',
+                {hash: {limit: 5, filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Should only make one API call
+            sinon.assert.calledOnce(browseStub);
+        });
+
+        it('should handle concurrent identical requests', async function () {
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
+
+            let resolveBrowse;
+            browseStub.callsFake(() => {
+                return new Promise((resolve) => {
+                    resolveBrowse = resolve;
+                });
+            });
+
+            const firstCall = get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+            const secondCall = get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            // Verify deduplication while both calls are in-flight.
+            sinon.assert.calledOnce(browseStub);
+            assert.equal(typeof resolveBrowse, 'function');
+
+            if (!resolveBrowse) {
+                throw new Error('Expected browse resolver to be set');
+            }
+            resolveBrowse({posts: [{id: 'post1'}], meta: meta});
+            await Promise.all([firstCall, secondCall]);
+
+            // Should only make one API call even for concurrent requests
+            sinon.assert.calledOnce(browseStub);
+            // Both should have rendered
+            sinon.assert.calledTwice(fn);
+        });
+
+        it('should not reuse the same response object instance across renders', async function () {
+            locals = {root: {_locals: {}}, _queryCache: new Map()};
+
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            await get.call(
+                {},
+                'posts',
+                {hash: {filter: 'featured:true'}, data: locals, fn: fn, inverse: inverse}
+            );
+
+            sinon.assert.calledOnce(browseStub);
+            assert.notEqual(fn.firstCall.args[0], fn.secondCall.args[0]);
         });
     });
 });

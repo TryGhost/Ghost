@@ -5,7 +5,6 @@ module.exports = function (environment) {
     let ENV = {
         modulePrefix: 'ghost-admin',
         environment,
-        cdnUrl: process.env.GHOST_CDN_URL || '',
         editorUrl: process.env.EDITOR_URL || '',
         rootURL: '',
         locationType: 'trailing-hash',
@@ -50,7 +49,8 @@ module.exports = function (environment) {
 
         // Enable mirage here in order to mock API endpoints during development
         ENV['ember-cli-mirage'] = {
-            enabled: false
+            enabled: false,
+            excludeFilesFromBuild: process.env.EMBER_INCLUDE_TESTS !== 'true'
         };
     }
 

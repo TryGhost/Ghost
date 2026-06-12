@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
-const should = require('should');
 const stripeConnect = require('../../../../../core/server/services/members/stripe-connect');
 
 describe('Members - Stripe Connect', function () {

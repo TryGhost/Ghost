@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const concat = require('../../../../core/frontend/helpers/concat');
 const link = require('../../../../core/frontend/helpers/link');
 const url = require('../../../../core/frontend/helpers/url');
@@ -21,7 +20,7 @@ function compile(templateString) {
 }
 
 describe('{{link}} helper', function () {
-    before(function () {
+    beforeAll(function () {
         handlebars.registerHelper('link', link);
         handlebars.registerHelper('url', url);
         handlebars.registerHelper('concat', concat);
@@ -35,7 +34,7 @@ describe('{{link}} helper', function () {
         };
     });
 
-    after(async function () {
+    afterAll(async function () {
         await configUtils.restore();
     });
 

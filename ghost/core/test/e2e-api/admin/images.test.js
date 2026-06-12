@@ -4,6 +4,7 @@ const p = require('path');
 const fsExtra = require('fs-extra');
 const {promises: fs} = require('fs');
 const assert = require('node:assert/strict');
+const {Blob} = require('node:buffer');
 const config = require('../../../core/shared/config');
 const urlUtils = require('../../../core/shared/url-utils');
 const imageTransform = require('@tryghost/image-transform');
@@ -394,10 +395,9 @@ describe('Images API', function () {
 
     it('Errors when image request body is broken', async function () {
         // Manually construct a broken request body
-        const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+        const blob = new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==', 'base64')], {type: 'image/png'});
         const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n\r\n';
 
-        // eslint-disable-next-line no-undef
         const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
             type: 'multipart/form-data; boundary=boundary'
         })).text();
@@ -417,12 +417,11 @@ describe('Images API', function () {
 
     it('Errors when image request body is broken #2', async function () {
         // Manually construct a broken request body
-        const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+        const blob = new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==', 'base64')], {type: 'image/png'});
 
         // Note: this differs from above test by not including the boundary at the end of the payload
         const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n';
 
-        // eslint-disable-next-line no-undef
         const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
             type: 'multipart/form-data; boundary=boundary'
         })).text();
@@ -438,6 +437,25 @@ describe('Images API', function () {
                     id: anyErrorId
                 }]
             });
+    });
+
+    it('Passes the content type to the storage adapter when uploading a GIF', async function () {
+        const store = storage.getStorage('images');
+        const saveSpy = sinon.spy(store, 'save');
+
+        const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/loadingcat.gif');
+        const fileContents = await fs.readFile(originalFilePath);
+        const {body} = await uploadImageRequest({fileContents, filename: 'loadingcat.gif', contentType: 'image/gif'})
+            .expectStatus(201);
+
+        const relativePath = body.images[0].url.replace(urlUtils.urlFor('home', true), '/');
+        const filePath = config.getContentPath('images') + relativePath.replace('/content/images/', '');
+        images.push(filePath);
+        images.push(imageTransform.generateOriginalImageName(filePath));
+
+        assert.ok(saveSpy.called, 'save() should have been called');
+        const fileArg = saveSpy.firstCall.args[0];
+        assert.equal(fileArg.type, 'image/gif', 'save() should receive the correct content type for image files');
     });
 
     it('Does not return HTTP 500 when image processing fails', async function () {

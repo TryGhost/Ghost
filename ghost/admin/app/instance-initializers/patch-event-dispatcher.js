@@ -3,12 +3,6 @@
 // the root element in order to capture events that bubble up from modals.
 
 export function initialize(appInstance) {
-    const inAdminForward = document.querySelector('#ember-app') !== null;
-
-    if (!inAdminForward) {
-        return;
-    }
-
     const dispatcher = appInstance.lookup('event_dispatcher:main');
     const originalSetup = dispatcher.setup;
 

@@ -8,9 +8,13 @@ const ObjectId = require('bson-objectid').default;
 const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
-const addCalendarMonths = require('../utils/add-calendar-months');
-const StartOutboxProcessingEvent = require('../../../outbox/events/start-outbox-processing-event');
+const hasActiveOffer = require('../utils/has-active-offer');
+const StartAutomationsPollEvent = require('../../../automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
+const db = require('../../../../data/db');
+/** @import {Knex} from 'knex' */
+/** @import * as automationsApi from '../../../automations/automations-api' */
+
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
     moreThanOneProduct: 'A member cannot have more than one Product',
@@ -32,13 +36,13 @@ const messages = {
     offerAlreadyRedeemed: 'This offer has already been redeemed on this subscription',
     subscriptionNotActive: 'Cannot apply offer to an inactive subscription',
     subscriptionHasOffer: 'Subscription already has an offer applied',
-    subscriptionInTrial: 'Cannot apply offer to a subscription in a trial period',
-    subscriptionCancelling: 'Cannot apply retention offer to a subscription that is already cancelling'
+    subscriptionCancelling: 'Cannot apply retention offer to a subscription that is already cancelling',
+    invalidMemberStatus: 'Invalid member status, must be one of {statuses}'
 };
 
 const SUBSCRIPTION_STATUS_TRIALING = 'trialing';
-
 const WELCOME_EMAIL_SOURCES = ['member'];
+const MEMBER_STATUSES = ['free', 'paid', 'comped', 'gift'];
 
 /**
  * @typedef {object} ITokenService
@@ -60,13 +64,14 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.OfferRedemption
      * @param {any} deps.Outbox
-     * @param {import('../../services/stripe-api')} deps.stripeAPIService
-     * @param {any} deps.labsService
+     * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      * @param {any} deps.productRepository
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
-     * @param {any} deps.AutomatedEmail
+     * @param {Pick<automationsApi, 'trigger'>} deps.automationsApi
+     * @param {any} deps.Automation
+     * @param {any} deps.WelcomeEmailAutomationRun
      */
     constructor({
         Member,
@@ -82,12 +87,13 @@ module.exports = class MemberRepository {
         OfferRedemption,
         Outbox,
         stripeAPIService,
-        labsService,
         productRepository,
         offersAPI,
         tokenService,
         newslettersService,
-        AutomatedEmail
+        automationsApi,
+        Automation,
+        WelcomeEmailAutomationRun
     }) {
         this._Member = Member;
         this._MemberNewsletter = MemberNewsletter;
@@ -106,8 +112,9 @@ module.exports = class MemberRepository {
         this._offersAPI = offersAPI;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
-        this._labsService = labsService;
-        this._AutomatedEmail = AutomatedEmail;
+        this._automationsApi = automationsApi;
+        this._Automation = Automation;
+        this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
             if (!event.data.offerId) {
@@ -132,6 +139,13 @@ module.exports = class MemberRepository {
         });
     }
 
+    /**
+     * @param {Parameters<typeof DomainEvents.dispatch>[0]} event
+     * @param {object} options
+     * @param {object} options.transacting
+     * @param {Promise<unknown>} options.transacting.executionPromise
+     * @returns {void}
+     */
     dispatchEvent(event, options) {
         if (options?.transacting) {
             // Only dispatch the event after the transaction has finished
@@ -139,9 +153,13 @@ module.exports = class MemberRepository {
                 DomainEvents.dispatch(event);
             }).catch((err) => {
                 // catches transaction errors/rollback to not dispatch event
+                let memberMessageFragment = '';
+                if (event.data && typeof event.data === 'object' && 'memberId' in event.data) {
+                    memberMessageFragment = `for member ${event.data.memberId} `;
+                }
                 logging.error({
                     err,
-                    message: `Error dispatching event ${event.constructor.name} for member ${event.data.memberId} after transaction finished`
+                    message: `Error dispatching event ${event.constructor.name} ${memberMessageFragment}after transaction finished`
                 });
             });
         } else {
@@ -162,26 +180,115 @@ module.exports = class MemberRepository {
     }
 
     /**
+     * @param {string} memberId
+     * @param {string} memberEmail
+     * @param {'free' | 'paid'} memberStatus
+     * @param {object} bookshelfOptions
+     * @param {Knex.Transaction} [bookshelfOptions.transacting]
+     * @returns {Promise<void>}
+     */
+    async #triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+        const trigger = async () => {
+            await this._automationsApi.trigger({
+                event: 'member_sign_up',
+                memberId,
+                memberEmail,
+                memberStatus
+            });
+        };
+
+        if (bookshelfOptions?.transacting) {
+            bookshelfOptions.transacting.executionPromise.then(trigger).catch((err) => {
+                logging.error({
+                    err,
+                    message: `Error triggering automation for member ${memberId}`
+                });
+            });
+        } else {
+            await trigger();
+        }
+    }
+
+    /**
+     * Looks up the active welcome email automation for the given slug and enqueues a
+     * `WelcomeEmailAutomationRun` for the member. Dispatches `StartAutomationsPollEvent`
+     * so the poll picks it up.
+     *
+     * @param {string} memberId
+     * @param {'free' | 'paid'} memberStatus
+     * @param {object} options
+     * @returns {Promise<void>}
+     */
+    async #triggerMemberSignupLegacyAutomation(memberId, memberStatus, options) {
+        if (!this._Automation || !this._WelcomeEmailAutomationRun) {
+            return;
+        }
+
+        const automation = await this._Automation.findOne(
+            {slug: MEMBER_WELCOME_EMAIL_SLUGS[memberStatus]},
+            {...options, withRelated: ['welcomeEmailAutomatedEmail']}
+        );
+        const email = automation?.related('welcomeEmailAutomatedEmail');
+        const isActive = Boolean(
+            automation &&
+            email &&
+            email.get('lexical') &&
+            automation.get('status') === 'active'
+        );
+
+        if (!isActive) {
+            return;
+        }
+
+        await this._WelcomeEmailAutomationRun.add({
+            welcome_email_automation_id: automation.id,
+            member_id: memberId,
+            next_welcome_email_automated_email_id: email.id,
+            ready_at: new Date(),
+            step_started_at: null,
+            step_attempts: 0,
+            exit_reason: null
+        }, options);
+
+        this.dispatchEvent(StartAutomationsPollEvent.create(), options);
+    }
+
+    /**
+     * Trigger an automation for member signup.
+     *
+     * Callers are responsible for any eligibility gating (member status, source, etc.)
+     * before calling this.
+     *
+     * @param {string} memberId
+     * @param {string} memberEmail
+     * @param {'free' | 'paid'} memberStatus
+     * @param {object} bookshelfOptions
+     * @returns {Promise<void>}
+     */
+    async triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+        await Promise.all([
+            this.#triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions),
+            this.#triggerMemberSignupLegacyAutomation(memberId, memberStatus, bookshelfOptions)
+        ]);
+    }
+
+    /**
      * Maps the framework context to members_*.source table record value
      * @param {Object} context instance of ghost framework context object
      * @returns {'import' | 'system' | 'api' | 'admin' | 'member'}
      */
     _resolveContextSource(context) {
-        let source;
-
         if (context.import || context.importer) {
-            source = 'import';
+            return 'import';
         } else if (context.internal) {
-            source = 'system';
+            return 'system';
         } else if (context.api_key) {
-            source = 'api';
+            return 'api';
         } else if (context.user) {
-            source = 'admin';
+            return 'admin';
         } else {
-            source = 'member';
+            return 'member';
         }
-
-        return source;
     }
 
     getMRR({interval, amount, status = null, canceled = false, discount = null}) {
@@ -277,7 +384,8 @@ module.exports = class MemberRepository {
      * @param {Object[]} [data.newsletters]
      * @param {Object} [data.stripeCustomer]
      * @param {string} [data.offerId]
-     * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
+     * @param {string} [data.status]
+     * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
      * @param {boolean} [data.email_disabled]
      * @param {*} options
      * @returns
@@ -302,7 +410,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled']);
+        const memberData = _.pick(data, ['email', 'name', 'note', 'subscribed', 'geolocation', 'created_at', 'products', 'newsletters', 'email_disabled', 'status']);
 
         // Generate a random transient_id
         memberData.transient_id = await this._generateTransientId();
@@ -317,25 +425,34 @@ module.exports = class MemberRepository {
 
         memberData.email_disabled = !!memberData.email_disabled;
 
+        if (memberData.status && !MEMBER_STATUSES.includes(memberData.status)) {
+            throw new errors.ValidationError({
+                message: tpl(messages.invalidMemberStatus, {statuses: MEMBER_STATUSES.join(', ')}),
+                property: 'status'
+            });
+        }
+
+        if (!memberData.status) {
+            if (memberData.products && memberData.products.length === 1) {
+                memberData.status = 'comped';
+            } else {
+                memberData.status = 'free';
+            }
+        }
+
         if (memberData.products && memberData.products.length > 1) {
             throw new errors.BadRequestError({message: tpl(messages.moreThanOneProduct)});
         }
 
-        if (memberData.products) {
+        // Don't allow to use archived tiers
+        // Exception: Gifts remain redeemable even if the tier is later archived, since the entitlement has already been paid for
+        if (memberData.products && memberData.status !== 'gift') {
             for (const productData of memberData.products) {
                 const product = await this._productRepository.get(productData);
                 if (product.get('active') !== true) {
                     throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
                 }
             }
-        }
-
-        const memberStatusData = {
-            status: 'free'
-        };
-
-        if (memberData.products && memberData.products.length === 1) {
-            memberStatusData.status = 'comped';
         }
 
         // Subscribe members to default newsletters
@@ -359,39 +476,21 @@ module.exports = class MemberRepository {
         const memberAddOptions = {...(options || {}), withRelated};
         let member;
 
-        const welcomeEmailsEnabled = this._labsService.isSet('welcomeEmails');
-        if (welcomeEmailsEnabled && WELCOME_EMAIL_SOURCES.includes(source)) {
-            const freeWelcomeEmail = this._AutomatedEmail ? await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.free}) : null;
-            const isFreeWelcomeEmailActive = freeWelcomeEmail && freeWelcomeEmail.get('lexical') && freeWelcomeEmail.get('status') === 'active';
-            const isFreeSignup = !stripeCustomer;
+        const isFreeSignup = !stripeCustomer && memberData.status === 'free';
 
+        if (isFreeSignup && WELCOME_EMAIL_SOURCES.includes(source)) {
             const runMemberCreation = async (transacting) => {
                 const newMember = await this._Member.add({
                     ...memberData,
-                    ...memberStatusData,
                     labels
                 }, {...memberAddOptions, transacting});
 
-                // Only send the free welcome email if:
-                // 1. The free welcome email is active
-                // 2. The member is not signing up for a paid subscription (no stripeCustomer)
-                if (isFreeWelcomeEmailActive && isFreeSignup) {
-                    const timestamp = eventData.created_at || newMember.get('created_at');
-
-                    await this._Outbox.add({
-                        id: ObjectId().toHexString(),
-                        event_type: MemberCreatedEvent.name,
-                        payload: JSON.stringify({
-                            memberId: newMember.id,
-                            uuid: newMember.get('uuid'),
-                            email: newMember.get('email'),
-                            name: newMember.get('name'),
-                            source,
-                            timestamp,
-                            status: 'free'
-                        })
-                    }, {transacting});
-                }
+                await this.triggerMemberSignupAutomation(
+                    newMember.id,
+                    newMember.get('email'),
+                    'free',
+                    {transacting}
+                );
 
                 return newMember;
             };
@@ -401,14 +500,9 @@ module.exports = class MemberRepository {
             } else {
                 member = await this._Member.transaction(runMemberCreation);
             }
-
-            if (isFreeWelcomeEmailActive && isFreeSignup) {
-                this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: member.id}), memberAddOptions);
-            }
         } else {
             member = await this._Member.add({
                 ...memberData,
-                ...memberStatusData,
                 labels
             }, memberAddOptions);
         }
@@ -429,6 +523,7 @@ module.exports = class MemberRepository {
             member_id: member.id,
             from_status: null,
             to_status: member.get('status'),
+            batch_id: options.batch_id ?? null,
             ...eventData
         }, options);
 
@@ -572,6 +667,13 @@ module.exports = class MemberRepository {
             });
         }
 
+        if (data.status && !MEMBER_STATUSES.includes(data.status)) {
+            throw new errors.ValidationError({
+                message: tpl(messages.invalidMemberStatus, {statuses: MEMBER_STATUSES.join(', ')}),
+                property: 'status'
+            });
+        }
+
         const memberStatusData = {};
 
         let productsToAdd = [];
@@ -631,8 +733,8 @@ module.exports = class MemberRepository {
                         throw new errors.BadRequestError({message: tpl(messages.addProductWithActiveSubscription)});
                     }
 
-                    // CASE: We are changing products & there were not active stripe subscriptions - the member is "comped"
-                    memberStatusData.status = 'comped';
+                    // CASE: We are changing products & there were no active stripe subscriptions - the member gets non-Stripe access
+                    memberStatusData.status = data.status || 'comped';
                 }
             }
         }
@@ -647,7 +749,9 @@ module.exports = class MemberRepository {
                 });
             }
 
-            if (product.get('active') !== true) {
+            // Don't allow to use archived tiers
+            // Exception: Gifts remain redeemable even if the tier is later archived, since the entitlement has already been paid for
+            if (product.get('active') !== true && memberStatusData.status !== 'gift') {
                 throw new errors.BadRequestError({message: tpl(messages.tierArchived)});
             }
         }
@@ -753,7 +857,8 @@ module.exports = class MemberRepository {
             await this._MemberStatusEvent.add({
                 member_id: member.id,
                 from_status: member._previousAttributes.status,
-                to_status: member.get('status')
+                to_status: member.get('status'),
+                batch_id: options.batch_id ?? null
             }, sharedOptions);
         }
 
@@ -812,9 +917,10 @@ module.exports = class MemberRepository {
             }
         }
 
+        // require: false so concurrent deletes don't throw "No Rows Deleted"
         return this._Member.destroy({
             id: data.id
-        }, options);
+        }, {...options, require: false});
     }
 
     async bulkDestroy(options) {
@@ -849,7 +955,7 @@ module.exports = class MemberRepository {
     }
 
     async bulkEdit(data, options) {
-        const {all, filter, search} = options;
+        const {activeStripeCustomersCount, all, filter, search} = options;
 
         if (!['unsubscribe', 'addLabel', 'removeLabel'].includes(data.action)) {
             throw new errors.IncorrectUsageError({
@@ -857,7 +963,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        if (!filter && !search && (!all || all !== true)) {
+        if (!filter && !search && !activeStripeCustomersCount && (!all || all !== true)) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.bulkActionRequiresFilter, {action: 'bulk edit'})
             });
@@ -867,7 +973,7 @@ module.exports = class MemberRepository {
 
         if (all !== true) {
             // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
-            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
+            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer', 'activeStripeCustomersCount']));
         }
         const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
             .select('members.id')
@@ -964,11 +1070,12 @@ module.exports = class MemberRepository {
     /**
      *
      * @param {Object} data
-     * @param {String} data.id - member ID
+     * @param {string} data.id - member ID
      * @param {Object} data.subscription
-     * @param {String} data.offerId
-     * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
-     * @param {*} options
+     * @param {string | null} [data.offerId]
+     * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
+     * @param {object} [options]
+     * @param {Knex.Transaction} [options.transacting]
      * @returns
      */
     async linkSubscription(data, options = {}) {
@@ -1159,25 +1266,34 @@ module.exports = class MemberRepository {
                 await stripeCustomerSubscriptionModel.destroy(options);
             }
         } else if (stripeCustomerSubscriptionModel) {
-            // CASE: Offer is already mapped against sub, don't overwrite it with NULL
-            // Needed for trial offers, which don't have a stripe coupon/discount attached to sub
+            const previousOfferId = stripeCustomerSubscriptionModel.get('offer_id');
+
+            // CASE: Only preserve offer_id for active trials (trial offers don't have Stripe discounts)
+            // Otherwise, allow offer_id to be cleared when the Stripe discount expires
             if (!subscriptionData.offer_id) {
-                delete subscriptionData.offer_id;
+                const trialEndAt = subscriptionData.trial_end_at;
+                const hasActiveTrial = trialEndAt && new Date(trialEndAt) > new Date();
+
+                if (hasActiveTrial) {
+                    delete subscriptionData.offer_id;
+                }
             }
+
             const updatedStripeCustomerSubscriptionModel = await this._StripeCustomerSubscription.edit(subscriptionData, {
                 ...options,
                 id: stripeCustomerSubscriptionModel.id
             });
 
-            // CASE: Existing free member subscribes to a paid tier with an offer
-            // Stripe doesn't send the discount/offer info in the subscription.created event
-            // So we need to record the offer redemption event upon updating the subscription here
-            if (stripeCustomerSubscriptionModel.get('offer_id') === null && subscriptionData.offer_id) {
+            // CASE: Record offer redemption when offer_id changes to a new non-null value
+            // This covers: null→new (free member upgrade), old→new (retention offer replacing expired signup offer)
+            // The OfferRedemptionEvent handler has a dedup check for repeated webhook deliveries
+            if (previousOfferId !== subscriptionData.offer_id && subscriptionData.offer_id) {
+                const redemptionTimestamp = subscriptionData.discount_start || updatedStripeCustomerSubscriptionModel.get('created_at');
                 const offerRedemptionEvent = OfferRedemptionEvent.create({
                     memberId: memberModel.id,
                     offerId: subscriptionData.offer_id,
                     subscriptionId: updatedStripeCustomerSubscriptionModel.id
-                }, updatedStripeCustomerSubscriptionModel.get('created_at'));
+                }, redemptionTimestamp);
                 this.dispatchEvent(offerRedemptionEvent, options);
             }
 
@@ -1458,36 +1574,76 @@ module.exports = class MemberRepository {
                 member_id: data.id,
                 from_status: updatedMember._previousAttributes.status,
                 to_status: updatedMember.get('status'),
+                batch_id: options.batch_id ?? null,
                 ...eventData
             }, options);
 
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
-            const shouldSendPaidWelcomeEmail = this._labsService.isSet('welcomeEmails') && WELCOME_EMAIL_SOURCES.includes(source);
-            let isPaidWelcomeEmailActive = false;
-            if (shouldSendPaidWelcomeEmail && this._AutomatedEmail) {
-                const paidWelcomeEmail = await this._AutomatedEmail.findOne({slug: MEMBER_WELCOME_EMAIL_SLUGS.paid}, options);
-                isPaidWelcomeEmailActive = paidWelcomeEmail && paidWelcomeEmail.get('lexical') && paidWelcomeEmail.get('status') === 'active';
-            }
-            // Send paid welcome email if:
-            // 1. The paid welcome email is active
+
+            // Enqueue automation if:
+            // 1. The source is allowed to trigger automations
             // 2. The member status changed to 'paid'
-            if (updatedMember.get('status') === 'paid' && isPaidWelcomeEmailActive) {
-                await this._Outbox.add({
-                    id: ObjectId().toHexString(),
-                    event_type: MemberCreatedEvent.name,
-                    payload: JSON.stringify({
-                        memberId: memberModel.id,
-                        uuid: memberModel.get('uuid'),
-                        email: memberModel.get('email'),
-                        name: memberModel.get('name'),
-                        source,
-                        timestamp: subscriptionData.start_date || updatedMember.get('updated_at') || new Date(),
-                        status: 'paid'
-                    })
-                }, options);
-                this.dispatchEvent(StartOutboxProcessingEvent.create({memberId: memberModel.id}), options);
+            // 3. The previous status wasn't 'gift', as gift members already received the paid welcome email on redemption
+            if (
+                WELCOME_EMAIL_SOURCES.includes(source) &&
+                updatedMember.get('status') === 'paid' &&
+                updatedMember._previousAttributes.status !== 'gift'
+            ) {
+                await this.triggerMemberSignupAutomation(
+                    memberModel.id,
+                    memberModel.get('email'),
+                    'paid',
+                    options
+                );
             }
+        }
+
+        // Update the members_current_subscription lookup table
+        await this._updateCurrentSubscription(data.id, options);
+    }
+
+    async _updateCurrentSubscription(memberId, options) {
+        try {
+            const knex = db.knex;
+            const trx = options.transacting || knex;
+
+            // Resolve the best subscription for this member via the VIEW
+            // (single source of truth for subscription priority logic)
+            const best = await trx('members_resolved_subscription')
+                .where('member_id', memberId)
+                .first();
+
+            if (best) {
+                // The lookup table has a UNIQUE constraint on `subscription_id`
+                // — a sub can be at most one member's current. The view's
+                // owning-member can change (member merges, Stripe customer
+                // re-link, test fixtures reusing customer IDs), in which case
+                // the lookup may still hold a stale row from the previous
+                // owner. Delete that stale row first so the upsert isn't
+                // rejected by the UNIQUE constraint. The displaced member's
+                // row will re-resolve next time their subscriptions change.
+                await trx('members_current_subscription')
+                    .where('subscription_id', best.subscription_id)
+                    .whereNot('member_id', best.member_id)
+                    .del();
+
+                await trx('members_current_subscription')
+                    .insert({member_id: best.member_id, subscription_id: best.subscription_id})
+                    .onConflict('member_id')
+                    .merge();
+            } else {
+                // No subscriptions remain — remove the lookup row
+                await trx('members_current_subscription')
+                    .where({member_id: memberId})
+                    .del();
+            }
+        } catch (e) {
+            logging.error({
+                err: e,
+                message: `Failed to update members_current_subscription for member ${memberId}`
+            });
+            throw e;
         }
     }
 
@@ -1721,18 +1877,10 @@ module.exports = class MemberRepository {
             });
         }
 
-        // Check subscription doesn't already have an offer
-        if (subscriptionModel.get('offer_id')) {
+        // Check subscription doesn't already have an active offer
+        if (await hasActiveOffer(subscriptionModel, this._offersAPI, options)) {
             throw new errors.BadRequestError({
                 message: tpl(messages.subscriptionHasOffer)
-            });
-        }
-
-        // Check subscription is not in a trial period
-        const trialEndAt = subscriptionModel.get('trial_end_at');
-        if (trialEndAt && trialEndAt > new Date()) {
-            throw new errors.BadRequestError({
-                message: tpl(messages.subscriptionInTrial)
             });
         }
 
@@ -1802,33 +1950,8 @@ module.exports = class MemberRepository {
         }
 
         const stripeSubscriptionId = subscriptionModel.get('subscription_id');
-        const isFreeMonthsOffer = offer.type === 'free_months';
 
-        if (isFreeMonthsOffer) {
-            const currentPeriodEnd = subscriptionModel.get('current_period_end');
-            if (!currentPeriodEnd) {
-                throw new errors.BadRequestError({
-                    message: tpl(messages.subscriptionNotActive)
-                });
-            }
-
-            const trialEndDate = addCalendarMonths(currentPeriodEnd, offer.amount);
-            const trialEnd = Math.floor(trialEndDate.getTime() / 1000);
-
-            const updatedSubscription = await this._stripeAPIService.updateSubscriptionTrialEnd(
-                stripeSubscriptionId,
-                trialEnd,
-                {prorationBehavior: 'none'}
-            );
-
-            return this.linkSubscription({
-                id: member.id,
-                subscription: updatedSubscription,
-                offerId: data.offerId
-            }, options);
-        }
-
-        // Besides free_months and trial offers, all other offers rely on a Stripe Coupon
+        // Besides trial offers, all other offers rely on a Stripe Coupon
         if (!data.couponId) {
             throw new errors.BadRequestError({
                 message: tpl(messages.offerNoCoupon)
@@ -1892,7 +2015,7 @@ module.exports = class MemberRepository {
     /**
      *
      * @param {Object} data
-     * @param {String} data.id - member ID
+     * @param {string} data.id - member ID
      * @param {Object} options
      * @param {Object} [options.transacting]
      */
@@ -1933,15 +2056,15 @@ module.exports = class MemberRepository {
             });
         }
 
-        const zeroValuePrices = defaultProduct.stripePrices.filter((price) => {
-            return price.amount === 0;
+        const complimentaryPrices = defaultProduct.stripePrices.filter((price) => {
+            return price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
         });
 
         if (activeSubscriptions.length) {
             for (const subscription of activeSubscriptions) {
                 const price = await subscription.related('stripePrice').fetch(options);
 
-                let zeroValuePrice = zeroValuePrices.find((p) => {
+                let zeroValuePrice = complimentaryPrices.find((p) => {
                     return p.currency.toLowerCase() === price.get('currency').toLowerCase();
                 });
 
@@ -1959,9 +2082,14 @@ module.exports = class MemberRepository {
                         }]
                     }, options)).toJSON();
                     zeroValuePrice = product.stripePrices.find((p) => {
-                        return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0;
+                        return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0 && this.isComplimentaryPlanNickname(p.nickname);
                     });
-                    zeroValuePrices.push(zeroValuePrice);
+                    if (!zeroValuePrice) {
+                        throw new errors.NotFoundError({
+                            message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "${price.get('currency')}" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                        });
+                    }
+                    complimentaryPrices.push(zeroValuePrice);
                 }
 
                 const stripeSubscription = await this._stripeAPIService.getSubscription(
@@ -1993,7 +2121,7 @@ module.exports = class MemberRepository {
                 name: stripeCustomer.name
             }, sharedOptions);
 
-            let zeroValuePrice = zeroValuePrices[0];
+            let zeroValuePrice = complimentaryPrices[0];
 
             if (!zeroValuePrice) {
                 const product = (await this._productRepository.update({
@@ -2009,9 +2137,14 @@ module.exports = class MemberRepository {
                     }]
                 }, sharedOptions)).toJSON();
                 zeroValuePrice = product.stripePrices.find((price) => {
-                    return price.currency.toLowerCase() === 'usd' && price.amount === 0;
+                    return price.currency.toLowerCase() === 'usd' && price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
                 });
-                zeroValuePrices.push(zeroValuePrice);
+                if (!zeroValuePrice) {
+                    throw new errors.NotFoundError({
+                        message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "USD" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                    });
+                }
+                complimentaryPrices.push(zeroValuePrice);
             }
 
             const subscription = await this._stripeAPIService.createSubscription(
@@ -2029,7 +2162,7 @@ module.exports = class MemberRepository {
     /**
      *
      * @param {Object} data
-     * @param {String} data.id - member ID
+     * @param {string} data.id - member ID
      * @param {Object} options
      * @param {Object} [options.transacting]
      */

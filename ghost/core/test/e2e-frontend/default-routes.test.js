@@ -7,7 +7,6 @@
 // But then again testing real code, rather than mock code, might be more useful...
 const assert = require('node:assert/strict');
 const {assertExists} = require('../utils/assertions');
-const should = require('should');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const moment = require('moment');
@@ -117,6 +116,37 @@ describe('Default Frontend routing', function () {
         });
     });
 
+    describe('Gift preview routes', function () {
+        before(async function () {
+            await testUtils.createPost({
+                post: {
+                    title: 'Gift a subscription',
+                    slug: 'gift',
+                    status: 'published',
+                    type: 'page'
+                }
+            });
+        });
+
+        it('does not intercept /gift/ when no token is provided — a custom page at that slug renders', async function () {
+            await request.get('/gift/')
+                .expect('Content-Type', /html/)
+                .expect(200)
+                .expect(assertCorrectFrontendHeaders)
+                .expect((res) => {
+                    const $ = cheerio.load(res.text);
+
+                    assert.match($('title').text(), /Gift a subscription/);
+                });
+        });
+
+        it('still handles /gift/<token> via the gift-preview controller (invalid token redirects to homepage)', async function () {
+            await request.get('/gift/this-token-does-not-exist')
+                .expect(302)
+                .expect('Location', /\/$/);
+        });
+    });
+
     describe('Single post', function () {
         it('/welcome/ should respond with valid HTML', async function () {
             await request.get('/welcome/')
@@ -129,7 +159,7 @@ describe('Default Frontend routing', function () {
                     assert(res.text.includes('<title>Start here for a quick overview of everything you need to know</title>'));
                     assert.match(res.text, /<h1[^>]*?>Start here for a quick overview of everything you need to know<\/h1>/);
                     // We should write a single test for this, or encapsulate it as an assertion
-                    // E.g. res.text.should.not.containInvalidUrls()
+                    // E.g. assertDoesNotContainInvalidUrls(res.text)
                     assert(!res.text.includes('__GHOST_URL__'));
                 });
         });
@@ -529,7 +559,7 @@ describe('Default Frontend routing', function () {
                 .expect(200)
                 .expect(assertCorrectFrontendHeaders)
                 .expect((res) => {
-                    res.text.should.match('User-agent: *\nDisallow: /');
+                    assert(res.text.includes('User-agent: *\nDisallow: /'));
                 });
         });
     });

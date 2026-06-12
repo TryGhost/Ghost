@@ -1,7 +1,5 @@
 const assert = require('node:assert/strict');
-require('should');
 const sinon = require('sinon');
-const {DataImportError} = require('@tryghost/errors');
 const MembersCSVImporterStripeUtils = require('../../../../../../core/server/services/members/importer/members-csv-importer-stripe-utils');
 
 describe('MembersCSVImporterStripeUtils', function () {
@@ -51,8 +49,8 @@ describe('MembersCSVImporterStripeUtils', function () {
      * Returns a stubbed Stripe API service
      *
      * @param {Object} options
-     * @param {Boolean} [options.configured] - Whether the Stripe API service is configured, defaults to true
-     * @param {Boolean} [options.resolveCustomer] - Whether the Stripe API service should resolve the customer, defaults to true
+     * @param {boolean} [options.configured] - Whether the Stripe API service is configured, defaults to true
+     * @param {boolean} [options.resolveCustomer] - Whether the Stripe API service should resolve the customer, defaults to true
      * @returns {Object}
      */
     const getStripeApiServiceStub = ({
@@ -78,9 +76,9 @@ describe('MembersCSVImporterStripeUtils', function () {
      * Returns a stubbed product repository
      *
      * @param {Object} options
-     * @param {String} [options.ghostProductStripePriceId] - The Stripe price ID of the Ghost product, defaults to the Stripe price ID of the Stripe customer's existing subscription
-     * @param {Boolean} [options.resolveGhostProductPrice] - Whether the product repository should resolve the Ghost product price, defaults to true
-     * @param {Boolean} [options.resolveStripeProduct] - Whether the product repository should resolve the Stripe product, defaults to true
+     * @param {string} [options.ghostProductStripePriceId] - The Stripe price ID of the Ghost product, defaults to the Stripe price ID of the Stripe customer's existing subscription
+     * @param {boolean} [options.resolveGhostProductPrice] - Whether the product repository should resolve the Ghost product price, defaults to true
+     * @param {boolean} [options.resolveStripeProduct] - Whether the product repository should resolve the Stripe product, defaults to true
      * @returns {Object}
      */
     const getProductRepositoryStub = ({
@@ -130,9 +128,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({}, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot force subscription to product without a Stripe Connection'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot force subscription to product without a Stripe Connection'
+                }
             );
         });
 
@@ -142,11 +143,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot find Stripe customer to update subscription'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({customer_id: CUSTOMER_ID}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot find Stripe customer to update subscription'
+                }
             );
         });
 
@@ -159,11 +161,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot update subscription when customer does not have an existing subscription'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({customer_id: CUSTOMER_ID}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot update subscription when customer does not have an existing subscription'
+                }
             );
         });
 
@@ -191,11 +194,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot update subscription when customer has multiple subscriptions'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({customer_id: CUSTOMER_ID}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot update subscription when customer has multiple subscriptions'
+                }
             );
         });
 
@@ -216,11 +220,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot update subscription when existing subscription has multiple items'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({customer_id: CUSTOMER_ID}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot update subscription when existing subscription has multiple items'
+                }
             );
         });
 
@@ -233,11 +238,12 @@ describe('MembersCSVImporterStripeUtils', function () {
                 stripeAPIService: stripeAPIServiceStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: 'Cannot update subscription when existing subscription is not recurring'}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({customer_id: CUSTOMER_ID}, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: 'Cannot update subscription when existing subscription is not recurring'
+                }
             );
         });
 
@@ -257,12 +263,15 @@ describe('MembersCSVImporterStripeUtils', function () {
                 productRepository: productRepositoryStub
             });
 
-            await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID,
-                product_id: PRODUCT_ID
-            }, OPTIONS).should.be.rejectedWith(
-                DataImportError,
-                {message: `Cannot find Product ${PRODUCT_ID}`}
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
+                    customer_id: CUSTOMER_ID,
+                    product_id: PRODUCT_ID
+                }, OPTIONS),
+                {
+                    name: 'DataImportError',
+                    message: `Cannot find Product ${PRODUCT_ID}`
+                }
             );
         });
 
@@ -281,7 +290,7 @@ describe('MembersCSVImporterStripeUtils', function () {
             assert.equal(result.stripePriceId, stripeCustomerSubscriptionItem.price.id);
             assert.equal(result.isNewStripePrice, false);
 
-            assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce, false);
+            sinon.assert.notCalled(stripeAPIServiceStub.updateSubscriptionItemPrice);
         });
 
         it('updates the Stripe customer\'s subscription if they already have a subscription, but to some other Ghost product', async function () {
@@ -302,7 +311,7 @@ describe('MembersCSVImporterStripeUtils', function () {
             assert.equal(result.stripePriceId, GHOST_PRODUCT_STRIPE_PRICE_ID);
             assert.equal(result.isNewStripePrice, false);
 
-            assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce, true);
+            sinon.assert.calledOnce(stripeAPIServiceStub.updateSubscriptionItemPrice);
             assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledWithExactly(
                 stripeCustomer.subscriptions.data[0].id,
                 stripeCustomerSubscriptionItem.id,
@@ -345,7 +354,7 @@ describe('MembersCSVImporterStripeUtils', function () {
             assert.equal(result.isNewStripePrice, true);
 
             // Assert subscription was updated
-            assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledOnce, true);
+            sinon.assert.calledOnce(stripeAPIServiceStub.updateSubscriptionItemPrice);
             assert.equal(stripeAPIServiceStub.updateSubscriptionItemPrice.calledWithExactly(
                 stripeCustomer.subscriptions.data[0].id,
                 stripeCustomerSubscriptionItem.id,
@@ -369,7 +378,7 @@ describe('MembersCSVImporterStripeUtils', function () {
                 product_id: PRODUCT_ID
             }, OPTIONS);
 
-            assert.equal(productRepositoryStub.update.calledOnce, true);
+            sinon.assert.calledOnce(productRepositoryStub.update);
             assert.equal(productRepositoryStub.update.calledWithExactly(
                 {
                     id: PRODUCT_ID,
@@ -398,7 +407,7 @@ describe('MembersCSVImporterStripeUtils', function () {
 
             await membersCSVImporterStripeUtils.archivePrice(stripePriceId);
 
-            assert.equal(stripeAPIServiceStub.updatePrice.calledOnce, true);
+            sinon.assert.calledOnce(stripeAPIServiceStub.updatePrice);
             assert.equal(stripeAPIServiceStub.updatePrice.calledWithExactly(stripePriceId, {active: false}), true);
         });
     });

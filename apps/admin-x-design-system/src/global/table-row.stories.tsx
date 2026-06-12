@@ -1,5 +1,5 @@
 import {ReactNode} from 'react';
-import type {Meta, StoryObj} from '@storybook/react';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 
 import Button from './button';
 import TableCell from './table-cell';

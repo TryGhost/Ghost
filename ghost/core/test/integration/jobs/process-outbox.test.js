@@ -7,7 +7,6 @@ const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
 const mailService = require('../../../core/server/services/mail');
-const mockManager = require('../../utils/e2e-framework-mock-manager');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 
 const JOB_NAME = 'process-outbox-test';
@@ -15,17 +14,21 @@ const processOutbox = require('../../../core/server/services/outbox/jobs/lib/pro
 
 describe('Process Outbox Job', function () {
     let jobService;
+    let defaultEmailDesignSettingId;
 
     before(async function () {
         await testUtils.startGhost();
         jobService = require('../../../core/server/services/jobs/job-service');
+        defaultEmailDesignSettingId = await db.knex('email_design_settings')
+            .where('slug', 'default-automated-email')
+            .first('id')
+            .then(row => row.id);
     });
 
     afterEach(async function () {
         sinon.restore();
-        mockManager.restore();
         await db.knex('outbox').del();
-        await db.knex('automated_emails').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
+        await db.knex('automations').where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free).del();
         try {
             await jobService.removeJob(JOB_NAME);
         } catch (err) {
@@ -43,10 +46,9 @@ describe('Process Outbox Job', function () {
         await jobService.awaitCompletion(JOB_NAME);
     }
 
-    describe('with welcomeEmails enabled', function () {
+    describe('processes outbox entries', function () {
         beforeEach(async function () {
             sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-            mockManager.mockLabsEnabled('welcomeEmails');
 
             const lexical = JSON.stringify({
                 root: {
@@ -62,13 +64,21 @@ describe('Process Outbox Job', function () {
                 }
             });
 
-            await db.knex('automated_emails').insert({
-                id: ObjectId().toHexString(),
+            const automationId = ObjectId().toHexString();
+            await db.knex('automations').insert({
+                id: automationId,
                 status: 'active',
                 name: 'Free Member Welcome Email',
                 slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
+                created_at: new Date()
+            });
+            await db.knex('welcome_email_automated_emails').insert({
+                id: ObjectId().toHexString(),
+                welcome_email_automation_id: automationId,
+                delay_days: 0,
                 subject: 'Welcome to {site_title}',
                 lexical,
+                email_design_setting_id: defaultEmailDesignSettingId,
                 created_at: new Date()
             });
         });
@@ -93,7 +103,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 0);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 1);
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
         });
 
         it('does nothing when there are no pending entries', async function () {
@@ -104,7 +114,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 0);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('processes multiple entries in a batch', async function () {
@@ -148,7 +158,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 0);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 3);
+            sinon.assert.calledThrice(mailService.GhostMailer.prototype.send);
         });
 
         it('ignores entries that are not pending', async function () {
@@ -181,7 +191,7 @@ describe('Process Outbox Job', function () {
 
             const entriesAfterJob = await models.Outbox.findAll();
             assert.equal(entriesAfterJob.length, 2);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
+            sinon.assert.notCalled(mailService.GhostMailer.prototype.send);
         });
 
         it('increments retry_count and keeps entry pending when handler fails', async function () {
@@ -233,37 +243,6 @@ describe('Process Outbox Job', function () {
             const entry = entriesAfterJob.models[0];
             assert.equal(entry.get('status'), OUTBOX_STATUSES.FAILED);
             assert.equal(entry.get('retry_count'), 2);
-        });
-    });
-
-    describe('with welcomeEmails disabled', function () {
-        beforeEach(async function () {
-            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-            mockManager.mockLabsDisabled('welcomeEmails');
-        });
-
-        it('skips processing and leaves entries pending', async function () {
-            await models.Outbox.add({
-                event_type: 'MemberCreatedEvent',
-                payload: JSON.stringify({
-                    memberId: 'member123',
-                    email: 'test@example.com',
-                    name: 'Test Member',
-                    source: 'member',
-                    status: 'free'
-                }),
-                status: OUTBOX_STATUSES.PENDING
-            });
-
-            const entriesBeforeJob = await models.Outbox.findAll();
-            assert.equal(entriesBeforeJob.length, 1);
-
-            await scheduleInlineJob();
-
-            const entriesAfterJob = await models.Outbox.findAll();
-            assert.equal(entriesAfterJob.length, 1);
-            assert.equal(entriesAfterJob.models[0].get('status'), OUTBOX_STATUSES.PENDING);
-            assert.equal(mailService.GhostMailer.prototype.send.callCount, 0);
         });
     });
 });

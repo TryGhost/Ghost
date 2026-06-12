@@ -10,10 +10,6 @@ const tiersService = require('../../../../../core/server/services/tiers');
 const {fixtureManager} = require('../../../../utils/e2e-framework');
 
 describe('WebhookService - Serialize', function () {
-    before(function () {
-        models.init();
-    });
-
     beforeEach(function () {
         tiersService.api = {
             browse() {
@@ -27,7 +23,15 @@ describe('WebhookService - Serialize', function () {
     });
 
     it('rejects with no arguments', async function () {
-        assert.rejects(await serialize, {name: 'TypeError'});
+        await assert.rejects(
+            async () => {
+                await serialize();
+            },
+            (error) => {
+                assert.equal(error.name, 'TypeError');
+                return true;
+            }
+        );
     });
 
     it('rejects with no model', async function () {

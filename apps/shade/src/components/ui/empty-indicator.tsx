@@ -32,22 +32,22 @@ interface EmptyIndicatorProps extends React.HTMLAttributes<HTMLDivElement> {
 
 const EmptyIndicator = React.forwardRef<HTMLDivElement, EmptyIndicatorProps>(({children, className, title, description, actions, ...props}, ref) => {
     return (
-        <div ref={ref} className={cn('flex flex-col items-center justify-center space-y-3 text-center', className)} {...props}>
+        <div ref={ref} className={cn('flex flex-col items-center justify-center gap-3 text-center', className)} {...props}>
             <EmptyBadge>
                 {children}
             </EmptyBadge>
-            <div className='max-w-[320px] space-y-1.5'>
-                <h3 className='text-pretty text-md font-medium tracking-normal text-foreground'>
+            <div className='flex max-w-[320px] flex-col gap-1.5'>
+                <h3 className='text-md font-medium tracking-normal text-pretty text-foreground'>
                     {title}
                 </h3>
                 {description &&
-                    <p className='text-pretty text-sm leading-tight text-muted-foreground'>
+                    <p className='text-sm leading-tight text-pretty text-muted-foreground'>
                         {description}
                     </p>
                 }
             </div>
             {actions && (
-                <div className='mt-4 flex items-center gap-2'>
+                <div className='flex items-center gap-2'>
                     {actions}
                 </div>
             )}

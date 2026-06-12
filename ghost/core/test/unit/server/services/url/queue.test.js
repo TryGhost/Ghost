@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
+const deferred = require('../../../../utils/deferred');
 const {assertExists} = require('../../../../utils/assertions');
 const _ = require('lodash');
-const should = require('should');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const Queue = require('../../../../../core/server/services/url/queue');
@@ -53,24 +53,27 @@ describe('Unit: services/url/Queue', function () {
     });
 
     describe('fn: start (no tolerance)', function () {
-        it('no subscribers', function (done) {
+        it('no subscribers', function () {
+            const {promise, done} = deferred();
             queue.addListener('ended', function (event) {
                 assert.equal(event, 'nachos');
-                assert.equal(queueRunSpy.callCount, 1);
+                sinon.assert.calledOnce(queueRunSpy);
                 done();
             });
 
             queue.start({
                 event: 'nachos'
             });
+            return promise;
         });
 
-        it('1 subscriber', function (done) {
+        it('1 subscriber', function () {
+            const {promise, done} = deferred();
             let notified = 0;
 
             queue.addListener('ended', function (event) {
                 assert.equal(event, 'nachos');
-                assert.equal(queueRunSpy.callCount, 2);
+                sinon.assert.calledTwice(queueRunSpy);
                 assert.equal(notified, 1);
                 done();
             });
@@ -84,9 +87,11 @@ describe('Unit: services/url/Queue', function () {
             queue.start({
                 event: 'nachos'
             });
+            return promise;
         });
 
-        it('x subscriber', function (done) {
+        it('x subscriber', function () {
+            const {promise, done} = deferred();
             let notified = 0;
             let order = [];
 
@@ -94,7 +99,7 @@ describe('Unit: services/url/Queue', function () {
                 assert.equal(event, 'nachos');
 
                 // 9 subscribers + start triggers run
-                assert.equal(queueRunSpy.callCount, 10);
+                sinon.assert.callCount(queueRunSpy, 10);
                 assert.equal(notified, 9);
                 assert.deepEqual(order, [0, 1, 2, 3, 4, 5, 6, 7, 8]);
                 done();
@@ -112,14 +117,16 @@ describe('Unit: services/url/Queue', function () {
             queue.start({
                 event: 'nachos'
             });
+            return promise;
         });
 
-        it('late subscriber', function (done) {
+        it('late subscriber', function () {
+            const {promise, done} = deferred();
             let notified = 0;
 
             queue.addListener('ended', function (event) {
                 assert.equal(event, 'nachos');
-                assert.equal(queueRunSpy.callCount, 1);
+                sinon.assert.calledOnce(queueRunSpy);
                 assert.equal(notified, 0);
                 done();
             });
@@ -133,6 +140,7 @@ describe('Unit: services/url/Queue', function () {
             }, function () {
                 notified = notified + 1;
             });
+            return promise;
         });
 
         it('subscriber throws error', function () {
@@ -146,13 +154,14 @@ describe('Unit: services/url/Queue', function () {
                 event: 'nachos'
             });
 
-            assert.equal(logging.error.calledOnce, true);
+            sinon.assert.calledOnce(logging.error);
             assert.equal(queue.toNotify.nachos.notified.length, 0);
         });
     });
 
     describe('fn: start (with tolerance)', function () {
-        it('late subscriber', function (done) {
+        it('late subscriber', function () {
+            const {promise, done} = deferred();
             let notified = 0;
 
             queue.addListener('ended', function (event) {
@@ -173,9 +182,11 @@ describe('Unit: services/url/Queue', function () {
             }, function () {
                 notified = notified + 1;
             });
+            return promise;
         });
 
-        it('start twice with subscriber between starts', function (done) {
+        it('start twice with subscriber between starts', function () {
+            const {promise, done} = deferred();
             let notified = 0;
             let called = 0;
 
@@ -209,9 +220,11 @@ describe('Unit: services/url/Queue', function () {
                 tolerance: 20,
                 timeoutInMS: 20
             });
+            return promise;
         });
 
-        it('start twice', function (done) {
+        it('start twice', function () {
+            const {promise, done} = deferred();
             let notified = 0;
             let called = 0;
 
@@ -233,9 +246,11 @@ describe('Unit: services/url/Queue', function () {
                 tolerance: 20,
                 timeoutInMS: 20
             });
+            return promise;
         });
 
-        it('late subscribers', function (done) {
+        it('late subscribers', function () {
+            const {promise, done} = deferred();
             let notified = 0;
             let called = 0;
 
@@ -263,6 +278,7 @@ describe('Unit: services/url/Queue', function () {
                 timeoutInMS: 20,
                 requiredSubscriberCount: 1
             });
+            return promise;
         });
     });
 });

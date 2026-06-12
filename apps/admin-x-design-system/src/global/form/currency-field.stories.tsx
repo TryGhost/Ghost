@@ -1,6 +1,6 @@
 import {ReactNode} from 'react';
-import {useArgs} from '@storybook/preview-api';
-import type {Meta, StoryObj} from '@storybook/react';
+import {useArgs} from 'storybook/preview-api';
+import type {Meta, StoryObj} from '@storybook/react-vite';
 
 import CurrencyField from './currency-field';
 

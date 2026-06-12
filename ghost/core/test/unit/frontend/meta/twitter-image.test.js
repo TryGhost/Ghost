@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const sinon = require('sinon');
 const getTwitterImage = require('../../../../core/frontend/meta/twitter-image');
 const settingsCache = require('../../../../core/shared/settings-cache');
@@ -22,13 +21,11 @@ describe('getTwitterImage', function () {
         localSettingsCache.twitter_image = '/content/images/settings-twitter.jpg';
         localSettingsCache.cover_image = '/content/images/settings-cover.jpg';
 
-        getTwitterImage({context: ['home'], home: {}})
-            .should.endWith('/content/images/settings-twitter.jpg');
+        assert(getTwitterImage({context: ['home'], home: {}}).endsWith('/content/images/settings-twitter.jpg'));
 
         localSettingsCache.twitter_image = '';
 
-        getTwitterImage({context: ['home'], home: {}})
-            .should.endWith('/content/images/settings-cover.jpg');
+        assert(getTwitterImage({context: ['home'], home: {}}).endsWith('/content/images/settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
@@ -44,13 +41,11 @@ describe('getTwitterImage', function () {
             feature_image: '/content/images/post-feature.jpg'
         };
 
-        getTwitterImage({context: ['post'], post})
-            .should.endWith('post-twitter.jpg');
+        assert(getTwitterImage({context: ['post'], post}).endsWith('post-twitter.jpg'));
 
         post.twitter_image = '';
 
-        getTwitterImage({context: ['post'], post})
-            .should.endWith('post-feature.jpg');
+        assert(getTwitterImage({context: ['post'], post}).endsWith('post-feature.jpg'));
 
         post.feature_image = '';
 
@@ -74,13 +69,11 @@ describe('getTwitterImage', function () {
             feature_image: '/content/images/page-feature.jpg'
         };
 
-        getTwitterImage({context: ['page'], page})
-            .should.endWith('page-twitter.jpg');
+        assert(getTwitterImage({context: ['page'], page}).endsWith('page-twitter.jpg'));
 
         page.twitter_image = '';
 
-        getTwitterImage({context: ['page'], page})
-            .should.endWith('page-feature.jpg');
+        assert(getTwitterImage({context: ['page'], page}).endsWith('page-feature.jpg'));
 
         page.feature_image = '';
 
@@ -104,13 +97,11 @@ describe('getTwitterImage', function () {
             feature_image: '/content/images/page-feature.jpg'
         };
 
-        getTwitterImage({context: ['page'], post})
-            .should.endWith('page-twitter.jpg');
+        assert(getTwitterImage({context: ['page'], post}).endsWith('page-twitter.jpg'));
 
         post.twitter_image = '';
 
-        getTwitterImage({context: ['page'], post})
-            .should.endWith('page-feature.jpg');
+        assert(getTwitterImage({context: ['page'], post}).endsWith('page-feature.jpg'));
 
         post.feature_image = '';
 
@@ -133,8 +124,7 @@ describe('getTwitterImage', function () {
             cover_image: '/content/images/author-cover.jpg'
         };
 
-        getTwitterImage({context: ['author'], author})
-            .should.endWith('author-cover.jpg');
+        assert(getTwitterImage({context: ['author'], author}).endsWith('author-cover.jpg'));
 
         author.cover_image = '';
 
@@ -149,8 +139,7 @@ describe('getTwitterImage', function () {
             cover_image: '/content/images/author-cover.jpg'
         };
 
-        getTwitterImage({context: ['author', 'paged'], author})
-            .should.endWith('author-cover.jpg');
+        assert(getTwitterImage({context: ['author', 'paged'], author}).endsWith('author-cover.jpg'));
 
         author.cover_image = '';
 
@@ -165,13 +154,11 @@ describe('getTwitterImage', function () {
             feature_image: '/content/images/tag-feature.jpg'
         };
 
-        getTwitterImage({context: ['tag'], tag})
-            .should.endWith('tag-feature.jpg');
+        assert(getTwitterImage({context: ['tag'], tag}).endsWith('tag-feature.jpg'));
 
         tag.feature_image = '';
 
-        getTwitterImage({context: ['tag'], tag})
-            .should.endWith('settings-cover.jpg');
+        assert(getTwitterImage({context: ['tag'], tag}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
@@ -186,16 +173,60 @@ describe('getTwitterImage', function () {
             feature_image: '/content/images/tag-feature.jpg'
         };
 
-        getTwitterImage({context: ['tag', 'paged'], tag})
-            .should.endWith('tag-feature.jpg');
+        assert(getTwitterImage({context: ['tag', 'paged'], tag}).endsWith('tag-feature.jpg'));
 
         tag.feature_image = '';
 
-        getTwitterImage({context: ['tag', 'paged'], tag})
-            .should.endWith('settings-cover.jpg');
+        assert(getTwitterImage({context: ['tag', 'paged'], tag}).endsWith('settings-cover.jpg'));
 
         localSettingsCache.cover_image = '';
 
         assert.equal(getTwitterImage({context: ['tag', 'paged'], tag}), null);
+    });
+
+    describe('CDN image URLs', function () {
+        it('returns CDN twitter_image for home context', function () {
+            localSettingsCache.twitter_image = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/twitter.jpg';
+
+            const result = getTwitterImage({context: ['home'], home: {}});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('/content/images/2026/02/twitter.jpg'));
+        });
+
+        it('returns CDN twitter_image for post context', function () {
+            const post = {
+                twitter_image: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/post-twitter.jpg',
+                feature_image: '/content/images/post-feature.jpg'
+            };
+
+            const result = getTwitterImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('post-twitter.jpg'));
+        });
+
+        it('falls back to CDN feature_image when post twitter_image is empty', function () {
+            const post = {
+                twitter_image: '',
+                feature_image: 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/feature.jpg'
+            };
+
+            const result = getTwitterImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('feature.jpg'));
+        });
+
+        it('falls back to CDN cover_image for settings', function () {
+            localSettingsCache.twitter_image = '';
+            localSettingsCache.cover_image = 'https://storage.ghost.is/c/6f/a3/site/content/images/2026/02/cover.jpg';
+
+            const post = {
+                twitter_image: '',
+                feature_image: ''
+            };
+
+            const result = getTwitterImage({context: ['post'], post});
+            assert(result.includes('storage.ghost.is'));
+            assert(result.endsWith('cover.jpg'));
+        });
     });
 });

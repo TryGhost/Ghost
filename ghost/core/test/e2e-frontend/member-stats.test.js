@@ -1,5 +1,4 @@
 const {assertExists} = require('../utils/assertions');
-const should = require('should');
 const {getMemberStats} = require('../../core/frontend/utils/member-count.js');
 
 describe('Front-end member stats ', function () {

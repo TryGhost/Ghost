@@ -1,4 +1,3 @@
-const should = require('should');
 const sinon = require('sinon');
 const validate = require('../../../../../core/server/services/themes/validate');
 const list = require('../../../../../core/server/services/themes/list');
@@ -8,6 +7,7 @@ const adapterManager = require('../../../../../core/server/services/adapter-mana
 const InMemoryCache = require('../../../../../core/server/adapters/cache/MemoryCache');
 const logging = require('@tryghost/logging');
 const _ = require('lodash');
+const config = require('../../../../../core/shared/config');
 
 describe('Themes', function () {
     let checkZipStub;
@@ -48,10 +48,16 @@ describe('Themes', function () {
 
             return validate.check(testTheme.name, testTheme, {isZip: true})
                 .then((checkedTheme) => {
-                    assert.equal(checkZipStub.calledOnce, true);
-                    assert.equal(checkZipStub.calledWith(testTheme), true);
+                    sinon.assert.calledOnce(checkZipStub);
+                    sinon.assert.calledWith(checkZipStub, testTheme);
+                    sinon.assert.calledWith(checkZipStub, testTheme, sinon.match({
+                        limits: {
+                            perEntryUncompressedBytes: config.get('theme:uploadLimits:entryUncompressedBytes'),
+                            totalUncompressedBytes: config.get('theme:uploadLimits:totalUncompressedBytes')
+                        }
+                    }));
                     sinon.assert.notCalled(checkStub);
-                    assert.equal(formatStub.calledOnce, true);
+                    sinon.assert.calledOnce(formatStub);
                     assert(_.isPlainObject(checkedTheme));
 
                     assert.equal(validate.canActivate(checkedTheme), true);
@@ -65,9 +71,9 @@ describe('Themes', function () {
             return validate.check(testTheme.name, testTheme, {isZip: false})
                 .then((checkedTheme) => {
                     sinon.assert.notCalled(checkZipStub);
-                    assert.equal(checkStub.calledOnce, true);
-                    assert.equal(checkStub.calledWith(testTheme.path), true);
-                    assert.equal(formatStub.calledOnce, true);
+                    sinon.assert.calledOnce(checkStub);
+                    sinon.assert.calledWith(checkStub, testTheme.path);
+                    sinon.assert.calledOnce(formatStub);
                     assert(_.isPlainObject(checkedTheme));
 
                     assert.equal(validate.canActivate(checkedTheme), true);
@@ -94,10 +100,10 @@ describe('Themes', function () {
 
             return validate.check(testTheme.name, testTheme, {isZip: true})
                 .then((checkedTheme) => {
-                    assert.equal(checkZipStub.calledOnce, true);
-                    assert.equal(checkZipStub.calledWith(testTheme), true);
+                    sinon.assert.calledOnce(checkZipStub);
+                    sinon.assert.calledWith(checkZipStub, testTheme);
                     sinon.assert.notCalled(checkStub);
-                    assert.equal(formatStub.calledOnce, true);
+                    sinon.assert.calledOnce(formatStub);
 
                     assert.equal(validate.canActivate(checkedTheme), false);
                 });
@@ -123,10 +129,10 @@ describe('Themes', function () {
 
             return validate.check(testTheme.name, testTheme, {isZip: false})
                 .then((checkedTheme) => {
-                    assert.equal(checkStub.calledOnce, true);
-                    assert.equal(checkStub.calledWith(testTheme.path), true);
+                    sinon.assert.calledOnce(checkStub);
+                    sinon.assert.calledWith(checkStub, testTheme.path);
                     sinon.assert.notCalled(checkZipStub);
-                    assert.equal(formatStub.calledOnce, true);
+                    sinon.assert.calledOnce(formatStub);
 
                     assert.equal(validate.canActivate(checkedTheme), false);
                 });
@@ -154,7 +160,7 @@ describe('Themes', function () {
             path: '/path/to/theme'
         };
 
-        before(function () {
+        beforeAll(function () {
             list.init();
             list.set(testTheme.name, testTheme);
             validate.init();

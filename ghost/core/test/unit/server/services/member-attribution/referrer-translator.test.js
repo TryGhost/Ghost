@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 
 const ReferrerTranslator = require('../../../../../core/server/services/member-attribution/referrer-translator');
 
@@ -12,7 +11,7 @@ describe('ReferrerTranslator', function () {
 
     describe('getReferrerDetails', function () {
         let translator;
-        before(function () {
+        beforeAll(function () {
             translator = new ReferrerTranslator({
                 siteUrl: 'https://example.com',
                 adminUrl: 'https://admin.example.com/ghost'

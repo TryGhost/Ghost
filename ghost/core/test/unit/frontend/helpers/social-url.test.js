@@ -1,5 +1,4 @@
 const assert = require('node:assert/strict');
-const should = require('should');
 const handlebars = require('../../../../core/frontend/services/theme-engine/engine').handlebars;
 const helpers = require('../../../../core/frontend/services/helpers');
 const social_url = require('../../../../core/frontend/helpers/social_url');
@@ -30,7 +29,7 @@ function compile(templateString) {
 }
 
 describe('{{social_url}} helper', function () {
-    before(function () {
+    beforeAll(function () {
         // Register the helper using an object structure
         helpers.registerHelper('social_url', social_url);
         helpers.registerAlias('facebook_url', 'social_url');
@@ -38,9 +37,7 @@ describe('{{social_url}} helper', function () {
         defaultGlobals = {
             data: {
                 site: {
-                    // @TODO: add all social platforms here if we add them to general settings
-                    twitter: socialData.twitter,
-                    facebook: socialData.facebook
+                    ...socialData
                 }
             }
         };
@@ -77,17 +74,20 @@ describe('{{social_url}} helper', function () {
             .with(socialData), '');
     });
 
-    it('should return empty string if the user does not have a new platform set in their profile', function () {
+    it('should return empty string if neither the user nor the publication has a platform set', function () {
         const templateString = `{{social_url type="instagram"}}`;
         assert.equal(compile(templateString)
-            .with({}), '');
+            .with({}, {
+                data: {
+                    site: {}
+                }
+            }), '');
     });
 
-    it('but for facebook and twitter, we do fall back to site data, same as the facebook and twitter url helpers', function () {
-        assert.equal(compile(`{{social_url type="facebook"}}`)
-            .with({}), 'https://www.facebook.com/testuser-fb');
-
-        assert.equal(compile(`{{social_url type="twitter"}}`)
-            .with({}), 'https://x.com/testuser-tw');
+    platforms.forEach((platform) => {
+        it(`falls back to site data for publication ${platform.name} when post-context is empty`, function () {
+            assert.equal(compile(`{{social_url type="${platform.name}"}}`)
+                .with({}), platform.expectedUrl);
+        });
     });
 });

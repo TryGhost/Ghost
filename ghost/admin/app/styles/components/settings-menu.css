@@ -46,11 +46,20 @@
 
 .settings-menu-container {
     z-index: 999;
-    height: 100dvh;
+    height: 100%;
     min-width: 420px;
-    overflow-x: visible;
-    overflow-y: auto;
+    overflow: hidden;
     border-left: 1px solid var(--whitegrey-d1);
+    display: flex;
+    flex-direction: column;
+}
+
+.settings-menu-container #entry-controls {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    display: flex;
+    flex-direction: column;
 }
 
 .settings-menu-container-wide {
@@ -101,7 +110,11 @@
     top: auto;
     right: auto;
     bottom: auto;
-    height: 100dvh;
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
 }
 
 @media (max-width: 500px) {
@@ -115,15 +128,18 @@
 /* ---------------------------------------------------------- */
 
 .settings-menu-header {
-    position: fixed;
+    position: sticky;
+    top: 0;
     display: flex;
     height: 82px; /* 34px + 24px + 24px */
+    min-height: 82px;
     width: 100%;
     padding: 24px;
     justify-content: space-between;
     align-items: center;
     z-index: 3;
     background: var(--white);
+    flex-shrink: 0;
 }
 
 @media (max-width: 1024px) {
@@ -134,9 +150,9 @@
 
 .settings-menu-header h4 {
     margin: 0;
-    font-size: 2rem;
-    line-height: 1.375;
-    font-weight: 700;
+    font-size: 1.5rem;
+    line-height: 1.175;
+    font-weight: 600;
 }
 
 .settings-menu-header .close {
@@ -188,7 +204,10 @@
 }
 
 .settings-menu-content {
-    padding: 92px 0 0;
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 0;
 }
 
 .gh-post-settings {
@@ -197,7 +216,7 @@
 
 @media (max-width: 1024px) {
     .settings-menu-content {
-        padding-top: 72px;
+        padding-top: 0;
     }
 }
 
@@ -502,20 +521,13 @@ li.nav-list-item .for-switch.xs label {
 .settings-menu-container .gh-date-time-picker-time {
     min-height: 38px;
     padding: 4px 12px;
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: var(--black);
-    background-color: var(--grey-150);
-    border: 1px solid transparent;
+    border: 1px solid var(--whitegrey);
     border-radius: 8px;
     transition-property: color, background-color,border-color, text-decoration-color, fill, stroke;
     transition-timing-function: cubic-bezier(.4,0,.2,1);
     transition-duration: .15s;
-}
-
-.settings-menu-container select:hover,
-.settings-menu-container .gh-date-time-picker-date:hover,
-.settings-menu-container .gh-date-time-picker-time:hover{
-    background-color: var(--grey-100);
 }
 
 .settings-menu-container .ember-basic-dropdown-trigger[aria-expanded=true] .gh-date-time-picker-date,
@@ -531,7 +543,7 @@ li.nav-list-item .for-switch.xs label {
 }
 
 .settings-menu-container .gh-date-time-picker input {
-    font-size: 1.4rem;
+    font-size: 1.3rem;
     color: var(--black);
 }
 
@@ -549,7 +561,7 @@ li.nav-list-item .for-switch.xs label {
 }
 
 .settings-menu-container .ember-power-select-multiple-trigger:has(.ember-power-select-multiple-option) {
-    padding-left: 6px !important;
+    padding-left: 2px !important;
 }
 
 .settings-menu-container .ember-power-select-multiple-option {

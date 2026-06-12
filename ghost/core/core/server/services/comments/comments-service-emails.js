@@ -2,10 +2,11 @@ const moment = require('moment');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const emailService = require('../email-service');
 const CommentsServiceEmailRenderer = require('./comments-service-email-renderer');
+const {toPlain} = require('../../lib/common/to-plain');
 const {t} = require('../i18n');
 
 class CommentsServiceEmails {
-    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils, labs}) {
+    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils}) {
         this.config = config;
         this.logging = logging;
         this.models = models;
@@ -14,27 +15,36 @@ class CommentsServiceEmails {
         this.settingsHelpers = settingsHelpers;
         this.urlService = urlService;
         this.urlUtils = urlUtils;
-        this.labs = labs;
         this.commentsServiceEmailRenderer = new CommentsServiceEmailRenderer({t});
     }
 
     /**
      * Build the post URL with comment fragment for email links
-     * @param {string} postId - The ID of the post
+     * @param {{id: string}} post - The post (model or plain object with `id`)
      * @param {string} commentId - The ID of the comment to link to
      * @returns {string} The post URL with appropriate comment fragment
      */
-    getPostUrl(postId, commentId) {
-        const baseUrl = this.urlService.getUrlByResourceId(postId, {absolute: true});
+    getPostUrl(post, commentId) {
+        const postData = toPlain(post);
+        const baseUrl = this.urlService.facade.getUrlForResource({...postData, type: 'posts'}, {absolute: true});
         return `${baseUrl}#ghost-comments-${commentId}`;
     }
 
     async notifyPostAuthors(comment) {
-        const post = await this.models.Post.findOne({id: comment.get('post_id')}, {withRelated: ['authors']});
+        // withRelated tags+authors so getPostUrl can resolve `:primary_tag` /
+        // `:primary_author` permalinks (only sites using those custom
+        // permalinks need it, but loading the relations is cheap and
+        // guarantees correctness regardless of the site's routes.yaml).
+        const post = await this.models.Post.findOne({id: comment.get('post_id')}, {withRelated: ['tags', 'authors']});
         const member = await this.models.Member.findOne({id: comment.get('member_id')});
 
         for (const author of post.related('authors')) {
             if (!author.get('comment_notifications')) {
+                continue;
+            }
+
+            // Don't send a notification if you comment or reply as a member to your own post
+            if (author.get('email') === member.get('email')) {
                 continue;
             }
 
@@ -48,7 +58,7 @@ class CommentsServiceEmails {
                 siteUrl: this.urlUtils.getSiteUrl(),
                 siteDomain: this.siteDomain,
                 postTitle: post.get('title'),
-                postUrl: this.getPostUrl(post.get('id'), comment.get('id')),
+                postUrl: this.getPostUrl(post, comment.get('id')),
                 commentHtml: comment.get('html'),
                 commentDate: moment(comment.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
                 memberName: memberName,
@@ -100,7 +110,7 @@ class CommentsServiceEmails {
             interpolation: {escapeValue: false}
         });
 
-        const post = await this.models.Post.findOne({id: reply.get('post_id')});
+        const post = await this.models.Post.findOne({id: reply.get('post_id')}, {withRelated: ['tags', 'authors']});
         const member = await this.models.Member.findOne({id: memberId});
 
         const memberName = member.get('name') || 'Anonymous';
@@ -110,7 +120,7 @@ class CommentsServiceEmails {
             siteUrl: this.urlUtils.getSiteUrl(),
             siteDomain: this.siteDomain,
             postTitle: post.get('title'),
-            postUrl: this.getPostUrl(post.get('id'), reply.get('id')),
+            postUrl: this.getPostUrl(post, reply.get('id')),
             replyHtml: reply.get('html'),
             replyDate: moment(reply.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
             memberName: memberName,
@@ -141,7 +151,7 @@ class CommentsServiceEmails {
      * @param {*} reporter The member object who reported this comment
      */
     async notifyReport(comment, reporter) {
-        const post = await this.models.Post.findOne({id: comment.get('post_id')}, {withRelated: ['authors']});
+        const post = await this.models.Post.findOne({id: comment.get('post_id')}, {withRelated: ['tags', 'authors']});
         const member = await this.models.Member.findOne({id: comment.get('member_id')});
         const owner = await this.models.User.getOwnerUser();
 
@@ -151,14 +161,12 @@ class CommentsServiceEmails {
 
         const memberName = member.get('name') || 'Anonymous';
 
-        const commentModerationEnabled = this.labs.isSet('commentModeration');
-
         const templateData = {
             siteTitle: this.settingsCache.get('title'),
             siteUrl: this.urlUtils.getSiteUrl(),
             siteDomain: this.siteDomain,
             postTitle: post.get('title'),
-            postUrl: this.getPostUrl(post.get('id'), comment.get('id')),
+            postUrl: this.getPostUrl(post, comment.get('id')),
             commentHtml: comment.get('html'),
             commentText: htmlToPlaintext.comment(comment.get('html')),
             commentDate: moment(comment.get('created_at')).tz(this.settingsCache.get('timezone')).format('D MMM YYYY'),
@@ -175,7 +183,6 @@ class CommentsServiceEmails {
             fromEmail: this.notificationFromAddress,
             toEmail: to,
             staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${owner.get('slug')}/email-notifications`),
-            commentModerationEnabled,
             moderationUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/comments/?id=is:${comment.get('id')}`)
         };
 

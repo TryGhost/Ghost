@@ -77,10 +77,10 @@ describe('Models: Base plugins: Overrides', function () {
 
             // called twice because format is also called on fetch
             // see https://github.com/TryGhost/Ghost/commit/426cbeec0f57886fbb4c7a1ebd2ce696913b03eb
-            assert.equal(format.callCount, 2);
+            sinon.assert.calledTwice(format);
 
             // only called once for the actual write
-            assert.equal(formatOnWrite.callCount, 1);
+            sinon.assert.calledOnce(formatOnWrite);
         });
     });
 });

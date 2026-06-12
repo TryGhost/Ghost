@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.4",
+  "version": "1.8.22",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -14,23 +14,23 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "flexsearch": "0.8.153",
-    "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "@tryghost/debug": "catalog:",
+    "@tryghost/i18n": "workspace:*",
+    "flexsearch": "0.8.212",
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17"
   },
   "scripts": {
-    "dev": "concurrently \"vite preview -l silent\" \"yarn build:watch\" \"yarn tailwind\"",
-    "build": "vite build && yarn tailwind:base",
+    "dev": "concurrently --kill-others --names preview,build,tailwind \"vite preview -l silent\" \"pnpm build:watch\" \"pnpm tailwind\"",
+    "build": "vite build && pnpm tailwind:base",
     "build:watch": "vite build --watch",
-    "tailwind": "yarn tailwind:base --watch ",
-    "tailwind:base": "npx tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
+    "tailwind": "pnpm tailwind:base --watch ",
+    "tailwind:base": "tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
     "test": "vitest run",
-    "test:ci": "yarn test --coverage",
-    "test:unit": "yarn test:ci",
     "lint": "eslint src --ext .js --cache",
-    "preship": "yarn lint",
+    "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
-    "prepublishOnly": "yarn build"
+    "prepublishOnly": "pnpm build"
   },
   "eslintConfig": {
     "env": {
@@ -93,13 +93,23 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "5.17.0",
-    "@testing-library/react": "12.1.5",
-    "@vitejs/plugin-react": "4.7.0",
-    "jsdom": "24.1.3",
-    "nock": "13.5.6",
-    "vite": "5.4.20",
-    "vite-plugin-svgr": "3.3.0",
-    "vitest": "1.6.1"
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:react17",
+    "@vitejs/plugin-react": "catalog:",
+    "@vitest/coverage-v8": "catalog:",
+    "concurrently": "catalog:",
+    "cross-fetch": "catalog:",
+    "eslint": "catalog:",
+    "jsdom": "catalog:",
+    "nock": "14.0.15",
+    "tailwindcss": "catalog:tailwind3",
+    "vite": "catalog:",
+    "vite-plugin-svgr": "catalog:",
+    "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "i18n"
+    ]
   }
 }
