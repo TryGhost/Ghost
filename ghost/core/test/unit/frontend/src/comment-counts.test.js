@@ -1,7 +1,7 @@
-const assert = require('node:assert/strict');
+/* global expect, vi */
+
 const fs = require('fs');
 const path = require('path');
-const sinon = require('sinon');
 const {createBrowserEnvironment, loadScript} = require('../../../utils/browser-test-utils');
 
 describe('comment-counts.js', function () {
@@ -20,12 +20,12 @@ describe('comment-counts.js', function () {
         ></script>
     `;
 
-    before(function () {
+    beforeAll(function () {
         scriptContent = fs.readFileSync(path.join(__dirname, '../../../../core/frontend/src/comment-counts/comment-counts.js'), 'utf8');
     });
 
     afterEach(function () {
-        sinon.restore();
+        vi.restoreAllMocks();
 
         if (env) {
             env.dom.window.close();
@@ -38,14 +38,16 @@ describe('comment-counts.js', function () {
             html: `<!DOCTYPE html><html><body><article class="post-card">${countMarker('post-1')}</article></body></html>`
         });
 
-        env.window.fetch = sinon.stub();
-        env.window.fetch.withArgs('https://example.com/members/api/comments/counts/?ids=post-1').resolves({
-            status: 200,
-            json: async () => ({'post-1': 1})
-        });
-        env.window.fetch.withArgs('https://example.com/members/api/comments/counts/?ids=post-2').resolves({
-            status: 200,
-            json: async () => ({'post-2': 2})
+        env.window.fetch = vi.fn(async (url) => {
+            const counts = {
+                'https://example.com/members/api/comments/counts/?ids=post-1': {'post-1': 1},
+                'https://example.com/members/api/comments/counts/?ids=post-2': {'post-2': 2}
+            };
+
+            return {
+                status: 200,
+                json: async () => counts[url]
+            };
         });
     }
 
@@ -66,7 +68,7 @@ describe('comment-counts.js', function () {
         });
 
         await flushAsyncWork();
-        assert.match(env.document.body.textContent, /1 comment/);
+        expect(env.document.body.textContent).toMatch(/1 comment/);
 
         const article = env.document.createElement('article');
         article.className = 'post-card';
@@ -78,7 +80,7 @@ describe('comment-counts.js', function () {
         });
         await flushAsyncWork();
 
-        sinon.assert.calledWith(env.window.fetch, 'https://example.com/members/api/comments/counts/?ids=post-2');
-        assert.match(article.textContent, /2 comments/);
+        expect(env.window.fetch).toHaveBeenCalledWith('https://example.com/members/api/comments/counts/?ids=post-2', expect.any(Object));
+        expect(article.textContent).toMatch(/2 comments/);
     });
 });
