@@ -23,7 +23,7 @@ const messages = {
     memberNotFound: 'Could not find Member {id}',
     subscriptionNotFound: 'Could not find Subscription {id}',
     productNotFound: 'Could not find Product {id}',
-    bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
+    bulkActionRequiresFilter: 'Cannot perform {action} without a filter, search, or all=true',
     tierArchived: 'Cannot use archived Tiers',
     invalidEmail: 'Invalid Email',
     offerNotFound: 'Could not find Offer {id}',
@@ -955,7 +955,7 @@ module.exports = class MemberRepository {
     }
 
     async bulkEdit(data, options) {
-        const {activeStripeCustomersCount, all, filter, search} = options;
+        const {all, filter, search} = options;
 
         if (!['unsubscribe', 'addLabel', 'removeLabel'].includes(data.action)) {
             throw new errors.IncorrectUsageError({
@@ -963,7 +963,7 @@ module.exports = class MemberRepository {
             });
         }
 
-        if (!filter && !search && !activeStripeCustomersCount && (!all || all !== true)) {
+        if (!filter && !search && (!all || all !== true)) {
             throw new errors.IncorrectUsageError({
                 message: tpl(messages.bulkActionRequiresFilter, {action: 'bulk edit'})
             });
@@ -973,7 +973,7 @@ module.exports = class MemberRepository {
 
         if (all !== true) {
             // Include mongoTransformer to apply subscribed:{true|false} => newsletter relation mapping
-            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer', 'activeStripeCustomersCount']));
+            Object.assign(filterOptions, _.pick(options, ['filter', 'search', 'mongoTransformer']));
         }
         const memberRows = await this._Member.getFilteredCollectionQuery(filterOptions)
             .select('members.id')

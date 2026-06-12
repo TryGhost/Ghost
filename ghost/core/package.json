@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.45.0-rc.0",
+  "version": "6.45.1-rc.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -93,7 +93,7 @@
     "@tryghost/adapter-base-cache": "0.1.25",
     "@tryghost/admin-api-schema": "4.7.4",
     "@tryghost/api-framework": "catalog:",
-    "@tryghost/bookshelf-plugins": "2.2.2",
+    "@tryghost/bookshelf-plugins": "2.2.4",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/config-url-helpers": "1.0.26",
     "@tryghost/custom-fonts": "catalog:",
