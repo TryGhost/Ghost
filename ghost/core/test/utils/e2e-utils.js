@@ -105,7 +105,7 @@ const _startGhost = async (options) => {
     // Reset the settings cache and disable listeners so they don't get triggered further
     settingsService.reset();
 
-    await dbUtils.reset();
+    await dbUtils.reset({truncate: true});
 
     await settingsService.init();
 

@@ -12,8 +12,8 @@ import ProfilePreviewHoverCard from '../global/profile-preview-hover-card';
 
 import FeedItemStats from './feed-item-stats';
 import clsx from 'clsx';
+import getHandle from '../../utils/get-handle';
 import getReadingTime from '../../utils/get-reading-time';
-import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, sanitizeHtml, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
@@ -75,7 +75,7 @@ export function renderFeedAttachment(
     const renderImagePlaceholder = (className: string, isSingleImage: boolean = false) => {
         const minHeight = isSingleImage ? 'min-h-[200px]' : '';
         return (
-            <div className={`${className} ${minHeight} flex w-full items-center justify-center bg-gray-100 dark:bg-gray-925/30`}>
+            <div className={`${className} ${minHeight} flex w-full items-center justify-center bg-gray-100 dark:bg-gray-950/30`}>
                 <LucideIcon.ImageOff className="text-gray-400" size={24} strokeWidth={1.5} />
             </div>
         );
@@ -379,7 +379,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
-    const authorHandle = author ? getUsername(author) : null;
+    const authorHandle = author ? getHandle(author) : null;
 
     const followedByMe = author?.followedByMe || false;
 
@@ -455,7 +455,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             </span>
                                             <div className={`flex w-full text-md text-gray-700 dark:text-gray-600`}>
                                                 <span className={`truncate ${!isPending ? 'hover-underline' : ''}`}>
-                                                    {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
+                                                    {!isLoading ? getHandle(author) : <Skeleton className='w-56' />}
                                                 </span>
                                                 <div className={`ml-1 before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
                                                     {!isLoading ? renderTimestamp(object, (isPending === false && !object.authored)) : <Skeleton className='w-4' />}
@@ -480,7 +480,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             <div className='relative col-start-2 col-end-3 w-full gap-4 pl-[52px]'>
                                 <div className='flex flex-col'>
                                     <div className=''>
-                                        {(object.type === 'Article') ? <div className='rounded-md border border-gray-150 transition-colors hover:bg-gray-75 dark:border-gray-950 dark:hover:bg-gray-950'>
+                                        {(object.type === 'Article') ? <div className='rounded-md border border-gray-200 transition-colors hover:bg-gray-100 dark:border-gray-950 dark:hover:bg-gray-950'>
                                             {renderFeedAttachment(object, onClick, brokenImages, handleImageError)}
                                             <div className='p-5'>
                                                 <div className='break-anywhere mb-1 line-clamp-2 text-lg leading-tight font-semibold tracking-tight text-pretty' data-test-activity-heading>{object.name}</div>
@@ -564,7 +564,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             <div>{renderTimestamp(object, !object.authored)}</div>
                                         </div>
                                         <div className='flex w-full'>
-                                            <span className='min-w-0 truncate text-gray-700 dark:text-gray-600'>{getUsername(author)}</span>
+                                            <span className='min-w-0 truncate text-gray-700 dark:text-gray-600'>{getHandle(author)}</span>
                                         </div>
                                     </div>
                                 </>}
@@ -626,7 +626,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 <div>{renderTimestamp(object, (isPending === false && !object.authored))}</div>
                                             </div>
                                             <div className='flex'>
-                                                <span className='truncate text-gray-700'>{getUsername(author)}</span>
+                                                <span className='truncate text-gray-700'>{getHandle(author)}</span>
                                             </div>
                                         </div>
                                     </div>
@@ -686,7 +686,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         return (
             <>
                 {object && (
-                    <div className='group/article @container/inbox-item relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 hover:bg-gray-75 dark:hover:bg-gray-950/50' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
+                    <div className='group/article @container/inbox-item relative -mx-4 -my-px flex min-h-[112px] min-w-0 cursor-pointer items-center justify-between rounded-lg p-6 hover:bg-gray-100 dark:hover:bg-gray-950/50' data-layout='inbox' data-object-id={object.id} onClick={onClick}>
                         <div className='w-full min-w-0'>
                             <div className='z-10 mb-1.5 flex w-full min-w-0 items-center gap-1.5 text-sm group-hover/article:border-transparent'>
                                 {!isLoading ?

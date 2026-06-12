@@ -74,11 +74,12 @@ export class MockedApi {
             if (parent) {
                 parent.replies.push(fixture);
                 parent.count.replies = parent.replies.length;
-                return;
+                return fixture;
             }
         }
 
         this.comments.push(fixture);
+        return fixture;
     }
 
     buildReply(overrides: any = {}) {
@@ -256,7 +257,7 @@ export class MockedApi {
         };
     }
 
-    browseReplies({commentId, filter, limit = 5}: {commentId: string, filter?: string, limit?: number}) {
+    browseReplies({commentId, filter, limit = 5, page = 1}: {commentId: string, filter?: string, limit?: number, page?: number}) {
         const comment = this.comments.find(c => c.id === commentId);
         if (!comment) {
             return {
@@ -287,18 +288,19 @@ export class MockedApi {
             });
         }
 
-        const limitedReplies = filteredReplies.slice(0, limit);
-        const hasMore = filteredReplies.length > limit;
+        const startIndex = (page - 1) * limit;
+        const limitedReplies = filteredReplies.slice(startIndex, startIndex + limit);
+        const hasMore = filteredReplies.length > startIndex + limit;
 
         return {
             comments: limitedReplies,
             meta: {
                 pagination: {
-                    page: 1,
+                    page,
                     pages: Math.ceil(filteredReplies.length / limit),
                     total: filteredReplies.length,
                     limit,
-                    next: hasMore ? 2 : null,
+                    next: hasMore ? page + 1 : null,
                     prev: null
                 }
             }
@@ -361,7 +363,7 @@ export class MockedApi {
             const payload = JSON.parse(route.request().postData());
 
             this.#lastCommentDate = new Date();
-            this.addComment({
+            const comment = this.addComment({
                 ...payload.comments[0],
                 member: this.member
             });
@@ -369,7 +371,7 @@ export class MockedApi {
                 status: 200,
                 body: JSON.stringify({
                     comments: [
-                        this.comments[this.comments.length - 1]
+                        comment
                     ]
                 })
             });
@@ -527,6 +529,7 @@ export class MockedApi {
             const url = new URL(route.request().url());
 
             const limit = parseInt(url.searchParams.get('limit') ?? '5');
+            const page = parseInt(url.searchParams.get('page') ?? '1');
             const commentId = url.pathname.split('/').reverse()[2];
             const filter = url.searchParams.get('filter') ?? '';
 
@@ -534,6 +537,7 @@ export class MockedApi {
                 status: 200,
                 body: JSON.stringify(this.browseReplies({
                     limit,
+                    page,
                     filter,
                     commentId
                 }))

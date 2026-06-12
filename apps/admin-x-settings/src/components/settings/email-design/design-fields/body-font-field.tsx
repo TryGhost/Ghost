@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/design-fields/body-font-field.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import {FONT_OPTIONS} from './font-constants';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {useEmailDesign} from '../email-design-context';

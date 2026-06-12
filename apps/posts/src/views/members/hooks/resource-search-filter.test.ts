@@ -7,7 +7,8 @@ describe('resource-search-filter', () => {
         expect(buildResourceFilter('status:published', '')).toBe('status:published');
     });
 
-    it('escapes trailing backslashes in search queries', () => {
-        expect(buildResourceFilter('status:published', 'draft\\')).toBe('status:published+title:~\'draft\\\\\'');
+    it('keeps trailing backslashes literal in search queries', () => {
+        // NQL has no \\ escape - a lone backslash is a literal character
+        expect(buildResourceFilter('status:published', 'draft\\')).toBe(String.raw`status:published+title:~'draft\'`);
     });
 });

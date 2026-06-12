@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/show-badge-field.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import React from 'react';
 import {Heart} from 'lucide-react';
 import {Switch} from '@tryghost/shade/components';
@@ -14,7 +13,7 @@ const ShowBadgeField: React.FC<ShowBadgeFieldProps> = ({value, onChange}) => (
             <Heart className="mt-0.5 size-4 shrink-0 text-red-500" />
             <div className="flex flex-col gap-0.5">
                 <span>Promote independent publishing</span>
-                <span className="text-xs leading-tight text-muted-foreground">Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
+                <span className="text-sm leading-tight text-muted-foreground">Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
             </div>
         </div>
         <Switch

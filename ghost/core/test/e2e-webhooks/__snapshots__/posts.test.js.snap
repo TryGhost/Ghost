@@ -2,8 +2,9 @@
 
 exports[`post.* events post.added event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -12,6 +13,7 @@ Object {
 
 exports[`post.* events post.added event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.added",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -175,8 +177,9 @@ Object {
 
 exports[`post.* events post.deleted event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -185,6 +188,7 @@ Object {
 
 exports[`post.* events post.deleted event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.deleted",
   "post": Object {
     "current": Object {},
     "previous": Object {
@@ -262,8 +266,9 @@ Object {
 
 exports[`post.* events post.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -272,6 +277,7 @@ Object {
 
 exports[`post.* events post.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.edited",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -499,8 +505,9 @@ Object {
 
 exports[`post.* events post.published event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -509,6 +516,7 @@ Object {
 
 exports[`post.* events post.published event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.published",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -759,8 +767,9 @@ Header Level 3
 
 exports[`post.* events post.published.edited event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -769,6 +778,7 @@ Object {
 
 exports[`post.* events post.published.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.published.edited",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -996,8 +1006,9 @@ Object {
 
 exports[`post.* events post.rescheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1006,6 +1017,7 @@ Object {
 
 exports[`post.* events post.rescheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.rescheduled",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -1233,8 +1245,9 @@ Object {
 
 exports[`post.* events post.scheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1243,6 +1256,7 @@ Object {
 
 exports[`post.* events post.scheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.scheduled",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -1471,8 +1485,9 @@ Object {
 
 exports[`post.* events post.tag.attached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1481,6 +1496,7 @@ Object {
 
 exports[`post.* events post.tag.attached event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.tag.attached",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -1775,8 +1791,9 @@ Header Level 3
 
 exports[`post.* events post.tag.detached event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1785,6 +1802,7 @@ Object {
 
 exports[`post.* events post.tag.detached event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.tag.detached",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -2019,8 +2037,9 @@ Header Level 3
 
 exports[`post.* events post.unpublished event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -2029,6 +2048,7 @@ Object {
 
 exports[`post.* events post.unpublished event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.unpublished",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -2278,8 +2298,9 @@ Header Level 3
 
 exports[`post.* events post.unscheduled event is triggered 1: [headers] 1`] = `
 Object {
-  "accept-encoding": "gzip, deflate, br",
-  "content-length": Any<Number>,
+  "accept-encoding": "gzip, deflate, br, zstd",
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -2288,6 +2309,7 @@ Object {
 
 exports[`post.* events post.unscheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.unscheduled",
   "post": Object {
     "current": Object {
       "authors": Array [

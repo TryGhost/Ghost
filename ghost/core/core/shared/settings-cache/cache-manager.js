@@ -179,7 +179,7 @@ class CacheManager {
      * In which case the full JSON version of the model will be resolved
      *
      * @param {string} key
-     * @param {object} options
+     * @param {object} [options]
      * @return {*}
      */
     get(key, options) {

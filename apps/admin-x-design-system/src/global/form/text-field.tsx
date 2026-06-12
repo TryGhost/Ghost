@@ -70,13 +70,13 @@ const TextField: React.FC<TextFieldProps> = ({
     );
 
     const bgClasses = !unstyled && clsx(
-        'absolute inset-0 rounded-lg border text-grey-300 transition-colors peer-hover:bg-grey-100 peer-focus:border-green peer-focus:bg-white peer-focus:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:peer-hover:bg-grey-925 dark:peer-focus:bg-grey-950',
-        error ? `border-red bg-white dark:bg-grey-925` : 'border-transparent bg-grey-150 dark:bg-grey-900',
+        'absolute inset-0 rounded-lg border text-grey-300 transition-colors peer-hover:bg-grey-100 peer-focus:border-green peer-focus:bg-white peer-focus:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:peer-hover:bg-grey-900 dark:peer-focus:bg-grey-950',
+        error ? `border-red bg-white dark:bg-grey-900` : 'border-transparent bg-grey-100 dark:bg-grey-900',
         disabled && 'bg-grey-50 shadow-[0_0_0_1px_rgba(255,255,255,0.45)] peer-hover:bg-grey-50 dark:bg-grey-950 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.18)] dark:peer-hover:bg-grey-950'
     );
 
     const textFieldClasses = !unstyled && clsx(
-        'peer z-[1] order-2 h-9 w-full bg-transparent px-3 py-1.5 text-sm placeholder:text-grey-500 md:h-[38px] md:py-2 md:text-md dark:placeholder:text-grey-700',
+        'peer z-[1] order-2 h-[var(--control-height)] w-full bg-transparent px-3 py-1.5 placeholder:text-grey-500 md:h-[var(--control-height)] md:py-2 dark:placeholder:text-grey-700',
         disabled ? 'cursor-not-allowed text-grey-600 dark:text-grey-800' : 'dark:text-white',
         rightPlaceholder ? 'w-0 grow rounded-l-lg' : 'rounded-lg',
         className
@@ -85,7 +85,7 @@ const TextField: React.FC<TextFieldProps> = ({
     const rightPlaceholderClasses = !unstyled && clsx(
         'z-[1] order-3 rounded-r-lg',
         (rightPlaceholder ?
-            ((typeof (rightPlaceholder) === 'string') ? 'flex h-8 items-center py-1 pr-3 text-right text-sm text-grey-500 md:h-9 md:text-base' : 'h-9 pr-1')
+            ((typeof (rightPlaceholder) === 'string') ? 'flex h-[var(--control-height)] items-center py-1 pr-3 text-right text-grey-500' : 'pr-1')
             : 'pr-2')
     );
 

@@ -443,7 +443,7 @@ export const ExampleDetailScreen: Story = {
                                 <span>Weekly roundup</span>
                             </div>
                             <div className='flex items-center gap-2'>
-                                <Toggle checked />
+                                <Toggle checked onChange={() => {}} />
                                 <span>The Inner Circle</span>
                             </div>
                             <div className='mt-5 rounded border border-red p-4 text-sm text-red'>

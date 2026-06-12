@@ -595,14 +595,14 @@ class StaffServiceEmails {
     }
 
     async renderText(templateName, data) {
-        const textTemplate = require(`./email-templates/${templateName}.txt.js`);
+        const {renderText} = require(`./email-templates/${templateName}.txt`);
 
         let sharedData = {};
         if (data.recipient) {
             sharedData = await this.getSharedData(data.recipient);
         }
 
-        return textTemplate({
+        return renderText({
             ...data,
             ...sharedData
         });

@@ -39,7 +39,7 @@ const ContentApiModal = NiceModal.create(() => {
                 title='Content API'
             />
             <div className='mt-7'>
-                <p className='mb-6 text-sm text-grey-700'>This key provides read-only access to your published content. For full read/write access, create a custom integration.</p>
+                <p className='mb-6 text-grey-700'>This key provides read-only access to your published content. For full read/write access, create a custom integration.</p>
                 <APIKeys keys={[
                     {
                         label: 'Content API key',

@@ -1,7 +1,58 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
+const configWithLlmsTxt = {
+    ...responseFixtures.config,
+    config: {
+        ...responseFixtures.config.config,
+        labs: {
+            ...responseFixtures.config.config.labs,
+            llmsTxt: true
+        }
+    }
+};
+
 test.describe('SEO Meta settings', async () => {
+    test('Supports toggling LLM structured data in Search tab when the llmsTxt labs flag is on', async ({page}) => {
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseConfig: {...globalDataRequests.browseConfig, response: configWithLlmsTxt},
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([
+                {key: 'llms_enabled', value: false}
+            ])}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('seometa');
+        const toggle = section.getByLabel('Enable structured data for LLMs and AI search engines');
+
+        await expect(toggle).toBeVisible();
+        await expect(toggle).toBeChecked();
+
+        await toggle.uncheck();
+        await section.getByRole('button', {name: 'Save'}).click();
+
+        expect(lastApiRequests.editSettings?.body).toEqual({
+            settings: [
+                {key: 'llms_enabled', value: false}
+            ]
+        });
+    });
+
+    test('Hides LLM structured data toggle when the llmsTxt labs flag is off', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('seometa');
+
+        await expect(section.getByLabel('Meta title')).toBeVisible();
+        await expect(section.getByLabel('Enable structured data for LLMs and AI search engines')).toHaveCount(0);
+    });
+
     test('Supports editing metadata in Search tab', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,

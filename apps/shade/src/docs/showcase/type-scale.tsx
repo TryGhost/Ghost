@@ -7,7 +7,7 @@ const DEFAULT_SAMPLE = 'The quick brown fox jumps over the lazy dog';
 function ScaleRow({step}: {step: Step}) {
     const computed = useComputedValue(step.cssVar);
     return (
-        <div className="flex flex-col gap-2 border-b border-border-subtle py-4 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-6">
+        <div className="flex flex-col gap-2 border-b border-border-default py-4 last:border-b-0 sm:flex-row sm:items-baseline sm:gap-6">
             <div className="flex w-40 shrink-0 flex-col gap-0.5">
                 <code className="text-sm font-medium text-text-primary">{step.name}</code>
                 <code className="text-2xs text-text-secondary">{step.cssVar}</code>
@@ -37,7 +37,7 @@ export function FontFamilies({families}: {families: Family[]}) {
     return (
         <section className="flex flex-col gap-4">
             {families.map(f => (
-                <div key={f.cssVar} className="flex flex-col gap-2 border-b border-border-subtle pb-4 last:border-b-0">
+                <div key={f.cssVar} className="flex flex-col gap-2 border-b border-border-default pb-4 last:border-b-0">
                     <div className="flex flex-col gap-0.5">
                         <span className="text-sm font-medium text-text-primary">{f.name}</span>
                         <code className="text-2xs text-text-secondary">{f.cssVar}</code>

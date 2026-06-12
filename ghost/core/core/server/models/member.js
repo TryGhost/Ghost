@@ -126,10 +126,10 @@ const Member = ghostBookshelf.Model.extend({
                 tableName: 'members_stripe_customers_subscriptions',
                 tableNameAs: 'subscriptions',
                 type: 'manyToMany',
-                joinTable: 'members_stripe_customers',
+                joinTable: 'members_current_subscription',
                 joinFrom: 'member_id',
-                joinTo: 'customer_id',
-                joinToForeign: 'customer_id'
+                joinTo: 'subscription_id',
+                joinToForeign: 'id'
             },
             signups: {
                 tableName: 'members_created_events',
@@ -198,6 +198,26 @@ const Member = ghostBookshelf.Model.extend({
         offers: 'offers'
     },
 
+    applyCustomQuery(options) {
+        if (!options.activeStripeCustomersCount) {
+            return;
+        }
+
+        this.query((qb) => {
+            qb.innerJoin(function () {
+                this
+                    .select('members_stripe_customers.member_id')
+                    .from('members_stripe_customers')
+                    .innerJoin('members_stripe_customers_subscriptions', 'members_stripe_customers_subscriptions.customer_id', 'members_stripe_customers.customer_id')
+                    .where('members_stripe_customers_subscriptions.status', 'active')
+                    .where('members_stripe_customers_subscriptions.cancel_at_period_end', false)
+                    .groupBy('members_stripe_customers.member_id')
+                    .havingRaw('COUNT(DISTINCT members_stripe_customers_subscriptions.customer_id) > 1')
+                    .as('multiple_active_stripe_customers');
+            }, 'multiple_active_stripe_customers.member_id', 'members.id');
+        });
+    },
+
     productEvents() {
         return this.hasMany('MemberProductEvent', 'member_id', 'id')
             .query('orderBy', 'created_at', 'DESC');
@@ -245,6 +265,13 @@ const Member = ghostBookshelf.Model.extend({
     },
 
     stripeSubscriptions() {
+        // Bookshelf belongsToMany positional args:
+        //   1: target model — StripeCustomerSubscription
+        //   2: join table   — members_stripe_customers (one row per customer)
+        //   3: foreignKey   — joinTable.member_id refs the parent (members)
+        //   4: otherKey     — joinTable.customer_id is what target rows match against
+        //   5: parentKey    — column on `members` matched by foreignKey (members.id)
+        //   6: targetKey    — column on `members_stripe_customers_subscriptions` matched by otherKey (mscs.customer_id)
         return this.belongsToMany(
             'StripeCustomerSubscription',
             'members_stripe_customers',
@@ -252,6 +279,24 @@ const Member = ghostBookshelf.Model.extend({
             'customer_id',
             'id',
             'customer_id'
+        );
+    },
+
+    currentSubscription() {
+        // Bookshelf belongsToMany positional args:
+        //   1: target model — StripeCustomerSubscription
+        //   2: join table   — members_current_subscription (1:1 lookup)
+        //   3: foreignKey   — joinTable.member_id refs the parent (members)
+        //   4: otherKey     — joinTable.subscription_id refs the target sub
+        //   5: parentKey    — column on `members` matched by foreignKey (members.id)
+        //   6: targetKey    — column on `members_stripe_customers_subscriptions` matched by otherKey (mscs.id)
+        return this.belongsToMany(
+            'StripeCustomerSubscription',
+            'members_current_subscription',
+            'member_id',
+            'subscription_id',
+            'id',
+            'id'
         );
     },
 
@@ -277,6 +322,17 @@ const Member = ghostBookshelf.Model.extend({
         if (defaultSerializedObject.stripeSubscriptions) {
             defaultSerializedObject.subscriptions = defaultSerializedObject.stripeSubscriptions;
             delete defaultSerializedObject.stripeSubscriptions;
+        }
+
+        // `currentSubscription` is conceptually 1:1 (members_current_subscription
+        // has member_id as its primary key) but bookshelf has no through-table
+        // 1:1 relation type — `belongsToMany` always returns a Collection.
+        // Flatten to a single object (or null) for the wire shape.
+        if (defaultSerializedObject.currentSubscription !== undefined) {
+            defaultSerializedObject.current_subscription = Array.isArray(defaultSerializedObject.currentSubscription)
+                ? (defaultSerializedObject.currentSubscription[0] || null)
+                : defaultSerializedObject.currentSubscription;
+            delete defaultSerializedObject.currentSubscription;
         }
 
         return defaultSerializedObject;
@@ -460,7 +516,7 @@ const Member = ghostBookshelf.Model.extend({
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
 
         if (['findPage', 'findAll'].includes(methodName)) {
-            options = options.concat(['search']);
+            options = options.concat(['search', 'activeStripeCustomersCount']);
         }
 
         return options;

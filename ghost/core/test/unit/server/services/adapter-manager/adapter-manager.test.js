@@ -105,7 +105,8 @@ describe('AdapterManager', function () {
                 adapterManager.getAdapter('scheduling', 'BrokenAdapter', {});
             }, {
                 errorType: 'IncorrectUsageError',
-                message: /missing dependencies/
+                // The error names the unresolved module so it's actionable
+                message: /missing a dependency 'this-package-does-not-exist-at-all' in your adapter/
             });
         } finally {
             fs.rmSync(tmpDir, {recursive: true, force: true});

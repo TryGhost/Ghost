@@ -29,7 +29,6 @@ const messages = {
     memberNotFound: 'No member exists with this e-mail address.',
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
-    giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
     archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
     otcNotSupported: 'OTC verification not supported.',
@@ -63,6 +62,26 @@ function extractGiftToken(input) {
     }
 
     return input.trim();
+}
+
+const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
+    'ghost_donation',
+    'ghost_gift',
+    'ghostSignupContext',
+    'gift_token',
+    'tier_id',
+    'cadence',
+    'duration'
+]);
+
+function removeReservedCheckoutMetadata(metadata) {
+    if (!metadata || typeof metadata !== 'object') {
+        return;
+    }
+
+    for (const key of RESERVED_CHECKOUT_METADATA_KEYS) {
+        delete metadata[key];
+    }
 }
 
 /**
@@ -632,7 +651,7 @@ module.exports = class RouterController {
      * @returns
      */
     async _createDonationCheckoutSession(options) {
-        if (!this._paymentsService.stripeAPIService.configured) {
+        if (!this._settingsHelpers.areDonationsEnabled()) {
             throw new DisabledFeatureError({
                 message: tpl(messages.notConfigured)
             });
@@ -665,7 +684,7 @@ module.exports = class RouterController {
      * @returns
      */
     async _createGiftCheckoutSession(options) {
-        if (!this._paymentsService.stripeAPIService.configured) {
+        if (!this._settingsHelpers.arePaidMembersEnabled()) {
             throw new DisabledFeatureError({
                 message: tpl(messages.notConfigured)
             });
@@ -734,6 +753,8 @@ module.exports = class RouterController {
         if (metadata.newsletters) {
             metadata.newsletters = JSON.stringify(await this._validateNewsletters(JSON.parse(metadata.newsletters)));
         }
+
+        removeReservedCheckoutMetadata(metadata);
 
         const siteUrl = this._urlUtils.getSiteUrl();
         const successUrl = sanitizeReturnUrl(req.body.successUrl, siteUrl);
@@ -808,12 +829,6 @@ module.exports = class RouterController {
             options.personalNote = parsePersonalNote(req.body.personalNote);
             response = await this._createDonationCheckoutSession(options);
         } else if (type === 'gift') {
-            if (!this.labsService.isSet('giftSubscriptions')) {
-                throw new BadRequestError({
-                    message: tpl(messages.giftSubscriptionsNotEnabled)
-                });
-            }
-
             if (!membersEnabled) {
                 throw new BadRequestError({
                     message: tpl(messages.badRequest)

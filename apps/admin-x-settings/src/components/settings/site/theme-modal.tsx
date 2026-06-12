@@ -41,7 +41,7 @@ const UploadModalContent: React.FC<{onUpload: (file: File) => void}> = ({onUploa
                 onUpload(file);
             }}
         >
-            <div className="cursor-pointer bg-grey-75 p-10 text-center dark:bg-grey-950">
+            <div className="cursor-pointer bg-grey-50 p-10 text-center dark:bg-grey-950">
             Click to select or drag & drop zip file
             </div>
         </FileUpload>

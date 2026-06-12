@@ -1067,6 +1067,13 @@ module.exports = class EventRepository {
 
         const data = models.map((model) => {
             const automatedEmail = model.related('automatedEmail');
+            if (!automatedEmail || !automatedEmail.id) {
+                // TODO(NY-1334) This won't necessarily be an error in the future.
+                throw new errors.InternalServerError({
+                    message: `Automated email recipient ${model.id} has no associated automated email`
+                });
+            }
+
             const automation = automatedEmail.related('automation');
             if (!automation || !automation.id) {
                 throw new errors.InternalServerError({

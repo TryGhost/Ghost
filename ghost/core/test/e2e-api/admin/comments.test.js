@@ -7,7 +7,7 @@ const {
     dbUtils,
     matchers
 } = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId, anyObjectId, anyISODateTime, anyUuid, anyNumber, anyBoolean, anyString, nullable} = matchers;
+const {anyEtag, anyErrorId, anyObjectId, anyISODateTime, anyUuid, anyNumber, anyBoolean, anyString, nullable, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const security = require('@tryghost/security');
@@ -154,7 +154,7 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            assert.equal(res.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/`);
+            assert.equal(res.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/, /api/members/comments/${commentToHide.id}/`);
 
             const {body: {comments: [afterHiding]}} = await getMemberComments(`/api/comments/${commentToHide.id}/`);
 
@@ -182,7 +182,7 @@ describe(`Admin Comments API`, function () {
 
             assert.equal(
                 res.headers['x-cache-invalidate'],
-                `/api/members/comments/post/${postId}/, /api/members/comments/${parent.id}/replies/`
+                `/api/members/comments/post/${postId}/, /api/members/comments/${parent.id}/replies/, /api/members/comments/${commentToHide.id}/`
             );
 
             const {body: {comments: [afterHiding]}} = await getMemberComments(`/api/comments/${commentToHide.id}/`);
@@ -202,7 +202,7 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            assert.equal(pinRes.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/`);
+            assert.equal(pinRes.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/, /api/members/comments/${commentToPin.id}/`);
             assert.equal(pinRes.body.comments[0].pinned, true);
 
             const pinnedComment = await models.Comment.findOne({id: commentToPin.id});
@@ -226,7 +226,7 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            assert.equal(unpinRes.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/`);
+            assert.equal(unpinRes.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/, /api/members/comments/${commentToPin.id}/`);
             assert.equal(unpinRes.body.comments[0].pinned, false);
 
             const unpinnedComment = await models.Comment.findOne({id: commentToPin.id});
@@ -770,6 +770,178 @@ describe(`Admin Comments API`, function () {
                 });
         });
 
+        it('includes deleted reply tombstones when they have visible descendants', async function () {
+            const root = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Comment 1',
+                status: 'published'
+            });
+
+            const deletedReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Deleted reply',
+                status: 'deleted'
+            });
+
+            const hiddenReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                in_reply_to_id: deletedReply.get('id'),
+                html: 'Hidden reply',
+                status: 'hidden'
+            });
+
+            const res = await adminApi.get('/comments/post/' + postId + '/');
+            const replies = res.body.comments[0].replies;
+
+            assert.deepEqual(replies.map(reply => reply.id), [deletedReply.get('id'), hiddenReply.get('id')]);
+            assert.equal(replies[0].html, null);
+            assert.equal(replies[1].html, 'Hidden reply');
+            assert.equal(replies[1].in_reply_to_id, deletedReply.get('id'));
+        });
+
+        it('includes deleted comments when only a nested descendant is visible', async function () {
+            const root = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Deleted comment',
+                status: 'deleted'
+            });
+
+            const deletedReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Deleted reply',
+                status: 'deleted'
+            });
+
+            const hiddenReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                in_reply_to_id: deletedReply.get('id'),
+                html: 'Hidden reply',
+                status: 'hidden'
+            });
+
+            const res = await adminApi.get('/comments/post/' + postId + '/');
+            const comment = res.body.comments[0];
+
+            assert.equal(res.body.comments.length, 1);
+            assert.equal(comment.id, root.get('id'));
+            assert.equal(comment.html, null);
+            assert.equal(comment.count.replies, 1);
+            assert.equal(comment.count.direct_replies, 0);
+            assert.deepEqual(comment.replies.map(reply => reply.id), [deletedReply.get('id'), hiddenReply.get('id')]);
+            assert.equal(comment.replies[0].html, null);
+            assert.equal(comment.replies[1].html, 'Hidden reply');
+            assert.equal(res.body.meta.pagination.total, 1);
+        });
+
+        it('reply endpoint includes deleted tombstones when they have visible descendants', async function () {
+            const root = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Comment 1',
+                status: 'published'
+            });
+
+            const deletedReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Deleted reply',
+                status: 'deleted'
+            });
+
+            const hiddenReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                in_reply_to_id: deletedReply.get('id'),
+                html: 'Hidden reply',
+                status: 'hidden'
+            });
+
+            const res = await adminApi.get(`/comments/${root.get('id')}/replies/`);
+            const replies = res.body.comments;
+
+            assert.deepEqual(replies.map(reply => reply.id), [deletedReply.get('id'), hiddenReply.get('id')]);
+            assert.equal(replies[0].html, null);
+            assert.equal(replies[1].html, 'Hidden reply');
+            assert.equal(replies[1].in_reply_to_id, deletedReply.get('id'));
+            assert.equal(replies[0].count.direct_replies, 1);
+            assert.equal(res.body.meta.pagination.total, 2);
+        });
+
+        it('reply endpoint paginates deleted tombstones before the visible descendant that makes them displayable', async function () {
+            const root = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Comment 1',
+                status: 'published'
+            });
+
+            const deletedReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Deleted reply',
+                status: 'deleted'
+            });
+
+            const hiddenReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                in_reply_to_id: deletedReply.get('id'),
+                html: 'Hidden reply',
+                status: 'hidden'
+            });
+
+            const firstPage = await adminApi.get(`/comments/${root.get('id')}/replies/?limit=1`);
+            assert.deepEqual(firstPage.body.comments.map(reply => reply.id), [deletedReply.get('id')]);
+            assert.equal(firstPage.body.comments[0].html, null);
+            assert.equal(firstPage.body.meta.pagination.total, 2);
+            assert.equal(firstPage.body.meta.pagination.next, 2);
+
+            const secondPage = await adminApi.get(`/comments/${root.get('id')}/replies/?limit=1&page=2`);
+            assert.deepEqual(secondPage.body.comments.map(reply => reply.id), [hiddenReply.get('id')]);
+            assert.equal(secondPage.body.comments[0].html, 'Hidden reply');
+            assert.equal(secondPage.body.meta.pagination.total, 2);
+            assert.equal(secondPage.body.meta.pagination.next, null);
+        });
+
+        it('reply endpoint excludes deleted leaf replies while keeping visible siblings', async function () {
+            const root = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                html: 'Comment 1',
+                status: 'published'
+            });
+
+            await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Deleted reply',
+                status: 'deleted'
+            });
+
+            const hiddenReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Hidden reply',
+                status: 'hidden'
+            });
+
+            const publishedReply = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 0).id,
+                parent_id: root.get('id'),
+                html: 'Published reply',
+                status: 'published'
+            });
+
+            const res = await adminApi.get(`/comments/${root.get('id')}/replies/`);
+            const replies = res.body.comments;
+
+            assert.deepEqual(replies.map(reply => reply.id), [hiddenReply.get('id'), publishedReply.get('id')]);
+            assert.equal(replies[0].html, 'Hidden reply');
+            assert.equal(replies[1].html, 'Published reply');
+            assert.equal(res.body.meta.pagination.total, 2);
+        });
+
         it('includes hidden replies but not deleted replies in count', async function () {
             await dbFns.addCommentWithReplies({
                 member_id: fixtureManager.get('members', 0).id,
@@ -1001,7 +1173,10 @@ describe(`Admin Comments API`, function () {
                 .post(`/api/comments/${comment.get('id')}/like/`)
                 .expectStatus(204)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'x-cache-invalidate': stringMatching(
+                        new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                    )
                 })
                 .expectEmptyBody();
         });

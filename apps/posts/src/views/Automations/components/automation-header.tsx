@@ -1,6 +1,6 @@
 import AutomationStatusBadge from './automation-status-badge';
 import React from 'react';
-import {Button, type ButtonProps, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger, Skeleton} from '@tryghost/shade/components';
+import {Button, type ButtonProps, Skeleton} from '@tryghost/shade/components';
 import {Link} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
 import type {AutomationDetail} from '@tryghost/admin-x-framework/api/automations';
@@ -40,9 +40,9 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
     const status = automation?.status;
 
     return (
-        <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm'>
+        <header className='relative z-10 flex h-14 shrink-0 items-center justify-between bg-background px-4 shadow-sm dark:border-b dark:border-gray-950'>
             <div className='flex min-w-0 items-center gap-3'>
-                <Button size='icon' variant='ghost' asChild>
+                <Button variant='ghost' asChild>
                     <Link aria-label='Back to automations' to='/automations'>
                         <LucideIcon.ArrowLeft strokeWidth={2} />
                     </Link>
@@ -51,26 +51,21 @@ const AutomationHeader: React.FC<AutomationHeaderProps> = ({
                     <Skeleton className='h-5 w-40' />
                 ) : (
                     <>
-                        <span className='truncate font-medium'>{name}</span>
+                        <span className='truncate text-lg font-semibold'>{name}</span>
                         {status && <AutomationStatusBadge status={status} />}
                     </>
                 )}
             </div>
             <div className='flex shrink-0 items-center gap-3'>
                 {status === 'active' && (
-                    <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                            <Button aria-label='Automation options' size='icon' variant='ghost'>
-                                <LucideIcon.Ellipsis />
-                            </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align='end'>
-                            <DropdownMenuItem disabled={!isTurnOffButtonEnabled} onSelect={onTurnOff}>
-                                <LucideIcon.Power className='size-4' />
-                                Turn off
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+                    <Button
+                        disabled={!isTurnOffButtonEnabled}
+                        variant='outline'
+                        onClick={onTurnOff}
+                    >
+                        <LucideIcon.Power />
+                        Turn off
+                    </Button>
                 )}
                 {status === 'inactive' && (
                     <Button

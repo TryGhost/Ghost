@@ -69,55 +69,6 @@ async function setOrder({state, data: {order}, options, api, dispatchAction}: {s
     }
 }
 
-async function loadMoreReplies({state, api, data: {comment, limit}, isReply}: {state: EditableAppContext, api: GhostApi, data: {comment: Comment, limit?: number | 'all'}, isReply: boolean}): Promise<Partial<EditableAppContext>> {
-    const fetchReplies = async (afterReplyId: string | undefined, requestLimit: number) => {
-        if (state.admin && state.adminApi && !isReply) { // we don't want the admin api to load reply data for replying to a reply, so we pass isReply: true
-            return await state.adminApi.replies({commentId: comment.id, afterReplyId, limit: requestLimit, memberUuid: state.member?.uuid});
-        } else {
-            return await api.comments.replies({commentId: comment.id, afterReplyId, limit: requestLimit});
-        }
-    };
-
-    let afterReplyId: string | undefined = comment.replies && comment.replies.length > 0
-        ? comment.replies[comment.replies.length - 1]?.id
-        : undefined;
-
-    let allComments: Comment[] = [];
-
-    if (limit === 'all') {
-        let hasMore = true;
-
-        while (hasMore) {
-            const data = await fetchReplies(afterReplyId, 100);
-            allComments.push(...data.comments);
-            hasMore = !!data.meta?.pagination?.next;
-
-            if (data.comments && data.comments.length > 0) {
-                afterReplyId = data.comments[data.comments.length - 1]?.id;
-            } else {
-                // If no comments returned, stop pagination to prevent infinite loop
-                hasMore = false;
-            }
-        }
-    } else {
-        const data = await fetchReplies(afterReplyId, limit as number || 100);
-        allComments = data.comments;
-    }
-
-    // Note: we store the comments from new to old, and show them in reverse order
-    return {
-        comments: state.comments.map((c) => {
-            if (c.id === comment.id) {
-                return {
-                    ...comment,
-                    replies: [...comment.replies, ...allComments]
-                };
-            }
-            return c;
-        })
-    };
-}
-
 async function addComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: AddComment}) {
     const data = await api.comments.add({comment});
     const newComment = data.comments[0];
@@ -136,16 +87,21 @@ async function addReply({state, api, data: {reply, parent}}: {state: EditableApp
     const newComment = data.comments[0];
 
     const allReplies = await api.comments.replies({commentId: parent.id, limit: 'all'});
+    // Caching can serve a stale replies response immediately after creation, so
+    // keep the refetch for concurrent replies but preserve the POSTed reply.
+    const replies = allReplies.comments.some(replyComment => replyComment.id === newComment.id)
+        ? allReplies.comments
+        : [...allReplies.comments, newComment];
 
     return {
         comments: state.comments.map((c) => {
             if (c.id === parent.id) {
                 return {
                     ...c,
-                    replies: allReplies.comments,
+                    replies,
                     count: {
                         ...c.count,
-                        replies: allReplies.comments.length
+                        replies: replies.length
                     }
                 };
             }
@@ -513,6 +469,37 @@ async function reportComment({api, data: comment}: {api: GhostApi, data: {id: st
     return {};
 }
 
+function hasDescendantReply(replies: Comment[], commentId: string) {
+    return replies.some(reply => reply.in_reply_to_id === commentId);
+}
+
+function isTombstoneReply(reply: Comment, isAdmin: boolean) {
+    return reply.status === 'deleted' || (!isAdmin && reply.status === 'hidden');
+}
+
+function pruneOrphanTombstoneReplies(replies: Comment[], isAdmin: boolean) {
+    let prunedReplies = replies;
+    let removedReply = false;
+
+    do {
+        removedReply = false;
+        prunedReplies = prunedReplies.filter((reply) => {
+            if (!isTombstoneReply(reply, isAdmin) || hasDescendantReply(prunedReplies, reply.id)) {
+                return true;
+            }
+
+            removedReply = true;
+            return false;
+        });
+    } while (removedReply);
+
+    return prunedReplies;
+}
+
+function decrementCount(count: number | undefined) {
+    return Math.max((count || 0) - 1, 0);
+}
+
 async function deleteComment({state, api, data: comment, dispatchAction}: {state: EditableAppContext, api: GhostApi, data: {id: string}, dispatchAction: DispatchActionType}) {
     await api.comments.edit({
         comment: {
@@ -545,18 +532,40 @@ async function deleteComment({state, api, data: comment, dispatchAction}: {state
             }
 
             const originalLength = topLevelComment.replies.length;
-            const updatedReplies = topLevelComment.replies.filter(reply => reply.id !== comment.id);
-            const hasDeletedReply = originalLength !== updatedReplies.length;
+            const replyToDelete = topLevelComment.replies.find(reply => reply.id === comment.id);
+            const keepTombstone = replyToDelete ? hasDescendantReply(topLevelComment.replies, replyToDelete.id) : false;
+            const repliesAfterDelete = topLevelComment.replies.reduce<Comment[]>((replies, reply) => {
+                if (reply.id !== comment.id) {
+                    replies.push(reply);
+                    return replies;
+                }
+
+                if (keepTombstone) {
+                    replies.push({
+                        ...reply,
+                        status: 'deleted',
+                        html: null
+                    });
+                }
+
+                return replies;
+            }, []);
+            const updatedReplies = pruneOrphanTombstoneReplies(repliesAfterDelete, state.isAdmin);
+            const hasDeletedReply = originalLength !== updatedReplies.length || keepTombstone;
 
             const updatedTopLevelComment = {
                 ...topLevelComment,
                 replies: updatedReplies
             };
 
-            // When a reply is deleted we need to update the parent's count so
-            // pagination displays the correct number of replies still to load
-            if (hasDeletedReply && topLevelComment.count?.replies) {
-                topLevelComment.count.replies = topLevelComment.count.replies - 1;
+            if (hasDeletedReply && replyToDelete && !['hidden', 'deleted'].includes(replyToDelete.status)) {
+                const wasDirectReply = !replyToDelete.in_reply_to_id || replyToDelete.in_reply_to_id === topLevelComment.id;
+
+                updatedTopLevelComment.count = {
+                    ...updatedTopLevelComment.count,
+                    replies: decrementCount(updatedTopLevelComment.count?.replies),
+                    direct_replies: wasDirectReply ? decrementCount(updatedTopLevelComment.count?.direct_replies) : updatedTopLevelComment.count?.direct_replies
+                };
             }
 
             return updatedTopLevelComment;
@@ -641,27 +650,7 @@ function closePopup() {
     };
 }
 
-async function openCommentForm({data: newForm, api, state}: {data: OpenCommentForm, api: GhostApi, state: EditableAppContext}) {
-    let otherStateChanges = {};
-
-    // When opening a reply form, load all replies for the parent comment so the
-    // reply appears in the correct position after posting
-    const topLevelCommentId = newForm.parent_id || newForm.id;
-    if (newForm.type === 'reply' && !state.openCommentForms.some(f => f.id === topLevelCommentId || f.parent_id === topLevelCommentId)) {
-        const comment = state.comments.find(c => c.id === topLevelCommentId);
-
-        if (comment) {
-            try {
-                const newCommentsState = await loadMoreReplies({state, api, data: {comment, limit: 'all'}, isReply: true});
-                otherStateChanges = {...otherStateChanges, ...newCommentsState};
-            } catch (e) {
-                // If loading replies fails, continue anyway - the form should still open
-                // and replies will be loaded when the user submits
-                console.error('[Comments] Failed to load replies before opening form:', e); // eslint-disable-line no-console
-            }
-        }
-    }
-
+function openCommentForm({data: newForm, state}: {data: OpenCommentForm, state: EditableAppContext}) {
     // We want to keep the number of displayed forms to a minimum so when opening a
     // new form, we close any existing forms that are empty or have had no changes
     const openFormsAfterAutoclose = state.openCommentForms.filter(form => form.hasUnsavedChanges);
@@ -671,9 +660,9 @@ async function openCommentForm({data: newForm, api, state}: {data: OpenCommentFo
     const openFormIndexForId = openFormsAfterAutoclose.findIndex(form => form.id === newForm.id);
     if (openFormIndexForId > -1) {
         openFormsAfterAutoclose[openFormIndexForId] = newForm;
-        return {openCommentForms: openFormsAfterAutoclose, ...otherStateChanges};
+        return {openCommentForms: openFormsAfterAutoclose};
     } else {
-        return {openCommentForms: [...openFormsAfterAutoclose, newForm], ...otherStateChanges};
+        return {openCommentForms: [...openFormsAfterAutoclose, newForm]};
     }
 }
 
@@ -751,7 +740,6 @@ export const Actions = {
     reportComment,
     addReply,
     loadMoreComments,
-    loadMoreReplies,
     openCommentForm,
     updateMember,
     setOrder,

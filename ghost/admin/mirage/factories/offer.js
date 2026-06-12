@@ -7,8 +7,8 @@ let randomDate = function randomDate(start = moment().subtract(30, 'days').toDat
 };
 
 export default Factory.extend({
-    name() { return `${faker.name.firstName()} ${faker.name.lastName()}`; },
-    amount() { return faker.datatype.number({min: 1, max: 10}); },
+    name() { return `${faker.person.firstName()} ${faker.person.lastName()}`; },
+    amount() { return faker.number.int({min: 1, max: 10}); },
     displayTitle() { return faker.lorem.word(); },
     code() { return faker.lorem.slug(); },
     createdAt() { return randomDate(); },

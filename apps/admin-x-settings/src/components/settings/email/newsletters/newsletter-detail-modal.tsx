@@ -1,6 +1,7 @@
 import NewsletterPreview from './newsletter-preview';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
+import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import validator from 'validator';
 import {Button, ButtonGroup, ColorPickerField, ConfirmationModal, Form, Heading, Hint, HtmlField, Icon, ImageUpload, LimitModal, PreviewModalContent, Select, type SelectOption, Separator, type Tab, TabView, TextArea, TextField, Toggle, ToggleGroup, showToast} from '@tryghost/admin-x-design-system';
@@ -411,8 +412,8 @@ const Sidebar: React.FC<{
                             direction='rtl'
                             label={
                                 <div className='flex flex-col gap-0.5'>
-                                    <span className='text-sm md:text-base'>Promote independent publishing</span>
-                                    <span className='text-[11px] leading-tight text-grey-700 md:text-xs md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
+                                    <span className='md:text-base'>Promote independent publishing</span>
+                                    <span className='text-[11px] leading-tight text-grey-700 md:text-sm md:leading-tight'>Show you&apos;re a part of the indie publishing movement with a small badge in the footer</span>
                                 </div>
                             }
                             labelStyle='value'
@@ -779,6 +780,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     const {config} = useGlobalData();
     const {mutateAsync: editNewsletter} = useEditNewsletter();
     const {updateRoute} = useRouting();
+    const returnRoute = useFeatureFlag('automations') ? 'emails' : 'newsletters';
     const handleError = useHandleError();
 
     const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
@@ -837,7 +839,7 @@ const NewsletterDetailModalContent: React.FC<{newsletter: Newsletter; onlyOne: b
     const sidebar = <Sidebar clearError={clearError} errors={errors} newsletter={formState} onlyOne={onlyOne} updateNewsletter={updateNewsletter} validate={validate} />;
 
     return <PreviewModalContent
-        afterClose={() => updateRoute('newsletters')}
+        afterClose={() => updateRoute(returnRoute)}
         buttonsDisabled={okProps.disabled}
         cancelLabel='Close'
         deviceSelector={false}

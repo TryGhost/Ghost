@@ -236,7 +236,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
             <div className="mt-[-3px] flex items-start" id={comment.id}>
                 <div className="flex h-10 flex-row items-center gap-4 pb-[8px] pr-4">
                     <PinnedLabel comment={comment} />
-                    <p className="text-md mt-[4px] font-sans leading-normal text-neutral-900/40 sm:text-lg dark:text-white/60">
+                    <p className="mt-[4px] font-sans text-md leading-normal text-neutral-900/40 dark:text-white/60 sm:text-lg">
                         {notPublishedMessage}
                     </p>
                     {showMoreButton && (
@@ -314,13 +314,13 @@ const ReplyFormBox: React.FC<ReplyFormBoxProps> = ({openForm, parent, useThreadi
         <div className={`relative ml-8 sm:ml-9 ${spacingClass}`}>
             {continueLine && (
                 <div
-                    className="pointer-events-none absolute inset-y-0 -left-4 border-l border-neutral-300 sm:-left-5 dark:border-neutral-700"
+                    className="pointer-events-none absolute inset-y-0 -left-4 border-l border-neutral-300 dark:border-neutral-700 sm:-left-5"
                     data-testid="reply-form-continuation-line"
                     aria-hidden
                 />
             )}
             <div
-                className="pointer-events-none absolute -left-4 top-0 h-4 w-3 border-b border-l border-neutral-300 [border-bottom-left-radius:12px_16px] sm:-left-5 sm:w-4 sm:[border-bottom-left-radius:16px_16px] dark:border-neutral-700"
+                className="pointer-events-none absolute -left-4 top-0 h-4 w-3 border-b border-l border-neutral-300 [border-bottom-left-radius:12px_16px] dark:border-neutral-700 sm:-left-5 sm:w-4 sm:[border-bottom-left-radius:16px_16px]"
                 data-testid="reply-form-elbow"
                 aria-hidden
             />
@@ -337,14 +337,14 @@ const AuthorName: React.FC<{comment: Comment}> = ({comment}) => {
     const {t} = useAppContext();
     const name = getMemberNameFromComment(comment, t);
     return (
-        <h4 className="font-sans text-base font-bold leading-snug text-neutral-900 sm:text-sm dark:text-white/85">
+        <h4 className="font-sans text-base font-bold leading-snug text-neutral-900 dark:text-white/85 sm:text-sm">
             {name}
         </h4>
     );
 };
 
 export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
-    const {comments, t, pageUrl} = useAppContext();
+    const {comments, t} = useAppContext();
     const inReplyToComment = findCommentById(comments, comment.in_reply_to_id);
 
     let inReplyToSnippet = comment.in_reply_to_snippet;
@@ -363,7 +363,7 @@ export const RepliedToSnippet: React.FC<{comment: Comment}> = ({comment}) => {
     }
 
     return (
-        <a className={linkClassName} data-testid="comment-in-reply-to" href={buildCommentPermalink(pageUrl, comment.in_reply_to_id)} target="_parent">{inReplyToSnippet}</a>
+        <a className={linkClassName} data-testid="comment-in-reply-to" href={buildCommentPermalink(comment.in_reply_to_id)} target="_parent">{inReplyToSnippet}</a>
     );
 };
 
@@ -374,7 +374,7 @@ type CommentHeaderProps = {
 }
 
 const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', useThreading}) => {
-    const {member, t, pageUrl} = useAppContext();
+    const {member, t} = useAppContext();
     const createdAtRelative = useRelativeTime(comment.created_at);
     const memberExpertise = member && comment.member && comment.member.uuid === member.uuid ? member.expertise : comment?.member?.expertise;
     const showReplyContext = !useThreading && comment.in_reply_to_id && comment.in_reply_to_snippet;
@@ -382,7 +382,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', u
     const timestampElement = (
         <a
             className="hover:underline"
-            href={buildCommentPermalink(pageUrl, comment.id)}
+            href={buildCommentPermalink(comment.id)}
             target="_parent"
             title={formatExplicitTime(comment.created_at)}
         >
@@ -394,7 +394,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', u
         <>
             <div className={`mt-0.5 flex flex-wrap items-start sm:flex-row ${memberExpertise ? 'flex-col' : 'flex-row'} ${showReplyContext ? 'mb-0.5' : 'mb-2'} ${className}`}>
                 <AuthorName comment={comment} />
-                <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
+                <div className="flex items-baseline pr-4 font-sans text-base leading-snug text-neutral-900/50 dark:text-white/60 sm:text-sm">
                     <span>
                         <MemberExpertise comment={comment}/>
                         {timestampElement}
@@ -408,7 +408,7 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', u
                 </div>
             </div>
             {(showReplyContext &&
-                <div className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60">
+                <div className="mb-2 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 dark:text-white/60 sm:text-sm">
                     <span>{t('Replied to')}</span>:&nbsp;<RepliedToSnippet comment={comment} />
                 </div>
             )}
@@ -450,7 +450,7 @@ const CommentBody: React.FC<CommentBodyProps> = ({html, className = '', isHighli
 
     return (
         <div className={`mt mb-2 flex flex-row items-center gap-4 pr-4 ${className}`}>
-            <div dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content text-md -mx-1 text-pretty rounded-md px-1 font-sans leading-normal text-neutral-900 [overflow-wrap:anywhere] sm:text-lg dark:text-white/85" data-testid="comment-content"/>
+            <div dangerouslySetInnerHTML={dangerouslySetInnerHTML} className="gh-comment-content -mx-1 text-pretty rounded-md px-1 font-sans text-md leading-normal text-neutral-900 [overflow-wrap:anywhere] dark:text-white/85 sm:text-lg" data-testid="comment-content"/>
         </div>
     );
 };
@@ -493,7 +493,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highli
                 : <LikeCount count={comment.count.likes} liked={comment.liked} />
             }
             {showDislikeButton && <DislikeButton comment={comment} disabled={voteDisabled} setDisabled={setVoteDisabled} />}
-            {showReplyButton && <ReplyButton isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
+            {showReplyButton && <ReplyButton comment={comment} isReplying={highlightReplyButton} openReplyForm={openReplyForm} />}
             {showMoreButton && <MoreButton comment={comment} toggleEdit={openEditMode} />}
         </div>
     );
@@ -559,13 +559,13 @@ const CommentLayout: React.FC<CommentLayoutProps> = ({children, avatar, hasRepli
         <div className={`relative flow-root ${hasReplies ? 'pb-4 sm:pb-0' : 'pb-7'}`}>
             {isReplyLayout && !isLastSibling && (
                 <div
-                    className="pointer-events-none absolute inset-y-0 -left-4 border-l border-neutral-300 sm:-left-5 dark:border-neutral-700"
+                    className="pointer-events-none absolute inset-y-0 -left-4 border-l border-neutral-300 dark:border-neutral-700 sm:-left-5"
                     aria-hidden
                 />
             )}
             {isReplyLayout && (
                 <div
-                    className="pointer-events-none absolute -left-4 top-0 h-4 w-3 border-b border-l border-neutral-300 [border-bottom-left-radius:12px_16px] sm:-left-5 sm:w-4 sm:[border-bottom-left-radius:16px_16px] dark:border-neutral-700"
+                    className="pointer-events-none absolute -left-4 top-0 h-4 w-3 border-b border-l border-neutral-300 [border-bottom-left-radius:12px_16px] dark:border-neutral-700 sm:-left-5 sm:w-4 sm:[border-bottom-left-radius:16px_16px]"
                     aria-hidden
                 />
             )}

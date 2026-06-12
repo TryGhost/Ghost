@@ -20,7 +20,6 @@ const contextWithDefaults = (appContext = {}) => {
         comments: [],
         openCommentForms: [],
         member,
-        pageUrl: 'https://example.com/post',
         isMember,
         isPaidOnly,
         hasRequiredTier,

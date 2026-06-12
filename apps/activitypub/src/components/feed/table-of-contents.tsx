@@ -216,7 +216,7 @@ const TableOfContentsView: React.FC<TableOfContentsViewProps> = ({items, activeH
                     {items.map(item => (
                         <button
                             key={item.id}
-                            className={`line-clamp-2 block w-full cursor-pointer rounded py-1 text-left text-sm leading-tight ${activeHeading === item.id ? 'text-black dark:text-white' : 'text-gray-700 dark:text-gray-600'} hover:bg-gray-75 hover:text-gray-900 dark:hover:bg-grey-925 dark:hover:text-white ${getHeadingPadding(item.level)}`}
+                            className={`line-clamp-2 block w-full cursor-pointer rounded py-1 text-left text-sm leading-tight ${activeHeading === item.id ? 'text-black dark:text-white' : 'text-gray-700 dark:text-gray-600'} hover:bg-gray-100 hover:text-gray-900 dark:hover:bg-grey-950 dark:hover:text-white ${getHeadingPadding(item.level)}`}
                             type='button'
                             onClick={() => onItemClick(item.id)}
                         >

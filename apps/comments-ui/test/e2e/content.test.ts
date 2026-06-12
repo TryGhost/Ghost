@@ -31,9 +31,6 @@ test.describe('Deleted and Hidden Content', async () => {
             labs: {}
         });
 
-        const iframeElement = await page.locator('iframe[data-frame="admin-auth"]');
-        await expect(iframeElement).toHaveCount(1);
-
         // Check if more actions button is visible on each comment
         const comments = await frame.getByTestId('comment-component');
         // 3 comments are visible
