@@ -92,13 +92,11 @@ module.exports.reset = async ({truncate} = {truncate: false}) => {
 module.exports.teardown = async () => {
     try {
         await truncateAll();
-        await dropMySQLSnapshots();
-        invalidateMySQLSnapshot();
     } catch (err) {
         await knexMigrator.reset({force: true});
-        await dropMySQLSnapshots();
-        invalidateMySQLSnapshot();
     }
+
+    await dropMySQLSnapshots();
 };
 
 /**
@@ -131,7 +129,6 @@ const forceReinit = async () => {
     await knexMigrator.reset({force: true});
     await knexMigrator.init();
     await dropMySQLSnapshots();
-    invalidateMySQLSnapshot();
 };
 
 const getResetTables = () => {
@@ -148,10 +145,6 @@ const getMySQLDatabaseName = () => {
 
 const isMySQLSnapshotCurrent = () => {
     return mysqlSnapshotDatabase === getMySQLDatabaseName();
-};
-
-const invalidateMySQLSnapshot = () => {
-    mysqlSnapshotDatabase = null;
 };
 
 const resetMySQLFromSnapshot = async () => {
@@ -210,6 +203,8 @@ const dropMySQLSnapshots = async () => {
     if (!module.exports.isMySQL()) {
         return;
     }
+
+    mysqlSnapshotDatabase = null;
 
     try {
         await sequence(getResetTables().map(table => () => {
