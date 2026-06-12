@@ -12,7 +12,6 @@ const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 
 const HOUR_MS = 60 * 60 * 1000;
-const WAIT_BOUNDARY_BUFFER_MS = 1000;
 const AUTOMATION_EMAIL_REPLY_TO = 'support@example.com';
 
 let agent;
@@ -45,12 +44,6 @@ async function runSchedulerPoll() {
         .expectStatus(204)
         .expectEmptyBody();
     await DomainEvents.allSettled();
-}
-
-function getSentAutomationEmails() {
-    return mailService.GhostMailer.prototype.send.getCalls()
-        .map(call => call.args[0])
-        .filter(emailToSend => emailToSend.tags?.includes('member-welcome-email'));
 }
 
 async function upsertEmailDesignSetting({id, senderReplyTo}) {
@@ -176,26 +169,24 @@ describe('Members Automations', function () {
         await DomainEvents.allSettled();
 
         const clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true, shouldClearNativeTimers: true});
-        const maxWaitMs = Math.max(
-            ...automation.actions
-                .filter(action => action.type === 'wait')
-                .map(action => action.data.wait_hours * HOUR_MS)
-        ) + WAIT_BOUNDARY_BUFFER_MS;
 
         try {
-            for (let pollCount = 0; pollCount < automation.actions.length * 2; pollCount += 1) {
-                if (getSentAutomationEmails().length >= sendEmailActions.length) {
-                    break;
+            for (const action of automation.actions) {
+                if (action.type === 'wait') {
+                    clock.setSystemTime(new Date(Date.now() + action.data.wait_hours * HOUR_MS));
                 }
 
-                clock.setSystemTime(new Date(Date.now() + maxWaitMs));
                 await runSchedulerPoll();
             }
+
+            await runSchedulerPoll();
         } finally {
             clock.restore();
         }
 
-        const sentEmails = getSentAutomationEmails();
+        const sentEmails = mailService.GhostMailer.prototype.send.getCalls()
+            .map(call => call.args[0])
+            .filter(emailToSend => emailToSend.tags?.includes('member-welcome-email'));
         assert.equal(sentEmails.length, 2);
         assert.deepEqual(sentEmails.map(({to}) => to), [email, email]);
         assert.deepEqual(sentEmails.map(({subject}) => subject), ['Welcome!', 'Follow up']);
