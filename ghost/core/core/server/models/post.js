@@ -932,7 +932,9 @@ Post = ghostBookshelf.Model.extend({
                         columns: ['id', 'lexical', 'created_at', 'author_id', 'title', 'reason', 'post_status', 'created_at_ts', 'feature_image']
                     }, _.pick(options, 'transacting')));
 
-                const revisions = revisionModels.toJSON();
+                // PostRevisions expects revisions in ascending order (latest last)
+                const revisions = revisionModels.toJSON()
+                    .sort((a, b) => a.created_at_ts - b.created_at_ts);
 
                 const current = {
                     id: model.id,

@@ -96,6 +96,9 @@ const Member = ghostBookshelf.Model.extend({
         }, {
             key: 'offer_redemptions',
             replacement: 'offer_redemptions.offer_id'
+        }, {
+            key: 'count.active_stripe_customers',
+            replacement: 'active_stripe_customers_count'
         }];
     },
 
@@ -169,6 +172,21 @@ const Member = ghostBookshelf.Model.extend({
                 tableName: 'offer_redemptions',
                 type: 'oneToOne',
                 joinFrom: 'member_id'
+            },
+            active_stripe_customers_count: {
+                type: 'aggregate',
+                aggregate: {fn: 'countDistinct', column: 'members_stripe_customers_subscriptions.customer_id'},
+                tableName: 'members_stripe_customers',
+                joinFrom: 'member_id',
+                joins: [{
+                    tableName: 'members_stripe_customers_subscriptions',
+                    from: 'customer_id',
+                    to: 'customer_id'
+                }],
+                wheres: {
+                    'members_stripe_customers_subscriptions.status': 'active',
+                    'members_stripe_customers_subscriptions.cancel_at_period_end': false
+                }
             }
         };
     },
@@ -196,26 +214,6 @@ const Member = ghostBookshelf.Model.extend({
         stripeCustomers: 'members_stripe_customers',
         email_recipients: 'email_recipients',
         offers: 'offers'
-    },
-
-    applyCustomQuery(options) {
-        if (!options.activeStripeCustomersCount) {
-            return;
-        }
-
-        this.query((qb) => {
-            qb.innerJoin(function () {
-                this
-                    .select('members_stripe_customers.member_id')
-                    .from('members_stripe_customers')
-                    .innerJoin('members_stripe_customers_subscriptions', 'members_stripe_customers_subscriptions.customer_id', 'members_stripe_customers.customer_id')
-                    .where('members_stripe_customers_subscriptions.status', 'active')
-                    .where('members_stripe_customers_subscriptions.cancel_at_period_end', false)
-                    .groupBy('members_stripe_customers.member_id')
-                    .havingRaw('COUNT(DISTINCT members_stripe_customers_subscriptions.customer_id) > 1')
-                    .as('multiple_active_stripe_customers');
-            }, 'multiple_active_stripe_customers.member_id', 'members.id');
-        });
     },
 
     productEvents() {
@@ -516,7 +514,7 @@ const Member = ghostBookshelf.Model.extend({
         let options = ghostBookshelf.Model.permittedOptions.call(this, methodName);
 
         if (['findPage', 'findAll'].includes(methodName)) {
-            options = options.concat(['search', 'activeStripeCustomersCount']);
+            options = options.concat(['search']);
         }
 
         return options;
