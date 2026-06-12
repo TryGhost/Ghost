@@ -1,6 +1,7 @@
 import {createMutation, createQueryWithId} from '../utils/api/hooks';
+import {JSONObject} from './config';
 
-export type ActivityPubContext = string | (string | Record<string, unknown>)[];
+export type ActivityPubContext = string | (string | JSONObject)[];
 
 export type ActivityPubAttachment = {
     type: string;
@@ -29,7 +30,7 @@ export type ObjectProperties = {
     content: string | null;
     summary: string | null;
     url?: string | undefined;
-    attributedTo?: ActorProperties | string | ActorProperties[] | Record<string, unknown> | Record<string, unknown>[];
+    attributedTo?: ActorProperties | string | ActorProperties[] | JSONObject | JSONObject[];
     image?: string | {
         url: string;
         mediaType?: string;
