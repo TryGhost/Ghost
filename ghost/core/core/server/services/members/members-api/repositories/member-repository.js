@@ -23,7 +23,7 @@ const messages = {
     memberNotFound: 'Could not find Member {id}',
     subscriptionNotFound: 'Could not find Subscription {id}',
     productNotFound: 'Could not find Product {id}',
-    bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
+    bulkActionRequiresFilter: 'Cannot perform {action} without a filter, search, or all=true',
     tierArchived: 'Cannot use archived Tiers',
     invalidEmail: 'Invalid Email',
     offerNotFound: 'Could not find Offer {id}',
