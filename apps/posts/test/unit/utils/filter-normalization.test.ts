@@ -6,8 +6,10 @@ describe('filter-normalization', () => {
         expect(escapeNqlString('can\'t stop')).toBe('\'can\\\'t stop\'');
     });
 
-    it('escapes backslashes before single quotes for NQL strings', () => {
-        expect(escapeNqlString('test\\\'value')).toBe('\'test\\\\\\\'value\'');
+    it('keeps backslashes literal for NQL strings', () => {
+        // NQL only unescapes \' and \" - lone backslashes are literal
+        // characters, so doubling them would query a different value
+        expect(escapeNqlString('test\\\'value')).toBe(String.raw`'test\\'value'`);
     });
 
     it('computes UTC day bounds from a site timezone date', () => {

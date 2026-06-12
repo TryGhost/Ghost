@@ -184,6 +184,11 @@ describe('Members Automations', function () {
             clock.restore();
         }
 
+        // TODO(NY-1341) This is a hack to make this test more reliable.
+        await new Promise((resolve) => {
+            setTimeout(resolve, 5000);
+        });
+
         const sentEmails = mailService.GhostMailer.prototype.send.getCalls()
             .map(call => call.args[0])
             .filter(emailToSend => emailToSend.tags?.includes('member-welcome-email'));

@@ -219,6 +219,7 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
 
         const response = await controller.browse({
             ...options,
+            context: {member: null},
             filter: 'status:published+visibility:public',
             order: type === 'post' ? 'published_at desc' : 'id asc'
         });
@@ -230,8 +231,13 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
     }
 
     async function fetchIndexEntries(type) {
+        // Without `fields` the content API selects every posts column (except
+        // mobiledoc/lexical), pulling the full html of every post into memory.
+        // The format columns (plaintext here) are appended to `fields` by the
+        // input serializer, and `url` is resolved at serialization time.
         const {entries} = await browsePublicEntries(type, {
             limit: 'all',
+            fields: 'id,title,slug,custom_excerpt,featured,published_at,url',
             formats: 'plaintext'
         });
 
@@ -246,6 +252,7 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         const {entries, pagination} = await browsePublicEntries(type, {
             limit: FULL_PAGE_SIZE,
             page: pageNum,
+            fields: 'id,title,slug,featured,published_at,updated_at,created_at,url',
             formats: 'html,plaintext'
         });
 
