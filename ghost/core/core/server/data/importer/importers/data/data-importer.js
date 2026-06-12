@@ -186,7 +186,15 @@ DataImporter = {
             // Errors preventing import:
             if (errors.length > 0) {
                 debug(errors);
-                throw errors;
+                const errorMessages = errors.map((e) => {
+                    return e.message || String(e);
+                }).join('\n');
+                const importError = new errors.DataImportError({
+                    message: `Content import was unsuccessful. Errors:\n${errorMessages}`,
+                    err: errors
+                });
+                importError.errorDetails = errors;
+                throw importError;
             }
 
             return {

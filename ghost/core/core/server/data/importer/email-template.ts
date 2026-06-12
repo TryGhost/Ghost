@@ -140,7 +140,12 @@ export const emailTemplate = ({result, siteUrl, postsUrl, emailRecipient}: Email
                     </tr>
                     ${result?.data?.errors ? `
                     <tr>
-                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">One or more error occured while importing your content. Please contact support or report on the <a href="https://forum.ghost.org/">Ghost Community Forum</a>.</td>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;"><p style="margin: 0 0 8px 0;">One or more errors occurred while importing your content:</p>
+                        <ul style="margin: 8px 0; padding-left: 20px;">
+                          ${result!.data!.errors!.map((e: any) => `<li style="margin-bottom: 6px;">${e?.message || e?.toString?.() || 'Unknown error'}</li>`).join('\n                          ')}
+                        </ul>
+                        <p style="margin: 12px 0 0 0;">Please fix the listed issues and try again, or ask for help on the <a href="https://forum.ghost.org/">Ghost Community Forum</a>.</p>
+                      </td>
                     </tr>
                     ` : `
                     <tr>
