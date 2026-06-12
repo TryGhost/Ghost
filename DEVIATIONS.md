@@ -398,6 +398,72 @@ flag source (see implementation notes).
   so no dual suite was added. Unit coverage: `debug-data.test.ts` (mapping) and
   `debug-tabs.test.tsx` (tab render / empty states / schedule controls).
 
+### Slice 6: Embed screens (site/pro/explore/migrate, `embedScreensX`) — backfilled 2026-06-12
+
+- **This slice landed (commit `9b6c7d39ec` + hardening in `2881c78578`) without a
+  DEVIATIONS section** — its deliberate deviations were recorded only as code comments
+  (this gap is itself audit finding Site/Pro L19, and the reason several embed-screen
+  audit findings count as "undocumented"). Deviations will be documented here as the
+  embed-wrapper Medium findings are worked through in the re-baselined queue.
+- Known deliberate so far (from the final-review hardening): exact-origin postMessage
+  checks on the explore screen, migrate iframe replies deferred until the API key is
+  loaded, owner details supplied to the billing iframe for non-owners in force-upgrade.
+
+### Re-promoted deviations (2026-06-12 re-baseline)
+
+The port is complete and the user has directed **full Ember parity**: the following
+previously documented deviations are converted into work-queue items (tracked alongside
+the Medium tier in AUDIT-REPORT.md). The original entries above stay for history;
+this list is authoritative for what is back in scope.
+
+- **Expired preconditions** (deferred "until X exists" — X now exists):
+  - Members-activity email events → clickable email preview. The editor slice shipped
+    `EmailPreview` (`apps/admin/src/editor/publish/email-preview.tsx`) and
+    `getPostEmailPreview` (admin-x-framework); needs extraction to a shareable home.
+  - Drag-and-drop image uploads (tag / member / PSM social / feature image). Shade now
+    has a `Dropzone` component with a working consumer
+    (`apps/posts/.../email-design/header-image-field.tsx`).
+  - Unsplash integration for the same upload surfaces. A React Unsplash selector
+    already exists (`apps/admin-x-settings/src/components/selectors/unsplash-selector.tsx`
+    wrapping `kg-unsplash-selector`); reuse per the established "reuse AdminX components
+    for gaps shade doesn't cover" precedent, or port to shade.
+  - PSM "theme doesn't support show title and feature image" warning — gscan
+    `warnings`/`errors` are now exposed on `useActiveTheme()`
+    (`admin-x-framework/src/api/themes.ts`).
+  - Shared unsaved-changes blocker/dialog extraction — the promised "when slice 2 adds
+    second consumers" moment came and went; implementations are currently duplicated
+    (`apps/posts/src/components/unsaved-changes/` + `apps/admin/src/editor/`).
+- **Editor slice-scope cuts** (former "known accepted gaps"): word count + TK counts,
+  snippets, Unsplash/Tenor/Pintura card integrations, post-history modal, email
+  host-limit checks + post-send failure polling, Cmd+P / Cmd+Shift+P shortcuts, the
+  `fromAnalytics` breadcrumb, and a conflict-resolution modal for 409s (beyond the
+  current toast).
+- **Email preview gaps:** send-test-email dropdown, editable subject line, email-size
+  clip warning.
+- **PSM subview previews:** SERP / X / Facebook preview cards (shared work with tag
+  detail Medium #4's network-styled mockups).
+
+### Pending user sign-off (React behavior kept, 2026-06-12)
+
+Findings where React's behavior was judged an improvement over Ember's. Per user
+decision these are **kept as-is** and dropped from the work queue, pending an explicit
+later review pass:
+
+- **Tag detail:** View button hidden on /tags/new (Ember always rendered it, with a
+  broken link for unsaved tags). (Audit Tag L11)
+- **Member detail:** engagement email counts use thousands separators; Ember showed raw
+  numbers. (Member L21)
+- **Members activity:** member context card rendered during load / zero results
+  (MA L5); bordered/rounded context card styling (MA L15); visible "Load more" +
+  sentinel pagination instead of invisible scroll trigger (MA L19); linked-title
+  capitalization fix (the capitalize half of MA L13 — the emphasis flip remains a
+  queue item).
+- **Restore:** larger React-style page header consistent with other React screens
+  (Restore M3); "Restoring..." disable-all affordance — Ember's running state was
+  near-invisible and allowed concurrent restores (Restore L6); surfaced restore
+  errors instead of Ember's false "restored successfully" toast (already documented
+  in the slice section above).
+
 ### Upstream issues discovered during slice-2 review (pre-existing, NOT introduced here)
 
 - **Server-side bulk-action authorization gap:** `DELETE /ghost/api/admin/posts/?filter=...`
@@ -431,11 +497,9 @@ flag source (see implementation notes).
 
 ## Open issues / risks
 
-- **BetterAuth (slice 4):** Ghost core implements bespoke session auth
-  (`/ghost/api/admin/session`, 2FA via signin-verify). No better-auth usage exists anywhere
-  in the monorepo today. Feasibility of adopting BetterAuth server-side without breaking
-  every existing API client needs assessment when the slice starts; findings will be
-  logged here.
+- **BetterAuth:** assessed and deliberately not adopted — see the slice-4 section above
+  for the full decision record. (The original pre-assessment note that lived here was
+  removed 2026-06-12; it predated the assessment and was already marked superseded.)
 
 ## Final state (end-of-migration summary, 2026-06-11)
 
@@ -466,6 +530,8 @@ flag source (see implementation notes).
   ones, and remove the `@source` scan of admin-x-design-system once its
   last consumers (CodeEditor in tag/PSM code injection) move to a shade
   equivalent.
-- **The audit-workflow report (AUDIT-REPORT.local.md) is pending the
-  live visual phase**, blocked on a dedicated automation login at the
-  time of writing; source-phase findings are cached for resume.
+- **The audit completed both phases** (source + live visual) on 2026-06-11:
+  169 findings in AUDIT-REPORT.md. All 10 High findings were fixed on
+  2026-06-11/12 (`8fa1429804`, `83e5738cc1`, `8ddf64034d`); the report was
+  re-baselined 2026-06-12 (see its "Re-baseline" section) and the remaining
+  Medium/Low tiers plus the re-promoted deviations below are the active queue.
