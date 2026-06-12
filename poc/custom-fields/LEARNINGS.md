@@ -1,22 +1,22 @@
 # Learnings (for a real implementation)
 
-What the POC surfaced that should inform a production build, if we pursue member custom fields. Captured after Story 1 (admin define + create/edit/delete, Tier 1 + select).
+What the POC surfaced that should inform a production build, if we pursue member custom fields. Captured across the whole POC (Stories 0–5.5: admin define/reorder, member detail, Portal signup + account + landing collection, audience-targeted landing forms, placeholders).
 
 ## What the model got right
 
 - **Three collections: definitions / placements / values.** Clean separation that held up.
   - `definition` = identity + type (the data primitive).
-  - `placement` = a field bound to a *surface* (`signup`, `account`, future `post_signup`) with per-surface `required` / `placeholder` / `order`.
+  - `placement` = a field bound to a *surface* (`signup` or `landing`) with per-surface `required` / `order`. (`signup` is the Portal surface — the signup form *and* account page share that one list.) (Placeholder was *later moved to the definition* — set once, not per-surface; see the placeholder note under "Type system". The `placeholder` field is now vestigial on the placement.)
   - `value` = per-member answer.
-- **Surfaces are an open set.** Member-visibility falls out of placement (a field reaches members only if placed on a member-facing surface). This is why a post-signup survey is additive (new surface), not a redesign, and why an explicit "internal" flag was unnecessary for the POC.
-- **`required` is a collection-time, per-placement rule; storage is always nullable.** The same field can be required on signup and optional on the account page. The store never rejects a missing value. This separation is worth keeping in the real schema.
+- **Surfaces are an open set.** Member-visibility falls out of placement (a field reaches members only if placed on a member-facing surface), so no explicit "internal" flag was needed. This held up in practice: the **Landing form (Story 5) was added as a new surface with zero model change**, and Story 5.5 turned it into a list of per-audience forms, still no redesign. (Within Portal, the **account page reuses the signup list** rather than being its own surface — a POC simplification; a real build could split "collected at signup" from "self-editable on account".)
+- **`required` is a collection-time, per-placement rule; storage is always nullable.** The same field can be required on `signup` and optional on `landing`. The store never rejects a missing value. This separation is worth keeping in the real schema.
 
 ## Backend implications (not built; from code exploration)
 
 Members have **no existing extensibility point** today (the `members` table is a fixed ~19 columns, no metadata blob). A real build needs a schema change. Options weighed:
 
 - **JSON column on `members`** (mirrors the existing `commenting` codec pattern): lowest churn, but values aren't efficiently queryable/segmentable in SQL.
-- **`members_custom_fields` join table** (member_id, field_id, value): more work, but enables filtering/segmentation by value, which a membership feature will almost certainly want (segments, email recipients). **Recommended** if segmentation is in scope.
+- **`members_custom_fields` join table** (member_id, field_id, value): more work, but enables filtering/segmentation by value, which a membership feature will almost certainly want (segments, email recipients). **Recommended** — segmentation is now in scope: Story 5.5's audience-targeted landing forms filter members by tier/label (NQL), and value-level segmentation would need this queryable shape.
 - Field **definitions** and **placements** are config-like; definitions likely a table, placements either a table or serialized per-surface settings.
 
 Key serialization/flow touchpoints found:
@@ -34,7 +34,7 @@ What worked conceptually: treat the signup config as **one unified "Form fields"
 - **Name** = built-in: an on/off **toggle** (maps to `portal_name`), not add/remove.
 - **Custom fields** = add/remove rows with per-placement Required/Optional and a `…` menu.
 
-This reconciles `portal_name` with the placement model and is the planned Story 3 approach. For a real build, the cleanest version makes `name`/`email` first-class **system fields** in the same fields model (locked type/deletion), so there's a single mental model for "things you collect about members" and the signup name toggle is just a placement of the `name` field.
+This reconciles `portal_name` with the placement model and is the approach Story 3 shipped (and Story 5.5 made the built-in Email/Name *intrinsic* to the signup list so they can't be lost regardless of stored data). For a real build, the cleanest version makes `name`/`email` first-class **system fields** in the same fields model (locked type/deletion), so there's a single mental model for "things you collect about members" and the signup name toggle is just a placement of the `name` field.
 
 **Presets deferred (not dropped).** Because `name` is built-in, beehiiv-style First/Last/Full name presets would create two competing name sources, so no presets in the POC. But gap-filling presets (Phone, Company, …) could be useful later, and a preset could pre-pick a *format* (see below). Tracked in [ideas/field-formats.md](./ideas/field-formats.md). (Open question: publishers who want split first/last names that `member.name` can't store.)
 
@@ -56,7 +56,7 @@ This reconciles `portal_name` with the placement model and is the planned Story 
 - Destructive actions should pass `okColor='red'` to `ConfirmationModal` to match the delete-post styling.
 - **`FormFieldsList` auto-persists placements, bypassing the modal's Save/dirty flow.** Adding / removing / reordering a custom field writes straight to the repo (`setForm` / `setLandingFormFields`) on every change, so the Portal modal never goes dirty for these and **Close keeps them** (no discard). This is a deliberate POC shortcut: it makes the live preview update instantly via `subscribe`, and the placements live in the throwaway repo, not in the real Ghost settings the modal's `useForm` saves. The tell is the inconsistency *within* the same modal — the **Name toggle (`portal_name`) is staged and committed on Save**, while the **custom-field placements auto-persist** — and *across* the POC: the Ember member detail deliberately wired the dirty/Save flow for values (above/below), but the React Portal modal chose auto-persist. **Real build:** placements belong in the same Save transaction as the other Portal settings (dirty on change, discardable on Cancel), not auto-saved to a side store.
 
-## Portal (still ahead, Stories 3–4)
+## Portal (Stories 3–5.5)
 
 - **Portal has no design system** (TailwindCSS v3, UMD bundles). The signup/account inputs are hand-rolled in `getInputFields()`. Rendering custom fields there means hand-built controls, especially a **multi-select** for `select` + `multiple`. Budget for it.
 - **Signup field order is hardcoded.** `signup-page.js` leads with `email` and `unshift`s `Name` above it when `portal_name` is on; `tabIndex` (1/2) and `autoFocus` (`fields[0]`) are hardcoded. Data-driven order (drag-to-reorder in the unified list) requires built-in email/name to be represented as entries in one ordered list alongside custom placements, with autoFocus/tabIndex derived from position. Email stays required/locked even if moved; the honeypot stays hidden/appended.
