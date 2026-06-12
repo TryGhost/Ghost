@@ -15,6 +15,7 @@ import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters'
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEmailPostValueSource} from '@src/hooks/filter-sources/use-email-post-value-source';
 import {useLabelValueSource} from '@src/hooks/filter-sources/use-label-value-source';
+import {useMultipleActiveSubscriptionsCount} from '../hooks/use-multiple-active-subscriptions-count';
 import {usePostResourceValueSource} from '@src/hooks/filter-sources/use-post-resource-value-source';
 import {useTierValueSource} from '@src/hooks/filter-sources/use-tier-value-source';
 import type {MemberView} from '../hooks/use-member-views';
@@ -94,6 +95,9 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailValueSource = useEmailPostValueSource();
     const labelValueSource = useLabelValueSource();
     const {valueSource: tierValueSource, hasMultipleTiers} = useTierValueSource();
+    const {count: multipleActiveSubscriptionsCount} = useMultipleActiveSubscriptionsCount({
+        enabled: paidMembersEnabled
+    });
 
     const filterFields = useMemberFilterFields({
         newsletters,
@@ -104,6 +108,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         labelValueSource,
         tierValueSource,
         offers,
+        multipleActiveSubscriptionsCount,
         postValueSource,
         emailValueSource,
         membersTrackSources,

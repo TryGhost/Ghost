@@ -15,7 +15,6 @@ import {buildMemberListSearchParams, getMemberActiveColumns} from './member-quer
 import {canBulkDeleteMembers, shouldShowMembersLoading} from './members-view-state';
 import {checkStripeEnabled, getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
-import {isMultipleActiveSubscriptionsPredicate} from './multiple-active-subscriptions';
 import {shouldDelayMembersDateFilterHydration, useMembersFilterState} from './hooks/use-members-filter-state';
 import {useActiveMemberView, useMemberViews} from './hooks/use-member-views';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
@@ -52,12 +51,6 @@ const MembersPage: React.FC<MembersPageProps> = ({
     const [searchInput, setSearchInput] = useState(search);
     const [debouncedSearch] = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
 
-    // The multiple active subscriptions predicate is applied via the banner's
-    // "View members" link and has no filter UI, so keep it out of the filter bar.
-    const visibleFilters = useMemo(() => {
-        return filters.filter(filter => !isMultipleActiveSubscriptionsPredicate(filter));
-    }, [filters]);
-
     const activeColumns = useMemo(() => {
         return getMemberActiveColumns(filters);
     }, [filters]);
@@ -93,7 +86,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
     });
 
     const totalMembers = data?.meta?.pagination?.total ?? 0;
-    const hasFilters = visibleFilters.length > 0;
+    const hasFilters = filters.length > 0;
     const shouldShowMobileSearchRow = showMobileSearch;
     const shouldShowFiltersRow = hasFilters;
     const shouldShowMemberControls = hasFilterOrSearch || totalMembers > 0;
@@ -162,7 +155,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                                             {!hasFilters && (
                                                 <MembersFilters
                                                     activeView={activeView}
-                                                    filters={visibleFilters}
+                                                    filters={filters}
                                                     iconOnly={true}
                                                     nql={nql}
                                                     savedViews={savedViews}
@@ -202,7 +195,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                                 {shouldShowFiltersRow && (
                                     <MembersFilters
                                         activeView={activeView}
-                                        filters={visibleFilters}
+                                        filters={filters}
                                         nql={nql}
                                         savedViews={savedViews}
                                         onFiltersChange={setFilters}

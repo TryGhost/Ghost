@@ -7,9 +7,9 @@ import {
 import {buildMembersUrl} from '../member-route';
 import {canManageMembers, useEditUser} from '@tryghost/admin-x-framework/api/users';
 import {toast} from 'sonner';
-import {useBrowseMembers} from '@tryghost/admin-x-framework/api/members';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
+import {useMultipleActiveSubscriptionsCount} from './use-multiple-active-subscriptions-count';
 import {useNavigate} from 'react-router';
 
 interface UseMultipleActiveSubscriptionsBannerOptions {
@@ -38,23 +38,9 @@ export function useMultipleActiveSubscriptionsBanner({
     // affected members themselves — any other filter/search hides the banner.
     const shouldConsiderBanner = !search && (!nql || isViewingFilter);
 
-    // Count-only query: we just need pagination.total, not the members.
-    const {
-        data
-    } = useBrowseMembers({
-        searchParams: {
-            filter: MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER,
-            limit: '1',
-            fields: 'id',
-            order: 'id'
-        },
-        defaultErrorHandler: false,
-        enabled: canManageMemberList && shouldConsiderBanner,
-        refetchOnMount: 'always',
-        staleTime: 0
+    const {count, hasResolvedCount} = useMultipleActiveSubscriptionsCount({
+        enabled: canManageMemberList && shouldConsiderBanner
     });
-
-    const count = data?.meta?.pagination?.total ?? 0;
     const preference = useMemo(() => {
         return getMultipleActiveSubscriptionsBannerPreference(currentUser?.accessibility);
     }, [currentUser?.accessibility]);
@@ -80,7 +66,7 @@ export function useMultipleActiveSubscriptionsBanner({
             || optimisticDismissedCount !== null
             || isDismissing
             || storedDismissedCount === undefined
-            || data === undefined
+            || !hasResolvedCount
             || count >= storedDismissedCount
         ) {
             return;
@@ -103,8 +89,8 @@ export function useMultipleActiveSubscriptionsBanner({
     }, [
         count,
         currentUser,
-        data,
         editUser,
+        hasResolvedCount,
         isDismissing,
         optimisticDismissedCount,
         preference.dismissedAt,
