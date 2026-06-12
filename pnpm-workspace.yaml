@@ -6,7 +6,7 @@ packages:
 strictDepBuilds: true
 catalogMode: strict
 
-minimumReleaseAge: 1440 # 1 day in minutes; pnpm 11 default
+minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
 
 allowBuilds:
@@ -48,8 +48,8 @@ catalog:
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
   '@tryghost/api-framework': 3.2.3
-  '@tryghost/color-utils': 0.2.18
-  '@tryghost/custom-fonts': 1.0.10
+  '@tryghost/color-utils': 0.2.19
+  '@tryghost/custom-fonts': 1.0.11
   '@tryghost/debug': 2.2.1
   '@tryghost/domain-events': 3.2.3
   '@tryghost/helpers': 1.1.106
@@ -197,3 +197,13 @@ packageExtensions:
 minimumReleaseAgeExclude:
   # Our own packages are published by us, so the release-age delay doesn't apply
   - "@tryghost/*"
+  # TryGhost-published packages that live outside the @tryghost/ npm scope.
+  # Deliberately NOT listed: sqlite3 — TryGhost stewards it, but legacy
+  # (Mapbox-era) npm maintainer accounts can still publish, so the soak
+  # retains value there.
+  - "bookshelf-relations"
+  - "eslint-plugin-ghost"
+  - "express-hbs"
+  - "ghost-storage-base"
+  - "gscan"
+  - "knex-migrator"
