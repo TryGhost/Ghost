@@ -53,7 +53,7 @@ function renderFilterAndSearch(searchText: string, values: string[] = []) {
 }
 
 describe('LabelFilterRenderer', () => {
-    it('toggles the new label and clears the search after a successful create', async () => {
+    it('clears the search after a successful create without re-toggling the selection', async () => {
         const picker = makePicker({
             createLabel: vi.fn().mockResolvedValue({
                 id: '1',
@@ -67,8 +67,10 @@ describe('LabelFilterRenderer', () => {
         const searchInput = renderFilterAndSearch('New Label');
         fireEvent.click(screen.getByRole('button', {name: 'Create "New Label"'}));
 
-        await waitFor(() => expect(picker.toggleLabel).toHaveBeenCalledWith('new-label'));
-        expect(picker.createLabel).toHaveBeenCalledWith('New Label');
+        await waitFor(() => expect(picker.createLabel).toHaveBeenCalledWith('New Label'));
+        // Selection happens inside createLabel - toggling here too could
+        // deselect the label if the selection changed during the request
+        expect(picker.toggleLabel).not.toHaveBeenCalled();
         expect(searchInput).toHaveValue('');
     });
 

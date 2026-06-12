@@ -103,11 +103,10 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
             return;
         }
         try {
+            // Selection happens inside onCreate against live state - toggling
+            // here from a pre-await snapshot could deselect the new label
             const newLabel = await onCreate(search.trim());
             if (newLabel) {
-                if (!selectedSlugs.includes(newLabel.slug)) {
-                    onToggle(newLabel.slug);
-                }
                 onSearchClear?.();
             }
         } catch {

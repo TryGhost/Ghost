@@ -19,6 +19,8 @@ export interface UseLabelPickerResult {
     resolvedSelectedLabels: Label[];
 
     toggleLabel: (slug: string) => void;
+    // Creates the label (or adopts an existing duplicate) and selects it;
+    // failures are reported via toast and rethrown
     createLabel: (name: string) => Promise<Label | undefined>;
     editLabel: (id: string, name: string) => Promise<void>;
     deleteLabel: (id: string) => Promise<void>;
@@ -58,7 +60,11 @@ export function useLabelPicker({
         onSearchChange: setSearchValue
     };
 
-    const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();
+    const {mutateAsync: createLabelMutation} = useCreateLabel();
+    // Local state rather than the mutation's isLoading so it also covers the
+    // duplicate-adoption lookup - the create action stays disabled until the
+    // whole operation settles
+    const [isCreating, setIsCreating] = useState(false);
     const {mutateAsync: editLabelMutation} = useEditLabel();
     const {mutateAsync: deleteLabelMutation} = useDeleteLabel();
     const findLabelByName = useFindLabelByName();
@@ -79,14 +85,28 @@ export function useLabelPicker({
         }
     }, [onSelectionChange]);
 
+    // Idempotent, unlike toggleLabel: selecting after an await must not
+    // deselect a label that became selected while the request was in flight
+    const selectLabel = useCallback((slug: string) => {
+        const current = selectedSlugsRef.current;
+        if (!current.includes(slug)) {
+            onSelectionChange([...current, slug]);
+        }
+    }, [onSelectionChange]);
+
     const createLabel = useCallback(async (name: string): Promise<Label | undefined> => {
         const trimmed = name.trim();
         if (!trimmed) {
             return undefined;
         }
+        setIsCreating(true);
         try {
             const result = await createLabelMutation({name: trimmed});
-            return result?.labels?.[0];
+            const created = result?.labels?.[0];
+            if (created) {
+                selectLabel(created.slug);
+            }
+            return created;
         } catch (error) {
             // A rejected duplicate (e.g. created by another admin since the
             // list loaded) is adopted as if the create succeeded - the lookup
@@ -100,13 +120,16 @@ export function useLabelPicker({
                 }
                 if (existing) {
                     invalidateLabels();
+                    selectLabel(existing.slug);
                     return existing;
                 }
             }
             handleError(error);
             throw error;
+        } finally {
+            setIsCreating(false);
         }
-    }, [createLabelMutation, findLabelByName, handleError, invalidateLabels]);
+    }, [createLabelMutation, findLabelByName, handleError, invalidateLabels, selectLabel]);
 
     const editLabel = useCallback(async (id: string, name: string) => {
         const trimmed = name.trim();

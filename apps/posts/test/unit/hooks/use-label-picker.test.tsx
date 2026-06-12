@@ -16,7 +16,7 @@ const {mockCreateLabel, mockEditLabel, mockDeleteLabel, mockFindLabelByName, moc
 // These mocks bypass the framework mutations' error reporting, so the tests
 // cover only the hook's own contract: what resolves, rejects, and adopts
 vi.mock('@tryghost/admin-x-framework/api/labels', () => ({
-    useCreateLabel: () => ({mutateAsync: mockCreateLabel, isLoading: false}),
+    useCreateLabel: () => ({mutateAsync: mockCreateLabel}),
     useEditLabel: () => ({mutateAsync: mockEditLabel}),
     useDeleteLabel: () => ({mutateAsync: mockDeleteLabel}),
     useFindLabelByName: () => mockFindLabelByName,
@@ -100,11 +100,12 @@ describe('useLabelPicker', () => {
     });
 
     describe('createLabel', () => {
-        it('returns the created label on success', async () => {
+        it('returns and selects the created label on success', async () => {
             const newLabel = {id: '2', name: 'New', slug: 'new', created_at: '', updated_at: ''};
             mockCreateLabel.mockResolvedValue({labels: [newLabel]});
+            const onSelectionChange = vi.fn();
 
-            const {result} = renderLabelPicker();
+            const {result} = renderLabelPicker({onSelectionChange});
 
             let created;
             await act(async () => {
@@ -112,14 +113,16 @@ describe('useLabelPicker', () => {
             });
 
             expect(created).toEqual(newLabel);
+            expect(onSelectionChange).toHaveBeenCalledWith(['new']);
         });
 
-        it('adopts the existing label when the API rejects a duplicate', async () => {
+        it('adopts and selects the existing label when the API rejects a duplicate', async () => {
             const existing = {id: '9', name: 'Duplicate', slug: 'duplicate', created_at: '', updated_at: ''};
             mockCreateLabel.mockRejectedValue(makeValidationError('Label already exists'));
             mockFindLabelByName.mockResolvedValue(existing);
+            const onSelectionChange = vi.fn();
 
-            const {result} = renderLabelPicker();
+            const {result} = renderLabelPicker({onSelectionChange});
 
             let created;
             await act(async () => {
@@ -127,8 +130,57 @@ describe('useLabelPicker', () => {
             });
 
             expect(created).toEqual(existing);
+            expect(onSelectionChange).toHaveBeenCalledWith(['duplicate']);
             expect(mockInvalidateLabels).toHaveBeenCalled();
             expect(mockHandleError).not.toHaveBeenCalled();
+        });
+
+        it('does not deselect an adopted label that is already selected', async () => {
+            const existing = {id: '9', name: 'Duplicate', slug: 'duplicate', created_at: '', updated_at: ''};
+            mockCreateLabel.mockRejectedValue(makeValidationError('Label already exists'));
+            mockFindLabelByName.mockResolvedValue(existing);
+            const onSelectionChange = vi.fn();
+
+            const {result} = renderLabelPicker({
+                labels: [{id: '9', name: 'Duplicate', slug: 'duplicate'}],
+                selectedSlugs: ['duplicate'],
+                onSelectionChange
+            });
+
+            await act(async () => {
+                await result.current.createLabel('Duplicate');
+            });
+
+            expect(onSelectionChange).not.toHaveBeenCalled();
+        });
+
+        it('stays creating while the duplicate adoption lookup is in flight', async () => {
+            const existing = {id: '9', name: 'Duplicate', slug: 'duplicate', created_at: '', updated_at: ''};
+            mockCreateLabel.mockRejectedValue(makeValidationError('Label already exists'));
+            let resolveLookup!: (label: typeof existing) => void;
+            mockFindLabelByName.mockImplementation(() => new Promise((resolve) => {
+                resolveLookup = resolve;
+            }));
+
+            const {result} = renderLabelPicker();
+
+            let createPromise!: Promise<unknown>;
+            await act(async () => {
+                createPromise = result.current.createLabel('Duplicate');
+                // Let the create rejection propagate to the adoption lookup
+                await Promise.resolve();
+            });
+
+            // The create action must stay disabled until the lookup settles,
+            // otherwise a second create can race the first and deselect it
+            expect(result.current.isCreating).toBe(true);
+
+            await act(async () => {
+                resolveLookup(existing);
+                await createPromise;
+            });
+
+            expect(result.current.isCreating).toBe(false);
         });
 
         it('reports the original rejection when the duplicate lookup fails', async () => {

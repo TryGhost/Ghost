@@ -114,11 +114,11 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                     variant="ghost"
                     onClick={async () => {
                         try {
+                            // Selection happens inside createLabel against live
+                            // state - toggling here from a pre-await snapshot
+                            // could deselect the new label
                             const newLabel = await picker.createLabel(searchInput.trim());
                             if (newLabel) {
-                                if (!values.includes(newLabel.slug)) {
-                                    picker.toggleLabel(newLabel.slug);
-                                }
                                 clearSearch();
                             }
                         } catch {
@@ -131,7 +131,7 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                 </Button>
             </div>
         );
-    }, [picker, values]);
+    }, [picker]);
 
     return (
         <Popover
