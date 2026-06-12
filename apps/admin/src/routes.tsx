@@ -10,41 +10,29 @@ import { PostsAppContextProvider, routes as postRoutes } from "@tryghost/posts/a
 import { GlobalDataProvider, routes as statsRoutes } from "@tryghost/stats/api";
 import MyProfileRedirect from "./my-profile-redirect";
 
+// Auth (signin, signout, signup, reset, setup)
+import { ResetRoute, SetupRoute, SigninRoute, SigninVerifyRoute, SignoutRoute, SignupRoute } from "./auth/auth-routes";
+
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
+import { PageEditorRoute, PostEditorRoute } from "./editor/editor-route";
+import { ExploreRoute, MigrateRoute, ProRoute, SiteRoute } from "./embed/embed-routes";
+import { HomeRedirect } from "./home-redirect";
+import { MemberDetailsRoute, MembersActivityRoute } from "./member-details-route";
 import { MembersRoute } from "./members-route";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
+import { PagesListRoute, PostsListRoute } from "./posts-list-route";
+import { PostDebugRoute } from "./post-debug-route";
+import { RestoreRoute } from "./restore/restore-route";
+import { TagDetailsRoute } from "./tag-details-route";
 
 import { NotFound } from "./not-found";
 
 // Routes handled by the Ember admin app. React delegates these to Ember via
 // EmberFallback. When migrating a route to React, remove its entry from here.
 const EMBER_ROUTES: string[] = [
-    "/",
-    "/dashboard",
-    "/site",
-    "/launch",
-    "/setup",
-    "/signin/*",
-    "/signout",
-    "/signup/*",
-    "/reset/*",
-    "/pro/*",
-    "/posts",
-    "/posts/analytics/:postId/mentions",
-    "/posts/analytics/:postId/debug",
-    "/restore",
-    "/pages",
-    "/editor/*",
-    "/tags/new",
-    "/explore/*",
-    "/migrate/*",
-    "/members/new",
-    "/members/:member_id",
-    "/members-activity",
     "/designsandbox",
-    "/mentions",
 ];
 
 const emberFallbackHandle = { allowInForceUpgrade: true } satisfies RouteHandle;
@@ -78,14 +66,116 @@ export const routes: RouteObject[] = [
         element: <ForceUpgradeGuard />,
         children: [
             {
-                // Override the tag detail route from the posts app to ensure we
-                // correctly delegate to Ember since we can't remove the blank screen in
-                // the posts app. The blank screen needs to be there to prevent the
-                // router error fallback from triggering when navigating from the tag
-                // list to a tag detail page.
+                // Override the tag detail route from the posts app: renders the React
+                // tag detail screen when the tagDetailsX labs flag is enabled and
+                // delegates to Ember otherwise. This override (rather than the posts
+                // app's own blank :tagSlug route) needs to exist to prevent the router
+                // error fallback from triggering when navigating from the tag list to
+                // a tag detail page.
+                // Note: deliberately no allowInForceUpgrade handle — when the
+                // tagDetailsX flag is on this renders a functional React screen,
+                // which must redirect to /pro in force-upgrade mode like every
+                // other React route (when the flag is off, /pro is itself an
+                // Ember fallback that shows the billing screen).
+                path: "/tags/new",
+                Component: TagDetailsRoute,
+            },
+            {
                 path: "/tags/:tagSlug",
-                Component: EmberFallback,
+                Component: TagDetailsRoute,
+            },
+            {
+                // React posts/pages list when the postsListX labs flag is on,
+                // Ember fallback otherwise. Like the Ember screens, these need
+                // to work in force-upgrade mode no more than other content
+                // routes, so no allowInForceUpgrade handle.
+                path: "/posts",
+                Component: PostsListRoute,
+            },
+            {
+                path: "/pages",
+                Component: PagesListRoute,
+            },
+            {
+                // React post email debug screen when the postDebugX labs flag
+                // is on, Ember fallback otherwise. A content route like the
+                // analytics screens, so no allowInForceUpgrade handle.
+                path: "/posts/analytics/:postId/debug",
+                Component: PostDebugRoute,
+            },
+            {
+                // React member detail / activity when the memberDetailsX labs
+                // flag is on, Ember fallback otherwise
+                path: "/members/new",
+                Component: MemberDetailsRoute,
+            },
+            {
+                path: "/members/:memberId",
+                Component: MemberDetailsRoute,
+            },
+            {
+                path: "/members-activity",
+                Component: MembersActivityRoute,
+            },
+            {
+                // React editor when the editorX labs flag is on, Ember
+                // fallback otherwise. Like the other content routes, no
+                // allowInForceUpgrade handle. Bare /editor mirrors Ember's
+                // lexical-editor index route which replaces with editor/post.
+                path: "/editor",
+                loader: () => redirect("/editor/post"),
+            },
+            {
+                path: "/editor/post",
+                Component: PostEditorRoute,
+            },
+            {
+                path: "/editor/post/:postId",
+                Component: PostEditorRoute,
+            },
+            {
+                path: "/editor/page",
+                Component: PageEditorRoute,
+            },
+            {
+                path: "/editor/page/:postId",
+                Component: PageEditorRoute,
+            },
+            {
+                // React restore (crash recovery) screen when the restoreX
+                // labs flag is on, Ember fallback otherwise. Like the other
+                // content routes, no allowInForceUpgrade handle.
+                path: "/restore",
+                Component: RestoreRoute,
+            },
+            {
+                // React iframe-wrapper screens (site preview, Ghost(Pro)
+                // billing, Explore, migration) when the embedScreensX labs
+                // flag is on, Ember fallbacks otherwise. /site, /explore and
+                // /migrate are content routes: no allowInForceUpgrade handle,
+                // so force-upgrade mode sends them to /pro (matching Ember,
+                // whose explore/migrate services refuse to open in that
+                // state).
+                path: "/site",
+                Component: SiteRoute,
+            },
+            {
+                // /pro must stay reachable in force-upgrade mode — it IS the
+                // billing screen the ForceUpgradeGuard redirects to — hence
+                // the allowInForceUpgrade handle (same handle the route had
+                // as an Ember fallback). The owner-only guard lives inside
+                // the screen, mirroring routes/pro.js.
+                path: "/pro/*",
+                Component: ProRoute,
                 handle: emberFallbackHandle,
+            },
+            {
+                path: "/explore/*",
+                Component: ExploreRoute,
+            },
+            {
+                path: "/migrate/*",
+                Component: MigrateRoute,
             },
             membersRoute,
             {
@@ -106,6 +196,40 @@ export const routes: RouteObject[] = [
                     </OnboardingRedirect>
                 ),
                 children: statsRoutes,
+            },
+            {
+                // React auth screens when the authX labs flag is on, Ember
+                // fallbacks otherwise. They must stay reachable in
+                // force-upgrade mode (like the Ember screens were via
+                // EMBER_ROUTES), hence the allowInForceUpgrade handle.
+                path: "/signin",
+                Component: SigninRoute,
+                handle: emberFallbackHandle,
+            },
+            {
+                path: "/signin/verify",
+                Component: SigninVerifyRoute,
+                handle: emberFallbackHandle,
+            },
+            {
+                path: "/signout",
+                Component: SignoutRoute,
+                handle: emberFallbackHandle,
+            },
+            {
+                path: "/signup/:token",
+                Component: SignupRoute,
+                handle: emberFallbackHandle,
+            },
+            {
+                path: "/reset/:token",
+                Component: ResetRoute,
+                handle: emberFallbackHandle,
+            },
+            {
+                path: "/setup",
+                Component: SetupRoute,
+                handle: emberFallbackHandle,
             },
             {
                 path: "setup/onboarding",
@@ -133,6 +257,23 @@ export const routes: RouteObject[] = [
                 path: `settings/*`,
                 lazy: lazyComponent(() => import("./settings/settings")),
                 handle: { allowInForceUpgrade: true } satisfies RouteHandle,
+            },
+            {
+                // Pure redirects ported from Ember's home/dashboard routes.
+                // No labs flag: they render no UI, so there is nothing to
+                // gate (see DEVIATIONS.md, slice 6). No allowInForceUpgrade
+                // handle — in force-upgrade mode the React shell sends them
+                // to /pro, which is where the Ember redirects ended up too.
+                // An index route, not path "/": a "/" child of the pathless
+                // guard root never matches in this tree.
+                index: true,
+                Component: HomeRedirect,
+            },
+            {
+                // Dashboard was retired: Ember redirected everyone to
+                // analytics unconditionally, so a plain loader redirect.
+                path: "/dashboard",
+                loader: () => redirect("/analytics"),
             },
             // Ember-handled routes
             ...emberFallbackRoutes,

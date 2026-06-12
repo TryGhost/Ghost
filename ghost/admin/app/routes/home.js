@@ -1,32 +1,11 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
-import {inject} from 'ghost-admin/decorators/inject';
-import {inject as service} from '@ember/service';
 
-export default class HomeRoute extends AuthenticatedRoute {
-    @inject config;
-    @service feature;
-    @service onboarding;
-    @service router;
-    @service session;
-
-    async beforeModel(transition) {
-        await super.beforeModel(...arguments);
-
-        if (transition.to?.queryParams?.firstStart === 'true') {
-            transition.abort();
-            if (this.session.user?.isOwnerOnly) {
-                await this.onboarding.startChecklist();
-            }
-            window.location.hash = '/setup/onboarding?returnTo=/analytics';
-            return;
-        }
-
-        if (this.session.user?.isAdmin) {
-            this.router.transitionTo('/analytics');
-        } else if (this.session.user?.isContributor) {
-            this.router.transitionTo('posts');
-        } else {
-            this.router.transitionTo('site');
-        }
-    }
-}
+// The React admin owns "/": the role-based redirect and the ?firstStart=true
+// onboarding entry both live in apps/admin/src/home-redirect.tsx. This route
+// is only the hidden Ember app's parking spot for the shared URL — internal
+// Ember transitions (routeAfterAuthentication, permission guards'
+// transitionTo('home')) land here, render nothing and leave the redirect to
+// React, which reacts to the URL change. The inherited authenticated-route
+// check still runs, so signed-out visits rewrite the URL to the signin
+// screen (which React relies on).
+export default class HomeRoute extends AuthenticatedRoute {}

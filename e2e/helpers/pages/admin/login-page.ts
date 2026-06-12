@@ -6,7 +6,8 @@ export class LoginPage extends AdminPage {
     readonly passwordField: Locator;
     readonly signInButton: Locator;
     readonly forgotButton: Locator;
-    readonly passwordResetSuccessMessage: Locator;
+    // Single element that shows both flow errors and success notifications
+    readonly flowNotification: Locator;
 
     constructor(page: Page) {
         super(page);
@@ -16,7 +17,7 @@ export class LoginPage extends AdminPage {
         this.passwordField = page.getByRole('textbox', {name: 'Password'});
         this.signInButton = page.getByRole('button', {name: 'Sign in →'});
         this.forgotButton = page.getByRole('button', {name: 'Forgot?'});
-        this.passwordResetSuccessMessage = page.getByRole('status');
+        this.flowNotification = page.getByTestId('signin-flow-notification');
     }
 
     async signIn(email: string, password: string) {

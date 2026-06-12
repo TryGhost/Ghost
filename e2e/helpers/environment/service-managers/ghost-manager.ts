@@ -198,7 +198,7 @@ export class GhostManager {
     /**
      * Wait for Ghost to become reachable through the same gateway path used by tests.
      */
-    async waitForReady(timeoutMs: number = 120000): Promise<void> {
+    async waitForReady(timeoutMs: number = 300000): Promise<void> {
         if (!this.ghostContainer) {
             throw new Error('Ghost container not initialized');
         }
@@ -296,11 +296,14 @@ export class GhostManager {
             Env: await this.buildEnvWithSchedulerUrl(database, extraConfig),
             ExposedPorts: {[`${TEST_ENVIRONMENT.ghost.port}/tcp`]: {}},
             Healthcheck: {
-                // Same health check as compose.dev.yaml - Ghost is ready when it responds
+                // Same health check as compose.dev.yaml - Ghost is ready when it responds.
+                // Retries are generous because dev-mode boots run a pnpm install check
+                // and can take several minutes on slower machines; waitForHealthy bails
+                // out early on container exit, so this only extends the success window.
                 Test: ['CMD', 'node', '-e', `fetch('http://localhost:${TEST_ENVIRONMENT.ghost.port}',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))`],
                 Interval: 1000000000, // 1s in nanoseconds
                 Timeout: 5000000000, // 5s in nanoseconds
-                Retries: 60,
+                Retries: 300,
                 StartPeriod: 5000000000 // 5s in nanoseconds
             },
             HostConfig: {

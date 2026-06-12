@@ -108,7 +108,7 @@
                 <h4 class="gh-expandable-title">Meta data</h4>
                 <p class="gh-expandable-description">Extra content for search engines.</p>
             </div>
-            <button type="button" class="gh-btn gh-btn-expand" {{on "click" (toggle "metadataOpen" this)}}><span>{{if this.metadataOpen "Close" "Expand"}}</span></button>
+            <button type="button" class="gh-btn gh-btn-expand" data-testid="expand-meta-data" {{on "click" (toggle "metadataOpen" this)}}><span>{{if this.metadataOpen "Close" "Expand"}}</span></button>
         </div>
 
         <div class="gh-expandable-content">
@@ -185,7 +185,7 @@
                 <h4 class="gh-expandable-title">X card</h4>
                 <p class="gh-expandable-description">Customized structured data for X.</p>
             </div>
-            <button type="button" class="gh-btn gh-btn-expand" {{on "click" (toggle "twitterMetadataOpen" this)}}><span>{{if this.twitterMetadataOpen "Close" "Expand"}}</span></button>
+            <button type="button" class="gh-btn gh-btn-expand" data-testid="expand-x-card" {{on "click" (toggle "twitterMetadataOpen" this)}}><span>{{if this.twitterMetadataOpen "Close" "Expand"}}</span></button>
         </div>
 
         <div class="gh-expandable-content">
@@ -282,7 +282,7 @@
                 <h4 class="gh-expandable-title">Facebook card</h4>
                 <p class="gh-expandable-description">Customize Open Graph data.</p>
             </div>
-            <button type="button" class="gh-btn gh-btn-expand" {{on "click" (toggle "facebookMetadataOpen" this)}}><span>{{if this.facebookMetadataOpen "Close" "Expand"}}</span></button>
+            <button type="button" class="gh-btn gh-btn-expand" data-testid="expand-facebook-card" {{on "click" (toggle "facebookMetadataOpen" this)}}><span>{{if this.facebookMetadataOpen "Close" "Expand"}}</span></button>
         </div>
 
         <div class="gh-expandable-content">
@@ -380,7 +380,7 @@
                 <h4 class="gh-expandable-title">Code injection</h4>
                 <p class="gh-expandable-description">Add styles/scripts to the header and footer.</p>
             </div>
-            <button type="button" class="gh-btn gh-btn-expand" {{on "click" (toggle "codeInjectionOpen" this)}}><span>{{if this.codeInjectionOpen "Close" "Expand"}}</span></button>
+            <button type="button" class="gh-btn gh-btn-expand" data-testid="expand-code-injection" {{on "click" (toggle "codeInjectionOpen" this)}}><span>{{if this.codeInjectionOpen "Close" "Expand"}}</span></button>
         </div>
 
         <div class="gh-expandable-content">

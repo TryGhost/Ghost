@@ -195,7 +195,9 @@ describe('Acceptance: Authentication', function () {
             await completeSignIn();
             expect(currentURL(), 'url after email+password submit').to.equal('/signin/verify');
             await completeVerification();
-            expect(currentURL()).to.equal('/analytics');
+            // the React shell owns "/" and performs the post-signin role
+            // redirect; Ember's home route parks on the react-fallback
+            expect(currentURL()).to.equal('/');
         });
 
         it('handles 2fa code verification failure', async function () {
@@ -285,7 +287,8 @@ describe('Acceptance: Authentication', function () {
             // can correctly submit after failed attempts
             await fillIn(codeInput, '123456');
             await click(verifyButton);
-            expect(currentURL()).to.equal('/analytics');
+            // React owns the post-signin redirect from "/" (see home route)
+            expect(currentURL()).to.equal('/');
         });
 
         it('can resend verification code', async function () {

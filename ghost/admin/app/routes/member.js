@@ -5,6 +5,7 @@ import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
 export default class MembersRoute extends MembersManagementRoute {
+    @service feature;
     @service modals;
     @service router;
     @service('unsaved-changes') unsavedChanges;
@@ -26,12 +27,22 @@ export default class MembersRoute extends MembersManagementRoute {
     beforeModel(transition) {
         super.beforeModel(...arguments);
 
+        const memberId = transition.to?.params?.member_id;
+
+        // The React admin owns this screen when the flag is enabled. Hand the
+        // URL over to the react-fallback catch-all so this route doesn't load
+        // data or register transition guards in the hidden Ember app. (The
+        // postAnalytics/backPath query params are dropped by the handover;
+        // React-internal navigation carries its own state.)
+        if (this.feature.memberDetailsX) {
+            return this.replaceWith('react-fallback', memberId ? `members/${memberId}` : 'members/new');
+        }
+
         // The outer React shell owns sibling URLs like /members/import.
         // Ember's recognizer can still match this dynamic route for those
         // paths and fire a bogus queryRecord that surfaces as an alert.
         // Abort the transition for known React-owned siblings so the React
         // shell keeps rendering the page.
-        const memberId = transition.to?.params?.member_id;
         if (memberId === 'import') {
             transition.abort();
         }

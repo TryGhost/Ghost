@@ -1,4 +1,4 @@
-<div class="modal-content" {{on-key "Enter" (perform this.deleteTagTask)}} data-test-modal="confirm-delete-tag">
+<div class="modal-content" {{on-key "Enter" (perform this.deleteTagTask)}} data-test-modal="confirm-delete-tag" data-testid="confirm-delete-tag-modal">
     <header class="modal-header">
         <h1>Are you sure you want to delete this tag?</h1>
     </header>
@@ -7,7 +7,7 @@
     <div class="modal-body">
         You’re about to delete the tag "<strong>{{@data.tag.name}}</strong>".
         {{#if @data.tag.count.posts}}
-            It will be removed from <span data-test-text="posts-count">{{gh-pluralize @data.tag.count.posts "post"}}</span>.
+            It will be removed from <span data-test-text="posts-count" data-testid="delete-tag-posts-count">{{gh-pluralize @data.tag.count.posts "post"}}</span>.
         {{/if}}
         This is permanent! We warned you, k?
     </div>

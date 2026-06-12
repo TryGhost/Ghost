@@ -1,7 +1,22 @@
 import AuthenticatedRoute from 'ghost-admin/routes/authenticated';
 import {pluralize} from 'ember-inflector';
+import {inject as service} from '@ember/service';
 
 export default class Debug extends AuthenticatedRoute {
+    @service feature;
+
+    beforeModel(transition) {
+        super.beforeModel(...arguments);
+
+        // The React admin owns this screen when the flag is enabled. Hand the
+        // URL over to the react-fallback catch-all so this route doesn't load
+        // data in the hidden Ember app.
+        if (this.feature.postDebugX) {
+            const postId = transition.to?.params?.post_id;
+            return this.replaceWith('react-fallback', `posts/analytics/${postId}/debug`);
+        }
+    }
+
     model(params) {
         let {post_id: id} = params;
 

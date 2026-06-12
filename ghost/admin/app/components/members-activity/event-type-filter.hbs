@@ -1,5 +1,5 @@
 <GhBasicDropdown @verticalPosition="below" as |dd|>
-    <dd.Trigger class="gh-btn gh-btn-icon gh-btn-action-icon" data-test-id="filter-events-button">
+    <dd.Trigger class="gh-btn gh-btn-icon gh-btn-action-icon" data-test-id="filter-events-button" data-testid="filter-events-button">
         <span class={{if @excludedEvents "gh-btn-label-green"}}>
             {{svg-jar "filter"}}
             Filter events
@@ -19,7 +19,7 @@
                         <span>{{type.name}}</span>
                     </label>
                     <div class="for-switch xxs">
-                        <label class="switch" for="type-{{idx}}">
+                        <label class="switch" for="type-{{idx}}" data-testid="event-type-filter-toggle-{{type.event}}">
                             <input
                                 data-test-id="event-type-filter-checkbox-{{type.event}}"
                                 type="checkbox"

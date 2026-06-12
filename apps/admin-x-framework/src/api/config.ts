@@ -20,6 +20,9 @@ export type Config = {
     enableDeveloperExperiments: boolean;
     database: string;
     blogUrl?: string;
+    // true when bulk email (Mailgun) is configured via Ghost config
+    // (ghost/core public-config); settings-based Mailgun config is separate
+    mailgunIsConfigured?: boolean;
     labs: Record<string, boolean>;
     stripeDirect: boolean;
     mail: string;

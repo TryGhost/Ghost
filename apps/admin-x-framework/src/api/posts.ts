@@ -1,10 +1,22 @@
-import {InfiniteData} from '@tanstack/react-query';
+import {InfiniteData, Query} from '@tanstack/react-query';
 import {Meta, createInfiniteQuery, createQuery, createQueryWithId, createMutation} from '../utils/api/hooks';
 
 export type Email = {
     opened_count: number;
     email_count: number;
     status?: string;
+};
+
+export type PostAuthor = {
+    id: string;
+    name: string;
+    slug: string;
+};
+
+export type PostTag = {
+    id: string;
+    name: string;
+    slug: string;
 };
 
 export type Post = {
@@ -15,6 +27,13 @@ export type Post = {
     visibility?: string;
     uuid: string;
     feature_image?: string;
+    featured?: boolean;
+    excerpt?: string;
+    custom_excerpt?: string;
+    authors?: PostAuthor[];
+    primary_tag?: PostTag | null;
+    tags?: PostTag[];
+    tiers?: {id: string; name: string}[];
     count?: {
         clicks?: number;
         positive_feedback?: number;
@@ -23,6 +42,8 @@ export type Post = {
     email?: Email;
     status?: string;
     published_at?: string;
+    updated_at?: string;
+    created_at?: string;
     newsletter_id?: string;
     newsletter?: object;
     email_only?: boolean;
@@ -78,6 +99,60 @@ export const getPost = createQueryWithId<PostsResponseType>({
 export const useDeletePost = createMutation<unknown, string>({
     method: 'DELETE',
     path: id => `/posts/${id}/`
+});
+
+// ---- bulk operations over an NQL filter (used by the posts/pages list) ----
+
+// These mutations are resource-parameterized (posts|pages), so they need to
+// invalidate both list caches. createMutation's `dataType` invalidation is
+// static, so we use the filters form, which only invalidates the query client
+// (the Ember mapping for these bulk operations is null anyway).
+const invalidatePostsAndPages = {
+    filters: {
+        predicate: (query: Query) => ['PostsResponseType', 'PagesResponseType'].includes(query.queryKey[0] as string)
+    }
+};
+
+export type BulkEditAction = 'feature' | 'unfeature' | 'unpublish' | 'unschedule' | 'addTag' | 'access';
+
+export interface BulkEditPostsPayload {
+    action: BulkEditAction;
+    filter: string;
+    meta?: Record<string, unknown>;
+    resource?: 'posts' | 'pages';
+}
+
+export interface BulkEditPostsResponse {
+    bulk: {
+        action: BulkEditAction;
+        meta: {
+            stats: {successful: number; unsuccessful: number};
+            errors: unknown[];
+            unsuccessfulData: unknown[];
+        };
+    };
+}
+
+export const useBulkEditPosts = createMutation<BulkEditPostsResponse, BulkEditPostsPayload>({
+    method: 'PUT',
+    path: ({resource = 'posts'}) => `/${resource}/bulk/`,
+    searchParams: ({filter}) => ({filter}),
+    body: ({action, meta}) => ({bulk: {action, meta: meta ?? {}}}),
+    invalidateQueries: invalidatePostsAndPages
+});
+
+export const useBulkDeletePosts = createMutation<unknown, {filter: string; resource?: 'posts' | 'pages'}>({
+    method: 'DELETE',
+    path: ({resource = 'posts'}) => `/${resource}/`,
+    searchParams: ({filter}) => ({filter}),
+    invalidateQueries: invalidatePostsAndPages
+});
+
+export const useCopyPost = createMutation<PostsResponseType, {id: string; resource?: 'posts' | 'pages'}>({
+    method: 'POST',
+    path: ({id, resource = 'posts'}) => `/${resource}/${id}/copy/`,
+    defaultSearchParams: {formats: 'mobiledoc,lexical'},
+    invalidateQueries: invalidatePostsAndPages
 });
 
 // Search index endpoints for efficient search

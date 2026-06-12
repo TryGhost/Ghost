@@ -20,7 +20,13 @@
             "require": "./dist/posts.umd.cjs"
         },
         "./api": "./src/api.ts",
-        "./members": "./src/views/members/members.tsx"
+        "./members": "./src/views/members/members.tsx",
+        "./member-details": "./src/views/members/detail/member-detail.tsx",
+        "./members-activity": "./src/views/members/activity/members-activity.tsx",
+        "./tag-details": "./src/views/Tags/tag-details/tag-details.tsx",
+        "./posts-list": "./src/views/posts/posts-list.tsx",
+        "./pages-list": "./src/views/posts/pages-list.tsx",
+        "./post-debug": "./src/views/PostAnalytics/Debug/debug.tsx"
     },
     "private": true,
     "scripts": {
@@ -46,6 +52,8 @@
         "@types/papaparse": "5.5.2",
         "@types/react": "catalog:",
         "@types/validator": "catalog:",
+        "@typescript-eslint/eslint-plugin": "catalog:",
+        "@typescript-eslint/parser": "catalog:",
         "@vitest/coverage-v8": "catalog:",
         "eslint": "catalog:",
         "eslint-plugin-react-hooks": "catalog:",
@@ -58,12 +66,16 @@
         "vitest": "catalog:"
     },
     "dependencies": {
+        "@codemirror/lang-html": "6.4.11",
         "@ebay/nice-modal-react": "catalog:",
-        "@tryghost/color-utils": "catalog:",
+        "@hookform/resolvers": "catalog:",
+        "@tryghost/admin-x-design-system": "workspace:*",
         "@tryghost/admin-x-framework": "workspace:*",
+        "@tryghost/color-utils": "catalog:",
         "@tryghost/koenig-lexical": "catalog:",
         "@tryghost/nql-lang": "catalog:",
         "@tryghost/shade": "workspace:*",
+        "@tryghost/string": "catalog:",
         "@xyflow/react": "12.10.2",
         "dequal": "catalog:",
         "i18n-iso-countries": "7.14.0",
@@ -72,6 +84,7 @@
         "papaparse": "5.5.3",
         "react": "catalog:",
         "react-dom": "catalog:",
+        "react-hook-form": "catalog:",
         "react-router": "catalog:",
         "sonner": "catalog:",
         "temporal-polyfill": "0.3.2",

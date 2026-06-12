@@ -2,6 +2,12 @@ import {Page} from '@playwright/test';
 import {TagEditorPage, TagsPage} from '@/admin-pages';
 import {TagFactory, createPostFactory,createTagFactory} from '@/data-factory';
 import {expect, test} from '@/helpers/playwright';
+import {usePerTestIsolation} from '@/helpers/playwright/isolation';
+
+// Tests in this file rely on the pristine default content (a single 'News'
+// tag) and mutate it (deleting/renaming the default tag), so they need a
+// fresh Ghost environment per test.
+usePerTestIsolation();
 
 test.describe('Ghost Admin - Tags', () => {
     let tagFactory: TagFactory;

@@ -76,6 +76,15 @@ export default class PostsRoute extends AuthenticatedRoute {
     }
 
     model(params) {
+        // The React admin owns this screen when the flag is enabled. The route
+        // stays active (so the URL and its query params are preserved for
+        // React), but it must not fetch data or render list DOM — the hidden
+        // Ember markup would otherwise duplicate the React list's test ids.
+        // The template is gated on the same flag.
+        if (this.feature.postsListX) {
+            return {};
+        }
+
         // Reset analytics cache every time we load the posts index to ensure fresh data
         if (this.settings.webAnalyticsEnabled || this.settings.membersTrackSources) {
             this.postAnalytics.reset();
@@ -135,6 +144,11 @@ export default class PostsRoute extends AuthenticatedRoute {
     // trigger a background load of all tags and authors for use in filter dropdowns
     setupController(controller, model) {
         super.setupController(...arguments);
+
+        // React owns the screen; skip authors/tags loading and analytics fetches
+        if (this.feature.postsListX) {
+            return;
+        }
 
         if (!this.session.user.isAuthorOrContributor && !controller._hasLoadedAuthors) {
             this.store.query('user', {limit: 'all'}).then(() => {

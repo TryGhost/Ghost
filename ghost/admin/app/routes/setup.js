@@ -3,6 +3,7 @@ import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 
 export default class SetupRoute extends Route {
+    @service feature;
     @service ghostPaths;
     @service session;
     @service ajax;
@@ -13,6 +14,12 @@ export default class SetupRoute extends Route {
     // previously completed.  If it has, stop the transition into the setup page.
     beforeModel() {
         super.beforeModel(...arguments);
+
+        // The React setup screen (authX) performs the setup-status check and
+        // redirects itself, so skip the duplicate API call and transitions here.
+        if (this.feature.authX) {
+            return;
+        }
 
         if (this.session.isAuthenticated) {
             return this.transitionTo('home');

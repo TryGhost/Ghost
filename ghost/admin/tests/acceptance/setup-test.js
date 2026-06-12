@@ -62,7 +62,9 @@ describe('Acceptance: Setup', function () {
         await authenticateSession();
 
         await visit('/setup');
-        expect(currentURL()).to.equal('/site');
+        // the setup route targets home for authenticated users, which hands
+        // "/" over to the React shell (react-fallback)
+        expect(currentURL()).to.equal('/');
     });
 
     it('redirects to signin if already set up', async function () {

@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 
-import {describe, expect, it, vi} from 'vitest';
+import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {renderHook} from '@testing-library/react';
 import {type SharedView} from './shared-views';
 import {useCustomSidebarViews} from './use-custom-sidebar-views';
@@ -10,9 +10,10 @@ interface EmberRoutingMock {
     isRouteActive: (route: 'posts' | 'pages', filter: Record<string, string | null>) => boolean;
 }
 
-const {mockUseSharedViews, mockUseEmberRouting} = vi.hoisted(() => ({
+const {mockUseSharedViews, mockUseEmberRouting, mockLocation} = vi.hoisted(() => ({
     mockUseSharedViews: vi.fn<(route?: string) => SharedView[]>(),
-    mockUseEmberRouting: vi.fn<() => EmberRoutingMock>()
+    mockUseEmberRouting: vi.fn<() => EmberRoutingMock>(),
+    mockLocation: {pathname: '/posts', search: ''}
 }));
 
 vi.mock('./shared-views', () => ({
@@ -27,8 +28,21 @@ vi.mock('@/ember-bridge', () => ({
     useEmberRouting: mockUseEmberRouting
 }));
 
+vi.mock('@tryghost/admin-x-framework', () => ({
+    useLocation: () => mockLocation,
+    useSearchParams: () => [new URLSearchParams(mockLocation.search), vi.fn()],
+    // use-posts-view-active imports @tryghost/posts/api, whose module graph
+    // calls lazyComponent at import time (routes.tsx)
+    lazyComponent: () => () => null
+}));
+
+function setUrl(pathname: string, search: string) {
+    mockLocation.pathname = pathname;
+    mockLocation.search = search;
+}
+
 describe('useCustomSidebarViews', () => {
-    it('maps shared views to sidebar views using Ember routing', () => {
+    beforeEach(() => {
         mockUseSharedViews.mockReturnValue([
             {
                 name: 'Drafts by me',
@@ -39,8 +53,12 @@ describe('useCustomSidebarViews', () => {
         ]);
         mockUseEmberRouting.mockReturnValue({
             getRouteUrl: vi.fn(() => 'posts?type=draft&author=me'),
-            isRouteActive: vi.fn(() => true)
+            isRouteActive: vi.fn(() => false)
         });
+    });
+
+    it('maps shared views to sidebar views, marking the matching view active from the URL', () => {
+        setUrl('/posts', '?type=draft&author=me');
 
         const {result} = renderHook(() => useCustomSidebarViews('posts'));
 
@@ -53,5 +71,21 @@ describe('useCustomSidebarViews', () => {
                 color: 'green'
             }
         ]);
+    });
+
+    it('does not mark a view active when the URL filters differ', () => {
+        setUrl('/posts', '?type=draft');
+
+        const {result} = renderHook(() => useCustomSidebarViews('posts'));
+
+        expect(result.current[0].isActive).toBe(false);
+    });
+
+    it('does not mark a view active on a different route', () => {
+        setUrl('/pages', '?type=draft&author=me');
+
+        const {result} = renderHook(() => useCustomSidebarViews('posts'));
+
+        expect(result.current[0].isActive).toBe(false);
     });
 });

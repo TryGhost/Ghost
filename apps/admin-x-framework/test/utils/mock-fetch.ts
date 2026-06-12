@@ -6,9 +6,18 @@ export const withMockFetch = async (
     {json = {}, headers = {}, status = 200, ok = true}: {json?: unknown; headers?: Record<string, string>; status?: number; ok?: boolean},
     callback: (mock: any) => void | Promise<void>
 ) => {
+    // Real API responses always carry a content-type; default to JSON so
+    // handleResponse parses the mocked body as JSON (it returns raw text for
+    // non-JSON content types)
+    const responseHeaders = new Headers(headers);
+    if (!responseHeaders.has('content-type')) {
+        responseHeaders.set('content-type', 'application/json');
+    }
+
     const mockFetch = vi.fn<typeof globalThis.fetch>(() => Promise.resolve({
         json: () => Promise.resolve(json),
-        headers: new Headers(headers),
+        text: () => Promise.resolve(typeof json === 'string' ? json : JSON.stringify(json)),
+        headers: responseHeaders,
         status,
         ok
     } as Response));

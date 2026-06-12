@@ -35,6 +35,7 @@ export class MemberDetailsPage extends AdminPage {
     readonly labelsInput: Locator;
     readonly labels: Locator;
     readonly newsletterSubscriptionToggles: Locator;
+    readonly newsletterSubscriptionCheckboxes: Locator;
 
     readonly saveButton: Locator;
     readonly savedButton: Locator;
@@ -45,6 +46,9 @@ export class MemberDetailsPage extends AdminPage {
     readonly magicLinkInput: Locator;
 
     readonly confirmLeaveButton: Locator;
+    readonly unsavedChangesModal: Locator;
+    readonly unsavedChangesStayButton: Locator;
+    readonly unsavedChangesLeaveButton: Locator;
     readonly settingsSection: SettingsSection;
 
     readonly activityHeading: Locator;
@@ -63,17 +67,21 @@ export class MemberDetailsPage extends AdminPage {
         this.nameInput = page.getByRole('textbox', {name: 'Name'});
         this.emailInput = page.getByRole('textbox', {name: 'Email'});
         this.noteInput = page.getByRole('textbox', {name: 'Note'});
-        this.labelsInput = page.getByText('Labels').locator('+ div');
+        this.labelsInput = page.getByTestId('member-labels-input');
         this.labels = this.labelsInput.getByRole('listitem');
         this.newsletterSubscriptionToggles = page.getByTestId('member-subscription-toggle');
+        this.newsletterSubscriptionCheckboxes = page.getByTestId('member-subscription-checkbox');
 
         this.saveButton = page.getByRole('button', {name: 'Save'});
         this.savedButton = page.getByRole('button', {name: 'Saved'});
         this.retryButton = page.getByRole('button', {name: 'Retry'});
-        this.membersBackLink = page.locator('[data-test-link="members-back"]');
+        this.membersBackLink = page.getByTestId('members-back');
         this.copyLinkButton = page.getByRole('button', {name: 'Copy link'});
         this.magicLinkInput = page.getByTestId('member-signin-url').last();
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
+        this.unsavedChangesModal = page.getByTestId('unsaved-changes-modal');
+        this.unsavedChangesStayButton = this.unsavedChangesModal.getByRole('button', {name: 'Stay'});
+        this.unsavedChangesLeaveButton = this.unsavedChangesModal.getByRole('button', {name: 'Leave'});
         this.settingsSection = new SettingsSection(page);
 
         this.activityHeading = page.getByRole('heading', {name: 'Activity', level: 4});
@@ -84,6 +92,10 @@ export class MemberDetailsPage extends AdminPage {
         this.hideCommentsCheckbox = this.disableCommentingModal.getByText('Hide all previous comments');
         this.commentingDisabledIndicator = page.getByText('Comments disabled');
         this.enableCommentingLink = page.getByRole('button', {name: 'Enable', exact: true});
+    }
+
+    async gotoMember(memberId: string): Promise<void> {
+        await this.goto(`/ghost/#/members/${memberId}`);
     }
 
     async clickNewsletterSubscriptionToggle(index: number = 0) {
@@ -101,18 +113,18 @@ export class MemberDetailsPage extends AdminPage {
     }
 
     async addLabel(label: string): Promise<void> {
-        await this.labelsInput.click();
+        await this.labelsInput.getByRole('textbox').click();
         await this.page.keyboard.type(label);
         await this.page.keyboard.press('Tab');
     }
 
     async removeLabel(labelName: string): Promise<void> {
-        await this.labelsInput.click();
+        await this.labelsInput.getByRole('textbox').click();
         await this.labels.filter({hasText: labelName}).getByLabel('remove element').click();
     }
 
     async removeLabels() {
-        await this.labelsInput.click();
+        await this.labelsInput.getByRole('textbox').click();
         let labelsCount = await this.labels.count();
 
         while (labelsCount > 0) {

@@ -10,14 +10,21 @@ const emberDataTypeMapping = {
     AutomatedEmailsResponseType: null, // automated emails only exist in React admin
     AutomationsResponseType: null, // automations only exist in React admin
     CommentsResponseType: null, // comments only exist in React admin
+    EmailAnalyticsStatusResponseType: null, // email analytics status only used by the React post debug screen
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
     LabelsResponseType: null, // labels only exist in React admin
     MembersResponseType: null, // members only exist in React admin
     OffersResponseType: {type: 'offer'},
+    // Posts/pages list lives in React behind postsListX; the Ember screens are
+    // gated off while the flag is on, and unloading posts from the Ember store
+    // could disturb records held by the (still-Ember) editor, so skip syncing.
+    PostsResponseType: null,
+    PagesResponseType: null,
     NewslettersResponseType: {type: 'newsletter'},
     RecommendationResponseType: {type: 'recommendation'},
     SettingsResponseType: {type: 'setting', singleton: true},
+    TagsResponseType: {type: 'tag'},
     ThemesResponseType: {type: 'theme'},
     TiersResponseType: {type: 'tier'},
     UsersResponseType: {type: 'user'},

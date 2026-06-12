@@ -28,6 +28,7 @@ export {generateId, generateUuid, generateSlug} from './utils';
 
 // Factory Setup Helpers
 export {createPostFactory} from './setup';
+export {createPageFactory} from './setup';
 export {createTagFactory} from './setup';
 export {createMemberFactory} from './setup';
 export {createTierFactory} from './setup';

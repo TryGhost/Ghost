@@ -1,16 +1,17 @@
+{{#unless this.feature.memberDetailsX}}
 <section class="gh-canvas gh-members-activity {{if this.memberRecord "gh-members-activity-single"}} feature-memberAttribution">
     <GhCanvasHeader class="gh-canvas-header">
         {{#if this.memberRecord}}
             <div class="flex flex-column">
-                <div class="gh-canvas-breadcrumb">
-                    <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} data-test-link="members-activity-back">
+                <div class="gh-canvas-breadcrumb" data-testid="members-activity-breadcrumb">
+                    <LinkTo @route="members-activity" @query={{reset-query-params "members-activity"}} data-test-link="members-activity-back" data-testid="members-activity-back">
                         Member activity
                     </LinkTo>
                     {{svg-jar "arrow-right-small"}} {{or this.memberRecord.name this.memberRecord.email}}
                 </div>
             </div>
         {{else}}
-            <h2 class="gh-canvas-title" data-test-screen-title>
+            <h2 class="gh-canvas-title" data-test-screen-title data-testid="members-activity-title">
                 Member activity
             </h2>
         {{/if}}
@@ -51,5 +52,6 @@
         {{/let}}
     </div>
 </section>
+{{/unless}}
 
 {{outlet}}

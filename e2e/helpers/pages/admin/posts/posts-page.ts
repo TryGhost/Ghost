@@ -41,7 +41,9 @@ export class PostsPage extends AdminPage {
     }
 
     getPostByTitle(title: string): Locator {
-        return this.postsListItem.filter({has: this.page.getByRole('heading', {name: title, exact: true, level: 3})});
+        // hasText (not an exact accessible-name match) because featured posts
+        // prepend a "star-fill" icon to the heading's accessible name
+        return this.postsListItem.filter({has: this.page.getByRole('heading', {level: 3}).filter({hasText: title})});
     }
 
     async waitForPageToFullyLoad() {
@@ -90,5 +92,57 @@ export class PostsPage extends AdminPage {
 
     async getActiveViewName(): Promise<string | null> {
         return await this.pageTitle.textContent();
+    }
+
+    getPostStatus(title: string): Locator {
+        return this.getPostByTitle(title).getByTestId('post-status');
+    }
+
+    // ---- multi-select + context menu (shared between Ember and React lists) ----
+
+    get contextMenu(): Locator {
+        return this.page.getByTestId('posts-context-menu');
+    }
+
+    contextMenuButton(name: string): Locator {
+        return this.contextMenu.getByRole('button', {name});
+    }
+
+    get deletePostsModal(): Locator {
+        return this.page.getByTestId('delete-posts-modal');
+    }
+
+    get unpublishPostsModal(): Locator {
+        return this.page.getByTestId('unpublish-posts-modal');
+    }
+
+    get addTagsModal(): Locator {
+        return this.page.getByTestId('add-tags-modal');
+    }
+
+    // The clickable selection target is the row wrapper (role=menuitem), which
+    // overlays the inner list item element.
+    getPostRow(title: string): Locator {
+        return this.page.getByRole('menuitem').filter({has: this.page.getByRole('heading', {level: 3}).filter({hasText: title})});
+    }
+
+    async selectPost(title: string): Promise<void> {
+        await this.getPostRow(title).click({modifiers: ['ControlOrMeta']});
+    }
+
+    async shiftSelectPost(title: string): Promise<void> {
+        await this.getPostRow(title).click({modifiers: ['Shift']});
+    }
+
+    async openContextMenu(title: string): Promise<void> {
+        await this.getPostRow(title).click({button: 'right'});
+        await this.contextMenu.waitFor({state: 'visible'});
+    }
+}
+
+export class PagesPage extends PostsPage {
+    constructor(page: Page) {
+        super(page);
+        this.pageUrl = '/ghost/#/pages';
     }
 }

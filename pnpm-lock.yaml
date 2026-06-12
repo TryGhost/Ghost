@@ -15,6 +15,9 @@ catalogs:
     '@faker-js/faker':
       specifier: 10.4.0
       version: 10.4.0
+    '@hookform/resolvers':
+      specifier: 5.4.0
+      version: 5.4.0
     '@playwright/test':
       specifier: 1.60.0
       version: 1.60.0
@@ -234,6 +237,9 @@ catalogs:
     react-dom:
       specifier: 18.3.1
       version: 18.3.1
+    react-hook-form:
+      specifier: 7.72.1
+      version: 7.72.1
     react-hot-toast:
       specifier: 2.6.0
       version: 2.6.0
@@ -515,9 +521,15 @@ importers:
 
   apps/admin:
     dependencies:
+      '@codemirror/lang-html':
+        specifier: 6.4.11
+        version: 6.4.11
       '@tryghost/activitypub':
         specifier: workspace:*
         version: link:../activitypub
+      '@tryghost/admin-x-design-system':
+        specifier: workspace:*
+        version: link:../admin-x-design-system
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
@@ -1309,9 +1321,18 @@ importers:
 
   apps/posts:
     dependencies:
+      '@codemirror/lang-html':
+        specifier: 6.4.11
+        version: 6.4.11
       '@ebay/nice-modal-react':
         specifier: 'catalog:'
         version: 1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@hookform/resolvers':
+        specifier: 'catalog:'
+        version: 5.4.0(react-hook-form@7.72.1(react@18.3.1))
+      '@tryghost/admin-x-design-system':
+        specifier: workspace:*
+        version: link:../admin-x-design-system
       '@tryghost/admin-x-framework':
         specifier: workspace:*
         version: link:../admin-x-framework
@@ -1327,6 +1348,9 @@ importers:
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
+      '@tryghost/string':
+        specifier: 'catalog:'
+        version: 0.3.4
       '@xyflow/react':
         specifier: 12.10.2
         version: 12.10.2(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1351,6 +1375,9 @@ importers:
       react-dom:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
+      react-hook-form:
+        specifier: 'catalog:'
+        version: 7.72.1(react@18.3.1)
       react-router:
         specifier: 'catalog:'
         version: 7.14.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1397,6 +1424,12 @@ importers:
       '@types/validator':
         specifier: 'catalog:'
         version: 13.15.10
+      '@typescript-eslint/eslint-plugin':
+        specifier: 'catalog:'
+        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
+      '@typescript-eslint/parser':
+        specifier: 'catalog:'
+        version: 8.49.0(eslint@8.57.1)(typescript@5.9.3)
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.7(vitest@4.1.7)
@@ -30008,7 +30041,7 @@ snapshots:
       obug: 2.1.1
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
+      vitest: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@22.19.19)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@22.19.19)(typescript@5.9.3))(vite@7.3.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
 
   '@vitest/expect@3.2.4':
     dependencies:

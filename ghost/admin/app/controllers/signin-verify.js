@@ -58,6 +58,7 @@ class VerifyData {
 
 export default class SigninVerifyController extends Controller {
     @service ajax;
+    @service feature;
     @service session;
     @service ghostPaths;
 

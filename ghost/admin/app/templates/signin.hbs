@@ -1,3 +1,4 @@
+{{#unless this.feature.authX}}
 <div class="gh-flow">
     <div class="gh-flow-content-wrap">
         <section class="gh-flow-content">
@@ -75,8 +76,9 @@
                         data-test-button="sign-in" />
                 </form>
 
-                <p class="{{if this.flowErrors "main-error" "main-notification"}}" data-test-flow-notification>{{if this.flowErrors this.flowErrors this.flowNotification}}&nbsp;</p>
+                <p class="{{if this.flowErrors "main-error" "main-notification"}}" data-test-flow-notification data-testid="signin-flow-notification">{{if this.flowErrors this.flowErrors this.flowNotification}}&nbsp;</p>
             {{/if}}
         </section>
     </div>
 </div>
+{{/unless}}

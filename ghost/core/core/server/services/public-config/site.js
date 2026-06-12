@@ -2,6 +2,7 @@ const ghostVersion = require('@tryghost/version');
 const settingsCache = require('../../../shared/settings-cache');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
+const labs = require('../../../shared/labs');
 
 module.exports = function getSiteProperties() {
     const siteProperties = {
@@ -15,7 +16,11 @@ module.exports = function getSiteProperties() {
         url: urlUtils.urlFor('home', true),
         version: ghostVersion.safe,
         allow_external_signup: settingsCache.get('allow_self_signup') && !(settingsCache.get('portal_signup_checkbox_required') && settingsCache.get('portal_signup_terms_html')),
-        site_uuid: settingsCache.get('site_uuid')
+        site_uuid: settingsCache.get('site_uuid'),
+        // The React admin auth screens render pre-authentication, so the flag
+        // has to be distributed via the (public) site endpoint rather than the
+        // authenticated config endpoint.
+        authX: labs.isSet('authX')
     };
 
     if (config.get('client_sentry') && !config.get('client_sentry').disabled) {

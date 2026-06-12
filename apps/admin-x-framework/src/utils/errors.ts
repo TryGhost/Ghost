@@ -108,7 +108,16 @@ export class ValidationError extends JSONError {
     }
 }
 
-export const errorsWithMessage = [ValidationError, ThemeValidationError, HostLimitError, EmailError];
+// Thrown for 409 responses where the resource was updated by someone else
+// since it was loaded (the request's updated_at is stale), e.g. when saving
+// a post that another user is editing
+export class UpdateCollisionError extends JSONError {
+    constructor(response: Response, data: ErrorResponse, errorOptions?: ErrorOptions) {
+        super(response, data, data.errors[0].message, errorOptions);
+    }
+}
+
+export const errorsWithMessage = [ValidationError, ThemeValidationError, HostLimitError, EmailError, UpdateCollisionError];
 
 // Frontend errors
 

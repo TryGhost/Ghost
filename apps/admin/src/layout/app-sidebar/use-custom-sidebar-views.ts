@@ -1,11 +1,13 @@
 import {useMemo} from 'react';
 import {type NavSavedView} from './nav-saved-views';
-import {useSharedViews} from './shared-views';
 import {useEmberRouting} from '@/ember-bridge';
+import {usePostsViewActive} from './use-posts-view-active';
+import {useSharedViews} from './shared-views';
 
 export function useCustomSidebarViews(route: 'posts' | 'pages' = 'posts') {
     const routing = useEmberRouting();
     const sharedViews = useSharedViews(route);
+    const {isFilterActive} = usePostsViewActive(route);
 
     return useMemo<NavSavedView[]>(() => {
         return sharedViews.map((view) => {
@@ -15,9 +17,9 @@ export function useCustomSidebarViews(route: 'posts' | 'pages' = 'posts') {
                 key: to,
                 name: view.name,
                 to,
-                isActive: routing.isRouteActive(route, view.filter),
+                isActive: isFilterActive(view.filter),
                 color: view.color
             };
         });
-    }, [route, routing, sharedViews]);
+    }, [route, routing, sharedViews, isFilterActive]);
 }

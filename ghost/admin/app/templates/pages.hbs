@@ -1,4 +1,5 @@
 <section class="gh-canvas gh-canvas-sticky">
+{{#unless this.feature.postsListX}}
     <GhCanvasHeader class="gh-canvas-header sticky break tablet post-header">
         <GhCustomViewTitle @title="Pages" @query={{reset-query-params "posts"}} />
 
@@ -73,5 +74,6 @@
     {{/if}}
 
     </section>
+{{/unless}}
     {{outlet}}
 </section>

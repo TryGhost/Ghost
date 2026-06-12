@@ -13,7 +13,7 @@
 
                     {{#unless this.directlyFromAnalytics}}
                         {{svg-jar "arrow-right-small"}}
-                        <a href={{this.membersListUrl}} data-test-link="members-back">
+                        <a href={{this.membersListUrl}} data-test-link="members-back" data-testid="members-back">
                             Members
                         </a>
                     {{/unless}}
@@ -23,7 +23,7 @@
                 </div>
             {{else}}
                 <div class="gh-canvas-breadcrumb">
-                    <a href={{this.membersListUrl}} data-test-link="members-back">
+                    <a href={{this.membersListUrl}} data-test-link="members-back" data-testid="members-back">
                         Members
                     </a>
                     {{svg-jar "arrow-right-small"}}

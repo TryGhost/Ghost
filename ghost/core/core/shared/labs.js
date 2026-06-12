@@ -47,13 +47,21 @@ const PRIVATE_FEATURES = [
     'adminUIRefresh',
     'emailCustomization',
     'tagsX',
+    'tagDetailsX',
+    'postsListX',
+    'memberDetailsX',
     'emailUniqueid',
     'themeTranslation',
     'indexnow',
     'pictureImageFormats',
     'smarterCounts',
     'llmsTxt',
-    'getHelperDeduplication'
+    'getHelperDeduplication',
+    'authX',
+    'editorX',
+    'restoreX',
+    'embedScreensX',
+    'postDebugX'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

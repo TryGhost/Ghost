@@ -5,35 +5,35 @@ import {
     createMutation,
     createInfiniteQuery
 } from '../utils/api/hooks';
+import {deleteFromQueryCache, insertToQueryCache, updateQueryCache} from '../utils/api/update-queries';
 
 export type Tag = {
     id: string;
     name: string;
     slug: string;
     url: string;
-    description: string;
+    description: string | null;
     visibility: 'public' | 'internal';
     count?: {
         posts: number;
     };
 
-    // XXX: Ensure the types match the casing in the API response by either
-    // transforming them to camelCase or using snake_case
-    // metaTitle: string;
-    // metaDescription: string;
-    // twitterImage: string;
-    // twitterTitle: string;
-    // twitterDescription: string;
-    // ogImage: string;
-    // ogTitle: string;
-    // ogDescription: string;
-    // codeinjectionHead: string;
-    // codeinjectionFoot: string;
-    // canonicalUrl: string;
-    // accentColor: string;
-    // featureImage: string;
-    // createdAtUTC: string;
-    // updatedAtUTC: string;
+    // Field names match the snake_case casing of the Admin API response
+    feature_image: string | null;
+    accent_color: string | null;
+    meta_title: string | null;
+    meta_description: string | null;
+    canonical_url: string | null;
+    twitter_image: string | null;
+    twitter_title: string | null;
+    twitter_description: string | null;
+    og_image: string | null;
+    og_title: string | null;
+    og_description: string | null;
+    codeinjection_head: string | null;
+    codeinjection_foot: string | null;
+    created_at: string;
+    updated_at: string;
 };
 
 export interface TagsResponseType {
@@ -91,7 +91,47 @@ export const getTag = createQueryWithId<TagsResponseType>({
     path: id => `/tags/${id}/`
 });
 
+export const getTagBySlug = createQueryWithId<TagsResponseType>({
+    dataType,
+    path: slug => `/tags/slug/${slug}/`,
+    defaultSearchParams: {include: 'count.posts'}
+});
+
+// These mutations patch existing query caches in place (and sync the Ember
+// store via the state bridge) instead of invalidating the whole dataType:
+// invalidation would refetch every loaded page of the infinite tags list, and
+// the Ember-side handling of invalidation (store.unloadAll) would strip tag
+// records out of any loaded posts' embedded tag relationships.
+export const useAddTag = createMutation<TagsResponseType, Partial<Tag>>({
+    method: 'POST',
+    path: () => '/tags/',
+    body: tag => ({tags: [tag]}),
+    defaultSearchParams: {include: 'count.posts'},
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: insertToQueryCache('tags')
+    }
+});
+
+export const useEditTag = createMutation<TagsResponseType, Partial<Tag> & {id: string}>({
+    method: 'PUT',
+    path: tag => `/tags/${tag.id}/`,
+    body: tag => ({tags: [tag]}),
+    defaultSearchParams: {include: 'count.posts'},
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: updateQueryCache('tags')
+    }
+});
+
 export const useDeleteTag = createMutation<unknown, string>({
     method: 'DELETE',
-    path: id => `/tags/${id}/`
+    path: id => `/tags/${id}/`,
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'delete',
+        update: deleteFromQueryCache('tags')
+    }
 });

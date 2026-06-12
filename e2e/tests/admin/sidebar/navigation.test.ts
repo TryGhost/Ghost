@@ -74,7 +74,7 @@ test.describe('Ghost Admin - Sidebar Navigation', () => {
 
             await sidebar.getNavLink('Posts').click();
 
-            await expect(page).toHaveURL(/\/ghost\/#\/posts\/?$/);
+            await expect(page).toHaveURL(/\/ghost\/?#\/posts\/?$/);
             await expect(sidebar.getNavLink('Scheduled')).not.toHaveAttribute('aria-current', 'page');
             await expect(sidebar.getNavLink('Posts')).toHaveAttribute('aria-current', 'page');
         });
@@ -90,7 +90,7 @@ test.describe('Ghost Admin - Sidebar Navigation', () => {
 
             await sidebar.getNavLink('Settings').click();
 
-            await expect(page).toHaveURL(/\/ghost\/#\/settings/);
+            await expect(page).toHaveURL(/\/ghost\/?#\/settings/);
         });
 
         test('user dropdown - opens and shows menu items', async ({page}) => {
@@ -114,7 +114,7 @@ test.describe('Ghost Admin - Sidebar Navigation', () => {
 
             await sidebar.userProfileLink.click();
 
-            await expect(page).toHaveURL(/\/ghost\/#\/settings\/staff\//);
+            await expect(page).toHaveURL(/\/ghost\/?#\/settings\/staff\//);
         });
 
         test('night shift toggle - changes state on click', async ({page}) => {
@@ -182,12 +182,12 @@ test.describe('Ghost Admin - Sidebar Navigation', () => {
             await sidebar.getNavLink('Network').click();
 
             // Badge should be hidden when on network route
-            await expect(page).toHaveURL(/\/ghost\/#\/(network|activitypub)/);
+            await expect(page).toHaveURL(/\/ghost\/?#\/(network|activitypub)/);
             await expect(sidebar.networkNotificationBadge).toBeHidden();
 
             // Navigate away to posts
             await sidebar.getNavLink('Posts').click();
-            await expect(page).toHaveURL(/\/ghost\/#\/posts/);
+            await expect(page).toHaveURL(/\/ghost\/?#\/posts/);
 
             // Badge should be visible again
             await expect(sidebar.networkNotificationBadge).toBeVisible();

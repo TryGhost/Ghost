@@ -11,6 +11,7 @@ import {
     HostLimitError,
     EmailError,
     ValidationError,
+    UpdateCollisionError,
     AlreadyExistsError,
     errorsWithMessage,
     ErrorResponse
@@ -255,6 +256,17 @@ describe('errors utils', () => {
         });
     });
 
+    describe('UpdateCollisionError', () => {
+        it('uses first error message from response', () => {
+            const mockResponse = new Response();
+            const error = new UpdateCollisionError(mockResponse, mockErrorResponse);
+            expect(error.message).toBe('Test error message');
+            expect(error.response).toBe(mockResponse);
+            expect(error.data).toBe(mockErrorResponse);
+            expect(error).toBeInstanceOf(JSONError);
+        });
+    });
+
     describe('ValidationError', () => {
         it('uses first error message from response', () => {
             const mockResponse = new Response();
@@ -300,11 +312,12 @@ describe('errors utils', () => {
 
     describe('errorsWithMessage', () => {
         it('contains all expected error types', () => {
-            expect(errorsWithMessage).toHaveLength(4);
+            expect(errorsWithMessage).toHaveLength(5);
             expect(errorsWithMessage).toContain(ValidationError);
             expect(errorsWithMessage).toContain(ThemeValidationError);
             expect(errorsWithMessage).toContain(HostLimitError);
             expect(errorsWithMessage).toContain(EmailError);
+            expect(errorsWithMessage).toContain(UpdateCollisionError);
         });
     });
 

@@ -25,6 +25,19 @@ export function createPostFactory(httpClient: HttpClient): PostFactory {
     return new PostFactory(adapter);
 }
 
+/**
+ * Pages share the posts schema; only the API resource differs, so this reuses
+ * PostFactory against the /pages/ endpoint.
+ */
+export function createPageFactory(httpClient: HttpClient): PostFactory {
+    const adapter = new GhostAdminApiAdapter(
+        httpClient,
+        'pages',
+        {formats: 'mobiledoc,lexical,html'}
+    );
+    return new PostFactory(adapter);
+}
+
 export function createTagFactory(httpClient: HttpClient): TagFactory {
     const adapter = new GhostAdminApiAdapter(
         httpClient,

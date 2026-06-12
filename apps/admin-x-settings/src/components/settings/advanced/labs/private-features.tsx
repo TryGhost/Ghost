@@ -40,6 +40,18 @@ const features: Feature[] = [{
     description: 'Enables the new Tags UI',
     flag: 'tagsX'
 }, {
+    title: 'Tag Details X',
+    description: 'Enables the new React tag detail screen (tag editing and creation)',
+    flag: 'tagDetailsX'
+}, {
+    title: 'Posts List X',
+    description: 'Enables the new React posts and pages list screens',
+    flag: 'postsListX'
+}, {
+    title: 'Member Details X',
+    description: 'Enables the new React member detail screen and member activity',
+    flag: 'memberDetailsX'
+}, {
     title: 'Email Unique ID',
     description: 'Enables {uniqueid} variable in emails for unique image URLs to bypass ESP image caching',
     flag: 'emailUniqueid'
@@ -67,6 +79,26 @@ const features: Feature[] = [{
     title: 'LLMs.txt',
     description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
     flag: 'llmsTxt'
+}, {
+    title: 'Auth X',
+    description: 'Enables the new React authentication screens',
+    flag: 'authX'
+}, {
+    title: 'Editor X',
+    description: 'Enables the new React post editor',
+    flag: 'editorX'
+}, {
+    title: 'Restore X',
+    description: 'Enables the new React restore-posts screen',
+    flag: 'restoreX'
+}, {
+    title: 'Embed Screens X',
+    description: 'Enables the new React site/billing/explore/migrate screens',
+    flag: 'embedScreensX'
+}, {
+    title: 'Post Debug X',
+    description: 'Enables the new React post email debug screen',
+    flag: 'postDebugX'
 }, {
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',

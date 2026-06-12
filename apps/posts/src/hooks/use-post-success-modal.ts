@@ -1,7 +1,8 @@
 import React from 'react';
 import {Post, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
+import {useBrowsePages} from '@tryghost/admin-x-framework/api/pages';
+import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useEffect, useMemo, useState} from 'react';
-import {useGlobalData} from '@src/providers/post-analytics-context';
 
 interface PublishedPostData {
     id: string;
@@ -9,41 +10,58 @@ interface PublishedPostData {
 }
 
 interface ExtendedPost extends Post {
-    authors?: {
-        name: string;
-    }[];
-    excerpt?: string;
     newsletter?: {
         name: string;
     };
 }
 
+type SuccessVariant = 'published' | 'scheduled';
+
+/**
+ * Consumes the `ghost-last-scheduled-post` / `ghost-last-published-post`
+ * localStorage keys the publish flow writes before redirecting (Ember parity:
+ * posts-list/list.js) and opens the post-success share modal.
+ */
 export const usePostSuccessModal = () => {
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [publishedPostData, setPublishedPostData] = useState<PublishedPostData | null>(null);
+    const [variant, setVariant] = useState<SuccessVariant>('published');
     const [postCount, setPostCount] = useState<number | null>(null);
-    const {site} = useGlobalData();
+    const {data: siteData} = useBrowseSite({enabled: !!publishedPostData});
 
-    // Fetch the published post data if we have it
+    const isPage = publishedPostData?.type === 'page';
+
+    // Fetch the published post (or page) data if we have it
     const {data: postResponse} = useBrowsePosts({
         searchParams: publishedPostData ? {
             filter: `id:${publishedPostData.id}`,
             include: 'authors,newsletter,email'
         } : {},
-        enabled: !!publishedPostData
+        enabled: !!publishedPostData && !isPage
+    });
+    const {data: pageResponse} = useBrowsePages({
+        searchParams: publishedPostData ? {
+            filter: `id:${publishedPostData.id}`,
+            include: 'authors'
+        } : {},
+        enabled: !!publishedPostData && isPage
     });
 
-    // Fetch total published post count
+    // Fetch total published post count (only shown for published posts)
     const {data: postCountResponse} = useBrowsePosts({
         searchParams: {
             filter: 'status:[published,sent]',
             limit: '1',
             fields: 'id'
         },
-        enabled: !!publishedPostData
+        enabled: !!publishedPostData && variant === 'published'
     });
 
-    const post = postResponse?.posts?.[0] as ExtendedPost | undefined;
+    const post = (isPage
+        ? (pageResponse?.pages?.[0] as unknown as ExtendedPost | undefined)
+        : (postResponse?.posts?.[0] as ExtendedPost | undefined));
+
+    const site = siteData?.site;
 
     // Helper functions for formatting
     const formatSubscriberCount = (count: number) => {
@@ -75,18 +93,28 @@ export const usePostSuccessModal = () => {
             return null;
         }
 
-        const showPostCount = !!postCount;
+        const isScheduled = variant === 'scheduled';
+        const typeWord = isPage ? 'page' : 'post';
+        const showPostCount = !isScheduled && !!postCount;
 
         // Build description with React elements to match Ember modal format with bold text
         const getDescription = () => {
             const parts = [];
 
-            if (post.email_only) {
+            if (isScheduled) {
+                if (post.email_only) {
+                    parts.push('Your email will be sent to');
+                } else if (post.email?.email_count) {
+                    parts.push('Your post will be published on your site and sent to');
+                } else {
+                    parts.push(`Your ${typeWord} will be published on your site`);
+                }
+            } else if (post.email_only) {
                 parts.push('Your email was sent to');
             } else if (post.email?.email_count) {
                 parts.push('Your post was published on your site and sent to');
             } else {
-                parts.push('Your post was published on your site');
+                parts.push(`Your ${typeWord} was published on your site`);
             }
 
             if (post.email?.email_count) {
@@ -136,7 +164,7 @@ export const usePostSuccessModal = () => {
             },
             emailOnly: post.email_only,
             postURL: post.url || '',
-            primaryTitle: 'Boom! It\'s out there.',
+            primaryTitle: isScheduled ? 'All set!' : 'Boom! It\'s out there.',
             secondaryTitle: showPostCount && postCount ?
                 `That's ${postCount.toLocaleString()} post${postCount !== 1 ? 's' : ''} published.` :
                 'Spread the word!',
@@ -149,19 +177,29 @@ export const usePostSuccessModal = () => {
             author: getAuthorsText(post.authors),
             onClose: handleClose
         };
-    }, [post, isModalOpen, postCount, site?.title]);
+    }, [post, isModalOpen, postCount, variant, isPage, site?.icon, site?.title]);
 
     useEffect(() => {
         const checkForPublishedPost = () => {
             try {
-                const storedData = localStorage.getItem('ghost-last-published-post');
+                // Ember parity: both keys are consumed and cleared; when both
+                // are present the published modal wins (Ember opened it last)
+                const scheduledData = localStorage.getItem('ghost-last-scheduled-post');
+                const publishedData = localStorage.getItem('ghost-last-published-post');
+
+                if (scheduledData) {
+                    localStorage.removeItem('ghost-last-scheduled-post');
+                }
+                if (publishedData) {
+                    localStorage.removeItem('ghost-last-published-post');
+                }
+
+                const storedData = publishedData ?? scheduledData;
                 if (storedData) {
                     const parsedData: PublishedPostData = JSON.parse(storedData);
+                    setVariant(publishedData ? 'published' : 'scheduled');
                     setPublishedPostData(parsedData);
                     setIsModalOpen(true);
-
-                    // Clean up localStorage
-                    localStorage.removeItem('ghost-last-published-post');
                 }
             } catch {
                 // Ignore localStorage errors

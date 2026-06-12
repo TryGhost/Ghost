@@ -14,6 +14,9 @@ export type SiteData = {
     locale: string;
     version: string;
     site_uuid: string;
+    // Labs flag for the React admin auth screens; distributed via the public
+    // site endpoint because the auth screens render pre-authentication
+    authX?: boolean;
 };
 
 export interface SiteResponseType {
