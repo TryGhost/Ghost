@@ -58,7 +58,7 @@ class GiftLinksService {
 
     /**
      * The active gift link matching a presented token, or null. Used by the
-     * frontend to validate `?gift=TOKEN`.
+     * frontend /g/ controller to validate the `?key=TOKEN` query param.
      * @param {string} token
      * @param {object} [options]
      * @returns {Promise<object|null>}

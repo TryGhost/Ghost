@@ -70,11 +70,15 @@ const getMiddleware = async (getFreeTier = async () => {
             return shared.middleware.cacheControl('noCache')(req, res, next);
         }
 
-        // CASE: Never cache gift-link requests. The response is the unlocked post,
-        // and query strings are not part of the cache key — caching it would leak
-        // the unlocked content to everyone hitting the clean URL. Mirrors the /p/
-        // preview behavior. Flag-gated so the param can't bust cache when off.
-        if (req.query?.gift && labs.isSet('giftLinks')) {
+        // CASE: Never cache gift-link requests. /g/<slug>/?key=TOKEN responses
+        // include unlocked gated content. The 301 redirects emitted by the
+        // gift-links controller on invalid/missing/mismatched tokens set
+        // their own `Cache-Control: no-store` (the controller can't rely on
+        // this middleware's header because `res.redirect` finalises the
+        // response, and `urlUtils.redirect301` would overwrite it with
+        // `public, max-age=...`). Mirrors the /p/ preview path check above.
+        // Flag-gated so /g/ paths don't bypass cache when the feature is off.
+        if (req.path?.startsWith('/g/') && labs.isSet('giftLinks')) {
             return shared.middleware.cacheControl('noCache')(req, res, next);
         }
 

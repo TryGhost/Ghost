@@ -7,6 +7,7 @@ const TaxonomyRouter = require('./taxonomy-router');
 const PreviewRouter = require('./preview-router');
 const ParentRouter = require('./parent-router');
 const EmailRouter = require('./email-router');
+const GiftLinksRouter = require('./gift-links-router');
 const UnsubscribeRouter = require('./unsubscribe-router');
 
 // This emits its own routing events
@@ -114,6 +115,13 @@ class RouterManager {
         const previewRouter = new PreviewRouter(RESOURCE_CONFIG);
         this.siteRouter.mountRouter(previewRouter.router());
         this.registry.setRouter('previewRouter', previewRouter);
+
+        // Gift links share preview's "top-level prefix, no collection coupling"
+        // shape. The controller flag-gates on `labs.giftLinks` per-request so
+        // the route effectively no-ops when the feature is off.
+        const giftLinksRouter = new GiftLinksRouter();
+        this.siteRouter.mountRouter(giftLinksRouter.router());
+        this.registry.setRouter('giftLinksRouter', giftLinksRouter);
 
         _.each(routerSettings.routes, (value, key) => {
             const staticRoutesRouter = new StaticRoutesRouter(key, value, this.routerCreated.bind(this));

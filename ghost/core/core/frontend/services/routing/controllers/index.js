@@ -19,6 +19,10 @@ module.exports = {
         return require('./email-post');
     },
 
+    get giftLinks() {
+        return require('./gift-links');
+    },
+
     get channel() {
         return require('./channel');
     },

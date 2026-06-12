@@ -145,7 +145,10 @@ module.exports = function setupSiteApp(routerConfig) {
     // Global handling for member session, ensures a member is logged in to the frontend
     siteApp.use(membersService.middleware.loadMemberSession);
 
-    // Resolve a `?gift=TOKEN` param into a content-only access grant (res.locals.giftLink)
+    // Resolve `/g/<slug>/?key=TOKEN` into a content-only access grant on
+    // res.locals.giftLink BEFORE theme middleware reads it for the gift
+    // callout. The slug-match check + render/redirect lives in the
+    // GiftLinksRouter's controller — this middleware only validates the token.
     siteApp.use(giftLinksService.middleware.loadGiftLink);
 
     // Theme middleware

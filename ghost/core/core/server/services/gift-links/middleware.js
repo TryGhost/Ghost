@@ -4,37 +4,42 @@ const Cookies = require('cookies');
 const urlUtils = require('../../../shared/url-utils');
 const isBotUserAgent = require('./is-bot-user-agent');
 
-// Distinct prefix from the `gift` query param to avoid confusion. The cookie is
-// named per-post (`gift_seen_<post_id>`) so reading multiple gifted posts can't
-// collide, and its value is the token, making the count a distinct-clients proxy.
+// The cookie is named per-post (`gift_seen_<post_id>`) so reading multiple
+// gifted posts can't collide, and its value is the token, making the count a
+// distinct-clients proxy.
 const GIFT_SEEN_COOKIE_PREFIX = 'gift_seen_';
 
 /**
- * Frontend middleware: resolve a `?gift=TOKEN` query param into a content-only
- * access grant for the rest of the request.
+ * Frontend middleware: when a request hits `/g/<slug>/?key=TOKEN`, resolve the
+ * key into a content-only access grant on `res.locals.giftLink` before the
+ * theme middleware reads it (the {{content}} helper renders the gift callout
+ * iff `data.gift.post_id === post.id`, so the grant has to land BEFORE
+ * `update-local-template-options` runs).
  *
- * - Sets `res.locals.giftLink` (post id + token) when the token is valid+active,
- *   which the entry data fetch threads into the gating serializer (forPost).
- * - Marks ANY gift request `noindex` (canonical already points to the clean URL)
- *   and applies a strict `Referrer-Policy` to limit token leakage via Referer.
- *
- * Cache bypass for gift requests is handled separately in frontend-caching.
+ * This is mounted globally at the site level rather than inside the
+ * GiftLinksRouter for that ordering reason. The router's controller is
+ * responsible for the slug-match check + render/redirect; this middleware
+ * only resolves the token.
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res
  * @param {import('express').NextFunction} next
  */
 async function loadGiftLink(req, res, next) {
-    // Coerce to string: Express's query parser turns `?gift[x]=y` into an object
-    // and `?gift=a&gift=b` into an array — only a plain string is a real token.
-    const token = typeof req.query.gift === 'string' ? req.query.gift : null;
-
-    if (!token || !labs.isSet('giftLinks')) {
+    if (!labs.isSet('giftLinks')) {
+        return next();
+    }
+    if (!req.path || !req.path.startsWith('/g/')) {
         return next();
     }
 
-    res.set('X-Robots-Tag', 'noindex');
-    res.set('Referrer-Policy', 'no-referrer');
+    // Coerce to string: Express's query parser turns `?key[x]=y` into an
+    // object and `?key=a&key=b` into an array — only a plain string is a
+    // real token.
+    const token = typeof req.query.key === 'string' ? req.query.key : null;
+    if (!token) {
+        return next();
+    }
 
     // Lazy require avoids any boot-time load-order coupling; `.api` is wired in init().
     const giftLinksService = require('./');
@@ -47,9 +52,14 @@ async function loadGiftLink(req, res, next) {
                 post_id: giftLink.get('post_id'),
                 token
             };
+            // Always-on for gift requests: defence in depth on top of
+            // `rel=canonical` pointing back to /<slug>/, and limit Referer
+            // leakage of the token to third-party sub-resources.
+            res.set('X-Robots-Tag', 'noindex');
+            res.set('Referrer-Policy', 'no-referrer');
         }
     } catch (err) {
-        // Invalid/unknown token → no grant; fall through to the normal paywalled page.
+        // Invalid/unknown token → no grant; controller will 301 to canonical.
         logging.warn(`Failed to resolve gift link token: ${err.message}`);
     }
 

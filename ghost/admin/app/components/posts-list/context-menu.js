@@ -64,6 +64,7 @@ const messages = {
 
 export default class PostsContextMenu extends Component {
     @service ajax;
+    @service config;
     @service ghostPaths;
     @service session;
     @service infinity;
@@ -459,8 +460,11 @@ export default class PostsContextMenu extends Component {
         const url = this.ghostPaths.url.api('gift_links', post.id);
         const response = yield this.ajax.post(url);
         const token = response.gift_links[0].token;
-        const separator = post.url.includes('?') ? '&' : '?';
-        const giftUrl = `${post.url}${separator}gift=${encodeURIComponent(token)}&utm_campaign=gift-link`;
+        // Gift links live at /g/<slug>/?key=TOKEN — see the matching getter in
+        // gh-post-settings-menu.js for the rationale (path prefix, Fastly
+        // bypass shape, subdirectory handling).
+        const base = (this.config.blogUrl || '').replace(/\/+$/, '');
+        const giftUrl = `${base}/g/${encodeURIComponent(post.slug)}/?key=${encodeURIComponent(token)}&utm_campaign=gift-link`;
         copyTextToClipboard(giftUrl);
         trackEvent('gift_link_copied', {surface: 'posts-list-context-menu'});
         this.notifications.showNotification(this.#getToastMessage('copiedGiftLink'), {type: 'success'});

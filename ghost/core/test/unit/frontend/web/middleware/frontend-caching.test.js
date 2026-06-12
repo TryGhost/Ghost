@@ -108,15 +108,15 @@ describe('frontendCaching', function () {
         assert.equal(headers['cache-control'], testUtils.cacheRules.noCache);
     });
 
-    it('should set cache control to no-cache when a gift token is present and the flag is enabled', async function () {
+    it('should set cache control to no-cache for /g/ paths when the giftLinks flag is enabled', async function () {
         sinon.stub(labs, 'isSet').withArgs('giftLinks').returns(true);
-        const {headers} = await requestWithFrontendCaching({path: '/my-post/?gift=sometoken'});
+        const {headers} = await requestWithFrontendCaching({path: '/g/my-post/?key=sometoken'});
         assert.equal(headers['cache-control'], testUtils.cacheRules.noCache);
     });
 
-    it('should NOT bypass cache for a gift token when the flag is disabled', async function () {
+    it('should NOT bypass cache for /g/ paths when the giftLinks flag is disabled', async function () {
         sinon.stub(labs, 'isSet').returns(false);
-        const {headers} = await requestWithFrontendCaching({path: '/my-post/?gift=sometoken'});
+        const {headers} = await requestWithFrontendCaching({path: '/g/my-post/?key=sometoken'});
         assert.equal(headers['cache-control'], testUtils.cacheRules.public);
     });
 

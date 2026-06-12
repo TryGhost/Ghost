@@ -1,9 +1,9 @@
 /**
  * Serializes a GiftLink for the admin API. The shareable URL is intentionally
- * NOT built here: the admin already holds each post/page's canonical `url`, so
- * surfaces compose `${post.url}?gift=${token}&utm_campaign=gift-link` client-side.
- * That keeps this serializer free of the URL-service (and avoids a dependency on
- * the in-memory URL map, which isn't populated in admin-only contexts).
+ * NOT built here: the admin already holds the site URL (config) and each post's
+ * slug, so surfaces compose `${siteUrl}/g/${slug}/?key=${token}&utm_campaign=gift-link`
+ * client-side. That keeps this serializer free of the URL-service (and avoids a
+ * dependency on the in-memory URL map, which isn't populated in admin-only contexts).
  *
  * @param {object|null} model - a GiftLink bookshelf model, or null
  * @returns {object|null}

@@ -11,8 +11,8 @@ function makeReqRes({userAgent, cookieHeader} = {}) {
     const headers = {};
     const req = {
         get: h => (h.toLowerCase() === 'user-agent' ? userAgent : undefined),
-        path: '/my-post/',
-        originalUrl: '/my-post/?gift=tok',
+        path: '/g/my-post/',
+        originalUrl: '/g/my-post/?key=tok',
         protocol: 'http',
         connection: {},
         headers: {cookie: cookieHeader || ''}
@@ -33,8 +33,8 @@ describe('Unit: gift-links/middleware loadGiftLink', function () {
     let setStub;
 
     beforeEach(function () {
-        req = {query: {}};
         setStub = sinon.stub();
+        req = {path: '/g/my-post/', query: {}};
         res = {locals: {}, set: setStub};
         next = sinon.stub();
     });
@@ -44,16 +44,20 @@ describe('Unit: gift-links/middleware loadGiftLink', function () {
         delete giftLinksService.api;
     });
 
-    it('no-ops when there is no gift param', async function () {
+    it('no-ops when the path is not under /g/', async function () {
+        req.path = '/some-post/';
+        req.query.key = 'tok';
+        sinon.stub(labs, 'isSet').withArgs('giftLinks').returns(true);
+
         await loadGiftLink(req, res, next);
 
-        sinon.assert.calledOnce(next);
         sinon.assert.notCalled(setStub);
         assert.equal(res.locals.giftLink, undefined);
+        sinon.assert.calledOnce(next);
     });
 
-    it('no-ops (no headers, no grant) when the flag is disabled', async function () {
-        req.query.gift = 'tok';
+    it('no-ops when the flag is disabled', async function () {
+        req.query.key = 'tok';
         sinon.stub(labs, 'isSet').returns(false);
 
         await loadGiftLink(req, res, next);
@@ -63,8 +67,29 @@ describe('Unit: gift-links/middleware loadGiftLink', function () {
         sinon.assert.calledOnce(next);
     });
 
-    it('sets noindex + referrer headers and grants for a valid token', async function () {
-        req.query.gift = 'tok';
+    it('no-ops when there is no key in the query string', async function () {
+        sinon.stub(labs, 'isSet').withArgs('giftLinks').returns(true);
+
+        await loadGiftLink(req, res, next);
+
+        sinon.assert.notCalled(setStub);
+        assert.equal(res.locals.giftLink, undefined);
+        sinon.assert.calledOnce(next);
+    });
+
+    it('ignores a non-string key param (e.g. ?key[$ne]= object/array)', async function () {
+        req.query.key = {$ne: 'x'};
+        sinon.stub(labs, 'isSet').withArgs('giftLinks').returns(true);
+
+        await loadGiftLink(req, res, next);
+
+        sinon.assert.notCalled(setStub);
+        assert.equal(res.locals.giftLink, undefined);
+        sinon.assert.calledOnce(next);
+    });
+
+    it('sets noindex + referrer headers and grants for a valid token on a /g/ path', async function () {
+        req.query.key = 'tok';
         sinon.stub(labs, 'isSet').withArgs('giftLinks').returns(true);
         giftLinksService.api = {
             getActiveByToken: sinon.stub().resolves({id: 'gl1', get: () => 'post-1'})
@@ -78,27 +103,14 @@ describe('Unit: gift-links/middleware loadGiftLink', function () {
         sinon.assert.calledOnce(next);
     });
 
-    it('ignores a non-string gift param (e.g. ?gift[$ne]= object/array)', async function () {
-        req.query.gift = {$ne: 'x'};
-        const isSetStub = sinon.stub(labs, 'isSet').returns(true);
-
-        await loadGiftLink(req, res, next);
-
-        // Short-circuits before the flag check and any DB lookup
-        sinon.assert.notCalled(isSetStub);
-        sinon.assert.notCalled(setStub);
-        assert.equal(res.locals.giftLink, undefined);
-        sinon.assert.calledOnce(next);
-    });
-
-    it('sets headers but no grant for an invalid/unknown token', async function () {
-        req.query.gift = 'bad';
+    it('sets no grant when the token is unknown (controller will 301 to canonical)', async function () {
+        req.query.key = 'bad';
         sinon.stub(labs, 'isSet').withArgs('giftLinks').returns(true);
         giftLinksService.api = {getActiveByToken: sinon.stub().resolves(null)};
 
         await loadGiftLink(req, res, next);
 
-        sinon.assert.calledWith(setStub, 'X-Robots-Tag', 'noindex');
+        sinon.assert.notCalled(setStub);
         assert.equal(res.locals.giftLink, undefined);
         sinon.assert.calledOnce(next);
     });
@@ -120,6 +132,7 @@ describe('Unit: gift-links/middleware loadGiftLink', function () {
             const cookieStr = Array.isArray(setCookie) ? setCookie.join(';') : String(setCookie);
             assert.match(cookieStr, /gift_seen_post-1=tok/, 'per-post cookie name avoids cross-post collisions');
             assert.match(cookieStr, /httponly/i);
+            assert.match(cookieStr, /path=\/g\/my-post\//i);
         });
 
         it('does not count a bot/scanner read', function () {

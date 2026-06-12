@@ -34,6 +34,7 @@ function assertContentIsAbsent(res) {
 describe('Front-end gift links', function () {
     let request;
     let token;
+    const slug = 'gift-me-this-paid-post';
 
     before(async function () {
         const originalSettingsCacheGetFn = settingsCache.get;
@@ -50,7 +51,7 @@ describe('Front-end gift links', function () {
         await testUtils.startGhost({copyThemes: true});
 
         const paidPost = testUtils.DataGenerator.forKnex.createPost({
-            slug: 'gift-me-this-paid-post',
+            slug,
             visibility: 'paid',
             published_at: moment().toDate()
         });
@@ -68,22 +69,22 @@ describe('Front-end gift links', function () {
         sinon.restore();
     });
 
-    it('paywalls the paid post for an anonymous visitor with no gift token', async function () {
+    it('paywalls the paid post for an anonymous visitor on the canonical URL', async function () {
         const res = await request
-            .get('/gift-me-this-paid-post/')
+            .get(`/${slug}/`)
             .expect(200)
             .expect(assertContentIsAbsent);
         // No gift → no reader callout (the normal paywall CTA shows instead)
         assert.ok(!res.text.includes('gh-gift-callout'));
     });
 
-    it('unlocks the full post for an anonymous visitor with a valid gift token', async function () {
+    it('unlocks the full post for an anonymous visitor with a valid /g/ + key', async function () {
         const res = await request
-            .get(`/gift-me-this-paid-post/?gift=${token}`)
+            .get(`/g/${slug}/?key=${token}`)
             .expect(200)
             .expect(assertContentIsPresent);
 
-        // Must never be cached (query strings aren't part of the cache key) and
+        // Must never be cached (path-based bypass + origin no-store) and
         // must not be indexed.
         assert.match(res.headers['cache-control'], /no-store/);
         assert.equal(res.headers['x-robots-tag'], 'noindex');
@@ -96,13 +97,57 @@ describe('Front-end gift links', function () {
         assert.ok(res.text.includes('data-portal="signin"'), 'renders the sign-in CTA');
     });
 
-    it('falls back to the paywall for an invalid gift token but still bypasses cache', async function () {
+    it('301s to the canonical URL when the gift token is invalid', async function () {
         const res = await request
-            .get('/gift-me-this-paid-post/?gift=not-a-real-token')
-            .expect(200)
-            .expect(assertContentIsAbsent);
+            .get(`/g/${slug}/?key=not-a-real-token`)
+            .redirects(0)
+            .expect(301);
 
+        // Redirect target carries no key and no utm — invalid attempts must
+        // not pollute gift counts or campaign analytics.
+        assert.match(res.headers.location, new RegExp(`/${slug}/?$`));
+        assert.doesNotMatch(res.headers.location, /key=/);
+        assert.doesNotMatch(res.headers.location, /utm_campaign=/);
+        // The 301 itself must NOT be cached, so a reset link can't poison
+        // subsequent requests via a stale browser-cached redirect.
         assert.match(res.headers['cache-control'], /no-store/);
+    });
+
+    it('301s to the canonical URL when no key is provided', async function () {
+        const res = await request
+            .get(`/g/${slug}/`)
+            .redirects(0)
+            .expect(301);
+
+        assert.match(res.headers.location, new RegExp(`/${slug}/?$`));
+        assert.match(res.headers['cache-control'], /no-store/);
+    });
+
+    it('301s to the canonical URL when a valid token is paired with the wrong slug', async function () {
+        // Use a different valid slug. The token unlocks the original post,
+        // but the URL slug doesn't match → treat as invalid (never leak the
+        // real slug by redirecting to the token's actual post).
+        const otherPost = testUtils.DataGenerator.forKnex.createPost({
+            slug: 'unrelated-paid-post',
+            visibility: 'paid',
+            published_at: moment().toDate()
+        });
+        await testUtils.fixtures.insertPosts([otherPost]);
+
+        const res = await request
+            .get(`/g/unrelated-paid-post/?key=${token}`)
+            .redirects(0)
+            .expect(301);
+
+        assert.match(res.headers.location, /\/unrelated-paid-post\/?$/);
+        assert.doesNotMatch(res.headers.location, /key=/);
+    });
+
+    it('404s when the URL slug does not resolve to any published post', async function () {
+        await request
+            .get('/g/no-such-slug/?key=irrelevant')
+            .redirects(0)
+            .expect(404);
     });
 
     it('counts a human gift read once and de-dupes repeat views via the gift_seen cookie', async function () {
@@ -110,7 +155,7 @@ describe('Front-end gift links', function () {
         const humanAgent = supertest.agent(configUtils.config.get('url'));
 
         const res = await humanAgent
-            .get(`/gift-me-this-paid-post/?gift=${token}`)
+            .get(`/g/${slug}/?key=${token}`)
             .set('User-Agent', HUMAN_UA)
             .expect(200);
 
@@ -122,7 +167,7 @@ describe('Front-end gift links', function () {
 
         // A second view from the same client must NOT double-count (cookie matches token).
         await humanAgent
-            .get(`/gift-me-this-paid-post/?gift=${token}`)
+            .get(`/g/${slug}/?key=${token}`)
             .set('User-Agent', HUMAN_UA)
             .expect(200);
         assert.equal(await pollRedeemedCount(token, 1), 1, 'repeat view from same client is de-duped');

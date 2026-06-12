@@ -4,7 +4,6 @@ const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
 const dataService = require('../../data');
 const renderer = require('../../rendering');
-const giftLinksService = require('../../../../server/services/gift-links');
 const {getAcceptedMarkdownContentType, getMarkdownPath, renderEntryMarkdown} = require('../../llms/markdown');
 
 function getLlmsService(req) {
@@ -107,12 +106,6 @@ module.exports = function entryController(req, res, next) {
                         return serveMarkdown(res, entry);
                     }
                 }
-            }
-
-            // CASE: this is a valid gift read of the gift's own post/page — count it
-            // (bot-filtered, client-de-duped) before rendering. Non-blocking.
-            if (res.locals.giftLink && res.locals.giftLink.post_id === entry.id) {
-                giftLinksService.middleware.countGiftRead(req, res, res.locals.giftLink);
             }
 
             return renderer.renderEntry(req, res)(entry);
