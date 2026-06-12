@@ -857,6 +857,9 @@ importers:
       react-router:
         specifier: 'catalog:'
         version: 7.14.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      sonner:
+        specifier: 'catalog:'
+        version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@playwright/test':
         specifier: 'catalog:'
@@ -2326,6 +2329,9 @@ importers:
       '@sentry/node':
         specifier: 7.120.4
         version: 7.120.4
+      '@slack/webhook':
+        specifier: 7.0.9
+        version: 7.0.9
       '@tryghost/adapter-base-cache':
         specifier: 0.1.25
         version: 0.1.25
@@ -2668,6 +2674,9 @@ importers:
       metascraper:
         specifier: 5.45.15
         version: 5.45.15(@noble/hashes@1.8.0)
+      metascraper-amazon:
+        specifier: 5.45.10
+        version: 5.45.10(@noble/hashes@1.8.0)
       metascraper-author:
         specifier: 5.45.10
         version: 5.45.10(@noble/hashes@1.8.0)
@@ -7017,6 +7026,14 @@ packages:
     deprecated: |-
       Deprecated: no longer maintained and no longer used by Sinon packages. See
         https://github.com/sinonjs/nise/issues/243 for replacement details.
+
+  '@slack/types@2.21.1':
+    resolution: {integrity: sha512-I8vmSjNYWsaxuWPx6dz4yeh0h7vRBWbgAMK14LEmblbZ404BtrPbXs6jDPx4cYgGf8msDGF4A9opLZBu21FViQ==}
+    engines: {node: '>= 12.13.0', npm: '>= 6.12.0'}
+
+  '@slack/webhook@7.0.9':
+    resolution: {integrity: sha512-hMfkQ5Y3Y7FtL+ZYhcxFblidx4Z2LPRFrhY1KJb6NqQdnK6kzTzTS1mjH5taVQIB496eqwpg9FE9mq9BFx0DWw==}
+    engines: {node: '>= 18', npm: '>= 8.6.0'}
 
   '@smithy/core@3.24.6':
     resolution: {integrity: sha512-wBXDRup6UU97VKyaiRo8AssnfStPtG0oAAfpq/bC0a1YYau8pM86YB4kM6ccoVi1mS8l/UHbn9oDM+7uozr/ug==}
@@ -16683,6 +16700,10 @@ packages:
 
   merge@2.1.1:
     resolution: {integrity: sha512-jz+Cfrg9GWOZbQAnDQ4hlVnQky+341Yk5ru8bZSe6sIDTCIg8n9i/u7hSQGSVOF3C7lH6mGtqjkiT9G4wFLL0w==}
+
+  metascraper-amazon@5.45.10:
+    resolution: {integrity: sha512-dL4ZUOFWsfXlgROp9Eow8lgUAe4DkyaYOFAHQLekPMPE37cueAV+PM6fZNl2mwCd5hHlc0mjNNW3lf1Lf5KHrA==}
+    engines: {node: '>= 16'}
 
   metascraper-author@5.45.10:
     resolution: {integrity: sha512-S00rvCOqoHrM3WzTRzeIg/TP5Pi35IqtFjsmYIhiqIzTlHHHWvsV2ZBnHjPQkwyu90kADWQh3Cem2BYYk1fvDw==}
@@ -26396,6 +26417,17 @@ snapshots:
       type-detect: 4.1.0
 
   '@sinonjs/text-encoding@0.7.3': {}
+
+  '@slack/types@2.21.1': {}
+
+  '@slack/webhook@7.0.9':
+    dependencies:
+      '@slack/types': 2.21.1
+      '@types/node': 25.9.1
+      axios: 1.16.1
+    transitivePeerDependencies:
+      - debug
+      - supports-color
 
   '@smithy/core@3.24.6':
     dependencies:
@@ -39807,6 +39839,16 @@ snapshots:
   merge2@1.4.1: {}
 
   merge@2.1.1: {}
+
+  metascraper-amazon@5.45.10(@noble/hashes@1.8.0):
+    dependencies:
+      '@metascraper/helpers': 5.50.1(@noble/hashes@1.8.0)
+    transitivePeerDependencies:
+      - '@noble/hashes'
+      - bufferutil
+      - canvas
+      - supports-color
+      - utf-8-validate
 
   metascraper-author@5.45.10(@noble/hashes@1.8.0):
     dependencies:

@@ -1,6 +1,8 @@
-import {Label, useCreateLabel, useDeleteLabel, useEditLabel} from '@tryghost/admin-x-framework/api/labels';
+import {APIError} from '@tryghost/admin-x-framework/errors';
+import {Label, useCreateLabel, useDeleteLabel, useEditLabel, useFindLabelByName, useInvalidateLabels} from '@tryghost/admin-x-framework/api/labels';
 import {ValueSource} from '@tryghost/shade/patterns';
 import {useCallback, useMemo, useRef, useState} from 'react';
+import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useLabelValueSource} from './filter-sources/use-label-value-source';
 import type {ComboboxOptionSource} from '@tryghost/shade/components';
 
@@ -17,11 +19,10 @@ export interface UseLabelPickerResult {
     resolvedSelectedLabels: Label[];
 
     toggleLabel: (slug: string) => void;
+    // Creates or adopts the label and selects it; failures are reported and rethrown
     createLabel: (name: string) => Promise<Label | undefined>;
     editLabel: (id: string, name: string) => Promise<void>;
     deleteLabel: (id: string) => Promise<void>;
-    isDuplicateName: (name: string, excludeId?: string) => boolean;
-    canCreateFromSearch: (inputValue: string) => boolean;
     isCreating: boolean;
 }
 
@@ -58,9 +59,14 @@ export function useLabelPicker({
         onSearchChange: setSearchValue
     };
 
-    const {mutateAsync: createLabelMutation, isLoading: isCreating} = useCreateLabel();
+    const {mutateAsync: createLabelMutation} = useCreateLabel();
+    // Unlike the mutation's isLoading, this also covers the adoption lookup
+    const [isCreating, setIsCreating] = useState(false);
     const {mutateAsync: editLabelMutation} = useEditLabel();
     const {mutateAsync: deleteLabelMutation} = useDeleteLabel();
+    const findLabelByName = useFindLabelByName();
+    const invalidateLabels = useInvalidateLabels();
+    const handleError = useHandleError();
 
     // Ref to always read the latest selectedSlugs in callbacks,
     // avoiding stale closures and keeping callbacks stable
@@ -76,32 +82,55 @@ export function useLabelPicker({
         }
     }, [onSelectionChange]);
 
-    const isDuplicateName = useCallback((name: string, excludeId?: string) => {
-        const normalized = name.trim().toLowerCase();
-        return labels.some(l => l.name.toLowerCase() === normalized && l.id !== excludeId);
-    }, [labels]);
-
-    const canCreateFromSearch = useCallback((inputValue: string) => {
-        const trimmed = inputValue.trim();
-        if (!trimmed) {
-            return false;
+    // Idempotent, unlike toggleLabel - selecting after an await must not
+    // deselect a label that was picked while the request was in flight
+    const selectLabel = useCallback((slug: string) => {
+        const current = selectedSlugsRef.current;
+        if (!current.includes(slug)) {
+            onSelectionChange([...current, slug]);
         }
-        return !isDuplicateName(trimmed);
-    }, [isDuplicateName]);
+    }, [onSelectionChange]);
 
     const createLabel = useCallback(async (name: string): Promise<Label | undefined> => {
         const trimmed = name.trim();
-        if (!trimmed || isDuplicateName(trimmed)) {
+        if (!trimmed) {
             return undefined;
         }
-        const result = await createLabelMutation({name: trimmed});
-        const newLabel = result?.labels?.[0];
-        return newLabel;
-    }, [createLabelMutation, isDuplicateName]);
+        setIsCreating(true);
+        try {
+            const result = await createLabelMutation({name: trimmed});
+            const created = result?.labels?.[0];
+            if (created) {
+                selectLabel(created.slug);
+            }
+            return created;
+        } catch (error) {
+            // A rejected duplicate (e.g. created by another admin since the
+            // list loaded) is adopted as if the create succeeded. Keyed on
+            // 422 because the ValidationError class also covers 403s
+            if (error instanceof APIError && error.response?.status === 422) {
+                let existing;
+                try {
+                    existing = await findLabelByName(trimmed);
+                } catch {
+                    // report the original rejection below
+                }
+                if (existing) {
+                    invalidateLabels();
+                    selectLabel(existing.slug);
+                    return existing;
+                }
+            }
+            handleError(error);
+            throw error;
+        } finally {
+            setIsCreating(false);
+        }
+    }, [createLabelMutation, findLabelByName, handleError, invalidateLabels, selectLabel]);
 
     const editLabel = useCallback(async (id: string, name: string) => {
         const trimmed = name.trim();
-        if (!trimmed || isDuplicateName(trimmed, id)) {
+        if (!trimmed) {
             return;
         }
         const oldLabel = labels.find(l => l.id === id);
@@ -114,18 +143,30 @@ export function useLabelPicker({
                 onSelectionChange(current.map(s => (s === oldLabel.slug ? updatedLabel.slug : s)));
             }
         }
-    }, [editLabelMutation, isDuplicateName, labels, onSelectionChange]);
+    }, [editLabelMutation, labels, onSelectionChange]);
 
     const deleteLabel = useCallback(async (id: string) => {
         const label = labels.find(l => l.id === id);
-        await deleteLabelMutation(id);
+        try {
+            await deleteLabelMutation(id);
+        } catch (error) {
+            // A label that is already gone fulfils the delete; anything else
+            // is unexpected, so report it and rethrow for the edit row to
+            // reset its state
+            if (error instanceof APIError && error.response?.status === 404) {
+                invalidateLabels();
+            } else {
+                handleError(error);
+                throw error;
+            }
+        }
         if (label) {
             const current = selectedSlugsRef.current;
             if (current.includes(label.slug)) {
                 onSelectionChange(current.filter(s => s !== label.slug));
             }
         }
-    }, [deleteLabelMutation, labels, onSelectionChange]);
+    }, [deleteLabelMutation, handleError, invalidateLabels, labels, onSelectionChange]);
 
     return {
         labels,
@@ -138,8 +179,6 @@ export function useLabelPicker({
         createLabel,
         editLabel,
         deleteLabel,
-        isDuplicateName,
-        canCreateFromSearch,
         isCreating
     };
 }

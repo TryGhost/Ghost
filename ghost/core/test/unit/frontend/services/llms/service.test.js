@@ -413,5 +413,34 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.equal(pageCall.options.filter, 'status:published+visibility:public');
         assert.equal(postCall.options.filter, 'status:published+visibility:public');
         assert.equal(postCall.options.limit, 'all');
+        assert.equal(pageCall.options.order, 'id asc');
+        assert.equal(postCall.options.order, 'published_at desc');
+        assert.deepEqual(pageCall.options.context, {member: null});
+        assert.deepEqual(postCall.options.context, {member: null});
+        assert.equal(postCall.options.formats, 'plaintext');
+        assert.equal(postCall.options.fields, 'id,title,slug,custom_excerpt,featured,published_at,url');
+    });
+
+    it('requests narrow fields and html for llms-full.txt entries', async function () {
+        const calls = [];
+        const recordingBrowse = key => async (options) => {
+            calls.push({key, options});
+            return {[key]: [], meta: {pagination: {next: null}}};
+        };
+        const api = {
+            pagesPublic: {browse: recordingBrowse('pages')},
+            postsPublic: {browse: recordingBrowse('posts')}
+        };
+
+        const service = createService({api});
+
+        await service.getLlmsFullTxt();
+
+        const postCall = calls.find(call => call.key === 'posts');
+
+        assert.ok(postCall, 'expected postsPublic.browse to be called');
+        assert.equal(postCall.options.formats, 'html,plaintext');
+        assert.equal(postCall.options.fields, 'id,title,slug,featured,published_at,updated_at,created_at,url');
+        assert.equal(postCall.options.limit, 100);
     });
 });
