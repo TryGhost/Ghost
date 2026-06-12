@@ -1,9 +1,9 @@
 import {useMatches} from "@tryghost/admin-x-framework";
 import {useSidebarVisibility as useEmberSidebarVisibility} from "@/ember-bridge/ember-bridge";
 
-export interface AdminRouteHandle {
+export type AdminRouteHandle = {
     hideAdminSidebar?: boolean;
-}
+};
 
 export function useAdminSidebarVisibility(): boolean {
     const emberSidebarVisible = useEmberSidebarVisibility();

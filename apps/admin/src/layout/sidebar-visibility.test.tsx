@@ -1,9 +1,9 @@
 import {renderHook} from "@testing-library/react";
 import {beforeEach, describe, expect, it, vi} from "vitest";
 
-interface RouteMatch {
+type RouteMatch = {
     handle?: unknown;
-}
+};
 
 const useMatchesMock = vi.fn<() => RouteMatch[]>();
 const useEmberSidebarVisibilityMock = vi.fn<() => boolean>();
