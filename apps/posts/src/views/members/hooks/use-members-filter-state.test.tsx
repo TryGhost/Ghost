@@ -79,7 +79,7 @@ describe('useMembersFilterState', () => {
                 id: 'count.active_stripe_customers:1',
                 field: 'count.active_stripe_customers',
                 operator: 'is',
-                values: [true]
+                values: ['true']
             }
         ]);
         expect(result.current.query).toBe('filter=count.active_stripe_customers%3A%3E1');
@@ -108,7 +108,7 @@ describe('useMembersFilterState', () => {
                 id: 'count.active_stripe_customers:1',
                 field: 'count.active_stripe_customers',
                 operator: 'is',
-                values: [false]
+                values: ['false']
             }
         ]);
         expect(result.current.query).toBe('filter=count.active_stripe_customers%3A%3C2');

@@ -204,9 +204,12 @@ describe('useMemberFilterFields', () => {
 
         expect(multipleSubscriptionsField).toMatchObject({
             label: 'Multiple active subscriptions',
-            type: 'boolean',
-            defaultValue: true,
-            hideOperatorSelect: true
+            type: 'select',
+            hideOperatorSelect: true,
+            options: [
+                {value: 'true', label: 'Yes'},
+                {value: 'false', label: 'No'}
+            ]
         });
     });
 

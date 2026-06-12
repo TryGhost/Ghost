@@ -24,7 +24,7 @@ export interface FilterField {
     parseKeys?: readonly string[];
     ui: {
         label: string;
-        type: 'text' | 'select' | 'multiselect' | 'date' | 'number' | 'boolean' | 'custom';
+        type: 'text' | 'select' | 'multiselect' | 'date' | 'number' | 'custom';
         [key: string]: unknown;
     };
     options?: Array<{value: string; label: string}>;

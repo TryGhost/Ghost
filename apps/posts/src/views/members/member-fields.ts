@@ -105,7 +105,7 @@ const multipleActiveSubscriptionsCodec: FilterCodec = {
             return {
                 field: ctx.key,
                 operator: 'is',
-                values: [true]
+                values: ['true']
             };
         }
 
@@ -113,22 +113,24 @@ const multipleActiveSubscriptionsCodec: FilterCodec = {
             return {
                 field: ctx.key,
                 operator: 'is',
-                values: [false]
+                values: ['false']
             };
         }
 
         return null;
     },
     serialize(predicate) {
+        const value = predicate.values[0];
+
         if (predicate.operator !== 'is') {
             return null;
         }
 
-        if (predicate.values[0] === true) {
+        if (value === 'true') {
             return [MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER];
         }
 
-        if (predicate.values[0] === false) {
+        if (value === 'false') {
             return [NO_MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER];
         }
 
@@ -447,10 +449,14 @@ const baseMemberFields = defineFields({
         operators: ['is'],
         ui: {
             label: 'Multiple active subscriptions',
-            type: 'boolean',
-            defaultValue: true,
+            type: 'select',
+            searchable: false,
             hideOperatorSelect: true
         },
+        options: [
+            {value: 'true', label: 'Yes'},
+            {value: 'false', label: 'No'}
+        ],
         codec: multipleActiveSubscriptionsCodec
     }
 });
