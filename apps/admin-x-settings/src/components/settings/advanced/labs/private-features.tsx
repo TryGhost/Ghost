@@ -48,10 +48,6 @@ const features: Feature[] = [{
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
 }, {
-    title: 'IndexNow',
-    description: 'Automatically notify search engines when content is published or updated for faster indexing.',
-    flag: 'indexnow'
-}, {
     title: 'Featurebase Feedback',
     description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
     flag: 'featurebaseFeedback'
