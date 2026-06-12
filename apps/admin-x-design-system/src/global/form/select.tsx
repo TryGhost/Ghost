@@ -212,8 +212,7 @@ const Select: React.FC<SelectProps> = ({
             control: () => customClasses.control,
             placeholder: () => customClasses.placeHolder,
             menu: () => customClasses.menu,
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            option: (state: any) => {
+            option: (state: OptionProps<SelectOption, false>) => {
                 if (state.data.className) {
                     return clsx(customClasses.option, state.data.className);
                 }
