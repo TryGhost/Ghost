@@ -186,6 +186,21 @@ describe('useHandleError', () => {
         expect(sonnerToast.error).not.toHaveBeenCalled();
     });
 
+    it('still clears lingering toasts for 418 status', () => {
+        const wrapper = createWrapper();
+        const {result} = renderHook(() => useHandleError(), {wrapper});
+
+        const mockResponse = new Response(null, {status: 418});
+        const error = new APIError(mockResponse);
+
+        result.current(error);
+
+        // A stale toast can cover UI and block clicks in tests, so the
+        // unmocked-request path must clear toasts even without showing one
+        expect(toast.remove).toHaveBeenCalled();
+        expect(sonnerToast.dismiss).toHaveBeenCalled();
+    });
+
     it('routes toasts to react-hot-toast when its outlet is mounted', () => {
         const outlet = document.createElement('div');
         outlet.className = 'toast-outlet-react-hot-toast';

@@ -6,19 +6,25 @@ import toast from 'react-hot-toast';
 import {useFramework} from '../providers/framework-provider';
 import {APIError, ValidationError} from '../utils/errors';
 
+// Stale toasts can cover UI (and block clicks in tests), so both outlets are
+// cleared before showing a new toast - and on the unmocked-request test path
+function dismissToasts() {
+    toast.remove();
+    sonnerToast.dismiss();
+}
+
 // There are two toast outlets: admin-x-design-system's DesignSystemProvider
 // renders react-hot-toast (marked with this class), shade's ShadeProvider
 // renders sonner - and the React shell can mount both at once. The marker's
 // presence in the DOM picks the library to emit to.
 function showErrorToast(message: React.ReactNode) {
+    dismissToasts();
     if (document.querySelector('.toast-outlet-react-hot-toast')) {
-        toast.remove();
         showToast({
             message,
             type: 'error'
         });
     } else {
-        sonnerToast.dismiss();
         sonnerToast.error(message);
     }
 }
@@ -58,7 +64,9 @@ const useHandleError = () => {
 
         if (error instanceof APIError && error.response?.status === 418) {
             // We use this status in tests to indicate the API request was not mocked -
-            // don't show a toast because it may block clicking things in the test
+            // don't show a toast because it may block clicking things in the test,
+            // but still clear lingering toasts that would block clicks the same way
+            dismissToasts();
         } else if (error instanceof ValidationError && error.data?.errors[0]) {
             showErrorToast(error.data.errors[0].context || error.data.errors[0].message);
         } else if (error instanceof APIError) {
