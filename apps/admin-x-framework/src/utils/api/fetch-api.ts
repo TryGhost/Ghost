@@ -121,8 +121,7 @@ const fetchWithXhr = (
 export const useFetchApi = () => {
     const {ghostVersion, sentryDSN} = useFramework();
 
-    // Memoized so hooks built on top (useCallback/useMemo with fetchApi as a
-    // dependency) actually cache instead of rebuilding on every render
+    // Memoized so hooks that depend on fetchApi can cache
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return useCallback(async <ResponseData = any>(
         endpoint: string | URL,

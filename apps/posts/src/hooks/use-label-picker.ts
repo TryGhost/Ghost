@@ -19,8 +19,7 @@ export interface UseLabelPickerResult {
     resolvedSelectedLabels: Label[];
 
     toggleLabel: (slug: string) => void;
-    // Creates the label (or adopts an existing duplicate) and selects it;
-    // failures are reported via toast and rethrown
+    // Creates or adopts the label and selects it; failures are reported and rethrown
     createLabel: (name: string) => Promise<Label | undefined>;
     editLabel: (id: string, name: string) => Promise<void>;
     deleteLabel: (id: string) => Promise<void>;
@@ -61,9 +60,7 @@ export function useLabelPicker({
     };
 
     const {mutateAsync: createLabelMutation} = useCreateLabel();
-    // Local state rather than the mutation's isLoading so it also covers the
-    // duplicate-adoption lookup - the create action stays disabled until the
-    // whole operation settles
+    // Unlike the mutation's isLoading, this also covers the adoption lookup
     const [isCreating, setIsCreating] = useState(false);
     const {mutateAsync: editLabelMutation} = useEditLabel();
     const {mutateAsync: deleteLabelMutation} = useDeleteLabel();
@@ -85,8 +82,8 @@ export function useLabelPicker({
         }
     }, [onSelectionChange]);
 
-    // Idempotent, unlike toggleLabel: selecting after an await must not
-    // deselect a label that became selected while the request was in flight
+    // Idempotent, unlike toggleLabel - selecting after an await must not
+    // deselect a label that was picked while the request was in flight
     const selectLabel = useCallback((slug: string) => {
         const current = selectedSlugsRef.current;
         if (!current.includes(slug)) {
@@ -109,10 +106,8 @@ export function useLabelPicker({
             return created;
         } catch (error) {
             // A rejected duplicate (e.g. created by another admin since the
-            // list loaded) is adopted as if the create succeeded - the lookup
-            // confirms it exists. Keyed on the 422 status because the
-            // ValidationError class also covers 403s, which must not be
-            // masked as a successful adoption
+            // list loaded) is adopted as if the create succeeded. Keyed on
+            // 422 because the ValidationError class also covers 403s
             if (error instanceof APIError && error.response?.status === 422) {
                 let existing;
                 try {

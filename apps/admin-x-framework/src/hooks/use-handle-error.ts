@@ -6,8 +6,7 @@ import toast from 'react-hot-toast';
 import {useFramework} from '../providers/framework-provider';
 import {APIError, getErrorMessage} from '../utils/errors';
 
-// Stale toasts can cover UI (and block clicks in tests), so both outlets are
-// cleared before showing a new toast - and on the unmocked-request test path
+// Stale toasts can cover UI and block clicks, especially in tests
 function dismissToasts() {
     toast.remove();
     sonnerToast.dismiss();
@@ -68,8 +67,6 @@ const useHandleError = () => {
             // but still clear lingering toasts that would block clicks the same way
             dismissToasts();
         } else if (error instanceof APIError) {
-            // getErrorMessage extracts the human-readable text from
-            // validation errors and falls back to the error's own message
             showErrorToast(getErrorMessage(error, error.message));
         } else {
             showErrorToast('Something went wrong, please try again.');
