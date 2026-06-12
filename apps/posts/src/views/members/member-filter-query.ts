@@ -224,41 +224,27 @@ const MEMBER_COMPOUND_MATCHERS: CompoundMatcher[] = [
     matchFeedbackGroupedNode
 ];
 
+/**
+ * NQL flattens redundant parentheses, so the AST for `(label:a+label:b)` is
+ * identical to `label:a+label:b`. To detect the outer grouping without
+ * re-implementing NQL's quoting rules, parse the filter with a probe predicate
+ * AND-ed alongside: the grouping is no longer redundant, so it survives as a
+ * nested `$and` in the probed AST.
+ */
 function hasOuterGrouping(filter: string): boolean {
-    const trimmed = filter.trim();
+    const probed = parseFilterToAst(`${filter.trim()}+__outer_grouping_probe__:1`);
 
-    if (!trimmed.startsWith('(') || !trimmed.endsWith(')')) {
+    if (!probed) {
         return false;
     }
 
-    let depth = 0;
-    let quote: string | null = null;
+    const compound = getCompoundChildren(probed);
 
-    for (let index = 0; index < trimmed.length; index += 1) {
-        const char = trimmed[index];
-        const previousChar = trimmed[index - 1];
-
-        if ((char === '\'' || char === '"') && previousChar !== '\\') {
-            quote = quote === char ? null : quote ?? char;
-            continue;
-        }
-
-        if (quote) {
-            continue;
-        }
-
-        if (char === '(') {
-            depth += 1;
-        } else if (char === ')') {
-            depth -= 1;
-
-            if (depth === 0 && index < trimmed.length - 1) {
-                return false;
-            }
-        }
+    if (compound?.operator !== '$and' || compound.children.length !== 2) {
+        return false;
     }
 
-    return depth === 0;
+    return getCompoundChildren(compound.children[0])?.operator === '$and';
 }
 
 function parseMemberNode(node: AstNode, timezone: string, isGroupedContext = false): ParsedPredicate[] {

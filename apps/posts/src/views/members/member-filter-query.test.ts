@@ -65,6 +65,12 @@ describe('member-filter-query', () => {
         ]);
     });
 
+    it('parses grouped label all-of filters with quoted values containing special characters', () => {
+        expect(stripIds(parseMemberFilter('(label:\'a (b)\'+label:\'trail\\\')', 'UTC'))).toEqual([
+            {field: 'label', operator: 'is-all', values: ['a (b)', 'trail\\']}
+        ]);
+    });
+
     it('keeps ungrouped repeated positive label filters as separate predicates', () => {
         expect(stripIds(parseMemberFilter('label:alpha+label:vip', 'UTC'))).toEqual([
             {field: 'label', operator: 'is-any', values: ['alpha']},
