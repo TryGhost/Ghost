@@ -41,8 +41,8 @@ describe('llms.txt routing', function () {
             .expect(200);
 
         // entries are linked via absolute urls resolved by the public API serializer
-        assert.match(res.text, new RegExp(`\\[About this site\\]\\(${siteUrl}/about\\.md\\)`));
-        assert.match(res.text, new RegExp(`\\[Start here for a quick overview of everything you need to know\\]\\(${siteUrl}/welcome\\.md\\)`));
+        assert.ok(res.text.includes(`[About this site](${siteUrl}/about.md)`), 'expected absolute .md link for the about page');
+        assert.ok(res.text.includes(`[Start here for a quick overview of everything you need to know](${siteUrl}/welcome.md)`), 'expected absolute .md link for the welcome post');
 
         // descriptions come from plaintext, which is requested via `formats`
         // on top of the narrowed `fields`
@@ -56,7 +56,7 @@ describe('llms.txt routing', function () {
 
         assert.match(res.text, /### About this site/);
         assert.match(res.text, /### Start here for a quick overview of everything you need to know/);
-        assert.match(res.text, new RegExp(`URL: ${siteUrl}/about/`));
+        assert.ok(res.text.includes(`URL: ${siteUrl}/about/`), 'expected absolute url for the about page entry');
 
         // entry bodies are rendered from html, which is requested via
         // `formats` on top of the narrowed `fields`
