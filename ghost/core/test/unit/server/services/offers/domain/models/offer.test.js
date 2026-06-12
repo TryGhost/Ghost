@@ -270,7 +270,7 @@ describe('Offer', function () {
             await Offer.create({...data, redemptionCount: 2}, mockUniqueChecker).then(() => {
                 assert.fail('Expected an error');
             }, (err) => {
-                assert(err);
+                assert(err instanceof errors.InvalidOfferRedemptionCount);
             });
         });
 
