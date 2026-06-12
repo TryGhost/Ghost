@@ -76,11 +76,11 @@ catalogs:
       specifier: 3.2.3
       version: 3.2.3
     '@tryghost/color-utils':
-      specifier: 0.2.18
-      version: 0.2.18
+      specifier: 0.2.19
+      version: 0.2.19
     '@tryghost/custom-fonts':
-      specifier: 1.0.10
-      version: 1.0.10
+      specifier: 1.0.11
+      version: 1.0.11
     '@tryghost/debug':
       specifier: 2.2.1
       version: 2.2.1
@@ -965,7 +965,7 @@ importers:
         version: 4.44.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.18
+        version: 0.2.19
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../ghost/i18n
@@ -1035,7 +1035,7 @@ importers:
         version: link:../admin-x-framework
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
-        version: 1.0.10
+        version: 1.0.11
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
@@ -1317,7 +1317,7 @@ importers:
         version: link:../admin-x-framework
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.18
+        version: 0.2.19
       '@tryghost/koenig-lexical':
         specifier: 'catalog:'
         version: 1.8.2
@@ -1992,7 +1992,7 @@ importers:
         version: link:../../apps/admin-x-framework
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.18
+        version: 0.2.19
       '@tryghost/ember-promise-modals':
         specifier: 2.0.1
         version: 2.0.1(ember-source@3.24.0(@babel/core@7.29.7))(postcss@8.5.15)
@@ -2340,13 +2340,13 @@ importers:
         version: 2.2.2
       '@tryghost/color-utils':
         specifier: 'catalog:'
-        version: 0.2.18
+        version: 0.2.19
       '@tryghost/config-url-helpers':
         specifier: 1.0.25
         version: 1.0.25
       '@tryghost/custom-fonts':
         specifier: 'catalog:'
-        version: 1.0.10
+        version: 1.0.11
       '@tryghost/database-info':
         specifier: 0.3.35
         version: 0.3.35
@@ -8567,8 +8567,8 @@ packages:
   '@tryghost/bunyan-rotating-filestream@0.0.7':
     resolution: {integrity: sha512-dswM+dxG8J7WpVoSjzAdoWXqqB5Dg0C2T7Zh6eoUvl5hkA8yWWJi/fS4jNXlHF700lWQ0g8/t+leJ7SGSWd+aw==}
 
-  '@tryghost/color-utils@0.2.18':
-    resolution: {integrity: sha512-Y1Q5/Pde5KGAFuBWgXtbCG4NAm2t1RjaiGoet7EUwYRB/8ePZqylpB9G8wDZkJbDX7b6z4fUlu3iMcJ5FNhNPg==}
+  '@tryghost/color-utils@0.2.19':
+    resolution: {integrity: sha512-jKq4/XFs9v5EoMQKJfH1Wy+AbMNn5wha6l15JoWG2utBIw6vksp7S/WKRN/nubR+nQS4rP7jyqeYYvkko50uDA==}
 
   '@tryghost/config-url-helpers@1.0.25':
     resolution: {integrity: sha512-hrC0XUYqxGVxoCD+ENjW5tU/Up3BGHGzDWGT0AgFxKKr0FEZ6MQC84aSjp4uf/22NXHguD65eqHz4gIKvQWQZA==}
@@ -8576,8 +8576,8 @@ packages:
   '@tryghost/config@2.2.1':
     resolution: {integrity: sha512-Tu3vVd65O9XaR7h7SJH5yzfKF4R3hOFgA0jJE55r78TPSSHXuez0LQaGTCdoJj60NAhC7+3rcVOPUnu2v0Glrg==}
 
-  '@tryghost/custom-fonts@1.0.10':
-    resolution: {integrity: sha512-qnzMWfu0UFR7XwwYu4Ti7adwoVqU/f/+jCtqsge7uT3wDRopRJ6xwt4oCIL2A3QSRZrdHxpu2+iH9puIKfLR2w==}
+  '@tryghost/custom-fonts@1.0.11':
+    resolution: {integrity: sha512-WAc3LkrgMKBk+pGyFfkR+5eoS4C52RXMBWBj4kNa+tcP51f/U3DIl8QKfp9M3XrcGS44Qpwq9C5nYKRp+sz1ig==}
 
   '@tryghost/database-info@0.3.22':
     resolution: {integrity: sha512-AwljcoXFUjSKFIoB/V9uohTLvWY8g+fIaHHjgPLH4Cq1tBZgcAlBIZR2ridhXiY1iDX7m3cws36uAxrN0KnoUw==}
@@ -28435,7 +28435,7 @@ snapshots:
     dependencies:
       long-timeout: 0.1.1
 
-  '@tryghost/color-utils@0.2.18':
+  '@tryghost/color-utils@0.2.19':
     dependencies:
       '@types/color': 4.2.1
       color: 3.2.1
@@ -28447,7 +28447,7 @@ snapshots:
       '@tryghost/root-utils': 2.2.1
       nconf: 0.13.0
 
-  '@tryghost/custom-fonts@1.0.10': {}
+  '@tryghost/custom-fonts@1.0.11': {}
 
   '@tryghost/database-info@0.3.22': {}
 
