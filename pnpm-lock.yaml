@@ -102,9 +102,6 @@ catalogs:
     '@tryghost/limit-service':
       specifier: 1.5.6
       version: 1.5.6
-    '@tryghost/nql':
-      specifier: 0.12.11
-      version: 0.12.11
     '@tryghost/nql-lang':
       specifier: 0.6.5
       version: 0.6.5
@@ -308,7 +305,7 @@ catalogs:
       version: 3.4.19
 
 overrides:
-  '@tryghost/mongo-knex': link:../nql/packages/mongo-knex
+  '@tryghost/nql': 0.13.0
   '@tryghost/errors': ^1.3.7
   '@tryghost/logging': 4.2.1
   jackspeak: 4.2.3
@@ -362,7 +359,7 @@ overrides:
   '@xmldom/xmldom@<0.8.13': ^0.9.0
   perf-primitives: ^0.0.6
 
-packageExtensionsChecksum: sha256-VoukEtG/3ZKlZLtw2HjOKS0hPvjiZTwZtAPotZw7zcw=
+packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
 
 importers:
 
@@ -980,8 +977,8 @@ importers:
         specifier: 'catalog:'
         version: 1.5.6
       '@tryghost/nql':
-        specifier: 'catalog:'
-        version: 0.12.11
+        specifier: 0.13.0
+        version: 0.13.0
       '@tryghost/string':
         specifier: 'catalog:'
         version: 0.3.5
@@ -1184,11 +1181,11 @@ importers:
         specifier: workspace:*
         version: link:../../ghost/i18n
       '@tryghost/nql':
-        specifier: 'catalog:'
-        version: 0.12.11
+        specifier: 0.13.0
+        version: 0.13.0
       '@vitejs/plugin-react':
         specifier: 'catalog:'
-        version: 4.7.0(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
+        version: 4.7.0(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.7(vitest@4.1.7)
@@ -1230,13 +1227,13 @@ importers:
         version: 3.4.19(tsx@4.21.0)(yaml@2.9.0)
       vite:
         specifier: 'catalog:'
-        version: 7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
+        version: 7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
       vite-plugin-svgr:
         specifier: 'catalog:'
-        version: 4.5.0(rollup@4.60.4)(typescript@5.9.3)(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
+        version: 4.5.0(rollup@4.60.4)(typescript@5.9.3)(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
-        version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
+        version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
 
   apps/portal:
     dependencies:
@@ -1666,13 +1663,13 @@ importers:
         version: 1.60.0
       '@storybook/addon-docs':
         specifier: 'catalog:'
-        version: 10.3.5(@types/react@18.3.31)(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))
+        version: 10.3.5(@types/react@18.3.31)(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))
       '@storybook/addon-links':
         specifier: 'catalog:'
         version: 10.3.5(react@18.3.1)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
       '@storybook/react-vite':
         specifier: 'catalog:'
-        version: 10.3.5(esbuild@0.28.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))
+        version: 10.3.5(esbuild@0.28.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))
       '@tailwindcss/line-clamp':
         specifier: 0.4.4
         version: 0.4.4(tailwindcss@3.4.19(tsx@4.21.0)(yaml@2.9.0))
@@ -1687,7 +1684,7 @@ importers:
         version: 18.3.7(@types/react@18.3.31)
       '@vitejs/plugin-react':
         specifier: 'catalog:'
-        version: 4.7.0(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
+        version: 4.7.0(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
       autoprefixer:
         specifier: 10.5.0
         version: 10.5.0(postcss@8.5.15)
@@ -1717,13 +1714,13 @@ importers:
         version: 3.4.19(tsx@4.21.0)(yaml@2.9.0)
       vite:
         specifier: 'catalog:'
-        version: 7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
+        version: 7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
       vite-plugin-svgr:
         specifier: 'catalog:'
-        version: 4.5.0(rollup@4.60.4)(typescript@5.9.3)(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
+        version: 4.5.0(rollup@4.60.4)(typescript@5.9.3)(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
       vitest:
         specifier: 'catalog:'
-        version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
+        version: 4.1.7(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.7)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
 
   apps/sodo-search:
     dependencies:
@@ -2016,8 +2013,8 @@ importers:
         specifier: 'catalog:'
         version: 1.5.6
       '@tryghost/nql':
-        specifier: 'catalog:'
-        version: 0.12.11
+        specifier: 0.13.0
+        version: 0.13.0
       '@tryghost/string':
         specifier: 'catalog:'
         version: 0.3.5
@@ -2439,8 +2436,8 @@ importers:
         specifier: 2.2.3
         version: 2.2.3(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       '@tryghost/nql':
-        specifier: 'catalog:'
-        version: 0.12.11
+        specifier: 0.13.0
+        version: 0.13.0
       '@tryghost/nql-lang':
         specifier: 'catalog:'
         version: 0.6.5
@@ -8572,6 +8569,9 @@ packages:
   '@tryghost/mobiledoc-kit@0.12.4-ghost.1':
     resolution: {integrity: sha512-c4aheSWH2Y7x4uSkAx08gbtvuEgPGjlu6v+FeUdSJZ1blEd+knL3zTcUAfeSiM6rgLEHxlNWtt+KFwotdf6rTA==}
 
+  '@tryghost/mongo-knex@0.10.0':
+    resolution: {integrity: sha512-m9yvVWbJHfZpPi6R0as1RfRu7bPJwhf9j4ZHF1hEZWJgRKfycSH8wUKvK7eS45fxINicEk2CXSFMRDd4IM6N2Q==}
+
   '@tryghost/mongo-utils@0.6.3':
     resolution: {integrity: sha512-BOgflEMywUXnTxXqOPuppFRD50IuIERAt06UEsyGTLRI6GSuO18BDygo72UpMHtM+NspGM0jPc1eQOeVvUJNAw==}
 
@@ -8590,11 +8590,8 @@ packages:
   '@tryghost/nql-lang@0.6.5':
     resolution: {integrity: sha512-13Loz2yH7GCMAfpVawD6KNWNPIVTc4STnP+MeCwbrWg8htv/CPOB0u+i9Eap0qEi8h6TC2aoOvbQV0EvjidQaQ==}
 
-  '@tryghost/nql@0.12.10':
-    resolution: {integrity: sha512-kpj2ICTBmkz5Uet7Z/J61C/EEBTfa55np6LnbqW6N8g33uvCh9NkAsM2WgV1NK2lffpQT3Cs/qA2ymzHAguvoA==}
-
-  '@tryghost/nql@0.12.11':
-    resolution: {integrity: sha512-8Cb10OpQWT+v0Xvfrov9IkBwzyPlARsjF1EIC8f3ET/JZD3G+ARoQ3GEBQ7XeW6YcUd7MIh3zqJTv5ST+aDjZA==}
+  '@tryghost/nql@0.13.0':
+    resolution: {integrity: sha512-Aa2vJBPBK5WltmO4ifkeNNG/XedmyeN9B0CT4HLHEIjUARc8wKKntzmRtzSJCSL5moyX40vJ95yTnUNwA1wxew==}
 
   '@tryghost/pretty-cli@3.2.1':
     resolution: {integrity: sha512-FpghCxZU8ZGgcMDhlI12oUM6krTVFKL1vUQSuqyheHMcViy8Kx+ZXYQl1n6ycA+BOaJAkYwYr+di7WAGiqMxqA==}
@@ -24801,6 +24798,14 @@ snapshots:
     optionalDependencies:
       typescript: 5.9.3
 
+  '@joshwooding/vite-plugin-react-docgen-typescript@0.7.0(typescript@5.9.3)(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))':
+    dependencies:
+      glob: 13.0.6
+      react-docgen-typescript: 2.4.0(typescript@5.9.3)
+      vite: 7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
+    optionalDependencies:
+      typescript: 5.9.3
+
   '@joshwooding/vite-plugin-react-docgen-typescript@0.7.0(typescript@5.9.3)(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))':
     dependencies:
       glob: 13.0.6
@@ -27348,6 +27353,23 @@ snapshots:
       - vite
       - webpack
 
+  '@storybook/addon-docs@10.3.5(@types/react@18.3.31)(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))':
+    dependencies:
+      '@mdx-js/react': 3.1.1(@types/react@18.3.31)(react@18.3.1)
+      '@storybook/csf-plugin': 10.3.5(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))
+      '@storybook/icons': 2.0.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      '@storybook/react-dom-shim': 10.3.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))
+      react: 18.3.1
+      react-dom: 18.3.1(react@18.3.1)
+      storybook: 10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      ts-dedent: 2.2.0
+    transitivePeerDependencies:
+      - '@types/react'
+      - esbuild
+      - rollup
+      - vite
+      - webpack
+
   '@storybook/addon-docs@10.3.5(@types/react@18.3.31)(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))':
     dependencies:
       '@mdx-js/react': 3.1.1(@types/react@18.3.31)(react@18.3.1)
@@ -27383,6 +27405,17 @@ snapshots:
       - rollup
       - webpack
 
+  '@storybook/builder-vite@10.3.5(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))':
+    dependencies:
+      '@storybook/csf-plugin': 10.3.5(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))
+      storybook: 10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      ts-dedent: 2.2.0
+      vite: 7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
+    transitivePeerDependencies:
+      - esbuild
+      - rollup
+      - webpack
+
   '@storybook/builder-vite@10.3.5(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))':
     dependencies:
       '@storybook/csf-plugin': 10.3.5(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))
@@ -27402,6 +27435,16 @@ snapshots:
       esbuild: 0.28.0
       rollup: 4.60.4
       vite: 7.3.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
+      webpack: 5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15)
+
+  '@storybook/csf-plugin@10.3.5(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))':
+    dependencies:
+      storybook: 10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      unplugin: 2.3.11
+    optionalDependencies:
+      esbuild: 0.28.0
+      rollup: 4.60.4
+      vite: 7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
       webpack: 5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15)
 
   '@storybook/csf-plugin@10.3.5(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))':
@@ -27442,6 +27485,28 @@ snapshots:
       storybook: 10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       tsconfig-paths: 4.2.0
       vite: 7.3.2(@types/node@22.19.19)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
+    transitivePeerDependencies:
+      - esbuild
+      - rollup
+      - supports-color
+      - typescript
+      - webpack
+
+  '@storybook/react-vite@10.3.5(esbuild@0.28.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))':
+    dependencies:
+      '@joshwooding/vite-plugin-react-docgen-typescript': 0.7.0(typescript@5.9.3)(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))
+      '@rollup/pluginutils': 5.3.0(rollup@4.60.4)
+      '@storybook/builder-vite': 10.3.5(esbuild@0.28.0)(rollup@4.60.4)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0))(webpack@5.105.4(@swc/core@1.15.40(@swc/helpers@0.5.21))(esbuild@0.28.0)(lightningcss@1.32.0)(postcss@8.5.15))
+      '@storybook/react': 10.3.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(storybook@10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
+      empathic: 2.0.1
+      magic-string: 0.30.21
+      react: 18.3.1
+      react-docgen: 8.0.3
+      react-dom: 18.3.1(react@18.3.1)
+      resolve: 1.22.12
+      storybook: 10.3.5(@testing-library/dom@9.3.4)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+      tsconfig-paths: 4.2.0
+      vite: 7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.46.1)(tsx@4.21.0)(yaml@2.9.0)
     transitivePeerDependencies:
       - esbuild
       - rollup
@@ -27970,7 +28035,7 @@ snapshots:
     dependencies:
       '@tryghost/debug': 2.2.1
       '@tryghost/errors': 1.3.13
-      '@tryghost/nql': 0.12.10
+      '@tryghost/nql': 0.13.0
       '@tryghost/tpl': 2.2.1
     transitivePeerDependencies:
       - supports-color
@@ -28359,6 +28424,13 @@ snapshots:
       mobiledoc-text-renderer: 0.4.0
     optional: true
 
+  '@tryghost/mongo-knex@0.10.0':
+    dependencies:
+      debug: 4.4.3(supports-color@5.5.0)
+      lodash: 4.18.1
+    transitivePeerDependencies:
+      - supports-color
+
   '@tryghost/mongo-utils@0.6.3':
     dependencies:
       lodash: 4.18.1
@@ -28448,21 +28520,15 @@ snapshots:
     dependencies:
       date-fns: 2.30.0
 
-  '@tryghost/nql@0.12.10':
+  '@tryghost/nql@0.13.0':
     dependencies:
-      '@tryghost/mongo-knex': link:../nql/packages/mongo-knex
-      '@tryghost/mongo-utils': 0.6.3
-      '@tryghost/nql-lang': 0.6.5
-      lodash: 4.18.1
-      mingo: 2.5.3
-
-  '@tryghost/nql@0.12.11':
-    dependencies:
-      '@tryghost/mongo-knex': link:../nql/packages/mongo-knex
+      '@tryghost/mongo-knex': 0.10.0
       '@tryghost/mongo-utils': 0.6.4
       '@tryghost/nql-lang': 0.6.5
       lodash: 4.18.1
       mingo: 2.5.3
+    transitivePeerDependencies:
+      - supports-color
 
   '@tryghost/pretty-cli@3.2.1':
     dependencies:
@@ -37027,7 +37093,7 @@ snapshots:
       '@tryghost/debug': 2.2.2
       '@tryghost/errors': 1.3.13
       '@tryghost/logging': 4.2.1
-      '@tryghost/nql': 0.12.11
+      '@tryghost/nql': 0.13.0
       '@tryghost/pretty-cli': 3.2.2
       '@tryghost/server': 3.0.2
       '@tryghost/zip': 3.3.3

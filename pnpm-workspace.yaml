@@ -58,7 +58,7 @@ catalog:
   '@tryghost/koenig-lexical': 1.8.2
   '@tryghost/limit-service': 1.5.6
   '@tryghost/logging': 4.2.1
-  '@tryghost/nql': 0.12.11
+  '@tryghost/nql': 0.13.0
   '@tryghost/nql-lang': 0.6.5
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
@@ -132,9 +132,9 @@ catalogs:
     eslint-plugin-tailwindcss: 3.18.3
 
 overrides:
-  # TEMPORARY: local link to the unpublished aggregate-relation-type branch of
-  # TryGhost/NQL — remove once @tryghost/mongo-knex ships aggregate relations
-  '@tryghost/mongo-knex': 'link:../nql/packages/mongo-knex'
+  # bookshelf-filter pins nql@0.12.10; force the catalog version so filter
+  # queries get aggregate relation support (nql 0.13.0 / mongo-knex 0.10.0)
+  '@tryghost/nql': 'catalog:'
   '@tryghost/errors': ^1.3.7
   '@tryghost/logging': 'catalog:'
   jackspeak: 4.2.3
@@ -194,9 +194,6 @@ packageExtensions:
   '@doist/react-interpolate@2.2.1':
     dependencies:
       '@babel/runtime': ^7.26.10
-  '@tryghost/nql@0.12.10':
-    dependencies:
-      lodash: ^4.18.0
 minimumReleaseAgeExclude:
   # Our own packages are published by us, so the release-age delay doesn't apply
   - "@tryghost/*"
