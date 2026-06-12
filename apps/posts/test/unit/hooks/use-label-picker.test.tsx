@@ -43,7 +43,7 @@ vi.mock('@src/hooks/filter-sources/use-label-value-source', () => ({
 
 type TestLabel = {id: string; name: string; slug: string};
 
-function makeValidationError(context: string) {
+function makeValidationError(context: string, status = 422) {
     const data: ErrorResponse = {
         errors: [{
             code: 'VALIDATION',
@@ -57,7 +57,7 @@ function makeValidationError(context: string) {
             type: 'ValidationError'
         }]
     };
-    return new ValidationError({url: '', status: 422} as unknown as Response, data);
+    return new ValidationError({url: '', status} as unknown as Response, data);
 }
 
 function makeValueSource(labels: TestLabel[]): ValueSource<string> {
@@ -209,6 +209,23 @@ describe('useLabelPicker', () => {
             });
 
             expect(mockHandleError).toHaveBeenCalledWith(validationError);
+        });
+
+        it('does not adopt on permission errors even though they share the ValidationError class', async () => {
+            // handle-response maps server NoPermissionError (403) responses to
+            // the ValidationError class - a denied create must not be masked
+            // as a successful adoption of the existing label
+            const permissionError = makeValidationError('You do not have permission', 403);
+            mockCreateLabel.mockRejectedValue(permissionError);
+
+            const {result} = renderLabelPicker();
+
+            await act(async () => {
+                await expect(result.current.createLabel('Existing')).rejects.toBe(permissionError);
+            });
+
+            expect(mockFindLabelByName).not.toHaveBeenCalled();
+            expect(mockHandleError).toHaveBeenCalledWith(permissionError);
         });
 
         it('reports and rethrows non-validation errors without a lookup', async () => {

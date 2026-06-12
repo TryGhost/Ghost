@@ -1,4 +1,4 @@
-import {APIError, ValidationError} from '@tryghost/admin-x-framework/errors';
+import {APIError} from '@tryghost/admin-x-framework/errors';
 import {Label, useCreateLabel, useDeleteLabel, useEditLabel, useFindLabelByName, useInvalidateLabels} from '@tryghost/admin-x-framework/api/labels';
 import {ValueSource} from '@tryghost/shade/patterns';
 import {useCallback, useMemo, useRef, useState} from 'react';
@@ -110,8 +110,10 @@ export function useLabelPicker({
         } catch (error) {
             // A rejected duplicate (e.g. created by another admin since the
             // list loaded) is adopted as if the create succeeded - the lookup
-            // confirms it exists
-            if (error instanceof ValidationError) {
+            // confirms it exists. Keyed on the 422 status because the
+            // ValidationError class also covers 403s, which must not be
+            // masked as a successful adoption
+            if (error instanceof APIError && error.response?.status === 422) {
                 let existing;
                 try {
                     existing = await findLabelByName(trimmed);
