@@ -190,7 +190,8 @@ DataImporter = {
                     message: errors[0].message,
                     context: errors[0].context,
                     help: errors[0].help,
-                    errorDetails: errors
+                    errorDetails: errors,
+                    err: errors[0]
                 });
             }
 
