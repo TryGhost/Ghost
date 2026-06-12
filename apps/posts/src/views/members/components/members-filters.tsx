@@ -15,13 +15,13 @@ import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters'
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useEmailPostValueSource} from '@src/hooks/filter-sources/use-email-post-value-source';
 import {useLabelValueSource} from '@src/hooks/filter-sources/use-label-value-source';
-import {useMultipleActiveSubscriptionsCount} from '../hooks/use-multiple-active-subscriptions-count';
 import {usePostResourceValueSource} from '@src/hooks/filter-sources/use-post-resource-value-source';
 import {useTierValueSource} from '@src/hooks/filter-sources/use-tier-value-source';
 import type {MemberView} from '../hooks/use-member-views';
 
 interface MembersFiltersProps {
     filters: Filter[];
+    multipleActiveSubscriptionsCount: number;
     nql?: string;
     onFiltersChange: (filters: Filter[]) => void;
     savedViews?: MemberView[];
@@ -49,6 +49,7 @@ function mapOfferRedemptionFilters(
 
 const MembersFilters: React.FC<MembersFiltersProps> = ({
     filters,
+    multipleActiveSubscriptionsCount,
     nql,
     onFiltersChange,
     savedViews = [],
@@ -95,9 +96,6 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const emailValueSource = useEmailPostValueSource();
     const labelValueSource = useLabelValueSource();
     const {valueSource: tierValueSource, hasMultipleTiers} = useTierValueSource();
-    const {count: multipleActiveSubscriptionsCount} = useMultipleActiveSubscriptionsCount({
-        enabled: paidMembersEnabled
-    });
 
     const filterFields = useMemberFilterFields({
         newsletters,

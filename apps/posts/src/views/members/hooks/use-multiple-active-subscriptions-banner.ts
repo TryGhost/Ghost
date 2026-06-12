@@ -5,14 +5,15 @@ import {
     isMultipleActiveSubscriptionsFilter
 } from '../multiple-active-subscriptions';
 import {buildMembersUrl} from '../member-route';
-import {canManageMembers, useEditUser} from '@tryghost/admin-x-framework/api/users';
 import {toast} from 'sonner';
 import {useCallback, useEffect, useMemo, useState} from 'react';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
-import {useMultipleActiveSubscriptionsCount} from './use-multiple-active-subscriptions-count';
+import {useEditUser} from '@tryghost/admin-x-framework/api/users';
 import {useNavigate} from 'react-router';
 
 interface UseMultipleActiveSubscriptionsBannerOptions {
+    count: number;
+    hasResolvedCount: boolean;
     nql?: string;
     search: string;
 }
@@ -24,6 +25,8 @@ interface UseMultipleActiveSubscriptionsBannerOptions {
  * what the user last acknowledged.
  */
 export function useMultipleActiveSubscriptionsBanner({
+    count,
+    hasResolvedCount,
     nql,
     search
 }: UseMultipleActiveSubscriptionsBannerOptions) {
@@ -32,15 +35,11 @@ export function useMultipleActiveSubscriptionsBanner({
     const {mutateAsync: editUser, isLoading: isDismissing} = useEditUser();
     const [optimisticDismissedCount, setOptimisticDismissedCount] = useState<number | null>(null);
 
-    const canManageMemberList = currentUser ? canManageMembers(currentUser) : false;
     const isViewingFilter = isMultipleActiveSubscriptionsFilter(nql);
     // Only relevant on the unfiltered member list or when viewing the
     // affected members themselves — any other filter/search hides the banner.
     const shouldConsiderBanner = !search && (!nql || isViewingFilter);
 
-    const {count, hasResolvedCount} = useMultipleActiveSubscriptionsCount({
-        enabled: canManageMemberList && shouldConsiderBanner
-    });
     const preference = useMemo(() => {
         return getMultipleActiveSubscriptionsBannerPreference(currentUser?.accessibility);
     }, [currentUser?.accessibility]);

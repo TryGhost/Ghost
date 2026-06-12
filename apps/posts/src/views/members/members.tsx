@@ -21,6 +21,7 @@ import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useBrowseMembersInfinite} from '@tryghost/admin-x-framework/api/members';
 import {useDebounce} from 'use-debounce';
 import {useLocation, useSearchParams} from 'react-router';
+import {useMultipleActiveSubscriptionsCount} from './hooks/use-multiple-active-subscriptions-count';
 
 const SEARCH_DEBOUNCE_MS = 250;
 const MEMBERS_HELP_CARDS_LIMIT = 6;
@@ -50,6 +51,13 @@ const MembersPage: React.FC<MembersPageProps> = ({
     const [mobileSearchOpenedByUser, setMobileSearchOpenedByUser] = useState(false);
     const [searchInput, setSearchInput] = useState(search);
     const [debouncedSearch] = useDebounce(searchInput, SEARCH_DEBOUNCE_MS);
+
+    // Fetched once at page level so the banner, and both filter bar instances,
+    // share a single request per visit and always agree on the count.
+    const {
+        count: multipleActiveSubscriptionsCount,
+        hasResolvedCount: hasResolvedMultipleActiveSubscriptionsCount
+    } = useMultipleActiveSubscriptionsCount({enabled: hasStripeEnabled});
 
     const activeColumns = useMemo(() => {
         return getMemberActiveColumns(filters);
@@ -157,6 +165,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                                                     activeView={activeView}
                                                     filters={filters}
                                                     iconOnly={true}
+                                                    multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
                                                     nql={nql}
                                                     savedViews={savedViews}
                                                     onFiltersChange={setFilters}
@@ -196,6 +205,7 @@ const MembersPage: React.FC<MembersPageProps> = ({
                                     <MembersFilters
                                         activeView={activeView}
                                         filters={filters}
+                                        multipleActiveSubscriptionsCount={multipleActiveSubscriptionsCount}
                                         nql={nql}
                                         savedViews={savedViews}
                                         onFiltersChange={setFilters}
@@ -205,6 +215,8 @@ const MembersPage: React.FC<MembersPageProps> = ({
                         )}
                         {hasStripeEnabled && (
                             <MultipleActiveSubscriptionsBanner
+                                count={multipleActiveSubscriptionsCount}
+                                hasResolvedCount={hasResolvedMultipleActiveSubscriptionsCount}
                                 nql={nql}
                                 search={search}
                             />
