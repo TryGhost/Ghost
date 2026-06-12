@@ -11,7 +11,25 @@ type EmailTemplateData = ReadonlyDeep<{
     emailRecipient: string;
 }>;
 
-export const emailTemplate = ({result, siteUrl, postsUrl, emailRecipient}: EmailTemplateData): string => `
+const escapeHtml = (value: string): string => value
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+
+const getFirstErrorMessage = (importErrors?: ReadonlyDeep<unknown[]>): string | null => {
+    const firstError = importErrors?.[0];
+    if (firstError && typeof firstError === 'object' && 'message' in firstError && typeof firstError.message === 'string') {
+        return firstError.message;
+    }
+    return null;
+};
+
+export const emailTemplate = ({result, siteUrl, postsUrl, emailRecipient}: EmailTemplateData): string => {
+    const errorMessage = getFirstErrorMessage(result?.data?.errors);
+
+    return `
 <!doctype html>
 <html>
   <head>
@@ -142,6 +160,11 @@ export const emailTemplate = ({result, siteUrl, postsUrl, emailRecipient}: Email
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px;">One or more error occured while importing your content. Please contact support or report on the <a href="https://forum.ghost.org/">Ghost Community Forum</a>.</td>
                     </tr>
+                    ${errorMessage ? `
+                    <tr>
+                      <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 16px; color: #738A94;">Error: ${escapeHtml(errorMessage)}</td>
+                    </tr>
+                    ` : ''}
                     ` : `
                     <tr>
                       <td style="font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol'; font-size: 14px; vertical-align: top; padding-bottom: 12px; padding-top: 16px;">
@@ -173,3 +196,4 @@ export const emailTemplate = ({result, siteUrl, postsUrl, emailRecipient}: Email
   </body>
 </html>
 `;
+};
