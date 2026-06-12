@@ -3,7 +3,7 @@ import CustomFieldModal from './custom-field-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useCallback, useEffect, useState} from 'react';
 import TopLevelGroup from '../../../top-level-group';
-import {Button, List, ListItem, NoValueLabel, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Button, List, ListItem, withErrorBoundary} from '@tryghost/admin-x-design-system';
 
 // POC: data comes from poc/custom-fields/repo (localStorage), not a real API.
 const typeLabel = (type: customFields.FieldType) => customFields.TYPES.find(t => t.value === type)?.label || type;
@@ -43,7 +43,7 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
             testId='custom-fields'
             title='Custom fields'
         >
-            {fields.length ? (
+            {fields.length > 0 && (
                 <List>
                     {fields.map(field => (
                         <ListItem
@@ -63,10 +63,6 @@ const CustomFields: React.FC<{keywords: string[]}> = ({keywords}) => {
                         />
                     ))}
                 </List>
-            ) : (
-                <NoValueLabel>
-                    <Button color='grey' label='Add first custom field' size='sm' onClick={() => openModal()} />
-                </NoValueLabel>
             )}
         </TopLevelGroup>
     );
