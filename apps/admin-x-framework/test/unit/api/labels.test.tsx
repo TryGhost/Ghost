@@ -88,7 +88,7 @@ describe('labels api', () => {
         });
     });
 
-    it('escapes backslashes in the lookup filter', async () => {
+    it('does not escape backslashes in the lookup filter', async () => {
         await withMockFetch({
             json: {labels: []},
             headers: {'content-type': 'application/json'},
@@ -101,8 +101,10 @@ describe('labels api', () => {
                 await result.current('trailing\\');
             });
 
+            // NQL keeps lone backslashes literal and only unescapes \' and \",
+            // so a doubled backslash would query a two-backslash name
             const url = new URL(mock.calls[0][0] as string);
-            expect(url.searchParams.get('filter')).toBe(String.raw`name:'trailing\\'`);
+            expect(url.searchParams.get('filter')).toBe(String.raw`name:'trailing\'`);
         });
     });
 
