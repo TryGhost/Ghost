@@ -50,7 +50,9 @@ const PreviewField: React.FC<{field: customFields.FieldDefinition}> = ({field}) 
     return (
         <div>
             <span className='mb-1.5 block text-sm font-semibold'>{field.label}</span>
-            <div className='h-11 rounded-lg border border-grey-300 dark:border-grey-800'></div>
+            <div className='flex h-11 items-center rounded-lg border border-grey-300 px-3 text-grey-500 dark:border-grey-800'>
+                <span className='text-md'>{field.placeholder || ''}</span>
+            </div>
         </div>
     );
 };

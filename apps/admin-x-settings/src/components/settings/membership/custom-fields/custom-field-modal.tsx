@@ -23,6 +23,8 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({field, refresh, onCr
         initialState: {
             label: field?.label || '',
             type: field?.type || ('text' as customFields.FieldType),
+            // Optional placeholder; only used/persisted for text & number fields.
+            placeholder: field?.placeholder || '',
             // Options editor state; only used/persisted when type is 'select'.
             options: field?.options?.length ? [...field.options] : ['', ''],
             multiple: field?.multiple || false
@@ -49,15 +51,19 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({field, refresh, onCr
         },
         onSave: async (state) => {
             const options = state.options.map(o => o.trim()).filter(Boolean);
+            // Placeholder is only meaningful for text/number; null otherwise.
+            const placeholder = (state.type === 'text' || state.type === 'number') ? (state.placeholder.trim() || null) : null;
             if (field) {
                 await customFields.updateField(field.id, {
                     label: state.label.trim(),
+                    placeholder,
                     ...(state.type === 'select' ? {options, multiple: state.multiple} : {})
                 });
             } else {
                 const created = await customFields.createField({
                     label: state.label.trim(),
                     type: state.type,
+                    placeholder,
                     options: state.type === 'select' ? options : null,
                     multiple: state.type === 'select' ? state.multiple : false
                 });
@@ -69,6 +75,7 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({field, refresh, onCr
 
     const selectedType = typeOptions.find(o => o.value === formState.type);
     const isSelect = formState.type === 'select';
+    const isTextual = formState.type === 'text' || formState.type === 'number';
 
     const updateOption = (index: number, value: string) => {
         updateForm(state => ({...state, options: state.options.map((o, i) => (i === index ? value : o))}));
@@ -152,6 +159,17 @@ const CustomFieldModal: React.FC<CustomFieldModalProps> = ({field, refresh, onCr
                     updateForm(state => ({...state, type: (option?.value as customFields.FieldType) || 'text'}));
                 }}
             />
+            {isTextual && (
+                <TextField
+                    autoComplete='off'
+                    hint='Optional example shown in the empty input'
+                    maxLength={191}
+                    placeholder='e.g. Acme Inc.'
+                    title='Placeholder'
+                    value={formState.placeholder}
+                    onChange={e => updateForm(state => ({...state, placeholder: e.target.value}))}
+                />
+            )}
             {isSelect && (
                 <>
                     <div className='flex flex-col gap-y-2'>

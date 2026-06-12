@@ -604,7 +604,7 @@ class SignupPage extends React.Component {
                     options: def.options || [],
                     multiple: def.multiple,
                     value,
-                    placeholder: entry.placeholder || '',
+                    placeholder: def.placeholder || '',
                     label: def.label,
                     name: def.id,
                     // POC: any custom field placed on the form is required.
@@ -810,7 +810,6 @@ class SignupPage extends React.Component {
                         field={def}
                         value={this.state.cfValues[field.name]}
                         errorMessage={field.errorMessage}
-                        placeholder={field.placeholder}
                         onKeyDown={e => this.onKeyDown(e)}
                         onChange={value => this.handleCustomChange(field, value)}
                     />

@@ -22,6 +22,7 @@
  * @property {string|null} preset     preset id, or null for fully custom
  * @property {number} tier            POC build tier (1 or 2)
  * @property {string|null} helpText
+ * @property {string|null} placeholder  optional example, only for text/number
  * @property {string[]|null} options  only for type 'select'
  * @property {boolean} multiple       only for 'select': multi vs single
  * @property {boolean} archived
@@ -160,6 +161,7 @@ export async function createField(input) {
         preset: input.preset || null,
         tier: input.tier || (input.type === 'select' ? 2 : 1),
         helpText: input.helpText || null,
+        placeholder: input.placeholder || null,
         options: input.type === 'select' ? (input.options || []) : null,
         multiple: input.type === 'select' ? Boolean(input.multiple) : false,
         archived: false,

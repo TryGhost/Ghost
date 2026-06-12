@@ -45,6 +45,7 @@ This reconciles `portal_name` with the placement model and is the planned Story 
 - **`select` is the complexity spike.** It needs an options editor in the create form and forks the value shape (string vs string[] via `multiple`) across every surface. Build trivial types first; treat select as its own milestone.
 - **Date / Date & Time intentionally dropped.** beehiiv stores them as plain strings with no picker; not worth the picker UX for the POC. Revisit only if a real date need appears.
 - **Orphaned values when a select option is deleted** need a real policy (block deletion, keep stale values, or migrate). Ignored in the POC.
+- **Placeholder is a property of the field, not the form.** beehiiv attaches the placeholder/prompt per form; we put it on the **definition** (set once, used everywhere), consistent with `label` and with our dropped per-question titles. It's optional, text/number only (select keeps its fixed "Select an option" prompt; boolean/multi have no placeholder), and blank by default, so it's purely additive. **Migration gotcha:** moving `placeholder` from the placement to the definition meant every *reader* had to follow. The signup page kept reading `entry.placeholder` (the placement, now always null) instead of `def.placeholder`, so placeholders silently didn't render until that one line was fixed. Lesson: when a property moves placement→definition, grep all readers. The placement-level `placeholder` field is now vestigial (left in `FormPlacement` but unused).
 
 ## Admin UI (reuse worked well)
 

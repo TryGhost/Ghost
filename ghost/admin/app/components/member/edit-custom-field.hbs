@@ -35,9 +35,9 @@
                     {{/each}}
                 </div>
             {{else if this.isNumber}}
-                <input type="number" class="gh-input" aria-label={{this.field.label}} value={{this.value}} {{on "input" this.updateNumber}}>
+                <input type="number" class="gh-input" aria-label={{this.field.label}} placeholder={{this.field.placeholder}} value={{this.value}} {{on "input" this.updateNumber}}>
             {{else}}
-                <input type="text" class="gh-input" aria-label={{this.field.label}} value={{this.value}} {{on "input" this.updateText}}>
+                <input type="text" class="gh-input" aria-label={{this.field.label}} placeholder={{this.field.placeholder}} value={{this.value}} {{on "input" this.updateText}}>
             {{/if}}
         </div>
     </div>

@@ -26,7 +26,9 @@ function FieldError({message}) {
     );
 }
 
-export default function CustomFieldInput({field, value, errorMessage, placeholder, onKeyDown = () => {}, onChange}) {
+export default function CustomFieldInput({field, value, errorMessage, onKeyDown = () => {}, onChange}) {
+    // Placeholder is defined on the field (optional, text/number only).
+    const ph = field.placeholder ?? '';
     if (field.type === 'boolean') {
         return (
             <section className='gh-portal-input-section'>
@@ -74,7 +76,7 @@ export default function CustomFieldInput({field, value, errorMessage, placeholde
                     style={value ? SELECT_STYLE : {...SELECT_STYLE, color: 'var(--grey8)'}}
                     onChange={e => onChange(e.target.value || null)}
                 >
-                    <option value=''>{placeholder || t('Select an option')}</option>
+                    <option value=''>{ph || t('Select an option')}</option>
                     {(field.options || []).map(option => (
                         <option key={option} value={option}>{option}</option>
                     ))}
@@ -89,6 +91,7 @@ export default function CustomFieldInput({field, value, errorMessage, placeholde
             type={field.type === 'number' ? 'number' : 'text'}
             name={field.id}
             value={value ?? ''}
+            placeholder={ph}
             errorMessage={errorMessage}
             onKeyDown={onKeyDown}
             onChange={e => onChange(field.type === 'number' ? (e.target.value === '' ? null : Number(e.target.value)) : e.target.value)}

@@ -14,6 +14,7 @@ export interface FieldDefinition {
     preset: string | null;
     tier: number;
     helpText: string | null;
+    placeholder: string | null;
     options: string[] | null;
     multiple: boolean;
     archived: boolean;
