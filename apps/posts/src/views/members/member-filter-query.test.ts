@@ -58,6 +58,12 @@ describe('member-filter-query', () => {
         ]);
     });
 
+    it('parses grouped label all-of filters using the labels alias key', () => {
+        expect(stripIds(parseMemberFilter('(labels:alpha+labels:vip)', 'UTC'))).toEqual([
+            {field: 'label', operator: 'is-all', values: ['alpha', 'vip']}
+        ]);
+    });
+
     it('parses grouped label all-of filters alongside other predicates', () => {
         expect(stripIds(parseMemberFilter('(label:alpha+label:vip)+status:paid', 'UTC'))).toEqual([
             {field: 'label', operator: 'is-all', values: ['alpha', 'vip']},

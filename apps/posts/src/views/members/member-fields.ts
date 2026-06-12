@@ -143,6 +143,7 @@ const baseMemberFields = defineFields({
     },
     label: {
         operators: LABEL_SET_OPERATORS,
+        parseKeys: ['labels'],
         ui: {
             label: 'Label',
             type: 'multiselect',

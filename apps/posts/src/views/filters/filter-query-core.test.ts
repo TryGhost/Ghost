@@ -1,7 +1,7 @@
 import {defineFields} from './filter-types';
 import {describe, expect, it} from 'vitest';
-import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates} from './filter-query-core';
-import {numberCodec, scalarCodec} from './filter-codecs';
+import {dispatchSimpleNodes, extractAllOfPredicates, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates} from './filter-query-core';
+import {numberCodec, scalarCodec, setCodec} from './filter-codecs';
 import type {AstNode} from './filter-ast';
 import type {FilterPredicate} from './filter-types';
 
@@ -118,5 +118,40 @@ describe('filter-query-core', () => {
 
         expect([...fieldKeys]).toEqual(['created_at', 'created_at_utc']);
         expect(hasFieldKey(ast, fieldKeys)).toBe(true);
+    });
+});
+
+describe('extractAllOfPredicates', () => {
+    const allOfFields = defineFields({
+        label: {
+            operators: ['is-any', 'is-all', 'is-not-any'],
+            parseKeys: ['labels'],
+            ui: {
+                label: 'Label',
+                type: 'multiselect'
+            },
+            codec: setCodec()
+        },
+        tier: {
+            operators: ['is-any', 'is-not-any'],
+            ui: {
+                label: 'Tier',
+                type: 'multiselect'
+            },
+            codec: setCodec()
+        }
+    });
+
+    it('groups repeated clauses for fields declaring is-all, resolving alias keys', () => {
+        const result = extractAllOfPredicates([{label: 'alpha'}, {labels: 'vip'}, {status: 'paid'}], allOfFields, 'UTC');
+
+        expect(result).toEqual({
+            predicates: [{field: 'label', operator: 'is-all', values: ['alpha', 'vip']}],
+            remaining: [{status: 'paid'}]
+        });
+    });
+
+    it('returns null when no field accumulates at least two all-of clauses', () => {
+        expect(extractAllOfPredicates([{label: 'alpha'}, {tier: 'gold'}, {tier: 'silver'}], allOfFields, 'UTC')).toBeNull();
     });
 });

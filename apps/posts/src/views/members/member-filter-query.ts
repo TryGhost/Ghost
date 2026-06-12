@@ -1,4 +1,4 @@
-import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
+import {dispatchSimpleNodes, extractAllOfPredicates, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
 import {memberFields} from './member-fields';
 import {resolveField} from '../filters/resolve-field';
 import type {AstNode} from '../filters/filter-ast';
@@ -183,41 +183,6 @@ function matchFeedbackGroupedNode(node: AstNode): ParsedPredicate | null {
     };
 }
 
-function extractLabelAllOfPredicate(children: AstNode[]): {predicate: ParsedPredicate; remaining: AstNode[]} | null {
-    const labelValues: string[] = [];
-    const remaining: AstNode[] = [];
-
-    for (const child of children) {
-        const keys = Object.keys(child);
-        const key = keys[0];
-        const value = child[key];
-
-        if (
-            keys.length === 1 &&
-            (key === 'label' || key === 'labels') &&
-            typeof value === 'string'
-        ) {
-            labelValues.push(value);
-            continue;
-        }
-
-        remaining.push(child);
-    }
-
-    if (labelValues.length < 2) {
-        return null;
-    }
-
-    return {
-        predicate: {
-            field: 'label',
-            operator: 'is-all',
-            values: labelValues
-        },
-        remaining
-    };
-}
-
 const MEMBER_COMPOUND_MATCHERS: CompoundMatcher[] = [
     matchSubscribedNode,
     matchNewsletterGroupedNode,
@@ -259,12 +224,12 @@ function parseMemberNode(node: AstNode, timezone: string, isGroupedContext = fal
     const compound = getCompoundChildren(node);
 
     if (compound?.operator === '$and') {
-        const labelAllOf = isGroupedContext ? extractLabelAllOfPredicate(compound.children) : null;
+        const allOf = isGroupedContext ? extractAllOfPredicates(compound.children, memberFields, timezone) : null;
 
-        if (labelAllOf) {
+        if (allOf) {
             return [
-                labelAllOf.predicate,
-                ...labelAllOf.remaining.flatMap(child => parseMemberNode(child, timezone, true))
+                ...allOf.predicates,
+                ...allOf.remaining.flatMap(child => parseMemberNode(child, timezone, true))
             ];
         }
 

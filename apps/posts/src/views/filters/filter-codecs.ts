@@ -49,9 +49,22 @@ const DATE_OPERATOR_SYMBOLS: Record<string, string> = {
     'is-or-greater': '>='
 };
 
-const SET_OPERATOR_SYMBOLS: Record<string, string> = {
-    'is-any': '',
-    'is-not-any': '-'
+type SetOperatorSerializer = (field: string, values: string[], config?: CodecConfig) => string;
+
+function serializeSetMembership(symbol: string): SetOperatorSerializer {
+    return (field, values, config) => {
+        if (config?.serializeSingletonAsScalar && values.length === 1) {
+            return `${field}:${symbol}${serializeScalarValue(values[0], config)}`;
+        }
+
+        return `${field}:${symbol}[${values.map(value => serializeScalarValue(value, config)).join(',')}]`;
+    };
+}
+
+const SET_OPERATOR_SERIALIZERS: Record<string, SetOperatorSerializer> = {
+    'is-any': serializeSetMembership(''),
+    'is-not-any': serializeSetMembership('-'),
+    'is-all': (field, values, config) => `(${values.map(value => `${field}:${serializeScalarValue(value, config)}`).join('+')})`
 };
 
 const UNQUOTED_TOKEN_PATTERN = /^[A-Za-z0-9_.-]+$/;
@@ -269,25 +282,13 @@ export function setCodec(config?: CodecConfig): FilterCodec {
                 return null;
             }
 
-            const values = normalizeMultiValue(predicate.values);
+            const serializeOperator = SET_OPERATOR_SERIALIZERS[predicate.operator];
 
-            if (predicate.operator === 'is-all') {
-                const clauses = values.map(value => `${field}:${serializeScalarValue(value, config)}`);
-
-                return [`(${clauses.join('+')})`];
-            }
-
-            const operator = SET_OPERATOR_SYMBOLS[predicate.operator];
-
-            if (operator === undefined) {
+            if (serializeOperator === undefined) {
                 return null;
             }
 
-            if (config?.serializeSingletonAsScalar && values.length === 1) {
-                return [`${field}:${operator}${serializeScalarValue(values[0], config)}`];
-            }
-
-            return [`${field}:${operator}[${values.map(value => serializeScalarValue(value, config)).join(',')}]`];
+            return [serializeOperator(field, normalizeMultiValue(predicate.values), config)];
         }
     };
 }
