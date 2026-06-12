@@ -4,7 +4,7 @@ import {toast as sonnerToast} from 'sonner';
 import {useCallback} from 'react';
 import toast from 'react-hot-toast';
 import {useFramework} from '../providers/framework-provider';
-import {APIError, ValidationError} from '../utils/errors';
+import {APIError, getErrorMessage} from '../utils/errors';
 
 // Stale toasts can cover UI (and block clicks in tests), so both outlets are
 // cleared before showing a new toast - and on the unmocked-request test path
@@ -67,10 +67,10 @@ const useHandleError = () => {
             // don't show a toast because it may block clicking things in the test,
             // but still clear lingering toasts that would block clicks the same way
             dismissToasts();
-        } else if (error instanceof ValidationError && error.data?.errors[0]) {
-            showErrorToast(error.data.errors[0].context || error.data.errors[0].message);
         } else if (error instanceof APIError) {
-            showErrorToast(error.message);
+            // getErrorMessage extracts the human-readable text from
+            // validation errors and falls back to the error's own message
+            showErrorToast(getErrorMessage(error, error.message));
         } else {
             showErrorToast('Something went wrong, please try again.');
         }
