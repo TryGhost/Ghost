@@ -507,7 +507,7 @@ function SearchResultBox() {
     return null;
 }
 
-function Results({posts, authors, tags}) {
+export function Results({posts, authors, tags}) {
     const {searchValue} = useContext(AppContext);
 
     const allResults = useMemo(() => {
