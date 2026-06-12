@@ -47,6 +47,12 @@ async function runSchedulerPoll() {
     await DomainEvents.allSettled();
 }
 
+function getSentAutomationEmails() {
+    return mailService.GhostMailer.prototype.send.getCalls()
+        .map(call => call.args[0])
+        .filter(emailToSend => emailToSend.tags?.includes('member-welcome-email'));
+}
+
 async function upsertEmailDesignSetting({id, senderReplyTo}) {
     const currentTime = new Date();
 
@@ -170,24 +176,26 @@ describe('Members Automations', function () {
         await DomainEvents.allSettled();
 
         const clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true, shouldClearNativeTimers: true});
+        const maxWaitMs = Math.max(
+            ...automation.actions
+                .filter(action => action.type === 'wait')
+                .map(action => action.data.wait_hours * HOUR_MS)
+        ) + WAIT_BOUNDARY_BUFFER_MS;
 
         try {
-            for (const action of automation.actions) {
-                if (action.type === 'wait') {
-                    clock.setSystemTime(new Date(Date.now() + action.data.wait_hours * HOUR_MS + WAIT_BOUNDARY_BUFFER_MS));
+            for (let pollCount = 0; pollCount < automation.actions.length * 2; pollCount += 1) {
+                if (getSentAutomationEmails().length >= sendEmailActions.length) {
+                    break;
                 }
 
+                clock.setSystemTime(new Date(Date.now() + maxWaitMs));
                 await runSchedulerPoll();
             }
-
-            await runSchedulerPoll();
         } finally {
             clock.restore();
         }
 
-        const sentEmails = mailService.GhostMailer.prototype.send.getCalls()
-            .map(call => call.args[0])
-            .filter(emailToSend => emailToSend.tags?.includes('member-welcome-email'));
+        const sentEmails = getSentAutomationEmails();
         assert.equal(sentEmails.length, 2);
         assert.deepEqual(sentEmails.map(({to}) => to), [email, email]);
         assert.deepEqual(sentEmails.map(({subject}) => subject), ['Welcome!', 'Follow up']);
