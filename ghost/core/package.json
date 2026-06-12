@@ -93,7 +93,7 @@
     "@tryghost/adapter-base-cache": "0.1.25",
     "@tryghost/admin-api-schema": "4.7.4",
     "@tryghost/api-framework": "catalog:",
-    "@tryghost/bookshelf-plugins": "2.2.2",
+    "@tryghost/bookshelf-plugins": "2.2.4",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/config-url-helpers": "1.0.26",
     "@tryghost/custom-fonts": "catalog:",
