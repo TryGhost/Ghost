@@ -2326,6 +2326,9 @@ importers:
       '@sentry/node':
         specifier: 7.120.4
         version: 7.120.4
+      '@slack/webhook':
+        specifier: 7.0.9
+        version: 7.0.9
       '@tryghost/adapter-base-cache':
         specifier: 0.1.25
         version: 0.1.25
@@ -7017,6 +7020,14 @@ packages:
     deprecated: |-
       Deprecated: no longer maintained and no longer used by Sinon packages. See
         https://github.com/sinonjs/nise/issues/243 for replacement details.
+
+  '@slack/types@2.21.1':
+    resolution: {integrity: sha512-I8vmSjNYWsaxuWPx6dz4yeh0h7vRBWbgAMK14LEmblbZ404BtrPbXs6jDPx4cYgGf8msDGF4A9opLZBu21FViQ==}
+    engines: {node: '>= 12.13.0', npm: '>= 6.12.0'}
+
+  '@slack/webhook@7.0.9':
+    resolution: {integrity: sha512-hMfkQ5Y3Y7FtL+ZYhcxFblidx4Z2LPRFrhY1KJb6NqQdnK6kzTzTS1mjH5taVQIB496eqwpg9FE9mq9BFx0DWw==}
+    engines: {node: '>= 18', npm: '>= 8.6.0'}
 
   '@smithy/core@3.24.6':
     resolution: {integrity: sha512-wBXDRup6UU97VKyaiRo8AssnfStPtG0oAAfpq/bC0a1YYau8pM86YB4kM6ccoVi1mS8l/UHbn9oDM+7uozr/ug==}
@@ -26396,6 +26407,17 @@ snapshots:
       type-detect: 4.1.0
 
   '@sinonjs/text-encoding@0.7.3': {}
+
+  '@slack/types@2.21.1': {}
+
+  '@slack/webhook@7.0.9':
+    dependencies:
+      '@slack/types': 2.21.1
+      '@types/node': 25.9.1
+      axios: 1.16.1
+    transitivePeerDependencies:
+      - debug
+      - supports-color
 
   '@smithy/core@3.24.6':
     dependencies:
