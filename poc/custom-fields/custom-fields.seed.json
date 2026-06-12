@@ -10,15 +10,16 @@
       "preset": "company",
       "tier": 1,
       "helpText": null,
+      "placeholder": "Acme Inc.",
       "options": null,
       "multiple": false,
       "archived": false,
       "createdAt": "2026-06-02T09:00:00.000Z"
     },
     {
-      "id": "cf_referrals",
-      "key": "referrals",
-      "label": "Referrals",
+      "id": "cf_team_size",
+      "key": "team_size",
+      "label": "Team size",
       "type": "number",
       "preset": null,
       "tier": 1,
@@ -110,7 +111,7 @@
   "values": {
     "member_1": {
       "cf_company": "Acme Inc.",
-      "cf_referrals": 3,
+      "cf_team_size": 12,
       "cf_test_account": false,
       "cf_role": "Founder",
       "cf_interests": ["Product", "Business"]

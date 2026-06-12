@@ -2,9 +2,9 @@ import * as customFields from '../../../../../../../poc/custom-fields/repo';
 import React, {useEffect, useRef, useState} from 'react';
 
 // POC-only dev toolbar: a small fixed "Custom Fields" pill (bottom-right) that
-// opens a menu to reseed/empty the throwaway repo while testing, instead of the
-// devtools console. No reload needed — the repo's write() notifies subscribers,
-// so the open admin views (and the site tab, via the storage event) refresh.
+// opens a menu to seed/empty the throwaway repo while testing, instead of the
+// devtools console. No reload — the repo's write() notifies subscribers, so the
+// open admin views (and the site tab, via the storage event) refresh live.
 // Custom (not the design-system Popover) so the menu matches the black pill.
 // Deletes with the rest of poc/custom-fields/.
 const itemClass = 'block w-full whitespace-nowrap px-4 py-1.5 text-left text-sm font-medium text-white hover:bg-grey-900';

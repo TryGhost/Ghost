@@ -43,7 +43,7 @@ const STORAGE_KEY = 'ghost-poc-custom-fields';
 // an older version is discarded and reseeded from the JSON, so dev browsers pick
 // up seed changes automatically (this DOES wipe local edits, which is the point
 // of a reseed).
-const SEED_VERSION = 9;
+const SEED_VERSION = 13;
 
 /** Type options for the "data type" dropdown in the create UI. */
 export const TYPES = [
@@ -84,19 +84,26 @@ if (typeof window !== 'undefined') {
     });
 }
 
+// Reseed (on a SEED_VERSION change) at most ONCE per page load, not on every
+// read. Otherwise two out-of-sync module instances (e.g. after an HMR seed bump)
+// keep reseeding each other's writes, and the dev toolbar's "Empty" just flashes
+// then gets reseeded away. After the first read normalizes the payload, trust it.
+let reseeded = false;
+
 function read() {
     const raw = typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY);
     if (raw) {
         try {
             const parsed = JSON.parse(raw);
-            if (parsed && parsed._seedVersion === SEED_VERSION) {
+            if (parsed && (parsed._seedVersion === SEED_VERSION || reseeded)) {
                 return parsed;
             }
-            // older seed version (or corrupt): fall through and reseed
+            // older seed version (first read of the session): fall through and reseed
         } catch (err) {
             // corrupt payload: fall through and reseed
         }
     }
+    reseeded = true;
     const initial = clone(seed);
     delete initial._comment;
     initial._seedVersion = SEED_VERSION;
