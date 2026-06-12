@@ -78,6 +78,7 @@ export const routes: RouteObject[] = [
                     },
                     {
                         path: ':id',
+                        handle: {hideAdminSidebar: true},
                         lazy: lazyComponent(() => import('@views/Automations/editor'))
                     }
                 ]
