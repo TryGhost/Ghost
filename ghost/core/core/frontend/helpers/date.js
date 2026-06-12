@@ -46,13 +46,20 @@ module.exports = function (...attrs) {
     // Documentation: http://momentjs.com/docs/#/i18n/
     // Locales: https://github.com/moment/moment/tree/develop/locale
     if (locale && locale.match('^[^/\\\\]*$') !== null) {
-        let momentLocale = locale;
-        if (locale === 'zh-Hant') {
-            momentLocale = 'zh-tw';
-        } else if (locale === 'zh') {
-            momentLocale = 'zh-cn';
+        // Moment ships region-specific locales (e.g. zh-cn, zh-tw, pa-in) for some
+        // languages where Ghost's i18n uses a bare or script-tagged code (zh, zh-Hant, pa).
+        // Maximize the locale to find the most likely regional variant, and let moment
+        // pick the first candidate it has a locale for.
+        const candidates = [locale];
+        try {
+            const maximized = new Intl.Locale(locale).maximize();
+            if (maximized.region) {
+                candidates.push(`${maximized.language}-${maximized.region}`, maximized.language);
+            }
+        } catch (e) {
+            // Invalid locale tag - moment will fall back to the default locale
         }
-        dateMoment.locale(momentLocale);
+        dateMoment.locale(candidates);
     }
 
     if (timeago) {
