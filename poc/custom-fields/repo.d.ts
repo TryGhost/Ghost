@@ -86,3 +86,4 @@ export function isDismissed(memberId: string, key: string): Promise<boolean>;
 export function setDismissed(memberId: string, key: string, value?: boolean): Promise<void>;
 
 export function resetToSeed(): Promise<unknown>;
+export function clearAll(): Promise<unknown>;

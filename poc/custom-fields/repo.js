@@ -422,3 +422,8 @@ export async function resetToSeed() {
     }
     return read();
 }
+
+/** Wipe to an empty state (no fields/forms/values) without reseeding, to simulate a brand-new site. */
+export async function clearAll() {
+    return write({_seedVersion: SEED_VERSION, definitions: [], forms: {}, landingForms: [], values: {}, settings: {}, dismissed: {}});
+}

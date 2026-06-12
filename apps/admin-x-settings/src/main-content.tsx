@@ -1,4 +1,5 @@
 import ExitSettingsButton from './components/exit-settings-button';
+import PocDevToolbar from './components/settings/membership/custom-fields/poc-dev-toolbar';
 import Settings from './components/settings';
 import Sidebar from './components/sidebar';
 import Users from './components/settings/general/users';
@@ -97,6 +98,7 @@ const MainContent: React.FC = () => {
             <div className="relative h-full flex-1 overflow-y-scroll bg-white pt-13 tablet:basis-[800px] dark:bg-grey-950 dark:tablet:bg-black" id="admin-x-settings-scroller">
                 <Settings />
             </div>
+            <PocDevToolbar />
         </Page>
     );
 };
