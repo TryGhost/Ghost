@@ -842,6 +842,7 @@ jobs:
     if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       packages: write
     steps:
@@ -1045,6 +1046,33 @@ jobs:
           # Use the first full-image tag as the FROM base for the e2e build.
           GHOST_IMAGE_TAG="${FULL_IMAGE_TAGS%%$'\n'*}"
           echo "GHOST_IMAGE_TAG=${GHOST_IMAGE_TAG}" >> "$GITHUB_ENV"
+
+      - name: Wait for public app artifacts (e2e)
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TIMEOUT=600
+          INTERVAL=10
+          START=$(date +%s)
+
+          while true; do
+            COUNT=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts?per_page=100" \
+              --jq '[.artifacts[] | select(.name == "e2e-public-apps" and .expired == false)] | length' 2>/dev/null || echo "0")
+
+            if [ "$COUNT" -gt 0 ]; then
+              echo "e2e-public-apps artifact is ready"
+              break
+            fi
+
+            ELAPSED=$(( $(date +%s) - START ))
+            if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+              echo "::error::Timed out waiting for e2e-public-apps artifact (${TIMEOUT}s)"
+              exit 1
+            fi
+
+            echo "Waiting for e2e-public-apps artifact... (${ELAPSED}s elapsed)"
+            sleep "$INTERVAL"
+          done
 
       - name: Download public app artifacts (e2e)
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
