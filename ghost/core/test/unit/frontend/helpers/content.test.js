@@ -258,70 +258,15 @@ describe('{{content}} helper with custom template', function () {
     });
 });
 
-describe('{{content}} helper gift callout', function () {
-    let i18nSetup;
-
-    beforeAll(async function () {
-        hbs.express4({partialsDir: [configUtils.config.get('paths').helperTemplates]});
-
-        const cachePartials = promisify(hbs.cachePartials.bind(hbs));
-        await cachePartials();
-
-        hbs.registerHelper('has', has);
-        hbs.registerHelper('is', is);
-        hbs.registerHelper('t', t);
-
-        i18nSetup = setupI18nTest({useNewTranslation: false, locale: 'en'});
-    });
-
-    afterAll(function () {
-        i18nSetup.teardown();
-        sinon.restore();
-    });
-
-    function optionsFor(gift, member = null) {
-        return {
-            data: {
-                site: {accent_color: '#abcdef'},
-                member,
-                gift
-            }
-        };
-    }
-
-    it('appends the gift callout to the gift\'s own post (anonymous reader)', function () {
+describe('{{content}} helper gift context', function () {
+    // Gift renders expose `@gift` as documented template context for theme
+    // authors; core deliberately ships NO default reader-facing UI, so the
+    // helper must return the content untouched.
+    it('does not alter the content output when a gift context is present', function () {
         const rendered = content.call(
             {id: 'post-1', html: '<p>Full content</p>', access: true},
-            optionsFor({post_id: 'post-1'})
+            {data: {site: {accent_color: '#abcdef'}, member: null, gift: {post_id: 'post-1'}}}
         );
-        assert(rendered.string.includes('<p>Full content</p>'), 'keeps the full content');
-        assert(rendered.string.includes('gh-gift-callout'), 'renders the callout');
-        assert(rendered.string.includes('This paid post was shared with you'), 'anonymous subscribe copy');
-    });
-
-    it('does not render the callout when there is no gift', function () {
-        const rendered = content.call(
-            {id: 'post-1', html: '<p>Full content</p>', access: true},
-            optionsFor(undefined)
-        );
-        assert(rendered.string.includes('<p>Full content</p>'));
-        assert(!rendered.string.includes('gh-gift-callout'));
-    });
-
-    it('does not render the callout on a post other than the gift\'s post', function () {
-        const rendered = content.call(
-            {id: 'other-post', html: '<p>Full content</p>', access: true},
-            optionsFor({post_id: 'post-1'})
-        );
-        assert(!rendered.string.includes('gh-gift-callout'));
-    });
-
-    it('does not render the callout for a signed-in member reading via a gift', function () {
-        const rendered = content.call(
-            {id: 'post-1', html: '<p>Full content</p>', access: true},
-            optionsFor({post_id: 'post-1'}, {uuid: 'm1'})
-        );
-        assert(rendered.string.includes('<p>Full content</p>'), 'keeps the full content');
-        assert(!rendered.string.includes('gh-gift-callout'), 'no callout for signed-in members');
+        assert.equal(rendered.string, '<p>Full content</p>');
     });
 });

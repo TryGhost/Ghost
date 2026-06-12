@@ -11,15 +11,11 @@ const GIFT_SEEN_COOKIE_PREFIX = 'gift_seen_';
 
 /**
  * Frontend middleware: when a request hits `/g/<slug>/?key=TOKEN`, resolve the
- * key into a content-only access grant on `res.locals.giftLink` before the
- * theme middleware reads it (the {{content}} helper renders the gift callout
- * iff `data.gift.post_id === post.id`, so the grant has to land BEFORE
- * `update-local-template-options` runs).
- *
- * This is mounted globally at the site level rather than inside the
- * GiftLinksRouter for that ordering reason. The router's controller is
- * responsible for the slug-match check + render/redirect; this middleware
- * only resolves the token.
+ * key into a content-only access grant on `res.locals.giftLink` before routing
+ * dispatches to the /g/ controller. The controller owns everything downstream:
+ * the slug-match check, render/redirect, and exposing the `@gift` template
+ * context on its verified render path. This middleware only resolves the
+ * token.
  *
  * @param {import('express').Request} req
  * @param {import('express').Response} res

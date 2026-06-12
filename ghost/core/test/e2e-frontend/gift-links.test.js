@@ -34,6 +34,7 @@ function assertContentIsAbsent(res) {
 describe('Front-end gift links', function () {
     let request;
     let token;
+    let postId;
     const slug = 'gift-me-this-paid-post';
 
     before(async function () {
@@ -56,6 +57,7 @@ describe('Front-end gift links', function () {
             published_at: moment().toDate()
         });
         await testUtils.fixtures.insertPosts([paidPost]);
+        postId = paidPost.id;
 
         // Mint an active gift link for the paid post.
         const giftLinksService = require('../../core/server/services/gift-links');
@@ -74,8 +76,8 @@ describe('Front-end gift links', function () {
             .get(`/${slug}/`)
             .expect(200)
             .expect(assertContentIsAbsent);
-        // No gift → no reader callout (the normal paywall CTA shows instead)
-        assert.ok(!res.text.includes('gh-gift-callout'));
+        // No gift → no `@gift` template context on the canonical URL
+        assert.ok(!res.text.includes('gift-context:'));
     });
 
     it('unlocks the full post for an anonymous visitor with a valid /g/ + key', async function () {
@@ -90,11 +92,11 @@ describe('Front-end gift links', function () {
         assert.equal(res.headers['x-robots-tag'], 'noindex');
         assert.equal(res.headers['referrer-policy'], 'no-referrer');
 
-        // The reader-facing conversion callout is rendered for the gift reader.
-        assert.ok(res.text.includes('gh-gift-callout'), 'renders the gift callout');
-        assert.ok(res.text.includes('This paid post was shared with you'), 'anonymous subscribe copy');
-        assert.ok(res.text.includes('data-portal="signup"'), 'renders the subscribe CTA');
-        assert.ok(res.text.includes('data-portal="signin"'), 'renders the sign-in CTA');
+        // Core ships no default reader-facing gift UI — themes opt in via the
+        // documented `@gift` template context instead (the test theme renders
+        // a marker from it).
+        assert.ok(res.text.includes(`gift-context:${postId}`), 'exposes @gift to the theme');
+        assert.ok(!res.text.includes('gh-gift-callout'), 'no default gift callout');
     });
 
     it('301s to the canonical URL when the gift token is invalid', async function () {
@@ -144,10 +146,15 @@ describe('Front-end gift links', function () {
     });
 
     it('404s when the URL slug does not resolve to any published post', async function () {
-        await request
-            .get('/g/no-such-slug/?key=irrelevant')
+        // Deliberately a VALID key: even though the token resolves, the slug
+        // mismatch + unresolvable fallback must render a clean 404 with no
+        // `@gift` context leaking into the error template.
+        const res = await request
+            .get(`/g/no-such-slug/?key=${token}`)
             .redirects(0)
             .expect(404);
+
+        assert.ok(!res.text.includes('gift-context:'), 'no @gift context on error renders');
     });
 
     it('counts a human gift read once and de-dupes repeat views via the gift_seen cookie', async function () {

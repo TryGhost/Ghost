@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{{statusCode}}</title>
+</head>
+<body>
+    <h1>{{statusCode}}</h1>
+    <p>{{message}}</p>
+    {{!-- `@gift` must never leak onto error renders — see e2e-frontend/gift-links.test.js --}}
+    {{#if @gift}}<div class="gift-context">gift-context:{{@gift.post_id}}</div>{{/if}}
+</body>
+</html>

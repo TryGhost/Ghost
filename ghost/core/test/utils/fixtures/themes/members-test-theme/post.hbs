@@ -17,6 +17,10 @@
                     {{content}}
                 </div>
             </section>
+
+            {{!-- `@gift` is the documented gift-link template context; only set
+                  when this post is rendered via a valid gift link --}}
+            {{#if @gift}}<div class="gift-context">gift-context:{{@gift.post_id}}</div>{{/if}}
         </article>
     </div>
 </main>

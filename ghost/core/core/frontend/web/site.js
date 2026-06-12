@@ -146,9 +146,9 @@ module.exports = function setupSiteApp(routerConfig) {
     siteApp.use(membersService.middleware.loadMemberSession);
 
     // Resolve `/g/<slug>/?key=TOKEN` into a content-only access grant on
-    // res.locals.giftLink BEFORE theme middleware reads it for the gift
-    // callout. The slug-match check + render/redirect lives in the
-    // GiftLinksRouter's controller — this middleware only validates the token.
+    // res.locals.giftLink BEFORE routing dispatches to the GiftLinksRouter's
+    // controller, which owns the slug-match check, render/redirect, and the
+    // `@gift` template context — this middleware only validates the token.
     siteApp.use(giftLinksService.middleware.loadGiftLink);
 
     // Theme middleware

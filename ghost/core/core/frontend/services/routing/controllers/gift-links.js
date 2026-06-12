@@ -1,6 +1,8 @@
 const debug = require('@tryghost/debug')('services:routing:controllers:gift-links');
+const _ = require('lodash');
 const labs = require('../../../../shared/labs');
 const renderer = require('../../rendering');
+const hbs = require('../../theme-engine/engine');
 const giftLinksService = require('../../../../server/services/gift-links');
 
 /**
@@ -79,14 +81,26 @@ module.exports = async function giftLinksController(req, res, next) {
             if (fetched && fetched.entry.slug === urlSlug) {
                 res.routerOptions.context = fetched.resource === 'pages' ? ['page'] : ['post'];
 
+                // `@gift` — documented template context for gift-link renders.
+                // Set here, on the verified render path only (never on
+                // redirects, fall-through 404s, or canonical routes), so theme
+                // authors can rely on `{{#if @gift}}` meaning "THIS render is
+                // the gift's own post via a valid link". Shape: `{post_id}`.
+                // The token is deliberately NOT exposed to templates.
+                const localTemplateOptions = hbs.getLocalTemplateOptions(res.locals);
+                hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
+                    data: {gift: {post_id: giftLink.post_id}}
+                }));
+
                 giftLinksService.middleware.countGiftRead(req, res, giftLink);
 
                 return renderer.renderEntry(req, res)(fetched.entry);
             }
 
             // Token resolved but the URL slug doesn't match the token's
-            // post — treat as invalid. Clear the grant so nothing downstream
-            // (e.g. theme helpers) reads it on the redirect path.
+            // post — treat as invalid. Clear the grant defensively so any
+            // downstream res.locals reader sees no gift on the redirect/404
+            // path (`@gift` is only ever set on the verified render above).
             res.locals.giftLink = null;
         }
 
