@@ -196,6 +196,26 @@ export async function deleteField(id) {
     return true;
 }
 
+/**
+ * Reorder field definitions to match `orderedIds` (drag-to-reorder). The
+ * definition array order is also the order fields appear in the "Add a custom
+ * field" picker, so this regroups the picker too. Any id not listed is appended.
+ * @returns {Promise<FieldDefinition[]>}
+ */
+export async function reorderFields(orderedIds) {
+    const state = read();
+    const byId = new Map(state.definitions.map(d => [d.id, d]));
+    const reordered = orderedIds.map(id => byId.get(id)).filter(Boolean);
+    for (const def of state.definitions) {
+        if (!orderedIds.includes(def.id)) {
+            reordered.push(def);
+        }
+    }
+    state.definitions = reordered;
+    write(state);
+    return state.definitions;
+}
+
 // --- Form placements -------------------------------------------------------
 
 /** @returns {Promise<FormPlacement[]>} placements for a surface, ordered. */

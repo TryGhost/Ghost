@@ -11,7 +11,9 @@ Show, per row, how many members actually have a value for that field, so owners 
 - **POC:** count = members in the repo `values` with a non-empty value for the field id.
 - **Real build:** a count per field over the `members_custom_fields` join (cheap with an index; consider caching for big lists). Pairs naturally with the segmentation/NQL work (a field's usage is a `field_id IS NOT NULL` count).
 
-## 2. Drag-to-reorder the definitions
+## 2. Drag-to-reorder the definitions ✅ Built
+
+> Shipped in the POC: the Custom fields section is a `SortableList`; dragging persists via `repo.reorderFields(orderedIds)`, and because the picker reads the same `listFields()` order, reordering regroups the picker live. The notes below were the original rationale.
 
 Let owners reorder the custom-field list to group related fields, instead of being stuck with creation order.
 

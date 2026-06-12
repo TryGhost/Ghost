@@ -49,6 +49,7 @@ export function getField(id: string): Promise<FieldDefinition | null>;
 export function createField(input: {label: string; type: FieldType} & Partial<FieldDefinition>): Promise<FieldDefinition>;
 export function updateField(id: string, patch: Partial<FieldDefinition>): Promise<FieldDefinition | null>;
 export function deleteField(id: string): Promise<boolean>;
+export function reorderFields(orderedIds: string[]): Promise<FieldDefinition[]>;
 
 export function getForm(surface: string): Promise<FormPlacement[]>;
 export function setForm(surface: string, placements: FormPlacement[]): Promise<FormPlacement[]>;

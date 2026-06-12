@@ -73,7 +73,7 @@ Out of scope for the POC, worth revisiting for a real implementation:
 - **Field formats (validated types) + presets**: validated types like email / phone / url (modeled as a `format` on text, surfaced as data types), plus deferred convenience presets. See [ideas/field-formats.md](./ideas/field-formats.md).
 - **Integration surface for a real build**: import/migration, CSV export, Admin API, NQL filtering/segmentation, email personalization, webhooks, themes, GDPR export, etc. The full checklist beyond the POC's UI surfaces. See [ideas/integration-surface.md](./ideas/integration-surface.md).
 - **Landing form presentation + enforcement**: let the owner pick the appearance (soft **card** vs centered **modal**, reusing Portal's popup) and whether the prompt is **skippable or required** (blocking gate). See [ideas/landing-form-presentation.md](./ideas/landing-form-presentation.md).
-- **Custom fields list enhancements**: per-field **fill stats** (members with a value, like Newsletters' Subscribers/Delivered), **drag-to-reorder** the definitions (which also reorders the picker), and a **"Show all"** when there are >5 fields (Recommendations pattern). See [ideas/custom-fields-list-enhancements.md](./ideas/custom-fields-list-enhancements.md).
+- **Custom fields list enhancements**: per-field **fill stats** (members with a value, like Newsletters' Subscribers/Delivered) and a **"Show all"** when there are >5 fields (Recommendations pattern). (Drag-to-reorder is built.) See [ideas/custom-fields-list-enhancements.md](./ideas/custom-fields-list-enhancements.md).
 
 ## Open questions
 
