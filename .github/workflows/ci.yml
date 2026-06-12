@@ -1109,7 +1109,15 @@ jobs:
       # this same job (same buildx builder) means the base resolves from the local
       # BuildKit cache instead of a 54s re-pull on a separate fresh runner.
       # ghost-e2e stays a SEPARATE tag, so the deployed production image stays clean.
+      #
+      # On tag runs every e2e step below is continue-on-error: this job gates the
+      # release lane (publish_ghost ← job_ghost-cli), so an e2e-lane failure must
+      # not strand a half-published release (GHCR images pushed, npm not) — and
+      # release.js --skip-checks can bypass a red e2e lane pre-tag but has no
+      # override inside this run. The e2e tests on the tag run still fail visibly
+      # if the image is missing or broken.
       - name: Resolve full image tag for E2E base
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         env:
           FULL_IMAGE_TAGS: ${{ steps.meta-full.outputs.tags }}
         run: |
@@ -1118,6 +1126,7 @@ jobs:
           echo "GHOST_IMAGE_TAG=${GHOST_IMAGE_TAG}" >> "$GITHUB_ENV"
 
       - name: Wait for public app artifacts (e2e)
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
@@ -1136,8 +1145,10 @@ jobs:
 
             # The artifact is never coming if the producing job already finished
             # without success — fail now instead of waiting out the timeout.
-            CONCLUSION=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs?per_page=100" \
-              --jq '[.jobs[] | select(.name == "Build E2E Public App Assets") | .conclusion] | last // ""' 2>/dev/null || echo "")
+            # --paginate: the run can exceed 100 jobs (e2e shards + package matrices).
+            # A queued/in-progress job has a null conclusion → empty → keep waiting.
+            CONCLUSION=$(gh api --paginate "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs?per_page=100" \
+              --jq '.jobs[] | select(.name == "Build E2E Public App Assets") | .conclusion // ""' 2>/dev/null | tail -n1 || echo "")
             if [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != "success" ]; then
               echo "::error::Build E2E Public App Assets concluded '${CONCLUSION}' — the e2e-public-apps artifact will not be produced"
               exit 1
@@ -1160,12 +1171,14 @@ jobs:
       # copies — using `.` as context would ship hundreds of MB into the builder
       # and let stray build:production files under apps/*/umd leak into the image.
       - name: Download public app artifacts (e2e)
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
         with:
           name: e2e-public-apps
           path: ${{ runner.temp }}/e2e-context
 
       - name: Extract public app artifacts (e2e)
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: |
           tar -xzf "${RUNNER_TEMP}/e2e-context/e2e-public-apps.tar.gz" -C "${RUNNER_TEMP}/e2e-context"
           rm "${RUNNER_TEMP}/e2e-context/e2e-public-apps.tar.gz"
@@ -1179,12 +1192,14 @@ jobs:
       # import/export keeps working.
       - name: Set up Docker Buildx (e2e host driver)
         if: steps.strategy.outputs.use-artifact == 'true'
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
         id: buildx-e2e-host
         with:
           driver: docker
 
       - name: Docker meta (e2e)
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         id: meta-e2e
         uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
         with:
@@ -1200,6 +1215,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push E2E image
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
         env:
           BUILDKIT_PROGRESS: plain
@@ -1226,6 +1242,7 @@ jobs:
 
       - name: Save E2E image as artifact
         if: steps.strategy.outputs.use-artifact == 'true'
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         run: |
           IMAGE_TAG=$(echo "${{ steps.meta-e2e.outputs.tags }}" | head -n1)
           echo "Saving image: $IMAGE_TAG"
@@ -1235,6 +1252,7 @@ jobs:
 
       - name: Upload E2E image artifact
         if: steps.strategy.outputs.use-artifact == 'true'
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
         with:
           name: docker-image-e2e
