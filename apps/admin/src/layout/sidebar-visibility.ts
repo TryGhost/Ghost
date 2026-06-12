@@ -5,14 +5,15 @@ export type AdminRouteHandle = {
     hideAdminSidebar?: boolean;
 };
 
+function hidesAdminSidebar(handle: unknown): handle is AdminRouteHandle {
+    return typeof handle === "object" && handle !== null && "hideAdminSidebar" in handle && handle.hideAdminSidebar === true;
+}
+
 export function useAdminSidebarVisibility(): boolean {
     const emberSidebarVisible = useEmberSidebarVisibility();
     const matches = useMatches();
 
-    const routeHidesSidebar = matches.some((match) => {
-        const handle = match.handle as AdminRouteHandle | undefined;
-        return handle?.hideAdminSidebar === true;
-    });
+    const routeHidesSidebar = matches.some(match => hidesAdminSidebar(match.handle));
 
     return emberSidebarVisible && !routeHidesSidebar;
 }
