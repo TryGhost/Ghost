@@ -36,7 +36,7 @@ describe("useAdminSidebarVisibility", () => {
         const {useAdminSidebarVisibility} = await import("./sidebar-visibility");
 
         useMatchesMock.mockReturnValue([
-            {handle: undefined},
+            {},
             {handle: {hideAdminSidebar: true}}
         ]);
 
