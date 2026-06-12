@@ -50,7 +50,7 @@ describe('services/koenig/node-renderers/signup-renderer', function () {
                                 <input data-members-label="" type="hidden" value="label 1" />
                                 <input data-members-label="" type="hidden" value="label 2" />
                                 <div class="kg-signup-card-fields">
-                                    <input class="kg-signup-card-input" id="email" data-members-email="" type="email" required="true" placeholder="Your email" />
+                                    <input class="kg-signup-card-input" id="email" data-members-email="" type="email" required="true" placeholder="jamie@example.com" />
                                     <button class="kg-signup-card-button" style="background-color: #000000; color: #ffffff" type="submit">
                                         <span class="kg-signup-card-button-default">Button</span>
                                         <span class="kg-signup-card-button-loading">
