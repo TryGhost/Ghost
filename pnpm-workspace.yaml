@@ -132,9 +132,6 @@ catalogs:
     eslint-plugin-tailwindcss: 3.18.3
 
 overrides:
-  # bookshelf-filter pins nql@0.12.10; force the catalog version so filter
-  # queries get aggregate relation support (nql 0.13.0 / mongo-knex 0.10.0)
-  '@tryghost/nql': 'catalog:'
   '@tryghost/errors': ^1.3.7
   '@tryghost/logging': 'catalog:'
   jackspeak: 4.2.3
