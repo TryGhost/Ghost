@@ -747,6 +747,21 @@ describe('Members API', function () {
             assert.equal(res.body.meta.pagination.total, 1);
             assert.equal(res.body.members.length, 1);
             assert.equal(res.body.members[0].email, emails[0]);
+
+            const combinedFilter = encodeURIComponent(`count.active_stripe_customers:>1+email:'${emails[1]}'`);
+            const combinedRes = await agent
+                .get(`/members/?filter=${combinedFilter}&fields=id,email`)
+                .expectStatus(200);
+
+            assert.equal(combinedRes.body.meta.pagination.total, 0);
+
+            const orFilter = encodeURIComponent(`count.active_stripe_customers:>1,email:'${emails[1]}'`);
+            const orRes = await agent
+                .get(`/members/?filter=${orFilter}&fields=id,email`)
+                .expectStatus(200);
+
+            assert.equal(orRes.body.meta.pagination.total, 2);
+            assert.deepEqual(orRes.body.members.map(member => member.email).sort(), [emails[0], emails[1]].sort());
         } finally {
             await deleteMembersWithStripeData(emails, customerIds);
         }
@@ -809,20 +824,15 @@ describe('Members API', function () {
         }
     });
 
-    it('Returns a bad request for unsupported active Stripe customer count filters', async function () {
+    it('Returns a bad request for non-numeric active Stripe customer count filters', async function () {
         const nullFilter = encodeURIComponent('count.active_stripe_customers:null');
         await agent
             .get(`/members/?filter=${nullFilter}`)
             .expectStatus(400);
 
-        const combinedFilter = encodeURIComponent('count.active_stripe_customers:>1+name:~\'Combined\'');
+        const stringFilter = encodeURIComponent('count.active_stripe_customers:\'abc\'');
         await agent
-            .get(`/members/?filter=${combinedFilter}`)
-            .expectStatus(400);
-
-        const orFilter = encodeURIComponent('status:paid,count.active_stripe_customers:>1');
-        await agent
-            .get(`/members/?filter=${orFilter}`)
+            .get(`/members/?filter=${stringFilter}`)
             .expectStatus(400);
     });
 
