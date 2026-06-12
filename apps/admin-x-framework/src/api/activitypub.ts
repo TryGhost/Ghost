@@ -1,33 +1,54 @@
 import {createMutation, createQueryWithId} from '../utils/api/hooks';
 
+type ActivityPubContext = string | (string | Record<string, unknown>)[];
+
+export type ActivityPubAttachment = {
+    type: string;
+    mediaType?: string;
+    name?: string;
+    url: string;
+};
+
+export type ObjectMetadata = {
+    ghostAuthors?: Array<{
+        name: string;
+        profile_image: string;
+    }>;
+};
+
 export type FollowItem = {
     id: string;
-    preferredUsername: string,
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [x: string]: any
+    preferredUsername: string;
 };
 
 export type ObjectProperties = {
-    '@context': string | (string | object)[];
+    '@context': ActivityPubContext;
+    id?: string;
     type: 'Article' | 'Link' | 'Note' | 'Tombstone';
     name: string;
     content: string | null;
     summary: string | null;
     url?: string | undefined;
-    attributedTo?: object | string | object[] | undefined;
+    attributedTo?: ActorProperties | string | ActorProperties[] | Record<string, unknown> | Record<string, unknown>[] | undefined;
     image?: string | {
         url: string;
         mediaType?: string;
         type?: string;
     };
+    attachment?: ActivityPubAttachment | ActivityPubAttachment[];
     published?: string;
     preview?: {type: string, content: string | null};
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [x: string]: any;
+    replyCount?: number;
+    likeCount?: number;
+    liked?: boolean;
+    reposted?: boolean;
+    repostCount?: number;
+    authored?: boolean;
+    metadata?: ObjectMetadata;
 }
 
 export type ActorProperties = {
-    '@context': string | (string | object)[];
+    '@context': ActivityPubContext;
     attachment?: {
         type: string;
         name: string;
@@ -49,6 +70,9 @@ export type ActorProperties = {
     name: string;
     outbox: string;
     preferredUsername: string;
+    handle?: string;
+    followedByMe?: boolean;
+    avatarUrl?: string | null;
     publicKey: {
         id: string;
         owner: string;
@@ -58,8 +82,6 @@ export type ActorProperties = {
     summary: string;
     type: 'Person';
     url: string;
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    [x: string]: any;
 }
 
 export type Activity = {

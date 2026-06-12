@@ -146,9 +146,30 @@ describe('mapPostToActivity', function () {
         expect(object.preview.content).toBe('Test Excerpt');
         expect(object.id).toBe('123');
         expect(object.replyCount).toBe(3);
+        expect(object.likeCount).toBe(2);
         expect(object.liked).toBe(true);
         expect(object.reposted).toBe(false);
         expect(object.repostCount).toBe(5);
+        expect(object.authored).toBe(true);
+    });
+
+    test('it preserves object metadata', function () {
+        const object = mapPostToActivity({
+            ...post,
+            metadata: {
+                ghostAuthors: [{
+                    name: 'Ghost Author',
+                    profile_image: 'https://example.com/authors/ghost-author.jpg'
+                }]
+            }
+        }).object;
+
+        expect(object.metadata).toEqual({
+            ghostAuthors: [{
+                name: 'Ghost Author',
+                profile_image: 'https://example.com/authors/ghost-author.jpg'
+            }]
+        });
     });
 
     test('it sets the correct attachments', function () {
@@ -180,6 +201,7 @@ describe('mapPostToActivity', function () {
         });
 
         expect(activity.actor.followedByMe).toBe(true);
+        expect(activity.actor.handle).toBe('@testuser@example.com');
 
         // Test for reposts
         const repostActivity = mapPostToActivity({
