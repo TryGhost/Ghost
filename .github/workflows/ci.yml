@@ -812,7 +812,22 @@ jobs:
         run: |
           DIR=$(mktemp -d)
           ghost install local -d "$DIR"
-          ghost update -d "$DIR" --archive "$(pwd)/ghost.tgz"
+          INSTALLED_VERSION=$(node -e "console.log(require(process.argv[1]).version)" "$DIR/current/package.json")
+          ARCHIVE_VERSION=$(tar -xOf ghost.tgz package/package.json | node -e "let data = ''; process.stdin.on('data', chunk => data += chunk); process.stdin.on('end', () => console.log(JSON.parse(data).version));")
+
+          # Stale PRs can build an archive from an older prerelease after the stable
+          # version has already been published. Ghost-CLI correctly rejects that as
+          # a downgrade, so only run the update path when the archive can upgrade
+          # the installed latest release.
+          HIGHEST_VERSION=$(npm exec --yes --package semver@7.7.4 -- semver "$INSTALLED_VERSION" "$ARCHIVE_VERSION" | tail -n1)
+          ARCHIVE_CAN_UPGRADE_LATEST=$([ "$HIGHEST_VERSION" = "$ARCHIVE_VERSION" ] && [ "$ARCHIVE_VERSION" != "$INSTALLED_VERSION" ] && echo "true" || echo "false")
+
+          if [ "$ARCHIVE_CAN_UPGRADE_LATEST" = "true" ]; then
+            ghost update -d "$DIR" --archive "$(pwd)/ghost.tgz"
+          else
+            echo "Skipping update test because archive version $ARCHIVE_VERSION cannot upgrade latest release $INSTALLED_VERSION"
+          fi
+
           URL=$(ghost config get url -d "$DIR" --no-prompt --no-color | tail -n1)
           curl --retry 10 --retry-connrefused --retry-delay 3 -fsSI "$URL"
           ghost stop -d "$DIR"
