@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/design-fields/button-style-field.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import {ToggleGroup, ToggleGroupItem} from '@tryghost/shade/components';
 import {useEmailDesign} from '../email-design-context';
 

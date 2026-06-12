@@ -1,6 +1,6 @@
 import App from '../src/app.js';
 import {fireEvent, appRender, within, waitFor} from './utils/test-utils';
-import {offer as FixtureOffer, site as FixtureSite} from './utils/test-fixtures';
+import {offer as FixtureOffer, site as FixtureSite, member as FixtureMember} from './utils/test-fixtures';
 import setupGhostApi from '../src/utils/api.js';
 
 // Simple deep clone function
@@ -85,7 +85,7 @@ const offerSetup = async ({site, member = null, offer}) => {
     };
 };
 
-const setup = async ({site, member = null}) => {
+const setup = async ({site, member = null, checkoutPlanError = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = vi.fn(() => {
         return Promise.resolve({
@@ -113,6 +113,9 @@ const setup = async ({site, member = null}) => {
     });
 
     ghostApi.member.checkoutPlan = vi.fn(() => {
+        if (checkoutPlanError) {
+            return Promise.reject(checkoutPlanError);
+        }
         return Promise.resolve();
     });
 
@@ -577,6 +580,37 @@ describe('Signup', () => {
                 tierId: singleTierProduct.id,
                 cadence: 'year'
             });
+        });
+
+        test('via direct signup link shows an error instead of the magic link page', async () => {
+            const siteData = FixtureSite.singleTier.basic;
+            const paidTier = siteData.products.find(p => p.type === 'paid');
+            window.location.hash = `#/portal/signup/${paidTier.id}/monthly`;
+
+            try {
+                const checkoutError = Object.assign(
+                    new Error('A subscription exists for this Member.'),
+                    {code: 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION'}
+                );
+
+                const {ghostApi, ...utils} = await setup({
+                    site: siteData,
+                    member: FixtureMember.paid,
+                    checkoutPlanError: checkoutError
+                });
+
+                const popupFrame = await utils.findByTitle(/portal-popup/i);
+
+                await waitFor(() => {
+                    expect(ghostApi.member.checkoutPlan).toHaveBeenCalled();
+                });
+                await waitFor(() => {
+                    expect(within(popupFrame.contentDocument).queryByText(/You already have an active subscription\./i)).toBeInTheDocument();
+                });
+                expect(within(popupFrame.contentDocument).queryByText(/Now check your email!/i)).not.toBeInTheDocument();
+            } finally {
+                window.location.hash = '';
+            }
         });
 
         test('to an offer via link', async () => {

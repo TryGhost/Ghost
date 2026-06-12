@@ -13,6 +13,7 @@ Object {
 
 exports[`post.* events post.added event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.added",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -187,6 +188,7 @@ Object {
 
 exports[`post.* events post.deleted event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.deleted",
   "post": Object {
     "current": Object {},
     "previous": Object {
@@ -275,6 +277,7 @@ Object {
 
 exports[`post.* events post.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.edited",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -513,6 +516,7 @@ Object {
 
 exports[`post.* events post.published event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.published",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -774,6 +778,7 @@ Object {
 
 exports[`post.* events post.published.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.published.edited",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -1012,6 +1017,7 @@ Object {
 
 exports[`post.* events post.rescheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.rescheduled",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -1250,6 +1256,7 @@ Object {
 
 exports[`post.* events post.scheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.scheduled",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -1489,6 +1496,7 @@ Object {
 
 exports[`post.* events post.tag.attached event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.tag.attached",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -1794,6 +1802,7 @@ Object {
 
 exports[`post.* events post.tag.detached event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.tag.detached",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -2039,6 +2048,7 @@ Object {
 
 exports[`post.* events post.unpublished event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.unpublished",
   "post": Object {
     "current": Object {
       "authors": Array [
@@ -2299,6 +2309,7 @@ Object {
 
 exports[`post.* events post.unscheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.unscheduled",
   "post": Object {
     "current": Object {
       "authors": Array [

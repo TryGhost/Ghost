@@ -210,6 +210,7 @@ const Member = ghostBookshelf.Model.extend({
                     .from('members_stripe_customers')
                     .innerJoin('members_stripe_customers_subscriptions', 'members_stripe_customers_subscriptions.customer_id', 'members_stripe_customers.customer_id')
                     .where('members_stripe_customers_subscriptions.status', 'active')
+                    .where('members_stripe_customers_subscriptions.cancel_at_period_end', false)
                     .groupBy('members_stripe_customers.member_id')
                     .havingRaw('COUNT(DISTINCT members_stripe_customers_subscriptions.customer_id) > 1')
                     .as('multiple_active_stripe_customers');

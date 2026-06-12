@@ -21,8 +21,11 @@ const LikeButton: React.FC<Props> = ({comment, disabled, setDisabled}) => {
     const setButtonDisabled = setDisabled ?? setLocalDisabled;
 
     const openCta = () => {
+        // Pass the comment id so the CTA's "Sign in" can ask Portal to return
+        // the reader to this comment after signing in (see cta-box).
         dispatchAction('openPopup', {
-            type: 'ctaPopup'
+            type: 'ctaPopup',
+            commentId: comment.id
         });
     };
 
@@ -103,8 +106,11 @@ export const DislikeButton: React.FC<Props> = ({comment, disabled, setDisabled})
     const setButtonDisabled = setDisabled ?? setLocalDisabled;
 
     const openCta = () => {
+        // Pass the comment id so the CTA's "Sign in" can ask Portal to return
+        // the reader to this comment after signing in (see cta-box).
         dispatchAction('openPopup', {
-            type: 'ctaPopup'
+            type: 'ctaPopup',
+            commentId: comment.id
         });
     };
 

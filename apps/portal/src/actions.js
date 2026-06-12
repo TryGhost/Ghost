@@ -43,12 +43,18 @@ function back({state}) {
 
 function closePopup({state}) {
     removePortalLinkFromUrl();
+    // Drop any one-shot post-sign-in redirect (e.g. set when sign-in is opened
+    // from a comment "Reply") so a dismissed sign-in can't leak its redirect into
+    // a later, unrelated sign-in on the same page. Other pageData is preserved.
+    const pageData = {...(state.pageData || {})};
+    delete pageData.redirect;
     return {
         showPopup: false,
         lastPage: null,
         pageQuery: '',
         popupNotification: null,
-        page: state.page === 'magiclink' ? '' : state.page
+        page: state.page === 'magiclink' ? '' : state.page,
+        pageData
     };
 }
 
@@ -210,6 +216,16 @@ async function signup({data, state, api}) {
         };
     } catch (e) {
         if (e.code === CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION) {
+            if (state.member) {
+                return {
+                    action: 'signup:failed',
+                    popupNotification: createPopupNotification({
+                        type: 'signup:failed', autoHide: false, closeable: true, state, status: 'error',
+                        message: t('You already have an active subscription.')
+                    })
+                };
+            }
+
             return {
                 page: 'magiclink',
                 lastPage: 'signin',

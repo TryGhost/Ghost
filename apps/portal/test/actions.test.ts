@@ -1,6 +1,31 @@
 import ActionHandler from '../src/actions';
 import {vi, type MockInstance} from 'vitest';
 
+describe('closePopup action', () => {
+    test('clears a one-shot redirect from pageData so it cannot leak into a later sign-in', async () => {
+        const result = await ActionHandler({
+            action: 'closePopup',
+            data: {},
+            api: {},
+            state: {
+                page: 'signin',
+                pageData: {redirect: 'https://example.com/post/#ghost-comments-1', email: 'reader@example.com'}
+            }
+        });
+
+        // the redirect is dropped...
+        expect(result.pageData.redirect).toBeUndefined();
+        // ...but other pageData is preserved
+        expect(result.pageData.email).toBe('reader@example.com');
+        expect(result.showPopup).toBe(false);
+    });
+
+    test('handles missing pageData', async () => {
+        const result = await ActionHandler({action: 'closePopup', data: {}, api: {}, state: {page: 'signin'}});
+        expect(result.pageData).toEqual({});
+    });
+});
+
 describe('updateProfile action', () => {
     test('trims whitespace from name before saving', async () => {
         const mockApi = {
@@ -85,6 +110,48 @@ describe('signup action', () => {
             popupNotification: null
         });
         expect(result).not.toHaveProperty('action', 'signup:failed');
+    });
+
+    test('shows an error when a logged-in member checkout finds an existing subscription', async () => {
+        const checkoutError = new Error('A subscription exists for this Member.') as Error & {code: string};
+        checkoutError.code = 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION';
+
+        const mockApi = {
+            member: {
+                checkoutPlan: vi.fn(() => Promise.reject(checkoutError))
+            }
+        };
+        const state = {
+            site: {},
+            member: {
+                name: 'Jamie Larson',
+                email: 'jamie@example.com',
+                paid: true
+            }
+        };
+
+        const result = await ActionHandler({
+            action: 'signup',
+            data: {
+                plan: 'price_123',
+                tierId: 'tier_123',
+                cadence: 'month'
+            },
+            state,
+            api: mockApi
+        });
+
+        // No sign-in email is sent for authenticated members, so the
+        // check-your-email page would be misleading.
+        expect(result).not.toHaveProperty('page', 'magiclink');
+        expect(result).toMatchObject({
+            action: 'signup:failed',
+            popupNotification: {
+                type: 'signup:failed',
+                status: 'error',
+                message: 'You already have an active subscription.'
+            }
+        });
     });
 });
 

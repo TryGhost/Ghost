@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const DomainEvents = require('@tryghost/domain-events');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
+const db = require('../../../core/server/data/db');
 const automationsApi = require('../../../core/server/services/automations/automations-api');
 const adapterManager = require('../../../core/server/services/adapter-manager');
 const mailService = require('../../../core/server/services/mail');
@@ -11,6 +12,7 @@ const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 
 const HOUR_MS = 60 * 60 * 1000;
+const AUTOMATION_EMAIL_REPLY_TO = 'support@example.com';
 
 let agent;
 let schedulerKey;
@@ -44,6 +46,67 @@ async function runSchedulerPoll() {
     await DomainEvents.allSettled();
 }
 
+async function upsertEmailDesignSetting({id, senderReplyTo}) {
+    const currentTime = new Date();
+
+    await db.knex('email_design_settings')
+        .insert({
+            id,
+            slug: `automation-test-email-design-${id}`,
+            background_color: 'light',
+            header_background_color: 'transparent',
+            show_header_icon: true,
+            show_header_title: true,
+            button_color: 'accent',
+            button_corners: 'rounded',
+            button_style: 'fill',
+            link_color: 'accent',
+            link_style: 'underline',
+            body_font_category: 'sans_serif',
+            title_font_category: 'sans_serif',
+            title_font_weight: 'bold',
+            image_corners: 'square',
+            show_badge: true,
+            sender_reply_to: senderReplyTo,
+            created_at: currentTime,
+            updated_at: currentTime
+        })
+        .onConflict('id')
+        .merge({
+            sender_reply_to: senderReplyTo,
+            updated_at: currentTime
+        });
+}
+
+async function updateAutomationEmailDesignSetting(automation, emailDesignSettingId) {
+    const actions = automation.actions.map((action) => {
+        if (action.type !== 'send_email') {
+            return action;
+        }
+
+        return {
+            ...action,
+            data: {
+                ...action.data,
+                email_design_setting_id: emailDesignSettingId
+            }
+        };
+    });
+
+    const {body} = await agent
+        .put(`automations/${automation.id}`)
+        .body({
+            automations: [{
+                status: automation.status,
+                actions,
+                edges: automation.edges
+            }]
+        })
+        .expectStatus(200);
+
+    return body.automations[0];
+}
+
 describe('Members Automations', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -66,10 +129,34 @@ describe('Members Automations', function () {
         await DomainEvents.allSettled();
         sinon.restore();
         mockManager.restore();
+        await db.knex('email_design_settings')
+            .where('slug', 'like', 'automation-test-email-design-%')
+            .del();
         automationsApi._resetTestDatabase();
     });
 
     it('runs every step in the free member signup automation', async function () {
+        let automation = await getFreeMemberSignupAutomation();
+        assert.equal(automation.actions.length, 4);
+
+        const sendEmailActions = automation.actions.filter(action => action.type === 'send_email');
+        assert.equal(sendEmailActions.length, 2);
+
+        const emailDesignSettingId = sendEmailActions[0].data.email_design_setting_id;
+        assert(emailDesignSettingId, 'Expected send email action to have an email design setting');
+        await upsertEmailDesignSetting({
+            id: emailDesignSettingId,
+            senderReplyTo: AUTOMATION_EMAIL_REPLY_TO
+        });
+
+        automation = await updateAutomationEmailDesignSetting(automation, emailDesignSettingId);
+        assert.deepEqual(
+            automation.actions
+                .filter(action => action.type === 'send_email')
+                .map(action => action.data.email_design_setting_id),
+            [emailDesignSettingId, emailDesignSettingId]
+        );
+
         const email = `automation-free-member-${Date.now()}@test.example`;
         const member = await membersService.api.members.create({
             email,
@@ -78,9 +165,6 @@ describe('Members Automations', function () {
             email_disabled: false
         });
         assert.equal(member.get('status'), 'free');
-
-        const automation = await getFreeMemberSignupAutomation();
-        assert.equal(automation.actions.length, 4);
 
         await DomainEvents.allSettled();
 
@@ -109,7 +193,7 @@ describe('Members Automations', function () {
         assert.match(sentEmails[0].html, /Welcome!/);
         assert.match(sentEmails[1].html, /Follow up/);
         assert.deepEqual(sentEmails.map(({forceTextContent}) => forceTextContent), [true, true]);
-        assert.deepEqual(sentEmails.map(({replyTo}) => replyTo), ['support@example.com', 'support@example.com']);
+        assert.deepEqual(sentEmails.map(({replyTo}) => replyTo), [AUTOMATION_EMAIL_REPLY_TO, AUTOMATION_EMAIL_REPLY_TO]);
         assert.deepEqual(sentEmails.map(({tags}) => tags), [
             ['member-welcome-email'],
             ['member-welcome-email']

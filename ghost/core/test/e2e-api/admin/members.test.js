@@ -78,7 +78,7 @@ async function createGiftMember(data) {
     return member;
 }
 
-async function createStripeCustomerWithSubscription(member, customerId, subscriptionId, status = 'active') {
+async function createStripeCustomerWithSubscription(member, customerId, subscriptionId, {status = 'active', cancelAtPeriodEnd = false} = {}) {
     const now = new Date();
 
     await knex('members_stripe_customers').insert({
@@ -95,6 +95,7 @@ async function createStripeCustomerWithSubscription(member, customerId, subscrip
         customer_id: customerId,
         subscription_id: subscriptionId,
         status,
+        cancel_at_period_end: cancelAtPeriodEnd,
         current_period_end: now,
         start_date: now,
         created_at: now,
@@ -690,9 +691,10 @@ describe('Members API', function () {
         const emails = [
             'multiple-active-stripe-customers@example.com',
             'same-active-stripe-customer@example.com',
-            'trialing-stripe-customers@example.com'
+            'trialing-stripe-customers@example.com',
+            'cancelling-stripe-customers@example.com'
         ];
-        const customerIds = ['cus_matching_1', 'cus_matching_2', 'cus_same_1', 'cus_trialing_1', 'cus_trialing_2'];
+        const customerIds = ['cus_matching_1', 'cus_matching_2', 'cus_same_1', 'cus_trialing_1', 'cus_trialing_2', 'cus_cancelling_1', 'cus_cancelling_2'];
 
         try {
             const matchingMember = await createMember({
@@ -727,8 +729,15 @@ describe('Members API', function () {
                 email: emails[2],
                 status: 'free'
             });
-            await createStripeCustomerWithSubscription(trialingMember, 'cus_trialing_1', 'sub_trialing_1', 'trialing');
-            await createStripeCustomerWithSubscription(trialingMember, 'cus_trialing_2', 'sub_trialing_2', 'trialing');
+            await createStripeCustomerWithSubscription(trialingMember, 'cus_trialing_1', 'sub_trialing_1', {status: 'trialing'});
+            await createStripeCustomerWithSubscription(trialingMember, 'cus_trialing_2', 'sub_trialing_2', {status: 'trialing'});
+
+            const cancellingMember = await createMember({
+                email: emails[3],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(cancellingMember, 'cus_cancelling_1', 'sub_cancelling_1');
+            await createStripeCustomerWithSubscription(cancellingMember, 'cus_cancelling_2', 'sub_cancelling_2', {cancelAtPeriodEnd: true});
 
             const filter = encodeURIComponent('count.active_stripe_customers:>1');
             const res = await agent

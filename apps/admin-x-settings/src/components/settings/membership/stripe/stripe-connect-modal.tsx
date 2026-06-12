@@ -124,6 +124,7 @@ const Connect: React.FC = () => {
             <div className='mb-6 flex items-center justify-between'>
                 <Heading level={3}>Connect with Stripe</Heading>
                 <Toggle
+                    checked={testMode}
                     direction='rtl'
                     label='Test mode'
                     labelClasses={`translate-y-[1px] ${testMode ? 'text-[#EC6803]' : 'text-grey-800'}`}
