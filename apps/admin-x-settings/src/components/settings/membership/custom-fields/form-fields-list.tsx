@@ -12,6 +12,30 @@ import {Button, DragIndicator, Select, type SelectOption, type SortableItemConta
 const CREATE_NEW = '__create_new_field__';
 const BUILTIN_LABELS: Record<string, string> = {email: 'Email', name: 'Name'};
 
+// Email + Name are intrinsic to the signup form (like real Ghost), so they're
+// guaranteed here rather than read from storage — the repo could be empty/reset
+// and they must still appear. Custom placements are appended after them.
+const SIGNUP_BUILTINS: customFields.FormPlacement[] = [
+    {fieldId: 'email', system: true, required: true, placeholder: null, order: 0},
+    {fieldId: 'name', system: true, required: false, placeholder: null, order: 1}
+];
+
+// Inject any missing built-ins (email then name) at the top of the signup list.
+const withSignupBuiltins = (surface: string, formId: string | undefined, placements: customFields.FormPlacement[]) => {
+    if (formId || surface !== 'signup') {
+        return placements;
+    }
+    const result = [...placements];
+    if (!result.some(p => p.fieldId === 'email')) {
+        result.unshift(SIGNUP_BUILTINS[0]);
+    }
+    if (!result.some(p => p.fieldId === 'name')) {
+        const emailIndex = result.findIndex(p => p.fieldId === 'email');
+        result.splice(emailIndex + 1, 0, SIGNUP_BUILTINS[1]);
+    }
+    return result;
+};
+
 const typeLabel = (type: customFields.FieldType) => customFields.TYPES.find(t => t.value === type)?.label || type;
 
 const Badge: React.FC<{children: React.ReactNode}> = ({children}) => (
@@ -54,7 +78,7 @@ const FormFieldsList: React.FC<{
             formId ? customFields.getLandingFormFields(formId) : customFields.getForm(surface),
             customFields.listFields()
         ]);
-        setItems(form.map(p => ({...p, id: p.fieldId})));
+        setItems(withSignupBuiltins(surface, formId, form).map(p => ({...p, id: p.fieldId})));
         setDefinitions(defs);
     }, [surface, formId]);
 
