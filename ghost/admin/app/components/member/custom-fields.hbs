@@ -1,6 +1,9 @@
-<h4 class="gh-main-section-header small bn">Custom fields</h4>
-<div class="gh-main-section-content bordered">
-    {{#if this.rows}}
+{{! POC: hide the whole section (heading + card) when no custom fields are
+    defined, rather than showing an empty "No custom fields defined yet" card.
+    Cleaner for sites that don't use the feature, at the cost of discoverability. }}
+{{#if this.rows.length}}
+    <h4 class="gh-main-section-header small bn">Custom fields</h4>
+    <div class="gh-main-section-content bordered">
         {{#each this.rows as |row|}}
             <div class="gh-member-newsletter-row">
                 <div>
@@ -16,7 +19,5 @@
                 </button>
             </div>
         {{/each}}
-    {{else}}
-        <div class="gh-members-no-data">No custom fields defined yet.</div>
-    {{/if}}
-</div>
+    </div>
+{{/if}}
