@@ -54,19 +54,21 @@ const generateItem = function generateItem(post) {
         htmlContent('img').attr('alt', post.title);
     }
 
-    // Tidy up cards
+    // Tidy up cards for RSS readers (no Ghost CSS/JS available)
     htmlContent('.kg-card').each(function (index, card) {
         // Bookmark card
         htmlContent(card).find('.kg-bookmark-thumbnail, .kg-bookmark-icon, .kg-bookmark-metadata').remove();
         htmlContent(card).find('.kg-bookmark-description').wrap('<small></small>');
 
-        // Video card
+        // Video card — strip custom player chrome, fall back to a native playable <video>
         htmlContent(card).find('.kg-video-overlay, .kg-video-player-container').remove();
         const videoPoster = htmlContent(card).attr('data-kg-custom-thumbnail') || htmlContent(card).attr('data-kg-thumbnail');
-        htmlContent(card).find('.kg-video-card video').attr('poster', videoPoster);
+        const video = htmlContent(card).find('.kg-video-card video');
+        video.attr('poster', videoPoster);
+        video.attr('controls', '');
 
-        // Audio card
-        htmlContent(card).find('.kg-audio-thumbnail, .kg-audio-player, .kg-audio-title').remove();
+        // Audio card — strip chrome but KEEP the title; native playable <audio>
+        htmlContent(card).find('.kg-audio-thumbnail, .kg-audio-player').remove();
         htmlContent(card).find('.kg-audio-card audio').attr('controls', '');
     });
 

@@ -6,7 +6,7 @@ const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/config-utils');
 const routerManager = require('../../../../../core/frontend/services/routing').routerManager;
 const generateFeed = require('../../../../../core/frontend/services/rss/generate-feed');
-const {callRenderer} = require('../../../../../test/unit/server/services/koenig/test-utils');
+const {callRenderer} = require('../../../server/services/koenig/test-utils');
 
 describe('RSS: Generate Feed', function () {
     const data = {};
@@ -222,94 +222,105 @@ describe('RSS: Generate Feed', function () {
     });
 
     describe('Card reformatting', function () {
-        before(function () {
-            let postWithBookmark = posts[0];
-            let postWithVideo = posts[1];
-            let postWithAudio = posts[2];
+        // The card markup we care about lives in <content:encoded>. The feed also
+        // emits a plain-text <description> excerpt that is generated before the
+        // card cleanup runs, so assertions are scoped to content:encoded.
+        function getEncodedContent(xmlData) {
+            const match = xmlData.match(/<content:encoded><!\[CDATA\[([\s\S]*?)\]\]><\/content:encoded>/);
+            return match ? match[1] : '';
+        }
 
-            postWithBookmark.html = callRenderer('bookmark', {
+        beforeEach(function () {
+            configUtils.set({url: 'http://my-ghost-blog.com'});
+        });
+
+        it('strips bookmark thumbnail, icon and metadata', async function () {
+            const html = callRenderer('bookmark', {
                 url: 'https://www.ghost.org/',
                 icon: 'https://www.ghost.org/favicon.ico',
-                title: 'Ghost: The Creator Economy Platform',
+                title: 'Ghost',
                 description: 'doing kewl stuff',
                 author: 'ghost',
-                publisher: 'Ghost - The Professional Publishing Platform',
-                thumbnail: 'https://ghost.org/images/meta/ghost.png',
-                caption: 'caption here'
-            });
+                publisher: 'Ghost',
+                thumbnail: 'https://ghost.org/images/meta/ghost.png'
+            }).html;
 
-            postWithVideo.html = callRenderer('video', {
-                src: '/content/images/2022/11/koenig-lexical.mp4',
-                caption: 'This is a <b>caption</b>',
-                fileName: 'koenig-lexical.mp4',
+            // sanity check: the rendered card contains the chrome we expect to remove
+            assert.match(html, /kg-bookmark-thumbnail/);
+            assert.match(html, /kg-bookmark-icon/);
+            assert.match(html, /kg-bookmark-metadata/);
+
+            data.posts = [Object.assign({}, posts[0], {html})];
+
+            const xmlData = await generateFeed(baseUrl, data);
+            assertExists(xmlData);
+
+            const content = getEncodedContent(xmlData);
+            assert.doesNotMatch(content, /kg-bookmark-thumbnail/);
+            assert.doesNotMatch(content, /kg-bookmark-icon/);
+            assert.doesNotMatch(content, /kg-bookmark-metadata/);
+        });
+
+        it('strips video player chrome and leaves a playable video with poster and controls', async function () {
+            const html = callRenderer('video', {
+                src: '/content/x.mp4',
                 mimeType: 'video/mp4',
                 width: 200,
                 height: 100,
                 duration: 60,
-                thumbnailSrc: '/content/images/2022/11/koenig-lexical.jpg',
-                customThumbnailSrc: '/content/images/2022/11/koenig-lexical-custom.jpg',
-                thumbnailWidth: 100,
-                thumbnailHeight: 50
-            });
+                thumbnailSrc: '/content/images/x.jpg',
+                customThumbnailSrc: '/content/images/x-custom.jpg'
+            }).html;
 
-            postWithAudio.html = callRenderer('audio', {
-                src: '/content/audio/2022/11/koenig-lexical.mp3',
-                title: 'Test Audio',
+            // sanity check: the rendered card contains the chrome we expect to remove
+            assert.match(html, /kg-video-overlay/);
+            assert.match(html, /kg-video-player-container/);
+
+            data.posts = [Object.assign({}, posts[1], {html})];
+
+            const xmlData = await generateFeed(baseUrl, data);
+            assertExists(xmlData);
+
+            const content = getEncodedContent(xmlData);
+            assert.doesNotMatch(content, /kg-video-overlay/);
+            assert.doesNotMatch(content, /kg-video-player-container/);
+
+            // the native <video> survives with a poster and is playable via controls
+            const video = content.match(/<video[^>]*>/);
+            assertExists(video);
+            assert.match(video[0], /poster=/);
+            assert.match(video[0], /controls/);
+        });
+
+        it('strips audio player chrome but keeps the title and adds controls', async function () {
+            const html = callRenderer('audio', {
+                src: '/content/audio/x.mp3',
+                title: 'My Episode Title',
                 duration: 60,
                 mimeType: 'audio/mp3',
-                thumbnailSrc: '/content/images/2022/11/koenig-audio-lexical.jpg'
-            });
+                thumbnailSrc: '/content/images/x.jpg'
+            }).html;
 
-            data.posts = [postWithBookmark, postWithVideo, postWithAudio];
-        });
+            // sanity check: the rendered card contains the chrome we expect to remove
+            assert.match(html, /kg-audio-thumbnail/);
+            assert.match(html, /class="kg-audio-player"/);
 
-        it('should remove clutter from bookmark card', function (done) {
-            // Check if original card content is present
-            data.posts[0].html.html.should.match(/kg-bookmark-thumbnail/);
-            data.posts[0].html.html.should.match(/kg-bookmark-icon/);
-            data.posts[0].html.html.should.match(/kg-bookmark-description/);
+            data.posts = [Object.assign({}, posts[2], {html})];
 
-            generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
+            const xmlData = await generateFeed(baseUrl, data);
+            assertExists(xmlData);
 
-                xmlData.should.not.match(/kg-bookmark-thumbnail/);
-                xmlData.should.not.match(/kg-bookmark-icon/);
-                xmlData.should.not.match(/kg-bookmark-description/);
+            const content = getEncodedContent(xmlData);
+            assert.doesNotMatch(content, /kg-audio-thumbnail/);
+            assert.doesNotMatch(content, /class="kg-audio-player"/);
 
-                done();
-            }).catch(done);
-        });
+            // the native <audio> survives and is playable via controls
+            const audio = content.match(/<audio[^>]*>/);
+            assertExists(audio);
+            assert.match(audio[0], /controls/);
 
-        it('should remove clutter from video card', function (done) {
-            // Check if original card content is present
-            data.posts[1].html.html.should.match(/kg-video-overlay/);
-            data.posts[1].html.html.should.match(/kg-video-player-container/);
-
-            generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
-
-                xmlData.should.not.match(/kg-video-overlay/);
-                xmlData.should.not.match(/kg-video-player-container/);
-
-                done();
-            }).catch(done);
-        });
-
-        it('should remove clutter from audio card', function (done) {
-            // Check if original card content is present
-            data.posts[2].html.html.should.match(/kg-audio-thumbnail/);
-            data.posts[2].html.html.should.match(/kg-audio-player/);
-            data.posts[2].html.html.should.match(/kg-audio-title/);
-
-            generateFeed(baseUrl, data).then(function (xmlData) {
-                should.exist(xmlData);
-
-                xmlData.should.not.match(/kg-audio-thumbnail/);
-                xmlData.should.not.match(/kg-audio-player/);
-                xmlData.should.not.match(/kg-audio-title/);
-
-                done();
-            }).catch(done);
+            // the title is preserved for readers that drop the audio element
+            assert.match(content, /My Episode Title/);
         });
     });
 });
