@@ -42,12 +42,10 @@ const generateItem = function generateItem(post) {
         // The inline style was the old CSS-thumbnail mechanism; the real poster replaces it
         video.removeAttr('style');
 
-        // Audio card — strip chrome but KEEP the title; native playable <audio>
-        htmlContent(card).find('.kg-audio-thumbnail, .kg-audio-player').remove();
+        // Audio card — strip chrome including the title; native playable <audio>
+        htmlContent(card).find('.kg-audio-thumbnail, .kg-audio-player, .kg-audio-title').remove();
         const audio = htmlContent(card).find('.kg-audio-card audio');
         audio.attr('controls', '');
-        // Title first, then the native player
-        audio.before(htmlContent(card).find('.kg-audio-title'));
         // Drop the now-purposeless player container, lifting its children into the card
         const audioContainer = htmlContent(card).find('.kg-audio-player-container');
         audioContainer.before(audioContainer.html());

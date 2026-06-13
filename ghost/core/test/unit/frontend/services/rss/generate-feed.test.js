@@ -294,7 +294,7 @@ describe('RSS: Generate Feed', function () {
             assert.doesNotMatch(video[0], /style=/);
         });
 
-        it('strips audio player chrome but keeps the title and adds controls', async function () {
+        it('strips audio player chrome including the title and adds controls', async function () {
             const html = callRenderer('audio', {
                 src: '/content/audio/x.mp3',
                 title: 'My Episode Title',
@@ -318,15 +318,13 @@ describe('RSS: Generate Feed', function () {
             // the now-purposeless player container wrapper is removed too
             assert.doesNotMatch(content, /kg-audio-player-container/);
 
+            // the title is stripped along with the rest of the card chrome
+            assert.doesNotMatch(content, /My Episode Title/);
+
             // the native <audio> survives and is playable via controls
             const audio = content.match(/<audio[^>]*>/);
             assertExists(audio);
             assert.match(audio[0], /controls/);
-
-            // the title is preserved for readers that drop the audio element
-            assert.match(content, /My Episode Title/);
-            // and it now precedes the native player (reading order: title, then audio)
-            assert(content.indexOf('My Episode Title') < content.indexOf('<audio'));
         });
 
         it('cleans the generated excerpt so card chrome does not leak into the description', async function () {
