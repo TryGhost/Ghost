@@ -84,7 +84,7 @@
     "cli": "^1.29.1"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1064.0",
+    "@aws-sdk/client-s3": "3.1065.0",
     "@extractus/oembed-extractor": "3.2.1",
     "@faker-js/faker": "catalog:",
     "@isaacs/ttlcache": "1.4.1",
@@ -124,7 +124,7 @@
     "@tryghost/mongo-utils": "0.6.3",
     "@tryghost/mw-error-handler": "1.0.13",
     "@tryghost/mw-vhost": "1.0.6",
-    "@tryghost/nodemailer": "2.2.3",
+    "@tryghost/nodemailer": "2.2.4",
     "@tryghost/nql": "catalog:",
     "@tryghost/nql-lang": "catalog:",
     "@tryghost/parse-email-address": "workspace:*",

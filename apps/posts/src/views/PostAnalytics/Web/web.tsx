@@ -8,13 +8,13 @@ import StatsFilter from '../components/stats-filter';
 import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, NavbarActions} from '@tryghost/shade/components';
 import {BaseSourceData, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, getScrollParent} from '@tryghost/shade/utils';
 import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
 import {createFilter} from '@tryghost/shade/patterns';
 import {formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {getPeriodText} from '@src/utils/chart-helpers';
-import {useCallback, useEffect, useMemo} from 'react';
+import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useFilterParams} from '@src/hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/post-analytics-context';
 
@@ -31,6 +31,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
     const {statsConfig, isLoading: isConfigLoading, range, data: globalData, post, isPostLoading} = useGlobalData();
+    const containerRef = useRef<HTMLElement>(null);
 
     // Use URL-synced filter state for bookmarking and sharing
     const {filters: analyticsFilters, setFilters: setAnalyticsFilters} = useFilterParams();
@@ -64,7 +65,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
 
     // Scroll to top of the scrollable container
     const scrollToTop = useCallback(() => {
-        const scrollContainer = document.querySelector('.overflow-y-scroll');
+        const scrollContainer = getScrollParent(containerRef.current);
         if (scrollContainer) {
             scrollContainer.scrollTo({top: 0, behavior: 'smooth'});
         }
@@ -224,7 +225,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                     {!hasFilters && <DateRangeSelect />}
                 </NavbarActions>
             </PostAnalyticsHeader>
-            <PostAnalyticsContent>
+            <PostAnalyticsContent ref={containerRef}>
                 {isPageLoading ?
                     <Card className='size-full' variant='plain'>
                         <CardContent className='size-full items-center justify-center'>
