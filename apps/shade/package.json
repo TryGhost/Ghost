@@ -152,7 +152,7 @@
         "react-world-flags": "1.6.0",
         "recharts": "2.15.4",
         "sonner": "catalog:",
-        "tailwind-merge": "3.5.0",
+        "tailwind-merge": "3.6.0",
         "validator": "catalog:",
         "zod": "catalog:"
     },
