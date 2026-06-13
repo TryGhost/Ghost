@@ -24,7 +24,7 @@ export type FollowItem = {
 
 export type ObjectProperties = {
     '@context': ActivityPubContext;
-    id?: string;
+    id: string;
     type: 'Article' | 'Link' | 'Note' | 'Tombstone';
     name: string;
     content: string | null;
@@ -38,13 +38,14 @@ export type ObjectProperties = {
     };
     attachment?: ActivityPubAttachment | ActivityPubAttachment[];
     published?: string;
+    createdAt?: string;
     preview?: {type: string, content: string | null};
-    replyCount?: number;
-    likeCount?: number;
+    replyCount: number;
+    likeCount: number;
     liked?: boolean;
     reposted?: boolean;
-    repostCount?: number;
-    authored?: boolean;
+    repostCount: number;
+    authored: boolean;
     metadata?: ObjectMetadata;
 }
 
@@ -73,6 +74,10 @@ export type ActorProperties = {
     preferredUsername: string;
     handle?: string;
     followedByMe?: boolean;
+    followsMe?: boolean;
+    followingCount?: number;
+    followerCount?: number;
+    bio?: string;
     avatarUrl?: string | null;
     publicKey: {
         id: string;
