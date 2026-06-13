@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/email-design-context.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import {type ReactNode, createContext, useContext} from 'react';
 import type {EmailDesignSettings} from './types';
 

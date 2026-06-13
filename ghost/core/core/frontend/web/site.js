@@ -70,8 +70,6 @@ module.exports = function setupSiteApp(routerConfig) {
 
     const settingsCache = require('../../shared/settings-cache');
     const labs = require('../../shared/labs');
-    const urlService = require('../../server/services/url');
-    const models = require('../../server/models');
     const routing = require('../services/routing');
     const {api} = require('../services/proxy');
     const {createLlmsService} = require('../services/llms/service');
@@ -82,9 +80,7 @@ module.exports = function setupSiteApp(routerConfig) {
         settingsCache,
         labs,
         config,
-        urlServiceFacade: urlService.facade,
         urlUtils,
-        models,
         routing,
         api
     });

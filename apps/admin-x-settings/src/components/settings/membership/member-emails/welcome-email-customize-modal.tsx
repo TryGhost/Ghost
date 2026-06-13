@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/automation-email-design-modal.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import EmailDesignModal from '../../email-design/email-design-modal';
 import EmailPreview from '../../email-design/email-preview';
 import HeaderImageField from '../../email-design/header-image-field';

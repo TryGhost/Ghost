@@ -110,6 +110,16 @@ export class ValidationError extends JSONError {
 
 export const errorsWithMessage = [ValidationError, ThemeValidationError, HostLimitError, EmailError];
 
+// The API error serializer puts the human-readable text in `context`;
+// `message` is only a generic summary
+export function getErrorMessage(error: unknown, fallback: string): string {
+    if (error instanceof ValidationError && error.data?.errors[0]) {
+        return error.data.errors[0].context || error.data.errors[0].message;
+    }
+
+    return fallback;
+}
+
 // Frontend errors
 
 export class AlreadyExistsError extends Error {
