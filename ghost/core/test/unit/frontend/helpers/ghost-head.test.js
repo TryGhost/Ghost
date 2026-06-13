@@ -1034,6 +1034,30 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
 
+        it('includes style tag in design preview when announcement bar renders nothing', async function () {
+            const loggingErrorStub = sinon.stub(logging, 'error');
+            getStub.withArgs('members_track_sources').returns(false);
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#123456',
+                    _preview: 'test'
+                }
+            };
+
+            const rendered = await testGhostHead({hash: {exclude: 'card_assets,comment_counts'}, ...testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            assert.match(rendered, /--ghost-accent-color: #123456/);
+            sinon.assert.notCalled(loggingErrorStub);
+        });
+
         it('does not override code injection', async function () {
             getStub.withArgs('codeinjection_head').returns('<style>:root {--ghost-accent-color: #site-code-injection}</style>');
 
