@@ -529,7 +529,8 @@ class ImportManager {
             return importResult;
         } catch (err) {
             logging.error(err, 'Content import was unsuccessful');
-            importResult = {data: {errors: [err]}};
+            const errorDetails = err.errorDetails || [err];
+            importResult = {data: {errors: errorDetails}};
         } finally {
             // Step 5: Cleanup any files
             await this.cleanUp();
