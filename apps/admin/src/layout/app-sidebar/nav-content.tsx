@@ -25,12 +25,12 @@ function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
                 to={to}
                 isActive={isActive}
             >
-                <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" />
+                <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" />
                 <NavMenuItem.Label>Posts</NavMenuItem.Label>
             </NavMenuItem.Link>
             <a href="#/editor/post"
                 aria-label="Create new post"
-                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2"
             >
                 <LucideIcon.Plus
                     size={20}
@@ -58,7 +58,7 @@ function MembersNavItemContent({
                 to={to}
                 isActive={isActive}
             >
-                <LucideIcon.Users className={collapsible ? "pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" : ""} />
+                <LucideIcon.Users className={collapsible ? "pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" : ""} />
                 <NavMenuItem.Label>Members</NavMenuItem.Label>
             </NavMenuItem.Link>
             {count != null && (
