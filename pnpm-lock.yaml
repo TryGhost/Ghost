@@ -2435,8 +2435,8 @@ importers:
         specifier: 1.0.6
         version: 1.0.6
       '@tryghost/nodemailer':
-        specifier: 2.2.3
-        version: 2.2.3(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
+        specifier: 2.2.4
+        version: 2.2.4(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       '@tryghost/nql':
         specifier: 'catalog:'
         version: 0.13.0
@@ -3106,8 +3106,8 @@ packages:
     resolution: {integrity: sha512-KtCpg2vihUjhUpqpsZIcB6Dm1hv9lRn5hWwU6hXtYfSQionFD/dB/gTwgyn9AHX6eGiCFqHfjIZwETz5Cz4RWA==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-sesv2@3.1053.0':
-    resolution: {integrity: sha512-I7FLyoQtf6Jv4fC++1DavM/HVknyb4Un8V5/uuVMd3AlvfsuprcPF0iLYce3bFjjoKKg8H2lC9uXKAPjwwgsqw==}
+  '@aws-sdk/client-sesv2@3.1064.0':
+    resolution: {integrity: sha512-iPKTvvo39PNJpqQAAZe+rz74TODUY0CXlbJPX5YK2Mxp9t2RCjfE0OuklYTWUnmRfQpJcTjWPbRJW45T+MvYSQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.974.20':
@@ -8587,8 +8587,8 @@ packages:
   '@tryghost/mw-vhost@1.0.6':
     resolution: {integrity: sha512-FKoSdBw5+fZNbzC58LD3ZLbMEj2UI5+4XOnEau7xINuYBP/c4wN0TXHuJT8y6H1wnYvO4Qu9L+PwHxe1yHBA+Q==}
 
-  '@tryghost/nodemailer@2.2.3':
-    resolution: {integrity: sha512-91t/mVCpY9XvHIdNZIib5L5qbeFKlV6NuwdwbCgq2DyURf+mzKKVgJMPiYmqFKPa1bI+CZTHGG2zfkP8ktkJcA==}
+  '@tryghost/nodemailer@2.2.4':
+    resolution: {integrity: sha512-sYFbDS6ceS72qXVeHiE+23Si+JwfDo3Gx+UcGLfmXPR+mW5VvkehoL1QFg/VOKv6mB2kA2Dknk2lPmJuQAw3Jw==}
 
   '@tryghost/nql-lang@0.6.5':
     resolution: {integrity: sha512-13Loz2yH7GCMAfpVawD6KNWNPIVTc4STnP+MeCwbrWg8htv/CPOB0u+i9Eap0qEi8h6TC2aoOvbQV0EvjidQaQ==}
@@ -17316,10 +17316,6 @@ packages:
     resolution: {integrity: sha512-BLFuSth7QtHOkBzyqTehWWyub0NTRDuK2Q2SQfnGLsrJnzyU+Yeh4WpV1eZGuARFj1xQJHIdnTuJZLP+b9R1GQ==}
     engines: {node: '>=6.0.0'}
 
-  nodemailer@8.0.8:
-    resolution: {integrity: sha512-p+XsnzXGdtIHXUu2ugxdfG+eX2nehsGhMjW9h0CWj1BhE30hrFz0kh0yIM0/VjUgVsRrDj+80ZO+I1nSkGE4tA==}
-    engines: {node: '>=6.0.0'}
-
   nodemon@3.1.14:
     resolution: {integrity: sha512-jakjZi93UtB3jHMWsXL68FXSAosbLfY0In5gtKq3niLSkrWznrVBzXFNOEMJUfc9+Ke7SHWoAZsiMkNP3vq6Jw==}
     engines: {node: '>=10'}
@@ -21958,7 +21954,7 @@ snapshots:
       '@smithy/types': 4.14.3
       tslib: 2.8.1
 
-  '@aws-sdk/client-sesv2@3.1053.0':
+  '@aws-sdk/client-sesv2@3.1064.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
@@ -28406,11 +28402,11 @@ snapshots:
 
   '@tryghost/mw-vhost@1.0.6': {}
 
-  '@tryghost/nodemailer@2.2.3(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)':
+  '@tryghost/nodemailer@2.2.4(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)':
     dependencies:
-      '@aws-sdk/client-sesv2': 3.1053.0
+      '@aws-sdk/client-sesv2': 3.1064.0
       '@tryghost/errors': 1.3.13
-      nodemailer: 8.0.8
+      nodemailer: 8.0.10
       nodemailer-mailgun-transport: 2.1.5(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       nodemailer-stub-transport: 1.1.0
     transitivePeerDependencies:
@@ -40839,8 +40835,6 @@ snapshots:
   nodemailer-stub-transport@1.1.0: {}
 
   nodemailer@8.0.10: {}
-
-  nodemailer@8.0.8: {}
 
   nodemon@3.1.14:
     dependencies:
