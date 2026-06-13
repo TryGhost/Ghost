@@ -231,7 +231,7 @@
     "probability-distributions": "0.9.1",
     "probe-image-size": "7.3.0",
     "rss": "1.2.2",
-    "sanitize-html": "2.17.4",
+    "sanitize-html": "2.17.5",
     "semver": "7.8.4",
     "sharp": "0.34.5",
     "simple-dom": "1.4.0",
