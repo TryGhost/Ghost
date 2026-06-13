@@ -33,6 +33,7 @@ type SidebarContext = {
     setOpenMobile: (open: boolean) => void
     isMobile: boolean
     toggleSidebar: () => void
+    sidebarId: string
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null);
@@ -68,6 +69,7 @@ React.ComponentProps<'div'> & {
         ) => {
             const isMobile = useIsMobile();
             const [openMobile, setOpenMobile] = React.useState(false);
+            const sidebarId = React.useId();
 
             // This is the internal state of the sidebar.
             // We use openProp and setOpenProp for control from outside the component.
@@ -123,9 +125,10 @@ React.ComponentProps<'div'> & {
                     isMobile,
                     openMobile,
                     setOpenMobile,
-                    toggleSidebar
+                    toggleSidebar,
+                    sidebarId
                 }),
-                [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+                [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, sidebarId]
             );
 
             return (
@@ -174,7 +177,7 @@ const Sidebar = React.forwardRef<
         },
         ref
     ) => {
-        const {isMobile, state, openMobile, setOpenMobile} = useSidebar();
+        const {isMobile, state, openMobile, setOpenMobile, sidebarId} = useSidebar();
 
         if (collapsible === 'none') {
             return (
@@ -184,6 +187,7 @@ const Sidebar = React.forwardRef<
                         'flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground',
                         className
                     )}
+                    id={sidebarId}
                     role="navigation"
                     {...props}
                 >
@@ -199,6 +203,7 @@ const Sidebar = React.forwardRef<
                         className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
                         data-mobile="true"
                         data-sidebar="sidebar"
+                        id={sidebarId}
                         role="navigation"
                         side={side}
                         style={
@@ -221,6 +226,7 @@ const Sidebar = React.forwardRef<
                 data-side={side}
                 data-state={state}
                 data-variant={variant}
+                id={sidebarId}
                 role="navigation"
             >
                 {/* This is what handles the sidebar gap on desktop */}
@@ -265,11 +271,13 @@ const SidebarTrigger = React.forwardRef<
     React.ElementRef<typeof Button>,
     React.ComponentProps<typeof Button>
 >(({children, className, onClick, ...props}, ref) => {
-    const {toggleSidebar} = useSidebar();
+    const {toggleSidebar, open, openMobile, isMobile, sidebarId} = useSidebar();
 
     return (
         <Button
             ref={ref}
+            aria-controls={sidebarId}
+            aria-expanded={isMobile ? openMobile : open}
             className={cn('h-7 w-7', className)}
             data-sidebar="trigger"
             size="icon"
