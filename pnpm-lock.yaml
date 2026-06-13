@@ -175,8 +175,8 @@ catalogs:
       specifier: 2.0.3
       version: 2.0.3
     dompurify:
-      specifier: 3.4.8
-      version: 3.4.8
+      specifier: 3.4.9
+      version: 3.4.9
     dotenv:
       specifier: 17.4.2
       version: 17.4.2
@@ -407,8 +407,8 @@ importers:
         specifier: 13.0.2
         version: 13.0.2
       semver:
-        specifier: 7.7.4
-        version: 7.7.4
+        specifier: 7.8.4
+        version: 7.8.4
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -438,7 +438,7 @@ importers:
         version: 2.1.1
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.8
+        version: 3.4.9
       html2canvas-objectfit-fix:
         specifier: 1.2.0
         version: 1.2.0
@@ -1281,7 +1281,7 @@ importers:
         version: 4.1.0(encoding@0.1.13)
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.8
+        version: 3.4.9
       eslint:
         specifier: 'catalog:'
         version: 8.57.1
@@ -2556,7 +2556,7 @@ importers:
         version: 2.0.3
       dompurify:
         specifier: 'catalog:'
-        version: 3.4.8
+        version: 3.4.9
       downsize-cjs:
         specifier: 1.1.2
         version: 1.1.2
@@ -2588,8 +2588,8 @@ importers:
         specifier: 1.19.0
         version: 1.19.0
       file-type:
-        specifier: 21.3.1
-        version: 21.3.1
+        specifier: 21.3.2
+        version: 21.3.2
       form-data:
         specifier: 4.0.5
         version: 4.0.5
@@ -2756,11 +2756,11 @@ importers:
         specifier: 1.2.2
         version: 1.2.2
       sanitize-html:
-        specifier: 2.17.4
-        version: 2.17.4
+        specifier: 2.17.5
+        version: 2.17.5
       semver:
-        specifier: 7.7.4
-        version: 7.7.4
+        specifier: 7.8.4
+        version: 7.8.4
       sharp:
         specifier: 0.34.5
         version: 0.34.5
@@ -12587,8 +12587,8 @@ packages:
     resolution: {integrity: sha512-cgwlv/1iFQiFnU96XXgROh8xTeetsnJiDsTc7TYCLFd9+/WNkIqPTxiM/8pSd8VIrhXGTf1Ny1q1hquVqDJB5w==}
     engines: {node: '>= 4'}
 
-  dompurify@3.4.8:
-    resolution: {integrity: sha512-yb1cEmaOum7wFvOCSQxyfgVlv5D47Rc30iZWoMpbDIWTnJ6grDDQyu2KFJzB2k7u0pMuJcQ1zphH//fFnw2tjQ==}
+  dompurify@3.4.9:
+    resolution: {integrity: sha512-4dPSRMRDqHvs0V4YDFCsaIZo4if5u0xM+llyxiM2fwuZFdKArUBAF3VtI2+n8NKg9P870WMdYk0UhqQNoWXbfQ==}
 
   domutils@1.5.1:
     resolution: {integrity: sha512-gSu5Oi/I+3wDENBsOWBiRK1eoGxcywYSqg3rR960/+EfY0CF4EX1VPkgHOZ3WiS/Jg2DtliF6BhWcHlfpYUcGw==}
@@ -13924,8 +13924,8 @@ packages:
     resolution: {integrity: sha512-QgXo+mXTe8ljeqUFaX3QVHc5osSItJ/Km+xpocx0aSqWGMSCf6qYs/VnzZgS864Pjn5iceMRFigeAV7AfTlaig==}
     engines: {node: '>= 12'}
 
-  file-type@21.3.1:
-    resolution: {integrity: sha512-SrzXX46I/zsRDjTb82eucsGg0ODq2NpGDp4HcsFKApPy8P8vACjpJRDoGGMfEzhFC0ry61ajd7f72J3603anBA==}
+  file-type@21.3.2:
+    resolution: {integrity: sha512-DLkUvGwep3poOV2wpzbHCOnSKGk1LzyXTv+aHFgN2VFl96wnp8YA9YjO2qPzg5PuL8q/SW9Pdi6WTkYOIh995w==}
     engines: {node: '>=20'}
 
   file-uri-to-path@1.0.0:
@@ -19580,8 +19580,8 @@ packages:
     deprecated: some dependency vulnerabilities fixed, support for node < 10 dropped, and newer ECMAScript syntax/features added
     hasBin: true
 
-  sanitize-html@2.17.4:
-    resolution: {integrity: sha512-2HW7v2ol/uAM7sX4hbD8Z59OGWmAPrvjL8E71UWlBcj6m+kcF6ilQBLny+cIgY214QJeJT5tQuxKKqX0SQqjGQ==}
+  sanitize-html@2.17.5:
+    resolution: {integrity: sha512-ZmU1joGRrvoyctKIiuwUxqR6moLoU2Wk+2bMccN6f7UwhAmwYDvWziqPxRDDN2Qip62NqnIrVrT9akbL6Wretg==}
 
   sax@1.2.4:
     resolution: {integrity: sha512-NqVDv9TpANUjFm0N8uM5GxL36UgKi9/atZw+x7YFnQ8ckwFGKrl4xX4yWtrey3UJm5nP1kUbnYgLopqWNSRhWw==}
@@ -19666,6 +19666,11 @@ packages:
 
   semver@7.8.3:
     resolution: {integrity: sha512-wnilbGyMxzbY7dNOl7jpKbLSjcfeweJWU5j4+u5qW+6/wuGD9KzIGOyZnQVSBM9E7DtWaaH3CyHkppYrKYoxwg==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+  semver@7.8.4:
+    resolution: {integrity: sha512-rUCObTnP32Q08R2uuIrt7r9PlEonuTmtuXYcW6s5kjdlj3xbnwe+21yXptAUYcMAABLkYYTtnmzb3w3EDZfueA==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -33610,7 +33615,7 @@ snapshots:
     dependencies:
       domelementtype: 2.3.0
 
-  dompurify@3.4.8:
+  dompurify@3.4.9:
     optionalDependencies:
       '@types/trusted-types': 2.0.7
 
@@ -36331,7 +36336,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  file-type@21.3.1:
+  file-type@21.3.2:
     dependencies:
       '@tokenizer/inflate': 0.4.1
       strtok3: 10.3.5
@@ -43595,7 +43600,7 @@ snapshots:
       minimist: 1.2.8
       walker: 1.0.8
 
-  sanitize-html@2.17.4:
+  sanitize-html@2.17.5:
     dependencies:
       deepmerge: 4.3.1
       escape-string-regexp: 4.0.0
@@ -43693,6 +43698,8 @@ snapshots:
   semver@7.8.2: {}
 
   semver@7.8.3: {}
+
+  semver@7.8.4: {}
 
   send@0.19.2:
     dependencies:

@@ -82,7 +82,7 @@ catalog:
   concurrently: 10.0.3
   cross-fetch: 4.1.0
   dequal: 2.0.3
-  dompurify: 3.4.8
+  dompurify: 3.4.9
   dotenv: 17.4.2
   eslint: 8.57.1
   eslint-plugin-react-hooks: 5.2.0
@@ -204,5 +204,5 @@ minimumReleaseAgeExclude:
   - "ghost-storage-base"
   - "gscan"
   - "knex-migrator"
-  # Renovate security update: file-type@21.3.1
-  - file-type@21.3.1
+  # Renovate security update: file-type@21.3.1 || 21.3.2
+  - file-type@21.3.1 || 21.3.2
