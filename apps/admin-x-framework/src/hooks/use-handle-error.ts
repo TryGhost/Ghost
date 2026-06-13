@@ -1,9 +1,32 @@
 import * as Sentry from '@sentry/react';
 import {showToast} from '@tryghost/admin-x-design-system';
+import {toast as sonnerToast} from 'sonner';
 import {useCallback} from 'react';
 import toast from 'react-hot-toast';
 import {useFramework} from '../providers/framework-provider';
-import {APIError, ValidationError} from '../utils/errors';
+import {APIError, getErrorMessage} from '../utils/errors';
+
+// Stale toasts can cover UI and block clicks, especially in tests
+function dismissToasts() {
+    toast.remove();
+    sonnerToast.dismiss();
+}
+
+// There are two toast outlets: admin-x-design-system's DesignSystemProvider
+// renders react-hot-toast (marked with this class), shade's ShadeProvider
+// renders sonner - and the React shell can mount both at once. The marker's
+// presence in the DOM picks the library to emit to.
+function showErrorToast(message: React.ReactNode) {
+    dismissToasts();
+    if (document.querySelector('.toast-outlet-react-hot-toast')) {
+        showToast({
+            message,
+            type: 'error'
+        });
+    } else {
+        sonnerToast.error(message);
+    }
+}
 
 /**
  * Generic error handling for API calls. This is enabled by default for queries (can be disabled by
@@ -38,26 +61,15 @@ const useHandleError = () => {
             return;
         }
 
-        toast.remove();
-
         if (error instanceof APIError && error.response?.status === 418) {
             // We use this status in tests to indicate the API request was not mocked -
-            // don't show a toast because it may block clicking things in the test
-        } else if (error instanceof ValidationError && error.data?.errors[0]) {
-            showToast({
-                message: error.data.errors[0].context || error.data.errors[0].message,
-                type: 'error'
-            });
+            // don't show a toast because it may block clicking things in the test,
+            // but still clear lingering toasts that would block clicks the same way
+            dismissToasts();
         } else if (error instanceof APIError) {
-            showToast({
-                message: error.message,
-                type: 'error'
-            });
+            showErrorToast(getErrorMessage(error, error.message));
         } else {
-            showToast({
-                message: 'Something went wrong, please try again.',
-                type: 'error'
-            });
+            showErrorToast('Something went wrong, please try again.');
         }
     }, [sentryDSN]);
 

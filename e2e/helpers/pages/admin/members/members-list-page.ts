@@ -126,8 +126,12 @@ export class MembersListPage extends AdminPage {
         await this.page.getByRole('option', {name: new RegExp(String.raw`^${escaped}\b`)}).click();
     }
 
+    get multiselectSearchInput(): Locator {
+        return this.page.locator('[cmdk-input]');
+    }
+
     async searchMultiselectOptions(query: string): Promise<void> {
-        await this.page.locator('[cmdk-input]').fill(query);
+        await this.multiselectSearchInput.fill(query);
     }
 
     get editLabelInput(): Locator {

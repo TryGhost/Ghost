@@ -312,7 +312,7 @@ jobs:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@9b2a4a48cd458728c438c7fc090b3863b494cd16 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -376,7 +376,7 @@ jobs:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@9b2a4a48cd458728c438c7fc090b3863b494cd16 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -448,7 +448,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@9b2a4a48cd458728c438c7fc090b3863b494cd16 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -512,11 +512,7 @@ jobs:
         # installing/linking it when restoring from a cached store. --force
         # ensures all optional deps are installed regardless.
         run: |
-          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
-            pnpm install --frozen-lockfile --force
-          else
-            pnpm install --frozen-lockfile
-          fi
+          pnpm install --frozen-lockfile --force
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -525,17 +521,24 @@ jobs:
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
-        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
+        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> "$GITHUB_ENV"
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
         run: |
-          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
-          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
-          echo "database__connection__password=root" >> $GITHUB_ENV
+          {
+            echo "database__connection__host=127.0.0.1"
+            echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}"
+            echo "database__connection__password=root"
+          } >> "$GITHUB_ENV"
 
       - name: E2E tests
-        run: pnpm nx run ghost:test:ci:e2e
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm nx run ghost:test:ci:e2e
+          else
+            pnpm nx run ghost:test:ci:e2e:no-coverage
+          fi
 
       - name: Start MinIO for integration tests
         run: |
@@ -557,7 +560,12 @@ jobs:
           exit 1
 
       - name: Integration tests
-        run: pnpm nx run ghost:test:ci:integration
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm nx run ghost:test:ci:integration
+          else
+            pnpm nx run ghost:test:ci:integration:no-coverage
+          fi
 
       - name: Check for unexpected file changes
         run: |
@@ -569,14 +577,14 @@ jobs:
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
+        if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'sqlite')
         with:
           name: e2e-coverage
           path: |
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@9b2a4a48cd458728c438c7fc090b3863b494cd16 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -662,7 +670,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@9b2a4a48cd458728c438c7fc090b3863b494cd16 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -715,7 +723,7 @@ jobs:
           path: apps/${{ steps.app_name.outputs.name }}/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@9b2a4a48cd458728c438c7fc090b3863b494cd16 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -732,7 +740,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:49f65a4197ae7ff4aa923ec53e969c03220fbc1ddc38fba5edfe6832aacbb5db
+        image: tinybirdco/tinybird-local:latest@sha256:8929a968e4aa7e3b3400d91019c1290cdb6100e3d381e2ed6c02949d7a8b8ce4
         ports:
           - 7181:7181
     steps:
@@ -814,7 +822,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@9b2a4a48cd458728c438c7fc090b3863b494cd16 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1398,7 +1406,7 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@9b2a4a48cd458728c438c7fc090b3863b494cd16 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1516,9 +1524,12 @@ jobs:
           rsync -av --remove-source-files admin/* ghost/admin
 
       - name: Upload Admin test coverage
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
+        if: contains(needs.job_admin-tests.result, 'success')
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
         with:
           flags: admin-tests
+          files: ghost/admin/coverage/cobertura-coverage.xml
+          disable_search: true
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
@@ -1533,9 +1544,11 @@ jobs:
 
       - name: Upload E2E test coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: codecov/codecov-action@e79a6962e0d4c0c17b229090214935d2e33f8354 # v6
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
         with:
           flags: e2e-tests
+          files: ghost/core/coverage-e2e/cobertura-coverage.xml,ghost/core/coverage-integration/cobertura-coverage.xml
+          disable_search: true
 
   job_required_tests:
     name: All required tests passed or skipped

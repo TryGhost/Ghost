@@ -1,16 +1,20 @@
 import MainLayout from '@src/components/layout';
-import React from 'react';
+import React, {forwardRef} from 'react';
 
-const StatsLayout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children}) => {
-    return (
-        <MainLayout>
-            <div className='grid w-full grow'>
-                <div className='flex h-full flex-col px-6'>
-                    {children}
+const StatsLayout = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivElement>>(
+    ({children}, ref) => {
+        return (
+            <MainLayout>
+                <div ref={ref} className='grid w-full grow'>
+                    <div className='flex h-full flex-col px-6'>
+                        {children}
+                    </div>
                 </div>
-            </div>
-        </MainLayout>
-    );
-};
+            </MainLayout>
+        );
+    }
+);
+
+StatsLayout.displayName = 'StatsLayout';
 
 export default StatsLayout;

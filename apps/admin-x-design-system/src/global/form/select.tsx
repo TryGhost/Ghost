@@ -32,7 +32,7 @@ export interface SelectControlClasses {
     clearIndicator?: string;
 }
 
-export type LoadSelectOptions = (inputValue: string, callback: (options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>) => void) => void
+export type LoadSelectOptions = (inputValue: string, callback: (options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>) => void) => void;
 
 type SelectOptionProps = {
     async: true;
@@ -44,7 +44,7 @@ type SelectOptionProps = {
     options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>;
     defaultOptions?: never;
     loadOptions?: never;
-}
+};
 
 export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
     async?: boolean;
@@ -52,9 +52,9 @@ export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
     hideTitle?: boolean;
     size?: 'xs' | 'md';
     prompt?: string;
-    selectedOption?: SelectOption
+    selectedOption?: SelectOption;
     onSelect: (option: SelectOption | null) => void;
-    error?:boolean;
+    error?: boolean;
     hint?: React.ReactNode;
     clearBg?: boolean;
     border?: boolean;
@@ -65,7 +65,7 @@ export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
     unstyled?: boolean;
     disabled?: boolean;
     testId?: string;
-}
+};
 
 const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & {clearBg: boolean}> = ({clearBg, ...props}) => (
     <components.DropdownIndicator {...props}>
@@ -212,8 +212,7 @@ const Select: React.FC<SelectProps> = ({
             control: () => customClasses.control,
             placeholder: () => customClasses.placeHolder,
             menu: () => customClasses.menu,
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            option: (state: any) => {
+            option: (state: OptionProps<SelectOption, false>) => {
                 if (state.data.className) {
                     return clsx(customClasses.option, state.data.className);
                 }
