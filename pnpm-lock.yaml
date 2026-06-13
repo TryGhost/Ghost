@@ -407,8 +407,8 @@ importers:
         specifier: 13.0.2
         version: 13.0.2
       semver:
-        specifier: 7.7.4
-        version: 7.7.4
+        specifier: 7.8.4
+        version: 7.8.4
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
@@ -2759,8 +2759,8 @@ importers:
         specifier: 2.17.4
         version: 2.17.4
       semver:
-        specifier: 7.7.4
-        version: 7.7.4
+        specifier: 7.8.4
+        version: 7.8.4
       sharp:
         specifier: 0.34.5
         version: 0.34.5
@@ -19666,6 +19666,11 @@ packages:
 
   semver@7.8.3:
     resolution: {integrity: sha512-wnilbGyMxzbY7dNOl7jpKbLSjcfeweJWU5j4+u5qW+6/wuGD9KzIGOyZnQVSBM9E7DtWaaH3CyHkppYrKYoxwg==}
+    engines: {node: '>=10'}
+    hasBin: true
+
+  semver@7.8.4:
+    resolution: {integrity: sha512-rUCObTnP32Q08R2uuIrt7r9PlEonuTmtuXYcW6s5kjdlj3xbnwe+21yXptAUYcMAABLkYYTtnmzb3w3EDZfueA==}
     engines: {node: '>=10'}
     hasBin: true
 
@@ -43693,6 +43698,8 @@ snapshots:
   semver@7.8.2: {}
 
   semver@7.8.3: {}
+
+  semver@7.8.4: {}
 
   send@0.19.2:
     dependencies:
