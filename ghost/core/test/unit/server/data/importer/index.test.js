@@ -18,6 +18,7 @@ const MarkdownHandler = require('../../../../../core/server/data/importer/handle
 const RevueHandler = require('../../../../../core/server/data/importer/handlers/revue');
 const DataImporter = require('../../../../../core/server/data/importer/importers/data');
 const RevueImporter = require('../../../../../core/server/data/importer/importers/importer-revue');
+const models = require('../../../../../core/server/models');
 const configUtils = require('../../../../utils/config-utils');
 const logging = require('@tryghost/logging');
 
@@ -681,6 +682,44 @@ describe('Importer', function () {
             assert.deepEqual(inputData.data.data.posts[0], outputData.data.data.posts[0]);
             assert.deepEqual(inputData.data.data.tags[0], outputData.data.data.tags[0]);
             assert.deepEqual(inputData.data.data.users[0], outputData.data.data.users[0]);
+        });
+
+        it('rejects with a DataImportError carrying the importer errors when the import fails', async function () {
+            const RewiredDataImporter = rewire('../../../../../core/server/data/importer/importers/data/data-importer');
+            const importError = new errors.ValidationError({
+                message: 'Value in [posts.title] exceeds maximum length of 2000 characters.',
+                context: '{"title":"..."}'
+            });
+
+            const fakeImporter = (importerErrors = []) => ({
+                options: {requiredImportedData: [], requiredExistingData: []},
+                fetchExisting: sinon.stub().resolves(),
+                beforeImport: sinon.stub().resolves(),
+                replaceIdentifiers: sinon.stub().resolves(),
+                doImport: sinon.stub().resolves(),
+                errors: importerErrors,
+                problems: [],
+                importedData: []
+            });
+
+            sinon.stub(models.Base, 'transaction').callsFake(fn => fn({fake: 'transacting'}));
+            sinon.stub(RewiredDataImporter, 'init').callsFake(function (importData) {
+                RewiredDataImporter.__set__('importers', {
+                    posts: fakeImporter([importError]),
+                    products: fakeImporter(),
+                    stripe_prices: fakeImporter()
+                });
+                return importData;
+            });
+
+            await assert.rejects(RewiredDataImporter.doImport({meta: {version: '4.0.0'}, data: {}}, {}), (err) => {
+                assert(err instanceof Error);
+                assert(err instanceof errors.DataImportError);
+                assert.equal(err.message, importError.message);
+                assert.equal(err.context, importError.context);
+                assert.deepEqual(err.errorDetails, [importError]);
+                return true;
+            });
         });
     });
 });

@@ -47,11 +47,11 @@ catalog:
   '@tanstack/react-query': 4.44.0
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
-  '@tryghost/api-framework': 3.2.3
+  '@tryghost/api-framework': 3.2.4
   '@tryghost/color-utils': 0.2.19
   '@tryghost/custom-fonts': 1.0.11
-  '@tryghost/debug': 2.2.1
-  '@tryghost/domain-events': 3.2.3
+  '@tryghost/debug': 2.2.3
+  '@tryghost/domain-events': 3.2.5
   '@tryghost/helpers': 1.1.106
   '@tryghost/kg-clean-basic-html': 4.3.2
   '@tryghost/kg-converters': 1.2.2
@@ -82,7 +82,7 @@ catalog:
   concurrently: 10.0.3
   cross-fetch: 4.1.0
   dequal: 2.0.3
-  dompurify: 3.4.8
+  dompurify: 3.4.9
   dotenv: 17.4.2
   eslint: 8.57.1
   eslint-plugin-react-hooks: 5.2.0
