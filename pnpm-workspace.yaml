@@ -121,8 +121,8 @@ catalog:
 
 catalogs:
   eslint9:
-    '@eslint/js': 9.37.0
-    eslint: 9.37.0
+    '@eslint/js': 9.39.4
+    eslint: 9.39.4
   react17:
     react: 17.0.2
     react-dom: 17.0.2
