@@ -444,7 +444,7 @@ describe('Member Welcome Emails Integration', function () {
             assert.ok(sendCall.args[0].from.includes(senderEmail));
         });
 
-        it('uses welcome email sender details instead of email design sender details for member welcome emails', async function () {
+        it('prefers sender details from email design settings for member welcome emails', async function () {
             const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
 
             await db.knex('newsletters')
@@ -491,11 +491,11 @@ describe('Member Welcome Emails Integration', function () {
 
             sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
-            assert.equal(sendCall.args[0].from, '"Welcome Sender" <welcome@example.com>');
-            assert.equal(sendCall.args[0].replyTo, 'welcome-reply@example.com');
+            assert.equal(sendCall.args[0].from, '"Design Sender" <design@example.com>');
+            assert.equal(sendCall.args[0].replyTo, 'design-reply@example.com');
         });
 
-        it('uses newsletter sender details for member welcome emails when welcome email sender details are empty', async function () {
+        it('uses welcome email sender details for member welcome emails when email design sender details are empty', async function () {
             const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
 
             await db.knex('newsletters')
@@ -509,9 +509,21 @@ describe('Member Welcome Emails Integration', function () {
             await db.knex('email_design_settings')
                 .where('id', defaultEmailDesignSettingId)
                 .update({
-                    sender_name: 'Design Sender',
-                    sender_email: 'design@example.com',
-                    sender_reply_to: 'design-reply@example.com'
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null
+                });
+
+            const welcomeEmailAutomation = await db.knex('automations')
+                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .first('id');
+
+            await db.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', welcomeEmailAutomation.id)
+                .update({
+                    sender_name: 'Welcome Sender',
+                    sender_email: 'welcome@example.com',
+                    sender_reply_to: 'welcome-reply@example.com'
                 });
 
             await models.Outbox.add({
@@ -529,8 +541,8 @@ describe('Member Welcome Emails Integration', function () {
             await scheduleInlineJob();
 
             sinon.assert.calledOnceWithExactly(mailService.GhostMailer.prototype.send, sinon.match({
-                from: '"Newsletter Sender" <newsletter@example.com>',
-                replyTo: 'newsletter-reply@example.com'
+                from: '"Welcome Sender" <welcome@example.com>',
+                replyTo: 'welcome-reply@example.com'
             }));
         });
 
@@ -645,7 +657,7 @@ describe('Member Welcome Emails Integration', function () {
             assert(!sendCall.args[0].html.includes('%7Buuid%7D'));
         });
 
-        it('uses welcome email sender details instead of email design sender details for test welcome emails', async function () {
+        it('uses email design sender details for test welcome emails', async function () {
             memberWelcomeEmailService.init();
 
             await db.knex('email_design_settings')
@@ -654,6 +666,54 @@ describe('Member Welcome Emails Integration', function () {
                     sender_name: 'Design Sender',
                     sender_email: 'design@example.com',
                     sender_reply_to: 'design-reply@example.com'
+                });
+
+            const automation = await db.knex('automations')
+                .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)
+                .first();
+
+            await db.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automation.id)
+                .update({
+                    sender_name: 'Welcome Sender',
+                    sender_email: 'welcome@example.com',
+                    sender_reply_to: 'welcome-reply@example.com'
+                });
+
+            await memberWelcomeEmailService.api.sendTestEmail({
+                email: 'test-member@example.com',
+                subject: 'Welcome test',
+                lexical: JSON.stringify({
+                    root: {
+                        children: [{
+                            type: 'paragraph',
+                            children: [{type: 'text', text: 'Hello'}]
+                        }],
+                        direction: null,
+                        format: '',
+                        indent: 0,
+                        type: 'root',
+                        version: 1
+                    }
+                }),
+                automatedEmailId: automation.id
+            });
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            assert.equal(sendCall.args[0].from, '"Design Sender" <design@example.com>');
+            assert.equal(sendCall.args[0].replyTo, 'design-reply@example.com');
+        });
+
+        it('uses welcome email sender details for test welcome emails when email design sender details are empty', async function () {
+            memberWelcomeEmailService.init();
+
+            await db.knex('email_design_settings')
+                .where('id', defaultEmailDesignSettingId)
+                .update({
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null
                 });
 
             const automation = await db.knex('automations')
