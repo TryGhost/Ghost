@@ -33,6 +33,6 @@
     "fs-extra": "11.3.5"
   },
   "optionalDependencies": {
-    "sharp": "^0.34.5"
+    "sharp": "^0.35.0"
   }
 }
