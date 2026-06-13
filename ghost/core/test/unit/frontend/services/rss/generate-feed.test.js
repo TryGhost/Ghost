@@ -290,6 +290,8 @@ describe('RSS: Generate Feed', function () {
             assertExists(video);
             assert.match(video[0], /poster=/);
             assert.match(video[0], /controls/);
+            // the redundant inline CSS-thumbnail style is dropped now there's a real poster
+            assert.doesNotMatch(video[0], /style=/);
         });
 
         it('strips audio player chrome but keeps the title and adds controls', async function () {
@@ -313,6 +315,8 @@ describe('RSS: Generate Feed', function () {
             const content = getEncodedContent(xmlData);
             assert.doesNotMatch(content, /kg-audio-thumbnail/);
             assert.doesNotMatch(content, /class="kg-audio-player"/);
+            // the now-purposeless player container wrapper is removed too
+            assert.doesNotMatch(content, /kg-audio-player-container/);
 
             // the native <audio> survives and is playable via controls
             const audio = content.match(/<audio[^>]*>/);
@@ -321,6 +325,37 @@ describe('RSS: Generate Feed', function () {
 
             // the title is preserved for readers that drop the audio element
             assert.match(content, /My Episode Title/);
+            // and it now precedes the native player (reading order: title, then audio)
+            assert(content.indexOf('My Episode Title') < content.indexOf('<audio'));
+        });
+
+        it('cleans the generated excerpt so card chrome does not leak into the description', async function () {
+            const html = callRenderer('audio', {
+                src: '/content/audio/x.mp3',
+                title: 'Episode 1',
+                duration: 60,
+                mimeType: 'audio/mp3',
+                thumbnailSrc: '/content/images/x.jpg'
+            }).html;
+
+            // sanity check: the raw card carries chrome text we don't want in the excerpt
+            assert.match(html, /kg-audio-player/);
+            assert.match(html, /Unmute/);
+
+            // a post with no custom_excerpt/meta_description falls back to a generated excerpt
+            const post = Object.assign({}, posts[0], {html, custom_excerpt: null, meta_description: null});
+            data.posts = [post];
+
+            const xmlData = await generateFeed(baseUrl, data);
+            assertExists(xmlData);
+
+            // the item <description> is the generated excerpt (last <description> in the doc)
+            const descriptions = xmlData.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/g);
+            const itemDescription = descriptions[descriptions.length - 1];
+            // the excerpt is built after the card cleanup, so chrome must not appear
+            assert.doesNotMatch(itemDescription, /kg-audio-player/);
+            assert.doesNotMatch(itemDescription, /Unmute/);
+            assert.doesNotMatch(itemDescription, /Play audio/);
         });
     });
 });

@@ -24,6 +24,36 @@ const generateItem = function generateItem(post) {
     // `type` column stripped by the serializer, so we tag the resource here.
     const itemUrl = routerManager.getUrlForResource({...post, type: 'posts'}, {absolute: true});
     const htmlContent = cheerio.load(post.html || '');
+
+    // Tidy up cards for RSS readers (no Ghost CSS/JS available). This runs
+    // before the item is built so the excerpt fallback below sees clean
+    // content rather than raw player chrome (e.g. "Play video 0:00 1× Unmute").
+    htmlContent('.kg-card').each(function (index, card) {
+        // Bookmark card
+        htmlContent(card).find('.kg-bookmark-thumbnail, .kg-bookmark-icon, .kg-bookmark-metadata').remove();
+        htmlContent(card).find('.kg-bookmark-description').wrap('<small></small>');
+
+        // Video card — strip custom player chrome, fall back to a native playable <video>
+        htmlContent(card).find('.kg-video-overlay, .kg-video-player-container').remove();
+        const videoPoster = htmlContent(card).attr('data-kg-custom-thumbnail') || htmlContent(card).attr('data-kg-thumbnail');
+        const video = htmlContent(card).find('.kg-video-card video');
+        video.attr('poster', videoPoster);
+        video.attr('controls', '');
+        // The inline style was the old CSS-thumbnail mechanism; the real poster replaces it
+        video.removeAttr('style');
+
+        // Audio card — strip chrome but KEEP the title; native playable <audio>
+        htmlContent(card).find('.kg-audio-thumbnail, .kg-audio-player').remove();
+        const audio = htmlContent(card).find('.kg-audio-card audio');
+        audio.attr('controls', '');
+        // Title first, then the native player
+        audio.before(htmlContent(card).find('.kg-audio-title'));
+        // Drop the now-purposeless player container, lifting its children into the card
+        const audioContainer = htmlContent(card).find('.kg-audio-player-container');
+        audioContainer.before(audioContainer.html());
+        audioContainer.remove();
+    });
+
     const item = {
         title: post.title,
         // @TODO: DRY this up with data/meta/index & other excerpt code
@@ -53,24 +83,6 @@ const generateItem = function generateItem(post) {
         htmlContent('p').first().before('<img src="' + imageUrl + '" />');
         htmlContent('img').attr('alt', post.title);
     }
-
-    // Tidy up cards for RSS readers (no Ghost CSS/JS available)
-    htmlContent('.kg-card').each(function (index, card) {
-        // Bookmark card
-        htmlContent(card).find('.kg-bookmark-thumbnail, .kg-bookmark-icon, .kg-bookmark-metadata').remove();
-        htmlContent(card).find('.kg-bookmark-description').wrap('<small></small>');
-
-        // Video card — strip custom player chrome, fall back to a native playable <video>
-        htmlContent(card).find('.kg-video-overlay, .kg-video-player-container').remove();
-        const videoPoster = htmlContent(card).attr('data-kg-custom-thumbnail') || htmlContent(card).attr('data-kg-thumbnail');
-        const video = htmlContent(card).find('.kg-video-card video');
-        video.attr('poster', videoPoster);
-        video.attr('controls', '');
-
-        // Audio card — strip chrome but KEEP the title; native playable <audio>
-        htmlContent(card).find('.kg-audio-thumbnail, .kg-audio-player').remove();
-        htmlContent(card).find('.kg-audio-card audio').attr('controls', '');
-    });
 
     item.custom_elements.push({
         'content:encoded': {
