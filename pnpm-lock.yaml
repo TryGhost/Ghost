@@ -2588,8 +2588,8 @@ importers:
         specifier: 1.19.0
         version: 1.19.0
       file-type:
-        specifier: 21.3.2
-        version: 21.3.2
+        specifier: 21.3.4
+        version: 21.3.4
       form-data:
         specifier: 4.0.5
         version: 4.0.5
@@ -13924,8 +13924,8 @@ packages:
     resolution: {integrity: sha512-QgXo+mXTe8ljeqUFaX3QVHc5osSItJ/Km+xpocx0aSqWGMSCf6qYs/VnzZgS864Pjn5iceMRFigeAV7AfTlaig==}
     engines: {node: '>= 12'}
 
-  file-type@21.3.2:
-    resolution: {integrity: sha512-DLkUvGwep3poOV2wpzbHCOnSKGk1LzyXTv+aHFgN2VFl96wnp8YA9YjO2qPzg5PuL8q/SW9Pdi6WTkYOIh995w==}
+  file-type@21.3.4:
+    resolution: {integrity: sha512-Ievi/yy8DS3ygGvT47PjSfdFoX+2isQueoYP1cntFW1JLYAuS4GD7NUPGg4zv2iZfV52uDyk5w5Z0TdpRS6Q1g==}
     engines: {node: '>=20'}
 
   file-uri-to-path@1.0.0:
@@ -36336,7 +36336,7 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  file-type@21.3.2:
+  file-type@21.3.4:
     dependencies:
       '@tokenizer/inflate': 0.4.1
       strtok3: 10.3.5
