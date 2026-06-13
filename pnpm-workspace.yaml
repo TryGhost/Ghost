@@ -204,3 +204,5 @@ minimumReleaseAgeExclude:
   - "ghost-storage-base"
   - "gscan"
   - "knex-migrator"
+  # Renovate security update: file-type@21.3.1
+  - file-type@21.3.1
