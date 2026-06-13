@@ -16,14 +16,14 @@ describe('useConfirmUnload', () => {
         listener = null;
 
         vi.spyOn(window, 'addEventListener').mockImplementation((type, newListener) => {
-            expect(type).toBe('beforeunload');
-            expect(listener).toBe(null);
+            expect(type, 'test only supports beforeunload').toBe('beforeunload');
+            expect(listener, 'multiple listeners should not be added').toBe(null);
             listener = newListener;
         });
 
         vi.spyOn(window, 'removeEventListener').mockImplementation((type, listenerToRemove) => {
-            expect(type).toBe('beforeunload');
-            expect(listenerToRemove).toBe(listener);
+            expect(type, 'test only supports beforeunload').toBe('beforeunload');
+            expect(listenerToRemove, 'removing the wrong listener').toBe(listener);
             listener = null;
         });
     });
@@ -57,7 +57,7 @@ describe('useConfirmUnload', () => {
         const {rerender} = renderHook(({shouldConfirmUnload}) => useConfirmUnload(shouldConfirmUnload), {
             initialProps: {shouldConfirmUnload: true}
         });
-        expect(listener).not.toBeNull();
+        expect(listener, 'test setup').not.toBeNull();
 
         rerender({shouldConfirmUnload: false});
 
@@ -66,7 +66,7 @@ describe('useConfirmUnload', () => {
 
     it('removes the beforeunload handler on unmount', () => {
         const {unmount} = renderHook(() => useConfirmUnload(true));
-        expect(listener).not.toBeNull();
+        expect(listener, 'test setup').not.toBeNull();
 
         unmount();
 
