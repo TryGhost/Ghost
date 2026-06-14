@@ -306,7 +306,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                                     value={item}
                                     onChange={e => benefits.updateItem(id, e.target.value)}
                                 />
-                                <Button className='absolute top-1 right-1 z-10 opacity-0 group-hover:opacity-100' color='grey' icon='trash' size='sm' onClick={() => benefits.removeItem(id)} />
+                                <Button className='absolute top-1/2 -translate-y-1/2 right-1 z-10 opacity-0 group-hover:opacity-100' color='grey' icon='trash' size='sm' onClick={() => benefits.removeItem(id)} />
                             </div>}
                             onMove={benefits.moveItem}
                         />
@@ -329,7 +329,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
                             }}
                         />
                         <Button
-                            className='absolute top-[5px] right-[5px] z-10'
+                            className='absolute top-1/2 -translate-y-1/2 right-[5px] z-10'
                             color='green'
                             icon='add'
                             iconColorClass='text-white'
