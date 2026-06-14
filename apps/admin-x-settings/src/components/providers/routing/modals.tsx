@@ -17,6 +17,7 @@ import EmbedSignupFormModal from '../../settings/growth/embed-signup/embed-signu
 import FirstPromoterModal from '../../settings/advanced/integrations/first-promoter-modal';
 import HistoryModal from '../../settings/advanced/history-modal';
 import InviteUserModal from '../../settings/general/invite-user-modal';
+import MediaLibraryModal from '../../settings/site/media-library-modal';
 import NavigationModal from '../../settings/site/navigation-modal';
 import NewsletterDetailModal from '../../settings/email/newsletters/newsletter-detail-modal';
 import OfferSuccess from '../../settings/growth/offers/offer-success';
@@ -44,6 +45,7 @@ const modals = {
     FirstPromoterModal,
     HistoryModal,
     InviteUserModal,
+    MediaLibraryModal,
     NavigationModal,
     NewsletterDetailModal,
     PinturaModal,

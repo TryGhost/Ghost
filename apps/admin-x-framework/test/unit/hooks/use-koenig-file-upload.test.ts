@@ -10,6 +10,13 @@ function makeFile(name: string, type = 'image/jpeg'): File {
     return new File(['content'], name, {type});
 }
 
+// Mirrors how the media-library picker registers an already-hosted file so the
+// upload hook reuses its URL instead of uploading.
+function registerReference(file: File, url: string) {
+    const w = window as unknown as {__mediaLibraryReferences?: WeakMap<File, string>};
+    (w.__mediaLibraryReferences ??= new WeakMap()).set(file, url);
+}
+
 interface UploadResponse {
     body: Record<string, unknown>;
     status?: number;
@@ -92,6 +99,7 @@ describe('useKoenigFileUpload', () => {
         const close = promisify(server.close.bind(server));
         await close();
 
+        delete (window as unknown as {__mediaLibraryReferences?: unknown}).__mediaLibraryReferences;
         vi.restoreAllMocks();
     });
 
@@ -255,6 +263,73 @@ describe('useKoenigFileUpload', () => {
 
         expect(uploadResult).not.toBeNull();
         expect(result.current.errors).toHaveLength(0);
+    });
+
+    it('reuses a media-library reference without uploading', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('image'));
+
+        const file = makeFile('existing.jpg');
+        registerReference(file, 'https://cdn.example.com/content/images/existing.jpg');
+
+        const uploadResult = await act(async () => (
+            await result.current.upload([file])
+        ));
+
+        expect(uploadResult).toEqual([{url: 'https://cdn.example.com/content/images/existing.jpg', fileName: 'existing.jpg'}]);
+        expect(requestLog.find(request => request.method === 'POST')).toBeUndefined();
+    });
+
+    it('skips validation for a referenced file even with an unsupported extension', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('image'));
+
+        const file = makeFile('doc.pdf', 'application/pdf');
+        registerReference(file, 'https://cdn.example.com/content/files/doc.pdf');
+
+        const uploadResult = await act(async () => (
+            await result.current.upload([file])
+        ));
+
+        expect(uploadResult?.[0].url).toBe('https://cdn.example.com/content/files/doc.pdf');
+        expect(result.current.errors).toHaveLength(0);
+        expect(requestLog.find(request => request.method === 'POST')).toBeUndefined();
+    });
+
+    it('uploads only the new files in a mixed selection and preserves order', async () => {
+        const {result} = renderHook(() => useKoenigFileUpload('image'));
+
+        const refA = makeFile('a.jpg');
+        const newB = makeFile('b.jpg');
+        const refC = makeFile('c.jpg');
+        registerReference(refA, 'https://cdn.example.com/a.jpg');
+        registerReference(refC, 'https://cdn.example.com/c.jpg');
+
+        const uploadResult = await act(async () => (
+            await result.current.upload([refA, newB, refC])
+        ));
+
+        expect(uploadResult?.map(item => item.url)).toEqual([
+            'https://cdn.example.com/a.jpg',
+            'https://example.com/image.jpg', // the server response for the one new file
+            'https://cdn.example.com/c.jpg'
+        ]);
+        expect(requestLog.filter(request => request.method === 'POST')).toHaveLength(1);
+    });
+
+    it('still surfaces a real upload error when mixed with a reference', async () => {
+        uploadResponse = serverErrorUploadResponse;
+
+        const {result} = renderHook(() => useKoenigFileUpload('image'));
+
+        const ref = makeFile('a.jpg');
+        const bad = makeFile('b.jpg');
+        registerReference(ref, 'https://cdn.example.com/a.jpg');
+
+        const uploadResult = await act(async () => (
+            await result.current.upload([ref, bad])
+        ));
+
+        expect(uploadResult).toBeNull();
+        expect(result.current.errors.length).toBeGreaterThan(0);
     });
 
     it('accepts all supported image extensions', async () => {

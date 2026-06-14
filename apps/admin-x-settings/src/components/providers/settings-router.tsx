@@ -9,6 +9,7 @@ export const modalPaths: {[key: string]: ModalName} = {
     'theme/install': 'DesignAndThemeModal', // this is a special route, because it can install a theme directly from the Ghost Marketplace
     'theme/edit/:name': 'DesignAndThemeModal',
     'navigation/edit': 'NavigationModal',
+    'media-library/browse': 'MediaLibraryModal',
     'staff/invite': 'InviteUserModal',
     'staff/:slug/social-links': 'UserDetailModal',
     'staff/:slug/email-notifications': 'UserDetailModal',

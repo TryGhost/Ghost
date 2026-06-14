@@ -58,6 +58,7 @@ const Sidebar: React.FC = () => {
     const [hasTipsAndDonations, isPrivate, paidMembersEnabled] = getSettingValues(settings, ['donations_enabled', 'is_private', 'paid_members_enabled']) as [string, boolean, boolean];
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
     const hasAutomations = useFeatureFlag('automations');
+    const hasMediaLibrary = useFeatureFlag('mediaLibrary');
     const visibleMembershipSearchKeywords = React.useMemo(() => [
         membershipSearchKeywords.access,
         membershipSearchKeywords.tiers,
@@ -204,6 +205,7 @@ const Sidebar: React.FC = () => {
                     <NavItem icon='palette' keywords={siteSearchKeywords.design} navid='design' title="Design & branding" onClick={handleSectionClick} />
                     <NavItem icon='layout-2-col' keywords={siteSearchKeywords.theme} navid='theme' title="Theme" onClick={handleSectionClick} />
                     <NavItem icon='navigation' keywords={siteSearchKeywords.navigation} navid='navigation' title="Navigation" onClick={handleSectionClick} />
+                    {hasMediaLibrary && <NavItem icon='picture' keywords={siteSearchKeywords.mediaLibrary} navid='media-library' title="Media library" onClick={handleSectionClick} />}
                     <NavItem icon='megaphone' keywords={siteSearchKeywords.announcementBar} navid='announcement-bar' title="Announcement bar" onClick={handleSectionClick} />
                 </SettingNavSection>
 

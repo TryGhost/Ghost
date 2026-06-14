@@ -94,6 +94,16 @@ export default class GhEditorFeatureImageComponent extends Component {
         this.args.updateCaption(caption);
     }
 
+    // Media library picker (prototype): set a chosen existing image by URL, the
+    // same way Unsplash does, so reusing media never re-uploads. Dispatched by the
+    // media-library-picker instance-initializer.
+    @action
+    setMediaLibraryImage(event) {
+        if (event.detail?.url) {
+            this.args.updateImage(event.detail.url);
+        }
+    }
+
     @action
     toggleUnsplashSelector() {
         this.showUnsplashSelector = !this.showUnsplashSelector;

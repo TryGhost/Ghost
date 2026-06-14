@@ -64,6 +64,14 @@ interface FileUploadHook {
     upload: (files: FileList | ReadonlyArray<File>) => Promise<UploadResult[] | null>;
 }
 
+// Files chosen from the media library already point at an existing hosted file.
+// The Ghost-side picker registers them here so the upload short-circuits and no
+// duplicate is created. Inert when nothing registers (the WeakMap is absent).
+const getMediaLibraryReference = (file: File): string | undefined => {
+    const refs = (window as unknown as {__mediaLibraryReferences?: WeakMap<File, string>}).__mediaLibraryReferences;
+    return refs?.get(file);
+};
+
 const getStringAtPath = (maybeObj: unknown, path: Iterable<PropertyKey>): null | string => {
     let current = maybeObj;
     for (const key of path) {
@@ -195,7 +203,11 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
         setFilesNumber(files.length);
         setLoading(true);
 
-        const validationResult = validate(files);
+        const fileArray = Array.from(files);
+
+        // Library picks already point at a hosted file; only genuinely new files
+        // need validating and uploading.
+        const validationResult = validate(fileArray.filter(file => !getMediaLibraryReference(file)));
 
         if (validationResult.length) {
             setErrors(validationResult);
@@ -205,12 +217,14 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
             return null;
         }
 
-        const uploadPromises = [];
-
-        for (let i = 0; i < files.length; i += 1) {
-            const file = files[i];
-            uploadPromises.push(uploadFile(file, options));
-        }
+        const uploadPromises = fileArray.map((file) => {
+            const reference = getMediaLibraryReference(file);
+            if (reference) {
+                progressTracker.current.set(file, 100);
+                return Promise.resolve({url: reference, fileName: file.name});
+            }
+            return uploadFile(file, options);
+        });
 
         try {
             const uploadResult = await Promise.all(uploadPromises);

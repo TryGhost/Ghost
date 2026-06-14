@@ -1,6 +1,8 @@
 import AnnouncementBar from './announcement-bar';
+import BehindFeatureFlag from '../../behind-feature-flag';
 import ChangeTheme from './change-theme';
 import DesignSetting from './design-setting';
+import MediaLibrary from './media-library';
 import Navigation from './navigation';
 import React from 'react';
 import SearchableSection from '../../searchable-section';
@@ -9,6 +11,7 @@ export const searchKeywords = {
     design: ['site', 'logo', 'cover', 'colors', 'fonts', 'background', 'themes', 'appearance', 'style', 'design & branding', 'design and branding'],
     theme: ['theme', 'template', 'upload'],
     navigation: ['site', 'navigation', 'menus', 'primary', 'secondary', 'links'],
+    mediaLibrary: ['site', 'media', 'library', 'images', 'files', 'gallery', 'assets', 'download'],
     announcementBar: ['site', 'announcement bar', 'important', 'banner']
 };
 
@@ -19,6 +22,9 @@ const SiteSettings: React.FC = () => {
                 <DesignSetting keywords={searchKeywords.design} />
                 <ChangeTheme keywords={searchKeywords.theme} />
                 <Navigation keywords={searchKeywords.navigation} />
+                <BehindFeatureFlag flag='mediaLibrary'>
+                    <MediaLibrary keywords={searchKeywords.mediaLibrary} />
+                </BehindFeatureFlag>
                 <AnnouncementBar keywords={searchKeywords.announcementBar} />
             </SearchableSection>
         </>

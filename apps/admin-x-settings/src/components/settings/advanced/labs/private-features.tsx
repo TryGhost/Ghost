@@ -16,6 +16,10 @@ const features: Feature[] = [{
     description: 'Enable automations management interface.',
     flag: 'automations'
 }, {
+    title: 'Media library',
+    description: 'Browse the media already used across your site and reuse it in the editor without re-uploading',
+    flag: 'mediaLibrary'
+}, {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'

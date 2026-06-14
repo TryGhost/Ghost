@@ -1,6 +1,7 @@
 {{!-- template-lint-disable no-invalid-interactive --}}
 <div
     class="gh-editor-feature-image-container"
+    {{on "gh-media-library-select" this.setMediaLibraryImage}}
 >
 {{!-- template-lint-enable no-invalid-interactive --}}
     <GhUploader
