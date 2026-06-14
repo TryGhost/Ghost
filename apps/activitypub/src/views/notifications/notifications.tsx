@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 
 import APAvatar from '@components/global/ap-avatar';
 import AppError from '@components/layout/error';
@@ -113,6 +113,7 @@ function groupNotifications(notifications: Notification[]): NotificationGroup[] 
 const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> = ({group}) => {
     const [firstActor, ...otherActors] = group.actors;
     const hasOthers = otherActors.length > 0;
+    const otherActorsCount = otherActors.length;
 
     const actorClass = 'cursor-pointer font-semibold hover:underline text-black dark:text-white';
 
@@ -125,13 +126,15 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
                     className={actorClass}
                     onClick={(e) => {
                         e?.stopPropagation();
-                        handleProfileClick(firstActor.handle, navigate);
+                        if (firstActor.handle) {
+                            handleProfileClick(firstActor.handle, navigate);
+                        }
                     }}
                 >
                     {firstActor.name}
                 </span>
             </ProfilePreviewHoverCard>
-            {hasOthers && ` and ${otherActors.length} ${otherActors.length > 1 ? 'others' : 'other'}`}
+            {hasOthers && ` and ${formatNumber(otherActorsCount)} ${otherActorsCount > 1 ? 'others' : 'other'}`}
         </>
     );
 
@@ -271,7 +274,7 @@ const Notifications: React.FC = () => {
         case 'follow':
             if (group.actors.length > 1) {
                 toggleOpen(group.id || `${group.type}_${index}`);
-            } else {
+            } else if (group.actors[0]?.handle) {
                 handleProfileClick(group.actors[0].handle, navigate);
             }
             break;
@@ -349,7 +352,7 @@ const Notifications: React.FC = () => {
                                                         ))}
                                                         {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
                                                             <div className='absolute right-[28px] z-10 flex size-9 items-center justify-center rounded-full bg-black/50 text-base font-semibold tracking-tightest text-white'>
-                                                                {`+${group.actors.length - maxAvatars}`}
+                                                                {`+${formatNumber(group.actors.length - maxAvatars)}`}
                                                             </div>
                                                         )}
 
