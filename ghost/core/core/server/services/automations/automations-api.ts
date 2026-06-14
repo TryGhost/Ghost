@@ -2,18 +2,17 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
-import type {Knex} from 'knex';
 import {z} from 'zod';
-import {createFakeDatabaseAutomationsRepository} from './fake-database-automations-repository';
+import {createDatabaseAutomationsRepository} from './database-automations-repository';
 import type {
     AutomationsRepository,
     EditAutomationData
 } from './automations-repository';
 
+const {knex} = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
-const temporaryFakeAutomationsDatabase = require('./temporary-fake-database');
 
 const MAX_AUTOMATION_ACTIONS = 20;
 
@@ -71,17 +70,7 @@ const editAutomationDataSchema = z.object({
     edges: z.array(edgeSchema)
 }).strict();
 
-let testDatabasePromise: Promise<Knex> | null = null;
-
-const repository = createFakeDatabaseAutomationsRepository({
-    getDatabase: async () => {
-        if (process.env.NODE_ENV?.startsWith('testing')) {
-            testDatabasePromise ??= temporaryFakeAutomationsDatabase.createTemporaryFakeAutomationsDatabase();
-            return await testDatabasePromise;
-        }
-        return await temporaryFakeAutomationsDatabase.getTemporaryFakeAutomationsDatabase();
-    }
-});
+const repository = createDatabaseAutomationsRepository(knex);
 
 export async function browse() {
     return await repository.browse();
@@ -316,10 +305,4 @@ export async function markStepTerminal(...args: Parameters<AutomationsRepository
 
 export async function retryStep(...args: Parameters<AutomationsRepository['retryStep']>) {
     return await repository.retryStep(...args);
-}
-
-export function _resetTestDatabase() {
-    if (process.env.NODE_ENV?.startsWith('testing')) {
-        testDatabasePromise = null;
-    }
 }

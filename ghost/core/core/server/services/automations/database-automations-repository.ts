@@ -95,15 +95,9 @@ type RevisionDataFor<ActionDataT> = {
 type WaitRevisionData = RevisionDataFor<WaitActionData>;
 type SendEmailRevisionData = RevisionDataFor<SendEmailActionData>;
 
-export function createFakeDatabaseAutomationsRepository({
-    getDatabase
-}: {
-    getDatabase: () => Promise<Knex>;
-}): AutomationsRepository {
+export function createDatabaseAutomationsRepository(knex: Knex): AutomationsRepository {
     return {
         async browse(): Promise<Page<AutomationSummary>> {
-            const knex = await getDatabase();
-
             return await knex.transaction(async (trx) => {
                 const rows = await loadAutomations(trx);
                 return {
@@ -116,7 +110,6 @@ export function createFakeDatabaseAutomationsRepository({
         },
 
         async getById(id: string): Promise<Automation | null> {
-            const knex = await getDatabase();
             return await knex.transaction(async (trx) => {
                 const automation = await loadAutomation(trx, id);
 
@@ -129,7 +122,6 @@ export function createFakeDatabaseAutomationsRepository({
         },
 
         async edit(id: string, data: EditAutomationData): Promise<Automation | null> {
-            const knex = await getDatabase();
             return await knex.transaction(async (trx) => {
                 const automation = await loadAutomation(trx, id);
 
@@ -154,8 +146,6 @@ export function createFakeDatabaseAutomationsRepository({
             memberId: string;
             memberStatus: 'free' | 'paid';
         }): Promise<void> {
-            const knex = await getDatabase();
-
             return await knex.transaction(trx => trigger(trx, options));
         },
 
@@ -163,26 +153,18 @@ export function createFakeDatabaseAutomationsRepository({
             steps: AutomationStepToRun[],
             nextStepReadyAt: null | Date;
         }> {
-            const knex = await getDatabase();
-
             return await knex.transaction(trx => fetchAndLockSteps(trx, limit));
         },
 
         async finishStepAndEnqueueNext(step: AutomationStepToRun): Promise<Date | null> {
-            const knex = await getDatabase();
-
             return await knex.transaction(trx => finishStepAndEnqueueNext(trx, step));
         },
 
         async markStepTerminal(step: AutomationStepToRun, status: AutomationStepTerminalStatus): Promise<boolean> {
-            const knex = await getDatabase();
-
             return await knex.transaction(trx => markStepTerminal(trx, step, status));
         },
 
         async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
-            const knex = await getDatabase();
-
             return await knex.transaction(trx => retryStep(trx, step, retryAt));
         }
     };
