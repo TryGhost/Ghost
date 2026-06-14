@@ -172,6 +172,25 @@ describe('mapPostToActivity', function () {
         });
     });
 
+    test('it maps object engagement properties', function () {
+        const object = mapPostToActivity({
+            ...post,
+            replyCount: 0,
+            likeCount: 0,
+            likedByMe: false,
+            repostedByMe: true,
+            repostCount: 0,
+            authoredByMe: false
+        }).object;
+
+        expect(object.replyCount).toBe(0);
+        expect(object.likeCount).toBe(0);
+        expect(object.liked).toBe(false);
+        expect(object.reposted).toBe(true);
+        expect(object.repostCount).toBe(0);
+        expect(object.authored).toBe(false);
+    });
+
     test('it sets the correct attachments', function () {
         const object = mapPostToActivity(post).object;
 
