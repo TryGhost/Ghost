@@ -6,6 +6,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
 const _ = require('lodash');
 const validator = require('@tryghost/validator');
+const errors = require('@tryghost/errors');
 
 // Stuff we are testing
 const db = require('../../../core/server/data/db');
@@ -385,7 +386,12 @@ describe('Importer', function () {
                 .then(function () {
                     assert.equal((1), 0, 'Allowed import of duplicate data.');
                 })
-                .catch(function (response) {
+                .catch(function (err) {
+                    assert(err instanceof errors.DataImportError);
+                    assert.equal(err.message, 'Value in [users.bio] exceeds maximum length of 250 characters.');
+
+                    const response = err.errorDetails;
+
                     assert.equal(response.length, 6);
                     // NOTE: a duplicated tag.slug is a warning
                     assert.equal(response[0].errorType, 'ValidationError');

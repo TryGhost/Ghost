@@ -20,7 +20,7 @@ function AppSidebarContent() {
     }
 
     return (
-        <SidebarContent className="justify-between px-3 pt-4">
+        <SidebarContent className="justify-between px-3 pt-4 pb-1">
             <div className="flex flex-col gap-2 sidebar:gap-4">
                 <NavMain />
                 <NavContent />

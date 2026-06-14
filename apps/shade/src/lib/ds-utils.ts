@@ -36,6 +36,24 @@ export function debounce<T extends unknown[]>(func: (...args: T) => void, wait: 
     };
 }
 
+// Helper to find scroll parent of element
+export function getScrollParent(node: Node | null): HTMLElement | null {
+    if (!node) {
+        return null;
+    }
+
+    if (node instanceof HTMLElement) {
+        const overflowY = window.getComputedStyle(node).overflowY;
+        const isScrollable = overflowY !== 'visible' && overflowY !== 'hidden';
+
+        if (isScrollable && node.scrollHeight >= node.clientHeight) {
+            return node;
+        }
+    }
+
+    return getScrollParent(node.parentNode) || document.body;
+}
+
 /* Data formatters
 /* -------------------------------------------------------------------------- */
 

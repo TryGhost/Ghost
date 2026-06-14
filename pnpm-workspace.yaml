@@ -47,11 +47,11 @@ catalog:
   '@tanstack/react-query': 4.44.0
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
-  '@tryghost/api-framework': 3.2.3
+  '@tryghost/api-framework': 3.2.4
   '@tryghost/color-utils': 0.2.19
   '@tryghost/custom-fonts': 1.0.11
-  '@tryghost/debug': 2.2.1
-  '@tryghost/domain-events': 3.2.3
+  '@tryghost/debug': 2.2.3
+  '@tryghost/domain-events': 3.2.5
   '@tryghost/helpers': 1.1.106
   '@tryghost/kg-clean-basic-html': 4.3.2
   '@tryghost/kg-converters': 1.2.2
@@ -65,7 +65,7 @@ catalog:
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/jest': 29.5.14
-  '@types/node': 22.19.19
+  '@types/node': 22.19.20
   '@types/react': 18.3.31
   '@types/react-dom': 18.3.7
   '@types/sanitize-html': 2.16.1
@@ -73,7 +73,7 @@ catalog:
   '@typescript-eslint/eslint-plugin': 8.49.0
   '@typescript-eslint/parser': 8.49.0
   '@vitejs/plugin-react': 4.7.0
-  '@vitest/coverage-v8': 4.1.7
+  '@vitest/coverage-v8': 4.1.8
   bson-objectid: 2.0.4
   c8: 11.0.0
   chai: 4.5.0
@@ -82,7 +82,7 @@ catalog:
   concurrently: 10.0.3
   cross-fetch: 4.1.0
   dequal: 2.0.3
-  dompurify: 3.4.8
+  dompurify: 3.4.9
   dotenv: 17.4.2
   eslint: 8.57.1
   eslint-plugin-react-hooks: 5.2.0
@@ -116,7 +116,7 @@ catalog:
   validator: 13.12.0
   vite: 7.3.2
   vite-plugin-svgr: 4.5.0
-  vitest: 4.1.7
+  vitest: 4.1.8
   zod: 4.1.12
 
 catalogs:
@@ -204,3 +204,5 @@ minimumReleaseAgeExclude:
   - "ghost-storage-base"
   - "gscan"
   - "knex-migrator"
+  # Renovate security update: file-type@21.3.1 || 21.3.2
+  - file-type@21.3.1 || 21.3.2
