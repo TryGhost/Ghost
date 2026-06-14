@@ -1,7 +1,3 @@
-import {InternalServerError} from '@tryghost/errors';
-
-type State = 'idle' | 'running' | 'running+queued';
-
 /**
  * Wraps an async function so it runs at most one invocation at a time, with at
  * most one additional invocation queued.
@@ -14,9 +10,16 @@ type State = 'idle' | 'running' | 'running+queued';
  *
  * Errors are silently swallowed.
  *
+ * The inner function returns a promise that resolves when the current
+ * invocation and any queued invocation have completed. All concurrent callers
+ * receive the same promise, which only resolves once all pending work is
+ * finished.
  */
-export const oneAtATime = (fn: () => PromiseLike<unknown>): () => void => {
-    let state: State = 'idle';
+export const oneAtATime = (
+    fn: () => PromiseLike<unknown>
+): () => Promise<void> => {
+    let promise: null | Promise<void> = null;
+    let queued = false;
 
     const run = async () => {
         try {
@@ -25,34 +28,20 @@ export const oneAtATime = (fn: () => PromiseLike<unknown>): () => void => {
             // noop
         }
 
-        switch (state) {
-        case 'running+queued':
-            state = 'running';
-            run();
-            break;
-        case 'running':
-            state = 'idle';
-            break;
-        default:
-            throw new InternalServerError({message: `Unexpected state: ${state}`});
+        if (queued) {
+            queued = false;
+            promise = run();
+        } else {
+            promise = null;
         }
     };
 
     return () => {
-        switch (state) {
-        case 'idle':
-            state = 'running';
-            run();
-            break;
-        case 'running':
-            state = 'running+queued';
-            break;
-        case 'running+queued':
-            break;
-        default: {
-            const _exhaustive: never = state;
-            throw new InternalServerError({message: `Unexpected state: ${_exhaustive}`});
+        if (promise) {
+            queued = true;
+        } else {
+            promise = run();
         }
-        }
+        return promise;
     };
 };
