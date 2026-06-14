@@ -30,6 +30,7 @@ Object {
       "indexnow": true,
       "lexicalIndicators": true,
       "llmsTxt": true,
+      "mediaLibrary": true,
       "members": true,
       "pictureImageFormats": true,
       "smarterCounts": true,

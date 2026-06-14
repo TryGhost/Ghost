@@ -331,6 +331,9 @@ module.exports = function apiRoutes() {
         http(api.media.uploadThumbnail)
     );
 
+    // ## Media library (media currently in use across the site)
+    router.get('/media/library', mw.authAdminApi, http(api.media_library.browse));
+
     // ## files
     router.post('/files/upload',
         mw.authAdminApi,
