@@ -1,4 +1,5 @@
 // @ts-check
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {oneAtATime} = require('../../../core/shared/one-at-a-time');
 
@@ -106,5 +107,44 @@ describe('oneAtATime', function () {
         // running -> idle
         second.reject(new Error('failure'));
         await eventLoop();
+    });
+
+    it('returns a promise that resolves when all work is done', async function () {
+        const first = Promise.withResolvers();
+        const fn = sinon.stub()
+            .onFirstCall().returns(first.promise)
+            .resolves();
+        const run = oneAtATime(fn);
+
+        // idle -> running
+        const p1 = run();
+        let isP1Resolved = false;
+        p1.then(() => {
+            isP1Resolved = true;
+        });
+        await eventLoop();
+        assert.equal(isP1Resolved, false);
+
+        // running -> running+queued
+        const p2 = run();
+        assert.equal(p1, p2, 'concurrent callers receive same promise');
+        await eventLoop();
+        assert.equal(isP1Resolved, false);
+
+        // running+queued -> running
+        first.resolve();
+        await Promise.all([p1, p2]);
+        assert.equal(isP1Resolved, true);
+    });
+
+    it('returns a new promise for each fresh invocation after going idle', async function () {
+        const fn = sinon.stub().resolves();
+        const run = oneAtATime(fn);
+
+        const p1 = run();
+        await p1;
+        const p2 = run();
+
+        assert.notEqual(p1, p2);
     });
 });
