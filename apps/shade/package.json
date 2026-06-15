@@ -97,7 +97,7 @@
         "eslint": "catalog:",
         "eslint-plugin-react-hooks": "catalog:",
         "eslint-plugin-react-refresh": "catalog:",
-        "eslint-plugin-storybook": "10.3.5",
+        "eslint-plugin-storybook": "10.4.4",
         "eslint-plugin-tailwindcss": "catalog:",
         "glob": "catalog:",
         "jsdom": "catalog:",
