@@ -158,6 +158,203 @@ test.describe('DOM validation for rendered AP content', async () => {
         expect(sourceText?.trim()).not.toContain('javascript');
     });
 
+    test('Twitter fallback embed follows reader customizer changes', async ({page}) => {
+        await page.addInitScript(() => {
+            localStorage.setItem('ghost-ap-background-color', 'light');
+            localStorage.setItem('ghost-ap-font-size', '2');
+            localStorage.setItem('ghost-ap-font-style', 'sans');
+        });
+
+        await page.route('https://platform.twitter.com/widgets.js', async (route) => {
+            await route.fulfill({
+                body: '',
+                contentType: 'application/javascript',
+                status: 200
+            });
+        });
+        await page.route('https://example.com/rich-card.js', async (route) => {
+            await route.fulfill({
+                body: '',
+                contentType: 'application/javascript',
+                status: 200
+            });
+        });
+
+        const twitterContent = [
+            '<p>Before the Twitter embed.</p>',
+            '<blockquote class="twitter-tweet">',
+            '<p lang="en" dir="ltr">Ghost ActivityPub renders this embedded post without trusting remote ActivityPub scripts.</p>',
+            '<a href="https://twitter.com/ghost/status/1234567890">March 20, 2025</a>',
+            '</blockquote>',
+            '<script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>',
+            '<script src="https://example.com/rich-card.js"></script>',
+            '<p>After the Twitter embed.</p>'
+        ].join('');
+        const testPost = {
+            ...inboxFixture.posts[0],
+            content: twitterContent,
+            excerpt: 'Twitter embed fallback test',
+            title: 'Twitter embed fallback test'
+        };
+        const testInbox = {
+            ...inboxFixture,
+            posts: [testPost, ...inboxFixture.posts.slice(1)]
+        };
+
+        await mockApi({page, requests: {
+            getInbox: {
+                method: 'GET',
+                path: '/v1/feed/reader',
+                response: testInbox
+            },
+            getDiscoveryFeed: {
+                method: 'GET',
+                path: '/v1/feed/discover/top',
+                response: testInbox
+            },
+            getPost: {
+                method: 'GET',
+                path: `/v1/replies/${encodeURIComponent(testPost.id)}`,
+                response: {
+                    ...testPost,
+                    post: {
+                        ...testPost,
+                        metadata: {
+                            ghostAuthors: []
+                        }
+                    },
+                    ancestors: {
+                        chain: [],
+                        next: null
+                    },
+                    children: [],
+                    next: null
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/reader');
+
+        const inboxList = page.getByTestId('inbox-list');
+        await expect(inboxList).toBeVisible();
+
+        const posts = page.getByTestId('inbox-item');
+        await expect(posts).toHaveCount(10);
+
+        await posts.first().click();
+        await page.waitForSelector('[role="dialog"]', {timeout: 10000});
+
+        const modal = page.getByRole('dialog');
+        const articleFrame = modal.locator('iframe').first().contentFrame();
+        await expect(articleFrame.locator('script[src="https://platform.twitter.com/widgets.js"]')).toHaveCount(0);
+        await expect(articleFrame.locator('script[src="https://example.com/rich-card.js"]')).toHaveCount(1);
+
+        const twitterEmbed = articleFrame.locator('iframe[data-gh-twitter-embed]');
+        await expect(twitterEmbed).toBeVisible();
+
+        const twitterFrame = twitterEmbed.contentFrame();
+        await expect(twitterFrame.getByText('Ghost ActivityPub renders this embedded post')).toBeVisible();
+
+        await expect.poll(() => twitterFrame.locator('body').evaluate(body => getComputedStyle(body).color)).toBe('rgb(21, 23, 26)');
+        await expect.poll(() => twitterFrame.locator('html').evaluate(html => getComputedStyle(html).getPropertyValue('--font-size').trim())).toBe('1.7rem');
+
+        await modal.locator('.sticky button').last().click();
+
+        const customizerButtons = page.locator('[data-radix-popper-content-wrapper] button');
+        await customizerButtons.nth(3).click();
+        await customizerButtons.nth(8).click();
+        await page.getByRole('button', {name: 'Serif'}).click();
+
+        await expect.poll(() => twitterFrame.locator('body').evaluate(body => getComputedStyle(body).color)).toBe('rgb(255, 255, 255)');
+        await expect.poll(() => twitterFrame.locator('html').evaluate(html => getComputedStyle(html).getPropertyValue('--font-size').trim())).toBe('1.8rem');
+        await expect.poll(() => twitterFrame.locator('body').evaluate(body => body.classList.contains('has-serif-body'))).toBe(true);
+    });
+
+    test('Article with a non-Twitter embed keeps the embed iframe in the reader', async ({page}) => {
+        // Stub the embed so the test does not depend on the real network.
+        await page.route('https://www.youtube.com/embed/**', async (route) => {
+            await route.fulfill({
+                body: '',
+                contentType: 'text/html',
+                status: 200
+            });
+        });
+
+        const embedContent = [
+            '<p>Before the embed.</p>',
+            '<figure class="kg-card kg-embed-card">',
+            '<iframe src="https://www.youtube.com/embed/aqz-KE-bpKQ" width="200" height="113" frameborder="0" allowfullscreen></iframe>',
+            '</figure>',
+            '<p>After the embed.</p>'
+        ].join('');
+        const testPost = {
+            ...inboxFixture.posts[0],
+            content: embedContent,
+            excerpt: 'Embed rendering test',
+            title: 'Embed rendering test'
+        };
+        const testInbox = {
+            ...inboxFixture,
+            posts: [testPost, ...inboxFixture.posts.slice(1)]
+        };
+
+        await mockApi({page, requests: {
+            getInbox: {
+                method: 'GET',
+                path: '/v1/feed/reader',
+                response: testInbox
+            },
+            getDiscoveryFeed: {
+                method: 'GET',
+                path: '/v1/feed/discover/top',
+                response: testInbox
+            },
+            getPost: {
+                method: 'GET',
+                path: `/v1/replies/${encodeURIComponent(testPost.id)}`,
+                response: {
+                    ...testPost,
+                    post: {
+                        ...testPost,
+                        metadata: {
+                            ghostAuthors: []
+                        }
+                    },
+                    ancestors: {
+                        chain: [],
+                        next: null
+                    },
+                    children: [],
+                    next: null
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/reader');
+
+        const inboxList = page.getByTestId('inbox-list');
+        await expect(inboxList).toBeVisible();
+
+        const posts = page.getByTestId('inbox-item');
+        await expect(posts).toHaveCount(10);
+
+        await posts.first().click();
+        await page.waitForSelector('[role="dialog"]', {timeout: 10000});
+
+        const modal = page.getByRole('dialog');
+        const articleFrame = modal.locator('iframe').first().contentFrame();
+
+        // The embed iframe must survive content processing — a previous regression ran
+        // the whole article through DOMPurify, which stripped all <iframe> embeds.
+        await expect(articleFrame.locator('.gh-content iframe[src*="youtube.com"]')).toHaveCount(1);
+        const twitterBridgeScriptCount = await articleFrame.locator('script:not([src])').evaluateAll(
+            scripts => scripts.filter(s => s.textContent?.includes('ghost-twitter-embed-style')).length
+        );
+        expect(twitterBridgeScriptCount).toBe(0);
+        await expect(articleFrame.getByText('Before the embed.')).toBeVisible();
+        await expect(articleFrame.getByText('After the embed.')).toBeVisible();
+    });
+
     test('Article excerpt containing HTML tags is rendered as text in the reader', async ({page}) => {
         const excerptWithHtml = '<script>window.__test_excerpt=true</script>Test excerpt';
         const testPost = {

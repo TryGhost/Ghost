@@ -7,6 +7,7 @@ import {LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {renderTimestamp} from '../../../utils/render-timestamp';
 import {useReplyChainData} from '@hooks/use-reply-chain-data';
 
+import * as twitterEmbed from '@src/utils/twitter-embed';
 import APAvatar from '@src/components/global/ap-avatar';
 import APReplyBox from '@src/components/global/ap-reply-box';
 import BackButton from '@src/components/global/back-button';
@@ -69,10 +70,41 @@ const ArticleBody: React.FC<{
 
     const cssContent = articleBodyStyles();
     const shouldEnforceVideoCardInlinePlayback = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    const articleHtml = useMemo(() => {
+    const readerStyleRef = useRef<twitterEmbed.TwitterEmbedStyleOptions>({
+        backgroundColor,
+        darkMode,
+        fontSize,
+        fontStyle
+    });
+    readerStyleRef.current.backgroundColor = backgroundColor;
+    readerStyleRef.current.darkMode = darkMode;
+    readerStyleRef.current.fontSize = fontSize;
+    readerStyleRef.current.fontStyle = fontStyle;
+    const initialTwitterEmbedOptionsRef = useRef<twitterEmbed.TwitterEmbedSandboxOptions | null>(null);
+
+    const articleHtml = useMemo<twitterEmbed.TwitterEmbeddedArticle>(() => {
         const transformedHtml = shouldEnforceVideoCardInlinePlayback ? enforceVideoCardInlinePlayback(html) : html;
-        return openLinksInNewTab(transformedHtml);
+        const formattedHtml = openLinksInNewTab(transformedHtml);
+
+        if (!twitterEmbed.hasTwitterEmbed(formattedHtml)) {
+            return {
+                hasTwitterEmbeds: false,
+                html: formattedHtml
+            };
+        }
+
+        return twitterEmbed.renderTwitterEmbedsInArticle(formattedHtml, () => {
+            if (!initialTwitterEmbedOptionsRef.current) {
+                initialTwitterEmbedOptionsRef.current = twitterEmbed.getTwitterEmbedOptions(readerStyleRef.current);
+            }
+
+            return initialTwitterEmbedOptionsRef.current;
+        });
     }, [html, shouldEnforceVideoCardInlinePlayback]);
+
+    const sendTwitterEmbedStyleMessage = useCallback(() => {
+        twitterEmbed.postTwitterEmbedStyleMessage(iframeRef.current, twitterEmbed.getTwitterEmbedOptions(readerStyleRef.current));
+    }, []);
 
     const htmlContent = `
         <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
@@ -149,9 +181,13 @@ const ArticleBody: React.FC<{
                     })).then(resizeIframe);
                 }
 
+                ${articleHtml.hasTwitterEmbeds ? twitterEmbed.getTwitterEmbedBridgeScript() : ''}
+
                 // Handle external resize triggers
                 window.addEventListener('message', (event) => {
-                    if (event.data.type === 'triggerResize') {
+                    const data = event.data || {};
+
+                    if (data.type === 'triggerResize') {
                         resizeIframe();
                     }
                 });
@@ -199,7 +235,7 @@ const ArticleBody: React.FC<{
                 ` : ''}
             </header>
             <div class='gh-content gh-canvas is-body'>
-                ${articleHtml}
+                ${articleHtml.html}
             </div>
             <script>
                 (function () {
@@ -269,6 +305,10 @@ const ArticleBody: React.FC<{
             if (iframeWindow) {
                 iframeWindow.addEventListener('keydown', handleIframeKeyDown);
             }
+
+            if (articleHtml.hasTwitterEmbeds) {
+                sendTwitterEmbedStyleMessage();
+            }
         };
 
         iframe.addEventListener('load', handleIframeLoad);
@@ -282,7 +322,7 @@ const ArticleBody: React.FC<{
                 iframeWindow.removeEventListener('keydown', handleIframeKeyDown);
             }
         };
-    }, [htmlContent]);
+    }, [articleHtml.hasTwitterEmbeds, htmlContent, sendTwitterEmbedStyleMessage]);
 
     // Separate effect for style updates
     useEffect(() => {
@@ -307,6 +347,9 @@ const ArticleBody: React.FC<{
         } else {
             root.classList.remove('has-sepia-bg');
         }
+        if (articleHtml.hasTwitterEmbeds) {
+            sendTwitterEmbedStyleMessage();
+        }
 
         const iframeWindow = iframe.contentWindow as IframeWindow;
         if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
@@ -315,7 +358,7 @@ const ArticleBody: React.FC<{
             const resizeEvent = new Event('resize');
             iframeDocument.dispatchEvent(resizeEvent);
         }
-    }, [fontSize, fontStyle, backgroundColor, darkMode]);
+    }, [fontSize, fontStyle, backgroundColor, darkMode, articleHtml.hasTwitterEmbeds, sendTwitterEmbedStyleMessage]);
 
     useEffect(() => {
         const iframe = iframeRef.current;
