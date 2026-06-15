@@ -74,6 +74,9 @@
 .gh-post-preview-close .gh-post-preview-close-icon svg {
     width: 14px;
     height: 14px;
+    /* close.svg has no fill of its own; follow the button's text colour so it
+       stays visible on both the light and dark (theme-flipped) header */
+    fill: currentColor;
 }
 
 @media (max-width: 640px) {
@@ -99,6 +102,11 @@
     .gh-post-preview-header .right {
         position: static;
         margin-left: auto;
+    }
+
+    /* move Close ahead of share so share sits directly left of Publish */
+    .gh-post-preview-close {
+        order: -1;
     }
 
     /* the desktop/mobile size toggle is meaningless on a phone */
