@@ -1,6 +1,7 @@
 {
   "name": "ghost-storage-base",
   "version": "2.0.0",
+  "packageManager": "pnpm@11.6.0",
   "description": "Base storage adapter.",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -17,10 +18,10 @@
   "scripts": {
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
-    "test": "yarn test:unit",
-    "test:unit": "vitest run --coverage",
-    "preship": "yarn test",
-    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then yarn publish && git push --follow-tags; fi"
+    "test": "vitest run --coverage",
+    "test:unit": "pnpm test",
+    "preship": "pnpm test",
+    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then pnpm publish && git push --follow-tags; fi"
   },
   "license": "MIT",
   "main": "./lib/BaseStorage",

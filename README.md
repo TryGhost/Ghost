@@ -7,7 +7,7 @@ Docs: https://ghost.org/docs/config/#creating-a-custom-storage-adapter
 ## Install
 
 ```sh
-yarn add ghost-storage-base
+pnpm add ghost-storage-base
 ```
 
 ## Usage
@@ -34,11 +34,12 @@ module.exports = MyStorage;
 
 ### Testing
 
-- `yarn test` to run tests
+- `pnpm test` to run tests
+- `pnpm lint` to run linting
 
 ### Publish
 
-- `yarn ship`
+- `pnpm ship`
 
 # Copyright & License
 

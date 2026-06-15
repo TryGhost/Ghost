@@ -5,6 +5,8 @@ on:
     branches:
       - main
       - 'renovate/*'
+permissions:
+  contents: read
 jobs:
   lint:
     runs-on: ubuntu-latest
@@ -16,19 +18,40 @@ jobs:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
         with:
           fetch-depth: 0
+
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
         with:
           node-version: 22
-          cache: yarn
 
-      - run: yarn --prefer-offline --frozen-lockfile
-      - run: yarn lint
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm lint
 
-  test:
-    uses: tryghost/actions/.github/workflows/test.yml@9b2a4a48cd458728c438c7fc090b3863b494cd16 # main
-    with:
-      node-versions: '[22, 24]'
-    secrets:
-      SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+  build:
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && !startsWith(github.head_ref, 'renovate/'))
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    env:
+      FORCE_COLOR: 1
+    name: Node ${{ matrix.node }}
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: ${{ matrix.node }}
+
+      - run: corepack enable
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm test
+
+      - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7

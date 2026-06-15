@@ -1,10 +1,11 @@
 ## Commands
 
-- `yarn test` — run the Vitest suite with coverage (this is the only test command; `yarn test:unit` is the same thing).
-- Run a single test: `yarn vitest run -t "<test name substring>"` (e.g. `yarn vitest run -t "generateUnique"`).
-- `yarn ship` — runs tests, then `yarn publish` and `git push --follow-tags`. Only succeeds with a clean working tree. Do not invoke unless the user explicitly asks to publish.
+- `pnpm test` — run the Vitest suite with coverage (this is the only test command; `pnpm test:unit` is the same thing).
+- `pnpm lint` — run oxlint.
+- Run a single test: `pnpm vitest run -t "<test name substring>"` (e.g. `pnpm vitest run -t "generateUnique"`).
+- `pnpm ship` — runs tests, then `pnpm publish` and `git push --follow-tags`. Only succeeds with a clean working tree. Do not invoke unless the user explicitly asks to publish.
 
-Node 22 or 24 is required (`engines.node: ^22.13.1 || ^24.0.0`). CI runs on Node 22 and 24 via `tryghost/actions/.github/workflows/test.yml`.
+Node 22 or 24 is required (`engines.node: ^22.13.1 || ^24.0.0`). CI runs on Node 22 and 24 via `.github/workflows/test.yml`.
 
 ## Architecture
 
@@ -19,7 +20,7 @@ Key design points that are easy to miss:
 
 ## Testing constraints
 
-`vitest.config.js` enforces **100% branches/functions/lines/statements coverage on `lib/BaseStorage.js`**. Any new branch in the source must come with a test, or `yarn test` will fail on thresholds even if all assertions pass.
+`vitest.config.js` enforces **100% branches/functions/lines/statements coverage on `lib/BaseStorage.js`**. Any new branch in the source must come with a test, or `pnpm test` will fail on thresholds even if all assertions pass.
 
 Tests use `node:assert/strict` and `vi.useFakeTimers()` for the date-dependent `getTargetDir` cases; the `afterEach` restores real timers.
 
