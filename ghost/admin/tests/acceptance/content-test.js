@@ -397,7 +397,7 @@ describe('Acceptance: Posts / Pages', function () {
                         expect(lastRequest.url, 'request url').to.match(new RegExp(`/posts/${publishedPost.id}/copy/`));
                     });
 
-                    it('opens the context menu via long-press on touch devices', async function () {
+                    it('opens the context menu via long-press and keeps it open on release', async function () {
                         await visit('/posts');
 
                         const post = find(`[data-test-post-id="${publishedPost.id}"]`);
@@ -412,9 +412,13 @@ describe('Acceptance: Posts / Pages', function () {
                         });
                         await settled();
 
-                        const contextMenu = find('.gh-posts-context-menu');
-                        expect(contextMenu, 'context menu').to.exist;
+                        expect(find('.gh-posts-context-menu'), 'context menu visible after long-press').to.be.visible;
 
+                        // releasing a long-press fires a synthetic click; it must not close the menu we just opened
+                        await triggerEvent(find('.gh-context-menu-overlay'), 'click');
+                        expect(find('.gh-posts-context-menu'), 'context menu stays visible after release click').to.be.visible;
+
+                        const contextMenu = find('.gh-posts-context-menu');
                         const buttons = [...contextMenu.querySelectorAll('button')];
                         const duplicate = buttons.find(button => button.innerText.trim().includes('Duplicate'));
                         expect(duplicate, 'duplicate button').to.exist;

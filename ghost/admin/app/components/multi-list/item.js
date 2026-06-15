@@ -24,6 +24,8 @@ export default class ItemComponent extends Component {
     longPressFired = false;
     touchStartX = 0;
     touchStartY = 0;
+    ghostClickHandler = null;
+    ghostClickTimer = null;
 
     get selectionList() {
         return this.args.model;
@@ -40,12 +42,39 @@ export default class ItemComponent extends Component {
     willDestroy() {
         super.willDestroy(...arguments);
         this.cancelLongPress();
+        this.cancelGhostClickSuppression();
     }
 
     cancelLongPress() {
         if (this.longPressTimer) {
             clearTimeout(this.longPressTimer);
             this.longPressTimer = null;
+        }
+    }
+
+    // A long-press opens the menu while the finger is still down; on release the browser
+    // fires a synthetic "ghost" click that the dropdown service's body-click handler reads
+    // as an outside click, closing the menu instantly. Swallow that one click at the
+    // document level (capture phase, before it reaches the overlay or body).
+    suppressGhostClick() {
+        this.cancelGhostClickSuppression();
+        this.ghostClickHandler = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            this.cancelGhostClickSuppression();
+        };
+        document.addEventListener('click', this.ghostClickHandler, true);
+        this.ghostClickTimer = setTimeout(() => this.cancelGhostClickSuppression(), 500);
+    }
+
+    cancelGhostClickSuppression() {
+        if (this.ghostClickHandler) {
+            document.removeEventListener('click', this.ghostClickHandler, true);
+            this.ghostClickHandler = null;
+        }
+        if (this.ghostClickTimer) {
+            clearTimeout(this.ghostClickTimer);
+            this.ghostClickTimer = null;
         }
     }
 
@@ -179,6 +208,7 @@ export default class ItemComponent extends Component {
             this.longPressTimer = null;
             this.longPressFired = true;
             this.openContextMenu(this.touchStartX, this.touchStartY);
+            this.suppressGhostClick();
         }, LONG_PRESS_DURATION_MS);
     }
 
