@@ -201,7 +201,7 @@ class MemberWelcomeEmailService {
     async #loadWelcomeEmailsCollection() {
         return Automation.findAll({
             filter: WELCOME_EMAIL_FILTER,
-            withRelated: ['welcomeEmailAutomatedEmail']
+            withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
         });
     }
 

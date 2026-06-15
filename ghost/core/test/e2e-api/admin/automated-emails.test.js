@@ -31,6 +31,24 @@ describe('Automated Emails API', function () {
         return body.automated_emails[0];
     };
 
+    const updateSenderStorage = async (automatedEmailId, {email = {}, designSettings = {}} = {}) => {
+        const welcomeEmail = await models.Base.knex('welcome_email_automated_emails')
+            .where('welcome_email_automation_id', automatedEmailId)
+            .first('id', 'email_design_setting_id');
+
+        if (Object.keys(email).length > 0) {
+            await models.Base.knex('welcome_email_automated_emails')
+                .where('id', welcomeEmail.id)
+                .update(email);
+        }
+
+        if (Object.keys(designSettings).length > 0) {
+            await models.Base.knex('email_design_settings')
+                .where('id', welcomeEmail.email_design_setting_id)
+                .update(designSettings);
+        }
+    };
+
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
@@ -41,6 +59,13 @@ describe('Automated Emails API', function () {
         await dbUtils.truncate('brute');
         await dbUtils.truncate('welcome_email_automated_emails');
         await dbUtils.truncate('automations');
+        await models.Base.knex('email_design_settings')
+            .where('slug', 'default-automated-email')
+            .update({
+                sender_name: null,
+                sender_email: null,
+                sender_reply_to: null
+            });
     });
 
     describe('Browse', function () {
@@ -69,6 +94,56 @@ describe('Automated Emails API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('Returns sender details from email design settings before welcome email automated email fields', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                email: {
+                    sender_name: 'Welcome Sender',
+                    sender_email: 'welcome@example.com',
+                    sender_reply_to: 'welcome-reply@example.com'
+                },
+                designSettings: {
+                    sender_name: 'Design Sender',
+                    sender_email: 'design@example.com',
+                    sender_reply_to: 'design-reply@example.com'
+                }
+            });
+
+            await agent
+                .get('automated_emails')
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails[0].sender_name, 'Design Sender');
+                    assert.equal(body.automated_emails[0].sender_email, 'design@example.com');
+                    assert.equal(body.automated_emails[0].sender_reply_to, 'design-reply@example.com');
+                });
+        });
+
+        it('Falls back to welcome email sender details when email design sender details are empty', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                email: {
+                    sender_name: 'Welcome Sender',
+                    sender_email: 'welcome@example.com',
+                    sender_reply_to: 'welcome-reply@example.com'
+                },
+                designSettings: {
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null
+                }
+            });
+
+            await agent
+                .get('automated_emails')
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails[0].sender_name, 'Welcome Sender');
+                    assert.equal(body.automated_emails[0].sender_email, 'welcome@example.com');
+                    assert.equal(body.automated_emails[0].sender_reply_to, 'welcome-reply@example.com');
+                });
+        });
     });
 
     describe('Read', function () {
@@ -86,6 +161,56 @@ describe('Automated Emails API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
+                });
+        });
+
+        it('Returns sender details from email design settings before welcome email automated email fields', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                email: {
+                    sender_name: 'Welcome Sender',
+                    sender_email: 'welcome@example.com',
+                    sender_reply_to: 'welcome-reply@example.com'
+                },
+                designSettings: {
+                    sender_name: 'Design Sender',
+                    sender_email: 'design@example.com',
+                    sender_reply_to: 'design-reply@example.com'
+                }
+            });
+
+            await agent
+                .get(`automated_emails/${automatedEmail.id}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails[0].sender_name, 'Design Sender');
+                    assert.equal(body.automated_emails[0].sender_email, 'design@example.com');
+                    assert.equal(body.automated_emails[0].sender_reply_to, 'design-reply@example.com');
+                });
+        });
+
+        it('Falls back to welcome email sender details when email design sender details are empty', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                email: {
+                    sender_name: 'Welcome Sender',
+                    sender_email: 'welcome@example.com',
+                    sender_reply_to: 'welcome-reply@example.com'
+                },
+                designSettings: {
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null
+                }
+            });
+
+            await agent
+                .get(`automated_emails/${automatedEmail.id}`)
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails[0].sender_name, 'Welcome Sender');
+                    assert.equal(body.automated_emails[0].sender_email, 'welcome@example.com');
+                    assert.equal(body.automated_emails[0].sender_reply_to, 'welcome-reply@example.com');
                 });
         });
     });
@@ -449,6 +574,33 @@ describe('Automated Emails API', function () {
                         assert.equal(automatedEmail.sender_name, 'Custom Sender');
                         assert.equal(automatedEmail.sender_email, 'sender@example.com');
                         assert.equal(automatedEmail.sender_reply_to, 'reply@example.com');
+                    }
+                });
+        });
+
+        it('Returns sender details from email design settings after editing shared sender settings', async function () {
+            await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .update({
+                    sender_name: 'Design Sender',
+                    sender_email: 'design@example.com',
+                    sender_reply_to: 'design-reply@example.com'
+                });
+
+            await agent
+                .put('automated_emails/senders/')
+                .body({
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails.length, 2);
+                    for (const automatedEmail of body.automated_emails) {
+                        assert.equal(automatedEmail.sender_name, 'Design Sender');
+                        assert.equal(automatedEmail.sender_email, 'design@example.com');
+                        assert.equal(automatedEmail.sender_reply_to, 'design-reply@example.com');
                     }
                 });
         });
