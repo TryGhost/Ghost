@@ -60,6 +60,65 @@
     }
 }
 
+/* The Close button shares .gh-editor-preview-trigger, which is hidden below 500px
+   for the editor toolbar; the modal needs it visible so the preview can be dismissed */
+.gh-post-preview-header .gh-editor-preview-trigger {
+    display: inline-flex;
+    align-items: center;
+}
+
+.gh-post-preview-close .gh-post-preview-close-icon {
+    display: none;
+}
+
+.gh-post-preview-close .gh-post-preview-close-icon svg {
+    width: 14px;
+    height: 14px;
+}
+
+@media (max-width: 640px) {
+    /* lay the header out in flow so the centered controls can't slide under the
+       absolutely-positioned action group and overlap it */
+    .gh-post-preview-header {
+        justify-content: flex-start;
+        padding: 1.2rem;
+    }
+
+    .gh-post-preview-header .left {
+        position: static;
+    }
+
+    .gh-post-preview-header h2 {
+        font-size: 1.6rem;
+    }
+
+    .gh-post-preview-btn-group {
+        margin-left: 8px;
+    }
+
+    .gh-post-preview-header .right {
+        position: static;
+        margin-left: auto;
+    }
+
+    /* the desktop/mobile size toggle is meaningless on a phone */
+    .gh-post-preview-sizes,
+    .gh-post-preview-btn-group .gh-contentfilter-divider,
+    .gh-post-preview-header .right .gh-contentfilter-divider {
+        display: none;
+    }
+
+    /* a compact X replaces the "Close" label to save horizontal space */
+    .gh-post-preview-close .gh-post-preview-close-text {
+        display: none;
+    }
+
+    .gh-post-preview-close .gh-post-preview-close-icon {
+        display: inline-flex;
+        align-items: center;
+    }
+}
+
 .gh-post-preview-btn-group .gh-btn-group {
     gap: .2rem;
     margin: 0 4px;
