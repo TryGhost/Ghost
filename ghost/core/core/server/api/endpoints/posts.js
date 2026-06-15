@@ -1,7 +1,6 @@
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
-const settingsCache = require('../../../shared/settings-cache');
-const {slugify} = require('@tryghost/string');
+const {getCSVExportFileName} = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const allowedIncludes = [
     'tags',
@@ -23,14 +22,6 @@ const allowedIncludes = [
 const unsafeAttrs = ['status', 'authors', 'visibility'];
 
 const postsService = getPostServiceInstance();
-
-function getPostAnalyticsExportFileName() {
-    const datetime = (new Date()).toJSON().substring(0, 10);
-    const title = settingsCache.get('title');
-    const titlePrefix = title ? `${slugify(title)}.` : '';
-
-    return `${titlePrefix}ghost.analytics.${datetime}.csv`;
-}
 
 /**
  * @param {string} event
@@ -101,7 +92,7 @@ const controller = {
             disposition: {
                 type: 'csv',
                 value() {
-                    return getPostAnalyticsExportFileName();
+                    return getCSVExportFileName('analytics');
                 }
             },
             cacheInvalidate: false
@@ -117,7 +108,7 @@ const controller = {
         async query(frame) {
             return {
                 data: await postsService.export(frame),
-                filename: getPostAnalyticsExportFileName()
+                filename: getCSVExportFileName('analytics')
             };
         }
     },
@@ -287,6 +278,19 @@ const controller = {
             method: 'destroy'
         },
         async query(frame) {
+            const postsToDelete = await models.Post.findAll({
+                filter: frame.options.filter,
+                status: 'all',
+                columns: ['status']
+            });
+
+            const allDraft = postsToDelete.length > 0 && postsToDelete.every((post) => {
+                return post.get('status') === 'draft';
+            });
+            if (allDraft) {
+                frame.setHeader('X-Cache-Invalidate', '');
+            }
+
             return await postsService.bulkDestroy(frame.options);
         }
     },
@@ -313,7 +317,16 @@ const controller = {
         permissions: {
             unsafeAttrs: unsafeAttrs
         },
-        query(frame) {
+        async query(frame) {
+            const post = await models.Post.findOne({
+                id: frame.options.id,
+                status: 'all'
+            }, {require: false, columns: ['status']});
+
+            if (post && post.get('status') === 'draft') {
+                frame.setHeader('X-Cache-Invalidate', '');
+            }
+
             return models.Post.destroy({...frame.options, require: true});
         }
     },

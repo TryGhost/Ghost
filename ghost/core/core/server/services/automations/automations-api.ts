@@ -2,7 +2,7 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
-import type {DatabaseSync} from 'node:sqlite';
+import type {Knex} from 'knex';
 import {z} from 'zod';
 import {createFakeDatabaseAutomationsRepository} from './fake-database-automations-repository';
 import type {
@@ -53,9 +53,6 @@ const sendEmailActionSchema = z.object({
                 return false;
             }
         }),
-        email_sender_name: z.string().nullable(),
-        email_sender_email: z.string().nullable(),
-        email_sender_reply_to: z.string().nullable(),
         email_design_setting_id: z.string().min(1)
     }).strict()
 }).strict();
@@ -74,15 +71,15 @@ const editAutomationDataSchema = z.object({
     edges: z.array(edgeSchema)
 }).strict();
 
-let testDatabase: DatabaseSync | null = null;
+let testDatabasePromise: Promise<Knex> | null = null;
 
 const repository = createFakeDatabaseAutomationsRepository({
-    getDatabase: () => {
+    getDatabase: async () => {
         if (process.env.NODE_ENV?.startsWith('testing')) {
-            testDatabase ??= temporaryFakeAutomationsDatabase.createTemporaryFakeAutomationsDatabase();
-            return testDatabase;
+            testDatabasePromise ??= temporaryFakeAutomationsDatabase.createTemporaryFakeAutomationsDatabase();
+            return await testDatabasePromise;
         }
-        return temporaryFakeAutomationsDatabase.getTemporaryFakeAutomationsDatabase();
+        return await temporaryFakeAutomationsDatabase.getTemporaryFakeAutomationsDatabase();
     }
 });
 
@@ -305,8 +302,24 @@ export async function trigger(options: TriggerOptions) {
     requestPoll();
 }
 
+export async function fetchAndLockSteps(...args: Parameters<AutomationsRepository['fetchAndLockSteps']>) {
+    return await repository.fetchAndLockSteps(...args);
+}
+
+export async function finishStepAndEnqueueNext(...args: Parameters<AutomationsRepository['finishStepAndEnqueueNext']>) {
+    return await repository.finishStepAndEnqueueNext(...args);
+}
+
+export async function markStepTerminal(...args: Parameters<AutomationsRepository['markStepTerminal']>) {
+    return await repository.markStepTerminal(...args);
+}
+
+export async function retryStep(...args: Parameters<AutomationsRepository['retryStep']>) {
+    return await repository.retryStep(...args);
+}
+
 export function _resetTestDatabase() {
     if (process.env.NODE_ENV?.startsWith('testing')) {
-        testDatabase = null;
+        testDatabasePromise = null;
     }
 }

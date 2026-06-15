@@ -9,7 +9,7 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
-const {Automation, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
+const {Automation, EmailDesignSetting, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -21,7 +21,19 @@ const EMAIL_VALIDATION_TYPE_BY_FIELD = {
     sender_reply_to: 'replyTo'
 };
 
+/**
+ * @param {null | undefined | string} value
+ * @returns {string}
+ */
 const trimValue = value => value?.trim() || '';
+
+const getSenderDetailsFromDesignSettings = (designSettingsJson) => {
+    return {
+        senderName: designSettingsJson?.sender_name,
+        senderEmail: designSettingsJson?.sender_email,
+        senderReplyTo: designSettingsJson?.sender_reply_to
+    };
+};
 
 class MemberWelcomeEmailService {
     #mailer;
@@ -359,9 +371,11 @@ class MemberWelcomeEmailService {
                 subject: email.get('subject'),
                 status: row.get('status'),
                 designSettings: designSettings?.id ? designSettings.toJSON() : null,
-                senderName: email.get('sender_name'),
-                senderEmail: email.get('sender_email'),
-                senderReplyTo: email.get('sender_reply_to')
+                senderDetails: {
+                    senderName: email.get('sender_name'),
+                    senderEmail: email.get('sender_email'),
+                    senderReplyTo: email.get('sender_reply_to')
+                }
             };
         }
     }
@@ -373,9 +387,18 @@ class MemberWelcomeEmailService {
      * @param {string} options.member.email
      * @param {string} options.member.uuid
      * @param {'free' | 'paid'} options.memberStatus
+     * @param {object} options.email
+     * @param {string} options.email.lexical
+     * @param {string} options.email.subject
+     * @param {null | object} options.email.designSettings
+     * @param {object} options.email.senderDetails
+     * @param {undefined | null | string} options.email.senderDetails.senderName
+     * @param {undefined | null | string} options.email.senderDetails.senderEmail
+     * @param {undefined | null | string} options.email.senderDetails.senderReplyTo
+     * @param {'welcome' | 'automation'} options.emailType
      * @returns {Promise<void>}
      */
-    async send({member, memberStatus}) {
+    async #sendEmail({member, memberStatus, email, emailType}) {
         if (!member.email) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.MISSING_RECIPIENT_EMAIL
@@ -385,29 +408,15 @@ class MemberWelcomeEmailService {
         const name = member?.name ? `${member.name} at ` : '';
         logging.info({
             system: {
-                event: 'member_welcome_email.sending',
+                event: emailType === 'automation' ? 'member_welcome_email.automation_sending' : 'member_welcome_email.sending',
                 member_status: memberStatus
             }
-        }, `${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member.email}`);
-
-        const memberWelcomeEmail = this.#memberWelcomeEmails[memberStatus];
-
-        if (!memberWelcomeEmail) {
-            throw new errors.IncorrectUsageError({
-                message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
-            });
-        }
-
-        if (memberWelcomeEmail.status !== 'active') {
-            throw new errors.IncorrectUsageError({
-                message: MESSAGES.memberWelcomeEmailInactive(memberStatus)
-            });
-        }
+        }, `${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending ${emailType} email to ${name}${member.email}`);
 
         const {html, text, subject} = await this.#renderer.render({
-            lexical: memberWelcomeEmail.lexical,
-            subject: memberWelcomeEmail.subject,
-            designSettings: memberWelcomeEmail.designSettings,
+            lexical: email.lexical,
+            subject: email.subject,
+            designSettings: email.designSettings,
             member: {
                 name: member.name,
                 email: member.email,
@@ -416,7 +425,7 @@ class MemberWelcomeEmailService {
             siteSettings: this.#getSiteSettings()
         });
 
-        const senderOptions = await this.#getEffectiveSenderOptions(memberWelcomeEmail);
+        const senderOptions = await this.#getEffectiveSenderOptions(email.senderDetails);
 
         await this.#mailer.send({
             to: member.email,
@@ -426,6 +435,63 @@ class MemberWelcomeEmailService {
             forceTextContent: true,
             tags: [MEMBER_WELCOME_EMAIL_TAG],
             ...senderOptions
+        });
+    }
+
+    async send({member, memberStatus}) {
+        const email = this.#memberWelcomeEmails[memberStatus];
+
+        if (!email) {
+            throw new errors.IncorrectUsageError({
+                message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
+            });
+        }
+
+        if (email.status !== 'active') {
+            throw new errors.IncorrectUsageError({
+                message: MESSAGES.memberWelcomeEmailInactive(memberStatus)
+            });
+        }
+
+        await this.#sendEmail({
+            member,
+            memberStatus,
+            emailType: 'welcome',
+            email
+        });
+    }
+
+    // TODO(NY-1319) This isn't the right place for automation email sends. We
+    // should do a refactor to get this out of here.
+    /**
+     * @param {object} options
+     * @param {object} options.email
+     * @param {null | string} options.email.designSettingId
+     * @param {string} options.email.lexical
+     * @param {string} options.email.subject
+     * @param {object} options.member
+     * @param {string} options.member.email
+     * @param {null | string} options.member.name
+     * @param {string} options.member.uuid
+     * @param {'free' | 'paid'} options.memberStatus
+     * @returns {Promise<void>}
+     */
+    async sendAutomationEmail({email, member, memberStatus}) {
+        const designSettings = email.designSettingId ?
+            await EmailDesignSetting.findOne({id: email.designSettingId}) :
+            null;
+        const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
+
+        await this.#sendEmail({
+            member,
+            memberStatus,
+            emailType: 'automation',
+            email: {
+                lexical: email.lexical,
+                subject: email.subject,
+                designSettings: designSettingsJson,
+                senderDetails: getSenderDetailsFromDesignSettings(designSettingsJson)
+            }
         });
     }
 

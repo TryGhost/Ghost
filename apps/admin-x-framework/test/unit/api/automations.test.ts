@@ -318,9 +318,6 @@ describe('automations api helpers', () => {
                         data: {
                             email_subject: 'Hi',
                             email_lexical: '{}',
-                            email_sender_name: null,
-                            email_sender_email: null,
-                            email_sender_reply_to: null,
                             email_design_setting_id: 'placeholder'
                         }
                     }
@@ -374,9 +371,6 @@ describe('automations api helpers', () => {
             data: {
                 email_subject: 'Original subject',
                 email_lexical: '{"root":{"children":[]}}',
-                email_sender_name: null,
-                email_sender_email: null,
-                email_sender_reply_to: null,
                 email_design_setting_id: 'placeholder',
                 ...overrides
             }
@@ -399,7 +393,7 @@ describe('automations api helpers', () => {
         });
 
         it('updates subject and lexical, preserving the rest of data', () => {
-            const detail = baseDetail([sendEmailAction('a', {email_sender_name: 'Jane'})], []);
+            const detail = baseDetail([sendEmailAction('a', {email_design_setting_id: 'design-setting-id'})], []);
 
             const next = updateSendEmailAction({
                 detail,
@@ -412,8 +406,7 @@ describe('automations api helpers', () => {
             expectSendEmailAction(updated);
             expect(updated.data.email_subject).toBe('Just the subject');
             expect(updated.data.email_lexical).toBe('{"root":{"children":[{"type":"paragraph"}]}}');
-            expect(updated.data.email_sender_name).toBe('Jane');
-            expect(updated.data.email_design_setting_id).toBe('placeholder');
+            expect(updated.data.email_design_setting_id).toBe('design-setting-id');
         });
 
         it('does not mutate the original detail or action', () => {

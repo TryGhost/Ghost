@@ -74,6 +74,7 @@ describe('mapPostToActivity', function () {
         expect(actor.id).toBe('https://example.com/users/123');
         expect(actor.icon.url).toBe('https://example.com/users/123/avatar.jpg');
         expect(actor.name).toBe('Test User');
+        expect(actor.handle).toBe('@testuser@example.com');
         expect(actor.preferredUsername).toBe('testuser');
 
         // When the post has been reposted, the actor should be the reposter
@@ -92,7 +93,23 @@ describe('mapPostToActivity', function () {
         expect(actor.id).toBe('https://example.com/users/456');
         expect(actor.icon.url).toBe('https://example.com/users/456/avatar.jpg');
         expect(actor.name).toBe('Test User 2');
+        expect(actor.handle).toBe('@testuser2@example.com');
         expect(actor.preferredUsername).toBe('testuser2');
+    });
+
+    test('it preserves the API-provided author handle', function () {
+        const actor = mapPostToActivity({
+            ...post,
+            author: {
+                ...post.author,
+                handle: '@testuser@social.example',
+                url: 'https://example.com/users/123'
+            }
+        }).actor;
+
+        expect(actor.id).toBe('https://example.com/users/123');
+        expect(actor.handle).toBe('@testuser@social.example');
+        expect(actor.preferredUsername).toBe('testuser');
     });
 
     test('it sets the correct object type', function () {
@@ -124,6 +141,7 @@ describe('mapPostToActivity', function () {
         expect(object.summary).toBe('Test Summary');
         expect(object.url).toBe('https://example.com/posts/123');
         expect(object.attributedTo.id).toBe('https://example.com/users/123');
+        expect(object.attributedTo.handle).toBe('@testuser@example.com');
         expect(object.published).toBe('2024-01-01T00:00:00Z');
         expect(object.preview.content).toBe('Test Excerpt');
         expect(object.id).toBe('123');

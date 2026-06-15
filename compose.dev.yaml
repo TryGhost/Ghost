@@ -60,13 +60,13 @@ services:
     working_dir: /home/ghost/ghost/core
     command: ["pnpm", "dev"]
     volumes:
-      - ./ghost:/home/ghost/ghost
-      # ghost/admin has workspace:* deps on apps/* (e.g. @tryghost/admin-x-framework).
-      # The dev Dockerfile only stages ghost/{core,i18n,parse-email-address}
-      # package.jsons at build time; mounting apps/ here makes the workspace
-      # graph complete at runtime. pnpm 10 tolerated the missing packages;
-      # pnpm 11 strict-validates and fails without this mount.
-      - ./apps:/home/ghost/apps
+      # Keep the runtime workspace graph aligned with the packages installed
+      # by docker/ghost-dev/Dockerfile. Mounting all of ghost/ exposes
+      # ghost/admin, which depends on apps/* and causes pnpm to repair the
+      # workspace before running scripts.
+      - ./ghost/core:/home/ghost/ghost/core
+      - ./ghost/i18n:/home/ghost/ghost/i18n
+      - ./ghost/parse-email-address:/home/ghost/ghost/parse-email-address
       # Mount specific content subdirectories to preserve themes/adapters from source
       - ghost-dev-data:/home/ghost/ghost/core/content/data
       - ghost-dev-images:/home/ghost/ghost/core/content/images
@@ -78,6 +78,7 @@ services:
       NODE_ENV: development
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
       DEBUG: ${DEBUG:-}
+      pnpm_config_verify_deps_before_run: "false"
       database__client: mysql2
       database__connection__host: mysql
       database__connection__user: root
@@ -127,7 +128,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:49adc22954b07ace90944d0c2816cd8d4c08f527548f150785aff7c4d1109d42
+    image: stripe/stripe-cli:latest@sha256:ac5920c06aa0ecd95e86366cb849de7acd39396e11cf2d0b16ea0e91cbb655ec
     container_name: ghost-dev-stripe
     entrypoint: ["/entrypoint.sh"]
     profiles: ["stripe"]

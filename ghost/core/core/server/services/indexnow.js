@@ -27,6 +27,7 @@ const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const settingsCache = require('../../shared/settings-cache');
+const config = require('../../shared/config');
 const labs = require('../../shared/labs');
 const events = require('../lib/common/events');
 
@@ -72,6 +73,11 @@ async function ping(post) {
 
     // Skip if site is private
     if (settingsCache.get('is_private')) {
+        return;
+    }
+
+    // Skip if IndexNow pings are disabled via privacy config
+    if (config.isPrivacyDisabled('useIndexNow')) {
         return;
     }
 
@@ -138,9 +144,11 @@ async function ping(post) {
         }, `${INDEXNOW_LOG_KEY} Successfully pinged ${url}`);
     } catch (err) {
         // Log errors but don't throw - IndexNow failures shouldn't disrupt publishing
+        const statusCode = err.statusCode ?? err.response?.statusCode ?? null;
+
         let eventName;
         let error;
-        if (err.statusCode === 429) {
+        if (statusCode === 429) {
             // Rate limited by IndexNow - we have no retry/backoff, so the ping is dropped
             eventName = 'indexnow.rate_limited';
             error = new errors.TooManyRequestsError({
@@ -149,8 +157,7 @@ async function ping(post) {
                 context: tpl(messages.requestFailedError, {service: 'IndexNow'}),
                 help: tpl(messages.requestFailedHelp, {url: 'https://ghost.org/docs/'})
             });
-        } else if (err.statusCode === 422) {
-            // 422 means the URL is invalid or key doesn't match
+        } else if (statusCode === 422 || statusCode === 403) {
             eventName = 'indexnow.key_validation_failed';
             error = new errors.ValidationError({
                 err,
@@ -171,7 +178,7 @@ async function ping(post) {
         logging.warn({
             event: {name: eventName},
             post: {id: post.id, slug: post.slug, url},
-            http: {response: {status_code: err.statusCode ?? null}},
+            http: {response: {status_code: statusCode}},
             err: error
         }, `${INDEXNOW_LOG_KEY} ${error.message}`);
     }

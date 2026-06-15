@@ -7,8 +7,7 @@ import * as TogglePrimitive from '@radix-ui/react-switch';
 type ToggleSizes = 'sm' | 'md' | 'lg';
 export type ToggleDirections = 'ltr' | 'rtl';
 
-export interface ToggleProps {
-    checked?: boolean;
+export type ToggleProps = {
     disabled?: boolean;
     name?: string;
     error?: boolean;
@@ -21,11 +20,16 @@ export interface ToggleProps {
     separator?: boolean;
     direction?: ToggleDirections;
     hint?: React.ReactNode;
-    onChange?: (event: React.ChangeEvent<HTMLInputElement>) => void;
     gap?: string;
     align?: 'start' | 'center';
     testId?: string;
-}
+} & (
+    {checked?: undefined; onChange?: undefined} |
+    {
+        checked: boolean;
+        onChange: (event: React.ChangeEvent<HTMLInputElement>) => void;
+    }
+);
 
 const Toggle: React.FC<ToggleProps> = ({
     size,
@@ -107,13 +111,13 @@ const Toggle: React.FC<ToggleProps> = ({
     return (
         <div>
             <div className={`group flex ${align === 'center' ? 'items-center' : 'items-start'} ${gap} dark:text-white ${direction === 'rtl' && 'justify-between'} ${separator && 'pb-2'} ${containerClasses}`}>
-                <TogglePrimitive.Root className={clsx(
+                <TogglePrimitive.Root checked={checked} className={clsx(
                     toggleBgClass,
                     'appearance-none rounded-full bg-grey-300 transition duration-100 dark:bg-grey-800',
                     'enabled:group-hover:opacity-80 enabled:hover:cursor-pointer disabled:cursor-not-allowed disabled:opacity-40',
                     sizeStyles,
                     direction === 'rtl' && ' order-2'
-                )} data-testid={testId} defaultChecked={checked} disabled={disabled} id={id} name={name} onCheckedChange={handleCheckedChange}>
+                )} data-testid={testId} disabled={disabled} id={id} name={name} onCheckedChange={handleCheckedChange}>
                     <TogglePrimitive.Thumb className={clsx(
                         thumbSizeStyles,
                         'block translate-x-0.5 rounded-full bg-white transition-transform duration-100 will-change-transform'

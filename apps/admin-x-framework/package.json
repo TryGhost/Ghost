@@ -41,6 +41,11 @@
             "require": "./dist/utils/post-utils.cjs",
             "types": "./types/utils/post-utils.d.ts"
         },
+        "./utils/nql": {
+            "import": "./dist/utils/nql.js",
+            "require": "./dist/utils/nql.cjs",
+            "types": "./types/utils/nql.d.ts"
+        },
         "./vite": {
             "import": "./dist/vite.js",
             "require": "./dist/vite.cjs",
@@ -107,6 +112,7 @@
         "react": "catalog:",
         "react-dom": "catalog:",
         "react-hot-toast": "catalog:",
+        "sonner": "catalog:",
         "react-router": "catalog:"
     },
     "peerDependencies": {

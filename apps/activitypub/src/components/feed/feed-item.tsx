@@ -12,8 +12,8 @@ import ProfilePreviewHoverCard from '../global/profile-preview-hover-card';
 
 import FeedItemStats from './feed-item-stats';
 import clsx from 'clsx';
+import getHandle from '../../utils/get-handle';
 import getReadingTime from '../../utils/get-reading-time';
-import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, sanitizeHtml, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
@@ -379,7 +379,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
-    const authorHandle = author ? getUsername(author) : null;
+    const authorHandle = author ? getHandle(author) : null;
 
     const followedByMe = author?.followedByMe || false;
 
@@ -455,7 +455,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             </span>
                                             <div className={`flex w-full text-md text-gray-700 dark:text-gray-600`}>
                                                 <span className={`truncate ${!isPending ? 'hover-underline' : ''}`}>
-                                                    {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
+                                                    {!isLoading ? getHandle(author) : <Skeleton className='w-56' />}
                                                 </span>
                                                 <div className={`ml-1 before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
                                                     {!isLoading ? renderTimestamp(object, (isPending === false && !object.authored)) : <Skeleton className='w-4' />}
@@ -564,7 +564,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             <div>{renderTimestamp(object, !object.authored)}</div>
                                         </div>
                                         <div className='flex w-full'>
-                                            <span className='min-w-0 truncate text-gray-700 dark:text-gray-600'>{getUsername(author)}</span>
+                                            <span className='min-w-0 truncate text-gray-700 dark:text-gray-600'>{getHandle(author)}</span>
                                         </div>
                                     </div>
                                 </>}
@@ -626,7 +626,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 <div>{renderTimestamp(object, (isPending === false && !object.authored))}</div>
                                             </div>
                                             <div className='flex'>
-                                                <span className='truncate text-gray-700'>{getUsername(author)}</span>
+                                                <span className='truncate text-gray-700'>{getHandle(author)}</span>
                                             </div>
                                         </div>
                                     </div>

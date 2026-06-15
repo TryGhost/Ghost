@@ -1,7 +1,7 @@
 import Customizer, {COLOR_OPTIONS, type ColorOption, type FontSize, useCustomizerSettings} from './customizer';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import ShowRepliesButton from '@src/components/global/show-replies-button';
-import getUsername from '../../../utils/get-username';
+import getHandle from '../../../utils/get-handle';
 import {LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 
 import {renderTimestamp} from '../../../utils/render-timestamp';
@@ -824,7 +824,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                     <span className='min-w-0 truncate font-semibold whitespace-nowrap text-black hover:underline dark:text-white'>{isLoadingContent ? <Skeleton className='w-20' /> : actor.name}</span>
                                                 </div>
                                                 <div className='flex w-full'>
-                                                    {!isLoadingContent && <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(actor)}</span>}
+                                                    {!isLoadingContent && <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getHandle(actor)}</span>}
                                                     <span className='text-gray-700'>{isLoadingContent ? <Skeleton className='w-[120px]' /> : renderTimestamp(object, !object.authored)}</span>
                                                 </div>
                                             </div>
@@ -833,7 +833,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                     {!object.authored && !isLoadingContent && (
                                         <FollowButton
                                             following={actor.followedByMe ?? false}
-                                            handle={getUsername(actor)}
+                                            handle={getHandle(actor)}
                                         />
                                     )}
                                 </div>

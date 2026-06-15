@@ -524,8 +524,8 @@ async function getTables(transaction = db.knex) {
         const response = await transaction.raw('select * from sqlite_master where type = "table"');
         return _.reject(_.map(response, 'tbl_name'), name => name === 'sqlite_sequence');
     } else if (client === 'mysql2') {
-        const response = await transaction.raw('show tables');
-        return _.flatten(_.map(response[0], entry => _.values(entry)));
+        const response = await transaction.raw('show full tables where Table_type = \'BASE TABLE\'');
+        return _.map(response[0], entry => _.values(entry)[0]);
     }
 
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));

@@ -2,7 +2,7 @@ import React, {useCallback, useState} from 'react';
 import {AddLabelModal, DeleteModal, ImportMembersModal, RemoveLabelModal, UnsubscribeModal} from './bulk-action-modals';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {type ImportResponse} from './bulk-action-modals/import-members/state';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {blobDownloadFromEndpoint} from '@tryghost/admin-x-framework/helpers';
 import {buildMemberOperationParams} from '../member-query-params';
 import {buildMembersUrl} from '../member-route';
@@ -16,23 +16,13 @@ interface MembersActionsProps {
     memberCount: number;
     nql?: string;
     search: string;
-    siteTitle?: string | null;
     canBulkDelete: boolean;
+    showMenu?: boolean;
+    showNewMember?: boolean;
     onImportComplete?: (importResponse?: ImportResponse) => void;
 }
 
-export function getMembersExportFileName(siteTitle?: string | null): string {
-    const titleSlug = siteTitle
-        ?.toLowerCase()
-        .replace(/[^a-z0-9]+/g, '-')
-        .replace(/^-|-$/g, '');
-    const titlePrefix = titleSlug ? `${titleSlug}.` : '';
-    const datetime = new Date().toJSON().substring(0, 10);
-
-    return `${titlePrefix}ghost.members.${datetime}.csv`;
-}
-
-export async function exportMembers(filter?: string, search?: string, siteTitle?: string | null): Promise<void> {
+export async function exportMembers(filter?: string, search?: string): Promise<void> {
     const params = new URLSearchParams({limit: 'all'});
     if (filter) {
         params.set('filter', filter);
@@ -40,7 +30,7 @@ export async function exportMembers(filter?: string, search?: string, siteTitle?
     if (search) {
         params.set('search', search);
     }
-    await blobDownloadFromEndpoint(`/members/upload/?${params}`, getMembersExportFileName(siteTitle));
+    await blobDownloadFromEndpoint(`/members/upload/?${params}`, 'members.csv');
 }
 
 const MembersActions: React.FC<MembersActionsProps> = ({
@@ -48,8 +38,9 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     memberCount,
     nql,
     search,
-    siteTitle,
     canBulkDelete,
+    showMenu = true,
+    showNewMember = true,
     onImportComplete
 }) => {
     const location = useLocation();
@@ -74,14 +65,14 @@ const MembersActions: React.FC<MembersActionsProps> = ({
     const memberOperationParams = buildMemberOperationParams({nql, search});
     const handleExport = useCallback(async () => {
         try {
-            await exportMembers(nql, search, siteTitle);
+            await exportMembers(nql, search);
         } catch (e) {
             toast.error('Export failed', {
                 description: 'There was a problem downloading your member data. Please check your connection and try again.'
             });
             throw e;
         }
-    }, [nql, search, siteTitle]);
+    }, [nql, search]);
 
     const handleAddLabel = useCallback(async (labelIds: string[]) => {
         try {
@@ -222,66 +213,69 @@ const MembersActions: React.FC<MembersActionsProps> = ({
 
     return (
         <>
-            {/* Actions Dropdown */}
-            <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                    <Button data-testid="members-actions" variant="outline">
-                        <LucideIcon.MoreHorizontal className="size-4" />
-                    </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                    {/* Import */}
-                    <DropdownMenuItem onClick={handleImportAction}>
-                        <LucideIcon.Upload className="mr-2 size-4" />
-                        Import members
-                    </DropdownMenuItem>
+            {showMenu && (
+                <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                        <Button data-testid="members-actions" variant="outline">
+                            <LucideIcon.MoreHorizontal className="size-4" />
+                        </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                        {/* Import */}
+                        <DropdownMenuItem onClick={handleImportAction}>
+                            <LucideIcon.Upload className="mr-2 size-4" />
+                            Import members
+                        </DropdownMenuItem>
 
-                    {memberCount > 0 && (
-                        <>
-                            {/* Export */}
-                            <DropdownMenuItem onClick={handleExport}>
-                                <LucideIcon.Download className="mr-2 size-4" />
-                                {hasFilterOrSearch
-                                    ? `Export ${memberCount.toLocaleString()} members`
-                                    : 'Export all members'}
-                            </DropdownMenuItem>
+                        {memberCount > 0 && (
+                            <>
+                                {/* Export */}
+                                <DropdownMenuItem onClick={handleExport}>
+                                    <LucideIcon.Download className="mr-2 size-4" />
+                                    {hasFilterOrSearch
+                                        ? `Export ${formatNumber(memberCount)} members`
+                                        : 'Export all members'}
+                                </DropdownMenuItem>
 
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem onClick={() => setShowAddLabelModal(true)}>
-                                <LucideIcon.Tags className="mr-2 size-4" />
-                                    Add label to {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem onClick={() => setShowRemoveLabelModal(true)}>
-                                <LucideIcon.Tag className="mr-2 size-4" />
-                                    Remove label from {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                            </DropdownMenuItem>
-                            <DropdownMenuItem
-                                disabled={isLoadingNewsletters}
-                                onClick={() => setShowUnsubscribeModal(true)}
-                            >
-                                <LucideIcon.MailX className="mr-2 size-4" />
-                                    Unsubscribe {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                            </DropdownMenuItem>
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                                className="text-destructive focus:text-destructive"
-                                disabled={!canBulkDelete}
-                                onClick={() => setShowDeleteModal(true)}
-                            >
-                                <LucideIcon.Trash2 className="mr-2 size-4" />
-                                    Delete {memberCount.toLocaleString()} {memberCount === 1 ? 'member' : 'members'}
-                            </DropdownMenuItem>
-                        </>
-                    )}
-                </DropdownMenuContent>
-            </DropdownMenu>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem onClick={() => setShowAddLabelModal(true)}>
+                                    <LucideIcon.Tags className="mr-2 size-4" />
+                                    Add label to {formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem onClick={() => setShowRemoveLabelModal(true)}>
+                                    <LucideIcon.Tag className="mr-2 size-4" />
+                                    Remove label from {formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}
+                                </DropdownMenuItem>
+                                <DropdownMenuItem
+                                    disabled={isLoadingNewsletters}
+                                    onClick={() => setShowUnsubscribeModal(true)}
+                                >
+                                    <LucideIcon.MailX className="mr-2 size-4" />
+                                    Unsubscribe {formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}
+                                </DropdownMenuItem>
+                                <DropdownMenuSeparator />
+                                <DropdownMenuItem
+                                    className="text-destructive focus:text-destructive"
+                                    disabled={!canBulkDelete}
+                                    onClick={() => setShowDeleteModal(true)}
+                                >
+                                    <LucideIcon.Trash2 className="mr-2 size-4" />
+                                    Delete {formatNumber(memberCount)} {memberCount === 1 ? 'member' : 'members'}
+                                </DropdownMenuItem>
+                            </>
+                        )}
+                    </DropdownMenuContent>
+                </DropdownMenu>
+            )}
 
-            {/* New Member Button - styled like Tags */}
-            <Button asChild>
-                <a aria-label="New member" className="inline-flex items-center" href={newMemberHref}>
-                    <span className="hidden sm:inline">New member</span>
-                </a>
-            </Button>
+            {showNewMember && (
+                <Button asChild>
+                    <a aria-label="New member" className="inline-flex items-center" href={newMemberHref}>
+                        <span className="hidden sm:inline">New member</span>
+                        <span className="sm:hidden"><LucideIcon.Plus /></span>
+                    </a>
+                </Button>
+            )}
 
             {/* Modals */}
             <ImportMembersModal

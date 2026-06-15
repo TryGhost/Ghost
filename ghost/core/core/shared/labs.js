@@ -26,7 +26,8 @@ const GA_FEATURES = [
     'commentsThreads',
     'commentsPinning',
     'featurebaseFeedback',
-    'dangerZoneResetAuth'
+    'dangerZoneResetAuth',
+    'indexnow'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -49,7 +50,6 @@ const PRIVATE_FEATURES = [
     'tagsX',
     'emailUniqueid',
     'themeTranslation',
-    'indexnow',
     'pictureImageFormats',
     'smarterCounts',
     'llmsTxt',

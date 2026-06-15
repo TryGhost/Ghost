@@ -37,6 +37,19 @@
     // Vulnerability-alert PRs require dashboard approval below so they do not
     // bypass the live open-PR cap enforced by the workflow.
     "minimumReleaseAge": "3 days",
+    // Hold updates internally during the release-age soak instead of opening a
+    // PR immediately and gating it with a pending `renovate/stability-days`
+    // status. With the default "flexible" filter, a soaking PR is still an open
+    // PR, so it counts against the live 10-PR cap enforced in
+    // .github/workflows/renovate.yml even though it cannot merge for up to 72h —
+    // soakers were starving creation slots from updates that are actually ready.
+    // "strict" keeps soaking updates as branchless/PR-less internal state until
+    // the soak passes, so a slot is only ever held by a mergeable PR. Trade-off:
+    // we lose day-0 CI signal on an update (breakage now surfaces only once the
+    // PR opens post-soak) and security fixes also stay invisible until their
+    // 72h soak clears (see vulnerabilityAlerts below — the soak already applied,
+    // strict only changes when the PR becomes visible).
+    "internalChecksFilter": "strict",
     "timezone": "Etc/UTC",
     // Restrict Renovate runs to the automerge windows so branch updates
     // (rebasing, force-pushes) happen around the same times automerge
@@ -129,11 +142,40 @@
         // tooling (broccoli-templater, sourcemap-validator) plus old @tryghost/*
         // packages, so it can't be removed from the tree here. Ignore it to stop
         // the unactionable dashboard noise.
-        "lodash.template"
+        "lodash.template",
+
+        // https://linear.app/ghost/issue/PLA-78
+        // https://github.com/TryGhost/Ghost/pull/28180
+        // knex 2.5.x breaks migrations: 2.5.0's password-masking mutates the
+        // shared `config.get('database')` object, which we hand to BOTH knex()
+        // and knex-migrator. With core ahead of knex-migrator's pinned knex
+        // (2.4.2), the password is stripped before knex-migrator connects →
+        // "Access denied (using password: NO)". 2.x is EOL; the real move is
+        // knex 3.x, gated on publishing a knex-3 knex-migrator
+        // (TryGhost/knex-migrator#86, unreleased), bumped in lockstep with core.
+        // Ignore until we do that coordinated upgrade.
+        "knex"
     ],
     "ignorePaths": [
         "test",
-        "ghost/admin/lib/koenig-editor/package.json"
+        // Freeze the Ember admin app wholesale. `ghost/admin` is being replaced by
+        // the React apps in `apps/*`, and its dependency tree is a frozen-as-a-unit
+        // Ember/broccoli stack we deliberately do not upgrade (see
+        // docs/ember-dependency-burden.md). Ignoring the whole directory drops
+        // admin's declared deps from extraction entirely: no update PRs, and they
+        // stop cluttering the Dependency Dashboard's Detected / Abandoned /
+        // Deprecated sections. Because Renovate manages deps per-manifest, anything
+        // admin SHARES with `ghost/core` or `apps/*` is still managed via those
+        // manifests — so in effect only admin-exclusive deps are omitted. This
+        // subsumes the old koenig-editor ignore and the per-package "Disable ember
+        // updates" / "disable css" rules (removed from packageRules below).
+        //
+        // Security note: GitHub Dependabot alerts for admin deps still fire (they
+        // are independent of Renovate) — we lose only Renovate's auto-fix PR. Given
+        // the app is slated for removal, remediate any rare real incident with a
+        // `pnpm overrides` pin. Today's admin-exclusive advisories are all
+        // build-time or verified-not-shipped (see docs/ember-dependency-burden.md).
+        "ghost/admin/**"
     ],
     "packageRules": [
         // Always require dashboard approval for major updates
@@ -147,6 +189,108 @@
                 "major"
             ],
             "dependencyDashboardApproval": true
+        },
+
+        // Keep `@types/*` aligned with the runtime major they describe. Type defs
+        // for a different major than what actually runs are silently wrong at best
+        // (e.g. @types/express 5 vs Express 4) and build-breaking at worst
+        // (@types/react 19 fails the @tryghost/shade build under React 18) — this
+        // is what stalled the grouped "Update Types packages (major)" PR (#28307).
+        // Two mechanisms, with the major-dashboard-approval rule above as the human
+        // backstop for any types-ahead major that still slips through:
+        //
+        // 1. @types/node has no `node` npm package to pair with — it tracks the
+        //    Node.js runtime declared in `engines`, not a dependency — so a hard
+        //    version cap is the only lever. Raise it when we bump the Node engine.
+        {
+            "description": "Cap @types/node at the installed Node major (engines: ^22.13.1)",
+            "matchPackageNames": [
+                "@types/node"
+            ],
+            "allowedVersions": "<23"
+        },
+
+        // 2. Every other @types/* is grouped WITH the runtime package it describes
+        //    (rules below) so a runtime major and its type-definition major travel
+        //    in the same PR and land together, instead of the types racing ahead.
+        //    This is self-maintaining — no per-package caps to hand-raise on each
+        //    upgrade (a stale cap silently flips from guard to blocker once the
+        //    runtime moves, as happened with supertest 6 -> 7).
+        //
+        // Any @types/* with NO managed runtime peer is left as its own individual
+        // PR rather than lumped into one mega "Types packages (major)" PR (so one
+        // breaking type can't block the rest). Ordering matters: this ungroup
+        // default comes BEFORE the pairings so the pairings (later) win for paired
+        // packages, and the pairings come BEFORE the react17/eslint9/tailwind3
+        // catalog rules below so those version-lane groups still win for their own
+        // depTypes (e.g. react@17 in the react17 catalog stays in its own PR).
+        {
+            "description": "Unpaired @types/* majors get their own PR, not one mega Types group",
+            "matchPackageNames": [
+                "@types/**"
+            ],
+            "matchUpdateTypes": [
+                "major"
+            ],
+            "groupName": null
+        },
+        {
+            "description": "React runtime + its type defs bump together",
+            "groupName": "React",
+            "matchPackageNames": [
+                "react",
+                "react-dom",
+                "@types/react",
+                "@types/react-dom"
+            ]
+        },
+        {
+            "description": "Express runtime + its type defs bump together",
+            "groupName": "Express",
+            "matchPackageNames": [
+                "express",
+                "@types/express"
+            ]
+        },
+        {
+            "description": "jest runtime + its type defs bump together",
+            "groupName": "jest",
+            "matchPackageNames": [
+                "jest",
+                "@types/jest"
+            ]
+        },
+        {
+            "description": "supertest runtime + its type defs bump together",
+            "groupName": "supertest",
+            "matchPackageNames": [
+                "supertest",
+                "@types/supertest"
+            ]
+        },
+        {
+            "description": "dockerode runtime + its type defs bump together",
+            "groupName": "dockerode",
+            "matchPackageNames": [
+                "dockerode",
+                "@types/dockerode"
+            ]
+        },
+        {
+            "description": "nodemailer runtime + its type defs bump together",
+            "groupName": "nodemailer",
+            "matchPackageNames": [
+                "nodemailer",
+                "@types/nodemailer"
+            ]
+        },
+        {
+            "description": "sinon runtime + its type defs bump together",
+            "groupName": "sinon",
+            "matchPackageNames": [
+                "sinon",
+                "@types/sinon"
+            ]
         },
 
         // Group NQL packages separately from other TryGhost packages
@@ -235,6 +379,27 @@
             ]
         },
 
+        // These are published by us but live outside the @tryghost/ npm scope,
+        // so they miss the shared preset's "0 days" trusted-package exemption
+        // and would otherwise soak for 72h like third-party releases. Mirrors
+        // the pnpm-workspace.yaml minimumReleaseAgeExclude list. knex-migrator
+        // is currently in ignoreDeps, but is listed for when that's lifted.
+        // Deliberately NOT listed: sqlite3 — TryGhost stewards it, but legacy
+        // (Mapbox-era) npm maintainer accounts can still publish, so the soak
+        // retains value there.
+        {
+            "description": "No release-age soak for unscoped TryGhost-published packages",
+            "matchPackageNames": [
+                "bookshelf-relations",
+                "eslint-plugin-ghost",
+                "express-hbs",
+                "ghost-storage-base",
+                "gscan",
+                "knex-migrator"
+            ],
+            "minimumReleaseAge": "0 days"
+        },
+
         // Group each pinned-version pnpm catalog into a single PR per catalog.
         //
         // The named catalogs in pnpm-workspace.yaml (react17, eslint9,
@@ -301,6 +466,48 @@
             "automergeType": "pr"
         },
 
+        // Digest and pin updates (Docker image digests, action SHAs) usually
+        // have no release timestamp — Docker Hub library images skip label
+        // lookup entirely — so the 72h soak can never be satisfied. Worse,
+        // digest updates bypass internalChecksFilter's lookup-time pending
+        // state (it only filters version releases), so the PR opens
+        // immediately anyway and then sits unmergeable forever on a pending
+        // renovate/stability-days status, getting rebased every run. A time
+        // gate is unmeasurable here, so exempt these update types from the
+        // soak; the automerge rules around this one decide what merges on
+        // green CI vs what waits for a human.
+        {
+            "description": "No release-age soak for digest/pin updates (no usable release timestamp)",
+            "matchUpdateTypes": [
+                "digest",
+                "pin",
+                "pinDigest"
+            ],
+            "minimumReleaseAge": "0 days"
+        },
+
+        // The shared preset automerges all `action`-type deps, which would
+        // quietly convert our SHA pins on third-party actions back into
+        // "trust whatever upstream publishes next" — the exact attack class
+        // SHA-pinning defends against (codecov 2021, tj-actions 2025). Keep
+        // own-org and GitHub-owned actions automerging; bumps to everything
+        // else (codecov, docker, pnpm, peter-evans, ...) wait for a human
+        // review per GitHub's Actions hardening guidance. Placed before the
+        // security-update rule below so vulnerability-alert action bumps can
+        // still automerge.
+        {
+            "description": "Third-party action bumps require human merge",
+            "matchDepTypes": [
+                "action"
+            ],
+            "matchPackageNames": [
+                "!tryghost/**",
+                "!actions/**",
+                "!github/**"
+            ],
+            "automerge": false
+        },
+
         // Security patches and minors automerge after CI passes regardless
         // of any other automerge exclusion (e.g. the CSS preprocessor rule
         // in the shared preset). Security majors are intentionally left
@@ -318,41 +525,14 @@
             ],
             "automerge": true,
             "automergeType": "pr"
-        },
-
-        // Ignore all ember-related packages in admin
-        // Our ember codebase is being replaced with react and
-        // Most of the dependencies have breaking changes and it's too hard to update
-        // Therefore, we'll leave these as-is for now
-        {
-            "groupName": "Disable ember updates",
-            "matchFileNames": [
-                "ghost/admin/package.json"
-            ],
-            "matchPackageNames": [
-                // `ember-foo` style packages
-                "/^ember(-|$)/",
-                // scoped `@ember/*` packages
-                "/^@ember\\//",
-                // foo/ember-something style packages
-                "/\\/ember(-|$)/"
-            ],
-            "enabled": false
-        },
-
-        // Don't allow css preprocessor updates in admin
-        {
-            "groupName": "disable css",
-            "matchFileNames": [
-                "ghost/admin/package.json"
-            ],
-            "matchPackageNames": [
-                "autoprefixer",
-                "ember-cli-postcss",
-                "/^postcss/",
-                "/^css/"
-            ],
-            "enabled": false
         }
+
+        // NOTE: the Ember admin app is now frozen wholesale via
+        // `ignorePaths: ghost/admin/**` (above). The former per-package
+        // "Disable ember updates" and "disable css" rules used to live here, but
+        // they only matched ember-*named* and css packages in
+        // ghost/admin/package.json — which let non-ember admin deps (broccoli-*,
+        // liquid-fire, tracked-built-ins, the autoprefixer/postcss tree, etc.)
+        // keep surfacing on the dashboard. The ignorePaths entry supersedes both.
     ]
 }

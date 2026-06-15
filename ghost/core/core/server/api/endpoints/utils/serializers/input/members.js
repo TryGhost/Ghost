@@ -1,6 +1,11 @@
 const _ = require('lodash');
+const errors = require('@tryghost/errors');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:members');
 const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
+
+const ACTIVE_STRIPE_CUSTOMERS_COUNT_FILTER = 'count.active_stripe_customers';
+const MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER = `${ACTIVE_STRIPE_CUSTOMERS_COUNT_FILTER}:>1`;
+const ACTIVE_STRIPE_CUSTOMERS_COUNT_FILTER_PATTERN = /(^|[+(,])count\.active_stripe_customers(?=:)/;
 
 function defaultRelations(frame) {
     if (frame.options.withRelated) {
@@ -31,6 +36,27 @@ function mapSubscribedFlagToNewsletterRelation(frame) {
     });
 }
 
+function extractActiveStripeCustomersCountFilter(frame) {
+    const filterString = frame.options.filter;
+
+    if (!filterString || !filterString.includes(ACTIVE_STRIPE_CUSTOMERS_COUNT_FILTER)) {
+        return;
+    }
+
+    if (!ACTIVE_STRIPE_CUSTOMERS_COUNT_FILTER_PATTERN.test(filterString)) {
+        return;
+    }
+
+    if (filterString !== MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER) {
+        throw new errors.BadRequestError({
+            message: `The ${ACTIVE_STRIPE_CUSTOMERS_COUNT_FILTER} filter only supports ${MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER}.`
+        });
+    }
+
+    frame.options.activeStripeCustomersCount = true;
+    delete frame.options.filter;
+}
+
 module.exports = {
     all(_apiConfig, frame) {
         if (!frame.options.withRelated) {
@@ -48,6 +74,7 @@ module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
         defaultRelations(frame);
+        extractActiveStripeCustomersCountFilter(frame);
         mapSubscribedFlagToNewsletterRelation(frame);
 
         if (!frame.options.order) {
@@ -109,6 +136,7 @@ module.exports = {
 
     bulkEdit(apiConfig, frame) {
         debug('bulkEdit');
+        extractActiveStripeCustomersCountFilter(frame);
         mapSubscribedFlagToNewsletterRelation(frame);
     },
 

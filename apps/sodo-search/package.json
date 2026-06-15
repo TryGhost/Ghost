@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.22",
+  "version": "1.8.23",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -101,7 +101,7 @@
     "cross-fetch": "catalog:",
     "eslint": "catalog:",
     "jsdom": "catalog:",
-    "nock": "13.5.6",
+    "nock": "14.0.15",
     "tailwindcss": "catalog:tailwind3",
     "vite": "catalog:",
     "vite-plugin-svgr": "catalog:",

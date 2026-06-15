@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/comments-ui",
-  "version": "1.5.5",
+  "version": "1.5.10",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -68,7 +68,7 @@
     "@tryghost/nql": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "autoprefixer": "10.4.21",
+    "autoprefixer": "10.5.0",
     "bson-objectid": "catalog:",
     "concurrently": "catalog:",
     "eslint": "catalog:",

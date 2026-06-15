@@ -1,5 +1,5 @@
 const {agentProvider, fixtureManager, matchers, mockManager, configUtils} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyErrorId, anyEtag, anyISODateTime, anyObjectId, anyString, anyUuid} = matchers;
+const {anyContentVersion, anyContentLength, anyErrorId, anyEtag, anyISODateTime, anyObjectId, anyString, anyUuid} = matchers;
 const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
@@ -54,6 +54,7 @@ describe('Member Commenting API', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
 
@@ -76,6 +77,7 @@ describe('Member Commenting API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
 
@@ -100,6 +102,7 @@ describe('Member Commenting API', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
         });
@@ -119,6 +122,7 @@ describe('Member Commenting API', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
         });
@@ -137,6 +141,7 @@ describe('Member Commenting API', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
         });
@@ -151,6 +156,7 @@ describe('Member Commenting API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
         });
@@ -165,6 +171,7 @@ describe('Member Commenting API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
 
@@ -189,6 +196,7 @@ describe('Member Commenting API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
 
@@ -203,6 +211,7 @@ describe('Member Commenting API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
 
@@ -222,6 +231,7 @@ describe('Member Commenting API', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 });
         });

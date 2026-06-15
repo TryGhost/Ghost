@@ -9,7 +9,7 @@ describe('Unit: models/tag', function () {
     });
 
     describe('SQL', function () {
-        const mockDb = require('mock-knex');
+        const mockDb = require('../../../utils/mock-knex');
         let tracker;
 
         beforeAll(function () {

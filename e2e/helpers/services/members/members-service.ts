@@ -85,4 +85,11 @@ export class MembersService {
         }
         return data.members[0];
     }
+
+    async deleteAll(): Promise<void> {
+        const response = await this.request.delete(`${this.adminEndpoint}/members?all=true`);
+        if (!response.ok()) {
+            throw new Error(`Failed to delete members: ${response.status()}`);
+        }
+    }
 }

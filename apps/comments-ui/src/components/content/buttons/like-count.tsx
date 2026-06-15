@@ -35,7 +35,7 @@ const LikeCount: React.FC<Props> = ({count, liked}) => {
             data-testid="like-count"
         >
             <ThumbsUpIcon
-                className={`h-4 w-4 ${
+                className={`size-4 ${
                     liked ? 'fill-black stroke-black dark:fill-white dark:stroke-white' : 'stroke-black/50 dark:stroke-white/60'
                 }`}
             />

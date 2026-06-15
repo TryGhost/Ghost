@@ -104,6 +104,24 @@ describe('oembed-service', function () {
         });
     });
 
+    describe('fetchPage', function () {
+        it('requests pages with a 5 second timeout', async function () {
+            const externalRequest = sinon.stub().resolves({});
+
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest
+            });
+
+            await service.fetchPage('https://www.example.com', {});
+
+            const options = externalRequest.firstCall.args[1];
+            assert.equal(options.timeout.request, 5000);
+        });
+    });
+
     describe('fetchOembedData', function () {
         const pageHtml = `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"></head></html>`;
 
@@ -182,6 +200,24 @@ describe('oembed-service', function () {
             assert.equal(response.metadata.title, 'Example');
         });
 
+        it('extracts Amazon product metadata via the metascraper-amazon ruleset', async function () {
+            nock('https://www.amazon.com')
+                .get('/dp/B08N5WRWNW')
+                .query(true)
+                .reply(200, `<html><head><title>Amazon.com</title></head><body>
+                    <span id="productTitle">Example Product Title</span>
+                    <img class="a-dynamic-image" src="https://m.media-amazon.com/images/I/example.jpg" data-old-hires="https://m.media-amazon.com/images/I/example-hires.jpg">
+                </body></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.amazon.com/dp/B08N5WRWNW', 'bookmark');
+
+            assert.equal(response.version, '1.0');
+            assert.equal(response.type, 'bookmark');
+            assert.equal(response.metadata.title, 'Example Product Title');
+            assert.equal(response.metadata.publisher, 'Amazon');
+            assert.equal(response.metadata.thumbnail, 'https://m.media-amazon.com/images/I/example-hires.jpg');
+        });
+
         it('should return a bookmark response when the oembed endpoint returns a link type', async function () {
             nock('https://www.example.com')
                 .get('/')
@@ -258,6 +294,87 @@ describe('oembed-service', function () {
                 });
 
             await oembedService.fetchOembedDataFromUrl('https://youtube.com/live/1234?param=existing');
+        });
+
+        it('keeps unknown provider fallback by default when the page fetch fails', async function () {
+            const fetchError = new Error('Service Unavailable');
+            fetchError.response = {
+                statusCode: 503
+            };
+
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest() {
+                    throw fetchError;
+                }
+            });
+
+            await assert.rejects(
+                () => service.fetchOembedDataFromUrl('https://www.example.com', 'mention'),
+                {
+                    name: 'ValidationError',
+                    message: 'No provider found for supplied URL.'
+                }
+            );
+        });
+
+        it('does not pass the rethrow callback to the external request', async function () {
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest(url, options) {
+                    assert.equal(url, 'https://www.example.com');
+                    assert.equal(options.shouldRethrowFetchError, undefined);
+
+                    return {
+                        headers: {
+                            'content-type': 'text/html'
+                        },
+                        body: Buffer.from('<html><head><title>Example</title></head></html>'),
+                        url
+                    };
+                }
+            });
+
+            const response = await service.fetchOembedDataFromUrl('https://www.example.com', 'bookmark', {
+                shouldRethrowFetchError() {
+                    return true;
+                }
+            });
+
+            assert.equal(response.metadata.title, 'Example');
+        });
+
+        it('allows callers to rethrow selected page fetch errors', async function () {
+            const fetchError = new Error('Service Unavailable');
+            fetchError.response = {
+                statusCode: 503
+            };
+
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest() {
+                    throw fetchError;
+                }
+            });
+
+            await assert.rejects(
+                () => service.fetchOembedDataFromUrl('https://www.example.com', 'mention', {
+                    shouldRethrowFetchError(err) {
+                        return err.response?.statusCode === 503;
+                    }
+                }),
+                (err) => {
+                    assert.equal(err, fetchError);
+                    assert.equal(err.response.statusCode, 503);
+                    return true;
+                }
+            );
         });
     });
 
