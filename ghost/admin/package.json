@@ -25,7 +25,7 @@
     "lint": "pnpm lint:js && pnpm lint:hbs"
   },
   "engines": {
-    "node": "^22.13.1"
+    "node": "^22.13.1 || ^24.0.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.28.6",

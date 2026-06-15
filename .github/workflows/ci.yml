@@ -161,10 +161,26 @@ jobs:
               - '!ghost/core/vitest.config.ts'
               - *renovate_only
 
-      - name: Define Node test matrix
+      - name: Define Node test matrices
         id: node_matrix
+        # Two independent Node version sets:
+        #   unit_matrix  — cheap suites (build + unit). Always fan out across
+        #                  every supported Node line, so each PR proves the code
+        #                  builds, installs native deps (sqlite3/sharp) and
+        #                  passes unit tests on both the recommended and the
+        #                  secondary Node version.
+        #   heavy_matrix — expensive suites (acceptance/integration/e2e). On PRs
+        #                  they run on the recommended version only to keep CI
+        #                  fast; on release tags they fan out across every line
+        #                  so the full cross-version signal gates the release.
+        # Keep the recommended version (NODE_VERSION) first in each array.
         run: |
-          echo 'matrix=["22.18.0"]' >> $GITHUB_OUTPUT
+          echo 'unit_matrix=["22.18.0", "24"]' >> "$GITHUB_OUTPUT"
+          if [[ "${{ github.ref_type }}" == 'tag' ]]; then
+            echo 'heavy_matrix=["22.18.0", "24"]' >> "$GITHUB_OUTPUT"
+          else
+            echo 'heavy_matrix=["22.18.0"]' >> "$GITHUB_OUTPUT"
+          fi
 
       - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
       - name: Set up Node
@@ -236,7 +252,8 @@ jobs:
       is_six_pr: ${{ env.IS_SIX_PR }}
       member_is_in_org: ${{ steps.check_user_org_membership.outputs.is_member }}
       node_version: ${{ env.NODE_VERSION }}
-      node_test_matrix: ${{ steps.node_matrix.outputs.matrix }}
+      unit_node_matrix: ${{ steps.node_matrix.outputs.unit_matrix }}
+      heavy_node_matrix: ${{ steps.node_matrix.outputs.heavy_matrix }}
       nx_base: ${{ env.NX_BASE }}
 
   job_app_version_bump_check:
@@ -389,7 +406,7 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.unit_test_projects_str != ''
     strategy:
       matrix:
-        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
+        node: ${{ fromJSON(needs.job_setup.outputs.unit_node_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -455,6 +472,53 @@ jobs:
         env:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
 
+  job_node-compat-smoke:
+    # Per-PR confidence that Ghost actually runs on the SECONDARY supported Node
+    # version (the unit matrix already covers build + unit + native-dep install
+    # on both lines). Boots ghost/core and exercises the HTTP API via the e2e
+    # suite on sqlite only — no MySQL/MinIO/integration/coverage — to stay light.
+    # The full cross-version acceptance/integration/e2e run happens at release
+    # tags via heavy_node_matrix.
+    runs-on: ubuntu-latest
+    needs: [job_setup]
+    if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.changed_core == 'true'
+    name: Node compat smoke (Node 24)
+    env:
+      DB: sqlite3
+      NODE_ENV: testing
+    steps:
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        env:
+          FORCE_COLOR: 0
+        with:
+          node-version: '24'
+          cache: pnpm
+
+      - name: Install dependencies
+        # --force ensures the sqlite3 optionalDependency is (re)built/linked
+        # against this Node version even when restoring from a cached store.
+        run: pnpm install --frozen-lockfile --force
+
+      - name: Set timezone (non-UTC)
+        uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
+        with:
+          timezoneLinux: "America/New_York"
+
+      - name: Set env vars (SQLite)
+        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> "$GITHUB_ENV"
+
+      - name: Boot + e2e smoke
+        run: pnpm nx run ghost:test:ci:e2e:no-coverage
+
+      - uses: tryghost/actions/actions/slack-build@9b2a4a48cd458728c438c7fc090b3863b494cd16 # main
+        if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
+        with:
+          status: ${{ job.status }}
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+
   job_acceptance-tests:
     runs-on: ubuntu-latest
     needs: [job_setup]
@@ -484,7 +548,7 @@ jobs:
           --health-retries=12
     strategy:
       matrix:
-        node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
+        node: ${{ fromJSON(needs.job_setup.outputs.heavy_node_matrix) }}
         env:
           - DB: mysql8
             NODE_ENV: testing-mysql
