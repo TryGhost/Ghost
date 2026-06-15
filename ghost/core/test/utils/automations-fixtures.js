@@ -1,4 +1,5 @@
 const ObjectId = require('bson-objectid').default;
+const moment = require('moment');
 const db = require('../../core/server/data/db');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../core/server/services/member-welcome-emails/constants');
 
@@ -13,7 +14,7 @@ const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
     root: {children: [{type: 'paragraph', children: [{type: 'text', text: 'Lorem ipsum.'}]}], direction: null, format: '', indent: 0, type: 'root', version: 1}
 });
 
-const timestamp = offset => new Date(Date.UTC(2026, 0, 1, 0, 0, offset));
+const timestamp = offset => moment(new Date(Date.UTC(2026, 0, 1, 0, 0, offset))).format('YYYY-MM-DD HH:mm:ss');
 
 async function setupAutomationsFixture() {
     await cleanupAutomationsFixture();

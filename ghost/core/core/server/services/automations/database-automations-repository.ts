@@ -4,6 +4,7 @@ import crypto from 'node:crypto';
 import ObjectId from 'bson-objectid';
 import {dequal} from 'dequal';
 import {type Knex} from 'knex';
+import moment from 'moment';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import type {
     Automation,
@@ -20,6 +21,7 @@ import {LOCK_TIMEOUT_MS} from './constants';
 import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
 const HOUR_MS = 60 * 60 * 1000;
+const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
 const messages = {
     invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".',
@@ -34,6 +36,10 @@ interface AutomationRow {
     status: string;
     created_at: string;
     updated_at: string;
+}
+
+function toDatabaseDate(date: Date | string): string {
+    return moment(date).format(DATABASE_DATE_FORMAT);
 }
 
 interface ActionRow {
@@ -132,7 +138,7 @@ export function createDatabaseAutomationsRepository(knex: Knex): AutomationsRepo
                 const updatedAutomation = await updateAutomation(trx, {
                     ...automation,
                     status: data.status,
-                    updated_at: new Date().toISOString()
+                    updated_at: toDatabaseDate(new Date())
                 });
 
                 await replaceAutomationGraph(trx, updatedAutomation.id, data.actions, data.edges);
@@ -185,7 +191,7 @@ async function trigger(trx: Knex.Transaction, {
     }
 
     const now = new Date();
-    const nowString = now.toISOString();
+    const nowString = toDatabaseDate(now);
 
     const readyAt = getReadyAtForAction(firstAction, now);
 
@@ -218,7 +224,7 @@ async function insertRunStep(trx: Knex.Transaction, {
     now: Date;
     readyAt: Date;
 }>): Promise<void> {
-    const nowString = now.toISOString();
+    const nowString = toDatabaseDate(now);
 
     await trx('automation_run_steps').insert({
         id: ObjectId().toHexString(),
@@ -226,7 +232,7 @@ async function insertRunStep(trx: Knex.Transaction, {
         updated_at: nowString,
         automation_run_id: automationRunId,
         automation_action_revision_id: automationActionRevisionId,
-        ready_at: readyAt.toISOString()
+        ready_at: toDatabaseDate(readyAt)
     });
 }
 
@@ -246,9 +252,9 @@ async function fetchAndLockSteps(trx: Knex.Transaction, limit: number): Promise<
     // 3. Select any rows we successfully locked.
 
     const now = new Date();
-    const nowString = now.toISOString();
+    const nowString = toDatabaseDate(now);
     const staleLockCutoff = new Date(now.getTime() - LOCK_TIMEOUT_MS);
-    const staleLockCutoffString = staleLockCutoff.toISOString();
+    const staleLockCutoffString = toDatabaseDate(staleLockCutoff);
     const lockId = crypto.randomUUID();
 
     // 1. Select up to `limit` candidate rows.
@@ -339,7 +345,7 @@ async function findNextPendingReadyAt(trx: Knex.Transaction, staleLockCutoff: Re
         .where((builder) => {
             builder
                 .whereNull('locked_by')
-                .orWhere('locked_at', '<', staleLockCutoff.toISOString());
+                .orWhere('locked_at', '<', toDatabaseDate(staleLockCutoff));
         })
         .first();
     return row?.next_ready_at ? new Date(row.next_ready_at) : null;
@@ -471,7 +477,7 @@ async function markStepTerminal(
     step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
     status: AutomationStepTerminalStatus
 ): Promise<boolean> {
-    const nowString = new Date().toISOString();
+    const nowString = toDatabaseDate(new Date());
     return await updateStep(trx, step, {
         status,
         finished_at: nowString,
@@ -484,12 +490,12 @@ async function retryStep(
     step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
     retryAt: Readonly<Date>
 ): Promise<boolean> {
-    const nowString = new Date().toISOString();
+    const nowString = toDatabaseDate(new Date());
     return await updateStep(trx, step, {
         status: 'pending',
         started_at: null,
         finished_at: null,
-        ready_at: retryAt.toISOString(),
+        ready_at: toDatabaseDate(retryAt),
         updated_at: nowString
     });
 }
@@ -593,7 +599,7 @@ async function replaceAutomationGraph(trx: Knex.Transaction, automationId: strin
     const existingActions = await loadAutomationActionRows(trx, automationId);
     const existingActionIds = new Set(existingActions.map(action => action.id));
     const submittedActionIds = new Set(actions.map(action => action.id));
-    const now = new Date().toISOString();
+    const now = toDatabaseDate(new Date());
 
     for (const action of actions) {
         if (existingActionIds.has(action.id)) {
@@ -749,17 +755,17 @@ async function insertActionRevision(
 
 function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreatedAt: string) {
     if (!latestCreatedAt) {
-        return requestedCreatedAt;
+        return toDatabaseDate(requestedCreatedAt);
     }
 
     const requestedTime = new Date(requestedCreatedAt).getTime();
     const latestTime = new Date(latestCreatedAt).getTime();
 
     if (requestedTime > latestTime) {
-        return requestedCreatedAt;
+        return toDatabaseDate(requestedCreatedAt);
     }
 
-    return new Date(latestTime + 1).toISOString();
+    return toDatabaseDate(new Date(latestTime + 1000));
 }
 
 function buildActionRevision(actionId: string, action: AutomationAction, createdAt: string) {

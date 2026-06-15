@@ -1,16 +1,19 @@
 import assert from 'node:assert/strict';
 import ObjectId from 'bson-objectid';
 import createKnex, {type Knex} from 'knex';
+import moment from 'moment';
 import {createDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/database-automations-repository';
 import type {AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 
 const HOUR_MS = 60 * 60 * 1000;
+const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
+
+const toDatabaseDate = (date: Date | string): string => moment(date).format(DATABASE_DATE_FORMAT);
+const toRepositoryDateISOString = (date: Date | string): string => new Date(toDatabaseDate(date)).toISOString();
 
 const addHours = (dateCol: unknown, hours: number): Date => {
     assert(typeof dateCol === 'string', 'Expected date column to be a string');
-    const start = new Date(dateCol).valueOf();
-    const delta = hours * HOUR_MS;
-    return new Date(start + delta);
+    return moment(dateCol, DATABASE_DATE_FORMAT).add(hours, 'hours').toDate();
 };
 
 const createDatabase = async (): Promise<Knex> => {
@@ -29,7 +32,7 @@ const createDatabase = async (): Promise<Knex> => {
     await database.raw('PRAGMA foreign_keys = ON;');
 
     const id = () => ObjectId().toHexString();
-    const now = () => new Date().toISOString();
+    const now = () => toDatabaseDate(new Date());
 
     const fakeLexical = JSON.stringify({
         root: {
@@ -385,7 +388,7 @@ describe('automations repository', function () {
     };
 
     const insertRun = async (automationId: string) => {
-        const now = new Date().toISOString();
+        const now = toDatabaseDate(new Date());
         const run = {
             id: ObjectId().toHexString(),
             created_at: now,
@@ -400,8 +403,17 @@ describe('automations repository', function () {
         return run;
     };
 
-    const insertStep = async (runId: string, revisionId: string, attrs = {}) => {
-        const now = new Date().toISOString();
+    const normalizeDateColumns = (row: Record<string, unknown>, columns: string[]) => {
+        for (const column of columns) {
+            const value = row[column];
+            if (typeof value === 'string' || value instanceof Date) {
+                row[column] = toDatabaseDate(value);
+            }
+        }
+    };
+
+    const insertStep = async (runId: string, revisionId: string, attrs: Record<string, unknown> = {}) => {
+        const now = toDatabaseDate(new Date());
         const step = {
             id: ObjectId().toHexString(),
             created_at: now,
@@ -417,6 +429,14 @@ describe('automations repository', function () {
             locked_at: null,
             ...attrs
         };
+        normalizeDateColumns(step, [
+            'created_at',
+            'updated_at',
+            'ready_at',
+            'started_at',
+            'finished_at',
+            'locked_at'
+        ]);
 
         await knex('automation_run_steps').insert(step);
 
@@ -497,7 +517,7 @@ describe('automations repository', function () {
             assert.equal(step.wait_hours, 48);
             assert.equal(step.created_at, run.created_at);
             assert.equal(step.updated_at, run.updated_at);
-            assert.equal(step.ready_at, addHours(run.created_at, 48).toISOString());
+            assert.equal(step.ready_at, toDatabaseDate(addHours(run.created_at, 48)));
             assert.equal(step.step_attempts, 0);
             assert.equal(step.started_at, null);
             assert.equal(step.finished_at, null);
@@ -715,7 +735,7 @@ describe('automations repository', function () {
                             includesStepId(result.response, contendedStepId)
                         ) {
                             hasSimulatedLock = true;
-                            const lockedAt = new Date().toISOString();
+                            const lockedAt = toDatabaseDate(new Date());
                             await trx('automation_run_steps')
                                 .update({
                                     locked_by: 'contending-lock',
@@ -789,7 +809,7 @@ describe('automations repository', function () {
             const actualStepIds = new Set(result.steps.map(step => step.id));
             const expectedStepIds = new Set([readyStep.id, staleLockStep.id]);
             assert.deepEqual(actualStepIds, expectedStepIds);
-            assert.equal(result.nextStepReadyAt?.toISOString(), futureReadyAt.toISOString());
+            assert.equal(result.nextStepReadyAt?.toISOString(), toRepositoryDateISOString(futureReadyAt));
 
             const lockId = assertSingleBatchLock(result.steps);
 
@@ -831,7 +851,7 @@ describe('automations repository', function () {
 
             assert.deepEqual(result.steps, []);
             assert(result.nextStepReadyAt);
-            assert.equal(result.nextStepReadyAt.toISOString(), sooner.toISOString());
+            assert.equal(result.nextStepReadyAt.toISOString(), toRepositoryDateISOString(sooner));
         });
 
         it('does not schedule an immediate poll when due steps are locked by another worker', async function () {
@@ -865,7 +885,7 @@ describe('automations repository', function () {
             const result = await repo.fetchAndLockSteps(2);
 
             assert.equal(result.steps.length, 2);
-            assert.equal(result.nextStepReadyAt?.toISOString(), readyAt2);
+            assert.equal(result.nextStepReadyAt?.toISOString(), toRepositoryDateISOString(readyAt2));
 
             const lockId = assertSingleBatchLock(result.steps);
 
@@ -954,7 +974,7 @@ describe('automations repository', function () {
 
             assert.deepEqual(result.steps, []);
             assert(result.nextStepReadyAt);
-            assert.equal(result.nextStepReadyAt.toISOString(), readyAt);
+            assert.equal(result.nextStepReadyAt.toISOString(), toRepositoryDateISOString(readyAt));
             await assertContendedStepWasLocked(contendedStep.id);
         });
     });
@@ -995,7 +1015,7 @@ describe('automations repository', function () {
             assert.equal(nextStep.automation_run_id, run.id);
             assert.equal(nextStep.automation_action_revision_id, nextAction.revision_id);
             assert.equal(nextStep.status, 'pending');
-            assert.equal(nextStep.ready_at, nextReadyAt.toISOString());
+            assert.equal(nextStep.ready_at, toDatabaseDate(nextReadyAt));
         });
 
         it('uses wait hours when the next action is a wait action', async function () {
@@ -1137,7 +1157,7 @@ describe('automations repository', function () {
             const nextStep = allSteps.find(candidate => candidate.id !== stepRow.id);
             assert(nextStep);
             assert.equal(nextStep.automation_action_revision_id, updatedNextAction.revision_id);
-            assert.equal(nextStep.ready_at, nextReadyAt.toISOString());
+            assert.equal(nextStep.ready_at, toDatabaseDate(nextReadyAt));
         });
     });
 
@@ -1169,8 +1189,8 @@ describe('automations repository', function () {
             assert.equal((await getStepsByRunId(run.id)).length, 1);
             const markedFinishedAt = marked.finished_at;
             assert(typeof markedFinishedAt === 'string');
-            assert(new Date(markedFinishedAt).getTime() >= beforeMark);
-            assert(new Date(markedFinishedAt).getTime() <= afterMark);
+            assert(markedFinishedAt >= toDatabaseDate(new Date(beforeMark - 1000)));
+            assert(markedFinishedAt <= toDatabaseDate(new Date(afterMark)));
         });
 
         it('does not overwrite a step that is no longer pending', async function () {
@@ -1249,7 +1269,7 @@ describe('automations repository', function () {
 
             const retried = await getStepById(step.id);
             assert.equal(retried.status, 'pending');
-            assert.equal(retried.ready_at, retryAt.toISOString());
+            assert.equal(retried.ready_at, toDatabaseDate(retryAt));
             assert.equal(retried.started_at, null);
             assert.equal(retried.finished_at, null);
             assert.equal(retried.locked_by, null);
@@ -1257,8 +1277,8 @@ describe('automations repository', function () {
             assert.equal(retried.step_attempts, 1);
             const retriedUpdatedAt = retried.updated_at;
             assert(typeof retriedUpdatedAt === 'string');
-            assert(new Date(retriedUpdatedAt).getTime() >= beforeRetry);
-            assert(new Date(retriedUpdatedAt).getTime() <= afterRetry);
+            assert(retriedUpdatedAt >= toDatabaseDate(new Date(beforeRetry - 1000)));
+            assert(retriedUpdatedAt <= toDatabaseDate(new Date(afterRetry)));
         });
 
         it('does not retry a locked step that is no longer pending', async function () {
