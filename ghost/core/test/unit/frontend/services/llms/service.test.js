@@ -210,6 +210,51 @@ describe('Unit: frontend/services/llms/service', function () {
         assert.match(llmsFullTxt, /Truncated after 5 MiB/);
     });
 
+    it('limits llms-full.txt to the latest 500 posts', async function () {
+        const calls = [];
+        const models = {
+            Post: {
+                findPage: async function (options) {
+                    calls.push(options);
+
+                    if (options.filter.includes('type:page')) {
+                        return {data: []};
+                    }
+
+                    const pageStart = (options.page - 1) * 100;
+                    return {
+                        data: Array.from({length: 100}, (_, index) => {
+                            const postIndex = pageStart + index;
+                            return {
+                                toJSON: () => ({
+                                    id: `post-${postIndex}`,
+                                    title: `Post ${postIndex}`,
+                                    slug: `post-${postIndex}`,
+                                    plaintext: `Post ${postIndex} body`,
+                                    type: 'post'
+                                })
+                            };
+                        })
+                    };
+                }
+            }
+        };
+        const urlMap = Object.fromEntries(Array.from({length: 600}, (_, index) => [
+            `post-${index}`,
+            `https://example.com/post-${index}/`
+        ]));
+        const service = createService({models, urlMap});
+
+        const llmsFullTxt = await service.getLlmsFullTxt();
+
+        const postCalls = calls.filter(call => call.filter.includes('type:post'));
+        assert.equal(postCalls.length, 5);
+        assert.match(llmsFullTxt, /### Post 499/);
+        assert.doesNotMatch(llmsFullTxt, /### Post 500/);
+        assert.match(llmsFullTxt, /Includes the latest 500 public posts/);
+        assert.match(llmsFullTxt, /Use `\/llms\.txt` for the complete index/);
+    });
+
     it('computes fresh output on every call (no cache)', async function () {
         let callCount = 0;
 

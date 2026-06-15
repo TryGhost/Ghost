@@ -1,4 +1,4 @@
-module.exports.QUERY = {
+export const QUERY = {
     tag: {
         controller: 'tagsPublic',
         type: 'read',
@@ -43,9 +43,9 @@ module.exports.QUERY = {
             slug: '%s'
         }
     }
-};
+} as const;
 
-module.exports.TAXONOMIES = {
+export const TAXONOMIES = {
     tag: {
         filter: 'tags:\'%s\'+tags.visibility:public',
         editRedirect: '#/tags/:slug/',
@@ -56,4 +56,4 @@ module.exports.TAXONOMIES = {
         editRedirect: '#/settings/staff/:slug/',
         resource: 'authors'
     }
-};
+} as const;

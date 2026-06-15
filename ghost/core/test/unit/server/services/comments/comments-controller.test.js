@@ -25,12 +25,17 @@ describe('Comments Service: CommentsController', function () {
             get: key => comment[key]
         };
         const service = {
+            getComments: sinon.stub().resolves({data: []}),
+            getAdminAllComments: sinon.stub().resolves({data: []}),
+            getReplies: sinon.stub().resolves({data: []}),
+            getAdminReplies: sinon.stub().resolves({data: []}),
             likeComment: sinon.stub().resolves({id: 'like-id'}),
             unlikeComment: sinon.stub().resolves(),
             dislikeComment: sinon.stub().resolves({id: 'dislike-id'}),
             undislikeComment: sinon.stub().resolves(),
             getCommentByID: sinon.stub().resolves(commentModel),
-            getCommentDislikes: sinon.stub().resolves({data: []})
+            getCommentDislikes: sinon.stub().resolves({data: []}),
+            getMemberIdByUUID: sinon.stub().resolves('impersonated-member-id')
         };
         const stats = {};
 
@@ -106,5 +111,83 @@ describe('Comments Service: CommentsController', function () {
             page: 3,
             limit: 15
         });
+    });
+
+    it('composes post scoping with existing mongo transformers', async function () {
+        const {controller, service} = createController();
+        const frame = createFrame({
+            options: {
+                post_id: 'post-id',
+                filter: 'status:published',
+                mongoTransformer: query => ({existing: query})
+            }
+        });
+
+        await controller.browse(frame);
+
+        const options = service.getComments.firstCall.args[0];
+        assert.deepEqual(options.mongoTransformer({status: 'published'}), {
+            $and: [
+                {
+                    post_id: 'post-id'
+                },
+                {
+                    existing: {
+                        status: 'published'
+                    }
+                }
+            ]
+        });
+    });
+
+    it('uses one service method for admin reply visibility', async function () {
+        const {controller, service} = createController();
+        const frame = createFrame();
+
+        await controller.adminReplies(frame);
+
+        sinon.assert.notCalled(service.getReplies);
+        sinon.assert.calledWith(service.getAdminReplies, 'comment-id', sinon.match({
+            order: 'created_at asc'
+        }));
+    });
+
+    it('uses explicit admin read options without mutating frame options', async function () {
+        const {controller, service} = createController();
+        const frame = createFrame({
+            options: {
+                impersonate_member_uuid: 'member-uuid'
+            },
+            data: {
+                id: 'comment-id'
+            }
+        });
+
+        await controller.adminRead(frame);
+
+        assert.equal(frame.options.isAdmin, undefined);
+        sinon.assert.calledWith(service.getCommentByID, 'comment-id', sinon.match({
+            isAdmin: true,
+            context: {
+                member: {
+                    id: 'impersonated-member-id'
+                }
+            }
+        }));
+    });
+
+    it('rejects unsupported count.reports filters instead of widening the query', async function () {
+        const {controller, service} = createController();
+        const frame = createFrame({
+            options: {
+                filter: 'count.reports:\'many\''
+            }
+        });
+
+        await assert.rejects(
+            () => controller.adminBrowseAll(frame),
+            errors.BadRequestError
+        );
+        sinon.assert.notCalled(service.getAdminAllComments);
     });
 });

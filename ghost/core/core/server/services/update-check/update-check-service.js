@@ -50,14 +50,14 @@ class UpdateCheckService {
      * @param {boolean} [options.config.forceUpdate]
      * @param {string} options.config.ghostVersion - Ghost instance version
      * @param {Function} options.request - a HTTP request proxy function
-     * @param {Function} options.sendEmail - function handling sending an email
+     * @param {Object} options.notificationEmailService - service that sends a sanitised, shell-rendered notification email to a recipient list
     */
-    constructor({api, config, request, sendEmail}) {
+    constructor({api, config, request, notificationEmailService}) {
         this.api = api;
         this.config = config;
         this.logging = logging;
         this.request = request;
-        this.sendEmail = sendEmail;
+        this.notificationEmailService = notificationEmailService;
     }
 
     nextCheckTimestamp() {
@@ -315,15 +315,6 @@ class UpdateCheckService {
         }
 
         debug(`creating custom notifications for ${notification.messages.length} notifications`);
-        const {users} = await this.api.users.browse(Object.assign({
-            limit: 'all',
-            include: ['roles'],
-            filter: 'status:active'
-        }, internal));
-
-        const adminEmails = users
-            .filter(user => ['Owner', 'Administrator'].includes(user.roles[0].name))
-            .map(user => user.email);
 
         const siteUrl = this.config.siteUrl;
 
@@ -340,19 +331,21 @@ class UpdateCheckService {
             };
 
             if (toAdd.type === 'alert') {
-                for (const email of adminEmails) {
-                    try {
-                        this.sendEmail({
-                            to: email,
-                            subject: `Action required: Critical alert from Ghost instance ${siteUrl}`,
-                            html: toAdd.message,
-                            forceTextContent: true
-                        });
-                    } catch (err) {
-                        this.logging.error(err);
-                        if (this.config.rethrowErrors) {
-                            throw err;
-                        }
+                try {
+                    const {users} = await this.api.users.browse({
+                        filter: 'status:active+roles.name:[Owner,Administrator]',
+                        ...internal
+                    });
+                    const to = users.map(user => user.email);
+                    await this.notificationEmailService.send({
+                        to,
+                        subject: `Action required: Critical alert from Ghost instance ${siteUrl}`,
+                        content: toAdd.message
+                    });
+                } catch (err) {
+                    this.logging.error(err);
+                    if (this.config.rethrowErrors) {
+                        throw err;
                     }
                 }
             }
