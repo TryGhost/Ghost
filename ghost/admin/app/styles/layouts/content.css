@@ -249,6 +249,15 @@
     border-color: transparent;
 }
 
+/* On touch devices a long-press opens the context menu, so suppress the native
+   link-callout and text-selection magnifier that would otherwise fire on the row */
+@media (hover: none) and (pointer: coarse) {
+    .gh-posts-list-item-group {
+        -webkit-touch-callout: none;
+        user-select: none;
+    }
+}
+
 .posts-list[data-ctrl] .gh-posts-list-item-group:hover::before {
     opacity: 0.05;
     background: #6E78E5;

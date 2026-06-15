@@ -2,6 +2,11 @@ import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {inject as service} from '@ember/service';
 
+// A touch long-press is the mobile equivalent of a right-click for opening the
+// context menu, since touch devices have no contextmenu gesture of their own.
+const LONG_PRESS_DURATION_MS = 500;
+const LONG_PRESS_MOVE_THRESHOLD_PX = 10;
+
 function clearTextSelection() {
     if (window.getSelection) {
         if (window.getSelection().empty) {
@@ -15,6 +20,11 @@ function clearTextSelection() {
 export default class ItemComponent extends Component {
     @service dropdown;
 
+    longPressTimer = null;
+    longPressFired = false;
+    touchStartX = 0;
+    touchStartY = 0;
+
     get selectionList() {
         return this.args.model;
     }
@@ -25,6 +35,29 @@ export default class ItemComponent extends Component {
 
     get isSelected() {
         return this.selectionList.isSelected(this.id);
+    }
+
+    willDestroy() {
+        super.willDestroy(...arguments);
+        this.cancelLongPress();
+    }
+
+    cancelLongPress() {
+        if (this.longPressTimer) {
+            clearTimeout(this.longPressTimer);
+            this.longPressTimer = null;
+        }
+    }
+
+    openContextMenu(x, y) {
+        if (this.isSelected) {
+            this.dropdown.toggleDropdown('context-menu', this, {left: x, top: y, selectionList: this.selectionList});
+        } else {
+            this.selectionList.clearSelection();
+            this.selectionList.toggleItem(this.id);
+            this.selectionList.clearOnNextUnfreeze();
+            this.dropdown.toggleDropdown('context-menu', this, {left: x, top: y, selectionList: this.selectionList});
+        }
     }
 
     /**
@@ -64,6 +97,15 @@ export default class ItemComponent extends Component {
 
     @action
     onClick(event) {
+        // A long-press opens the context menu while the finger is still down; swallow
+        // the click that fires on release so the row doesn't also navigate
+        if (this.longPressFired) {
+            this.longPressFired = false;
+            event.preventDefault();
+            event.stopPropagation();
+            return;
+        }
+
         if (!this.selectionList.enabled) {
             return;
         }
@@ -96,19 +138,71 @@ export default class ItemComponent extends Component {
             return;
         }
 
-        let x = event.clientX;
-        let y = event.clientY;
-
-        if (this.isSelected) {
-            this.dropdown.toggleDropdown('context-menu', this, {left: x, top: y, selectionList: this.selectionList});
-        } else {
-            this.selectionList.clearSelection();
-            this.selectionList.toggleItem(this.id);
-            this.selectionList.clearOnNextUnfreeze();
-            this.dropdown.toggleDropdown('context-menu', this, {left: x, top: y, selectionList: this.selectionList});
+        // Some touch platforms (e.g. Android) emit a native contextmenu on long-press in
+        // addition to our timer. If the long-press already opened the menu, just swallow
+        // this event so we don't toggle it straight back closed.
+        if (this.longPressFired) {
+            event.preventDefault();
+            event.stopPropagation();
+            return;
         }
+        this.cancelLongPress();
+
+        this.openContextMenu(event.clientX, event.clientY);
 
         event.preventDefault();
         event.stopPropagation();
+    }
+
+    @action
+    onTouchStart(event) {
+        if (!this.selectionList.enabled) {
+            return;
+        }
+
+        if (event.target.closest('[data-ignore-select]')) {
+            return;
+        }
+
+        this.cancelLongPress();
+        this.longPressFired = false;
+
+        if (event.touches.length !== 1) {
+            return;
+        }
+
+        const touch = event.touches[0];
+        this.touchStartX = touch.clientX;
+        this.touchStartY = touch.clientY;
+
+        this.longPressTimer = setTimeout(() => {
+            this.longPressTimer = null;
+            this.longPressFired = true;
+            this.openContextMenu(this.touchStartX, this.touchStartY);
+        }, LONG_PRESS_DURATION_MS);
+    }
+
+    @action
+    onTouchMove(event) {
+        if (!this.longPressTimer) {
+            return;
+        }
+
+        const touch = event.touches[0];
+        if (!touch) {
+            return;
+        }
+
+        // A press that drifts past the threshold is a scroll, not a long-press
+        const dx = Math.abs(touch.clientX - this.touchStartX);
+        const dy = Math.abs(touch.clientY - this.touchStartY);
+        if (dx > LONG_PRESS_MOVE_THRESHOLD_PX || dy > LONG_PRESS_MOVE_THRESHOLD_PX) {
+            this.cancelLongPress();
+        }
+    }
+
+    @action
+    onTouchEnd() {
+        this.cancelLongPress();
     }
 }
