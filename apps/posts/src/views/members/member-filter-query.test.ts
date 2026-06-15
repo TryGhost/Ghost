@@ -52,35 +52,34 @@ describe('member-filter-query', () => {
         ]);
     });
 
-    it('parses grouped positive label filters into an all-of predicate', () => {
-        expect(stripIds(parseMemberFilter('(label:alpha+label:vip)', 'UTC'))).toEqual([
+    it('parses all-of label filters ($all) into an all-of predicate', () => {
+        expect(stripIds(parseMemberFilter('label:[alpha+vip]', 'UTC'))).toEqual([
             {field: 'label', operator: 'is-all', values: ['alpha', 'vip']}
         ]);
     });
 
-    it('parses grouped label all-of filters using the labels alias key', () => {
-        expect(stripIds(parseMemberFilter('(labels:alpha+labels:vip)', 'UTC'))).toEqual([
+    it('parses all-of label filters using the labels alias key', () => {
+        expect(stripIds(parseMemberFilter('labels:[alpha+vip]', 'UTC'))).toEqual([
             {field: 'label', operator: 'is-all', values: ['alpha', 'vip']}
         ]);
     });
 
-    it('parses grouped label all-of filters alongside other predicates', () => {
-        expect(stripIds(parseMemberFilter('(label:alpha+label:vip)+status:paid', 'UTC'))).toEqual([
+    it('parses all-of label filters alongside other predicates', () => {
+        expect(stripIds(parseMemberFilter('label:[alpha+vip]+status:paid', 'UTC'))).toEqual([
             {field: 'label', operator: 'is-all', values: ['alpha', 'vip']},
             {field: 'status', operator: 'is', values: ['paid']}
         ]);
     });
 
-    it('parses grouped label all-of filters with quoted values containing special characters', () => {
-        expect(stripIds(parseMemberFilter('(label:\'a (b)\'+label:\'trail\\\')', 'UTC'))).toEqual([
+    it('parses all-of label filters with quoted values containing special characters', () => {
+        expect(stripIds(parseMemberFilter('label:[\'a (b)\'+\'trail\\\']', 'UTC'))).toEqual([
             {field: 'label', operator: 'is-all', values: ['a (b)', 'trail\\']}
         ]);
     });
 
-    it('keeps ungrouped repeated positive label filters as separate predicates', () => {
-        expect(stripIds(parseMemberFilter('label:alpha+label:vip', 'UTC'))).toEqual([
-            {field: 'label', operator: 'is-any', values: ['alpha']},
-            {field: 'label', operator: 'is-any', values: ['vip']}
+    it('keeps comma value lists as any-of, not all-of', () => {
+        expect(stripIds(parseMemberFilter('label:[alpha,vip]', 'UTC'))).toEqual([
+            {field: 'label', operator: 'is-any', values: ['alpha', 'vip']}
         ]);
     });
 
@@ -171,13 +170,60 @@ describe('member-filter-query', () => {
         expect(serializeMemberFilters(predicates, 'UTC')).toBe('label:[alpha,vip]+status:paid');
     });
 
-    it('serializes label all-of filters as repeated AND clauses', () => {
+    it('serializes label all-of filters as a +-separated value list', () => {
         const predicates: FilterPredicate[] = [
             {id: '1', field: 'label', operator: 'is-all', values: ['vip', 'alpha']},
             {id: '2', field: 'status', operator: 'is', values: ['paid']}
         ];
 
-        expect(serializeMemberFilters(predicates, 'UTC')).toBe('(label:alpha+label:vip)+status:paid');
+        expect(serializeMemberFilters(predicates, 'UTC')).toBe('label:[alpha+vip]+status:paid');
+    });
+
+    it('round-trips an all-of label filter alongside a scalar filter', () => {
+        const predicates: FilterPredicate[] = [
+            {id: '1', field: 'label', operator: 'is-all', values: ['alpha', 'vip']},
+            {id: '2', field: 'status', operator: 'is', values: ['paid']}
+        ];
+
+        const serialized = serializeMemberFilters(predicates, 'UTC');
+
+        expect(serialized).toBe('label:[alpha+vip]+status:paid');
+        expect(stripIds(parseMemberFilter(serialized, 'UTC'))).toEqual([
+            {field: 'label', operator: 'is-all', values: ['alpha', 'vip']},
+            {field: 'status', operator: 'is', values: ['paid']}
+        ]);
+    });
+
+    it('round-trips multiple all-of label filters on the same field', () => {
+        const predicates: FilterPredicate[] = [
+            {id: '1', field: 'label', operator: 'is-all', values: ['alpha', 'vip']},
+            {id: '2', field: 'label', operator: 'is-all', values: ['gold', 'silver']},
+            {id: '3', field: 'status', operator: 'is', values: ['paid']}
+        ];
+
+        const serialized = serializeMemberFilters(predicates, 'UTC');
+
+        expect(serialized).toBe('label:[alpha+vip]+label:[gold+silver]+status:paid');
+        expect(stripIds(parseMemberFilter(serialized, 'UTC'))).toEqual([
+            {field: 'label', operator: 'is-all', values: ['alpha', 'vip']},
+            {field: 'label', operator: 'is-all', values: ['gold', 'silver']},
+            {field: 'status', operator: 'is', values: ['paid']}
+        ]);
+    });
+
+    it('round-trips a single-value all-of label filter as the equivalent any-of', () => {
+        // A one-value all-of is identical to any-of (`[alpha]` is `$in`), so it
+        // serializes to the any-of form and parses back as is-any.
+        const predicates: FilterPredicate[] = [
+            {id: '1', field: 'label', operator: 'is-all', values: ['alpha']}
+        ];
+
+        const serialized = serializeMemberFilters(predicates, 'UTC');
+
+        expect(serialized).toBe('label:[alpha]');
+        expect(stripIds(parseMemberFilter(serialized, 'UTC'))).toEqual([
+            {field: 'label', operator: 'is-any', values: ['alpha']}
+        ]);
     });
 
     it('round-trips canonical member examples', () => {

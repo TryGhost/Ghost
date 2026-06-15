@@ -61,10 +61,21 @@ function serializeSetMembership(symbol: string): SetOperatorSerializer {
     };
 }
 
+const serializeAnyMembership = serializeSetMembership('');
+
 const SET_OPERATOR_SERIALIZERS: Record<string, SetOperatorSerializer> = {
-    'is-any': serializeSetMembership(''),
+    'is-any': serializeAnyMembership,
     'is-not-any': serializeSetMembership('-'),
-    'is-all': (field, values, config) => `(${values.map(value => `${field}:${serializeScalarValue(value, config)}`).join('+')})`
+    'is-all': (field, values, config) => {
+        // NQL's all-of operator is a `+`-separated value list: `label:[a+b]`.
+        // A single value is identical to any-of (and `[a]` is `$in` regardless),
+        // so only emit the all-of form for two or more values.
+        if (values.length === 1) {
+            return serializeAnyMembership(field, values, config);
+        }
+
+        return `${field}:[${values.map(value => serializeScalarValue(value, config)).join('+')}]`;
+    }
 };
 
 const UNQUOTED_TOKEN_PATTERN = /^[A-Za-z0-9_.-]+$/;
@@ -135,7 +146,7 @@ export function scalarCodec(config?: CodecConfig): FilterCodec {
             const comparator = extractComparator(node as Record<string, unknown>);
             const field = getCodecField(config, ctx.key);
 
-            if (!comparator || comparator.field !== field) {
+            if (!comparator || comparator.field !== field && comparator.field !== ctx.matchedKey) {
                 return null;
             }
 
@@ -178,7 +189,7 @@ export function textCodec(config?: CodecConfig): FilterCodec {
             const comparator = extractComparator(node as Record<string, unknown>);
             const field = getCodecField(config, ctx.key);
 
-            if (!comparator || comparator.field !== field) {
+            if (!comparator || comparator.field !== field && comparator.field !== ctx.matchedKey) {
                 return null;
             }
 
@@ -237,7 +248,7 @@ export function setCodec(config?: CodecConfig): FilterCodec {
             const comparator = extractComparator(node as Record<string, unknown>);
             const field = getCodecField(config, ctx.key);
 
-            if (!comparator || comparator.field !== field) {
+            if (!comparator || comparator.field !== field && comparator.field !== ctx.matchedKey) {
                 return null;
             }
 
@@ -245,6 +256,14 @@ export function setCodec(config?: CodecConfig): FilterCodec {
                 return {
                     field: ctx.key,
                     operator: 'is-any',
+                    values: comparator.value
+                };
+            }
+
+            if (comparator.operator === '$all' && Array.isArray(comparator.value)) {
+                return {
+                    field: ctx.key,
+                    operator: 'is-all',
                     values: comparator.value
                 };
             }
@@ -299,7 +318,7 @@ export function numberCodec(config?: CodecConfig): FilterCodec {
             const comparator = extractComparator(node as Record<string, unknown>);
             const field = getCodecField(config, ctx.key);
 
-            if (!comparator || comparator.field !== field || typeof comparator.value !== 'number') {
+            if (!comparator || comparator.field !== field && comparator.field !== ctx.matchedKey || typeof comparator.value !== 'number') {
                 return null;
             }
 
@@ -371,7 +390,7 @@ export function dateCodec(config?: CodecConfig): FilterCodec {
             const comparator = extractComparator(node as Record<string, unknown>);
             const field = getCodecField(config, ctx.key);
 
-            if (!comparator || comparator.field !== field) {
+            if (!comparator || comparator.field !== field && comparator.field !== ctx.matchedKey) {
                 return null;
             }
 

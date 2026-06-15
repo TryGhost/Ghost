@@ -1,4 +1,4 @@
-import {dispatchSimpleNodes, extractAllOfPredicates, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
+import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
 import {memberFields} from './member-fields';
 import {resolveField} from '../filters/resolve-field';
 import type {AstNode} from '../filters/filter-ast';
@@ -189,30 +189,7 @@ const MEMBER_COMPOUND_MATCHERS: CompoundMatcher[] = [
     matchFeedbackGroupedNode
 ];
 
-/**
- * NQL flattens redundant parentheses, so the AST for `(label:a+label:b)` is
- * identical to `label:a+label:b`. To detect the outer grouping without
- * re-implementing NQL's quoting rules, parse the filter with a probe predicate
- * AND-ed alongside: the grouping is no longer redundant, so it survives as a
- * nested `$and` in the probed AST.
- */
-function hasOuterGrouping(filter: string): boolean {
-    const probed = parseFilterToAst(`${filter.trim()}+__outer_grouping_probe__:1`);
-
-    if (!probed) {
-        return false;
-    }
-
-    const compound = getCompoundChildren(probed);
-
-    if (compound?.operator !== '$and' || compound.children.length !== 2) {
-        return false;
-    }
-
-    return getCompoundChildren(compound.children[0])?.operator === '$and';
-}
-
-function parseMemberNode(node: AstNode, timezone: string, isGroupedContext = false): ParsedPredicate[] {
+function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
     for (const matcher of MEMBER_COMPOUND_MATCHERS) {
         const parsed = matcher(node);
 
@@ -224,16 +201,7 @@ function parseMemberNode(node: AstNode, timezone: string, isGroupedContext = fal
     const compound = getCompoundChildren(node);
 
     if (compound?.operator === '$and') {
-        const allOf = isGroupedContext ? extractAllOfPredicates(compound.children, memberFields, timezone) : null;
-
-        if (allOf) {
-            return [
-                ...allOf.predicates,
-                ...allOf.remaining.flatMap(child => parseMemberNode(child, timezone, true))
-            ];
-        }
-
-        return compound.children.flatMap(child => parseMemberNode(child, timezone, true));
+        return compound.children.flatMap(child => parseMemberNode(child, timezone));
     }
 
     return dispatchSimpleNodes([node], memberFields, timezone);
@@ -250,7 +218,7 @@ export function parseMemberFilter(filter: string | undefined, timezone: string):
         return [];
     }
 
-    return stampPredicates(parseMemberNode(ast, timezone, hasOuterGrouping(filter ?? '')));
+    return stampPredicates(parseMemberNode(ast, timezone));
 }
 
 export function hasTimezoneSensitiveMemberFilter(filter: string | undefined): boolean {

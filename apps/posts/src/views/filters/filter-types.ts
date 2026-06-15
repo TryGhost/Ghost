@@ -8,7 +8,13 @@ export interface FilterPredicate {
 export type ParsedPredicate = Omit<FilterPredicate, 'id'>;
 
 export interface CodecContext {
+    // Canonical field key the codec serializes to / reports predicates under.
     key: string;
+    // The key actually matched in the source NQL — equals `key` for an exact or
+    // pattern match, but is the alias (a `parseKeys` entry) when one was used.
+    // Codecs additionally accept a node whose field is this key. Set by
+    // `resolveField`; absent on hand-built contexts (which use canonical keys).
+    matchedKey?: string;
     pattern: string;
     params: Record<string, string>;
     timezone: string;

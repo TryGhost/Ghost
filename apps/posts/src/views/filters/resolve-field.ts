@@ -40,6 +40,7 @@ export function resolveField<TFields extends Record<string, FilterField>>(fields
             definition: exactDefinition,
             context: {
                 key,
+                matchedKey: key,
                 pattern: key,
                 params: {},
                 timezone
@@ -56,6 +57,7 @@ export function resolveField<TFields extends Record<string, FilterField>>(fields
             definition,
             context: {
                 key: fieldKey,
+                matchedKey: key,
                 pattern: fieldKey,
                 params: {},
                 timezone
@@ -78,6 +80,7 @@ export function resolveField<TFields extends Record<string, FilterField>>(fields
             definition,
             context: {
                 key,
+                matchedKey: key,
                 pattern,
                 params,
                 timezone

@@ -272,7 +272,15 @@ describe('setCodec', () => {
         expect(setCodec().serialize(predicate, labelContext)).toEqual(['label:[alpha,vip]']);
     });
 
-    it('serializes all-of set membership as AND clauses', () => {
+    it('parses all-of set membership ($all) into an is-all predicate', () => {
+        expect(setCodec().parse(nql.parse('label:[vip+alpha]') as never, labelContext)).toEqual({
+            field: 'label',
+            operator: 'is-all',
+            values: ['vip', 'alpha']
+        });
+    });
+
+    it('serializes all-of set membership as a +-separated value list', () => {
         const predicate: FilterPredicate = {
             id: '1',
             field: 'label',
@@ -280,7 +288,20 @@ describe('setCodec', () => {
             values: ['vip', 'alpha']
         };
 
-        expect(setCodec().serialize(predicate, labelContext)).toEqual(['(label:alpha+label:vip)']);
+        expect(setCodec().serialize(predicate, labelContext)).toEqual(['label:[alpha+vip]']);
+    });
+
+    it('serializes a single-value all-of as any-of (a one-value all is identical to any)', () => {
+        const predicate: FilterPredicate = {
+            id: '1',
+            field: 'label',
+            operator: 'is-all',
+            values: ['alpha']
+        };
+
+        // `[alpha]` is `$in` regardless, so emit the any-of form rather than a
+        // one-element all-of that would just round-trip back to is-any anyway.
+        expect(setCodec().serialize(predicate, labelContext)).toEqual(['label:[alpha]']);
     });
 
     it('can serialize singleton string values as quoted scalars', () => {

@@ -687,6 +687,55 @@ describe('Members API', function () {
             });
     });
 
+    it('Can browse with an all-of label filter (label:[a+b]) returning only members with every label', async function () {
+        // Exercises the NQL "all of" operator end to end: the admin API string
+        // `label:[a+b]` -> @tryghost/nql ($all -> $and of equalities) -> mongo-knex
+        // (a separate subquery per label) -> the database, and back as JSON.
+        const emails = [
+            'all-of-both@example.com',
+            'all-of-alpha-only@example.com',
+            'all-of-beta-only@example.com'
+        ];
+
+        const alpha = await models.Label.add({name: 'All Of Alpha'});
+        const beta = await models.Label.add({name: 'All Of Beta'});
+        const alphaSlug = alpha.get('slug');
+        const betaSlug = beta.get('slug');
+
+        try {
+            await createMember({email: emails[0], labels: [{name: 'All Of Alpha'}, {name: 'All Of Beta'}]});
+            await createMember({email: emails[1], labels: [{name: 'All Of Alpha'}]});
+            await createMember({email: emails[2], labels: [{name: 'All Of Beta'}]});
+
+            // all-of: only the member carrying BOTH labels
+            const allOfFilter = encodeURIComponent(`label:[${alphaSlug}+${betaSlug}]`);
+            const allOfRes = await agent
+                .get(`/members/?filter=${allOfFilter}&fields=id,email`)
+                .expectStatus(200);
+
+            assert.equal(allOfRes.body.meta.pagination.total, 1);
+            assert.deepEqual(allOfRes.body.members.map(member => member.email), [emails[0]]);
+
+            // any-of (comma list) stays "either label" — proves the two are distinct
+            const anyOfFilter = encodeURIComponent(`label:[${alphaSlug},${betaSlug}]`);
+            const anyOfRes = await agent
+                .get(`/members/?filter=${anyOfFilter}&fields=id,email`)
+                .expectStatus(200);
+
+            assert.equal(anyOfRes.body.meta.pagination.total, 3);
+            assert.deepEqual(anyOfRes.body.members.map(member => member.email).sort(), [...emails].sort());
+        } finally {
+            for (const email of emails) {
+                const member = await models.Member.findOne({email});
+                if (member) {
+                    await models.Member.destroy({id: member.id});
+                }
+            }
+            await models.Label.destroy({id: alpha.id});
+            await models.Label.destroy({id: beta.id});
+        }
+    });
+
     it('Can filter members with active subscriptions across multiple Stripe customers', async function () {
         const emails = [
             'multiple-active-stripe-customers@example.com',
