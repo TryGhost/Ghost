@@ -4,8 +4,8 @@ const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
-const automationsApi = require('../../../core/server/services/automations/automations-api');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
+const {cleanupAutomationsFixture, setupAutomationsFixture, TEST_EMAIL_DESIGN_SETTING_ID} = require('../../utils/automations-fixtures');
 const StartAutomationsPollEvent = require('../../../core/server/services/automations/events/start-automations-poll-event');
 
 const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = matchers;
@@ -76,7 +76,7 @@ const buildSendEmailAction = (dataOverrides = {}) => ({
     data: {
         email_subject: 'Welcome',
         email_lexical: NON_EMPTY_EMAIL_LEXICAL,
-        email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7',
+        email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID,
         ...dataOverrides
     }
 });
@@ -100,13 +100,17 @@ describe('Automations API', function () {
         });
     });
 
-    afterEach(function () {
+    beforeEach(async function () {
+        await setupAutomationsFixture();
+    });
+
+    afterEach(async function () {
         sinon.restore();
-        automationsApi._resetTestDatabase();
+        await cleanupAutomationsFixture();
     });
 
     describe('browse', function () {
-        it('returns automations sourced from the temporary fake database', async function () {
+        it('returns automations sourced from the database', async function () {
             await agent
                 .get('automations')
                 .expectStatus(200)
@@ -128,7 +132,7 @@ describe('Automations API', function () {
     });
 
     describe('read', function () {
-        it('returns the automation, ordered actions, and edges sourced from the temporary fake database', async function () {
+        it('returns the automation, ordered actions, and edges sourced from the database', async function () {
             const {body: browseBody} = await agent
                 .get('automations')
                 .expectStatus(200);
@@ -187,7 +191,7 @@ describe('Automations API', function () {
                             data: {
                                 email_subject: 'Hello from the editor',
                                 email_lexical: emailLexical,
-                                email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7'
+                                email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID
                             }
                         }],
                         edges: [{
@@ -369,6 +373,33 @@ describe('Automations API', function () {
 
             assert.equal(editBody.automations[0].status, 'inactive');
             assert.equal(editBody.automations[0].actions[0].data.email_subject, '');
+        });
+
+        it('resolves default email design setting slugs when saving a send email action', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const emailAction = buildSendEmailAction({
+                email_design_setting_id: 'default-automated-email'
+            });
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [emailAction],
+                        edges: []
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const designSettingId = editBody.automations[0].actions[0].data.email_design_setting_id;
+            assert.notEqual(designSettingId, 'default-automated-email');
+            assert.equal(ObjectId.isValid(designSettingId), true);
         });
 
         it('rejects activating an automation with an empty email subject', async function () {
@@ -553,7 +584,7 @@ describe('Automations API', function () {
                 data: {
                     email_subject: 'Changed type',
                     email_lexical: JSON.stringify({root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}}),
-                    email_design_setting_id: '64b6f7b7c8f1a2b3c4d5e6f7'
+                    email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID
                 }
             } : {
                 id: existingAction.id,
