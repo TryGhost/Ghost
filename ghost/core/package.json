@@ -270,7 +270,7 @@
     "@types/node": "catalog:",
     "@types/node-fetch": "2.6.13",
     "@types/node-jose": "1.1.13",
-    "@types/nodemailer": "8.0.0",
+    "@types/nodemailer": "8.0.1",
     "@types/on-headers": "1.0.4",
     "@types/papaparse": "5.5.2",
     "@types/sanitize-html": "catalog:",
