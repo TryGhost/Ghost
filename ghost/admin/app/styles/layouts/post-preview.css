@@ -90,9 +90,10 @@
         margin-left: auto;
     }
 
-    /* move Close ahead of share so share sits directly left of Publish */
+    /* push Close to the far-right corner so it isn't stranded mid-header; share
+       still sits directly left of Publish */
     .gh-post-preview-close {
-        order: -1;
+        order: 1;
     }
 
     /* the desktop/mobile size toggle is meaningless on a phone */
