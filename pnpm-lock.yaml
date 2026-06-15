@@ -102,12 +102,9 @@ catalogs:
     '@tryghost/limit-service':
       specifier: 1.5.6
       version: 1.5.6
-    '@tryghost/nql':
-      specifier: 0.13.0
-      version: 0.13.0
     '@tryghost/nql-lang':
-      specifier: 0.6.5
-      version: 0.6.5
+      specifier: 0.6.6
+      version: 0.6.6
     '@tryghost/string':
       specifier: 0.3.5
       version: 0.3.5
@@ -308,6 +305,7 @@ catalogs:
       version: 3.4.19
 
 overrides:
+  '@tryghost/nql': 0.13.1
   '@tryghost/errors': ^1.3.7
   '@tryghost/logging': 4.2.1
   jackspeak: 4.2.3
@@ -979,8 +977,8 @@ importers:
         specifier: 'catalog:'
         version: 1.5.6
       '@tryghost/nql':
-        specifier: 'catalog:'
-        version: 0.13.0
+        specifier: 0.13.1
+        version: 0.13.1
       '@tryghost/string':
         specifier: 'catalog:'
         version: 0.3.5
@@ -1183,8 +1181,8 @@ importers:
         specifier: workspace:*
         version: link:../../ghost/i18n
       '@tryghost/nql':
-        specifier: 'catalog:'
-        version: 0.13.0
+        specifier: 0.13.1
+        version: 0.13.1
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 4.7.0(vite@7.3.2(@types/node@25.9.1)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.21.0)(yaml@2.9.0))
@@ -1326,7 +1324,7 @@ importers:
         version: 1.8.2
       '@tryghost/nql-lang':
         specifier: 'catalog:'
-        version: 0.6.5
+        version: 0.6.6
       '@tryghost/shade':
         specifier: workspace:*
         version: link:../shade
@@ -2015,8 +2013,8 @@ importers:
         specifier: 'catalog:'
         version: 1.5.6
       '@tryghost/nql':
-        specifier: 'catalog:'
-        version: 0.13.0
+        specifier: 0.13.1
+        version: 0.13.1
       '@tryghost/string':
         specifier: 'catalog:'
         version: 0.3.5
@@ -2438,11 +2436,11 @@ importers:
         specifier: 2.2.4
         version: 2.2.4(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       '@tryghost/nql':
-        specifier: 'catalog:'
-        version: 0.13.0
+        specifier: 0.13.1
+        version: 0.13.1
       '@tryghost/nql-lang':
         specifier: 'catalog:'
-        version: 0.6.5
+        version: 0.6.6
       '@tryghost/parse-email-address':
         specifier: workspace:*
         version: link:../parse-email-address
@@ -8573,14 +8571,14 @@ packages:
   '@tryghost/mobiledoc-kit@0.12.4-ghost.1':
     resolution: {integrity: sha512-c4aheSWH2Y7x4uSkAx08gbtvuEgPGjlu6v+FeUdSJZ1blEd+knL3zTcUAfeSiM6rgLEHxlNWtt+KFwotdf6rTA==}
 
-  '@tryghost/mongo-knex@0.10.0':
-    resolution: {integrity: sha512-m9yvVWbJHfZpPi6R0as1RfRu7bPJwhf9j4ZHF1hEZWJgRKfycSH8wUKvK7eS45fxINicEk2CXSFMRDd4IM6N2Q==}
-
-  '@tryghost/mongo-knex@0.9.5':
-    resolution: {integrity: sha512-etO6Kz8a1dgMV6yapD2C2JsoeLrUjkIoIUdXrkV9ELHQsMjMhtI2SAUnMV9AcLhxv0P7h8UWWD2rlNBwo8JJig==}
+  '@tryghost/mongo-knex@0.10.1':
+    resolution: {integrity: sha512-6LRA4zVpNvCrVrA9hOhs8N4iylAiafGssiKuD8yML/13xg2PvKw6dzOZj6hg0CKQwG7tVp8TA+7Nw3iDOzy/jQ==}
 
   '@tryghost/mongo-utils@0.6.4':
     resolution: {integrity: sha512-4ZGl9QXoMTQb9qb5HGjMjVLkV39FO0F/0cM4Z3i/9gUXXfdmGZwPdcAMBRT7oRhqng3/4uSRpvQ/Rk0oASM+kg==}
+
+  '@tryghost/mongo-utils@0.6.5':
+    resolution: {integrity: sha512-fMEfdlVaVkr7SJwVxBxVDfUQ+x4DVF4PMet698PLzabqSnGsaWcruBaQlOuNvtf8ITNXKFUAqZMdmSUTIAHU+Q==}
 
   '@tryghost/mw-error-handler@1.0.13':
     resolution: {integrity: sha512-qDRjyiOkF5UNGgMHUDdFKTY0Mcwnxo5N9m71pliwVI+HfYvw77k/GxEIGc8mgikxjCuZkgC+IUnJjWCLuzCvKQ==}
@@ -8591,14 +8589,11 @@ packages:
   '@tryghost/nodemailer@2.2.4':
     resolution: {integrity: sha512-sYFbDS6ceS72qXVeHiE+23Si+JwfDo3Gx+UcGLfmXPR+mW5VvkehoL1QFg/VOKv6mB2kA2Dknk2lPmJuQAw3Jw==}
 
-  '@tryghost/nql-lang@0.6.5':
-    resolution: {integrity: sha512-13Loz2yH7GCMAfpVawD6KNWNPIVTc4STnP+MeCwbrWg8htv/CPOB0u+i9Eap0qEi8h6TC2aoOvbQV0EvjidQaQ==}
+  '@tryghost/nql-lang@0.6.6':
+    resolution: {integrity: sha512-ZWEUN92fVnxavf+matwASvi7pom0i1jhAtNCuoCN9f3ShtyrVm92m1SfvY+x/XuEvbefXAzCGzSEMcaQ4cqoXw==}
 
-  '@tryghost/nql@0.12.11':
-    resolution: {integrity: sha512-8Cb10OpQWT+v0Xvfrov9IkBwzyPlARsjF1EIC8f3ET/JZD3G+ARoQ3GEBQ7XeW6YcUd7MIh3zqJTv5ST+aDjZA==}
-
-  '@tryghost/nql@0.13.0':
-    resolution: {integrity: sha512-Aa2vJBPBK5WltmO4ifkeNNG/XedmyeN9B0CT4HLHEIjUARc8wKKntzmRtzSJCSL5moyX40vJ95yTnUNwA1wxew==}
+  '@tryghost/nql@0.13.1':
+    resolution: {integrity: sha512-TQRDur1miWd2ORa3XOhtw8Na8AUj/8h+epNMDgiutOyAH/RTw+d+ksLndMnm/Z9MhnKg7kFy7398peKZ7nF8bQ==}
 
   '@tryghost/pretty-cli@3.2.2':
     resolution: {integrity: sha512-S0W7UW3wRWquLVg0zQ/UfTy1pMM1NnSJkJB2hNMqWWnzLqSdk9yadCNfal0dsQh0QT/5XpAWKir5Mtzt04oQLQ==}
@@ -20753,6 +20748,7 @@ packages:
   tsconfck@3.1.6:
     resolution: {integrity: sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==}
     engines: {node: ^18 || >=20}
+    deprecated: unmaintained
     hasBin: true
     peerDependencies:
       typescript: ^5.0.0
@@ -27999,7 +27995,7 @@ snapshots:
     dependencies:
       '@tryghost/debug': 2.2.3
       '@tryghost/errors': 1.3.13
-      '@tryghost/nql': 0.13.0
+      '@tryghost/nql': 0.13.1
       '@tryghost/tpl': 2.2.3
     transitivePeerDependencies:
       - supports-color
@@ -28388,14 +28384,7 @@ snapshots:
       mobiledoc-text-renderer: 0.4.0
     optional: true
 
-  '@tryghost/mongo-knex@0.10.0':
-    dependencies:
-      debug: 4.4.3(supports-color@5.5.0)
-      lodash: 4.18.1
-    transitivePeerDependencies:
-      - supports-color
-
-  '@tryghost/mongo-knex@0.9.5':
+  '@tryghost/mongo-knex@0.10.1':
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
       lodash: 4.18.1
@@ -28403,6 +28392,10 @@ snapshots:
       - supports-color
 
   '@tryghost/mongo-utils@0.6.4':
+    dependencies:
+      lodash: 4.18.1
+
+  '@tryghost/mongo-utils@0.6.5':
     dependencies:
       lodash: 4.18.1
 
@@ -28483,25 +28476,15 @@ snapshots:
       - walrus
       - whiskers
 
-  '@tryghost/nql-lang@0.6.5':
+  '@tryghost/nql-lang@0.6.6':
     dependencies:
       date-fns: 2.30.0
 
-  '@tryghost/nql@0.12.11':
+  '@tryghost/nql@0.13.1':
     dependencies:
-      '@tryghost/mongo-knex': 0.9.5
-      '@tryghost/mongo-utils': 0.6.4
-      '@tryghost/nql-lang': 0.6.5
-      lodash: 4.18.1
-      mingo: 2.5.3
-    transitivePeerDependencies:
-      - supports-color
-
-  '@tryghost/nql@0.13.0':
-    dependencies:
-      '@tryghost/mongo-knex': 0.10.0
-      '@tryghost/mongo-utils': 0.6.4
-      '@tryghost/nql-lang': 0.6.5
+      '@tryghost/mongo-knex': 0.10.1
+      '@tryghost/mongo-utils': 0.6.5
+      '@tryghost/nql-lang': 0.6.6
       lodash: 4.18.1
       mingo: 2.5.3
     transitivePeerDependencies:
@@ -37098,7 +37081,7 @@ snapshots:
       '@tryghost/debug': 2.2.2
       '@tryghost/errors': 1.3.13
       '@tryghost/logging': 4.2.1
-      '@tryghost/nql': 0.12.11
+      '@tryghost/nql': 0.13.1
       '@tryghost/pretty-cli': 3.2.2
       '@tryghost/server': 3.0.2
       '@tryghost/zip': 3.3.3
