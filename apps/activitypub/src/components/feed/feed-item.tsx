@@ -1,6 +1,6 @@
 import FeedItemMenu from './feed-item-menu';
 import React, {useEffect, useRef, useState} from 'react';
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActivityPubAttachment, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Skeleton} from '@tryghost/shade/components';
 import {H4} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
@@ -20,11 +20,18 @@ import {renderTimestamp} from '../../utils/render-timestamp';
 import {useDeleteMutationForUser, useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
-export function getAttachment(object: ObjectProperties) {
-    let attachment;
+export function getAttachment(object: ObjectProperties): ActivityPubAttachment | ActivityPubAttachment[] | null {
+    let attachment: ActivityPubAttachment | ActivityPubAttachment[] | undefined;
 
     if (object.image) {
-        attachment = object.image;
+        attachment = typeof object.image === 'string' ? {
+            type: 'Image',
+            url: object.image
+        } : {
+            type: object.image.type ?? 'Image',
+            mediaType: object.image.mediaType,
+            url: object.image.url
+        };
     }
 
     if (object.type === 'Note' && !attachment) {
