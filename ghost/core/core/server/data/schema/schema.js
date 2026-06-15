@@ -1271,6 +1271,7 @@ module.exports = {
     automated_email_recipients: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id'},
+        automation_action_revision_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_action_revisions.id'},
         member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},
