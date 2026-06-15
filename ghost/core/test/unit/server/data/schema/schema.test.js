@@ -32,6 +32,7 @@ const VALID_KEYS = {
         'references',
         'constraintName',
         'cascadeDelete',
+        'restrictDelete',
         'setNullDelete',
         'index'
     ],

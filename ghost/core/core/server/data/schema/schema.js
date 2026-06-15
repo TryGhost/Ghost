@@ -1197,13 +1197,13 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false},
         deleted_at: {type: 'dateTime', nullable: true},
-        automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', cascadeDelete: true},
+        automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', restrictDelete: true},
         type: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['wait', 'send_email']]}}
     },
     automation_action_revisions: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         created_at: {type: 'dateTime', nullable: false},
-        action_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_actions.id', cascadeDelete: true},
+        action_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_actions.id', restrictDelete: true},
         wait_hours: {type: 'integer', nullable: true, unsigned: true},
         email_subject: {type: 'string', maxlength: 300, nullable: true},
         email_lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
@@ -1213,15 +1213,15 @@ module.exports = {
         ]
     },
     automation_action_edges: {
-        source_action_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_actions.id', cascadeDelete: true},
-        target_action_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_actions.id', cascadeDelete: true},
+        source_action_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_actions.id', restrictDelete: true},
+        target_action_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_actions.id', restrictDelete: true},
         '@@PRIMARY_KEY@@': ['source_action_id', 'target_action_id']
     },
     automation_runs: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false},
-        automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', cascadeDelete: true},
+        automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', restrictDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: true, references: 'members.id', setNullDelete: true, index: true},
         member_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}}
     },
@@ -1229,8 +1229,8 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false},
-        automation_run_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_runs.id', cascadeDelete: true},
-        automation_action_revision_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_action_revisions.id', cascadeDelete: true},
+        automation_run_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_runs.id', restrictDelete: true},
+        automation_action_revision_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_action_revisions.id', restrictDelete: true},
         ready_at: {type: 'dateTime', nullable: false},
         step_attempts: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         started_at: {type: 'dateTime', nullable: true},
