@@ -1,8 +1,11 @@
 import {useCallback, useEffect, useRef, useState} from 'react';
 
 export type QuoteSelection = {
+    html: string;
     left: number;
+    textLeft: number;
     top: number;
+    centerTop: number;
 };
 
 type QuoteSelectionEntry = {
@@ -194,6 +197,7 @@ function getQuoteSelectionManager(ownerDocument: Document) {
 
 export function useQuoteSelection({disabled}: {disabled: boolean}) {
     const contentRef = useRef<HTMLDivElement | null>(null);
+    const quoteHtmlRef = useRef<string | null>(null);
     const [quoteSelection, setQuoteSelection] = useState<QuoteSelection | null>(null);
 
     const clearQuoteSelection = useCallback(() => {
@@ -201,8 +205,8 @@ export function useQuoteSelection({disabled}: {disabled: boolean}) {
     }, []);
 
     // Runs on every selection/scroll event while a selection is active, so it
-    // only reads the selection rect. Serializing the selected HTML is deferred
-    // to getQuoteHtml (called once, on button click).
+    // only reads the selection rect and caches the selected HTML for mobile
+    // browsers that clear the live selection while the quote button is tapped.
     const updateQuoteSelection = useCallback((range: Range) => {
         const contentElement = contentRef.current;
 
@@ -222,20 +226,32 @@ export function useQuoteSelection({disabled}: {disabled: boolean}) {
             return;
         }
 
+        const quoteHtml = getSelectionHtml(range) || null;
+
+        if (!quoteHtml) {
+            clearQuoteSelection();
+            return;
+        }
+
+        quoteHtmlRef.current = quoteHtml;
+
         const left = rect.left + (rect.width / 2);
+        const textLeft = rect.left;
         const top = rect.top - 8;
+        const centerTop = rect.top + (rect.height / 2);
 
         // Keep the previous object when the position is unchanged so React can
         // bail out of re-rendering the comment body.
         setQuoteSelection(previous => (
-            previous && previous.left === left && previous.top === top
+            previous && previous.html === quoteHtml && previous.left === left && previous.textLeft === textLeft && previous.top === top && previous.centerTop === centerTop
                 ? previous
-                : {left, top}
+                : {centerTop, html: quoteHtml, left, textLeft, top}
         ));
     }, [clearQuoteSelection, disabled]);
 
-    // Serializes the current selection into normalized quote HTML. Returns null
-    // when there is no valid selection inside this comment body.
+    // Serializes the current selection into normalized quote HTML. Falls back
+    // to the last valid quote HTML because mobile browsers can clear the live
+    // selection before the quote button's touch handler runs.
     const getQuoteHtml = useCallback(() => {
         const contentElement = contentRef.current;
 
@@ -245,17 +261,17 @@ export function useQuoteSelection({disabled}: {disabled: boolean}) {
 
         const selection = contentElement.ownerDocument.getSelection();
 
-        if (!selection || selection.isCollapsed || selection.rangeCount !== 1 || !selection.toString().trim()) {
-            return null;
+        if (selection && !selection.isCollapsed && selection.rangeCount === 1 && selection.toString().trim()) {
+            const range = selection.getRangeAt(0);
+
+            if (isRangeInsideElement(range, contentElement)) {
+                const quoteHtml = getSelectionHtml(range) || null;
+                quoteHtmlRef.current = quoteHtml;
+                return quoteHtml;
+            }
         }
 
-        const range = selection.getRangeAt(0);
-
-        if (!isRangeInsideElement(range, contentElement)) {
-            return null;
-        }
-
-        return getSelectionHtml(range) || null;
+        return quoteHtmlRef.current;
     }, [disabled]);
 
     useEffect(() => {

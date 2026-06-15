@@ -55,6 +55,71 @@ test.describe('Quote replies', async () => {
         expect(mockedApi.comments[0].replies[0].html).toBe('<blockquote><p>comment 1</p></blockquote><p>Reply text</p>');
     });
 
+    test('shows the quote action as a left gutter icon button on mobile', async ({page}) => {
+        mockedApi.addComment({
+            html: '<p>This is mobile comment 1</p>'
+        });
+
+        const {frame} = await initialize({
+            bodyStyle: 'margin:0',
+            mockedApi,
+            page,
+            publication: 'Publisher Weekly'
+        });
+
+        await page.setViewportSize({width: 390, height: 700});
+
+        const comment = frame.getByTestId('comment-component').nth(0);
+        await selectText(comment.getByTestId('comment-content'), /comment 1/);
+
+        const quoteButton = frame.getByTestId('quote-reply-button');
+        await expect(quoteButton).toBeVisible();
+        await expect(quoteButton).toHaveAttribute('data-placement', 'gutter');
+
+        const selectionRect = await comment.getByTestId('comment-content').evaluate(() => {
+            const range = document.getSelection()?.getRangeAt(0);
+            const rect = range?.getBoundingClientRect();
+
+            return rect ? {
+                bottom: rect.bottom,
+                left: rect.left,
+                top: rect.top
+            } : null;
+        });
+        const buttonRect = await quoteButton.evaluate((button) => {
+            const rect = button.getBoundingClientRect();
+            return {
+                height: rect.height,
+                left: rect.left,
+                right: rect.right,
+                top: rect.top,
+                width: rect.width
+            };
+        });
+
+        expect(selectionRect).not.toBeNull();
+        expect(Math.round(buttonRect.width)).toBe(32);
+        expect(Math.round(buttonRect.height)).toBe(32);
+        expect(Math.round(buttonRect.left)).toBeGreaterThanOrEqual(0);
+        expect(Math.round(buttonRect.right)).toBeLessThanOrEqual(Math.round(selectionRect!.left));
+        expect(Math.round(buttonRect.top + (buttonRect.height / 2))).toBe(Math.round((selectionRect!.top + selectionRect!.bottom) / 2));
+
+        await quoteButton.evaluate((button) => {
+            button.addEventListener('touchstart', () => {
+                document.getSelection()?.removeAllRanges();
+            }, {capture: true, once: true});
+        });
+        await quoteButton.dispatchEvent('touchstart', {
+            changedTouches: [],
+            targetTouches: [],
+            touches: []
+        });
+
+        const editor = frame.getByTestId('reply-form').getByTestId('form-editor');
+        await waitEditorFocused(editor);
+        await expect(editor.locator('blockquote')).toHaveText('comment 1');
+    });
+
     test('opens the profile modal before opening a quoted reply when quoting without a name', async ({page}) => {
         mockedApi.setMember({name: null, expertise: 'Software development'});
         mockedApi.addComment({

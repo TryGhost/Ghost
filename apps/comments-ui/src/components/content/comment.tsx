@@ -484,10 +484,8 @@ type CommentBodyProps = {
 const CommentBody: React.FC<CommentBodyProps> = ({html, canQuoteInReply, className = '', isHighlighted, onQuoteInReply}) => {
     const {clearQuoteSelection, contentRef, getQuoteHtml, quoteSelection} = useQuoteSelection({disabled: !canQuoteInReply});
 
-    const quoteInReply = React.useCallback(() => {
-        // The quote HTML is serialized lazily from the live selection here, on
-        // click, rather than on every selection change (see use-quote-selection).
-        const quoteHtml = getQuoteHtml();
+    const quoteInReply = React.useCallback((quoteHtmlFromButton?: string) => {
+        const quoteHtml = quoteHtmlFromButton || getQuoteHtml();
 
         if (!quoteHtml) {
             return;
