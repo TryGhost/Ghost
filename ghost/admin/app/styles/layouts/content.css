@@ -792,8 +792,15 @@
         max-width: calc(100% - 140px);
     }
 
-    /* let the title/meta block shrink so a long title or tag name can't hold the
-       row open and push the row's action button past the viewport */
+    /* the list is a CSS table, which sizes to its content and so grows past the
+       viewport on a phone; make it a normal block (the table columns are already
+       hidden at this width) so it tracks the viewport instead */
+    .posts-list.gh-list {
+        display: block;
+    }
+
+    /* with the table gone, let the title/meta block shrink so a long title or tag
+       name can't hold the row open and push its action button off-screen */
     .gh-post-list-title-content {
         min-width: 0;
         overflow: hidden;
