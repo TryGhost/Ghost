@@ -2597,8 +2597,8 @@ importers:
         specifier: 'catalog:'
         version: 11.3.5
       ghost-storage-base:
-        specifier: 1.1.2
-        version: 1.1.2
+        specifier: 2.0.0
+        version: 2.0.0
       glob:
         specifier: 'catalog:'
         version: 13.0.6
@@ -14349,8 +14349,9 @@ packages:
   getpass@0.1.7:
     resolution: {integrity: sha512-0fzj9JxOLfJ+XGLhR8ze3unN0KZCgZwiSSDz168VERjK8Wl8kVSdcu2kspd4s4wtAa1y/qrVRiAA0WclVsu0ng==}
 
-  ghost-storage-base@1.1.2:
-    resolution: {integrity: sha512-5NG3cm7dbb5RPFcviNlXJuwIN5ydDEaMEY5+ixrMAYspRLLEtAAtUYF+YDkBfpJc86aopqMshcszvwDzE7QCnA==}
+  ghost-storage-base@2.0.0:
+    resolution: {integrity: sha512-K4bVe03ErETEMmINEaaGCS3wQXliRWA7c9pTJZiOoRyvdrRaBPhmrl6i25aU6dX7c4dTbEXKmBlpfdgdBdDcIg==}
+    engines: {node: ^22.13.1 || ^24.0.0}
 
   git-hooks-list@1.0.3:
     resolution: {integrity: sha512-Y7wLWcrLUXwk2noSka166byGCvhMtDRpgHdzCno1UQv/n/Hegp++a2xBWJL1lJarnKD3SWaljD+0z1ztqxuKyQ==}
@@ -20753,6 +20754,7 @@ packages:
   tsconfck@3.1.6:
     resolution: {integrity: sha512-ks6Vjr/jEw0P1gmOVwutM3B7fWxoWBL2KRDb1JfqGVawBmO5UsvmWOQFGHBPl5yxYz4eERr19E6L7NMv+Fej4w==}
     engines: {node: ^18 || >=20}
+    deprecated: unmaintained
     hasBin: true
     peerDependencies:
       typescript: ^5.0.0
@@ -36864,7 +36866,7 @@ snapshots:
     dependencies:
       assert-plus: 1.0.0
 
-  ghost-storage-base@1.1.2:
+  ghost-storage-base@2.0.0:
     dependencies:
       moment: 2.30.1
 
