@@ -1,4 +1,4 @@
-const {agentProvider, fixtureManager, matchers, dbUtils} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager, matchers, dbUtils, mockManager} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag, anyLocationFor} = matchers;
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
@@ -12,6 +12,33 @@ const matchAutomatedEmail = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime
 };
+
+const validLexical = JSON.stringify({
+    root: {
+        children: [{
+            type: 'paragraph',
+            children: [{
+                detail: 0,
+                format: 0,
+                mode: 'normal',
+                style: '',
+                text: 'Welcome!',
+                type: 'text',
+                version: 1
+            }],
+            direction: 'ltr',
+            format: '',
+            indent: 0,
+            version: 1
+        }],
+        direction: 'ltr',
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1
+    }
+});
+const automatedEmailsUnavailableMessage = 'The automated emails API is not available when automations are enabled.';
 
 describe('Automated Emails API', function () {
     let agent;
@@ -68,6 +95,7 @@ describe('Automated Emails API', function () {
     });
 
     beforeEach(async function () {
+        mockManager.mockLabsDisabled('automations');
         await dbUtils.truncate('brute');
         await dbUtils.truncate('welcome_email_automated_emails');
         await dbUtils.truncate('automations');
@@ -78,6 +106,120 @@ describe('Automated Emails API', function () {
                 sender_email: null,
                 sender_reply_to: null
             });
+    });
+
+    afterEach(function () {
+        mockManager.restore();
+    });
+
+    const expectAutomatedEmailsUnavailable = ({body}) => {
+        assert.equal(body.errors.length, 1);
+        assert.equal(body.errors[0].type, 'BadRequestError');
+        assert(
+            [body.errors[0].message, body.errors[0].context].includes(automatedEmailsUnavailableMessage),
+            `Expected error message or context to include "${automatedEmailsUnavailableMessage}"`
+        );
+    };
+
+    describe('Automations flag guard', function () {
+        it('Returns 400 when browsing automated emails', async function () {
+            mockManager.mockLabsEnabled('automations');
+
+            await agent
+                .get('automated_emails')
+                .expectStatus(400)
+                .expect(expectAutomatedEmailsUnavailable);
+        });
+
+        it('Returns 400 when reading an automated email', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            mockManager.mockLabsEnabled('automations');
+
+            await agent
+                .get(`automated_emails/${automatedEmail.id}`)
+                .expectStatus(400)
+                .expect(expectAutomatedEmailsUnavailable);
+        });
+
+        it('Returns 400 when adding an automated email', async function () {
+            mockManager.mockLabsEnabled('automations');
+
+            await agent
+                .post('automated_emails')
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    slug: 'member-welcome-email-free',
+                    status: 'inactive',
+                    subject: 'Welcome to the site!',
+                    lexical: validLexical
+                }]})
+                .expectStatus(400)
+                .expect(expectAutomatedEmailsUnavailable);
+        });
+
+        it('Returns 400 when editing an automated email', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            mockManager.mockLabsEnabled('automations');
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    name: 'Welcome Email (Free)',
+                    subject: 'Updated subject',
+                    status: 'active'
+                }]})
+                .expectStatus(400)
+                .expect(expectAutomatedEmailsUnavailable);
+        });
+
+        it('Returns 400 when editing shared sender settings', async function () {
+            await createAutomatedEmail();
+            await createAutomatedEmail({
+                name: 'Welcome Email (Paid)',
+                slug: 'member-welcome-email-paid',
+                subject: 'Welcome paid member'
+            });
+            mockManager.mockLabsEnabled('automations');
+
+            await agent
+                .put('automated_emails/senders/')
+                .body({
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                })
+                .expectStatus(400)
+                .expect(expectAutomatedEmailsUnavailable);
+        });
+
+        it('Returns 400 when previewing an automated email', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            mockManager.mockLabsEnabled('automations');
+
+            await agent
+                .post(`automated_emails/${automatedEmail.id}/preview/`)
+                .body({
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(400)
+                .expect(expectAutomatedEmailsUnavailable);
+        });
+
+        it('Returns 400 when sending a test email', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            mockManager.mockLabsEnabled('automations');
+
+            await agent
+                .post(`automated_emails/${automatedEmail.id}/test/`)
+                .body({
+                    email: 'test@ghost.org',
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(400)
+                .expect(expectAutomatedEmailsUnavailable);
+        });
     });
 
     describe('Browse', function () {
@@ -733,32 +875,6 @@ describe('Automated Emails API', function () {
     describe('Preview', function () {
         let automatedEmailId;
 
-        const validLexical = JSON.stringify({
-            root: {
-                children: [{
-                    type: 'paragraph',
-                    children: [{
-                        detail: 0,
-                        format: 0,
-                        mode: 'normal',
-                        style: '',
-                        text: 'Welcome!',
-                        type: 'text',
-                        version: 1
-                    }],
-                    direction: 'ltr',
-                    format: '',
-                    indent: 0,
-                    version: 1
-                }],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'root',
-                version: 1
-            }
-        });
-
         beforeEach(function () {
             sinon.stub(Date.prototype, 'getFullYear').returns(2025);
         });
@@ -929,32 +1045,6 @@ describe('Automated Emails API', function () {
 
     describe('SendTestEmail', function () {
         let automatedEmailId;
-
-        const validLexical = JSON.stringify({
-            root: {
-                children: [{
-                    type: 'paragraph',
-                    children: [{
-                        detail: 0,
-                        format: 0,
-                        mode: 'normal',
-                        style: '',
-                        text: 'Welcome!',
-                        type: 'text',
-                        version: 1
-                    }],
-                    direction: 'ltr',
-                    format: '',
-                    indent: 0,
-                    version: 1
-                }],
-                direction: 'ltr',
-                format: '',
-                indent: 0,
-                type: 'root',
-                version: 1
-            }
-        });
 
         beforeEach(async function () {
             sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');

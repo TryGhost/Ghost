@@ -3,9 +3,11 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
+const labs = require('../../../shared/labs');
 
 const messages = {
-    automatedEmailNotFound: 'Automated email not found.'
+    automatedEmailNotFound: 'Automated email not found.',
+    automatedEmailsUnavailable: 'The automated emails API is not available when automations are enabled.'
 };
 
 // NOTE: This file is in a transitionary state. The `automated_emails` database table was split into
@@ -33,6 +35,14 @@ function flattenAutomation(automation, email = automation.related('welcomeEmailA
         updated_at: automation.get('updated_at')
     };
     return result;
+}
+
+function rejectWhenAutomationsEnabled() {
+    if (labs.isSet('automations')) {
+        throw new errors.BadRequestError({
+            message: tpl(messages.automatedEmailsUnavailable)
+        });
+    }
 }
 
 async function updateEmailDesignSenderFields(email, senderData, options) {
@@ -65,6 +75,8 @@ const controller = {
         ],
         permissions: true,
         async query(frame) {
+            rejectWhenAutomationsEnabled();
+
             const result = await models.Automation.findPage({
                 ...frame.options,
                 withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
@@ -89,6 +101,8 @@ const controller = {
         ],
         permissions: true,
         async query(frame) {
+            rejectWhenAutomationsEnabled();
+
             const model = await models.Automation.findOne(frame.data, {
                 ...frame.options,
                 withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
@@ -110,6 +124,8 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
+            rejectWhenAutomationsEnabled();
+
             const data = frame.data.automated_emails[0];
 
             const emailData = _.pick(data, EMAIL_FIELDS);
@@ -149,6 +165,8 @@ const controller = {
         permissions: true,
         // eslint-disable-next-line ghost/ghost-custom/max-api-complexity
         async query(frame) {
+            rejectWhenAutomationsEnabled();
+
             const data = frame.data.automated_emails[0];
 
             const emailData = _.pick(data, EMAIL_FIELDS);
@@ -201,6 +219,8 @@ const controller = {
             method: 'edit'
         },
         async query(frame) {
+            rejectWhenAutomationsEnabled();
+
             memberWelcomeEmailService.init();
             const data = frame.data;
             const result = await memberWelcomeEmailService.api.editSharedSenderOptions({
@@ -256,6 +276,8 @@ const controller = {
             method: 'edit'
         },
         async query(frame) {
+            rejectWhenAutomationsEnabled();
+
             memberWelcomeEmailService.init();
             return await memberWelcomeEmailService.api.previewEmail({
                 subject: frame.data.subject,
@@ -288,6 +310,8 @@ const controller = {
             method: 'edit'
         },
         async query(frame) {
+            rejectWhenAutomationsEnabled();
+
             memberWelcomeEmailService.init();
             await memberWelcomeEmailService.api.sendTestEmail({
                 email: frame.data.email,
