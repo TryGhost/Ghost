@@ -1,0 +1,57 @@
+/*
+ * Shared animations for superportal.
+ *
+ * Each animation is exposed as a class so JSX can opt in via className without
+ * the keyframe declaration leaking into per-feature CSS.
+ *
+ * Auto-injected by the modal-service into every modal iframe; light-DOM
+ * features can import this file directly when they need an animation.
+ */
+
+@keyframes gh-popover-in {
+    from {
+        opacity: 0;
+        transform: translateY(8px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.gh-popover-in {
+    animation: gh-popover-in 0.18s ease-out forwards;
+}
+
+@keyframes gh-fade-in {
+    from {
+        opacity: 0;
+    }
+    to {
+        opacity: 1;
+    }
+}
+
+.gh-fade-in {
+    animation: gh-fade-in 0.3s ease-in-out;
+}
+
+@keyframes gh-notification-slidein {
+    0% { transform: translateX(380px); }
+    60% { transform: translateX(-6px); }
+    100% { transform: translateX(0); }
+}
+
+@keyframes gh-notification-slideout {
+    0% { transform: translateX(0); }
+    30% { transform: translateX(-10px); }
+    100% { transform: translateX(380px); }
+}
+
+.gh-notification-slidein {
+    animation: gh-notification-slidein 0.55s cubic-bezier(0.215, 0.610, 0.355, 1.000);
+}
+
+.gh-notification-leaving {
+    animation: gh-notification-slideout 0.4s cubic-bezier(0.550, 0.055, 0.675, 0.190) forwards;
+}

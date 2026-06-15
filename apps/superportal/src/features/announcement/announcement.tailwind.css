@@ -1,0 +1,52 @@
+/*
+ * Announcement bar styles.
+ *
+ * Tailwind v4 prefix configuration lives in shared/styles/tailwind.css —
+ * imported here so utilities used in this feature's JSX (gh:flex, gh:w-full,
+ * etc.) are emitted into the chunk.
+ */
+@import "../../shared/styles/tailwind.css";
+
+/*
+ * Rules below target dangerouslySetInnerHTML content (which can't be tagged
+ * with utility classes) and are scoped under .gh-announcement-bar so they
+ * cannot leak. The selectors match the legacy contract — themes can override
+ * via .gh-announcement-bar.gh-announcement-bar--{dark,light,accent}.
+ */
+
+.gh-announcement-bar,
+.gh-announcement-bar * {
+    box-sizing: border-box !important;
+}
+
+/*
+ * Reset only the user-HTML content (dangerouslySetInnerHTML target).
+ * Scoping to `.gh-announcement-bar-content` rather than the full bar means the
+ * close button — a sibling of the content div — keeps its Tailwind utility
+ * styles. The legacy CSS used `.gh-announcement-bar *:not(path)` and then
+ * re-applied button styles via a same-specificity rule that came later in the
+ * stylesheet; that ordering trick doesn't work for us because Tailwind
+ * utilities have lower specificity than the reset.
+ */
+.gh-announcement-bar-content *:not(path) {
+    all: unset;
+}
+
+.gh-announcement-bar-content strong {
+    font-weight: 700;
+}
+
+.gh-announcement-bar-content :is(i, em) {
+    font-style: italic;
+}
+
+.gh-announcement-bar-content a {
+    color: #fff;
+    font-weight: 700;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.gh-announcement-bar.gh-announcement-bar--light .gh-announcement-bar-content a {
+    color: var(--ghost-accent-color) !important;
+}

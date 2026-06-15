@@ -1,0 +1,59 @@
+/*
+ * Search modal overrides.
+ *
+ * The modal-service iframe already injects the base modal CSS, host vars,
+ * shared Tailwind, and shared animation keyframes. This file holds only:
+ *   - Panel-size override (560px, no internal padding).
+ *   - Backdrop override (blur+gradient + 140px top anchor) replacing the
+ *     base solid scrim.
+ *   - Local @keyframes for the modal popup, backdrop fade, and spinner spin.
+ *   - Two pseudo-element resets Tailwind utilities can't express.
+ */
+
+.gh-search-modal-panel {
+    max-width: 560px;
+    padding: 0;
+    overflow: hidden;
+    animation: gh-search-popup 150ms ease;
+}
+
+.gh-search-modal-backdrop {
+    background: linear-gradient(
+        135deg,
+        rgba(0, 0, 0, 0.2) 0%,
+        rgba(0, 0, 0, 0.1) 100%
+    );
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    padding: 64px 24px 24px;
+    animation: gh-search-fadein 120ms ease;
+}
+
+/* Verbatim port of sodo-search's `popup` keyframes (tailwind.config.js:96–105):
+ * panel starts above (-20px), instantly snaps below (+20px) at 1%, then settles
+ * to 0. The 0%→1% jump is a fade-in disguise — only translation is animated
+ * across the visible 1%→100% range. */
+@keyframes gh-search-popup {
+    0%   { opacity: 0; transform: translateY(-20px); }
+    1%   { opacity: 0; transform: translateY(20px); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes gh-search-fadein {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+}
+
+@keyframes gh-search-spin {
+    from { transform: rotate(0deg); }
+    to   { transform: rotate(360deg); }
+}
+
+/* Hide the browser-default search clear control — we render our own. */
+.gh-search-input::-webkit-search-cancel-button {
+    display: none;
+}
+
+.gh-search-spinner {
+    animation: gh-search-spin 0.5s linear infinite;
+}

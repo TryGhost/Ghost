@@ -1,0 +1,19 @@
+/*
+ * Canonical Tailwind v4 setup for superportal.
+ *
+ * `prefix(gh)` makes every utility a gh:-variant class (gh:flex, gh:w-full),
+ * preventing collisions with theme CSS in light DOM. In modal iframes there's
+ * no theme CSS to collide with, but using the same prefix everywhere keeps a
+ * single mental model across light-DOM and iframe features.
+ *
+ * Imported by:
+ *   - shell/modal-service.tsx — auto-injected into every modal iframe
+ *   - features/announcement/announcement.tailwind.css — imported for the
+ *     light-DOM bar
+ *
+ * Theme + utilities only — preflight is intentionally NOT imported. Preflight
+ * uses element selectors (`*`, `body`, `h1`) that aren't prefix-scoped and
+ * would reset host-page or iframe-document content.
+ */
+@import "tailwindcss/theme.css" prefix(gh);
+@import "tailwindcss/utilities.css" prefix(gh);

@@ -10,10 +10,15 @@ const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = req
 const {cardAssets} = require('../services/assets-minification');
 
 const logging = require('@tryghost/logging');
+const semver = require('semver');
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('ghost_head');
 const templateStyles = require('./tpl/styles');
 const {getFrontendAppConfig, getDataAttributes} = require('../utils/frontend-apps');
+
+// Track whether we have already emitted the v3 deprecation warning so it only
+// fires once per server process even though ghost_head runs on every request.
+let _v3DeprecationLogged = false;
 
 /**
  * @typedef {import('@tryghost/custom-fonts').FontSelection} FontSelection
@@ -172,6 +177,172 @@ function getAdminToolbarHelper(dataRoot, siteTitle, excludeList) {
     const dataAttrs = getDataAttributes(attrs);
 
     return `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
+}
+
+/**
+ * Determine whether ghost_head should operate in superportal v3 mode.
+ * v3 mode is active when the portal:version config is semver >= 3.0.0.
+ * @returns {boolean}
+ */
+function isV3Mode() {
+    const portalVersion = config.get('portal:version');
+    if (!portalVersion) {
+        return false;
+    }
+    // semver.coerce handles version strings like "3.0" that aren't fully
+    // qualified. semver.gte requires a valid full version for both operands.
+    const coerced = semver.coerce(portalVersion);
+    if (!coerced) {
+        return false;
+    }
+    return semver.gte(coerced, '3.0.0');
+}
+
+/**
+ * Compute the features array for v3 mode from current settings / config.
+ * The excludeList (from {{ghost_head exclude="..."}}) is applied so that
+ * theme-level exclusions continue to work.
+ *
+ * @param {Set<string>} excludeList
+ * @param {object} data - options.data from the helper
+ * @returns {string[]}
+ */
+function computeV3Features(excludeList, data) {
+    const features = [];
+
+    const membersActive = !!(
+        settingsCache.get('members_enabled') ||
+        settingsCache.get('donations_enabled') ||
+        settingsCache.get('recommendations_enabled')
+    );
+
+    const portalGate = membersActive && !excludeList.has('portal');
+
+    if (portalGate) {
+        features.push('members');
+    }
+    // share is independent of members — themes opt out via exclude="share".
+    if (!excludeList.has('share')) {
+        features.push('share');
+    }
+    if (portalGate) {
+        // gift depends on the members API.
+        features.push('gift');
+    }
+    // offers ride with paid memberships
+    if (portalGate && settingsCache.get('paid_members_enabled') && !excludeList.has('offers')) {
+        features.push('offers');
+    }
+    // the client's dependency rules handle donations→members
+    if (settingsCache.get('donations_enabled') && !excludeList.has('donations')) {
+        features.push('donations');
+    }
+
+    // The announcement chunk fetches /members/api/announcement/ at runtime
+    // and the endpoint applies the visibility filter for the current member,
+    // so ghost_head only needs the simple "is the announcement set globally?"
+    // gate to decide whether to ship the chunk.
+    const hasAnnouncement = !!(
+        settingsCache.get('announcement_content') &&
+        settingsCache.get('announcement_visibility') &&
+        settingsCache.get('announcement_visibility').length
+    );
+    const preview = data?.site?._preview;
+    if ((hasAnnouncement || preview) && !excludeList.has('announcement')) {
+        features.push('announcement');
+    }
+
+    const {scriptUrl: searchScriptUrl} = getFrontendAppConfig('sodoSearch');
+    if (searchScriptUrl && !excludeList.has('search')) {
+        features.push('search');
+    }
+
+    // feedback + unsubscribe are always-on email-link features
+    if (!excludeList.has('feedback')) {
+        features.push('feedback');
+    }
+    if (!excludeList.has('unsubscribe')) {
+        features.push('unsubscribe');
+    }
+    if (settingsCache.get('recommendations_enabled') && !excludeList.has('recommendations')) {
+        features.push('recommendations');
+    }
+
+    return features;
+}
+
+/**
+ * Emit a one-time info-level deprecation log if v3 mode is active but legacy
+ * per-app config keys are still set. Fires at most once per server process.
+ */
+function maybeLogV3DeprecationWarning() {
+    if (_v3DeprecationLogged) {
+        return;
+    }
+    _v3DeprecationLogged = true;
+
+    const legacyKeys = [
+        {key: 'sodoSearch:url', name: 'sodoSearch:url'},
+        {key: 'announcementBar:url', name: 'announcementBar:url'},
+        {key: 'comments:url', name: 'comments:url'}
+    ];
+
+    const presentKeys = legacyKeys
+        .filter(({key}) => {
+            const val = config.get(key);
+            return val !== undefined && val !== null;
+        })
+        .map(({name}) => name);
+
+    if (presentKeys.length > 0) {
+        logging.info(
+            `Superportal v3 mode is active. The following legacy config keys are ` +
+            `still set and are now unused — consider removing them from your config: ` +
+            presentKeys.join(', ')
+        );
+    }
+}
+
+/**
+ * Build and return the v3 superportal script tags:
+ *   1. Shell <script defer type="module" src="..." data-ghost="..." data-key="..." data-features="..." data-superportal-shell crossorigin>
+ *   2. Stripe (if paid_members_enabled) — same as legacy mode
+ *
+ * The shell bootstraps client-side from these attributes plus the Content API
+ * settings endpoint and the members API; no page state is inlined.
+ *
+ * @param {object} params
+ * @param {object} params.data - options.data from the helper
+ * @param {Set<string>} params.excludeList
+ * @param {string} params.frontendKey
+ * @returns {string}
+ */
+function getSuperportalV3Helper({data, excludeList, frontendKey}) {
+    maybeLogV3DeprecationWarning();
+
+    const features = computeV3Features(excludeList, data);
+    const siteUrl = urlUtils.getSiteUrl();
+
+    const attrs = {
+        ghost: escapeExpression(siteUrl),
+        // Admin URL — search-index endpoints live here, may differ from `ghost`.
+        'admin-url': escapeExpression(urlUtils.getAdminUrl() || siteUrl),
+        key: escapeExpression(frontendKey),
+        locale: escapeExpression(settingsCache.get('locale') || 'en'),
+        features: features.join(',')
+    };
+    const dataAttrs = getDataAttributes(attrs);
+
+    const {scriptUrl} = getFrontendAppConfig('portal');
+    const shellScriptTag = `<script defer type="module" src="${scriptUrl}" ${dataAttrs} data-superportal-shell crossorigin="anonymous"></script>`;
+
+    // --- Stripe (when paid members enabled — identical gate to legacy mode) ---
+    let stripeTag = '';
+    if (settingsCache.get('paid_members_enabled')) {
+        stripeTag = `<script async src="https://js.stripe.com/v3/"></script>`;
+    }
+
+    return [shellScriptTag, stripeTag].filter(Boolean).join('\n    ');
 }
 
 function getWebmentionDiscoveryLink() {
@@ -337,12 +508,23 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
             escapeExpression(meta.site.title) + '" href="' +
             escapeExpression(meta.rssUrl) + '">');
 
-        head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
-        if (!excludeList.has('search')) {
-            head.push(getSearchHelper(frontendKey));
-        }
-        if (!excludeList.has('announcement')) {
-            head.push(getAnnouncementBarHelper(options.data));
+        if (isV3Mode()) {
+            // Superportal v3: one attribute-configured shell script replaces the
+            // portal/search/announcement scripts and the inline CTA styles.
+            head.push(getSuperportalV3Helper({
+                data: options.data,
+                excludeList,
+                frontendKey
+            }));
+        } else {
+            // Legacy mode — byte-for-byte identical to pre-v3 behaviour.
+            head.push(getMembersHelper(options.data, frontendKey, excludeList)); // controlling for excludes within the function
+            if (!excludeList.has('search')) {
+                head.push(getSearchHelper(frontendKey));
+            }
+            if (!excludeList.has('announcement')) {
+                head.push(getAnnouncementBarHelper(options.data));
+            }
         }
         const adminToolbarHelper = getAdminToolbarHelper(dataRoot, meta.site.title, excludeList);
         if (adminToolbarHelper) {

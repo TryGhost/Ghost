@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Superportal — local dev</title>
+
+    <!-- OG tags so the share modal has something to render. -->
+    <meta property="og:site_name" content="Spike Test Blog" />
+    <meta property="og:title" content="Hello from the spike test page" />
+    <meta property="og:description" content="A small page that simulates a Ghost-rendered theme so the superportal shell has a realistic environment to wire up against." />
+    <link rel="canonical" href="http://localhost:4175/" />
+
+    <!--
+        Dev-only fetch stub — simulates the Ghost APIs the shell fetches at
+        boot (settings, member) and at feature mount (tiers, newsletters,
+        announcement), since the vite dev server is not a Ghost backend.
+    -->
+    <script>
+        (function stubGhostApis() {
+            const MOCK = {
+                settings: {
+                    title: 'Spike Test Blog',
+                    accent_color: '#0c8a51',
+                    locale: 'en',
+                    portal_name: true,
+                    portal_signup_terms_html: null,
+                    portal_signup_checkbox_required: false,
+                    portal_plans: ['free', 'monthly', 'yearly'],
+                    members_signup_access: 'all',
+                    allow_self_signup: true,
+                    donations_enabled: true,
+                    recommendations_enabled: true,
+                    outbound_link_tagging: true,
+                    support_email_address: 'support@spiketest.example.com',
+                    default_email_address: 'noreply@spiketest.example.com'
+                },
+                member: {
+                    uuid: '00000000-0000-0000-0000-000000000001',
+                    email: 'test@example.com',
+                    name: 'Test Reader',
+                    status: 'free'
+                },
+                tiers: [
+                    {id: 'free', name: 'Free', description: 'Sign up for new posts and updates.', type: 'free', visibility: 'public', trial_days: 0, benefits: []},
+                    {id: 'silver', name: 'Silver', description: 'Full access to all members-only posts.', type: 'paid', visibility: 'public', trial_days: 0, currency: 'usd', monthly_price: 500, yearly_price: 5000, benefits: [{id: 'b1', name: 'Access to all members-only posts'}, {id: 'b2', name: 'Full archive of past issues'}]},
+                    {id: 'gold', name: 'Gold', description: 'Everything in Silver, plus extras.', type: 'paid', visibility: 'public', trial_days: 14, currency: 'usd', monthly_price: 1200, yearly_price: 12000, benefits: [{id: 'b1', name: 'Everything in Silver'}, {id: 'b2', name: 'Monthly subscriber-only video call'}, {id: 'b3', name: 'Early access to new work'}]}
+                ],
+                newsletters: [
+                    {id: 'nl-weekly', name: 'Weekly digest', description: "A roundup of the week's posts, every Sunday.", subscribe_on_signup: true, visibility: 'members'},
+                    {id: 'nl-product', name: 'Product updates', description: "Occasional news about what we're building.", visibility: 'members'}
+                ]
+            };
+            const realFetch = window.fetch.bind(window);
+            const json = body => Promise.resolve(new Response(JSON.stringify(body), {status: 200, headers: {'Content-Type': 'application/json'}}));
+            window.fetch = function (input, init) {
+                const path = new URL(String(input instanceof Request ? input.url : input), window.location.origin).pathname;
+                if (path === '/ghost/api/content/settings/') return json({settings: MOCK.settings});
+                if (path === '/ghost/api/content/tiers/') return json({tiers: MOCK.tiers});
+                if (path === '/ghost/api/content/newsletters/') return json({newsletters: MOCK.newsletters});
+                if (path === '/members/api/member/') return json(MOCK.member);
+                if (path === '/members/api/announcement/') return json({announcement: [{id: 'a1', content: '<strong>Welcome!</strong> This is a spike-test announcement.', background_color: 'dark'}]});
+                return realFetch(input, init);
+            };
+        })();
+    </script>
+
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; margin: 0; color: #15171a; }
+        .page { max-width: 720px; margin: 40px auto; padding: 0 24px; }
+        h1 { font-size: 28px; margin-top: 0; }
+        button, a.button { display: inline-block; padding: 8px 14px; border: 1px solid #d6dbe0; border-radius: 6px; background: #fff; color: #15171a; text-decoration: none; font: inherit; cursor: pointer; margin: 4px 4px 4px 0; }
+        button:hover, a.button:hover { background: #f5f6f7; }
+        kbd { background: #f5f6f7; border: 1px solid #d6dbe0; border-radius: 4px; padding: 2px 6px; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; }
+        section { margin: 24px 0; }
+    </style>
+</head>
+<body>
+    <main class="page">
+    <h1>Superportal local dev</h1>
+    <p>This page simulates a Ghost theme: shell config rides as data attributes on the script tag, and a fetch stub plays the Ghost APIs.</p>
+
+    <section>
+        <h2>Theme triggers</h2>
+        <button data-portal="signin">Sign in</button>
+        <button data-portal="signup">Sign up</button>
+        <button data-portal="signup/silver/yearly">Sign up — Silver yearly</button>
+        <button data-portal="account">Account</button>
+        <button data-portal="share">Share</button>
+        <button data-portal="gift">Gift</button>
+        <button data-portal="offer/demo">Offer</button>
+        <button data-portal="support">Support</button>
+        <button data-ghost-search>Search</button>
+        <p>Or press <kbd>⌘ K</kbd> / <kbd>Ctrl K</kbd> to open search.</p>
+    </section>
+
+    <section>
+        <h2>Hash routes</h2>
+        <a class="button" href="#/portal/signup">#/portal/signup</a>
+        <a class="button" href="#/portal/account">#/portal/account</a>
+        <a class="button" href="#/share">#/share</a>
+        <a class="button" href="#/portal/support/success">#/portal/support/success</a>
+        <a class="button" href="#/portal/support/error">#/portal/support/error</a>
+        <a class="button" href="#/feedback/demo-post/1/?uuid=demo&key=demo">#/feedback (more)</a>
+        <a class="button" href="?action=unsubscribe&uuid=demo&key=demo&newsletter=nl-weekly">?action=unsubscribe</a>
+        <a class="button" href="#/portal/recommendations">#/portal/recommendations</a>
+        <a class="button" href="?action=signup&success=true">?action=signup (recs)</a>
+        <a class="button" href="#/portal/account/newsletters/help">#/…/newsletters/help</a>
+        <a class="button" href="#/portal/account/newsletters/disabled">#/…/newsletters/disabled</a>
+    </section>
+
+    <section>
+        <h2>Member-form binding</h2>
+        <form data-members-form="signup">
+            <input type="email" name="email" data-members-email placeholder="email@example.com" />
+            <button type="submit">Subscribe</button>
+        </form>
+        <p style="color:#5b6573;font-size:13px">Mounting a form with <code>data-members-form</code> triggers eager-on-mount load of the members chunk on shell init.</p>
+    </section>
+    </main>
+
+    <!--
+        The ESM shell. In production ghost_head emits this with the CDN URL
+        and the same data attributes.
+    -->
+    <script type="module" src="/src/shell/index.ts"
+        data-ghost="http://localhost:4175/"
+        data-admin-url="http://localhost:4175/"
+        data-key="spike-key"
+        data-locale="en"
+        data-features="members,share,gift,announcement,search,offers,donations,feedback,unsubscribe,recommendations"
+        data-superportal-shell></script>
+</body>
+</html>

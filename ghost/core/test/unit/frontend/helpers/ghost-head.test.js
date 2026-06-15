@@ -1653,7 +1653,7 @@ describe('{{ghost_head}} helper', function () {
             getStub.withArgs('members_enabled').returns(true);
             getStub.withArgs('paid_members_enabled').returns(true);
             getStub.withArgs('announcement_content').returns('Hello world');
-            getStub.withArgs('announcement_visibility').returns('visitors');
+            getStub.withArgs('announcement_visibility').returns(['visitors']);
 
             let rendered = await testGhostHead({hash: {exclude: ''}, ...testUtils.createHbsResponse({
                 locals: {
@@ -1671,7 +1671,7 @@ describe('{{ghost_head}} helper', function () {
             getStub.withArgs('members_enabled').returns(true);
             getStub.withArgs('paid_members_enabled').returns(true);
             getStub.withArgs('announcement_content').returns('Hello world');
-            getStub.withArgs('announcement_visibility').returns('visitors');
+            getStub.withArgs('announcement_visibility').returns(['visitors']);
 
             let rendered = await testGhostHead({hash: {exclude: 'announcement'}, ...testUtils.createHbsResponse({
                 locals: {
@@ -1914,6 +1914,441 @@ describe('{{ghost_head}} helper', function () {
                 }
             })});
             assert.doesNotMatch(rendered, /.gh-post-upgrade-cta-content/);
+        });
+    });
+
+    describe('superportal v3 mode', function () {
+        beforeEach(function () {
+            configUtils.set({url: 'http://localhost:65530/'});
+            // Set portal version to 3.0.0 to enable v3 mode
+            configUtils.set('portal:version', '3.0.0');
+            configUtils.set('portal:url', 'http://localhost:4180/portal.min.js');
+        });
+
+        function renderedFeatures(rendered) {
+            const match = rendered.match(/data-features="([^"]*)"/);
+            return match ? match[1].split(',') : [];
+        }
+
+        it('emits configured shell script tag instead of legacy scripts and state blob', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            // No inline state blob — the shell bootstraps client-side
+            assert.doesNotMatch(rendered, /id="gh-portal-state"/);
+
+            // Shell script tag with module type, config attributes, and marker
+            assert.match(rendered, /type="module"/);
+            assert.match(rendered, /data-superportal-shell/);
+            assert.match(rendered, /localhost:4180\/portal\.min\.js/);
+            assert.match(rendered, /data-ghost="http:\/\/localhost:65530\/"/);
+            assert.match(rendered, /data-admin-url="http:\/\/localhost:65530\/"/);
+            assert.match(rendered, /data-key="xyz"/);
+            assert.match(rendered, /data-locale="en"/);
+
+            // Legacy separate scripts must NOT appear
+            assert.doesNotMatch(rendered, /portal@~\[\[VERSION\]\]/);
+            assert.doesNotMatch(rendered, /sodo-search@/);
+            assert.doesNotMatch(rendered, /announcement-bar@/);
+
+            // CTA styles must not appear in v3
+            assert.doesNotMatch(rendered, /gh-members-styles/);
+        });
+
+        it('data-features starts with members,share,gift when members_enabled', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.match(rendered, /data-features="members,share,gift/);
+        });
+
+        it('features include announcement when content is set', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('announcement_content').returns('Hello world');
+            getStub.withArgs('announcement_visibility').returns(['visitors']);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.ok(renderedFeatures(rendered).includes('announcement'));
+        });
+
+        it('features include search when sodoSearch:url is configured', async function () {
+            // The default config already has sodoSearch:url set, so search should appear
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.ok(renderedFeatures(rendered).includes('search'));
+        });
+
+        it('emits stripe script when paid_members_enabled', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.match(rendered, /js\.stripe\.com\/v3/);
+        });
+
+        it('does not emit stripe script when paid_members_enabled is false', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(false);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.doesNotMatch(rendered, /js\.stripe\.com/);
+        });
+
+        it('excludes members features when portal is excluded but keeps share', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+
+            const rendered = await testGhostHead({hash: {exclude: 'portal'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            // members + gift are gated on members API; share is independent.
+            const features = renderedFeatures(rendered);
+            assert.ok(!features.includes('members'));
+            assert.ok(!features.includes('gift'));
+            assert.ok(features.includes('share'));
+        });
+
+        it('excludes share when explicitly excluded', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+
+            const rendered = await testGhostHead({hash: {exclude: 'share'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            const features = renderedFeatures(rendered);
+            assert.ok(!features.includes('share'));
+            assert.ok(features.includes('members'));
+        });
+
+        it('excludes search from features when search is excluded', async function () {
+            const rendered = await testGhostHead({hash: {exclude: 'search'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            assert.ok(!renderedFeatures(rendered).includes('search'));
+        });
+
+        it('includes offers when members and paid members are enabled', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.ok(renderedFeatures(rendered).includes('offers'));
+        });
+
+        it('does not include offers when paid_members_enabled is false', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.ok(!renderedFeatures(rendered).includes('offers'));
+        });
+
+        it('does not include offers when portal is excluded', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
+
+            const rendered = await testGhostHead({hash: {exclude: 'portal'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            assert.ok(!renderedFeatures(rendered).includes('offers'));
+        });
+
+        it('excludes offers when explicitly excluded', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
+
+            const rendered = await testGhostHead({hash: {exclude: 'offers'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            const features = renderedFeatures(rendered);
+            assert.ok(!features.includes('offers'));
+            assert.ok(features.includes('members'));
+        });
+
+        it('includes donations (and members) when donations_enabled', async function () {
+            getStub.withArgs('donations_enabled').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            const features = renderedFeatures(rendered);
+            assert.ok(features.includes('donations'));
+            assert.ok(features.includes('members'));
+        });
+
+        it('does not include donations when donations_enabled is false', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.ok(!renderedFeatures(rendered).includes('donations'));
+        });
+
+        it('excludes donations when explicitly excluded', async function () {
+            getStub.withArgs('donations_enabled').returns(true);
+
+            const rendered = await testGhostHead({hash: {exclude: 'donations'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            assert.ok(!renderedFeatures(rendered).includes('donations'));
+        });
+
+        it('includes recommendations when recommendations_enabled', async function () {
+            getStub.withArgs('recommendations_enabled').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.ok(renderedFeatures(rendered).includes('recommendations'));
+        });
+
+        it('does not include recommendations when recommendations_enabled is false', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.ok(!renderedFeatures(rendered).includes('recommendations'));
+        });
+
+        it('excludes recommendations when explicitly excluded', async function () {
+            getStub.withArgs('recommendations_enabled').returns(true);
+
+            const rendered = await testGhostHead({hash: {exclude: 'recommendations'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            assert.ok(!renderedFeatures(rendered).includes('recommendations'));
+        });
+
+        it('includes feedback and unsubscribe even with all member settings off', async function () {
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            const features = renderedFeatures(rendered);
+            assert.ok(features.includes('feedback'));
+            assert.ok(features.includes('unsubscribe'));
+        });
+
+        it('excludes feedback when explicitly excluded', async function () {
+            const rendered = await testGhostHead({hash: {exclude: 'feedback'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            const features = renderedFeatures(rendered);
+            assert.ok(!features.includes('feedback'));
+            assert.ok(features.includes('unsubscribe'));
+        });
+
+        it('excludes unsubscribe when explicitly excluded', async function () {
+            const rendered = await testGhostHead({hash: {exclude: 'unsubscribe'}, ...testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            const features = renderedFeatures(rendered);
+            assert.ok(!features.includes('unsubscribe'));
+            assert.ok(features.includes('feedback'));
+        });
+
+        it('emits the full canonical feature list when all gates are on', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
+            getStub.withArgs('donations_enabled').returns(true);
+            getStub.withArgs('recommendations_enabled').returns(true);
+            getStub.withArgs('announcement_content').returns('Hello world');
+            getStub.withArgs('announcement_visibility').returns(['visitors']);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.match(rendered, /data-features="members,share,gift,offers,donations,announcement,search,feedback,unsubscribe,recommendations"/);
+        });
+
+        it('renders no member data into the page', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                renderObject: {
+                    member: {
+                        uuid: 'test-uuid',
+                        email: 'test@example.com',
+                        name: 'Test Member',
+                        status: 'free',
+                        subscriptions: [],
+                        avatar_image: null
+                    }
+                },
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.doesNotMatch(rendered, /test@example\.com/);
+            assert.doesNotMatch(rendered, /Test Member/);
+        });
+
+        it('remains in legacy mode when portal version is < 3.0.0', async function () {
+            // Override both version and URL back to CDN defaults so we can
+            // match the version-normalised pattern used by testGhostHead.
+            configUtils.set('portal:version', '2.68');
+            configUtils.set('portal:url', 'https://cdn.jsdelivr.net/ghost/portal@~{version}/umd/portal.min.js');
+            getStub.withArgs('members_enabled').returns(true);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            // Should use legacy portal script, not v3 shell
+            assert.match(rendered, /portal@~\[\[VERSION\]\]/);
+            assert.doesNotMatch(rendered, /data-superportal-shell/);
+            assert.doesNotMatch(rendered, /id="gh-portal-state"/);
+        });
+
+        it('data-features attribute on shell tag lists enabled features', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('announcement_content').returns('Hi');
+            getStub.withArgs('announcement_visibility').returns(['visitors', 'free_members', 'paid_members']);
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }));
+
+            assert.match(rendered, /data-features="members,share,gift,announcement,search,feedback,unsubscribe"/);
         });
     });
 });

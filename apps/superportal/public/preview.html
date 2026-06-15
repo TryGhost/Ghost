@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Superportal — built bundle preview</title>
+
+    <meta property="og:site_name" content="Spike Test Blog" />
+    <meta property="og:title" content="Hello from the spike test page" />
+    <meta property="og:description" content="A small page that loads the production-built portal.min.js to verify the shipped bundle works end-to-end." />
+    <link rel="canonical" href="http://localhost:4175/preview.html" />
+
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; max-width: 720px; margin: 40px auto; padding: 0 24px; color: #15171a; }
+        h1 { font-size: 28px; margin-top: 0; }
+        button, a.button { display: inline-block; padding: 8px 14px; border: 1px solid #d6dbe0; border-radius: 6px; background: #fff; color: #15171a; text-decoration: none; font: inherit; cursor: pointer; margin: 4px 4px 4px 0; }
+        kbd { background: #f5f6f7; border: 1px solid #d6dbe0; border-radius: 4px; padding: 2px 6px; font-family: ui-monospace, SFMono-Regular, monospace; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>Built bundle preview</h1>
+    <p>This page loads the production-built <code>portal.min.js</code> (after <code>pnpm build</code>) to verify the shipped artifact works the same as the dev server.</p>
+
+    <button data-portal="signin">Sign in</button>
+    <button data-portal="share">Share</button>
+    <button data-ghost-search>Search</button>
+    <a class="button" href="#/share">#/share</a>
+
+    <script type="module" src="/portal.min.js"
+        data-ghost="http://localhost:4175/"
+        data-admin-url="http://localhost:4175/"
+        data-key="spike-key"
+        data-locale="en"
+        data-features="members,share,gift,announcement,search"
+        data-superportal-shell></script>
+</body>
+</html>

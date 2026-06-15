@@ -1,0 +1,22 @@
+/*
+ * Share modal overrides.
+ *
+ * Tailwind utilities + animations live in shared/ — see modal-service.tsx for
+ * what the iframe automatically receives. This file holds only:
+ *   - Panel-size override (560px instead of the 480px default).
+ *   - Excerpt line-clamp (uses the legacy -webkit-line-clamp triplet to match
+ *     portal byte-for-byte; gh:line-clamp-3 would also work but the explicit
+ *     declaration is clearer).
+ */
+
+.gh-share-modal-panel {
+    max-width: 560px;
+    padding: 32px;
+}
+
+.gh-share-excerpt {
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+}

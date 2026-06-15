@@ -1,0 +1,41 @@
+{
+    "name": "@tryghost/superportal",
+    "version": "0.0.0-spike",
+    "private": true,
+    "license": "MIT",
+    "description": "Unified reader-facing frontend app (spike — not for publish)",
+    "type": "module",
+    "scripts": {
+        "dev": "vite",
+        "build": "vite build && node scripts/verify-pinned-dist.mjs",
+        "build:watch": "vite build --watch",
+        "preview": "vite preview --port 4175",
+        "serve": "concurrently -k \"pnpm build:watch\" \"pnpm preview -l silent\"",
+        "bundle:visualize": "node scripts/visualize-bundles.mjs",
+        "bundle:visualize:build": "node scripts/visualize-bundles.mjs --build",
+        "lint:types": "tsc --noEmit",
+        "lint": "pnpm lint:types",
+        "test": "vitest run"
+    },
+    "dependencies": {
+        "@sentry/browser": "catalog:",
+        "@tryghost/i18n": "workspace:*",
+        "clsx": "2.1.1",
+        "dompurify": "catalog:",
+        "flexsearch": "0.8.153",
+        "react": "19.0.0",
+        "react-dom": "19.0.0",
+        "tailwind-merge": "3.5.0"
+    },
+    "devDependencies": {
+        "@tailwindcss/vite": "4.2.1",
+        "@types/react": "19.0.0",
+        "@types/react-dom": "19.0.4",
+        "@vitejs/plugin-react": "4.7.0",
+        "concurrently": "8.2.2",
+        "tailwindcss": "4.2.1",
+        "typescript": "5.9.3",
+        "vite": "7.3.2",
+        "vitest": "3.0.5"
+    }
+}

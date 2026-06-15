@@ -1,0 +1,7 @@
+@import "tailwindcss";
+
+/* Disable scrolling inside the signup-form iframe */
+body,
+html {
+    overflow: hidden;
+}
