@@ -2,7 +2,7 @@ import React from 'react';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {isContributorUser} from '@tryghost/admin-x-framework/api/users';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
-import {useFeaturebase} from '@src/hooks/use-featurebase';
+import {useFeaturebase} from '@tryghost/admin-x-framework';
 
 const FORUM_URL = 'https://forum.ghost.org';
 const HELP_URL = 'https://ghost.org/help';

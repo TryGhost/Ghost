@@ -54,7 +54,8 @@ vi.mock('@tryghost/admin-x-framework', async () => {
     );
     return {
         ...actual,
-        getFeaturebaseToken: () => ({data: undefined})
+        getFeaturebaseToken: () => ({data: undefined}),
+        useFeaturebase: () => ({isAvailable: false, openFeedbackWidget: () => {}, preloadFeedbackWidget: () => {}})
     };
 });
 

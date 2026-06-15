@@ -21,6 +21,7 @@ export {useKoenigFileUpload, koenigFileUploadTypes} from './hooks/use-koenig-fil
 export {useKoenigFetchEmbed} from './hooks/use-koenig-fetch-embed';
 export type {KoenigFileUploadType} from './hooks/use-koenig-file-upload';
 export {useKoenigLinkSuggestions} from './hooks/use-koenig-link-suggestions';
+export {useFeaturebase} from './hooks/use-featurebase';
 
 // Currency utilities
 export {getSymbol} from './utils/currency';
