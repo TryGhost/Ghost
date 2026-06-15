@@ -15,6 +15,8 @@
   },
   "bugs": "https://github.com/TryGhost/Ghost-Storage-Base/issues",
   "scripts": {
+    "lint": "oxlint .",
+    "lint:fix": "oxlint --fix .",
     "test": "yarn test:unit",
     "test:unit": "vitest run --coverage",
     "preship": "yarn test",
@@ -33,6 +35,7 @@
   },
   "devDependencies": {
     "@vitest/coverage-v8": "4.1.8",
+    "oxlint": "1.56.0",
     "vite": "8.0.16",
     "vitest": "4.1.8"
   }

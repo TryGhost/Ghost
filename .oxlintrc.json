@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/oxlint/configuration_schema.json",
+  "categories": {
+    "correctness": "off",
+    "suspicious": "off",
+    "style": "off",
+    "pedantic": "off",
+    "perf": "off",
+    "restriction": "off",
+    "nursery": "off"
+  },
+  "plugins": ["import", "vitest"],
+  "ignorePatterns": [
+    "**/node_modules/**",
+    "**/coverage/**",
+    "**/dist/**",
+    "**/build/**"
+  ],
+  "rules": {
+    "eqeqeq": "error",
+    "no-console": "off",
+    "no-unused-vars": "error",
+    "prefer-const": "error"
+  }
+}
