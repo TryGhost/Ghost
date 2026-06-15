@@ -21,6 +21,14 @@ const Automation = ghostBookshelf.Model.extend({
         return this.hasMany('WelcomeEmailAutomatedEmail', 'welcome_email_automation_id');
     },
 
+    automationActions() {
+        return this.hasMany('AutomationAction', 'automation_id', 'id');
+    },
+
+    automationRuns() {
+        return this.hasMany('AutomationRun', 'automation_id', 'id');
+    },
+
     onSaved(model) {
         if (!model?.id) {
             return;
