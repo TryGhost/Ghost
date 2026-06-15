@@ -1,6 +1,14 @@
 # Idea / future task: post-signup survey (progressive profiling)
 
-**Status:** Promoted to **[Story 5 — Landing form](../stories/05-landing-form.md)** (in progress). This doc is the original thinking; the story is canonical. Note: the POC build keeps it simple (no per-question titles; field label = prompt) and names it "Landing form".
+**Status:** ✅ **Built** as the Landing form — **[Story 5](../stories/05-landing-form.md)** + **[Story 5.5](../stories/05.5-audience-targeted-landing-forms.md)** (done). This doc is the *original thinking*; the stories are canonical and the shipped build diverged from this sketch (see "As built" below).
+
+## As built (how it diverged from this sketch)
+
+- **Named "Landing form", surface key is `landing`** — not `post_signup`. And the surfaces are `signup` + `landing`; there's no separate `account` surface (the account page reuses the signup list).
+- **5.5 made it a *list* of per-audience forms** (`landingForms` collection), not a single `forms.post_signup` key. Audience targeting (tier/label, NQL-style) decides who sees which form.
+- **Per-member state = a `dismissed` flag** (the "don't nag" record this doc predicted), keyed per form.
+- **Kept simple:** field label = the prompt (no per-question titles), placeholder lives on the *definition* (not per-placement), required-at-collection but storage stays nullable.
+- **Lives in Membership settings** (next to Custom fields), not under Growth as this doc speculated. Analytics (completion/dismissal rates) and a forced/blocking gate remain deferred — see [landing-form-presentation.md](./landing-form-presentation.md).
 
 ## The idea
 
