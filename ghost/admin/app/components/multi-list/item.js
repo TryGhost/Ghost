@@ -208,7 +208,6 @@ export default class ItemComponent extends Component {
             this.longPressTimer = null;
             this.longPressFired = true;
             this.openContextMenu(this.touchStartX, this.touchStartY);
-            this.suppressGhostClick();
         }, LONG_PRESS_DURATION_MS);
     }
 
@@ -234,5 +233,13 @@ export default class ItemComponent extends Component {
     @action
     onTouchEnd() {
         this.cancelLongPress();
+
+        // If the long-press opened the menu, the finger lift fires a synthetic ghost click
+        // right after this; arm the one-shot suppressor now so that click can't close the menu.
+        // Arming here (at release) rather than when the menu opened means it works no matter
+        // how long the press was held.
+        if (this.longPressFired) {
+            this.suppressGhostClick();
+        }
     }
 }
