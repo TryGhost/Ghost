@@ -72,10 +72,8 @@
                 type="button"
                 class="gh-btn gh-btn-editor gh-editor-preview-trigger gh-post-preview-close active"
                 {{on "click" @close}}
-                aria-label="Close preview"
             >
-                <span class="gh-post-preview-close-text">Close</span>
-                <span class="gh-post-preview-close-icon">{{svg-jar "close"}}</span>
+                <span>Close</span>
             </button>
 
             {{#if @data.publishOptions.user.isContributor}}
