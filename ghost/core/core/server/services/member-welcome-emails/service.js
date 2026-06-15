@@ -35,12 +35,12 @@ const getSenderDetailsFromDesignSettings = (designSettingsJson) => {
     };
 };
 
-const getSenderDetails = (senderDetails = {}, designSettingsJson) => {
+const getSenderDetails = (designSettingsJson) => {
     const designSenderDetails = getSenderDetailsFromDesignSettings(designSettingsJson);
     return {
-        senderName: trimValue(designSenderDetails.senderName) || trimValue(senderDetails.senderName),
-        senderEmail: trimValue(designSenderDetails.senderEmail) || trimValue(senderDetails.senderEmail),
-        senderReplyTo: trimValue(designSenderDetails.senderReplyTo) || trimValue(senderDetails.senderReplyTo)
+        senderName: trimValue(designSenderDetails.senderName),
+        senderEmail: trimValue(designSenderDetails.senderEmail),
+        senderReplyTo: trimValue(designSenderDetails.senderReplyTo)
     };
 };
 
@@ -259,10 +259,7 @@ class MemberWelcomeEmailService {
     #hasSharedSenderFieldChanged(rows, field, value) {
         return rows.some((row) => {
             const email = row.related('welcomeEmailAutomatedEmail');
-            const currentValue = (
-                email?.related('emailDesignSetting')?.get(field) ??
-                email?.get(field)
-            );
+            const currentValue = email?.related('emailDesignSetting')?.get(field);
             return trimValue(currentValue) !== trimValue(value);
         });
     }
@@ -387,12 +384,7 @@ class MemberWelcomeEmailService {
                 lexical: email.get('lexical'),
                 subject: email.get('subject'),
                 status: row.get('status'),
-                designSettings: designSettings?.id ? designSettings.toJSON() : null,
-                senderDetails: {
-                    senderName: email.get('sender_name'),
-                    senderEmail: email.get('sender_email'),
-                    senderReplyTo: email.get('sender_reply_to')
-                }
+                designSettings: designSettings?.id ? designSettings.toJSON() : null
             };
         }
     }
@@ -408,10 +400,6 @@ class MemberWelcomeEmailService {
      * @param {string} options.email.lexical
      * @param {string} options.email.subject
      * @param {null | object} options.email.designSettings
-     * @param {object} options.email.senderDetails
-     * @param {undefined | null | string} options.email.senderDetails.senderName
-     * @param {undefined | null | string} options.email.senderDetails.senderEmail
-     * @param {undefined | null | string} options.email.senderDetails.senderReplyTo
      * @param {'welcome' | 'automation'} options.emailType
      * @returns {Promise<void>}
      */
@@ -443,7 +431,7 @@ class MemberWelcomeEmailService {
         });
 
         const senderOptions = await this.#getEffectiveSenderOptions(
-            getSenderDetails(email.senderDetails, email.designSettings)
+            getSenderDetails(email.designSettings)
         );
 
         await this.#mailer.send({
@@ -508,8 +496,7 @@ class MemberWelcomeEmailService {
             email: {
                 lexical: email.lexical,
                 subject: email.subject,
-                designSettings: designSettingsJson,
-                senderDetails: getSenderDetailsFromDesignSettings(designSettingsJson)
+                designSettings: designSettingsJson
             }
         });
     }
@@ -573,8 +560,7 @@ class MemberWelcomeEmailService {
 
         return {
             ...preview,
-            designSettings,
-            automatedEmail
+            designSettings
         };
     }
 
@@ -597,7 +583,6 @@ class MemberWelcomeEmailService {
             html,
             text,
             subject: renderedSubject,
-            automatedEmail,
             designSettings
         } = await this.#renderWelcomeEmailPreview({
             automatedEmailId,
@@ -610,11 +595,7 @@ class MemberWelcomeEmailService {
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
         const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
         const senderOptions = await this.#getEffectiveSenderOptions(
-            getSenderDetails({
-                senderName: automatedEmail.get('sender_name'),
-                senderEmail: automatedEmail.get('sender_email'),
-                senderReplyTo: automatedEmail.get('sender_reply_to')
-            }, designSettingsJson)
+            getSenderDetails(designSettingsJson)
         );
 
         await this.#mailer.send({
