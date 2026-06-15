@@ -791,6 +791,23 @@
     .gh-post-list-author {
         max-width: calc(100% - 140px);
     }
+
+    /* let the title/meta block shrink so a long title or tag name can't hold the
+       row open and push the row's action button past the viewport */
+    .gh-post-list-title-content {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    .gh-post-list-title-content .gh-content-entry-title {
+        overflow-wrap: anywhere;
+    }
+
+    .gh-post-list-title-content .gh-content-entry-meta {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
 }
 
 @media (max-width: 430px) {
