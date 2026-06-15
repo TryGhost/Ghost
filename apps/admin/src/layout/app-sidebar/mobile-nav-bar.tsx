@@ -17,7 +17,7 @@ function MobileNavBarButton({ to, activeOnSubpath = false, children, ...props }:
     return (
         <Button
             asChild
-            className={`w-full max-w-16 min-w-9 rounded-full hover:bg-gray-200 ${isActive ? 'bg-gray-200' : 'bg-transparent'}`} {...props}
+            className={`w-full max-w-16 min-w-9 rounded-full hover:bg-sidebar-accent hover:text-sidebar-accent-foreground ${isActive ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'bg-transparent'}`} {...props}
             variant="ghost"
             size="icon"
             data-active={isActive}
