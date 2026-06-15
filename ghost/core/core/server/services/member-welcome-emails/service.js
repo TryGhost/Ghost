@@ -9,7 +9,7 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
-const {Automation, EmailDesignSetting, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
+const {Automation, EmailDesignSetting, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -258,7 +258,11 @@ class MemberWelcomeEmailService {
 
     #hasSharedSenderFieldChanged(rows, field, value) {
         return rows.some((row) => {
-            const currentValue = row.related('welcomeEmailAutomatedEmail')?.get(field);
+            const email = row.related('welcomeEmailAutomatedEmail');
+            const currentValue = (
+                email?.related('emailDesignSetting')?.get(field) ??
+                email?.get(field)
+            );
             return trimValue(currentValue) !== trimValue(value);
         });
     }
@@ -314,9 +318,13 @@ class MemberWelcomeEmailService {
             return;
         }
 
-        await Promise.all(rows.map((row) => {
-            const email = row.related('welcomeEmailAutomatedEmail');
-            return WelcomeEmailAutomatedEmail.edit(attrs, {id: email.id});
+        // De-dupe so we don't write to the same design row twice.
+        const designSettingIds = new Set(
+            rows.map(row => row.related('welcomeEmailAutomatedEmail')?.get('email_design_setting_id')).filter(Boolean)
+        );
+
+        await Promise.all([...designSettingIds].map(async (id) => {
+            await EmailDesignSetting.edit(attrs, {id});
         }));
     }
 

@@ -10,11 +10,12 @@ const messages = {
 
 // NOTE: This file is in a transitionary state. The `automated_emails` database table was split into
 // `automations` (automation metadata: status, name, slug) and
-// `welcome_email_automated_emails` (email content: subject, lexical, sender fields). This controller
+// `welcome_email_automated_emails` (email content: subject, lexical). This controller
 // acts as a facade that joins/splits data between those two models while preserving the original
 // `automated_emails` API shape externally.
 const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
-const EMAIL_FIELDS = ['subject', 'lexical', 'sender_name', 'sender_email', 'sender_reply_to', 'email_design_setting_id'];
+const EMAIL_FIELDS = ['subject', 'lexical', 'email_design_setting_id'];
+const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
 
 function hasSenderValue(value) {
     if (typeof value === 'string') {
@@ -52,12 +53,17 @@ function flattenAutomation(automation, email = automation.related('welcomeEmailA
     return result;
 }
 
-async function getEmailDesignSettings(email, options) {
-    if (!email.get('email_design_setting_id')) {
-        return null;
+async function updateEmailDesignSenderFields(email, senderData, options) {
+    const id = email.get('email_design_setting_id');
+
+    if (Object.keys(senderData).length > 0) {
+        return models.EmailDesignSetting.edit(senderData, {
+            ...options,
+            id
+        });
     }
 
-    return models.EmailDesignSetting.findOne({id: email.get('email_design_setting_id')}, options);
+    return models.EmailDesignSetting.findOne({id}, options);
 }
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -125,6 +131,7 @@ const controller = {
             const data = frame.data.automated_emails[0];
 
             const emailData = _.pick(data, EMAIL_FIELDS);
+            const senderData = _.pick(data, SENDER_FIELDS);
             const automationData = _.pick(data, AUTOMATION_FIELDS);
 
             return models.Base.transaction(async (transacting) => {
@@ -137,7 +144,7 @@ const controller = {
                     },
                     {...frame.options, transacting}
                 );
-                const designSettings = await getEmailDesignSettings(email, {...frame.options, transacting});
+                const designSettings = await updateEmailDesignSenderFields(email, senderData, {...frame.options, transacting});
                 return flattenAutomation(automation, email, designSettings);
             });
         }
@@ -163,6 +170,7 @@ const controller = {
             const data = frame.data.automated_emails[0];
 
             const emailData = _.pick(data, EMAIL_FIELDS);
+            const senderData = _.pick(data, SENDER_FIELDS);
             const automationData = _.pick(data, AUTOMATION_FIELDS);
 
             return models.Base.transaction(async (transacting) => {
@@ -184,9 +192,12 @@ const controller = {
                         id: email.id
                     });
                 }
-                const designSettings = email.related('emailDesignSetting')?.id ?
-                    email.related('emailDesignSetting') :
-                    await getEmailDesignSettings(email, {...frame.options, transacting});
+
+                const designSettings = await updateEmailDesignSenderFields(
+                    email,
+                    senderData,
+                    {...frame.options, transacting}
+                );
 
                 if (Object.keys(automationData).length > 0) {
                     automation = await models.Automation.edit(automationData, {
