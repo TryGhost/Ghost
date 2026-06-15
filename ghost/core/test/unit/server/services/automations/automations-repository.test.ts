@@ -7,6 +7,22 @@ import type {AutomationAction, AutomationsRepository, AutomationStepToRun} from 
 
 const HOUR_MS = 60 * 60 * 1000;
 const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
+const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
+    root: {
+        children: [{
+            type: 'paragraph',
+            children: [{
+                type: 'text',
+                text: 'Lorem ipsum.'
+            }]
+        }],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1
+    }
+});
 
 const toDatabaseDate = (date: Date | string): string => moment(date).format(DATABASE_DATE_FORMAT);
 const toRepositoryDateISOString = (date: Date | string): string => new Date(toDatabaseDate(date)).toISOString();
@@ -34,23 +50,8 @@ const createDatabase = async (): Promise<Knex> => {
     const id = () => ObjectId().toHexString();
     const now = () => toDatabaseDate(new Date());
 
-    const fakeLexical = JSON.stringify({
-        root: {
-            children: [{
-                type: 'paragraph',
-                children: [{
-                    type: 'text',
-                    text: 'Lorem ipsum.'
-                }]
-            }],
-            direction: null,
-            format: '',
-            indent: 0,
-            type: 'root',
-            version: 1
-        }
-    });
     const fakeEmailDesignSettingId = id();
+    const defaultEmailDesignSettingId = id();
 
     await database.schema.createTable('automations', (table) => {
         table.text('id').primary();
@@ -70,6 +71,13 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('type').notNullable();
     });
 
+    await database.schema.createTable('email_design_settings', (table) => {
+        table.text('id').primary();
+        table.text('slug').notNullable().unique();
+        table.text('created_at').notNullable();
+        table.text('updated_at');
+    });
+
     await database.schema.createTable('automation_action_revisions', (table) => {
         table.text('id').primary();
         table.text('created_at').notNullable();
@@ -77,7 +85,7 @@ const createDatabase = async (): Promise<Knex> => {
         table.integer('wait_hours');
         table.text('email_subject');
         table.text('email_lexical');
-        table.text('email_design_setting_id'); // not a real foreign key here
+        table.text('email_design_setting_id').references('id').inTable('email_design_settings');
         table.unique(['created_at', 'action_id']);
     });
 
@@ -113,6 +121,18 @@ const createDatabase = async (): Promise<Knex> => {
 
     const freeAutomationId = id();
     const paidAutomationId = id();
+    await database('email_design_settings').insert([{
+        id: defaultEmailDesignSettingId,
+        slug: 'default-automated-email',
+        created_at: now(),
+        updated_at: now()
+    }, {
+        id: fakeEmailDesignSettingId,
+        slug: 'test-automation-email-design',
+        created_at: now(),
+        updated_at: now()
+    }]);
+
     await database('automations').insert([{
         id: freeAutomationId,
         created_at: now(),
@@ -201,7 +221,7 @@ const createDatabase = async (): Promise<Knex> => {
         action_id: freeAction2Id,
         wait_hours: null,
         email_subject: 'Welcome!',
-        email_lexical: fakeLexical,
+        email_lexical: NON_EMPTY_EMAIL_LEXICAL,
         email_design_setting_id: fakeEmailDesignSettingId
     }, {
         id: id(),
@@ -217,7 +237,7 @@ const createDatabase = async (): Promise<Knex> => {
         action_id: freeAction4Id,
         wait_hours: null,
         email_subject: 'Follow up',
-        email_lexical: fakeLexical,
+        email_lexical: NON_EMPTY_EMAIL_LEXICAL,
         email_design_setting_id: fakeEmailDesignSettingId
     }, {
         id: id(),
@@ -233,7 +253,7 @@ const createDatabase = async (): Promise<Knex> => {
         action_id: paidAction2Id,
         wait_hours: null,
         email_subject: 'Welcome to Paid!',
-        email_lexical: fakeLexical,
+        email_lexical: NON_EMPTY_EMAIL_LEXICAL,
         email_design_setting_id: fakeEmailDesignSettingId
     }, {
         id: id(),
@@ -249,7 +269,7 @@ const createDatabase = async (): Promise<Knex> => {
         action_id: paidAction4Id,
         wait_hours: null,
         email_subject: 'Exclusive Insights',
-        email_lexical: fakeLexical,
+        email_lexical: NON_EMPTY_EMAIL_LEXICAL,
         email_design_setting_id: fakeEmailDesignSettingId
     }]);
 
@@ -375,7 +395,8 @@ describe('automations repository', function () {
                 'automation_actions.id as action_id',
                 'automation_actions.type as action_type',
                 'automation_action_revisions.id as revision_id',
-                'automation_action_revisions.wait_hours as wait_hours'
+                'automation_action_revisions.wait_hours as wait_hours',
+                'automation_action_revisions.email_design_setting_id as email_design_setting_id'
             )
             .innerJoin('automation_action_revisions', 'automation_action_revisions.action_id', 'automation_actions.id')
             .where('automation_actions.id', actionId)
@@ -691,6 +712,34 @@ describe('automations repository', function () {
             assert.equal(await getRevisionCount(waitAction.id), 2);
             assert.equal(await getRevisionCount(unchangedEmailAction.id), 1);
             assert.equal(await getRevisionCount(addedActionId), 1);
+        });
+
+        it('resolves default email design setting slugs to the default design setting id', async function () {
+            const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
+            const addedActionId = ObjectId().toString();
+            const addedAction: AutomationAction = {
+                id: addedActionId,
+                type: 'send_email',
+                data: {
+                    email_subject: 'Welcome',
+                    email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+                    email_design_setting_id: 'default-automated-email'
+                }
+            };
+
+            await repo.edit(initialAutomation.id, {
+                status: 'inactive',
+                actions: [addedAction],
+                edges: []
+            });
+
+            const defaultDesignSetting = await knex('email_design_settings')
+                .select('id')
+                .where('slug', 'default-automated-email')
+                .first();
+            const revision = await getLatestActionRevisionByActionId(addedActionId);
+
+            assert.equal(revision.email_design_setting_id, defaultDesignSetting.id);
         });
     });
 

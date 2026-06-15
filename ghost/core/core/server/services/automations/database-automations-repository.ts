@@ -5,7 +5,7 @@ import ObjectId from 'bson-objectid';
 import {dequal} from 'dequal';
 import {type Knex} from 'knex';
 import moment from 'moment';
-import {MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
+import {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import type {
     Automation,
     AutomationAction,
@@ -26,8 +26,11 @@ const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const messages = {
     invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".',
     conflictingAutomationActionId: 'Automation action "{actionId}" already exists and cannot be inserted.',
-    conflictingAutomationActionType: 'Automation action "{actionId}" already exists with a different type.'
+    conflictingAutomationActionType: 'Automation action "{actionId}" already exists with a different type.',
+    defaultEmailDesignSettingNotFound: 'Default automated email design setting not found.'
 };
+
+const DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE = DEFAULT_EMAIL_DESIGN_SETTING_SLUG;
 
 interface AutomationRow {
     id: string;
@@ -594,9 +597,10 @@ async function updateAutomation(trx: Knex.Transaction, automation: AutomationRow
     return requireAutomation(await loadAutomation(trx, automation.id), automation.id);
 }
 
-async function replaceAutomationGraph(trx: Knex.Transaction, automationId: string, actions: AutomationAction[], edges: AutomationEdge[]): Promise<void> {
+async function replaceAutomationGraph(trx: Knex.Transaction, automationId: string, submittedActions: AutomationAction[], edges: AutomationEdge[]): Promise<void> {
     // TODO(NY-1340): This makes too many round-trips to the database. We should improve that.
     const existingActions = await loadAutomationActionRows(trx, automationId);
+    const actions = await resolveEmailDesignSettingIds(trx, submittedActions);
     const existingActionIds = new Set(existingActions.map(action => action.id));
     const submittedActionIds = new Set(actions.map(action => action.id));
     const now = toDatabaseDate(new Date());
@@ -646,6 +650,43 @@ async function replaceAutomationGraph(trx: Knex.Transaction, automationId: strin
     await deleteAutomationEdges(trx, automationId);
 
     await insertActionEdges(trx, edges);
+}
+
+async function resolveEmailDesignSettingIds(trx: Knex.Transaction, actions: ReadonlyArray<AutomationAction>): Promise<AutomationAction[]> {
+    if (!actions.some(action => action.type === 'send_email' && action.data.email_design_setting_id === DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE)) {
+        return [...actions];
+    }
+
+    const defaultEmailDesignSettingId = await loadDefaultEmailDesignSettingId(trx);
+
+    return actions.map((action) => {
+        if (action.type !== 'send_email' || action.data.email_design_setting_id !== DEFAULT_EMAIL_DESIGN_SETTING_REFERENCE) {
+            return action;
+        }
+
+        return {
+            ...action,
+            data: {
+                ...action.data,
+                email_design_setting_id: defaultEmailDesignSettingId
+            }
+        };
+    });
+}
+
+async function loadDefaultEmailDesignSettingId(trx: Knex.Transaction): Promise<string> {
+    const row = await trx('email_design_settings')
+        .select('id')
+        .where('slug', DEFAULT_EMAIL_DESIGN_SETTING_SLUG)
+        .first();
+
+    if (!row?.id) {
+        throw new errors.InternalServerError({
+            message: tpl(messages.defaultEmailDesignSettingNotFound)
+        });
+    }
+
+    return row.id;
 }
 
 async function loadAutomationActionRows(trx: Knex.Transaction, automationId: string): Promise<Array<Pick<ActionRow, 'id' | 'type'>>> {

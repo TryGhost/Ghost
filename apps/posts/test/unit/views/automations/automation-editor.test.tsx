@@ -1294,7 +1294,7 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
     });
 
-    it('inserts a send_email step with placeholder defaults when picked from the tail', async () => {
+    it('inserts a send_email step with default values when picked from the tail', async () => {
         mockUseReadAutomation.mockReturnValue({
             data: {automations: [automationDetail]},
             isLoading: false,
@@ -1307,7 +1307,7 @@ describe('AutomationEditor', () => {
         const picker = await screen.findByTestId('step-picker');
         fireEvent.click(within(picker).getByText('Email'));
 
-        // The new send_email step renders with the placeholder subject.
+        // The new send_email step renders with the default empty subject.
         const insertedNode = screen.getByRole('button', {name: 'Send email: Untitled'});
         expect(insertedNode).toHaveClass('border-yellow-600');
         expect(within(insertedNode).getByText('Untitled')).toHaveClass('opacity-50');

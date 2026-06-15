@@ -375,6 +375,33 @@ describe('Automations API', function () {
             assert.equal(editBody.automations[0].actions[0].data.email_subject, '');
         });
 
+        it('resolves default email design setting slugs when saving a send email action', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const emailAction = buildSendEmailAction({
+                email_design_setting_id: 'default-automated-email'
+            });
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [emailAction],
+                        edges: []
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const designSettingId = editBody.automations[0].actions[0].data.email_design_setting_id;
+            assert.notEqual(designSettingId, 'default-automated-email');
+            assert.equal(ObjectId.isValid(designSettingId), true);
+        });
+
         it('rejects activating an automation with an empty email subject', async function () {
             const {body: browseBody} = await agent
                 .get('automations')
