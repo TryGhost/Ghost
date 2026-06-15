@@ -14,19 +14,44 @@ type Props = {
 const ReplyForm: React.FC<Props> = ({openForm, parent, threadedLayout = false}) => {
     const {postId, dispatchAction, t} = useAppContext();
     const [, setForm] = useRefCallback<HTMLDivElement>(scrollToElement);
-    const insertedQuoteId = useRef<string | null>(null);
+
+    // The quote present when the form first opens is seeded as the editor's
+    // initial content (below) rather than inserted after mount. Inserting post-
+    // mount races the editor's async creation on mobile — the form opens but the
+    // quote is dropped, forcing a second tap. Seeding makes it part of the
+    // document at creation, so it's there in a single action. Captured once via
+    // a ref so re-renders don't change it.
+    const initialQuote = useRef(openForm.pendingQuote);
+    // The seeded quote counts as already inserted; the effect below only handles
+    // subsequent re-quotes into an already-open (already-mounted) editor.
+    const insertedQuoteId = useRef<string | null>(initialQuote.current?.id ?? null);
 
     const config = useMemo(() => ({
         placeholder: t('Reply to comment'),
+        // Seed the opening quote as initial content so it exists at editor
+        // creation (see initialQuote above). Empty for plain reply forms.
+        content: initialQuote.current ? `<blockquote>${initialQuote.current.html}</blockquote><p></p>` : '',
         // TipTap's autofocus fires from a setTimeout after editor creation and
-        // rewrites the editor selection into the DOM. For a quote-initiated form
-        // the insertion effect below already focuses synchronously, so the
-        // delayed autofocus would only race the user's next text selection and
-        // steal it. Plain reply forms keep autofocus.
+        // rewrites the editor selection into the DOM, racing (and stealing) a
+        // text selection the user makes right after a quote form opens. Quote
+        // forms focus via the effect below instead; plain reply forms keep
+        // autofocus. (On iOS neither raises the keyboard — the editor is created
+        // after the tap's gesture window closes — but desktop focuses either way.)
         autofocus: !openForm.pendingQuote
     }), []);
 
     const {editor} = useEditor(config);
+
+    useEffect(() => {
+        // Focus after a seeded quote (cursor in the trailing paragraph) once the
+        // editor exists. A direct focus() avoids TipTap autofocus's deferred
+        // selection-steal; autofocus is disabled for quote forms above.
+        if (!editor || !initialQuote.current) {
+            return;
+        }
+
+        editor.commands.focus('end');
+    }, [editor]);
 
     useEffect(() => {
         if (!editor || !openForm.pendingQuote || insertedQuoteId.current === openForm.pendingQuote.id) {
@@ -35,11 +60,11 @@ const ReplyForm: React.FC<Props> = ({openForm, parent, threadedLayout = false}) 
 
         insertedQuoteId.current = openForm.pendingQuote.id;
 
-        // insertContent parses against the editor schema (with the editor's
-        // preserveWhitespace: 'full' parse options), replaces the empty paragraph
-        // in place when the form is empty, and leaves the cursor in the trailing
-        // paragraph. The inserted quote counts as content, so the form reports
-        // unsaved changes (see form.tsx checkContent) and is never auto-closed.
+        // Re-quoting into an already-open form: the editor already exists, so
+        // inserting here is race-free (the first quote is seeded as initial
+        // content above). insertContent parses against the editor schema, leaves
+        // the cursor in the trailing paragraph, and counts as content so the form
+        // reports unsaved changes (see form.tsx checkContent) and isn't auto-closed.
         editor.chain()
             .focus()
             .insertContent(`<blockquote>${openForm.pendingQuote.html}</blockquote><p></p>`)
