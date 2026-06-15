@@ -280,8 +280,8 @@ catalogs:
       specifier: 4.1.8
       version: 4.1.8
     zod:
-      specifier: 4.1.12
-      version: 4.1.12
+      specifier: 4.4.3
+      version: 4.4.3
   eslint9:
     '@eslint/js':
       specifier: 9.37.0
@@ -462,7 +462,7 @@ importers:
         version: 10.1.1(react@18.3.1)
       zod:
         specifier: 'catalog:'
-        version: 4.1.12
+        version: 4.4.3
     devDependencies:
       '@playwright/test':
         specifier: 'catalog:'
@@ -550,7 +550,7 @@ importers:
         version: 18.3.1(react@18.3.1)
       zod:
         specifier: 'catalog:'
-        version: 4.1.12
+        version: 4.4.3
     devDependencies:
       '@eslint/js':
         specifier: catalog:eslint9
@@ -1371,7 +1371,7 @@ importers:
         version: 13.12.0
       zod:
         specifier: 'catalog:'
-        version: 4.1.12
+        version: 4.4.3
     devDependencies:
       '@playwright/test':
         specifier: 'catalog:'
@@ -1555,7 +1555,7 @@ importers:
         version: 13.12.0
       zod:
         specifier: 'catalog:'
-        version: 4.1.12
+        version: 4.4.3
     devDependencies:
       '@storybook/addon-docs':
         specifier: 'catalog:'
@@ -2796,7 +2796,7 @@ importers:
         version: 1.0.1
       zod:
         specifier: 'catalog:'
-        version: 4.1.12
+        version: 4.4.3
     devDependencies:
       '@actions/core':
         specifier: 3.0.1
@@ -21982,8 +21982,8 @@ packages:
     resolution: {integrity: sha512-dSvYKdvLsAHCDqPOhIwk/q5CvuWtTB3Dgpoe0uVEFjTzIOAmsQpprX25InCvrvJsirEbu1OHyy67n/kAj1Sw/w==}
     engines: {node: '>=18'}
 
-  zod@4.1.12:
-    resolution: {integrity: sha512-JInaHOamG8pt5+Ey8kGmdcAcg3OL9reK8ltczgHTAwNhMys/6ThXHityHxVV2p3fkw/c+MAvBHFVYHFZDmjMCQ==}
+  zod@4.4.3:
+    resolution: {integrity: sha512-ytENFjIJFl2UwYglde2jchW2Hwm4GJFLDiSXWdTrJQBIN9Fcyp7n4DhxJEiWNAJMV1/BqWfW/kkg71UDcHJyTQ==}
 
   zrender@5.6.1:
     resolution: {integrity: sha512-OFXkDJKcrlx5su2XbzJvj/34Q3m6PvyCZkVPHGYpcCJ52ek4U/ymZyfuV1nKE23AyBJ51E/6Yr0mhZ7xGTO4ag==}
@@ -39349,7 +39349,7 @@ snapshots:
       tinyglobby: 0.2.16
       unbash: 3.0.0
       yaml: 2.9.0
-      zod: 4.1.12
+      zod: 4.4.3
 
   language-subtag-registry@0.3.23: {}
 
@@ -46708,7 +46708,7 @@ snapshots:
       normalize-path: 3.0.0
       readable-stream: 4.7.0
 
-  zod@4.1.12: {}
+  zod@4.4.3: {}
 
   zrender@5.6.1:
     dependencies:

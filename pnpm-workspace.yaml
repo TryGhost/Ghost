@@ -117,7 +117,7 @@ catalog:
   vite: 7.3.2
   vite-plugin-svgr: 4.5.0
   vitest: 4.1.8
-  zod: 4.1.12
+  zod: 4.4.3
 
 catalogs:
   eslint9:
