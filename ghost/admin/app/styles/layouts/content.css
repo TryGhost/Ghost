@@ -794,9 +794,12 @@
 
     /* the list is a CSS table, which sizes to its content and so grows past the
        viewport on a phone; make it a normal block (the table columns are already
-       hidden at this width) so it tracks the viewport instead */
+       hidden at this width) so it tracks the viewport instead. Keep a min-width so
+       the text column stays usable on very narrow screens (the page scrolls a little
+       below ~350px rather than breaking titles mid-word) */
     .posts-list.gh-list {
         display: block;
+        min-width: 300px;
     }
 
     /* with the table gone, let the title/meta block shrink so a long title or tag
