@@ -132,7 +132,7 @@ describe('Automated Emails API', function () {
                 });
         });
 
-        it('Falls back to welcome email sender details when email design sender details are empty', async function () {
+        it('Does not return welcome email sender details when email design sender details are empty', async function () {
             const automatedEmail = await createAutomatedEmail();
             await updateSenderStorage(automatedEmail.id, {
                 email: {
@@ -151,9 +151,9 @@ describe('Automated Emails API', function () {
                 .get('automated_emails')
                 .expectStatus(200)
                 .expect(({body}) => {
-                    assert.equal(body.automated_emails[0].sender_name, 'Welcome Sender');
-                    assert.equal(body.automated_emails[0].sender_email, 'welcome@example.com');
-                    assert.equal(body.automated_emails[0].sender_reply_to, 'welcome-reply@example.com');
+                    assert.equal(body.automated_emails[0].sender_name, null);
+                    assert.equal(body.automated_emails[0].sender_email, null);
+                    assert.equal(body.automated_emails[0].sender_reply_to, null);
                 });
         });
     });
@@ -201,7 +201,7 @@ describe('Automated Emails API', function () {
                 });
         });
 
-        it('Falls back to welcome email sender details when email design sender details are empty', async function () {
+        it('Does not return welcome email sender details when email design sender details are empty', async function () {
             const automatedEmail = await createAutomatedEmail();
             await updateSenderStorage(automatedEmail.id, {
                 email: {
@@ -220,9 +220,9 @@ describe('Automated Emails API', function () {
                 .get(`automated_emails/${automatedEmail.id}`)
                 .expectStatus(200)
                 .expect(({body}) => {
-                    assert.equal(body.automated_emails[0].sender_name, 'Welcome Sender');
-                    assert.equal(body.automated_emails[0].sender_email, 'welcome@example.com');
-                    assert.equal(body.automated_emails[0].sender_reply_to, 'welcome-reply@example.com');
+                    assert.equal(body.automated_emails[0].sender_name, null);
+                    assert.equal(body.automated_emails[0].sender_email, null);
+                    assert.equal(body.automated_emails[0].sender_reply_to, null);
                 });
         });
     });

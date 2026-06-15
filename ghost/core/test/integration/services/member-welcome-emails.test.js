@@ -495,7 +495,7 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(sendCall.args[0].replyTo, 'design-reply@example.com');
         });
 
-        it('uses welcome email sender details for member welcome emails when email design sender details are empty', async function () {
+        it('uses newsletter sender details for member welcome emails when email design sender details are empty', async function () {
             const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
 
             await db.knex('newsletters')
@@ -541,8 +541,8 @@ describe('Member Welcome Emails Integration', function () {
             await scheduleInlineJob();
 
             sinon.assert.calledOnceWithExactly(mailService.GhostMailer.prototype.send, sinon.match({
-                from: '"Welcome Sender" <welcome@example.com>',
-                replyTo: 'welcome-reply@example.com'
+                from: '"Newsletter Sender" <newsletter@example.com>',
+                replyTo: 'newsletter-reply@example.com'
             }));
         });
 
@@ -705,8 +705,18 @@ describe('Member Welcome Emails Integration', function () {
             assert.equal(sendCall.args[0].replyTo, 'design-reply@example.com');
         });
 
-        it('uses welcome email sender details for test welcome emails when email design sender details are empty', async function () {
+        it('uses newsletter sender details for test welcome emails when email design sender details are empty', async function () {
             memberWelcomeEmailService.init();
+
+            const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
+
+            await db.knex('newsletters')
+                .where('id', defaultNewsletter.id)
+                .update({
+                    sender_name: 'Newsletter Sender',
+                    sender_email: 'newsletter@example.com',
+                    sender_reply_to: 'newsletter-reply@example.com'
+                });
 
             await db.knex('email_design_settings')
                 .where('id', defaultEmailDesignSettingId)
@@ -749,8 +759,8 @@ describe('Member Welcome Emails Integration', function () {
 
             sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
-            assert.equal(sendCall.args[0].from, '"Welcome Sender" <welcome@example.com>');
-            assert.equal(sendCall.args[0].replyTo, 'welcome-reply@example.com');
+            assert.equal(sendCall.args[0].from, '"Newsletter Sender" <newsletter@example.com>');
+            assert.equal(sendCall.args[0].replyTo, 'newsletter-reply@example.com');
         });
     });
 

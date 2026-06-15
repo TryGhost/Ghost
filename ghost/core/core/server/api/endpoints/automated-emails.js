@@ -17,24 +17,6 @@ const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
 const EMAIL_FIELDS = ['subject', 'lexical', 'email_design_setting_id'];
 const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
 
-function hasSenderValue(value) {
-    if (typeof value === 'string') {
-        return value.trim() !== '';
-    }
-
-    return value !== null && value !== undefined;
-}
-
-function getEffectiveSenderValue(email, designSettings, field) {
-    const designValue = designSettings?.id ? designSettings.get(field) : null;
-
-    if (hasSenderValue(designValue)) {
-        return designValue;
-    }
-
-    return email.get(field);
-}
-
 function flattenAutomation(automation, email = automation.related('welcomeEmailAutomatedEmail'), designSettings = email.related('emailDesignSetting')) {
     const result = {
         id: automation.id,
@@ -43,9 +25,9 @@ function flattenAutomation(automation, email = automation.related('welcomeEmailA
         slug: automation.get('slug'),
         subject: email.get('subject'),
         lexical: email.get('lexical'),
-        sender_name: getEffectiveSenderValue(email, designSettings, 'sender_name'),
-        sender_email: getEffectiveSenderValue(email, designSettings, 'sender_email'),
-        sender_reply_to: getEffectiveSenderValue(email, designSettings, 'sender_reply_to'),
+        sender_name: designSettings?.get('sender_name') || null,
+        sender_email: designSettings?.get('sender_email') || null,
+        sender_reply_to: designSettings?.get('sender_reply_to') || null,
         email_design_setting_id: email.get('email_design_setting_id'),
         created_at: automation.get('created_at'),
         updated_at: automation.get('updated_at')
