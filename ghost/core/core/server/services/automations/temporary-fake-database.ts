@@ -50,75 +50,64 @@ export async function createTemporaryFakeAutomationsDatabase(): Promise<Knex> {
     });
     const fakeEmailDesignSettingId = id();
 
-    for (const createTable of [
-        `
-            CREATE TABLE automations (
-              id TEXT PRIMARY KEY,
-              created_at TEXT NOT NULL,
-              updated_at TEXT NOT NULL,
-              slug TEXT NOT NULL,
-              name TEXT NOT NULL,
-              status TEXT NOT NULL
-            ) STRICT;
-        `,
-        `
-            CREATE TABLE automation_actions (
-              id TEXT PRIMARY KEY,
-              created_at TEXT NOT NULL,
-              updated_at TEXT NOT NULL,
-              deleted_at TEXT,
-              automation_id TEXT NOT NULL REFERENCES automations(id),
-              type TEXT NOT NULL
-            ) STRICT;
-        `,
-        `
-            CREATE TABLE automation_action_revisions (
-              id TEXT PRIMARY KEY,
-              created_at TEXT NOT NULL,
-              action_id TEXT NOT NULL REFERENCES automation_actions(id),
-              wait_hours INTEGER,
-              email_subject TEXT,
-              email_lexical TEXT,
-              email_design_setting_id TEXT, -- not a real foreign key here
-              UNIQUE (created_at, action_id)
-            ) STRICT;
-        `,
-        `
-            CREATE TABLE automation_action_edges (
-              source_action_id TEXT NOT NULL REFERENCES automation_actions(id),
-              target_action_id TEXT NOT NULL REFERENCES automation_actions(id),
-              PRIMARY KEY (source_action_id, target_action_id)
-            ) STRICT;
-        `,
-        `
-            CREATE TABLE automation_runs (
-              id TEXT PRIMARY KEY,
-              created_at TEXT NOT NULL,
-              updated_at TEXT NOT NULL,
-              automation_id TEXT NOT NULL REFERENCES automations(id),
-              member_id TEXT, -- not a real foreign key here
-              member_email TEXT NOT NULL
-            ) STRICT;
-        `,
-        `
-            CREATE TABLE automation_run_steps (
-              id TEXT PRIMARY KEY,
-              created_at TEXT NOT NULL,
-              updated_at TEXT NOT NULL,
-              automation_run_id TEXT NOT NULL REFERENCES automation_runs(id),
-              automation_action_revision_id TEXT NOT NULL REFERENCES automation_action_revisions(id),
-              ready_at TEXT NOT NULL,
-              step_attempts INTEGER NOT NULL DEFAULT 0,
-              started_at TEXT,
-              finished_at TEXT,
-              status TEXT NOT NULL DEFAULT 'pending',
-              locked_by TEXT,
-              locked_at TEXT
-            ) STRICT;
-        `
-    ]) {
-        await database.raw(createTable);
-    }
+    await database.schema.createTable('automations', (table) => {
+        table.text('id').primary();
+        table.text('created_at').notNullable();
+        table.text('updated_at').notNullable();
+        table.text('slug').notNullable();
+        table.text('name').notNullable();
+        table.text('status').notNullable();
+    });
+
+    await database.schema.createTable('automation_actions', (table) => {
+        table.text('id').primary();
+        table.text('created_at').notNullable();
+        table.text('updated_at').notNullable();
+        table.text('deleted_at');
+        table.text('automation_id').notNullable().references('id').inTable('automations');
+        table.text('type').notNullable();
+    });
+
+    await database.schema.createTable('automation_action_revisions', (table) => {
+        table.text('id').primary();
+        table.text('created_at').notNullable();
+        table.text('action_id').notNullable().references('id').inTable('automation_actions');
+        table.integer('wait_hours');
+        table.text('email_subject');
+        table.text('email_lexical');
+        table.text('email_design_setting_id'); // not a real foreign key here
+        table.unique(['created_at', 'action_id']);
+    });
+
+    await database.schema.createTable('automation_action_edges', (table) => {
+        table.text('source_action_id').notNullable().references('id').inTable('automation_actions');
+        table.text('target_action_id').notNullable().references('id').inTable('automation_actions');
+        table.primary(['source_action_id', 'target_action_id']);
+    });
+
+    await database.schema.createTable('automation_runs', (table) => {
+        table.text('id').primary();
+        table.text('created_at').notNullable();
+        table.text('updated_at').notNullable();
+        table.text('automation_id').notNullable().references('id').inTable('automations');
+        table.text('member_id'); // not a real foreign key here
+        table.text('member_email').notNullable();
+    });
+
+    await database.schema.createTable('automation_run_steps', (table) => {
+        table.text('id').primary();
+        table.text('created_at').notNullable();
+        table.text('updated_at').notNullable();
+        table.text('automation_run_id').notNullable().references('id').inTable('automation_runs');
+        table.text('automation_action_revision_id').notNullable().references('id').inTable('automation_action_revisions');
+        table.text('ready_at').notNullable();
+        table.integer('step_attempts').notNullable().defaultTo(0);
+        table.text('started_at');
+        table.text('finished_at');
+        table.text('status').notNullable().defaultTo('pending');
+        table.text('locked_by');
+        table.text('locked_at');
+    });
 
     const freeAutomationId = id();
     const paidAutomationId = id();

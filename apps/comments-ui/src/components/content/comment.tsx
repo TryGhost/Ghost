@@ -463,7 +463,7 @@ type CommentMenuProps = {
     className?: string;
 };
 const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highlightReplyButton, openEditMode, className = ''}) => {
-    const {member, t, isMember, isAdmin, isCommentingDisabled, capabilities} = useAppContext();
+    const {member, t, isMember, isAdmin, isCommentingDisabled} = useAppContext();
     const [voteDisabled, setVoteDisabled] = React.useState(false);
 
     const isPublished = comment.status === 'published';
@@ -471,7 +471,7 @@ const CommentMenu: React.FC<CommentMenuProps> = ({comment, openReplyForm, highli
 
     // Visibility decisions
     const showLikeButton = !isCommentingDisabled;
-    const showDislikeButton = showLikeButton && capabilities?.dislikes === true;
+    const showDislikeButton = showLikeButton;
     const showReplyButton = !isCommentingDisabled;
     const shouldShowMoreButton = isAdmin || (isMember && isPublished);
     const shouldHideMoreButton = isCommentingDisabled && isOwnComment;

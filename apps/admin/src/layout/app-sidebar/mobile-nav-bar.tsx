@@ -2,7 +2,7 @@ import React from "react";
 import {Button, SidebarTrigger, useSidebar} from "@tryghost/shade/components";
 import {LucideIcon} from "@tryghost/shade/utils";
 import { useIsActiveLink } from "./use-is-active-link";
-import { useSidebarVisibility } from "@/ember-bridge/ember-bridge";
+import { useAdminSidebarVisibility } from "@/layout/sidebar-visibility";
 
 const ICON_STROKE_WIDTH = 1.5;
 
@@ -31,7 +31,7 @@ function MobileNavBarButton({ to, activeOnSubpath = false, children, ...props }:
 
 export function MobileNavBar() {
     const { isMobile } = useSidebar();
-    const sidebarVisible = useSidebarVisibility();
+    const sidebarVisible = useAdminSidebarVisibility();
 
 
     if (!isMobile || !sidebarVisible) {
