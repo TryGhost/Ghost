@@ -430,9 +430,10 @@
         justify-content: flex-end;
         min-width: 0;
         max-width: 100% !important;
-        padding: 0;
+        padding: 0 0 6px;
         overflow-x: auto;
         overflow-y: visible;
+        scrollbar-width: thin;
     }
 
     .post-header .view-actions::before {

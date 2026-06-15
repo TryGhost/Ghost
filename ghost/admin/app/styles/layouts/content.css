@@ -806,14 +806,11 @@
         overflow: hidden;
     }
 
-    .gh-post-list-title-content .gh-content-entry-title {
-        overflow-wrap: anywhere;
-    }
-
+    /* wrap (and break long unbroken tokens like a numeric tag) rather than run off
+       the side, so nothing in the row can extend past the viewport */
+    .gh-post-list-title-content .gh-content-entry-title,
     .gh-post-list-title-content .gh-content-entry-meta {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        overflow-wrap: anywhere;
     }
 }
 
