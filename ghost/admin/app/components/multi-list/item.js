@@ -26,6 +26,7 @@ export default class ItemComponent extends Component {
     touchStartY = 0;
     ghostClickHandler = null;
     ghostClickTimer = null;
+    nativeContextMenuHandler = null;
 
     get selectionList() {
         return this.args.model;
@@ -43,6 +44,7 @@ export default class ItemComponent extends Component {
         super.willDestroy(...arguments);
         this.cancelLongPress();
         this.cancelGhostClickSuppression();
+        this.releaseNativeContextMenu();
     }
 
     cancelLongPress() {
@@ -75,6 +77,28 @@ export default class ItemComponent extends Component {
         if (this.ghostClickTimer) {
             clearTimeout(this.ghostClickTimer);
             this.ghostClickTimer = null;
+        }
+    }
+
+    // While the finger is held, the browser's own long-press fires a native contextmenu
+    // event; if it lands on the menu's overlay, the overlay's onContextMenuOutside handler
+    // closes the menu mid-press. Eat contextmenu at the document level for the duration of
+    // the touch so our timer is the only thing that opens or holds the menu.
+    suppressNativeContextMenu() {
+        if (this.nativeContextMenuHandler) {
+            return;
+        }
+        this.nativeContextMenuHandler = (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+        };
+        document.addEventListener('contextmenu', this.nativeContextMenuHandler, true);
+    }
+
+    releaseNativeContextMenu() {
+        if (this.nativeContextMenuHandler) {
+            document.removeEventListener('contextmenu', this.nativeContextMenuHandler, true);
+            this.nativeContextMenuHandler = null;
         }
     }
 
@@ -204,6 +228,8 @@ export default class ItemComponent extends Component {
         this.touchStartX = touch.clientX;
         this.touchStartY = touch.clientY;
 
+        this.suppressNativeContextMenu();
+
         this.longPressTimer = setTimeout(() => {
             this.longPressTimer = null;
             this.longPressFired = true;
@@ -233,6 +259,7 @@ export default class ItemComponent extends Component {
     @action
     onTouchEnd() {
         this.cancelLongPress();
+        this.releaseNativeContextMenu();
 
         // If the long-press opened the menu, the finger lift fires a synthetic ghost click
         // right after this; arm the one-shot suppressor now so that click can't close the menu.

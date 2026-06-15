@@ -414,7 +414,11 @@ describe('Acceptance: Posts / Pages', function () {
 
                         expect(find('.gh-posts-context-menu'), 'context menu visible after long-press').to.be.visible;
 
-                        // releasing the long-press fires a synthetic click; it must not close the menu we just opened
+                        // the browser's own long-press fires a native contextmenu while held; it must not close the menu
+                        await triggerEvent(find('.gh-context-menu-overlay'), 'contextmenu');
+                        expect(find('.gh-posts-context-menu'), 'context menu stays visible while held').to.be.visible;
+
+                        // releasing the long-press fires a synthetic click; it must not close the menu either
                         await triggerEvent(post, 'touchend');
                         await triggerEvent(find('.gh-context-menu-overlay'), 'click');
                         expect(find('.gh-posts-context-menu'), 'context menu stays visible after release click').to.be.visible;
