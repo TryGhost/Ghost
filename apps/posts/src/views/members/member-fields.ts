@@ -11,6 +11,7 @@ const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'en
 const NUMBER_OPERATORS = ['is', 'is-greater', 'is-less'] as const;
 const SCALAR_OPERATORS = ['is', 'is-not'] as const;
 const SET_OPERATORS = ['is-any', 'is-not-any'] as const;
+const LABEL_SET_OPERATORS = ['is-any', 'is-all', 'is-not-any'] as const;
 const SUBSCRIPTION_STATUS_OPTIONS: Array<{value: string; label: string}> = [
     {value: 'active', label: 'Active'},
     {value: 'trialing', label: 'Trialing'},
@@ -141,7 +142,8 @@ const baseMemberFields = defineFields({
         codec: textCodec()
     },
     label: {
-        operators: SET_OPERATORS,
+        operators: LABEL_SET_OPERATORS,
+        parseKeys: ['labels'],
         ui: {
             label: 'Label',
             type: 'multiselect',

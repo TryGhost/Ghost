@@ -47,6 +47,7 @@ describe('resolveField', () => {
             definition: fields.status,
             context: {
                 key: 'status',
+                matchedKey: 'status',
                 pattern: 'status',
                 params: {},
                 timezone: 'UTC'
@@ -61,6 +62,7 @@ describe('resolveField', () => {
             definition: fields['newsletters.:slug'],
             context: {
                 key: 'newsletters.weekly',
+                matchedKey: 'newsletters.weekly',
                 pattern: 'newsletters.:slug',
                 params: {
                     slug: 'weekly'
@@ -84,6 +86,7 @@ describe('resolveField', () => {
             definition: fields.author,
             context: {
                 key: 'author',
+                matchedKey: 'member_id',
                 pattern: 'author',
                 params: {},
                 timezone: 'UTC'
