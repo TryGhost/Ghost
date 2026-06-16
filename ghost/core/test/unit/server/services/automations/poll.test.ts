@@ -312,6 +312,20 @@ describe('automations poll', function () {
         );
     });
 
+    it('does not retry the email send when recording the automated email recipient fails', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        automatedEmailRecipientAdd.rejects(new Error('recipient persistence failed'));
+
+        await poll(options);
+
+        sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.calledOnce(automatedEmailRecipientAdd);
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.retryStep);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+    });
+
     it('enqueues the earlier pending step instead of a later processed next step', async function () {
         const pendingReadyAt = new Date(Date.now() + 30 * 1000);
         const processedNextReadyAt = new Date(Date.now() + 60 * 1000);

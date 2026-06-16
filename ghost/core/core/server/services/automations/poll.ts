@@ -166,13 +166,24 @@ const processStep = async ({
                 },
                 memberStatus
             });
-            await AutomatedEmailRecipient.add({
-                member_id: step.member_id,
-                member_uuid: member.get('uuid'),
-                member_email: member.get('email'),
-                member_name: member.get('name'),
-                automation_action_revision_id: step.automation_action_revision_id
-            });
+            try {
+                await AutomatedEmailRecipient.add({
+                    member_id: step.member_id,
+                    member_uuid: member.get('uuid'),
+                    member_email: member.get('email'),
+                    member_name: member.get('name'),
+                    automation_action_revision_id: step.automation_action_revision_id
+                });
+            } catch (err) {
+                logging.error({
+                    err,
+                    system: {
+                        event: 'automations.poll.recipient_persistence_failed',
+                        member_id: step.member_id,
+                        step_id: step.id
+                    }
+                }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
+            }
             nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
             break;
         }
