@@ -4,6 +4,7 @@ const {http} = require('@tryghost/api-framework');
 const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
+const labs = require('../../../../../shared/labs');
 
 const shared = require('../../../shared');
 
@@ -399,6 +400,19 @@ module.exports = function apiRoutes() {
 
     router.get('/links', mw.authAdminApi, http(api.links.browse));
     router.put('/links/bulk', mw.authAdminApi, http(api.links.bulkEdit));
+
+    // Gift links (gated behind the `giftLinks` private flag). A gift link is a
+    // singular sub-resource of a post/page (at most one active per post), so the
+    // per-post actions nest under the parent. `reset_all` is the site-wide kill
+    // switch and stays on its own path (it's a danger-zone concern, not a
+    // per-post one). Both posts and pages get the parallel routes (like `copy`).
+    router.put('/gift_links/reset_all', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.resetAll));
+    router.get('/posts/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.read));
+    router.put('/posts/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.upsert));
+    router.post('/posts/:id/gift_link/reset', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.reset));
+    router.get('/pages/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.read));
+    router.put('/pages/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.upsert));
+    router.post('/pages/:id/gift_link/reset', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.reset));
 
     // Recommendations
     router.get('/recommendations', mw.authAdminApi, http(api.recommendations.browse));
