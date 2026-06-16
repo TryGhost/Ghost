@@ -217,20 +217,19 @@ async function ensureAutomation(
 }
 
 async function ensureWelcomeEmailAction(trx: Knex.Transaction, automationId: string): Promise<void> {
+    const hasActions = await trx('automation_actions')
+        .where('automation_id', automationId)
+        .whereNull('deleted_at')
+        .first('id');
+    if (hasActions) {
+        return;
+    }
+
     await trx('automations')
         .select('id')
         .where('id', automationId)
         .forUpdate()
         .first();
-
-    const hasActions = await trx('automation_actions')
-        .where('automation_id', automationId)
-        .whereNull('deleted_at')
-        .first('id');
-
-    if (hasActions) {
-        return;
-    }
 
     const email = await trx('welcome_email_automated_emails')
         .select('subject', 'lexical', 'email_design_setting_id')
