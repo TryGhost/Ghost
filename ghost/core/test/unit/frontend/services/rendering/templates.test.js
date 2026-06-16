@@ -1,14 +1,13 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const rewire = require('rewire');
-const templates = rewire('../../../../../core/frontend/services/rendering/templates');
+const templates = require('../../../../../core/frontend/services/rendering/templates');
 const themeEngine = require('../../../../../core/frontend/services/theme-engine');
 
 describe('templates', function () {
     let getActiveThemeStub;
     let hasTemplateStub;
-    let _private = templates.__get__('_private');
+    const _private = templates._private;
 
     afterEach(function () {
         sinon.restore();

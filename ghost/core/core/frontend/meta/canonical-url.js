@@ -1,6 +1,9 @@
 const _ = require('lodash');
 const urlUtils = require('../../shared/url-utils');
-const getUrl = require('./url');
+
+const _private = {
+    getUrl: require('./url')
+};
 
 function getCanonicalUrl(data) {
     if ((_.includes(data.context, 'post') || _.includes(data.context, 'page'))
@@ -12,7 +15,8 @@ function getCanonicalUrl(data) {
         return data.tag.canonical_url;
     }
 
-    return urlUtils.urlJoin(urlUtils.urlFor('home', true), getUrl(data, false));
+    return urlUtils.urlJoin(urlUtils.urlFor('home', true), _private.getUrl(data, false));
 }
 
 module.exports = getCanonicalUrl;
+module.exports._private = _private;

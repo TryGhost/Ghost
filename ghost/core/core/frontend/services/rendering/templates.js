@@ -199,3 +199,5 @@ module.exports.setTemplate = function setTemplate(req, res, data) {
         res._template = 'index';
     }
 };
+
+module.exports._private = _private;

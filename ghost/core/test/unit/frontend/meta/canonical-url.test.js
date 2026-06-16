@@ -1,10 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const urlUtils = require('../../../../core/shared/url-utils');
 const testUtils = require('../../../utils');
 
-let getCanonicalUrl = rewire('../../../../core/frontend/meta/canonical-url');
+const getCanonicalUrl = require('../../../../core/frontend/meta/canonical-url');
 
 describe('getCanonicalUrl', function () {
     let getUrlStub;
@@ -12,10 +11,7 @@ describe('getCanonicalUrl', function () {
     let urlForStub;
 
     beforeEach(function () {
-        getUrlStub = sinon.stub();
-
-        getCanonicalUrl = rewire('../../../../core/frontend/meta/canonical-url');
-        getCanonicalUrl.__set__('getUrl', getUrlStub);
+        getUrlStub = sinon.stub(getCanonicalUrl._private, 'getUrl');
 
         urlJoinStub = sinon.stub(urlUtils, 'urlJoin');
         urlForStub = sinon.stub(urlUtils, 'urlFor').withArgs('home', true).returns('http://localhost:9999');

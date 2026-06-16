@@ -1,7 +1,10 @@
 const crypto = require('crypto');
-const generateFeed = require('./generate-feed');
 const logging = require('@tryghost/logging');
 const feedCache = {};
+
+const _private = {
+    generateFeed: require('./generate-feed')
+};
 
 /**
  * @returns {string}
@@ -12,7 +15,7 @@ module.exports.getXML = function getFeedXml(baseUrl, data) {
         // We need to regenerate
         feedCache[baseUrl] = {
             hash: dataHash,
-            xml: generateFeed(baseUrl, data)
+            xml: _private.generateFeed(baseUrl, data)
         };
     } else {
         logging.info('[RSS] Serving from in-memory cache');
@@ -20,3 +23,5 @@ module.exports.getXML = function getFeedXml(baseUrl, data) {
 
     return feedCache[baseUrl].xml;
 };
+
+module.exports._private = _private;

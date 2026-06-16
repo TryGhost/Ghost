@@ -1,24 +1,20 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const configUtils = require('../../../../utils/config-utils');
-const rssCache = rewire('../../../../../core/frontend/services/rss/cache');
+const rssCache = require('../../../../../core/frontend/services/rss/cache');
 
 describe('RSS: Cache', function () {
     let generateSpy;
-    let generateFeedReset;
 
     afterEach(async function () {
         await configUtils.restore();
         sinon.restore();
-        generateFeedReset();
     });
 
     beforeEach(function () {
         configUtils.set({url: 'http://my-ghost-blog.com'});
 
-        generateSpy = sinon.spy(rssCache.__get__('generateFeed'));
-        generateFeedReset = rssCache.__set__('generateFeed', generateSpy);
+        generateSpy = sinon.spy(rssCache._private, 'generateFeed');
     });
 
     it('should not rebuild xml for same data and url', async function () {
