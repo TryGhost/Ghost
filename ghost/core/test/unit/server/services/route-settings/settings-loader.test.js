@@ -1,11 +1,10 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const fs = require('fs-extra');
 const path = require('path');
 const errors = require('@tryghost/errors');
-const SettingsLoader = rewire('../../../../../core/server/services/route-settings/settings-loader');
+const SettingsLoader = require('../../../../../core/server/services/route-settings/settings-loader');
 
 describe('UNIT > SettingsLoader:', function () {
     afterEach(function () {
@@ -25,11 +24,9 @@ describe('UNIT > SettingsLoader:', function () {
         };
 
         let yamlParserStub;
-        let validateStub;
 
         beforeEach(function () {
             yamlParserStub = sinon.stub();
-            validateStub = sinon.stub();
         });
 
         it('reads a settings object for routes.yaml file', async function () {
@@ -65,9 +62,7 @@ describe('UNIT > SettingsLoader:', function () {
             const expectedSettingsFile = path.join(storageFolderPath, 'routes.yaml');
 
             yamlParserStub.returns(yamlStubFile);
-            validateStub.returns({routes: {}, collections: {}, taxonomies: {}});
-
-            SettingsLoader.__set__('validate', validateStub);
+            sinon.stub(SettingsLoader._private, 'validate').returns({routes: {}, collections: {}, taxonomies: {}});
 
             const settingsLoader = new SettingsLoader({
                 parseYaml: yamlParserStub,

@@ -1,13 +1,12 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
-const rewire = require('rewire');
 const sinon = require('sinon');
 const Queue = require('../../../../../core/server/services/url/queue');
 const Resources = require('../../../../../core/server/services/url/resources');
 const UrlGenerator = require('../../../../../core/server/services/url/url-generator');
 const Urls = require('../../../../../core/server/services/url/urls');
-const UrlService = rewire('../../../../../core/server/services/url/url-service');
+const UrlService = require('../../../../../core/server/services/url/url-service');
 
 describe('Unit: services/url/UrlService', function () {
     let QueueStub;
@@ -17,22 +16,17 @@ describe('Unit: services/url/UrlService', function () {
     let urlService;
 
     beforeEach(function () {
-        QueueStub = sinon.stub();
+        QueueStub = sinon.stub(UrlService._private, 'Queue');
         QueueStub.returns(sinon.createStubInstance(Queue));
 
-        ResourcesStub = sinon.stub();
+        ResourcesStub = sinon.stub(UrlService._private, 'Resources');
         ResourcesStub.returns(sinon.createStubInstance(Resources));
 
-        UrlsStub = sinon.stub();
+        UrlsStub = sinon.stub(UrlService._private, 'Urls');
         UrlsStub.returns(sinon.createStubInstance(Urls));
 
-        UrlGeneratorStub = sinon.stub();
+        UrlGeneratorStub = sinon.stub(UrlService._private, 'UrlGenerator');
         UrlGeneratorStub.returns(sinon.createStubInstance(UrlGenerator));
-
-        UrlService.__set__('Queue', QueueStub);
-        UrlService.__set__('Resources', ResourcesStub);
-        UrlService.__set__('Urls', UrlsStub);
-        UrlService.__set__('UrlGenerator', UrlGeneratorStub);
 
         urlService = new UrlService();
     });

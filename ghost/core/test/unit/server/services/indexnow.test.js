@@ -2,10 +2,9 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
 const nock = require('nock');
-const rewire = require('rewire');
 const errors = require('@tryghost/errors');
 const testUtils = require('../../../utils');
-const indexnow = rewire('../../../../core/server/services/indexnow');
+const indexnow = require('../../../../core/server/services/indexnow');
 const events = require('../../../../core/server/lib/common/events');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const config = require('../../../../core/shared/config');
@@ -73,16 +72,13 @@ describe('IndexNow', function () {
                 }
             };
 
-            const pingStub = sinon.stub().resolves();
-            const resetIndexNow = indexnow.__set__('ping', pingStub);
-            const listener = indexnow.__get__('indexnowListener');
+            const pingStub = sinon.stub(indexnow._private, 'ping').resolves();
+            const listener = indexnow._private.indexnowListener;
 
             listener(testModel);
 
             sinon.assert.calledOnce(pingStub);
             sinon.assert.calledWith(pingStub, testPost);
-
-            resetIndexNow();
         });
 
         it('does not call ping() when importing', function () {
@@ -100,15 +96,12 @@ describe('IndexNow', function () {
                 }
             };
 
-            const pingStub = sinon.stub();
-            const resetIndexNow = indexnow.__set__('ping', pingStub);
-            const listener = indexnow.__get__('indexnowListener');
+            const pingStub = sinon.stub(indexnow._private, 'ping');
+            const listener = indexnow._private.indexnowListener;
 
             listener(testModel, {importing: true});
 
             sinon.assert.notCalled(pingStub);
-
-            resetIndexNow();
         });
 
         it('does not call ping() when no SEO-relevant fields have changed', function () {
@@ -146,15 +139,12 @@ describe('IndexNow', function () {
                 }
             };
 
-            const pingStub = sinon.stub();
-            const resetIndexNow = indexnow.__set__('ping', pingStub);
-            const listener = indexnow.__get__('indexnowListener');
+            const pingStub = sinon.stub(indexnow._private, 'ping');
+            const listener = indexnow._private.indexnowListener;
 
             listener(testModel);
 
             sinon.assert.notCalled(pingStub);
-
-            resetIndexNow();
         });
 
         it('calls ping() when title changes', function () {
@@ -178,15 +168,12 @@ describe('IndexNow', function () {
                 }
             };
 
-            const pingStub = sinon.stub().resolves();
-            const resetIndexNow = indexnow.__set__('ping', pingStub);
-            const listener = indexnow.__get__('indexnowListener');
+            const pingStub = sinon.stub(indexnow._private, 'ping').resolves();
+            const listener = indexnow._private.indexnowListener;
 
             listener(testModel);
 
             sinon.assert.calledOnce(pingStub);
-
-            resetIndexNow();
         });
 
         it('calls ping() when slug changes', function () {
@@ -210,15 +197,12 @@ describe('IndexNow', function () {
                 }
             };
 
-            const pingStub = sinon.stub().resolves();
-            const resetIndexNow = indexnow.__set__('ping', pingStub);
-            const listener = indexnow.__get__('indexnowListener');
+            const pingStub = sinon.stub(indexnow._private, 'ping').resolves();
+            const listener = indexnow._private.indexnowListener;
 
             listener(testModel);
 
             sinon.assert.calledOnce(pingStub);
-
-            resetIndexNow();
         });
 
         it('calls ping() when meta_description changes', function () {
@@ -242,20 +226,17 @@ describe('IndexNow', function () {
                 }
             };
 
-            const pingStub = sinon.stub().resolves();
-            const resetIndexNow = indexnow.__set__('ping', pingStub);
-            const listener = indexnow.__get__('indexnowListener');
+            const pingStub = sinon.stub(indexnow._private, 'ping').resolves();
+            const listener = indexnow._private.indexnowListener;
 
             listener(testModel);
 
             sinon.assert.calledOnce(pingStub);
-
-            resetIndexNow();
         });
     });
 
     describe('ping()', function () {
-        const ping = indexnow.__get__('ping');
+        const ping = indexnow._private.ping;
         let urlStub;
 
         beforeEach(function () {
@@ -456,19 +437,11 @@ describe('IndexNow', function () {
     });
 
     describe('ping() error classification (got HTTPError shape)', function () {
-        const ping = indexnow.__get__('ping');
-        let resetIndexNow;
+        const ping = indexnow._private.ping;
 
         beforeEach(function () {
             sinon.stub(urlService.facade, 'getUrlForResource').returns('https://example.com/my-post/');
             loggingStub = sinon.stub(logging, 'warn');
-        });
-
-        afterEach(function () {
-            if (resetIndexNow) {
-                resetIndexNow();
-                resetIndexNow = null;
-            }
         });
 
         function makeHttpError(statusCode) {
@@ -480,7 +453,7 @@ describe('IndexNow', function () {
         }
 
         async function pingWithHttpError(statusCode) {
-            resetIndexNow = indexnow.__set__('request', sinon.stub().rejects(makeHttpError(statusCode)));
+            sinon.stub(indexnow._private, 'request').rejects(makeHttpError(statusCode));
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
             await ping(testPost);
         }
@@ -519,7 +492,7 @@ describe('IndexNow', function () {
 
         it('still classifies a GhostError carrying err.statusCode (manual throw) correctly', async function () {
             const err = new errors.TooManyRequestsError({message: 'manual', statusCode: 429});
-            resetIndexNow = indexnow.__set__('request', sinon.stub().rejects(err));
+            sinon.stub(indexnow._private, 'request').rejects(err);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
             await ping(testPost);
@@ -554,11 +527,10 @@ describe('IndexNow', function () {
     // for a resource-based facade method) could regress without anyone
     // noticing.
     describe('ping() URL output', function () {
-        const ping = indexnow.__get__('ping');
+        const ping = indexnow._private.ping;
         const POST_URL = 'https://my-blog.example/some-post/';
         let getUrlForResourceStub;
         let requestStub;
-        let resetIndexNow;
 
         beforeEach(function () {
             // Bind the stub to the exact resource shape production passes
@@ -569,14 +541,9 @@ describe('IndexNow', function () {
                 .withArgs(sinon.match({id: 'abc', type: 'posts'}), {absolute: true})
                 .returns(POST_URL);
 
-            requestStub = sinon.stub().resolves({statusCode: 200});
-            resetIndexNow = indexnow.__set__('request', requestStub);
+            requestStub = sinon.stub(indexnow._private, 'request').resolves({statusCode: 200});
 
             settingsCacheStub.withArgs('indexnow_api_key').returns('a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4');
-        });
-
-        afterEach(function () {
-            resetIndexNow();
         });
 
         it('passes the post URL into the IndexNow request', async function () {

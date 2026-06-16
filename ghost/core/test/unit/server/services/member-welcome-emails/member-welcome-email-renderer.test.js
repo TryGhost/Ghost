@@ -1,11 +1,12 @@
 const assert = require('node:assert/strict');
 const cheerio = require('cheerio');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const errors = require('@tryghost/errors');
+const lexicalLib = require('../../../../../core/server/lib/lexical');
+const emailDesign = require('../../../../../core/server/services/email-rendering/email-design');
+const MemberWelcomeEmailRenderer = require('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
 
 describe('MemberWelcomeEmailRenderer', function () {
-    let MemberWelcomeEmailRenderer;
     let lexicalRenderStub;
 
     const defaultSiteSettings = {
@@ -16,12 +17,7 @@ describe('MemberWelcomeEmailRenderer', function () {
     };
 
     beforeEach(function () {
-        lexicalRenderStub = sinon.stub().resolves('<p>Hello World</p>');
-
-        MemberWelcomeEmailRenderer = rewire('../../../../../core/server/services/member-welcome-emails/member-welcome-email-renderer');
-        MemberWelcomeEmailRenderer.__set__('lexicalLib', {
-            render: lexicalRenderStub
-        });
+        lexicalRenderStub = sinon.stub(lexicalLib, 'render').resolves('<p>Hello World</p>');
     });
 
     afterEach(function () {
@@ -490,8 +486,7 @@ describe('MemberWelcomeEmailRenderer', function () {
 
         describe('design customization', function () {
             it('builds the email design from database-backed design settings', async function () {
-                const getEmailDesignStub = sinon.stub().returns({accentColor: '#123456'});
-                MemberWelcomeEmailRenderer.__set__('getEmailDesign', getEmailDesignStub);
+                const getEmailDesignStub = sinon.stub(emailDesign, 'getEmailDesign').returns({accentColor: '#123456'});
 
                 const renderer = new MemberWelcomeEmailRenderer({t: key => key});
                 const designSettings = {

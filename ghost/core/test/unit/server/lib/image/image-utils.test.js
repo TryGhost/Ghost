@@ -1,17 +1,14 @@
 const assert = require('node:assert/strict');
 const {PassThrough} = require('node:stream');
 const sinon = require('sinon');
-const rewire = require('rewire');
 
-const MODULE_PATH = '../../../../../core/server/lib/image/image-utils';
+const ImageUtils = require('../../../../../core/server/lib/image/image-utils');
 
 describe('image-utils probe wrapper', function () {
     let stream;
     let externalRequestStub;
     let probeImageSizeStub;
     let probe;
-    let imageUtilsModule;
-    let revert;
 
     beforeEach(function () {
         stream = new PassThrough();
@@ -21,16 +18,12 @@ describe('image-utils probe wrapper', function () {
         };
         probeImageSizeStub = sinon.stub().resolves({width: 10, height: 20});
 
-        imageUtilsModule = rewire(MODULE_PATH);
-        revert = imageUtilsModule.__set__({
-            externalRequest: externalRequestStub,
-            probeImageSize: probeImageSizeStub
-        });
-        probe = imageUtilsModule.__get__('probe');
+        sinon.stub(ImageUtils._private, 'externalRequest').value(externalRequestStub);
+        sinon.stub(ImageUtils._private, 'probeImageSize').value(probeImageSizeStub);
+        probe = ImageUtils._private.probe;
     });
 
     afterEach(function () {
-        revert();
         sinon.restore();
     });
 

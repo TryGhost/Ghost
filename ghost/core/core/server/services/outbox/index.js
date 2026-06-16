@@ -5,6 +5,10 @@ const domainEvents = require('@tryghost/domain-events');
 const processOutbox = require('./jobs/lib/process-outbox');
 const {OUTBOX_LOG_KEY} = require('./jobs/lib/constants');
 
+const _private = {
+    processOutbox
+};
+
 class OutboxServiceWrapper {
     init() {
         if (this.initialized) {
@@ -34,7 +38,7 @@ class OutboxServiceWrapper {
         this.processing = true;
 
         try {
-            const statusMessage = await processOutbox();
+            const statusMessage = await _private.processOutbox();
             logging.info(statusMessage);
         } catch (err) {
             logging.error({
@@ -49,4 +53,7 @@ class OutboxServiceWrapper {
     }
 }
 
-module.exports = new OutboxServiceWrapper();
+const outboxServiceWrapper = new OutboxServiceWrapper();
+outboxServiceWrapper._private = _private;
+
+module.exports = outboxServiceWrapper;

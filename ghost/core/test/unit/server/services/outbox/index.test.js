@@ -1,25 +1,24 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const DomainEvents = require('@tryghost/domain-events');
 const {captureLoggerOutput, findByEvent} = require('../../../../utils/logging-utils');
 const StartOutboxProcessingEvent = require('../../../../../core/server/services/outbox/events/start-outbox-processing-event');
+const jobs = require('../../../../../core/server/services/outbox/jobs');
+const service = require('../../../../../core/server/services/outbox/index.js');
 
 describe('Outbox Service', function () {
-    let service;
     let processOutboxStub;
-    let jobsStub;
     let logCapture;
 
     beforeEach(function () {
-        service = rewire('../../../../../core/server/services/outbox/index.js');
+        // `service` is a singleton; reset its processing flag so each test
+        // starts from a clean state (the fresh-module load this replaced did
+        // the same).
+        service.processing = false;
 
-        processOutboxStub = sinon.stub().resolves('Processed');
-        jobsStub = {scheduleOutboxJob: sinon.stub()};
+        processOutboxStub = sinon.stub(service._private, 'processOutbox').resolves('Processed');
+        sinon.stub(jobs, 'scheduleOutboxJob');
         logCapture = captureLoggerOutput();
-
-        service.__set__('processOutbox', processOutboxStub);
-        service.__set__('jobs', jobsStub);
     });
 
     afterEach(async function () {

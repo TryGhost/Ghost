@@ -21,7 +21,25 @@ const MagicLink = require('../../lib/magic-link/magic-link');
 const DomainEvents = require('@tryghost/domain-events');
 const automationsApi = require('../../automations/automations-api');
 
-module.exports = function MembersAPI({
+const _private = {
+    Router,
+    body,
+    PaymentsService,
+    TokenService,
+    GeolocationService,
+    MemberBREADService,
+    MemberRepository,
+    NextPaymentCalculator,
+    EventRepository,
+    ProductRepository,
+    RouterController,
+    MemberController,
+    WellKnownController,
+    MagicLink,
+    DomainEvents
+};
+
+const MembersAPI = function MembersAPI({
     tokenConfig: {
         issuer,
         privateKey,
@@ -86,13 +104,13 @@ module.exports = function MembersAPI({
     emailAddressService,
     giftService
 }) {
-    const tokenService = new TokenService({
+    const tokenService = new _private.TokenService({
         privateKey,
         publicKey,
         issuer
     });
 
-    const productRepository = new ProductRepository({
+    const productRepository = new _private.ProductRepository({
         Product,
         Settings,
         StripeProduct,
@@ -100,7 +118,7 @@ module.exports = function MembersAPI({
         stripeAPIService
     });
 
-    const memberRepository = new MemberRepository({
+    const memberRepository = new _private.MemberRepository({
         stripeAPIService,
         tokenService,
         newslettersService,
@@ -123,7 +141,7 @@ module.exports = function MembersAPI({
         offersAPI
     });
 
-    const eventRepository = new EventRepository({
+    const eventRepository = new _private.EventRepository({
         DonationPaymentEvent,
         EmailRecipient,
         MemberSubscribeEvent,
@@ -144,9 +162,9 @@ module.exports = function MembersAPI({
         Gift
     });
 
-    const nextPaymentCalculator = new NextPaymentCalculator();
+    const nextPaymentCalculator = new _private.NextPaymentCalculator();
 
-    const memberBREADService = new MemberBREADService({
+    const memberBREADService = new _private.MemberBREADService({
         offersAPI,
         memberRepository,
         emailService: {
@@ -170,9 +188,9 @@ module.exports = function MembersAPI({
         giftService
     });
 
-    const geolocationService = new GeolocationService();
+    const geolocationService = new _private.GeolocationService();
 
-    const magicLinkService = new MagicLink({
+    const magicLinkService = new _private.MagicLink({
         transporter,
         tokenProvider,
         getSigninURL,
@@ -183,7 +201,7 @@ module.exports = function MembersAPI({
         labsService
     });
 
-    const paymentsService = new PaymentsService({
+    const paymentsService = new _private.PaymentsService({
         StripeProduct,
         StripePrice,
         StripeCustomer,
@@ -194,7 +212,7 @@ module.exports = function MembersAPI({
         giftService
     });
 
-    const memberController = new MemberController({
+    const memberController = new _private.MemberController({
         memberRepository,
         productRepository,
         paymentsService,
@@ -205,7 +223,7 @@ module.exports = function MembersAPI({
         settingsCache
     });
 
-    const routerController = new RouterController({
+    const routerController = new _private.RouterController({
         offersAPI,
         paymentsService,
         tiersService,
@@ -227,7 +245,7 @@ module.exports = function MembersAPI({
         giftService
     });
 
-    const wellKnownController = new WellKnownController({
+    const wellKnownController = new _private.WellKnownController({
         tokenService
     });
 
@@ -399,43 +417,43 @@ module.exports = function MembersAPI({
     };
 
     const middleware = {
-        sendMagicLink: Router().use(
-            body.json(),
+        sendMagicLink: _private.Router().use(
+            _private.body.json(),
             forwardError((req, res) => routerController.sendMagicLink(req, res))
         ),
-        verifyOTC: Router().use(
-            body.json(),
+        verifyOTC: _private.Router().use(
+            _private.body.json(),
             forwardError((req, res) => routerController.verifyOTC(req, res))
         ),
-        createCheckoutSession: Router().use(
-            body.json(),
+        createCheckoutSession: _private.Router().use(
+            _private.body.json(),
             forwardError((req, res) => routerController.createCheckoutSession(req, res))
         ),
-        createCheckoutSetupSession: Router().use(
-            body.json(),
+        createCheckoutSetupSession: _private.Router().use(
+            _private.body.json(),
             forwardError((req, res) => routerController.createCheckoutSetupSession(req, res))
         ),
-        createBillingPortalSession: Router().use(
-            body.json(),
+        createBillingPortalSession: _private.Router().use(
+            _private.body.json(),
             forwardError((req, res) => routerController.createBillingPortalSession(req, res))
         ),
-        updateEmailAddress: Router().use(
-            body.json(),
+        updateEmailAddress: _private.Router().use(
+            _private.body.json(),
             forwardError((req, res) => memberController.updateEmailAddress(req, res))
         ),
-        updateSubscription: Router({mergeParams: true}).use(
-            body.json(),
+        updateSubscription: _private.Router({mergeParams: true}).use(
+            _private.body.json(),
             forwardError((req, res) => memberController.updateSubscription(req, res))
         ),
-        applyOfferToSubscription: Router({mergeParams: true}).use(
-            body.json(),
+        applyOfferToSubscription: _private.Router({mergeParams: true}).use(
+            _private.body.json(),
             forwardError((req, res) => memberController.applyOfferToSubscription(req, res))
         ),
-        getMemberOffers: Router().use(
-            body.json(),
+        getMemberOffers: _private.Router().use(
+            _private.body.json(),
             forwardError((req, res) => routerController.getMemberOffers(req, res))
         ),
-        wellKnown: Router()
+        wellKnown: _private.Router()
             .get('/jwks.json',
                 (req, res) => wellKnownController.getPublicKeys(req, res)
             )
@@ -452,7 +470,7 @@ module.exports = function MembersAPI({
 
     bus.emit('ready');
 
-    DomainEvents.subscribe(EmailSuppressedEvent, async function (event) {
+    _private.DomainEvents.subscribe(EmailSuppressedEvent, async function (event) {
         const member = await memberRepository.get({email: event.data.emailAddress});
         if (!member) {
             return;
@@ -483,3 +501,7 @@ module.exports = function MembersAPI({
         paymentsService
     };
 };
+
+MembersAPI._private = _private;
+
+module.exports = MembersAPI;

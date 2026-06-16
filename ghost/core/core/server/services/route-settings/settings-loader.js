@@ -33,7 +33,7 @@ class SettingsLoader {
             const object = this.parseYaml(file);
             debug('YAML settings file parsed:', this.settingFilePath);
 
-            return validate(object);
+            return _private.validate(object);
         } catch (err) {
             if (errors.utils.isGhostError(err)) {
                 throw err;
@@ -49,6 +49,12 @@ class SettingsLoader {
         }
     }
 }
+
+const _private = {
+    validate
+};
+
+SettingsLoader._private = _private;
 
 module.exports = SettingsLoader;
 

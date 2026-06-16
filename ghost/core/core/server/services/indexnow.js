@@ -128,7 +128,7 @@ async function ping(post) {
             }
         };
 
-        const response = await request(indexNowUrl.toString(), options);
+        const response = await _private.request(indexNowUrl.toString(), options);
 
         if (response.statusCode !== 200 && response.statusCode !== 202) {
             throw new errors.InternalServerError({
@@ -222,7 +222,7 @@ function indexnowListener(model, options) {
         return;
     }
 
-    ping(model.toJSON()).catch(() => {
+    _private.ping(model.toJSON()).catch(() => {
         // Errors are already logged inside ping()
         // This catch is just to prevent unhandled rejection warnings
     });
@@ -234,16 +234,23 @@ function indexnowListener(model, options) {
 function listen() {
     // Listen for new posts being published
     events
-        .removeListener('post.published', indexnowListener)
-        .on('post.published', indexnowListener);
+        .removeListener('post.published', _private.indexnowListener)
+        .on('post.published', _private.indexnowListener);
 
     // Also listen for published posts being edited
     events
-        .removeListener('post.published.edited', indexnowListener)
-        .on('post.published.edited', indexnowListener);
+        .removeListener('post.published.edited', _private.indexnowListener)
+        .on('post.published.edited', _private.indexnowListener);
 }
+
+const _private = {
+    ping,
+    indexnowListener,
+    request
+};
 
 module.exports = {
     listen: listen,
-    getApiKey: getApiKey
+    getApiKey: getApiKey,
+    _private
 };

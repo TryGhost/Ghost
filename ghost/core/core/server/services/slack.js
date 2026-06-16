@@ -155,7 +155,7 @@ function ping(post) {
             };
         }
 
-        return request(slackSettings.url, {
+        return _private.request(slackSettings.url, {
             body: JSON.stringify(slackData),
             headers: {
                 'Content-type': 'application/json'
@@ -177,29 +177,37 @@ function slackListener(model, options) {
         return;
     }
 
-    ping({
+    _private.ping({
         ...model.toJSON(),
         authors: model.related('authors').toJSON()
     });
 }
 
 function slackTestPing() {
-    ping({
+    _private.ping({
         message: 'Heya! This is a test notification from your Ghost blog :smile:. Seems to work fine!'
     });
 }
 
 function listen() {
     if (!events.hasRegisteredListener('post.published', 'slackListener')) {
-        events.on('post.published', slackListener);
+        events.on('post.published', _private.slackListener);
     }
 
     if (!events.hasRegisteredListener('slack.test', 'slackTestPing')) {
-        events.on('slack.test', slackTestPing);
+        events.on('slack.test', _private.slackTestPing);
     }
 }
 
+const _private = {
+    ping,
+    slackListener,
+    slackTestPing,
+    request
+};
+
 // Public API
 module.exports = {
-    listen: listen
+    listen: listen,
+    _private
 };

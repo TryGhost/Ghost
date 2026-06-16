@@ -33,11 +33,11 @@ class UrlService {
         this.urlGenerators = [];
 
         // Get urls
-        this.queue = new Queue();
+        this.queue = new _private.Queue();
         // NOTE: Urls and Resources should not be initialized here but only in the init method.
         //      Way too many tests fail if the initialization is removed so leaving it as is for time being
-        this.urls = new Urls();
-        this.resources = new Resources({
+        this.urls = new _private.Urls();
+        this.resources = new _private.Resources({
             resourcesConfig: resourcesConfig,
             queue: this.queue
         });
@@ -98,7 +98,7 @@ class UrlService {
     onRouterAddedType(identifier, filter, resourceType, permalink) {
         debug('Registering route:', filter, resourceType, permalink);
 
-        let urlGenerator = new UrlGenerator({
+        let urlGenerator = new _private.UrlGenerator({
             identifier,
             filter,
             resourceType,
@@ -383,5 +383,14 @@ class UrlService {
         this.resources.softReset();
     }
 }
+
+const _private = {
+    Queue,
+    Urls,
+    Resources,
+    UrlGenerator
+};
+
+UrlService._private = _private;
 
 module.exports = UrlService;

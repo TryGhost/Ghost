@@ -12,17 +12,23 @@ const externalRequest = require('../request-external');
 // The returned promise exposes the underlying stream via `.stream` so callers
 // can destroy it on early abort — otherwise a pooled keep-alive socket leaks.
 function probe(url, options = {}) {
-    const stream = externalRequest.stream(url, {
+    const stream = _private.externalRequest.stream(url, {
         headers: options.headers,
         timeout: {
             request: options.response_timeout || 10000
         },
         retry: {limit: 0}
     });
-    const promise = probeImageSize(stream);
+    const promise = _private.probeImageSize(stream);
     promise.stream = stream;
     return promise;
 }
+
+const _private = {
+    probe,
+    externalRequest,
+    probeImageSize
+};
 
 class ImageUtils {
     constructor({config, urlUtils, settingsCache, storageUtils, storage, validator, request, cacheStore}) {
@@ -35,5 +41,7 @@ class ImageUtils {
         this.gravatar = new Gravatar({config, request});
     }
 }
+
+ImageUtils._private = _private;
 
 module.exports = ImageUtils;

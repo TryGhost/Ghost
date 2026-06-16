@@ -4,8 +4,10 @@ const {OUTBOX_STATUSES} = require('../../../../models/outbox');
 const MemberCreatedEvent = require('../../../../../shared/events/member-created-event');
 const memberCreatedHandler = require('../../handlers/member-created');
 
-const EVENT_HANDLERS = {
-    [MemberCreatedEvent.name]: memberCreatedHandler
+const _private = {
+    EVENT_HANDLERS: {
+        [MemberCreatedEvent.name]: memberCreatedHandler
+    }
 };
 
 async function deleteProcessedEntry({db, entryId}) {
@@ -41,7 +43,7 @@ async function markEntryCompleted({db, entryId}) {
 }
 
 async function processEntry({db, entry}) {
-    const handler = EVENT_HANDLERS[entry.event_type];
+    const handler = _private.EVENT_HANDLERS[entry.event_type];
     if (!handler) {
         logging.warn({
             system: {
@@ -113,5 +115,7 @@ async function processEntries({db, entries}) {
 
     return {processed, failed};
 }
+
+processEntries._private = _private;
 
 module.exports = processEntries;

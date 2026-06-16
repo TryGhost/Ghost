@@ -1,9 +1,9 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
+const models = require('../../../../../core/server/models');
+const accept = require('../../../../../core/server/services/invitations/accept');
 
 describe('Unit: services/invitations/accept', function () {
-    let accept;
     let transactionStub;
     let findOneInviteStub;
     let findOneUserStub;
@@ -13,7 +13,7 @@ describe('Unit: services/invitations/accept', function () {
     beforeEach(function () {
         destroyStub = sinon.stub().resolves();
 
-        findOneInviteStub = sinon.stub().resolves({
+        findOneInviteStub = sinon.stub(models.Invite, 'findOne').resolves({
             get: sinon.stub().callsFake((key) => {
                 if (key === 'expires') {
                     return Date.now() + 100000;
@@ -25,18 +25,11 @@ describe('Unit: services/invitations/accept', function () {
             destroy: destroyStub
         });
 
-        findOneUserStub = sinon.stub().resolves(null);
-        addUserStub = sinon.stub().resolves();
+        findOneUserStub = sinon.stub(models.User, 'findOne').resolves(null);
+        addUserStub = sinon.stub(models.User, 'add').resolves();
 
-        transactionStub = sinon.stub().callsFake(async (cb) => {
+        transactionStub = sinon.stub(models.Base, 'transaction').callsFake(async (cb) => {
             return cb('fake-txn');
-        });
-
-        accept = rewire('../../../../../core/server/services/invitations/accept');
-        accept.__set__('models', {
-            Base: {transaction: transactionStub},
-            Invite: {findOne: findOneInviteStub},
-            User: {findOne: findOneUserStub, add: addUserStub}
         });
     });
 

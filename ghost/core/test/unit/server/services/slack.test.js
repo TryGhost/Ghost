@@ -1,12 +1,11 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
-const rewire = require('rewire');
 const testUtils = require('../../../utils');
 const configUtils = require('../../../utils/config-utils');
 
 // Stuff we test
-const slack = rewire('../../../../core/server/services/slack');
+const slack = require('../../../../core/server/services/slack');
 
 const events = require('../../../../core/server/lib/common/events');
 const logging = require('@tryghost/logging');
@@ -33,8 +32,8 @@ describe('Slack', function () {
     it('listen() should initialise event correctly', function () {
         slack.listen();
         sinon.assert.calledTwice(eventStub);
-        sinon.assert.calledWith(eventStub.firstCall, 'post.published', slack.__get__('slackListener'));
-        sinon.assert.calledWith(eventStub.secondCall, 'slack.test', slack.__get__('slackTestPing'));
+        sinon.assert.calledWith(eventStub.firstCall, 'post.published', slack._private.slackListener);
+        sinon.assert.calledWith(eventStub.secondCall, 'slack.test', slack._private.slackTestPing);
     });
 
     it('listener() calls ping() with toJSONified model', function () {
@@ -58,9 +57,8 @@ describe('Slack', function () {
             }
         };
 
-        const pingStub = sinon.stub();
-        const resetSlack = slack.__set__('ping', pingStub);
-        const listener = slack.__get__('slackListener');
+        const pingStub = sinon.stub(slack._private, 'ping');
+        const listener = slack._private.slackListener;
 
         listener(testModel);
 
@@ -69,9 +67,6 @@ describe('Slack', function () {
             ...testPost,
             authors: [testAuthor]
         });
-
-        // Reset slack ping method
-        resetSlack();
     });
 
     it('listener() does not call ping() when importing', function () {
@@ -83,55 +78,41 @@ describe('Slack', function () {
             }
         };
 
-        const pingStub = sinon.stub();
-        const resetSlack = slack.__set__('ping', pingStub);
-        const listener = slack.__get__('slackListener');
+        const pingStub = sinon.stub(slack._private, 'ping');
+        const listener = slack._private.slackListener;
 
         listener(testModel, {importing: true});
 
         sinon.assert.notCalled(pingStub);
-
-        // Reset slack ping method
-        resetSlack();
     });
 
     it('testPing() calls ping() with default message', function () {
-        const pingStub = sinon.stub();
-        const resetSlack = slack.__set__('ping', pingStub);
-        const testPing = slack.__get__('slackTestPing');
+        const pingStub = sinon.stub(slack._private, 'ping');
+        const testPing = slack._private.slackTestPing;
 
         testPing();
 
         sinon.assert.calledOnce(pingStub);
         sinon.assert.calledWith(pingStub, sinon.match.has('message'));
-
-        // Reset slack ping method
-        resetSlack();
     });
 
     describe('ping()', function () {
         let settingsCacheStub;
-        let slackReset;
         let makeRequestStub;
         let urlServiceGetUrlForResourceStub;
-        const ping = slack.__get__('ping');
+        const ping = slack._private.ping;
 
         beforeEach(function () {
             urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
 
             settingsCacheStub = sinon.stub(settingsCache, 'get');
 
-            makeRequestStub = sinon.stub();
-            slackReset = slack.__set__('request', makeRequestStub);
+            makeRequestStub = sinon.stub(slack._private, 'request');
             makeRequestStub.resolves();
 
             sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('http://myblog.com/favicon.ico');
 
             configUtils.set('url', 'http://myblog.com');
-        });
-
-        afterEach(function () {
-            slackReset();
         });
 
         it('makes a request for a post if url is provided', function () {

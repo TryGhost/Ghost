@@ -1,10 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const {captureLoggerOutput, findByEvent} = require('../../../../../../utils/logging-utils');
+const processEntries = require('../../../../../../../core/server/services/outbox/jobs/lib/process-entries.js');
 
 describe('processEntries', function () {
-    let processEntries;
     let handlerStub;
     let dbStub;
     let logCapture;
@@ -24,15 +23,13 @@ describe('processEntries', function () {
     }
 
     beforeEach(function () {
-        processEntries = rewire('../../../../../../../core/server/services/outbox/jobs/lib/process-entries.js');
-
         handlerStub = {
             handle: sinon.stub().resolves(),
             getLogInfo: sinon.stub().returns('test@example.com'),
             LOG_KEY: '[OUTBOX][MEMBER-WELCOME-EMAIL]'
         };
 
-        processEntries.__set__('EVENT_HANDLERS', {
+        sinon.stub(processEntries._private, 'EVENT_HANDLERS').value({
             MemberCreatedEvent: handlerStub
         });
 

@@ -56,7 +56,7 @@ const STRIPE_API_VERSION = '2020-08-27';
  * @prop {boolean} testEnv  - indicates if the module is run in test environment (note, NOT the test mode)
  */
 
-module.exports = class StripeAPI {
+class StripeAPI {
     /**
      * StripeAPI
      * @param {object} deps
@@ -142,7 +142,7 @@ module.exports = class StripeAPI {
         if (stripeApiProtocol) {
             stripeConfig.protocol = stripeApiProtocol;
         }
-        this._stripe = new Stripe(config.secretKey, stripeConfig);
+        this._stripe = new _private.Stripe(config.secretKey, stripeConfig);
         this._config = config;
         this._testMode = config.secretKey && config.secretKey.startsWith('sk_test_');
         if (this._testMode) {
@@ -699,8 +699,8 @@ module.exports = class StripeAPI {
         await this._rateLimitBucket.throttle();
 
         const cadenceLabel = cadence === 'year' ?
-            t('{count} year', {count: duration}) :
-            t('{count} month', {count: duration});
+            _private.t('{count} year', {count: duration}) :
+            _private.t('{count} month', {count: duration});
 
         const stripeSessionOptions = {
             mode: 'payment',
@@ -721,7 +721,7 @@ module.exports = class StripeAPI {
                     currency,
                     unit_amount: amount,
                     product_data: {
-                        name: `${t('Gift subscription')} — ${tierName} (${cadenceLabel})`
+                        name: `${_private.t('Gift subscription')} — ${tierName} (${cadenceLabel})`
                     }
                 },
                 quantity: 1
@@ -1080,4 +1080,13 @@ module.exports = class StripeAPI {
         await this._rateLimitBucket.throttle();
         return await this._stripe.billingPortal.configurations.update(id, options);
     }
+}
+
+const _private = {
+    Stripe,
+    t
 };
+
+StripeAPI._private = _private;
+
+module.exports = StripeAPI;

@@ -8,6 +8,7 @@
 
 // Required Ghost internals
 const config = require('../shared/config');
+const bootstrapSocket = require('./lib/bootstrap-socket');
 
 let notified = {
     started: false,
@@ -51,8 +52,7 @@ async function notify(type, error = null) {
     // CASE: use bootstrap socket to communicate with CLI for systemd
     let socketAddress = config.get('bootstrap-socket');
     if (socketAddress) {
-        const bootstrapSocket = require('./lib/bootstrap-socket');
-        return bootstrapSocket.connectAndSend(socketAddress, message);
+        return _private.bootstrapSocket.connectAndSend(socketAddress, message);
     }
 
     return Promise.resolve();
@@ -65,3 +65,10 @@ module.exports.notifyServerStarted = async function (error = null) {
 module.exports.notifyServerReady = async function (error = null) {
     return await notify('ready', error);
 };
+
+const _private = {
+    notified,
+    bootstrapSocket
+};
+
+module.exports._private = _private;

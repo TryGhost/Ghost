@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
+const MembersAPI = require('../../../../../../core/server/services/members/members-api/members-api');
 
 describe('MembersAPI', function () {
-    let MembersAPI;
     let membersAPI;
     let memberRepository;
     let memberBREADService;
@@ -25,50 +24,48 @@ describe('MembersAPI', function () {
     };
 
     const buildMembersAPI = () => {
-        MembersAPI = rewire('../../../../../../core/server/services/members/members-api/members-api');
-
-        MembersAPI.__set__('Router', () => createRouterStub());
-        MembersAPI.__set__('body', {
+        sinon.stub(MembersAPI._private, 'Router').callsFake(() => createRouterStub());
+        sinon.stub(MembersAPI._private, 'body').value({
             json: () => 'json-middleware',
             raw: () => 'raw-middleware',
             urlencoded: () => 'urlencoded-middleware'
         });
-        MembersAPI.__set__('PaymentsService', function PaymentsService() {
+        sinon.stub(MembersAPI._private, 'PaymentsService').callsFake(function PaymentsService() {
             return {};
         });
-        MembersAPI.__set__('TokenService', function TokenService() {
+        sinon.stub(MembersAPI._private, 'TokenService').callsFake(function TokenService() {
             return {};
         });
-        MembersAPI.__set__('GeolocationService', function GeolocationService() {
+        sinon.stub(MembersAPI._private, 'GeolocationService').callsFake(function GeolocationService() {
             return {
                 getGeolocationFromIP: sinon.stub().resolves(null)
             };
         });
-        MembersAPI.__set__('MemberRepository', function MemberRepository() {
+        sinon.stub(MembersAPI._private, 'MemberRepository').callsFake(function MemberRepository() {
             return memberRepository;
         });
-        MembersAPI.__set__('MemberBREADService', function MemberBREADService() {
+        sinon.stub(MembersAPI._private, 'MemberBREADService').callsFake(function MemberBREADService() {
             return memberBREADService;
         });
-        MembersAPI.__set__('NextPaymentCalculator', function NextPaymentCalculator() {
+        sinon.stub(MembersAPI._private, 'NextPaymentCalculator').callsFake(function NextPaymentCalculator() {
             return {};
         });
-        MembersAPI.__set__('EventRepository', function EventRepository() {
+        sinon.stub(MembersAPI._private, 'EventRepository').callsFake(function EventRepository() {
             return {};
         });
-        MembersAPI.__set__('ProductRepository', function ProductRepository() {
+        sinon.stub(MembersAPI._private, 'ProductRepository').callsFake(function ProductRepository() {
             return {};
         });
-        MembersAPI.__set__('RouterController', function RouterController() {
+        sinon.stub(MembersAPI._private, 'RouterController').callsFake(function RouterController() {
             return {};
         });
-        MembersAPI.__set__('MemberController', function MemberController() {
+        sinon.stub(MembersAPI._private, 'MemberController').callsFake(function MemberController() {
             return {};
         });
-        MembersAPI.__set__('WellKnownController', function WellKnownController() {
+        sinon.stub(MembersAPI._private, 'WellKnownController').callsFake(function WellKnownController() {
             return {};
         });
-        MembersAPI.__set__('MagicLink', function MagicLink() {
+        sinon.stub(MembersAPI._private, 'MagicLink').callsFake(function MagicLink() {
             return {
                 tokenProvider,
                 getDataFromToken: sinon.stub().callsFake(async (token, otcVerification) => {
@@ -79,7 +76,7 @@ describe('MembersAPI', function () {
                 getSigninURL: sinon.stub()
             };
         });
-        MembersAPI.__set__('DomainEvents', {
+        sinon.stub(MembersAPI._private, 'DomainEvents').value({
             subscribe: sinon.stub()
         });
 
