@@ -22,6 +22,13 @@ import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 
 const HOUR_MS = 60 * 60 * 1000;
 const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
+const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [{
+    name: 'Welcome Email (Free)',
+    slug: MEMBER_WELCOME_EMAIL_SLUGS.free
+}, {
+    name: 'Welcome Email (Paid)',
+    slug: MEMBER_WELCOME_EMAIL_SLUGS.paid
+}];
 
 const messages = {
     invalidAutomationActionRevision: 'Automation action "{actionId}" of type "{actionType}" is missing required revision field "{field}".',
@@ -108,6 +115,7 @@ export function createDatabaseAutomationsRepository(knex: Knex): AutomationsRepo
     return {
         async browse(): Promise<Page<AutomationSummary>> {
             return await knex.transaction(async (trx) => {
+                await ensureDefaultAutomations(trx);
                 const rows = await loadAutomations(trx);
                 return {
                     data: rows.map(row => buildAutomationSummary(row)),
@@ -177,6 +185,85 @@ export function createDatabaseAutomationsRepository(knex: Knex): AutomationsRepo
             return await knex.transaction(trx => retryStep(trx, step, retryAt));
         }
     };
+}
+
+async function ensureDefaultAutomations(trx: Knex.Transaction): Promise<void> {
+    for (const defaults of DEFAULT_WELCOME_EMAIL_AUTOMATIONS) {
+        const automation = await ensureAutomation(trx, defaults);
+        await ensureWelcomeEmailAction(trx, automation.id);
+    }
+}
+
+async function ensureAutomation(
+    trx: Knex.Transaction,
+    defaults: Readonly<{name: string; slug: string}>
+): Promise<AutomationRow> {
+    const now = toDatabaseDate(new Date());
+    const id = ObjectId().toHexString();
+
+    await trx('automations')
+        .insert({
+            id,
+            status: 'inactive',
+            name: defaults.name,
+            slug: defaults.slug,
+            created_at: now,
+            updated_at: now
+        })
+        .onConflict('slug')
+        .ignore();
+
+    return requireAutomation(await loadAutomationBySlug(trx, defaults.slug), defaults.slug);
+}
+
+async function ensureWelcomeEmailAction(trx: Knex.Transaction, automationId: string): Promise<void> {
+    await trx('automations')
+        .select('id')
+        .where('id', automationId)
+        .forUpdate()
+        .first();
+
+    const hasActions = await trx('automation_actions')
+        .where('automation_id', automationId)
+        .whereNull('deleted_at')
+        .first('id');
+
+    if (hasActions) {
+        return;
+    }
+
+    const email = await trx('welcome_email_automated_emails')
+        .select('subject', 'lexical', 'email_design_setting_id')
+        .where('welcome_email_automation_id', automationId)
+        .orderBy([
+            'created_at',
+            'id'
+        ])
+        .first();
+
+    if (!email) {
+        return;
+    }
+
+    const now = toDatabaseDate(new Date());
+    const actionId = ObjectId().toHexString();
+
+    await insertAction(trx, {
+        id: actionId,
+        created_at: now,
+        updated_at: now,
+        automation_id: automationId,
+        type: 'send_email'
+    });
+    await insertActionRevision(trx, actionId, {
+        id: actionId,
+        type: 'send_email',
+        data: {
+            email_subject: email.subject,
+            email_lexical: email.lexical ?? '',
+            email_design_setting_id: email.email_design_setting_id
+        }
+    }, now, null);
 }
 
 async function trigger(trx: Knex.Transaction, {
@@ -573,6 +660,14 @@ async function loadAutomation(trx: Knex.Transaction, automationId: string): Prom
     const row = await trx('automations')
         .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
         .where('id', automationId)
+        .first();
+    return row ?? null;
+}
+
+async function loadAutomationBySlug(trx: Knex.Transaction, slug: string): Promise<AutomationRow | null> {
+    const row = await trx('automations')
+        .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
+        .where('slug', slug)
         .first();
     return row ?? null;
 }
