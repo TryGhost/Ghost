@@ -53,7 +53,8 @@ const PRIVATE_FEATURES = [
     'pictureImageFormats',
     'smarterCounts',
     'llmsTxt',
-    'getHelperDeduplication'
+    'getHelperDeduplication',
+    'giftLinks'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
