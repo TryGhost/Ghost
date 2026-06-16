@@ -81,7 +81,8 @@ export default function AccountEmailPage() {
     const defaultSubscribedNewsletters = [...(member?.newsletters || [])];
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultSubscribedNewsletters);
     const {comments_enabled: commentsEnabled} = site;
-    const {enable_comment_notifications: enableCommentNotifications} = member || {};
+    const updatesAndAnnouncementsEnabled = !!site.labs?.automations;
+    const {enable_comment_notifications: enableCommentNotifications, enable_updates_and_announcements: enableUpdatesAndAnnouncements} = member || {};
 
     useEffect(() => {
         setSubscribedNewsletters(member?.newsletters || []);
@@ -92,9 +93,13 @@ export default function AccountEmailPage() {
             hasNewslettersEnabled={hasNewslettersEnabled}
             notification={newsletterUuid ? HeaderNotification : null}
             subscribedNewsletters={subscribedNewsletters}
-            updateSubscribedNewsletters={(updatedNewsletters) => {
+            updateSubscribedNewsletters={(updatedNewsletters, enableUpdatesAndAnnouncementsValue) => {
                 setSubscribedNewsletters(updatedNewsletters);
-                doAction('updateNewsletterPreference', {newsletters: updatedNewsletters});
+                const data = {newsletters: updatedNewsletters};
+                if (enableUpdatesAndAnnouncementsValue !== undefined) {
+                    data.enableUpdatesAndAnnouncements = enableUpdatesAndAnnouncementsValue;
+                }
+                doAction('updateNewsletterPreference', data);
                 doAction('showPopupNotification', {
                     action: 'updated:success',
                     message: t('Email preferences updated.')
@@ -102,6 +107,9 @@ export default function AccountEmailPage() {
             }}
             updateCommentNotifications={async (enabled) => {
                 doAction('updateNewsletterPreference', {enableCommentNotifications: enabled});
+            }}
+            updateUpdatesAndAnnouncements={async (enabled) => {
+                doAction('updateNewsletterPreference', {enableUpdatesAndAnnouncements: enabled});
             }}
             unsubscribeAll={() => {
                 setSubscribedNewsletters([]);
@@ -113,11 +121,16 @@ export default function AccountEmailPage() {
                 if (commentsEnabled) {
                     data.enableCommentNotifications = false;
                 }
+                if (updatesAndAnnouncementsEnabled) {
+                    data.enableUpdatesAndAnnouncements = false;
+                }
                 doAction('updateNewsletterPreference', data);
             }}
             isPaidMember={isPaidMember({member})}
             isCommentsEnabled={commentsEnabled !== 'off'}
             enableCommentNotifications={enableCommentNotifications}
+            isUpdatesAndAnnouncementsEnabled={updatesAndAnnouncementsEnabled}
+            enableUpdatesAndAnnouncements={enableUpdatesAndAnnouncements}
         />
     );
 }

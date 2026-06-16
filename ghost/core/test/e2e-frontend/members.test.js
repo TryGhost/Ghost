@@ -349,6 +349,12 @@ describe('Front-end members behavior', function () {
                 .expect('Location', `${config.get('url')}/?uuid=XXX&key=YYY&action=unsubscribe`);
         });
 
+        it('should pass through an optional updates param', async function () {
+            await request.get('/unsubscribe/?uuid=XXX&updates=1')
+                .expect(302)
+                .expect('Location', `${config.get('url')}/?uuid=XXX&updates=1&action=unsubscribe`);
+        });
+
         it('should reject when missing a uuid', async function () {
             await request.get('/unsubscribe/')
                 .expect(400);
@@ -467,6 +473,28 @@ describe('Front-end members behavior', function () {
             const updatedMember = await members.api.members.get({id: member.id}, {withRelated: ['newsletters']});
             assert.equal(updatedMember.get('enable_comment_notifications'), false);
             assert.equal(updatedMember.related('newsletters').models.length, 1);
+        });
+
+        it('should unsubscribe from updates & announcements on POST', async function () {
+            const newsletterId = fixtureManager.get('newsletters', 0).id;
+
+            const member = await createMember({
+                email: 'unsubscribe-member-test-updates@example.com',
+                newsletters: [
+                    {id: newsletterId}
+                ]
+            });
+
+            const memberUUID = member.get('uuid');
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+            const memberHmac = crypto.createHmac('sha256','test').update(memberUUID).digest('hex');
+
+            await request.post(`/unsubscribe/?uuid=${memberUUID}&key=${memberHmac}&updates=1`)
+                .expect(201);
+
+            const updatedMember = await members.api.members.get({id: member.id}, {withRelated: ['newsletters']});
+            assert.equal(updatedMember.get('enable_updates_and_announcements'), false);
+            assert.equal(updatedMember.related('newsletters').models.length, 1, 'newsletters should be untouched');
         });
 
         it('unsubscribe post works with x-www-form-urlencoded', async function () {
@@ -915,6 +943,7 @@ describe('Front-end members behavior', function () {
                         'paid',
                         'created_at',
                         'enable_comment_notifications',
+                        'enable_updates_and_announcements',
                         'can_comment',
                         'commenting',
                         'newsletters',

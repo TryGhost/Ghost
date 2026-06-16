@@ -24,6 +24,7 @@ describe('Members Service - utils', function () {
                 status: 'free',
                 extra: 'property',
                 enable_comment_notifications: true,
+                enable_updates_and_announcements: true,
                 can_comment: true,
                 commenting: null,
                 email_suppression: {
@@ -46,6 +47,7 @@ describe('Members Service - utils', function () {
                 status: 'free',
                 paid: false,
                 enable_comment_notifications: true,
+                enable_updates_and_announcements: true,
                 can_comment: true,
                 commenting: null,
                 email_suppression: {
@@ -76,6 +78,7 @@ describe('Members Service - utils', function () {
                     sort_order: 0
                 }],
                 enable_comment_notifications: false,
+                enable_updates_and_announcements: false,
                 can_comment: true,
                 commenting: null,
                 unsubscribe_url: undefined,
@@ -100,6 +103,7 @@ describe('Members Service - utils', function () {
                     sort_order: 0
                 }],
                 enable_comment_notifications: false,
+                enable_updates_and_announcements: false,
                 can_comment: true,
                 commenting: null,
                 unsubscribe_url: undefined,

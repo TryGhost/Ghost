@@ -9,6 +9,7 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
+const labs = require('../../../shared/labs');
 const {Automation, EmailDesignSetting, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
@@ -401,9 +402,10 @@ class MemberWelcomeEmailService {
      * @param {string} options.email.subject
      * @param {null | object} options.email.designSettings
      * @param {'welcome' | 'automation'} options.emailType
+     * @param {null | {url: string, oneClickUrl: string}} [options.unsubscribe] - When set, the footer links to an unsubscribe URL and the email carries one-click List-Unsubscribe headers
      * @returns {Promise<void>}
      */
-    async #sendEmail({member, memberStatus, email, emailType}) {
+    async #sendEmail({member, memberStatus, email, emailType, unsubscribe = null}) {
         if (!member.email) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.MISSING_RECIPIENT_EMAIL
@@ -427,12 +429,18 @@ class MemberWelcomeEmailService {
                 email: member.email,
                 uuid: member.uuid
             },
-            siteSettings: this.#getSiteSettings()
+            siteSettings: this.#getSiteSettings(),
+            unsubscribeUrl: unsubscribe?.url
         });
 
         const senderOptions = await this.#getEffectiveSenderOptions(
             getSenderDetails(email.designSettings)
         );
+
+        const headers = unsubscribe?.oneClickUrl ? {
+            'List-Unsubscribe': `<${unsubscribe.oneClickUrl}>`,
+            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click'
+        } : undefined;
 
         await this.#mailer.send({
             to: member.email,
@@ -441,6 +449,7 @@ class MemberWelcomeEmailService {
             text,
             forceTextContent: true,
             tags: [MEMBER_WELCOME_EMAIL_TAG],
+            ...(headers ? {headers} : {}),
             ...senderOptions
         });
     }
@@ -489,6 +498,15 @@ class MemberWelcomeEmailService {
             null;
         const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
 
+        // Real automation sends carry an unsubscribe link to the "Updates & Announcements"
+        // preference. The visible footer link and the one-click List-Unsubscribe header both point
+        // at the same /unsubscribe/?...&updates=1 URL (handled by the unsubscribe controller), just
+        // like newsletters. Preview/test sends render separately and never reach this path.
+        const unsubscribeUrl = labs.isSet('automations') && member.uuid ?
+            settingsHelpers.createUnsubscribeUrl(member.uuid, {updatesAndAnnouncements: true}) :
+            null;
+        const unsubscribe = unsubscribeUrl ? {url: unsubscribeUrl, oneClickUrl: unsubscribeUrl} : null;
+
         await this.#sendEmail({
             member,
             memberStatus,
@@ -497,7 +515,8 @@ class MemberWelcomeEmailService {
                 lexical: email.lexical,
                 subject: email.subject,
                 designSettings: designSettingsJson
-            }
+            },
+            unsubscribe
         });
     }
 

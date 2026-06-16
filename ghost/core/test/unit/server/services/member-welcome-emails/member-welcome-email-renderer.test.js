@@ -277,6 +277,23 @@ describe('MemberWelcomeEmailRenderer', function () {
             assert($('a[href="https://example.com/#/portal/account/newsletters"]').text().includes('Manage your preferences'));
         });
 
+        it('shows an unsubscribe link in the footer when an unsubscribeUrl is provided', async function () {
+            lexicalRenderStub.resolves('<p>Content</p>');
+            const renderer = new MemberWelcomeEmailRenderer({t: key => key});
+
+            const result = await renderer.render({
+                lexical: '{}',
+                subject: 'Test Subject',
+                member: {name: 'John', email: 'john@example.com'},
+                siteSettings: defaultSiteSettings,
+                unsubscribeUrl: 'https://example.com/unsubscribe/?uuid=abc&key=def&updates=1'
+            });
+
+            const $ = cheerio.load(result.html);
+            assert.equal($('a[href="https://example.com/unsubscribe/?uuid=abc&key=def&updates=1"]').text().trim(), 'Unsubscribe');
+            assert.equal($('a:contains("Manage your preferences")').length, 0);
+        });
+
         it('preserves multiline code block whitespace in the shared email wrapper', async function () {
             lexicalRenderStub.resolves('<pre><code>const firstLine = 1;\nconst secondLine = 2;</code></pre>');
             const renderer = createRenderer();

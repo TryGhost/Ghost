@@ -151,6 +151,12 @@ describe('Settings Helpers', function () {
             const url = settingsHelpers.createUnsubscribeUrl(memberUuid, {comments: true});
             assert.equal(url, `http://domain.com/unsubscribe/?uuid=memberuuid&key=${memberUuidHash}&comments=1`);
         });
+
+        it('returns a url that can be used to unsubscribe a member from updates & announcements', function () {
+            const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}, limitService});
+            const url = settingsHelpers.createUnsubscribeUrl(memberUuid, {updatesAndAnnouncements: true});
+            assert.equal(url, `http://domain.com/unsubscribe/?uuid=memberuuid&key=${memberUuidHash}&updates=1`);
+        });
     });
 
     describe('getAllBlockedEmailDomains', function () {
@@ -419,4 +425,3 @@ describe('Settings Helpers', function () {
         });
     });
 });
-

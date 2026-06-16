@@ -28,6 +28,10 @@ type MemberWelcomeEmailService = {
 type MemberModel = {
     get(key: 'name'): string | null;
     get(key: 'email' | 'status' | 'uuid'): string;
+    get(key: 'enable_updates_and_announcements'): boolean | null;
+    related(key: 'newsletters'): {
+        models: unknown[];
+    };
 };
 
 type PollOptions = {
@@ -44,6 +48,16 @@ type PollOptions = {
 const slugToMemberStatus = new Map<string, 'free' | 'paid'>(
     Object.entries(MEMBER_WELCOME_EMAIL_SLUGS).map(([status, slug]) => [slug as string, status as 'free' | 'paid'])
 );
+
+const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
+    const preference = member.get('enable_updates_and_announcements');
+
+    if (preference !== null) {
+        return preference;
+    }
+
+    return member.related('newsletters').models.length > 0;
+};
 
 const markMaxAttemptsExceeded = async (automationsApi: PollOptions['automationsApi'], step: AutomationStepToRun): Promise<void> => {
     await automationsApi.markStepTerminal(step, 'failed');
@@ -121,7 +135,7 @@ const processStep = async ({
         return null;
     }
 
-    const member = await Member.findOne({id: step.member_id}) as MemberModel | null;
+    const member = await Member.findOne({id: step.member_id}, {withRelated: ['newsletters']}) as MemberModel | null;
 
     if (!member) {
         // It's possible that the member was deleted between the time the step was fetched and now, though it's
@@ -152,6 +166,13 @@ const processStep = async ({
             break;
         }
         case 'send_email': {
+            // The member opted out of updates & announcements, so skip this email but keep
+            // the automation run moving.
+            if (!hasUpdatesAndAnnouncementsEnabled(member)) {
+                nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
+                break;
+            }
+
             memberWelcomeEmailService.init();
             await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {

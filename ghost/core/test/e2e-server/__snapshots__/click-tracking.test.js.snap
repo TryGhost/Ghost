@@ -31,6 +31,7 @@ Object {
       "email_open_rate": null,
       "email_opened_count": 0,
       "enable_comment_notifications": true,
+      "enable_updates_and_announcements": null,
       "geolocation": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "labels": Array [],
