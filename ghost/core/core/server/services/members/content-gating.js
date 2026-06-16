@@ -61,9 +61,16 @@ function checkPostAccess(post, member) {
     return BLOCK_ACCESS;
 }
 
-function checkGatedBlockAccess(gatedBlockParams, member) {
+function checkGatedBlockAccess(gatedBlockParams, member, hasGiftAccess = false) {
     const {nonMember, memberSegment} = gatedBlockParams;
     const isLoggedIn = !!member;
+
+    // A gift reader is anonymous but has full content access to this post, so
+    // they should see what a member sees: reveal member-only blocks and hide
+    // non-member CTAs (e.g. "subscribe to read more").
+    if (hasGiftAccess) {
+        return nonMember ? BLOCK_ACCESS : PERMIT_ACCESS;
+    }
 
     if (nonMember && !isLoggedIn) {
         return PERMIT_ACCESS;

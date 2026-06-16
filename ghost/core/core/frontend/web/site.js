@@ -14,6 +14,7 @@ const servePublicFiles = require('./routers/serve-public-file');
 const themeEngine = require('../services/theme-engine');
 const themeMiddleware = themeEngine.middleware;
 const membersService = require('../../server/services/members');
+const giftLinksService = require('../../server/services/gift-links');
 const offersService = require('../../server/services/offers');
 const customRedirects = require('../../server/services/custom-redirects');
 const linkRedirectsHandler = require('./routers/link-redirects');
@@ -139,6 +140,12 @@ module.exports = function setupSiteApp(routerConfig) {
 
     // Global handling for member session, ensures a member is logged in to the frontend
     siteApp.use(membersService.middleware.loadMemberSession);
+
+    // Resolve `/g/<slug>/?key=TOKEN` into a content-only access grant on
+    // res.locals.giftLink BEFORE routing dispatches to the GiftLinksRouter's
+    // controller, which owns the slug-match check, render/redirect, and the
+    // `@gift` template context — this middleware only validates the token.
+    siteApp.use(giftLinksService.middleware.loadGiftLink);
 
     // Theme middleware
     // This should happen AFTER any shared assets are served, as it only changes things to do with templates

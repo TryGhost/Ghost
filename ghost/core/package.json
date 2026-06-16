@@ -197,6 +197,7 @@
     "image-size": "1.2.1",
     "intl": "1.2.5",
     "intl-messageformat": "5.4.3",
+    "isbot": "catalog:",
     "js-yaml": "4.2.0",
     "jsdom": "catalog:",
     "jsonc-parser": "catalog:",

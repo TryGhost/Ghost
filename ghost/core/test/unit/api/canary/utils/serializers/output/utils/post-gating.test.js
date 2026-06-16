@@ -91,6 +91,72 @@ describe('Unit: endpoints/utils/serializers/output/utils/post-gating', function 
             assert.equal(attrs.html, '<p>Can read this</p>');
         });
 
+        describe('gift link access', function () {
+            it('grants full content for a gated post when the gift token matches the post', function () {
+                const attrs = {
+                    id: 'post-1',
+                    visibility: 'paid',
+                    plaintext: 'Secret paid content',
+                    html: '<p>Can read this with a gift</p>'
+                };
+
+                frame.original.context.giftLink = {post_id: 'post-1'};
+
+                gating.forPost(attrs, frame);
+
+                assert.equal(attrs.html, '<p>Can read this with a gift</p>');
+                assert.equal(attrs.plaintext, 'Secret paid content');
+                assert.equal(attrs.access, true);
+            });
+
+            it('reveals content behind the <!--members-only--> paywall under a gift', function () {
+                const attrs = {
+                    id: 'post-1',
+                    visibility: 'paid',
+                    html: '<p>teaser</p><!--members-only--><p>the secret</p>'
+                };
+
+                frame.original.context.giftLink = {post_id: 'post-1'};
+
+                gating.forPost(attrs, frame);
+
+                assert.match(attrs.html, /the secret/);
+            });
+
+            it('does NOT grant access when the gift token is for a different post', function () {
+                const attrs = {
+                    id: 'post-1',
+                    visibility: 'paid',
+                    plaintext: 'Secret paid content',
+                    html: '<p>Should be hidden</p>'
+                };
+
+                frame.original.context.giftLink = {post_id: 'a-different-post'};
+
+                gating.forPost(attrs, frame);
+
+                assert.equal(attrs.html, '');
+                assert.equal(attrs.plaintext, '');
+                assert.equal(attrs.access, false);
+            });
+
+            it('reveals member-only gated blocks and hides non-member CTAs under a gift', function () {
+                const attrs = {
+                    id: 'post-1',
+                    visibility: 'paid',
+                    html: '<!--kg-gated-block:begin nonMember:true--><p>Subscribe CTA</p><!--kg-gated-block:end-->'
+                        + '<!--kg-gated-block:begin nonMember:false memberSegment:"status:free,status:-free"--><p>Member content</p><!--kg-gated-block:end-->'
+                };
+
+                frame.original.context.giftLink = {post_id: 'post-1'};
+
+                gating.forPost(attrs, frame);
+
+                assert.ok(!attrs.html.includes('Subscribe CTA'), 'non-member CTA hidden');
+                assert.ok(attrs.html.includes('Member content'), 'member content revealed');
+            });
+        });
+
         describe('member UUID substitution', function () {
             it('replaces %7Buuid%7D placeholder with member UUID', function () {
                 const attrs = {

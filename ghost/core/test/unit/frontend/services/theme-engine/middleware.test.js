@@ -239,6 +239,30 @@ describe('Themes middleware', function () {
 
             assert.ok(data._queryCache instanceof Map, '_queryCache should be a Map when the flag is enabled');
         });
+
+        // `@gift` (the gift-link template context) is deliberately NOT set
+        // here: the /g/ controller sets it on its verified render path only,
+        // so it can never leak onto redirects, error pages, or canonical
+        // routes. See e2e-frontend/gift-links.test.js for the contract tests.
+        it('exposes no @gift even when a gift link is resolved on the request', async function () {
+            const giftApp = express();
+            giftApp.use(function (req, res, next) {
+                res.locals.giftLink = {post_id: 'post-1', token: 'tok'};
+                next();
+            });
+            giftApp.use(middleware);
+            giftApp.get('/', (_req, res) => {
+                res.json({ok: true});
+            });
+
+            await request(giftApp)
+                .get('/')
+                .expect(200);
+
+            sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+            const {data} = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+            assert.equal(data.gift, undefined);
+        });
     });
 
     describe('Preview Mode', function () {

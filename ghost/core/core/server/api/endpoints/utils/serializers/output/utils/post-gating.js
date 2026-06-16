@@ -53,12 +53,13 @@ const parseGatedBlockParams = function (paramsString) {
 /**
  * @param {string} html - The HTML to strip gated blocks from
  * @param {object} member - The member who's access should be checked
+ * @param {boolean} [hasGiftAccess] - Whether the reader holds a valid gift link for this post
  * @returns {string} HTML with gated blocks stripped
  */
-const stripGatedBlocks = function (html, member) {
+const stripGatedBlocks = function (html, member, hasGiftAccess = false) {
     return html.replace(GATED_BLOCK_REGEX, (match, params, content) => {
         const gatedBlockParams = module.exports.parseGatedBlockParams(params);
-        const checkResult = membersService.contentGating.checkGatedBlockAccess(gatedBlockParams, member);
+        const checkResult = membersService.contentGating.checkGatedBlockAccess(gatedBlockParams, member, hasGiftAccess);
 
         if (checkResult === PERMIT_ACCESS) {
             // return content rather than match to avoid rendering gated block wrapping comments
@@ -82,12 +83,18 @@ function _updateTextAttrs(attrs) {
 
 // @TODO: reconsider the location of this - it's part of members and adds a property to the API
 const forPost = (attrs, frame) => {
+    // CASE: a valid gift link for THIS post grants full, content-only access to
+    // an otherwise-anonymous reader (never a synthetic member). The token only
+    // unlocks the post it was minted for, so the post ids must match.
+    const giftLink = frame.original.context.giftLink;
+    const hasGiftAccess = !!(giftLink && attrs.id && giftLink.post_id === attrs.id);
+
     // CASE: Access always defaults to true, unless members is enabled and the member does not have access
     if (!Object.prototype.hasOwnProperty.call(frame.options, 'columns') || (frame.options.columns.includes('access'))) {
         attrs.access = true;
     }
 
-    const memberHasAccess = membersService.contentGating.checkPostAccess(attrs, frame.original.context.member);
+    const memberHasAccess = hasGiftAccess || membersService.contentGating.checkPostAccess(attrs, frame.original.context.member);
 
     if (!memberHasAccess) {
         const paywallIndex = (attrs.html || '').indexOf('<!--members-only-->');
@@ -106,7 +113,7 @@ const forPost = (attrs, frame) => {
 
     const hasGatedBlocks = HAS_GATED_BLOCKS_REGEX.test(attrs.html);
     if (hasGatedBlocks) {
-        attrs.html = module.exports.stripGatedBlocks(attrs.html, frame.original.context.member);
+        attrs.html = module.exports.stripGatedBlocks(attrs.html, frame.original.context.member, hasGiftAccess);
         _updateTextAttrs(attrs);
     }
 

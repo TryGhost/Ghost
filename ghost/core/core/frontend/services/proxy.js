@@ -67,6 +67,10 @@ module.exports = {
 
     // Labs utils for enabling/disabling helpers
     labs: require('../../shared/labs'),
+    // Gift links service — the /g/ reader controller records reads through its
+    // middleware. Crossed via this seam (not a direct require) per the
+    // frontend→server boundary rule.
+    giftLinks: require('../../server/services/gift-links'),
     // URGH... Yuk (unhelpful comment :D)
     urlService: require('../../server/services/url'),
     urlUtils: require('../../shared/url-utils')

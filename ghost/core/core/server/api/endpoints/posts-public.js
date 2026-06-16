@@ -122,6 +122,13 @@ const controller = {
                     'absolute_urls'
                 ]),
                 auth: generateAuthData(frame),
+                // A gift link unlocks the post for an otherwise-anonymous reader.
+                // The response must NOT collide with the plain anonymous cache
+                // entry (same auth), or unlocked content would leak to everyone.
+                // The middleware re-validates the token against the DB each
+                // request, so a reset/inactive token yields no giftLink → the
+                // plain anonymous key → reset stays instant.
+                gift: frame.options?.context?.giftLink?.post_id || null,
                 method: 'read',
                 identifier: {
                     id: frame.data.id,

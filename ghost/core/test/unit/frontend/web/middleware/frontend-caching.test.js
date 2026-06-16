@@ -6,6 +6,7 @@ const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/config-utils');
 
 const {api} = require('../../../../../core/frontend/services/proxy');
+const labs = require('../../../../../core/shared/labs');
 const frontendCaching = require('../../../../../core/frontend/web/middleware/frontend-caching');
 
 const cacheMembersContentConfigKey = 'cacheMembersContent:enabled';
@@ -105,6 +106,18 @@ describe('frontendCaching', function () {
     it('should set cache control to no-cache if the path starts with /p/', async function () {
         const {headers} = await requestWithFrontendCaching({path: '/p/test'});
         assert.equal(headers['cache-control'], testUtils.cacheRules.noCache);
+    });
+
+    it('should set cache control to no-cache for /g/ paths when the giftLinks flag is enabled', async function () {
+        sinon.stub(labs, 'isSet').withArgs('giftLinks').returns(true);
+        const {headers} = await requestWithFrontendCaching({path: '/g/my-post/?key=sometoken'});
+        assert.equal(headers['cache-control'], testUtils.cacheRules.noCache);
+    });
+
+    it('should NOT bypass cache for /g/ paths when the giftLinks flag is disabled', async function () {
+        sinon.stub(labs, 'isSet').returns(false);
+        const {headers} = await requestWithFrontendCaching({path: '/g/my-post/?key=sometoken'});
+        assert.equal(headers['cache-control'], testUtils.cacheRules.public);
     });
 
     it('should set cache control to private if the member has more than one active subscription', async function () {

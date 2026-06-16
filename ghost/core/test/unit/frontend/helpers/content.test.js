@@ -257,3 +257,16 @@ describe('{{content}} helper with custom template', function () {
         assert(rendered.string.includes('This page is for'));
     });
 });
+
+describe('{{content}} helper gift context', function () {
+    // Gift renders expose `@gift` as documented template context for theme
+    // authors; core deliberately ships NO default reader-facing UI, so the
+    // helper must return the content untouched.
+    it('does not alter the content output when a gift context is present', function () {
+        const rendered = content.call(
+            {id: 'post-1', html: '<p>Full content</p>', access: true},
+            {data: {site: {accent_color: '#abcdef'}, member: null, gift: {post_id: 'post-1'}}}
+        );
+        assert.equal(rendered.string, '<p>Full content</p>');
+    });
+});
