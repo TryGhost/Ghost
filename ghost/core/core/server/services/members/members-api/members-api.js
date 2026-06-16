@@ -85,14 +85,32 @@ module.exports = function MembersAPI({
     commentsService,
     emailAddressService,
     giftService
-}) {
-    const tokenService = new TokenService({
+}, dependencies = {}) {
+    const {
+        Router: RouterConstructor = Router,
+        body: bodyParser = body,
+        PaymentsService: PaymentsServiceConstructor = PaymentsService,
+        TokenService: TokenServiceConstructor = TokenService,
+        GeolocationService: GeolocationServiceConstructor = GeolocationService,
+        MemberBREADService: MemberBREADServiceConstructor = MemberBREADService,
+        MemberRepository: MemberRepositoryConstructor = MemberRepository,
+        NextPaymentCalculator: NextPaymentCalculatorConstructor = NextPaymentCalculator,
+        EventRepository: EventRepositoryConstructor = EventRepository,
+        ProductRepository: ProductRepositoryConstructor = ProductRepository,
+        RouterController: RouterControllerConstructor = RouterController,
+        MemberController: MemberControllerConstructor = MemberController,
+        WellKnownController: WellKnownControllerConstructor = WellKnownController,
+        MagicLink: MagicLinkConstructor = MagicLink,
+        DomainEvents: domainEvents = DomainEvents
+    } = dependencies;
+
+    const tokenService = new TokenServiceConstructor({
         privateKey,
         publicKey,
         issuer
     });
 
-    const productRepository = new ProductRepository({
+    const productRepository = new ProductRepositoryConstructor({
         Product,
         Settings,
         StripeProduct,
@@ -100,7 +118,7 @@ module.exports = function MembersAPI({
         stripeAPIService
     });
 
-    const memberRepository = new MemberRepository({
+    const memberRepository = new MemberRepositoryConstructor({
         stripeAPIService,
         tokenService,
         newslettersService,
@@ -123,7 +141,7 @@ module.exports = function MembersAPI({
         offersAPI
     });
 
-    const eventRepository = new EventRepository({
+    const eventRepository = new EventRepositoryConstructor({
         DonationPaymentEvent,
         EmailRecipient,
         MemberSubscribeEvent,
@@ -144,9 +162,9 @@ module.exports = function MembersAPI({
         Gift
     });
 
-    const nextPaymentCalculator = new NextPaymentCalculator();
+    const nextPaymentCalculator = new NextPaymentCalculatorConstructor();
 
-    const memberBREADService = new MemberBREADService({
+    const memberBREADService = new MemberBREADServiceConstructor({
         offersAPI,
         memberRepository,
         emailService: {
@@ -170,9 +188,9 @@ module.exports = function MembersAPI({
         giftService
     });
 
-    const geolocationService = new GeolocationService();
+    const geolocationService = new GeolocationServiceConstructor();
 
-    const magicLinkService = new MagicLink({
+    const magicLinkService = new MagicLinkConstructor({
         transporter,
         tokenProvider,
         getSigninURL,
@@ -183,7 +201,7 @@ module.exports = function MembersAPI({
         labsService
     });
 
-    const paymentsService = new PaymentsService({
+    const paymentsService = new PaymentsServiceConstructor({
         StripeProduct,
         StripePrice,
         StripeCustomer,
@@ -194,7 +212,7 @@ module.exports = function MembersAPI({
         giftService
     });
 
-    const memberController = new MemberController({
+    const memberController = new MemberControllerConstructor({
         memberRepository,
         productRepository,
         paymentsService,
@@ -205,7 +223,7 @@ module.exports = function MembersAPI({
         settingsCache
     });
 
-    const routerController = new RouterController({
+    const routerController = new RouterControllerConstructor({
         offersAPI,
         paymentsService,
         tiersService,
@@ -227,7 +245,7 @@ module.exports = function MembersAPI({
         giftService
     });
 
-    const wellKnownController = new WellKnownController({
+    const wellKnownController = new WellKnownControllerConstructor({
         tokenService
     });
 
@@ -399,43 +417,43 @@ module.exports = function MembersAPI({
     };
 
     const middleware = {
-        sendMagicLink: Router().use(
-            body.json(),
+        sendMagicLink: RouterConstructor().use(
+            bodyParser.json(),
             forwardError((req, res) => routerController.sendMagicLink(req, res))
         ),
-        verifyOTC: Router().use(
-            body.json(),
+        verifyOTC: RouterConstructor().use(
+            bodyParser.json(),
             forwardError((req, res) => routerController.verifyOTC(req, res))
         ),
-        createCheckoutSession: Router().use(
-            body.json(),
+        createCheckoutSession: RouterConstructor().use(
+            bodyParser.json(),
             forwardError((req, res) => routerController.createCheckoutSession(req, res))
         ),
-        createCheckoutSetupSession: Router().use(
-            body.json(),
+        createCheckoutSetupSession: RouterConstructor().use(
+            bodyParser.json(),
             forwardError((req, res) => routerController.createCheckoutSetupSession(req, res))
         ),
-        createBillingPortalSession: Router().use(
-            body.json(),
+        createBillingPortalSession: RouterConstructor().use(
+            bodyParser.json(),
             forwardError((req, res) => routerController.createBillingPortalSession(req, res))
         ),
-        updateEmailAddress: Router().use(
-            body.json(),
+        updateEmailAddress: RouterConstructor().use(
+            bodyParser.json(),
             forwardError((req, res) => memberController.updateEmailAddress(req, res))
         ),
-        updateSubscription: Router({mergeParams: true}).use(
-            body.json(),
+        updateSubscription: RouterConstructor({mergeParams: true}).use(
+            bodyParser.json(),
             forwardError((req, res) => memberController.updateSubscription(req, res))
         ),
-        applyOfferToSubscription: Router({mergeParams: true}).use(
-            body.json(),
+        applyOfferToSubscription: RouterConstructor({mergeParams: true}).use(
+            bodyParser.json(),
             forwardError((req, res) => memberController.applyOfferToSubscription(req, res))
         ),
-        getMemberOffers: Router().use(
-            body.json(),
+        getMemberOffers: RouterConstructor().use(
+            bodyParser.json(),
             forwardError((req, res) => routerController.getMemberOffers(req, res))
         ),
-        wellKnown: Router()
+        wellKnown: RouterConstructor()
             .get('/jwks.json',
                 (req, res) => wellKnownController.getPublicKeys(req, res)
             )
@@ -452,7 +470,7 @@ module.exports = function MembersAPI({
 
     bus.emit('ready');
 
-    DomainEvents.subscribe(EmailSuppressedEvent, async function (event) {
+    domainEvents.subscribe(EmailSuppressedEvent, async function (event) {
         const member = await memberRepository.get({email: event.data.emailAddress});
         if (!member) {
             return;

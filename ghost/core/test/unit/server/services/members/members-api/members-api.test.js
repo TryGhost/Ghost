@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
+const MembersAPI = require('../../../../../../core/server/services/members/members-api/members-api');
 
 describe('MembersAPI', function () {
-    let MembersAPI;
     let membersAPI;
     let memberRepository;
     let memberBREADService;
@@ -25,64 +24,6 @@ describe('MembersAPI', function () {
     };
 
     const buildMembersAPI = () => {
-        MembersAPI = rewire('../../../../../../core/server/services/members/members-api/members-api');
-
-        MembersAPI.__set__('Router', () => createRouterStub());
-        MembersAPI.__set__('body', {
-            json: () => 'json-middleware',
-            raw: () => 'raw-middleware',
-            urlencoded: () => 'urlencoded-middleware'
-        });
-        MembersAPI.__set__('PaymentsService', function PaymentsService() {
-            return {};
-        });
-        MembersAPI.__set__('TokenService', function TokenService() {
-            return {};
-        });
-        MembersAPI.__set__('GeolocationService', function GeolocationService() {
-            return {
-                getGeolocationFromIP: sinon.stub().resolves(null)
-            };
-        });
-        MembersAPI.__set__('MemberRepository', function MemberRepository() {
-            return memberRepository;
-        });
-        MembersAPI.__set__('MemberBREADService', function MemberBREADService() {
-            return memberBREADService;
-        });
-        MembersAPI.__set__('NextPaymentCalculator', function NextPaymentCalculator() {
-            return {};
-        });
-        MembersAPI.__set__('EventRepository', function EventRepository() {
-            return {};
-        });
-        MembersAPI.__set__('ProductRepository', function ProductRepository() {
-            return {};
-        });
-        MembersAPI.__set__('RouterController', function RouterController() {
-            return {};
-        });
-        MembersAPI.__set__('MemberController', function MemberController() {
-            return {};
-        });
-        MembersAPI.__set__('WellKnownController', function WellKnownController() {
-            return {};
-        });
-        MembersAPI.__set__('MagicLink', function MagicLink() {
-            return {
-                tokenProvider,
-                getDataFromToken: sinon.stub().callsFake(async (token, otcVerification) => {
-                    return await tokenProvider.validate(token, {otcVerification});
-                }),
-                sendMagicLink: sinon.stub(),
-                getMagicLink: sinon.stub(),
-                getSigninURL: sinon.stub()
-            };
-        });
-        MembersAPI.__set__('DomainEvents', {
-            subscribe: sinon.stub()
-        });
-
         return MembersAPI({
             tokenConfig: {
                 issuer: 'ghost',
@@ -153,6 +94,62 @@ describe('MembersAPI', function () {
                 service: {
                     redeem: giftRedeem
                 }
+            }
+        }, {
+            Router: () => createRouterStub(),
+            body: {
+                json: () => 'json-middleware',
+                raw: () => 'raw-middleware',
+                urlencoded: () => 'urlencoded-middleware'
+            },
+            PaymentsService: function PaymentsService() {
+                return {};
+            },
+            TokenService: function TokenService() {
+                return {};
+            },
+            GeolocationService: function GeolocationService() {
+                return {
+                    getGeolocationFromIP: sinon.stub().resolves(null)
+                };
+            },
+            MemberRepository: function MemberRepository() {
+                return memberRepository;
+            },
+            MemberBREADService: function MemberBREADService() {
+                return memberBREADService;
+            },
+            NextPaymentCalculator: function NextPaymentCalculator() {
+                return {};
+            },
+            EventRepository: function EventRepository() {
+                return {};
+            },
+            ProductRepository: function ProductRepository() {
+                return {};
+            },
+            RouterController: function RouterController() {
+                return {};
+            },
+            MemberController: function MemberController() {
+                return {};
+            },
+            WellKnownController: function WellKnownController() {
+                return {};
+            },
+            MagicLink: function MagicLink() {
+                return {
+                    tokenProvider,
+                    getDataFromToken: sinon.stub().callsFake(async (token, otcVerification) => {
+                        return await tokenProvider.validate(token, {otcVerification});
+                    }),
+                    sendMagicLink: sinon.stub(),
+                    getMagicLink: sinon.stub(),
+                    getSigninURL: sinon.stub()
+                };
+            },
+            DomainEvents: {
+                subscribe: sinon.stub()
             }
         });
     };
