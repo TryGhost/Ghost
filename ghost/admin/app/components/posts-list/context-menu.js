@@ -7,9 +7,11 @@ import UnschedulePostsModal from './modals/unschedule-posts';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import nql from '@tryghost/nql';
 import {action} from '@ember/object';
+import {canCopyGiftLink, giftLinkUrl} from 'ghost-admin/utils/gift-link';
 import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
+import {trackEvent} from 'ghost-admin/utils/analytics';
 
 /**
  * @tryghost/tpl doesn't work in admin yet (Safari)
@@ -55,17 +57,37 @@ const messages = {
     },
     copiedPreviewUrl: {
         single: 'Preview link copied'
+    },
+    copiedGiftLink: {
+        single: 'Gift link copied'
     }
 };
 
 export default class PostsContextMenu extends Component {
     @service ajax;
+    @service config;
     @service ghostPaths;
     @service session;
     @service infinity;
     @service store;
     @service notifications;
     @service membersUtils;
+    @service feature;
+
+    // Gift links: only for a single published, gated (non-public) post/page, and
+    // only for users who can manage them (Owner/Administrator/Editor).
+    // Eligibility and URL shape are shared with the post-settings menu via
+    // app/utils/gift-link.js.
+    get canCopyGiftLink() {
+        if (!this.selectionList.isSingle) {
+            return false;
+        }
+        return canCopyGiftLink({
+            feature: this.feature,
+            user: this.session.user,
+            post: this.selectionList.first
+        });
+    }
 
     get menu() {
         return this.args.menu;
@@ -94,6 +116,11 @@ export default class PostsContextMenu extends Component {
     @action
     async copyPreviewLink() {
         this.menu.performTask(this.copyPreviewLinkTask);
+    }
+
+    @action
+    async copyGiftLink() {
+        this.menu.performTask(this.copyGiftLinkTask);
     }
 
     @action
@@ -426,6 +453,30 @@ export default class PostsContextMenu extends Component {
         copyTextToClipboard(this.selectionList.availableModels[0].url);
         this.notifications.showNotification(this.#getToastMessage('copiedPreviewUrl'), {type: 'success'});
         yield timeout(1000);
+        return true;
+    }
+
+    @task
+    *copyGiftLinkTask() {
+        try {
+            const post = this.selectionList.availableModels[0];
+            // Idempotent ensure (issue): returns the live gift link, creating it
+            // if absent — PUT /{posts|pages}/:id/gift_link, mirroring the editor PSM.
+            const resource = this.type === 'page' ? 'pages' : 'posts';
+            const url = this.ghostPaths.url.api(resource, post.id, 'gift_link');
+            const response = yield this.ajax.put(url);
+            const token = response.gift_links[0].token;
+            const giftUrl = giftLinkUrl({blogUrl: this.config.blogUrl, slug: post.slug, token});
+            // Await the clipboard write so we only show "copied" on real
+            // success — in Safari/Firefox the write can reject after the awaited
+            // POST loses the user-activation, and we must not claim success then.
+            yield navigator.clipboard.writeText(giftUrl);
+            trackEvent('gift_link_copied', {surface: 'posts-list-context-menu'});
+            this.notifications.showNotification(this.#getToastMessage('copiedGiftLink'), {type: 'success'});
+            yield timeout(1000);
+        } catch (error) {
+            this.notifications.showAPIError(error, {key: 'gift-link.copy.failed'});
+        }
         return true;
     }
 

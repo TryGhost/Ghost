@@ -4,9 +4,11 @@ import classic from 'ember-classic-decorator';
 import moment from 'moment-timezone';
 import {action, computed} from '@ember/object';
 import {alias, or} from '@ember/object/computed';
+import {canCopyGiftLink, giftLinkUrl} from 'ghost-admin/utils/gift-link';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
+import {trackEvent} from 'ghost-admin/utils/analytics';
 import {tracked} from '@glimmer/tracking';
 
 @classic
@@ -26,6 +28,10 @@ export default class GhPostSettingsMenu extends Component {
     @inject config;
 
     @tracked showPostHistory = false;
+    @tracked giftLink = null;
+    @tracked giftLinkCopied = false;
+    @tracked giftLinkResetConfirming = false;
+    @tracked giftLinkResetting = false;
 
     post = null;
     isViewingSubview = false;
@@ -186,6 +192,104 @@ export default class GhPostSettingsMenu extends Component {
         }
 
         this.setSidebarWidthVariable(0);
+    }
+
+    // Gift links: only for a published, gated (non-public) post/page, and only
+    // for users who can manage them (Owner/Administrator/Editor). Eligibility
+    // and URL shape are shared with the posts-list context menu via
+    // app/utils/gift-link.js.
+    @computed('feature.giftLinks', 'session.user.{isAdmin,isEitherEditor,isAuthor}', 'post.{isPublished,visibility}')
+    get canCopyGiftLink() {
+        return canCopyGiftLink({feature: this.feature, user: this.session.user, post: this.post});
+    }
+
+    get giftLinkUrl() {
+        return giftLinkUrl({
+            blogUrl: this.config.blogUrl,
+            slug: this.post?.slug,
+            token: this.giftLink?.token
+        });
+    }
+
+    get giftLinkUsesLabel() {
+        const count = this.giftLink ? this.giftLink.redeemed_count : 0;
+        if (count === 0) {
+            return 'Not used yet';
+        }
+        return `${count} ${count === 1 ? 'use' : 'uses'}`;
+    }
+
+    // Load the post's existing gift link (if any) when the control is shown, so
+    // the usage counter is populated without the author having to copy first.
+    @action
+    async loadGiftLink() {
+        if (!this.canCopyGiftLink) {
+            return;
+        }
+        try {
+            const url = this.ghostPaths.url.api('posts', this.post.id, 'gift_link');
+            const response = await this.ajax.request(url);
+            this.giftLink = response.gift_links[0] || null;
+        } catch (e) {
+            // Non-fatal: leave unset so the counter reads "0 uses".
+        }
+    }
+
+    // Copy is a creation intent: the post may not have a link yet, so the
+    // idempotent PUT creates it when missing and otherwise returns the current
+    // active token, which also refreshes the usage counter.
+    @action
+    async copyGiftLink() {
+        try {
+            const url = this.ghostPaths.url.api('posts', this.post.id, 'gift_link');
+            const response = await this.ajax.put(url);
+            this.giftLink = response.gift_links[0];
+            // Await the clipboard write so we only show "copied" on real
+            // success — in Safari/Firefox the write can reject after the awaited
+            // POST loses the user-activation, and we must not claim success then.
+            await navigator.clipboard.writeText(this.giftLinkUrl);
+            trackEvent('gift_link_copied', {surface: 'editor-psm'});
+            this.giftLinkCopied = true;
+            setTimeout(() => {
+                if (this.isDestroying || this.isDestroyed) {
+                    return;
+                }
+                this.giftLinkCopied = false;
+            }, 2000);
+        } catch (e) {
+            this.notifications.showAPIError(e, {key: 'gift-link.copy'});
+        }
+    }
+
+    @action
+    startResetGiftLink() {
+        this.giftLinkResetConfirming = true;
+    }
+
+    @action
+    cancelResetGiftLink() {
+        this.giftLinkResetConfirming = false;
+    }
+
+    @action
+    async confirmResetGiftLink() {
+        if (this.giftLinkResetting) {
+            return;
+        }
+        this.giftLinkResetting = true;
+        try {
+            // Rotate the post's link (reissue) — POST /posts/:id/gift_link.
+            // Distinct from copy's idempotent PUT to the same path.
+            const url = this.ghostPaths.url.api('posts', this.post.id, 'gift_link');
+            const response = await this.ajax.post(url);
+            this.giftLink = response.gift_links[0];
+            trackEvent('gift_link_reset', {surface: 'editor-psm'});
+        } catch (e) {
+            this.notifications.showAPIError(e, {key: 'gift-link.reset'});
+        } finally {
+            this.giftLinkResetting = false;
+            this.giftLinkResetConfirming = false;
+        }
     }
 
     @action

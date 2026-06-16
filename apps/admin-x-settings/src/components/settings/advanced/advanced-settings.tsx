@@ -13,7 +13,7 @@ export const searchKeywords = {
     codeInjection: ['advanced', 'code injection', 'head', 'footer'],
     labs: ['advanced', 'labs', 'alpha', 'private', 'beta', 'flag', 'routes', 'redirect', 'translation', 'editor', 'portal'],
     history: ['advanced', 'history', 'log', 'events', 'user events', 'staff', 'audit', 'action'],
-    dangerzone: ['danger zone', 'delete all content', 'delete site', 'reset all authentication', 'reset api keys', 'reset password', 'compromised credentials', 'lock staff users', 'sign out all staff']
+    dangerzone: ['danger zone', 'delete all content', 'delete site', 'reset all authentication', 'reset api keys', 'reset password', 'compromised credentials', 'lock staff users', 'sign out all staff', 'revoke all gift links', 'reset all gift links', 'gift links', 'invalidate gift links']
 };
 
 const AdvancedSettings: React.FC = () => {

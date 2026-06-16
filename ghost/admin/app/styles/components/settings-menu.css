@@ -214,6 +214,61 @@
     padding: 0 24px;
 }
 
+/* Gift link controls under the post access setting — inline copy on the left,
+   usage counter + reset on the right, pulled up tight beneath the access select.
+   Reset swaps in an inline confirmation (warning + Cancel/Confirm). */
+.gh-psm-gift-link {
+    margin-top: -14px;
+}
+
+.gh-psm-gift-link-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    font-size: 1.3rem;
+    line-height: 1.5;
+}
+
+.gh-psm-gift-link-usage {
+    display: flex;
+    align-items: baseline;
+    gap: 14px;
+}
+
+.gh-psm-gift-link-count,
+.gh-psm-gift-link-warning {
+    color: var(--midgrey);
+}
+
+.gh-psm-gift-link-action {
+    padding: 0;
+    border: none;
+    background: none;
+    font-family: inherit;
+    font-size: inherit;
+    line-height: inherit;
+    color: var(--midgrey);
+    cursor: pointer;
+}
+
+.gh-psm-gift-link-action:hover {
+    color: var(--darkgrey);
+}
+
+/* Copy is the primary action */
+.gh-psm-gift-link-copy,
+.gh-psm-gift-link-copy:hover {
+    color: var(--blue);
+    font-weight: 500;
+}
+
+/* Confirm is emphasized within the reset confirmation */
+.gh-psm-gift-link-confirm {
+    color: var(--darkgrey);
+    font-weight: 600;
+}
+
 @media (max-width: 1024px) {
     .settings-menu-content {
         padding-top: 0;

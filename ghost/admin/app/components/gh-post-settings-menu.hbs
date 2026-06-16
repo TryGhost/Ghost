@@ -93,6 +93,28 @@
                             {{/if}}
                         {{/if}}
 
+                        {{#if this.canCopyGiftLink}}
+                            <div class="form-group gh-psm-gift-link" {{did-insert this.loadGiftLink}}>
+                                {{#if this.giftLinkResetConfirming}}
+                                    <div class="gh-psm-gift-link-row">
+                                        <span class="gh-psm-gift-link-warning">Current gift link will stop working</span>
+                                        <span class="gh-psm-gift-link-usage">
+                                            <button type="button" class="gh-psm-gift-link-action" {{on "click" this.cancelResetGiftLink}} data-test-button="cancel-reset-gift-link">Cancel</button>
+                                            <button type="button" class="gh-psm-gift-link-action gh-psm-gift-link-confirm" {{on "click" this.confirmResetGiftLink}} data-test-button="confirm-reset-gift-link">Confirm</button>
+                                        </span>
+                                    </div>
+                                {{else}}
+                                    <div class="gh-psm-gift-link-row">
+                                        <button type="button" class="gh-psm-gift-link-action gh-psm-gift-link-copy" {{on "click" this.copyGiftLink}} data-test-button="copy-gift-link">{{if this.giftLinkCopied "Link copied" "Copy gift link"}}</button>
+                                        <span class="gh-psm-gift-link-usage">
+                                            <span class="gh-psm-gift-link-count" data-test-text="gift-link-uses">{{this.giftLinkUsesLabel}}</span>
+                                            <button type="button" class="gh-psm-gift-link-action" {{on "click" this.startResetGiftLink}} data-test-button="reset-gift-link">Reset</button>
+                                        </span>
+                                    </div>
+                                {{/if}}
+                            </div>
+                        {{/if}}
+
                         {{#unless (feature 'editorExcerpt')}}
                         <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="customExcerpt">
                             <label for="custom-excerpt">Excerpt</label>
