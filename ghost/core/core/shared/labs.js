@@ -54,7 +54,8 @@ const PRIVATE_FEATURES = [
     'smarterCounts',
     'llmsTxt',
     'getHelperDeduplication',
-    'giftLinks'
+    'giftLinks',
+    'customCardPlugins'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

@@ -205,6 +205,10 @@ module.exports = {
         return apiFramework.pipeline(require('./featurebase'), localUtils);
     },
 
+    get cardPlugins() {
+        return apiFramework.pipeline(require('./card-plugins'), localUtils);
+    },
+
     get serializers() {
         return require('./utils/serializers');
     },

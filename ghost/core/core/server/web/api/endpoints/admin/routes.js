@@ -420,5 +420,16 @@ module.exports = function apiRoutes() {
     router.get('/search-index/tags', mw.authAdminApi, http(api.searchIndex.fetchTags));
     router.get('/search-index/users', mw.authAdminApi, http(api.searchIndex.fetchUsers));
 
+    // ## Custom Card Plugins
+    router.get('/plugins/cards', mw.authAdminApi, http(api.cardPlugins.browse));
+    router.get('/plugins/:name/download', mw.authAdminApi, http(api.cardPlugins.download));
+    router.get('/plugins/:name', mw.authAdminApi, http(api.cardPlugins.read));
+    router.delete('/plugins/:name', mw.authAdminApi, http(api.cardPlugins.destroy));
+    router.post('/plugins/install',
+        mw.authAdminApi,
+        apiMw.upload.single('file'),
+        http(api.cardPlugins.install)
+    );
+
     return router;
 };

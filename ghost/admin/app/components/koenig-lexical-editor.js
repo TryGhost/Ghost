@@ -148,6 +148,41 @@ export default class KoenigLexicalEditor extends Component {
     contentKey = null;
     defaultLinks = null;
 
+    get pluginCards() {
+        console.log('[KoenigEditor] pluginCards getter called');
+        try {
+            const labs = JSON.parse(this.settings.labs || '{}');
+            console.log('[KoenigEditor] labs:', labs);
+            if (!labs.customCardPlugins) {
+                console.log('[KoenigEditor] customCardPlugins not enabled');
+                return [];
+            }
+            // Return cached result if available
+            if (this._pluginCardsLoaded) {
+                console.log('[KoenigEditor] returning cached:', this._pluginCards?.length);
+                return this._pluginCards || [];
+            }
+            // Synchronous fetch using XMLHttpRequest
+            const xhr = new XMLHttpRequest();
+            xhr.open('GET', '/ghost/api/admin/plugins/cards/', false);
+            xhr.withCredentials = true;
+            xhr.send();
+            console.log('[KoenigEditor] XHR status:', xhr.status);
+            if (xhr.status === 200) {
+                const data = JSON.parse(xhr.responseText);
+                this._pluginCards = data.plugins?.flat() || [];
+                console.log('[KoenigEditor] loaded plugins:', this._pluginCards.length);
+            }
+        } catch (e) {
+            console.error('[KoenigEditor] error loading plugins:', e);
+            this._pluginCards = [];
+        }
+        // Cache the result even on failure so we don't retry the
+        // blocking synchronous XHR on every invocation
+        this._pluginCardsLoaded = true;
+        return this._pluginCards || [];
+    }
+
     editorResource = this.koenig.resource;
 
     get pinturaJsUrl() {
@@ -444,9 +479,10 @@ export default class KoenigLexicalEditor extends Component {
             siteUrl: this.config.getSiteUrl('/'),
             siteUuid: this.config.site_uuid,
             stripeEnabled: checkStripeEnabled(), // returns a boolean
-            visibilitySettings: getCardVisibilitySettings(props.cardConfig)
+            visibilitySettings: getCardVisibilitySettings(props.cardConfig),
+            pluginCards: this.pluginCards
         };
-        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig, visibilitySettings: defaultCardConfig.visibilitySettings});
+        const cardConfig = Object.assign({}, defaultCardConfig, props.cardConfig, {pinturaConfig: this.pinturaConfig, visibilitySettings: defaultCardConfig.visibilitySettings, pluginCards: this.pluginCards});
 
         const KGEditorComponent = ({isInitInstance}) => {
             return (

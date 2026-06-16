@@ -117,6 +117,10 @@ module.exports = {
         return require('./themes');
     },
 
+    get cardPlugins() {
+        return require('./card-plugins');
+    },
+
     get site() {
         return require('./site');
     },

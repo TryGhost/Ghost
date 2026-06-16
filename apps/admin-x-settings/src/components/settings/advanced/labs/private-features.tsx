@@ -71,6 +71,10 @@ const features: Feature[] = [{
     title: 'Gift links',
     description: 'Tokenized links that let anyone read a single gated post or page in full, no account required',
     flag: 'giftLinks'
+}, {
+    title: 'Custom Card Plugins',
+    description: 'Allow installing card plugins that extend the editor with custom content blocks like review cards, comparison tables, and more.',
+    flag: 'customCardPlugins'
 }];
 
 const AlphaFeatures: React.FC = () => {

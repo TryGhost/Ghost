@@ -1,18 +1,23 @@
 import BetaFeatures from './labs/beta-features';
 import LabsBubbles from '../../../assets/images/labs-bg.svg';
+import PluginsManager from './labs/plugins';
 import PrivateFeatures from './labs/private-features';
 import React, {useState} from 'react';
 import TopLevelGroup from '../../top-level-group';
 import {Button, SettingGroupHeader, type Tab, TabView, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useAutoExpandable} from '../../../hooks/use-auto-expandable';
 import {useGlobalData} from '../../providers/global-data-provider';
 
-type LabsTab = 'labs-private-features' | 'labs-beta-features';
+type LabsTab = 'labs-private-features' | 'labs-beta-features' | 'labs-plugins';
 
 const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [selectedTab, setSelectedTab] = useState<LabsTab>('labs-beta-features');
-    const {config} = useGlobalData();
+    const {config, settings} = useGlobalData();
     const {isOpen, openManually, closeManually} = useAutoExpandable(keywords);
+
+    const labs = JSON.parse(getSettingValue<string>(settings, 'labs') || '{}');
+    const pluginsEnabled = labs.customCardPlugins === true;
 
     const tabs = [
         {
@@ -24,6 +29,11 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
             id: 'labs-private-features',
             title: 'Private features',
             contents: <PrivateFeatures />
+        }),
+        pluginsEnabled && ({
+            id: 'labs-plugins',
+            title: 'Card Plugins',
+            contents: <PluginsManager />
         })
     ].filter(Boolean) as Tab<LabsTab>[];
 
@@ -50,7 +60,7 @@ const Labs: React.FC<{ keywords: string[] }> = ({keywords}) => {
             testId='labs'
         >
             {isOpen ? (
-                <TabView<'labs-private-features' | 'labs-beta-features'>
+                <TabView<'labs-private-features' | 'labs-beta-features' | 'labs-plugins'>
                     selectedTab={selectedTab}
                     tabs={tabs}
                     onTabChange={setSelectedTab}
