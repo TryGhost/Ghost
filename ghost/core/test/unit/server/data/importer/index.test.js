@@ -708,7 +708,6 @@ describe('Importer', function () {
                 ProductsImporter,
                 StripeProductsImporter,
                 StripePricesImporter,
-                PostsImporter,
                 CustomThemeSettingsImporter,
                 RevueSubscriberImporter
             ].forEach((Importer) => {
@@ -718,11 +717,14 @@ describe('Importer', function () {
                 sinon.stub(Importer.prototype, 'doImport').resolves();
             });
 
-            sinon.stub(models.Base, 'transaction').callsFake(fn => fn({fake: 'transacting'}));
-            PostsImporter.prototype.doImport.restore();
+            sinon.stub(PostsImporter.prototype, 'fetchExisting').resolves();
+            sinon.stub(PostsImporter.prototype, 'beforeImport').resolves();
+            sinon.stub(PostsImporter.prototype, 'replaceIdentifiers').resolves();
             sinon.stub(PostsImporter.prototype, 'doImport').callsFake(function () {
                 this.errors.push(importError);
             });
+
+            sinon.stub(models.Base, 'transaction').callsFake(fn => fn({fake: 'transacting'}));
 
             await assert.rejects(DataImporter.doImport({meta: {version: '4.0.0'}, data: {}}, {}), (err) => {
                 assert(err instanceof Error);
