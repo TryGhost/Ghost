@@ -3,15 +3,21 @@ import {formatNumber} from '@tryghost/shade/utils';
 import {useMultipleActiveSubscriptionsBanner} from '../hooks/use-multiple-active-subscriptions-banner';
 
 interface MultipleActiveSubscriptionsBannerProps {
+    count: number;
+    hasResolvedCount: boolean;
     nql?: string;
     search: string;
 }
 
 const MultipleActiveSubscriptionsBanner = ({
+    count,
+    hasResolvedCount,
     nql,
     search
 }: MultipleActiveSubscriptionsBannerProps) => {
     const banner = useMultipleActiveSubscriptionsBanner({
+        count,
+        hasResolvedCount,
         nql,
         search
     });
