@@ -368,3 +368,96 @@
     margin-left: 8px;
     background: var(--whitegrey);
 }
+
+@media (max-width: 1500px) {
+    .post-header .gh-canvas-header-content {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(0, max-content) auto;
+        grid-template-areas: "title filters primary";
+        align-items: center;
+        gap: 12px;
+        min-height: auto !important;
+    }
+
+    .post-header .gh-canvas-title-container {
+        grid-area: title;
+        min-width: 0;
+    }
+
+    .post-header .gh-canvas-breadcrumb,
+    .post-header .gh-canvas-title {
+        min-width: 0;
+        max-width: 100%;
+        overflow: hidden;
+    }
+
+    .post-header .gh-canvas-breadcrumb {
+        display: flex !important;
+    }
+
+    .post-header .gh-canvas-breadcrumb a,
+    .post-header .gh-canvas-breadcrumb span,
+    .post-header .gh-canvas-title a {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .post-header .gh-canvas-breadcrumb a,
+    .post-header .gh-canvas-breadcrumb svg {
+        flex: 0 0 auto;
+    }
+
+    .post-header .gh-canvas-breadcrumb span {
+        min-width: 0;
+    }
+
+    .post-header .view-actions {
+        display: contents;
+        position: static !important;
+        width: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
+    }
+
+    .post-header .view-actions-top-row {
+        grid-area: primary;
+        justify-self: end;
+    }
+
+    .post-header .view-actions-bottom-row {
+        grid-area: filters;
+        justify-content: flex-end;
+        min-width: 0;
+        max-width: 100% !important;
+        padding: 0;
+        overflow-x: auto;
+        overflow-y: visible;
+        /* the overlay scrollbar floats over the chips and can't be pushed below with
+           padding; hide it and let the row scroll by swipe/trackpad instead */
+        scrollbar-width: none;
+    }
+
+    .post-header .view-actions-bottom-row::-webkit-scrollbar {
+        display: none;
+    }
+
+    .post-header .view-actions::before {
+        display: none !important;
+    }
+}
+
+@media (max-width: 1300px) {
+    .post-header .gh-canvas-header-content {
+        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-areas:
+            "title primary"
+            "filters filters";
+    }
+}
+
+@media (max-width: 800px) {
+    .post-header .view-actions-bottom-row {
+        justify-content: flex-start;
+    }
+}

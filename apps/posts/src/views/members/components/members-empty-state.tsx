@@ -5,7 +5,6 @@ import {toast} from 'sonner';
 import {useAddMember} from '@tryghost/admin-x-framework/api/members';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-import {useNavigate} from '@tryghost/admin-x-framework';
 
 interface MembersEmptyStateProps {
     membershipsEnabled: boolean;
@@ -16,7 +15,6 @@ const MembersEmptyState: React.FC<MembersEmptyStateProps> = ({membershipsEnabled
     const {data: currentUser, isLoading: isCurrentUserLoading} = useCurrentUser();
     const {mutateAsync: addMember, isLoading: isAdding} = useAddMember();
     const handleError = useHandleError();
-    const navigate = useNavigate();
 
     const handleAddYourself = useCallback(async () => {
         if (!currentUser || isAdding) {
@@ -55,36 +53,31 @@ const MembersEmptyState: React.FC<MembersEmptyStateProps> = ({membershipsEnabled
 
     return (
         <div className="flex h-full flex-col items-center justify-center px-4">
-            <div className="flex max-w-lg flex-col items-center gap-3">
-                <EmptyIndicator
-                    actions={
-                        <div className="flex flex-col items-center gap-3">
+            <EmptyIndicator
+                actions={
+                    <div className="flex flex-col items-center gap-3">
+                        <div className="flex flex-col items-center gap-2 sm:flex-row">
+                            <Button asChild>
+                                <a href="#/members/new?back=%2Fmembers">New member</a>
+                            </Button>
                             <Button
                                 disabled={isAdding || isCurrentUserLoading || !currentUser}
+                                variant="outline"
                                 onClick={handleAddYourself}
                             >
-                                {isAdding ? 'Adding...' : 'Add yourself as a member to test'}
+                                {isAdding ? 'Adding...' : 'Add yourself as a member'}
                             </Button>
-                            <p className="text-sm text-muted-foreground">
-                                Have members already?{' '}
-                                <a className="font-medium text-foreground hover:underline" href="#/members/new">Add them manually</a>
-                                {' '}or{' '}
-                                <button
-                                    className="font-medium text-foreground hover:underline"
-                                    type="button"
-                                    onClick={() => navigate('/members/import')}
-                                >
-                                    import from CSV
-                                </button>
-                            </p>
                         </div>
-                    }
-                    description="Use memberships to allow your readers to sign up and subscribe to your content."
-                    title="Start building your audience"
-                >
-                    <LucideIcon.Users />
-                </EmptyIndicator>
-            </div>
+                        <p className="text-sm leading-tight text-pretty text-muted-foreground">
+                            Already have members? <a className="font-medium text-foreground underline-offset-4 hover:underline" href="#/members/import">Import with CSV</a>
+                        </p>
+                    </div>
+                }
+                description="Use memberships to allow your readers to sign up and subscribe to your content."
+                title="Start building your audience"
+            >
+                <LucideIcon.Users />
+            </EmptyIndicator>
         </div>
     );
 };

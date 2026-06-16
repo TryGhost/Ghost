@@ -44,6 +44,9 @@ describe('Data Generator', function () {
                             table.index(indexes);
                         }
                         break;
+                    } else if (rowName === '@@PRIMARY_KEY@@') {
+                        table.primary(row);
+                        break;
                     }
 
                     let rowChain = table[row.type.toLowerCase()](rowName);
@@ -83,7 +86,8 @@ describe('Data Generator', function () {
             schemaTables,
             logger: {
                 info: () => { },
-                ok: () => { }
+                ok: () => { },
+                warn: () => { }
             },
             tables: [{
                 name: 'members',
@@ -104,7 +108,8 @@ describe('Data Generator', function () {
             schemaTables,
             logger: {
                 info: () => {},
-                ok: () => {}
+                ok: () => {},
+                warn: () => {}
             },
             tables: [{
                 name: 'offers',

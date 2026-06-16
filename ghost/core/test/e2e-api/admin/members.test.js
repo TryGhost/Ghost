@@ -1,5 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers, regexes} = require('../../utils/e2e-framework');
-const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject} = matchers;
+const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyISODate, anyString, anyArray, anyLocationFor, anyContentLength, anyErrorId, anyObject, nullable} = matchers;
 const {queryStringToken} = regexes;
 const ObjectId = require('bson-objectid').default;
 
@@ -78,6 +78,42 @@ async function createGiftMember(data) {
     return member;
 }
 
+async function createStripeCustomerWithSubscription(member, customerId, subscriptionId, {status = 'active', cancelAtPeriodEnd = false} = {}) {
+    const now = new Date();
+
+    await knex('members_stripe_customers').insert({
+        id: ObjectId().toHexString(),
+        member_id: member.id,
+        customer_id: customerId,
+        email: member.get('email'),
+        created_at: now,
+        updated_at: now
+    });
+
+    await knex('members_stripe_customers_subscriptions').insert({
+        id: ObjectId().toHexString(),
+        customer_id: customerId,
+        subscription_id: subscriptionId,
+        status,
+        cancel_at_period_end: cancelAtPeriodEnd,
+        current_period_end: now,
+        start_date: now,
+        created_at: now,
+        updated_at: now,
+        plan_id: 'plan_test',
+        plan_nickname: 'Test plan',
+        plan_interval: 'month',
+        plan_amount: 500,
+        plan_currency: 'usd'
+    });
+}
+
+async function deleteMembersWithStripeData(emails, customerIds) {
+    await knex('members_stripe_customers_subscriptions').whereIn('customer_id', customerIds).del();
+    await knex('members_stripe_customers').whereIn('customer_id', customerIds).del();
+    await knex('members').whereIn('email', emails).del();
+}
+
 const newsletterSnapshot = {
     id: anyObjectId
 };
@@ -138,6 +174,7 @@ function buildMemberWithIncludesSnapshot(options) {
         attribution: attributionSnapshot,
         newsletters: new Array(options.newsletters).fill(newsletterSnapshot),
         subscriptions: anyArray,
+        current_subscription: nullable(anyObject),
         labels: anyArray,
         unsubscribe_url: anyString
     };
@@ -157,6 +194,7 @@ const memberMatcherShallowIncludes = {
     created_at: anyISODateTime,
     updated_at: anyISODateTime,
     subscriptions: anyArray,
+    current_subscription: nullable(anyObject),
     labels: anyArray,
     unsubscribe_url: anyString
 };
@@ -649,6 +687,155 @@ describe('Members API', function () {
             });
     });
 
+    it('Can filter members with active subscriptions across multiple Stripe customers', async function () {
+        const emails = [
+            'multiple-active-stripe-customers@example.com',
+            'same-active-stripe-customer@example.com',
+            'trialing-stripe-customers@example.com',
+            'cancelling-stripe-customers@example.com'
+        ];
+        const customerIds = ['cus_matching_1', 'cus_matching_2', 'cus_same_1', 'cus_trialing_1', 'cus_trialing_2', 'cus_cancelling_1', 'cus_cancelling_2'];
+
+        try {
+            const matchingMember = await createMember({
+                email: emails[0],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(matchingMember, 'cus_matching_1', 'sub_matching_1');
+            await createStripeCustomerWithSubscription(matchingMember, 'cus_matching_2', 'sub_matching_2');
+
+            const sameCustomerMember = await createMember({
+                email: emails[1],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(sameCustomerMember, 'cus_same_1', 'sub_same_1');
+            await knex('members_stripe_customers_subscriptions').insert({
+                id: ObjectId().toHexString(),
+                customer_id: 'cus_same_1',
+                subscription_id: 'sub_same_2',
+                status: 'active',
+                current_period_end: new Date(),
+                start_date: new Date(),
+                created_at: new Date(),
+                updated_at: new Date(),
+                plan_id: 'plan_test',
+                plan_nickname: 'Test plan',
+                plan_interval: 'month',
+                plan_amount: 500,
+                plan_currency: 'usd'
+            });
+
+            const trialingMember = await createMember({
+                email: emails[2],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(trialingMember, 'cus_trialing_1', 'sub_trialing_1', {status: 'trialing'});
+            await createStripeCustomerWithSubscription(trialingMember, 'cus_trialing_2', 'sub_trialing_2', {status: 'trialing'});
+
+            const cancellingMember = await createMember({
+                email: emails[3],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(cancellingMember, 'cus_cancelling_1', 'sub_cancelling_1');
+            await createStripeCustomerWithSubscription(cancellingMember, 'cus_cancelling_2', 'sub_cancelling_2', {cancelAtPeriodEnd: true});
+
+            const filter = encodeURIComponent('count.active_stripe_customers:>1');
+            const res = await agent
+                .get(`/members/?filter=${filter}&limit=1&fields=id,email&order=id`)
+                .expectStatus(200);
+
+            assert.equal(res.body.meta.pagination.total, 1);
+            assert.equal(res.body.members.length, 1);
+            assert.equal(res.body.members[0].email, emails[0]);
+
+            const combinedFilter = encodeURIComponent(`count.active_stripe_customers:>1+email:'${emails[1]}'`);
+            const combinedRes = await agent
+                .get(`/members/?filter=${combinedFilter}&fields=id,email`)
+                .expectStatus(200);
+
+            assert.equal(combinedRes.body.meta.pagination.total, 0);
+
+            const orFilter = encodeURIComponent(`count.active_stripe_customers:>1,email:'${emails[1]}'`);
+            const orRes = await agent
+                .get(`/members/?filter=${orFilter}&fields=id,email`)
+                .expectStatus(200);
+
+            assert.equal(orRes.body.meta.pagination.total, 2);
+            assert.deepEqual(orRes.body.members.map(member => member.email).sort(), [emails[0], emails[1]].sort());
+        } finally {
+            await deleteMembersWithStripeData(emails, customerIds);
+        }
+    });
+
+    it('Can bulk edit members with active subscriptions across multiple Stripe customers filter', async function () {
+        const emails = [
+            'bulk-multiple-active-stripe-customers@example.com',
+            'bulk-single-active-stripe-customer@example.com'
+        ];
+        const customerIds = ['cus_bulk_matching_1', 'cus_bulk_matching_2', 'cus_bulk_single_1'];
+        const label = await models.Label.add({name: 'bulk-multiple-active-stripe-customers'});
+
+        try {
+            const matchingMember = await createMember({
+                email: emails[0],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(matchingMember, 'cus_bulk_matching_1', 'sub_bulk_matching_1');
+            await createStripeCustomerWithSubscription(matchingMember, 'cus_bulk_matching_2', 'sub_bulk_matching_2');
+
+            const singleCustomerMember = await createMember({
+                email: emails[1],
+                status: 'free'
+            });
+            await createStripeCustomerWithSubscription(singleCustomerMember, 'cus_bulk_single_1', 'sub_bulk_single_1');
+
+            const filter = encodeURIComponent('count.active_stripe_customers:>1');
+            await agent
+                .put(`/members/bulk/?filter=${filter}`)
+                .body({bulk: {
+                    action: 'addLabel',
+                    meta: {
+                        label: {
+                            id: label.id
+                        }
+                    }
+                }})
+                .expectStatus(200)
+                .matchBodySnapshot({
+                    bulk: {
+                        meta: {
+                            stats: {
+                                successful: 1,
+                                unsuccessful: 0
+                            },
+                            unsuccessfulData: [],
+                            errors: []
+                        }
+                    }
+                });
+
+            const updatedMatchingMember = await models.Member.findOne({id: matchingMember.id}, {withRelated: 'labels'});
+            const updatedSingleCustomerMember = await models.Member.findOne({id: singleCustomerMember.id}, {withRelated: 'labels'});
+
+            assert(updatedMatchingMember.related('labels').models.some(model => model.id === label.id));
+            assert.equal(updatedSingleCustomerMember.related('labels').models.some(model => model.id === label.id), false);
+        } finally {
+            await deleteMembersWithStripeData(emails, customerIds);
+        }
+    });
+
+    it('Returns a bad request for non-numeric active Stripe customer count filters', async function () {
+        const nullFilter = encodeURIComponent('count.active_stripe_customers:null');
+        await agent
+            .get(`/members/?filter=${nullFilter}`)
+            .expectStatus(400);
+
+        const stringFilter = encodeURIComponent('count.active_stripe_customers:\'abc\'');
+        await agent
+            .get(`/members/?filter=${stringFilter}`)
+            .expectStatus(400);
+    });
+
     it('Can filter by signup attribution', async function () {
         await agent
             .get('/members/?filter=signup:' + fixtureManager.get('posts', 0).id)
@@ -728,6 +915,143 @@ describe('Members API', function () {
                 'content-version': anyContentVersion,
                 etag: anyEtag
             });
+    });
+
+    it('Can filter by subscription status for member with concurrent active and canceled subscriptions', async function () {
+        // Case 5: Member cancels, then re-subscribes before the cancellation period ends.
+        // They now have an active + canceled subscription concurrently.
+        // The subscription status filter should resolve to the "current" (best) subscription only.
+        const email = 'concurrent-sub-filter-test@example.com';
+
+        const customer = stripeMocker.createCustomer({email});
+        const price1 = await stripeMocker.getPriceForTier('default-product', 'month');
+        const price2 = await stripeMocker.getPriceForTier('default-product', 'year');
+
+        // Create two active subscriptions (simulates re-subscribe before period end)
+        await stripeMocker.createSubscription({customer, price: price1});
+        const subscription2 = await stripeMocker.createSubscription({customer, price: price2});
+        await DomainEvents.allSettled();
+
+        // Cancel one subscription — member still has the other active one
+        await stripeMocker.updateSubscription({
+            id: subscription2.id,
+            status: 'canceled',
+            cancel_at_period_end: false,
+            canceled_at: Date.now() / 1000
+        });
+        await DomainEvents.allSettled();
+
+        // Verify the member has one active and one canceled subscription via the API
+        const {body: memberBody} = await agent
+            .get(`/members/?filter=email:'${email}'&include=subscriptions`)
+            .expectStatus(200);
+
+        assert.equal(memberBody.members.length, 1, 'Member should exist');
+        const memberSubscriptions = memberBody.members[0].subscriptions;
+        assert.equal(memberSubscriptions.length, 2, 'Member should have 2 subscriptions');
+        const subStatuses = new Set(memberSubscriptions.map(s => s.status));
+        assert.ok(subStatuses.has('active'), 'One subscription should be active');
+        assert.ok(subStatuses.has('canceled'), 'One subscription should be canceled');
+
+        const activeSub = memberSubscriptions.find(s => s.status === 'active');
+        const canceledSub = memberSubscriptions.find(s => s.status === 'canceled');
+
+        // The whole point of the fix: the API surfaces the ACTIVE subscription as
+        // the resolved current one, not the canceled one. Assert the actual
+        // resolved object, not just that the field exists.
+        const currentSubscription = memberBody.members[0].current_subscription;
+        assert.ok(currentSubscription, 'current_subscription should be populated for a member with subscriptions');
+        assert.equal(currentSubscription.id, activeSub.id, 'current_subscription should resolve to the active subscription');
+        assert.equal(currentSubscription.status, 'active', 'current_subscription should be active, not canceled');
+        assert.notEqual(currentSubscription.id, canceledSub.id, 'current_subscription must not be the canceled subscription');
+
+        const memberId = memberBody.members[0].id;
+
+        // Filter by subscriptions.status:active should find this member
+        const {body: activeBody} = await agent
+            .get(`/members/?filter=subscriptions.status:active`)
+            .expectStatus(200);
+
+        const activeEmails = activeBody.members.map(m => m.email);
+        assert.ok(activeEmails.includes(email), 'Member with active+canceled subs should appear in subscriptions.status:active filter');
+
+        // Filter by subscriptions.status:canceled should NOT find this member
+        // because the resolved/current subscription is active (active beats canceled)
+        const {body: canceledBody} = await agent
+            .get(`/members/?filter=subscriptions.status:canceled`)
+            .expectStatus(200);
+
+        const canceledEmails = canceledBody.members.map(m => m.email);
+        assert.ok(!canceledEmails.includes(email), 'Member with active+canceled subs should NOT appear in subscriptions.status:canceled filter');
+
+        // Clean up: remove the test member so subsequent tests aren't affected
+        await agent
+            .delete(`/members/${memberId}/`)
+            .expectStatus(204);
+    });
+
+    it('Re-resolves the current subscription when a member re-subscribes after cancelling', async function () {
+        // Exercises the lookup-table UPDATE path: a member whose only sub is
+        // canceled resolves to that canceled sub, then re-subscribes and the
+        // resolved current subscription must flip to the new active one — moving
+        // them out of the canceled filter and into the active filter.
+        const email = 'resub-after-cancel@example.com';
+
+        const customer = stripeMocker.createCustomer({email});
+        const monthlyPrice = await stripeMocker.getPriceForTier('default-product', 'month');
+
+        // Subscribe, then cancel — the member's only subscription is now canceled
+        const firstSubscription = await stripeMocker.createSubscription({customer, price: monthlyPrice});
+        await DomainEvents.allSettled();
+        await stripeMocker.updateSubscription({
+            id: firstSubscription.id,
+            status: 'canceled',
+            cancel_at_period_end: false,
+            canceled_at: Date.now() / 1000
+        });
+        await DomainEvents.allSettled();
+
+        // The resolved current subscription is the canceled one (their only sub)
+        let {body: memberBody} = await agent
+            .get(`/members/?filter=email:'${email}'&include=subscriptions`)
+            .expectStatus(200);
+        const memberId = memberBody.members[0].id;
+        assert.equal(memberBody.members[0].current_subscription.status, 'canceled', 'current_subscription should be the canceled sub when it is the only one');
+
+        let {body: canceledBody} = await agent
+            .get(`/members/?filter=subscriptions.status:canceled`)
+            .expectStatus(200);
+        assert.ok(canceledBody.members.map(m => m.email).includes(email), 'member should be in the canceled filter while their only sub is canceled');
+
+        // Re-subscribe — a new active subscription on the same customer
+        const yearlyPrice = await stripeMocker.getPriceForTier('default-product', 'year');
+        await stripeMocker.createSubscription({customer, price: yearlyPrice});
+        await DomainEvents.allSettled();
+
+        // The resolved current subscription must now flip to the new active sub
+        ({body: memberBody} = await agent
+            .get(`/members/?filter=email:'${email}'&include=subscriptions`)
+            .expectStatus(200));
+        const newActiveSub = memberBody.members[0].subscriptions.find(s => s.status === 'active');
+        assert.ok(newActiveSub, 'member should now have an active subscription');
+        assert.equal(memberBody.members[0].current_subscription.id, newActiveSub.id, 'current_subscription should flip to the new active subscription');
+        assert.equal(memberBody.members[0].current_subscription.status, 'active');
+
+        // ...and the member leaves the canceled filter and enters the active filter
+        ({body: canceledBody} = await agent
+            .get(`/members/?filter=subscriptions.status:canceled`)
+            .expectStatus(200));
+        assert.ok(!canceledBody.members.map(m => m.email).includes(email), 'member should no longer be in the canceled filter after re-subscribing');
+
+        const {body: activeBody} = await agent
+            .get(`/members/?filter=subscriptions.status:active`)
+            .expectStatus(200);
+        assert.ok(activeBody.members.map(m => m.email).includes(email), 'member should be in the active filter after re-subscribing');
+
+        // Clean up: remove the test member so subsequent tests aren't affected
+        await agent
+            .delete(`/members/${memberId}/`)
+            .expectStatus(204);
     });
 
     it('Can filter using contains operators', async function () {
@@ -1701,6 +2025,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     tiers: new Array(1).fill({
                         id: anyObjectId,
                         monthly_price_id: anyObjectId,
@@ -1808,6 +2133,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     tiers: new Array(1).fill(tierMatcher),
                     newsletters: new Array(1).fill(newsletterSnapshot)
                 })
@@ -1923,6 +2249,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     tiers: new Array(1).fill(tierMatcher),
                     newsletters: new Array(1).fill(newsletterSnapshot)
                 })
@@ -2465,6 +2792,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshotWithTier],
+                    current_subscription: nullable(anyObject),
                     newsletters: new Array(1).fill(newsletterSnapshot),
                     tiers: [tierSnapshot]
                 })
@@ -2486,6 +2814,7 @@ describe('Members API', function () {
                     updated_at: anyISODateTime,
                     labels: anyArray,
                     subscriptions: [subscriptionSnapshotWithTier],
+                    current_subscription: nullable(anyObject),
                     newsletters: new Array(1).fill(newsletterSnapshot),
                     tiers: [tierSnapshot]
                 })
@@ -2989,6 +3318,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(1).fill(newsletterSnapshot)
                 }]
@@ -3016,6 +3346,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(1).fill(newsletterSnapshot)
                 }]
@@ -3062,6 +3393,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(2).fill(newsletterSnapshot)
                 }]
@@ -3090,6 +3422,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(2).fill(newsletterSnapshot)
                 }]
@@ -3123,6 +3456,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(0).fill(newsletterSnapshot)
                 }]
@@ -3156,6 +3490,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(1).fill(newsletterSnapshot)
                 }]
@@ -3200,6 +3535,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: Array(1).fill(newsletterSnapshot)
                 }]
@@ -3248,6 +3584,7 @@ describe('Members API', function () {
                     created_at: anyISODateTime,
                     updated_at: anyISODateTime,
                     subscriptions: anyArray,
+                    current_subscription: nullable(anyObject),
                     labels: anyArray,
                     newsletters: new Array(0)
                 }]

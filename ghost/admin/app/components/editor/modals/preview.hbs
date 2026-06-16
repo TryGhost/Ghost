@@ -13,7 +13,7 @@
                 {{/if}}
             </div>
             <div class="gh-contentfilter-divider"></div>
-            <div class="gh-contentfilter gh-btn-group">
+            <div class="gh-contentfilter gh-btn-group gh-post-preview-sizes">
                 <button type="button" class="gh-btn {{if (eq this.previewSize "desktop") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changePreviewSize "desktop")}}><span>{{svg-jar "laptop"}}</span></button>
                 <button type="button" class="gh-btn {{if (eq this.previewSize "mobile") "gh-btn-group-selected"}} gh-post-preview-mode" {{on "click" (fn this.changePreviewSize "mobile")}}><span>{{svg-jar "mobile-phone"}}</span></button>
             </div>
@@ -70,7 +70,7 @@
             <div class="gh-contentfilter-divider"></div>
             <button
                 type="button"
-                class="gh-btn gh-btn-editor gh-editor-preview-trigger active"
+                class="gh-btn gh-btn-editor gh-editor-preview-trigger gh-post-preview-close active"
                 {{on "click" @close}}
             >
                 <span>Close</span>

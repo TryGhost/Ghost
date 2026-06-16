@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/design-fields/color-swatch-helpers.ts because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import {textColorForBackgroundColor} from '@tryghost/color-utils';
 
 const VALID_HEX = /^#(?:[0-9a-f]{3}){1,2}$/i;

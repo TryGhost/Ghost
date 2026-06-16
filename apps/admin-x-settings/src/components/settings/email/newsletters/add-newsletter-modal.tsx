@@ -1,5 +1,6 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React, {useEffect, useState} from 'react';
+import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import {Form, LimitModal, Modal, TextArea, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {HostLimitError, useLimiter} from '../../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -11,6 +12,7 @@ import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
     const modal = useModal();
     const {updateRoute} = useRouting();
+    const returnRoute = useFeatureFlag('automations') ? 'emails' : 'newsletters';
     const handleError = useHandleError();
     const [isCheckingLimit, setIsCheckingLimit] = useState(true);
     const [limitError, setLimitError] = useState<HostLimitError | null>(null);
@@ -77,9 +79,9 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
                 onOk: () => updateRoute({route: '/pro', isExternal: true})
             });
             modal.remove();
-            updateRoute('newsletters');
+            updateRoute(returnRoute);
         }
-    }, [limitError, modal, updateRoute]);
+    }, [limitError, modal, returnRoute, updateRoute]);
 
     if (isCheckingLimit || limitError) {
         return null;
@@ -87,7 +89,7 @@ const AddNewsletterModal: React.FC<RoutingModalProps> = () => {
 
     return <Modal
         afterClose={() => {
-            updateRoute('newsletters');
+            updateRoute(returnRoute);
         }}
         backDropClick={false}
         okColor='black'

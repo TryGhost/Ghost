@@ -36,8 +36,10 @@ describe('useCommentFilterFields', () => {
                 {value: 'is-less', label: 'before'},
                 {value: 'is-or-less', label: 'on or before'},
                 {value: 'is-greater', label: 'after'},
-                {value: 'is-or-greater', label: 'on or after'}
-            ]
+                {value: 'is-or-greater', label: 'on or after'},
+                {value: 'in-the-last', label: 'in the last'}
+            ],
+            customRenderer: expect.any(Function)
         });
     });
 });

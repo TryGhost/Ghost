@@ -24,10 +24,10 @@ class CommentsServiceEmailRenderer {
     async renderEmailTemplate(templateName, data) {
         const htmlTemplateSource = await fs.readFile(path.join(__dirname, './email-templates/', `${templateName}.hbs`), 'utf8');
         const htmlTemplate = this.Handlebars.compile(Buffer.from(htmlTemplateSource).toString());
-        const textTemplate = require(`./email-templates/${templateName}.txt.js`);
+        const {renderText} = require(`./email-templates/${templateName}.txt`);
 
         const html = htmlTemplate(data);
-        const text = textTemplate(data, this.t);
+        const text = renderText(data, this.t);
 
         return {html, text};
     }

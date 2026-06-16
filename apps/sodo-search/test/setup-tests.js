@@ -1,5 +1,5 @@
-import matchers from '@testing-library/jest-dom/matchers';
-import {afterEach, expect} from 'vitest';
+import '@testing-library/jest-dom/vitest';
+import {afterEach} from 'vitest';
 import {cleanup} from '@testing-library/react';
 import {fetch} from 'cross-fetch';
 
@@ -13,8 +13,6 @@ globalThis.fetch = fetch;
 // Add the cleanup function for React testing library
 afterEach(cleanup);
 
-// jest-dom adds custom jest matchers for asserting on DOM nodes.
-// allows you to do things like:
-// expect(element).toHaveTextContent(/react/i)
+// jest-dom (imported above as /vitest) registers custom matchers for asserting
+// on DOM nodes, e.g. expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
-expect.extend(matchers);

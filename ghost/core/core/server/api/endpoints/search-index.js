@@ -1,6 +1,17 @@
 const models = require('../../models');
+const config = require('../../../shared/config');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const postsService = getPostServiceInstance();
+
+const urlRelationsWhenLazyRouting = () => {
+    if (config.get('lazyRouting')) {
+        return {
+            withRelated: ['tags', 'authors']
+        };
+    }
+
+    return {};
+};
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
@@ -19,7 +30,7 @@ const controller = {
                 limit: '10000',
                 order: 'updated_at DESC',
                 columns: ['id', 'uuid', 'url', 'title', 'slug', 'status', 'published_at', 'visibility'],
-                withRelated: ['tags', 'authors']
+                ...urlRelationsWhenLazyRouting()
             };
 
             return postsService.browsePosts(options);
@@ -39,7 +50,7 @@ const controller = {
                 limit: '10000',
                 order: 'updated_at DESC',
                 columns: ['id', 'uuid', 'url', 'title', 'slug', 'status', 'published_at', 'visibility'],
-                withRelated: ['tags', 'authors']
+                ...urlRelationsWhenLazyRouting()
             };
 
             return postsService.browsePosts(options);

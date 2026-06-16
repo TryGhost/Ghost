@@ -11,6 +11,7 @@ import {
 import {EditRow} from './edit-row';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {canCreateLabel} from './can-create-label';
 
 export interface LabelPickerProps {
     labels: Label[];
@@ -19,13 +20,11 @@ export interface LabelPickerProps {
     resolvedSelectedLabels?: Label[];
     onToggle: (slug: string) => void;
     // Creation
-    canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
     isCreating?: boolean;
     // Editing
     onEdit?: (id: string, name: string) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
-    isDuplicateName?: (name: string, excludeId?: string) => boolean;
 }
 
 // --- LabelRow: single label item with overlapping check/edit icon ---
@@ -76,8 +75,6 @@ interface LabelListItemsProps {
     onToggle: (slug: string) => void;
     onEdit?: (id: string, name: string) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
-    isDuplicateName?: (name: string, excludeId?: string) => boolean;
-    canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
     isCreating?: boolean;
     onSearchClear?: () => void;
@@ -90,8 +87,6 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     onToggle,
     onEdit,
     onDelete,
-    isDuplicateName,
-    canCreateFromSearch,
     onCreate,
     isCreating,
     onSearchClear
@@ -101,15 +96,19 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
     const visibleLabels = normalizedSearch
         ? labels.filter(label => label.name.toLowerCase().includes(normalizedSearch))
         : labels;
-    const showCreate = !!onCreate && search.trim() && canCreateFromSearch?.(search);
+    const showCreate = !!onCreate && canCreateLabel(labels, search);
     const showEdit = !!onEdit;
     const handleCreate = async () => {
-        if (onCreate) {
+        if (!onCreate) {
+            return;
+        }
+        try {
             const newLabel = await onCreate(search.trim());
             if (newLabel) {
-                onToggle(newLabel.slug);
+                onSearchClear?.();
             }
-            onSearchClear?.();
+        } catch {
+            // Already reported via toast - keep the typed name for retry
         }
     };
 
@@ -137,7 +136,6 @@ const LabelListItems: React.FC<LabelListItemsProps> = ({
                         editingLabelId === label.id ? (
                             <EditRow
                                 key={label.id}
-                                isDuplicateName={isDuplicateName}
                                 label={label}
                                 onCancel={() => setEditingLabelId(null)}
                                 onDelete={handleDelete}
@@ -205,12 +203,10 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
     selectedSlugs,
     resolvedSelectedLabels,
     onToggle,
-    canCreateFromSearch,
     onCreate,
     isCreating,
     onEdit,
-    onDelete,
-    isDuplicateName
+    onDelete
 }) => {
     const selectedLabels = resolvedSelectedLabels || selectedSlugs
         .map(slug => labels.find(l => l.slug === slug))
@@ -218,9 +214,7 @@ const LabelPicker: React.FC<LabelPickerProps> = ({
 
     return (
         <ComboboxPicker
-            canCreateFromSearch={canCreateFromSearch}
             isCreating={isCreating}
-            isDuplicateName={isDuplicateName}
             labels={labels}
             optionSource={optionSource}
             selectedLabels={selectedLabels}
@@ -241,12 +235,10 @@ interface ComboboxPickerProps {
     selectedLabels: Label[];
     selectedSlugs: string[];
     onToggle: (slug: string) => void;
-    canCreateFromSearch?: (inputValue: string) => boolean;
     onCreate?: (name: string) => Promise<Label | undefined>;
     isCreating?: boolean;
     onEdit?: (id: string, name: string) => Promise<void>;
     onDelete?: (id: string) => Promise<void>;
-    isDuplicateName?: (name: string, excludeId?: string) => boolean;
 }
 
 const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
@@ -255,12 +247,10 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     selectedLabels,
     selectedSlugs,
     onToggle,
-    canCreateFromSearch,
     onCreate,
     isCreating,
     onEdit,
-    onDelete,
-    isDuplicateName
+    onDelete
 }) => {
     const [open, setOpen] = useState(false);
     const [search, setSearch] = useState('');
@@ -301,7 +291,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
     return (
         <div ref={containerRef} className="relative">
             <div
-                className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-transparent bg-gray-150 px-3 py-1 text-sm transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:bg-gray-900"
+                className="flex min-h-9 w-full cursor-text flex-wrap items-center gap-1.5 rounded-md border border-transparent bg-gray-100 px-3 py-1 text-sm transition-colors focus-within:border-green focus-within:bg-transparent focus-within:shadow-[0_0_0_2px_rgba(48,207,67,.25)] dark:bg-gray-950"
                 role="combobox"
                 onClick={() => {
                     inputRef.current?.focus();
@@ -334,9 +324,7 @@ const ComboboxPicker: React.FC<ComboboxPickerProps> = ({
                         <Command shouldFilter={false}>
                             <CommandList className="max-h-64 overflow-y-auto">
                                 <LabelListItems
-                                    canCreateFromSearch={canCreateFromSearch}
                                     isCreating={isCreating}
-                                    isDuplicateName={isDuplicateName}
                                     labels={labels}
                                     search={search}
                                     selectedSlugs={selectedSlugs}

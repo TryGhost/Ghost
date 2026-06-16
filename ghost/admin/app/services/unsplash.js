@@ -113,10 +113,16 @@ export default Service.extend({
         yield timeout(DEBOUNCE_MS);
 
         let url = `${API_URL}/search/photos?query=${term}&per_page=30`;
-        yield this._makeRequest(url);
+        yield this._makeRequest(url, {searchTermAtRequest: term});
     }).restartable(),
 
-    _addPhotosFromResponse(response) {
+    _addPhotosFromResponse(response, searchTermAtRequest) {
+        // If a search term was provided at the time of the request,
+        // we only want to add photos if the search term matches the current one.
+        if (searchTermAtRequest && searchTermAtRequest !== this.searchTerm) {
+            return;
+        }
+
         let photos = response.results || response;
 
         photos.forEach(photo => this._addPhoto(photo));
@@ -189,9 +195,9 @@ export default Service.extend({
 
         return fetch(url, {headers})
             .then(response => this._checkStatus(response))
-            .then(response => this._extractPagination(response))
+            .then(response => this._extractPagination(response, options.searchTermAtRequest))
             .then(response => response.json())
-            .then(response => this._addPhotosFromResponse(response))
+            .then(response => this._addPhotosFromResponse(response, options.searchTermAtRequest))
             .catch(() => {
                 // if the error text isn't already set then we've get a connection error from `fetch`
                 if (!options.ignoreErrors && !this.error) {
@@ -233,7 +239,11 @@ export default Service.extend({
         });
     },
 
-    _extractPagination(response) {
+    _extractPagination(response, searchTermAtRequest) {
+        if (searchTermAtRequest && searchTermAtRequest !== this.searchTerm) {
+            return response;
+        }
+
         let pagination = {};
         let linkRegex = new RegExp('<(.*)>; rel="(.*)"');
         let {link: links} = response.headers.map;

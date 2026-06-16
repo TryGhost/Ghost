@@ -25,6 +25,11 @@ describe('Exporter', function () {
         const tables = [
             'actions',
             'api_keys',
+            'automation_action_edges',
+            'automation_action_revisions',
+            'automation_actions',
+            'automation_run_steps',
+            'automation_runs',
             'automated_email_recipients',
             'automations',
             'benefits',
@@ -42,6 +47,7 @@ describe('Exporter', function () {
             'email_recipients',
             'email_spam_complaint_events',
             'emails',
+            'gift_links',
             'gifts',
             'integrations',
             'invites',
@@ -51,6 +57,7 @@ describe('Exporter', function () {
             'members_cancel_events',
             'members_click_events',
             'members_created_events',
+            'members_current_subscription',
             'members_email_change_events',
             'members_feedback',
             'members_labels',
@@ -137,7 +144,8 @@ describe('Exporter', function () {
             'members_paid_subscription_events',
             'members_subscribe_events',
             'outbox',
-            'gifts'
+            'gifts',
+            'gift_links'
         ];
 
         excludedTables.forEach((tableName) => {

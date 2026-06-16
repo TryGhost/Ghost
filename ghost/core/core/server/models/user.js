@@ -109,6 +109,18 @@ User = ghostBookshelf.Model.extend({
         return attrs;
     },
 
+    filterRelations: function filterRelations() {
+        return {
+            roles: {
+                tableName: 'roles',
+                type: 'manyToMany',
+                joinTable: 'roles_users',
+                joinFrom: 'user_id',
+                joinTo: 'role_id'
+            }
+        };
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'user' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
@@ -129,17 +141,19 @@ User = ghostBookshelf.Model.extend({
     },
 
     onDestroyed: function onDestroyed(model, options) {
-        ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
 
         if (activeStates.includes(model.previous('status'))) {
             model.emitChange('deactivated', options);
         }
 
         model.emitChange('deleted', options);
+
+        return result;
     },
 
     onCreated: function onCreated(model, options) {
-        ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
         model.emitChange('added', options);
 
@@ -147,10 +161,12 @@ User = ghostBookshelf.Model.extend({
         if (!model.get('status') || activeStates.includes(model.get('status'))) {
             model.emitChange('activated', options);
         }
+
+        return result;
     },
 
     onUpdated: function onUpdated(model, options) {
-        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
 
         model.statusChanging = model.get('status') !== model.previous('status');
         model.isActive = activeStates.includes(model.get('status'));
@@ -164,6 +180,8 @@ User = ghostBookshelf.Model.extend({
         }
 
         model.emitChange('edited', options);
+
+        return result;
     },
 
     isActive: function isActive() {

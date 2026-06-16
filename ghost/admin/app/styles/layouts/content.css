@@ -50,8 +50,8 @@
     gap: 4px;
     background: var(--white);
     font-size: 1.3rem;
-    font-weight: 500;
-    height: 34px;
+    font-weight: 400;
+    height: 32px;
     padding: 6px 12px 6px;
     outline: none;
     border: 1px solid transparent;
@@ -247,6 +247,15 @@
 .gh-posts-list-item-group[data-selected] {
     user-select: none;
     border-color: transparent;
+}
+
+/* On touch devices a long-press opens the context menu, so suppress the native
+   link-callout and text-selection magnifier that would otherwise fire on the row */
+@media (hover: none) and (pointer: coarse) {
+    .gh-posts-list-item-group {
+        -webkit-touch-callout: none;
+        user-select: none;
+    }
 }
 
 .posts-list[data-ctrl] .gh-posts-list-item-group:hover::before {
@@ -782,6 +791,30 @@
     .gh-post-list-author {
         max-width: calc(100% - 140px);
     }
+
+    /* the list is a CSS table, which sizes to its content and so grows past the
+       viewport on a phone; make it a normal block (the table columns are already
+       hidden at this width) so it tracks the viewport instead. Keep a min-width so
+       the text column stays usable on very narrow screens (the page scrolls a little
+       below ~350px rather than breaking titles mid-word) */
+    .posts-list.gh-list {
+        display: block;
+        min-width: 300px;
+    }
+
+    /* with the table gone, let the title/meta block shrink so a long title or tag
+       name can't hold the row open and push its action button off-screen */
+    .gh-post-list-title-content {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    /* wrap (and break long unbroken tokens like a numeric tag) rather than run off
+       the side, so nothing in the row can extend past the viewport */
+    .gh-post-list-title-content .gh-content-entry-title,
+    .gh-post-list-title-content .gh-content-entry-meta {
+        overflow-wrap: anywhere;
+    }
 }
 
 @media (max-width: 430px) {
@@ -934,14 +967,14 @@
 
 .gh-content-entry-title {
     margin: 0 0 2px;
-    font-size: 1.55rem;
+    font-size: 1.4rem;
     font-weight: 600;
 }
 
 .gh-content-entry-meta,
 .gh-content-entry-status {
     max-width: max-content;
-    font-size: 1.35rem;
+    font-size: 1.3rem;
     color: #99a3ad;
 }
 
@@ -1346,7 +1379,8 @@ span.dropdown .gh-post-list-cta > span {
 }
 
 .gh-list .gh-post-list-analytics .gh-content-entry-title {
-    font-size: 1.5rem;
+    font-size: 1.4rem;
+    font-weight: 600;
 }
 
 .gh-post-list-analytics .gh-content-email-stats-value {

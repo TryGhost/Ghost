@@ -1,7 +1,7 @@
 import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from '@components/global/ap-avatar';
 import FeedItem from '@components/feed/feed-item';
-import getUsername from '@utils/get-username';
+import getHandle from '@utils/get-handle';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
@@ -273,7 +273,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
     if (replyTo) {
         const attributedTo = replyTo.object.attributedTo || {};
         if (typeof attributedTo === 'object' && 'preferredUsername' in attributedTo && 'id' in attributedTo) {
-            placeholder = `Reply to ${getUsername(attributedTo as ActorProperties)}...`;
+            placeholder = `Reply to ${getHandle(attributedTo as ActorProperties)}...`;
         }
     }
 
@@ -376,7 +376,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                     <div className='mt-1'>
                         <Input
                             ref={altTextInputRef}
-                            className='w-full border-0 bg-transparent px-0 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:bg-[#101114] dark:text-white dark:placeholder:text-gray-800'
+                            className='w-full border-0 bg-transparent px-0 focus-visible:border-0 focus-visible:bg-transparent focus-visible:shadow-none focus-visible:outline-0 dark:bg-(--color-popover) dark:text-white dark:placeholder:text-gray-800'
                             placeholder='Type alt text for image (optional)'
                             type='text'
                             value={altText}
@@ -384,7 +384,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                         />
                     </div>
                 }
-                <DialogFooter className={`${isSticky ? 'sticky' : 'static'} bottom-0 flex-row bg-background py-6 dark:bg-[#101114]`}>
+                <DialogFooter className={`${isSticky ? 'sticky' : 'static'} bottom-0 flex-row bg-background py-6 dark:bg-(--color-popover)`}>
                     <Button className='mr-auto w-[34px] min-w-0!' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
                     <div className='flex items-center gap-3'>
                         <div className={`text-sm ${content.length >= MAX_CONTENT_LENGTH ? 'text-red-500' : content.length >= MAX_CONTENT_LENGTH * 0.9 ? 'text-yellow-600' : 'text-gray-500'}`}>

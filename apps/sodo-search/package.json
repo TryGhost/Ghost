@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.21",
+  "version": "1.8.23",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -16,12 +16,12 @@
   "dependencies": {
     "@tryghost/debug": "catalog:",
     "@tryghost/i18n": "workspace:*",
-    "flexsearch": "0.8.153",
-    "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "flexsearch": "0.8.212",
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17"
   },
   "scripts": {
-    "dev": "concurrently --kill-others --names preview,build,tailwind \"vite preview -l silent\" \"pnpm build:watch\" \"pnpm tailwind\"",
+    "dev": "pnpm build && concurrently --kill-others --names preview,build,tailwind \"vite preview -l silent\" \"pnpm build:watch\" \"pnpm tailwind\"",
     "build": "vite build && pnpm tailwind:base",
     "build:watch": "vite build --watch",
     "tailwind": "pnpm tailwind:base --watch ",
@@ -93,15 +93,15 @@
     ]
   },
   "devDependencies": {
-    "@testing-library/jest-dom": "5.17.0",
-    "@testing-library/react": "12.1.5",
+    "@testing-library/jest-dom": "catalog:",
+    "@testing-library/react": "catalog:react17",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "concurrently": "catalog:",
     "cross-fetch": "catalog:",
     "eslint": "catalog:",
     "jsdom": "catalog:",
-    "nock": "13.5.6",
+    "nock": "14.0.15",
     "tailwindcss": "catalog:tailwind3",
     "vite": "catalog:",
     "vite-plugin-svgr": "catalog:",

@@ -2,11 +2,11 @@ const moment = require('moment');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 const emailService = require('../email-service');
 const CommentsServiceEmailRenderer = require('./comments-service-email-renderer');
-const toPlain = require('../../lib/common/to-plain');
+const {toPlain} = require('../../lib/common/to-plain');
 const {t} = require('../i18n');
 
 class CommentsServiceEmails {
-    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils, labs}) {
+    constructor({config, logging, models, mailer, settingsCache, settingsHelpers, urlService, urlUtils}) {
         this.config = config;
         this.logging = logging;
         this.models = models;
@@ -15,7 +15,6 @@ class CommentsServiceEmails {
         this.settingsHelpers = settingsHelpers;
         this.urlService = urlService;
         this.urlUtils = urlUtils;
-        this.labs = labs;
         this.commentsServiceEmailRenderer = new CommentsServiceEmailRenderer({t});
     }
 
@@ -41,6 +40,11 @@ class CommentsServiceEmails {
 
         for (const author of post.related('authors')) {
             if (!author.get('comment_notifications')) {
+                continue;
+            }
+
+            // Don't send a notification if you comment or reply as a member to your own post
+            if (author.get('email') === member.get('email')) {
                 continue;
             }
 
@@ -157,8 +161,6 @@ class CommentsServiceEmails {
 
         const memberName = member.get('name') || 'Anonymous';
 
-        const commentModerationEnabled = this.labs.isSet('commentModeration');
-
         const templateData = {
             siteTitle: this.settingsCache.get('title'),
             siteUrl: this.urlUtils.getSiteUrl(),
@@ -181,7 +183,6 @@ class CommentsServiceEmails {
             fromEmail: this.notificationFromAddress,
             toEmail: to,
             staffUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/settings/staff/${owner.get('slug')}/email-notifications`),
-            commentModerationEnabled,
             moderationUrl: this.urlUtils.urlJoin(this.urlUtils.urlFor('admin', true), '#', `/comments/?id=is:${comment.get('id')}`)
         };
 

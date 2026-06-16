@@ -121,6 +121,23 @@ module.exports = {
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
         email_only: {type: 'boolean', nullable: false, defaultTo: false}
     },
+    gift_links: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
+        token: {type: 'string', maxlength: 64, nullable: false, unique: true},
+        status: {
+            type: 'string', maxlength: 50, nullable: false, defaultTo: 'active', validations: {
+                isIn: [['active', 'inactive']]
+            }
+        },
+        redeemed_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        last_redeemed_at: {type: 'dateTime', nullable: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['post_id', 'status']
+        ]
+    },
     // NOTE: this is the staff table
     users: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -716,6 +733,10 @@ module.exports = {
         // so we should decide whether we should reduce it down in the future
         plan_currency: {type: 'string', maxlength: 191, nullable: false}
     },
+    members_current_subscription: {
+        member_id: {type: 'string', maxlength: 24, nullable: false, primary: true, references: 'members.id', cascadeDelete: true},
+        subscription_id: {type: 'string', maxlength: 24, nullable: false, unique: true, references: 'members_stripe_customers_subscriptions.id', cascadeDelete: true}
+    },
     members_subscription_created_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         created_at: {type: 'dateTime', nullable: false},
@@ -1080,7 +1101,8 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         payload: {type: 'text', maxlength: 65535, nullable: true},
         deleted: {type: 'boolean', nullable: false, defaultTo: false},
-        verified: {type: 'boolean', nullable: false, defaultTo: false}
+        verified: {type: 'boolean', nullable: false, defaultTo: false},
+        revalidation_failure_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0}
     },
     milestones: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -1173,6 +1195,9 @@ module.exports = {
         divider_color: {type: 'string', maxlength: 50, nullable: true},
         section_title_color: {type: 'string', maxlength: 50, nullable: true},
         show_badge: {type: 'boolean', nullable: false, defaultTo: true},
+        sender_name: {type: 'string', maxlength: 191, nullable: true},
+        sender_email: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
+        sender_reply_to: {type: 'string', maxlength: 191, nullable: true, validations: {isEmail: true}},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
@@ -1183,6 +1208,53 @@ module.exports = {
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
+    },
+    automation_actions: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: false},
+        deleted_at: {type: 'dateTime', nullable: true},
+        automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', restrictDelete: true},
+        type: {type: 'string', maxlength: 50, nullable: false, validations: {isIn: [['wait', 'send_email']]}}
+    },
+    automation_action_revisions: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        created_at: {type: 'dateTime', nullable: false},
+        action_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_actions.id', restrictDelete: true},
+        wait_hours: {type: 'integer', nullable: true, unsigned: true},
+        email_subject: {type: 'string', maxlength: 300, nullable: true},
+        email_lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
+        email_design_setting_id: {type: 'string', maxlength: 24, nullable: true, references: 'email_design_settings.id', setNullDelete: true},
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['created_at', 'action_id']
+        ]
+    },
+    automation_action_edges: {
+        source_action_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_actions.id', restrictDelete: true},
+        target_action_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_actions.id', restrictDelete: true},
+        '@@PRIMARY_KEY@@': ['source_action_id', 'target_action_id']
+    },
+    automation_runs: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: false},
+        automation_id: {type: 'string', maxlength: 24, nullable: false, references: 'automations.id', restrictDelete: true},
+        member_id: {type: 'string', maxlength: 24, nullable: true, references: 'members.id', setNullDelete: true, index: true},
+        member_email: {type: 'string', maxlength: 191, nullable: false, validations: {isEmail: true}}
+    },
+    automation_run_steps: {
+        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: false},
+        automation_run_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_runs.id', restrictDelete: true},
+        automation_action_revision_id: {type: 'string', maxlength: 24, nullable: false, references: 'automation_action_revisions.id', restrictDelete: true},
+        ready_at: {type: 'dateTime', nullable: false},
+        step_attempts: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        started_at: {type: 'dateTime', nullable: true},
+        finished_at: {type: 'dateTime', nullable: true},
+        status: {type: 'string', maxlength: 50, nullable: false, defaultTo: 'pending', validations: {isIn: [['pending', 'automation disabled', 'failed', 'finished', 'member changed status', 'member unsubscribed']]}},
+        locked_by: {type: 'string', maxlength: 191, nullable: true},
+        locked_at: {type: 'dateTime', nullable: true}
     },
     welcome_email_automated_emails: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -1215,7 +1287,8 @@ module.exports = {
     },
     automated_email_recipients: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        automated_email_id: {type: 'string', maxlength: 24, nullable: false, references: 'welcome_email_automated_emails.id'},
+        automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id'},
+        automation_action_revision_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_action_revisions.id'},
         member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},

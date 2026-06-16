@@ -11,6 +11,10 @@ const crypto = require('crypto');
 const hasActiveOffer = require('../utils/has-active-offer');
 const StartAutomationsPollEvent = require('../../../automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
+const db = require('../../../../data/db');
+const labs = require('../../../../../shared/labs');
+/** @import {Knex} from 'knex' */
+/** @import * as automationsApi from '../../../automations/automations-api' */
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -20,7 +24,7 @@ const messages = {
     memberNotFound: 'Could not find Member {id}',
     subscriptionNotFound: 'Could not find Subscription {id}',
     productNotFound: 'Could not find Product {id}',
-    bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
+    bulkActionRequiresFilter: 'Cannot perform {action} without a filter, search, or all=true',
     tierArchived: 'Cannot use archived Tiers',
     invalidEmail: 'Invalid Email',
     offerNotFound: 'Could not find Offer {id}',
@@ -66,6 +70,7 @@ module.exports = class MemberRepository {
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
+     * @param {Pick<automationsApi, 'trigger'>} deps.automationsApi
      * @param {any} deps.Automation
      * @param {any} deps.WelcomeEmailAutomationRun
      */
@@ -87,6 +92,7 @@ module.exports = class MemberRepository {
         offersAPI,
         tokenService,
         newslettersService,
+        automationsApi,
         Automation,
         WelcomeEmailAutomationRun
     }) {
@@ -107,6 +113,7 @@ module.exports = class MemberRepository {
         this._offersAPI = offersAPI;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
+        this._automationsApi = automationsApi;
         this._Automation = Automation;
         this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
 
@@ -174,27 +181,56 @@ module.exports = class MemberRepository {
     }
 
     /**
+     * @param {string} memberId
+     * @param {string} memberEmail
+     * @param {'free' | 'paid'} memberStatus
+     * @param {object} bookshelfOptions
+     * @param {Knex.Transaction} [bookshelfOptions.transacting]
+     * @returns {Promise<void>}
+     */
+    async #triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+        const trigger = async () => {
+            await this._automationsApi.trigger({
+                event: 'member_sign_up',
+                memberId,
+                memberEmail,
+                memberStatus
+            });
+        };
+
+        if (bookshelfOptions?.transacting) {
+            bookshelfOptions.transacting.executionPromise.then(trigger).catch((err) => {
+                logging.error({
+                    err,
+                    message: `Error triggering automation for member ${memberId}`
+                });
+            });
+        } else {
+            await trigger();
+        }
+    }
+
+    /**
      * Looks up the active welcome email automation for the given slug and enqueues a
      * `WelcomeEmailAutomationRun` for the member. Dispatches `StartAutomationsPollEvent`
-     * so the poll picks it up. Returns the created run, or null if there is no active
-     * automation/email for that slug.
-     *
-     * Callers are responsible for any eligibility gating (member status, source, etc.)
-     * before calling this — this helper just looks up + inserts + dispatches. Pass
-     * `options.transacting` to run the insert inside an existing transaction; the
-     * dispatch is automatically deferred until that transaction commits.
+     * so the poll picks it up.
      *
      * @param {string} memberId
-     * @param {string} slug automation slug, see MEMBER_WELCOME_EMAIL_SLUGS
-     * @param {object} [options] bookshelf options (transacting, context, etc.)
+     * @param {'free' | 'paid'} memberStatus
+     * @param {object} options
+     * @returns {Promise<void>}
      */
-    async enqueueWelcomeEmailRun(memberId, slug, options = {}) {
+    async #triggerMemberSignupLegacyAutomation(memberId, memberStatus, options) {
         if (!this._Automation || !this._WelcomeEmailAutomationRun) {
-            return null;
+            return;
+        }
+
+        if (labs.isSet('automations')) {
+            return;
         }
 
         const automation = await this._Automation.findOne(
-            {slug},
+            {slug: MEMBER_WELCOME_EMAIL_SLUGS[memberStatus]},
             {...options, withRelated: ['welcomeEmailAutomatedEmail']}
         );
         const email = automation?.related('welcomeEmailAutomatedEmail');
@@ -206,10 +242,10 @@ module.exports = class MemberRepository {
         );
 
         if (!isActive) {
-            return null;
+            return;
         }
 
-        const run = await this._WelcomeEmailAutomationRun.add({
+        await this._WelcomeEmailAutomationRun.add({
             welcome_email_automation_id: automation.id,
             member_id: memberId,
             next_welcome_email_automated_email_id: email.id,
@@ -220,8 +256,25 @@ module.exports = class MemberRepository {
         }, options);
 
         this.dispatchEvent(StartAutomationsPollEvent.create(), options);
+    }
 
-        return run;
+    /**
+     * Trigger an automation for member signup.
+     *
+     * Callers are responsible for any eligibility gating (member status, source, etc.)
+     * before calling this.
+     *
+     * @param {string} memberId
+     * @param {string} memberEmail
+     * @param {'free' | 'paid'} memberStatus
+     * @param {object} bookshelfOptions
+     * @returns {Promise<void>}
+     */
+    async triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+        await Promise.all([
+            this.#triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions),
+            this.#triggerMemberSignupLegacyAutomation(memberId, memberStatus, bookshelfOptions)
+        ]);
     }
 
     /**
@@ -230,21 +283,17 @@ module.exports = class MemberRepository {
      * @returns {'import' | 'system' | 'api' | 'admin' | 'member'}
      */
     _resolveContextSource(context) {
-        let source;
-
         if (context.import || context.importer) {
-            source = 'import';
+            return 'import';
         } else if (context.internal) {
-            source = 'system';
+            return 'system';
         } else if (context.api_key) {
-            source = 'api';
+            return 'api';
         } else if (context.user) {
-            source = 'admin';
+            return 'admin';
         } else {
-            source = 'member';
+            return 'member';
         }
-
-        return source;
     }
 
     getMRR({interval, amount, status = null, canceled = false, discount = null}) {
@@ -441,7 +490,12 @@ module.exports = class MemberRepository {
                     labels
                 }, {...memberAddOptions, transacting});
 
-                await this.enqueueWelcomeEmailRun(newMember.id, MEMBER_WELCOME_EMAIL_SLUGS.free, {transacting});
+                await this.triggerMemberSignupAutomation(
+                    newMember.id,
+                    newMember.get('email'),
+                    'free',
+                    {transacting}
+                );
 
                 return newMember;
             };
@@ -1023,9 +1077,10 @@ module.exports = class MemberRepository {
      * @param {Object} data
      * @param {string} data.id - member ID
      * @param {Object} data.subscription
-     * @param {string} data.offerId
+     * @param {string | null} [data.offerId]
      * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
-     * @param {*} options
+     * @param {object} [options]
+     * @param {Knex.Transaction} [options.transacting]
      * @returns
      */
     async linkSubscription(data, options = {}) {
@@ -1531,8 +1586,8 @@ module.exports = class MemberRepository {
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
 
-            // Enqueue paid welcome email if:
-            // 1. The source is allowed to send welcome emails
+            // Enqueue automation if:
+            // 1. The source is allowed to trigger automations
             // 2. The member status changed to 'paid'
             // 3. The previous status wasn't 'gift', as gift members already received the paid welcome email on redemption
             if (
@@ -1540,8 +1595,60 @@ module.exports = class MemberRepository {
                 updatedMember.get('status') === 'paid' &&
                 updatedMember._previousAttributes.status !== 'gift'
             ) {
-                await this.enqueueWelcomeEmailRun(memberModel.id, MEMBER_WELCOME_EMAIL_SLUGS.paid, options);
+                await this.triggerMemberSignupAutomation(
+                    memberModel.id,
+                    memberModel.get('email'),
+                    'paid',
+                    options
+                );
             }
+        }
+
+        // Update the members_current_subscription lookup table
+        await this._updateCurrentSubscription(data.id, options);
+    }
+
+    async _updateCurrentSubscription(memberId, options) {
+        try {
+            const knex = db.knex;
+            const trx = options.transacting || knex;
+
+            // Resolve the best subscription for this member via the VIEW
+            // (single source of truth for subscription priority logic)
+            const best = await trx('members_resolved_subscription')
+                .where('member_id', memberId)
+                .first();
+
+            if (best) {
+                // The lookup table has a UNIQUE constraint on `subscription_id`
+                // — a sub can be at most one member's current. The view's
+                // owning-member can change (member merges, Stripe customer
+                // re-link, test fixtures reusing customer IDs), in which case
+                // the lookup may still hold a stale row from the previous
+                // owner. Delete that stale row first so the upsert isn't
+                // rejected by the UNIQUE constraint. The displaced member's
+                // row will re-resolve next time their subscriptions change.
+                await trx('members_current_subscription')
+                    .where('subscription_id', best.subscription_id)
+                    .whereNot('member_id', best.member_id)
+                    .del();
+
+                await trx('members_current_subscription')
+                    .insert({member_id: best.member_id, subscription_id: best.subscription_id})
+                    .onConflict('member_id')
+                    .merge();
+            } else {
+                // No subscriptions remain — remove the lookup row
+                await trx('members_current_subscription')
+                    .where({member_id: memberId})
+                    .del();
+            }
+        } catch (e) {
+            logging.error({
+                err: e,
+                message: `Failed to update members_current_subscription for member ${memberId}`
+            });
+            throw e;
         }
     }
 

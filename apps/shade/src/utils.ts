@@ -8,6 +8,7 @@ export {useSimplePagination} from './hooks/use-simple-pagination';
 export {
     cn,
     debounce,
+    getScrollParent,
     kebabToPascalCase,
     formatTimestamp,
     formatNumber,

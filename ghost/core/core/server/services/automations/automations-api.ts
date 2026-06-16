@@ -2,16 +2,17 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
-import type {DatabaseSync} from 'node:sqlite';
 import {z} from 'zod';
-import {createFakeDatabaseAutomationsRepository} from './fake-database-automations-repository';
+import {createDatabaseAutomationsRepository} from './database-automations-repository';
 import type {
+    AutomationsRepository,
     EditAutomationData
 } from './automations-repository';
 
+const {knex} = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
+const labs = require('../../../shared/labs');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
-const temporaryFakeAutomationsDatabase = require('./temporary-fake-database');
 
 const MAX_AUTOMATION_ACTIONS = 20;
 
@@ -23,7 +24,9 @@ const messages = {
     invalidAutomationEdgeEndpoint: 'Automation edges must reference actions in the submitted graph.',
     duplicateAutomationEdge: 'Automation edges must be unique.',
     invalidAutomationEdge: 'Automation edges cannot connect an action to itself.',
-    invalidAutomationGraphShape: 'Automation graph must be a single linear path without branches or cycles.'
+    invalidAutomationGraphShape: 'Automation graph must be a single linear path without branches or cycles.',
+    emptyEmailSubjectWhenActive: 'Active automations require a subject line for every email.',
+    emptyEmailBodyWhenActive: 'Active automations require a body for every email.'
 };
 
 const objectIdSchema = z.string().refine(value => ObjectId.isValid(value));
@@ -40,7 +43,7 @@ const sendEmailActionSchema = z.object({
     id: objectIdSchema,
     type: z.literal('send_email'),
     data: z.object({
-        email_subject: z.string().min(1),
+        email_subject: z.string(),
         email_lexical: z.string().refine((value) => {
             try {
                 JSON.parse(value);
@@ -49,9 +52,6 @@ const sendEmailActionSchema = z.object({
                 return false;
             }
         }),
-        email_sender_name: z.string().nullable(),
-        email_sender_email: z.string().nullable(),
-        email_sender_reply_to: z.string().nullable(),
         email_design_setting_id: z.string().min(1)
     }).strict()
 }).strict();
@@ -70,23 +70,13 @@ const editAutomationDataSchema = z.object({
     edges: z.array(edgeSchema)
 }).strict();
 
-let testDatabase: DatabaseSync | null = null;
+const repository = createDatabaseAutomationsRepository(knex);
 
-const repository = createFakeDatabaseAutomationsRepository({
-    getDatabase: () => {
-        if (process.env.NODE_ENV?.startsWith('testing')) {
-            testDatabase ??= temporaryFakeAutomationsDatabase.createTemporaryFakeAutomationsDatabase();
-            return testDatabase;
-        }
-        return temporaryFakeAutomationsDatabase.getTemporaryFakeAutomationsDatabase();
-    }
-});
-
-async function browse() {
+export async function browse() {
     return await repository.browse();
 }
 
-async function read(automationId: string) {
+export async function read(automationId: string) {
     const automation = await repository.getById(automationId);
 
     if (!automation) {
@@ -98,7 +88,7 @@ async function read(automationId: string) {
     return automation;
 }
 
-async function edit(automationId: string, data: unknown) {
+export async function edit(automationId: string, data: unknown) {
     const parsedData = validateEditData(data);
 
     const automation = await repository.edit(automationId, parsedData);
@@ -124,7 +114,46 @@ function validateEditData(data: unknown): EditAutomationData {
     }
 
     validateGraph(result.data.actions, result.data.edges);
+    validateActiveEmailSteps(result.data.status, result.data.actions);
     return result.data;
+}
+
+// Drafts may persist empty email steps, but an active automation must have a
+// complete subject and body for every email it sends — mirroring the editor's
+// publish-time validation.
+function validateActiveEmailSteps(status: EditAutomationData['status'], actions: EditAutomationData['actions']) {
+    if (status !== 'active') {
+        return;
+    }
+
+    for (const action of actions) {
+        if (action.type !== 'send_email') {
+            continue;
+        }
+
+        if (!action.data.email_subject.trim()) {
+            throwValidationError(messages.emptyEmailSubjectWhenActive, 'actions');
+        }
+
+        if (isEmptyLexical(action.data.email_lexical)) {
+            throwValidationError(messages.emptyEmailBodyWhenActive, 'actions');
+        }
+    }
+}
+
+function isEmptyLexical(lexical: string): boolean {
+    try {
+        const parsed = JSON.parse(lexical);
+        const children = parsed?.root?.children;
+
+        if (!children || children.length === 0) {
+            return true;
+        }
+
+        return children.length === 1 && children[0].type === 'paragraph' && (!children[0].children || children[0].children.length === 0);
+    } catch {
+        return true;
+    }
 }
 
 function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[]) {
@@ -234,20 +263,41 @@ function throwValidationError(message: string, property?: string): never {
     });
 }
 
-function requestPoll() {
+export function requestPoll() {
     domainEvents.dispatch(StartAutomationsPollEvent.create());
 }
 
-function _resetTestDatabase() {
-    if (process.env.NODE_ENV?.startsWith('testing')) {
-        testDatabase = null;
+type TriggerOptions = Parameters<AutomationsRepository['trigger']>[0] & {
+    event: 'member_sign_up';
+};
+export async function trigger(options: TriggerOptions) {
+    if (options.event !== 'member_sign_up') {
+        throw new errors.IncorrectUsageError({
+            message: 'Member signup is the only supported event right now. More may be added later'
+        });
     }
+
+    if (!labs.isSet('automations')) {
+        return;
+    }
+
+    await repository.trigger(options);
+
+    requestPoll();
 }
 
-module.exports = {
-    _resetTestDatabase,
-    browse,
-    edit,
-    read,
-    requestPoll
-};
+export async function fetchAndLockSteps(...args: Parameters<AutomationsRepository['fetchAndLockSteps']>) {
+    return await repository.fetchAndLockSteps(...args);
+}
+
+export async function finishStepAndEnqueueNext(...args: Parameters<AutomationsRepository['finishStepAndEnqueueNext']>) {
+    return await repository.finishStepAndEnqueueNext(...args);
+}
+
+export async function markStepTerminal(...args: Parameters<AutomationsRepository['markStepTerminal']>) {
+    return await repository.markStepTerminal(...args);
+}
+
+export async function retryStep(...args: Parameters<AutomationsRepository['retryStep']>) {
+    return await repository.retryStep(...args);
+}

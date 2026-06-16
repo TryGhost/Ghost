@@ -15,7 +15,7 @@ const H1 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
                 ref={ref as React.Ref<HTMLElement>}
                 as='h1'
                 className={cn('scroll-m-20 leading-[1.1em] tracking-tighter', className)}
-                size='3xl'
+                size='2xl'
                 weight='bold'
                 {...props}
             />
@@ -34,7 +34,7 @@ const H2 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
                 ref={ref as React.Ref<HTMLElement>}
                 as='h2'
                 className={cn('scroll-m-20 tracking-tighter first:mt-0', className)}
-                size='2xl'
+                size='xl'
                 weight='bold'
                 {...props}
             />
@@ -53,7 +53,7 @@ const H3 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
                 ref={ref as React.Ref<HTMLElement>}
                 as='h3'
                 className={cn('scroll-m-20 tracking-tight', className)}
-                size='xl'
+                size='lg'
                 weight='semibold'
                 {...props}
             />
@@ -72,7 +72,7 @@ const H4 = React.forwardRef<HTMLHeadingElement, HeadingProps>(
                 ref={ref as React.Ref<HTMLElement>}
                 as='h4'
                 className={cn('scroll-m-20 tracking-tight', className)}
-                size='lg'
+                size='md'
                 weight='semibold'
                 {...props}
             />
@@ -96,7 +96,7 @@ const HTable = React.forwardRef<HTMLDivElement, HTableProps>(
                 ref={ref as React.Ref<HTMLElement>}
                 as='div'
                 className={cn('tracking-wide uppercase', className)}
-                size='xs'
+                size='sm'
                 tone='secondary'
                 weight='medium'
                 {...props}

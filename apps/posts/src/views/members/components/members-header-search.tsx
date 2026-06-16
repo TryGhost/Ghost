@@ -18,7 +18,7 @@ const MembersHeaderSearch: React.FC<MembersHeaderSearchProps> = ({
     const testId = ariaLabel === 'Search members mobile' ? 'members-mobile-search-input' : 'members-search-input';
 
     return (
-        <InputGroup className="h-[34px] min-w-0 basis-full lg:w-[180px] lg:basis-auto xl:w-[240px]">
+        <InputGroup className="h-(--control-height) min-w-0 basis-full lg:w-[180px] lg:basis-auto xl:w-[240px]">
             <InputGroupAddon>
                 <LucideIcon.Search className="size-4" strokeWidth={1.75} />
             </InputGroupAddon>

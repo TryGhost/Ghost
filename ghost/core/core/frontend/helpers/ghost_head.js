@@ -34,8 +34,7 @@ function finaliseStructuredData(meta) {
             _.each(meta.keywords, function (keyword) {
                 if (keyword !== '') {
                     keyword = escapeExpression(keyword);
-                    head.push(writeMetaTag(property,
-                        escapeExpression(keyword)));
+                    head.push(writeMetaTag(property, keyword));
                 }
             });
             head.push('');
@@ -57,19 +56,21 @@ function getMembersHelper(data, frontendKey, excludeList) {
     if (!excludeList.has('portal')) {
         const {scriptUrl} = getFrontendAppConfig('portal');
 
-        const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
-        const attributes = {
-            i18n: true,
-            ghost: urlUtils.getSiteUrl(),
-            key: frontendKey,
-            api: urlUtils.urlFor('api', {type: 'content'}, true),
-            locale: settingsCache.get('locale') || 'en'
-        };
-        if (colorString) {
-            attributes['accent-color'] = colorString;
+        if (scriptUrl) {
+            const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
+            const attributes = {
+                i18n: true,
+                ghost: urlUtils.getSiteUrl(),
+                key: frontendKey,
+                api: urlUtils.urlFor('api', {type: 'content'}, true),
+                locale: settingsCache.get('locale') || 'en'
+            };
+            if (colorString) {
+                attributes['accent-color'] = colorString;
+            }
+            const dataAttributes = getDataAttributes(attributes);
+            membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
         }
-        const dataAttributes = getDataAttributes(attributes);
-        membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     }
     if (!excludeList.has('cta_styles')) {
         membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
@@ -123,7 +124,7 @@ function getAnnouncementBarHelper(data) {
         const announcementVisibility = searchParam.has('announcement_vis');
 
         if (!announcement || !announcementVisibility) {
-            return;
+            return '';
         }
         attrs.announcement = escapeExpression(announcement);
         attrs['announcement-background'] = escapeExpression(announcementBackground);
@@ -134,6 +135,42 @@ function getAnnouncementBarHelper(data) {
     let helper = `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 
     return helper;
+}
+
+function getAdminToolbarHelper(dataRoot, siteTitle, excludeList) {
+    if (!dataRoot._locals?.staffFrontendToolsEnabled || excludeList.has('admin_toolbar')) {
+        return '';
+    }
+
+    const {scriptUrl} = getFrontendAppConfig('adminToolbar');
+    const context = dataRoot._locals?.context || dataRoot.context || [];
+    const entry = dataRoot.post || dataRoot.page;
+    const resourceId = entry?.id;
+    const resourceSlug = context.includes('tag') ? dataRoot.tag?.slug : '';
+    const isHome = context.includes('home');
+    let resourceType = '';
+
+    if (resourceId) {
+        resourceType = context.includes('page') || entry.type === 'page' ? 'page' : 'post';
+    } else if (resourceSlug) {
+        resourceType = 'tag';
+    }
+
+    const attrs = {
+        'ghost-admin-toolbar': escapeExpression(urlUtils.urlFor('admin', true)),
+        'site-title': escapeExpression(siteTitle || settingsCache.get('title') || 'Ghost'),
+        'resource-type': resourceType || undefined,
+        'resource-id': resourceId ? escapeExpression(resourceId) : undefined,
+        'resource-slug': resourceSlug ? escapeExpression(resourceSlug) : undefined,
+        'page-context': isHome ? 'home' : undefined,
+        'site-analytics-enabled': isHome && settingsCache.get('web_analytics_enabled') === true ? 'true' : undefined,
+        'activitypub-enabled': isHome && settingsCache.get('social_web_enabled') === true ? 'true' : undefined,
+        'members-enabled': isHome && settingsCache.get('members_enabled') === true ? 'true' : undefined,
+        'comments-enabled': resourceType === 'post' && settingsCache.get('comments_enabled') === 'off' ? 'false' : undefined
+    };
+    const dataAttrs = getDataAttributes(attrs);
+
+    return `<script defer src="${scriptUrl}" ${dataAttrs} crossorigin="anonymous"></script>`;
 }
 
 function getWebmentionDiscoveryLink() {
@@ -306,6 +343,10 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (!excludeList.has('announcement')) {
             head.push(getAnnouncementBarHelper(options.data));
         }
+        const adminToolbarHelper = getAdminToolbarHelper(dataRoot, meta.site.title, excludeList);
+        if (adminToolbarHelper) {
+            head.push(adminToolbarHelper);
+        }
         try {
             head.push(getWebmentionDiscoveryLink());
         } catch (err) {
@@ -343,7 +384,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (options.data.site.accent_color) {
             const accentColor = escapeExpression(options.data.site.accent_color);
             const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
-            const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+            const existingScriptIndex = _.findLastIndex(head, str => typeof str === 'string' && /<\/(style|script)>/.test(str));
 
             if (existingScriptIndex !== -1) {
                 head[existingScriptIndex] = head[existingScriptIndex] + styleTag;

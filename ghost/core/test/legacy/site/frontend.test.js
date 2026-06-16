@@ -8,6 +8,7 @@ const {assertExists} = require('../../utils/assertions');
 const sinon = require('sinon');
 const supertest = require('supertest');
 const cheerio = require('cheerio');
+const nock = require('nock');
 const testUtils = require('../../utils');
 const configUtils = require('../../utils/config-utils');
 const config = require('../../../core/shared/config');
@@ -87,6 +88,9 @@ describe('Frontend Routing', function () {
             });
 
             it('Single post should sanitize double slashes when redirecting uppercase', async function () {
+                // nock 14 misparses the leading `//` as an external host and blocks the
+                // (actually local) request; allow it through. afterEach re-disables.
+                nock.enableNetConnect();
                 await request.get('///Google/')
                     .expect('Location', '/google/')
                     .expect('Cache-Control', testUtils.cacheRules.year)
@@ -131,6 +135,9 @@ describe('Frontend Routing', function () {
                 });
 
                 it('should redirect to editor for post resource', async function () {
+                    // nock 14 misparses the leading `//` as an external host and blocks the
+                    // (actually local) request; allow it through. afterEach re-disables.
+                    nock.enableNetConnect();
                     await request.get('//welcome/edit/')
                         .expect('Location', /ghost\/#\/editor\/post\/\w+/)
                         .expect('Cache-Control', testUtils.cacheRules.public)

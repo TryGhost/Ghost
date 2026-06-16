@@ -248,6 +248,21 @@ describe('UNIT: redirect-config-parser', function () {
             );
         });
 
+        it('does not fold long values into block scalars', function () {
+            // js-yaml's default lineWidth (80) folds long values into
+            // `>-` block scalars, injecting markup the user never wrote.
+            const longTo = '/very/long/destination/path/that/is/definitely/longer/than/eighty/characters/total/';
+            const redirects = [
+                {from: '/old/', to: longTo, permanent: true}
+            ];
+
+            const yamlString = serializeToYaml(redirects);
+
+            assert.doesNotMatch(yamlString, />-/, 'no folded block scalar markup');
+            assert.match(yamlString, new RegExp(`/old/: ${longTo}`));
+            assert.deepEqual(parseYaml(yamlString), redirects);
+        });
+
         it('emits unquoted 301 / 302 section headers', function () {
             // Self-hosters diff downloaded files against VCS-tracked
             // originals — quoted numeric keys would create spurious diffs.

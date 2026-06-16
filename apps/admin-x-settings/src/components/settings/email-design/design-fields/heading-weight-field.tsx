@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/design-fields/heading-weight-field.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import {FONT_WEIGHT_OPTIONS, getValidWeight} from './font-constants';
 import {Select, SelectContent, SelectItem, SelectTrigger, SelectValue} from '@tryghost/shade/components';
 import {useEmailDesign} from '../email-design-context';

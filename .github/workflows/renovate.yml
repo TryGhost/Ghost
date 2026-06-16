@@ -4,16 +4,33 @@ name: Renovate
 # more frequently than ~4h and clear the dependency backlog within the existing
 # automerge windows. See PLA-48 for the throughput rationale;
 # .github/renovate.json5 is still the source of truth for package rules,
-# schedule, and automergeSchedule.
+# schedule, and automergeSchedule. This workflow adds the live GitHub open-PR
+# cap because Renovate's config-level limits are not enough to express "run
+# maintenance, but create no more PRs once 10 are open."
 on:
   schedule:
-    # Hourly. The repo-level `schedule` / `automergeSchedule` blocks in
-    # renovate.json5 still gate when Renovate actually acts or merges, so
-    # extra wake-ups outside those windows are no-ops (~30s each). Hourly
-    # ticks during the 7h weeknight automerge window roughly match Ghost's
-    # CI duration, giving each merge a fresh rebase + green CI window
-    # before the next tick.
-    - cron: '0 * * * *'
+    # Wake the runner only inside the windows where Renovate is actually
+    # allowed to open or maintain PRs (see `schedule` in renovate.json5),
+    # plus a single weekday daytime tick to keep vulnerability-alert state
+    # fresh in the Dependency Dashboard. Ticks outside those windows aren't
+    # no-ops in practice — each one is a 20-30min full extract — so the
+    # previous `17 * * * *` was burning ~17h/day of Actions compute for no
+    # merge benefit.
+    #
+    # :17-past-the-hour offset avoids top-of-hour GH Actions scheduler
+    # contention, which was dropping roughly every other tick on `0 * * * *`.
+    # Hourly cadence inside active windows roughly matches Ghost's CI
+    # duration, giving each merge a fresh rebase + green CI window.
+    #
+    # Times are UTC; matches renovate.json5's `schedule` block.
+    # Weekday early-morning window (Mon-Sat 00:00-04:59 UTC)
+    - cron: '17 0-4 * * 1-6'
+    # Weekday evening window (Mon-Fri 23:00-23:59 UTC)
+    - cron: '17 23 * * 1-5'
+    # Weekend - every 2h is plenty; no automerge urgency, just batch creation
+    - cron: '17 */2 * * 0,6'
+    # Weekday daytime CVE pickup tick (Mon-Fri 14:17 UTC)
+    - cron: '17 14 * * 1-5'
   workflow_dispatch:
     inputs:
       ignoreSchedule:
@@ -31,8 +48,13 @@ permissions:
 
 jobs:
   renovate:
+    # Never run on forks: both `schedule` and `workflow_dispatch` can fire on a
+    # fork that has Actions enabled, and this job mints the Renovate GitHub App
+    # token. Matches the fork guard used across the rest of the repo's
+    # privileged workflows.
+    if: github.repository == 'TryGhost/Ghost'
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
 
     steps:
       - name: Get GitHub App token
@@ -45,14 +67,66 @@ jobs:
           repositories: Ghost
 
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
 
-      - name: Allow manual run outside schedule
-        if: ${{ github.event_name == 'workflow_dispatch' && inputs.ignoreSchedule }}
-        run: echo 'RENOVATE_FORCE={"schedule":null,"automergeSchedule":null}' >> "$GITHUB_ENV"
+      # Enforce a live cap on open Renovate PRs while still letting Renovate
+      # maintain and automerge the PRs that already exist.
+      #
+      # Why this lives outside renovate.json5:
+      # - prConcurrentLimit/branchConcurrentLimit are useful guardrails, but
+      #   Renovate computes them from the branches in the current run rather
+      #   than by asking GitHub for every open Renovate PR.
+      # - vulnerability-alert PRs can bypass Renovate's normal branch, PR,
+      #   hourly, and schedule limits.
+      #
+      # Below the cap, restrict PR creation to the number of slots left. At or
+      # above the cap, or when RENOVATE_MAINTENANCE_ONLY=true, force dashboard
+      # approval for new branches/PRs while allowing existing PR branches to
+      # keep updating outside the creation schedule. That gives us "rebase and
+      # merge the 10, but create no more."
+      - name: Configure Renovate PR cap
+        env:
+          GH_TOKEN: ${{ steps.app-token.outputs.token }}
+          PR_CAP: ${{ vars.RENOVATE_OPEN_PR_CAP || '10' }}
+          MAINTENANCE_ONLY: ${{ vars.RENOVATE_MAINTENANCE_ONLY || 'false' }}
+          IGNORE_SCHEDULE: ${{ github.event_name == 'workflow_dispatch' && inputs.ignoreSchedule }}
+        run: |
+          set -euo pipefail
+
+          if ! [[ "$PR_CAP" =~ ^[0-9]+$ ]]; then
+            echo "::warning::RENOVATE_OPEN_PR_CAP must be a non-negative integer; falling back to 10."
+            PR_CAP=10
+          fi
+
+          open_count=$(gh pr list \
+            --repo "${{ github.repository }}" \
+            --author "app/tryghost-renovate" \
+            --state open \
+            --json number --jq 'length')
+
+          echo "Renovate has $open_count open PRs (cap: $PR_CAP)"
+
+          if [ "$MAINTENANCE_ONLY" = "true" ]; then
+            force='{"dependencyDashboardApproval":true,"prCreation":"approval","updateNotScheduled":true,"vulnerabilityAlerts":{"dependencyDashboardApproval":false}}'
+            echo "::notice::RENOVATE_MAINTENANCE_ONLY=true. Running in maintenance-only mode: existing PRs may update/automerge, new PRs require dashboard approval."
+          elif [ "$open_count" -ge "$PR_CAP" ]; then
+            force='{"dependencyDashboardApproval":true,"prCreation":"approval","updateNotScheduled":true,"vulnerabilityAlerts":{"dependencyDashboardApproval":false}}'
+            echo "::notice::Renovate is at or above the open PR cap. Running in maintenance-only mode: existing PRs may update/automerge, new PRs require dashboard approval."
+          else
+            remaining=$((PR_CAP - open_count))
+            force="{\"prHourlyLimit\":$remaining}"
+
+            if [ "$IGNORE_SCHEDULE" = "true" ]; then
+              force="{\"schedule\":null,\"automergeSchedule\":null,\"prHourlyLimit\":$remaining}"
+            fi
+
+            echo "Renovate may create up to $remaining PR(s) in this run."
+          fi
+
+          echo "RENOVATE_FORCE=$force" >> "$GITHUB_ENV"
 
       - name: Self-hosted Renovate
-        uses: renovatebot/github-action@693b9ef15eec82123529a37c782242f091365961 # v46.1.14
+        uses: renovatebot/github-action@8217b3fc286df088d7c27f3255fe8414463bc0fd # v46.1.15
         with:
           token: ${{ steps.app-token.outputs.token }}
         env:

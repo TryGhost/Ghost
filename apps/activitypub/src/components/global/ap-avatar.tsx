@@ -1,6 +1,6 @@
 import React, {useEffect, useState} from 'react';
 import clsx from 'clsx';
-import getUsername from '@utils/get-username';
+import getHandle from '@utils/get-handle';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Skeleton} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
@@ -140,7 +140,7 @@ const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, dis
         return <Skeleton className={imageClass} containerClassName={containerClass} />;
     }
 
-    const handle = author?.handle || getUsername(author as ActorProperties);
+    const handle = getHandle(author as ActorProperties);
 
     const handleClick = (e: React.MouseEvent) => {
         e.stopPropagation();

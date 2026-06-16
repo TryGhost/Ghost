@@ -60,6 +60,50 @@
     }
 }
 
+/* The Close button shares .gh-editor-preview-trigger, which is hidden below 500px
+   for the editor toolbar; the modal needs it visible so the preview can be dismissed */
+.gh-post-preview-header .gh-editor-preview-trigger {
+    display: inline-flex;
+    align-items: center;
+}
+
+@media (max-width: 640px) {
+    /* lay the header out in flow so the centered controls can't slide under the
+       absolutely-positioned action group and overlap it */
+    .gh-post-preview-header {
+        justify-content: flex-start;
+        padding: 1.2rem;
+    }
+
+    /* the "Preview" title is redundant inside the preview modal; drop it on phones
+       so the Close/share/Publish controls fit without crowding */
+    .gh-post-preview-header .left {
+        display: none;
+    }
+
+    .gh-post-preview-btn-group {
+        margin-left: 0;
+    }
+
+    .gh-post-preview-header .right {
+        position: static;
+        margin-left: auto;
+    }
+
+    /* push Close to the far-right corner so it isn't stranded mid-header; share
+       still sits directly left of Publish */
+    .gh-post-preview-close {
+        order: 1;
+    }
+
+    /* the desktop/mobile size toggle is meaningless on a phone */
+    .gh-post-preview-sizes,
+    .gh-post-preview-btn-group .gh-contentfilter-divider,
+    .gh-post-preview-header .right .gh-contentfilter-divider {
+        display: none;
+    }
+}
+
 .gh-post-preview-btn-group .gh-btn-group {
     gap: .2rem;
     margin: 0 4px;
