@@ -241,9 +241,10 @@ export const poll = async ({
             logging.error({
                 err,
                 system: {
-                    event: 'automations.poll.step_failed'
+                    event: 'automations.poll.step_failed',
+                    step_id: step.id
                 }
-            }, '[AUTOMATIONS] Failed to process automation step');
+            }, `[AUTOMATIONS] Failed to process automation step ${step.id}`);
             return;
         }
     }));
