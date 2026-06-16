@@ -27,7 +27,7 @@ const ROW_GRID_CLASS = 'grid w-full grid-cols-[1fr_auto_auto_auto] items-center 
 
 const AutomationsListSkeleton: React.FC = () => {
     return (
-        <Table className="flex table-fixed flex-col border-t lg:table" data-testid="automations-list-loading">
+        <Table className="flex table-fixed flex-col lg:table" data-testid="automations-list-loading">
             <TableBody className="flex flex-col lg:table-row-group">
                 {Array.from({length: 2}, (_, index) => (
                     <TableRow
@@ -61,13 +61,13 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
     }
 
     return (
-        <Table className="flex table-fixed flex-col border-t lg:table" data-testid="automations-list">
-            <TableHeader className="hidden lg:table-header-group">
+        <Table className="flex table-fixed flex-col lg:table" data-testid="automations-list">
+            <TableHeader className="hidden lg:visible! lg:table-header-group!">
                 <TableRow>
-                    <TableHead className="lg:p-4">Name</TableHead>
-                    <TableHead className="text-right lg:w-24 lg:p-4">Runs</TableHead>
-                    <TableHead className="text-right lg:w-32 lg:p-4">Created</TableHead>
-                    <TableHead className="text-right lg:w-32 lg:p-4">Status</TableHead>
+                    <TableHead className="w-auto px-4">Name</TableHead>
+                    <TableHead className="w-24 px-4 text-right">Runs</TableHead>
+                    <TableHead className="w-32 px-4 text-right">Created</TableHead>
+                    <TableHead className="w-32 px-4 text-right">Status</TableHead>
                 </TableRow>
             </TableHeader>
             <TableBody className="flex flex-col lg:table-row-group">

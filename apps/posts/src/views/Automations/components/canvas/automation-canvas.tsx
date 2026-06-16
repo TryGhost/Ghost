@@ -17,7 +17,13 @@ import type {EmailModalMode} from '../types';
 const NODE_X = 0;
 const NODE_WIDTH = 256;
 const NODE_COLUMN_CENTER_X = NODE_X + (NODE_WIDTH / 2);
-const NODE_GAP_Y = 180;
+// Visible space between node bottom and the next node's top. Constant across all pairs so the
+// chain reads as evenly spaced regardless of how tall any individual node renders.
+const NODE_VISUAL_GAP_Y = 112;
+// Approximate rendered heights — used to compute the absolute y-position of each node so the
+// visible gap stays uniform. If node body layout changes, retune these.
+const REGULAR_NODE_HEIGHT = 68;
+const EMAIL_NODE_WITH_STATS_HEIGHT = 129;
 const INITIAL_VIEWPORT_Y = 40;
 const NODE_ENTER_ANIMATION_DURATION = 250;
 const DISABLED_REASON = 'Maximum steps added';
@@ -154,6 +160,17 @@ type BuildGraphParams = {
     selectedStepId: string | null;
 }
 
+const getActionNodeHeight = (action: AutomationAction, hasError: boolean): number => {
+    // Mirrors the gating in `StepNode` for the static stats footer (nodes.tsx). Email steps render
+    // the Sent / Opened / Clicked block only when neither an error nor an empty-body warning is set.
+    if (action.type === 'send_email'
+        && !hasError
+        && !isEmptyEmailLexical(action.data.email_lexical)) {
+        return EMAIL_NODE_WITH_STATS_HEIGHT;
+    }
+    return REGULAR_NODE_HEIGHT;
+};
+
 const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBody, onPick, onPreviewEmail, onSelectStep, newStepId, selectedStepId}: BuildGraphParams): { nodes: AutomationFlowNode[]; edges: Edge[] } => {
     const ordered = getInitialActionOrder(automation);
     const baseNodeProps = {
@@ -170,11 +187,12 @@ const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBo
         targetId: TAIL_CANVAS_ID
     };
 
+    let cursorY = 0;
     const nodes: AutomationFlowNode[] = [
         {
             id: TRIGGER_CANVAS_ID,
             type: 'trigger',
-            position: {x: NODE_X, y: 0},
+            position: {x: NODE_X, y: cursorY},
             data: {
                 contextMenuItems: buildNodeContextMenuItems({
                     onSelectStep,
@@ -190,12 +208,13 @@ const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBo
             ...baseNodeProps
         }
     ];
+    cursorY += REGULAR_NODE_HEIGHT + NODE_VISUAL_GAP_Y;
 
-    ordered.forEach((action, index) => {
+    ordered.forEach((action) => {
         nodes.push({
             id: action.id,
             type: 'step',
-            position: {x: NODE_X, y: NODE_GAP_Y * (index + 1)},
+            position: {x: NODE_X, y: cursorY},
             data: {
                 ...buildActionData(action),
                 contextMenuItems: buildNodeContextMenuItems({
@@ -214,12 +233,13 @@ const buildGraph = ({actionErrors, automation, disabled, onDelete, onEditEmailBo
             },
             ...baseNodeProps
         });
+        cursorY += getActionNodeHeight(action, Boolean(actionErrors[action.id])) + NODE_VISUAL_GAP_Y;
     });
 
     nodes.push({
         id: TAIL_CANVAS_ID,
         type: 'tail',
-        position: {x: NODE_X, y: NODE_GAP_Y * (ordered.length + 1)},
+        position: {x: NODE_X, y: cursorY},
         data: {disabled, disabledReason, onPick, anchor: tailAnchor},
         draggable: false,
         connectable: false
