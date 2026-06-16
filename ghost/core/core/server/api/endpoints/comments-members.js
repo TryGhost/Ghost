@@ -1,16 +1,6 @@
 const commentsService = require('../../services/comments');
 const ALLOWED_INCLUDES = ['member', 'replies', 'replies.member', 'replies.count.likes', 'replies.liked', 'replies.disliked', 'count.replies', 'count.direct_replies', 'count.likes', 'liked', 'disliked', 'post', 'parent'];
 
-function withDislikesCapability(response) {
-    response.meta = response.meta || {};
-    response.meta.capabilities = {
-        ...response.meta.capabilities,
-        dislikes: true
-    };
-
-    return response;
-}
-
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {
     docName: 'comments',
@@ -35,9 +25,8 @@ const controller = {
             }
         },
         permissions: false,
-        async query(frame) {
-            const response = await commentsService.controller.browse(frame);
-            return withDislikesCapability(response);
+        query(frame) {
+            return commentsService.controller.browse(frame);
         }
     },
 

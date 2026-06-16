@@ -160,6 +160,18 @@ module.exports = {
             }
         },
         {
+            // Frontend must not access the model layer directly; use the public Content API via services/proxy
+            files: 'core/frontend/**',
+            rules: {
+                'ghost/node/no-restricted-require': ['error', [
+                    {
+                        name: [path.resolve(__dirname, 'core/server/models/**')],
+                        message: 'Invalid require of core/server/models from core/frontend. Fetch content through the public Content API (api.postsPublic / api.pagesPublic), injected via core/frontend/services/proxy — not the model layer directly. See #28420.'
+                    }
+                ]]
+            }
+        },
+        {
             files: 'core/server/**',
             rules: {
                 'ghost/node/no-restricted-require': ['warn', [

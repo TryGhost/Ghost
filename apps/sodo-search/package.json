@@ -21,7 +21,7 @@
     "react-dom": "catalog:react17"
   },
   "scripts": {
-    "dev": "concurrently --kill-others --names preview,build,tailwind \"vite preview -l silent\" \"pnpm build:watch\" \"pnpm tailwind\"",
+    "dev": "pnpm build && concurrently --kill-others --names preview,build,tailwind \"vite preview -l silent\" \"pnpm build:watch\" \"pnpm tailwind\"",
     "build": "vite build && pnpm tailwind:base",
     "build:watch": "vite build --watch",
     "tailwind": "pnpm tailwind:base --watch ",

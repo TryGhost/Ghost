@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`Automations API browse returns automations sourced from the temporary fake database 1: [body] 1`] = `
+exports[`Automations API browse returns automations sourced from the database 1: [body] 1`] = `
 Object {
   "automations": Array [
     Object {
@@ -33,7 +33,7 @@ Object {
 }
 `;
 
-exports[`Automations API browse returns automations sourced from the temporary fake database 2: [headers] 1`] = `
+exports[`Automations API browse returns automations sourced from the database 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
@@ -119,7 +119,7 @@ Object {
 }
 `;
 
-exports[`Automations API read returns the automation, ordered actions, and edges sourced from the temporary fake database 1: [body] 1`] = `
+exports[`Automations API read returns the automation, ordered actions, and edges sourced from the database 1: [body] 1`] = `
 Object {
   "automations": Array [
     Object {
@@ -182,7 +182,7 @@ Object {
 }
 `;
 
-exports[`Automations API read returns the automation, ordered actions, and edges sourced from the temporary fake database 2: [headers] 1`] = `
+exports[`Automations API read returns the automation, ordered actions, and edges sourced from the database 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
