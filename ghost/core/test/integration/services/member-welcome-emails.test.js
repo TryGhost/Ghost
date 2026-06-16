@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const ObjectId = require('bson-objectid').default;
 const testUtils = require('../../utils');
+const {mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const {OUTBOX_STATUSES} = require('../../../core/server/models/outbox');
 const db = require('../../../core/server/data/db');
@@ -39,6 +40,8 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     beforeEach(async function () {
+        mockManager.mockLabsDisabled('automations');
+
         const defaultNewsletter = await models.Newsletter.getDefaultNewsletter();
         if (defaultNewsletter) {
             defaultNewsletterSenderState = {
@@ -106,6 +109,7 @@ describe('Member Welcome Emails Integration', function () {
     });
 
     afterEach(async function () {
+        mockManager.restore();
         sinon.restore();
 
         if (defaultNewsletterSenderState) {
@@ -137,7 +141,7 @@ describe('Member Welcome Emails Integration', function () {
             await db.knex('welcome_email_automation_runs').del();
         });
 
-        it('creates automation run when member source is "member"', async function () {
+        it('creates legacy automation run when automations labs flag is disabled', async function () {
             await db.knex.transaction(async (trx) => {
                 const before = new Date(Date.now() - 1000);
 
