@@ -139,6 +139,60 @@ describe('dateCodec', () => {
     });
 });
 
+describe('multipleActiveSubscriptionsCodec', () => {
+    const field = memberFields['count.active_stripe_customers'];
+    const context: CodecContext = {
+        key: 'count.active_stripe_customers',
+        pattern: 'count.active_stripe_customers',
+        params: {},
+        timezone: 'UTC'
+    };
+
+    it('serializes the Yes/No predicate to count comparisons', () => {
+        const predicate: FilterPredicate = {
+            id: '1',
+            field: 'count.active_stripe_customers',
+            operator: 'is',
+            values: ['true']
+        };
+
+        expect(field.codec.serialize(predicate, context)).toEqual([
+            'count.active_stripe_customers:>1'
+        ]);
+        expect(field.codec.serialize({...predicate, values: ['false']}, context)).toEqual([
+            'count.active_stripe_customers:<2'
+        ]);
+    });
+
+    it('rejects unknown values and other operators', () => {
+        const predicate: FilterPredicate = {
+            id: '1',
+            field: 'count.active_stripe_customers',
+            operator: 'is',
+            values: [true]
+        };
+
+        expect(field.codec.serialize(predicate, context)).toBeNull();
+        expect(field.codec.serialize({...predicate, values: [1]}, context)).toBeNull();
+        expect(field.codec.serialize({...predicate, operator: 'is-greater', values: ['true']}, context)).toBeNull();
+    });
+
+    it('parses only the comparisons it serializes', () => {
+        expect(field.codec.parse({'count.active_stripe_customers': {$gt: 1}}, context)).toEqual({
+            field: 'count.active_stripe_customers',
+            operator: 'is',
+            values: ['true']
+        });
+        expect(field.codec.parse({'count.active_stripe_customers': {$lt: 2}}, context)).toEqual({
+            field: 'count.active_stripe_customers',
+            operator: 'is',
+            values: ['false']
+        });
+        expect(field.codec.parse({'count.active_stripe_customers': {$gt: 2}}, context)).toBeNull();
+        expect(field.codec.parse({'count.active_stripe_customers': 1}, context)).toBeNull();
+    });
+});
+
 describe('newsletterCodec', () => {
     it('serializes newsletter subscription state from a pattern field', () => {
         const predicate: FilterPredicate = {
