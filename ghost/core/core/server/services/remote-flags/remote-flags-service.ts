@@ -35,15 +35,10 @@ export interface RemoteFlagsServiceDeps {
 }
 
 /**
- * Polls a remote JSON manifest of feature-flag overrides, resolves it for this
- * site, and pushes the result into the shared override store. Designed to be
- * unconditionally fail-open: a missing, broken, or unreachable manifest must never
- * change live flag state in a way that takes the site down, so every failure path
- * either keeps the last-known-good overrides or clears them, and nothing here ever
- * throws out.
- *
- * The HTTP client and the override sink are injected so the polling/caching/
- * fail-open logic can be unit-tested without real I/O or timers.
+ * Polls the manifest, resolves it for this site, and writes the result to the
+ * shared override store. Fail-open by design: a missing/broken/unreachable manifest
+ * keeps last-known-good (or clears) and never throws, so it can't take a site down.
+ * The HTTP client and override sink are injected for testing.
  */
 export class RemoteFlagsService {
     url: URL;
@@ -77,9 +72,8 @@ export class RemoteFlagsService {
     }
 
     /**
-     * Fetch the manifest once, resolve it for this site, and apply it. Always
-     * fail-open; never rejects. Not re-entrant: overlapping calls are coalesced so
-     * concurrent refreshes can never race the cached ETag.
+     * Fetch, resolve, and apply the manifest once. Never rejects. Overlapping calls
+     * are coalesced so concurrent refreshes can't race the cached ETag.
      */
     async refresh(): Promise<void> {
         if (this._refreshing) {
@@ -161,8 +155,7 @@ export class RemoteFlagsService {
             this._applyAndMaybeLog(manifest, etag);
             this._etag = etag;
         } catch (err) {
-            // Defensive backstop: resolve()/applyOverrides should not throw, but if
-            // anything does, fail open rather than letting it escape the poll loop.
+            // Backstop: resolve()/applyOverrides shouldn't throw, but fail open if they do.
             logging.warn({
                 system: {event: 'remote_flags.apply_failed', siteId: this.siteId},
                 err
@@ -171,9 +164,8 @@ export class RemoteFlagsService {
     }
 
     /**
-     * Resolve a manifest for this site, push it to the override sink, and emit a
-     * structured log only when the resolved set actually changes (so a steady fleet
-     * does not log on every poll).
+     * Resolve and apply the manifest, logging only when the resolved set changes
+     * (so a steady fleet doesn't log on every poll).
      * @private
      */
     _applyAndMaybeLog(manifest: unknown, etag: string | null): void {
@@ -183,11 +175,8 @@ export class RemoteFlagsService {
 
         this.applyOverrides(resolved);
 
-        // Canonicalise with sorted keys so a manifest that only reorders its keys
-        // does not look "changed" and emit a spurious applied log on every container.
-        // The second arg to JSON.stringify is a key allowlist (not a sort directive):
-        // passing the sorted own keys both restricts and orders the output. `resolved`
-        // is a flat {flag: boolean} map, so a flat key list fully canonicalises it.
+        // Stable-stringify (sorted keys) so a reordered-but-identical manifest isn't
+        // seen as a change. JSON.stringify's 2nd arg is a key allowlist, here the sorted keys.
         const key = JSON.stringify(resolved, Object.keys(resolved).sort());
         if (key !== this._resolvedKey) {
             this._resolvedKey = key;
@@ -206,8 +195,7 @@ export class RemoteFlagsService {
         if (!this._started) {
             return;
         }
-        // Ensure a single outstanding timer even across a stop/start cycle where an
-        // in-flight callback could otherwise schedule a second chain.
+        // Clear any existing timer so a stop/start cycle can't leave two chains running.
         if (this._timer) {
             clearTimeout(this._timer);
             this._timer = null;

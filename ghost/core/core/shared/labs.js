@@ -67,12 +67,9 @@ module.exports.getAll = () => {
         labs[gaKey] = true;
     });
 
-    // Remote overrides sit above GA_FEATURES (so a remote entry can kill a GA flag
-    // fleet-wide) but below local config (so an explicit `config.labs` pin always
-    // wins): config.labs > remote > GA_FEATURES > DB settings. The override store
-    // lives in its own module so labs only ever reads it; the remote-flags service
-    // (Pro-only) is the sole writer, and the store is empty on self-hosted so this
-    // overlay is a no-op there.
+    // Remote overrides sit above GA (so a remote entry can kill a GA flag) but below
+    // config.labs (so an explicit local pin wins): config.labs > remote > GA > DB.
+    // Empty on self-hosted, so this overlay is a no-op there.
     const remoteOverrides = flagOverrides.getAll();
     Object.keys(remoteOverrides).forEach((key) => {
         labs[key] = remoteOverrides[key];

@@ -3,14 +3,10 @@ import logging from '@tryghost/logging';
 import {RemoteFlagsService} from './remote-flags-service';
 import * as flagOverrides from '../../../shared/labs-flag-overrides';
 
-// @tryghost/request ships no type declarations, so it is required rather than
-// imported to avoid an implicit-any error under the strict tsconfig.
+// @tryghost/request ships no types; require() avoids an implicit-any under the strict tsconfig.
 const request = require('@tryghost/request');
 
-/**
- * The slice of the config service this module needs. Injected rather than imported
- * so the gating logic stays a pure function of its inputs and is trivial to test.
- */
+// Config slice this module needs; injected so init() stays testable.
 interface ConfigLike {
     get(key: string): unknown;
 }
@@ -21,24 +17,17 @@ interface RemoteFlagsConfig {
     pollInterval?: unknown;
 }
 
-// Floor for the configured poll interval. A fleet of ~30k containers polling a
-// shared CDN must never be allowed to poll faster than this, so a too-small (or
-// units-confused, e.g. seconds-as-ms) value is rejected rather than honored.
+// Floor for the poll interval: ~30k containers share one CDN, so a too-small or
+// units-confused (seconds-as-ms) value is rejected, not honored.
 const MIN_POLL_INTERVAL_MS = 60 * 1000;
 
 let instance: RemoteFlagsService | null = null;
 
 /**
- * Start the remote feature-flag poller, if it is enabled for this instance.
- *
- * Pro-only and opt-in: the service stays completely inert unless the `remoteFlags`
- * config block is explicitly enabled with a manifest `url`, on a container that has
- * a `hostSettings:siteId`. Self-hosted and dev installs have neither by default, so
- * this is a no-op there and labs behaves exactly as before.
- *
- * Polling is started fire-and-forget so boot is never blocked on (or failed by) the
- * first manifest fetch; the service is fail-open and applies overrides once the
- * fetch completes.
+ * Start the poller if enabled for this instance. Pro-only and opt-in: inert unless
+ * `remoteFlags` is enabled with a `url` and the container has a `hostSettings:siteId`
+ * (self-hosted/dev have neither). Polling is fire-and-forget so boot is never blocked
+ * on the first fetch.
  *
  * @returns the running service, or null when inert
  */
@@ -56,9 +45,7 @@ export function init(config: ConfigLike): RemoteFlagsService | null {
 
     let url: URL;
     try {
-        // Validate and normalise the manifest url once here so a misconfigured value
-        // fails loudly at start rather than silently warning on every poll, and so the
-        // service is handed a ready URL object instead of constructing one itself.
+        // Validate the url once at start (not on every poll); hand the service a ready URL.
         url = new URL(remoteFlags.url);
     } catch {
         logging.warn({
@@ -67,10 +54,8 @@ export function init(config: ConfigLike): RemoteFlagsService | null {
         return null;
     }
 
-    // Optional poll interval (ms). Fall back to the service default when unset; a
-    // value that is not a finite number at or above the floor is rejected with a
-    // warning so a typo (or seconds mistaken for ms) can neither stop polling nor
-    // hammer the CDN across the fleet.
+    // Optional poll interval (ms): honor a finite value >= the floor, else warn and
+    // use the service default.
     let pollInterval: number | undefined;
     const configuredInterval = remoteFlags.pollInterval;
     if (configuredInterval !== undefined && configuredInterval !== null) {
@@ -91,16 +76,15 @@ export function init(config: ConfigLike): RemoteFlagsService | null {
         pollInterval
     });
 
-    // Fire-and-forget: start() is fail-open and never rejects, so this neither
-    // blocks boot nor produces an unhandled rejection.
+    // Fire-and-forget: start() never rejects, so this won't block boot or throw unhandled.
     instance.start();
 
     return instance;
 }
 
 /**
- * Stop the poller. This only halts polling; it intentionally leaves the
- * last-applied overrides in place rather than clearing them.
+ * Stop the poller. Halts polling; intentionally leaves the last-applied overrides
+ * in place rather than clearing them.
  */
 export function stop(): void {
     if (instance) {

@@ -2,8 +2,7 @@ const assert = require('node:assert/strict');
 
 const {resolve, bucketFor} = require('../../../../../core/server/services/remote-flags/resolve');
 
-// Sample flag names for these pure tests. The resolver no longer filters against a
-// known-flag allowlist, so these are just illustrative keys, not a gate.
+// Sample flag names for these pure tests; the resolver doesn't gate on them.
 const SAMPLE_FLAGS = ['flagA', 'flagB', 'flagC', 'commentModeration'];
 
 describe('remote-flags resolve', function () {
@@ -213,10 +212,8 @@ describe('remote-flags resolve', function () {
 
     describe('security: dangerous manifest keys', function () {
         it('skips keys that collide with Object.prototype and never pollutes the prototype', function () {
-            // A real manifest is JSON.parsed from the CDN; JSON.parse creates a real
-            // own "__proto__" key (unlike an object literal). With no allowlist these
-            // unsafe keys are dropped explicitly, and because values are always
-            // booleans nothing can leak onto the global prototype.
+            // JSON.parse creates a real own "__proto__" key (unlike an object literal);
+            // the resolver must drop these unsafe keys and never touch Object.prototype.
             const manifest = JSON.parse('{"__proto__": {"value": true}, "constructor": true, "prototype": true, "polluted": true, "flagA": true}');
             const result = resolve(manifest, {siteId: 1});
             assert.deepEqual(result, {polluted: true, flagA: true});
