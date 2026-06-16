@@ -1093,7 +1093,7 @@ module.exports = class EventRepository {
                     created_at: model.get('created_at'),
                     member: model.related('member').toJSON(),
                     automatedEmail: {
-                        id: automatedEmailId || automationActionRevisionId,
+                        id: automatedEmailId ?? automationActionRevisionId,
                         source: automatedEmailId ? 'automated_email' : 'automation_action_revision',
                         slug: automatedEmail.slug,
                         name: automatedEmail.name,
