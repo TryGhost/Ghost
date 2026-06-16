@@ -159,7 +159,7 @@ overrides:
   'diff@>=6.0.0 <8.0.3': ^8.0.3
   'fast-xml-parser@<5.7.0': ^5.7.0
   'follow-redirects@<1.16.0': ^1.16.0
-  'form-data@<2.5.4': ^2.5.4
+  'form-data@<2.5.4': ^4.0.0
   'growl@<1.10.0': ^1.10.0
   'handlebars@>=4.0.0 <=4.7.8': ^4.7.9
   'ip-address@<=10.1.0': ^10.2.0
@@ -206,3 +206,5 @@ minimumReleaseAgeExclude:
   - "knex-migrator"
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+  # Renovate security update: form-data@4.0.6
+  - form-data@4.0.6
