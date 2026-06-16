@@ -2,9 +2,11 @@
  * @file Middleware to set the appropriate cache headers on the frontend
  */
 const config = require('../../../shared/config');
+const labs = require('../../../shared/labs');
 const shared = require('../../../server/web/shared');
 const {api} = require('../../services/proxy');
 const preview = require('../../services/theme-engine/preview');
+const {GIFT_LINK_PREFIX} = require('../../services/routing/gift-links-router');
 
 /**
  * Calculate the member's active tier.
@@ -66,6 +68,18 @@ const getMiddleware = async (getFreeTier = async () => {
 
         // CASE: Never cache preview routes
         if (req.path?.startsWith('/p/')) {
+            return shared.middleware.cacheControl('noCache')(req, res, next);
+        }
+
+        // CASE: Never cache gift-link requests. /g/<slug>/?key=TOKEN responses
+        // include unlocked gated content. The 301 redirects emitted by the
+        // gift-links controller on invalid/missing/mismatched tokens set
+        // their own `Cache-Control: no-store` (the controller can't rely on
+        // this middleware's header because `res.redirect` finalises the
+        // response, and `urlUtils.redirect301` would overwrite it with
+        // `public, max-age=...`). Mirrors the /p/ preview path check above.
+        // Flag-gated so /g/ paths don't bypass cache when the feature is off.
+        if (req.path?.startsWith(GIFT_LINK_PREFIX) && labs.isSet('giftLinks')) {
             return shared.middleware.cacheControl('noCache')(req, res, next);
         }
 

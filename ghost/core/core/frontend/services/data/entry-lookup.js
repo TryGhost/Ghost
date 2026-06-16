@@ -39,7 +39,11 @@ function entryLookup(postUrl, routerOptions, locals) {
         include: 'authors,tags,tiers'
     };
 
-    options.context = {member: locals.member};
+    // Gift-link access uses the dedicated /g/ router (which calls the API
+    // directly with its own context), so `locals.giftLink` is always null on
+    // canonical post routes — the null thread-through is kept as a defensive
+    // no-op so the forPost serializer never sees a missing context key.
+    options.context = {member: locals.member, giftLink: locals.giftLink || null};
 
     return (api[routerOptions.query.controller] || api[routerOptions.query.resource])
         .read(_.extend(_.pick(params, 'slug', 'id'), options))
