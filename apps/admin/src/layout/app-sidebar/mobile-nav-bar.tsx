@@ -13,6 +13,9 @@ interface MobileNavBarButtonProps extends Omit<React.ComponentProps<typeof Butto
 
 function MobileNavBarButton({ to, activeOnSubpath = false, children, ...props }: MobileNavBarButtonProps) {
     const isActive = useIsActiveLink({ path: to, activeOnSubpath });
+    // Use a hash route (e.g. "#/posts") so navigation stays client-side; a bare
+    // relative href like "posts" triggers a full page load and reloads all of admin.
+    const href = `#/${to?.replace(/^\/?#\//, '')}`;
 
     return (
         <Button
@@ -22,7 +25,7 @@ function MobileNavBarButton({ to, activeOnSubpath = false, children, ...props }:
             size="icon"
             data-active={isActive}
         >
-            <a href={to}>
+            <a href={href}>
                 {children}
             </a>
         </Button>
