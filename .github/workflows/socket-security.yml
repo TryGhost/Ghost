@@ -1,0 +1,32 @@
+name: Socket Security
+
+on:
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  socket-security:
+    name: Socket report
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    env:
+      SOCKET_SECURITY_API_TOKEN: ${{ secrets.SOCKET_SECURITY_API_TOKEN }}
+    steps:
+      - name: Checkout current commit
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Set up Node
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: 22.18.0
+
+      - name: Install Socket CLI
+        run: npm install -g socket
+
+      - name: Run Socket report
+        run: socket ci
