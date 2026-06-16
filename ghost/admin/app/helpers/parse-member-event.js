@@ -394,18 +394,10 @@ export default class ParseMemberEventHelper extends Helper {
             return event.data.tier_name;
         }
 
-        if (event.type === 'automated_email_sent_event') {
-            return;
-        }
-
         return;
     }
 
     getDescription(event) {
-        if (event.type === 'automated_email_sent_event') {
-            return;
-        }
-
         if (event.type === 'click_event') {
             // Clean URL
             try {
