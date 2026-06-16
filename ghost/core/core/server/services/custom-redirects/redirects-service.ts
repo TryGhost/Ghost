@@ -4,6 +4,7 @@ import * as errors from '@tryghost/errors';
 
 import DynamicRedirectManager from '../lib/dynamic-redirect-manager';
 import type {RedirectConfig, RedirectsStore} from './types';
+import {errify} from '../../../shared/errify';
 
 const messages = {
     redirectsRegister: 'Could not register custom redirects.',
@@ -121,12 +122,13 @@ export class RedirectsService {
                     throw this._buildRejectedError(redirect);
                 }
                 loaded += 1;
-            } catch (err) {
+            } catch (rawError) {
                 if (failFast) {
-                    throw err;
+                    throw rawError;
                 }
+                const err = errify(rawError);
                 logging.error(new errors.IncorrectUsageError({
-                    message: tpl(messages.skippedInvalidRedirect, {context: (err as Error).message}),
+                    message: tpl(messages.skippedInvalidRedirect, {context: err.message}),
                     err
                 }));
             }
@@ -146,9 +148,8 @@ export class RedirectsService {
                 from: redirect.from,
                 to: redirect.to
             }),
-            context: redirect,
             help: tpl(messages.redirectsHelp),
-            ...(cause !== undefined ? {err: cause} : {})
+            ...(cause !== undefined ? {err: errify(cause)} : {})
         });
     }
 
@@ -163,13 +164,14 @@ export class RedirectsService {
     async init(): Promise<void> {
         try {
             await this.activate();
-        } catch (err) {
+        } catch (rawError) {
+            const err = errify(rawError);
             if (errors.utils.isGhostError(err)) {
                 logging.error(err);
             } else {
                 logging.error(new errors.IncorrectUsageError({
                     message: tpl(messages.redirectsRegister),
-                    context: (err as Error).message,
+                    context: err.message,
                     help: tpl(messages.redirectsHelp),
                     err
                 }));
