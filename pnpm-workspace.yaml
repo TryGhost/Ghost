@@ -58,8 +58,8 @@ catalog:
   '@tryghost/koenig-lexical': 1.8.2
   '@tryghost/limit-service': 1.5.6
   '@tryghost/logging': 4.2.1
-  '@tryghost/nql': 0.13.0
-  '@tryghost/nql-lang': 0.6.5
+  '@tryghost/nql': 0.13.1
+  '@tryghost/nql-lang': 0.6.6
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
   '@types/express': 4.17.25
