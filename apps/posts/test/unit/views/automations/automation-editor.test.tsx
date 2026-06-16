@@ -1344,7 +1344,7 @@ describe('AutomationEditor', () => {
 
         let emailStep = screen.getByRole('button', {name: 'Send email: Untitled'});
         expect(emailStep).toHaveAttribute('aria-invalid', 'true');
-        expect(emailStep).toHaveClass('items-start');
+        expect(emailStep.firstElementChild).toHaveClass('items-start');
         expect(emailStep).toHaveClass('border-destructive');
         expect(emailStep).not.toHaveClass('border-yellow-600');
         expect(within(emailStep).getByText('Add a subject line and email body.').closest('div')?.previousElementSibling).toHaveClass('mt-[3px]');

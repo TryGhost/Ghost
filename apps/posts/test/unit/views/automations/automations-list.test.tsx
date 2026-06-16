@@ -31,6 +31,19 @@ describe('AutomationsList', () => {
         expect(screen.getByText('Off')).toBeInTheDocument();
     });
 
+    it('renders Name, Runs, Created and Status columns', () => {
+        renderWithRouter(<AutomationsList automations={automations} />);
+
+        expect(screen.getByRole('columnheader', {name: 'Name'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Runs'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Created'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Status'})).toBeInTheDocument();
+
+        expect(screen.getAllByText('1,247')).toHaveLength(2);
+        expect(screen.getByText('3 days ago')).toBeInTheDocument();
+        expect(screen.getByText('Feb 12, 2026')).toBeInTheDocument();
+    });
+
     it('links each row to the automation sequence by id', () => {
         renderWithRouter(<AutomationsList automations={automations} />);
 

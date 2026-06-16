@@ -4,7 +4,7 @@ import StepPicker, {type StepPickerType} from './step-picker';
 import {ContextMenu, ContextMenuContent, ContextMenuItem, ContextMenuSeparator, ContextMenuTrigger, Popover, PopoverContent, PopoverTrigger} from '@tryghost/shade/components';
 import {Handle, Node, NodeProps, Position} from '@xyflow/react';
 import {InsertActionAnchor} from '@tryghost/admin-x-framework/api/automations';
-import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
 
 // React Flow node IDs for the trigger and tail nodes. The canvas builds the visual graph using
 // these; they are not action IDs and never reach the API.
@@ -77,7 +77,7 @@ const HiddenHandle: React.FC<{type: 'source' | 'target'; position: Position}> = 
     <Handle isConnectable={false} position={position} style={HIDDEN_HANDLE_STYLE} type={type} />
 );
 
-const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: StepNodeData}>> = ({children, className, data}) => {
+const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: StepNodeData; footer?: React.ReactNode}>> = ({children, className, data, footer}) => {
     const ignoreNextClickRef = useRef(false);
 
     return (
@@ -92,8 +92,7 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
                     aria-label={data.value ? `${data.label}: ${data.value}` : data.label}
                     aria-pressed={data.selected}
                     className={cn(
-                        'flex w-64 items-center gap-3 rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
-                        (data.errorMessage || data.warningMessage) && 'items-start',
+                        'flex w-64 flex-col rounded-lg border border-transparent bg-surface-elevated p-3 text-left text-sm text-foreground shadow-sm transition-all focus-visible:border-border-strong focus-visible:outline-none',
                         !data.selected && 'hover:border-border-strong',
                         data.selected && !data.errorMessage && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
                         data.errorMessage && 'border-destructive',
@@ -120,7 +119,13 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
                         }
                     }}
                 >
-                    {children}
+                    <div className={cn(
+                        'flex w-full items-center gap-3',
+                        (data.errorMessage || data.warningMessage) && 'items-start'
+                    )}>
+                        {children}
+                    </div>
+                    {footer}
                 </button>
             </ContextMenuTrigger>
             <ContextMenuContent
@@ -163,6 +168,24 @@ const StepNodeContent: React.FC<{data: StepNodeData}> = ({data}) => {
     );
 };
 
+// TODO: replace with real analytics — see NY-1347
+const EmailStepStatsFooter: React.FC = () => (
+    <div className='mt-3 grid w-full grid-cols-3 gap-3 border-t border-border-default pt-3'>
+        <div className='flex flex-col text-left'>
+            <span className='text-xs text-text-secondary'>Sent</span>
+            <span className='text-sm font-medium'>{formatNumber(1247)}</span>
+        </div>
+        <div className='flex flex-col text-left'>
+            <span className='text-xs text-text-secondary'>Opened</span>
+            <span className='text-sm font-medium'>95%</span>
+        </div>
+        <div className='flex flex-col text-left'>
+            <span className='text-xs text-text-secondary'>Clicked</span>
+            <span className='text-sm font-medium'>26%</span>
+        </div>
+    </div>
+);
+
 const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
     <NodeShell data={data}>
         <StepNodeContent data={data} />
@@ -171,13 +194,16 @@ const TriggerNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
 ));
 TriggerNode.displayName = 'TriggerNode';
 
-const StepNode = React.memo<NodeProps<StepFlowNode>>(({data}) => (
-    <NodeShell data={data}>
-        <HiddenHandle position={Position.Top} type='target' />
-        <StepNodeContent data={data} />
-        <HiddenHandle position={Position.Bottom} type='source' />
-    </NodeShell>
-));
+const StepNode = React.memo<NodeProps<StepFlowNode>>(({data}) => {
+    const showStats = data.label === 'Send email' && !data.errorMessage && !data.warningMessage;
+    return (
+        <NodeShell data={data} footer={showStats ? <EmailStepStatsFooter /> : undefined}>
+            <HiddenHandle position={Position.Top} type='target' />
+            <StepNodeContent data={data} />
+            <HiddenHandle position={Position.Bottom} type='source' />
+        </NodeShell>
+    );
+});
 StepNode.displayName = 'StepNode';
 
 const TailNode: React.FC<NodeProps<TailFlowNode>> = ({data}) => {
