@@ -143,17 +143,6 @@ describe('automations poll', function () {
         sinon.restore();
     });
 
-    it('does nothing in production (for now)', async function () {
-        // NOTE: We'll remove this test once we go live.
-        sinon.stub(process.env, 'NODE_ENV').value('production');
-
-        await poll(options);
-
-        sinon.assert.notCalled(automationsApi.fetchAndLockSteps);
-        sinon.assert.notCalled(options.enqueueAnotherPollAt);
-        sinon.assert.notCalled(memberWelcomeEmailService.init);
-    });
-
     it('does nothing when no steps are ready', async function () {
         await poll(options);
 
