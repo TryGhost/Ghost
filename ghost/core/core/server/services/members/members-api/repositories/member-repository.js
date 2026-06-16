@@ -12,6 +12,7 @@ const hasActiveOffer = require('../utils/has-active-offer');
 const StartAutomationsPollEvent = require('../../../automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
+const labs = require('../../../../../shared/labs');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
 
@@ -221,6 +222,10 @@ module.exports = class MemberRepository {
      */
     async #triggerMemberSignupLegacyAutomation(memberId, memberStatus, options) {
         if (!this._Automation || !this._WelcomeEmailAutomationRun) {
+            return;
+        }
+
+        if (labs.isSet('automations')) {
             return;
         }
 
