@@ -1,40 +1,29 @@
 const sinon = require('sinon');
-const rewire = require('rewire');
+const membersController = require('../../../../core/server/api/endpoints/members');
+const membersService = require('../../../../core/server/services/members');
+const settingsCache = require('../../../../core/shared/settings-cache');
 
 describe('Members controller', function () {
-    let models, membersController, mockMembersService, mockSettingsCache, mockMoment;
+    let models;
+    let processImportStub;
+    let originalProcessImport;
 
     beforeAll(function () {
         models = require('../../../../core/server/models');
     });
 
     beforeEach(function () {
-        // Use rewire to load the members controller and replace its dependencies
-        membersController = rewire('../../../../core/server/api/endpoints/members');
-
-        // Create mocks
-        mockMembersService = {
-            processImport: sinon.stub().resolves({
-                meta: {stats: {imported: 1}}
-            })
-        };
-
-        mockSettingsCache = {
-            get: sinon.stub().withArgs('timezone').returns('UTC')
-        };
-
-        mockMoment = sinon.stub().returns({
-            tz: sinon.stub().returnsThis(),
-            format: sinon.stub().returns('2023-01-01 12:00')
+        originalProcessImport = membersService.processImport;
+        processImportStub = sinon.stub().resolves({
+            meta: {stats: {imported: 1}}
         });
+        membersService.processImport = processImportStub;
 
-        // Replace the dependencies in the rewired module
-        membersController.__set__('membersService', mockMembersService);
-        membersController.__set__('settingsCache', mockSettingsCache);
-        membersController.__set__('moment', mockMoment);
+        sinon.stub(settingsCache, 'get').withArgs('timezone').returns('UTC');
     });
 
     afterEach(function () {
+        membersService.processImport = originalProcessImport;
         sinon.restore();
     });
 
@@ -53,7 +42,7 @@ describe('Members controller', function () {
 
             // Verify the user's email was used
             sinon.assert.calledWith(mockUser.get, 'email');
-            sinon.assert.calledWith(mockMembersService.processImport, sinon.match({
+            sinon.assert.calledWith(processImportStub, sinon.match({
                 user: {email: 'user@example.com'}
             }));
         });
@@ -75,7 +64,7 @@ describe('Members controller', function () {
             // Verify the owner fallback path was used
             sinon.assert.calledOnce(models.User.getOwnerUser);
             sinon.assert.calledWith(mockOwnerUser.get, 'email');
-            sinon.assert.calledWith(mockMembersService.processImport, sinon.match({
+            sinon.assert.calledWith(processImportStub, sinon.match({
                 user: {email: 'owner@example.com'}
             }));
         });

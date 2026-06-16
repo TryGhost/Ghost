@@ -7,8 +7,12 @@ const config = require('../shared/config');
 // the core limit capping logic that can be used by both middleware and helpers.
 
 const limitConfig = {
-    allowLimitAll: config.get('optimization:allowLimitAll') || false,
-    maxLimit: config.get('optimization:maxLimit') || 100,
+    get allowLimitAll() {
+        return config.get('optimization:allowLimitAll') || false;
+    },
+    get maxLimit() {
+        return config.get('optimization:maxLimit') || 100;
+    },
     // Temporary exceptions to the max limit rule (HTTP-specific)
     exceptionEndpoints: [
         '/ghost/api/admin/posts/export/',
