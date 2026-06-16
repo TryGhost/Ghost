@@ -14,6 +14,7 @@ services:
       MYSQL_PASSWORD: ghost
     volumes:
       - mysql-data:/var/lib/mysql
+      - ./e2e/data/cache/mysql:/mnt/e2e-cache
     healthcheck:
       test: ["CMD", "mysql", "-h", "127.0.0.1", "-uroot", "-p${MYSQL_ROOT_PASSWORD:-root}", "-e", "SELECT 1"]
       interval: 1s

@@ -8,9 +8,10 @@ const __dirname = path.dirname(__filename);
 const E2E_ROOT = path.resolve(__dirname, '../..');
 const REPO_ROOT = path.resolve(E2E_ROOT, '..');
 
-export const SNAPSHOT_PATH = '/tmp/dump.sql';
+export const SNAPSHOT_PATH = '/mnt/e2e-cache/dump.sql';
 export const FORCE_FIXTURE_RESET_ENV = 'E2E_FORCE_FIXTURE_RESET';
-export const FIXTURE_CACHE_VERSION = 2;
+export const CI_FIXTURE_CACHE_ENV = 'E2E_ENABLE_CI_FIXTURE_CACHE';
+export const FIXTURE_CACHE_VERSION = 3;
 
 export type FixtureRole = 'owner' | 'administrator' | 'editor' | 'author' | 'contributor';
 export type StaffFixtureRole = Exclude<FixtureRole, 'owner'>;
@@ -27,25 +28,7 @@ const MIGRATIONS_DIR = path.join(
 );
 
 const CACHE_FINGERPRINT_FILES = [
-    'docker/dev-gateway/Caddyfile',
-    'docker/dev-gateway/Caddyfile.build',
-    'e2e/package.json',
-    'e2e/playwright.config.mjs',
-    'e2e/data-factory/factories/user-factory.ts',
-    'e2e/data-factory/index.ts',
-    'e2e/helpers/pages/admin/admin-page.ts',
-    'e2e/helpers/pages/admin/analytics/analytics-overview-page.ts',
-    'e2e/helpers/pages/admin/login-page.ts',
-    'e2e/helpers/pages/admin/settings/settings-page.ts',
-    'e2e/helpers/pages/admin/settings/sections/staff-section.ts',
-    'e2e/helpers/pages/admin/signup-page.ts',
-    'e2e/helpers/playwright/context-with-auth-state.ts',
-    'e2e/helpers/playwright/flows/sign-in.ts',
-    'e2e/helpers/playwright/fixture.ts',
-    'e2e/helpers/services/email/utils.ts',
-    'e2e/helpers/utils/fixture-cache.ts',
-    'e2e/helpers/utils/setup-user.ts',
-    'e2e/tests/global.setup.ts'
+    'ghost/core/test/unit/server/data/schema/integrity.test.js'
 ];
 
 export const STATE_DIR = path.join(E2E_ROOT, 'data', 'state');
@@ -71,6 +54,11 @@ export interface FixtureCacheManifest {
 
 export function shouldForceFixtureReset(): boolean {
     const raw = process.env[FORCE_FIXTURE_RESET_ENV];
+    return raw === '1' || raw === 'true';
+}
+
+export function shouldUseCIFixtureCache(): boolean {
+    const raw = process.env[CI_FIXTURE_CACHE_ENV];
     return raw === '1' || raw === 'true';
 }
 

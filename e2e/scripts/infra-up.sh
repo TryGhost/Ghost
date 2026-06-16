@@ -7,6 +7,8 @@ source "$SCRIPT_DIR/resolve-e2e-mode.sh"
 
 cd "$REPO_ROOT"
 
+mkdir -p e2e/data/cache/mysql e2e/data/state/auth
+
 MODE="$(resolve_e2e_mode)"
 export GHOST_E2E_MODE="$MODE"
 ANALYTICS_ENABLED="${GHOST_E2E_ANALYTICS:-true}"

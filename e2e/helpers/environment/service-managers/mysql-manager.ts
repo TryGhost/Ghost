@@ -1,3 +1,4 @@
+import * as path from 'path';
 import Docker from 'dockerode';
 import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
@@ -116,7 +117,8 @@ export class MySQLManager {
     async createSnapshot(sourceDatabase: string = 'ghost_testing', outputPath: string = SNAPSHOT_PATH): Promise<void> {
         logging.info('Creating database snapshot...');
 
-        await this.exec(`mysqldump -uroot -proot --opt --single-transaction ${sourceDatabase} > ${outputPath}`);
+        await this.ensureSnapshotDirectory(outputPath);
+        await this.exec(`mysqldump -uroot -proot --opt --single-transaction ${sourceDatabase} > ${this.shellQuote(outputPath)}`);
 
         logging.info('Database snapshot created');
     }
@@ -125,6 +127,7 @@ export class MySQLManager {
         const metadataPath = this.getSnapshotMetadataPath(snapshotPath);
         const json = JSON.stringify(metadata);
 
+        await this.ensureSnapshotDirectory(snapshotPath);
         await this.exec(`printf %s ${this.shellQuote(json)} > ${this.shellQuote(metadataPath)}`);
     }
 
@@ -156,13 +159,17 @@ export class MySQLManager {
     async restoreDatabaseFromSnapshot(database: string, snapshotPath: string = SNAPSHOT_PATH): Promise<void> {
         debug('Restoring database from snapshot:', database);
 
-        await this.exec('mysql -uroot -proot ' + database + ' < ' + snapshotPath);
+        await this.exec('mysql -uroot -proot ' + database + ' < ' + this.shellQuote(snapshotPath));
 
         debug('Database restored from snapshot:', database);
     }
 
     private getSnapshotMetadataPath(snapshotPath: string): string {
         return `${snapshotPath}.meta.json`;
+    }
+
+    private async ensureSnapshotDirectory(snapshotPath: string): Promise<void> {
+        await this.exec(`mkdir -p ${this.shellQuote(path.posix.dirname(snapshotPath))}`);
     }
 
     private shellQuote(value: string): string {
@@ -188,7 +195,7 @@ export class MySQLManager {
 
     async snapshotExists(snapshotPath: string = SNAPSHOT_PATH): Promise<boolean> {
         try {
-            const output = await this.exec(`[ -f "${snapshotPath}" ] && echo "exists"`);
+            const output = await this.exec(`[ -f ${this.shellQuote(snapshotPath)} ] && echo "exists"`);
             return output.trim() === 'exists';
         } catch {
             return false;

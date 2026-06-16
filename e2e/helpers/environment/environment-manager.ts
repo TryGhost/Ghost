@@ -2,7 +2,7 @@ import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
 import {GhostInstance, MySQLManager} from './service-managers';
 import {GhostManager} from './service-managers/ghost-manager';
-import {createFixtureCacheManifest, getLatestMigrationFileName, getMissingAuthStateFiles, isFixtureCacheManifestCurrent, shouldForceFixtureReset} from '@/helpers/utils/fixture-cache';
+import {createFixtureCacheManifest, getLatestMigrationFileName, getMissingAuthStateFiles, isFixtureCacheManifestCurrent, shouldForceFixtureReset, shouldUseCIFixtureCache} from '@/helpers/utils/fixture-cache';
 import {randomUUID} from 'crypto';
 import type {GhostConfig} from '@/helpers/playwright/fixture';
 
@@ -18,7 +18,7 @@ export type EnvironmentMode = 'dev' | 'build';
 type GhostEnvOverrides = GhostConfig | Record<string, string>;
 type CacheStatus =
     | {isValid: true; reason: 'cache_hit'}
-    | {isValid: false; reason: 'ci_always_rebuild' | 'forced_fixture_reset' | 'missing_snapshot' | 'missing_auth_state' | 'missing_migration_files' | 'missing_migrations_table' | 'migration_mismatch' | 'missing_fixture_manifest' | 'fixture_manifest_mismatch'};
+    | {isValid: false; reason: 'ci_always_rebuild' | 'forced_fixture_reset' | 'missing_snapshot' | 'missing_auth_state' | 'missing_migration_files' | 'migration_mismatch' | 'missing_fixture_manifest' | 'fixture_manifest_mismatch'};
 type GlobalSetupResult = {baseUrl: string; cacheHit: boolean};
 
 /**
@@ -75,7 +75,7 @@ export class EnvironmentManager {
         logging.info(`Starting ${this.mode} environment global setup...`);
 
         const cacheStatus = await this.getCacheStatus();
-        const cacheHit = cacheStatus.isValid;
+        let cacheHit = cacheStatus.isValid;
         if (cacheHit) {
             logging.info('Fixture cache hit - reusing snapshot + auth state package');
         } else {
@@ -83,6 +83,10 @@ export class EnvironmentManager {
         }
 
         await this.cleanupResources({deleteSnapshot: !cacheHit});
+
+        if (cacheHit) {
+            cacheHit = await this.restoreBaseDatabaseFromSnapshot();
+        }
 
         if (!cacheHit) {
             await this.mysql.recreateBaseDatabase('ghost_e2e_base');
@@ -119,7 +123,7 @@ export class EnvironmentManager {
         }
 
         logging.info(`Starting ${this.mode} environment global teardown...`);
-        await this.cleanupResources({deleteSnapshot: this.isCI()});
+        await this.cleanupResources({deleteSnapshot: this.isCI() && !shouldUseCIFixtureCache()});
         logging.info(`${this.mode} environment global teardown complete`);
     }
 
@@ -194,7 +198,7 @@ export class EnvironmentManager {
     }
 
     private async getCacheStatus(): Promise<CacheStatus> {
-        if (this.isCI()) {
+        if (this.isCI() && !shouldUseCIFixtureCache()) {
             return {isValid: false, reason: 'ci_always_rebuild'};
         }
 
@@ -217,15 +221,6 @@ export class EnvironmentManager {
             return {isValid: false, reason: 'missing_migration_files'};
         }
 
-        const latestAppliedMigration = await this.mysql.getLatestMigrationName('ghost_e2e_base');
-        if (!latestAppliedMigration) {
-            return {isValid: false, reason: 'missing_migrations_table'};
-        }
-
-        if (latestAppliedMigration !== latestMigrationFileName) {
-            return {isValid: false, reason: 'migration_mismatch'};
-        }
-
         const expectedManifest = await createFixtureCacheManifest(latestMigrationFileName);
         const actualManifest = await this.mysql.getSnapshotMetadata();
         if (!actualManifest) {
@@ -237,5 +232,34 @@ export class EnvironmentManager {
         }
 
         return {isValid: true, reason: 'cache_hit'};
+    }
+
+    private async restoreBaseDatabaseFromSnapshot(): Promise<boolean> {
+        const latestMigrationFileName = await getLatestMigrationFileName();
+        if (!latestMigrationFileName) {
+            logging.warn('Fixture cache could not be restored because migration files are missing.');
+            return false;
+        }
+
+        try {
+            await this.mysql.recreateBaseDatabase('ghost_e2e_base');
+            await this.mysql.restoreDatabaseFromSnapshot('ghost_e2e_base');
+
+            const latestAppliedMigration = await this.mysql.getLatestMigrationName('ghost_e2e_base');
+            if (latestAppliedMigration !== latestMigrationFileName) {
+                logging.warn(
+                    `Fixture cache migration mismatch after restore: expected ${latestMigrationFileName}, received ${latestAppliedMigration || 'none'}`
+                );
+                await this.mysql.deleteSnapshot();
+                return false;
+            }
+
+            return true;
+        } catch (error) {
+            logging.warn('Fixture cache restore failed - rebuilding fixture package');
+            logging.warn(error);
+            await this.mysql.deleteSnapshot();
+            return false;
+        }
     }
 }

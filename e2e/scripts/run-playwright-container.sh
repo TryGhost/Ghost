@@ -34,11 +34,14 @@ docker run --rm --network host --ipc host \
   -v "${WORKSPACE_PATH}:${WORKSPACE_PATH}" \
   -w "${WORKSPACE_PATH}/e2e" \
   -e CI=true \
+  -e NODE_VERSION="${NODE_VERSION:-}" \
   -e TEST_WORKERS_COUNT="${TEST_WORKERS_COUNT:-1}" \
   -e COMPOSE_PROJECT_NAME="${COMPOSE_PROJECT_NAME:-ghost-dev}" \
   -e GHOST_E2E_MODE="${GHOST_E2E_MODE:-build}" \
   -e GHOST_E2E_IMAGE="${GHOST_E2E_IMAGE:-ghost-e2e:local}" \
   -e GHOST_E2E_GATEWAY_IMAGE="${GHOST_E2E_GATEWAY_IMAGE:-caddy:2-alpine}" \
   -e GHOST_E2E_ANALYTICS="${GHOST_E2E_ANALYTICS:-true}" \
+  -e E2E_ENABLE_CI_FIXTURE_CACHE="${E2E_ENABLE_CI_FIXTURE_CACHE:-false}" \
+  -e E2E_FORCE_FIXTURE_RESET="${E2E_FORCE_FIXTURE_RESET:-false}" \
   "$PLAYWRIGHT_IMAGE" \
   bash -c "corepack enable && bash ./scripts/run-playwright-host.sh pnpm exec playwright test ${project_args_string}--shard=${SHARD_INDEX}/${SHARD_TOTAL} --retries=${RETRIES}"
