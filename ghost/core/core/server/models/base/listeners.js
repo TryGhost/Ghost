@@ -8,12 +8,7 @@ const {sequence} = require('@tryghost/promise');
 // Listen to settings.timezone.edited and settings.notifications.edited to bind extra logic to settings, similar to the bridge and member service
 const events = require('../../lib/common/events');
 
-/**
- * WHEN timezone changes, we will:
- * - reschedule all scheduled posts
- * - draft scheduled posts, when the published_at would be in the past
- */
-events.on('settings.timezone.edited', function (settingModel, options) {
+const onTimezoneEdited = function (settingModel, options) {
     options = options || {};
     options = _.merge({}, options, {context: {internal: true}});
 
@@ -81,14 +76,9 @@ events.on('settings.timezone.edited', function (settingModel, options) {
             }));
         }
     });
-});
+};
 
-/**
- * Remove all notifications, which are seen, older than 3 months.
- * No transaction, because notifications are not sensitive and we would have to add `forUpdate`
- * to the settings model to create real lock.
- */
-events.on('settings.notifications.edited', function (settingModel) {
+const onNotificationsEdited = function (settingModel) {
     let allNotifications = JSON.parse(settingModel.attributes.value || []);
     const options = {context: {internal: true}};
     let skip = true;
@@ -117,4 +107,26 @@ events.on('settings.notifications.edited', function (settingModel) {
     }, options).catch(function (err) {
         errors.logError(err);
     });
-});
+};
+
+const registerListeners = function (eventEmitter = events) {
+    /**
+     * WHEN timezone changes, we will:
+     * - reschedule all scheduled posts
+     * - draft scheduled posts, when the published_at would be in the past
+     */
+    eventEmitter.on('settings.timezone.edited', onTimezoneEdited);
+
+    /**
+     * Remove all notifications, which are seen, older than 3 months.
+     * No transaction, because notifications are not sensitive and we would have to add `forUpdate`
+     * to the settings model to create real lock.
+     */
+    eventEmitter.on('settings.notifications.edited', onNotificationsEdited);
+};
+
+registerListeners();
+
+module.exports = {
+    registerListeners
+};

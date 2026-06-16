@@ -1,10 +1,10 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const moment = require('moment-timezone');
-const rewire = require('rewire');
 const _ = require('lodash');
 const events = require('../../../../core/server/lib/common/events');
 const models = require('../../../../core/server/models');
+const listeners = require('../../../../core/server/models/base/listeners');
 const testUtils = require('../../../utils');
 
 describe('Models: listeners', function () {
@@ -27,7 +27,7 @@ describe('Models: listeners', function () {
             eventsToRemember[eventName] = callback;
         });
 
-        rewire('../../../../core/server/models/base/listeners');
+        listeners.registerListeners(events);
     });
 
     afterEach(function () {
