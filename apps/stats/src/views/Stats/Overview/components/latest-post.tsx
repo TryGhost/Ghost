@@ -59,21 +59,21 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const shouldGoToEditor = postDestination.startsWith('/editor/');
 
     return (
-        <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
+        <Card className='group/card w-full max-w-full min-w-0 bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
             <CardHeader>
                 <CardTitle className='flex items-baseline justify-between leading-snug font-medium text-muted-foreground'>
                     Latest post performance
                 </CardTitle>
                 <CardDescription className='hidden'>How your last post did</CardDescription>
             </CardHeader>
-            <CardContent className='flex flex-col gap-6 px-0 lg:flex-row xl:grid xl:grid-cols-3'>
+            <CardContent className='flex min-w-0 flex-col gap-6 px-0 lg:flex-row xl:grid xl:grid-cols-3'>
                 {isLoading &&
                     <>
-                        <div className='flex w-full items-center gap-6 px-6 xl:col-span-2'>
-                            <div className='w-full max-w-[232px] grow'>
+                        <div className='flex w-full min-w-0 items-center gap-6 px-6 xl:col-span-2'>
+                            <div className='w-full max-w-[232px] min-w-0 grow'>
                                 <Skeleton className='aspect-[16/10] rounded-md' />
                             </div>
-                            <div className='w-full grow'>
+                            <div className='w-full min-w-0 grow'>
                                 <Skeleton className='w-full max-w-[420px]' />
                                 <Skeleton className='w-1/2' />
                             </div>
@@ -102,21 +102,21 @@ const LatestPost: React.FC<LatestPostProps> = ({
                 }
                 {!isLoading && latestPostStats && metricsToShow ? (
                     <>
-                        <div className='flex flex-col gap-6 px-6 transition-all md:flex-row md:items-start xl:col-span-2'>
+                        <div className='flex min-w-0 flex-col gap-6 px-6 transition-all md:flex-row md:items-start xl:col-span-2'>
                             {latestPostStats.feature_image &&
                                     <div className='aspect-[16/10] w-full min-w-[100px] rounded-sm bg-cover bg-center sm:max-w-[170px] lg:max-w-[170px] xl:max-w-[232px]' style={{
                                         backgroundImage: `url(${latestPostStats.feature_image})`
                                     }}></div>
                             }
-                            <div className='flex grow flex-col items-start justify-center self-stretch'>
-                                <div className='text-md leading-tighter font-semibold tracking-tight hover:cursor-pointer hover:opacity-75' onClick={() => {
+                            <div className='flex min-w-0 grow flex-col items-start justify-center self-stretch'>
+                                <div className='max-w-full text-md leading-tighter font-semibold tracking-tight break-words hover:cursor-pointer hover:opacity-75' onClick={() => {
                                     if (!isLoading && latestPostStats) {
                                         navigate(postDestination, {crossApp: true});
                                     }
                                 }}>
                                     {latestPostStats.title}
                                 </div>
-                                <div className='mt-1 text-muted-foreground'>
+                                <div className='mt-1 max-w-full text-muted-foreground'>
                                     {latestPostStats.authors && latestPostStats.authors.length > 0 && (
                                         <div>
                                             By {latestPostStats.authors.map(author => author.name).join(', ')} &ndash; {formatDisplayDate(latestPostStats.published_at, siteTimezone)}
@@ -126,7 +126,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
                                         {getPostStatusText(latestPostStats)}
                                     </div>
                                 </div>
-                                <div className='mt-6 flex items-center gap-2'>
+                                <div className='mt-6 flex max-w-full flex-wrap items-center gap-2'>
                                     {!latestPostStats.email_only && (
                                         <PostShareModal
                                             author={latestPostStats.authors?.map(author => author.name).join(', ') || ''}
@@ -169,8 +169,8 @@ const LatestPost: React.FC<LatestPostProps> = ({
                             </div>
                         </div>
 
-                        <div className='-ml-4 flex w-full flex-col items-stretch gap-2 pr-6 xl:h-full xl:max-w-none'>
-                            <div className='grid grid-cols-2 gap-6 pl-10 lg:border-l xl:h-full'>
+                        <div className='flex w-full min-w-0 flex-col items-stretch gap-2 px-6 lg:-ml-4 lg:pr-6 lg:pl-0 xl:h-full xl:max-w-none'>
+                            <div className='grid min-w-0 grid-cols-2 gap-6 lg:border-l lg:pl-10 xl:h-full'>
                                 {/* Web metrics - only for published posts */}
                                 {metricsToShow.showWebMetrics && webAnalytics &&
                                     <div className={metricClassName} data-testid='latest-post-visitors' onClick={() => {

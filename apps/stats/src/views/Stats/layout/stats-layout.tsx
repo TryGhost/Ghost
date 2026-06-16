@@ -5,8 +5,8 @@ const StatsLayout = forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDivEleme
     ({children}, ref) => {
         return (
             <MainLayout>
-                <div ref={ref} className='grid w-full grow'>
-                    <div className='flex h-full flex-col px-6'>
+                <div ref={ref} className='grid w-full min-w-0 grow'>
+                    <div className='flex h-full min-w-0 flex-col px-6'>
                         {children}
                     </div>
                 </div>

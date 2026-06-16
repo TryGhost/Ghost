@@ -204,8 +204,8 @@ const TopNewslettersTable: React.FC<{
     const [sortBy, setSortBy] = useState<TopNewslettersOrder>('open_rate desc');
 
     return (
-        <Card className='w-full max-w-[calc(100vw-64px)] overflow-x-auto sidebar:max-w-[calc(100vw-64px-280px)]' data-testid='top-newsletters-card'>
-            <CardContent>
+        <Card className='w-full max-w-full min-w-0 overflow-x-auto' data-testid='top-newsletters-card'>
+            <CardContent className='min-w-0'>
                 <Table>
                     <NewsletterTableHeader range={range} setSortBy={setSortBy} sortBy={sortBy} />
                     <TableBody>
@@ -383,8 +383,8 @@ const Newsletters: React.FC = () => {
             </StatsHeader>
             <StatsView isLoading={false} loadingComponent={<></>}>
                 <>
-                    <Card data-testid='newsletters-card'>
-                        <CardContent>
+                    <Card className='w-full max-w-full min-w-0' data-testid='newsletters-card'>
+                        <CardContent className='min-w-0'>
                             <NewsletterKPIs
                                 avgsData={avgsData}
                                 initialTab={initialTab}

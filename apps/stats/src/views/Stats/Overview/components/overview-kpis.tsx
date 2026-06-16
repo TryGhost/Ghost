@@ -71,13 +71,13 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
     }, [diffDirection, diffValue, trendingFromValue, formattedValue, range]);
 
     return (
-        <Card className='group' data-testid={title}>
+        <Card className='group w-full max-w-full min-w-0' data-testid={title}>
             <CardHeader className='hidden'>
                 <CardTitle>{title}</CardTitle>
                 <CardDescription>{description}</CardDescription>
             </CardHeader>
             <KpiCardHeader className='relative flex grow flex-row items-start justify-between gap-5 border-none pb-2 xl:pb-4'>
-                <div className='flex grow flex-col gap-1.5 border-none pb-0'>
+                <div className='flex min-w-0 grow flex-col gap-1.5 border-none pb-0'>
                     <KpiCardHeaderLabel className={onClick && 'transition-all group-hover:text-foreground'}>
                         {color && <span className='inline-block size-2 rounded-full opacity-50' style={{backgroundColor: color}}></span>}
                         {IconComponent && <IconComponent size={16} strokeWidth={1.5} />}
@@ -94,7 +94,7 @@ const OverviewKPICard: React.FC<OverviewKPICardProps> = ({
                     <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={onClick}>View more</Button>
                 }
             </KpiCardHeader>
-            <CardContent>
+            <CardContent className='min-w-0'>
                 {children}
             </CardContent>
         </Card>
@@ -160,7 +160,7 @@ const OverviewKPIs:React.FC<OverviewKPIsProps> = ({
     const containerClass = `flex flex-col lg:grid ${cols} gap-6`;
 
     return (
-        <div className={containerClass}>
+        <div className={`${containerClass} min-w-0`}>
             {showWebAnalytics && !showUpgradeCTA &&
                 <OverviewKPICard
                     description='Number of individual people who visited your website'

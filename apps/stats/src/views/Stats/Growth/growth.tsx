@@ -149,8 +149,8 @@ const Growth: React.FC = () => {
                 </NavbarActions>
             </StatsHeader>
             <StatsView data={isPageLoading ? undefined : chartData} isLoading={false} loadingComponent={<></>}>
-                <Card data-testid='total-members-card'>
-                    <CardContent>
+                <Card className='w-full max-w-full min-w-0' data-testid='total-members-card'>
+                    <CardContent className='min-w-0'>
                         <GrowthKPIs
                             chartData={chartData}
                             currencySymbol={currencySymbol}
@@ -162,7 +162,7 @@ const Growth: React.FC = () => {
                     </CardContent>
                 </Card>
                 {appSettings?.paidMembersEnabled && currentKpiTab === 'paid-members' && (
-                    <div className='grid grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[2fr_minmax(460px,1fr)]'>
+                    <div className='grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2 xl:grid-cols-[2fr_minmax(460px,1fr)]'>
                         <PaidMembersChangeChart
                             isLoading={isPageLoading}
                             memberData={chartData}
@@ -172,12 +172,12 @@ const Growth: React.FC = () => {
                         <NewSubscribersCadence isLoading={isPageLoading} range={range} />
                     </div>
                 )}
-                <Card className='w-full overflow-x-auto' data-testid='top-content-card'>
+                <Card className='w-full max-w-full min-w-0 overflow-x-auto' data-testid='top-content-card'>
                     <CardHeader>
                         <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
                         <CardDescription>{getGrowthContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
                     </CardHeader>
-                    <CardContent>
+                    <CardContent className='min-w-0'>
                         <Table>
                             <TableHeader>
                                 <TableRow className='[&>th]:h-auto [&>th]:pt-0 [&>th]:pb-2'>

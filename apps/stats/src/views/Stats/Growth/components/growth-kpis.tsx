@@ -248,7 +248,7 @@ const GrowthKPIs: React.FC<{
         );
     }
 
-    const areaChartClassname = '-mb-3 h-[16vw] max-h-[320px] w-full min-h-[180px]';
+    const areaChartClassname = '-mb-3 h-[16vw] max-h-[320px] w-full min-w-0 min-h-[180px]';
 
     return (
         <Tabs defaultValue={validatedInitialTab} variant='kpis'>
@@ -355,7 +355,7 @@ const GrowthKPIs: React.FC<{
                     </DropdownMenuContent>
                 </DropdownMenu>
             }
-            <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
+            <div className='my-4 min-w-0 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 <GhAreaChart
                     className={areaChartClassname}
                     color={tabConfig[currentTab].color}

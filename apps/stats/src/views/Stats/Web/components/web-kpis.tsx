@@ -86,7 +86,7 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
     }
 
     return (
-        <Tabs data-testid='web-graph' defaultValue="visits" variant='kpis'>
+        <Tabs className='min-w-0' data-testid='web-graph' defaultValue="visits" variant='kpis'>
             <TabsList className="-mx-6 hidden grid-cols-2 md:visible! md:grid!">
                 <KpiTabTrigger value="visits" onClick={() => setCurrentTab('visits')}>
                     <KpiTabValue color='var(--chart-blue)' label="Unique visitors" value={kpiValues.visits} />
@@ -111,9 +111,9 @@ const WebKPIs: React.FC<WebKPIsProps> = ({data, range, isLoading}) => {
                     <DropdownMenuItem onClick={() => setCurrentTab('views')}>Total views</DropdownMenuItem>
                 </DropdownMenuContent>
             </DropdownMenu>
-            <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
+            <div className='my-4 min-w-0 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 <GhAreaChart
-                    className='-mb-3 h-[16vw] max-h-[320px] min-h-[180px] w-full'
+                    className='-mb-3 h-[16vw] max-h-[320px] min-h-[180px] w-full min-w-0'
                     color={currentMetric.chartColor}
                     data={chartData}
                     id="mrr"

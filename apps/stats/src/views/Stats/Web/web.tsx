@@ -204,8 +204,8 @@ const Web: React.FC = () => {
                 </NavbarActions>
             </StatsHeader>
             <StatsView isLoading={isPageLoading} loadingComponent={<></>}>
-                <Card>
-                    <CardContent>
+                <Card className='w-full max-w-full min-w-0'>
+                    <CardContent className='min-w-0'>
                         <WebKPIs
                             data={kpiData as KpiDataItem[] | null}
                             isLoading={kpiLoading}
@@ -213,7 +213,7 @@ const Web: React.FC = () => {
                         />
                     </CardContent>
                 </Card>
-                <div className='flex grid-cols-2 flex-col gap-6 lg:grid'>
+                <div className='flex min-w-0 grid-cols-2 flex-col gap-6 lg:grid'>
                     <TopContent
                         audience={audience}
                         filterParams={filterParams}
