@@ -1,9 +1,9 @@
 const assert = require('assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
+const accept = require('../../../../../core/server/services/invitations/accept');
+const models = require('../../../../../core/server/models');
 
 describe('Unit: services/invitations/accept', function () {
-    let accept;
     let transactionStub;
     let findOneInviteStub;
     let findOneUserStub;
@@ -32,12 +32,10 @@ describe('Unit: services/invitations/accept', function () {
             return cb('fake-txn');
         });
 
-        accept = rewire('../../../../../core/server/services/invitations/accept');
-        accept.__set__('models', {
-            Base: {transaction: transactionStub},
-            Invite: {findOne: findOneInviteStub},
-            User: {findOne: findOneUserStub, add: addUserStub}
-        });
+        sinon.stub(models.Base, 'transaction').callsFake(transactionStub);
+        sinon.stub(models.Invite, 'findOne').callsFake(findOneInviteStub);
+        sinon.stub(models.User, 'findOne').callsFake(findOneUserStub);
+        sinon.stub(models.User, 'add').callsFake(addUserStub);
     });
 
     afterEach(function () {

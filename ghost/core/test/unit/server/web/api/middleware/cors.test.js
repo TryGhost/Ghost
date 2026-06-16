@@ -1,10 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const configUtils = require('../../../../../utils/config-utils');
 
-let cors = rewire('../../../../../../core/server/web/api/middleware/cors').corsMiddleware;
-const {corsCaching} = rewire('../../../../../../core/server/web/api/middleware/cors');
+const apiCors = require('../../../../../../core/server/web/api/middleware/cors');
+const {corsMiddleware: cors, corsCaching} = apiCors;
 
 describe('cors', function () {
     let res;
@@ -37,7 +36,7 @@ describe('cors', function () {
     afterEach(async function () {
         sinon.restore();
         await configUtils.restore();
-        cors = rewire('../../../../../../core/server/web/api/middleware/cors').corsMiddleware;
+        apiCors.resetAllowlist();
     });
 
     it('should not be enabled without a request origin header', function () {
