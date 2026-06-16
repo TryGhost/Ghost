@@ -40,8 +40,8 @@ async function markEntryCompleted({db, entryId}) {
         });
 }
 
-async function processEntry({db, entry}) {
-    const handler = EVENT_HANDLERS[entry.event_type];
+async function processEntry({db, entry, eventHandlers}) {
+    const handler = eventHandlers[entry.event_type];
     if (!handler) {
         logging.warn({
             system: {
@@ -98,20 +98,23 @@ async function processEntry({db, entry}) {
     return {success: true};
 }
 
-async function processEntries({db, entries}) {
-    let processed = 0;
-    let failed = 0;
+function createProcessEntries({eventHandlers = EVENT_HANDLERS} = {}) {
+    return async function processEntries({db, entries}) {
+        let processed = 0;
+        let failed = 0;
 
-    for (const entry of entries) {
-        const result = await processEntry({db, entry});
-        if (result.success) {
-            processed += 1;
-        } else {
-            failed += 1;
+        for (const entry of entries) {
+            const result = await processEntry({db, entry, eventHandlers});
+            if (result.success) {
+                processed += 1;
+            } else {
+                failed += 1;
+            }
         }
-    }
 
-    return {processed, failed};
+        return {processed, failed};
+    };
 }
 
-module.exports = processEntries;
+module.exports = createProcessEntries();
+module.exports.createProcessEntries = createProcessEntries;

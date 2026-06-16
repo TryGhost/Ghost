@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const {captureLoggerOutput, findByEvent} = require('../../../../../utils/logging-utils');
+const {createMemberCreatedHandler} = require('../../../../../../core/server/services/outbox/handlers/member-created.js');
 
 describe('member-created handler', function () {
     let handler;
@@ -11,8 +11,6 @@ describe('member-created handler', function () {
     let logCapture;
 
     beforeEach(function () {
-        handler = rewire('../../../../../../core/server/services/outbox/handlers/member-created.js');
-
         memberWelcomeEmailServiceStub = {
             api: {
                 send: sinon.stub().resolves()
@@ -36,9 +34,11 @@ describe('member-created handler', function () {
 
         logCapture = captureLoggerOutput();
 
-        handler.__set__('memberWelcomeEmailService', memberWelcomeEmailServiceStub);
-        handler.__set__('Automation', AutomationStub);
-        handler.__set__('AutomatedEmailRecipient', AutomatedEmailRecipientStub);
+        handler = createMemberCreatedHandler({
+            memberWelcomeEmailService: memberWelcomeEmailServiceStub,
+            Automation: AutomationStub,
+            AutomatedEmailRecipient: AutomatedEmailRecipientStub
+        });
     });
 
     afterEach(function () {
