@@ -249,6 +249,15 @@
     border-color: transparent;
 }
 
+/* On touch devices a long-press opens the context menu, so suppress the native
+   link-callout and text-selection magnifier that would otherwise fire on the row */
+@media (hover: none) and (pointer: coarse) {
+    .gh-posts-list-item-group {
+        -webkit-touch-callout: none;
+        user-select: none;
+    }
+}
+
 .posts-list[data-ctrl] .gh-posts-list-item-group:hover::before {
     opacity: 0.05;
     background: #6E78E5;
@@ -781,6 +790,30 @@
 
     .gh-post-list-author {
         max-width: calc(100% - 140px);
+    }
+
+    /* the list is a CSS table, which sizes to its content and so grows past the
+       viewport on a phone; make it a normal block (the table columns are already
+       hidden at this width) so it tracks the viewport instead. Keep a min-width so
+       the text column stays usable on very narrow screens (the page scrolls a little
+       below ~350px rather than breaking titles mid-word) */
+    .posts-list.gh-list {
+        display: block;
+        min-width: 300px;
+    }
+
+    /* with the table gone, let the title/meta block shrink so a long title or tag
+       name can't hold the row open and push its action button off-screen */
+    .gh-post-list-title-content {
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    /* wrap (and break long unbroken tokens like a numeric tag) rather than run off
+       the side, so nothing in the row can extend past the viewport */
+    .gh-post-list-title-content .gh-content-entry-title,
+    .gh-post-list-title-content .gh-content-entry-meta {
+        overflow-wrap: anywhere;
     }
 }
 

@@ -3,7 +3,7 @@ import sinon from 'sinon';
 import windowProxy from 'ghost-admin/utils/window-proxy';
 import {authenticateSession, invalidateSession} from 'ember-simple-auth/test-support';
 import {beforeEach, describe, it} from 'mocha';
-import {blur, click, currentURL, fillIn, find, findAll, triggerEvent, triggerKeyEvent, visit} from '@ember/test-helpers';
+import {blur, click, currentURL, fillIn, find, findAll, settled, triggerEvent, triggerKeyEvent, visit} from '@ember/test-helpers';
 import {clickTrigger, selectChoose, selectSearch} from 'ember-power-select/test-support/helpers';
 import {expect} from 'chai';
 import {setupApplicationTest} from 'ember-mocha';
@@ -395,6 +395,95 @@ describe('Acceptance: Posts / Pages', function () {
                         expect(posts.length, 'all posts count').to.equal(5);
                         let [lastRequest] = this.server.pretender.handledRequests.slice(-1);
                         expect(lastRequest.url, 'request url').to.match(new RegExp(`/posts/${publishedPost.id}/copy/`));
+                    });
+
+                    it('opens the context menu via long-press and keeps it open on release', async function () {
+                        await visit('/posts');
+
+                        const post = find(`[data-test-post-id="${publishedPost.id}"]`);
+                        expect(post, 'post').to.exist;
+
+                        // touch devices have no contextmenu gesture, so a long-press opens the menu
+                        await triggerEvent(post, 'touchstart', {touches: [{clientX: 10, clientY: 10}]});
+
+                        // wait for the long-press timer to fire, then let the menu render
+                        await new Promise((resolve) => {
+                            setTimeout(resolve, 700);
+                        });
+                        await settled();
+
+                        expect(find('.gh-posts-context-menu'), 'context menu visible after long-press').to.be.visible;
+
+                        // the browser's own long-press fires a native contextmenu while held; it must not close the menu
+                        await triggerEvent(find('.gh-context-menu-overlay'), 'contextmenu');
+                        expect(find('.gh-posts-context-menu'), 'context menu stays visible while held').to.be.visible;
+
+                        // releasing the long-press fires a synthetic click at the touch point; it must not close the menu
+                        await triggerEvent(post, 'touchend');
+                        await triggerEvent(find('.gh-context-menu-overlay'), 'click', {clientX: 10, clientY: 10});
+                        expect(find('.gh-posts-context-menu'), 'context menu stays visible after release click').to.be.visible;
+
+                        const contextMenu = find('.gh-posts-context-menu');
+                        const buttons = [...contextMenu.querySelectorAll('button')];
+                        const duplicate = buttons.find(button => button.innerText.trim().includes('Duplicate'));
+                        expect(duplicate, 'duplicate button').to.exist;
+
+                        await click(duplicate);
+
+                        const posts = findAll('[data-test-post-id]');
+                        expect(posts.length, 'all posts count').to.equal(5);
+                        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                        expect(lastRequest.url, 'request url').to.match(new RegExp(`/posts/${publishedPost.id}/copy/`));
+                    });
+
+                    it('does not discard a real tap on a menu action after a long-press', async function () {
+                        await visit('/posts');
+
+                        const post = find(`[data-test-post-id="${publishedPost.id}"]`);
+                        expect(post, 'post').to.exist;
+
+                        await triggerEvent(post, 'touchstart', {touches: [{clientX: 10, clientY: 10}]});
+                        await new Promise((resolve) => {
+                            setTimeout(resolve, 700);
+                        });
+                        await settled();
+                        // arm the ghost-click suppressor, but emit no synthetic release click
+                        await triggerEvent(post, 'touchend');
+
+                        // a real tap on a menu action (away from the touch point) must still go through,
+                        // even though the suppressor is armed and no ghost click was consumed
+                        const contextMenu = find('.gh-posts-context-menu');
+                        const buttons = [...contextMenu.querySelectorAll('button')];
+                        const duplicate = buttons.find(button => button.innerText.trim().includes('Duplicate'));
+                        expect(duplicate, 'duplicate button').to.exist;
+
+                        await click(duplicate);
+
+                        const posts = findAll('[data-test-post-id]');
+                        expect(posts.length, 'all posts count').to.equal(5);
+                        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                        expect(lastRequest.url, 'request url').to.match(new RegExp(`/posts/${publishedPost.id}/copy/`));
+                    });
+
+                    it('does not open the context menu when a touch becomes a scroll', async function () {
+                        await visit('/posts');
+
+                        const post = find(`[data-test-post-id="${publishedPost.id}"]`);
+                        expect(post, 'post').to.exist;
+
+                        await triggerEvent(post, 'touchstart', {touches: [{clientX: 10, clientY: 10}]});
+                        // a press that drifts past the threshold is a scroll and cancels the long-press
+                        await triggerEvent(post, 'touchmove', {touches: [{clientX: 10, clientY: 60}]});
+
+                        await new Promise((resolve) => {
+                            setTimeout(resolve, 700);
+                        });
+                        await settled();
+
+                        // the menu markup is always present; open-state lives on the container,
+                        // and the Duplicate action only renders once a row is selected
+                        expect(find('.gh-context-menu-container').getAttribute('data-open'), 'context menu open state').to.not.equal('true');
+                        expect(find('[data-test-post-context-menu] [data-test-button="duplicate"]'), 'duplicate button').to.not.exist;
                     });
 
                     it('can copy a post link', async function () {
