@@ -6,6 +6,9 @@ import {inject as service} from '@ember/service';
 // context menu, since touch devices have no contextmenu gesture of their own.
 const LONG_PRESS_DURATION_MS = 500;
 const LONG_PRESS_MOVE_THRESHOLD_PX = 10;
+// The compatibility "ghost" click fires at the release point; only swallow clicks
+// within this radius of it so a real tap on a menu action is never discarded.
+const GHOST_CLICK_RADIUS_PX = 20;
 
 function clearTextSelection() {
     if (window.getSelection) {
@@ -57,12 +60,18 @@ export default class ItemComponent extends Component {
     // A long-press opens the menu while the finger is still down; on release the browser
     // fires a synthetic "ghost" click that the dropdown service's body-click handler reads
     // as an outside click, closing the menu instantly. Swallow that one click at the
-    // document level (capture phase, before it reaches the overlay or body).
+    // document level (capture phase, before it reaches the overlay or body) — but only when
+    // it lands at the release point, so a real tap on a menu action elsewhere is never
+    // discarded, even if the browser happens not to emit the ghost click.
     suppressGhostClick() {
         this.cancelGhostClickSuppression();
         this.ghostClickHandler = (event) => {
-            event.preventDefault();
-            event.stopPropagation();
+            const isGhostClick = Math.abs(event.clientX - this.touchStartX) <= GHOST_CLICK_RADIUS_PX
+                && Math.abs(event.clientY - this.touchStartY) <= GHOST_CLICK_RADIUS_PX;
+            if (isGhostClick) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
             this.cancelGhostClickSuppression();
         };
         document.addEventListener('click', this.ghostClickHandler, true);

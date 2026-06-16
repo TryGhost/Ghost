@@ -418,11 +418,40 @@ describe('Acceptance: Posts / Pages', function () {
                         await triggerEvent(find('.gh-context-menu-overlay'), 'contextmenu');
                         expect(find('.gh-posts-context-menu'), 'context menu stays visible while held').to.be.visible;
 
-                        // releasing the long-press fires a synthetic click; it must not close the menu either
+                        // releasing the long-press fires a synthetic click at the touch point; it must not close the menu
                         await triggerEvent(post, 'touchend');
-                        await triggerEvent(find('.gh-context-menu-overlay'), 'click');
+                        await triggerEvent(find('.gh-context-menu-overlay'), 'click', {clientX: 10, clientY: 10});
                         expect(find('.gh-posts-context-menu'), 'context menu stays visible after release click').to.be.visible;
 
+                        const contextMenu = find('.gh-posts-context-menu');
+                        const buttons = [...contextMenu.querySelectorAll('button')];
+                        const duplicate = buttons.find(button => button.innerText.trim().includes('Duplicate'));
+                        expect(duplicate, 'duplicate button').to.exist;
+
+                        await click(duplicate);
+
+                        const posts = findAll('[data-test-post-id]');
+                        expect(posts.length, 'all posts count').to.equal(5);
+                        const [lastRequest] = this.server.pretender.handledRequests.slice(-1);
+                        expect(lastRequest.url, 'request url').to.match(new RegExp(`/posts/${publishedPost.id}/copy/`));
+                    });
+
+                    it('does not discard a real tap on a menu action after a long-press', async function () {
+                        await visit('/posts');
+
+                        const post = find(`[data-test-post-id="${publishedPost.id}"]`);
+                        expect(post, 'post').to.exist;
+
+                        await triggerEvent(post, 'touchstart', {touches: [{clientX: 10, clientY: 10}]});
+                        await new Promise((resolve) => {
+                            setTimeout(resolve, 700);
+                        });
+                        await settled();
+                        // arm the ghost-click suppressor, but emit no synthetic release click
+                        await triggerEvent(post, 'touchend');
+
+                        // a real tap on a menu action (away from the touch point) must still go through,
+                        // even though the suppressor is armed and no ghost click was consumed
                         const contextMenu = find('.gh-posts-context-menu');
                         const buttons = [...contextMenu.querySelectorAll('button')];
                         const duplicate = buttons.find(button => button.innerText.trim().includes('Duplicate'));
