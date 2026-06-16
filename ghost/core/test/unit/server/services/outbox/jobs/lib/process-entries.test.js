@@ -1,12 +1,12 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {captureLoggerOutput, findByEvent} = require('../../../../../../utils/logging-utils');
-const {createProcessEntries} = require('../../../../../../../core/server/services/outbox/jobs/lib/process-entries.js');
+const processEntries = require('../../../../../../../core/server/services/outbox/jobs/lib/process-entries.js');
+const memberCreatedHandler = require('../../../../../../../core/server/services/outbox/handlers/member-created');
 
 const MEMBER_CREATED_EVENT = 'MemberCreatedEvent';
 
 describe('processEntries', function () {
-    let processEntries;
     let handlerStub;
     let dbStub;
     let logCapture;
@@ -27,16 +27,9 @@ describe('processEntries', function () {
 
     beforeEach(function () {
         handlerStub = {
-            handle: sinon.stub().resolves(),
-            getLogInfo: sinon.stub().returns('test@example.com'),
-            LOG_KEY: '[OUTBOX][MEMBER-WELCOME-EMAIL]'
+            handle: sinon.stub(memberCreatedHandler, 'handle').resolves(),
+            getLogInfo: sinon.stub(memberCreatedHandler, 'getLogInfo').returns('test@example.com')
         };
-
-        processEntries = createProcessEntries({
-            eventHandlers: {
-                [MEMBER_CREATED_EVENT]: handlerStub
-            }
-        });
 
         dbStub = createDbStub();
 
