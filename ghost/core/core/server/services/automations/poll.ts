@@ -4,7 +4,7 @@ import errors from '@tryghost/errors';
 import {MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
 // @ts-expect-error Models currently lack type definitions.
-import {Member} from '../../models';
+import {AutomatedEmailRecipient, Member} from '../../models';
 
 type MemberWelcomeEmailService = {
     init: () => unknown;
@@ -166,6 +166,24 @@ const processStep = async ({
                 },
                 memberStatus
             });
+            try {
+                await AutomatedEmailRecipient.add({
+                    member_id: step.member_id,
+                    member_uuid: member.get('uuid'),
+                    member_email: member.get('email'),
+                    member_name: member.get('name'),
+                    automation_action_revision_id: step.automation_action_revision_id
+                });
+            } catch (err) {
+                logging.error({
+                    err,
+                    system: {
+                        event: 'automations.poll.recipient_persistence_failed',
+                        member_id: step.member_id,
+                        step_id: step.id
+                    }
+                }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
+            }
             nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
             break;
         }

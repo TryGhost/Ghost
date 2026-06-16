@@ -1052,7 +1052,8 @@ module.exports = class EventRepository {
         options = {
             ...options,
             withRelated: ['member', 'automatedEmail.automation'],
-            filter: 'custom:true',
+            // TODO(NY-1338): Handle rows where automated_email_id is null.
+            filter: 'automated_email_id:-null+custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
                 replaceCustomFilterTransformer(filter),
