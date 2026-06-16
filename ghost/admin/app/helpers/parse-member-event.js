@@ -22,15 +22,6 @@ export default class ParseMemberEventHelper extends Helper {
         return trimmed || null;
     }
 
-    truncateString(value, maxLength = 60) {
-        const trimmed = this.trimString(value);
-        if (!trimmed || trimmed.length <= maxLength) {
-            return trimmed;
-        }
-
-        return `${trimmed.slice(0, maxLength - 3)}...`;
-    }
-
     compute([event, hasMultipleNewsletters]) {
         let memberName = event.data.member?.name;
         memberName = this.trimString(memberName);
@@ -41,7 +32,6 @@ export default class ParseMemberEventHelper extends Helper {
         const actionTitle = this.getActionTitle(event, hasMultipleNewsletters);
         const info = this.getInfo(event);
         const description = this.getDescription(event);
-        const descriptionTitle = this.getDescriptionTitle(event);
 
         const join = this.getJoin(event);
         const object = this.getObject(event);
@@ -70,7 +60,6 @@ export default class ParseMemberEventHelper extends Helper {
             source,
             info,
             description,
-            descriptionTitle,
             url,
             route,
             timestamp
@@ -235,7 +224,7 @@ export default class ParseMemberEventHelper extends Helper {
 
             const subject = this.trimString(event.data.automatedEmail?.subject);
             if (subject) {
-                return `received automated email: ${this.truncateString(subject)}`;
+                return `received automated email: ${subject}`;
             }
 
             return 'received automated email';
@@ -427,12 +416,6 @@ export default class ParseMemberEventHelper extends Helper {
             return event.data.link.to;
         }
         return;
-    }
-
-    getDescriptionTitle(event) {
-        if (event.type === 'automated_email_sent_event') {
-            return;
-        }
     }
 
     /**

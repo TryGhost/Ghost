@@ -58,7 +58,6 @@ describe('Unit: Helper: parse-member-event', function () {
             expect(result.actionTitle).to.equal('received welcome email (Paid)');
             expect(result.info).to.equal(undefined);
             expect(result.description).to.equal(undefined);
-            expect(result.descriptionTitle).to.equal(undefined);
         });
 
         it('returns the email subject inline for automation action revision rows', function () {
@@ -78,10 +77,9 @@ describe('Unit: Helper: parse-member-event', function () {
             expect(result.actionTitle).to.equal('received automated email: Here is how to get started');
             expect(result.info).to.equal(undefined);
             expect(result.description).to.equal(undefined);
-            expect(result.descriptionTitle).to.equal(undefined);
         });
 
-        it('truncates long automation email subjects inline and keeps the full title', function () {
+        it('returns long automation email subjects inline for CSS truncation', function () {
             const subject = 'This is a very long automated email subject that should be truncated in the activity feed';
             const event = buildEvent({
                 type: 'automated_email_sent_event',
@@ -95,7 +93,7 @@ describe('Unit: Helper: parse-member-event', function () {
                 }
             });
             const result = helper.compute([event]);
-            expect(result.action).to.equal('received automated email: This is a very long automated email subject that should be...');
+            expect(result.action).to.equal(`received automated email: ${subject}`);
             expect(result.actionTitle).to.equal(`received automated email: ${subject}`);
         });
 
@@ -115,7 +113,6 @@ describe('Unit: Helper: parse-member-event', function () {
             expect(result.action).to.equal('received automated email');
             expect(result.actionTitle).to.equal('received automated email');
             expect(result.description).to.equal(undefined);
-            expect(result.descriptionTitle).to.equal(undefined);
         });
     });
 

@@ -39,7 +39,7 @@
                     </span>
                     {{#if event.description}}
                         <div class="ghost-members-activity-event-description feature-memberAttribution">
-                            <div class="ghost-members-activity-event-url" title={{event.descriptionTitle}} {{on "mouseenter" this.enterLinkURL}} {{on "mouseleave" this.leaveLinkURL}}>
+                            <div class="ghost-members-activity-event-url" {{on "mouseenter" this.enterLinkURL}} {{on "mouseleave" this.leaveLinkURL}}>
                                 <span>{{event.description}}</span>
                             </div>
                         </div>
