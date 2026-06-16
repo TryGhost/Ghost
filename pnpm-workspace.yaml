@@ -206,3 +206,5 @@ minimumReleaseAgeExclude:
   - "knex-migrator"
   # Renovate security update: file-type@21.3.1 || 21.3.2
   - file-type@21.3.1 || 21.3.2
+  # Renovate security update: esbuild@0.28.1
+  - esbuild@0.28.1
