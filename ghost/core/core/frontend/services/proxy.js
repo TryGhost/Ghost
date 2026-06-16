@@ -26,7 +26,6 @@ module.exports = {
      * Section two: data manipulation
      * Stuff that modifies API data (SDK layer)
      */
-    metaData: require('../meta'),
     socialUrls: require('@tryghost/social-urls'),
     blogIcon: require('../../server/lib/image').blogIcon,
     // Used by router service and {{get}} helper to prepare data for optimal usage in themes
