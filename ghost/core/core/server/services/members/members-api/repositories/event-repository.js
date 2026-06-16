@@ -3,6 +3,7 @@ const nql = require('@tryghost/nql');
 const mingo = require('mingo');
 const {replaceFilters, expandFilters, splitFilter, getUsedKeys, chainTransformers, mapKeys, rejectStatements} = require('@tryghost/mongo-utils');
 const {default: ObjectID} = require('bson-objectid');
+const db = require('../../../../data/db');
 
 /**
  * This mongo transformer ignores the provided filter option and replaces the filter with a custom filter that was provided to the transformer. Allowing us to set a mongo filter instead of a string based NQL filter.
@@ -35,7 +36,8 @@ module.exports = class EventRepository {
         memberAttributionService,
         MemberEmailChangeEvent,
         AutomatedEmailRecipient,
-        Gift
+        Gift,
+        knex
     }) {
         this._DonationPaymentEvent = DonationPaymentEvent;
         this._MemberSubscribeEvent = MemberSubscribeEvent;
@@ -55,6 +57,7 @@ module.exports = class EventRepository {
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
         this._AutomatedEmailRecipient = AutomatedEmailRecipient;
         this._Gift = Gift;
+        this._knex = knex || db.knex;
     }
 
     async getEventTimeline(options = {}) {
@@ -1051,9 +1054,8 @@ module.exports = class EventRepository {
     async getAutomatedEmailSentEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'automatedEmail.automation'],
-            // TODO(NY-1338): Handle rows where automated_email_id is null.
-            filter: 'automated_email_id:-null+custom:true',
+            withRelated: ['member'],
+            filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
                 replaceCustomFilterTransformer(filter),
@@ -1065,18 +1067,19 @@ module.exports = class EventRepository {
         };
 
         const {data: models, meta} = await this._AutomatedEmailRecipient.findPage(options);
+        const {
+            automatedEmailLabels,
+            automationActionRevisionLabels
+        } = await this.getAutomatedEmailSentEventLabels(models);
 
         const data = models.map((model) => {
-            const automatedEmail = model.related('automatedEmail');
-            if (!automatedEmail || !automatedEmail.id) {
-                // TODO(NY-1334) This won't necessarily be an error in the future.
-                throw new errors.InternalServerError({
-                    message: `Automated email recipient ${model.id} has no associated automated email`
-                });
-            }
+            const automatedEmailId = model.get('automated_email_id');
+            const automationActionRevisionId = model.get('automation_action_revision_id');
+            const automatedEmail = automatedEmailId
+                ? automatedEmailLabels.get(automatedEmailId)
+                : automationActionRevisionLabels.get(automationActionRevisionId);
 
-            const automation = automatedEmail.related('automation');
-            if (!automation || !automation.id) {
+            if (!automatedEmail) {
                 throw new errors.InternalServerError({
                     message: `Automated email recipient ${model.id} has no associated automation`
                 });
@@ -1090,8 +1093,11 @@ module.exports = class EventRepository {
                     created_at: model.get('created_at'),
                     member: model.related('member').toJSON(),
                     automatedEmail: {
-                        id: automatedEmail.id,
-                        slug: automation.get('slug')
+                        id: automatedEmailId || automationActionRevisionId,
+                        source: automatedEmailId ? 'automated_email' : 'automation_action_revision',
+                        slug: automatedEmail.slug,
+                        name: automatedEmail.name,
+                        subject: automatedEmail.subject
                     }
                 }
             };
@@ -1100,6 +1106,38 @@ module.exports = class EventRepository {
         return {
             data,
             meta
+        };
+    }
+
+    async getAutomatedEmailSentEventLabels(models) {
+        const automatedEmailIds = [...new Set(models.map(model => model.get('automated_email_id')).filter(Boolean))];
+        const automationActionRevisionIds = [...new Set(models.map(model => model.get('automation_action_revision_id')).filter(Boolean))];
+
+        const [automatedEmailRows, automationActionRevisionRows] = await Promise.all([
+            automatedEmailIds.length ? this._knex('welcome_email_automated_emails as email')
+                .select(
+                    'email.id as id',
+                    'automation.slug as slug',
+                    'automation.name as name',
+                    'email.subject as subject'
+                )
+                .innerJoin('automations as automation', 'automation.id', 'email.welcome_email_automation_id')
+                .whereIn('email.id', automatedEmailIds) : [],
+            automationActionRevisionIds.length ? this._knex('automation_action_revisions as revision')
+                .select(
+                    'revision.id as id',
+                    'automation.slug as slug',
+                    'automation.name as name',
+                    'revision.email_subject as subject'
+                )
+                .innerJoin('automation_actions as action', 'action.id', 'revision.action_id')
+                .innerJoin('automations as automation', 'automation.id', 'action.automation_id')
+                .whereIn('revision.id', automationActionRevisionIds) : []
+        ]);
+
+        return {
+            automatedEmailLabels: new Map(automatedEmailRows.map(row => [row.id, row])),
+            automationActionRevisionLabels: new Map(automationActionRevisionRows.map(row => [row.id, row]))
         };
     }
 

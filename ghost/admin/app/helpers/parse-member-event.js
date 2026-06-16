@@ -22,6 +22,15 @@ export default class ParseMemberEventHelper extends Helper {
         return trimmed || null;
     }
 
+    truncateString(value, maxLength = 60) {
+        const trimmed = this.trimString(value);
+        if (!trimmed || trimmed.length <= maxLength) {
+            return trimmed;
+        }
+
+        return `${trimmed.slice(0, maxLength - 3)}...`;
+    }
+
     compute([event, hasMultipleNewsletters]) {
         let memberName = event.data.member?.name;
         memberName = this.trimString(memberName);
@@ -29,8 +38,10 @@ export default class ParseMemberEventHelper extends Helper {
         const subject = event.data.member ? (memberName || event.data.member.email) : (event.data.name || event.data.email || '');
         const icon = this.getIcon(event);
         const action = this.getAction(event, hasMultipleNewsletters);
+        const actionTitle = this.getActionTitle(event, hasMultipleNewsletters);
         const info = this.getInfo(event);
         const description = this.getDescription(event);
+        const descriptionTitle = this.getDescriptionTitle(event);
 
         const join = this.getJoin(event);
         const object = this.getObject(event);
@@ -53,11 +64,13 @@ export default class ParseMemberEventHelper extends Helper {
             icon,
             subject,
             action,
+            actionTitle,
             join,
             object,
             source,
             info,
             description,
+            descriptionTitle,
             url,
             route,
             timestamp
@@ -214,9 +227,18 @@ export default class ParseMemberEventHelper extends Helper {
         }
 
         if (event.type === 'automated_email_sent_event') {
-            const slug = event.data.automatedEmail?.slug || '';
-            const emailType = slug.includes('paid') ? 'Paid' : 'Free';
-            return `received welcome email (${emailType})`;
+            if (event.data.automatedEmail?.source !== 'automation_action_revision') {
+                const slug = event.data.automatedEmail?.slug || '';
+                const emailType = slug.includes('paid') ? 'Paid' : 'Free';
+                return `received welcome email (${emailType})`;
+            }
+
+            const subject = this.trimString(event.data.automatedEmail?.subject);
+            if (subject) {
+                return `received automated email: ${this.truncateString(subject)}`;
+            }
+
+            return 'received automated email';
         }
 
         if (event.type === 'email_delivered_event') {
@@ -284,6 +306,17 @@ export default class ParseMemberEventHelper extends Helper {
         if (event.type === 'gift_ended_event') {
             return 'gift subscription expired';
         }
+    }
+
+    getActionTitle(event, hasMultipleNewsletters) {
+        if (event.type === 'automated_email_sent_event' && event.data.automatedEmail?.source === 'automation_action_revision') {
+            const subject = this.trimString(event.data.automatedEmail?.subject);
+            if (subject) {
+                return `received automated email: ${subject}`;
+            }
+        }
+
+        return this.getAction(event, hasMultipleNewsletters);
     }
 
     /**
@@ -372,10 +405,18 @@ export default class ParseMemberEventHelper extends Helper {
             return event.data.tier_name;
         }
 
+        if (event.type === 'automated_email_sent_event') {
+            return;
+        }
+
         return;
     }
 
     getDescription(event) {
+        if (event.type === 'automated_email_sent_event') {
+            return;
+        }
+
         if (event.type === 'click_event') {
             // Clean URL
             try {
@@ -386,6 +427,12 @@ export default class ParseMemberEventHelper extends Helper {
             return event.data.link.to;
         }
         return;
+    }
+
+    getDescriptionTitle(event) {
+        if (event.type === 'automated_email_sent_event') {
+            return;
+        }
     }
 
     /**
