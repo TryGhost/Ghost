@@ -1,15 +1,30 @@
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
-import {Button, ConfirmationModal, SettingGroupHeader, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import useStaffUsers from '../../../hooks/use-staff-users';
+import {Button, ConfirmationModal, ListItem, SettingGroupHeader, showToast, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
 import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
+import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
+import {useResetAuth} from '@tryghost/admin-x-framework/api/security';
 
 const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {mutateAsync: deleteAllContent} = useDeleteAllContent();
+    const {mutateAsync: resetAuth} = useResetAuth();
     const client = useQueryClient();
     const handleError = useHandleError();
+    const {config} = useGlobalData();
+    const {totalUsers} = useStaffUsers();
+
+    const resetAuthEnabled = Boolean(config?.labs?.dangerZoneResetAuth);
+
+    const resetAuthStaffSentence = totalUsers === 1
+        ? 'You will be signed out and must reset your password before signing back in.'
+        : totalUsers > 1
+            ? `All ${totalUsers} staff users, including you, will be signed out and must reset their password before signing back in.`
+            : 'All staff users, including you, will be signed out and must reset their password before signing back in.';
 
     const handleDeleteAllContent = () => {
         NiceModal.show(ConfirmationModal, {
@@ -33,17 +48,67 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
         });
     };
 
+    const handleResetAuth = () => {
+        NiceModal.show(ConfirmationModal, {
+            title: 'Reset all authentication?',
+            prompt: (
+                <>
+                    <p className='mb-4'>
+                        This rotates every API key on your site. Any integration using one will stop working until you reconfigure it with the new key from <strong>Settings → Advanced → Integrations</strong>.
+                    </p>
+                    <p>
+                        {resetAuthStaffSentence} Your members aren&apos;t affected.
+                    </p>
+                </>
+            ),
+            okLabel: 'Reset all authentication',
+            okRunningLabel: 'Resetting...',
+            okColor: 'red',
+            onOk: async (modal) => {
+                try {
+                    const response = await resetAuth(null);
+                    const result = response?.security_action?.[0];
+                    const keys = result?.api_keys_rotated ?? 0;
+                    const users = result?.users_locked ?? 0;
+                    showToast({
+                        title: `Rotated ${keys} API ${keys === 1 ? 'key' : 'keys'} and locked ${users} ${users === 1 ? 'user' : 'users'}. You will be signed out shortly.`,
+                        type: 'success'
+                    });
+                    modal?.remove();
+                    window.location.href = getGhostPaths().adminRoot;
+                } catch (e) {
+                    handleError(e);
+                }
+            }
+        });
+    };
+
     return (
         <TopLevelGroup
             customHeader={
-                <SettingGroupHeader description='Permanently delete all posts and tags from the database, a hard reset' title='Danger zone' />
+                <SettingGroupHeader description='Destructive actions that affect your entire site.' title='Danger zone' />
             }
             keywords={keywords}
             navid='dangerzone'
             testId='dangerzone'
         >
-            <div>
-                <Button color='red' label='Delete all content' onClick={handleDeleteAllContent} />
+            <div className='flex flex-col'>
+                <ListItem
+                    action={<Button aria-label='Delete all content' color='red' label='Delete' onClick={handleDeleteAllContent} />}
+                    bgOnHover={false}
+                    detail='Permanently delete all posts and tags from the database.'
+                    testId='delete-all-content'
+                    title='Delete all content'
+                />
+                {resetAuthEnabled && (
+                    <ListItem
+                        action={<Button aria-label='Reset all authentication' color='red' label='Reset' onClick={handleResetAuth} />}
+                        bgOnHover={false}
+                        detail='Rotate every API key, sign out every staff user, and require a password reset. Use after a suspected credential compromise.'
+                        testId='reset-all-authentication'
+                        title='Reset all authentication'
+                    />
+                )}
             </div>
         </TopLevelGroup>
     );

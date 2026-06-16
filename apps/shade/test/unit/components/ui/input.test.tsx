@@ -7,7 +7,7 @@ import {render} from '../../utils/test-utils';
 
 describe('Input Component', () => {
     it('renders correctly with default props', () => {
-        render(<Input placeholder="Enter text" data-testid="input" />);
+        render(<Input data-testid="input" placeholder="Enter text" />);
         const input = screen.getByTestId('input');
         
         assert.ok(input, 'Input should be rendered');
@@ -23,7 +23,7 @@ describe('Input Component', () => {
 
     it('handles input changes', () => {
         const handleChange = vi.fn();
-        render(<Input onChange={handleChange} data-testid="input" />);
+        render(<Input data-testid="input" onChange={handleChange} />);
         
         const input = screen.getByTestId('input');
         fireEvent.change(input, {target: {value: 'test value'}});
@@ -32,7 +32,7 @@ describe('Input Component', () => {
     });
 
     it('renders disabled state correctly', () => {
-        render(<Input disabled data-testid="input" />);
+        render(<Input data-testid="input" disabled />);
         const input = screen.getByTestId('input');
         
         assert.ok(input.hasAttribute('disabled'), 'Input should be disabled');
@@ -40,7 +40,7 @@ describe('Input Component', () => {
     });
 
     it('passes type attribute correctly', () => {
-        render(<Input type="password" data-testid="input" />);
+        render(<Input data-testid="input" type="password" />);
         const input = screen.getByTestId('input');
         
         assert.equal(input.getAttribute('type'), 'password', 'Should have correct type attribute');

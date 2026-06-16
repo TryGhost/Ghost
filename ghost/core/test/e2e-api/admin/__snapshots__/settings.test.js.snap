@@ -93,6 +93,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": null,
     },
@@ -314,7 +318,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -593,6 +597,10 @@ Object {
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -984,6 +992,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -1205,7 +1217,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -1430,6 +1442,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -1651,7 +1667,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -1787,7 +1803,7 @@ exports[`Settings API Edit can edit Stripe settings when Stripe Connect limit is
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "5343",
+  "content-length": "5449",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -1919,6 +1935,10 @@ Object {
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -2142,7 +2162,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -2366,6 +2386,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -2587,7 +2611,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -2814,6 +2838,10 @@ Object {
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -3294,6 +3322,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -3515,7 +3547,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -3740,6 +3772,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -3961,7 +3997,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -4186,6 +4222,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -4407,7 +4447,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -4636,6 +4676,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -4857,7 +4901,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -5081,6 +5125,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -5302,7 +5350,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -5531,6 +5579,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -5752,7 +5804,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -5978,6 +6030,10 @@ Object {
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -6365,6 +6421,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -6586,7 +6646,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -6811,6 +6871,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -7032,7 +7096,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -7257,6 +7321,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -7479,7 +7547,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -7704,6 +7772,10 @@ Object {
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
     },
     Object {
+      "key": "llms_enabled",
+      "value": true,
+    },
+    Object {
       "key": "meta_title",
       "value": "SEO title",
     },
@@ -7926,7 +7998,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",
@@ -8079,6 +8151,42 @@ Object {
 }
 `;
 
+exports[`Settings API publicSiteAccess limit rejects external attempts to change the access code 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Site visibility and access code cannot be changed.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Permission error, cannot edit setting.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
+exports[`Settings API publicSiteAccess limit rejects external attempts to set is_private = false 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": "Site visibility and access code cannot be changed.",
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Permission error, cannot edit setting.",
+      "property": null,
+      "type": "NoPermissionError",
+    },
+  ],
+}
+`;
+
 exports[`Settings API stripe connect Can attempt to connect to stripe 1: [body] 1`] = `
 Object {
   "errors": Array [
@@ -8212,6 +8320,10 @@ Object {
     Object {
       "key": "secondary_navigation",
       "value": "[{\\"label\\":\\"Data & privacy\\",\\"url\\":\\"/privacy/\\"},{\\"label\\":\\"Contact\\",\\"url\\":\\"/contact/\\"},{\\"label\\":\\"Contribute →\\",\\"url\\":\\"/contribute/\\"}]",
+    },
+    Object {
+      "key": "llms_enabled",
+      "value": true,
     },
     Object {
       "key": "meta_title",
@@ -8435,7 +8547,7 @@ Object {
     },
     Object {
       "key": "comments_enabled",
-      "value": "off",
+      "value": "all",
     },
     Object {
       "key": "outbound_link_tagging",

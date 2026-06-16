@@ -549,6 +549,21 @@ describe('PaidAccountActions', () => {
             expect(container.querySelector('[data-test-button="change-plan"]')).not.toBeInTheDocument();
         });
 
+        test('renders nothing for a gift member when Stripe is disconnected', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({
+                products,
+                portalProducts: products.map(p => p.id),
+                paidMembersEnabled: false
+            });
+            const member = buildGiftMember({tierId: products[0].id});
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="continue-gift-subscription"]')).not.toBeInTheDocument();
+            expect(container.querySelector('[data-test-button="change-plan"]')).not.toBeInTheDocument();
+        });
+
         test('renders "Change" for a gift member when the tier has been archived', () => {
             // Archived tier = tier id absent from site.products
             const {site} = buildPaidSite();
@@ -670,6 +685,71 @@ describe('PaidAccountActions', () => {
 
             expect(container.querySelector('[data-test-button="change-plan"]')).not.toBeInTheDocument();
             expect(container.querySelector('[data-test-button="continue-gift-subscription"]')).not.toBeInTheDocument();
+            expect(container.querySelector('[data-test-button="manage-billing"]')).not.toBeInTheDocument();
+        });
+    });
+
+    describe('Billing section', () => {
+        test('renders for a regular paid member', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month'
+                    })
+                ]
+            });
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="manage-billing"]')).toBeInTheDocument();
+        });
+
+        test('does not render for a gift member', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const member = getMemberData({
+                paid: true,
+                status: 'gift',
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 0,
+                        currency: 'USD',
+                        interval: 'month',
+                        tier: {id: products[0].id, expiry_at: new Date('2099-01-01T12:00:00.000Z')}
+                    })
+                ]
+            });
+
+            const {container} = setup({site, member});
+
+            expect(container.querySelector('[data-test-button="manage-billing"]')).not.toBeInTheDocument();
+        });
+
+        test('does not render for a complimentary member', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const member = getMemberData({
+                paid: true,
+                status: 'comped',
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 0,
+                        currency: 'USD',
+                        interval: 'month'
+                    })
+                ]
+            });
+
+            const {container} = setup({site, member});
+
             expect(container.querySelector('[data-test-button="manage-billing"]')).not.toBeInTheDocument();
         });
     });

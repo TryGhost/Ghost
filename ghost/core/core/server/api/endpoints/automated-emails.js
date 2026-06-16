@@ -9,14 +9,15 @@ const messages = {
 };
 
 // NOTE: This file is in a transitionary state. The `automated_emails` database table was split into
-// `welcome_email_automations` (automation metadata: status, name, slug) and
-// `welcome_email_automated_emails` (email content: subject, lexical, sender fields). This controller
+// `automations` (automation metadata: status, name, slug) and
+// `welcome_email_automated_emails` (email content: subject, lexical). This controller
 // acts as a facade that joins/splits data between those two models while preserving the original
 // `automated_emails` API shape externally.
 const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
-const EMAIL_FIELDS = ['subject', 'lexical', 'sender_name', 'sender_email', 'sender_reply_to', 'email_design_setting_id'];
+const EMAIL_FIELDS = ['subject', 'lexical', 'email_design_setting_id'];
+const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
 
-function flattenAutomation(automation, email = automation.related('welcomeEmailAutomatedEmail')) {
+function flattenAutomation(automation, email = automation.related('welcomeEmailAutomatedEmail'), designSettings = email.related('emailDesignSetting')) {
     const result = {
         id: automation.id,
         status: automation.get('status'),
@@ -24,14 +25,27 @@ function flattenAutomation(automation, email = automation.related('welcomeEmailA
         slug: automation.get('slug'),
         subject: email.get('subject'),
         lexical: email.get('lexical'),
-        sender_name: email.get('sender_name'),
-        sender_email: email.get('sender_email'),
-        sender_reply_to: email.get('sender_reply_to'),
+        sender_name: designSettings?.get('sender_name') || null,
+        sender_email: designSettings?.get('sender_email') || null,
+        sender_reply_to: designSettings?.get('sender_reply_to') || null,
         email_design_setting_id: email.get('email_design_setting_id'),
         created_at: automation.get('created_at'),
         updated_at: automation.get('updated_at')
     };
     return result;
+}
+
+async function updateEmailDesignSenderFields(email, senderData, options) {
+    const id = email.get('email_design_setting_id');
+
+    if (Object.keys(senderData).length > 0) {
+        return models.EmailDesignSetting.edit(senderData, {
+            ...options,
+            id
+        });
+    }
+
+    return models.EmailDesignSetting.findOne({id}, options);
 }
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -51,9 +65,9 @@ const controller = {
         ],
         permissions: true,
         async query(frame) {
-            const result = await models.WelcomeEmailAutomation.findPage({
+            const result = await models.Automation.findPage({
                 ...frame.options,
-                withRelated: ['welcomeEmailAutomatedEmail']
+                withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
             });
             return {
                 ...result,
@@ -75,9 +89,9 @@ const controller = {
         ],
         permissions: true,
         async query(frame) {
-            const model = await models.WelcomeEmailAutomation.findOne(frame.data, {
+            const model = await models.Automation.findOne(frame.data, {
                 ...frame.options,
-                withRelated: ['welcomeEmailAutomatedEmail']
+                withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
             });
             if (!model) {
                 throw new errors.NotFoundError({
@@ -99,10 +113,11 @@ const controller = {
             const data = frame.data.automated_emails[0];
 
             const emailData = _.pick(data, EMAIL_FIELDS);
+            const senderData = _.pick(data, SENDER_FIELDS);
             const automationData = _.pick(data, AUTOMATION_FIELDS);
 
             return models.Base.transaction(async (transacting) => {
-                const automation = await models.WelcomeEmailAutomation.add(automationData, {...frame.options, transacting});
+                const automation = await models.Automation.add(automationData, {...frame.options, transacting});
                 const email = await models.WelcomeEmailAutomatedEmail.add(
                     {
                         ...emailData,
@@ -111,7 +126,8 @@ const controller = {
                     },
                     {...frame.options, transacting}
                 );
-                return flattenAutomation(automation, email);
+                const designSettings = await updateEmailDesignSenderFields(email, senderData, {...frame.options, transacting});
+                return flattenAutomation(automation, email, designSettings);
             });
         }
     },
@@ -136,12 +152,13 @@ const controller = {
             const data = frame.data.automated_emails[0];
 
             const emailData = _.pick(data, EMAIL_FIELDS);
+            const senderData = _.pick(data, SENDER_FIELDS);
             const automationData = _.pick(data, AUTOMATION_FIELDS);
 
             return models.Base.transaction(async (transacting) => {
-                let automation = await models.WelcomeEmailAutomation.findOne({id: frame.options.id}, {
+                let automation = await models.Automation.findOne({id: frame.options.id}, {
                     transacting,
-                    withRelated: ['welcomeEmailAutomatedEmail']
+                    withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
                 });
                 if (!automation) {
                     throw new errors.NotFoundError({
@@ -158,14 +175,20 @@ const controller = {
                     });
                 }
 
+                const designSettings = await updateEmailDesignSenderFields(
+                    email,
+                    senderData,
+                    {...frame.options, transacting}
+                );
+
                 if (Object.keys(automationData).length > 0) {
-                    automation = await models.WelcomeEmailAutomation.edit(automationData, {
+                    automation = await models.Automation.edit(automationData, {
                         ...frame.options,
                         transacting
                     });
                 }
 
-                return flattenAutomation(automation, email);
+                return flattenAutomation(automation, email, designSettings);
             });
         }
     },

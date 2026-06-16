@@ -68,7 +68,11 @@ const usePublishedPageValueSource = createGhostBrowseValueSource<Page, PagesResp
 
 const useCombinedPostResourceValueSource = createCombinedValueSource(
     usePublishedPostValueSource,
-    usePublishedPageValueSource
+    usePublishedPageValueSource,
+    value => ({
+        value,
+        label: `ID: ${value}`
+    })
 );
 
 export function usePostResourceValueSource(): ValueSource<string> {

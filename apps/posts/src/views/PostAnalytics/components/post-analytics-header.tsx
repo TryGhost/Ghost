@@ -3,7 +3,7 @@ import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, A
 import {H1} from '@tryghost/shade/primitives';
 import {LucideIcon, formatDisplayDate, formatDisplayTime, formatNumber} from '@tryghost/shade/utils';
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
-import {PostShareModal} from '@tryghost/shade/patterns';
+import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
@@ -92,7 +92,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     className='relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pt-8 pb-0'
                     data-header='header'
                 >
-                    <div className='flex w-full flex-col gap-5'>
+                    <div className='flex w-full flex-col gap-6'>
                         <div className='flex w-full flex-col justify-between md:flex-row md:items-center'>
                             <Breadcrumb>
                                 <BreadcrumbList>
@@ -116,9 +116,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                             </Breadcrumb>
                             <div className='flex w-full items-center gap-2 md:w-auto'>
                                 {appSettings?.analytics.webAnalytics && !post?.email_only && (
-                                    <div className='mr-3 flex grow items-center gap-2 text-sm md:grow-0'>
-                                        <div className='flex items-center gap-2 text-sm text-muted-foreground' title='Active readers in the last 5 minutes · Updates every 60 seconds'>
-                                            <span className='text-sm'>
+                                    <div className='mr-3 flex grow items-center gap-2 md:grow-0'>
+                                        <div className='flex items-center gap-2 text-muted-foreground' title='Active readers in the last 5 minutes · Updates every 60 seconds'>
+                                            <span>
                                                 {isActiveVisitorsLoading ? '' : formatNumber(activeVisitors)} reading now
                                             </span>
                                             <div className={`size-2 rounded-full ${isActiveVisitorsLoading ? 'animate-pulse bg-muted' : activeVisitors ? 'bg-green-500' : 'border border-muted-foreground'}`}></div>
@@ -190,11 +190,11 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 }}></div>
                             }
                             <div>
-                                <H1 className='-ml-px max-w-[920px] indent-0 text-xl md:min-h-[35px] md:text-3xl md:leading-[1.2em]' data-header='header-title'>
+                                <H1 className='-ml-px max-w-[920px] indent-0 !text-xl md:leading-[1.2em]' data-header='header-title'>
                                     {post?.title}
                                 </H1>
                                 {post?.published_at && (
-                                    <div className='mt-0.5 flex items-center justify-start text-sm leading-[1.65em] text-muted-foreground'>
+                                    <div className='mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground'>
                                         {isEmailOnly(post) && `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                                         {isPublishedOnly(post) && `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                                         {isPublishedAndEmailed(post) && `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
@@ -213,7 +213,6 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                             <PageMenuItem value="Overview" onClick={() => {
                                 navigate(`/posts/analytics/${postId}`);
                             }}>
-                                <LucideIcon.Gauge />
                                 Overview
                             </PageMenuItem>
                         )}
@@ -221,7 +220,6 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                             <PageMenuItem value="Web" onClick={() => {
                                 navigate(`/posts/analytics/${postId}/web`);
                             }}>
-                                <LucideIcon.Globe />
                                 Web traffic
                             </PageMenuItem>
                         )}
@@ -229,7 +227,6 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                             <PageMenuItem value="Newsletter" onClick={() => {
                                 navigate(`/posts/analytics/${postId}/newsletter`);
                             }}>
-                                <LucideIcon.Mail />
                                 Newsletter
                             </PageMenuItem>
                         )}
@@ -237,7 +234,6 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                             <PageMenuItem value="Growth" onClick={() => {
                                 navigate(`/posts/analytics/${postId}/growth`);
                             }}>
-                                <LucideIcon.Sprout />
                                 Growth
                             </PageMenuItem>
                         )}

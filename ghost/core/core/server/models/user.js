@@ -61,6 +61,7 @@ User = ghostBookshelf.Model.extend({
 
     defaults: function defaults() {
         return {
+            // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
             password: security.identifier.uid(50),
             visibility: 'public',
             status: 'active',
@@ -72,7 +73,7 @@ User = ghostBookshelf.Model.extend({
             recommendation_notifications: true,
             milestone_notifications: true,
             donation_notifications: true,
-            gift_subscription_purchase_notification: true
+            gift_subscription_notifications: true
         };
     },
 
@@ -108,6 +109,18 @@ User = ghostBookshelf.Model.extend({
         return attrs;
     },
 
+    filterRelations: function filterRelations() {
+        return {
+            roles: {
+                tableName: 'roles',
+                type: 'manyToMany',
+                joinTable: 'roles_users',
+                joinFrom: 'user_id',
+                joinTo: 'role_id'
+            }
+        };
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'user' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
@@ -128,17 +141,19 @@ User = ghostBookshelf.Model.extend({
     },
 
     onDestroyed: function onDestroyed(model, options) {
-        ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
 
         if (activeStates.includes(model.previous('status'))) {
             model.emitChange('deactivated', options);
         }
 
         model.emitChange('deleted', options);
+
+        return result;
     },
 
     onCreated: function onCreated(model, options) {
-        ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
         model.emitChange('added', options);
 
@@ -146,10 +161,12 @@ User = ghostBookshelf.Model.extend({
         if (!model.get('status') || activeStates.includes(model.get('status'))) {
             model.emitChange('activated', options);
         }
+
+        return result;
     },
 
     onUpdated: function onUpdated(model, options) {
-        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
 
         model.statusChanging = model.get('status') !== model.previous('status');
         model.isActive = activeStates.includes(model.get('status'));
@@ -163,6 +180,8 @@ User = ghostBookshelf.Model.extend({
         }
 
         model.emitChange('edited', options);
+
+        return result;
     },
 
     isActive: function isActive() {
@@ -171,6 +190,24 @@ User = ghostBookshelf.Model.extend({
 
     isLocked: function isLocked() {
         return this.get('status') === 'locked';
+    },
+
+    /**
+     * Replace this user's password with an opaque random value, and mark
+     * them as locked unless they are already inactive (suspended). Suspended
+     * users must not be transitioned out of `inactive` — they retain the
+     * suspended-signin path — but their password is still rotated so a
+     * compromised credential cannot survive a future unsuspend.
+     */
+    lock: function lock(options) {
+        const update = {
+            // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
+            password: security.identifier.uid(50)
+        };
+        if (this.get('status') !== 'inactive') {
+            update.status = 'locked';
+        }
+        return this.save(update, {...options, patch: true});
     },
 
     isInactive: function isInactive() {
@@ -513,8 +550,8 @@ User = ghostBookshelf.Model.extend({
             filter += '+donation_notifications:true';
         } else if (type === 'recommendation-received') {
             filter += '+recommendation_notifications:true';
-        } else if (type === 'gift-subscription-purchased') {
-            filter += '+gift_subscription_purchase_notification:true';
+        } else if (type === 'gift-subscriptions') {
+            filter += '+gift_subscription_notifications:true';
         }
         const updatedOptions = Object.assign({}, options, {filter, withRelated: ['roles']});
         return this.findAll(updatedOptions).then((users) => {

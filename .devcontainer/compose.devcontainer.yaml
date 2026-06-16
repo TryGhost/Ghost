@@ -48,4 +48,5 @@ services:
       SIGNUP_DEV_SERVER: ghost-dev:6174
       SEARCH_DEV_SERVER: ghost-dev:4178
       ANNOUNCEMENT_DEV_SERVER: ghost-dev:4177
+      ADMIN_TOOLBAR_DEV_SERVER: ghost-dev:4176
       LEXICAL_DEV_SERVER: ghost-dev:4173

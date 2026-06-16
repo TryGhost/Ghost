@@ -1,8 +1,7 @@
 import moment from 'moment-timezone';
 
+import {Avatar, TableCell, TableRow} from '@tryghost/shade/components';
 import {Member} from '@tryghost/admin-x-framework/api/members';
-import {MemberAvatar} from '@components/member-avatar';
-import {TableCell, TableRow} from '@tryghost/shade/components';
 import {buildMemberDetailPath} from '../member-detail-hash';
 import {cn} from '@tryghost/shade/utils';
 import {getActiveColumnValue} from '../member-query-params';
@@ -72,12 +71,11 @@ function openMemberInNewTab(memberId: string, backPath?: string) {
 function MembersListItemName({item, backPath, onClick}: { item: Member; backPath?: string; onClick?: (memberId: string) => void }) {
     return (
         <div className="flex min-w-0 items-center gap-3">
-            <MemberAvatar
-                avatarImage={item.avatar_image}
-                className="size-10 min-w-10 md:size-10 md:min-w-10"
-                memberEmail={item.email}
-                memberId={item.id}
-                memberName={item.name}
+            <Avatar
+                className="size-8 min-w-8"
+                email={item.email}
+                name={item.name}
+                src={item.avatar_image}
             />
             <div className="min-w-0">
                 <a
@@ -93,13 +91,13 @@ function MembersListItemName({item, backPath, onClick}: { item: Member; backPath
                         onClick(item.id);
                     } : undefined}
                 >
-                    <span className="block truncate font-medium">
+                    <span className="block truncate text-md font-semibold">
                         {item.name || item.email || 'Anonymous'}
                     </span>
                 </a>
                 {item.name && item.email && (
                     <div
-                        className="truncate text-sm text-muted-foreground"
+                        className="truncate text-muted-foreground"
                         data-testid="member-email"
                     >
                         {item.email}
@@ -121,9 +119,9 @@ function MembersListItemStatus({
     return (
         <div className="flex min-w-0 justify-start">
             <div className="min-w-0">
-                <div className="truncate text-sm">{getStatusLabel(status)}</div>
+                <div className="truncate">{getStatusLabel(status)}</div>
                 {tierNames && (
-                    <div className="truncate text-xs text-muted-foreground">
+                    <div className="truncate text-sm text-muted-foreground">
                         {tierNames}
                     </div>
                 )}
@@ -140,7 +138,7 @@ function MembersListItemOpenRate({
     const isKnown = emailOpenRate !== null && emailOpenRate !== undefined;
     return (
         <div
-            className={cn('text-sm', isKnown ? 'text-foreground' : 'text-muted-foreground')}
+            className={cn('text-base', isKnown ? 'text-foreground' : 'text-muted-foreground')}
         >
             {isKnown ? `${Math.round(emailOpenRate)}%` : 'N/A'}
         </div>
@@ -156,7 +154,7 @@ function MembersListItemLocation({
 
     return (
         <div
-            className={cn('truncate text-sm', location.isKnown ? 'text-foreground' : 'text-muted-foreground')}
+            className={cn('truncate text-base', location.isKnown ? 'text-foreground' : 'text-muted-foreground')}
         >
             {location.text}
         </div>
@@ -166,10 +164,10 @@ function MembersListItemLocation({
 function MembersListItemCreated({createdAt}: { createdAt: string }) {
     return (
         <div>
-            <div className="text-sm">
+            <div className="text-base">
                 {moment.utc(createdAt).format('D MMM YYYY')}
             </div>
-            <div className="text-xs text-muted-foreground">
+            <div className="text-base text-muted-foreground">
                 {moment.utc(createdAt).fromNow()}
             </div>
         </div>
@@ -189,15 +187,15 @@ function MembersListItemDynamicColumn({
 
     if (!value) {
         return (
-            <span className="text-sm text-muted-foreground">-</span>
+            <span className="text-base text-muted-foreground">-</span>
         );
     }
 
     return (
         <div className="min-w-0">
-            <div className="truncate text-sm">{value.text}</div>
+            <div className="truncate text-base">{value.text}</div>
             {value.subtext && (
-                <div className="truncate text-xs text-muted-foreground">
+                <div className="truncate text-base text-muted-foreground">
                     {value.subtext}
                 </div>
             )}
@@ -231,7 +229,7 @@ function MembersListItem({
 }: MembersListItemProps &
     Omit<React.HTMLAttributes<HTMLTableRowElement>, 'onClick'>) {
     const memberCellStyle = {
-        '--members-sticky-hover-bg': 'color-mix(in hsl, var(--muted) 50%, var(--background))'
+        '--members-sticky-hover-bg': 'color-mix(in oklab, var(--muted) 50%, var(--background))'
     } as CSSProperties;
     const handleRowClick = (event: React.MouseEvent<HTMLTableRowElement>) => {
         if (isModifiedClick(event)) {

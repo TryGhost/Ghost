@@ -80,23 +80,28 @@ export function buildThreadLink(searchParams: URLSearchParams, commentId: string
 
 interface CommentMetricsProps {
     comment: Comment;
+    dislikesEnabled: boolean;
     className?: string;
 }
 
 export function CommentMetrics({
     comment,
+    dislikesEnabled,
     className
 }: CommentMetricsProps) {
     const [searchParams] = useSearchParams();
     const [likesModalOpen, setLikesModalOpen] = useState(false);
+    const [likesModalDefaultTab, setLikesModalDefaultTab] = useState<'likes' | 'dislikes'>('likes');
     const [reportsModalOpen, setReportsModalOpen] = useState(false);
     const repliesLink = buildThreadLink(searchParams, comment.id);
 
-    const repliesCount = comment.count?.direct_replies ?? comment.count?.replies ?? comment.replies?.length ?? 0; // TODO: remove replies fallback once backend is fully rolled out
+    const repliesCount = comment.count?.direct_replies ?? comment.replies?.length ?? 0;
     const likesCount = comment.count?.likes ?? 0;
+    const dislikesCount = dislikesEnabled ? (comment.count?.dislikes ?? 0) : 0;
     const reportsCount = comment.count?.reports ?? 0;
     const hasReplies = repliesCount > 0;
     const hasLikes = likesCount > 0;
+    const hasDislikes = dislikesCount > 0;
     const hasReports = reportsCount > 0;
 
     return (
@@ -109,12 +114,37 @@ export function CommentMetrics({
                     testId="replies-metric"
                     to={hasReplies ? repliesLink : undefined}
                 />
-                <Metric
-                    count={likesCount}
-                    icon={<LucideIcon.Heart size={16} strokeWidth={1.5} />}
-                    label="Likes"
-                    onClick={hasLikes ? () => setLikesModalOpen(true) : undefined}
-                />
+                {dislikesEnabled ? (
+                    <div className="flex items-center gap-3">
+                        <Metric
+                            count={likesCount}
+                            icon={<LucideIcon.ThumbsUp size={16} strokeWidth={1.5} />}
+                            label="Likes"
+                            testId="likes-metric"
+                            onClick={hasLikes ? () => {
+                                setLikesModalDefaultTab('likes');
+                                setLikesModalOpen(true);
+                            } : undefined}
+                        />
+                        <Metric
+                            count={dislikesCount}
+                            icon={<LucideIcon.ThumbsDown size={16} strokeWidth={1.5} />}
+                            label="Dislikes"
+                            testId="dislikes-metric"
+                            onClick={hasDislikes ? () => {
+                                setLikesModalDefaultTab('dislikes');
+                                setLikesModalOpen(true);
+                            } : undefined}
+                        />
+                    </div>
+                ) : (
+                    <Metric
+                        count={likesCount}
+                        icon={<LucideIcon.Heart size={16} strokeWidth={1.5} />}
+                        label="Likes"
+                        onClick={hasLikes ? () => setLikesModalOpen(true) : undefined}
+                    />
+                )}
                 <Metric
                     className={hasReports ? 'font-semibold text-red' : undefined}
                     count={reportsCount}
@@ -125,6 +155,8 @@ export function CommentMetrics({
             </div>
             <CommentLikesModal
                 comment={comment}
+                defaultTab={likesModalDefaultTab}
+                dislikesEnabled={dislikesEnabled}
                 open={likesModalOpen}
                 onOpenChange={setLikesModalOpen}
             />

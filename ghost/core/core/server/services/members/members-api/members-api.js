@@ -19,6 +19,7 @@ const WellKnownController = require('./controllers/well-known-controller');
 const {EmailSuppressedEvent} = require('../../email-suppression-list/email-suppression-list');
 const MagicLink = require('../../lib/magic-link/magic-link');
 const DomainEvents = require('@tryghost/domain-events');
+const automationsApi = require('../../automations/automations-api');
 
 module.exports = function MembersAPI({
     tokenConfig: {
@@ -65,7 +66,7 @@ module.exports = function MembersAPI({
         Comment,
         MemberFeedback,
         Outbox,
-        WelcomeEmailAutomation,
+        Automation,
         WelcomeEmailAutomationRun,
         AutomatedEmailRecipient,
         Gift
@@ -104,7 +105,8 @@ module.exports = function MembersAPI({
         tokenService,
         newslettersService,
         productRepository,
-        WelcomeEmailAutomation,
+        automationsApi,
+        Automation,
         WelcomeEmailAutomationRun,
         Member,
         MemberNewsletter,
@@ -268,8 +270,6 @@ module.exports = function MembersAPI({
             return null;
         }
 
-        const giftSubscriptionsEnabled = labsService.isSet('giftSubscriptions');
-
         let member = oldEmail ? await getMemberIdentityData(oldEmail) : await getMemberIdentityData(email);
 
         if (member) {
@@ -280,7 +280,7 @@ module.exports = function MembersAPI({
                 return getMemberIdentityData(email);
             }
 
-            if (giftToken && giftSubscriptionsEnabled) {
+            if (giftToken) {
                 await giftService.service.redeem(giftToken, member.id);
             }
 
@@ -308,7 +308,7 @@ module.exports = function MembersAPI({
 
         let newMember;
 
-        if (giftToken && giftSubscriptionsEnabled) {
+        if (giftToken) {
             newMember = await Member.transaction(async (transacting) => {
                 const created = await users.create(
                     {name, email, labels, newsletters, attribution, geolocation, status: 'gift'},

@@ -7,15 +7,7 @@ export interface ExportedFile {
     content: string;
 }
 
-export interface MembersListSurface {
-    goto(): Promise<unknown>;
-    openActionsMenu(): Promise<void>;
-    applyLabelFilter(labelName: string): Promise<void>;
-    getVisibleMemberCount(): Promise<number>;
-    exportMembers(): Promise<ExportedFile>;
-}
-
-export class MembersListPage extends AdminPage implements MembersListSurface {
+export class MembersListPage extends AdminPage {
     readonly memberRows: Locator;
     readonly searchInput: Locator;
     readonly actionsButton: Locator;
@@ -24,6 +16,7 @@ export class MembersListPage extends AdminPage implements MembersListSurface {
     readonly clearFiltersButton: Locator;
     readonly emptyState: Locator;
     readonly addYourselfButton: Locator;
+    readonly importCsvLink: Locator;
     readonly noResults: Locator;
     readonly showAllButton: Locator;
 
@@ -38,7 +31,8 @@ export class MembersListPage extends AdminPage implements MembersListSurface {
         this.filterButton = page.getByRole('button', {name: /^(Filter|Add filter)$/});
         this.clearFiltersButton = page.getByRole('button', {name: 'Clear'});
         this.emptyState = page.getByText('Start building your audience');
-        this.addYourselfButton = page.getByRole('button', {name: 'Add yourself as a member to test'});
+        this.addYourselfButton = page.getByRole('button', {name: 'Add yourself as a member'});
+        this.importCsvLink = page.getByRole('link', {name: 'Import with CSV'});
         this.noResults = page.getByText('No matching members found.');
         this.showAllButton = page.getByRole('button', {name: 'Show all members'});
     }
@@ -132,8 +126,12 @@ export class MembersListPage extends AdminPage implements MembersListSurface {
         await this.page.getByRole('option', {name: new RegExp(String.raw`^${escaped}\b`)}).click();
     }
 
+    get multiselectSearchInput(): Locator {
+        return this.page.locator('[cmdk-input]');
+    }
+
     async searchMultiselectOptions(query: string): Promise<void> {
-        await this.page.locator('[cmdk-input]').fill(query);
+        await this.multiselectSearchInput.fill(query);
     }
 
     get editLabelInput(): Locator {

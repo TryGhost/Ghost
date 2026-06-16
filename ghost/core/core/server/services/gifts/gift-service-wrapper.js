@@ -4,15 +4,10 @@
  */
 
 /**
- * @typedef {object} SchedulerIntegration
- * @prop {Array<{id: string; secret: string}>} api_keys
- */
-
-/**
  * @typedef {object} InitOptions
  * @prop {string} [apiUrl]
  * @prop {SchedulerAdapter} [schedulerAdapter]
- * @prop {SchedulerIntegration} [schedulerIntegration]
+ * @prop {import('../internal-keys').InternalKeys} [internalKeys]
  */
 
 class GiftServiceWrapper {
@@ -31,12 +26,12 @@ class GiftServiceWrapper {
         const {Gift: GiftModel} = require('../../models');
         const {GiftBookshelfRepository} = require('./gift-bookshelf-repository');
         const {GiftService} = require('./gift-service');
+        const {GiftReminderScheduler} = require('./gift-reminder-scheduler');
         const {GiftEmailService} = require('./gift-email-service');
         const {GiftController} = require('./gift-controller');
         const membersService = require('../members');
         const tiersService = require('../tiers');
         const staffService = require('../staff');
-        const labsService = require('../../../shared/labs');
         const DomainEvents = require('@tryghost/domain-events');
         const logging = require('@tryghost/logging');
         const {SubscriptionActivatedEvent} = require('../../../shared/events');
@@ -50,7 +45,7 @@ class GiftServiceWrapper {
         const settingsHelpers = require('../settings-helpers');
         const EmailAddressParser = require('../email-address/email-address-parser');
         const {blogIcon} = require('../../../server/lib/image');
-        const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
+        const {t} = require('../i18n');
 
         const repository = new GiftBookshelfRepository({
             GiftModel
@@ -61,7 +56,15 @@ class GiftServiceWrapper {
             settingsCache,
             urlUtils,
             getFromAddress: () => EmailAddressParser.stringify(settingsHelpers.getDefaultEmail()),
-            blogIcon
+            blogIcon,
+            t
+        });
+
+        const giftReminderScheduler = new GiftReminderScheduler({
+            apiUrl: options.apiUrl,
+            adapter: options.schedulerAdapter,
+            internalKeys: options.internalKeys,
+            findUnsentReminders: () => repository.findUnsentReminders()
         });
 
         this.service = new GiftService({
@@ -74,17 +77,12 @@ class GiftServiceWrapper {
             get staffServiceEmails() {
                 return staffService.api.emails;
             },
-            schedulerAdapter: options.schedulerAdapter ?? null,
-            schedulerIntegration: options.schedulerIntegration ?? null,
-            getSignedAdminToken,
-            urlJoin: urlUtils.urlJoin.bind(urlUtils),
-            apiUrl: options.apiUrl ?? null
+            giftReminderScheduler
         });
 
         this.controller = new GiftController({
             service: this.service,
-            tiersService,
-            labsService: labsService
+            tiersService
         });
 
         DomainEvents.subscribe(SubscriptionActivatedEvent, async (event) => {
@@ -132,10 +130,8 @@ class GiftServiceWrapper {
             }
         });
 
-        if (labsService.isSet('giftSubscriptions')) {
-            jobs.scheduleGiftCleanupJob();
-            jobs.scheduleGiftReminderJob();
-        }
+        jobs.scheduleGiftCleanupJob();
+        jobs.scheduleGiftReminderJob();
 
         this.#initialized = true;
     }

@@ -213,7 +213,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
         if (siteLink) {
             viewSiteButton = (
                 <div className='ml-3 border-l border-grey-400 dark:border-grey-800'>
-                    <a className='ml-3 flex items-center gap-1 text-sm' href={siteLink} rel="noopener noreferrer" target="_blank">View site <Icon name='arrow-top-right' size='xs' /></a>
+                    <a className='ml-3 flex items-center gap-1' href={siteLink} rel="noopener noreferrer" target="_blank">View site <Icon name='arrow-top-right' size='xs' /></a>
                 </div>
             );
         }
@@ -229,7 +229,7 @@ export const PreviewModalContent: React.FC<PreviewModalProps> = ({
                         {viewSiteButton}
                     </div>}
                 </header>}
-                <div className='flex grow items-center justify-center text-sm text-grey-400'>
+                <div className='flex grow items-center justify-center text-grey-400'>
                     {preview}
                 </div>
             </div>

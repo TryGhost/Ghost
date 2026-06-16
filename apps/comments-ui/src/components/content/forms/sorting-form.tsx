@@ -1,16 +1,22 @@
+import ChevronIcon from '../../../images/icons/chevron-down.svg?react';
 import React, {useEffect, useRef, useState} from 'react';
-import {ReactComponent as ChevronIcon} from '../../../images/icons/chevron-down.svg';
 import {useAppContext, useOrderChange} from '../../../app-context';
 
 export const SortingForm: React.FC = () => {
-    const {t} = useAppContext();
+    const {order, t} = useAppContext();
     const changeOrder = useOrderChange();
     const [isOpen, setIsOpen] = useState(false);
-    const [selectedOption, setSelectedOption] = useState('count__likes desc, created_at desc');
+    const [selectedOption, setSelectedOption] = useState(order);
     const dropdownRef = useRef<HTMLDivElement>(null);
+    const bestOrder = 'count__net_score desc, created_at desc';
+
+    useEffect(() => {
+        const isBestOrder = order === 'count__likes desc, created_at desc' || order === 'count__net_score desc, created_at desc';
+        setSelectedOption(isBestOrder ? bestOrder : order);
+    }, [order]);
 
     const options = [
-        {value: 'count__likes desc, created_at desc', label: t('Best')},
+        {value: bestOrder, label: t('Best')},
         {value: 'created_at desc', label: t('Newest')},
         {value: 'created_at asc', label: t('Oldest')}
     ];

@@ -42,6 +42,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -67,6 +68,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -99,6 +101,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -124,6 +127,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "This is my custom excerpt!",
         "feature_image": "https://example.com/super_photo.jpg",
@@ -137,6 +141,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -162,6 +167,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -194,6 +200,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -219,6 +226,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -251,6 +259,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -276,6 +285,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -308,6 +318,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -333,6 +344,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -348,6 +360,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -373,6 +386,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -405,6 +419,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -430,6 +445,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -462,6 +478,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
         "reports": Any<Number>,
@@ -495,9 +512,11 @@ Object {
         "in_reply_to_snippet": null,
         "member": null,
         "parent_id": Nullable<StringMatching>,
+        "pinned": false,
         "status": "deleted",
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -530,6 +549,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -555,6 +575,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -587,6 +608,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -612,6 +634,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -627,6 +650,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -652,6 +676,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -684,6 +709,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
         "reports": Any<Number>,
@@ -717,9 +743,11 @@ Object {
         "in_reply_to_snippet": null,
         "member": null,
         "parent_id": Nullable<StringMatching>,
+        "pinned": false,
         "status": "published",
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -735,6 +763,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -760,6 +789,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -792,6 +822,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -817,6 +848,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -849,6 +881,7 @@ Object {
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -874,6 +907,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -889,6 +923,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
     Object {
       "count": Object {
         "direct_replies": Any<Number>,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": Any<Number>,
         "reports": Any<Number>,
@@ -914,6 +949,7 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "post": Object {
         "excerpt": "HTML Ipsum Presents
 
@@ -935,6 +971,91 @@ Pellentesque habitant morbi tristique senectus et netus et malesuada fames ac tu
       "pages": 3,
       "prev": null,
       "total": 5,
+    },
+  },
+}
+`;
+
+exports[`Admin Comments API Comment Dislikes Can browse comment dislikes 1: [body] 1`] = `
+Object {
+  "comment_dislikes": Array [
+    Object {
+      "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "member2@test.com",
+        "email_count": 0,
+        "email_disabled": false,
+        "email_open_rate": 50,
+        "email_opened_count": 0,
+        "enable_comment_notifications": true,
+        "expertise": null,
+        "geolocation": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "last_commented_at": Nullable<StringMatching>,
+        "last_seen_at": Nullable<StringMatching>,
+        "name": null,
+        "note": null,
+        "status": "free",
+        "transient_id": Any<String>,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+    Object {
+      "comment_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "member": Object {
+        "avatar_image": null,
+        "can_comment": true,
+        "commenting": Object {
+          "disabled": false,
+          "disabled_reason": null,
+          "disabled_until": null,
+        },
+        "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "email": "paid@test.com",
+        "email_count": 0,
+        "email_disabled": false,
+        "email_open_rate": 80,
+        "email_opened_count": 0,
+        "enable_comment_notifications": true,
+        "expertise": null,
+        "geolocation": null,
+        "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+        "last_commented_at": Nullable<StringMatching>,
+        "last_seen_at": Nullable<StringMatching>,
+        "name": "Egon Spengler",
+        "note": null,
+        "status": "paid",
+        "transient_id": Any<String>,
+        "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+        "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      },
+      "member_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+      "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+    },
+  ],
+  "meta": Object {
+    "pagination": Object {
+      "limit": 15,
+      "next": null,
+      "page": 1,
+      "pages": 1,
+      "prev": null,
+      "total": 2,
     },
   },
 }
@@ -1188,6 +1309,7 @@ Object {
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1202,6 +1324,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [],
       "status": "published",
     },
@@ -1214,7 +1337,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "446",
+  "content-length": "478",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1232,6 +1355,7 @@ Object {
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1246,6 +1370,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [],
       "status": "hidden",
     },
@@ -1258,7 +1383,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "421",
+  "content-length": "453",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1276,6 +1401,7 @@ Object {
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a reply</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1290,6 +1416,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [],
       "status": "published",
     },
@@ -1302,7 +1429,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "462",
+  "content-length": "494",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1320,6 +1447,7 @@ Object {
         "replies": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1334,6 +1462,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [],
       "status": "hidden",
     },
@@ -1346,7 +1475,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "439",
+  "content-length": "471",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1361,7 +1490,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/\\$/,
   "x-powered-by": "Express",
 }
 `;
@@ -1373,7 +1502,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/\\$/,
   "x-powered-by": "Express",
 }
 `;
@@ -1385,7 +1514,7 @@ Object {
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin",
-  "x-cache-invalidate": "/api/members/comments/post/618ba1ffbe2896088840a6e1/",
+  "x-cache-invalidate": StringMatching /\\\\/api\\\\/members\\\\/comments\\\\/post\\\\/\\[0-9a-f\\]\\{24\\}\\\\/, \\\\/api\\\\/members\\\\/comments\\\\/\\[0-9a-f\\]\\{24\\}\\\\/\\$/,
   "x-powered-by": "Express",
 }
 `;
@@ -1396,11 +1525,13 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 3,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 3,
         "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1422,14 +1553,17 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": Any<String>,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1451,15 +1585,18 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": Any<String>,
         },
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": Any<String>,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1481,15 +1618,18 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": Any<String>,
         },
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": Any<Number>,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": Any<String>,
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1511,6 +1651,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": Any<String>,
         },
       ],
@@ -1542,11 +1683,13 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 2,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 2,
         "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "Comment 1",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1568,14 +1711,17 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": 0,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "Reply 2",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1597,15 +1743,18 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": "hidden",
         },
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": 0,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "Reply 3",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1627,6 +1776,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": "published",
         },
       ],
@@ -1668,11 +1818,13 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 2,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 2,
         "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "Comment 1",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1694,14 +1846,17 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": 0,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "Reply 1",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1723,15 +1878,18 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": "hidden",
         },
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": 0,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "Reply 3",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1753,6 +1911,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": "published",
         },
       ],
@@ -1778,11 +1937,13 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 1,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 1,
         "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1804,14 +1965,17 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [
         Object {
           "count": Object {
             "direct_replies": 0,
+            "dislikes": 0,
             "likes": 0,
             "reports": 0,
           },
           "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+          "disliked": false,
           "edited_at": null,
           "html": "Reply 1",
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1833,6 +1997,7 @@ Object {
             "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
           },
           "parent_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
+          "pinned": Any<Boolean>,
           "status": "published",
         },
       ],
@@ -1858,11 +2023,13 @@ Object {
     Object {
       "count": Object {
         "direct_replies": 0,
+        "dislikes": 0,
         "likes": Any<Number>,
         "replies": 0,
         "reports": 0,
       },
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
+      "disliked": false,
       "edited_at": null,
       "html": "<p>This is a comment</p>",
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -1884,6 +2051,7 @@ Object {
         "uuid": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
       },
       "parent_id": Nullable<StringMatching>,
+      "pinned": Any<Boolean>,
       "replies": Array [],
       "status": "published",
     },

@@ -1,9 +1,32 @@
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const {generateGiftPreviewImage} = require('./image');
+const {t} = require('../../services/i18n');
 
 function getCadenceLabel(cadence, duration) {
-    return duration === 1 ? `1 ${cadence}` : `${duration} ${cadence}s`;
+    if (cadence === 'year') {
+        return t('{count} year', {count: duration});
+    }
+
+    return t('{count} month', {count: duration});
+}
+
+function getOgTitle({cadence, duration, tierName, siteTitle}) {
+    if (cadence === 'year') {
+        return t(`You've been gifted a {duration}-year {tierName} membership to {siteTitle}`, {
+            duration,
+            tierName,
+            siteTitle,
+            interpolation: {escapeValue: false}
+        });
+    }
+
+    return t(`You've been gifted a {duration}-month {tierName} membership to {siteTitle}`, {
+        duration,
+        tierName,
+        siteTitle,
+        interpolation: {escapeValue: false}
+    });
 }
 
 function escapeHtml(str) {
@@ -15,21 +38,18 @@ function escapeHtml(str) {
 }
 
 async function giftPreview(req, res) {
-    const labs = require('../../../shared/labs');
     const giftService = require('../../services/gifts').service;
+    const tiersService = require('../../services/tiers');
     const urlUtils = require('../../../shared/url-utils');
     const settingsCache = require('../../../shared/settings-cache');
 
     const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
 
-    if (!labs.isSet('giftSubscriptions')) {
-        return res.redirect(302, siteUrl + '/');
-    }
-
     const {token} = req.params;
     const siteTitle = settingsCache.get('title') || 'Ghost';
 
     let gift;
+    let tier;
 
     try {
         gift = await giftService.getByToken(token);
@@ -37,15 +57,25 @@ async function giftPreview(req, res) {
         if (!gift) {
             throw new errors.NotFoundError({message: `Gift not found for token`});
         }
+
+        tier = await tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.id}`});
+        }
     } catch (err) {
         logging.warn(`Gift preview: failed to load required gift data, redirecting to homepage`, err);
 
         return res.redirect(302, siteUrl + '/');
     }
 
-    const cadenceLabel = getCadenceLabel(gift.cadence, gift.duration);
-    const ogTitle = `You've been gifted ${cadenceLabel} of ${siteTitle}`;
-    const ogDescription = 'Open this link to redeem your gift.';
+    const ogTitle = getOgTitle({
+        cadence: gift.cadence,
+        duration: gift.duration,
+        tierName: tier.name,
+        siteTitle
+    });
+    const ogDescription = t('Open this link to redeem your gift.');
     const ogImage = `${siteUrl}/gift/${encodeURIComponent(token)}/image`;
     const ogUrl = `${siteUrl}/gift/${encodeURIComponent(token)}`;
     const redirectUrl = `${siteUrl}/#/portal/gift/redeem/${encodeURIComponent(token)}`;
@@ -78,7 +108,7 @@ async function giftPreview(req, res) {
 </head>
 <body>
     <script>window.location.replace(${JSON.stringify(redirectUrl)});</script>
-    <noscript><a href="${escapeHtml(redirectUrl)}">Redeem your gift subscription</a></noscript>
+    <noscript><a href="${escapeHtml(redirectUrl)}">${escapeHtml(t('Redeem your gift subscription'))}</a></noscript>
 </body>
 </html>`;
 
@@ -88,17 +118,36 @@ async function giftPreview(req, res) {
 }
 
 async function giftPreviewImage(req, res) {
-    const labs = require('../../../shared/labs');
+    const giftService = require('../../services/gifts').service;
     const settingsCache = require('../../../shared/settings-cache');
-
-    if (!labs.isSet('giftSubscriptions')) {
-        return res.sendStatus(404);
-    }
+    const tiersService = require('../../services/tiers');
 
     const accentColor = settingsCache.get('accent_color') || '#15171A';
+    const siteTitle = settingsCache.get('title') || 'Ghost';
+    const {token} = req.params;
 
     try {
-        const png = await generateGiftPreviewImage({accentColor});
+        const gift = await giftService.getByToken(token);
+
+        if (!gift) {
+            throw new errors.NotFoundError({message: `Gift not found for token`});
+        }
+
+        const tier = await tiersService.api.read(gift.tierId);
+
+        if (!tier) {
+            throw new errors.NotFoundError({message: `Tier not found for gift: ${gift.id}`});
+        }
+
+        const png = await generateGiftPreviewImage({
+            accentColor,
+            siteTitle,
+            tierLabel: t('{tierName} membership', {
+                tierName: tier.name,
+                interpolation: {escapeValue: false}
+            }),
+            cadenceLabel: getCadenceLabel(gift.cadence, gift.duration)
+        });
 
         res.set('Content-Type', 'image/png');
         res.set('Cache-Control', 'public, max-age=86400');

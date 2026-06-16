@@ -1,0 +1,63 @@
+import { Meta } from '@storybook/addon-docs/blocks';
+
+<Meta title="Recipes / Recipes Guide" />
+
+<div className="sb-doc">
+
+# Recipes
+
+<p className="excerpt">Class-string functions for visual rules shared by multiple components. No JSX, no markup, no state — recipes return strings that components splice into `className`.</p>
+
+## Use a recipe when
+
+- The same chrome (border, background, focus ring) appears on **two or more components**.
+- The rule is one coherent concern (chrome, density, focus state) — not a grab bag.
+- The rule is purely visual.
+
+Canonical example: `inputSurface`. The border, background, radius, and focus ring shared by `Input`, `Textarea`, `InputGroup`, and the `Select` trigger.
+
+## Don't
+
+- Pre-extract a recipe for a class string used by only one component.
+- Reach for `React` inside a recipe — that's a component.
+- Hard-code colour or spacing values. Drive styles through semantic tokens so the recipe flips in dark mode.
+
+## Shape every recipe follows
+
+```ts
+import {cn} from '@/lib/utils';
+
+export const recipeClasses = {
+    base: '...',
+    stateA: '...',
+    stateB: '...'
+} as const;
+
+export function recipe(mode: 'a' | 'b' = 'a') {
+    return cn(recipeClasses.base, mode === 'a' ? recipeClasses.stateA : recipeClasses.stateB);
+}
+```
+
+Function for the easy path, atoms (the `as const` object) for unusual cases where consumers need to compose a subset. Tokens everywhere underneath.
+
+Full rules: [Layers](?path=/docs/overview-layers--docs). Agent rules: `apps/shade/AGENTS.md`.
+
+## Example
+
+```tsx
+import {cn} from '@/lib/utils';
+import {inputSurface, inputSurfaceClasses} from './input-surface';
+
+// Common case — call the function
+<input className={cn(inputSurface('self'), 'h-9 px-3 text-sm')} />
+
+// Edge case — compose atoms statically so Tailwind can detect them
+<div className={cn(
+    inputSurfaceClasses.base,
+    inputSurfaceClasses.invalidWithin
+)} />
+```
+
+Browse the sidebar for the live list of recipes.
+
+</div>

@@ -135,7 +135,6 @@ describe('Gift Subscriptions', function () {
     beforeEach(function () {
         mockManager.mockStripe();
         mockManager.mockMail();
-        mockManager.mockLabsEnabled('giftSubscriptions');
     });
 
     afterEach(async function () {
@@ -334,12 +333,6 @@ describe('Gift Subscriptions', function () {
             });
 
             assert.equal(gifts.length, 1, 'Should have exactly one gift record');
-        });
-
-        it('Rejects purchase when labs flag is disabled', async function () {
-            mockManager.mockLabsDisabled('giftSubscriptions');
-
-            await expectGiftCheckoutError();
         });
 
         it('Rejects purchase with an offer', async function () {
@@ -636,7 +629,7 @@ describe('Gift Subscriptions', function () {
 
                 // Verify staff notification email was sent
                 mockManager.assert.sentEmail({
-                    subject: /paid subscription started/i,
+                    subject: /gift subscription redeemed/i,
                     to: 'jbloggs@example.com'
                 });
             });
@@ -760,7 +753,7 @@ describe('Gift Subscriptions', function () {
                             {slug: 'default-automated-email'},
                             {require: true}
                         );
-                        freeWelcomeAutomation = await models.WelcomeEmailAutomation.add({
+                        freeWelcomeAutomation = await models.Automation.add({
                             name: 'Free welcome email',
                             slug: 'member-welcome-email-free',
                             status: 'active'
@@ -772,7 +765,7 @@ describe('Gift Subscriptions', function () {
                             lexical: JSON.stringify({root: {children: [{type: 'paragraph', children: [{text: 'Welcome'}]}]}}),
                             email_design_setting_id: emailDesignSetting.id
                         });
-                        paidWelcomeAutomation = await models.WelcomeEmailAutomation.add({
+                        paidWelcomeAutomation = await models.Automation.add({
                             name: 'Paid welcome email',
                             slug: 'member-welcome-email-paid',
                             status: 'active'
@@ -832,10 +825,10 @@ describe('Gift Subscriptions', function () {
                             'Should enqueue the paid welcome email automation, not the free one'
                         );
 
-                        // Verify gift subscription started staff notification was sent,
+                        // Verify gift subscription redeemed staff notification was sent,
                         // and that no other unwanted staff notifications were sent (i.e. no "Free member signup" email)
                         mockManager.assert.sentEmail({
-                            subject: /paid subscription started/i,
+                            subject: /gift subscription redeemed/i,
                             to: 'jbloggs@example.com'
                         });
                         mockManager.assert.sentEmailCount(1);
@@ -862,7 +855,7 @@ describe('Gift Subscriptions', function () {
                             for (const run of runs.models) {
                                 await models.WelcomeEmailAutomationRun.destroy({id: run.id});
                             }
-                            await models.WelcomeEmailAutomation.destroy({id: automation.id});
+                            await models.Automation.destroy({id: automation.id});
                         }
                     }
                 });
@@ -892,7 +885,7 @@ describe('Gift Subscriptions', function () {
                             {slug: 'default-automated-email'},
                             {require: true}
                         );
-                        freeWelcomeAutomation = await models.WelcomeEmailAutomation.add({
+                        freeWelcomeAutomation = await models.Automation.add({
                             name: 'Free welcome email',
                             slug: 'member-welcome-email-free',
                             status: 'active'
@@ -904,7 +897,7 @@ describe('Gift Subscriptions', function () {
                             lexical: JSON.stringify({root: {children: [{type: 'paragraph', children: [{text: 'Welcome'}]}]}}),
                             email_design_setting_id: emailDesignSetting.id
                         });
-                        paidWelcomeAutomation = await models.WelcomeEmailAutomation.add({
+                        paidWelcomeAutomation = await models.Automation.add({
                             name: 'Paid welcome email',
                             slug: 'member-welcome-email-paid',
                             status: 'active'
@@ -970,9 +963,9 @@ describe('Gift Subscriptions', function () {
                             'Should enqueue the paid welcome email automation, not the free one'
                         );
 
-                        // Verify gift subscription started staff notification was sent
+                        // Verify gift subscription redeemed staff notification was sent
                         mockManager.assert.sentEmail({
-                            subject: /paid subscription started/i,
+                            subject: /gift subscription redeemed/i,
                             to: 'jbloggs@example.com'
                         });
 
@@ -998,7 +991,7 @@ describe('Gift Subscriptions', function () {
                             for (const run of runs.models) {
                                 await models.WelcomeEmailAutomationRun.destroy({id: run.id});
                             }
-                            await models.WelcomeEmailAutomation.destroy({id: automation.id});
+                            await models.Automation.destroy({id: automation.id});
                         }
                     }
                 });
@@ -1178,7 +1171,7 @@ describe('Gift Subscriptions', function () {
                     {slug: 'default-automated-email'},
                     {require: true}
                 );
-                paidWelcomeAutomation = await models.WelcomeEmailAutomation.add({
+                paidWelcomeAutomation = await models.Automation.add({
                     name: 'Paid welcome email',
                     slug: 'member-welcome-email-paid',
                     status: 'active'
@@ -1226,7 +1219,7 @@ describe('Gift Subscriptions', function () {
                     for (const run of runs.models) {
                         await models.WelcomeEmailAutomationRun.destroy({id: run.id});
                     }
-                    await models.WelcomeEmailAutomation.destroy({id: paidWelcomeAutomation.id});
+                    await models.Automation.destroy({id: paidWelcomeAutomation.id});
                 }
             }
         });

@@ -1,4 +1,6 @@
 import AutomationsList from '@src/views/Automations/components/automations-list';
+import React from 'react';
+import {MemoryRouter} from 'react-router';
 import {describe, expect, it} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
@@ -14,29 +16,30 @@ const automations = [{
     status: 'inactive' as const
 }];
 
+const renderWithRouter = (ui: React.ReactElement) => render(<MemoryRouter>{ui}</MemoryRouter>);
+
 describe('AutomationsList', () => {
     it('renders fetched automations with private beta copy and status labels', () => {
-        render(<AutomationsList automations={automations} />);
+        renderWithRouter(<AutomationsList automations={automations} />);
 
-        expect(screen.getByRole('columnheader', {name: 'Automation'})).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', {name: 'Status'})).toBeInTheDocument();
+        expect(screen.getAllByTestId('automation-list-row')).toHaveLength(2);
         expect(screen.getByText('Welcome Email (Free)')).toBeInTheDocument();
         expect(screen.getByText('Onboard new free members with a short welcome email.')).toBeInTheDocument();
         expect(screen.getByText('Welcome Email (Paid)')).toBeInTheDocument();
         expect(screen.getByText('Greet new paid members and point them at member-only content.')).toBeInTheDocument();
-        expect(screen.getByText('LIVE')).toBeInTheDocument();
-        expect(screen.getByText('OFF')).toBeInTheDocument();
+        expect(screen.getByText('Live')).toBeInTheDocument();
+        expect(screen.getByText('Off')).toBeInTheDocument();
     });
 
-    it('links each row to the automation sequence slug', () => {
-        render(<AutomationsList automations={automations} />);
+    it('links each row to the automation sequence by id', () => {
+        renderWithRouter(<AutomationsList automations={automations} />);
 
-        expect(screen.getByRole('link', {name: 'Welcome Email (Free)'})).toHaveAttribute('href', '#/automations/member-welcome-email-free');
-        expect(screen.getByRole('link', {name: 'Welcome Email (Paid)'})).toHaveAttribute('href', '#/automations/member-welcome-email-paid');
+        expect(screen.getByRole('link', {name: 'Welcome Email (Free)'})).toHaveAttribute('href', '/automations/automation-id-1');
+        expect(screen.getByRole('link', {name: 'Welcome Email (Paid)'})).toHaveAttribute('href', '/automations/automation-id-2');
     });
 
     it('renders a table skeleton while loading', () => {
-        render(<AutomationsList isLoading={true} />);
+        renderWithRouter(<AutomationsList isLoading={true} />);
 
         expect(screen.getByTestId('automations-list-loading')).toBeInTheDocument();
     });

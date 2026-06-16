@@ -62,6 +62,12 @@ export function setupAdminAPI({adminUrl}: {adminUrl: string}) {
         async showComment({id} : {id: string}) {
             return await callApi('showComment', {id});
         },
+        async pinComment({id}: {id: string}) {
+            return await callApi('pinComment', {id});
+        },
+        async unpinComment({id}: {id: string}) {
+            return await callApi('unpinComment', {id});
+        },
 
         async browse({page, postId, order, memberUuid}: {page: number, postId: string, order?: string, memberUuid?: string}) {
             let filter = null;

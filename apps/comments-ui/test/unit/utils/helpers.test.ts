@@ -3,7 +3,6 @@ import moment, {DurationInputObject} from 'moment';
 import sinon from 'sinon';
 import {buildAnonymousMember, buildComment, buildDeletedMember} from '../../utils/fixtures';
 
-
 describe('COMMENT_HASH_PREFIX', function () {
     it('exports the correct prefix', function () {
         expect(helpers.COMMENT_HASH_PREFIX).toEqual('ghost-comments-');
@@ -11,29 +10,16 @@ describe('COMMENT_HASH_PREFIX', function () {
 });
 
 describe('buildCommentPermalink', function () {
-    it('builds permalink with hash', function () {
-        expect(helpers.buildCommentPermalink('https://example.com/post', 'abc123'))
-            .toEqual('https://example.com/post#ghost-comments-abc123');
+    it('builds a fragment-only permalink so the browser resolves it against the live page URL', function () {
+        expect(helpers.buildCommentPermalink('abc123'))
+            .toEqual('#ghost-comments-abc123');
     });
+});
 
-    it('removes existing hash from base URL', function () {
-        expect(helpers.buildCommentPermalink('https://example.com/post#existing', 'abc123'))
-            .toEqual('https://example.com/post#ghost-comments-abc123');
-    });
-
-    it('preserves trailing slash in base URL', function () {
-        expect(helpers.buildCommentPermalink('https://example.com/post/', 'abc123'))
-            .toEqual('https://example.com/post/#ghost-comments-abc123');
-    });
-
-    it('handles URL with both trailing slash and hash', function () {
-        expect(helpers.buildCommentPermalink('https://example.com/post/#old-hash', 'abc123'))
-            .toEqual('https://example.com/post/#ghost-comments-abc123');
-    });
-
-    it('handles URL with query parameters', function () {
-        expect(helpers.buildCommentPermalink('https://example.com/post?ref=twitter', 'abc123'))
-            .toEqual('https://example.com/post?ref=twitter#ghost-comments-abc123');
+describe('buildCommentsRootPermalink', function () {
+    it('builds a fragment-only permalink for the comments root', function () {
+        expect(helpers.buildCommentsRootPermalink())
+            .toEqual('#ghost-comments');
     });
 });
 

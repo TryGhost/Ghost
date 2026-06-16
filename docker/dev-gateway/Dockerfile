@@ -1,4 +1,4 @@
-FROM caddy:2-alpine@sha256:fce4f15aad23222c0ac78a1220adf63bae7b94355d5ea28eee53910624acedfa
+FROM caddy:2-alpine@sha256:77c07d5ebfa5be9fd6c820d2094ae662c9e7eeb9bf98346b7f639900263ee2a2
 
 RUN caddy add-package github.com/caddyserver/transform-encoder
 
@@ -11,6 +11,7 @@ ENV GHOST_BACKEND=ghost-dev:2368 \
     SIGNUP_DEV_SERVER=host.docker.internal:6174 \
     SEARCH_DEV_SERVER=host.docker.internal:4178 \
     ANNOUNCEMENT_DEV_SERVER=host.docker.internal:4177 \
+    ADMIN_TOOLBAR_DEV_SERVER=host.docker.internal:4176 \
     LEXICAL_DEV_SERVER=host.docker.internal:4173 \
     ANALYTICS_PROXY_TARGET=analytics:3000 \
     ACTIVITYPUB_PROXY_TARGET=host.docker.internal:8080

@@ -3,7 +3,7 @@ const fetch = require('node-fetch').default;
 const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
 const urlUtils = require('../../core/shared/url-utils');
 const jobService = require('../../core/server/services/jobs/job-service');
-const {anyGhostAgent, anyContentVersion, anyNumber, anyISODateTime, anyObjectId} = matchers;
+const {anyGhostAgent, anyContentVersion, anyContentLength, anyISODateTime, anyObjectId} = matchers;
 const membersEventsService = require('../../core/server/services/members-events');
 
 describe('Click Tracking', function () {
@@ -153,7 +153,7 @@ describe('Click Tracking', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({

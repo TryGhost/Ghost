@@ -19,7 +19,7 @@ const runHelperThunk = data => () => runHelper(data);
 describe('{{navigation}} helper', function () {
     let optionsData;
 
-    before(async function () {
+    beforeAll(async function () {
         hbs.express4({
             partialsDir: [configUtils.config.get('paths').helperTemplates]
         });
@@ -226,7 +226,7 @@ describe('{{navigation}} helper', function () {
 describe('{{navigation}} helper with custom template', function () {
     let optionsData;
 
-    before(async function () {
+    beforeAll(async function () {
         hbs.express4({partialsDir: [path.resolve(__dirname, './test_tpl')]});
 
         const cachePartials = promisify(hbs.cachePartials.bind(hbs));
@@ -311,7 +311,7 @@ describe('{{navigation}} helper with custom template', function () {
             return template;
         }
 
-        before(function () {
+        beforeAll(function () {
             handlebars.registerHelper('link_class', link_class);
             handlebars.registerHelper('concat', concat);
             handlebars.registerHelper('url', concat);

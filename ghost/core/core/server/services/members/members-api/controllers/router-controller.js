@@ -29,7 +29,6 @@ const messages = {
     memberNotFound: 'No member exists with this e-mail address.',
     invalidType: 'Invalid checkout type.',
     notConfigured: 'This site is not accepting payments at the moment.',
-    giftSubscriptionsNotEnabled: 'Gift subscriptions are not enabled on this site.',
     invalidNewsletters: 'Cannot subscribe to invalid newsletters {newsletters}',
     archivedNewsletters: 'Cannot subscribe to archived newsletters {newsletters}',
     otcNotSupported: 'OTC verification not supported.',
@@ -65,6 +64,65 @@ function extractGiftToken(input) {
     return input.trim();
 }
 
+const RESERVED_CHECKOUT_METADATA_KEYS = new Set([
+    'ghost_donation',
+    'ghost_gift',
+    'ghostSignupContext',
+    'gift_token',
+    'tier_id',
+    'cadence',
+    'duration'
+]);
+
+function removeReservedCheckoutMetadata(metadata) {
+    if (!metadata || typeof metadata !== 'object') {
+        return;
+    }
+
+    for (const key of RESERVED_CHECKOUT_METADATA_KEYS) {
+        delete metadata[key];
+    }
+}
+
+/**
+ * Validate that a candidate return URL (e.g. Stripe Checkout success/cancel URL) points back
+ * to the configured Ghost site. Returns `undefined` when the candidate is missing, malformed,
+ * on a different origin, or outside of the site's subpath (for subpath installs) — leaving
+ * the downstream Stripe service to fall back to its configured default URL.
+ *
+ * This prevents the public checkout endpoints being abused as open-redirect surfaces.
+ *
+ * @param {string | undefined} candidate - URL provided in the request body
+ * @param {string} siteUrl - The site URL returned by urlUtils.getSiteUrl()
+ * @returns {string | undefined} The candidate URL if same-origin, otherwise undefined
+ */
+function sanitizeReturnUrl(candidate, siteUrl) {
+    if (typeof candidate !== 'string' || candidate.length === 0) {
+        return undefined;
+    }
+
+    let site;
+    let url;
+
+    try {
+        site = new URL(siteUrl);
+        url = new URL(candidate);
+    } catch {
+        return undefined;
+    }
+
+    if (url.origin !== site.origin) {
+        return undefined;
+    }
+
+    // Normalize site/candidate paths to trailing-slash form so that /blog and /blog/
+    // are treated equivalently when the site is configured at a subpath.
+    const sitePath = site.pathname.endsWith('/') ? site.pathname : `${site.pathname}/`;
+    const urlPath = url.pathname.endsWith('/') ? url.pathname : `${url.pathname}/`;
+
+    return urlPath.startsWith(sitePath) ? url.href : undefined;
+}
+
 module.exports = class RouterController {
     #inboxLinksDnsResolver = new dns.Resolver({maxTimeout: 1000});
 
@@ -78,8 +136,8 @@ module.exports = class RouterController {
      * @param {any} deps.StripePrice
      * @param {() => boolean} deps.allowSelfSignup
      * @param {any} deps.magicLinkService
-     * @param {import('@tryghost/members-stripe-service')} deps.stripeAPIService
-     * @param {import('@tryghost/member-attribution')} deps.memberAttributionService
+     * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
+     * @param {import('../../../member-attribution')} deps.memberAttributionService
      * @param {any} deps.tokenService
      * @param {any} deps.sendEmailWithMagicLink
      * @param {{isSet(name: string): boolean}} deps.labsService
@@ -202,9 +260,10 @@ module.exports = class RouterController {
             customer = await this._stripeAPIService.getCustomer(subscription.get('customer_id'));
         }
 
+        const siteUrl = this._urlUtils.getSiteUrl();
         const session = await this._stripeAPIService.createCheckoutSetupSession(customer, {
-            successUrl: req.body.successUrl,
-            cancelUrl: req.body.cancelUrl,
+            successUrl: sanitizeReturnUrl(req.body.successUrl, siteUrl),
+            cancelUrl: sanitizeReturnUrl(req.body.cancelUrl, siteUrl),
             subscription_id: req.body.subscription_id,
             currency
         });
@@ -267,8 +326,9 @@ module.exports = class RouterController {
 
         const configurationId = this._settingsCache.get('stripe_billing_portal_configuration_id');
 
+        const siteUrl = this._urlUtils.getSiteUrl();
         const session = await this._stripeAPIService.createBillingPortalSession(customer, {
-            returnUrl: req.body.returnUrl,
+            returnUrl: sanitizeReturnUrl(req.body.returnUrl, siteUrl),
             ...(configurationId && {configurationId})
         });
         const sessionInfo = {
@@ -591,7 +651,7 @@ module.exports = class RouterController {
      * @returns
      */
     async _createDonationCheckoutSession(options) {
-        if (!this._paymentsService.stripeAPIService.configured) {
+        if (!this._settingsHelpers.areDonationsEnabled()) {
             throw new DisabledFeatureError({
                 message: tpl(messages.notConfigured)
             });
@@ -624,7 +684,7 @@ module.exports = class RouterController {
      * @returns
      */
     async _createGiftCheckoutSession(options) {
-        if (!this._paymentsService.stripeAPIService.configured) {
+        if (!this._settingsHelpers.arePaidMembersEnabled()) {
             throw new DisabledFeatureError({
                 message: tpl(messages.notConfigured)
             });
@@ -694,10 +754,16 @@ module.exports = class RouterController {
             metadata.newsletters = JSON.stringify(await this._validateNewsletters(JSON.parse(metadata.newsletters)));
         }
 
+        removeReservedCheckoutMetadata(metadata);
+
+        const siteUrl = this._urlUtils.getSiteUrl();
+        const successUrl = sanitizeReturnUrl(req.body.successUrl, siteUrl);
+        const cancelUrl = sanitizeReturnUrl(req.body.cancelUrl, siteUrl);
+
         // Build options
         const options = {
-            successUrl: req.body.successUrl,
-            cancelUrl: req.body.cancelUrl,
+            successUrl,
+            cancelUrl,
             email: req.body.customerEmail,
             member,
             metadata,
@@ -763,12 +829,6 @@ module.exports = class RouterController {
             options.personalNote = parsePersonalNote(req.body.personalNote);
             response = await this._createDonationCheckoutSession(options);
         } else if (type === 'gift') {
-            if (!this.labsService.isSet('giftSubscriptions')) {
-                throw new BadRequestError({
-                    message: tpl(messages.giftSubscriptionsNotEnabled)
-                });
-            }
-
             if (!membersEnabled) {
                 throw new BadRequestError({
                     message: tpl(messages.badRequest)
@@ -788,8 +848,8 @@ module.exports = class RouterController {
                 ...options,
                 ...data,
                 duration: 1, // gifts are currently 1 month or 1 year only
-                successUrl: this._urlUtils.getSiteUrl(),
-                cancelUrl: this._urlUtils.getSiteUrl()
+                successUrl: siteUrl,
+                cancelUrl: options.cancelUrl || siteUrl
             });
         }
 

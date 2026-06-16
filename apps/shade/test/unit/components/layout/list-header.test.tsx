@@ -22,8 +22,8 @@ describe('ListHeader ActionGroup', () => {
     it('renders all actions directly when no mobile menu is provided', () => {
         render(
             <ListHeader.ActionGroup>
-                <button>Search</button>
-                <button>Filter</button>
+                <button type="button">Search</button>
+                <button type="button">Filter</button>
             </ListHeader.ActionGroup>
         );
 
@@ -38,11 +38,11 @@ describe('ListHeader ActionGroup', () => {
     it('renders only the mobile menu trigger in mobile row when no primary action is provided', () => {
         render(
             <ListHeader.ActionGroup mobileMenuBreakpoint={1200}>
-                <button>Search</button>
-                <button>Filter</button>
+                <button type="button">Search</button>
+                <button type="button">Filter</button>
                 <ListHeader.ActionGroup.MobileMenu>
                     <ListHeader.ActionGroup.MobileMenuTrigger>
-                        <button aria-label="Open menu">Menu</button>
+                        <button aria-label="Open menu" type="button">Menu</button>
                     </ListHeader.ActionGroup.MobileMenuTrigger>
                     <ListHeader.ActionGroup.MobileMenuContent>
                         <DropdownMenuItem>Filter</DropdownMenuItem>
@@ -66,14 +66,14 @@ describe('ListHeader ActionGroup', () => {
     it('renders both primary action and mobile menu trigger in mobile row when primary action is provided', () => {
         render(
             <ListHeader.ActionGroup mobileMenuBreakpoint={1200}>
-                <button>Search</button>
-                <button>Filter</button>
+                <button type="button">Search</button>
+                <button type="button">Filter</button>
                 <ListHeader.ActionGroup.Primary>
-                    <button>Add member</button>
+                    <button type="button">Add member</button>
                 </ListHeader.ActionGroup.Primary>
                 <ListHeader.ActionGroup.MobileMenu>
                     <ListHeader.ActionGroup.MobileMenuTrigger>
-                        <button aria-label="Open menu">Menu</button>
+                        <button aria-label="Open menu" type="button">Menu</button>
                     </ListHeader.ActionGroup.MobileMenuTrigger>
                     <ListHeader.ActionGroup.MobileMenuContent>
                         <DropdownMenuItem>Filter</DropdownMenuItem>
@@ -101,14 +101,14 @@ describe('ListHeader ActionGroup', () => {
     it('shows full desktop actions when viewport is above the provided mobile breakpoint', () => {
         render(
             <ListHeader.ActionGroup mobileMenuBreakpoint={900}>
-                <button>Search</button>
-                <button>Filter</button>
+                <button type="button">Search</button>
+                <button type="button">Filter</button>
                 <ListHeader.ActionGroup.Primary>
-                    <button>Add member</button>
+                    <button type="button">Add member</button>
                 </ListHeader.ActionGroup.Primary>
                 <ListHeader.ActionGroup.MobileMenu>
                     <ListHeader.ActionGroup.MobileMenuTrigger>
-                        <button aria-label="Open menu">Menu</button>
+                        <button aria-label="Open menu" type="button">Menu</button>
                     </ListHeader.ActionGroup.MobileMenuTrigger>
                     <ListHeader.ActionGroup.MobileMenuContent>
                         <DropdownMenuItem>Filter</DropdownMenuItem>

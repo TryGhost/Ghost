@@ -8,6 +8,7 @@ const _ = require('lodash');
 const charset = require('charset');
 const iconv = require('iconv-lite');
 const path = require('path');
+const crypto = require('crypto');
 
 // Some sites block non-standard user agents so we need to mimic a typical browser
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
@@ -155,22 +156,14 @@ class OEmbedService {
 
         // Extract file name from URL
         const fileName = path.basename(new URL(imageUrl).pathname);
-        let ext = path.extname(fileName);
-        let name;
+        const ext = path.extname(fileName);
+        const baseName = ext ? path.basename(fileName, ext) : fileName;
+        const name = store.getSanitizedFileName(baseName);
 
-        if (ext) {
-            name = store.getSanitizedFileName(path.basename(fileName, ext));
-        } else {
-            name = store.getSanitizedFileName(path.basename(fileName));
-        }
+        const uniqueFileName = `${name}-${crypto.randomUUID()}${ext}`;
+        const targetPath = path.join(imageType, uniqueFileName);
 
-        let targetDir = path.join(this.config.getContentPath('images'), imageType);
-        const uniqueFilePath = await store.generateUnique(targetDir, name, ext, 0);
-        const targetPath = path.join(imageType, path.basename(uniqueFilePath));
-
-        const imageStoredUrl = await store.saveRaw(imageBuffer, targetPath);
-
-        return imageStoredUrl;
+        return store.saveRaw(imageBuffer, targetPath);
     }
 
     /**
@@ -187,7 +180,7 @@ class OEmbedService {
                     'user-agent': USER_AGENT
                 },
                 timeout: {
-                    request: 2000
+                    request: 5000
                 },
                 followRedirect: true,
                 ...options
@@ -301,6 +294,7 @@ class OEmbedService {
         };
 
         const metascraper = require('metascraper')([
+            require('metascraper-amazon')(),
             require('metascraper-url')(),
             require('metascraper-title')(),
             require('metascraper-description')(),
@@ -471,6 +465,8 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchOembedDataFromUrl(url, type, options = {}) {
+        const {shouldRethrowFetchError, ...fetchOptions} = options;
+
         try {
             const urlObject = new URL(url);
 
@@ -509,7 +505,7 @@ class OEmbedService {
             }
 
             // Not in the list, we need to fetch the content
-            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url, options);
+            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url, fetchOptions);
 
             // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {
@@ -565,6 +561,10 @@ class OEmbedService {
 
             return data;
         } catch (err) {
+            if (shouldRethrowFetchError?.(err)) {
+                throw err;
+            }
+
             // allow specific validation errors through for better error messages
             if (errors.utils.isGhostError(err) && err.errorType === 'ValidationError') {
                 throw err;

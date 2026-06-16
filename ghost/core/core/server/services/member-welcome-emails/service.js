@@ -9,8 +9,7 @@ const emailAddressService = require('../email-address');
 const settingsHelpers = require('../settings-helpers');
 const EmailAddressParser = require('../email-address/email-address-parser');
 const mail = require('../mail');
-// @ts-expect-error type checker has trouble with the dynamic exporting in models
-const {WelcomeEmailAutomation, WelcomeEmailAutomatedEmail, Newsletter} = require('../../models');
+const {Automation, EmailDesignSetting, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
 const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
@@ -22,7 +21,28 @@ const EMAIL_VALIDATION_TYPE_BY_FIELD = {
     sender_reply_to: 'replyTo'
 };
 
+/**
+ * @param {null | undefined | string} value
+ * @returns {string}
+ */
 const trimValue = value => value?.trim() || '';
+
+const getSenderDetailsFromDesignSettings = (designSettingsJson) => {
+    return {
+        senderName: designSettingsJson?.sender_name,
+        senderEmail: designSettingsJson?.sender_email,
+        senderReplyTo: designSettingsJson?.sender_reply_to
+    };
+};
+
+const getSenderDetails = (designSettingsJson) => {
+    const designSenderDetails = getSenderDetailsFromDesignSettings(designSettingsJson);
+    return {
+        senderName: trimValue(designSenderDetails.senderName),
+        senderEmail: trimValue(designSenderDetails.senderEmail),
+        senderReplyTo: trimValue(designSenderDetails.senderReplyTo)
+    };
+};
 
 class MemberWelcomeEmailService {
     #mailer;
@@ -179,9 +199,9 @@ class MemberWelcomeEmailService {
     }
 
     async #loadWelcomeEmailsCollection() {
-        return WelcomeEmailAutomation.findAll({
+        return Automation.findAll({
             filter: WELCOME_EMAIL_FILTER,
-            withRelated: ['welcomeEmailAutomatedEmail']
+            withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
         });
     }
 
@@ -238,7 +258,8 @@ class MemberWelcomeEmailService {
 
     #hasSharedSenderFieldChanged(rows, field, value) {
         return rows.some((row) => {
-            const currentValue = row.related('welcomeEmailAutomatedEmail')?.get(field);
+            const email = row.related('welcomeEmailAutomatedEmail');
+            const currentValue = email?.related('emailDesignSetting')?.get(field);
             return trimValue(currentValue) !== trimValue(value);
         });
     }
@@ -294,9 +315,13 @@ class MemberWelcomeEmailService {
             return;
         }
 
-        await Promise.all(rows.map((row) => {
-            const email = row.related('welcomeEmailAutomatedEmail');
-            return WelcomeEmailAutomatedEmail.edit(attrs, {id: email.id});
+        // De-dupe so we don't write to the same design row twice.
+        const designSettingIds = new Set(
+            rows.map(row => row.related('welcomeEmailAutomatedEmail')?.get('email_design_setting_id')).filter(Boolean)
+        );
+
+        await Promise.all([...designSettingIds].map(async (id) => {
+            await EmailDesignSetting.edit(attrs, {id});
         }));
     }
 
@@ -337,7 +362,7 @@ class MemberWelcomeEmailService {
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
 
         for (const [memberStatus, slug] of Object.entries(MEMBER_WELCOME_EMAIL_SLUGS)) {
-            const row = await WelcomeEmailAutomation.findOne({slug}, {
+            const row = await Automation.findOne({slug}, {
                 withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
             });
 
@@ -359,15 +384,26 @@ class MemberWelcomeEmailService {
                 lexical: email.get('lexical'),
                 subject: email.get('subject'),
                 status: row.get('status'),
-                designSettings: designSettings?.id ? designSettings.toJSON() : null,
-                senderName: email.get('sender_name'),
-                senderEmail: email.get('sender_email'),
-                senderReplyTo: email.get('sender_reply_to')
+                designSettings: designSettings?.id ? designSettings.toJSON() : null
             };
         }
     }
 
-    async send({member, memberStatus}) {
+    /**
+     * @param {object} options
+     * @param {object} options.member
+     * @param {undefined | null | string} options.member.name
+     * @param {string} options.member.email
+     * @param {string} options.member.uuid
+     * @param {'free' | 'paid'} options.memberStatus
+     * @param {object} options.email
+     * @param {string} options.email.lexical
+     * @param {string} options.email.subject
+     * @param {null | object} options.email.designSettings
+     * @param {'welcome' | 'automation'} options.emailType
+     * @returns {Promise<void>}
+     */
+    async #sendEmail({member, memberStatus, email, emailType}) {
         if (!member.email) {
             throw new errors.IncorrectUsageError({
                 message: MESSAGES.MISSING_RECIPIENT_EMAIL
@@ -377,29 +413,15 @@ class MemberWelcomeEmailService {
         const name = member?.name ? `${member.name} at ` : '';
         logging.info({
             system: {
-                event: 'member_welcome_email.sending',
+                event: emailType === 'automation' ? 'member_welcome_email.automation_sending' : 'member_welcome_email.sending',
                 member_status: memberStatus
             }
-        }, `${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending welcome email to ${name}${member.email}`);
-
-        const memberWelcomeEmail = this.#memberWelcomeEmails[memberStatus];
-
-        if (!memberWelcomeEmail) {
-            throw new errors.IncorrectUsageError({
-                message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
-            });
-        }
-
-        if (memberWelcomeEmail.status !== 'active') {
-            throw new errors.IncorrectUsageError({
-                message: MESSAGES.memberWelcomeEmailInactive(memberStatus)
-            });
-        }
+        }, `${MEMBER_WELCOME_EMAIL_LOG_KEY} Sending ${emailType} email to ${name}${member.email}`);
 
         const {html, text, subject} = await this.#renderer.render({
-            lexical: memberWelcomeEmail.lexical,
-            subject: memberWelcomeEmail.subject,
-            designSettings: memberWelcomeEmail.designSettings,
+            lexical: email.lexical,
+            subject: email.subject,
+            designSettings: email.designSettings,
             member: {
                 name: member.name,
                 email: member.email,
@@ -408,7 +430,9 @@ class MemberWelcomeEmailService {
             siteSettings: this.#getSiteSettings()
         });
 
-        const senderOptions = await this.#getEffectiveSenderOptions(memberWelcomeEmail);
+        const senderOptions = await this.#getEffectiveSenderOptions(
+            getSenderDetails(email.designSettings)
+        );
 
         await this.#mailer.send({
             to: member.email,
@@ -421,6 +445,62 @@ class MemberWelcomeEmailService {
         });
     }
 
+    async send({member, memberStatus}) {
+        const email = this.#memberWelcomeEmails[memberStatus];
+
+        if (!email) {
+            throw new errors.IncorrectUsageError({
+                message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
+            });
+        }
+
+        if (email.status !== 'active') {
+            throw new errors.IncorrectUsageError({
+                message: MESSAGES.memberWelcomeEmailInactive(memberStatus)
+            });
+        }
+
+        await this.#sendEmail({
+            member,
+            memberStatus,
+            emailType: 'welcome',
+            email
+        });
+    }
+
+    // TODO(NY-1319) This isn't the right place for automation email sends. We
+    // should do a refactor to get this out of here.
+    /**
+     * @param {object} options
+     * @param {object} options.email
+     * @param {null | string} options.email.designSettingId
+     * @param {string} options.email.lexical
+     * @param {string} options.email.subject
+     * @param {object} options.member
+     * @param {string} options.member.email
+     * @param {null | string} options.member.name
+     * @param {string} options.member.uuid
+     * @param {'free' | 'paid'} options.memberStatus
+     * @returns {Promise<void>}
+     */
+    async sendAutomationEmail({email, member, memberStatus}) {
+        const designSettings = email.designSettingId ?
+            await EmailDesignSetting.findOne({id: email.designSettingId}) :
+            null;
+        const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
+
+        await this.#sendEmail({
+            member,
+            memberStatus,
+            emailType: 'automation',
+            email: {
+                lexical: email.lexical,
+                subject: email.subject,
+                designSettings: designSettingsJson
+            }
+        });
+    }
+
     async isMemberWelcomeEmailActive(memberStatus = 'free') {
         const slug = MEMBER_WELCOME_EMAIL_SLUGS[memberStatus];
 
@@ -428,7 +508,7 @@ class MemberWelcomeEmailService {
             return false;
         }
 
-        const row = await WelcomeEmailAutomation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmail']});
+        const row = await Automation.findOne({slug}, {withRelated: ['welcomeEmailAutomatedEmail']});
         if (!row) {
             return false;
         }
@@ -438,7 +518,7 @@ class MemberWelcomeEmailService {
 
     async #renderWelcomeEmailPreview({automatedEmailId, subject, lexical, memberEmail = 'jamie@example.com'}) {
         // Still validate the automated email exists (for permission purposes)
-        const automation = await WelcomeEmailAutomation.findOne({id: automatedEmailId}, {
+        const automation = await Automation.findOne({id: automatedEmailId}, {
             withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
         });
         const automatedEmail = automation?.related('welcomeEmailAutomatedEmail');
@@ -468,18 +548,19 @@ class MemberWelcomeEmailService {
         };
 
         const designSettings = automatedEmail.related('emailDesignSetting');
+        const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
 
         const preview = await this.#renderer.render({
             lexical,
             subject,
-            designSettings: designSettings?.id ? designSettings.toJSON() : null,
+            designSettings: designSettingsJson,
             member: testMember,
             siteSettings: this.#getSiteSettings()
         });
 
         return {
             ...preview,
-            automatedEmail
+            designSettings
         };
     }
 
@@ -498,7 +579,12 @@ class MemberWelcomeEmailService {
     }
 
     async sendTestEmail({email, subject, lexical, automatedEmailId}) {
-        const {html, text, subject: renderedSubject, automatedEmail} = await this.#renderWelcomeEmailPreview({
+        const {
+            html,
+            text,
+            subject: renderedSubject,
+            designSettings
+        } = await this.#renderWelcomeEmailPreview({
             automatedEmailId,
             subject,
             lexical,
@@ -507,11 +593,10 @@ class MemberWelcomeEmailService {
 
         // Test sends should always reflect latest newsletter fallback values.
         this.#defaultNewsletterSenderOptions = await this.#getDefaultNewsletterSenderOptions();
-        const senderOptions = await this.#getEffectiveSenderOptions({
-            senderName: automatedEmail.get('sender_name'),
-            senderEmail: automatedEmail.get('sender_email'),
-            senderReplyTo: automatedEmail.get('sender_reply_to')
-        });
+        const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
+        const senderOptions = await this.#getEffectiveSenderOptions(
+            getSenderDetails(designSettingsJson)
+        );
 
         await this.#mailer.send({
             to: email,

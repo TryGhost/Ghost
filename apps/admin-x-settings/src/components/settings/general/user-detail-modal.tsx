@@ -12,10 +12,10 @@ import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, type Me
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
+import {SOCIAL_PLATFORM_CONFIGS, getSocialValidationError} from '../../../utils/social-urls/index';
 import {type User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useGetUserBySlug, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useGlobalData} from '../../providers/global-data-provider';
-import {validateBlueskyUrl, validateFacebookUrl, validateInstagramUrl, validateLinkedInUrl, validateMastodonUrl, validateThreadsUrl, validateTikTokUrl, validateTwitterUrl, validateYouTubeUrl} from '../../../utils/social-urls/index';
 
 const validators: Record<string, (u: Partial<User>) => string> = {
     name: ({name}) => {
@@ -52,105 +52,10 @@ const validators: Record<string, (u: Partial<User>) => string> = {
         const valid = !website || (validator.isURL(website) && website.length <= 2000);
         return valid ? '' : 'Enter a valid URL';
     },
-    facebook: ({facebook}) => {
-        try {
-            validateFacebookUrl(facebook || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    twitter: ({twitter}) => {
-        try {
-            validateTwitterUrl(twitter || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    threads: ({threads}) => {
-        try {
-            validateThreadsUrl(threads || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    bluesky: ({bluesky}) => {
-        try {
-            validateBlueskyUrl(bluesky || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    linkedin: ({linkedin}) => {
-        try {
-            validateLinkedInUrl(linkedin || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    instagram: ({instagram}) => {
-        try {
-            validateInstagramUrl(instagram || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    youtube: ({youtube}) => {
-        try {
-            validateYouTubeUrl(youtube || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    tiktok: ({tiktok}) => {
-        try {
-            validateTikTokUrl(tiktok || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    },
-    mastodon: ({mastodon}) => {
-        try {
-            validateMastodonUrl(mastodon || '');
-            return '';
-        } catch (e) {
-            if (e instanceof Error) {
-                return e.message;
-            }
-            return '';
-        }
-    }
+    ...Object.fromEntries(SOCIAL_PLATFORM_CONFIGS.map(config => [
+        config.key,
+        (values: Partial<User>) => getSocialValidationError(config.key, values[config.key] as string | null | undefined)
+    ]))
 };
 
 export interface UserDetailProps {
@@ -408,9 +313,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         });
     }
 
-    const noCoverButtonClasses = 'rounded text-sm flex flex-nowrap items-center justify-center px-3 h-8 transition-all cursor-pointer font-medium border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white';
+    const noCoverButtonClasses = 'rounded flex flex-nowrap items-center justify-center px-3 h-8 transition-all cursor-pointer font-medium border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white';
 
-    const coverButtonClasses = 'flex flex-nowrap items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white transition-all cursor-pointer font-medium nowrap';
+    const coverButtonClasses = 'flex flex-nowrap items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 bg-[rgba(0,0,0,0.75)] rounded     text-white transition-all cursor-pointer font-medium nowrap';
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
@@ -432,6 +337,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             buttonsDisabled={okProps.disabled}
             cancelLabel='Close'
             dirty={saveState === 'unsaved'}
+            hideXOnMobile={true}
             okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
             size={canAccessSettings(currentUser) ? 'md' : 'bleed'}

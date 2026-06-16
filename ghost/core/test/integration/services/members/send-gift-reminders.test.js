@@ -31,7 +31,6 @@ describe('Gift reminder processing', function () {
     });
 
     beforeEach(async function () {
-        mockManager.mockLabsEnabled('giftSubscriptions');
         emailMockReceiver = mockManager.mockMail();
 
         redeemerMember = await models.Member.add({
@@ -107,7 +106,7 @@ describe('Gift reminder processing', function () {
         const sent = emailMockReceiver.getSentEmail(0);
 
         assert.equal(sent.to, redeemerMember.get('email'));
-        assert.match(sent.subject, /ending soon/);
+        assert.equal(sent.subject, 'Your gift subscription is ending soon');
 
         const reloaded = await models.Gift.findOne({token: gift.get('token')}, {require: true});
 

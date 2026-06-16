@@ -8,6 +8,7 @@ export {AppContext, AppProvider, useAppContext} from './providers/app-provider';
 
 // Hooks
 export {useActiveVisitors} from './hooks/use-active-visitors';
+export {useConfirmUnload} from './hooks/use-confirm-unload';
 export {default as useForm} from './hooks/use-form';
 export type {Dirtyable, ErrorMessages, FormHook, OkProps, SaveHandler, SaveState} from './hooks/use-form';
 export {default as useHandleError} from './hooks/use-handle-error';
@@ -40,6 +41,10 @@ export type {BaseSourceData, ProcessedSourceData, ExtendSourcesOptions} from './
 // Routing
 export type {RouteObject} from 'react-router';
 export type {RouterProviderProps, NavigateOptions} from './providers/router-provider';
+export type AdminRouteHandle = {
+    allowInForceUpgrade?: boolean;
+    hideAdminSidebar?: boolean;
+};
 export {RouterProvider, useNavigate, useBaseRoute, useRouteHasParams, resetScrollPosition, ScrollRestoration, Navigate} from './providers/router-provider';
 export {useNavigationStack} from './providers/navigation-stack-provider';
 export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect, matchRoutes, matchPath, useMatch, useMatches} from 'react-router';

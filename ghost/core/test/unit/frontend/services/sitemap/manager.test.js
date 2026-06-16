@@ -32,7 +32,7 @@ describe('Unit: sitemap/manager', function () {
         return new SiteMapManager({posts: posts, pages: pages, tags: tags, authors: authors});
     };
 
-    before(function () {
+    beforeAll(function () {
         eventsToRemember = {};
 
         // @NOTE: the pattern of faking event call is not great, we should be
@@ -47,14 +47,14 @@ describe('Unit: sitemap/manager', function () {
         sinon.stub(IndexGenerator.prototype, 'getXml');
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
     describe('SiteMapManager', function () {
         let manager;
 
-        before(function () {
+        beforeAll(function () {
             manager = makeStubManager();
         });
 

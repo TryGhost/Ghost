@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isPaidMember} from '../../utils/helpers';
+import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isArchivedTier, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, isComplimentaryMember, isGiftMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 import {translateCadence} from '../../utils/helpers';
@@ -91,8 +91,10 @@ const Header = ({showConfirmation, confirmationType, pendingOffer}) => {
 };
 
 const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandColor}) => {
-    const {site} = useContext(AppContext);
     if (!member.paid) {
+        return null;
+    }
+    if (isGiftMember({member})) {
         return null;
     }
     const subscription = getMemberSubscription({member});
@@ -124,7 +126,7 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
                 disabled={disabled}
                 isPrimary={isPrimary}
                 isDestructive={isDestructive}
-                classes={hasMultipleProductsFeature({site}) ? 'gh-portal-btn-text mt2 mb4' : ''}
+                classes='gh-portal-btn-text mt2 mb4'
                 brandColor={brandColor}
                 label={label}
                 style={{
@@ -151,7 +153,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
     const priceString = formatNumber(plan.price);
     const planStartMessage = `${plan.currency_symbol}${priceString}/${translateCadence(plan.interval)} – ${planStartingMessage}`;
     const product = getProductFromPrice({site, priceId: plan?.id});
-    const priceLabel = hasMultipleProductsFeature({site}) ? product?.name : t('Price');
+    const priceLabel = product?.name;
     if (type === 'changePlan') {
         return (
             <div className='gh-portal-logged-out-form-container'>
@@ -435,14 +437,39 @@ const UpgradePlanSection = ({
     );
 };
 
+// Shown when there are no paid plans to display (e.g. a member reaches the
+// plans page via a theme button or deep link while the site has no paid tiers).
+const NoPlansAvailableMessage = () => {
+    return (
+        <section>
+            <div className='gh-portal-section'>
+                <p
+                    className='gh-portal-no-plans-available-notification'
+                    data-testid="no-plans-available-notification-text"
+                >
+                    {t('Sorry, no paid plans are available.')}
+                </p>
+            </div>
+        </section>
+    );
+};
+
 const PlansContainer = ({
     plans, selectedPlan, confirmationPlan, confirmationType, showConfirmation = false,
     pendingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
     onAcceptRetentionOffer, onDeclineRetentionOffer
 }) => {
     const {member} = useContext(AppContext);
-    // Plan upgrade flow for free member or complimentary member
-    if (!isPaidMember({member}) || isComplimentaryMember({member})) {
+    // Plan upgrade flow for free, complimentary, or gift members.
+    if (!isPaidMember({member}) || isComplimentaryMember({member}) || isGiftMember({member})) {
+        // No paid plans to choose from. This covers the deep-link / theme-button
+        // entry point (#/portal/account/plans), which cannot be gated in-app,
+        // where the body would otherwise render blank under the page header.
+        if (plans.length === 0) {
+            return (
+                <NoPlansAvailableMessage />
+            );
+        }
         return (
             <UpgradePlanSection
                 {...{plans, selectedPlan, onPlanSelect, onPlanCheckout}}
@@ -493,10 +520,19 @@ export default class AccountPlanPage extends React.Component {
     }
 
     componentDidMount() {
-        const {member} = this.context;
+        const {member, site} = this.context;
         if (!member) {
             this.context.doAction('switchPage', {
                 page: 'signin'
+            });
+            return;
+        }
+
+        // Gift members on an active tier can only continue on the same tier via AccountHomePage "Continue" button
+        // Redirect them home if they land here via deep link (#/portal/account/plans)
+        if (isGiftMember({member}) && !isArchivedTier({member, site})) {
+            this.context.doAction('switchPage', {
+                page: 'accountHome'
             });
             return;
         }
@@ -611,7 +647,7 @@ export default class AccountPlanPage extends React.Component {
             selectedPlan = priceId;
         }
 
-        if (isPaidMember({member}) && !isComplimentaryMember({member})) {
+        if (isPaidMember({member}) && !isComplimentaryMember({member}) && !isGiftMember({member})) {
             const subscription = getMemberSubscription({member});
             const subscriptionId = subscription ? subscription.id : '';
             if (subscriptionId) {
@@ -627,8 +663,8 @@ export default class AccountPlanPage extends React.Component {
 
         const {member} = this.context;
 
-        // Work as checkboxes for free member plan selection and button for paid members
-        if (!isPaidMember({member}) || isComplimentaryMember({member})) {
+        // Work as checkboxes for free, complimentary, and gift members and as button for paid Stripe members.
+        if (!isPaidMember({member}) || isComplimentaryMember({member}) || isGiftMember({member})) {
             // Hack: React checkbox gets out of sync with dom state with instant update
             this.timeoutId = setTimeout(() => {
                 this.setState(() => {

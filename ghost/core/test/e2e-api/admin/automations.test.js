@@ -1,17 +1,89 @@
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const domainEvents = require('@tryghost/domain-events');
-const assert = require('node:assert/strict');
+const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
-const {agentProvider, dbUtils, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
-const StartAutomationsPollEvent = require('../../../core/server/services/welcome-email-automations/events/start-automations-poll-event');
+const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
+const {cleanupAutomationsFixture, setupAutomationsFixture, TEST_EMAIL_DESIGN_SETTING_ID} = require('../../utils/automations-fixtures');
+const StartAutomationsPollEvent = require('../../../core/server/services/automations/events/start-automations-poll-event');
 
-const {anyContentVersion, anyEtag, anyErrorId} = matchers;
+const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = matchers;
 const {cacheInvalidateHeaderNotSet} = assertions;
+
+const matchAutomationSummary = () => ({
+    id: anyObjectId,
+    created_at: anyISODateTime,
+    updated_at: anyISODateTime
+});
+
+const matchAutomation = () => ({
+    ...matchAutomationSummary(),
+    actions: [{
+        id: anyObjectId
+    }, {
+        id: anyObjectId,
+        data: {
+            email_design_setting_id: anyObjectId
+        }
+    }, {
+        id: anyObjectId
+    }, {
+        id: anyObjectId,
+        data: {
+            email_design_setting_id: anyObjectId
+        }
+    }],
+    edges: Array.from({length: 3}, () => ({
+        source_action_id: anyObjectId,
+        target_action_id: anyObjectId
+    }))
+});
+
+const matchPagination = () => ({
+    page: 1,
+    pages: 1,
+    limit: 'all',
+    total: 2,
+    prev: null,
+    next: null
+});
+
+const buildWaitAction = () => ({
+    id: ObjectId().toHexString(),
+    type: 'wait',
+    data: {
+        wait_hours: 24
+    }
+});
+
+const buildLinearEdges = actions => actions.slice(1).map((action, index) => ({
+    source_action_id: actions[index].id,
+    target_action_id: action.id
+}));
+
+const EMPTY_EMAIL_LEXICAL = JSON.stringify({
+    root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}
+});
+
+const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
+    root: {children: [{type: 'paragraph', children: [{type: 'text', text: 'Lorem ipsum.'}]}], direction: null, format: '', indent: 0, type: 'root', version: 1}
+});
+
+const buildSendEmailAction = (dataOverrides = {}) => ({
+    id: ObjectId().toHexString(),
+    type: 'send_email',
+    data: {
+        email_subject: 'Welcome',
+        email_lexical: NON_EMPTY_EMAIL_LEXICAL,
+        email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID,
+        ...dataOverrides
+    }
+});
 
 describe('Automations API', function () {
     let agent;
-    let schedulerIntegration;
+    let schedulerKey;
     let schedulerToken;
 
     before(async function () {
@@ -19,57 +91,898 @@ describe('Automations API', function () {
         await fixtureManager.init('users', 'integrations', 'api_keys');
         await agent.loginAsOwner();
 
-        schedulerIntegration = await models.Integration.findOne(
-            {slug: 'ghost-scheduler'},
-            {withRelated: 'api_keys'}
-        );
+        schedulerKey = await models.Integration.getApiKeyBySlug('ghost-scheduler', 'admin');
 
         schedulerToken = getSignedAdminToken({
             publishedAt: new Date().toISOString(),
             apiUrl: '/admin/',
-            integration: schedulerIntegration.toJSON()
+            key: schedulerKey
         });
     });
 
-    afterEach(function () {
+    beforeEach(async function () {
+        await setupAutomationsFixture();
+    });
+
+    afterEach(async function () {
         sinon.restore();
+        await cleanupAutomationsFixture();
     });
 
     describe('browse', function () {
-        beforeEach(async function () {
-            await dbUtils.truncate('welcome_email_automated_emails');
-            await dbUtils.truncate('welcome_email_automations');
+        it('returns automations sourced from the database', async function () {
+            await agent
+                .get('automations')
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet())
+                .matchBodySnapshot({
+                    automations: [
+                        matchAutomationSummary(),
+                        matchAutomationSummary()
+                    ],
+                    meta: {
+                        pagination: matchPagination()
+                    }
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
         });
+    });
 
-        it('returns welcome email automations ordered by creation time', async function () {
-            const second = await models.WelcomeEmailAutomation.add({
-                name: 'Welcome Email (Premium)',
-                slug: 'member-welcome-email-premium',
-                status: 'inactive',
-                created_at: new Date('2025-01-02T00:00:00Z')
-            });
-            const first = await models.WelcomeEmailAutomation.add({
-                name: 'Welcome Email (Free)',
-                slug: 'member-welcome-email-free',
-                status: 'active',
-                created_at: new Date('2025-01-01T00:00:00Z')
-            });
-
-            const {body} = await agent
+    describe('read', function () {
+        it('returns the automation, ordered actions, and edges sourced from the database', async function () {
+            const {body: browseBody} = await agent
                 .get('automations')
                 .expectStatus(200);
 
-            assert.deepEqual(body.automations, [{
-                id: first.id,
-                name: first.get('name'),
-                slug: first.get('slug'),
-                status: first.get('status')
-            }, {
-                id: second.id,
-                name: second.get('name'),
-                slug: second.get('slug'),
-                status: second.get('status')
+            await agent
+                .get(`automations/${browseBody.automations[0].id}`)
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet())
+                .matchBodySnapshot({
+                    automations: [matchAutomation()]
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+        });
+    });
+
+    describe('edit', function () {
+        it('replaces automation actions and edges using frontend-generated ObjectIds', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const waitActionId = ObjectId().toHexString();
+            const emailActionId = ObjectId().toHexString();
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+            const emailLexical = JSON.stringify({
+                root: {
+                    children: [],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [{
+                            id: waitActionId,
+                            type: 'wait',
+                            data: {
+                                wait_hours: 24
+                            }
+                        }, {
+                            id: emailActionId,
+                            type: 'send_email',
+                            data: {
+                                email_subject: 'Hello from the editor',
+                                email_lexical: emailLexical,
+                                email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID
+                            }
+                        }],
+                        edges: [{
+                            source_action_id: waitActionId,
+                            target_action_id: emailActionId
+                        }]
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const automation = editBody.automations[0];
+            assert.equal(automation.name, beforeBody.automations[0].name);
+            assert.equal(automation.status, 'inactive');
+            assert.equal(automation.actions.length, 2);
+            assert.equal(automation.edges.length, 1);
+            assert.equal(automation.actions[0].id, waitActionId);
+            assert.equal(automation.actions[1].id, emailActionId);
+            assert.equal(automation.actions[0].type, 'wait');
+            assert.equal(automation.actions[0].data.wait_hours, 24);
+            assert.equal(automation.actions[1].type, 'send_email');
+            assert.equal(automation.actions[1].data.email_subject, 'Hello from the editor');
+            assert.equal(automation.edges[0].source_action_id, automation.actions[0].id);
+            assert.equal(automation.edges[0].target_action_id, automation.actions[1].id);
+
+            const {body: readBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(readBody.automations[0], automation);
+        });
+
+        it('allows an automation with a single action and no edges', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const actionId = ObjectId().toHexString();
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [{
+                            id: actionId,
+                            type: 'wait',
+                            data: {
+                                wait_hours: 24
+                            }
+                        }],
+                        edges: []
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const automation = editBody.automations[0];
+            assert.equal(automation.status, 'inactive');
+            assert.deepEqual(automation.actions, [{
+                id: actionId,
+                type: 'wait',
+                data: {
+                    wait_hours: 24
+                }
             }]);
+            assert.deepEqual(automation.edges, []);
+
+            const {body: readBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(readBody.automations[0], automation);
+        });
+
+        it('allows an automation with 20 actions', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const actions = Array.from({length: 20}, buildWaitAction);
+            const edges = buildLinearEdges(actions);
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions,
+                        edges
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const automation = editBody.automations[0];
+            assert.equal(automation.status, 'inactive');
+            assert.equal(automation.actions.length, 20);
+            assert.equal(automation.edges.length, 19);
+            assert.deepEqual(automation.actions, actions);
+            assert.deepEqual(automation.edges, edges);
+        });
+
+        it('rejects an automation with more than 20 actions', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const actions = Array.from({length: 21}, buildWaitAction);
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions,
+                        edges: buildLinearEdges(actions)
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects an invalid automation status', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const {body: readBody} = await agent
+                .get(`automations/${browseBody.automations[0].id}`)
+                .expectStatus(200);
+
+            await agent
+                .put(`automations/${browseBody.automations[0].id}`)
+                .body({
+                    automations: [{
+                        status: 'paused',
+                        actions: readBody.automations[0].actions,
+                        edges: readBody.automations[0].edges
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+        });
+
+        it('allows saving an inactive draft with an empty email subject and body', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const emailAction = buildSendEmailAction({email_subject: '', email_lexical: EMPTY_EMAIL_LEXICAL});
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [emailAction],
+                        edges: []
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            assert.equal(editBody.automations[0].status, 'inactive');
+            assert.equal(editBody.automations[0].actions[0].data.email_subject, '');
+        });
+
+        it('resolves default email design setting slugs when saving a send email action', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const emailAction = buildSendEmailAction({
+                email_design_setting_id: 'default-automated-email'
+            });
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [emailAction],
+                        edges: []
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const designSettingId = editBody.automations[0].actions[0].data.email_design_setting_id;
+            assert.notEqual(designSettingId, 'default-automated-email');
+            assert.equal(ObjectId.isValid(designSettingId), true);
+        });
+
+        it('rejects activating an automation with an empty email subject', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'active',
+                        actions: [buildSendEmailAction({email_subject: ''})],
+                        edges: []
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects activating an automation with an empty email body', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'active',
+                        actions: [buildSendEmailAction({email_lexical: EMPTY_EMAIL_LEXICAL})],
+                        edges: []
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('allows activating an automation with complete email steps', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: editBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'active',
+                        actions: [buildSendEmailAction()],
+                        edges: []
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            assert.equal(editBody.automations[0].status, 'active');
+        });
+
+        it('rejects an empty edit payload', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            await agent
+                .put(`automations/${browseBody.automations[0].id}`)
+                .body({
+                    automations: [{
+                        actions: null
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+        });
+
+        it('rejects an edit with no actions or edges', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [],
+                        edges: []
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects an action with an invalid type', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const {body: errorBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [{
+                            id: ObjectId().toHexString(),
+                            type: 'sms',
+                            data: {}
+                        }],
+                        edges: []
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            assert.match(errorBody.errors[0].context, /actions\.0\.type/);
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects changing an existing action type', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const existingAction = beforeBody.automations[0].actions[0];
+            const changedAction = existingAction.type === 'wait' ? {
+                id: existingAction.id,
+                type: 'send_email',
+                data: {
+                    email_subject: 'Changed type',
+                    email_lexical: JSON.stringify({root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}}),
+                    email_design_setting_id: TEST_EMAIL_DESIGN_SETTING_ID
+                }
+            } : {
+                id: existingAction.id,
+                type: 'wait',
+                data: {
+                    wait_hours: 24
+                }
+            };
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: beforeBody.automations[0].actions.map((action) => {
+                            return action.id === existingAction.id ? changedAction : action;
+                        }),
+                        edges: beforeBody.automations[0].edges
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects an action from another automation', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const foreignAutomationId = browseBody.automations[1].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const {body: foreignBody} = await agent
+                .get(`automations/${foreignAutomationId}`)
+                .expectStatus(200);
+
+            const firstAction = beforeBody.automations[0].actions[0];
+            const foreignAction = foreignBody.automations[0].actions[0];
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [firstAction, foreignAction],
+                        edges: [{
+                            source_action_id: firstAction.id,
+                            target_action_id: foreignAction.id
+                        }]
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects an edge that references another automation', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+            const foreignAutomationId = browseBody.automations[1].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const {body: foreignBody} = await agent
+                .get(`automations/${foreignAutomationId}`)
+                .expectStatus(200);
+
+            const firstAction = beforeBody.automations[0].actions[0];
+            const foreignAction = foreignBody.automations[0].actions[0];
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [firstAction],
+                        edges: [{
+                            source_action_id: firstAction.id,
+                            target_action_id: foreignAction.id
+                        }]
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects an edge that references a missing action', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const firstAction = beforeBody.automations[0].actions[0];
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [firstAction],
+                        edges: [{
+                            source_action_id: firstAction.id,
+                            target_action_id: ObjectId().toHexString()
+                        }]
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects an edge that references a soft-deleted action', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[1].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const keptAction = beforeBody.automations[0].actions[0];
+            const deletedAction = beforeBody.automations[0].actions[1];
+
+            const {body: editedBody} = await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [keptAction],
+                        edges: []
+                    }]
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const editedAutomation = editedBody.automations[0];
+            assert.equal(editedAutomation.actions.length, 1);
+            assert.equal(editedAutomation.actions[0].id, keptAction.id);
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: editedAutomation.actions,
+                        edges: [{
+                            source_action_id: keptAction.id,
+                            target_action_id: deletedAction.id
+                        }]
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody.automations[0], editedAutomation);
+        });
+
+        it('rejects an orphaned action', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const firstAction = beforeBody.automations[0].actions[0];
+            const secondAction = beforeBody.automations[0].actions[1];
+            const orphanedAction = beforeBody.automations[0].actions[2];
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [firstAction, secondAction, orphanedAction],
+                        edges: [{
+                            source_action_id: firstAction.id,
+                            target_action_id: secondAction.id
+                        }]
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects a graph with multiple heads', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const firstAction = beforeBody.automations[0].actions[0];
+            const secondAction = beforeBody.automations[0].actions[1];
+            const thirdAction = beforeBody.automations[0].actions[2];
+            const fourthAction = beforeBody.automations[0].actions[3];
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [firstAction, secondAction, thirdAction, fourthAction],
+                        edges: [{
+                            source_action_id: firstAction.id,
+                            target_action_id: secondAction.id
+                        }, {
+                            source_action_id: thirdAction.id,
+                            target_action_id: fourthAction.id
+                        }]
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects a branching graph', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const firstAction = beforeBody.automations[0].actions[0];
+            const secondAction = beforeBody.automations[0].actions[1];
+            const thirdAction = beforeBody.automations[0].actions[2];
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [firstAction, secondAction, thirdAction],
+                        edges: [{
+                            source_action_id: firstAction.id,
+                            target_action_id: secondAction.id
+                        }, {
+                            source_action_id: firstAction.id,
+                            target_action_id: thirdAction.id
+                        }]
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects a graph with converging edges', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const firstAction = beforeBody.automations[0].actions[0];
+            const secondAction = beforeBody.automations[0].actions[1];
+            const thirdAction = beforeBody.automations[0].actions[2];
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [firstAction, secondAction, thirdAction],
+                        edges: [{
+                            source_action_id: firstAction.id,
+                            target_action_id: thirdAction.id
+                        }, {
+                            source_action_id: secondAction.id,
+                            target_action_id: thirdAction.id
+                        }]
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
+        });
+
+        it('rejects a circular graph', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            const {body: beforeBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            const firstAction = beforeBody.automations[0].actions[0];
+            const secondAction = beforeBody.automations[0].actions[1];
+            const thirdAction = beforeBody.automations[0].actions[2];
+
+            await agent
+                .put(`automations/${automationId}`)
+                .body({
+                    automations: [{
+                        status: 'inactive',
+                        actions: [firstAction, secondAction, thirdAction],
+                        edges: [{
+                            source_action_id: firstAction.id,
+                            target_action_id: secondAction.id
+                        }, {
+                            source_action_id: secondAction.id,
+                            target_action_id: thirdAction.id
+                        }, {
+                            source_action_id: thirdAction.id,
+                            target_action_id: firstAction.id
+                        }]
+                    }]
+                })
+                .expectStatus(422)
+                .expect(cacheInvalidateHeaderNotSet());
+
+            const {body: afterBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+
+            assert.deepEqual(afterBody, beforeBody);
         });
     });
 
@@ -104,7 +1017,7 @@ describe('Automations API', function () {
             const invalidSchedulerToken = getSignedAdminToken({
                 publishedAt: new Date().toISOString(),
                 apiUrl: '/members/',
-                integration: schedulerIntegration.toJSON()
+                key: schedulerKey
             });
 
             await agent

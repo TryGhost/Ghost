@@ -3,9 +3,9 @@ import Interpolate from '@doist/react-interpolate';
 import Frame from './frame';
 import AppContext from '../app-context';
 import NotificationStyle from './notification.styles';
-import {ReactComponent as CloseIcon} from '../images/icons/close.svg';
-import {ReactComponent as CheckmarkIcon} from '../images/icons/checkmark-fill.svg';
-import {ReactComponent as WarningIcon} from '../images/icons/warning-fill.svg';
+import CloseIcon from '../images/icons/close.svg?react';
+import CheckmarkIcon from '../images/icons/checkmark-fill.svg?react';
+import WarningIcon from '../images/icons/warning-fill.svg?react';
 import NotificationParser, {clearURLParams} from '../utils/notifications';
 import {getGiftRedemptionSuccessMessage} from '../utils/gift-redemption-notification';
 import {getPortalLink} from '../utils/helpers';
@@ -30,7 +30,7 @@ const Styles = () => {
 
 const NotificationText = ({type, status, message, context}) => {
     const signinPortalLink = getPortalLink({page: 'signin', siteUrl: context.site.url});
-    const singupPortalLink = getPortalLink({page: 'signup', siteUrl: context.site.url});
+    const signupPortalLink = getPortalLink({page: 'signup', siteUrl: context.site.url});
 
     if (message) {
         if (typeof message === 'object') {
@@ -98,19 +98,18 @@ const NotificationText = ({type, status, message, context}) => {
     } else if (type === 'signup' && status === 'error') {
         return (
             <p>
-                {t('Signup error: Invalid link')}<br /><a href={singupPortalLink} target="_parent">{t('Click here to retry')}</a>
+                {t('Signup error: Invalid link')}<br /><a href={signupPortalLink} target="_parent">{t('Click here to retry')}</a>
             </p>
         );
     } else if (type === 'signup-paid' && status === 'error') {
         return (
             <p>
-                {t('Signup error: Invalid link')}<br /><a href={singupPortalLink} target="_parent">{t('Click here to retry')}</a>
+                {t('Signup error: Invalid link')}<br /><a href={signupPortalLink} target="_parent">{t('Click here to retry')}</a>
             </p>
         );
     } else if (type === 'giftRedeem' && status === 'success') {
-        // TODO: Add translation strings once copy has been finalised
         const successMessage = getGiftRedemptionSuccessMessage({member: context.member})
-            || 'Gift redeemed! You\'re all set.';
+            || t('Gift redeemed! You\'re all set.');
 
         return (
             <p>

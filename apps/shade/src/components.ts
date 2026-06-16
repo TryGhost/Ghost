@@ -6,10 +6,12 @@ export * from './components/ui/badge';
 export * from './components/ui/banner';
 export * from './components/ui/breadcrumb';
 export * from './components/ui/button';
+export * from './components/ui/calendar';
 export * from './components/ui/card';
 export * from './components/ui/chart';
 export * from './components/ui/checkbox';
 export * from './components/ui/command';
+export * from './components/ui/context-menu';
 export * from './components/ui/data-list';
 export * from './components/ui/dialog';
 export * from './components/ui/dropdown-menu';
@@ -48,19 +50,15 @@ export * from './components/ui/toggle-group';
 export * from './components/ui/tooltip';
 export * from './components/ui/trend-badge';
 
-// Feature components — product-shaped compositions of UI primitives
-export * from './components/features/charts/gh-chart';
-export * from './components/features/kpi/kpi-card';
-export * from './components/features/kpi/kpi-tabs';
-
 export type {DropdownMenuCheckboxItemProps as DropdownMenuCheckboxItemProps} from '@radix-ui/react-dropdown-menu';
+export type {ContextMenuCheckboxItemProps as ContextMenuCheckboxItemProps} from '@radix-ui/react-context-menu';
 
 export {IconComponents as Icon} from './components/ui/icon';
 
 // Visual assets
-export {ReactComponent as FacebookLogo} from './assets/images/facebook-logo.svg';
-export {ReactComponent as GhostLogo} from './assets/images/ghost-logo.svg';
-export {ReactComponent as GhostOrb} from './assets/images/ghost-orb.svg';
-export {ReactComponent as GoogleLogo} from './assets/images/google-logo.svg';
-export {ReactComponent as TwitterLogo} from './assets/images/twitter-logo.svg';
-export {ReactComponent as XLogo} from './assets/images/x-logo.svg';
+export {default as FacebookLogo} from './assets/images/facebook-logo.svg?react';
+export {default as GhostLogo} from './assets/images/ghost-logo.svg?react';
+export {default as GhostOrb} from './assets/images/ghost-orb.svg?react';
+export {default as GoogleLogo} from './assets/images/google-logo.svg?react';
+export {default as TwitterLogo} from './assets/images/twitter-logo.svg?react';
+export {default as XLogo} from './assets/images/x-logo.svg?react';

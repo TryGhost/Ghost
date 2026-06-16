@@ -9,7 +9,7 @@ export const GAP_CLASSES: Record<SpaceStep, string> = {
     xs: 'gap-1',
     sm: 'gap-2',
     md: 'gap-3',
-    lg: 'gap-4',
+    lg: 'gap-5',
     xl: 'gap-6',
     '2xl': 'gap-8'
 };
@@ -19,7 +19,7 @@ export const PADDING_CLASSES: Record<SpaceStep, string> = {
     xs: 'p-1',
     sm: 'p-2',
     md: 'p-3',
-    lg: 'p-4',
+    lg: 'p-5',
     xl: 'p-6',
     '2xl': 'p-8'
 };
@@ -29,7 +29,7 @@ export const PADDING_X_CLASSES: Record<SpaceStep, string> = {
     xs: 'px-1',
     sm: 'px-2',
     md: 'px-3',
-    lg: 'px-4',
+    lg: 'px-5',
     xl: 'px-6',
     '2xl': 'px-8'
 };
@@ -39,7 +39,7 @@ export const PADDING_Y_CLASSES: Record<SpaceStep, string> = {
     xs: 'py-1',
     sm: 'py-2',
     md: 'py-3',
-    lg: 'py-4',
+    lg: 'py-5',
     xl: 'py-6',
     '2xl': 'py-8'
 };

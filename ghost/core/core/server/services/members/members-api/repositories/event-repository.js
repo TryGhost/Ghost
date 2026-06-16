@@ -214,7 +214,6 @@ module.exports = class EventRepository {
                 'subscriptionCreatedEvent.userAttribution',
                 'subscriptionCreatedEvent.tagAttribution',
                 'subscriptionCreatedEvent.memberCreatedEvent',
-                'subscriptionCreatedEvent.paidStatusEvent',
 
                 // This is rediculous, but we need the tier name (we'll be able to shorten this later when we switch to the subscriptions table)
                 'stripeSubscription.stripePrice.stripeProduct.product'
@@ -248,10 +247,6 @@ module.exports = class EventRepository {
             const tierName = model.related('stripeSubscription') && model.related('stripeSubscription').related('stripePrice') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct') && model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product') ? model.related('stripeSubscription').related('stripePrice').related('stripeProduct').related('product').get('name') : null;
 
             const subscriptionCreatedEvent = model.related('subscriptionCreatedEvent');
-            const paidStatusEvent = subscriptionCreatedEvent && subscriptionCreatedEvent.id
-                ? subscriptionCreatedEvent.related('paidStatusEvent')
-                : null;
-            const previousStatus = paidStatusEvent && paidStatusEvent.id ? paidStatusEvent.get('from_status') : null;
 
             // Prevent toJSON on stripeSubscription (we don't have everything loaded)
             delete model.relations.stripeSubscription;
@@ -259,11 +254,9 @@ module.exports = class EventRepository {
                 ...model.toJSON(options),
                 attribution: model.get('type') === 'created' && subscriptionCreatedEvent && subscriptionCreatedEvent.id ? this._memberAttributionService.getEventAttribution(subscriptionCreatedEvent) : null,
                 signup: model.get('type') === 'created' && subscriptionCreatedEvent && subscriptionCreatedEvent.id && subscriptionCreatedEvent.related('memberCreatedEvent') && subscriptionCreatedEvent.related('memberCreatedEvent').id ? true : false,
-                previous_status: previousStatus,
                 tierName
             };
             delete d.stripeSubscription;
-            delete d.subscriptionCreatedEvent?.paidStatusEvent;
             return {
                 type: 'subscription_event',
                 data: d
@@ -596,7 +589,7 @@ module.exports = class EventRepository {
     async getCommentEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'post', 'parent'],
+            withRelated: ['member', 'post', 'post.tags', 'post.authors', 'parent'],
             filter: 'member_id:-null+custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -630,7 +623,7 @@ module.exports = class EventRepository {
     async getClickEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'link', 'link.post'],
+            withRelated: ['member', 'link', 'link.post', 'link.post.tags', 'link.post.authors'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -784,7 +777,7 @@ module.exports = class EventRepository {
     async getFeedbackEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'post'],
+            withRelated: ['member', 'post', 'post.tags', 'post.authors'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -1058,7 +1051,7 @@ module.exports = class EventRepository {
     async getAutomatedEmailSentEvents(options = {}, filter) {
         options = {
             ...options,
-            withRelated: ['member', 'automatedEmail.welcomeEmailAutomation'],
+            withRelated: ['member', 'automatedEmail.automation'],
             filter: 'custom:true',
             useBasicCount: true,
             mongoTransformer: chainTransformers(
@@ -1074,10 +1067,17 @@ module.exports = class EventRepository {
 
         const data = models.map((model) => {
             const automatedEmail = model.related('automatedEmail');
-            const automation = automatedEmail.related('welcomeEmailAutomation');
+            if (!automatedEmail || !automatedEmail.id) {
+                // TODO(NY-1334) This won't necessarily be an error in the future.
+                throw new errors.InternalServerError({
+                    message: `Automated email recipient ${model.id} has no associated automated email`
+                });
+            }
+
+            const automation = automatedEmail.related('automation');
             if (!automation || !automation.id) {
                 throw new errors.InternalServerError({
-                    message: `Automated email recipient ${model.id} has no associated welcome email automation`
+                    message: `Automated email recipient ${model.id} has no associated automation`
                 });
             }
 

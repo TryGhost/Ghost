@@ -9,8 +9,11 @@ const {NotFoundError} = require('@tryghost/errors');
 const validator = require('@tryghost/validator');
 const crypto = require('crypto');
 const hasActiveOffer = require('../utils/has-active-offer');
-const StartAutomationsPollEvent = require('../../../welcome-email-automations/events/start-automations-poll-event');
+const StartAutomationsPollEvent = require('../../../automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
+const db = require('../../../../data/db');
+/** @import {Knex} from 'knex' */
+/** @import * as automationsApi from '../../../automations/automations-api' */
 
 const messages = {
     noStripeConnection: 'Cannot {action} without a Stripe Connection',
@@ -20,7 +23,7 @@ const messages = {
     memberNotFound: 'Could not find Member {id}',
     subscriptionNotFound: 'Could not find Subscription {id}',
     productNotFound: 'Could not find Product {id}',
-    bulkActionRequiresFilter: 'Cannot perform {action} without a filter or all=true',
+    bulkActionRequiresFilter: 'Cannot perform {action} without a filter, search, or all=true',
     tierArchived: 'Cannot use archived Tiers',
     invalidEmail: 'Invalid Email',
     offerNotFound: 'Could not find Offer {id}',
@@ -61,12 +64,13 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.OfferRedemption
      * @param {any} deps.Outbox
-     * @param {import('../../services/stripe-api')} deps.stripeAPIService
+     * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      * @param {any} deps.productRepository
      * @param {any} deps.offersAPI
      * @param {ITokenService} deps.tokenService
      * @param {any} deps.newslettersService
-     * @param {any} deps.WelcomeEmailAutomation
+     * @param {Pick<automationsApi, 'trigger'>} deps.automationsApi
+     * @param {any} deps.Automation
      * @param {any} deps.WelcomeEmailAutomationRun
      */
     constructor({
@@ -87,7 +91,8 @@ module.exports = class MemberRepository {
         offersAPI,
         tokenService,
         newslettersService,
-        WelcomeEmailAutomation,
+        automationsApi,
+        Automation,
         WelcomeEmailAutomationRun
     }) {
         this._Member = Member;
@@ -107,7 +112,8 @@ module.exports = class MemberRepository {
         this._offersAPI = offersAPI;
         this.tokenService = tokenService;
         this._newslettersService = newslettersService;
-        this._WelcomeEmailAutomation = WelcomeEmailAutomation;
+        this._automationsApi = automationsApi;
+        this._Automation = Automation;
         this._WelcomeEmailAutomationRun = WelcomeEmailAutomationRun;
 
         DomainEvents.subscribe(OfferRedemptionEvent, async function (event) {
@@ -174,27 +180,52 @@ module.exports = class MemberRepository {
     }
 
     /**
+     * @param {string} memberId
+     * @param {string} memberEmail
+     * @param {'free' | 'paid'} memberStatus
+     * @param {object} bookshelfOptions
+     * @param {Knex.Transaction} [bookshelfOptions.transacting]
+     * @returns {Promise<void>}
+     */
+    async #triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+        const trigger = async () => {
+            await this._automationsApi.trigger({
+                event: 'member_sign_up',
+                memberId,
+                memberEmail,
+                memberStatus
+            });
+        };
+
+        if (bookshelfOptions?.transacting) {
+            bookshelfOptions.transacting.executionPromise.then(trigger).catch((err) => {
+                logging.error({
+                    err,
+                    message: `Error triggering automation for member ${memberId}`
+                });
+            });
+        } else {
+            await trigger();
+        }
+    }
+
+    /**
      * Looks up the active welcome email automation for the given slug and enqueues a
      * `WelcomeEmailAutomationRun` for the member. Dispatches `StartAutomationsPollEvent`
-     * so the poll picks it up. Returns the created run, or null if there is no active
-     * automation/email for that slug.
-     *
-     * Callers are responsible for any eligibility gating (member status, source, etc.)
-     * before calling this — this helper just looks up + inserts + dispatches. Pass
-     * `options.transacting` to run the insert inside an existing transaction; the
-     * dispatch is automatically deferred until that transaction commits.
+     * so the poll picks it up.
      *
      * @param {string} memberId
-     * @param {string} slug automation slug, see MEMBER_WELCOME_EMAIL_SLUGS
-     * @param {object} [options] bookshelf options (transacting, context, etc.)
+     * @param {'free' | 'paid'} memberStatus
+     * @param {object} options
+     * @returns {Promise<void>}
      */
-    async enqueueWelcomeEmailRun(memberId, slug, options = {}) {
-        if (!this._WelcomeEmailAutomation || !this._WelcomeEmailAutomationRun) {
-            return null;
+    async #triggerMemberSignupLegacyAutomation(memberId, memberStatus, options) {
+        if (!this._Automation || !this._WelcomeEmailAutomationRun) {
+            return;
         }
 
-        const automation = await this._WelcomeEmailAutomation.findOne(
-            {slug},
+        const automation = await this._Automation.findOne(
+            {slug: MEMBER_WELCOME_EMAIL_SLUGS[memberStatus]},
             {...options, withRelated: ['welcomeEmailAutomatedEmail']}
         );
         const email = automation?.related('welcomeEmailAutomatedEmail');
@@ -206,10 +237,10 @@ module.exports = class MemberRepository {
         );
 
         if (!isActive) {
-            return null;
+            return;
         }
 
-        const run = await this._WelcomeEmailAutomationRun.add({
+        await this._WelcomeEmailAutomationRun.add({
             welcome_email_automation_id: automation.id,
             member_id: memberId,
             next_welcome_email_automated_email_id: email.id,
@@ -220,8 +251,25 @@ module.exports = class MemberRepository {
         }, options);
 
         this.dispatchEvent(StartAutomationsPollEvent.create(), options);
+    }
 
-        return run;
+    /**
+     * Trigger an automation for member signup.
+     *
+     * Callers are responsible for any eligibility gating (member status, source, etc.)
+     * before calling this.
+     *
+     * @param {string} memberId
+     * @param {string} memberEmail
+     * @param {'free' | 'paid'} memberStatus
+     * @param {object} bookshelfOptions
+     * @returns {Promise<void>}
+     */
+    async triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions) {
+        await Promise.all([
+            this.#triggerMemberSignupAutomation(memberId, memberEmail, memberStatus, bookshelfOptions),
+            this.#triggerMemberSignupLegacyAutomation(memberId, memberStatus, bookshelfOptions)
+        ]);
     }
 
     /**
@@ -230,21 +278,17 @@ module.exports = class MemberRepository {
      * @returns {'import' | 'system' | 'api' | 'admin' | 'member'}
      */
     _resolveContextSource(context) {
-        let source;
-
         if (context.import || context.importer) {
-            source = 'import';
+            return 'import';
         } else if (context.internal) {
-            source = 'system';
+            return 'system';
         } else if (context.api_key) {
-            source = 'api';
+            return 'api';
         } else if (context.user) {
-            source = 'admin';
+            return 'admin';
         } else {
-            source = 'member';
+            return 'member';
         }
-
-        return source;
     }
 
     getMRR({interval, amount, status = null, canceled = false, discount = null}) {
@@ -341,7 +385,7 @@ module.exports = class MemberRepository {
      * @param {Object} [data.stripeCustomer]
      * @param {string} [data.offerId]
      * @param {string} [data.status]
-     * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
+     * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
      * @param {boolean} [data.email_disabled]
      * @param {*} options
      * @returns
@@ -441,7 +485,12 @@ module.exports = class MemberRepository {
                     labels
                 }, {...memberAddOptions, transacting});
 
-                await this.enqueueWelcomeEmailRun(newMember.id, MEMBER_WELCOME_EMAIL_SLUGS.free, {transacting});
+                await this.triggerMemberSignupAutomation(
+                    newMember.id,
+                    newMember.get('email'),
+                    'free',
+                    {transacting}
+                );
 
                 return newMember;
             };
@@ -1023,9 +1072,10 @@ module.exports = class MemberRepository {
      * @param {Object} data
      * @param {string} data.id - member ID
      * @param {Object} data.subscription
-     * @param {string} data.offerId
-     * @param {import('@tryghost/member-attribution/lib/Attribution').AttributionResource} [data.attribution]
-     * @param {*} options
+     * @param {string | null} [data.offerId]
+     * @param {import('../../../member-attribution/attribution-builder').AttributionResource} [data.attribution]
+     * @param {object} [options]
+     * @param {Knex.Transaction} [options.transacting]
      * @returns
      */
     async linkSubscription(data, options = {}) {
@@ -1531,8 +1581,8 @@ module.exports = class MemberRepository {
             const context = options?.context || {};
             const source = this._resolveContextSource(context);
 
-            // Enqueue paid welcome email if:
-            // 1. The source is allowed to send welcome emails
+            // Enqueue automation if:
+            // 1. The source is allowed to trigger automations
             // 2. The member status changed to 'paid'
             // 3. The previous status wasn't 'gift', as gift members already received the paid welcome email on redemption
             if (
@@ -1540,8 +1590,60 @@ module.exports = class MemberRepository {
                 updatedMember.get('status') === 'paid' &&
                 updatedMember._previousAttributes.status !== 'gift'
             ) {
-                await this.enqueueWelcomeEmailRun(memberModel.id, MEMBER_WELCOME_EMAIL_SLUGS.paid, options);
+                await this.triggerMemberSignupAutomation(
+                    memberModel.id,
+                    memberModel.get('email'),
+                    'paid',
+                    options
+                );
             }
+        }
+
+        // Update the members_current_subscription lookup table
+        await this._updateCurrentSubscription(data.id, options);
+    }
+
+    async _updateCurrentSubscription(memberId, options) {
+        try {
+            const knex = db.knex;
+            const trx = options.transacting || knex;
+
+            // Resolve the best subscription for this member via the VIEW
+            // (single source of truth for subscription priority logic)
+            const best = await trx('members_resolved_subscription')
+                .where('member_id', memberId)
+                .first();
+
+            if (best) {
+                // The lookup table has a UNIQUE constraint on `subscription_id`
+                // — a sub can be at most one member's current. The view's
+                // owning-member can change (member merges, Stripe customer
+                // re-link, test fixtures reusing customer IDs), in which case
+                // the lookup may still hold a stale row from the previous
+                // owner. Delete that stale row first so the upsert isn't
+                // rejected by the UNIQUE constraint. The displaced member's
+                // row will re-resolve next time their subscriptions change.
+                await trx('members_current_subscription')
+                    .where('subscription_id', best.subscription_id)
+                    .whereNot('member_id', best.member_id)
+                    .del();
+
+                await trx('members_current_subscription')
+                    .insert({member_id: best.member_id, subscription_id: best.subscription_id})
+                    .onConflict('member_id')
+                    .merge();
+            } else {
+                // No subscriptions remain — remove the lookup row
+                await trx('members_current_subscription')
+                    .where({member_id: memberId})
+                    .del();
+            }
+        } catch (e) {
+            logging.error({
+                err: e,
+                message: `Failed to update members_current_subscription for member ${memberId}`
+            });
+            throw e;
         }
     }
 
@@ -1954,15 +2056,15 @@ module.exports = class MemberRepository {
             });
         }
 
-        const zeroValuePrices = defaultProduct.stripePrices.filter((price) => {
-            return price.amount === 0;
+        const complimentaryPrices = defaultProduct.stripePrices.filter((price) => {
+            return price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
         });
 
         if (activeSubscriptions.length) {
             for (const subscription of activeSubscriptions) {
                 const price = await subscription.related('stripePrice').fetch(options);
 
-                let zeroValuePrice = zeroValuePrices.find((p) => {
+                let zeroValuePrice = complimentaryPrices.find((p) => {
                     return p.currency.toLowerCase() === price.get('currency').toLowerCase();
                 });
 
@@ -1980,9 +2082,14 @@ module.exports = class MemberRepository {
                         }]
                     }, options)).toJSON();
                     zeroValuePrice = product.stripePrices.find((p) => {
-                        return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0;
+                        return p.currency.toLowerCase() === price.get('currency').toLowerCase() && p.amount === 0 && this.isComplimentaryPlanNickname(p.nickname);
                     });
-                    zeroValuePrices.push(zeroValuePrice);
+                    if (!zeroValuePrice) {
+                        throw new errors.NotFoundError({
+                            message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "${price.get('currency')}" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                        });
+                    }
+                    complimentaryPrices.push(zeroValuePrice);
                 }
 
                 const stripeSubscription = await this._stripeAPIService.getSubscription(
@@ -2014,7 +2121,7 @@ module.exports = class MemberRepository {
                 name: stripeCustomer.name
             }, sharedOptions);
 
-            let zeroValuePrice = zeroValuePrices[0];
+            let zeroValuePrice = complimentaryPrices[0];
 
             if (!zeroValuePrice) {
                 const product = (await this._productRepository.update({
@@ -2030,9 +2137,14 @@ module.exports = class MemberRepository {
                     }]
                 }, sharedOptions)).toJSON();
                 zeroValuePrice = product.stripePrices.find((price) => {
-                    return price.currency.toLowerCase() === 'usd' && price.amount === 0;
+                    return price.currency.toLowerCase() === 'usd' && price.amount === 0 && this.isComplimentaryPlanNickname(price.nickname);
                 });
-                zeroValuePrices.push(zeroValuePrice);
+                if (!zeroValuePrice) {
+                    throw new errors.NotFoundError({
+                        message: `Failed to locate a complimentary (zero-amount, nickname matched by isComplimentaryPlanNickname) Stripe price for currency "USD" on product ${product.id} after update. Returned stripePrices: ${JSON.stringify(product.stripePrices)}`
+                    });
+                }
+                complimentaryPrices.push(zeroValuePrice);
             }
 
             const subscription = await this._stripeAPIService.createSubscription(

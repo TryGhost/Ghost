@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {Blob} = require('node:buffer');
 const path = require('path');
 const fs = require('fs-extra');
 const supertest = require('supertest');
@@ -73,6 +74,21 @@ describe('Media API', function () {
 
             assert.match(new URL(res.body.media[0].url).pathname, /\/content\/media\/\d+\/\d+\/sample_640x360\.ogv/);
             assert.equal(res.body.media[0].ref, 'https://ghost.org/sample_640x360.ogv');
+
+            media.push(new URL(res.body.media[0].url).pathname);
+        });
+
+        it('Can upload an Ogg audio with application/ogg content type', async function () {
+            const res = await request.post(localUtils.API.getApiQuery('media/upload'))
+                .set('Origin', config.get('url'))
+                .expect('Content-Type', /json/)
+                .field('ref', 'https://ghost.org/sample.ogg')
+                .attach('file', path.join(__dirname, '/../../utils/fixtures/media/sample.ogg'), {filename: 'sample.ogg', contentType: 'application/ogg'})
+                .attach('thumbnail', path.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png'))
+                .expect(201);
+
+            assert.match(new URL(res.body.media[0].url).pathname, /\/content\/media\/\d+\/\d+\/sample\.ogg/);
+            assert.equal(res.body.media[0].ref, 'https://ghost.org/sample.ogg');
 
             media.push(new URL(res.body.media[0].url).pathname);
         });
@@ -176,10 +192,9 @@ describe('Media API', function () {
 
             // Note: still using png mime type here but it doesn't matter because we're sending an invalid
             // request body anyway
-            const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+            const blob = new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==', 'base64')], {type: 'image/png'});
             const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n\r\n';
 
-            // eslint-disable-next-line no-undef
             const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
                 type: 'multipart/form-data; boundary=boundary'
             })).text();
@@ -198,12 +213,11 @@ describe('Media API', function () {
 
             // Note: still using png mime type here but it doesn't matter because we're sending an invalid
             // request body anyway
-            const blob = await fetch('data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==').then(res => res.blob());
+            const blob = new Blob([Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAUAAAAFCAYAAACNbyblAAAAHElEQVQI12P4//8/w38GIAXDIBKE0DHxgljNBAAO9TXL0Y4OHwAAAABJRU5ErkJggg==', 'base64')], {type: 'image/png'});
 
             // Note: this differs from above test by not including the boundary at the end of the payload
             const brokenPayload = '--boundary\r\nContent-Disposition: form-data; name=\"image\"; filename=\"example.png\"\r\nContent-Type: image/png\r\n';
 
-            // eslint-disable-next-line no-undef
             const brokenDataBlob = await (new Blob([brokenPayload, blob.slice(0, Math.floor(blob.size / 2))], {
                 type: 'multipart/form-data; boundary=boundary'
             })).text();

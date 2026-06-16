@@ -6,12 +6,14 @@ import {useReadComment, useThreadComments} from '@tryghost/admin-x-framework/api
 
 interface CommentThreadSidebarProps {
     commentId: string | null;
+    dislikesEnabled: boolean;
     open: boolean;
     onOpenChange: (open: boolean) => void;
 }
 
 const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
     commentId,
+    dislikesEnabled,
     open,
     onOpenChange
 }) => {
@@ -23,11 +25,13 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
         hasNextPage,
         isFetchingNextPage
     } = useThreadComments(commentId ?? '', {
+        dislikesEnabled,
         enabled: open && !!commentId
     });
 
     // Fetch the selected comment separately using the read endpoint
     const {data: selectedData, isLoading: isLoadingSelected, isError: isSelectedError} = useReadComment(commentId ?? '', {
+        dislikesEnabled,
         enabled: open && !!commentId
     });
 
@@ -44,7 +48,7 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
 
     return (
         <Sheet open={open} onOpenChange={onOpenChange}>
-            <SheetContent className='overflow-y-auto px-6 pt-0 sm:max-w-[600px]'>
+            <SheetContent className='overflow-y-auto px-6 pt-0 sm:max-w-[420px]'>
                 <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
                     <SheetTitle className='text-md'>Thread</SheetTitle>
                 </SheetHeader>
@@ -93,6 +97,7 @@ const CommentThreadSidebar: React.FC<CommentThreadSidebarProps> = ({
                         </div>
                     ) : (
                         <CommentThreadList
+                            dislikesEnabled={dislikesEnabled}
                             fetchNextPage={fetchNextPage}
                             hasNextPage={hasNextPage}
                             isFetchingNextPage={isFetchingNextPage}

@@ -4,6 +4,8 @@ import {getGiftRedemptionErrorMessage, getGiftRedemptionSuccessMessage} from './
 import {createNotification, createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
 import {t} from './utils/i18n';
 
+const CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION = 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION';
+
 function switchPage({data, state}) {
     return {
         page: data.page,
@@ -41,12 +43,18 @@ function back({state}) {
 
 function closePopup({state}) {
     removePortalLinkFromUrl();
+    // Drop any one-shot post-sign-in redirect (e.g. set when sign-in is opened
+    // from a comment "Reply") so a dismissed sign-in can't leak its redirect into
+    // a later, unrelated sign-in on the same page. Other pageData is preserved.
+    const pageData = {...(state.pageData || {})};
+    delete pageData.redirect;
     return {
         showPopup: false,
         lastPage: null,
         pageQuery: '',
         popupNotification: null,
-        page: state.page === 'magiclink' ? '' : state.page
+        page: state.page === 'magiclink' ? '' : state.page,
+        pageData
     };
 }
 
@@ -186,12 +194,13 @@ async function signup({data, state, api}) {
             const integrityToken = await api.member.getIntegrityToken();
             ({inboxLinks} = await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data, name}));
         } else {
-            if (tierId && cadence) {
-                await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
-            } else {
+            // An existing (logged-in) member starting a paid checkout is upgrading, not signing up,
+            // so flag it as an upgrade to suppress the signup email.
+            const metadata = state.member ? {checkoutType: 'upgrade'} : undefined;
+            if (!tierId || !cadence) {
                 ({tierId, cadence} = getProductCadenceFromPrice({site: state?.site, priceId: plan}));
-                await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId});
             }
+            await api.member.checkoutPlan({plan, tierId, cadence, email, name, newsletters, offerId, metadata});
             return {
                 page: 'loading'
             };
@@ -206,6 +215,28 @@ async function signup({data, state, api}) {
             }
         };
     } catch (e) {
+        if (e.code === CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION) {
+            if (state.member) {
+                return {
+                    action: 'signup:failed',
+                    popupNotification: createPopupNotification({
+                        type: 'signup:failed', autoHide: false, closeable: true, state, status: 'error',
+                        message: t('You already have an active subscription.')
+                    })
+                };
+            }
+
+            return {
+                page: 'magiclink',
+                lastPage: 'signin',
+                pageData: {
+                    ...(state.pageData || {}),
+                    email: (data?.email || '').trim()
+                },
+                popupNotification: null
+            };
+        }
+
         const message = chooseBestErrorMessage(e, t('Failed to sign up, please try again'));
         return {
             action: 'signup:failed',
@@ -340,8 +371,12 @@ async function continueGiftSubscription({state, api}) {
 
 async function checkoutGift({data, state, api}) {
     try {
-        const {tierId, cadence} = data;
-        await api.member.checkoutGift({tierId, cadence});
+        const {tierId, cadence, email} = data;
+        await api.member.checkoutGift({
+            tierId,
+            cadence,
+            ...(email ? {email} : {})
+        });
         return {
             action: 'checkoutGift:success'
         };

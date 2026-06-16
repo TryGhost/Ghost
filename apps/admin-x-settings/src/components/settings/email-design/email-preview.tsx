@@ -1,13 +1,14 @@
 import React from 'react';
 import {GhostOrb} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
-import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {resolveAllColors, resolveImageCorners} from './design-utils';
-import {useGlobalData} from '../../providers/global-data-provider';
 import type {EmailDesignSettings} from './types';
 
 interface EmailPreviewProps {
     settings: EmailDesignSettings;
+    accentColor: string;
+    publicationIcon?: string | null;
+    siteTitle?: string | null;
     senderName?: string;
     senderEmail?: string;
     replyToEmail?: string;
@@ -41,7 +42,7 @@ const EnvelopeHeader: React.FC<{
     }
 
     return (
-        <div className="flex flex-col justify-center gap-1 border-b border-grey-200 bg-white p-6 text-sm text-grey-700">
+        <div className="flex flex-col justify-center gap-1 border-b border-grey-200 bg-white p-6 text-grey-700">
             {senderDisplay && (
                 <div>
                     <span className="font-semibold text-grey-900">From:</span> {senderDisplay}
@@ -127,20 +128,17 @@ const Footer: React.FC<{siteTitle?: string; footerLinkText?: string; emailFooter
 
 // --- Main component ---
 
-const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, senderEmail, replyToEmail, subject, showRecipientLine = true, showSubjectLine = true, headerImage, showPublicationIcon = false, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
-    const {settings: globalSettings, siteData} = useGlobalData();
-    const [siteTitle, icon] = getSettingValues<string>(globalSettings, ['title', 'icon']);
-    const accentColor = siteData.accent_color;
-
+const EmailPreview: React.FC<EmailPreviewProps> = ({settings, accentColor, publicationIcon, siteTitle, senderName, senderEmail, replyToEmail, subject, showRecipientLine = true, showSubjectLine = true, headerImage, showPublicationIcon = false, showPublicationTitle = true, showBadge = true, emailFooter, footerLinkText, children}) => {
     const colors = resolveAllColors(settings, accentColor);
     const imageCornerClass = resolveImageCorners(settings.image_corners);
+    const resolvedSiteTitle = siteTitle || undefined;
 
     return (
         <div className="mx-auto flex max-h-full min-h-0 w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
             <EnvelopeHeader replyToEmail={replyToEmail} senderEmail={senderEmail} senderName={senderName} showRecipientLine={showRecipientLine} showSubjectLine={showSubjectLine} subject={subject} />
 
             <div
-                className="min-h-0 w-full flex-1 overflow-y-auto text-sm"
+                className="min-h-0 w-full flex-1 overflow-y-auto"
                 style={{backgroundColor: colors.backgroundColor}}
             >
                 <div className="px-[7rem]" style={{backgroundColor: colors.headerBackgroundColor === 'transparent' ? undefined : colors.headerBackgroundColor}}>
@@ -152,17 +150,17 @@ const EmailPreview: React.FC<EmailPreviewProps> = ({settings, senderName, sender
 
                     <PublicationHeader
                         backgroundColor="transparent"
-                        iconUrl={icon}
-                        showIcon={showPublicationIcon && Boolean(icon)}
+                        iconUrl={publicationIcon}
+                        showIcon={showPublicationIcon && Boolean(publicationIcon)}
                         showTitle={showPublicationTitle}
-                        siteTitle={siteTitle}
+                        siteTitle={resolvedSiteTitle}
                         textColor={colors.headerTextColor}
                     />
                 </div>
 
                 {children}
 
-                <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} footerLinkText={footerLinkText} showBadge={showBadge} siteTitle={siteTitle} textColor={colors.textColor} />
+                <Footer color={colors.secondaryTextColor} emailFooter={emailFooter} footerLinkText={footerLinkText} showBadge={showBadge} siteTitle={resolvedSiteTitle} textColor={colors.textColor} />
             </div>
         </div>
     );

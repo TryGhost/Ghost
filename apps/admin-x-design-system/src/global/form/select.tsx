@@ -32,7 +32,7 @@ export interface SelectControlClasses {
     clearIndicator?: string;
 }
 
-export type LoadSelectOptions = (inputValue: string, callback: (options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>) => void) => void
+export type LoadSelectOptions = (inputValue: string, callback: (options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>) => void) => void;
 
 type SelectOptionProps = {
     async: true;
@@ -44,7 +44,7 @@ type SelectOptionProps = {
     options: OptionsOrGroups<SelectOption, GroupBase<SelectOption>>;
     defaultOptions?: never;
     loadOptions?: never;
-}
+};
 
 export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
     async?: boolean;
@@ -52,9 +52,9 @@ export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
     hideTitle?: boolean;
     size?: 'xs' | 'md';
     prompt?: string;
-    selectedOption?: SelectOption
+    selectedOption?: SelectOption;
     onSelect: (option: SelectOption | null) => void;
-    error?:boolean;
+    error?: boolean;
     hint?: React.ReactNode;
     clearBg?: boolean;
     border?: boolean;
@@ -65,7 +65,7 @@ export type SelectProps = Props<SelectOption, false> & SelectOptionProps & {
     unstyled?: boolean;
     disabled?: boolean;
     testId?: string;
-}
+};
 
 const DropdownIndicator: React.FC<DropdownIndicatorProps<SelectOption, false> & {clearBg: boolean}> = ({clearBg, ...props}) => (
     <components.DropdownIndicator {...props}>
@@ -86,7 +86,7 @@ const ClearIndicator: React.FC<ClearIndicatorProps<SelectOption, false>> = props
 const Option: React.FC<OptionProps<SelectOption, false>> = ({children, ...optionProps}) => (
     <components.Option {...optionProps}>
         <span className={optionProps.isSelected ? 'relative flex w-full items-center justify-between gap-2' : ''} data-testid="select-option" data-value={optionProps.data.value}>{children}{optionProps.isSelected && <span><Icon name='check' size={14} /></span>}</span>
-        {optionProps.data.hint && <span className="block text-xs text-grey-700 dark:text-grey-300">{optionProps.data.hint}</span>}
+        {optionProps.data.hint && <span className="block text-sm text-grey-700 dark:text-grey-300">{optionProps.data.hint}</span>}
     </components.Option>
 );
 
@@ -151,7 +151,7 @@ const Select: React.FC<SelectProps> = ({
         containerClasses = clsx(
             'dark:text-white',
             fullWidth && 'w-full',
-            disabled && 'cursor-not-allowed opacity-40'
+            disabled && 'cursor-not-allowed text-grey-600 dark:text-grey-800'
         );
     }
     containerClasses = clsx(
@@ -162,23 +162,25 @@ const Select: React.FC<SelectProps> = ({
     const customClasses = {
         control: clsx(
             controlClasses?.control,
-            'h-9 min-h-[36px] w-full appearance-none rounded-lg border outline-hidden md:h-[38px] md:min-h-[38px] dark:text-white',
-            size === 'xs' ? 'py-0 pr-2 text-xs' : 'py-1 pr-4',
-            clearBg ? '' : 'bg-grey-150 px-3 dark:bg-grey-900',
-            error ? 'border-red' : `border-transparent ${!clearBg && 'hover:bg-grey-100 dark:hover:bg-grey-925'}`,
+            'h-[var(--control-height)] !min-h-[var(--control-height)] w-full appearance-none rounded-lg border outline-hidden',
+            size === 'xs' ? 'py-0 pr-2 text-sm' : 'py-1 pr-4',
+            clearBg ? '' : 'bg-grey-100 px-3 dark:bg-grey-900',
+            disabled && !clearBg && 'bg-grey-50 shadow-[0_0_0_1px_rgba(255,255,255,0.45)] hover:bg-grey-50 dark:bg-grey-950 dark:shadow-[0_0_0_1px_rgba(255,255,255,0.18)] dark:hover:bg-grey-950',
+            error ? 'border-red' : `border-transparent ${!clearBg && !disabled && 'hover:bg-grey-100 dark:hover:bg-grey-900'}`,
             !disabled && 'cursor-pointer',
+            disabled ? 'dark:text-grey-800' : 'dark:text-white',
             (title && !clearBg) && 'mt-1.5'
         ),
         valueContainer: clsx('mr-1.5 gap-1', controlClasses?.valueContainer),
         placeHolder: clsx('text-grey-700 dark:text-grey-800', controlClasses?.placeHolder),
         menu: clsx(
             '!z-[300] mt-0.5 overflow-hidden rounded-lg bg-white shadow-lg dark:border dark:border-grey-900 dark:bg-black',
-            size === 'xs' && 'text-xs',
+            size === 'xs' && 'text-sm',
             controlClasses?.menu
         ),
         option: clsx('group px-3 py-[7px] hover:cursor-pointer hover:bg-grey-100 dark:text-white dark:hover:bg-grey-900', controlClasses?.option),
         noOptionsMessage: clsx('nowrap p-3 text-grey-600', controlClasses?.noOptionsMessage),
-        groupHeading: clsx('px-3 py-[7px] text-2xs font-semibold tracking-wide text-grey-700 uppercase', controlClasses?.groupHeading),
+        groupHeading: clsx('px-3 py-[7px] text-xs font-semibold tracking-wide text-grey-700 uppercase', controlClasses?.groupHeading),
         clearIndicator: clsx('', controlClasses?.clearIndicator)
     };
 
@@ -210,8 +212,7 @@ const Select: React.FC<SelectProps> = ({
             control: () => customClasses.control,
             placeholder: () => customClasses.placeHolder,
             menu: () => customClasses.menu,
-            /* eslint-disable @typescript-eslint/no-explicit-any */
-            option: (state: any) => {
+            option: (state: OptionProps<SelectOption, false>) => {
                 if (state.data.className) {
                     return clsx(customClasses.option, state.data.className);
                 }

@@ -2,11 +2,13 @@ import InvalidThemeModal, {type FatalErrors} from './invalid-theme-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
-import {Button, type ButtonProps, ConfirmationModal, List, ListItem, Menu, ModalPage, showToast} from '@tryghost/admin-x-design-system';
+import {Button, type ButtonProps, ConfirmationModal, LimitModal, List, ListItem, Menu, ModalPage, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Theme, isActiveTheme, isDefaultTheme, isDeletableTheme, isLegacyTheme, useActivateTheme, useDeleteTheme} from '@tryghost/admin-x-framework/api/themes';
 import {downloadFile, getGhostPaths} from '@tryghost/admin-x-framework/helpers';
+import {useCheckThemeLimitError} from '../../../../hooks/use-check-theme-limit-error';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 interface ThemeActionProps {
     theme: Theme;
@@ -25,14 +27,14 @@ function getThemeLabel(theme: Theme): React.ReactNode {
         label += ' (legacy)';
     } else if (theme.package?.name !== theme.name) {
         label =
-            <span className='text-sm md:text-base'>
+            <span className='md:text-base'>
                 {label} <span className='text-grey-600'>({theme.name})</span>
             </span>;
     }
 
     if (isActiveTheme(theme)) {
         label =
-            <span className="text-sm font-bold md:text-base">
+            <span className="font-bold md:text-base">
                 {label} &mdash; <span className='text-green'> Active</span>
             </span>;
     }
@@ -51,6 +53,8 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     const {mutateAsync: deleteTheme} = useDeleteTheme();
     const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
+    const {route, updateRoute} = useRouting();
+    const {checkThemeLimitError} = useCheckThemeLimitError();
 
     const handleActivate = async () => {
         try {
@@ -64,7 +68,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         } catch (e) {
             let fatalErrors: FatalErrors | null = null;
             if (e instanceof JSONError && e.response?.status === 422 && e.data?.errors) {
-                fatalErrors = (e.data.errors as any) as FatalErrors;
+                fatalErrors = e.data.errors as unknown as FatalErrors;
             } else {
                 handleError(e);
             }
@@ -122,6 +126,20 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         });
     };
 
+    const handleEditCode = async () => {
+        const limitError = await checkThemeLimitError('.');
+
+        if (limitError) {
+            NiceModal.show(LimitModal, {
+                prompt: limitError,
+                onOk: () => updateRoute({route: '/pro', isExternal: true})
+            });
+            return;
+        }
+
+        updateRoute(`theme/edit/${encodeURIComponent(theme.name)}?from=${encodeURIComponent(route ?? '')}`);
+    };
+
     let actions = [];
 
     if (!isActiveTheme(theme)) {
@@ -138,6 +156,11 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
     }
 
     let menuItems = [
+        {
+            id: 'edit-code',
+            label: 'Edit code',
+            onClick: handleEditCode
+        },
         {
             id: 'download',
             label: 'Download',

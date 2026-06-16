@@ -25,7 +25,13 @@ describe('Exporter', function () {
         const tables = [
             'actions',
             'api_keys',
+            'automation_action_edges',
+            'automation_action_revisions',
+            'automation_actions',
+            'automation_run_steps',
+            'automation_runs',
             'automated_email_recipients',
+            'automations',
             'benefits',
             'brute',
             'collections',
@@ -50,6 +56,7 @@ describe('Exporter', function () {
             'members_cancel_events',
             'members_click_events',
             'members_created_events',
+            'members_current_subscription',
             'members_email_change_events',
             'members_feedback',
             'members_labels',
@@ -102,8 +109,7 @@ describe('Exporter', function () {
             'users',
             'webhooks',
             'welcome_email_automated_emails',
-            'welcome_email_automation_runs',
-            'welcome_email_automations'
+            'welcome_email_automation_runs'
         ];
 
         assertExists(exportData);

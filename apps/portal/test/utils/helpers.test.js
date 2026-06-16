@@ -1,6 +1,6 @@
 import {
     getActiveInterval,
-    hasGiftSubscriptions,
+    arePaidMembersEnabled,
     hasAvailablePrices,
     getAllProductsForSite,
     getAvailableProducts,
@@ -707,7 +707,7 @@ describe('Helpers - ', () => {
             const actual = getAvailableProducts({
                 site: {
                     ...FixturesSite.multipleTiers.basic,
-                    is_stripe_configured: false
+                    paid_members_enabled: false
                 }
             });
 
@@ -918,21 +918,21 @@ describe('Helpers - ', () => {
         });
     });
 
-    describe('hasGiftSubscriptions', () => {
-        test('returns true when labs flag is enabled', () => {
-            expect(hasGiftSubscriptions({site: {labs: {giftSubscriptions: true}}})).toBe(true);
+    describe('arePaidMembersEnabled', () => {
+        test('returns true when paid_members_enabled is true', () => {
+            expect(arePaidMembersEnabled({site: {paid_members_enabled: true}})).toBe(true);
         });
 
-        test('returns false when labs flag is disabled', () => {
-            expect(hasGiftSubscriptions({site: {labs: {giftSubscriptions: false}}})).toBe(false);
+        test('returns false when paid_members_enabled is false', () => {
+            expect(arePaidMembersEnabled({site: {paid_members_enabled: false}})).toBe(false);
         });
 
-        test('returns false when labs flag is missing', () => {
-            expect(hasGiftSubscriptions({site: {labs: {}}})).toBe(false);
+        test('returns false when paid_members_enabled is missing', () => {
+            expect(arePaidMembersEnabled({site: {}})).toBe(false);
         });
 
-        test('returns false when labs is undefined', () => {
-            expect(hasGiftSubscriptions({site: {}})).toBe(false);
+        test('returns false when site is undefined', () => {
+            expect(arePaidMembersEnabled({})).toBe(false);
         });
     });
 

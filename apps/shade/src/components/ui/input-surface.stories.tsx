@@ -4,11 +4,11 @@ import {inputSurface, inputSurfaceClasses} from './input-surface';
 
 /**
  * Docs-only Storybook entry for the `inputSurface` recipe.
- * Lives under "Foundations" rather than "Components" because there's no component to render —
+ * Lives under "Recipes" rather than "Components" because there's no component to render —
  * just a shared visual recipe that powers Input, Textarea, InputGroup and the Select trigger.
  */
 const meta: Meta = {
-    title: 'Foundations / Input Surface',
+    title: 'Recipes / Input Surface',
     tags: ['autodocs'],
     parameters: {
         docs: {

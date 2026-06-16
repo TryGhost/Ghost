@@ -1,6 +1,7 @@
 import React, {useMemo} from 'react';
-import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue, Separator} from '@tryghost/shade/components';
+import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Separator} from '@tryghost/shade/components';
 import {HTable} from '@tryghost/shade/primitives';
+import {KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from '@tryghost/shade/patterns';
 import {LucideIcon, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {NewsletterRadialChart, NewsletterRadialChartData} from '../../Newsletter/components/newsletter-radial-chart';
 import {Post} from '@tryghost/admin-x-framework/api/posts';

@@ -1,10 +1,10 @@
 import React from 'react';
 import ActionButton from '../common/action-button';
 import AppContext from '../../app-context';
-import {ReactComponent as CheckmarkIcon} from '../../images/icons/checkmark.svg';
+import CheckmarkIcon from '../../images/icons/checkmark.svg?react';
 import CloseButton from '../common/close-button';
 import InputForm from '../common/input-form';
-import {getCurrencySymbol, getProductFromId, hasMultipleProductsFeature, getUpdatedOfferPrice, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
+import {getCurrencySymbol, getProductFromId, getUpdatedOfferPrice, formatNumber, hasMultipleNewsletters} from '../../utils/helpers';
 import {ValidateInputForm} from '../../utils/form';
 import {interceptAnchorClicks} from '../../utils/links';
 import {sanitizeHtml} from '../../utils/sanitize-html';
@@ -276,7 +276,7 @@ export default class OfferPage extends React.Component {
 
     handleSignup(e) {
         e.preventDefault();
-        const {pageData: offer, site} = this.context;
+        const {pageData: offer, site, member} = this.context;
         if (!offer || !offer.tier) {
             return null;
         }
@@ -298,7 +298,9 @@ export default class OfferPage extends React.Component {
                     offerId: offer?.id,
                     phonenumber
                 };
-                if (hasMultipleNewsletters({site})) {
+                // Logged-in members are upgrading and already have newsletter preferences,
+                // so they skip the newsletter selection step that new signups see.
+                if (hasMultipleNewsletters({site}) && !member) {
                     this.setState({
                         showNewsletterSelection: true,
                         pageData: signupData,
@@ -470,7 +472,7 @@ export default class OfferPage extends React.Component {
         const benefitsUI = benefits.map((benefit, idx) => {
             return (
                 <div className="gh-portal-product-benefit" key={`${benefit.name}-${idx}`}>
-                    <CheckmarkIcon className='gh-portal-benefit-checkmark' />
+                    <CheckmarkIcon className='gh-portal-benefit-checkmark' aria-hidden='true' />
                     <div className="gh-portal-benefit-title">{benefit.name}</div>
                 </div>
             );
@@ -523,7 +525,7 @@ export default class OfferPage extends React.Component {
         };
 
         const originalPrice = this.getOriginalPrice({offer, product});
-        const renewsLabel = t(`Renews at {price}.`, {price: originalPrice, interpolation: {escapeValue: false}});
+        const renewsLabel = t(`Renews at {price}.`, {price: originalPrice});
 
         let offerLabel = '';
         let useRenewsLabel = false;
@@ -546,8 +548,7 @@ export default class OfferPage extends React.Component {
             return (
                 <p className="footnote" data-testid="offer-message">{t('Try free for {amount} days, then {originalPrice}.', {
                     amount: offer.amount,
-                    originalPrice: originalPrice,
-                    interpolation: {escapeValue: false}
+                    originalPrice: originalPrice
                 })} <span className="gh-portal-cancel">{t('Cancel anytime.')}</span></p>
             );
         }
@@ -557,15 +558,8 @@ export default class OfferPage extends React.Component {
     }
 
     renderProductLabel({product, offer}) {
-        const {site} = this.context;
-
-        if (hasMultipleProductsFeature({site})) {
-            return (
-                <h4 className="gh-portal-plan-name">{product.name} - {(offer.cadence === 'month' ? t('Monthly') : t('Yearly'))}</h4>
-            );
-        }
         return (
-            <h4 className="gh-portal-plan-name">{(offer.cadence === 'month' ? t('Monthly') : t('Yearly'))}</h4>
+            <h4 className="gh-portal-plan-name">{product.name} - {(offer.cadence === 'month' ? t('Monthly') : t('Yearly'))}</h4>
         );
     }
 

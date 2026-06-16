@@ -3,6 +3,7 @@ import AppError from '@components/layout/error';
 import {Navigate, Outlet, RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
 
 const basePath = import.meta.env.VITE_TEST ? '' : 'activitypub';
+const accountMigrationPath = 'preferences/move';
 
 export type CustomRouteObject = RouteObject & {
     pageTitle?: string;
@@ -104,6 +105,12 @@ export const routes: CustomRouteObject[] = [
             {
                 path: 'preferences/bluesky-sharing',
                 lazy: lazyComponent(() => import('./views/preferences/components/bluesky-sharing')),
+                showBackButton: true
+            },
+            {
+                path: accountMigrationPath,
+                lazy: lazyComponent(() => import('./views/preferences/components/account-migration')),
+                pageTitle: 'Account migration',
                 showBackButton: true
             },
             {

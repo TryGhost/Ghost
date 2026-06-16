@@ -1,15 +1,15 @@
 import CommentContent from './comment-content';
 import CommentThreadSidebar from './comment-thread-sidebar';
 import LoadMoreButton from '@components/virtual-table/load-more-button';
-import {Button} from '@tryghost/shade/components';
-import {Comment, useHideComment, useShowComment} from '@tryghost/admin-x-framework/api/comments';
-import {CommentAvatar} from './comment-avatar';
+import {Avatar, Button} from '@tryghost/shade/components';
+import {Comment, useHideComment, useShowComment, useUnpinComment} from '@tryghost/admin-x-framework/api/comments';
 import {CommentHeader} from './comment-header';
 import {CommentMenu} from './comment-menu';
 import {CommentMetrics, buildThreadLink} from './comment-metrics';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {forwardRef, useEffect, useRef, useState} from 'react';
+import {useCommentsPinningEnabled} from '@src/hooks/use-comments-pinning-enabled';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
@@ -47,7 +47,8 @@ function CommentsList({
     fetchNextPage,
     resetKey,
     onAddFilter,
-    isLoading
+    isLoading,
+    dislikesEnabled
 }: {
     items: Comment[];
     totalItems: number;
@@ -57,6 +58,7 @@ function CommentsList({
     resetKey: string;
     onAddFilter: (field: string, value: string, operator?: string) => void;
     isLoading?: boolean;
+    dislikesEnabled: boolean;
 }) {
     const parentRef = useRef<HTMLDivElement>(null);
     const {visibleItemCount, canLoadMore, loadMore} = useVirtualListWindow(totalItems, {resetKey});
@@ -66,6 +68,8 @@ function CommentsList({
 
     const {mutate: hideComment} = useHideComment();
     const {mutate: showComment} = useShowComment();
+    const {mutate: unpinComment} = useUnpinComment();
+    const commentsPinningEnabled = useCommentsPinningEnabled();
 
     const handleCloseSidebar = (open: boolean) => {
         setThreadSidebarOpen(open);
@@ -112,7 +116,7 @@ function CommentsList({
     });
 
     return (
-        <div ref={parentRef} className="overflow-hidden">
+        <div ref={parentRef} className="overflow-hidden border-t">
             <div
                 className="flex flex-col"
                 data-testid="comments-list"
@@ -131,7 +135,7 @@ function CommentsList({
                             <div
                                 key={key}
                                 {...props}
-                                className="grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-muted/50 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]"
+                                className='grid w-full grid-cols-1 items-start justify-between gap-4 border-b p-3 hover:bg-muted/50 md:p-5 lg:grid-cols-[minmax(0,1fr)_144px]'
                                 data-testid="comment-list-row"
                                 onClick={() => {
                                     // Close sidebar when clicking on a comment in the main list
@@ -141,43 +145,48 @@ function CommentsList({
                                 }}
                             >
                                 <div className='flex items-start gap-3'>
-                                    <CommentAvatar
-                                        avatarImage={item.member?.avatar_image}
-                                        isHidden={item.status === 'hidden'}
-                                        memberId={item.member?.id}
+                                    <Avatar
+                                        className={cn('mt-0.5 size-6 md:size-8', item.status === 'hidden' && 'opacity-50')}
+                                        email={item.member?.email}
+                                        name={item.member?.name}
+                                        src={item.member?.avatar_image}
                                     />
 
-                                    <div className='flex min-w-0 flex-col'>
-                                        <CommentHeader
-                                            canComment={item.member?.can_comment}
-                                            createdAt={item.created_at}
-                                            isHidden={item.status === 'hidden'}
-                                            memberId={item.member?.id}
-                                            memberName={item.member?.name}
-                                            postTitle={item.post?.title}
-                                            onAuthorClick={item.member?.id ? () => onAddFilter('author', item.member!.id) : undefined}
-                                            onPostClick={item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined}
-                                        />
+                                    <div className='flex min-w-0 flex-col gap-3'>
+                                        <div>
+                                            <CommentHeader
+                                                canComment={item.member?.can_comment}
+                                                createdAt={item.created_at}
+                                                isHidden={item.status === 'hidden'}
+                                                isPinned={commentsPinningEnabled && item.pinned}
+                                                memberId={item.member?.id}
+                                                memberName={item.member?.name}
+                                                postTitle={item.post?.title}
+                                                onAuthorClick={item.member?.id ? () => onAddFilter('author', item.member!.id) : undefined}
+                                                onPostClick={item.post?.id ? () => onAddFilter('post', item.post!.id) : undefined}
+                                                onUnpinClick={commentsPinningEnabled ? () => unpinComment({id: item.id}) : undefined}
+                                            />
 
-                                        {item.in_reply_to_snippet && (
-                                            <div className={`mb-1 line-clamp-1 max-w-3xl text-sm ${item.status === 'hidden' && 'opacity-50'}`}>
-                                                <span className="text-muted-foreground">Replied to:</span>&nbsp;
-                                                <Link
-                                                    className="text-sm font-normal text-muted-foreground hover:text-foreground"
-                                                    data-testid="replied-to-link"
-                                                    to={buildThreadLink(searchParams, item.in_reply_to_id || item.parent_id) || ''}
-                                                    onClick={(e) => {
-                                                        e.stopPropagation();
-                                                    }}
-                                                >
-                                                    {item.in_reply_to_snippet}
-                                                </Link>
-                                            </div>
-                                        )}
+                                            {item.in_reply_to_snippet && (
+                                                <div className={`mb-1 line-clamp-1 max-w-3xl ${item.status === 'hidden' && 'opacity-50'}`}>
+                                                    <span className="text-muted-foreground">Replied to:</span>&nbsp;
+                                                    <Link
+                                                        className="text-sm font-normal text-muted-foreground hover:text-foreground"
+                                                        data-testid="replied-to-link"
+                                                        to={buildThreadLink(searchParams, item.in_reply_to_id || item.parent_id) || ''}
+                                                        onClick={(e) => {
+                                                            e.stopPropagation();
+                                                        }}
+                                                    >
+                                                        {item.in_reply_to_snippet}
+                                                    </Link>
+                                                </div>
+                                            )}
+                                        </div>
 
                                         <CommentContent item={item} />
 
-                                        <div className="mt-4 flex flex-row flex-nowrap items-center gap-3">
+                                        <div className="flex flex-row flex-nowrap items-center gap-3">
                                             {item.status === 'published' && (
                                                 <Button className='text-foreground' size="sm" variant="outline" onClick={() => hideComment({id: item.id})}>
                                                     <LucideIcon.EyeOff/>
@@ -193,6 +202,7 @@ function CommentsList({
                                             <CommentMetrics
                                                 className="ml-2"
                                                 comment={item}
+                                                dislikesEnabled={dislikesEnabled}
                                             />
                                             <CommentMenu
                                                 comment={item}
@@ -223,6 +233,7 @@ function CommentsList({
 
             <CommentThreadSidebar
                 commentId={selectedThreadCommentId}
+                dislikesEnabled={dislikesEnabled}
                 open={threadSidebarOpen}
                 onOpenChange={handleCloseSidebar}
             />

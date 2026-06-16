@@ -636,8 +636,8 @@
                     "object_type": "offer"
                 },
                 {
-                    "name": "Reset all passwords",
-                    "action_type": "resetAllPasswords",
+                    "name": "Reset authentication",
+                    "action_type": "reset",
                     "object_type": "authentication"
                 },
                 {
@@ -1111,7 +1111,7 @@
                     "snippet": "all",
                     "custom_theme_setting": "all",
                     "offer": "all",
-                    "authentication": "resetAllPasswords",
+                    "authentication": "reset",
                     "members_stripe_connect": "auth",
                     "newsletter": "all",
                     "explore": "read",
