@@ -335,6 +335,7 @@ async function initServices() {
     const mediaInliner = require('./server/services/media-inliner');
     const donationService = require('./server/services/donations');
     const giftService = require('./server/services/gifts');
+    const giftLinksService = require('./server/services/gift-links');
     const recommendationsService = require('./server/services/recommendations');
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
@@ -376,6 +377,7 @@ async function initServices() {
         slackNotifications.init(),
         mediaInliner.init(),
         donationService.init(),
+        giftLinksService.init(),
         recommendationsService.init(),
         statsService.init(),
         explorePingService.init(),
