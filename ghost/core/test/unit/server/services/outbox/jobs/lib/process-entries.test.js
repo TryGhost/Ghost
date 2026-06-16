@@ -1,7 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const {captureLoggerOutput, findByEvent} = require('../../../../../../utils/logging-utils');
+const {createProcessEntries} = require('../../../../../../../core/server/services/outbox/jobs/lib/process-entries.js');
+
+const MEMBER_CREATED_EVENT = 'MemberCreatedEvent';
 
 describe('processEntries', function () {
     let processEntries;
@@ -24,16 +26,16 @@ describe('processEntries', function () {
     }
 
     beforeEach(function () {
-        processEntries = rewire('../../../../../../../core/server/services/outbox/jobs/lib/process-entries.js');
-
         handlerStub = {
             handle: sinon.stub().resolves(),
             getLogInfo: sinon.stub().returns('test@example.com'),
             LOG_KEY: '[OUTBOX][MEMBER-WELCOME-EMAIL]'
         };
 
-        processEntries.__set__('EVENT_HANDLERS', {
-            MemberCreatedEvent: handlerStub
+        processEntries = createProcessEntries({
+            eventHandlers: {
+                [MEMBER_CREATED_EVENT]: handlerStub
+            }
         });
 
         dbStub = createDbStub();
@@ -67,7 +69,7 @@ describe('processEntries', function () {
     it('logs structured error when payload parsing fails', async function () {
         const entries = [{
             id: 'entry-2',
-            event_type: 'MemberCreatedEvent',
+            event_type: MEMBER_CREATED_EVENT,
             payload: 'invalid-json',
             retry_count: 0
         }];
@@ -87,7 +89,7 @@ describe('processEntries', function () {
 
         const entries = [{
             id: 'entry-3',
-            event_type: 'MemberCreatedEvent',
+            event_type: MEMBER_CREATED_EVENT,
             payload: JSON.stringify({email: 'test@example.com'}),
             retry_count: 0
         }];
@@ -107,7 +109,7 @@ describe('processEntries', function () {
 
         const entries = [{
             id: 'entry-4',
-            event_type: 'MemberCreatedEvent',
+            event_type: MEMBER_CREATED_EVENT,
             payload: JSON.stringify({email: 'test@example.com'}),
             retry_count: 0
         }];
