@@ -58,6 +58,7 @@ export function generatePendingActivity(actorProps: ActorProperties, id: string,
             // These are used in the app, but are not part of the ObjectProperties type
             id,
             replyCount: 0,
+            likeCount: 0,
             liked: false,
             reposted: false,
             repostCount: 0,

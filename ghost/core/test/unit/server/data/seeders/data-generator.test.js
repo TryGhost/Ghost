@@ -44,6 +44,9 @@ describe('Data Generator', function () {
                             table.index(indexes);
                         }
                         break;
+                    } else if (rowName === '@@PRIMARY_KEY@@') {
+                        table.primary(row);
+                        break;
                     }
 
                     let rowChain = table[row.type.toLowerCase()](rowName);

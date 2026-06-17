@@ -357,7 +357,7 @@ describe('EventRepository', function () {
 
             sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'automatedEmail.automation'],
-                filter: 'custom:true',
+                filter: 'automated_email_id:-null+custom:true',
                 order: 'created_at desc, id desc'
             });
         });
@@ -371,7 +371,7 @@ describe('EventRepository', function () {
 
             sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'automatedEmail.automation'],
-                filter: 'custom:true',
+                filter: 'automated_email_id:-null+custom:true',
                 order: 'created_at desc, id desc'
             });
         });
@@ -386,8 +386,18 @@ describe('EventRepository', function () {
 
             sinon.assert.calledOnceWithMatch(fake, {
                 withRelated: ['member', 'automatedEmail.automation'],
-                filter: 'custom:true',
+                filter: 'automated_email_id:-null+custom:true',
                 order: 'created_at desc, id desc'
+            });
+        });
+
+        it('excludes automation action revision recipients until they are supported in the activity feed', async function () {
+            await eventRepository.getAutomatedEmailSentEvents({
+                order: 'created_at desc, id desc'
+            }, {});
+
+            sinon.assert.calledOnceWithMatch(fake, {
+                filter: 'automated_email_id:-null+custom:true'
             });
         });
 

@@ -435,6 +435,10 @@ async function initBackgroundServices({config}) {
         updateCheck.scheduleBootJob();
     }
 
+    // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
+    const remoteFlags = require('./server/services/remote-flags');
+    remoteFlags.init(config);
+
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
 

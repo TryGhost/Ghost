@@ -1,4 +1,3 @@
-import LikeIcon from '../../../images/icons/like.svg?react';
 import ThumbsDownIcon from '../../../images/icons/thumbs-down.svg?react';
 import ThumbsUpIcon from '../../../images/icons/thumbs-up.svg?react';
 import {Comment, useAppContext} from '../../../app-context';
@@ -10,13 +9,12 @@ type Props = {
     setDisabled?: (disabled: boolean) => void;
 };
 const LikeButton: React.FC<Props> = ({comment, disabled, setDisabled}) => {
-    const {dispatchAction, isMember, hasRequiredTier, capabilities, t} = useAppContext();
+    const {dispatchAction, isMember, hasRequiredTier, t} = useAppContext();
     const [likeAnimation, setLikeAnimation] = useState('');
     const [localDisabled, setLocalDisabled] = useState(false);
 
     const canInteract = isMember && hasRequiredTier;
     const likesCount = comment.count.likes;
-    const dislikesEnabled = capabilities?.dislikes === true;
     const buttonDisabled = disabled ?? localDisabled;
     const setButtonDisabled = setDisabled ?? setLocalDisabled;
 
@@ -50,28 +48,6 @@ const LikeButton: React.FC<Props> = ({comment, disabled, setDisabled}) => {
             setButtonDisabled(false);
         }
     };
-
-    if (!dislikesEnabled) {
-        return (
-            <button
-                aria-label={comment.liked ? t('Remove like') : t('Like')}
-                className={`duration-50 group flex cursor-pointer items-center font-sans text-base outline-0 transition-all ease-linear sm:text-sm ${
-                    comment.liked ? 'text-black/90 dark:text-white/90' : 'text-black/50 hover:text-black/75 dark:text-white/60 dark:hover:text-white/75'
-                }`}
-                data-testid="like-button"
-                disabled={buttonDisabled}
-                type="button"
-                onClick={toggleLike}
-            >
-                <LikeIcon
-                    className={likeAnimation + ` mr-[6px] ${
-                        comment.liked ? 'fill-black dark:fill-white stroke-black dark:stroke-white' : 'stroke-black/50 group-hover:stroke-black/75 dark:stroke-white/60 dark:group-hover:stroke-white/75'
-                    } ${!comment.liked && canInteract && 'group-hover:stroke-black/75 dark:group-hover:stroke-white/75'} transition duration-50 ease-linear`}
-                />
-                {likesCount}
-            </button>
-        );
-    }
 
     return (
         <button

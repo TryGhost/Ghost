@@ -420,16 +420,6 @@ describe('Comments API', function () {
                 ]);
             });
 
-            it('advertises dislike support on comment list responses', async function () {
-                const {body} = await membersAgent
-                    .get(`/api/comments/post/${postId}/`)
-                    .expectStatus(200);
-
-                assert.deepEqual(body.meta.capabilities, {
-                    dislikes: true
-                });
-            });
-
             it('excludes hidden comments', async function () {
                 const hiddenComment = await dbFns.addComment({
                     post_id: postId,

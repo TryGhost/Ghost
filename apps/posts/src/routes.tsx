@@ -1,5 +1,5 @@
+import {type AdminRouteHandle, RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
 import {ErrorPage} from '@tryghost/shade/primitives';
-import {RouteObject, lazyComponent} from '@tryghost/admin-x-framework';
 // import {withFeatureFlag} from '@src/hooks/with-feature-flag';
 
 export const APP_ROUTE_PREFIX = '/';
@@ -78,6 +78,7 @@ export const routes: RouteObject[] = [
                     },
                     {
                         path: ':id',
+                        handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
                         lazy: lazyComponent(() => import('@views/Automations/editor'))
                     }
                 ]

@@ -65,6 +65,12 @@ describe('Pending Activity Utils', function () {
             expect(pendingActivity.object.preview!.type).toBe('Note');
             expect(pendingActivity.object.preview!.content).toBe(content);
             expect(pendingActivity.object.id).toBe(id);
+            expect(pendingActivity.object.attachment).toEqual([]);
+            expect(pendingActivity.object.replyCount).toBe(0);
+            expect(pendingActivity.object.liked).toBe(false);
+            expect(pendingActivity.object.reposted).toBe(false);
+            expect(pendingActivity.object.repostCount).toBe(0);
+            expect(pendingActivity.object.authored).toBe(true);
             expect(pendingActivity.object.attributedTo).toBeDefined();
             expect(pendingActivity.object.attributedTo).toBeInstanceOf(Object);
 
@@ -79,6 +85,39 @@ describe('Pending Activity Utils', function () {
             expect(attributedToIcon.url).toEqual(actor.icon.url);
             expect(attributedToName).toEqual(actor.name);
             expect(attributedToPreferredUsername).toEqual(actor.preferredUsername);
+        });
+
+        it('should attach an uploaded image url to the pending activity', function () {
+            const actor: ActorProperties = {
+                id: 'https://example.com/actor',
+                icon: {
+                    url: 'https://example.com/icon.png'
+                },
+                name: 'Example Actor',
+                preferredUsername: 'example',
+                '@context': '',
+                discoverable: false,
+                featured: '',
+                followers: '',
+                following: '',
+                image: {url: ''},
+                inbox: '',
+                manuallyApprovesFollowers: false,
+                outbox: '',
+                publicKey: {
+                    id: '',
+                    owner: '',
+                    publicKeyPem: ''
+                },
+                published: '',
+                summary: '',
+                type: 'Person',
+                url: 'https://example.com/actor'
+            };
+            const id = generatePendingActivityId();
+            const pendingActivity = generatePendingActivity(actor, id, 'Pending note', 'https://example.com/image.png');
+
+            expect(pendingActivity.object.image).toBe('https://example.com/image.png');
         });
     });
 
