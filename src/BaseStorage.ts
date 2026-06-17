@@ -11,7 +11,7 @@ abstract class StorageBase {
     abstract save(file: StorageBase.StorageFile, targetDir?: string): Promise<string>;
     abstract serve(): RequestHandler;
     abstract delete(fileName: string, targetDir?: string): Promise<void>;
-    abstract read(options: {path: string}): Promise<Buffer>;
+    abstract read(options: StorageBase.ReadOptions): Promise<Buffer>;
     abstract saveRaw(buffer: Buffer, targetPath: string): Promise<string>;
     abstract urlToPath(url: string): string;
 
@@ -85,6 +85,10 @@ declare namespace StorageBase {
         name: string;
         path: string;
         type?: string;
+    };
+
+    export type ReadOptions = {
+        path: string;
     };
 }
 
