@@ -5,7 +5,7 @@ const testUtils = require('../../utils');
 const {mockSetting, restore: restoreMocks} = require('../../utils/e2e-framework-mock-manager');
 
 describe('CommentsService', function () {
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
     beforeEach(testUtils.setup('default'));
     afterEach(testUtils.teardownDb);
 

@@ -115,7 +115,7 @@ describe.skip('Batch sending tests', function () {
         await jobManager.allSettled();
     });
 
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
         agent = agents.adminAgent;
         frontendAgent = agents.frontendAgent;
@@ -131,7 +131,7 @@ describe.skip('Batch sending tests', function () {
         linkClickRepository = linkTrackingService.linkClickRepository;
     });
 
-    after(async function () {
+    afterAll(async function () {
         mockManager.restore();
         await ghostServer.stop();
     });

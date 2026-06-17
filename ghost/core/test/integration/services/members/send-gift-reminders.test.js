@@ -18,7 +18,7 @@ describe('Gift reminder processing', function () {
     let redeemerMember;
     let giftSequence = 0;
 
-    before(async function () {
+    beforeAll(async function () {
         const agent = await agentProvider.getAdminAPIAgent();
 
         await fixtureManager.init('newsletters', 'members:newsletters');
