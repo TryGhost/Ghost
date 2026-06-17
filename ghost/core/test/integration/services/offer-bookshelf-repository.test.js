@@ -11,7 +11,7 @@ const {StripePrice} = require('../../../core/server/models/stripe-price');
 const OfferBookshelfRepository = require('../../../core/server/services/offers/offer-bookshelf-repository');
 
 describe('OfferBookshelfRepository', function () {
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles'));
     afterEach(testUtils.teardownDb);
 

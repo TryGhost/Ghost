@@ -29,7 +29,7 @@ describe('Member Welcome Emails Integration', function () {
     let defaultNewsletterSenderState = null;
     let defaultEmailDesignSettingId;
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.setup('default')();
         membersService = require('../../../core/server/services/members');
         membersService.init();
@@ -195,7 +195,7 @@ describe('Member Welcome Emails Integration', function () {
         const JOB_NAME = 'welcome-email-outbox-test';
         let jobService;
 
-        before(function () {
+        beforeAll(function () {
             jobService = require('../../../core/server/services/jobs/job-service');
         });
 
