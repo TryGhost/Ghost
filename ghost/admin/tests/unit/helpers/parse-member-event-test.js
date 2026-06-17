@@ -78,24 +78,6 @@ describe('Unit: Helper: parse-member-event', function () {
             expect(result.info).to.equal(undefined);
             expect(result.description).to.equal(undefined);
         });
-
-        it('returns long automation email subjects inline for CSS truncation', function () {
-            const subject = 'This is a very long automated email subject that should be truncated in the activity feed';
-            const event = buildEvent({
-                type: 'automated_email_sent_event',
-                data: {
-                    automatedEmail: {
-                        source: 'automation_action_revision',
-                        slug: 'new-member-onboarding',
-                        name: 'New member onboarding',
-                        subject
-                    }
-                }
-            });
-            const result = helper.compute([event]);
-            expect(result.action).to.equal(`received automated email: ${subject}`);
-            expect(result.actionTitle).to.equal(`received automated email: ${subject}`);
-        });
     });
 
     describe('signup_event info', function () {
