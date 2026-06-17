@@ -222,12 +222,8 @@ export default class ParseMemberEventHelper extends Helper {
                 return `received welcome email (${emailType})`;
             }
 
-            const subject = this.trimString(event.data.automatedEmail?.subject);
-            if (subject) {
-                return `received automated email: ${subject}`;
-            }
-
-            return 'received automated email';
+            const subject = this.trimString(event.data.automatedEmail.subject);
+            return `received automated email: ${subject}`;
         }
 
         if (event.type === 'email_delivered_event') {
@@ -299,10 +295,8 @@ export default class ParseMemberEventHelper extends Helper {
 
     getActionTitle(event, hasMultipleNewsletters) {
         if (event.type === 'automated_email_sent_event' && event.data.automatedEmail?.source === 'automation_action_revision') {
-            const subject = this.trimString(event.data.automatedEmail?.subject);
-            if (subject) {
-                return `received automated email: ${subject}`;
-            }
+            const subject = this.trimString(event.data.automatedEmail.subject);
+            return `received automated email: ${subject}`;
         }
 
         return this.getAction(event, hasMultipleNewsletters);

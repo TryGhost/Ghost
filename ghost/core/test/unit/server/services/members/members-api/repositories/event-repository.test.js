@@ -300,6 +300,7 @@ describe('EventRepository', function () {
         let fake;
         let fakeKnex;
         let models;
+        let automationActionRevisionSubject;
 
         const makeAutomatedEmailRecipient = ({
             automatedEmailId = 'ae123',
@@ -331,6 +332,7 @@ describe('EventRepository', function () {
 
         beforeAll(function () {
             models = [makeAutomatedEmailRecipient()];
+            automationActionRevisionSubject = 'Here is how to get started';
             fake = sinon.fake(() => ({data: models}));
             fakeKnex = sinon.fake((tableName) => {
                 return {
@@ -355,7 +357,7 @@ describe('EventRepository', function () {
                                 id: ids[0],
                                 slug: 'member-welcome-email-free',
                                 name: 'New member onboarding',
-                                subject: 'Here is how to get started'
+                                subject: automationActionRevisionSubject
                             }];
                         }
 
@@ -380,6 +382,7 @@ describe('EventRepository', function () {
 
         afterEach(function () {
             models = [makeAutomatedEmailRecipient()];
+            automationActionRevisionSubject = 'Here is how to get started';
             fake.resetHistory();
             fakeKnex.resetHistory();
         });
@@ -479,6 +482,24 @@ describe('EventRepository', function () {
                     }
                 }
             });
+        });
+
+        it('throws when an automation action revision row has no subject', async function () {
+            models = [makeAutomatedEmailRecipient({
+                automatedEmailId: null,
+                automationActionRevisionId: 'aar123'
+            })];
+            automationActionRevisionSubject = null;
+
+            await assert.rejects(
+                () => eventRepository.getAutomatedEmailSentEvents({
+                    order: 'created_at desc, id desc'
+                }, {}),
+                {
+                    name: 'InternalServerError',
+                    message: 'Automated email recipient aer123 has no associated automation email subject'
+                }
+            );
         });
     });
 

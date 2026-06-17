@@ -1085,6 +1085,12 @@ module.exports = class EventRepository {
                 });
             }
 
+            if (!automatedEmailId && !automatedEmail.subject?.trim()) {
+                throw new errors.InternalServerError({
+                    message: `Automated email recipient ${model.id} has no associated automation email subject`
+                });
+            }
+
             return {
                 type: 'automated_email_sent_event',
                 data: {

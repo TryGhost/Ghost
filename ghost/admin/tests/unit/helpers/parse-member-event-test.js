@@ -96,24 +96,6 @@ describe('Unit: Helper: parse-member-event', function () {
             expect(result.action).to.equal(`received automated email: ${subject}`);
             expect(result.actionTitle).to.equal(`received automated email: ${subject}`);
         });
-
-        it('returns the fallback action for automation action revision rows without a subject', function () {
-            const event = buildEvent({
-                type: 'automated_email_sent_event',
-                data: {
-                    automatedEmail: {
-                        source: 'automation_action_revision',
-                        slug: 'new-member-onboarding',
-                        name: 'New member onboarding',
-                        subject: null
-                    }
-                }
-            });
-            const result = helper.compute([event]);
-            expect(result.action).to.equal('received automated email');
-            expect(result.actionTitle).to.equal('received automated email');
-            expect(result.description).to.equal(undefined);
-        });
     });
 
     describe('signup_event info', function () {
