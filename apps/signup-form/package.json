@@ -14,7 +14,7 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "concurrently --kill-others --names dev,preview,build \"vite --port 6173\" \"vite preview -l silent\" \"vite build --watch\"",
+    "dev": "pnpm build && concurrently --kill-others --names dev,preview,build \"vite --port 6173\" \"vite preview -l silent\" \"vite build --watch\"",
     "preview": "concurrently --kill-others --names preview,build \"vite preview -l silent\" \"vite build --watch\"",
     "dev:test": "vite build && vite preview --port 6175",
     "build": "tsc && vite build",
