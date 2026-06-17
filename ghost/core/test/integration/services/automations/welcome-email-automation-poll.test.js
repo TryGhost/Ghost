@@ -16,7 +16,7 @@ const MAX_RUNS_PER_BATCH = 100;
 describe('automations poll', function () {
     let options;
 
-    beforeAll(async function () {
+    before(async function () {
         await testUtils.setup('default')();
     });
 

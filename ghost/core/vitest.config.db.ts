@@ -82,14 +82,21 @@ export default defineConfig({
                     ...sharedDbConfig,
                     name: 'integration',
                     include: ['test/integration/**/*.test.{js,ts}'],
-                    // Two files stay on mocha (kept green via the test:integration:mocha
-                    // sidecar) pending vitest fixes: update-check's bree worker_thread
-                    // can't resolve .ts (PLA-157); domain-warming's batch-send job hangs
-                    // under vitest (PLA-158).
+                    // These stay on mocha (kept green via the test:integration:mocha
+                    // sidecar) pending vitest fixes:
+                    //  - update-check: bree worker_thread can't resolve .ts (PLA-157)
+                    //  - domain-warming: batch-send job hangs under vitest (PLA-158)
+                    //  - welcome-email-automation-poll / clean-tokens / last-seen-at-updater:
+                    //    sinon fake timers break the mysql2 driver's internal pool/query
+                    //    timers, so DB I/O hangs under vitest on MySQL (pass on sqlite,
+                    //    which has no network/pool timers) (PLA-160).
                     exclude: [
                         '**/node_modules/**',
                         '**/jobs/update-check.test.js',
-                        '**/email-service/domain-warming.test.js'
+                        '**/email-service/domain-warming.test.js',
+                        '**/automations/welcome-email-automation-poll.test.js',
+                        '**/members/clean-tokens.test.js',
+                        '**/last-seen-at-updater.test.js'
                     ],
                     // Matches the mocha `--timeout=10000` for the integration suite.
                     testTimeout: 10000
