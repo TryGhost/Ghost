@@ -6,7 +6,7 @@ const resourcesConfig = require('./config');
 // A resource is looked up by exactly one real, unique column. Multi-segment
 // permalinks capture more (year/month, primary_tag, ...), but those segments
 // are validated by the canonical re-check in the service, never queried here.
-export type ResourceLookupParams = {id: string} | {uuid: string} | {slug: string};
+export type ResourceLookupParams = {id: string} | {slug: string};
 
 export type FindResource = (
     routerType: string,

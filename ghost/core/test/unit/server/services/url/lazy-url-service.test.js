@@ -457,11 +457,48 @@ describe('LazyUrlService', function () {
             const findResource = sinon.stub();
             const service = new LazyUrlService({urlUtils, findResource});
             // An archive-style permalink captures only derived date segments,
-            // so there's no id/uuid/slug column to look a resource up by.
+            // so there's no id/slug column to look a resource up by.
             service.onRouterAddedType('archive', null, 'posts', '/:year/:month/');
 
             assert.equal(await service.resolveUrl('/2026/04/'), null);
             sinon.assert.notCalled(findResource);
+        });
+
+        it('does not query findResource when a captured id cannot fit the ObjectId format', async function () {
+            const findResource = sinon.stub();
+            const service = new LazyUrlService({urlUtils, findResource});
+            // `:id` is a real permalink token, but a Ghost id is a 24-char hex
+            // ObjectId. A path segment that can't be one is a guaranteed miss,
+            // so we skip the lookup eager would also never have a URL for.
+            service.onRouterAddedType('default', null, 'posts', '/:id/');
+
+            assert.equal(await service.resolveUrl('/blahblah/'), null);
+            sinon.assert.notCalled(findResource);
+        });
+
+        it('does not query findResource when a derived date segment cannot fit its format', async function () {
+            const findResource = sinon.stub();
+            const service = new LazyUrlService({urlUtils, findResource});
+            // The slug is queryable here, but a non-numeric year can never be a
+            // canonical date segment, so the path is a guaranteed miss — skip
+            // the lookup instead of finding the post and failing the re-check.
+            service.onRouterAddedType('dated', null, 'posts', '/:year/:month/:slug/');
+
+            assert.equal(await service.resolveUrl('/notayear/04/hello/'), null);
+            sinon.assert.notCalled(findResource);
+        });
+
+        it('still queries findResource when the captured id is a valid ObjectId', async function () {
+            const findResource = sinon.stub();
+            findResource.withArgs('posts', {id: '0123456789abcdef01234567'})
+                .resolves({id: '0123456789abcdef01234567', slug: 'hello', type: 'post'});
+
+            const service = new LazyUrlService({urlUtils, findResource});
+            service.onRouterAddedType('default', null, 'posts', '/:id/');
+
+            const result = await service.resolveUrl('/0123456789abcdef01234567/');
+            assert.equal(result.id, '0123456789abcdef01234567');
+            sinon.assert.calledOnce(findResource);
         });
 
         it('uses the singular DB type field to find posts collections', async function () {

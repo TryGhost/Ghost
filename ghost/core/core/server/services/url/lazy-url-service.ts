@@ -29,10 +29,28 @@ const ROUTER_TYPE_TO_DB_TYPE: Record<string, string> = {posts: 'post', pages: 'p
 // also captures derived (year/month) and relation (primary_tag) segments, but
 // only one of these columns is ever queried — the others are checked by the
 // canonical re-check below.
-const QUERYABLE_PARAMS = ['id', 'uuid', 'slug'] as const;
+const QUERYABLE_PARAMS = ['id', 'slug'] as const;
 
-// Narrow the full captured params down to the single column we query by, or
-// null when the permalink captured no queryable column to look up at all.
+// Permalink fields with a fixed, knowable format.
+const FIELD_VALIDATORS: Record<string, RegExp> = {
+    id: /^[0-9a-f]{24}$/i,
+    year: /^\d{4}$/,
+    month: /^\d{2}$/,
+    day: /^\d{2}$/
+};
+
+function capturedValuesAreValid(params: Record<string, string>): boolean {
+    for (const [field, value] of Object.entries(params)) {
+        const pattern = FIELD_VALIDATORS[field];
+        if (pattern && !pattern.test(value)) {
+            return false;
+        }
+    }
+    return true;
+}
+
+// Narrow the full captured params down to the single column we query the DB by,
+// or null when the permalink captured no queryable column at all.
 function toLookupParams(params: Record<string, string>): ResourceLookupParams | null {
     for (const key of QUERYABLE_PARAMS) {
         const value = params[key];
@@ -131,6 +149,9 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         for (const config of this.routerConfigs) {
             const params = matchPermalink(config.permalink, urlPath);
             if (!params) {
+                continue;
+            }
+            if (!capturedValuesAreValid(params)) {
                 continue;
             }
             const lookupParams = toLookupParams(params);
