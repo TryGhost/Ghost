@@ -301,6 +301,10 @@ module.exports = {
         return apiFramework.pipeline(require('./gifts-members'), localUtils, 'members');
     },
 
+    get giftLinks() {
+        return apiFramework.pipeline(require('./gift-links'), localUtils);
+    },
+
     get giftReminders() {
         return apiFramework.pipeline(require('./gift-reminders'), localUtils);
     },

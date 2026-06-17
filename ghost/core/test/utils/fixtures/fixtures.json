@@ -806,8 +806,8 @@
                     "object_type": "gift_link"
                 },
                 {
-                    "name": "Reset all gift links",
-                    "action_type": "resetAll",
+                    "name": "Revoke all gift links",
+                    "action_type": "revokeAll",
                     "object_type": "gift_link"
                 }
             ]
