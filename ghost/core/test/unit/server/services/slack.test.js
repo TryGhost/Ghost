@@ -1,12 +1,12 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
-const rewire = require('rewire');
+const nock = require('nock');
 const testUtils = require('../../../utils');
 const configUtils = require('../../../utils/config-utils');
 
 // Stuff we test
-const slack = rewire('../../../../core/server/services/slack');
+const slack = require('../../../../core/server/services/slack');
 
 const events = require('../../../../core/server/lib/common/events');
 const logging = require('@tryghost/logging');
@@ -16,40 +16,53 @@ const settingsCache = require('../../../../core/shared/settings-cache');
 
 // Test data
 const slackURL = 'https://hooks.slack.com/services/a-b-c-d';
+const slackURLPath = '/services/a-b-c-d';
+
+const wait = ms => new Promise((resolve) => {
+    setTimeout(resolve, ms);
+});
+
+async function waitFor(assertion, timeout = 1000) {
+    const deadline = Date.now() + timeout;
+
+    while (!assertion() && Date.now() < deadline) {
+        await wait(50);
+    }
+}
 
 describe('Slack', function () {
     let eventStub;
-    let loggingStub;
 
     beforeEach(function () {
         eventStub = sinon.stub(events, 'on');
+        sinon.stub(events, 'hasRegisteredListener').returns(false);
     });
 
     afterEach(async function () {
         sinon.restore();
+        nock.cleanAll();
         await configUtils.restore();
     });
 
-    it('listen() should initialise event correctly', function () {
+    function getListeners() {
         slack.listen();
-        sinon.assert.calledTwice(eventStub);
-        sinon.assert.calledWith(eventStub.firstCall, 'post.published', slack.__get__('slackListener'));
-        sinon.assert.calledWith(eventStub.secondCall, 'slack.test', slack.__get__('slackTestPing'));
-    });
 
-    it('listener() calls ping() with toJSONified model', function () {
-        const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
-        const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+        return {
+            slackListener: eventStub.firstCall.args[1],
+            slackTestPing: eventStub.secondCall.args[1]
+        };
+    }
 
-        const testModel = {
+    function createPostModel(post, authors = []) {
+        return {
             toJSON: function () {
-                return testPost;
+                return post;
             },
             related: function (relation) {
                 return {
                     toJSON: function () {
                         if (relation === 'authors') {
-                            return [testAuthor];
+                            return authors;
                         }
 
                         return [];
@@ -57,91 +70,96 @@ describe('Slack', function () {
                 };
             }
         };
+    }
 
-        const pingStub = sinon.stub();
-        const resetSlack = slack.__set__('ping', pingStub);
-        const listener = slack.__get__('slackListener');
+    function mockSlackWebhook() {
+        const requests = [];
+        const scope = nock('https://hooks.slack.com')
+            .post(slackURLPath, (body) => {
+                requests.push(typeof body === 'string' ? JSON.parse(body) : body);
+                return true;
+            })
+            .reply(200);
 
-        listener(testModel);
+        return {
+            requests,
+            scope
+        };
+    }
 
-        sinon.assert.calledOnce(pingStub);
-        sinon.assert.calledWith(pingStub, {
-            ...testPost,
-            authors: [testAuthor]
-        });
+    it('listen() should initialise event correctly', function () {
+        slack.listen();
+        sinon.assert.calledTwice(eventStub);
+        sinon.assert.calledWith(eventStub.firstCall, 'post.published', sinon.match.func);
+        sinon.assert.calledWith(eventStub.secondCall, 'slack.test', sinon.match.func);
+        assert.equal(eventStub.firstCall.args[1].name, 'slackListener');
+        assert.equal(eventStub.secondCall.args[1].name, 'slackTestPing');
+    });
 
-        // Reset slack ping method
-        resetSlack();
+    it('listener() sends a ping with toJSONified model and related authors', async function () {
+        const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+        const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+        const settingsCacheStub = sinon.stub(settingsCache, 'get');
+        const urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
+        const {requests, scope} = mockSlackWebhook();
+        const {slackListener} = getListeners();
+
+        settingsCacheStub.withArgs('slack_url').returns(slackURL);
+        sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('http://myblog.com/favicon.ico');
+        urlServiceGetUrlForResourceStub
+            .withArgs(sinon.match({id: testPost.id, type: 'posts'}), {absolute: true})
+            .returns('http://myblog.com/' + testPost.slug + '/');
+        urlServiceGetUrlForResourceStub
+            .withArgs(sinon.match({id: testAuthor.id, type: 'authors'}), {absolute: true})
+            .returns('http://myblog.com/author/' + testAuthor.slug + '/');
+
+        configUtils.set('url', 'http://myblog.com');
+
+        slackListener(createPostModel(testPost, [testAuthor]));
+
+        await waitFor(() => scope.isDone());
+
+        assert.equal(scope.isDone(), true);
+        assert.equal(requests[0].attachments[1].fields[0].value, `<http://myblog.com/author/${testAuthor.slug}/ | ${testAuthor.name}>`);
     });
 
     it('listener() does not call ping() when importing', function () {
         const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+        const settingsCacheStub = sinon.stub(settingsCache, 'get');
+        const urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
+        const {scope} = mockSlackWebhook();
+        const {slackListener} = getListeners();
 
-        const testModel = {
-            toJSON: function () {
-                return testPost;
-            }
-        };
+        settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
-        const pingStub = sinon.stub();
-        const resetSlack = slack.__set__('ping', pingStub);
-        const listener = slack.__get__('slackListener');
+        slackListener(createPostModel(testPost), {importing: true});
 
-        listener(testModel, {importing: true});
-
-        sinon.assert.notCalled(pingStub);
-
-        // Reset slack ping method
-        resetSlack();
-    });
-
-    it('testPing() calls ping() with default message', function () {
-        const pingStub = sinon.stub();
-        const resetSlack = slack.__set__('ping', pingStub);
-        const testPing = slack.__get__('slackTestPing');
-
-        testPing();
-
-        sinon.assert.calledOnce(pingStub);
-        sinon.assert.calledWith(pingStub, sinon.match.has('message'));
-
-        // Reset slack ping method
-        resetSlack();
+        assert.equal(scope.isDone(), false);
+        sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
     });
 
     describe('ping()', function () {
         let settingsCacheStub;
-        let slackReset;
-        let makeRequestStub;
         let urlServiceGetUrlForResourceStub;
-        const ping = slack.__get__('ping');
+        let listeners;
 
         beforeEach(function () {
             urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
 
             settingsCacheStub = sinon.stub(settingsCache, 'get');
 
-            makeRequestStub = sinon.stub();
-            slackReset = slack.__set__('request', makeRequestStub);
-            makeRequestStub.resolves();
-
             sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('http://myblog.com/favicon.ico');
 
             configUtils.set('url', 'http://myblog.com');
+            listeners = getListeners();
         });
 
-        afterEach(function () {
-            slackReset();
-        });
-
-        it('makes a request for a post if url is provided', function () {
-            let requestUrl;
-            let requestData;
-
+        it('makes a request for a post if url is provided', async function () {
             const post = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'webhook-test',
                 html: `<p>Hello World!</p><p>This is a test post.</p><!--members-only--><p>This is members only content.</p>`
             });
+            const {requests, scope} = mockSlackWebhook();
             urlServiceGetUrlForResourceStub
                 .withArgs(sinon.match({id: post.id, type: 'posts'}), {absolute: true})
                 .returns('http://myblog.com/' + post.slug + '/');
@@ -149,17 +167,17 @@ describe('Slack', function () {
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
-            ping(post);
+            listeners.slackListener(createPostModel(post));
+
+            await waitFor(() => scope.isDone());
 
             // assertions
-            sinon.assert.calledOnce(makeRequestStub);
+            assert.equal(scope.isDone(), true);
             sinon.assert.calledOnce(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
 
-            requestUrl = makeRequestStub.firstCall.args[0];
-            requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
+            const requestData = requests[0];
 
-            assert.equal(requestUrl, slackURL);
             assert.equal(requestData.attachments[0].title, post.title);
             assert.equal(requestData.attachments[0].title_link, 'http://myblog.com/webhook-test/');
             assert.equal(requestData.attachments[0].fields[0].value, 'Hello World!This is a test post.');
@@ -170,73 +188,69 @@ describe('Slack', function () {
             assert.equal(requestData.unfurl_links, true);
         });
 
-        it('makes a request for a message if url is provided', function () {
-            let requestUrl;
-            let requestData;
-
+        it('makes a request for a test message if url is provided', async function () {
+            const {requests, scope} = mockSlackWebhook();
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
-            ping({message: 'Hi!'});
+            listeners.slackTestPing();
+
+            await waitFor(() => scope.isDone());
 
             // assertions
-            sinon.assert.calledOnce(makeRequestStub);
+            assert.equal(scope.isDone(), true);
             sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
 
-            requestUrl = makeRequestStub.firstCall.args[0];
-            requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
+            const requestData = requests[0];
 
-            assert.equal(requestUrl, slackURL);
-            assert.equal(requestData.text, 'Hi!');
+            assert.equal(requestData.text, 'Heya! This is a test notification from your Ghost blog :smile:. Seems to work fine!');
             assert.equal(requestData.icon_url, 'http://myblog.com/favicon.ico');
             assert.equal(requestData.username, 'Ghost');
             assert.equal(requestData.unfurl_links, true);
         });
 
         it('makes a request and errors', async function () {
-            loggingStub = sinon.stub(logging, 'error');
-            makeRequestStub.rejects();
+            const loggingStub = sinon.stub(logging, 'error');
+            const requestScope = nock('https://hooks.slack.com')
+                .post(slackURLPath)
+                .replyWithError('Slack unavailable');
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
-            ping({});
+            listeners.slackTestPing();
 
-            const wait = ms => new Promise((resolve) => {
-                setTimeout(resolve, ms);
-            });
             // Bound the poll so a regression fails with a clear assertion
             // below rather than stalling until the suite-wide test timeout.
-            const deadline = Date.now() + 1000;
-            while (!loggingStub.calledOnce && Date.now() < deadline) {
-                await wait(50);
-            }
-            sinon.assert.calledOnce(makeRequestStub);
+            await waitFor(() => loggingStub.calledOnce);
+            assert.equal(requestScope.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
         });
 
         it('does not make a request if post is a page', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({type: 'page'});
+            const {scope} = mockSlackWebhook();
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
-            ping(post);
+            listeners.slackListener(createPostModel(post));
 
             // assertions
-            sinon.assert.notCalled(makeRequestStub);
+            assert.equal(scope.isDone(), false);
             sinon.assert.calledOnce(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });
 
         it('does not send webhook for \'welcome\' post', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({slug: 'welcome'});
+            const {scope} = mockSlackWebhook();
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
-            ping(post);
+            listeners.slackListener(createPostModel(post));
 
             // assertions
-            sinon.assert.notCalled(makeRequestStub);
+            assert.equal(scope.isDone(), false);
             sinon.assert.calledOnce(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });
@@ -246,10 +260,9 @@ describe('Slack', function () {
             settingsCacheStub.withArgs('slack_url').returns();
 
             // execute code
-            ping(post);
+            listeners.slackListener(createPostModel(post));
 
             // assertions
-            sinon.assert.notCalled(makeRequestStub);
             sinon.assert.called(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });

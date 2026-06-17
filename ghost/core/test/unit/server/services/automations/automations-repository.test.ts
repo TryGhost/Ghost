@@ -57,7 +57,7 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('id').primary();
         table.text('created_at').notNullable();
         table.text('updated_at').notNullable();
-        table.text('slug').notNullable();
+        table.text('slug').notNullable().unique();
         table.text('name').notNullable();
         table.text('status').notNullable();
     });
@@ -74,6 +74,18 @@ const createDatabase = async (): Promise<Knex> => {
     await database.schema.createTable('email_design_settings', (table) => {
         table.text('id').primary();
         table.text('slug').notNullable().unique();
+        table.text('created_at').notNullable();
+        table.text('updated_at');
+    });
+
+    await database.schema.createTable('welcome_email_automated_emails', (table) => {
+        table.text('id').primary();
+        table.text('welcome_email_automation_id').notNullable().references('id').inTable('automations');
+        table.text('next_welcome_email_automated_email_id');
+        table.integer('delay_days').notNullable();
+        table.text('subject').notNullable();
+        table.text('lexical');
+        table.text('email_design_setting_id').notNullable().references('id').inTable('email_design_settings');
         table.text('created_at').notNullable();
         table.text('updated_at');
     });
@@ -514,6 +526,124 @@ describe('automations repository', function () {
 
     afterEach(async function () {
         await knex?.destroy();
+    });
+
+    describe('browse', function () {
+        const deleteActionsForAutomationIds = async (automationIds: string[]) => {
+            const actionIds = await knex('automation_actions')
+                .whereIn('automation_id', automationIds)
+                .pluck('id');
+            await knex('automation_action_edges')
+                .whereIn('source_action_id', actionIds)
+                .orWhereIn('target_action_id', actionIds)
+                .del();
+            await knex('automation_action_revisions')
+                .whereIn('action_id', actionIds)
+                .del();
+            await knex('automation_actions')
+                .whereIn('id', actionIds)
+                .del();
+        };
+
+        const getWelcomeEmailDesignSettingId = async () => {
+            const row = await knex('email_design_settings')
+                .select('id')
+                .where('slug', 'test-automation-email-design')
+                .first();
+            assert(row);
+            return row.id;
+        };
+
+        const createWelcomeEmailsForAutomations = async (automations: Array<{id: string; slug: string}>) => {
+            const emailDesignSettingId = await getWelcomeEmailDesignSettingId();
+            await knex('welcome_email_automated_emails').insert(automations.map(automation => ({
+                id: ObjectId().toHexString(),
+                welcome_email_automation_id: automation.id,
+                next_welcome_email_automated_email_id: null,
+                delay_days: 0,
+                subject: `${automation.slug} subject`,
+                lexical: NON_EMPTY_EMAIL_LEXICAL,
+                email_design_setting_id: emailDesignSettingId,
+                created_at: toDatabaseDate(new Date()),
+                updated_at: toDatabaseDate(new Date())
+            })));
+            return emailDesignSettingId;
+        };
+
+        const assertWelcomeEmailActionsWereCreated = async (automations: Array<{id: string; slug: string}>, emailDesignSettingId: string) => {
+            for (const automation of automations) {
+                const result = await repo.getById(automation.id);
+                assert(result);
+                assert.deepEqual(result.edges, []);
+                assert.equal(result.actions.length, 1);
+                const action = result.actions[0];
+                assert.equal(action.type, 'send_email');
+                if (action.type !== 'send_email') {
+                    assert.fail('Expected a send_email action');
+                }
+                assert.equal(action.data.email_subject, `${automation.slug} subject`);
+                assert.equal(action.data.email_lexical, NON_EMPTY_EMAIL_LEXICAL);
+                assert.equal(action.data.email_design_setting_id, emailDesignSettingId);
+            }
+        };
+
+        it('creates missing default free and paid automations', async function () {
+            const automationIds = await knex('automations')
+                .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
+                .pluck('id');
+
+            await deleteActionsForAutomationIds(automationIds);
+            await knex('automations')
+                .whereIn('id', automationIds)
+                .del();
+
+            await repo.browse();
+
+            const automations = await knex('automations')
+                .select('id', 'name', 'slug', 'status')
+                .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
+                .orderBy('slug');
+
+            assert.deepEqual(automations.map(({name, slug, status}) => ({name, slug, status})), [{
+                name: 'Welcome Email (Free)',
+                slug: 'member-welcome-email-free',
+                status: 'inactive'
+            }, {
+                name: 'Welcome Email (Paid)',
+                slug: 'member-welcome-email-paid',
+                status: 'inactive'
+            }]);
+
+            const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
+
+            await repo.browse();
+
+            await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
+        });
+
+        it('creates copied send_email actions for default automations without actions', async function () {
+            const automations = await knex('automations')
+                .select('id', 'slug')
+                .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid']);
+            const automationIds = automations.map(automation => automation.id);
+
+            await deleteActionsForAutomationIds(automationIds);
+            const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
+
+            await repo.browse();
+
+            await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
+
+            await repo.browse();
+
+            const totalActions = await knex('automation_actions')
+                .whereIn('automation_id', automationIds)
+                .whereNull('deleted_at')
+                .count({count: 'id'})
+                .first();
+
+            assert.equal(Number(totalActions?.count), 2);
+        });
     });
 
     describe('trigger', function () {

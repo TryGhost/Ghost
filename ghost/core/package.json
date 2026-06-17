@@ -80,7 +80,7 @@
     "lint": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend && pnpm lint:test && pnpm lint:types"
   },
   "engines": {
-    "node": "^22.13.1",
+    "node": "^22.18.0",
     "cli": "^1.29.1"
   },
   "dependencies": {

@@ -89,6 +89,16 @@ async function cleanupAutomationsFixture() {
     }
 
     if (actionIds.length > 0) {
+        const revisionIds = await db.knex('automation_action_revisions')
+            .whereIn('action_id', actionIds)
+            .pluck('id');
+
+        if (revisionIds.length > 0) {
+            await db.knex('automated_email_recipients')
+                .whereIn('automation_action_revision_id', revisionIds)
+                .del();
+        }
+
         await db.knex('automation_action_edges')
             .whereIn('source_action_id', actionIds)
             .orWhereIn('target_action_id', actionIds)

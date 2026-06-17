@@ -47,6 +47,7 @@ describe('Exporter', function () {
             'email_recipients',
             'email_spam_complaint_events',
             'emails',
+            'gift_links',
             'gifts',
             'integrations',
             'invites',
@@ -143,7 +144,8 @@ describe('Exporter', function () {
             'members_paid_subscription_events',
             'members_subscribe_events',
             'outbox',
-            'gifts'
+            'gifts',
+            'gift_links'
         ];
 
         excludedTables.forEach((tableName) => {

@@ -397,6 +397,9 @@ importers:
       lint-staged:
         specifier: 17.0.7
         version: 17.0.7
+      node:
+        specifier: runtime:22.18.0
+        version: runtime:22.18.0
       nx:
         specifier: 22.7.5
         version: 22.7.5(@swc/core@1.15.40(@swc/helpers@0.5.21))
@@ -17606,6 +17609,137 @@ packages:
   node-releases@2.0.46:
     resolution: {integrity: sha512-GYVXHE2KnrzAfsAjl4uP++evGFCrAU1jta4ubEjIG7YWt/64Gqv66a30yKwWczVjA6j3bM4nBwH7Pk1JmDHaxQ==}
     engines: {node: '>=18'}
+
+  node@runtime:22.18.0:
+    resolution:
+      type: variations
+      variants:
+        - resolution:
+            archive: tarball
+            bin:
+              node: bin/node
+            integrity: sha256-e7da8wj8n2PlaJaODvDhYAuxBavi0q+ZIXrHLpok/9A=
+            type: binary
+            url: https://nodejs.org/download/release/v22.18.0/node-v22.18.0-aix-ppc64.tar.gz
+          targets:
+            - cpu: ppc64
+              os: aix
+        - resolution:
+            archive: tarball
+            bin:
+              node: bin/node
+            integrity: sha256-LBKRPLpnr3fe2KOZ3z/ZHC5/hijHB52kC7n/M78A38A=
+            type: binary
+            url: https://nodejs.org/download/release/v22.18.0/node-v22.18.0-darwin-arm64.tar.gz
+          targets:
+            - cpu: arm64
+              os: darwin
+        - resolution:
+            archive: tarball
+            bin:
+              node: bin/node
+            integrity: sha256-nIqh5f9XgLOMwRNOImPYTi9DCOuEwCUV468zk2ygLNw=
+            type: binary
+            url: https://nodejs.org/download/release/v22.18.0/node-v22.18.0-darwin-x64.tar.gz
+          targets:
+            - cpu: x64
+              os: darwin
+        - resolution:
+            archive: tarball
+            bin:
+              node: bin/node
+            integrity: sha256-1BXu6pCi/bYMZt04ayWKy/xNH6RyCo313qc2n7283e4=
+            type: binary
+            url: https://nodejs.org/download/release/v22.18.0/node-v22.18.0-linux-arm64.tar.gz
+          targets:
+            - cpu: arm64
+              os: linux
+        - resolution:
+            archive: tarball
+            bin:
+              node: bin/node
+            integrity: sha256-V4MJFFgdw2QOjZU3i3bGkQhg9CUxlZ5OiOtEXgzZgrA=
+            type: binary
+            url: https://nodejs.org/download/release/v22.18.0/node-v22.18.0-linux-armv7l.tar.gz
+          targets:
+            - cpu: armv7l
+              os: linux
+        - resolution:
+            archive: tarball
+            bin:
+              node: bin/node
+            integrity: sha256-OPlly6pecw29Oxr+iVz9uG2pY3FHSCfQXYR9M4oMnJc=
+            type: binary
+            url: https://nodejs.org/download/release/v22.18.0/node-v22.18.0-linux-ppc64le.tar.gz
+          targets:
+            - cpu: ppc64le
+              os: linux
+        - resolution:
+            archive: tarball
+            bin:
+              node: bin/node
+            integrity: sha256-81eLDnzfJHBF9u63Zv69dJQpVDUhYRAstgQKTUw7TDw=
+            type: binary
+            url: https://nodejs.org/download/release/v22.18.0/node-v22.18.0-linux-s390x.tar.gz
+          targets:
+            - cpu: s390x
+              os: linux
+        - resolution:
+            archive: tarball
+            bin:
+              node: bin/node
+            integrity: sha256-oucDcl2Gg76Gu12pZ7+CcvRRi9rxDyE4nissnq6ujIo=
+            type: binary
+            url: https://nodejs.org/download/release/v22.18.0/node-v22.18.0-linux-x64.tar.gz
+          targets:
+            - cpu: x64
+              os: linux
+        - resolution:
+            archive: zip
+            bin:
+              node: node.exe
+            integrity: sha256-Ajr7PSXEx9EMtuuKZIZcNHtW1LB+ZpBgbQIRMKkZImM=
+            prefix: node-v22.18.0-win-arm64
+            type: binary
+            url: https://nodejs.org/download/release/v22.18.0/node-v22.18.0-win-arm64.zip
+          targets:
+            - cpu: arm64
+              os: win32
+        - resolution:
+            archive: zip
+            bin:
+              node: node.exe
+            integrity: sha256-yV2KfhyZ5mnMCMnxF24GjB9QhHw3kI/LjDW2JII2ZRE=
+            prefix: node-v22.18.0-win-x64
+            type: binary
+            url: https://nodejs.org/download/release/v22.18.0/node-v22.18.0-win-x64.zip
+          targets:
+            - cpu: x64
+              os: win32
+        - resolution:
+            archive: zip
+            bin:
+              node: node.exe
+            integrity: sha256-8uVGNF9ynY6CyCoIjmFudt8UMwxT08/su6tR94PwjPQ=
+            prefix: node-v22.18.0-win-x86
+            type: binary
+            url: https://nodejs.org/download/release/v22.18.0/node-v22.18.0-win-x86.zip
+          targets:
+            - cpu: x86
+              os: win32
+        - resolution:
+            archive: tarball
+            bin:
+              node: bin/node
+            integrity: sha256-8AOkYGjujcJYFF/2j1LQaVHM+Xu5NM5GEUMiZTrTXHk=
+            type: binary
+            url: https://unofficial-builds.nodejs.org/download/release/v22.18.0/node-v22.18.0-linux-x64-musl.tar.gz
+          targets:
+            - cpu: x64
+              os: linux
+              libc: musl
+    version: 22.18.0
+    hasBin: true
 
   nodemailer-mailgun-transport@2.1.5:
     resolution: {integrity: sha512-hF7POkaxFgMvYEd5aHLaQJI2511ld+aQlQi7JH6bGjhjlZ33cIbTB9PimlIrLu5XC3z76Kde6e65OIwL9lOdTA==}
@@ -41276,6 +41410,8 @@ snapshots:
       which: 2.0.2
 
   node-releases@2.0.46: {}
+
+  node@runtime:22.18.0: {}
 
   nodemailer-mailgun-transport@2.1.5(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8):
     dependencies:
