@@ -6,7 +6,7 @@
 // Defaults to words="50"
 
 const {SafeString} = require('../services/handlebars');
-const {metaData} = require('../services/proxy');
+const metaData = require('../meta');
 const _ = require('lodash');
 const getMetaDataExcerpt = metaData.getMetaDataExcerpt;
 

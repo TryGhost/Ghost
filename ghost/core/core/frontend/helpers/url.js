@@ -4,7 +4,7 @@
 // Returns the URL for the current object scope i.e. If inside a post scope will return post permalink
 // `absolute` flag outputs absolute URL, else URL is relative
 
-const {metaData} = require('../services/proxy');
+const metaData = require('../meta');
 const {SafeString} = require('../services/handlebars');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');

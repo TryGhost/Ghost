@@ -172,6 +172,38 @@ module.exports = {
             }
         },
         {
+            // Prevent new direct requires of core/server from the frontend.
+            // Adding files to this list is an anti-pattern
+            // Work down until only proxy.js remains
+            files: 'core/frontend/**',
+            excludedFiles: [
+                // The sanctioned seam.
+                'core/frontend/services/proxy.js',
+
+                // Composition root wiring (less wrong).
+                'core/frontend/web/site.js',
+                'core/frontend/web/middleware/frontend-caching.js',
+                'core/frontend/web/middleware/handle-image-sizes.js',
+                'core/frontend/web/routers/link-redirects.js',
+                'core/frontend/web/routers/serve-favicon.js',
+                'core/frontend/apps/private-blogging/lib/router.js',
+
+                // Leaks that bypass the proxy (fix first).
+                'core/frontend/services/routing/controllers/unsubscribe.js', // services/members + settings-helpers
+                'core/frontend/services/routing/router-manager.js', // server/lib/common/events bus
+                'core/frontend/services/sitemap/site-map-manager.js', // server/lib/common/events bus
+                'core/frontend/utils/images.js' // server/adapters/storage/utils
+            ],
+            rules: {
+                'ghost/node/no-restricted-require': ['error', [
+                    {
+                        name: [path.resolve(__dirname, 'core/server/**')],
+                        message: 'Invalid require of core/server from core/frontend. Cross only via the proxy seam (core/frontend/services/proxy.js).'
+                    }
+                ]]
+            }
+        },
+        {
             files: 'core/server/**',
             rules: {
                 'ghost/node/no-restricted-require': ['warn', [
