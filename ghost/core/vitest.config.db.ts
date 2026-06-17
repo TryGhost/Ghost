@@ -67,8 +67,11 @@ export default defineConfig({
                 test: {
                     ...sharedDbConfig,
                     name: 'e2e',
-                    // Widens to e2e-api / e2e-server / e2e-frontend as they port.
-                    include: ['test/e2e-webhooks/**/*.test.{js,ts}'],
+                    // Widens to e2e-api / e2e-frontend as they port.
+                    include: [
+                        'test/e2e-webhooks/**/*.test.{js,ts}',
+                        'test/e2e-server/**/*.test.{js,ts}'
+                    ],
                     exclude: ['**/node_modules/**'],
                     // Matches the mocha `--timeout=15000` for the e2e suites.
                     testTimeout: 15000
