@@ -134,6 +134,27 @@
         </div>
     {{/if}}
 
+    {{#if @publishOptions.showNavigationOption}}
+        <div class="gh-publish-setting" data-test-setting="navigation">
+            <button type="button" class="gh-publish-setting-title" {{on "click" (fn this.toggleSection "navigation")}} data-test-setting-title>
+                {{svg-jar "navigation"}}
+                <div class="gh-publish-setting-trigger">
+                    <span>{{@publishOptions.selectedNavigationOption.display}}</span>
+                </div>
+                <span class="{{if (eq this.openSection "navigation") "expanded"}}">
+                    {{svg-jar "arrow-down" class="icon-expand"}}
+                </span>
+            </button>
+            {{#liquid-if (eq this.openSection "navigation")}}
+                <div class="gh-publish-setting-form">
+                    <Editor::PublishOptions::Navigation
+                        @publishOptions={{@publishOptions}}
+                    />
+                </div>
+            {{/liquid-if}}
+        </div>
+    {{/if}}
+
     <div class="gh-publish-setting last" data-test-setting="publish-at">
         <button type="button" class="gh-publish-setting-title {{if @publishOptions.publishDisabledError "disabled"}}" {{on "click" (if @publishOptions.publishDisabledError (optional) (fn this.toggleSection "publishAt"))}} data-test-setting-title>
             {{svg-jar "clock"}}

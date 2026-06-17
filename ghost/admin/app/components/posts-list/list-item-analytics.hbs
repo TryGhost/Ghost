@@ -159,6 +159,12 @@
                                 {{/if}}
                             </span>
                         {{/if}}
+
+                        {{#if this.navigationPlacement}}
+                            <span class="gh-content-entry-nav" title="In {{this.navigationPlacement}} navigation" data-test-nav-indicator={{this.navigationPlacement}}>
+                                {{svg-jar "navigation"}} In {{this.navigationPlacement}} navigation
+                            </span>
+                        {{/if}}
                     </p>
                 {{/unless}}
             </div>

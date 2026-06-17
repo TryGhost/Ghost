@@ -1,6 +1,7 @@
 import Component from '@glimmer/component';
 import {action} from '@ember/object';
 import {formatPostTime} from 'ghost-admin/helpers/gh-format-post-time';
+import {getPagePlacement, pagePathForSlug} from 'ghost-admin/utils/site-navigation';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tracked} from '@glimmer/tracking';
@@ -26,6 +27,18 @@ export default class PostsListItemClicks extends Component {
             return 'error';
         }
         return '';
+    }
+
+    // 'primary' / 'secondary' when this page is linked in the site navigation,
+    // otherwise null. A nav link points at the published URL, so placement is
+    // only surfaced for live pages - a draft's link would 404 and shouldn't
+    // read as "in navigation".
+    get navigationPlacement() {
+        if (!this.post.isPage || !this.post.isPublished) {
+            return null;
+        }
+
+        return getPagePlacement(this.settings, pagePathForSlug(this.post.slug, this.config.blogUrl), this.config.blogUrl);
     }
 
     get scheduledText() {

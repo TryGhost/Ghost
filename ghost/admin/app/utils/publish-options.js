@@ -1,5 +1,6 @@
 import moment from 'moment-timezone';
 import {action} from '@ember/object';
+import {getPagePlacement, pagePathForSlug, setPageNavigationPlacement} from 'ghost-admin/utils/site-navigation';
 import {htmlSafe} from '@ember/template';
 import {task} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
@@ -92,6 +93,87 @@ export default class PublishOptions {
             this.isScheduled = false;
             this.scheduledAt = null;
         }
+    }
+
+    // navigation ----------------------------------------------------------
+    // pages are not linked from anywhere on a site by default so when
+    // publishing a page we let the user place it in the site navigation. The
+    // picker reflects the page's current placement so it can be added, moved
+    // between menus, or removed - not just added.
+
+    // the user's explicit picker selection (none/primary/secondary), or
+    // undefined when they haven't touched it - in which case the picker
+    // reflects the page's live current placement so it always matches the
+    // settings menu / pages list, even if those changed it
+    @tracked navigationPlacementOverride = undefined;
+    // true when the most recent saveTask attempted a navigation change that
+    // failed to save - reset at the start of every saveTask so it never leaks
+    // a stale failure into a later publish
+    @tracked navigationSaveFailed = false;
+
+    get pageNavigationPath() {
+        return pagePathForSlug(this.post.slug, this.config.blogUrl);
+    }
+
+    get currentNavigationPlacement() {
+        if (!this.post.isPage || !this.pageNavigationPath) {
+            return null;
+        }
+
+        return getPagePlacement(this.settings, this.pageNavigationPath, this.config.blogUrl);
+    }
+
+    get navigationPlacement() {
+        if (this.navigationPlacementOverride !== undefined) {
+            return this.navigationPlacementOverride;
+        }
+
+        return this.currentNavigationPlacement ?? 'none';
+    }
+
+    // only admins/owners can edit the navigation settings, and a link to a
+    // not-yet-published page would 404 so scheduling hides the option
+    get showNavigationOption() {
+        return this.post.isPage &&
+            !!this.user.isAdmin &&
+            !this.isScheduled &&
+            !!this.pageNavigationPath;
+    }
+
+    get desiredNavigationPlacement() {
+        return this.navigationPlacement === 'none' ? null : this.navigationPlacement;
+    }
+
+    get navigationOptions() {
+        return [{
+            value: 'none',
+            label: 'None', // shown in expanded options (pill)
+            display: 'Not in site navigation' // shown in collapsed option title
+        }, {
+            value: 'primary',
+            label: 'Primary',
+            display: 'Primary navigation'
+        }, {
+            value: 'secondary',
+            label: 'Secondary',
+            display: 'Secondary navigation'
+        }];
+    }
+
+    get selectedNavigationOption() {
+        return this.navigationOptions.find(o => o.value === this.navigationPlacement);
+    }
+
+    @action
+    setNavigationPlacement(placement) {
+        this.navigationPlacementOverride = placement;
+    }
+
+    // discards an unsaved picker selection so the flow always reopens showing
+    // the page's real current placement, not a change that was never published
+    @action
+    resetNavigationPlacement() {
+        this.navigationPlacementOverride = undefined;
     }
 
     // publish type ------------------------------------------------------------
@@ -313,6 +395,14 @@ export default class PublishOptions {
         // willEmail can change after model changes are applied because the post
         // can leave draft status - grab it now before that happens
         const willEmail = this.willEmail;
+        // capture before model changes flip the post to published. We only
+        // touch settings when the chosen placement actually differs, so a plain
+        // republish never re-saves navigation
+        const navigationPlacementChanged = this.showNavigationOption
+            && this.desiredNavigationPlacement !== this.currentNavigationPlacement;
+
+        // clear any failure from a previous save so it can't leak into this one
+        this.navigationSaveFailed = false;
 
         this._applyModelChanges();
 
@@ -323,12 +413,30 @@ export default class PublishOptions {
             adapterOptions.emailSegment = this.recipientFilter;
         }
 
+        let result;
         try {
-            return yield this.post.save({adapterOptions});
+            result = yield this.post.save({adapterOptions});
         } catch (e) {
             this._revertModelChanges();
             throw e;
         }
+
+        // the page is published at this point so a navigation failure should
+        // never fail the publish - the failure is surfaced separately
+        if (navigationPlacementChanged && this.post.isPublished) {
+            try {
+                yield setPageNavigationPlacement(this.settings, {
+                    label: this.post.title,
+                    path: this.pageNavigationPath,
+                    placement: this.desiredNavigationPlacement,
+                    blogUrl: this.config.blogUrl
+                });
+            } catch (e) {
+                this.navigationSaveFailed = true;
+            }
+        }
+
+        return result;
     }
 
     @task({drop: true})
