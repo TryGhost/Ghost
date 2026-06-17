@@ -1,3 +1,7 @@
+## Orientation
+
+This repo is the TypeScript 5 `ghost-storage-base` npm package for Ghost storage adapters; it builds CommonJS for Node 22/24 with pnpm 11. See `README.md` for human-facing usage docs.
+
 ## Commands
 
 - `pnpm build` — compile `src/` to `dist/` with `tsc`.
@@ -19,6 +23,7 @@ This is a published npm package (`ghost-storage-base`) consumed by Ghost storage
 Key design points that are easy to miss:
 
 - `requiredFns = ['exists', 'save', 'serve', 'delete', 'read']` is declared as a non-writable property on every instance. The base class does **not** implement these — subclasses must. `generateUnique` and `getUniqueFileName` call `this.exists(...)`, so they will throw on the base class alone; tests stub `exists` directly on the instance.
+- `saveRaw` and `urlToPath` are TypeScript abstract declarations, but they are **not** part of the runtime `requiredFns` contract. Do not add them to `requiredFns` without treating it as a breaking adapter-contract change.
 - `getUniqueFileName` deliberately treats purely-numeric extensions (`.1`, `.342`) as part of the filename rather than as extensions, then sanitizes and suffixes the whole thing. This behavior is asserted by tests and is intentional — do not "fix" it.
 - `getSanitizedFileName` only preserves `[A-Za-z0-9_@.]`; everything else (including all non-ASCII unicode) collapses to `-`. Filenames like `город.zip` become `-----.zip`. Tests pin this.
 - Source uses `export = StorageBase` so the compiled CJS emits `module.exports = StorageBase` — preserving `const StorageBase = require('ghost-storage-base')` for downstream adapters. Do not change to `export default`; that would break the require shape.
