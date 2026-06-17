@@ -209,19 +209,19 @@ const EmailPerformanceSection: React.FC = () => {
                     Email performance
                 </h3>
                 <div className='grid grid-cols-2 gap-4'>
-                    <div className='flex flex-col gap-1'>
+                    <div className='flex flex-col gap-0.5'>
                         <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
                             <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-blue)'}} />
                             Open rate
                         </span>
-                        <span className='text-2xl font-semibold tracking-tight'>{formatPercentage(openRate)}</span>
+                        <span className='text-xl font-semibold tracking-tight'>{formatPercentage(openRate)}</span>
                     </div>
-                    <div className='flex flex-col gap-1'>
+                    <div className='flex flex-col gap-0.5'>
                         <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
                             <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-teal)'}} />
                             Click rate
                         </span>
-                        <span className='text-2xl font-semibold tracking-tight'>{formatPercentage(clickRate)}</span>
+                        <span className='text-xl font-semibold tracking-tight'>{formatPercentage(clickRate)}</span>
                     </div>
                 </div>
                 <div className='mx-auto h-[200px] w-[200px]'>
