@@ -8,6 +8,7 @@ import {canCopyGiftLink, giftLinkUrl} from 'ghost-admin/utils/gift-link';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
+import {task} from 'ember-concurrency';
 import {trackEvent} from 'ghost-admin/utils/analytics';
 import {tracked} from '@glimmer/tracking';
 
@@ -30,6 +31,7 @@ export default class GhPostSettingsMenu extends Component {
     @tracked showPostHistory = false;
     @tracked giftLink = null;
     @tracked giftLinkCopied = false;
+    @tracked giftLinkModalOpen = false;
     @tracked giftLinkResetConfirming = false;
     @tracked giftLinkResetting = false;
 
@@ -211,12 +213,21 @@ export default class GhPostSettingsMenu extends Component {
         });
     }
 
-    get giftLinkUsesLabel() {
-        const count = this.giftLink ? this.giftLink.redeemed_count : 0;
+    get giftLinkRedemptionsCount() {
+        return this.giftLink ? this.giftLink.redeemed_count : 0;
+    }
+
+    get giftLinkRedemptionsLabel() {
+        const count = this.giftLinkRedemptionsCount;
         if (count === 0) {
             return 'Not used yet';
         }
-        return `${count} ${count === 1 ? 'use' : 'uses'}`;
+        return `${count} ${count === 1 ? 'redemption' : 'redemptions'}`;
+    }
+
+    get giftLinkDescription() {
+        const memberType = this.post.visibility === 'members' ? 'member' : 'paid member';
+        return `Anyone you share this link with will be able to access this post without becoming a ${memberType}.`;
     }
 
     // Load the post's existing gift link (if any) when the control is shown, so
@@ -231,8 +242,15 @@ export default class GhPostSettingsMenu extends Component {
             const response = await this.ajax.request(url);
             this.giftLink = response.gift_links[0] || null;
         } catch (e) {
-            // Non-fatal: leave unset so the counter reads "0 uses".
+            // Non-fatal: leave unset so the counter reads "0 redemptions".
         }
+    }
+
+    async ensureGiftLink() {
+        const url = this.ghostPaths.url.api('gift_links', this.post.id);
+        const response = await this.ajax.post(url);
+        this.giftLink = response.gift_links[0];
+        return this.giftLink;
     }
 
     // Copy is a creation intent: the post may not have a link yet, so the
@@ -241,9 +259,7 @@ export default class GhPostSettingsMenu extends Component {
     @action
     async copyGiftLink() {
         try {
-            const url = this.ghostPaths.url.api('gift_links', this.post.id);
-            const response = await this.ajax.post(url);
-            this.giftLink = response.gift_links[0];
+            await this.ensureGiftLink();
             // Await the clipboard write so we only show "copied" on real
             // success — in Safari/Firefox the write can reject after the awaited
             // POST loses the user-activation, and we must not claim success then.
@@ -259,6 +275,29 @@ export default class GhPostSettingsMenu extends Component {
         } catch (e) {
             this.notifications.showAPIError(e, {key: 'gift-link.copy'});
         }
+    }
+
+    @task
+    *copyGiftLinkTask() {
+        yield this.copyGiftLink();
+        return true;
+    }
+
+    @action
+    async openGiftLinkModal() {
+        try {
+            await this.ensureGiftLink();
+            this.giftLinkResetConfirming = false;
+            this.giftLinkModalOpen = true;
+        } catch (e) {
+            this.notifications.showAPIError(e, {key: 'gift-link.open'});
+        }
+    }
+
+    @action
+    closeGiftLinkModal() {
+        this.giftLinkModalOpen = false;
+        this.giftLinkResetConfirming = false;
     }
 
     @action

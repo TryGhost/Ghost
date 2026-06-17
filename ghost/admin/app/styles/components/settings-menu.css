@@ -214,31 +214,24 @@
     padding: 0 24px;
 }
 
-/* Gift link controls under the post access setting — inline copy on the left,
-   usage counter + reset on the right, pulled up tight beneath the access select.
-   Reset swaps in an inline confirmation (warning + Cancel/Confirm). */
-.gh-psm-gift-link {
-    margin-top: -14px;
-}
-
-.gh-psm-gift-link-row {
+.gh-psm-setting-label-row {
     display: flex;
-    align-items: baseline;
+    align-items: center;
     justify-content: space-between;
     gap: 12px;
-    font-size: 1.3rem;
-    line-height: 1.5;
 }
 
-.gh-psm-gift-link-usage {
+.gh-psm-setting-label-row label {
+    margin-bottom: 4px;
+}
+
+.gh-psm-gift-link-actions {
     display: flex;
-    align-items: baseline;
-    gap: 14px;
-}
-
-.gh-psm-gift-link-count,
-.gh-psm-gift-link-warning {
-    color: var(--midgrey);
+    align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+    font-size: 1.3rem;
+    line-height: 1;
 }
 
 .gh-psm-gift-link-action {
@@ -256,17 +249,137 @@
     color: var(--darkgrey);
 }
 
-/* Copy is the primary action */
 .gh-psm-gift-link-copy,
 .gh-psm-gift-link-copy:hover {
-    color: var(--blue);
+    color: var(--green);
     font-weight: 500;
 }
 
-/* Confirm is emphasized within the reset confirmation */
-.gh-psm-gift-link-confirm {
+.gh-psm-gift-link-copy:hover {
+    color: var(--green-d1);
+}
+
+.gh-psm-gift-link-icon-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--midgrey);
+    cursor: pointer;
+}
+
+.gh-psm-gift-link-icon-button:hover {
     color: var(--darkgrey);
+}
+
+.gh-psm-gift-link-icon-button svg {
+    width: 14px;
+    height: 14px;
+}
+
+.fullscreen-modal-gift-link {
+    width: 100%;
+    max-width: 540px;
+}
+
+.gh-psm-gift-link-modal {
+    padding: 32px;
+    border-radius: 8px;
+}
+
+.gh-psm-gift-link-modal-header {
+    margin-bottom: 24px;
+}
+
+.gh-psm-gift-link-modal .modal-header h1 {
+    margin-top: 0;
+    font-size: 2rem;
+    line-height: 1.2;
     font-weight: 600;
+    letter-spacing: 0;
+}
+
+.gh-psm-gift-link-description {
+    margin: -12px 0 24px;
+    color: var(--midgrey);
+    font-size: 1.4rem;
+    line-height: 1.5;
+}
+
+.gh-psm-gift-link-modal-footer .gh-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    height: 36px;
+    border-radius: 6px;
+    box-shadow: none;
+    transition-property: color, border-color, background;
+}
+
+.gh-psm-gift-link-modal-footer .gh-btn span {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 36px;
+    padding: 0 10px;
+    font-size: 1.4rem;
+    line-height: 36px;
+    border-radius: 6px;
+}
+
+.gh-psm-gift-link-modal-footer .gh-btn {
+    min-width: 80px;
+}
+
+.gh-psm-gift-link-modal-footer .gh-btn-outline {
+    border-color: var(--whitegrey-d1);
+    background: var(--white);
+    box-shadow: none;
+}
+
+.gh-psm-gift-link-modal-footer .gh-btn-outline:hover {
+    border-color: var(--lightgrey);
+    background: var(--whitegrey-l2);
+    box-shadow: none;
+}
+
+.gh-psm-gift-link-modal-footer .gh-btn-red,
+.gh-psm-gift-link-modal-footer .gh-btn-red:hover {
+    box-shadow: none;
+}
+
+.gh-psm-gift-link-modal .gh-psm-gift-link-redemptions {
+    margin: 6px 0 0;
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+.gh-psm-gift-link-modal-footer {
+    align-items: center;
+    margin-top: 32px;
+}
+
+.gh-psm-gift-link-warning {
+    color: var(--midgrey);
+    font-size: 1.3rem;
+    line-height: 1.4;
+}
+
+.gh-psm-gift-link-reset-actions {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.gh-psm-gift-link-reset-actions .gh-btn:not(:first-child) {
+    margin-left: 0;
 }
 
 @media (max-width: 1024px) {

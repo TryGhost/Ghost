@@ -390,6 +390,15 @@ Post context menu
     stroke-width: 1.8px;
 }
 
+.gh-posts-context-menu li > button span svg.gift-link-icon,
+.gh-posts-context-menu li > button:hover span svg.gift-link-icon {
+    fill: currentColor;
+}
+
+.gh-posts-context-menu li > button span svg.gift-link-icon path {
+    stroke: none;
+}
+
 .gh-posts-context-menu li:last-child::before,
 .gh-analytics-actions-menu li:last-child::before {
     display: block;

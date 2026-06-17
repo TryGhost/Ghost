@@ -465,10 +465,7 @@ export default class PostsContextMenu extends Component {
             const response = yield this.ajax.post(url);
             const token = response.gift_links[0].token;
             const giftUrl = giftLinkUrl({blogUrl: this.config.blogUrl, slug: post.slug, token});
-            // Await the clipboard write so we only show "copied" on real
-            // success — in Safari/Firefox the write can reject after the awaited
-            // POST loses the user-activation, and we must not claim success then.
-            yield navigator.clipboard.writeText(giftUrl);
+            copyTextToClipboard(giftUrl);
             trackEvent('gift_link_copied', {surface: 'posts-list-context-menu'});
             this.notifications.showNotification(this.#getToastMessage('copiedGiftLink'), {type: 'success'});
             yield timeout(1000);
