@@ -904,7 +904,8 @@ function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreat
 }
 
 function buildActionRevision(actionId: string, action: AutomationAction, createdAt: string) {
-    if (action.type === 'wait') {
+    switch (action.type) {
+    case 'wait':
         return {
             id: ObjectId().toString(),
             created_at: createdAt,
@@ -914,17 +915,23 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
             email_lexical: null,
             email_design_setting_id: null
         };
+    case 'send_email':
+        return {
+            id: ObjectId().toString(),
+            created_at: createdAt,
+            action_id: actionId,
+            wait_hours: null,
+            email_subject: action.data.email_subject,
+            email_lexical: action.data.email_lexical,
+            email_design_setting_id: action.data.email_design_setting_id
+        };
+    default: {
+        const _exhaustive: never = action;
+        throw new errors.InternalServerError({
+            message: `Unexpected action type ${_exhaustive}`
+        });
     }
-
-    return {
-        id: ObjectId().toString(),
-        created_at: createdAt,
-        action_id: actionId,
-        wait_hours: null,
-        email_subject: action.data.email_subject,
-        email_lexical: action.data.email_lexical,
-        email_design_setting_id: action.data.email_design_setting_id
-    };
+    }
 }
 
 async function deleteAutomationEdges(trx: Knex.Transaction, automationId: string): Promise<void> {
