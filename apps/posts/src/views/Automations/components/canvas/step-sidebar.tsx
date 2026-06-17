@@ -287,36 +287,47 @@ const EmailPerformanceSection: React.FC = () => {
                     Email performance
                     </h3>
                     <div className='grid grid-cols-3 gap-4'>
-                        <Link className='-mx-2 -my-1 flex flex-col gap-0.5 rounded-md px-2 py-1 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none' to='/members'>
-                            <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
-                                <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-purple)'}} />
-                                Sent
-                            </span>
-                            <span className='text-xl font-semibold tracking-tight'>{formatNumber(sent)}</span>
-                        </Link>
                         <Tooltip>
                             <TooltipTrigger asChild>
                                 <Link className='-mx-2 -my-1 flex flex-col gap-0.5 rounded-md px-2 py-1 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none' to='/members'>
                                     <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
-                                        <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-blue)'}} />
-                                    Opened
+                                        <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-purple)'}} />
+                                        Sent
                                     </span>
-                                    <span className='text-xl font-semibold tracking-tight'>{formatPercentage(openRate)}</span>
+                                    <span className='text-xl font-semibold tabular-nums tracking-tight'>{formatNumber(sent)}</span>
                                 </Link>
                             </TooltipTrigger>
-                            <TooltipContent>{formatNumber(openedCount)} of {formatNumber(sent)} sent</TooltipContent>
+                            <TooltipContent>See members</TooltipContent>
                         </Tooltip>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <Link className='-mx-2 -my-1 flex flex-col gap-0.5 rounded-md px-2 py-1 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none' to='/members'>
+                                <Link className='group/kpi -mx-2 -my-1 flex flex-col gap-0.5 rounded-md px-2 py-1 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none' to='/members'>
                                     <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
-                                        <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-teal)'}} />
-                                    Clicked
+                                        <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-blue)'}} />
+                                        Opened
                                     </span>
-                                    <span className='text-xl font-semibold tracking-tight'>{formatPercentage(clickRate)}</span>
+                                    <span className='text-xl font-semibold tabular-nums tracking-tight'>
+                                        <span className='group-hover/kpi:hidden group-focus-visible/kpi:hidden'>{formatPercentage(openRate)}</span>
+                                        <span className='hidden group-hover/kpi:inline group-focus-visible/kpi:inline'>{formatNumber(openedCount)}</span>
+                                    </span>
                                 </Link>
                             </TooltipTrigger>
-                            <TooltipContent>{formatNumber(clickedCount)} of {formatNumber(sent)} sent</TooltipContent>
+                            <TooltipContent>See members</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <Link className='group/kpi -mx-2 -my-1 flex flex-col gap-0.5 rounded-md px-2 py-1 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none' to='/members'>
+                                    <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
+                                        <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-teal)'}} />
+                                        Clicked
+                                    </span>
+                                    <span className='text-xl font-semibold tabular-nums tracking-tight'>
+                                        <span className='group-hover/kpi:hidden group-focus-visible/kpi:hidden'>{formatPercentage(clickRate)}</span>
+                                        <span className='hidden group-hover/kpi:inline group-focus-visible/kpi:inline'>{formatNumber(clickedCount)}</span>
+                                    </span>
+                                </Link>
+                            </TooltipTrigger>
+                            <TooltipContent>See members</TooltipContent>
                         </Tooltip>
                     </div>
                     <EmailPerformanceChart clickRate={clickRate} openRate={openRate} />

@@ -31,13 +31,13 @@ describe('AutomationsList', () => {
         expect(screen.getByText('Off')).toBeInTheDocument();
     });
 
-    it('renders Name, In progress, Completed, Created and Status columns', () => {
+    it('renders Name, Last run date, In progress, Completed and Status columns', () => {
         renderWithRouter(<AutomationsList automations={automations} />);
 
         expect(screen.getByRole('columnheader', {name: 'Name'})).toBeInTheDocument();
         expect(screen.getByRole('columnheader', {name: 'In progress'})).toBeInTheDocument();
         expect(screen.getByRole('columnheader', {name: 'Completed'})).toBeInTheDocument();
-        expect(screen.getByRole('columnheader', {name: 'Created'})).toBeInTheDocument();
+        expect(screen.getByRole('columnheader', {name: 'Last run date'})).toBeInTheDocument();
         expect(screen.getByRole('columnheader', {name: 'Status'})).toBeInTheDocument();
 
         expect(screen.getByText('0')).toBeInTheDocument();

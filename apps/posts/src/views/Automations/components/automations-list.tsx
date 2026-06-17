@@ -47,7 +47,7 @@ const AutomationsListSkeleton: React.FC = () => {
                             <Skeleton className="mb-1 h-3 w-48 max-w-full " />
                             <Skeleton className="h-3 w-80 max-w-full" />
                         </TableCell>
-                        <TableCell className="lg:w-28 lg:p-4">
+                        <TableCell className="lg:w-32 lg:p-4">
                             <Skeleton className="h-3 w-20" />
                         </TableCell>
                         <TableCell className="text-right lg:w-28 lg:p-4">
@@ -76,7 +76,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
             <TableHeader className="hidden lg:visible! lg:table-header-group!">
                 <TableRow>
                     <TableHead className="w-auto px-4">Name</TableHead>
-                    <TableHead className="w-28 px-4">Created</TableHead>
+                    <TableHead className="w-32 px-4 whitespace-nowrap">Last run date</TableHead>
                     <TableHead className="w-28 px-4 text-right whitespace-nowrap">In progress</TableHead>
                     <TableHead className="w-28 px-4 text-right whitespace-nowrap">Completed</TableHead>
                     <TableHead className="w-32 pr-4 pl-8">Status</TableHead>
@@ -109,7 +109,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
                                     </span>
                                 )}
                             </TableCell>
-                            <TableCell className="whitespace-nowrap lg:w-28 lg:p-4">
+                            <TableCell className="whitespace-nowrap lg:w-32 lg:p-4">
                                 {created}
                             </TableCell>
                             <TableCell className={cn('text-right tabular-nums lg:w-28 lg:p-4', inProgress === 0 && 'text-muted-foreground')}>
