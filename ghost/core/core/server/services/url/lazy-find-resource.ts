@@ -3,9 +3,14 @@ const _ = require('lodash');
 const resourcesConfig = require('./config');
 /* eslint-enable @typescript-eslint/no-require-imports */
 
+// A resource is looked up by exactly one real, unique column. Multi-segment
+// permalinks capture more (year/month, primary_tag, ...), but those segments
+// are validated by the canonical re-check in the service, never queried here.
+export type ResourceLookupParams = {id: string} | {uuid: string} | {slug: string};
+
 export type FindResource = (
     routerType: string,
-    params: Record<string, string>
+    params: ResourceLookupParams
 ) => Promise<Record<string, unknown> | null>;
 
 interface BookshelfModel {
@@ -22,10 +27,6 @@ const POST_SCOPE = {type: 'post', status: 'published'};
 const PAGE_SCOPE = {type: 'page', status: 'published'};
 const POST_RELATIONS = ['tags', 'authors'];
 const RELATION_KEYS = ['tags', 'authors', 'primary_tag', 'primary_author'];
-// Permalink segments that are real, unique lookup columns. Derived segments
-// (year/month/day) and relation segments (primary_tag/author) are not columns,
-// so passing them to findOne would build invalid SQL and 500 a simple URL miss.
-const QUERYABLE_PARAMS = ['id', 'uuid', 'slug'];
 
 // Drop the same fields the eager resourceConfig excludes so the resolved record
 // has the same shape the eager service exposes (no post body, no extra
@@ -90,20 +91,16 @@ export function createFindResource(models: Models): FindResource {
         return pruneToEagerShape(record, type);
     };
 
-    return (type: string, params: Record<string, string>): Promise<Record<string, unknown> | null> => {
-        const query = _.pick(params, QUERYABLE_PARAMS);
-        if (_.isEmpty(query)) {
-            return Promise.resolve(null);
-        }
+    return (type: string, params: ResourceLookupParams): Promise<Record<string, unknown> | null> => {
         switch (type) {
         case 'posts':
-            return loadOne(models.Post, {...query, ...POST_SCOPE}, type, {withRelated: POST_RELATIONS});
+            return loadOne(models.Post, {...params, ...POST_SCOPE}, type, {withRelated: POST_RELATIONS});
         case 'pages':
-            return loadOne(models.Post, {...query, ...PAGE_SCOPE}, type);
+            return loadOne(models.Post, {...params, ...PAGE_SCOPE}, type);
         case 'tags':
-            return loadOne(models.TagPublic, {...query, visibility: 'public'}, type);
+            return loadOne(models.TagPublic, {...params, visibility: 'public'}, type);
         case 'authors':
-            return loadOne(models.Author, {...query, visibility: 'public'}, type);
+            return loadOne(models.Author, {...params, visibility: 'public'}, type);
         default:
             return Promise.resolve(null);
         }

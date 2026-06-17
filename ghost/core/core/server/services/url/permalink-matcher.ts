@@ -22,10 +22,6 @@ function isWordChars(value: string): boolean {
  * the `:field` placeholders, or returns `null` when the path doesn't match.
  */
 export function matchPermalink(template: string, urlPath: string): Record<string, string> | null {
-    if (typeof template !== 'string' || typeof urlPath !== 'string') {
-        return null;
-    }
-
     const templateSegments = template.split('/');
     const pathSegments = urlPath.split('/');
 

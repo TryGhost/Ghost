@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const nql = require('@tryghost/nql');
-const debug = require('@tryghost/debug')('services:url:router-filter');
+const logging = require('@tryghost/logging');
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 // A deliberate copy of the eager UrlGenerator's NQL semantics: while both
@@ -62,7 +62,7 @@ export function filterMatches(compiledFilter: CompiledFilter | null, record: Rec
         return !!compiledFilter.queryJSON(record);
     } catch (err) {
         const message = err instanceof Error ? err.message : String(err);
-        debug('NQL match failed', message);
+        logging.warn('NQL match failed', message);
         return false;
     }
 }

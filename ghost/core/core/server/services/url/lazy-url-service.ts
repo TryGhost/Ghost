@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/no-require-imports */
 const debug = require('@tryghost/debug')('services:url:lazy');
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const localUtils = require('../../../shared/url-utils');
 const {matchPermalink} = require('./permalink-matcher');
@@ -8,7 +7,7 @@ const {buildFilter, filterMatches, routerTypeOf} = require('./router-filter');
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 import type {Resource, UrlOptions, LazyUrlServiceBackend} from './url-service-facade';
-import type {FindResource} from './lazy-find-resource';
+import type {FindResource, ResourceLookupParams} from './lazy-find-resource';
 import type {CompiledFilter} from './router-filter';
 
 interface RouterConfig {
@@ -25,6 +24,24 @@ interface LazyUrlServiceDeps {
 }
 
 const ROUTER_TYPE_TO_DB_TYPE: Record<string, string> = {posts: 'post', pages: 'page'};
+
+// Real, unique lookup columns, in priority order. A multi-segment permalink
+// also captures derived (year/month) and relation (primary_tag) segments, but
+// only one of these columns is ever queried — the others are checked by the
+// canonical re-check below.
+const QUERYABLE_PARAMS = ['id', 'uuid', 'slug'] as const;
+
+// Narrow the full captured params down to the single column we query by, or
+// null when the permalink captured no queryable column to look up at all.
+function toLookupParams(params: Record<string, string>): ResourceLookupParams | null {
+    for (const key of QUERYABLE_PARAMS) {
+        const value = params[key];
+        if (value !== undefined) {
+            return {[key]: value} as ResourceLookupParams;
+        }
+    }
+    return null;
+}
 
 /**
  * On-demand replacement for the eager UrlService: computes URLs and ownership
@@ -78,7 +95,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             if (config.resourceType !== routerType) {
                 continue;
             }
-            this._warnIfThin(config, resource, routerType);
+            this._assertNotThin(config, resource, routerType);
             if (filterMatches(config.compiledFilter, record)) {
                 const path = this.urlUtils.replacePermalink(config.permalink, resource);
                 return this._formatPath(path, options);
@@ -116,12 +133,16 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             if (!params) {
                 continue;
             }
-            const cacheKey = `${config.resourceType}:${JSON.stringify(params)}`;
+            const lookupParams = toLookupParams(params);
+            if (!lookupParams) {
+                continue;
+            }
+            const cacheKey = `${config.resourceType}:${JSON.stringify(lookupParams)}`;
             let resource: Record<string, unknown> | null;
             if (lookupCache.has(cacheKey)) {
                 resource = lookupCache.get(cacheKey) ?? null;
             } else {
-                resource = await this.findResource(config.resourceType, params);
+                resource = await this.findResource(config.resourceType, lookupParams);
                 lookupCache.set(cacheKey, resource);
             }
             if (!resource) {
@@ -184,9 +205,12 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return '/404/';
     }
 
-    // Warns when a filtered router can't see a relation the caller didn't load:
-    // lazy would 404 here while eager (full data in memory) returns a URL.
-    private _warnIfThin(config: RouterConfig, resource: Resource, routerType: string): void {
+    // A filtered router that references a relation the resource doesn't carry
+    // can't be evaluated: lazy would 404 here while eager (full data in memory)
+    // returns a URL. Callers must hand the service fully-inflated resources, so
+    // a thin one is a programmer error we refuse loudly rather than mask as a
+    // silent /404/.
+    private _assertNotThin(config: RouterConfig, resource: Resource, routerType: string): void {
         if (!config.filter) {
             return;
         }
@@ -207,7 +231,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         if (missing.length === 0) {
             return;
         }
-        logging.error(new errors.InternalServerError({
+        throw new errors.InternalServerError({
             message: 'Thin resource passed to LazyUrlService.getUrlForResource',
             code: 'LAZY_URL_THIN_RESOURCE',
             errorDetails: {
@@ -217,7 +241,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
                 filter: config.filter,
                 missing
             }
-        }));
+        });
     }
 }
 

@@ -83,6 +83,30 @@ describe('LazyUrlService', function () {
             assert.equal(url, '/404/');
         });
 
+        it('throws when a relation-filtered router is given a thin resource', function () {
+            const service = new LazyUrlService({urlUtils});
+            // tag:news needs the tags relation; a resource with no tags array
+            // can't be evaluated, which would otherwise silently 404.
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+            assert.throws(
+                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello'}),
+                /Thin resource passed to LazyUrlService/
+            );
+        });
+
+        it('does not throw when the relation a filter references is present', function () {
+            const service = new LazyUrlService({urlUtils});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
+
+            // An empty tags array is still a loaded relation, so the resource is
+            // evaluated normally and falls through to /404/ on no match.
+            assert.equal(
+                service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello', tags: []}),
+                '/404/'
+            );
+        });
+
         it('expands shorthand tag/author filters via the EXPANSIONS table', function () {
             const service = new LazyUrlService({urlUtils});
             service.onRouterAddedType('podcast', 'tag:podcast', 'posts', '/podcast/:slug/');
@@ -351,11 +375,11 @@ describe('LazyUrlService', function () {
 
         it('matches multi-segment permalinks (e.g. /:primary_tag/:slug/)', async function () {
             const findResource = sinon.stub();
-            // withArgs binds the resolve to the exact param shape, so a
-            // regression that drops one of the captures (e.g. forgets to
-            // pass `primary_tag`) fails on the resolve, not just on the spy.
+            // Only the queryable slug column is passed to findResource; the
+            // primary_tag segment is validated by the canonical re-check, not
+            // the DB query.
             findResource
-                .withArgs('posts', {primary_tag: 'podcast', slug: 'hello'})
+                .withArgs('posts', {slug: 'hello'})
                 .resolves({id: 'p1', slug: 'hello', primary_tag: {slug: 'podcast'}});
 
             const service = new LazyUrlService({urlUtils, findResource});
@@ -364,12 +388,13 @@ describe('LazyUrlService', function () {
             const result = await service.resolveUrl('/podcast/hello/');
             assert.equal(result.id, 'p1');
             assert.equal(result.type, 'posts');
+            sinon.assert.calledWith(findResource, 'posts', {slug: 'hello'});
         });
 
         it('returns null when the primary_tag segment is not the record canonical tag', async function () {
             const findResource = sinon.stub();
             findResource
-                .withArgs('posts', {primary_tag: 'news', slug: 'hello'})
+                .withArgs('posts', {slug: 'hello'})
                 .resolves({id: 'p1', slug: 'hello', primary_tag: {slug: 'podcast'}});
 
             const service = new LazyUrlService({urlUtils, findResource});
@@ -383,7 +408,7 @@ describe('LazyUrlService', function () {
         it('matches date-based permalinks when the date is canonical', async function () {
             const findResource = sinon.stub();
             findResource
-                .withArgs('posts', {year: '2026', month: '04', slug: 'hello'})
+                .withArgs('posts', {slug: 'hello'})
                 .resolves({id: 'p1', slug: 'hello', published_at: '2026-04-15T00:00:00.000Z'});
 
             const service = new LazyUrlService({urlUtils, findResource});
@@ -396,7 +421,7 @@ describe('LazyUrlService', function () {
         it('returns null when the date segments do not match the record published date', async function () {
             const findResource = sinon.stub();
             findResource
-                .withArgs('posts', {year: '2026', month: '05', slug: 'hello'})
+                .withArgs('posts', {slug: 'hello'})
                 .resolves({id: 'p1', slug: 'hello', published_at: '2026-04-15T00:00:00.000Z'});
 
             const service = new LazyUrlService({urlUtils, findResource});
@@ -425,6 +450,17 @@ describe('LazyUrlService', function () {
             service.onRouterAddedType('default', null, 'posts', '/blog-:slug/');
 
             assert.equal(await service.resolveUrl('/blog-hello/'), null);
+            sinon.assert.notCalled(findResource);
+        });
+
+        it('does not query findResource when the permalink captures no queryable column', async function () {
+            const findResource = sinon.stub();
+            const service = new LazyUrlService({urlUtils, findResource});
+            // An archive-style permalink captures only derived date segments,
+            // so there's no id/uuid/slug column to look a resource up by.
+            service.onRouterAddedType('archive', null, 'posts', '/:year/:month/');
+
+            assert.equal(await service.resolveUrl('/2026/04/'), null);
             sinon.assert.notCalled(findResource);
         });
 

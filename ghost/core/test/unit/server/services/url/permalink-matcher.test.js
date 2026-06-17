@@ -85,12 +85,4 @@ describe('permalink-matcher', function () {
             assert.equal(JSON.stringify(result), '{"__proto__":"hello"}');
         });
     });
-
-    describe('guards', function () {
-        it('returns null when either argument is not a string', function () {
-            assert.equal(matchPermalink(null, '/hello/'), null);
-            assert.equal(matchPermalink('/:slug/', null), null);
-            assert.equal(matchPermalink(undefined, undefined), null);
-        });
-    });
 });

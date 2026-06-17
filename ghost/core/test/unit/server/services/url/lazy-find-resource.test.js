@@ -251,28 +251,5 @@ describe('createFindResource', function () {
             sinon.assert.notCalled(models.TagPublic.findOne);
             sinon.assert.notCalled(models.Author.findOne);
         });
-
-        it('queries only by column params, dropping derived/relation permalink segments', async function () {
-            models.Post.findOne.resolves(record({id: 'p1', slug: 'hello'}));
-
-            await findResource('posts', {year: '2026', month: '04', primary_tag: 'podcast', slug: 'hello'});
-
-            sinon.assert.calledWith(
-                models.Post.findOne,
-                sinon.match({slug: 'hello', type: 'post', status: 'published'}),
-                sinon.match.any
-            );
-            const query = models.Post.findOne.firstCall.args[0];
-            assert.equal('year' in query, false);
-            assert.equal('month' in query, false);
-            assert.equal('primary_tag' in query, false);
-        });
-
-        it('returns null without querying when no column param was captured', async function () {
-            const result = await findResource('posts', {year: '2026', month: '04'});
-
-            assert.equal(result, null);
-            sinon.assert.notCalled(models.Post.findOne);
-        });
     });
 });
