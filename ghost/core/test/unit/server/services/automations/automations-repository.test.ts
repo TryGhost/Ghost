@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import createKnex, {type Knex} from 'knex';
 import moment from 'moment';
@@ -778,6 +779,15 @@ describe('automations repository', function () {
     });
 
     describe('edit', function () {
+        const assertValidationError = async (fn: () => Promise<unknown>, property: string, message: RegExp) => {
+            await assert.rejects(fn, (error: unknown) => {
+                assert(error instanceof errors.ValidationError);
+                assert.equal(error.property, property);
+                assert.match(error.message, message);
+                return true;
+            });
+        };
+
         it('only inserts action revisions when action data changes', async function () {
             const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
             const initialRevisionCount = await getRevisionCount();
@@ -870,6 +880,62 @@ describe('automations repository', function () {
             const revision = await getLatestActionRevisionByActionId(addedActionId);
 
             assert.equal(revision.email_design_setting_id, defaultDesignSetting.id);
+        });
+
+        it('rejects changing an action that is part of another automation', async function () {
+            const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+            const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+            const paidAction = paidAutomation.actions[0];
+
+            await assertValidationError(async () => repo.edit(freeAutomation.id, {
+                status: 'inactive',
+                actions: [paidAction],
+                edges: []
+            }), 'actions.id', /already exists/);
+        });
+
+        it('rejects changing a soft-deleted action', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const now = toDatabaseDate(new Date());
+            const softDeletedActionId = ObjectId().toString();
+            await knex('automation_actions').insert({
+                id: softDeletedActionId,
+                created_at: now,
+                updated_at: now,
+                deleted_at: now,
+                automation_id: automation.id,
+                type: 'wait'
+            });
+
+            await assertValidationError(async () => repo.edit(automation.id, {
+                status: 'inactive',
+                actions: [{
+                    id: softDeletedActionId,
+                    type: 'wait',
+                    data: {
+                        wait_hours: 24
+                    }
+                }],
+                edges: []
+            }), 'actions.id', /already exists/);
+        });
+
+        it('rejects changing the type of an action', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const waitAction = automation.actions.find(action => action.type === 'wait');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(waitAction, 'test setup expects wait action');
+            assert.equal(emailAction?.type, 'send_email', 'test setup expects email action');
+
+            await assertValidationError(async () => repo.edit(automation.id, {
+                status: 'inactive',
+                actions: [{
+                    id: waitAction.id,
+                    type: 'send_email',
+                    data: emailAction.data
+                }],
+                edges: []
+            }), 'actions.type', /different type/);
         });
     });
 
