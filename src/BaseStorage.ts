@@ -5,7 +5,7 @@ import type {RequestHandler} from 'express';
 abstract class StorageBase {
     readonly requiredFns!: readonly ['exists', 'save', 'serve', 'delete', 'read'];
 
-    protected declare storagePath: string;
+    declare storagePath: string;
 
     abstract exists(fileName: string, targetDir?: string): Promise<boolean>;
     abstract save(file: StorageBase.StorageFile, targetDir?: string): Promise<string>;
