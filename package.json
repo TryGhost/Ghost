@@ -40,7 +40,7 @@
     "node": "^22.13.1 || ^24.0.0"
   },
   "devDependencies": {
-    "@types/node": "22.10.5",
+    "@types/node": "22.19.21",
     "@vitest/coverage-v8": "4.1.8",
     "oxlint": "1.69.0",
     "typescript": "5.9.3",
