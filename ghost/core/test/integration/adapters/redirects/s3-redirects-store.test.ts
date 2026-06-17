@@ -1,4 +1,5 @@
 /* eslint-disable ghost/mocha/no-setup-in-describe -- runStoreContract is the parameterised-test seam; calling it inside describe is the intended use. */
+import {describe, it, beforeAll, afterEach, afterAll} from 'vitest';
 import assert from 'node:assert/strict';
 import {ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
 

@@ -1,3 +1,4 @@
+import {describe, it, beforeAll, beforeEach, afterEach} from 'vitest';
 import assert from 'node:assert/strict';
 
 const testUtils = require('../../../utils');
