@@ -470,14 +470,14 @@ describe('LazyUrlService', function () {
             sinon.assert.calledWith(findResource, 'posts', {slug: 'hello'});
         });
 
-        it('throws when a matched permalink has no queryable lookup column', async function () {
+        it('does not resolve a permalink that captures no queryable column', async function () {
             const findResource = sinon.stub();
             const service = new LazyUrlService({urlUtils, findResource});
-            // A permalink with neither slug nor id is invalid config; matching
-            // one is a programmer error we refuse loudly rather than mask.
+            // A permalink with neither slug nor id can't identify a resource, so
+            // the matcher treats it as no match and the DB is never touched.
             service.onRouterAddedType('archive', null, 'posts', '/:year/:month/');
 
-            await assert.rejects(() => service.resolveUrl('/2026/04/'), /no queryable lookup column/);
+            assert.equal(await service.resolveUrl('/2026/04/'), null);
             sinon.assert.notCalled(findResource);
         });
 

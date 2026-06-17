@@ -2,7 +2,15 @@
 const routeMatch = require('path-match')();
 /* eslint-enable @typescript-eslint/no-require-imports */
 
-import type {ResourceLookupParams} from './lazy-find-resource';
+import type {ResourceLookupParams} from './lazy-url-service';
+
+export type PermalinkParams = ResourceLookupParams & {
+    year?: string;
+    month?: string;
+    day?: string;
+    primary_tag?: string;
+    primary_author?: string;
+};
 
 const SUPPORTED_TOKENS = new Set([
     'id',
@@ -13,8 +21,6 @@ const SUPPORTED_TOKENS = new Set([
     'primary_tag',
     'primary_author'
 ]);
-
-const QUERYABLE_PARAMS = ['id', 'slug'] as const;
 
 const FIELD_VALIDATORS: Record<string, RegExp> = {
     id: /^[0-9a-f]{24}$/i,
@@ -68,7 +74,7 @@ function valuesFitTheirFormat(params: Record<string, string>): boolean {
     return true;
 }
 
-export function matchPermalink(template: string, urlPath: string): Record<string, string> | null {
+export function matchPermalink(template: string, urlPath: string): PermalinkParams | null {
     if (!hasOnlySupportedTokens(template)) {
         return null;
     }
@@ -91,22 +97,23 @@ export function matchPermalink(template: string, urlPath: string): Record<string
         return null;
     }
 
-    return params;
+    if (params.id === undefined && params.slug === undefined) {
+        return null;
+    }
+
+    return params as PermalinkParams;
 }
 
 /**
- * Narrows the captured params down to the single column the DB is queried by,
- * or null when no queryable column is present — which, for a real resource
- * permalink, can't happen and signals an invalid permalink to the caller.
+ * Narrows a matched permalink down to the single unique column the DB is
+ * queried by. matchPermalink guarantees a queryable column is present, so this
+ * is total — there is no "no lookup column" case to handle.
  */
-export function toLookupParams(params: Record<string, string>): ResourceLookupParams | null {
-    for (const key of QUERYABLE_PARAMS) {
-        const value = params[key];
-        if (value !== undefined) {
-            return {[key]: value} as ResourceLookupParams;
-        }
+export function toLookupParams(params: PermalinkParams): ResourceLookupParams {
+    if ('id' in params) {
+        return {id: params.id};
     }
-    return null;
+    return {slug: params.slug};
 }
 
 module.exports = {matchPermalink, toLookupParams};

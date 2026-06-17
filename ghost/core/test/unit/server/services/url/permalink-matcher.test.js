@@ -12,10 +12,6 @@ describe('permalink-matcher', function () {
             assert.deepEqual(captured('/:slug/', '/hello/'), {slug: 'hello'});
         });
 
-        it('returns an empty params object for a fully literal template', function () {
-            assert.deepEqual(captured('/about/', '/about/'), {});
-        });
-
         it('returns null when a literal segment differs', function () {
             assert.equal(matchPermalink('/about/', '/hello/'), null);
         });
@@ -50,6 +46,16 @@ describe('permalink-matcher', function () {
         it('returns null when segment counts differ', function () {
             assert.equal(matchPermalink('/:slug/', '/a/b/'), null);
             assert.equal(matchPermalink('/:year/:slug/', '/2026/'), null);
+        });
+    });
+
+    describe('queryable column required', function () {
+        it('returns null for a fully literal template', function () {
+            assert.equal(matchPermalink('/about/', '/about/'), null);
+        });
+
+        it('returns null for a template that captures only derived segments', function () {
+            assert.equal(matchPermalink('/:year/:month/', '/2026/04/'), null);
         });
     });
 
@@ -129,10 +135,6 @@ describe('permalink-matcher', function () {
 
         it('prefers id over slug', function () {
             assert.deepEqual(toLookupParams({id: '0123456789abcdef01234567', slug: 'hello'}), {id: '0123456789abcdef01234567'});
-        });
-
-        it('returns null when no queryable column is present', function () {
-            assert.equal(toLookupParams({year: '2026', month: '04'}), null);
         });
     });
 });

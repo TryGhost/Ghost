@@ -7,8 +7,15 @@ const {buildFilter, filterMatches, routerTypeOf} = require('./router-filter');
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 import type {Resource, UrlOptions, LazyUrlServiceBackend} from './url-service-facade';
-import type {FindResource} from './lazy-find-resource';
 import type {CompiledFilter} from './router-filter';
+import type {PermalinkParams} from './permalink-matcher';
+
+export type ResourceLookupParams = {id: string} | {slug: string};
+
+export type FindResource = (
+    routerType: string,
+    params: ResourceLookupParams
+) => Promise<Record<string, unknown> | null>;
 
 interface RouterConfig {
     identifier: string;
@@ -117,20 +124,9 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             if (!params) {
                 continue;
             }
+            // matchPermalink only matches permalinks that capture a queryable
+            // column, so this always yields a usable lookup.
             const lookupParams = toLookupParams(params);
-            if (!lookupParams) {
-                // A resource permalink always carries a slug or id, so matching
-                // one without a queryable column means the router was registered
-                // with an invalid permalink — a config bug.
-                throw new errors.InternalServerError({
-                    message: 'LazyUrlService matched a permalink with no queryable lookup column',
-                    code: 'LAZY_URL_NO_LOOKUP_PARAM',
-                    errorDetails: {
-                        routerIdentifier: config.identifier,
-                        permalink: config.permalink
-                    }
-                });
-            }
             const cacheKey = `${config.resourceType}:${JSON.stringify(lookupParams)}`;
             let resource: Record<string, unknown> | null;
             if (lookupCache.has(cacheKey)) {
@@ -161,13 +157,15 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     // captured params match it. Without this, derived/relation segments the
     // query can't filter on (year/month, primary_tag) would resolve any slug,
     // 200-ing a URL the eager service 404s.
-    private _matchesCanonicalUrl(config: RouterConfig, params: Record<string, string>, resource: Record<string, unknown>): boolean {
+    private _matchesCanonicalUrl(config: RouterConfig, params: PermalinkParams, resource: Record<string, unknown>): boolean {
         const canonicalPath = this.urlUtils.replacePermalink(config.permalink, resource);
         const canonicalParams = matchPermalink(config.permalink, canonicalPath);
         if (!canonicalParams) {
             return false;
         }
-        return Object.keys(params).every(key => canonicalParams[key] === params[key]);
+        const captured = params as Record<string, string>;
+        const canonical = canonicalParams as Record<string, string>;
+        return Object.keys(captured).every(key => canonical[key] === captured[key]);
     }
 
     // Normalizes the plural router type to the singular DB value for filter

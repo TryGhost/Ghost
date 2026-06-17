@@ -3,15 +3,7 @@ const _ = require('lodash');
 const resourcesConfig = require('./config');
 /* eslint-enable @typescript-eslint/no-require-imports */
 
-// A resource is looked up by exactly one real, unique column. Multi-segment
-// permalinks capture more (year/month, primary_tag, ...), but those segments
-// are validated by the canonical re-check in the service, never queried here.
-export type ResourceLookupParams = {id: string} | {slug: string};
-
-export type FindResource = (
-    routerType: string,
-    params: ResourceLookupParams
-) => Promise<Record<string, unknown> | null>;
+import type {ResourceLookupParams, FindResource} from './lazy-url-service';
 
 interface BookshelfModel {
     findOne(query: Record<string, unknown>, options?: Record<string, unknown>): Promise<{toJSON(): Record<string, unknown>} | null>;
