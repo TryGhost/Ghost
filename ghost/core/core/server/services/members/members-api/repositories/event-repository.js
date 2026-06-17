@@ -36,8 +36,7 @@ module.exports = class EventRepository {
         memberAttributionService,
         MemberEmailChangeEvent,
         AutomatedEmailRecipient,
-        Gift,
-        knex
+        Gift
     }) {
         this._DonationPaymentEvent = DonationPaymentEvent;
         this._MemberSubscribeEvent = MemberSubscribeEvent;
@@ -57,7 +56,7 @@ module.exports = class EventRepository {
         this._MemberEmailChangeEvent = MemberEmailChangeEvent;
         this._AutomatedEmailRecipient = AutomatedEmailRecipient;
         this._Gift = Gift;
-        this._knex = knex ?? db.knex;
+        this._knex = db.knex;
     }
 
     async getEventTimeline(options = {}) {

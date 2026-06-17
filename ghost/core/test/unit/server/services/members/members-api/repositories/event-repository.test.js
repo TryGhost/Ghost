@@ -375,9 +375,9 @@ describe('EventRepository', function () {
                 labsService: null,
                 AutomatedEmailRecipient: {
                     findPage: fake
-                },
-                knex: fakeKnex
+                }
             });
+            eventRepository._knex = fakeKnex;
         });
 
         afterEach(function () {
