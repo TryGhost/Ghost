@@ -66,7 +66,7 @@ describe('Front-end members behavior', function () {
         return member;
     }
 
-    before(async function () {
+    beforeAll(async function () {
         const originalSettingsCacheGetFn = settingsCache.get;
 
         sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
@@ -88,7 +88,7 @@ describe('Front-end members behavior', function () {
         request = supertest.agent(configUtils.config.get('url'));
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
@@ -544,7 +544,7 @@ describe('Front-end members behavior', function () {
         let labelPost;
         let productPost;
 
-        before(function () {
+        beforeAll(function () {
             publicPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'free-to-see',
                 visibility: 'public',
@@ -786,7 +786,7 @@ describe('Front-end members behavior', function () {
         });
 
         describe('as free member', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await loginAsMember('member1@test.com');
             });
 
@@ -839,7 +839,7 @@ describe('Front-end members behavior', function () {
 
         describe('as free member with vip label', function () {
             const email = 'vip@test.com';
-            before(async function () {
+            beforeAll(async function () {
                 await loginAsMember(email);
             });
 
@@ -869,7 +869,7 @@ describe('Front-end members behavior', function () {
 
         describe('as paid member', function () {
             const email = 'paid@test.com';
-            before(async function () {
+            beforeAll(async function () {
                 // Member should exist, because we are signin in
                 await models.Member.findOne({email}, {require: true});
 
@@ -1003,7 +1003,7 @@ describe('Front-end members behavior', function () {
         });
 
         describe('as comped member', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await loginAsMember('comped@test.com');
             });
 
@@ -1044,7 +1044,7 @@ describe('Front-end members behavior', function () {
         });
 
         describe('as member with product', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await loginAsMember('with-product@test.com');
             });
 

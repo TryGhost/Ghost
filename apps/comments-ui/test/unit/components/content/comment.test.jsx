@@ -1,9 +1,8 @@
 import React from 'react';
 import {AppContext} from '../../../../src/app-context';
 import {CommentComponent, RepliedToSnippet} from '../../../../src/components/content/comment';
-import {SortingForm} from '../../../../src/components/content/forms/sorting-form';
 import {buildComment} from '../../../utils/fixtures';
-import {fireEvent, render, screen, waitFor} from '@testing-library/react';
+import {fireEvent, render, screen} from '@testing-library/react';
 import {vi} from 'vitest';
 
 vi.mock('../../../../src/components/content/forms/reply-form', () => ({
@@ -15,7 +14,6 @@ const contextualRender = (ui, {appContext, ...renderOptions}) => {
         commentsEnabled: 'all',
         comments: [],
         openCommentForms: [],
-        capabilities: {},
         member: null,
         commentIdToScrollTo: null,
         t: str => str,
@@ -70,28 +68,14 @@ describe('<CommentComponent>', function () {
         expect(container.querySelector('[data-member-uuid="123"]')).not.toBeInTheDocument();
     });
 
-    it('keeps the like-only controls when dislike capability is absent', function () {
-        const comment = buildComment({
-            count: {
-                likes: 3
-            }
-        });
-        const appContext = {comments: [comment], dispatchAction: () => {}};
-
-        contextualRender(<CommentComponent comment={comment} />, {appContext});
-
-        expect(screen.getByTestId('like-button')).toHaveTextContent('3');
-        expect(screen.queryByTestId('dislike-button')).not.toBeInTheDocument();
-    });
-
-    it('renders an icon-only dislike control when dislike capability is present', function () {
+    it('renders an icon-only dislike control', function () {
         const comment = buildComment({
             disliked: true,
             count: {
                 likes: 3
             }
         });
-        const appContext = {comments: [comment], capabilities: {dislikes: true}, dispatchAction: () => {}};
+        const appContext = {comments: [comment], dispatchAction: () => {}};
 
         contextualRender(<CommentComponent comment={comment} />, {appContext});
 
@@ -128,38 +112,6 @@ describe('<CommentComponent>', function () {
         expect(screen.getByText('Second reply')).toBeInTheDocument();
         expect(container.ownerDocument.getElementById(reply2.id)).toHaveTextContent('Second reply');
         expect(screen.queryByTestId('replies-pagination')).not.toBeInTheDocument();
-    });
-
-    it('keeps Best selected when dislike capabilities change the best order', async function () {
-        const appContext = {
-            comments: [],
-            order: 'count__likes desc, created_at desc',
-            dispatchAction: () => {}
-        };
-
-        const {rerender} = contextualRender(<SortingForm />, {appContext});
-
-        expect(screen.getByTestId('comments-sorting-form')).toHaveTextContent('Best');
-
-        rerender(
-            <AppContext.Provider value={{
-                commentsEnabled: 'all',
-                comments: [],
-                openCommentForms: [],
-                capabilities: {dislikes: true},
-                member: null,
-                commentIdToScrollTo: null,
-                t: str => str,
-                ...appContext
-            }}
-            >
-                <SortingForm />
-            </AppContext.Provider>
-        );
-
-        await waitFor(() => {
-            expect(screen.getByTestId('comments-sorting-form')).toHaveTextContent('Best');
-        });
     });
 
     it('hides reply-to-reply context when commentsThreads is enabled', function () {

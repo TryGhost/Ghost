@@ -1,6 +1,5 @@
 const assert = require('node:assert/strict');
 const path = require('path');
-const rewire = require('rewire');
 const _ = require('lodash');
 const configUtils = require('../../../utils/config-utils');
 const sinon = require('sinon');
@@ -24,7 +23,7 @@ describe('Config Loader', function () {
         beforeEach(function () {
             originalEnv = _.clone(process.env);
             originalArgv = _.clone(process.argv);
-            loader = rewire('../../../../core/shared/config/loader');
+            loader = require('../../../../core/shared/config/loader');
             nodeEnvStub = sinon.stub(localUtils, 'getNodeEnv').returns('testing');
             // we manually call `loadConf` in the tests and we need to ensure that the minimum
             // required config properties are available

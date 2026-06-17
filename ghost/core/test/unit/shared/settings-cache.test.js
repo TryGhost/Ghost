@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const {EventEmitter} = require('node:events');
 const sinon = require('sinon');
 const _ = require('lodash');
 const events = require('../../../core/server/lib/common/events');
@@ -232,5 +233,32 @@ describe('UNIT: settings cache', function () {
         });
         sinon.assert.callCount(setSpy, 4);
         assert.equal(cache.get('key1'), 'second edit');
+    });
+
+    it('.reset() removes calculated field listeners and handlers', function () {
+        const localEvents = new EventEmitter();
+        const localCache = new CacheManager({
+            publicSettings
+        });
+        const settingsCollection = {
+            models: []
+        };
+        const createCalculatedField = value => ({
+            key: 'calculated_key',
+            dependents: ['dependent_key'],
+            getSetting: () => ({value})
+        });
+
+        for (let i = 0; i < 5; i += 1) {
+            localCache.init(localEvents, settingsCollection, [createCalculatedField(i)], new InMemoryCache());
+
+            assert.equal(localEvents.listenerCount('settings.dependent_key.edited'), 1);
+            assert.equal(localCache._calculatedFieldHandlers.size, 1);
+        }
+
+        localCache.reset(localEvents);
+
+        assert.equal(localEvents.listenerCount('settings.dependent_key.edited'), 0);
+        assert.equal(localCache._calculatedFieldHandlers.size, 0);
     });
 });

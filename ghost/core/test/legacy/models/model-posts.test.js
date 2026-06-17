@@ -21,8 +21,6 @@ const markdownToMobiledoc = testUtils.DataGenerator.markdownToMobiledoc;
  * IMPORTANT:
  * - do not spy the events unit, because when we only spy, all listeners get the event
  * - this can cause unexpected behavior as the listeners execute code
- * - using rewire is not possible, because each model self registers it's model registry in bookshelf
- * - rewire would add 1 registry, a file who requires the models, tries to register the model another time
  */
 describe('Post Model', function () {
     let eventsTriggered = {};

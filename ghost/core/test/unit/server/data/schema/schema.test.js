@@ -32,6 +32,7 @@ const VALID_KEYS = {
         'references',
         'constraintName',
         'cascadeDelete',
+        'restrictDelete',
         'setNullDelete',
         'index'
     ],
@@ -53,7 +54,7 @@ describe('schema validations', function () {
             assert(_.isPlainObject(table));
 
             _.each(table, function (column, columnName) {
-                if (['@@INDEXES@@', '@@UNIQUE_CONSTRAINTS@@'].includes(columnName)) {
+                if (['@@INDEXES@@', '@@UNIQUE_CONSTRAINTS@@', '@@PRIMARY_KEY@@'].includes(columnName)) {
                     return;
                 }
 

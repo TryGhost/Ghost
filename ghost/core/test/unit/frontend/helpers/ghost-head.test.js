@@ -373,6 +373,21 @@ describe('{{ghost_head}} helper', function () {
             published_at: new Date(0),
             updated_at: new Date(0)
         }));
+
+        posts.push(createPost({ // Post 11
+            meta_description: 'site description',
+            title: 'Welcome to Ghost',
+            feature_image: '/content/images/test-image.png',
+            tags: [
+                createTag({name: 'Tom & Jerry'})
+            ],
+            authors: [
+                authors[3]
+            ],
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
+        }));
     };
 
     beforeEach(function () {
@@ -595,6 +610,27 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+        });
+
+        it('single-escapes special characters in article:tag meta values', async function () {
+            const renderObject = {
+                post: posts[11]
+            };
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            // The tag name "Tom & Jerry" must be HTML-escaped exactly once, so that
+            // consumers decode it back to the original "Tom & Jerry".
+            assert.match(rendered, /<meta property="article:tag" content="Tom &amp; Jerry">/);
+            // Guard against the double-escaping regression (&amp;amp;).
+            assert.doesNotMatch(rendered, /&amp;amp;/);
         });
 
         it('returns structured data without tags if there are no tags', async function () {

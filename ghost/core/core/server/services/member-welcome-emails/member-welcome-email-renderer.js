@@ -7,7 +7,7 @@ const errors = require('@tryghost/errors');
 const {MESSAGES} = require('./constants');
 const {wrapReplacementStrings} = require('../koenig/render-utils/replacement-strings');
 const linkReplacer = require('../lib/link-replacer');
-const {getEmailDesign} = require('../email-rendering/email-design');
+const emailDesign = require('../email-rendering/email-design');
 const {registerHelpers} = require('../email-service/helpers/register-helpers');
 
 const REPLACEMENT_REGEX = /%%\{(\w+?)(?:,? *"(.*?)")?\}%%/g;
@@ -119,7 +119,7 @@ class MemberWelcomeEmailRenderer {
     async render({lexical, subject, designSettings, member, siteSettings}) {
         designSettings = designSettings || {};
 
-        const design = getEmailDesign({
+        const design = emailDesign.getEmailDesign({
             accentColor: siteSettings.accentColor,
             backgroundColor: designSettings.background_color,
             buttonColor: designSettings.button_color,

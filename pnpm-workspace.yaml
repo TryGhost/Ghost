@@ -39,9 +39,9 @@ catalog:
   '@radix-ui/react-tabs': 1.1.14
   '@radix-ui/react-tooltip': 1.2.9
   '@sentry/react': 7.120.4
-  '@storybook/addon-docs': 10.3.5
-  '@storybook/addon-links': 10.3.5
-  '@storybook/react-vite': 10.3.5
+  '@storybook/addon-docs': 10.4.4
+  '@storybook/addon-links': 10.4.4
+  '@storybook/react-vite': 10.4.4
   '@tailwindcss/postcss': 4.2.2
   '@tailwindcss/vite': 4.2.2
   '@tanstack/react-query': 4.44.0
@@ -58,14 +58,14 @@ catalog:
   '@tryghost/koenig-lexical': 1.8.2
   '@tryghost/limit-service': 1.5.6
   '@tryghost/logging': 4.2.1
-  '@tryghost/nql': 0.13.0
-  '@tryghost/nql-lang': 0.6.5
+  '@tryghost/nql': 0.13.1
+  '@tryghost/nql-lang': 0.6.6
   '@tryghost/string': 0.3.5
   '@tryghost/timezone-data': 1.0.0
   '@types/express': 4.17.25
   '@types/html-minifier': ^4.0.6
   '@types/jest': 29.5.14
-  '@types/node': 22.19.20
+  '@types/node': 22.19.21
   '@types/react': 18.3.31
   '@types/react-dom': 18.3.7
   '@types/sanitize-html': 2.16.1
@@ -93,7 +93,7 @@ catalog:
   jsdom: 29.1.1
   jsonc-parser: 3.3.1
   lodash: 4.18.1
-  lucide-react: 1.17.0
+  lucide-react: 1.18.0
   mingo: 2.5.3
   mocha: 11.7.6
   msw: 2.14.6
@@ -106,23 +106,23 @@ catalog:
   react-router: 7.14.0
   sinon: 22.0.0
   sonner: 2.0.7
-  storybook: 10.3.5
+  storybook: 10.4.4
   supertest: 7.2.2
   tailwindcss: 4.2.2
-  tsx: 4.21.0
+  tsx: 4.22.4
   tw-animate-css: 1.4.0
-  type-fest: 5.6.0
+  type-fest: 5.7.0
   typescript: 5.9.3
   validator: 13.12.0
   vite: 7.3.2
   vite-plugin-svgr: 4.5.0
   vitest: 4.1.8
-  zod: 4.1.12
+  zod: 4.4.3
 
 catalogs:
   eslint9:
-    '@eslint/js': 9.37.0
-    eslint: 9.37.0
+    '@eslint/js': 9.39.4
+    eslint: 9.39.4
   react17:
     react: 17.0.2
     react-dom: 17.0.2

@@ -78,6 +78,12 @@ class CacheManager {
         this.settingsOverrides = {};
         this.publicSettings = publicSettings;
         this.calculatedFields = [];
+        // Memoized per-field calculated-field listeners, so reset() can remove the
+        // exact function reference init() added. _updateCalculatedField() returns a
+        // fresh closure each call, so the old removeListener() never matched and the
+        // listeners leaked across every boot (harmless in production — boot happens
+        // once — but accumulates in test runs that boot repeatedly).
+        this._calculatedFieldHandlers = new Map();
 
         this.get = this.get.bind(this);
         this.set = this.set.bind(this);
@@ -101,6 +107,15 @@ class CacheManager {
             debug('Auto updating', field.key);
             this.set(field.key, field.getSetting());
         };
+    }
+
+    // Stable per-field handler so events.on()/removeListener() use the same
+    // function reference (otherwise calculated-field listeners leak across boots).
+    _getCalculatedFieldHandler(field) {
+        if (!this._calculatedFieldHandlers.has(field)) {
+            this._calculatedFieldHandlers.set(field, this._updateCalculatedField(field));
+        }
+        return this._calculatedFieldHandlers.get(field);
     }
 
     _doGet(key, options) {
@@ -279,7 +294,7 @@ class CacheManager {
         this.calculatedFields.forEach((field) => {
             this._updateCalculatedField(field)();
             field.dependents.forEach((dependent) => {
-                events.on(`settings.${dependent}.edited`, this._updateCalculatedField(field));
+                events.on(`settings.${dependent}.edited`, this._getCalculatedFieldHandler(field));
             });
         });
 
@@ -302,11 +317,12 @@ class CacheManager {
         //unbind calculated fields
         this.calculatedFields.forEach((field) => {
             field.dependents.forEach((dependent) => {
-                events.removeListener(`settings.${dependent}.edited`, this._updateCalculatedField(field));
+                events.removeListener(`settings.${dependent}.edited`, this._getCalculatedFieldHandler(field));
             });
         });
 
         this.calculatedFields = [];
+        this._calculatedFieldHandlers.clear();
     }
 }
 

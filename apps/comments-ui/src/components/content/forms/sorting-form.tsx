@@ -3,17 +3,17 @@ import React, {useEffect, useRef, useState} from 'react';
 import {useAppContext, useOrderChange} from '../../../app-context';
 
 export const SortingForm: React.FC = () => {
-    const {capabilities, order, t} = useAppContext();
+    const {order, t} = useAppContext();
     const changeOrder = useOrderChange();
     const [isOpen, setIsOpen] = useState(false);
     const [selectedOption, setSelectedOption] = useState(order);
     const dropdownRef = useRef<HTMLDivElement>(null);
-    const bestOrder = capabilities?.dislikes === true ? 'count__net_score desc, created_at desc' : 'count__likes desc, created_at desc';
+    const bestOrder = 'count__net_score desc, created_at desc';
 
     useEffect(() => {
         const isBestOrder = order === 'count__likes desc, created_at desc' || order === 'count__net_score desc, created_at desc';
         setSelectedOption(isBestOrder ? bestOrder : order);
-    }, [order, bestOrder]);
+    }, [order]);
 
     const options = [
         {value: bestOrder, label: t('Best')},

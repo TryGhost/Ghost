@@ -15,7 +15,7 @@ describe('Frontend Routing: Email Routes', function () {
     let request;
     let emailPosts;
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost({forceStart: true});
 
         request = supertest.agent(config.get('url'));
@@ -35,7 +35,7 @@ describe('Frontend Routing: Email Routes', function () {
         }]);
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 

@@ -336,9 +336,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -356,7 +353,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1524",
+  "content-length": "1491",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -446,9 +443,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -466,7 +460,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1524",
+  "content-length": "1491",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -556,9 +550,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -576,7 +567,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1524",
+  "content-length": "1491",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -666,9 +657,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -686,7 +674,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1524",
+  "content-length": "1491",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -1990,9 +1978,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2010,7 +1995,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1029",
+  "content-length": "996",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2049,9 +2034,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2069,7 +2051,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "599",
+  "content-length": "566",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2081,9 +2063,6 @@ exports[`Comments API when commenting enabled for all when authenticated browse 
 Object {
   "comments": Array [],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2101,7 +2080,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "136",
+  "content-length": "103",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2113,9 +2092,6 @@ exports[`Comments API when commenting enabled for all when authenticated browse 
 Object {
   "comments": Array [],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2133,7 +2109,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "136",
+  "content-length": "103",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2172,9 +2148,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2192,7 +2165,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "599",
+  "content-length": "566",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2204,9 +2177,6 @@ exports[`Comments API when commenting enabled for all when authenticated browse 
 Object {
   "comments": Array [],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2224,7 +2194,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "136",
+  "content-length": "103",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2236,9 +2206,6 @@ exports[`Comments API when commenting enabled for all when authenticated browse 
 Object {
   "comments": Array [],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2256,7 +2223,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "136",
+  "content-length": "103",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2295,9 +2262,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2315,7 +2279,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "599",
+  "content-length": "566",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2427,9 +2391,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2447,7 +2408,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1978",
+  "content-length": "1945",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2511,9 +2472,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2531,7 +2489,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1029",
+  "content-length": "996",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2595,9 +2553,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2615,7 +2570,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1028",
+  "content-length": "995",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -2703,9 +2658,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -2723,7 +2675,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1585",
+  "content-length": "1552",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -3165,9 +3117,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -3185,7 +3134,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1053",
+  "content-length": "1020",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
@@ -3249,9 +3198,6 @@ Object {
     },
   ],
   "meta": Object {
-    "capabilities": Object {
-      "dislikes": true,
-    },
     "pagination": Object {
       "limit": 15,
       "next": null,
@@ -3269,7 +3215,7 @@ Object {
   "access-control-allow-credentials": "true",
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1053",
+  "content-length": "1020",
   "content-type": "application/json; charset=utf-8",
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
   "vary": "Origin, Accept-Encoding",
