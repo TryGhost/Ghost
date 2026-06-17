@@ -14,7 +14,7 @@ describe('llms.txt routing', function () {
     let request;
     let siteUrl;
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost();
         siteUrl = configUtils.config.get('url').replace(/\/$/, '');
         request = supertest.agent(configUtils.config.get('url'));
