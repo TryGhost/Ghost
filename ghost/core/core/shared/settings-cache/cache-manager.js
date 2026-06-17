@@ -322,6 +322,7 @@ class CacheManager {
         });
 
         this.calculatedFields = [];
+        this._calculatedFieldHandlers.clear();
     }
 }
 
