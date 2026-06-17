@@ -2,19 +2,13 @@ import moment from 'moment';
 import path from 'path';
 import type {RequestHandler} from 'express';
 
-type StorageFile = {
-    name: string;
-    path: string;
-    type?: string;
-};
-
 abstract class StorageBase {
     readonly requiredFns!: readonly ['exists', 'save', 'serve', 'delete', 'read'];
 
     protected declare storagePath: string;
 
     abstract exists(fileName: string, targetDir?: string): Promise<boolean>;
-    abstract save(file: StorageFile, targetDir?: string): Promise<string>;
+    abstract save(file: StorageBase.StorageFile, targetDir?: string): Promise<string>;
     abstract serve(): RequestHandler;
     abstract delete(fileName: string, targetDir?: string): Promise<void>;
     abstract read(options: {path: string}): Promise<Buffer>;
@@ -64,7 +58,7 @@ abstract class StorageBase {
         });
     }
 
-    getUniqueFileName(file: StorageFile, targetDir: string): Promise<string> {
+    getUniqueFileName(file: StorageBase.StorageFile, targetDir: string): Promise<string> {
         const ext = path.extname(file.name);
         let name: string;
 
@@ -84,6 +78,14 @@ abstract class StorageBase {
         // unicode filenames like город.zip would therefore resolve to ----.zip
         return fileName.replace(/[^\w@.]/gi, '-');
     }
+}
+
+declare namespace StorageBase {
+    export type StorageFile = {
+        name: string;
+        path: string;
+        type?: string;
+    };
 }
 
 export = StorageBase;
