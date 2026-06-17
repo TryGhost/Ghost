@@ -42,6 +42,10 @@ describe('errify', function () {
         assertError(errify({message: 42}), '42');
     });
 
+    it('does not use nested message properties', function () {
+        assertError(errify({message: {message: 'Test error'}}), '[object Object]');
+    });
+
     it('converts objects without messages to errors with the object stringified as the message', function () {
         assertError(errify({foo: 'bar'}), '[object Object]');
         assertError(errify(Object.create(null)), '[object Object]');

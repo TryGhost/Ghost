@@ -12,15 +12,12 @@ export const errify = (value: unknown): Error => {
         return new Error();
     }
 
-    const valuesSeen = new Set<unknown>();
-    while (
-        !valuesSeen.has(value) &&
+    if (
         value &&
         typeof value === 'object' &&
         'message' in value
     ) {
         value = value.message;
-        valuesSeen.add(value);
     }
 
     let message: string;
