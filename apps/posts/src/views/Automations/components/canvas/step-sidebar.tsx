@@ -1,6 +1,7 @@
 import '@xyflow/react/dist/style.css';
 import React, {useEffect, useRef, useState} from 'react';
 import {AutomationDetail, AutomationSendEmailAction, AutomationWaitAction} from '@tryghost/admin-x-framework/api/automations';
+import {Link} from '@tryghost/admin-x-framework';
 import {Button, ChartConfig, ChartContainer, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
 import {LucideIcon, Recharts, cn, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {MemberTier, StepSidebarDetail} from '../types';
@@ -286,34 +287,34 @@ const EmailPerformanceSection: React.FC = () => {
                     Email performance
                     </h3>
                     <div className='grid grid-cols-3 gap-4'>
-                        <div className='flex flex-col gap-0.5'>
+                        <Link className='-mx-2 -my-1 flex flex-col gap-0.5 rounded-md px-2 py-1 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none' to='/members'>
                             <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
                                 <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-purple)'}} />
                                 Sent
                             </span>
                             <span className='text-xl font-semibold tracking-tight'>{formatNumber(sent)}</span>
-                        </div>
+                        </Link>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <div className='flex cursor-default flex-col gap-0.5'>
+                                <Link className='-mx-2 -my-1 flex flex-col gap-0.5 rounded-md px-2 py-1 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none' to='/members'>
                                     <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
                                         <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-blue)'}} />
                                     Opened
                                     </span>
                                     <span className='text-xl font-semibold tracking-tight'>{formatPercentage(openRate)}</span>
-                                </div>
+                                </Link>
                             </TooltipTrigger>
                             <TooltipContent>{formatNumber(openedCount)} of {formatNumber(sent)} sent</TooltipContent>
                         </Tooltip>
                         <Tooltip>
                             <TooltipTrigger asChild>
-                                <div className='flex cursor-default flex-col gap-0.5'>
+                                <Link className='-mx-2 -my-1 flex flex-col gap-0.5 rounded-md px-2 py-1 transition-colors hover:bg-muted focus-visible:bg-muted focus-visible:outline-none' to='/members'>
                                     <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
                                         <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-teal)'}} />
                                     Clicked
                                     </span>
                                     <span className='text-xl font-semibold tracking-tight'>{formatPercentage(clickRate)}</span>
-                                </div>
+                                </Link>
                             </TooltipTrigger>
                             <TooltipContent>{formatNumber(clickedCount)} of {formatNumber(sent)} sent</TooltipContent>
                         </Tooltip>
