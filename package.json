@@ -42,7 +42,7 @@
     "@types/node": "22.10.5",
     "@vitest/coverage-v8": "4.1.8",
     "oxlint": "1.69.0",
-    "typescript": "5.7.3",
+    "typescript": "5.9.3",
     "vite": "8.0.16",
     "vitest": "4.1.8"
   }
