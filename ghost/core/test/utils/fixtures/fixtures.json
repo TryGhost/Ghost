@@ -1182,7 +1182,8 @@
                     "mention": "browse",
                     "collection": "all",
                     "recommendation": "all",
-                    "automation": ["browse", "read", "edit"]
+                    "automation": ["browse", "read", "edit"],
+                    "gift_link": "manage"
                 },
                 "Editor": {
                     "notification": "all",
