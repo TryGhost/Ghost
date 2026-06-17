@@ -5,10 +5,12 @@ const {
 } = require('./markdown');
 
 const DEFAULT_BUDGET = 5 * 1024 * 1024;
-const TRUNCATION_FOOTER = '\n_Truncated after 5 MiB. Use `/llms.txt` for the complete index of older public content._\n';
-const RECENT_POSTS_FOOTER = '\n_Includes the latest 500 public posts. Use `/llms.txt` for the complete index of older public content._\n';
+const DEFAULT_INDEX_BUDGET = 50 * 1024;
+const TRUNCATION_FOOTER = '\n_Truncated after 5 MiB. Use `/sitemap.xml` for the complete archive of public content._\n';
+const RECENT_POSTS_FOOTER = '\n_Includes the latest 500 public posts. Use `/sitemap.xml` for the complete archive of public content._\n';
 const FULL_PAGE_SIZE = 100;
 const FULL_POST_LIMIT = 500;
+const PAGES_LIMIT = 20;
 
 function createLlmsService({settingsCache, labs, config, urlUtils, routing, api, fullTxtBudget}) {
     const footerBudget = Math.max(
@@ -16,6 +18,7 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         Buffer.byteLength(RECENT_POSTS_FOOTER, 'utf8')
     );
     const BUDGET = (fullTxtBudget || DEFAULT_BUDGET) - footerBudget;
+
     function isEnabled() {
         return labs.isSet('llmsTxt') && !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
     }
@@ -38,26 +41,30 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
             return null;
         }
 
-        const [pages, posts] = await Promise.all([
-            fetchIndexEntries('page'),
-            fetchIndexEntries('post')
-        ]);
+        const pages = await fetchIndexPages();
+        const pagesSection = buildIndexSection(pages);
+        const optionalSection = buildOptionalSection();
 
-        const sections = [
+        const scaffold = postsSection => [
             buildHeader(),
             'Public Ghost content for AI and LLM tooling. Use `/llms-full.txt` for consolidated page and post context.',
+            'Append `.md` to any post or page URL to get the content in Markdown (for example, `/example-post.md`).',
             '',
             '## Pages',
-            buildIndexSection(pages),
+            pagesSection,
             '',
             '## Posts',
-            buildIndexSection(posts),
+            postsSection,
             '',
             '## Optional',
-            buildOptionalSection()
+            optionalSection
         ];
 
-        return `${sections.join('\n').trim()}\n`;
+        const fixedBytes = Buffer.byteLength(scaffold('').join('\n'), 'utf8');
+        const postsBudget = Math.max(0, DEFAULT_INDEX_BUDGET - fixedBytes);
+        const postsSection = await buildBudgetedIndexPosts(postsBudget);
+
+        return `${scaffold(postsSection).join('\n').trim()}\n`;
     }
 
     async function getLlmsFullTxt() {
@@ -68,6 +75,7 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         const header = [
             buildHeader(),
             'Public Ghost content for AI and LLM tooling. This file includes a bounded export of public pages first, then recent public posts.',
+            'Append `.md` to any post or page URL to get the content in Markdown (for example, `/example-post.md`).',
             ''
         ].join('\n');
 
@@ -75,7 +83,7 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         let wasTruncated = false;
         let wasLimited = false;
 
-        const pageResult = await appendBoundedSectionPaginated(output, 'Pages', 'page');
+        const pageResult = await appendBoundedSectionPaginated(output, 'Pages', 'page', {maxEntries: PAGES_LIMIT});
         output = pageResult.output;
         wasTruncated = pageResult.wasTruncated;
 
@@ -169,21 +177,56 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         ].join('\n');
     }
 
+    function buildIndexLine(entry) {
+        const description = truncateDescription(entry.custom_excerpt || entry.plaintext);
+        const linkLine = `- [${entry.title}](${getMarkdownUrl(entry.url)})`;
+
+        if (!description) {
+            return linkLine;
+        }
+
+        return `${linkLine} - ${description}`;
+    }
+
     function buildIndexSection(entries) {
         if (!entries.length) {
             return '_No public content available._';
         }
 
-        return entries.map((entry) => {
-            const description = truncateDescription(entry.custom_excerpt || entry.plaintext);
-            const linkLine = `- [${entry.title}](${getMarkdownUrl(entry.url)})`;
+        return entries.map(buildIndexLine).join('\n');
+    }
 
-            if (!description) {
-                return linkLine;
+    async function buildBudgetedIndexPosts(budgetBytes) {
+        const lines = [];
+        let usedBytes = 0;
+        let page = 1;
+        let hasMore = true;
+
+        while (hasMore) {
+            const {entries, pagination} = await browsePublicEntries('post', {
+                limit: FULL_PAGE_SIZE,
+                page,
+                fields: 'id,title,slug,custom_excerpt,featured,published_at,url',
+                formats: 'plaintext'
+            });
+            hasMore = Boolean(pagination && pagination.next);
+
+            for (const entry of entries) {
+                const line = buildIndexLine(entry);
+                const lineBytes = Buffer.byteLength(`${line}\n`, 'utf8');
+
+                if (usedBytes + lineBytes > budgetBytes) {
+                    return lines.length ? lines.join('\n') : '_No public content available._';
+                }
+
+                lines.push(line);
+                usedBytes += lineBytes;
             }
 
-            return `${linkLine} - ${description}`;
-        }).join('\n');
+            page += 1;
+        }
+
+        return lines.length ? lines.join('\n') : '_No public content available._';
     }
 
     function buildOptionalSection() {
@@ -195,6 +238,7 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         }
 
         optionalLinks.push(`- [Sitemap](${urlUtils.urlFor({relativeUrl: '/sitemap.xml'}, true)})`);
+        optionalLinks.push(`- [Full content of pages and posts](${urlUtils.urlFor({relativeUrl: '/llms-full.txt'}, true)})`);
 
         return optionalLinks.join('\n');
     }
@@ -202,7 +246,17 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
     function buildFullEntry(entry) {
         const lastUpdated = entry.updated_at || entry.published_at || entry.created_at;
         const lastUpdatedLine = lastUpdated ? `Last updated: ${new Date(lastUpdated).toISOString()}` : null;
-        const markdownBody = renderEntryMarkdownBody(entry) || '_No content available._';
+
+        let markdownBody;
+        if (entry.visibility && entry.visibility !== 'public') {
+            const notice = (entry.visibility === 'paid' || entry.visibility === 'tiers')
+                ? 'This post is for paying subscribers only.'
+                : 'This post is for subscribers only.';
+            const excerpt = truncateDescription(entry.custom_excerpt);
+            markdownBody = excerpt ? `${excerpt}\n\n_${notice}_` : `_${notice}_`;
+        } else {
+            markdownBody = renderEntryMarkdownBody(entry) || '_No content available._';
+        }
 
         return [
             `### ${entry.title}`,
@@ -220,8 +274,8 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         const response = await controller.browse({
             ...options,
             context: {member: null},
-            filter: 'status:published+visibility:public',
-            order: type === 'post' ? 'published_at desc' : 'id asc'
+            filter: 'status:published',
+            ...(type === 'page' ? {order: 'id asc'} : {})
         });
 
         const entries = (response?.[responseKey] || [])
@@ -230,20 +284,18 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         return {entries, pagination: response?.meta?.pagination};
     }
 
-    async function fetchIndexEntries(type) {
+    async function fetchIndexPages() {
         // Without `fields` the content API selects every posts column (except
         // mobiledoc/lexical), pulling the full html of every post into memory.
         // The format columns (plaintext here) are appended to `fields` by the
         // input serializer, and `url` is resolved at serialization time.
-        const {entries} = await browsePublicEntries(type, {
-            limit: 'all',
+        const {entries} = await browsePublicEntries('page', {
+            limit: PAGES_LIMIT,
             fields: 'id,title,slug,custom_excerpt,featured,published_at,url',
             formats: 'plaintext'
         });
 
-        if (type === 'page') {
-            entries.sort((left, right) => left.url.localeCompare(right.url));
-        }
+        entries.sort((left, right) => left.url.localeCompare(right.url));
 
         return entries;
     }
@@ -252,7 +304,7 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         const {entries, pagination} = await browsePublicEntries(type, {
             limit: FULL_PAGE_SIZE,
             page: pageNum,
-            fields: 'id,title,slug,featured,published_at,updated_at,created_at,url',
+            fields: 'id,title,slug,featured,published_at,updated_at,created_at,url,visibility,custom_excerpt',
             formats: 'html,plaintext'
         });
 
