@@ -28,6 +28,7 @@ module.exports = {
      */
     socialUrls: require('@tryghost/social-urls'),
     blogIcon: require('../../server/lib/image').blogIcon,
+    cachedImageSizeFromUrl: require('../../server/lib/image').cachedImageSizeFromUrl,
     // Used by router service and {{get}} helper to prepare data for optimal usage in themes
     prepareContextResource(data) {
         (Array.isArray(data) ? data : [data]).forEach((resource) => {

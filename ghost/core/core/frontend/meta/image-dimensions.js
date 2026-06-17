@@ -1,7 +1,7 @@
 const _ = require('lodash');
 const {getImageWithSize} = require('../utils/images');
 const config = require('../../shared/config');
-const imageSizeCache = require('../../server/lib/image').cachedImageSizeFromUrl;
+const imageSizeCache = require('../services/proxy').cachedImageSizeFromUrl;
 
 /**
  * Get Image dimensions
