@@ -1,9 +1,10 @@
 import '@xyflow/react/dist/style.css';
 import React, {useEffect, useRef, useState} from 'react';
 import {AutomationDetail, AutomationSendEmailAction, AutomationWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {Button, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText} from '@tryghost/shade/components';
-import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
+import {Button, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {LucideIcon, cn, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {MemberTier, StepSidebarDetail} from '../types';
+import {NewsletterRadialChart, NewsletterRadialChartData} from '@src/views/PostAnalytics/Newsletter/components/newsletter-radial-chart';
 import {TRIGGER_CANVAS_ID} from './nodes';
 import {formatWait} from './format-wait';
 
@@ -172,6 +173,112 @@ const WaitSidebarBody: React.FC<{
     );
 };
 
+// TODO: replace with real analytics — see NY-1347
+const MOCK_EMAIL_PERFORMANCE = {
+    openRate: 0.78,
+    clickRate: 0.22,
+    clickedCount: 227,
+    links: [
+        {id: 'l1', to: 'https://sure-footed-chapel.org/broken-spirit', count: 61},
+        {id: 'l2', to: 'https://major-publicity.org/french-carboxyl', count: 60},
+        {id: 'l3', to: 'https://simple-strait.info/made-up-innovation', count: 54},
+        {id: 'l4', to: 'https://trivial-yarmulke.com/sudden-labourer', count: 52},
+        {id: 'l5', to: 'https://ringed-doorbell.io/articles/quarterly-roundup-of-product-news-and-tips', count: 38},
+        {id: 'l6', to: 'https://gentle-banyan.dev/changelog#2026-q1', count: 24}
+    ]
+} as const;
+
+const EMAIL_PERFORMANCE_CHART_CONFIG = {
+    Opened: {label: 'Opened'},
+    Clicked: {label: 'Clicked'}
+} satisfies ChartConfig;
+
+const EmailPerformanceSection: React.FC = () => {
+    const {openRate, clickRate, clickedCount, links} = MOCK_EMAIL_PERFORMANCE;
+    const chartData: NewsletterRadialChartData[] = [
+        {datatype: 'Clicked', value: clickRate, fill: 'url(#gradientTeal)', color: 'var(--chart-teal)'},
+        {datatype: 'Opened', value: openRate, fill: 'url(#gradientBlue)', color: 'var(--chart-blue)'}
+    ];
+    const sortedLinks = [...links].sort((a, b) => b.count - a.count);
+
+    return (
+        <div className='flex flex-col gap-5'>
+            <Separator />
+            <div className='flex flex-col gap-5'>
+                <h3 className='text-sm font-medium tracking-normal text-text-secondary'>
+                    Email performance
+                </h3>
+                <div className='grid grid-cols-2 gap-4'>
+                    <div className='flex flex-col gap-1'>
+                        <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
+                            <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-blue)'}} />
+                            Open rate
+                        </span>
+                        <span className='text-2xl font-semibold tracking-tight'>{formatPercentage(openRate)}</span>
+                    </div>
+                    <div className='flex flex-col gap-1'>
+                        <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
+                            <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-teal)'}} />
+                            Click rate
+                        </span>
+                        <span className='text-2xl font-semibold tracking-tight'>{formatPercentage(clickRate)}</span>
+                    </div>
+                </div>
+                <div className='mx-auto h-[200px] w-[200px]'>
+                    <NewsletterRadialChart
+                        className='pointer-events-none aspect-square h-[200px]'
+                        config={EMAIL_PERFORMANCE_CHART_CONFIG}
+                        data={chartData}
+                        size='md'
+                        tooltip={false}
+                    />
+                </div>
+            </div>
+            <Separator />
+            <div className='flex flex-col gap-3'>
+                <div className='flex items-center justify-between'>
+                    <span className='text-sm font-medium text-text-secondary'>Top clicked links</span>
+                    <span className='text-sm font-medium text-muted-foreground'>Members</span>
+                </div>
+                <TooltipProvider delayDuration={500}>
+                    <DataList className='group/datalist'>
+                        <DataListBody>
+                            {sortedLinks.map((link) => {
+                                const percentage = clickedCount > 0 ? link.count / clickedCount : 0;
+                                return (
+                                    <DataListRow key={link.id}>
+                                        <DataListBar style={{width: `${Math.round(percentage * 100)}%`}} />
+                                        <DataListItemContent>
+                                            <Tooltip>
+                                                <TooltipTrigger asChild>
+                                                    <a
+                                                        className='flex min-w-0 items-center gap-2 hover:underline'
+                                                        href={link.to}
+                                                        rel='noreferrer'
+                                                        target='_blank'
+                                                    >
+                                                        <LucideIcon.Link className='size-3.5 shrink-0 text-muted-foreground' strokeWidth={1.5} />
+                                                        <span className='truncate font-medium'>{link.to.replace(/^https?:\/\//, '')}</span>
+                                                    </a>
+                                                </TooltipTrigger>
+                                                <TooltipContent className='max-w-[28rem] break-all'>{link.to}</TooltipContent>
+                                            </Tooltip>
+                                        </DataListItemContent>
+                                        <DataListItemValue>
+                                            <DataListItemValueAbs>{formatNumber(link.count)}</DataListItemValueAbs>
+                                            <DataListItemValuePerc>{formatPercentage(percentage)}</DataListItemValuePerc>
+                                        </DataListItemValue>
+                                    </DataListRow>
+                                );
+                            })}
+                        </DataListBody>
+                    </DataList>
+                </TooltipProvider>
+            </div>
+        </div>
+    );
+};
+
 const SendEmailSidebarBody: React.FC<{
   action: AutomationSendEmailAction;
   onUpdateSubject: (subject: string) => void;
@@ -203,7 +310,8 @@ const SendEmailSidebarBody: React.FC<{
                 <LucideIcon.Pencil className='size-4' />
               Edit email content
             </Button>
-            <div className='mt-auto pt-6'>
+            <EmailPerformanceSection />
+            <div className='mt-auto pt-6 pb-2'>
                 <DeleteStepButton onClick={onDelete} />
             </div>
         </div>
@@ -237,7 +345,7 @@ const StepSidebarContent: React.FC<{detail: StepSidebarDetail}> = ({detail}) => 
                     </div>
                     <div className='min-w-0'>
                         <span className='block text-sm text-text-secondary'>{detail.label}</span>
-                        <h2 className={cn('truncate text-base leading-tight font-medium text-foreground', detail.isPlaceholderTitle && 'opacity-50')}>{detail.title}</h2>
+                        <h2 className={cn('truncate text-base leading-tight font-medium tracking-normal text-foreground', detail.isPlaceholderTitle && 'opacity-50')}>{detail.title}</h2>
                     </div>
                 </div>
             </div>
