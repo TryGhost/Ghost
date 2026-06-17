@@ -8,7 +8,7 @@ describe('Job: Clean tokens', function () {
     let jobsService;
     let clock;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters', 'members:emails');
         await agent.loginAsOwner();
@@ -17,7 +17,7 @@ describe('Job: Clean tokens', function () {
         jobsService = require('../../../../core/server/services/jobs');
     });
 
-    this.afterAll(function () {
+    afterAll(function () {
         sinon.restore();
     });
 

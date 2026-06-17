@@ -37,7 +37,7 @@ describe('Integration: S3RedirectsStore', function () {
     let bucket: string;
     const minioConfig = getMinioConfig();
 
-    before(async function () {
+    beforeAll(async function () {
         adminClient = createTestS3Client();
         bucket = await createTestBucket(adminClient);
     });
@@ -46,7 +46,7 @@ describe('Integration: S3RedirectsStore', function () {
         await emptyTestBucket(adminClient, bucket);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await deleteTestBucket(adminClient, bucket);
     });
 
@@ -91,11 +91,10 @@ describe('Integration: S3RedirectsStore', function () {
             assert.equal(backupBody?.toString('utf-8'), JSON.stringify(initial));
         });
 
-        it('creates a new backup on every overwrite', async function () {
+        it('creates a new backup on every overwrite', {timeout: 15000}, async function () {
             // The backup key generator uses a per-second timestamp, so
             // real waits between writes are needed to guarantee distinct
             // backup keys.
-            this.timeout(15000);
             const store = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX});
 
             await store.replaceAll([{from: '/a', to: '/a', permanent: true}]);

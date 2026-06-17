@@ -13,7 +13,7 @@ describe('Integration: MinIO test helper', function () {
     let client;
     let bucket;
 
-    before(async function () {
+    beforeAll(async function () {
         client = createTestS3Client();
         bucket = await createTestBucket(client);
     });
@@ -22,7 +22,7 @@ describe('Integration: MinIO test helper', function () {
         await emptyTestBucket(client, bucket);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await deleteTestBucket(client, bucket);
     });
 

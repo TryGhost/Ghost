@@ -114,7 +114,7 @@ describe('Can send cards via email', function () {
         sinon.restore();
     });
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
 
         await fixtureManager.init('newsletters', 'members:newsletters');

@@ -76,11 +76,26 @@ export default defineConfig({
                     // Matches the mocha `--timeout=15000` for the e2e suites.
                     testTimeout: 15000
                 }
+            },
+            {
+                test: {
+                    ...sharedDbConfig,
+                    name: 'integration',
+                    include: ['test/integration/**/*.test.{js,ts}'],
+                    // Two files stay on mocha (kept green via the test:integration:mocha
+                    // sidecar) pending vitest fixes: update-check's bree worker_thread
+                    // can't resolve .ts (PLA-157); domain-warming's batch-send job hangs
+                    // under vitest (PLA-158).
+                    exclude: [
+                        '**/node_modules/**',
+                        '**/jobs/update-check.test.js',
+                        '**/email-service/domain-warming.test.js'
+                    ],
+                    // Matches the mocha `--timeout=10000` for the integration suite.
+                    testTimeout: 10000
+                }
             }
-            // Added as these suites port (see the note at the top of the file):
-            //   {test: {...sharedDbConfig, name: 'integration',
-            //       include: ['test/integration/**/*.test.{js,ts}'],
-            //       exclude: ['**/node_modules/**'], testTimeout: 10000}},
+            // Added as legacy ports (see the note at the top of the file):
             //   {test: {...sharedDbConfig, name: 'legacy',
             //       include: ['test/legacy/**/*.test.{js,ts}'],
             //       exclude: ['**/node_modules/**'], testTimeout: 60000}}

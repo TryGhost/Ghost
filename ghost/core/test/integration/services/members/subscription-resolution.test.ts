@@ -80,7 +80,7 @@ async function resolvedSubscriptionId(memberId: string): Promise<string | null> 
 }
 
 describe('Subscription resolution priority', function () {
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
     beforeEach(async function () {
         await testUtils.setup('roles')();
 

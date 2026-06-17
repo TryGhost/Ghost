@@ -11,7 +11,7 @@ describe('MailgunEmailSuppressionList', function () {
     let agent;
     let events = [];
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters', 'members:emails:failed');
         await agent.loginAsOwner();
@@ -22,7 +22,7 @@ describe('MailgunEmailSuppressionList', function () {
         });
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
