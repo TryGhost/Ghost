@@ -2,8 +2,8 @@ import crypto from 'crypto';
 import {z} from 'zod';
 
 export interface ResolveOptions {
-    /** this container's site id; required to resolve ramps */
-    siteId?: number | string;
+    /** this site's UUID; required to resolve ramps */
+    siteUuid?: string;
 }
 
 // Skip keys that would shadow an Object.prototype member: a manifest
@@ -12,16 +12,17 @@ export interface ResolveOptions {
 const UNSAFE_KEYS = new Set([...Object.getOwnPropertyNames(Object.prototype), 'prototype']);
 
 /**
- * Deterministic bucket in [0, 99] for a (flag, siteId) pair.
+ * Deterministic bucket in [0, 99] for a (flag, siteUuid) pair.
  *
  * The flag name is in the hash so ramps are decorrelated across flags, and the
  * mapping is stable so raising a flag's percent only ever adds sites (monotonic).
- * md5 is just a fast, uniform hash here, not a security primitive. The mapping
- * must stay stable: changing the algorithm, offset, or separator silently
+ * Bucketing on the universally-available site UUID keeps ramps available to any
+ * site. md5 is just a fast, uniform hash here, not a security primitive. The
+ * mapping must stay stable: changing the algorithm, offset, or separator silently
  * re-buckets every in-flight ramp, so a golden value is pinned in the tests.
  */
-export function bucketFor(flag: string, siteId: number | string): number {
-    const digest = crypto.createHash('md5').update(`${flag}:${siteId}`).digest();
+export function bucketFor(flag: string, siteUuid: string): number {
+    const digest = crypto.createHash('md5').update(`${flag}:${siteUuid}`).digest();
     return digest.readUInt32BE(0) % 100;
 }
 
@@ -58,7 +59,7 @@ export function resolve(manifest: unknown, options?: ResolveOptions): Record<str
         return result;
     }
 
-    const {siteId} = options || {};
+    const {siteUuid} = options || {};
 
     const entries = manifest as Record<string, unknown>;
     for (const flag of Object.keys(entries)) {
@@ -92,15 +93,13 @@ export function resolve(manifest: unknown, options?: ResolveOptions): Record<str
             continue;
         }
 
-        // Ramps need a usable scalar siteId to bucket against; without one, skip the
+        // Ramps need a usable site UUID to bucket against; without one, skip the
         // ramp (any full overrides above still applied). Also guards bucketFor input.
-        const canBucket = (typeof siteId === 'number' && Number.isFinite(siteId))
-            || (typeof siteId === 'string' && siteId !== '');
-        if (!canBucket) {
+        if (typeof siteUuid !== 'string' || siteUuid === '') {
             continue;
         }
 
-        if (bucketFor(flag, siteId!) < percent) {
+        if (bucketFor(flag, siteUuid) < percent) {
             result[flag] = entry.value;
         }
     }

@@ -4,12 +4,14 @@ const logging = require('@tryghost/logging');
 
 const {RemoteFlagsService} = require('../../../../../core/server/services/remote-flags/remote-flags-service');
 
+const SITE_UUID = '550e8400-e29b-41d4-a716-446655440000';
+
 function buildService(overrides = {}) {
     const request = overrides.request || sinon.stub();
     const applyOverrides = overrides.applyOverrides || sinon.stub();
     const service = new RemoteFlagsService({
         url: new URL('https://assets.example.com/platform/flags.json'),
-        siteId: 42,
+        siteUuid: SITE_UUID,
         applyOverrides,
         request,
         pollInterval: 1000,
@@ -54,11 +56,11 @@ describe('RemoteFlagsService', function () {
 
             const appliedLog = logInfo.getCalls().find(c => c.args[0]?.system?.event === 'remote_flags.applied');
             assert.ok(appliedLog, 'expected a remote_flags.applied log');
-            assert.equal(appliedLog.args[0].system.siteId, 42);
+            assert.equal(appliedLog.args[0].system.siteUuid, SITE_UUID);
             assert.deepEqual(appliedLog.args[0].system.flags, {flagA: true, commentModeration: false});
         });
 
-        it('passes arbitrary flags through and resolves percentage ramps via siteId', async function () {
+        it('passes arbitrary flags through and resolves percentage ramps via the site UUID', async function () {
             const {service, applyOverrides} = buildService({
                 request: sinon.stub().resolves(ok({
                     flagA: {value: true, percent: 100}, // full -> on

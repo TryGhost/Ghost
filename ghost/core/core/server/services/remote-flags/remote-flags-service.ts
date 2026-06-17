@@ -20,8 +20,8 @@ type RequestFn = (url: string, options: Record<string, unknown>) => Promise<Requ
 export interface RemoteFlagsServiceDeps {
     /** canonical manifest URL (one per environment) */
     url: URL;
-    /** this container's Pro site id */
-    siteId: number | string;
+    /** this site's UUID (the ramp bucket key); undefined disables ramps but not full overrides */
+    siteUuid?: string;
     /** sink for resolved overrides (the shared override store's replace()) */
     applyOverrides: (overrides: FlagOverrides) => void;
     /** @tryghost/request-compatible client */
@@ -42,7 +42,7 @@ export interface RemoteFlagsServiceDeps {
  */
 export class RemoteFlagsService {
     url: URL;
-    siteId: number | string;
+    siteUuid?: string;
     applyOverrides: (overrides: FlagOverrides) => void;
     request: RequestFn;
     pollInterval: number;
@@ -57,7 +57,7 @@ export class RemoteFlagsService {
 
     constructor(deps: RemoteFlagsServiceDeps) {
         this.url = deps.url;
-        this.siteId = deps.siteId;
+        this.siteUuid = deps.siteUuid;
         this.applyOverrides = deps.applyOverrides;
         this.request = deps.request;
         this.pollInterval = deps.pollInterval || DEFAULT_POLL_INTERVAL_MS;
@@ -108,7 +108,7 @@ export class RemoteFlagsService {
         } catch (err) {
             // Network/timeout error: keep last-known-good, change nothing.
             logging.warn({
-                system: {event: 'remote_flags.fetch_failed', siteId: this.siteId},
+                system: {event: 'remote_flags.fetch_failed', siteUuid: this.siteUuid},
                 err
             }, 'Remote feature flags fetch failed; keeping last-known-good');
             return;
@@ -131,7 +131,7 @@ export class RemoteFlagsService {
 
             if (!status || status < 200 || status >= 300) {
                 logging.warn({
-                    system: {event: 'remote_flags.fetch_bad_status', siteId: this.siteId, statusCode: status || null}
+                    system: {event: 'remote_flags.fetch_bad_status', siteUuid: this.siteUuid, statusCode: status || null}
                 }, 'Remote feature flags fetch returned an unexpected status; keeping last-known-good');
                 return;
             }
@@ -141,7 +141,7 @@ export class RemoteFlagsService {
                 manifest = JSON.parse(response.body as string);
             } catch (parseErr) {
                 logging.warn({
-                    system: {event: 'remote_flags.parse_failed', siteId: this.siteId},
+                    system: {event: 'remote_flags.parse_failed', siteUuid: this.siteUuid},
                     err: parseErr
                 }, 'Remote feature flags manifest was not valid JSON; keeping last-known-good');
                 return;
@@ -157,7 +157,7 @@ export class RemoteFlagsService {
         } catch (err) {
             // Backstop: resolve()/applyOverrides shouldn't throw, but fail open if they do.
             logging.warn({
-                system: {event: 'remote_flags.apply_failed', siteId: this.siteId},
+                system: {event: 'remote_flags.apply_failed', siteUuid: this.siteUuid},
                 err
             }, 'Remote feature flags could not be applied; keeping last-known-good');
         }
@@ -170,7 +170,7 @@ export class RemoteFlagsService {
      */
     _applyAndMaybeLog(manifest: unknown, etag: string | null): void {
         const resolved = resolve(manifest, {
-            siteId: this.siteId
+            siteUuid: this.siteUuid
         });
 
         this.applyOverrides(resolved);
@@ -183,7 +183,7 @@ export class RemoteFlagsService {
             logging.info({
                 system: {
                     event: 'remote_flags.applied',
-                    siteId: this.siteId,
+                    siteUuid: this.siteUuid,
                     etag: etag || null,
                     flags: resolved
                 }

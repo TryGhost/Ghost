@@ -5,6 +5,8 @@ import * as flagOverrides from '../../../shared/labs-flag-overrides';
 
 // @tryghost/request ships no types; require() avoids an implicit-any under the strict tsconfig.
 const request = require('@tryghost/request');
+// Every site seeds a site_uuid setting, so it's a universal ramp key.
+const settingsCache = require('../../../shared/settings-cache');
 
 // Config slice this module needs; injected so init() stays testable.
 interface ConfigLike {
@@ -17,17 +19,18 @@ interface RemoteFlagsConfig {
     pollInterval?: unknown;
 }
 
-// Floor for the poll interval: ~30k containers share one CDN, so a too-small or
-// units-confused (seconds-as-ms) value is rejected, not honored.
+// Floor for the poll interval: many instances can share one manifest host, so a
+// too-small or units-confused (seconds-as-ms) value is rejected, not honored.
 const MIN_POLL_INTERVAL_MS = 60 * 1000;
 
 let instance: RemoteFlagsService | null = null;
 
 /**
- * Start the poller if enabled for this instance. Pro-only and opt-in: inert unless
- * `remoteFlags` is enabled with a `url` and the container has a `hostSettings:siteId`
- * (self-hosted/dev have neither). Polling is fire-and-forget so boot is never blocked
- * on the first fetch.
+ * Start the poller if enabled for this instance. Config-gated and opt-in: inert
+ * unless `remoteFlags` is enabled with a `url` (self-hosted/dev leave it unset).
+ * The site's UUID is the ramp bucket key; it's absent only in edge cases, where
+ * ramps are skipped but full overrides still apply. Polling is fire-and-forget so
+ * boot is never blocked on the first fetch.
  *
  * @returns the running service, or null when inert
  */
@@ -37,11 +40,12 @@ export function init(config: ConfigLike): RemoteFlagsService | null {
     }
 
     const remoteFlags = (config.get('remoteFlags') as RemoteFlagsConfig) || {};
-    const siteId = config.get('hostSettings:siteId') as number | string | undefined | null;
 
-    if (remoteFlags.enabled !== true || !remoteFlags.url || siteId === undefined || siteId === null) {
+    if (remoteFlags.enabled !== true || !remoteFlags.url) {
         return null;
     }
+
+    const siteUuid = settingsCache.get('site_uuid') as string | undefined;
 
     let url: URL;
     try {
@@ -49,7 +53,7 @@ export function init(config: ConfigLike): RemoteFlagsService | null {
         url = new URL(remoteFlags.url);
     } catch {
         logging.warn({
-            system: {event: 'remote_flags.invalid_url', siteId}
+            system: {event: 'remote_flags.invalid_url', siteUuid}
         }, `Remote feature flags url is not a valid URL, not starting: ${remoteFlags.url}`);
         return null;
     }
@@ -63,14 +67,14 @@ export function init(config: ConfigLike): RemoteFlagsService | null {
             pollInterval = configuredInterval;
         } else {
             logging.warn({
-                system: {event: 'remote_flags.invalid_poll_interval', siteId}
+                system: {event: 'remote_flags.invalid_poll_interval', siteUuid}
             }, `Remote feature flags pollInterval must be a number >= ${MIN_POLL_INTERVAL_MS}ms, using the default: ${configuredInterval}`);
         }
     }
 
     instance = new RemoteFlagsService({
         url,
-        siteId,
+        siteUuid,
         applyOverrides: overrides => flagOverrides.replace(overrides),
         request,
         pollInterval
