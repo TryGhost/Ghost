@@ -1,10 +1,9 @@
 import '@xyflow/react/dist/style.css';
 import React, {useEffect, useRef, useState} from 'react';
 import {AutomationDetail, AutomationSendEmailAction, AutomationWaitAction} from '@tryghost/admin-x-framework/api/automations';
-import {Button, ChartConfig, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
-import {LucideIcon, cn, formatNumber, formatPercentage} from '@tryghost/shade/utils';
+import {Button, ChartConfig, ChartContainer, DataList, DataListBar, DataListBody, DataListItemContent, DataListItemValue, DataListItemValueAbs, DataListItemValuePerc, DataListRow, Field, FieldError, FieldLabel, Input, InputGroup, InputGroupAddon, InputGroupButton, InputGroupInput, InputGroupText, Separator, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {LucideIcon, Recharts, cn, formatNumber, formatPercentage} from '@tryghost/shade/utils';
 import {MemberTier, StepSidebarDetail} from '../types';
-import {NewsletterRadialChart, NewsletterRadialChartData} from '@src/views/PostAnalytics/Newsletter/components/newsletter-radial-chart';
 import {TRIGGER_CANVAS_ID} from './nodes';
 import {formatWait} from './format-wait';
 
@@ -175,9 +174,10 @@ const WaitSidebarBody: React.FC<{
 
 // TODO: replace with real analytics — see NY-1347
 const MOCK_EMAIL_PERFORMANCE = {
-    openRate: 0.78,
-    clickRate: 0.22,
-    clickedCount: 227,
+    sent: 1247,
+    openRate: 0.95,
+    clickRate: 0.26,
+    clickedCount: 324,
     links: [
         {id: 'l1', to: 'https://sure-footed-chapel.org/broken-spirit', count: 61},
         {id: 'l2', to: 'https://major-publicity.org/french-carboxyl', count: 60},
@@ -189,16 +189,91 @@ const MOCK_EMAIL_PERFORMANCE = {
 } as const;
 
 const EMAIL_PERFORMANCE_CHART_CONFIG = {
-    Opened: {label: 'Opened'},
-    Clicked: {label: 'Clicked'}
+    value: {label: 'Rate'}
 } satisfies ChartConfig;
 
+// Per-ring radii in px, calibrated for a 240×240 chart container. Each ring is 22px thick with a
+// 3px gap. Recharts' <RadialBar> doesn't accept innerRadius/outerRadius (those live on the parent
+// <RadialBarChart>), so we draw each ring with its own absolutely-positioned chart.
+const EMAIL_CHART_RINGS = {
+    sent: {innerRadius: 88, outerRadius: 110},
+    opened: {innerRadius: 63, outerRadius: 85},
+    clicked: {innerRadius: 38, outerRadius: 60}
+};
+
+const EmailPerformanceRing: React.FC<{
+    datatype: string;
+    value: number;
+    color: 'purple' | 'blue' | 'teal';
+    innerRadius: number;
+    outerRadius: number;
+}> = ({datatype, value, color, innerRadius, outerRadius}) => {
+    const gradientId = `emailRing-${color}`;
+    const colorVar = `var(--chart-${color})`;
+    return (
+        <ChartContainer className='absolute inset-0 aspect-square' config={EMAIL_PERFORMANCE_CHART_CONFIG}>
+            <Recharts.RadialBarChart
+                data={[{datatype, value}]}
+                endAngle={-270}
+                innerRadius={innerRadius}
+                outerRadius={outerRadius}
+                startAngle={90}
+            >
+                <defs>
+                    <radialGradient cx='30%' cy='30%' id={gradientId} r='70%'>
+                        <stop offset='0%' stopColor={colorVar} stopOpacity={0.5} />
+                        <stop offset='100%' stopColor={colorVar} stopOpacity={1} />
+                    </radialGradient>
+                </defs>
+                <Recharts.PolarAngleAxis angleAxisId={0} domain={[0, 1]} tick={false} type='number' />
+                <Recharts.RadialBar
+                    angleAxisId={0}
+                    background
+                    cornerRadius={10}
+                    dataKey='value'
+                    fill={`url(#${gradientId})`}
+                    minPointSize={-2}
+                >
+                    <Recharts.LabelList
+                        className='fill-black opacity-60'
+                        dataKey='datatype'
+                        fontSize={11}
+                        position='insideStart'
+                    />
+                </Recharts.RadialBar>
+            </Recharts.RadialBarChart>
+        </ChartContainer>
+    );
+};
+
+const EmailPerformanceChart: React.FC<{openRate: number; clickRate: number}> = ({openRate, clickRate}) => (
+    <div className='relative mx-auto aspect-square h-[240px] w-[240px]'>
+        <EmailPerformanceRing
+            color='purple'
+            datatype='Sent'
+            innerRadius={EMAIL_CHART_RINGS.sent.innerRadius}
+            outerRadius={EMAIL_CHART_RINGS.sent.outerRadius}
+            value={1}
+        />
+        <EmailPerformanceRing
+            color='blue'
+            datatype='Opened'
+            innerRadius={EMAIL_CHART_RINGS.opened.innerRadius}
+            outerRadius={EMAIL_CHART_RINGS.opened.outerRadius}
+            value={openRate}
+        />
+        <EmailPerformanceRing
+            color='teal'
+            datatype='Clicked'
+            innerRadius={EMAIL_CHART_RINGS.clicked.innerRadius}
+            outerRadius={EMAIL_CHART_RINGS.clicked.outerRadius}
+            value={clickRate}
+        />
+    </div>
+);
+
 const EmailPerformanceSection: React.FC = () => {
-    const {openRate, clickRate, clickedCount, links} = MOCK_EMAIL_PERFORMANCE;
-    const chartData: NewsletterRadialChartData[] = [
-        {datatype: 'Clicked', value: clickRate, fill: 'url(#gradientTeal)', color: 'var(--chart-teal)'},
-        {datatype: 'Opened', value: openRate, fill: 'url(#gradientBlue)', color: 'var(--chart-blue)'}
-    ];
+    const {sent, openRate, clickRate, clickedCount, links} = MOCK_EMAIL_PERFORMANCE;
     const sortedLinks = [...links].sort((a, b) => b.count - a.count);
 
     return (
@@ -208,7 +283,14 @@ const EmailPerformanceSection: React.FC = () => {
                 <h3 className='text-sm font-medium tracking-normal text-text-secondary'>
                     Email performance
                 </h3>
-                <div className='grid grid-cols-2 gap-4'>
+                <div className='grid grid-cols-3 gap-4'>
+                    <div className='flex flex-col gap-0.5'>
+                        <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
+                            <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-purple)'}} />
+                            Sent
+                        </span>
+                        <span className='text-xl font-semibold tracking-tight'>{formatNumber(sent)}</span>
+                    </div>
                     <div className='flex flex-col gap-0.5'>
                         <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
                             <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-blue)'}} />
@@ -224,15 +306,7 @@ const EmailPerformanceSection: React.FC = () => {
                         <span className='text-xl font-semibold tracking-tight'>{formatPercentage(clickRate)}</span>
                     </div>
                 </div>
-                <div className='mx-auto h-[200px] w-[200px]'>
-                    <NewsletterRadialChart
-                        className='pointer-events-none aspect-square h-[200px]'
-                        config={EMAIL_PERFORMANCE_CHART_CONFIG}
-                        data={chartData}
-                        size='md'
-                        tooltip={false}
-                    />
-                </div>
+                <EmailPerformanceChart clickRate={clickRate} openRate={openRate} />
             </div>
             <Separator />
             <div className='flex flex-col gap-3'>
