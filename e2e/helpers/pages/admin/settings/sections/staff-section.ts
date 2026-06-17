@@ -4,13 +4,15 @@ import {Locator, Page} from '@playwright/test';
 export class StaffSection extends BasePage {
     readonly requireTwoFaButton: Locator;
     readonly ownerUser: Locator;
-    readonly inviteStaffButton: Locator;
+    readonly invitePeopleButton: Locator;
+    readonly inviteModal: Locator;
 
     constructor(page: Page) {
         super(page, '/ghost/#/settings/staff');
         this.ownerUser = this.page.getByTestId('owner-user');
         this.requireTwoFaButton = page.getByTestId('users').getByRole('switch');
-        this.inviteStaffButton = page.getByRole('button', {name: 'Invite people'});
+        this.invitePeopleButton = page.getByTestId('users').getByRole('button', {name: 'Invite people'});
+        this.inviteModal = page.getByTestId('invite-user-modal');
     }
 
     async waitForOwnerUser(): Promise<void> {
@@ -45,22 +47,27 @@ export class StaffSection extends BasePage {
         return ariaChecked === 'true';
     }
 
-    async inviteUser(email: string): Promise<void> {
-        await this.inviteStaffButton.click();
-        await this.page.getByPlaceholder('jamie@example.com').fill(email);
+    private async waitForSwitch(checked: boolean): Promise<void> {
+        const switchState = this.page.getByTestId('users').getByRole('switch', {checked: checked});
+        await switchState.waitFor({state: 'visible'});
+    }
+
+    async inviteUser(email: string, role?: 'administrator' | 'editor' | 'author' | 'contributor'): Promise<void> {
+        await this.invitePeopleButton.click();
+        await this.inviteModal.waitFor({state: 'visible'});
+
+        await this.inviteModal.getByLabel('Email address').fill(email);
+        if (role) {
+            await this.inviteModal.locator(`button[value="${role}"]`).click();
+        }
 
         const responsePromise = this.page.waitForResponse(
             response => response.url().includes('/api/admin/invites/') &&
                        response.request().method() === 'POST'
         );
 
-        await this.page.getByRole('button', {name: 'Send invitation'}).click();
+        await this.inviteModal.getByRole('button', {name: 'Send invitation'}).click();
         await responsePromise;
-        await this.page.getByText('Invitation sent', {exact: true}).waitFor({state: 'visible'});
-    }
-
-    private async waitForSwitch(checked: boolean): Promise<void> {
-        const switchState = this.page.getByTestId('users').getByRole('switch', {checked: checked});
-        await switchState.waitFor({state: 'visible'});
+        await this.inviteModal.waitFor({state: 'hidden'});
     }
 }

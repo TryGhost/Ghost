@@ -3,7 +3,9 @@ import baseDebug from '@tryghost/debug';
 import logging from '@tryghost/logging';
 import {DEV_PRIMARY_DATABASE} from '@/helpers/environment/constants';
 import {PassThrough} from 'stream';
+import {SNAPSHOT_PATH} from '@/helpers/utils/fixture-cache';
 import type {Container} from 'dockerode';
+import type {FixtureCacheManifest} from '@/helpers/utils/fixture-cache';
 
 const debug = baseDebug('e2e:MySQLManager');
 
@@ -32,12 +34,16 @@ export class MySQLManager {
             secretKey: string;
             publishableKey: string;
         };
+        sessionOrigin?: string;
     } = {}): Promise<void> {
         debug('Setting up test database:', databaseName);
         try {
             await this.createDatabase(databaseName);
             await this.restoreDatabaseFromSnapshot(databaseName);
             await this.updateSiteUuid(databaseName, siteUuid);
+            if (options.sessionOrigin) {
+                await this.updateSessionOrigin(databaseName, options.sessionOrigin);
+            }
             if (options.stripe) {
                 await this.updateStripeSettings(databaseName, options.stripe.secretKey, options.stripe.publishableKey);
             }
@@ -107,7 +113,7 @@ export class MySQLManager {
         }
     }
 
-    async createSnapshot(sourceDatabase: string = 'ghost_testing', outputPath: string = '/tmp/dump.sql'): Promise<void> {
+    async createSnapshot(sourceDatabase: string = 'ghost_testing', outputPath: string = SNAPSHOT_PATH): Promise<void> {
         logging.info('Creating database snapshot...');
 
         await this.exec(`mysqldump -uroot -proot --opt --single-transaction ${sourceDatabase} > ${outputPath}`);
@@ -115,11 +121,30 @@ export class MySQLManager {
         logging.info('Database snapshot created');
     }
 
-    async deleteSnapshot(snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
+    async writeSnapshotMetadata(metadata: FixtureCacheManifest, snapshotPath: string = SNAPSHOT_PATH): Promise<void> {
+        const metadataPath = this.getSnapshotMetadataPath(snapshotPath);
+        const json = JSON.stringify(metadata);
+
+        await this.exec(`printf %s ${this.shellQuote(json)} > ${this.shellQuote(metadataPath)}`);
+    }
+
+    async getSnapshotMetadata(snapshotPath: string = SNAPSHOT_PATH): Promise<FixtureCacheManifest | null> {
+        const metadataPath = this.getSnapshotMetadataPath(snapshotPath);
+
+        try {
+            const output = await this.exec(`[ -f ${this.shellQuote(metadataPath)} ] && cat ${this.shellQuote(metadataPath)}`);
+            return JSON.parse(output) as FixtureCacheManifest;
+        } catch (error) {
+            debug('Failed to read snapshot metadata:', error);
+            return null;
+        }
+    }
+
+    async deleteSnapshot(snapshotPath: string = SNAPSHOT_PATH): Promise<void> {
         try {
             debug('Deleting MySQL snapshot:', snapshotPath);
 
-            await this.exec(`rm -f ${snapshotPath}`);
+            await this.exec(`rm -f ${this.shellQuote(snapshotPath)} ${this.shellQuote(this.getSnapshotMetadataPath(snapshotPath))}`);
 
             debug('MySQL snapshot deleted');
         } catch (error) {
@@ -128,12 +153,28 @@ export class MySQLManager {
         }
     }
 
-    async restoreDatabaseFromSnapshot(database: string, snapshotPath: string = '/tmp/dump.sql'): Promise<void> {
+    async restoreDatabaseFromSnapshot(database: string, snapshotPath: string = SNAPSHOT_PATH): Promise<void> {
         debug('Restoring database from snapshot:', database);
 
         await this.exec('mysql -uroot -proot ' + database + ' < ' + snapshotPath);
 
         debug('Database restored from snapshot:', database);
+    }
+
+    private getSnapshotMetadataPath(snapshotPath: string): string {
+        return `${snapshotPath}.meta.json`;
+    }
+
+    private shellQuote(value: string): string {
+        return `'${value.replace(/'/g, `'\\''`)}'`;
+    }
+
+    private sqlIdentifier(value: string): string {
+        return '`' + value.replace(/`/g, '``') + '`';
+    }
+
+    private sqlString(value: string): string {
+        return '\'' + value.replace(/\\/g, '\\\\').replace(/'/g, '\\\'') + '\'';
     }
 
     async recreateBaseDatabase(database: string = 'ghost_testing'): Promise<void> {
@@ -143,6 +184,29 @@ export class MySQLManager {
         await this.createDatabase(database);
 
         debug('Base database recreated:', database);
+    }
+
+    async snapshotExists(snapshotPath: string = SNAPSHOT_PATH): Promise<boolean> {
+        try {
+            const output = await this.exec(`[ -f "${snapshotPath}" ] && echo "exists"`);
+            return output.trim() === 'exists';
+        } catch {
+            return false;
+        }
+    }
+
+    async getLatestMigrationName(database: string): Promise<string | null> {
+        try {
+            const output = await this.exec(
+                `mysql -uroot -proot -N -e "SELECT name FROM ${database}.migrations ORDER BY id DESC LIMIT 1;"`
+            );
+
+            const trimmed = output.trim();
+            return trimmed.length > 0 ? trimmed : null;
+        } catch (error) {
+            debug('Failed to read migrations table (MySQL may not be running):', error);
+            return null;
+        }
     }
 
     private parseDatabaseNames(text: string) {
@@ -173,6 +237,18 @@ export class MySQLManager {
         await this.exec(command);
 
         debug('site_uuid updated in database settings:', siteUuid);
+    }
+
+    async updateSessionOrigin(database: string, origin: string): Promise<void> {
+        debug('Updating session origins in database:', database, origin);
+
+        const sql = 'UPDATE ' + this.sqlIdentifier(database) + '.sessions ' +
+            'SET session_data = JSON_SET(session_data, \'$.origin\', ' + this.sqlString(origin) + ') ' +
+            'WHERE JSON_VALID(session_data) AND JSON_EXTRACT(session_data, \'$.origin\') IS NOT NULL;';
+
+        await this.exec(`mysql -uroot -proot -e ${this.shellQuote(sql)}`);
+
+        debug('Session origins updated in database:', origin);
     }
 
     async updateStripeSettings(database: string, secretKey: string, publishableKey: string): Promise<void> {

@@ -4,6 +4,14 @@ import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 
 test.describe('Two-Factor authentication', () => {
     const emailClient: EmailClient = new MailPit();
+    const verificationEmailSearchLimit = 100;
+    const verificationEmailTimeoutMs = 15000;
+
+    test.use({
+        config: {
+            security__staffDeviceVerification: 'true'
+        }
+    });
 
     function parseCodeFromMessageSubject(message: EmailMessage) {
         const subject = message.Subject;
@@ -16,6 +24,35 @@ test.describe('Two-Factor authentication', () => {
         return match[0];
     }
 
+    async function getVerificationMessageIds(email: string): Promise<Set<string>> {
+        const messages = await emailClient.search({subject: 'verification code', to: email}, {limit: verificationEmailSearchLimit, timeoutMs: null});
+        return new Set(messages.map(({ID}) => ID));
+    }
+
+    async function getNewVerificationMessage(email: string, ignoredMessageIds: Set<string>): Promise<EmailMessage> {
+        const startTime = Date.now();
+        let matchingMessageCount = 0;
+
+        while (Date.now() - startTime < verificationEmailTimeoutMs) {
+            const messages = await emailClient.search({subject: 'verification code', to: email}, {limit: verificationEmailSearchLimit, timeoutMs: null});
+            matchingMessageCount = messages.length;
+
+            const latestMessage = messages
+                .filter(message => !ignoredMessageIds.has(message.ID))
+                .sort((left, right) => Date.parse(right.Created) - Date.parse(left.Created))[0];
+
+            if (latestMessage) {
+                return latestMessage;
+            }
+
+            await new Promise<void>((resolve) => {
+                setTimeout(resolve, 500);
+            });
+        }
+
+        throw new Error(`No new verification email found for ${email}. Found ${matchingMessageCount} matching message(s).`);
+    }
+
     test.beforeEach(async ({page}) => {
         const loginPage = new LoginPage(page);
         await loginPage.goto();
@@ -25,14 +62,12 @@ test.describe('Two-Factor authentication', () => {
         await withIsolatedPage(browser, {baseURL}, async ({page: page}) => {
             const {email, password} = ghostAccountOwner;
             const adminLoginPage = new LoginPage(page);
+            const ignoredMessageIds = await getVerificationMessageIds(email);
             await adminLoginPage.goto();
             await adminLoginPage.signIn(email, password);
 
-            const messages = await emailClient.search({
-                subject: 'verification code',
-                to: ghostAccountOwner.email
-            });
-            const code = parseCodeFromMessageSubject(messages[0]);
+            const message = await getNewVerificationMessage(email, ignoredMessageIds);
+            const code = parseCodeFromMessageSubject(message);
 
             const verifyPage = new LoginVerifyPage(page);
             await verifyPage.twoFactorTokenField.fill(code);
@@ -43,30 +78,21 @@ test.describe('Two-Factor authentication', () => {
         });
     });
 
-    test('authenticates with 2FA token that was resent', async ({browser, baseURL,ghostAccountOwner}) => {
+    test('authenticates with 2FA token that was resent', async ({browser, baseURL, ghostAccountOwner}) => {
         await withIsolatedPage(browser, {baseURL}, async ({page: page}) => {
             const {email, password} = ghostAccountOwner;
             const adminLoginPage = new LoginPage(page);
+            const ignoredMessageIds = await getVerificationMessageIds(email);
             await adminLoginPage.goto();
             await adminLoginPage.signIn(email, password);
 
-            let messages = await emailClient.search({
-                subject: 'verification code',
-                to: ghostAccountOwner.email
-            });
-            expect(messages.length).toBe(1);
-
             const verifyPage = new LoginVerifyPage(page);
+            const firstMessage = await getNewVerificationMessage(email, ignoredMessageIds);
+            ignoredMessageIds.add(firstMessage.ID);
             await verifyPage.resendTwoFactorCodeButton.click();
 
-            messages = await emailClient.search({
-                subject: 'verification code',
-                to: ghostAccountOwner.email
-            }, {numberOfMessages: 2});
-
-            expect(messages.length).toBe(2);
-
-            const code = parseCodeFromMessageSubject(messages[0]);
+            const resentMessage = await getNewVerificationMessage(email, ignoredMessageIds);
+            const code = parseCodeFromMessageSubject(resentMessage);
             await verifyPage.twoFactorTokenField.fill(code);
             await verifyPage.twoFactorVerifyButton.click();
 
