@@ -58,6 +58,23 @@ process.env.database__connection__database = mysqlBase
     ? `${mysqlBase}_${sessionId}`
     : `ghost_testing_${sessionId}`;
 
+// Vitest force-terminates the DB-suite forks at end-of-run via SIGTERM (which
+// is also why the forks-teardown deadlock doesn't bite). On a coverage run that
+// would lose each fork's coverage: the external c8 collector reads
+// NODE_V8_COVERAGE, but Node only writes it on a *clean* exit, not on SIGTERM.
+// Flush explicitly in a SIGTERM handler so c8 sees every fork's coverage.
+// Guarded so it's a no-op off coverage runs. (PLA-156)
+if (process.env.NODE_V8_COVERAGE) {
+    process.on('SIGTERM', () => {
+        try {
+            require('v8').takeCoverage();
+        } catch (e) {
+            // ignore — best effort
+        }
+        process.exit(0);
+    });
+}
+
 // NOTE: each fork leaves its per-process DB behind (sqlite file / mysql db).
 // vitest force-terminates forks (which is also why the forks-teardown deadlock
 // doesn't bite), so a process 'exit' handler can't reclaim them. On CI both are
