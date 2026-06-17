@@ -1,6 +1,5 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {ConfirmationModal, SettingGroupHeader, showToast} from '@tryghost/admin-x-design-system';
-import {Button} from '@tryghost/shade/components';
+import {Button, ConfirmationModal, SettingGroupHeader, showToast} from '@tryghost/admin-x-design-system';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
