@@ -33,6 +33,8 @@ function makeUrlUtils() {
     };
 }
 
+const noopFindResource = () => Promise.resolve(null);
+
 describe('LazyUrlService', function () {
     let urlUtils;
 
@@ -42,19 +44,19 @@ describe('LazyUrlService', function () {
 
     describe('getUrlForResource', function () {
         it('returns /404/ when no router has been registered', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             const url = service.getUrlForResource({type: 'posts', id: 'a', slug: 'hello'});
             assert.equal(url, '/404/');
         });
 
         it('returns /404/ when called without a resource type', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             assert.equal(service.getUrlForResource(null), '/404/');
             assert.equal(service.getUrlForResource({}), '/404/');
         });
 
         it('uses the unfiltered collection router for any post', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
 
             const url = service.getUrlForResource({type: 'posts', id: 'p', slug: 'hello'});
@@ -62,7 +64,7 @@ describe('LazyUrlService', function () {
         });
 
         it('respects router priority for filtered collections', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             // Featured posts go to /featured/, everything else to /:slug/.
             service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
@@ -75,7 +77,7 @@ describe('LazyUrlService', function () {
         });
 
         it('falls back to /404/ when a post matches no collection filter', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             // Only featured posts are routed.
             service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
 
@@ -84,7 +86,7 @@ describe('LazyUrlService', function () {
         });
 
         it('throws when a relation-filtered router is given a thin resource', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             // tag:news needs the tags relation; a resource with no tags array
             // can't be evaluated, which would otherwise silently 404.
             service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
@@ -96,7 +98,7 @@ describe('LazyUrlService', function () {
         });
 
         it('does not throw when the relation a filter references is present', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('news', 'tag:news', 'posts', '/:slug/');
 
             // An empty tags array is still a loaded relation, so the resource is
@@ -108,7 +110,7 @@ describe('LazyUrlService', function () {
         });
 
         it('expands shorthand tag/author filters via the EXPANSIONS table', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('podcast', 'tag:podcast', 'posts', '/podcast/:slug/');
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
 
@@ -130,7 +132,7 @@ describe('LazyUrlService', function () {
             // type:'page' resource is routed to the pages collection rather
             // than reaching this posts router's filter at all. That's why
             // only the positive match is asserted here.
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('posts-only', 'page:false', 'posts', '/:slug/');
 
             const post = service.getUrlForResource({type: 'post', id: 'p', slug: 'hello'});
@@ -138,7 +140,7 @@ describe('LazyUrlService', function () {
         });
 
         it('handles deterministic ownership for tags/authors/pages', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('tagsRouter', null, 'tags', '/tag/:slug/');
             service.onRouterAddedType('authorsRouter', null, 'authors', '/author/:slug/');
             service.onRouterAddedType('staticPages', null, 'pages', '/:slug/');
@@ -158,7 +160,7 @@ describe('LazyUrlService', function () {
         });
 
         it('substitutes date-based permalink fields', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('dated', null, 'posts', '/:year/:month/:slug/');
 
             const url = service.getUrlForResource({
@@ -171,7 +173,7 @@ describe('LazyUrlService', function () {
         });
 
         it('honours the absolute and withSubdirectory options', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
 
             const post = {type: 'posts', id: 'p', slug: 'hello'};
@@ -182,24 +184,24 @@ describe('LazyUrlService', function () {
 
     describe('ownsResource', function () {
         it('returns false for an unknown router identifier', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             assert.equal(service.ownsResource('unknown', {type: 'posts', id: 'p'}), false);
         });
 
         it('returns true for an unfiltered router that matches the resource type', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
             assert.equal(service.ownsResource('default', {type: 'posts', id: 'p', slug: 'x'}), true);
         });
 
         it('returns false when the resource type does not match the router', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
             assert.equal(service.ownsResource('default', {type: 'pages', id: 'p', slug: 'x'}), false);
         });
 
         it('evaluates NQL filters against the resource', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
 
             assert.equal(service.ownsResource('featured', {type: 'posts', id: 'a', featured: true}), true);
@@ -209,7 +211,7 @@ describe('LazyUrlService', function () {
         it('grants exclusive ownership to the first matching router', function () {
             // A featured collection ahead of a catch-all: the catch-all must
             // not claim a featured post the higher-priority router owns.
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
 
@@ -225,13 +227,13 @@ describe('LazyUrlService', function () {
 
     describe('hasFinished', function () {
         it('always returns true', function () {
-            assert.equal(new LazyUrlService({urlUtils}).hasFinished(), true);
+            assert.equal(new LazyUrlService({urlUtils, findResource: noopFindResource}).hasFinished(), true);
         });
     });
 
     describe('reset', function () {
         it('drops all registered router configs', function () {
-            const service = new LazyUrlService({urlUtils});
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('default', null, 'posts', '/:slug/');
             assert.equal(service.getUrlForResource({type: 'posts', slug: 'hello', id: 'p'}), '/hello/');
 
@@ -240,13 +242,13 @@ describe('LazyUrlService', function () {
         });
     });
 
-    describe('resolveUrl', function () {
-        it('returns null when no findResource hook is configured', async function () {
-            const service = new LazyUrlService({urlUtils});
-            service.onRouterAddedType('default', null, 'posts', '/:slug/');
-            assert.equal(await service.resolveUrl('/hello/'), null);
+    describe('constructor', function () {
+        it('throws when constructed without a findResource hook', function () {
+            assert.throws(() => new LazyUrlService({urlUtils}), /findResource/);
         });
+    });
 
+    describe('resolveUrl', function () {
         it('extracts slug params and queries the DB by router type', async function () {
             const findResource = sinon.stub();
             findResource.withArgs('posts', {slug: 'hello'}).resolves({id: 'p1', slug: 'hello', title: 'Hello'});
@@ -442,25 +444,40 @@ describe('LazyUrlService', function () {
             sinon.assert.notCalled(findResource);
         });
 
-        it('rejects mixed-literal-and-placeholder segments (no ReDoS surface)', async function () {
+        it('matches literal-prefixed placeholder segments', async function () {
             const findResource = sinon.stub();
+            findResource.withArgs('posts', {slug: 'hello'}).resolves({id: 'p1', slug: 'hello'});
+
             const service = new LazyUrlService({urlUtils, findResource});
-            // Mixed segments like `/blog-:slug/` are not a documented Ghost
-            // permalink shape; we deliberately don't try to match them.
             service.onRouterAddedType('default', null, 'posts', '/blog-:slug/');
 
-            assert.equal(await service.resolveUrl('/blog-hello/'), null);
-            sinon.assert.notCalled(findResource);
+            const result = await service.resolveUrl('/blog-hello/');
+            assert.equal(result.id, 'p1');
+            sinon.assert.calledWith(findResource, 'posts', {slug: 'hello'});
         });
 
-        it('does not query findResource when the permalink captures no queryable column', async function () {
+        it('matches hyphen-separated multi-token segments (#28076)', async function () {
+            const findResource = sinon.stub();
+            findResource
+                .withArgs('posts', {slug: 'hello'})
+                .resolves({id: 'p1', slug: 'hello', published_at: '2026-04-15T00:00:00.000Z'});
+
+            const service = new LazyUrlService({urlUtils, findResource});
+            service.onRouterAddedType('default', null, 'posts', '/:year-:month-:day-:slug/');
+
+            const result = await service.resolveUrl('/2026-04-15-hello/');
+            assert.equal(result.id, 'p1');
+            sinon.assert.calledWith(findResource, 'posts', {slug: 'hello'});
+        });
+
+        it('throws when a matched permalink has no queryable lookup column', async function () {
             const findResource = sinon.stub();
             const service = new LazyUrlService({urlUtils, findResource});
-            // An archive-style permalink captures only derived date segments,
-            // so there's no id/slug column to look a resource up by.
+            // A permalink with neither slug nor id is invalid config; matching
+            // one is a programmer error we refuse loudly rather than mask.
             service.onRouterAddedType('archive', null, 'posts', '/:year/:month/');
 
-            assert.equal(await service.resolveUrl('/2026/04/'), null);
+            await assert.rejects(() => service.resolveUrl('/2026/04/'), /no queryable lookup column/);
             sinon.assert.notCalled(findResource);
         });
 

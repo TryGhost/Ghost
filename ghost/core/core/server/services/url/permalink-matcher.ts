@@ -1,63 +1,114 @@
-// Placeholder names are word chars only (\w === [A-Za-z0-9_]); a literal scan
-// keeps the matcher regex-free, so no regex ever runs on a request path.
-function isWordChars(value: string): boolean {
-    if (value.length === 0) {
-        return false;
-    }
-    for (let i = 0; i < value.length; i += 1) {
-        const code = value.charCodeAt(i);
-        const isDigit = code >= 48 && code <= 57;
-        const isUpper = code >= 65 && code <= 90;
-        const isLower = code >= 97 && code <= 122;
-        const isUnderscore = code === 95;
-        if (!isDigit && !isUpper && !isLower && !isUnderscore) {
+/* eslint-disable @typescript-eslint/no-require-imports */
+const routeMatch = require('path-match')();
+/* eslint-enable @typescript-eslint/no-require-imports */
+
+import type {ResourceLookupParams} from './lazy-find-resource';
+
+const SUPPORTED_TOKENS = new Set([
+    'id',
+    'slug',
+    'year',
+    'month',
+    'day',
+    'primary_tag',
+    'primary_author'
+]);
+
+const QUERYABLE_PARAMS = ['id', 'slug'] as const;
+
+const FIELD_VALIDATORS: Record<string, RegExp> = {
+    id: /^[0-9a-f]{24}$/i,
+    year: /^\d{4}$/,
+    month: /^\d{2}$/,
+    day: /^\d{2}$/
+};
+
+const TOKEN = /:([A-Za-z_]\w*)/g;
+const PARAM = /:([A-Za-z_]\w*)(?:\([^)]*\))?[+*?]?/g;
+const BARE_PARAM = /:([A-Za-z_]\w*)(?![\w(])/g;
+
+function constrainHyphenatedPermalinkParams(permalink: string): string {
+    return permalink.split('/').map((segment) => {
+        if (!segment.includes('-')) {
+            return segment;
+        }
+
+        const params = [...segment.matchAll(PARAM)];
+
+        if (params.length < 2) {
+            return segment;
+        }
+
+        return segment.replace(BARE_PARAM, (match, ...args) => {
+            const offset = args[args.length - 2];
+            const index = params.findIndex(param => param.index === offset);
+            const isLastParamInSegment = index === params.length - 1;
+
+            return `${match}${isLastParamInSegment ? '([^/]+)' : '([^-/]+)'}`;
+        });
+    }).join('/');
+}
+
+function hasOnlySupportedTokens(template: string): boolean {
+    for (const [, token] of template.matchAll(TOKEN)) {
+        if (!SUPPORTED_TOKENS.has(token)) {
             return false;
         }
     }
     return true;
 }
 
-/**
- * Matches a permalink template (e.g. `/:slug/`) against a URL path and extracts
- * the `:field` placeholders, or returns `null` when the path doesn't match.
- */
-export function matchPermalink(template: string, urlPath: string): Record<string, string> | null {
-    const templateSegments = template.split('/');
-    const pathSegments = urlPath.split('/');
+function valuesFitTheirFormat(params: Record<string, string>): boolean {
+    for (const [field, value] of Object.entries(params)) {
+        const pattern = FIELD_VALIDATORS[field];
+        if (pattern && !pattern.test(value)) {
+            return false;
+        }
+    }
+    return true;
+}
 
-    if (templateSegments.length !== pathSegments.length) {
+export function matchPermalink(template: string, urlPath: string): Record<string, string> | null {
+    if (!hasOnlySupportedTokens(template)) {
         return null;
     }
 
-    // Null-prototype map so a placeholder named after an Object.prototype member
-    // (e.g. `/:__proto__/`) is captured as an own key instead of being swallowed.
-    const params: Record<string, string> = Object.create(null);
+    const match = routeMatch(constrainHyphenatedPermalinkParams(template));
 
-    for (let i = 0; i < templateSegments.length; i += 1) {
-        const templateSegment = templateSegments[i];
-        const pathSegment = pathSegments[i];
+    let params: Record<string, string> | false;
+    try {
+        params = match(urlPath);
+    } catch {
+        // path-match throws a 400 on an undecodable %-escape; treat as no match.
+        return null;
+    }
 
-        if (!templateSegment.startsWith(':')) {
-            if (templateSegment !== pathSegment) {
-                return null;
-            }
-            continue;
-        }
+    if (params === false) {
+        return null;
+    }
 
-        const fieldName = templateSegment.slice(1);
-        if (!isWordChars(fieldName) || pathSegment.length === 0) {
-            return null;
-        }
-
-        try {
-            params[fieldName] = decodeURIComponent(pathSegment);
-        } catch {
-            return null;
-        }
+    if (!valuesFitTheirFormat(params)) {
+        return null;
     }
 
     return params;
 }
 
-module.exports = {matchPermalink};
+/**
+ * Narrows the captured params down to the single column the DB is queried by,
+ * or null when no queryable column is present — which, for a real resource
+ * permalink, can't happen and signals an invalid permalink to the caller.
+ */
+export function toLookupParams(params: Record<string, string>): ResourceLookupParams | null {
+    for (const key of QUERYABLE_PARAMS) {
+        const value = params[key];
+        if (value !== undefined) {
+            return {[key]: value} as ResourceLookupParams;
+        }
+    }
+    return null;
+}
+
+module.exports = {matchPermalink, toLookupParams};
 module.exports.matchPermalink = matchPermalink;
+module.exports.toLookupParams = toLookupParams;

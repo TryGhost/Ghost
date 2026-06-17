@@ -2,12 +2,12 @@
 const debug = require('@tryghost/debug')('services:url:lazy');
 const errors = require('@tryghost/errors');
 const localUtils = require('../../../shared/url-utils');
-const {matchPermalink} = require('./permalink-matcher');
+const {matchPermalink, toLookupParams} = require('./permalink-matcher');
 const {buildFilter, filterMatches, routerTypeOf} = require('./router-filter');
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 import type {Resource, UrlOptions, LazyUrlServiceBackend} from './url-service-facade';
-import type {FindResource, ResourceLookupParams} from './lazy-find-resource';
+import type {FindResource} from './lazy-find-resource';
 import type {CompiledFilter} from './router-filter';
 
 interface RouterConfig {
@@ -20,46 +20,10 @@ interface RouterConfig {
 
 interface LazyUrlServiceDeps {
     urlUtils?: typeof localUtils;
-    findResource?: FindResource | null;
+    findResource: FindResource;
 }
 
 const ROUTER_TYPE_TO_DB_TYPE: Record<string, string> = {posts: 'post', pages: 'page'};
-
-// Real, unique lookup columns, in priority order. A multi-segment permalink
-// also captures derived (year/month) and relation (primary_tag) segments, but
-// only one of these columns is ever queried — the others are checked by the
-// canonical re-check below.
-const QUERYABLE_PARAMS = ['id', 'slug'] as const;
-
-// Permalink fields with a fixed, knowable format.
-const FIELD_VALIDATORS: Record<string, RegExp> = {
-    id: /^[0-9a-f]{24}$/i,
-    year: /^\d{4}$/,
-    month: /^\d{2}$/,
-    day: /^\d{2}$/
-};
-
-function capturedValuesAreValid(params: Record<string, string>): boolean {
-    for (const [field, value] of Object.entries(params)) {
-        const pattern = FIELD_VALIDATORS[field];
-        if (pattern && !pattern.test(value)) {
-            return false;
-        }
-    }
-    return true;
-}
-
-// Narrow the full captured params down to the single column we query the DB by,
-// or null when the permalink captured no queryable column at all.
-function toLookupParams(params: Record<string, string>): ResourceLookupParams | null {
-    for (const key of QUERYABLE_PARAMS) {
-        const value = params[key];
-        if (value !== undefined) {
-            return {[key]: value} as ResourceLookupParams;
-        }
-    }
-    return null;
-}
 
 /**
  * On-demand replacement for the eager UrlService: computes URLs and ownership
@@ -69,11 +33,16 @@ function toLookupParams(params: Record<string, string>): ResourceLookupParams | 
  */
 export class LazyUrlService implements LazyUrlServiceBackend {
     private urlUtils: typeof localUtils;
-    private findResource: FindResource | null;
+    private findResource: FindResource;
     // Router configs in registration order, which is also their priority.
     private routerConfigs: RouterConfig[];
 
-    constructor({urlUtils = localUtils, findResource = null}: LazyUrlServiceDeps = {}) {
+    constructor({urlUtils = localUtils, findResource}: LazyUrlServiceDeps) {
+        if (typeof findResource !== 'function') {
+            throw new errors.IncorrectUsageError({
+                message: 'LazyUrlService requires a findResource function'
+            });
+        }
         this.urlUtils = urlUtils;
         this.findResource = findResource;
         this.routerConfigs = [];
@@ -140,9 +109,6 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     }
 
     async resolveUrl(urlPath: string): Promise<Resource | null> {
-        if (!this.findResource) {
-            return null;
-        }
         // Memoize per call so routers sharing a resourceType+permalink shape (or
         // fallthrough across filters) don't repeat the same DB lookup.
         const lookupCache = new Map<string, Record<string, unknown> | null>();
@@ -151,12 +117,19 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             if (!params) {
                 continue;
             }
-            if (!capturedValuesAreValid(params)) {
-                continue;
-            }
             const lookupParams = toLookupParams(params);
             if (!lookupParams) {
-                continue;
+                // A resource permalink always carries a slug or id, so matching
+                // one without a queryable column means the router was registered
+                // with an invalid permalink — a config bug.
+                throw new errors.InternalServerError({
+                    message: 'LazyUrlService matched a permalink with no queryable lookup column',
+                    code: 'LAZY_URL_NO_LOOKUP_PARAM',
+                    errorDetails: {
+                        routerIdentifier: config.identifier,
+                        permalink: config.permalink
+                    }
+                });
             }
             const cacheKey = `${config.resourceType}:${JSON.stringify(lookupParams)}`;
             let resource: Record<string, unknown> | null;

@@ -37,6 +37,14 @@ const SCENARIOS = [
             {identifier: 'tags-router', filter: null, resourceType: 'tags', permalink: '/tag/:slug/'},
             {identifier: 'authors-router', filter: null, resourceType: 'authors', permalink: '/author/:slug/'}
         ]
+    },
+    {
+        name: 'hyphen-separated date post permalinks',
+        routes: [
+            {identifier: 'posts-router', filter: null, resourceType: 'posts', permalink: '/:year-:month-:day-:slug/'},
+            {identifier: 'tags-router', filter: null, resourceType: 'tags', permalink: '/tag/:slug/'},
+            {identifier: 'authors-router', filter: null, resourceType: 'authors', permalink: '/author/:slug/'}
+        ]
     }
 ];
 
@@ -248,14 +256,20 @@ describe('Integration: eager/lazy URL service parity', function () {
                 it('agrees with the eager service that a non-canonical (wrong-date) URL 404s', async function () {
                     let checked = 0;
                     for (const {url} of allGeneratedUrls()) {
-                        const yearMatch = url.match(/^\/(\d{4})\//);
+                        // Swap the year for one the post wasn't published in, in
+                        // either the slash (/YYYY/...) or hyphen (/YYYY-MM-DD-...)
+                        // date shape: a valid permalink that isn't this post's
+                        // canonical URL, so both services must reject it.
+                        const slashMatch = url.match(/^\/(\d{4})\//);
+                        const hyphenMatch = url.match(/^\/(\d{4})-/);
+                        const yearMatch = slashMatch || hyphenMatch;
                         if (!yearMatch) {
                             continue;
                         }
-                        // Swap the year for one the post wasn't published in: a
-                        // valid permalink shape that is not this post's canonical
-                        // URL, so both services must reject it.
-                        const variant = url.replace(/^\/\d{4}\//, `/${Number(yearMatch[1]) - 1}/`);
+                        const wrongYear = Number(yearMatch[1]) - 1;
+                        const variant = slashMatch
+                            ? url.replace(/^\/\d{4}\//, `/${wrongYear}/`)
+                            : url.replace(/^\/\d{4}-/, `/${wrongYear}-`);
 
                         assert.equal(eager.getResource(variant), null, `eager resolved non-canonical ${variant}`);
                         assert.equal(await lazy.resolveUrl(variant), null, `lazy resolved non-canonical ${variant}`);
