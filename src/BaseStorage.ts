@@ -1,13 +1,12 @@
 import moment from 'moment';
 import path from 'path';
+import type {RequestHandler} from 'express';
 
 type StorageFile = {
     name: string;
     path: string;
     type?: string;
 };
-
-type ServeHandler = (...args: any[]) => any;
 
 abstract class StorageBase {
     readonly requiredFns!: readonly ['exists', 'save', 'serve', 'delete', 'read'];
@@ -16,7 +15,7 @@ abstract class StorageBase {
 
     abstract exists(fileName: string, targetDir?: string): Promise<boolean>;
     abstract save(file: StorageFile, targetDir?: string): Promise<string>;
-    abstract serve(): ServeHandler;
+    abstract serve(): RequestHandler;
     abstract delete(fileName: string, targetDir?: string): Promise<void>;
     abstract read(options: {path: string}): Promise<Buffer>;
     abstract saveRaw(buffer: Buffer, targetPath: string): Promise<string>;
