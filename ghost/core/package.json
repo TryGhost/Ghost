@@ -62,7 +62,7 @@
     "test:unit": "pnpm test:vitest",
     "test:integration": "pnpm test:integration:vitest && pnpm test:integration:mocha",
     "test:integration:vitest": "vitest run -c vitest.config.db.ts --project integration",
-    "test:integration:mocha": "pnpm test:base ./test/integration/jobs/update-check.test.js ./test/integration/services/email-service/domain-warming.test.js --timeout=10000",
+    "test:integration:mocha": "env -u database__connection__filename -u database__connection__database pnpm test:base ./test/integration/jobs/update-check.test.js ./test/integration/services/email-service/domain-warming.test.js --timeout=10000",
     "test:integration:ci": "pnpm test:integration:vitest && pnpm test:integration:mocha -b",
     "test:e2e": "pnpm test:e2e:mocha && pnpm test:e2e:vitest",
     "test:e2e:mocha": "pnpm test:base ./test/e2e-api ./test/e2e-frontend --timeout=15000",
