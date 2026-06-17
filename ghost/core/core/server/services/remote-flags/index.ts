@@ -53,7 +53,7 @@ export function init(config: ConfigLike): RemoteFlagsService | null {
         url = new URL(remoteFlags.url);
     } catch {
         logging.warn({
-            system: {event: 'remote_flags.invalid_url', siteUuid}
+            system: {event: 'remote_flags.invalid_url'}
         }, `Remote feature flags url is not a valid URL, not starting: ${remoteFlags.url}`);
         return null;
     }
@@ -67,7 +67,7 @@ export function init(config: ConfigLike): RemoteFlagsService | null {
             pollInterval = configuredInterval;
         } else {
             logging.warn({
-                system: {event: 'remote_flags.invalid_poll_interval', siteUuid}
+                system: {event: 'remote_flags.invalid_poll_interval'}
             }, `Remote feature flags pollInterval must be a number >= ${MIN_POLL_INTERVAL_MS}ms, using the default: ${configuredInterval}`);
         }
     }

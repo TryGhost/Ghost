@@ -56,7 +56,6 @@ describe('RemoteFlagsService', function () {
 
             const appliedLog = logInfo.getCalls().find(c => c.args[0]?.system?.event === 'remote_flags.applied');
             assert.ok(appliedLog, 'expected a remote_flags.applied log');
-            assert.equal(appliedLog.args[0].system.siteUuid, SITE_UUID);
             assert.deepEqual(appliedLog.args[0].system.flags, {flagA: true, commentModeration: false});
         });
 

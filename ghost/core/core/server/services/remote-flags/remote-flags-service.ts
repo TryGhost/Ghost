@@ -108,7 +108,7 @@ export class RemoteFlagsService {
         } catch (err) {
             // Network/timeout error: keep last-known-good, change nothing.
             logging.warn({
-                system: {event: 'remote_flags.fetch_failed', siteUuid: this.siteUuid},
+                system: {event: 'remote_flags.fetch_failed'},
                 err
             }, 'Remote feature flags fetch failed; keeping last-known-good');
             return;
@@ -131,7 +131,7 @@ export class RemoteFlagsService {
 
             if (!status || status < 200 || status >= 300) {
                 logging.warn({
-                    system: {event: 'remote_flags.fetch_bad_status', siteUuid: this.siteUuid, statusCode: status || null}
+                    system: {event: 'remote_flags.fetch_bad_status', statusCode: status || null}
                 }, 'Remote feature flags fetch returned an unexpected status; keeping last-known-good');
                 return;
             }
@@ -141,7 +141,7 @@ export class RemoteFlagsService {
                 manifest = JSON.parse(response.body as string);
             } catch (parseErr) {
                 logging.warn({
-                    system: {event: 'remote_flags.parse_failed', siteUuid: this.siteUuid},
+                    system: {event: 'remote_flags.parse_failed'},
                     err: parseErr
                 }, 'Remote feature flags manifest was not valid JSON; keeping last-known-good');
                 return;
@@ -157,7 +157,7 @@ export class RemoteFlagsService {
         } catch (err) {
             // Backstop: resolve()/applyOverrides shouldn't throw, but fail open if they do.
             logging.warn({
-                system: {event: 'remote_flags.apply_failed', siteUuid: this.siteUuid},
+                system: {event: 'remote_flags.apply_failed'},
                 err
             }, 'Remote feature flags could not be applied; keeping last-known-good');
         }
@@ -183,7 +183,6 @@ export class RemoteFlagsService {
             logging.info({
                 system: {
                     event: 'remote_flags.applied',
-                    siteUuid: this.siteUuid,
                     etag: etag || null,
                     flags: resolved
                 }
