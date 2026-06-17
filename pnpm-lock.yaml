@@ -2942,9 +2942,6 @@ importers:
       qs:
         specifier: 6.15.2
         version: 6.15.2
-      rewire:
-        specifier: 9.0.1
-        version: 9.0.1(jiti@2.7.0)
       sinon:
         specifier: 'catalog:'
         version: 22.0.0
@@ -19865,9 +19862,6 @@ packages:
   reusify@1.1.0:
     resolution: {integrity: sha512-g6QUff04oZpHs0eG5p83rFLhHeV00ug/Yf9nZM6fLeUrPguBTkTQOdpAWWspMh55TZfVQDPaN3NQJfbVRAxdIw==}
     engines: {iojs: '>=1.0.0', node: '>=0.10.0'}
-
-  rewire@9.0.1:
-    resolution: {integrity: sha512-dnbLeTwHpXvWJjswC6CshXUUnnpE5AVhlayVRvDJhJx5ejbO4nbj1IXqN2urErgB7TpHUAMpf6iPDhQIxeSQOQ==}
 
   rfdc@1.4.1:
     resolution: {integrity: sha512-q1b3N5QkRUWUl7iyylaaj3kOpIT0N2i9MqIEQXP73GVsN9cw3fdx8X63cEmWhJGi2PPCF23Ijp7ktmd39rawIA==}
@@ -44026,14 +44020,6 @@ snapshots:
   rettime@0.11.11: {}
 
   reusify@1.1.0: {}
-
-  rewire@9.0.1(jiti@2.7.0):
-    dependencies:
-      eslint: 9.39.4(jiti@2.7.0)
-      pirates: 4.0.7
-    transitivePeerDependencies:
-      - jiti
-      - supports-color
 
   rfdc@1.4.1: {}
 
