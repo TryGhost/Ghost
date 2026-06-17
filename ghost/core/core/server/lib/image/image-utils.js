@@ -11,7 +11,7 @@ const externalRequest = require('../request-external');
 // and routes them through the same SSRF protections as other external requests.
 // The returned promise exposes the underlying stream via `.stream` so callers
 // can destroy it on early abort — otherwise a pooled keep-alive socket leaks.
-function probe(url, options = {}) {
+function probe(url, options = {}, {probeImageSize: probeImageSizeFn = probeImageSize} = {}) {
     const stream = externalRequest.stream(url, {
         headers: options.headers,
         timeout: {
@@ -19,7 +19,7 @@ function probe(url, options = {}) {
         },
         retry: {limit: 0}
     });
-    const promise = probeImageSize(stream);
+    const promise = probeImageSizeFn(stream);
     promise.stream = stream;
     return promise;
 }
@@ -37,3 +37,4 @@ class ImageUtils {
 }
 
 module.exports = ImageUtils;
+module.exports.probe = probe;
