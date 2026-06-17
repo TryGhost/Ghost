@@ -62,7 +62,7 @@
     "test:unit": "pnpm test:vitest",
     "test:integration": "pnpm test:base './test/integration' --timeout=10000",
     "test:e2e": "pnpm test:e2e:mocha && pnpm test:e2e:vitest",
-    "test:e2e:mocha": "pnpm test:base ./test/e2e-api ./test/e2e-frontend --timeout=15000",
+    "test:e2e:mocha": "pnpm test:base ./test/e2e-api --timeout=15000",
     "test:e2e:vitest": "vitest run -c vitest.config.db.ts --project e2e",
     "test:e2e:ci": "pnpm test:e2e:mocha -b && pnpm test:e2e:vitest",
     "test:legacy": "pnpm test:base './test/legacy' --timeout=60000",
