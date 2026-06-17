@@ -16,17 +16,21 @@
   },
   "bugs": "https://github.com/TryGhost/Ghost-Storage-Base/issues",
   "scripts": {
+    "build": "tsc",
+    "clean": "rm -rf dist",
     "lint": "oxlint .",
     "lint:fix": "oxlint --fix .",
     "test": "vitest run --coverage",
     "test:unit": "pnpm test",
+    "prepare": "npm run build",
     "preship": "pnpm test",
     "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then pnpm publish && git push --follow-tags; fi"
   },
   "license": "MIT",
-  "main": "./lib/BaseStorage",
+  "main": "./dist/BaseStorage.js",
+  "types": "./dist/BaseStorage.d.ts",
   "files": [
-    "lib"
+    "dist"
   ],
   "dependencies": {
     "moment": "2.30.1"
@@ -35,8 +39,10 @@
     "node": "^22.13.1 || ^24.0.0"
   },
   "devDependencies": {
+    "@types/node": "22.10.5",
     "@vitest/coverage-v8": "4.1.8",
     "oxlint": "1.69.0",
+    "typescript": "5.7.3",
     "vite": "8.0.16",
     "vitest": "4.1.8"
   }

@@ -14,7 +14,8 @@
     "**/node_modules/**",
     "**/coverage/**",
     "**/dist/**",
-    "**/build/**"
+    "**/build/**",
+    "Ghost/**"
   ],
   "rules": {
     "eqeqeq": "error",

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import {afterEach, describe, it, vi} from 'vitest';
 
-import StorageBase from '../lib/BaseStorage.js';
+import StorageBase from '../src/BaseStorage.ts';
 
 describe('Storage Base', function () {
     afterEach(function () {

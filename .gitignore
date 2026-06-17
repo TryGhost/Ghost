@@ -28,3 +28,10 @@ node_modules
 
 # IDE
 .idea/*
+
+# Build output
+dist
+
+# Local workspace links/stores
+Ghost
+.pnpm-store

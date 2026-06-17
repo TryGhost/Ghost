@@ -12,18 +12,24 @@ importers:
         specifier: 2.30.1
         version: 2.30.1
     devDependencies:
+      '@types/node':
+        specifier: 22.10.5
+        version: 22.10.5
       '@vitest/coverage-v8':
         specifier: 4.1.8
         version: 4.1.8(vitest@4.1.8)
       oxlint:
         specifier: 1.69.0
         version: 1.69.0
+      typescript:
+        specifier: 5.7.3
+        version: 5.7.3
       vite:
         specifier: 8.0.16
-        version: 8.0.16
+        version: 8.0.16(@types/node@22.10.5)
       vitest:
         specifier: 4.1.8
-        version: 4.1.8(@vitest/coverage-v8@4.1.8)(vite@8.0.16)
+        version: 4.1.8(@types/node@22.10.5)(@vitest/coverage-v8@4.1.8)(vite@8.0.16(@types/node@22.10.5))
 
 packages:
 
@@ -311,6 +317,9 @@ packages:
   '@types/estree@1.0.9':
     resolution: {integrity: sha512-GhdPgy1el4/ImP05X05Uw4cw2/M93BCUmnEvWZNStlCzEKME4Fkk+YpoA5OiHNQmoS7Cafb8Xa3Pya8m1Qrzeg==}
 
+  '@types/node@22.10.5':
+    resolution: {integrity: sha512-F8Q+SeGimwOo86fiovQh8qiXfFEh2/ocYv7tU5pJ3EXMSSxk1Joj5wefpFK2fHTf/N6HKGSxIDBT9f3gCxXPkQ==}
+
   '@vitest/coverage-v8@4.1.8':
     resolution: {integrity: sha512-lt3kovsyHwYe00wq4D1ti0Z974fWj4NLp6siqiyEufUpyFwK9Yhi7rBhac9JL5aA0zoMrJqc4vYPZRUnI7l7nw==}
     peerDependencies:
@@ -581,6 +590,14 @@ packages:
   tslib@2.8.1:
     resolution: {integrity: sha512-oJFu94HQb+KVduSUQL7wnpmqnfmLsOA/nAh6b6EH0wCEoK0/mPeXU6c3wKDV83MkOuHPRHtSXKKU99IBazS/2w==}
 
+  typescript@5.7.3:
+    resolution: {integrity: sha512-84MVSjMEHP+FQRPy3pX9sTVV/INIex71s9TL2Gm5FG/WG1SqXeKyZ0k7/blY/4FdOzI12CBy1vGc4og/eus0fw==}
+    engines: {node: '>=14.17'}
+    hasBin: true
+
+  undici-types@6.20.0:
+    resolution: {integrity: sha512-Ny6QZ2Nju20vw1SRHe3d9jVu6gJ+4e3+MMpqu7pqE5HT6WsTSlce++GQmK5UXS8mzV8DSYHrQH+Xrf2jVcuKNg==}
+
   vite@8.0.16:
     resolution: {integrity: sha512-h9bXPmJichP5fLmVQo3PyaGSDE2n3aPuomeAlVRm0JLmt4rY6zmPKd59HYI4LNW8oTK7tlTsuC7l/m7awx9Jcw==}
     engines: {node: ^20.19.0 || >=22.12.0}
@@ -845,6 +862,10 @@ snapshots:
 
   '@types/estree@1.0.9': {}
 
+  '@types/node@22.10.5':
+    dependencies:
+      undici-types: 6.20.0
+
   '@vitest/coverage-v8@4.1.8(vitest@4.1.8)':
     dependencies:
       '@bcoe/v8-coverage': 1.0.2
@@ -857,7 +878,7 @@ snapshots:
       obug: 2.1.3
       std-env: 4.1.0
       tinyrainbow: 3.1.0
-      vitest: 4.1.8(@vitest/coverage-v8@4.1.8)(vite@8.0.16)
+      vitest: 4.1.8(@types/node@22.10.5)(@vitest/coverage-v8@4.1.8)(vite@8.0.16(@types/node@22.10.5))
 
   '@vitest/expect@4.1.8':
     dependencies:
@@ -868,13 +889,13 @@ snapshots:
       chai: 6.2.2
       tinyrainbow: 3.1.0
 
-  '@vitest/mocker@4.1.8(vite@8.0.16)':
+  '@vitest/mocker@4.1.8(vite@8.0.16(@types/node@22.10.5))':
     dependencies:
       '@vitest/spy': 4.1.8
       estree-walker: 3.0.3
       magic-string: 0.30.21
     optionalDependencies:
-      vite: 8.0.16
+      vite: 8.0.16(@types/node@22.10.5)
 
   '@vitest/pretty-format@4.1.8':
     dependencies:
@@ -1100,7 +1121,11 @@ snapshots:
   tslib@2.8.1:
     optional: true
 
-  vite@8.0.16:
+  typescript@5.7.3: {}
+
+  undici-types@6.20.0: {}
+
+  vite@8.0.16(@types/node@22.10.5):
     dependencies:
       lightningcss: 1.32.0
       picomatch: 4.0.4
@@ -1108,12 +1133,13 @@ snapshots:
       rolldown: 1.0.3
       tinyglobby: 0.2.17
     optionalDependencies:
+      '@types/node': 22.10.5
       fsevents: 2.3.3
 
-  vitest@4.1.8(@vitest/coverage-v8@4.1.8)(vite@8.0.16):
+  vitest@4.1.8(@types/node@22.10.5)(@vitest/coverage-v8@4.1.8)(vite@8.0.16(@types/node@22.10.5)):
     dependencies:
       '@vitest/expect': 4.1.8
-      '@vitest/mocker': 4.1.8(vite@8.0.16)
+      '@vitest/mocker': 4.1.8(vite@8.0.16(@types/node@22.10.5))
       '@vitest/pretty-format': 4.1.8
       '@vitest/runner': 4.1.8
       '@vitest/snapshot': 4.1.8
@@ -1130,9 +1156,10 @@ snapshots:
       tinyexec: 1.2.4
       tinyglobby: 0.2.17
       tinyrainbow: 3.1.0
-      vite: 8.0.16
+      vite: 8.0.16(@types/node@22.10.5)
       why-is-node-running: 2.3.0
     optionalDependencies:
+      '@types/node': 22.10.5
       '@vitest/coverage-v8': 4.1.8(vitest@4.1.8)
     transitivePeerDependencies:
       - msw
