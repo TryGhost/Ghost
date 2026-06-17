@@ -1,98 +1,34 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
+const MembersAPI = require('../../../../../../core/server/services/members/members-api/members-api');
+const MagicLink = require('../../../../../../core/server/services/lib/magic-link/magic-link');
+const GeolocationService = require('../../../../../../core/server/services/members/members-api/services/geolocation-service');
+const MemberRepository = require('../../../../../../core/server/services/members/members-api/repositories/member-repository');
+const MemberBREADService = require('../../../../../../core/server/services/members/members-api/services/member-bread-service');
+const DomainEvents = require('@tryghost/domain-events');
 
 describe('MembersAPI', function () {
-    let MembersAPI;
+    const privateKey = '-----BEGIN RSA PRIVATE KEY-----\nMIICWwIBAAKBgQCea7oriNoFgxnY/JgFDpNRlxLMVIapfoMQTCJMWkH9pDYoAq/8GF6q0yTd\nn5+AS7TGasCjgNGW6miEbBDBaQy8hS8hWqhaRKY6Sy8/11KyAC8y5cs+QW4dFY2JvnXO6UpE\nFaTtHR7oAtTSZJ9D9i/FN+2wAoO/4193Leoqqw1dJwIDAQABAoGAeqejo5M4Yi4n9AVV2gx3\n6SLTrhn/jPljllmr8HutPilGuOGjycZAfXguwdyVjKqQ01LRxYW2QGdK9sQIkQa5kXjzTtLa\ndtHYcplk0rTTsdjbvZ31AKNTNYn5s+PhGGb0Gc9n8co18K75ol8VPG8lpXjUUCWsb2xcV7wA\nQuHkOukCQQD7TluL8I4tHXzREIW3OZeLTyRlPEIn5cDdPPEIHrAIu4WJ50zAbkMH7W4HBmWf\ntafxSgWcRsdMIZn//wZV3goLAkEAoWE6/LgKgowSouIjbRdekw7QPZMvN2LUV0a0GZHpSA2K\nzzyvOsW1dU9EO+WhCpdfoikuxWiPtN+byAe2sbBG1QJALuKgm8wmim488jhV6ig5iMkcLjL+\n2Li5sc0D3xLynr51nJPlsuUfZmQ6qd7cqN5YVeEMiOp/lkmSlLs8sFp7nwJAKEkFWKD4vq4I\n2PBqt4jl6v//q99aIhFhwIe93cQ23+3BgQo9FAbWzXoEJo+kK+itzuVI766ycQyA7uY+DQ1c\nIQJAER3D4lsY5wnE+01eqk8NfF7TO+u4ezWs/rmNyn3hapskgV0xqn+FanXeVJ5K7B3AzabR\na4/tLo88gWEfcow6WQ==\n-----END RSA PRIVATE KEY-----\n';
+    const publicKey = '-----BEGIN RSA PUBLIC KEY-----\nMIGJAoGBAJ5ruiuI2gWDGdj8mAUOk1GXEsxUhql+gxBMIkxaQf2kNigCr/wYXqrTJN2fn4BL\ntMZqwKOA0ZbqaIRsEMFpDLyFLyFaqFpEpjpLLz/XUrIALzLlyz5Bbh0VjYm+dc7pSkQVpO0d\nHugC1NJkn0P2L8U37bACg7/jX3ct6iqrDV0nAgMBAAE=\n-----END RSA PUBLIC KEY-----\n';
+
     let membersAPI;
-    let memberRepository;
-    let memberBREADService;
     let giftRedeem;
-    let tokenProvider;
     let memberLoginEvent;
     let labsService;
     let tokenData;
     let MemberModel;
 
-    const createRouterStub = () => {
-        const router = {};
-
-        ['use', 'get', 'post', 'put', 'delete'].forEach((method) => {
-            router[method] = sinon.stub().returns(router);
-        });
-
-        return router;
-    };
-
     const buildMembersAPI = () => {
-        MembersAPI = rewire('../../../../../../core/server/services/members/members-api/members-api');
-
-        MembersAPI.__set__('Router', () => createRouterStub());
-        MembersAPI.__set__('body', {
-            json: () => 'json-middleware',
-            raw: () => 'raw-middleware',
-            urlencoded: () => 'urlencoded-middleware'
-        });
-        MembersAPI.__set__('PaymentsService', function PaymentsService() {
-            return {};
-        });
-        MembersAPI.__set__('TokenService', function TokenService() {
-            return {};
-        });
-        MembersAPI.__set__('GeolocationService', function GeolocationService() {
-            return {
-                getGeolocationFromIP: sinon.stub().resolves(null)
-            };
-        });
-        MembersAPI.__set__('MemberRepository', function MemberRepository() {
-            return memberRepository;
-        });
-        MembersAPI.__set__('MemberBREADService', function MemberBREADService() {
-            return memberBREADService;
-        });
-        MembersAPI.__set__('NextPaymentCalculator', function NextPaymentCalculator() {
-            return {};
-        });
-        MembersAPI.__set__('EventRepository', function EventRepository() {
-            return {};
-        });
-        MembersAPI.__set__('ProductRepository', function ProductRepository() {
-            return {};
-        });
-        MembersAPI.__set__('RouterController', function RouterController() {
-            return {};
-        });
-        MembersAPI.__set__('MemberController', function MemberController() {
-            return {};
-        });
-        MembersAPI.__set__('WellKnownController', function WellKnownController() {
-            return {};
-        });
-        MembersAPI.__set__('MagicLink', function MagicLink() {
-            return {
-                tokenProvider,
-                getDataFromToken: sinon.stub().callsFake(async (token, otcVerification) => {
-                    return await tokenProvider.validate(token, {otcVerification});
-                }),
-                sendMagicLink: sinon.stub(),
-                getMagicLink: sinon.stub(),
-                getSigninURL: sinon.stub()
-            };
-        });
-        MembersAPI.__set__('DomainEvents', {
-            subscribe: sinon.stub()
-        });
-
         return MembersAPI({
             tokenConfig: {
                 issuer: 'ghost',
-                privateKey: 'private-key',
-                publicKey: 'public-key'
+                privateKey,
+                publicKey
             },
             auth: {
                 allowSelfSignup: sinon.stub().returns(true),
                 getSigninURL: sinon.stub().returns('https://example.com/magic-link'),
-                tokenProvider
+                tokenProvider: {}
             },
             mail: {
                 transporter: {
@@ -158,6 +94,20 @@ describe('MembersAPI', function () {
     };
 
     beforeEach(function () {
+        sinon.stub(DomainEvents, 'subscribe');
+        sinon.stub(MagicLink.prototype, 'getDataFromToken').callsFake(async (token, otcVerification) => {
+            assert.equal(token, 'magic-token');
+            assert.equal(otcVerification, undefined);
+            return tokenData;
+        });
+        sinon.stub(MagicLink.prototype, 'sendMagicLink').resolves();
+        sinon.stub(MagicLink.prototype, 'getMagicLink').resolves();
+        sinon.stub(MemberRepository.prototype, 'get');
+        sinon.stub(MemberRepository.prototype, 'update');
+        sinon.stub(MemberRepository.prototype, 'create');
+        sinon.stub(MemberBREADService.prototype, 'read');
+        sinon.stub(GeolocationService.prototype, 'getGeolocationFromIP').resolves(null);
+
         tokenData = {
             email: 'jamie@example.com',
             name: 'Jamie Larson',
@@ -169,19 +119,7 @@ describe('MembersAPI', function () {
             giftToken: 'gift-token-123'
         };
 
-        memberRepository = {
-            get: sinon.stub(),
-            update: sinon.stub(),
-            create: sinon.stub()
-        };
-        memberBREADService = {
-            read: sinon.stub()
-        };
         giftRedeem = sinon.stub().resolves();
-        tokenProvider = {
-            create: sinon.stub(),
-            validate: sinon.stub().resolves(tokenData)
-        };
         memberLoginEvent = {
             add: sinon.stub().resolves()
         };
@@ -207,14 +145,14 @@ describe('MembersAPI', function () {
             email: 'jamie@example.com'
         };
 
-        memberBREADService.read.onFirstCall().resolves(existingMember);
-        memberBREADService.read.onSecondCall().resolves(existingMember);
+        MemberBREADService.prototype.read.onFirstCall().resolves(existingMember);
+        MemberBREADService.prototype.read.onSecondCall().resolves(existingMember);
 
         const result = await membersAPI.getMemberDataFromMagicLinkToken('magic-token');
 
-        sinon.assert.calledOnceWithExactly(tokenProvider.validate, 'magic-token', {otcVerification: undefined});
-        sinon.assert.calledTwice(memberBREADService.read);
-        sinon.assert.calledWithExactly(memberBREADService.read.firstCall, {email: 'jamie@example.com'});
+        sinon.assert.calledOnceWithExactly(MagicLink.prototype.getDataFromToken, 'magic-token', undefined);
+        sinon.assert.calledTwice(MemberBREADService.prototype.read);
+        sinon.assert.calledWithExactly(MemberBREADService.prototype.read.firstCall, {email: 'jamie@example.com'});
         sinon.assert.calledOnceWithExactly(memberLoginEvent.add, {member_id: 'member_1'});
         sinon.assert.calledOnceWithExactly(giftRedeem, 'gift-token-123', 'member_1');
         sinon.assert.callOrder(giftRedeem, memberLoginEvent.add);
@@ -229,18 +167,18 @@ describe('MembersAPI', function () {
             email: 'jamie@example.com'
         };
 
-        memberBREADService.read.onFirstCall().resolves(null);
-        memberBREADService.read.onSecondCall().resolves(createdMember);
-        memberRepository.create.resolves(createdMember);
+        MemberBREADService.prototype.read.onFirstCall().resolves(null);
+        MemberBREADService.prototype.read.onSecondCall().resolves(createdMember);
+        MemberRepository.prototype.create.resolves(createdMember);
 
         const result = await membersAPI.getMemberDataFromMagicLinkToken('magic-token');
 
         sinon.assert.calledOnce(MemberModel.transaction);
-        sinon.assert.calledOnce(memberRepository.create);
-        assert.equal(memberRepository.create.firstCall.args[0].email, 'jamie@example.com');
-        assert.equal(memberRepository.create.firstCall.args[0].name, 'Jamie Larson');
-        assert.equal(memberRepository.create.firstCall.args[0].status, 'gift');
-        assert.deepEqual(memberRepository.create.firstCall.args[1], {transacting: 'trx'});
+        sinon.assert.calledOnce(MemberRepository.prototype.create);
+        assert.equal(MemberRepository.prototype.create.firstCall.args[0].email, 'jamie@example.com');
+        assert.equal(MemberRepository.prototype.create.firstCall.args[0].name, 'Jamie Larson');
+        assert.equal(MemberRepository.prototype.create.firstCall.args[0].status, 'gift');
+        assert.deepEqual(MemberRepository.prototype.create.firstCall.args[1], {transacting: 'trx'});
         sinon.assert.calledOnceWithExactly(giftRedeem, 'gift-token-123', 'member_2', {transacting: 'trx', newMember: true});
         sinon.assert.calledOnceWithExactly(memberLoginEvent.add, {member_id: 'member_2'});
         sinon.assert.callOrder(giftRedeem, memberLoginEvent.add);
@@ -254,7 +192,7 @@ describe('MembersAPI', function () {
         };
         const redemptionError = new Error('Gift redeem failed');
 
-        memberBREADService.read.resolves(existingMember);
+        MemberBREADService.prototype.read.resolves(existingMember);
         giftRedeem.rejects(redemptionError);
 
         await assert.rejects(
