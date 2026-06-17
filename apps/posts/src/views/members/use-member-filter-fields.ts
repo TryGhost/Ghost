@@ -3,6 +3,7 @@ import {DATE_OPERATOR_LABELS} from '../filters/filter-date';
 import {FilterFieldConfig, FilterFieldGroup, FilterOption, ValueSource} from '@tryghost/shade/patterns';
 import {LabelFilterRenderer} from '@src/components/label-picker';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD} from './multiple-active-subscriptions';
 import {RELATIVE_DATE_OPERATOR_LABELS, createRelativeDateRenderer, fieldHasRelativeOperator} from '../filters/filter-relative-date';
 import {createOperatorOptions} from '../filters/filter-operator-options';
 import {getMemberFields} from './member-fields';
@@ -20,6 +21,7 @@ interface UseMemberFilterFieldsOptions {
     postValueSource?: ValueSource<string>;
     emailValueSource?: ValueSource<string>;
     offers?: Offer[];
+    multipleActiveSubscriptionsCount?: number;
     membersTrackSources?: boolean;
     emailTrackOpens?: boolean;
     emailTrackClicks?: boolean;
@@ -86,6 +88,8 @@ function getFieldIcon(key: string) {
         return React.createElement(LucideIcon.MessageSquare, {className: 'size-4'});
     case 'offer_redemptions':
         return React.createElement(LucideIcon.Ticket, {className: 'size-4'});
+    case MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD:
+        return React.createElement(LucideIcon.Layers, {className: 'size-4'});
     default:
         if (key.startsWith('newsletters.')) {
             return React.createElement(LucideIcon.Newspaper, {className: 'size-4'});
@@ -250,6 +254,7 @@ export function useMemberFilterFields({
     postValueSource,
     emailValueSource,
     offers = [],
+    multipleActiveSubscriptionsCount = 0,
     membersTrackSources = false,
     emailTrackOpens = false,
     emailTrackClicks = false,
@@ -377,10 +382,15 @@ export function useMemberFilterFields({
                 subscriptionFields.push(createFieldConfig('tier_id', createSearchableFieldOverrides([], tierValueSource)));
             }
 
+            subscriptionFields.push(createFieldConfig('status', {
+                options: [...fields.status.options, {value: 'gift', label: 'Gift subscription'}]
+            }));
+
+            if (multipleActiveSubscriptionsCount > 0) {
+                subscriptionFields.push(createFieldConfig(MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD));
+            }
+
             subscriptionFields.push(
-                createFieldConfig('status', {
-                    options: [...fields.status.options, {value: 'gift', label: 'Gift subscription'}]
-                }),
                 createFieldConfig('subscriptions.plan_interval'),
                 createFieldConfig('subscriptions.status'),
                 createDateFieldConfig('subscriptions.start_date', today),
@@ -450,6 +460,7 @@ export function useMemberFilterFields({
         hasMultipleTiers,
         labelValueSource,
         membersTrackSources,
+        multipleActiveSubscriptionsCount,
         newsletters,
         offers,
         hydratedNewsletterSlugs,

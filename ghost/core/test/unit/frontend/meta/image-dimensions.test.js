@@ -2,14 +2,14 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const _ = require('lodash');
 const sinon = require('sinon');
-const rewire = require('rewire');
-const getImageDimensions = rewire('../../../../core/frontend/meta/image-dimensions');
+const imageSizeCache = require('../../../../core/server/lib/image').cachedImageSizeFromUrl;
+const getImageDimensions = require('../../../../core/frontend/meta/image-dimensions');
 
 describe('getImageDimensions', function () {
     let sizeOfStub;
 
     beforeEach(function () {
-        sizeOfStub = sinon.stub();
+        sizeOfStub = sinon.stub(imageSizeCache, 'getCachedImageSizeFromUrl');
     });
 
     afterEach(function () {
@@ -38,10 +38,6 @@ describe('getImageDimensions', function () {
             width: 50,
             height: 50,
             type: 'jpg'
-        });
-
-        getImageDimensions.__set__('imageSizeCache', {
-            getCachedImageSizeFromUrl: sizeOfStub
         });
 
         const result = await getImageDimensions(metaData);
@@ -91,10 +87,6 @@ describe('getImageDimensions', function () {
 
         sizeOfStub.returns({});
 
-        getImageDimensions.__set__('imageSizeCache', {
-            getCachedImageSizeFromUrl: sizeOfStub
-        });
-
         const result = await getImageDimensions(metaData);
         assertExists(result);
         sinon.assert.calledWith(sizeOfStub, metaData.coverImage.url);
@@ -133,10 +125,6 @@ describe('getImageDimensions', function () {
             width: 480,
             height: 480,
             type: 'jpg'
-        });
-
-        getImageDimensions.__set__('imageSizeCache', {
-            getCachedImageSizeFromUrl: sizeOfStub
         });
 
         const result = await getImageDimensions(metaData);
@@ -185,10 +173,6 @@ describe('getImageDimensions', function () {
             width: 80,
             height: 480,
             type: 'jpg'
-        });
-
-        getImageDimensions.__set__('imageSizeCache', {
-            getCachedImageSizeFromUrl: sizeOfStub
         });
 
         const result = await getImageDimensions(metaData);
@@ -245,10 +229,6 @@ describe('getImageDimensions', function () {
             type: 'jpg'
         }));
 
-        getImageDimensions.__set__('imageSizeCache', {
-            getCachedImageSizeFromUrl: sizeOfStub
-        });
-
         const result = await getImageDimensions(metaData);
         assertExists(result);
         sinon.assert.calledWith(sizeOfStub, originalMetaData.coverImage.url);
@@ -301,10 +281,6 @@ describe('getImageDimensions', function () {
             type: 'jpg'
         }));
 
-        getImageDimensions.__set__('imageSizeCache', {
-            getCachedImageSizeFromUrl: sizeOfStub
-        });
-
         const result = await getImageDimensions(metaData);
         assertExists(result);
         assert('url' in result.coverImage);
@@ -343,10 +319,6 @@ describe('getImageDimensions', function () {
             height: 1200,
             type: 'jpg'
         }));
-
-        getImageDimensions.__set__('imageSizeCache', {
-            getCachedImageSizeFromUrl: sizeOfStub
-        });
 
         const result = await getImageDimensions(metaData);
         assertExists(result);

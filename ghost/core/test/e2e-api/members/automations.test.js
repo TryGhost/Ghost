@@ -4,12 +4,12 @@ const DomainEvents = require('@tryghost/domain-events');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
-const automationsApi = require('../../../core/server/services/automations/automations-api');
 const adapterManager = require('../../../core/server/services/adapter-manager');
 const mailService = require('../../../core/server/services/mail');
 const membersService = require('../../../core/server/services/members');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
+const {cleanupAutomationsFixture, setupAutomationsFixture} = require('../../utils/automations-fixtures');
 
 const HOUR_MS = 60 * 60 * 1000;
 const AUTOMATION_EMAIL_REPLY_TO = 'support@example.com';
@@ -122,17 +122,14 @@ describe('Members Automations', function () {
         sinon.stub(schedulerAdapter, 'schedule');
         sinon.stub(schedulerAdapter, '_pingUrl');
         sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
-        automationsApi._resetTestDatabase();
+        await setupAutomationsFixture();
     });
 
     afterEach(async function () {
         await DomainEvents.allSettled();
         sinon.restore();
         mockManager.restore();
-        await db.knex('email_design_settings')
-            .where('slug', 'like', 'automation-test-email-design-%')
-            .del();
-        automationsApi._resetTestDatabase();
+        await cleanupAutomationsFixture();
     });
 
     it('runs every step in the free member signup automation', async function () {

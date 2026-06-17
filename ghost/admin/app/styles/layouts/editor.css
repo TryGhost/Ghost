@@ -421,6 +421,11 @@
         gap: 1.6rem;
     }
 
+    .gh-editor-mobile-menu .gh-editor-preview-trigger {
+        display: inline-flex;
+        align-items: center;
+    }
+
     .gh-editor-mobile-menu .gh-btn-editor:hover {
         background: none !important;
     }

@@ -4,18 +4,34 @@ const {
     truncateDescription
 } = require('./markdown');
 
-const DEFAULT_BUDGET = 5 * 1024 * 1024;
-const TRUNCATION_FOOTER = '\n_Truncated after 5 MiB. Use `/llms.txt` for the complete index of older public content._\n';
-const RECENT_POSTS_FOOTER = '\n_Includes the latest 500 public posts. Use `/llms.txt` for the complete index of older public content._\n';
-const FULL_PAGE_SIZE = 100;
-const FULL_POST_LIMIT = 500;
+const LLMS_TXT_BUDGET = 50 * 1024;
+const LLMS_FULL_TXT_BUDGET = 5 * 1024 * 1024;
+const LLMS_FULL_TXT_POST_LIMIT = 500;
+const BROWSE_PAGE_SIZE = 100;
+const PAGES_LIMIT = 20;
+
+const LLMS_TXT_INTRO = 'Public Ghost content for AI and LLM tooling. Use `/llms-full.txt` for consolidated page and post context.';
+const LLMS_FULL_TXT_INTRO = 'Public Ghost content for AI and LLM tooling. This file includes a bounded export of public pages first, then recent public posts.';
+const MARKDOWN_DISCOVERABILITY = 'Append `.md` to any post or page URL to get the content in Markdown (for example, `/example-post.md`).';
+const MEMBERS_ONLY_NOTICE = 'This post is for subscribers only.';
+const PAID_MEMBERS_ONLY_NOTICE = 'This post is for paying subscribers only.';
+const EMPTY_SECTION = '_No public content available._';
+const LLMS_FULL_TXT_TRUNCATION_FOOTER = '\n_Truncated after 5 MiB. Use `/sitemap.xml` for the complete archive of public content._\n';
+const LLMS_FULL_TXT_RECENT_POSTS_FOOTER = '\n_Includes the latest 500 public posts. Use `/sitemap.xml` for the complete archive of public content._\n';
+
+// Narrow field lists stop the content API selecting every column (e.g. the full
+// html of every post). The requested `formats` columns are appended to the
+// select by the input serializer, and `url` is resolved at serialization time.
+const LLMS_TXT_FIELDS = 'id,title,slug,custom_excerpt,featured,published_at,url';
+const LLMS_FULL_TXT_FIELDS = 'id,title,slug,featured,published_at,updated_at,created_at,url,visibility,custom_excerpt';
 
 function createLlmsService({settingsCache, labs, config, urlUtils, routing, api, fullTxtBudget}) {
     const footerBudget = Math.max(
-        Buffer.byteLength(TRUNCATION_FOOTER, 'utf8'),
-        Buffer.byteLength(RECENT_POSTS_FOOTER, 'utf8')
+        Buffer.byteLength(LLMS_FULL_TXT_TRUNCATION_FOOTER, 'utf8'),
+        Buffer.byteLength(LLMS_FULL_TXT_RECENT_POSTS_FOOTER, 'utf8')
     );
-    const BUDGET = (fullTxtBudget || DEFAULT_BUDGET) - footerBudget;
+    const BUDGET = (fullTxtBudget || LLMS_FULL_TXT_BUDGET) - footerBudget;
+
     function isEnabled() {
         return labs.isSet('llmsTxt') && !settingsCache.get('is_private') && settingsCache.get('llms_enabled') !== false;
     }
@@ -38,26 +54,30 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
             return null;
         }
 
-        const [pages, posts] = await Promise.all([
-            fetchIndexEntries('page'),
-            fetchIndexEntries('post')
-        ]);
+        const pages = await fetchIndexPages();
+        const pagesSection = buildIndexSection(pages);
+        const optionalSection = buildOptionalSection();
 
-        const sections = [
+        const scaffold = postsSection => [
             buildHeader(),
-            'Public Ghost content for AI and LLM tooling. Use `/llms-full.txt` for consolidated page and post context.',
+            LLMS_TXT_INTRO,
+            MARKDOWN_DISCOVERABILITY,
             '',
             '## Pages',
-            buildIndexSection(pages),
+            pagesSection,
             '',
             '## Posts',
-            buildIndexSection(posts),
+            postsSection,
             '',
             '## Optional',
-            buildOptionalSection()
+            optionalSection
         ];
 
-        return `${sections.join('\n').trim()}\n`;
+        const fixedBytes = Buffer.byteLength(scaffold('').join('\n'), 'utf8');
+        const postsBudget = Math.max(0, LLMS_TXT_BUDGET - fixedBytes);
+        const postsSection = await buildBudgetedIndexPosts(postsBudget);
+
+        return `${scaffold(postsSection).join('\n').trim()}\n`;
     }
 
     async function getLlmsFullTxt() {
@@ -67,7 +87,8 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
 
         const header = [
             buildHeader(),
-            'Public Ghost content for AI and LLM tooling. This file includes a bounded export of public pages first, then recent public posts.',
+            LLMS_FULL_TXT_INTRO,
+            MARKDOWN_DISCOVERABILITY,
             ''
         ].join('\n');
 
@@ -75,21 +96,21 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         let wasTruncated = false;
         let wasLimited = false;
 
-        const pageResult = await appendBoundedSectionPaginated(output, 'Pages', 'page');
+        const pageResult = await appendBoundedSectionPaginated(output, 'Pages', 'page', {maxEntries: PAGES_LIMIT});
         output = pageResult.output;
         wasTruncated = pageResult.wasTruncated;
 
         if (!wasTruncated) {
-            const postResult = await appendBoundedSectionPaginated(output, 'Posts', 'post', {maxEntries: FULL_POST_LIMIT});
+            const postResult = await appendBoundedSectionPaginated(output, 'Posts', 'post', {maxEntries: LLMS_FULL_TXT_POST_LIMIT});
             output = postResult.output;
             wasTruncated = postResult.wasTruncated;
             wasLimited = postResult.wasLimited;
         }
 
         if (wasTruncated) {
-            output += TRUNCATION_FOOTER;
+            output += LLMS_FULL_TXT_TRUNCATION_FOOTER;
         } else if (wasLimited) {
-            output += RECENT_POSTS_FOOTER;
+            output += LLMS_FULL_TXT_RECENT_POSTS_FOOTER;
         }
 
         return output.trimEnd() + '\n';
@@ -116,7 +137,7 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
             hasMore = result.hasMore;
 
             if (!entries.length && page === 1) {
-                const emptySection = `${output}_No public content available._\n`;
+                const emptySection = `${output}${EMPTY_SECTION}\n`;
                 const emptySectionBytes = Buffer.byteLength(emptySection, 'utf8');
 
                 if (emptySectionBytes <= BUDGET) {
@@ -169,21 +190,56 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         ].join('\n');
     }
 
-    function buildIndexSection(entries) {
-        if (!entries.length) {
-            return '_No public content available._';
+    function buildIndexLine(entry) {
+        const description = truncateDescription(entry.custom_excerpt || entry.plaintext);
+        const linkLine = `- [${entry.title}](${getMarkdownUrl(entry.url)})`;
+
+        if (!description) {
+            return linkLine;
         }
 
-        return entries.map((entry) => {
-            const description = truncateDescription(entry.custom_excerpt || entry.plaintext);
-            const linkLine = `- [${entry.title}](${getMarkdownUrl(entry.url)})`;
+        return `${linkLine} - ${description}`;
+    }
 
-            if (!description) {
-                return linkLine;
+    function buildIndexSection(entries) {
+        if (!entries.length) {
+            return EMPTY_SECTION;
+        }
+
+        return entries.map(buildIndexLine).join('\n');
+    }
+
+    async function buildBudgetedIndexPosts(budgetBytes) {
+        const lines = [];
+        let usedBytes = 0;
+        let page = 1;
+        let hasMore = true;
+
+        while (hasMore) {
+            const {entries, pagination} = await browsePublishedEntries('post', {
+                limit: BROWSE_PAGE_SIZE,
+                page,
+                fields: LLMS_TXT_FIELDS,
+                formats: 'plaintext'
+            });
+            hasMore = Boolean(pagination && pagination.next);
+
+            for (const entry of entries) {
+                const line = buildIndexLine(entry);
+                const lineBytes = Buffer.byteLength(`${line}\n`, 'utf8');
+
+                if (usedBytes + lineBytes > budgetBytes) {
+                    return lines.length ? lines.join('\n') : EMPTY_SECTION;
+                }
+
+                lines.push(line);
+                usedBytes += lineBytes;
             }
 
-            return `${linkLine} - ${description}`;
-        }).join('\n');
+            page += 1;
+        }
+
+        return lines.length ? lines.join('\n') : EMPTY_SECTION;
     }
 
     function buildOptionalSection() {
@@ -195,14 +251,27 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         }
 
         optionalLinks.push(`- [Sitemap](${urlUtils.urlFor({relativeUrl: '/sitemap.xml'}, true)})`);
+        optionalLinks.push(`- [Full content of pages and posts](${urlUtils.urlFor({relativeUrl: '/llms-full.txt'}, true)})`);
 
         return optionalLinks.join('\n');
+    }
+
+    function buildMembersOnlyBody(entry) {
+        const notice = (entry.visibility === 'paid' || entry.visibility === 'tiers')
+            ? PAID_MEMBERS_ONLY_NOTICE
+            : MEMBERS_ONLY_NOTICE;
+        const excerpt = truncateDescription(entry.custom_excerpt);
+
+        return excerpt ? `${excerpt}\n\n_${notice}_` : `_${notice}_`;
     }
 
     function buildFullEntry(entry) {
         const lastUpdated = entry.updated_at || entry.published_at || entry.created_at;
         const lastUpdatedLine = lastUpdated ? `Last updated: ${new Date(lastUpdated).toISOString()}` : null;
-        const markdownBody = renderEntryMarkdownBody(entry) || '_No content available._';
+        const isMembersOnly = entry.visibility && entry.visibility !== 'public';
+        const markdownBody = isMembersOnly
+            ? buildMembersOnlyBody(entry)
+            : (renderEntryMarkdownBody(entry) || '_No content available._');
 
         return [
             `### ${entry.title}`,
@@ -213,15 +282,15 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         ].filter(Boolean).join('\n');
     }
 
-    async function browsePublicEntries(type, options) {
+    async function browsePublishedEntries(type, options) {
         const controller = type === 'page' ? api.pagesPublic : api.postsPublic;
         const responseKey = type === 'page' ? 'pages' : 'posts';
 
         const response = await controller.browse({
             ...options,
             context: {member: null},
-            filter: 'status:published+visibility:public',
-            order: type === 'post' ? 'published_at desc' : 'id asc'
+            filter: 'status:published',
+            ...(type === 'page' ? {order: 'id asc'} : {})
         });
 
         const entries = (response?.[responseKey] || [])
@@ -230,29 +299,23 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         return {entries, pagination: response?.meta?.pagination};
     }
 
-    async function fetchIndexEntries(type) {
-        // Without `fields` the content API selects every posts column (except
-        // mobiledoc/lexical), pulling the full html of every post into memory.
-        // The format columns (plaintext here) are appended to `fields` by the
-        // input serializer, and `url` is resolved at serialization time.
-        const {entries} = await browsePublicEntries(type, {
-            limit: 'all',
-            fields: 'id,title,slug,custom_excerpt,featured,published_at,url',
+    async function fetchIndexPages() {
+        const {entries} = await browsePublishedEntries('page', {
+            limit: PAGES_LIMIT,
+            fields: LLMS_TXT_FIELDS,
             formats: 'plaintext'
         });
 
-        if (type === 'page') {
-            entries.sort((left, right) => left.url.localeCompare(right.url));
-        }
+        entries.sort((left, right) => left.url.localeCompare(right.url));
 
         return entries;
     }
 
     async function fetchFullEntries(type, pageNum) {
-        const {entries, pagination} = await browsePublicEntries(type, {
-            limit: FULL_PAGE_SIZE,
+        const {entries, pagination} = await browsePublishedEntries(type, {
+            limit: BROWSE_PAGE_SIZE,
             page: pageNum,
-            fields: 'id,title,slug,featured,published_at,updated_at,created_at,url',
+            fields: LLMS_FULL_TXT_FIELDS,
             formats: 'html,plaintext'
         });
 

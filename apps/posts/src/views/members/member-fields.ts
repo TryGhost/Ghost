@@ -1,5 +1,5 @@
 import {DATE_FILTER_OPERATORS, DEFAULT_DATE_OPERATOR} from '../filters/filter-date';
-import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD, MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER} from './multiple-active-subscriptions';
+import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD, MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER, NO_MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER} from './multiple-active-subscriptions';
 import {dateCodec, numberCodec, scalarCodec, setCodec, textCodec} from '../filters/filter-codecs';
 import {defineFields} from '../filters/filter-types';
 import {escapeNqlString} from '../filters/filter-normalization';
@@ -97,23 +97,44 @@ const multipleActiveSubscriptionsCodec: FilterCodec = {
     parse(node, ctx) {
         const comparator = extractComparator(node as Record<string, unknown>);
 
-        // The API only supports the exact `count.active_stripe_customers:>1` form
-        if (!comparator || comparator.field !== ctx.key || comparator.operator !== '$gt' || comparator.value !== 1) {
+        if (!comparator || comparator.field !== ctx.key) {
             return null;
         }
 
-        return {
-            field: ctx.key,
-            operator: 'is-greater',
-            values: [1]
-        };
+        if (comparator.operator === '$gt' && comparator.value === 1) {
+            return {
+                field: ctx.key,
+                operator: 'is',
+                values: ['true']
+            };
+        }
+
+        if (comparator.operator === '$lt' && comparator.value === 2) {
+            return {
+                field: ctx.key,
+                operator: 'is',
+                values: ['false']
+            };
+        }
+
+        return null;
     },
     serialize(predicate) {
-        if (predicate.operator !== 'is-greater' || predicate.values[0] !== 1) {
+        const value = predicate.values[0];
+
+        if (predicate.operator !== 'is') {
             return null;
         }
 
-        return [MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER];
+        if (value === 'true') {
+            return [MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER];
+        }
+
+        if (value === 'false') {
+            return [NO_MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER];
+        }
+
+        return null;
     }
 };
 
@@ -424,15 +445,18 @@ const baseMemberFields = defineFields({
         },
         codec: setCodec({quoteStrings: true, serializeSingletonAsScalar: true})
     },
-    // Intentionally absent from `useMemberFilterFields`, so it never appears
-    // in the filter UI — it's only reachable via the multiple active
-    // subscriptions banner's "View members" link.
     [MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD]: {
-        operators: ['is-greater'],
+        operators: ['is'],
         ui: {
             label: 'Multiple active subscriptions',
-            type: 'number'
+            type: 'select',
+            searchable: false,
+            hideOperatorSelect: true
         },
+        options: [
+            {value: 'true', label: 'Yes'},
+            {value: 'false', label: 'No'}
+        ],
         codec: multipleActiveSubscriptionsCodec
     }
 });
