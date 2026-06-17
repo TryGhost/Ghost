@@ -200,17 +200,14 @@ export class EgressMonitor {
         return queries;
     }
 
-    /** Number of queries logged so far — use as a cursor for per-test deltas. */
-    async cursor(): Promise<number> {
-        return (await this.readQueries()).length;
-    }
-
     /**
-     * Collect queries logged since `startCursor`. Because outbound pings are often
-     * fire-and-forget, briefly poll for the log to settle so a late lookup isn't
-     * missed (this runs in test teardown, not inside a test body).
+     * Read every query the container has resolved, briefly polling for the CoreDNS
+     * log to settle first. Outbound pings are often fire-and-forget, so a late
+     * lookup from the final test can land just after it finishes; the settle window
+     * waits for the log to stop growing before returning. Runs once per worker at
+     * teardown — not per test — so this cost is paid a single time.
      */
-    async collectSince(startCursor: number, {settleMs = 400, maxWaitMs = 1500} = {}): Promise<EgressQuery[]> {
+    async collectSettled({settleMs = 400, maxWaitMs = 1500} = {}): Promise<EgressQuery[]> {
         const deadline = Date.now() + maxWaitMs;
         let previous = await this.readQueries();
         let lastGrowth = Date.now();
@@ -227,13 +224,17 @@ export class EgressMonitor {
                 break;
             }
         }
-        return previous.slice(startCursor);
+        return previous;
     }
 
-    /** Hosts seen since `startCursor` that are not on the allowlist. */
-    async unexpectedSince(startCursor: number, opts?: {settleMs?: number; maxWaitMs?: number}): Promise<EgressQuery[]> {
-        const queries = await this.collectSince(startCursor, opts);
-        return queries.filter(q => !isAllowedHost(q.name));
+    /**
+     * External hosts the container resolved that are NOT on the allowlist, as a
+     * sorted, de-duplicated list.
+     */
+    async unexpectedHosts(opts?: {settleMs?: number; maxWaitMs?: number}): Promise<string[]> {
+        const queries = await this.collectSettled(opts);
+        const hosts = queries.map(query => query.name).filter(host => !isAllowedHost(host));
+        return [...new Set(hosts)].sort();
     }
 
     /** Persist the full query log as a JSON artifact for inspection. */
