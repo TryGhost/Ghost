@@ -173,15 +173,15 @@ const EmailStepStatsFooter: React.FC = () => (
     <div className='mt-3 grid w-full grid-cols-3 gap-3 border-t border-border-default pt-3'>
         <div className='flex flex-col text-left'>
             <span className='text-xs text-text-secondary'>Sent</span>
-            <span className='text-sm font-medium'>{formatNumber(1247)}</span>
+            <span className='text-base font-medium'>{formatNumber(1247)}</span>
         </div>
         <div className='flex flex-col text-left'>
             <span className='text-xs text-text-secondary'>Opened</span>
-            <span className='text-sm font-medium'>95%</span>
+            <span className='text-base font-medium'>95%</span>
         </div>
         <div className='flex flex-col text-left'>
             <span className='text-xs text-text-secondary'>Clicked</span>
-            <span className='text-sm font-medium'>26%</span>
+            <span className='text-base font-medium'>26%</span>
         </div>
     </div>
 );

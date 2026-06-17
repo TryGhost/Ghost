@@ -276,45 +276,56 @@ const EmailPerformanceSection: React.FC = () => {
     const {sent, openRate, clickRate, clickedCount, links} = MOCK_EMAIL_PERFORMANCE;
     const sortedLinks = [...links].sort((a, b) => b.count - a.count);
 
+    const openedCount = Math.round(sent * openRate);
     return (
-        <div className='flex flex-col gap-5'>
-            <Separator />
+        <TooltipProvider delayDuration={500}>
             <div className='flex flex-col gap-5'>
-                <h3 className='text-sm font-medium tracking-normal text-text-secondary'>
+                <Separator />
+                <div className='flex flex-col gap-5'>
+                    <h3 className='text-sm font-medium tracking-normal text-text-secondary'>
                     Email performance
-                </h3>
-                <div className='grid grid-cols-3 gap-4'>
-                    <div className='flex flex-col gap-0.5'>
-                        <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
-                            <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-purple)'}} />
-                            Sent
-                        </span>
-                        <span className='text-xl font-semibold tracking-tight'>{formatNumber(sent)}</span>
+                    </h3>
+                    <div className='grid grid-cols-3 gap-4'>
+                        <div className='flex flex-col gap-0.5'>
+                            <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
+                                <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-purple)'}} />
+                                Sent
+                            </span>
+                            <span className='text-xl font-semibold tracking-tight'>{formatNumber(sent)}</span>
+                        </div>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className='flex cursor-default flex-col gap-0.5'>
+                                    <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
+                                        <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-blue)'}} />
+                                    Opened
+                                    </span>
+                                    <span className='text-xl font-semibold tracking-tight'>{formatPercentage(openRate)}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>{formatNumber(openedCount)} of {formatNumber(sent)} sent</TooltipContent>
+                        </Tooltip>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <div className='flex cursor-default flex-col gap-0.5'>
+                                    <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
+                                        <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-teal)'}} />
+                                    Clicked
+                                    </span>
+                                    <span className='text-xl font-semibold tracking-tight'>{formatPercentage(clickRate)}</span>
+                                </div>
+                            </TooltipTrigger>
+                            <TooltipContent>{formatNumber(clickedCount)} of {formatNumber(sent)} sent</TooltipContent>
+                        </Tooltip>
                     </div>
-                    <div className='flex flex-col gap-0.5'>
-                        <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
-                            <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-blue)'}} />
-                            Open rate
-                        </span>
-                        <span className='text-xl font-semibold tracking-tight'>{formatPercentage(openRate)}</span>
-                    </div>
-                    <div className='flex flex-col gap-0.5'>
-                        <span className='flex items-center gap-1.5 text-sm text-text-secondary'>
-                            <span aria-hidden='true' className='size-2 rounded-full' style={{backgroundColor: 'var(--chart-teal)'}} />
-                            Click rate
-                        </span>
-                        <span className='text-xl font-semibold tracking-tight'>{formatPercentage(clickRate)}</span>
-                    </div>
+                    <EmailPerformanceChart clickRate={clickRate} openRate={openRate} />
                 </div>
-                <EmailPerformanceChart clickRate={clickRate} openRate={openRate} />
-            </div>
-            <Separator />
-            <div className='flex flex-col gap-3'>
-                <div className='flex items-center justify-between'>
-                    <span className='text-sm font-medium text-text-secondary'>Top clicked links</span>
-                    <span className='text-sm font-medium text-muted-foreground'>Members</span>
-                </div>
-                <TooltipProvider delayDuration={500}>
+                <Separator />
+                <div className='flex flex-col gap-3'>
+                    <div className='flex items-center justify-between'>
+                        <span className='text-sm font-medium text-text-secondary'>Top clicked links</span>
+                        <span className='text-sm font-medium text-muted-foreground'>Members</span>
+                    </div>
                     <DataList className='group/datalist'>
                         <DataListBody>
                             {sortedLinks.map((link) => {
@@ -347,9 +358,9 @@ const EmailPerformanceSection: React.FC = () => {
                             })}
                         </DataListBody>
                     </DataList>
-                </TooltipProvider>
+                </div>
             </div>
-        </div>
+        </TooltipProvider>
     );
 };
 

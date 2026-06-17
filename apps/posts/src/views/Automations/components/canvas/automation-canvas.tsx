@@ -23,7 +23,7 @@ const NODE_VISUAL_GAP_Y = 112;
 // Approximate rendered heights — used to compute the absolute y-position of each node so the
 // visible gap stays uniform. If node body layout changes, retune these.
 const REGULAR_NODE_HEIGHT = 68;
-const EMAIL_NODE_WITH_STATS_HEIGHT = 129;
+const EMAIL_NODE_WITH_STATS_HEIGHT = 133;
 const INITIAL_VIEWPORT_Y = 40;
 const NODE_ENTER_ANIMATION_DURATION = 250;
 const DISABLED_REASON = 'Maximum steps added';
