@@ -1,13 +1,8 @@
-import type {GiftLinksService} from '../../services/gift-links/gift-links-service';
+import {service} from '../../services/gift-links';
 
-// The service is a boot singleton on a wrapper exported with `module.exports =`
-// (TS can't type a default import of that, and boot/the framework load it via
-// raw `require()`), so it's required and cast to the real service type.
-// `permissions` is untyped JS and required for the same reason.
-/* eslint-disable @typescript-eslint/no-require-imports */
-const giftLinks = require('../../services/gift-links') as {service: GiftLinksService};
+// `permissions` is untyped JS, so it's loaded via `require()`.
+// eslint-disable-next-line @typescript-eslint/no-require-imports
 const permissionsService = require('../../services/permissions');
-/* eslint-enable @typescript-eslint/no-require-imports */
 
 interface Frame {
     options: {
@@ -55,7 +50,7 @@ const controller = {
             return assertCanManageGiftLink(frame);
         },
         query(frame: Frame) {
-            return giftLinks.service.getActive(frame.options.id, {context: frame.options.context});
+            return service!.getActive(frame.options.id, {context: frame.options.context});
         }
     },
 
@@ -79,7 +74,7 @@ const controller = {
             return assertCanManageGiftLink(frame);
         },
         query(frame: Frame) {
-            return giftLinks.service.upsert(frame.options.id, {context: frame.options.context});
+            return service!.upsert(frame.options.id, {context: frame.options.context});
         }
     },
 
@@ -102,7 +97,7 @@ const controller = {
             return assertCanManageGiftLink(frame);
         },
         query(frame: Frame) {
-            return giftLinks.service.reset(frame.options.id, {context: frame.options.context});
+            return service!.reset(frame.options.id, {context: frame.options.context});
         }
     },
 
@@ -117,7 +112,7 @@ const controller = {
         statusCode: 200,
         permissions: true,
         async query(frame: Frame) {
-            const count = await giftLinks.service.resetAll({context: frame.options.context});
+            const count = await service!.resetAll({context: frame.options.context});
             return {count};
         }
     }
