@@ -20,7 +20,12 @@ function loadFeaturebaseSDK(): Promise<void> {
         featurebaseSDKPromise = new Promise((resolve, reject) => {
             const existingScript = document.querySelector(`script[src="${SDK_URL}"]`);
             if (existingScript) {
-                resolve();
+                if (window.Featurebase) {
+                    resolve();
+                    return;
+                }
+                existingScript.addEventListener('load', () => resolve(), {once: true});
+                existingScript.addEventListener('error', reject, {once: true});
                 return;
             }
 
