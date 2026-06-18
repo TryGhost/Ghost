@@ -99,6 +99,9 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
     const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(initialLexical || '');
     const hasEditorBeenFocused = useRef(false);
+    const hasModalHistoryEntry = useRef(false);
+    const pendingDiscardPoppedHistory = useRef(false);
+    const onCloseRef = useRef(onClose);
     const handleError = useHandleError();
     const automatedEmails = automatedEmailsData?.automated_emails || [];
     const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useEmailSenderDetails(automatedEmails);
@@ -147,15 +150,70 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
     }, [enterPreview, formState, initialMode]);
 
     const isDirty = saveState === 'unsaved';
+    const isDirtyRef = useRef(isDirty);
+
+    useEffect(() => {
+        onCloseRef.current = onClose;
+    }, [onClose]);
+
+    useEffect(() => {
+        isDirtyRef.current = isDirty;
+    }, [isDirty]);
+
+    const pushModalHistoryEntry = useCallback(() => {
+        const modalHistoryState = {
+            ...(window.history.state ?? {}),
+            automationEmailModal: true
+        };
+        window.history.pushState(modalHistoryState, '', window.location.href);
+        hasModalHistoryEntry.current = true;
+    }, []);
+
+    const closeModal = useCallback(() => {
+        if (hasModalHistoryEntry.current) {
+            hasModalHistoryEntry.current = false;
+            window.history.back();
+        }
+        onCloseRef.current();
+    }, []);
 
     // Single close funnel: Esc, overlay click, and the Close button all route here.
     const attemptClose = useCallback(() => {
-        if (isDirty) {
+        if (isDirtyRef.current) {
             setConfirmDiscardOpen(true);
         } else {
-            onClose();
+            closeModal();
         }
-    }, [isDirty, onClose]);
+    }, [closeModal]);
+
+    useEffect(() => {
+        pushModalHistoryEntry();
+
+        const handlePopState = () => {
+            if (!hasModalHistoryEntry.current) {
+                return;
+            }
+
+            hasModalHistoryEntry.current = false;
+            if (isDirtyRef.current) {
+                pendingDiscardPoppedHistory.current = true;
+            }
+            attemptClose();
+        };
+
+        window.addEventListener('popstate', handlePopState);
+        return () => {
+            window.removeEventListener('popstate', handlePopState);
+        };
+    }, [attemptClose, pushModalHistoryEntry]);
+
+    const handleConfirmDiscardOpenChange = useCallback((open: boolean) => {
+        setConfirmDiscardOpen(open);
+        if (!open && pendingDiscardPoppedHistory.current) {
+            pendingDiscardPoppedHistory.current = false;
+            pushModalHistoryEntry();
+        }
+    }, [pushModalHistoryEntry]);
 
     // Commit to the automation draft. The Close button is the only way out of the modal.
     const handleSaveClick = useCallback(async () => {
@@ -359,7 +417,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
                     </EmailPreviewModalContent>
                 </DialogContent>
             </Dialog>
-            <AlertDialog open={confirmDiscardOpen} onOpenChange={setConfirmDiscardOpen}>
+            <AlertDialog open={confirmDiscardOpen} onOpenChange={handleConfirmDiscardOpenChange}>
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Discard changes?</AlertDialogTitle>
@@ -370,8 +428,9 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
                         <Button
                             variant='destructive'
                             onClick={() => {
+                                pendingDiscardPoppedHistory.current = false;
                                 setConfirmDiscardOpen(false);
-                                onClose();
+                                closeModal();
                             }}
                         >
                             Discard
