@@ -6,7 +6,7 @@ const models = require('../../../core/server/models');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
-const {cleanupAutomationsFixture, setupAutomationsFixture, TEST_EMAIL_DESIGN_SETTING_ID} = require('../../utils/automations-fixtures');
+const {cleanupAutomationsFixture, EMPTY_EMAIL_LEXICAL, NON_EMPTY_EMAIL_LEXICAL, setupAutomationsFixture, TEST_EMAIL_DESIGN_SETTING_ID} = require('../../utils/automations-fixtures');
 const StartAutomationsPollEvent = require('../../../core/server/services/automations/events/start-automations-poll-event');
 
 const {anyContentVersion, anyEtag, anyErrorId, anyISODateTime, anyObjectId} = matchers;
@@ -62,14 +62,6 @@ const buildLinearEdges = actions => actions.slice(1).map((action, index) => ({
     source_action_id: actions[index].id,
     target_action_id: action.id
 }));
-
-const EMPTY_EMAIL_LEXICAL = JSON.stringify({
-    root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}
-});
-
-const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
-    root: {children: [{type: 'paragraph', children: [{type: 'text', text: 'Lorem ipsum.'}]}], direction: null, format: '', indent: 0, type: 'root', version: 1}
-});
 
 const buildSendEmailAction = (dataOverrides = {}) => ({
     id: ObjectId().toHexString(),
