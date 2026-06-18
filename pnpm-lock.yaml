@@ -423,7 +423,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: 5.4.0
-        version: 5.4.0(react-hook-form@7.78.0(react@18.3.1))
+        version: 5.4.0(react-hook-form@7.79.0(react@18.3.1))
       '@radix-ui/react-form':
         specifier: 'catalog:'
         version: 0.1.9(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -452,8 +452,8 @@ importers:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       react-hook-form:
-        specifier: 7.78.0
-        version: 7.78.0(react@18.3.1)
+        specifier: 7.79.0
+        version: 7.79.0(react@18.3.1)
       react-router:
         specifier: 'catalog:'
         version: 7.14.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1441,7 +1441,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: 5.4.0
-        version: 5.4.0(react-hook-form@7.78.0(react@18.3.1))
+        version: 5.4.0(react-hook-form@7.79.0(react@18.3.1))
       '@number-flow/react':
         specifier: 0.6.0
         version: 0.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1542,8 +1542,8 @@ importers:
         specifier: 14.4.1
         version: 14.4.1(react@18.3.1)
       react-hook-form:
-        specifier: 7.78.0
-        version: 7.78.0(react@18.3.1)
+        specifier: 7.79.0
+        version: 7.79.0(react@18.3.1)
       react-world-flags:
         specifier: 1.6.0
         version: 1.6.0(react@18.3.1)
@@ -19432,8 +19432,8 @@ packages:
     peerDependencies:
       react: '>=16.13.1'
 
-  react-hook-form@7.78.0:
-    resolution: {integrity: sha512-EEZqc+N23moyzTlz61Pj+JvcXo76ICkpfOZo8JZw+sM4+wLQGh6nI2Ms+PdMOYNluFu0ghlM7B8mCzhRYtJCnA==}
+  react-hook-form@7.79.0:
+    resolution: {integrity: sha512-mhYp/MTmXvzYX6AJcJVko0rktoIhhmRnEouObj4wF5i/tCttgJvnp1+9wRkpITZjDTqpo4IOSJqu0dBlPlV/Lw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -24821,10 +24821,10 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 
-  '@hookform/resolvers@5.4.0(react-hook-form@7.78.0(react@18.3.1))':
+  '@hookform/resolvers@5.4.0(react-hook-form@7.79.0(react@18.3.1))':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.78.0(react@18.3.1)
+      react-hook-form: 7.79.0(react@18.3.1)
 
   '@html-next/vertical-collection@3.0.0(@babel/core@7.29.7)':
     dependencies:
@@ -43495,7 +43495,7 @@ snapshots:
       '@babel/runtime': 7.29.7
       react: 18.3.1
 
-  react-hook-form@7.78.0(react@18.3.1):
+  react-hook-form@7.79.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
