@@ -125,7 +125,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
         window.addEventListener('keydown', keyDownListener, {passive: true});
 
         return () => {
-            window.removeEventListener('keydown', keyDownListener, {passive: true} as any);
+            window.removeEventListener('keydown', keyDownListener, {passive: true} as EventListenerOptions);
         };
     }, [editor, close, submitForm]);
 

@@ -56,7 +56,7 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
         window.addEventListener('keydown', listener, {passive: true});
 
         return () => {
-            window.removeEventListener('keydown', listener, {passive: true} as any);
+            window.removeEventListener('keydown', listener, {passive: true} as EventListenerOptions);
         };
     }, [close]);
 
