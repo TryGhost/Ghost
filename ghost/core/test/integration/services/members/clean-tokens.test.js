@@ -8,7 +8,7 @@ describe('Job: Clean tokens', function () {
     let jobsService;
     let clock;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters', 'members:emails');
         await agent.loginAsOwner();
@@ -17,14 +17,13 @@ describe('Job: Clean tokens', function () {
         jobsService = require('../../../../core/server/services/jobs');
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
     it('Deletes tokens that are older than 24 hours', async function () {
         // Go back 25 hours (reason: the job will be run at the current time, no way to change that)
-        // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
-        clock = sinon.useFakeTimers({now: Date.now() - 25 * 60 * 60 * 1000, shouldAdvanceTime: true});
+        clock = sinon.useFakeTimers({now: Date.now() - 25 * 60 * 60 * 1000, toFake: ['Date']});
 
         // Create some tokens
         const firstToken = await models.SingleUseToken.add({data: 'test'});

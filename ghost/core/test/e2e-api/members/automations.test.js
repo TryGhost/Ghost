@@ -130,7 +130,7 @@ function getMemberWelcomeEmailSends() {
 }
 
 describe('Members Automations', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'integrations', 'api_keys');
         await agent.loginAsOwner();
@@ -187,7 +187,7 @@ describe('Members Automations', function () {
 
         await DomainEvents.allSettled();
 
-        const clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true, shouldClearNativeTimers: true});
+        const clock = sinon.useFakeTimers({now: new Date(), toFake: ['Date']});
 
         try {
             for (const action of automation.actions) {
@@ -261,7 +261,7 @@ describe('Members Automations', function () {
         await DomainEvents.allSettled();
         await updateAutomation(automation, {status: 'inactive'});
 
-        const clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true, shouldClearNativeTimers: true});
+        const clock = sinon.useFakeTimers({now: new Date(), toFake: ['Date']});
 
         try {
             clock.setSystemTime(new Date(Date.now() + firstWaitAction.data.wait_hours * HOUR_MS));
@@ -295,7 +295,7 @@ describe('Members Automations', function () {
                 updated_at: new Date()
             });
 
-        const clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true, shouldClearNativeTimers: true});
+        const clock = sinon.useFakeTimers({now: new Date(), toFake: ['Date']});
 
         try {
             clock.setSystemTime(new Date(Date.now() + firstWaitAction.data.wait_hours * HOUR_MS));

@@ -143,7 +143,7 @@ const uploadImageCheck = async ({path, filename, contentType, expectedFileName, 
 };
 
 describe('Images API', function () {
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
         agent = agents.adminAgent;
         frontendAgent = agents.frontendAgent;
@@ -152,7 +152,7 @@ describe('Images API', function () {
         await agent.loginAsOwner();
     });
 
-    after(function () {
+    afterAll(function () {
         configUtils.restore();
         ghostServer.stop();
     });
@@ -337,7 +337,7 @@ describe('Images API', function () {
     });
 
     it('Can upload around midnight of month change', async function () {
-        const clock = sinon.useFakeTimers({now: new Date(2022, 0, 31, 23, 59, 59), shouldAdvanceTime: true});
+        const clock = sinon.useFakeTimers({now: new Date(2022, 0, 31, 23, 59, 59), toFake: ['Date']});
         assert.equal(new Date().getMonth(), 0);
 
         const originalFilePath = p.join(__dirname, '/../../utils/fixtures/images/ghost-logo.png');

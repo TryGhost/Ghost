@@ -5,7 +5,7 @@ const sinon = require('sinon');
 let agent;
 
 describe('Last Seen At Updater', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();
@@ -75,8 +75,7 @@ describe('Last Seen At Updater', function () {
 
             mockManager.mockSetting('timezone', 'CET');
 
-            // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
-            const clock = sinon.useFakeTimers({now: firstDate, shouldAdvanceTime: true});
+            const clock = sinon.useFakeTimers({now: firstDate, toFake: ['Date']});
 
             await membersEvents.lastSeenAtUpdater.cachedUpdateLastSeenAt(memberId, previousLastSeen, firstDate);
 
@@ -108,8 +107,7 @@ describe('Last Seen At Updater', function () {
 
             mockManager.mockSetting('timezone', 'CET');
 
-            // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
-            const clock = sinon.useFakeTimers({now: firstDate, shouldAdvanceTime: true});
+            const clock = sinon.useFakeTimers({now: firstDate, toFake: ['Date']});
 
             const spy = sinon.spy(membersEvents.lastSeenAtUpdater, 'updateLastSeenAt');
 

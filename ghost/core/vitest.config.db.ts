@@ -103,17 +103,10 @@ export default defineConfig({
                     // sidecar) pending vitest fixes:
                     //  - update-check: bree worker_thread can't resolve .ts (PLA-157)
                     //  - domain-warming: batch-send job hangs under vitest (PLA-158)
-                    //  - welcome-email-automation-poll / clean-tokens / last-seen-at-updater:
-                    //    sinon fake timers break the mysql2 driver's internal pool/query
-                    //    timers, so DB I/O hangs under vitest on MySQL (pass on sqlite,
-                    //    which has no network/pool timers) (PLA-160).
                     exclude: [
                         '**/node_modules/**',
                         '**/jobs/update-check.test.js',
-                        '**/email-service/domain-warming.test.js',
-                        '**/automations/welcome-email-automation-poll.test.js',
-                        '**/members/clean-tokens.test.js',
-                        '**/last-seen-at-updater.test.js'
+                        '**/email-service/domain-warming.test.js'
                     ],
                     // Matches the mocha `--timeout=10000` for the integration suite.
                     testTimeout: 10000
@@ -145,17 +138,6 @@ export default defineConfig({
                     include: ['test/e2e-api/**/*.test.{js,ts}'],
                     exclude: [
                         '**/node_modules/**',
-                        // sinon fake timers freeze the awaited magic-link / email /
-                        // job flows in these → they hang under vitest. Carved to the
-                        // test:e2e-api:mocha sidecar pending fixes (PLA-160 class).
-                        '**/e2e-api/admin/actions.test.js',
-                        '**/e2e-api/admin/images.test.js',
-                        '**/e2e-api/admin/links.test.js',
-                        '**/e2e-api/admin/members.test.js',
-                        '**/e2e-api/members/automations.test.js',
-                        '**/e2e-api/members/feedback.test.js',
-                        '**/e2e-api/members/send-magic-link.test.js',
-                        '**/e2e-api/members/signin.test.js',
                         // bree job awaitCompletion hangs under vitest (PLA-158 class).
                         '**/e2e-api/admin/emails.test.js'
                     ],
