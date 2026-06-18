@@ -294,15 +294,38 @@ describe('UrlServiceFacade', function () {
             sinon.assert.calledWith(lazyUrlService.onRouterAddedType, 'id', 'filter', 'posts', '/{slug}/');
         });
 
+        it('still registers on eager and reports when lazy onRouterAddedType throws', function () {
+            lazyUrlService.onRouterAddedType.throws(new Error('boom'));
+            compareFacade.onRouterAddedType('id', 'filter', 'posts', '/{slug}/');
+            sinon.assert.calledWith(urlService.onRouterAddedType, 'id', 'filter', 'posts', '/{slug}/');
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
+        });
+
         it('forwards onRouterUpdated to both backends', function () {
             compareFacade.onRouterUpdated('id');
             sinon.assert.calledWith(urlService.onRouterUpdated, 'id');
             sinon.assert.calledWith(lazyUrlService.onRouterUpdated, 'id');
         });
 
+        it('still updates eager and reports when lazy onRouterUpdated throws', function () {
+            lazyUrlService.onRouterUpdated.throws(new Error('boom'));
+            compareFacade.onRouterUpdated('id');
+            sinon.assert.calledWith(urlService.onRouterUpdated, 'id');
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
+        });
+
         it('reset() clears the lazy backend', function () {
             compareFacade.reset();
             sinon.assert.calledOnce(lazyUrlService.reset);
+        });
+
+        it('swallows and reports a lazy reset() throw', function () {
+            lazyUrlService.reset.throws(new Error('boom'));
+            assert.doesNotThrow(() => compareFacade.reset());
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
         });
     });
 });

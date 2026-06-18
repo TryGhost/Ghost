@@ -166,7 +166,7 @@ export class UrlServiceFacade {
     // While comparing, register on both so lazy sees the same routers as eager.
     onRouterAddedType(...args: unknown[]): unknown {
         if (this.isComparing()) {
-            this.lazyUrlService!.onRouterAddedType(...args);
+            this._runLazyHook('onRouterAddedType', () => this.lazyUrlService!.onRouterAddedType(...args));
             return this.urlService.onRouterAddedType(...args);
         }
         if (this.lazyUrlService) {
@@ -177,7 +177,7 @@ export class UrlServiceFacade {
 
     onRouterUpdated(...args: unknown[]): unknown {
         if (this.isComparing()) {
-            this.lazyUrlService!.onRouterUpdated(...args);
+            this._runLazyHook('onRouterUpdated', () => this.lazyUrlService!.onRouterUpdated(...args));
             return this.urlService.onRouterUpdated(...args);
         }
         if (this.lazyUrlService) {
@@ -192,7 +192,18 @@ export class UrlServiceFacade {
      */
     reset(): void {
         if (this.lazyUrlService) {
-            this.lazyUrlService.reset();
+            this._runLazyHook('reset', () => this.lazyUrlService!.reset());
+        }
+    }
+
+    // Runs a lazy router hook in compare mode. Lazy failures are swallowed and
+    // reported so they can never block the authoritative eager hook (or, for
+    // reset, break a routes reload).
+    private _runLazyHook(method: string, fn: () => void): void {
+        try {
+            fn();
+        } catch (err) {
+            this._reportLazyError(method, err as Error, {});
         }
     }
 
