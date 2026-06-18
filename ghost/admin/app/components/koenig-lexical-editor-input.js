@@ -69,7 +69,6 @@ export default class KoenigLexicalEditorInput extends Component {
     @service feature;
     @service koenig;
     @service search;
-    @service session;
     @service settings;
     @service store;
 
