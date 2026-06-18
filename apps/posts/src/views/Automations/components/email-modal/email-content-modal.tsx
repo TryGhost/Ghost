@@ -345,7 +345,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
                                 >
                                     <EmailEditor
                                         className='automation-email-editor'
-                                        placeholder='Write your email content...'
+                                        placeholder='Begin writing your email...'
                                         value={formState.lexical}
                                         onChange={handleEditorChange}
                                     />
