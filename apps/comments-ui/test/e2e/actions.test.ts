@@ -119,8 +119,8 @@ test.describe('Actions', async () => {
         await expect(icon).not.toHaveClass(/fill/);
         await expect(likeButton).toHaveText('0');
 
+        mockedApi.setDelay(1000); // delay the request so the disabled window is observable while it is in flight
         await likeButton.click();
-        mockedApi.setDelay(100); // give time for disabled state
         await expect(likeButton).toHaveText('1');
         await expect(likeButton).toBeDisabled();
     });
@@ -170,8 +170,8 @@ test.describe('Actions', async () => {
         const icon = likeButton.locator('svg');
         await expect(icon).toHaveClass(/fill/);
 
+        mockedApi.setDelay(1000); // delay the request so the disabled window is observable while it is in flight
         await likeButton.click();
-        mockedApi.setDelay(100); // give time for disabled state
         await expect(likeButton).toHaveText('51');
         await expect(likeButton).toBeDisabled();
     });
@@ -194,8 +194,8 @@ test.describe('Actions', async () => {
         const icon = likeButton.locator('svg');
         await expect(icon).toHaveClass(/fill/);
 
+        mockedApi.setDelay(1000); // delay the request so the disabled window is observable while it is in flight
         await likeButton.click();
-        mockedApi.setDelay(100); // give time for disabled state
         await expect(likeButton).toHaveText('51');
         await expect(likeButton).toBeDisabled();
 
