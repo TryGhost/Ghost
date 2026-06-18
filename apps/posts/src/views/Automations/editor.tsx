@@ -474,9 +474,9 @@ const AutomationEditor: React.FC = () => {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Update automation?</AlertDialogTitle>
+                        <AlertDialogTitle>Update your automation?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            This will update the automation for new runs of the automation, as well as any actively-running ones.
+                            Once published, your changes apply immediately to members already in progress and to any new members who enter the automation.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>

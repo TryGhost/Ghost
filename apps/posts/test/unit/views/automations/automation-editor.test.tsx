@@ -649,7 +649,7 @@ describe('AutomationEditor', () => {
         expect(publish).toBeEnabled();
         fireEvent.click(publish);
 
-        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        const dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
 
         expect(mockEditMutation.mutate).toHaveBeenCalledWith(
@@ -696,7 +696,7 @@ describe('AutomationEditor', () => {
 
         // Publishing persists the edited content.
         fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
-        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        const dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
         expect(mockEditMutation.mutate).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -785,7 +785,7 @@ describe('AutomationEditor', () => {
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
 
         fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
-        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        const dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
 
         const mutateCall = mockEditMutation.mutate.mock.calls.at(-1)![0];
@@ -1826,7 +1826,7 @@ describe('AutomationEditor', () => {
         await pickWaitAtTail();
 
         fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
-        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        const dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
 
         const mutateCall = mockEditMutation.mutate.mock.calls.at(-1)![0];
@@ -1855,9 +1855,8 @@ describe('AutomationEditor', () => {
 
         fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
 
-        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
-        expect(within(dialog).getByText(/new runs of the automation/)).toBeInTheDocument();
-        expect(within(dialog).getByText(/actively-running ones/)).toBeInTheDocument();
+        const dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
+        expect(within(dialog).getByText(/apply immediately/)).toBeInTheDocument();
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
 
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
@@ -1885,7 +1884,7 @@ describe('AutomationEditor', () => {
         await stageLocalEdit();
         fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
 
-        expect(screen.queryByRole('alertdialog', {name: 'Update automation?'})).not.toBeInTheDocument();
+        expect(screen.queryByRole('alertdialog', {name: 'Update your automation?'})).not.toBeInTheDocument();
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
         expect(mockToastError).toHaveBeenCalledWith('Automation needs a few details', {
             description: 'Fix the highlighted steps and try again.'
@@ -1909,10 +1908,10 @@ describe('AutomationEditor', () => {
         await stageLocalEdit();
         fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
 
-        let dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        let dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
 
-        dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         const button = within(dialog).getByRole('button', {name: 'Publishing...'});
         expect(button).toBeDisabled();
         expect(button.querySelector('.animate-spin')).toBeInTheDocument();
@@ -1933,7 +1932,7 @@ describe('AutomationEditor', () => {
         await stageLocalEdit();
         fireEvent.click(screen.getByRole('button', {name: 'Publish changes'}));
 
-        const dialog = screen.getByRole('alertdialog', {name: 'Update automation?'});
+        const dialog = screen.getByRole('alertdialog', {name: 'Update your automation?'});
         fireEvent.click(within(dialog).getByRole('button', {name: 'Publish changes'}));
 
         const button = within(dialog).getByRole('button', {name: 'Retry'});
