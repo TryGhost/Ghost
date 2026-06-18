@@ -233,6 +233,35 @@ class PostsStatsService {
                 }
             }
 
+            // Resolve absolute frontend URL for post/page attribution rows so the
+            // client can render page rows as clickable links to the live page.
+            let resolvedUrl;
+            const resourceId = row.post_id || row.attribution_id;
+            if (this.urlService && typeof this.urlService.getUrlByResourceId === 'function' && resourceId && (row.attribution_type === 'post' || row.attribution_type === 'page')) {
+                try {
+                    const url = this.urlService.getUrlByResourceId(resourceId, {absolute: true});
+                    if (url && !url.endsWith('/404/')) {
+                        resolvedUrl = url;
+                    }
+                } catch (error) {
+                    if (error.code !== 'URLSERVICE_NOT_READY') {
+                        logging.warn(`Error resolving URL for ${row.attribution_type} ${resourceId}: ${error.message}`);
+                    }
+                }
+            }
+
+            // Homepage attribution (recorded as type='url' with path '/') has no
+            // posts-table resource — build the absolute URL from the site URL so
+            // the row is still clickable.
+            if (!resolvedUrl && row.attribution_url === '/') {
+                try {
+                    const siteUrl = urlUtils.urlFor('home', true);
+                    resolvedUrl = siteUrl.endsWith('/') ? siteUrl : `${siteUrl}/`;
+                } catch (error) {
+                    // Leave resolvedUrl unset
+                }
+            }
+
             return {
                 post_id: row.post_id,
                 attribution_url: row.attribution_url,
@@ -244,6 +273,7 @@ class PostsStatsService {
                 paid_members: row.paid_members,
                 mrr: row.mrr,
                 post_type: row.attribution_type === 'post' ? 'post' : (row.attribution_type === 'page' ? 'page' : null),
+                url: resolvedUrl,
                 url_exists: urlExists
             };
         }));

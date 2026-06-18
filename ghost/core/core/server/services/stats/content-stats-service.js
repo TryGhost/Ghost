@@ -1,4 +1,5 @@
 const logging = require('@tryghost/logging');
+const urlUtils = require('../../../shared/url-utils');
 
 // Pre-migration the resourceType field on this service's response was the
 // raw `data.type` column on the underlying record: 'post' / 'page' for
@@ -161,7 +162,7 @@ class ContentStatsService {
             return {};
         }
 
-        let query = this.knex.select('uuid', 'title', 'id', 'type')
+        let query = this.knex.select('uuid', 'title', 'id', 'type', 'slug')
             .from('posts')
             .whereIn('uuid', uuids);
 
@@ -176,16 +177,42 @@ class ContentStatsService {
             map[post.uuid] = {
                 title: post.title,
                 id: post.id,
-                type: post.type
+                type: post.type,
+                slug: post.slug
             };
             return map;
         }, {});
     }
 
     /**
+     * Resolve the absolute frontend URL for a posts-table resource via the URL service.
+     * Returns null if the URL service can't resolve the resource (e.g. draft, no route).
+     * @param {string} id - Posts table row id
+     * @param {string} type - 'post' or 'page'
+     * @returns {string|null}
+     */
+    resolveResourceUrl(id, type) {
+        if (!this.urlService || !id || typeof this.urlService.getUrlByResourceId !== 'function') {
+            return null;
+        }
+        try {
+            const url = this.urlService.getUrlByResourceId(id, {absolute: true});
+            if (!url || url.endsWith('/404/')) {
+                return null;
+            }
+            return url;
+        } catch (err) {
+            if (err.code !== 'URLSERVICE_NOT_READY') {
+                logging.warn(`Error resolving URL for ${type} ${id}: ${err.message}`);
+            }
+            return null;
+        }
+    }
+
+    /**
      * Get resource title using UrlService
      * @param {string} pathname - Path to look up
-     * @returns {Promise<Object|null>} Resource title and type, or null if not found
+     * @returns {Promise<Object|null>} Resource title, type, and id; or null if not found
      */
     async getResourceTitle(pathname) {
         if (!this.urlService) {
@@ -193,7 +220,14 @@ class ContentStatsService {
         }
 
         try {
-            const resource = await this.urlService.facade.resolveUrl(pathname);
+            let resource = await this.urlService.facade.resolveUrl(pathname);
+            // Tinybird records the raw visited path which may lack a trailing
+            // slash, while Ghost's canonical URLs end with one. Retry the
+            // opposite form before giving up so we don't 404 valid pages.
+            if (!resource && pathname && pathname !== '/') {
+                const altPath = pathname.endsWith('/') ? pathname.slice(0, -1) : `${pathname}/`;
+                resource = await this.urlService.facade.resolveUrl(altPath);
+            }
 
             if (resource) {
                 // resource.type is the routing-level plural form (posts/pages/tags/authors).
@@ -203,13 +237,15 @@ class ContentStatsService {
                 if (resource.title) {
                     return {
                         title: resource.title,
-                        resourceType
+                        resourceType,
+                        id: resource.id
                     };
                 } else if (resource.name) {
                     // For authors, tags, etc.
                     return {
                         title: resource.name,
-                        resourceType
+                        resourceType,
+                        id: resource.id
                     };
                 }
             }
@@ -220,6 +256,26 @@ class ContentStatsService {
         }
 
         return null;
+    }
+
+    /**
+     * Build an absolute frontend URL for a known-good pathname using the site URL.
+     * Used for routes that aren't a posts-table resource (e.g. the homepage).
+     * @param {string} pathname
+     * @returns {string|null}
+     */
+    buildAbsoluteUrl(pathname) {
+        if (!pathname) {
+            return null;
+        }
+        try {
+            const siteUrl = urlUtils.urlFor('home', true);
+            const cleanSite = siteUrl.endsWith('/') ? siteUrl.slice(0, -1) : siteUrl;
+            const cleanPath = pathname.startsWith('/') ? pathname : `/${pathname}`;
+            return `${cleanSite}${cleanPath}`;
+        } catch (err) {
+            return null;
+        }
     }
 
     /**
@@ -258,11 +314,14 @@ class ContentStatsService {
 
             // Check if post_uuid is available directly
             if (item.post_uuid && titleMap[item.post_uuid]) {
+                const matched = titleMap[item.post_uuid];
+                const resolvedUrl = this.resolveResourceUrl(matched.id, matched.type);
                 return {
                     ...item,
-                    title: titleMap[item.post_uuid].title,
-                    post_id: titleMap[item.post_uuid].id,
-                    post_type: titleMap[item.post_uuid].type,
+                    title: matched.title,
+                    post_id: matched.id,
+                    post_type: matched.type,
+                    url: resolvedUrl || undefined,
                     url_exists: urlExists
                 };
             }
@@ -270,21 +329,33 @@ class ContentStatsService {
             // Use UrlService for pages without post_uuid
             const resourceInfo = await this.getResourceTitle(item.pathname);
             if (resourceInfo) {
+                // For posts/pages we have a resource id, so we can resolve the
+                // canonical URL via the URL service. For tags/authors we don't
+                // surface a clickable URL — the click handler treats them as
+                // non-actionable today.
+                const resolvedUrl = (resourceInfo.resourceType === 'post' || resourceInfo.resourceType === 'page')
+                    ? this.resolveResourceUrl(resourceInfo.id, resourceInfo.resourceType)
+                    : null;
                 return {
                     ...item,
                     title: resourceInfo.title,
                     resourceType: resourceInfo.resourceType,
-                    post_type: null,
+                    post_id: resourceInfo.id,
+                    post_type: resourceInfo.resourceType || null,
+                    url: resolvedUrl || undefined,
                     url_exists: urlExists
                 };
             }
 
-            // Otherwise fallback to pathname (removing leading/trailing slashes)
+            // Otherwise fallback to pathname (removing leading/trailing slashes).
+            // For the homepage we can still build a clickable URL from the site URL.
             const formattedPath = item.pathname.replace(/^\/|\/$/g, '') || 'Homepage';
+            const homepageUrl = item.pathname === '/' ? this.buildAbsoluteUrl('/') : undefined;
             return {
                 ...item,
                 title: formattedPath,
                 post_type: null,
+                url: homepageUrl,
                 url_exists: urlExists
             };
         }));

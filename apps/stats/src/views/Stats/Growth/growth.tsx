@@ -36,6 +36,7 @@ interface UnifiedGrowthContentData {
     mrr: number;
     percentage?: number;
     published_at: string;
+    url?: string;
     url_exists?: boolean;
 }
 
@@ -133,6 +134,7 @@ const Growth: React.FC = () => {
                 mrr: item.mrr,
                 percentage,
                 published_at: item.published_at,
+                url: item.url,
                 url_exists: item.url_exists ?? true
             };
         });
@@ -246,12 +248,12 @@ const Growth: React.FC = () => {
                                                 <TableRow key={`${selectedContentType}-${post.post_id || `${post.title}-${index}`}`} className='last:border-none'>
                                                     <TableCell>
                                                         <div className='group/link inline-flex flex-col items-start gap-px'>
-                                                            {post.post_id && post.attribution_type === 'post' ?
+                                                            {(post.post_id && post.attribution_type === 'post') || post.url ?
                                                                 <Button
                                                                     className='h-auto p-0 text-left leading-tight font-medium whitespace-normal hover:underline!'
-                                                                    title='View post analytics'
+                                                                    title={post.attribution_type === 'post' ? 'View post analytics' : 'View page'}
                                                                     variant='link'
-                                                                    onClick={getClickHandler(post.attribution_url, post.post_id, site.url || '', navigate, post.attribution_type)}
+                                                                    onClick={getClickHandler(post.attribution_url, post.post_id, site.url || '', navigate, post.attribution_type, post.url)}
                                                                 >
                                                                     {post.title}
                                                                 </Button>
