@@ -32,14 +32,14 @@ export async function setupAutomationsFixture(): Promise<void> {
         created_at: timestamp(0),
         updated_at: timestamp(0),
         slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
-        name: 'Welcome Email (Free)',
+        name: 'Free member welcome flow',
         status: 'active'
     }, {
         id: paidAutomationId,
         created_at: timestamp(1),
         updated_at: timestamp(1),
         slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
-        name: 'Welcome Email (Paid)',
+        name: 'Paid member welcome flow',
         status: 'active'
     }];
 

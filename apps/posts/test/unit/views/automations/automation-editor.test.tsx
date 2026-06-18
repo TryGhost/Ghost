@@ -157,7 +157,7 @@ vi.mock('@xyflow/react', async () => {
 const automationDetail: AutomationDetail = {
     id: 'automation-id-1',
     slug: 'member-welcome-email-free',
-    name: 'Welcome Email (Free)',
+    name: 'Free member welcome flow',
     status: 'active',
     created_at: '2026-05-05T00:00:00.000Z',
     updated_at: '2026-05-05T00:00:00.000Z',
@@ -260,7 +260,7 @@ describe('AutomationEditor', () => {
 
         renderEditor();
 
-        expect(screen.getByText('Welcome Email (Free)')).toBeInTheDocument();
+        expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
         expect(screen.getByText('Trigger')).toBeInTheDocument();
         expect(screen.getByText('Member signs up')).toBeInTheDocument();
         expect(screen.getByText('Wait')).toBeInTheDocument();
@@ -580,7 +580,7 @@ describe('AutomationEditor', () => {
                 automations: [{
                     ...automationDetail,
                     slug: 'member-welcome-email-paid',
-                    name: 'Welcome Email (Paid)'
+                    name: 'Paid member welcome flow'
                 }]
             },
             isLoading: false,
