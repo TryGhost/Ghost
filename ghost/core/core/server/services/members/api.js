@@ -239,7 +239,6 @@ function createApiInstance(config) {
             Comment: models.Comment,
             MemberFeedback: models.MemberFeedback,
             EmailSpamComplaintEvent: models.EmailSpamComplaintEvent,
-            Outbox: models.Outbox,
             Automation: models.Automation,
             WelcomeEmailAutomationRun: models.WelcomeEmailAutomationRun,
             AutomatedEmailRecipient: models.AutomatedEmailRecipient,

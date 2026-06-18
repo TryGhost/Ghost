@@ -17,7 +17,6 @@ describe('MemberRepository', function () {
     let MemberStatusEvent;
     let MemberSubscribeEvent;
     let mockOfferRedemption;
-    let Outbox;
     let StripeCustomer;
     let StripeCustomerSubscription;
     let WelcomeEmailAutomationRun;
@@ -44,7 +43,6 @@ describe('MemberRepository', function () {
         MemberStatusEvent,
         MemberSubscribeEventModel: MemberSubscribeEvent,
         OfferRedemption: mockOfferRedemption,
-        Outbox,
         StripeCustomer,
         StripeCustomerSubscription,
         WelcomeEmailAutomationRun,
@@ -123,10 +121,6 @@ describe('MemberRepository', function () {
         };
 
         MemberProductEvent = {
-            add: sinon.stub().resolves()
-        };
-
-        Outbox = {
             add: sinon.stub().resolves()
         };
 
@@ -1732,7 +1726,6 @@ describe('MemberRepository', function () {
             it('creates automation run for free member signup (free welcome email)', async function () {
                 const repo = buildRepo({
                     Member,
-                    Outbox,
                     WelcomeEmailAutomationRun,
                     MemberStatusEvent,
                     MemberSubscribeEventModel: MemberSubscribeEvent,
@@ -1759,7 +1752,6 @@ describe('MemberRepository', function () {
 
                 const repo = buildRepo({
                     Member,
-                    Outbox,
                     WelcomeEmailAutomationRun,
                     MemberStatusEvent,
                     MemberSubscribeEventModel: MemberSubscribeEvent,
@@ -1783,7 +1775,6 @@ describe('MemberRepository', function () {
             it('does not create automation run for disallowed sources', async function () {
                 const repo = buildRepo({
                     Member,
-                    Outbox,
                     WelcomeEmailAutomationRun,
                     MemberStatusEvent,
                     MemberSubscribeEventModel: MemberSubscribeEvent,
@@ -1808,7 +1799,6 @@ describe('MemberRepository', function () {
             it('passes transaction to automation run creation', async function () {
                 const repo = buildRepo({
                     Member,
-                    Outbox,
                     WelcomeEmailAutomationRun,
                     MemberStatusEvent,
                     MemberSubscribeEventModel: MemberSubscribeEvent,
@@ -1842,7 +1832,6 @@ describe('MemberRepository', function () {
 
                 const repo = buildRepo({
                     Member,
-                    Outbox,
                     WelcomeEmailAutomationRun,
                     MemberStatusEvent,
                     MemberSubscribeEventModel: MemberSubscribeEvent,
@@ -1859,7 +1848,6 @@ describe('MemberRepository', function () {
             it('does NOT create automation run when member is signing up for a paid subscription (stripeCustomer is present)', async function () {
                 const repo = buildRepo({
                     Member,
-                    Outbox,
                     WelcomeEmailAutomationRun,
                     MemberStatusEvent,
                     MemberSubscribeEventModel: MemberSubscribeEvent,
@@ -1962,10 +1950,6 @@ describe('MemberRepository', function () {
                     attributes: {},
                     _previousAttributes: {}
                 })
-            };
-
-            Outbox = {
-                add: sinon.stub().resolves()
             };
 
             WelcomeEmailAutomationRun = {
@@ -2098,7 +2082,6 @@ describe('MemberRepository', function () {
 
                 const repo = buildRepo({
                     Member,
-                    Outbox,
                     WelcomeEmailAutomationRun,
                     MemberPaidSubscriptionEvent,
                     StripeCustomerSubscription,
@@ -2147,7 +2130,6 @@ describe('MemberRepository', function () {
 
                 const repo = buildRepo({
                     Member,
-                    Outbox,
                     WelcomeEmailAutomationRun,
                     MemberPaidSubscriptionEvent,
                     StripeCustomerSubscription,
@@ -2193,7 +2175,6 @@ describe('MemberRepository', function () {
 
                 const repo = buildRepo({
                     Member,
-                    Outbox,
                     WelcomeEmailAutomationRun,
                     MemberPaidSubscriptionEvent,
                     StripeCustomerSubscription,
@@ -2258,7 +2239,6 @@ describe('MemberRepository', function () {
 
                 const repo = buildRepo({
                     Member,
-                    Outbox,
                     WelcomeEmailAutomationRun,
                     MemberPaidSubscriptionEvent,
                     StripeCustomerSubscription,
@@ -2297,7 +2277,6 @@ describe('MemberRepository', function () {
 
                 const repo = buildRepo({
                     Member,
-                    Outbox,
                     WelcomeEmailAutomationRun,
                     MemberPaidSubscriptionEvent,
                     StripeCustomerSubscription,
