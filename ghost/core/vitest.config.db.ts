@@ -88,6 +88,16 @@ export default defineConfig({
                 test: {
                     ...sharedDbConfig,
                     name: 'integration',
+                    // isolate:true (overriding the shared default) gives each file
+                    // its own fork → its own fresh per-process DB + Ghost. The
+                    // integration suite has inter-file state pollution that the old
+                    // fixed serial order masked but nondeterministic fork sharding
+                    // exposes — e.g. migration.test.js can leave a rolled-back
+                    // schema that a co-located file then inherits. Per-file
+                    // isolation removes it by construction. The e2e project keeps
+                    // isolate:false (it has no such pollution and is fastest that
+                    // way); sqlite per-file init is cheap so the cost here is small.
+                    isolate: true,
                     include: ['test/integration/**/*.test.{js,ts}'],
                     // These stay on mocha (kept green via the test:integration:mocha
                     // sidecar) pending vitest fixes:
