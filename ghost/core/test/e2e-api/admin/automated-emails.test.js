@@ -666,6 +666,66 @@ describe('Automated Emails API', function () {
             });
         });
 
+        it('Can edit shared sender settings without welcome email content rows', async function () {
+            await models.Base.knex('welcome_email_automated_emails').del();
+
+            await agent
+                .put('automated_emails/senders/')
+                .body({
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails.length, 2);
+                    for (const automatedEmail of body.automated_emails) {
+                        assert.equal(automatedEmail.sender_name, 'Custom Sender');
+                        assert.equal(automatedEmail.sender_email, 'sender@example.com');
+                        assert.equal(automatedEmail.sender_reply_to, 'reply@example.com');
+                    }
+                });
+
+            const welcomeEmailRows = await models.Base.knex('welcome_email_automated_emails')
+                .select('welcome_email_automation_id');
+            assert.equal(welcomeEmailRows.length, 0);
+
+            const designSettings = await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .first('sender_name', 'sender_email', 'sender_reply_to');
+            assert.deepEqual(designSettings, {
+                sender_name: 'Custom Sender',
+                sender_email: 'sender@example.com',
+                sender_reply_to: 'reply@example.com'
+            });
+        });
+
+        it('Can edit shared sender settings without welcome email automation rows', async function () {
+            await models.Base.knex('welcome_email_automated_emails').del();
+            await models.Base.knex('automations').del();
+
+            await agent
+                .put('automated_emails/senders/')
+                .body({
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.automated_emails.length, 0);
+                });
+
+            const designSettings = await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .first('sender_name', 'sender_email', 'sender_reply_to');
+            assert.deepEqual(designSettings, {
+                sender_name: 'Custom Sender',
+                sender_email: 'sender@example.com',
+                sender_reply_to: 'reply@example.com'
+            });
+        });
+
         it('Returns sender details from email design settings after editing shared sender settings', async function () {
             await models.Base.knex('email_design_settings')
                 .where('slug', 'default-automated-email')
@@ -789,6 +849,29 @@ describe('Automated Emails API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('Cannot render legacy preview without a welcome email content row', async function () {
+            await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automatedEmailId)
+                .del();
+
+            await agent
+                .post(`automated_emails/${automatedEmailId}/preview/`)
+                .body({
+                    subject: 'Test Subject',
+                    lexical: validLexical
+                })
+                .expectStatus(404)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
+                    assert.equal(typeof body.errors[0].id, 'string');
+                });
+
+            const welcomeEmailRow = await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automatedEmailId)
+                .first('id');
+            assert.equal(welcomeEmailRow, undefined);
         });
 
         it('Can preview inactive automated email', async function () {

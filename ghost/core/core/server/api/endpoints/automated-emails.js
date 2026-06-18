@@ -3,6 +3,7 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
+const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../../services/member-welcome-emails/constants');
 
 const messages = {
     automatedEmailNotFound: 'Automated email not found.'
@@ -17,22 +18,43 @@ const AUTOMATION_FIELDS = ['status', 'name', 'slug'];
 const EMAIL_FIELDS = ['subject', 'lexical', 'email_design_setting_id'];
 const SENDER_FIELDS = ['sender_name', 'sender_email', 'sender_reply_to'];
 
-function flattenAutomation(automation, email = automation.related('welcomeEmailAutomatedEmail'), designSettings = email.related('emailDesignSetting')) {
+function flattenAutomation(automation, email = automation.related('welcomeEmailAutomatedEmail'), designSettings = email?.related('emailDesignSetting')) {
     const result = {
         id: automation.id,
         status: automation.get('status'),
         name: automation.get('name'),
         slug: automation.get('slug'),
-        subject: email.get('subject'),
-        lexical: email.get('lexical'),
+        subject: email?.get('subject') || null,
+        lexical: email?.get('lexical') || null,
         sender_name: designSettings?.get('sender_name') || null,
         sender_email: designSettings?.get('sender_email') || null,
         sender_reply_to: designSettings?.get('sender_reply_to') || null,
-        email_design_setting_id: email.get('email_design_setting_id'),
+        email_design_setting_id: email?.get('email_design_setting_id') || designSettings?.id || null,
         created_at: automation.get('created_at'),
         updated_at: automation.get('updated_at')
     };
     return result;
+}
+
+async function getDefaultEmailDesignSettings() {
+    const designSettings = await models.EmailDesignSetting.findOne({slug: DEFAULT_EMAIL_DESIGN_SETTING_SLUG});
+
+    if (!designSettings?.id) {
+        throw new errors.NotFoundError({
+            message: 'Default automated email design setting not found'
+        });
+    }
+
+    return designSettings;
+}
+
+function flattenAutomationWithDefaultSenderSettings(automation, defaultDesignSettings) {
+    const email = automation.related('welcomeEmailAutomatedEmail');
+    const designSettings = email?.related('emailDesignSetting')?.id ?
+        email.related('emailDesignSetting') :
+        defaultDesignSettings;
+
+    return flattenAutomation(automation, email, designSettings);
 }
 
 async function updateEmailDesignSenderFields(email, senderData, options) {
@@ -208,9 +230,10 @@ const controller = {
                 sender_email: data.sender_email,
                 sender_reply_to: data.sender_reply_to
             });
+            const defaultDesignSettings = await getDefaultEmailDesignSettings();
             return {
                 ...result,
-                data: result.data.map(automation => flattenAutomation(automation))
+                data: result.data.map(automation => flattenAutomationWithDefaultSenderSettings(automation, defaultDesignSettings))
             };
         }
     },
@@ -228,9 +251,10 @@ const controller = {
         async query(frame) {
             memberWelcomeEmailService.init();
             const result = await memberWelcomeEmailService.api.verifySenderPropertyUpdate(frame.data.token);
+            const defaultDesignSettings = await getDefaultEmailDesignSettings();
             return {
                 ...result,
-                data: result.data.map(automation => flattenAutomation(automation))
+                data: result.data.map(automation => flattenAutomationWithDefaultSenderSettings(automation, defaultDesignSettings))
             };
         }
     },

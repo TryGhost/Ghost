@@ -4,12 +4,12 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import TestEmailDropdown from './test-email-dropdown';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogTitle, Input, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {WELCOME_EMAIL_SLUGS} from './sender-details';
 import {getEmailValidationErrors} from './validation';
-import {useBrowseAutomatedEmails, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useBrowseAutomatedEmails} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useEmailPreview} from './use-email-preview';
 import {useEmailSenderDetails} from './use-sender-details';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {usePreviewAutomationEmail} from '@tryghost/admin-x-framework/api/automations';
 import type {EmailModalMode} from '../types';
 
 interface EmailPreviewModalContentProps {
@@ -81,6 +81,7 @@ const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className}
 );
 
 export interface EmailContentModalProps {
+    automationId: string;
     initialLexical: string;
     initialMode?: EmailModalMode;
     initialSubject: string;
@@ -93,6 +94,7 @@ export interface EmailContentModalProps {
 }
 
 const EmailContentModal: React.FC<EmailContentModalProps> = ({
+    automationId,
     initialMode = 'edit',
     initialSubject,
     initialLexical,
@@ -103,7 +105,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     onKeepEditingAfterBlockedNavigation,
     onSave
 }) => {
-    const {mutateAsync: previewWelcomeEmail} = usePreviewWelcomeEmail();
+    const {mutateAsync: previewAutomationEmail} = usePreviewAutomationEmail();
     const {data: automatedEmailsData} = useBrowseAutomatedEmails();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
     const [mode, setMode] = useState<EmailModalMode>(initialMode);
@@ -117,14 +119,6 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     const handleError = useHandleError();
     const automatedEmails = automatedEmailsData?.automated_emails || [];
     const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useEmailSenderDetails(automatedEmails);
-
-    // Preview & test reuse the legacy welcome-email endpoints, which are keyed by
-    // an automated-email id. Borrow the free welcome email's id (falling back to
-    // the first record) so unsaved automation content can be rendered/sent.
-    const previewAutomatedEmailId = (
-        automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS.free)
-        || automatedEmails[0]
-    )?.id || '';
 
     // Saving commits whatever the user has — including an empty subject or body — to the
     // automation draft. Completeness is only enforced when publishing the automation or
@@ -148,8 +142,8 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     }, [formState, setErrors]);
     const saveButtonLabel = okProps.label || 'Save';
     const {previewFrameState, enterPreview, exitPreview} = useEmailPreview({
-        automatedEmailId: previewAutomatedEmailId,
-        previewWelcomeEmail,
+        automationId,
+        previewAutomationEmail,
         setErrors
     });
 
@@ -317,7 +311,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                                                     Test
                                                 </Button>
                                                 {showTestDropdown && (
-                                                    <TestEmailDropdown automatedEmailId={previewAutomatedEmailId} lexical={formState.lexical} subject={formState.subject} validateForm={validateForTest} onClose={() => setShowTestDropdown(false)} />
+                                                    <TestEmailDropdown automationId={automationId} lexical={formState.lexical} subject={formState.subject} validateForm={validateForTest} onClose={() => setShowTestDropdown(false)} />
                                                 )}
                                             </div>
                                         </div>
