@@ -1,34 +1,24 @@
 {
   "name": "@tryghost/api-framework",
-  "version": "3.2.4",
+  "version": "0.0.0",
+  "private": true,
   "author": "Ghost Foundation",
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/TryGhost/framework.git",
-    "directory": "packages/api-framework"
-  },
-  "files": [
-    "index.js",
-    "lib"
-  ],
   "main": "index.js",
-  "publishConfig": {
-    "access": "public"
-  },
   "scripts": {
     "dev": "echo \"Implement me!\"",
-    "test": "NODE_ENV=testing vitest run --coverage",
-    "lint": "oxlint -c ../../.oxlintrc.json ."
+    "test:unit": "NODE_ENV=testing vitest run",
+    "test": "pnpm test:unit"
   },
   "dependencies": {
-    "@tryghost/debug": "workspace:*",
-    "@tryghost/errors": "workspace:*",
-    "@tryghost/promise": "workspace:*",
-    "@tryghost/tpl": "workspace:*",
-    "@tryghost/validator": "workspace:*",
-    "lodash": "4.18.1"
+    "@tryghost/debug": "catalog:",
+    "@tryghost/errors": "1.3.13",
+    "@tryghost/promise": "2.2.3",
+    "@tryghost/tpl": "2.2.3",
+    "@tryghost/validator": "0.2.22",
+    "lodash": "catalog:"
   },
   "devDependencies": {
-    "sinon": "catalog:"
+    "sinon": "catalog:",
+    "vitest": "catalog:"
   }
 }

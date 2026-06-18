@@ -72,9 +72,6 @@ catalogs:
     '@testing-library/react':
       specifier: 14.3.1
       version: 14.3.1
-    '@tryghost/api-framework':
-      specifier: 3.2.4
-      version: 3.2.4
     '@tryghost/color-utils':
       specifier: 0.2.19
       version: 0.2.19
@@ -2312,6 +2309,34 @@ importers:
         specifier: 4.0.2
         version: 4.0.2
 
+  ghost/api-framework:
+    dependencies:
+      '@tryghost/debug':
+        specifier: 'catalog:'
+        version: 2.2.3
+      '@tryghost/errors':
+        specifier: ^1.3.7
+        version: 1.3.13
+      '@tryghost/promise':
+        specifier: 2.2.3
+        version: 2.2.3
+      '@tryghost/tpl':
+        specifier: 2.2.3
+        version: 2.2.3
+      '@tryghost/validator':
+        specifier: 0.2.22
+        version: 0.2.22
+      lodash:
+        specifier: 'catalog:'
+        version: 4.18.1
+    devDependencies:
+      sinon:
+        specifier: 'catalog:'
+        version: 22.0.0
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.8(@opentelemetry/api@1.9.1)(@types/node@25.9.1)(@vitest/coverage-v8@4.1.8)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@25.9.1)(typescript@5.9.3))(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
+
   ghost/core:
     dependencies:
       '@aws-sdk/client-s3':
@@ -2339,8 +2364,8 @@ importers:
         specifier: 4.7.5
         version: 4.7.5
       '@tryghost/api-framework':
-        specifier: 'catalog:'
-        version: 3.2.4
+        specifier: workspace:*
+        version: link:../api-framework
       '@tryghost/bookshelf-plugins':
         specifier: 2.2.4
         version: 2.2.4
@@ -8694,9 +8719,6 @@ packages:
   '@tryghost/admin-api-schema@4.7.5':
     resolution: {integrity: sha512-k8XWP5g6hwpe3DcxhujBVHrDSkUSZ1nedR/TBony3TMbqNCMi4v40HkOhXiryAZ/ENDcmlKj/ZLzYDgG6cb0ww==}
 
-  '@tryghost/api-framework@3.2.4':
-    resolution: {integrity: sha512-Otz6uxGsedTsDqQIw62sQ8pmDpiaLMyvsSvCWUBUc44eMix5LFjZ1FMxKl2jXettj6tfMa04+Qz0p71zW/g/Qg==}
-
   '@tryghost/bookshelf-collision@2.2.4':
     resolution: {integrity: sha512-2SV1QZkvXiYBXEWSvCeDc5YuHM7fRRcT2N8z/RHpOmDYyWHslmrdKuWb+jJOhIeRmO+oH0pYC4Nk9haQI2dgIg==}
 
@@ -8994,9 +9016,6 @@ packages:
 
   '@tryghost/validator@3.1.1':
     resolution: {integrity: sha512-GIBONNQs7BP7FEKf8XxDk+roLVf86rQle3YWbe4IajqAcHoto952RAARwSAvYOhmqroBfX2++9BAyXEER+Ys9Q==}
-
-  '@tryghost/validator@3.1.4':
-    resolution: {integrity: sha512-xHLD9iek3zeINSy0ZYjVbzQMDgCSGEIzcuT1WUR9+zSBOmQzAXMfvykfn5ppglMroIOUJ4V9OIWcimybQ57BSQ==}
 
   '@tryghost/version@0.1.38':
     resolution: {integrity: sha512-kVaM7eijFRrBLZLDbmiFxHQ/shmAg5UQ9yM4s9GZN4M3OWY34UHNmjoSOniOHnA5E8fYNA8A3IFmS3FW910xYg==}
@@ -14772,7 +14791,7 @@ packages:
       csstype: ^3.0.10
 
   google-caja-bower@https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
+    resolution: {gitHosted: true, integrity: sha512-mmCXdxGKGKDznjgkNzVqzTslaldslk5KMb/A7l8rxWnqyxzwsdPhuBJ6oT1Kh/Y3k4jN54ISee/2AgjFyCBxYw==, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
     version: 6011.0.0
 
   gopd@1.2.0:
@@ -16165,7 +16184,7 @@ packages:
     engines: {node: '>= 0.6'}
 
   keymaster@https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
+    resolution: {gitHosted: true, integrity: sha512-/WVovQslVEqPGNoD97TbqNHuCDPYu2v4/ggrZj0a+9PVPw3Rud4Ut2K7fOi0kMqzoJINkgP68e9m09Al/wFZ8g==, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
     version: 1.6.3
 
   keypair@1.0.4:
@@ -28478,17 +28497,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/api-framework@3.2.4':
-    dependencies:
-      '@tryghost/debug': 2.2.3
-      '@tryghost/errors': 1.3.13
-      '@tryghost/promise': 2.2.3
-      '@tryghost/tpl': 2.2.3
-      '@tryghost/validator': 3.1.4
-      lodash: 4.18.1
-    transitivePeerDependencies:
-      - supports-color
-
   '@tryghost/bookshelf-collision@2.2.4':
     dependencies:
       '@tryghost/errors': 1.3.13
@@ -29169,16 +29177,6 @@ snapshots:
     dependencies:
       '@tryghost/errors': 1.3.13
       '@tryghost/tpl': 2.2.0
-      lodash: 4.18.1
-      moment-timezone: 0.5.45
-      validator: 13.15.35
-    transitivePeerDependencies:
-      - supports-color
-
-  '@tryghost/validator@3.1.4':
-    dependencies:
-      '@tryghost/errors': 1.3.13
-      '@tryghost/tpl': 2.2.3
       lodash: 4.18.1
       moment-timezone: 0.5.45
       validator: 13.15.35
