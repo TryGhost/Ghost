@@ -81,7 +81,7 @@ export default function AccountEmailPage() {
     const defaultSubscribedNewsletters = [...(member?.newsletters || [])];
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultSubscribedNewsletters);
     const {comments_enabled: commentsEnabled} = site;
-    const updatesAndAnnouncementsEnabled = !!site.labs?.automations;
+    const canChangeUpdatesAndAnnouncements = !!site.labs?.automations;
     const {enable_comment_notifications: enableCommentNotifications, enable_updates_and_announcements: enableUpdatesAndAnnouncements} = member || {};
 
     useEffect(() => {
@@ -120,7 +120,7 @@ export default function AccountEmailPage() {
                 if (commentsEnabled) {
                     data.enableCommentNotifications = false;
                 }
-                if (updatesAndAnnouncementsEnabled) {
+                if (canChangeUpdatesAndAnnouncements) {
                     data.enableUpdatesAndAnnouncements = false;
                 }
                 doAction('updateNewsletterPreference', data);
@@ -128,7 +128,7 @@ export default function AccountEmailPage() {
             isPaidMember={isPaidMember({member})}
             isCommentsEnabled={commentsEnabled !== 'off'}
             enableCommentNotifications={enableCommentNotifications}
-            isUpdatesAndAnnouncementsEnabled={updatesAndAnnouncementsEnabled}
+            canChangeUpdatesAndAnnouncements={canChangeUpdatesAndAnnouncements}
             enableUpdatesAndAnnouncements={enableUpdatesAndAnnouncements}
         />
     );

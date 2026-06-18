@@ -55,7 +55,7 @@ export default function UnsubscribePage() {
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultNewsletters);
     const [showPrefs, setShowPrefs] = useState(false);
     const {comments_enabled: commentsEnabled} = site;
-    const updatesAndAnnouncementsEnabled = !!site.labs?.automations;
+    const canChangeUpdatesAndAnnouncements = !!site.labs?.automations;
     const {enable_comment_notifications: enableCommentNotifications = false, enable_updates_and_announcements: enableUpdatesAndAnnouncements} = member || {};
 
     const hasNewslettersEnabled = hasNewsletterSendingEnabled({site});
@@ -161,12 +161,12 @@ export default function UnsubscribePage() {
             } else if (pageData.comments && commentsEnabled) {
                 // Unsubscribe link for comments
                 await updateCommentNotifications(false);
-            } else if (pageData.updatesAndAnnouncements && updatesAndAnnouncementsEnabled) {
+            } else if (pageData.updatesAndAnnouncements && canChangeUpdatesAndAnnouncements) {
                 // Unsubscribe link for updates & announcements (automation emails)
                 await updateUpdatesAndAnnouncements(false);
             }
         })();
-    }, [commentsEnabled, updatesAndAnnouncementsEnabled, pageData.uuid, pageData.newsletterUuid, pageData.comments, pageData.updatesAndAnnouncements, site.url, siteNewsletters?.length]);
+    }, [commentsEnabled, canChangeUpdatesAndAnnouncements, pageData.uuid, pageData.newsletterUuid, pageData.comments, pageData.updatesAndAnnouncements, site.url, siteNewsletters?.length]);
 
     if (loading) {
         // Loading member data from the API based on the uuid
@@ -252,7 +252,7 @@ export default function UnsubscribePage() {
                 </>
             );
         }
-        if (pageData.updatesAndAnnouncements && updatesAndAnnouncementsEnabled) {
+        if (pageData.updatesAndAnnouncements && canChangeUpdatesAndAnnouncements) {
             const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
             return (
                 <>
@@ -309,7 +309,7 @@ export default function UnsubscribePage() {
             isPaidMember={member?.status !== 'free'}
             isCommentsEnabled={commentsEnabled !== 'off'}
             enableCommentNotifications={enableCommentNotifications}
-            isUpdatesAndAnnouncementsEnabled={updatesAndAnnouncementsEnabled}
+            canChangeUpdatesAndAnnouncements={canChangeUpdatesAndAnnouncements}
             enableUpdatesAndAnnouncements={enableUpdatesAndAnnouncements}
         />
     );

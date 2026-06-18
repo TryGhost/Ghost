@@ -78,12 +78,12 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
     );
 }
 
-function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, isUpdatesAndAnnouncementsEnabled, enableUpdatesAndAnnouncements}) {
+function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChangeUpdatesAndAnnouncements, enableUpdatesAndAnnouncements}) {
     const {doAction, site} = useContext(AppContext);
     const [isUpdating, setIsUpdating] = useState(false);
     const isChecked = !!enableUpdatesAndAnnouncements;
 
-    if (!isUpdatesAndAnnouncementsEnabled) {
+    if (!canChangeUpdatesAndAnnouncements) {
         return null;
     }
 
@@ -151,7 +151,7 @@ export default function NewsletterManagement({
     isPaidMember,
     isCommentsEnabled,
     enableCommentNotifications,
-    isUpdatesAndAnnouncementsEnabled,
+    canChangeUpdatesAndAnnouncements,
     enableUpdatesAndAnnouncements
 }) {
     const {brandColor, doAction, member, site} = useContext(AppContext);
@@ -165,7 +165,7 @@ export default function NewsletterManagement({
     const effectiveEnableUpdatesAndAnnouncements = hasExplicitUpdatesPreference ? !!enableUpdatesAndAnnouncements : updatesPreferenceWhenNull;
 
     const hasNoCommentSubscription = (isCommentsEnabled && !enableCommentNotifications) || !isCommentsEnabled;
-    const hasNoUpdatesSubscription = (isUpdatesAndAnnouncementsEnabled && !effectiveEnableUpdatesAndAnnouncements) || !isUpdatesAndAnnouncementsEnabled;
+    const hasNoUpdatesSubscription = (canChangeUpdatesAndAnnouncements && !effectiveEnableUpdatesAndAnnouncements) || !canChangeUpdatesAndAnnouncements;
     const isDisabled = !subscribedNewsletters?.length && hasNoCommentSubscription && hasNoUpdatesSubscription;
     const EmptyNotification = () => {
         return null;
@@ -189,7 +189,7 @@ export default function NewsletterManagement({
                             });
                             // When there's no explicit updates & announcements preference yet, persist
                             // the value computed at open so the member only changes one thing at a time.
-                            const computedUpdatesAndAnnouncements = isUpdatesAndAnnouncementsEnabled && !hasExplicitUpdatesPreference ?
+                            const computedUpdatesAndAnnouncements = canChangeUpdatesAndAnnouncements && !hasExplicitUpdatesPreference ?
                                 effectiveEnableUpdatesAndAnnouncements :
                                 undefined;
                             updateSubscribedNewsletters(newsletters, computedUpdatesAndAnnouncements);
@@ -201,7 +201,7 @@ export default function NewsletterManagement({
                         updateCommentNotifications={updateCommentNotifications}
                     />
                     <UpdatesAndAnnouncementsSection
-                        isUpdatesAndAnnouncementsEnabled={isUpdatesAndAnnouncementsEnabled}
+                        canChangeUpdatesAndAnnouncements={canChangeUpdatesAndAnnouncements}
                         enableUpdatesAndAnnouncements={effectiveEnableUpdatesAndAnnouncements}
                         updateUpdatesAndAnnouncements={updateUpdatesAndAnnouncements}
                     />
