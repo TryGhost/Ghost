@@ -1,0 +1,12 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "phantom",
+      "runtimeExecutable": "sh",
+      "runtimeArgs": ["-c", "cd phantom && GHOST_DB_URL=file:/tmp/phantom-e2e.db GHOST_PORT=2469 npx tsx src/index.ts"],
+      "port": 2469,
+      "autoPort": false
+    }
+  ]
+}

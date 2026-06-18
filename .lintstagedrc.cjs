@@ -90,10 +90,21 @@ function buildCommand(workspace, files) {
     return `pnpm ${dirArg}exec eslint --cache -- ${relativeFiles}`;
 }
 
+// phantom/ is a standalone yarn workspace outside the pnpm/eslint toolchain
+// (no eslint config of its own; tsc + vitest are its gates), so the root
+// eslint cannot parse its files.
+function isPhantomFile(file) {
+    const rel = normalize(path.relative(ROOT, path.resolve(file)));
+    return rel === 'phantom' || rel.startsWith('phantom/');
+}
+
 module.exports = {
     '*.{js,ts,tsx,jsx,cjs}': (files) => {
         const groups = new Map();
         for (const file of files) {
+            if (isPhantomFile(file)) {
+                continue;
+            }
             const workspace = findWorkspace(file);
             const key = workspace ?? '';
             if (!groups.has(key)) {
