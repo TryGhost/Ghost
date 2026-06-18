@@ -101,6 +101,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
     const hasEditorBeenFocused = useRef(false);
     const hasModalHistoryEntry = useRef(false);
     const pendingDiscardPoppedHistory = useRef(false);
+    const isClosingFromModalHistory = useRef(false);
     const onCloseRef = useRef(onClose);
     const handleError = useHandleError();
     const automatedEmails = automatedEmailsData?.automated_emails || [];
@@ -160,34 +161,47 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
         isDirtyRef.current = isDirty;
     }, [isDirty]);
 
-    const pushModalHistoryEntry = useCallback(() => {
+    const pushModalHistoryEntry = () => {
+        if (hasModalHistoryEntry.current) {
+            return;
+        }
+
         const modalHistoryState = {
             ...(window.history.state ?? {}),
             automationEmailModal: true
         };
         window.history.pushState(modalHistoryState, '', window.location.href);
         hasModalHistoryEntry.current = true;
-    }, []);
+    };
 
-    const closeModal = useCallback(() => {
-        if (hasModalHistoryEntry.current) {
-            hasModalHistoryEntry.current = false;
-            window.history.back();
+    const closeModal = () => {
+        if (!hasModalHistoryEntry.current) {
+            onCloseRef.current();
+            return;
         }
-        onCloseRef.current();
-    }, []);
+
+        isClosingFromModalHistory.current = true;
+        window.history.back();
+    };
 
     // Single close funnel: Esc, overlay click, and the Close button all route here.
-    const attemptClose = useCallback(() => {
+    const attemptClose = () => {
         if (isDirtyRef.current) {
             setConfirmDiscardOpen(true);
         } else {
             closeModal();
         }
-    }, [closeModal]);
+    };
 
     useEffect(() => {
-        pushModalHistoryEntry();
+        if (!hasModalHistoryEntry.current) {
+            const modalHistoryState = {
+                ...(window.history.state ?? {}),
+                automationEmailModal: true
+            };
+            window.history.pushState(modalHistoryState, '', window.location.href);
+            hasModalHistoryEntry.current = true;
+        }
 
         const handlePopState = () => {
             if (!hasModalHistoryEntry.current) {
@@ -195,25 +209,35 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
             }
 
             hasModalHistoryEntry.current = false;
+            if (isClosingFromModalHistory.current) {
+                isClosingFromModalHistory.current = false;
+                onCloseRef.current();
+                return;
+            }
+
             if (isDirtyRef.current) {
                 pendingDiscardPoppedHistory.current = true;
             }
-            attemptClose();
+            if (isDirtyRef.current) {
+                setConfirmDiscardOpen(true);
+            } else {
+                onCloseRef.current();
+            }
         };
 
         window.addEventListener('popstate', handlePopState);
         return () => {
             window.removeEventListener('popstate', handlePopState);
         };
-    }, [attemptClose, pushModalHistoryEntry]);
+    }, []);
 
-    const handleConfirmDiscardOpenChange = useCallback((open: boolean) => {
+    const handleConfirmDiscardOpenChange = (open: boolean) => {
         setConfirmDiscardOpen(open);
         if (!open && pendingDiscardPoppedHistory.current) {
             pendingDiscardPoppedHistory.current = false;
             pushModalHistoryEntry();
         }
-    }, [pushModalHistoryEntry]);
+    };
 
     // Commit to the automation draft. The Close button is the only way out of the modal.
     const handleSaveClick = useCallback(async () => {
