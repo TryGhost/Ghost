@@ -10,6 +10,10 @@ export default class ConfigManagerService extends Service {
 
     @inject config;
 
+    // Lets re-auth paths that bypass `postAuthPreparation()` detect that the
+    // authenticated `/config` payload was never loaded for this app instance.
+    isConfigLoaded = false;
+
     fetch() {
         let promises = [];
 
@@ -40,5 +44,6 @@ export default class ConfigManagerService extends Service {
         const {config} = await this.ajax.request(configUrl);
 
         setProperties(this.config, config);
+        this.isConfigLoaded = true;
     }
 }
