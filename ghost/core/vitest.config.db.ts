@@ -118,11 +118,22 @@ export default defineConfig({
                     // Matches the mocha `--timeout=10000` for the integration suite.
                     testTimeout: 10000
                 }
+            },
+            {
+                test: {
+                    ...sharedDbConfig,
+                    name: 'legacy',
+                    // isolate:true for the same reason as integration: the legacy
+                    // suite is the most state-pollution-prone (it was parked on
+                    // exactly that under the old serial model), so per-file
+                    // isolation removes the inter-file bleed by construction.
+                    isolate: true,
+                    include: ['test/legacy/**/*.test.{js,ts}'],
+                    exclude: ['**/node_modules/**'],
+                    // Matches the mocha `--timeout=60000` (boot-heavy model/api/site tests).
+                    testTimeout: 60000
+                }
             }
-            // Added as legacy ports (see the note at the top of the file):
-            //   {test: {...sharedDbConfig, name: 'legacy',
-            //       include: ['test/legacy/**/*.test.{js,ts}'],
-            //       exclude: ['**/node_modules/**'], testTimeout: 60000}}
         ]
     }
 });
