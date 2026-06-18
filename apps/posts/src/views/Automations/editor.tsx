@@ -13,6 +13,7 @@ import type {AutomationEditState} from './types';
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
 const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
+const EMAIL_STEP_QUERY_PARAM = 'emailStep';
 
 const editableSlice = (automation: AutomationDetail) => ({
     status: automation.status,
@@ -58,6 +59,10 @@ const AutomationEditor: React.FC = () => {
     const editMutation = useEditAutomation();
     const [editState, setEditState] = React.useState<AutomationEditState>({phase: 'idle'});
     const [actionErrors, setActionErrors] = React.useState<Record<string, string>>({});
+    const [isEmailModalDirty, setIsEmailModalDirty] = React.useState(false);
+    const isEmailModalDirtyRef = React.useRef(false);
+    const navigationBlockerReasonRef = React.useRef<'automation' | 'email' | null>(null);
+    const isBlockedEmailNavigationLeavingEditorRef = React.useRef(false);
 
     // Draft is the user-facing, locally mutable copy. The React Query cache stays as server truth;
     // staged edits (adding steps, etc.) live here until the user publishes. Seeded once when the
@@ -361,16 +366,38 @@ const AutomationEditor: React.FC = () => {
         }
     };
 
-    useConfirmUnload(isEditRequestActive || hasUnsavedChanges);
-    const navigationBlocker = useBlocker(({currentLocation, nextLocation}) => (
-        hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname
-    ));
+    useConfirmUnload(isEditRequestActive || hasUnsavedChanges || isEmailModalDirty);
+    const navigationBlocker = useBlocker(({currentLocation, nextLocation}) => {
+        const currentEmailStep = new URLSearchParams(currentLocation.search).get(EMAIL_STEP_QUERY_PARAM);
+        const nextEmailStep = new URLSearchParams(nextLocation.search).get(EMAIL_STEP_QUERY_PARAM);
+        if (isEmailModalDirtyRef.current && currentEmailStep && currentEmailStep !== nextEmailStep) {
+            navigationBlockerReasonRef.current = 'email';
+            isBlockedEmailNavigationLeavingEditorRef.current = currentLocation.pathname !== nextLocation.pathname;
+            return true;
+        }
+
+        if (hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname) {
+            navigationBlockerReasonRef.current = 'automation';
+            return true;
+        }
+
+        navigationBlockerReasonRef.current = null;
+        isBlockedEmailNavigationLeavingEditorRef.current = false;
+        return false;
+    });
+    const isEmailNavigationBlocked = navigationBlocker.state === 'blocked' && navigationBlockerReasonRef.current === 'email';
+    const isAutomationNavigationBlocked = navigationBlocker.state === 'blocked' && navigationBlockerReasonRef.current === 'automation';
 
     const onConfirmDiscardOpenChange = (open: boolean): void => {
-        if (!open && navigationBlocker.state === 'blocked') {
+        if (!open && isAutomationNavigationBlocked) {
             navigationBlocker.reset();
         }
     };
+
+    const onEmailDirtyChange = React.useCallback((dirty: boolean) => {
+        isEmailModalDirtyRef.current = dirty;
+        setIsEmailModalDirty(dirty);
+    }, []);
 
     return (
         <div className='fixed inset-0 z-50 flex flex-col bg-background' data-testid='automation-editor'>
@@ -392,13 +419,31 @@ const AutomationEditor: React.FC = () => {
             <AutomationCanvas
                 actionErrors={actionErrors}
                 automation={draft}
+                isEmailNavigationBlocked={isEmailNavigationBlocked}
                 isError={isError}
                 isLoading={isLoadingAutomation}
                 onChange={onDraftChange}
+                onDiscardBlockedEmailNavigation={(closeEmailModal) => {
+                    onEmailDirtyChange(false);
+                    if (isBlockedEmailNavigationLeavingEditorRef.current) {
+                        isBlockedEmailNavigationLeavingEditorRef.current = false;
+                        navigationBlocker.reset?.();
+                        closeEmailModal();
+                        return;
+                    }
+
+                    isBlockedEmailNavigationLeavingEditorRef.current = false;
+                    navigationBlocker.proceed?.();
+                }}
+                onEmailDirtyChange={onEmailDirtyChange}
+                onKeepEditingAfterBlockedEmailNavigation={() => {
+                    isBlockedEmailNavigationLeavingEditorRef.current = false;
+                    navigationBlocker.reset?.();
+                }}
             />
 
             <AlertDialog
-                open={navigationBlocker.state === 'blocked'}
+                open={isAutomationNavigationBlocked}
                 onOpenChange={onConfirmDiscardOpenChange}
             >
                 <AlertDialogContent>
