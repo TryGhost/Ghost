@@ -122,7 +122,7 @@ test.describe('Actions', async () => {
         await likeButton.click();
         mockedApi.setDelay(100); // give time for disabled state
         await expect(likeButton).toHaveText('1');
-        expect(likeButton.isDisabled()).toBeTruthy();
+        await expect(likeButton).toBeDisabled();
     });
 
     test('Like state reverts when like api request is unsuccessful', async ({page}) => {
@@ -173,7 +173,7 @@ test.describe('Actions', async () => {
         await likeButton.click();
         mockedApi.setDelay(100); // give time for disabled state
         await expect(likeButton).toHaveText('51');
-        expect(likeButton.isDisabled()).toBeTruthy();
+        await expect(likeButton).toBeDisabled();
     });
 
     test('like button UI updates instantly when unliking a comment and can like again after button is enabled', async ({page}) => {
@@ -197,9 +197,9 @@ test.describe('Actions', async () => {
         await likeButton.click();
         mockedApi.setDelay(100); // give time for disabled state
         await expect(likeButton).toHaveText('51');
-        expect(likeButton.isDisabled()).toBeTruthy();
+        await expect(likeButton).toBeDisabled();
 
-        expect(await likeButton.isDisabled()).toBeFalsy();
+        await expect(likeButton).not.toBeDisabled();
 
         await likeButton.click();
         await expect(likeButton).toHaveText('52');
