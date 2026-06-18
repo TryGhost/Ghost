@@ -2,6 +2,17 @@ const assert = require('node:assert/strict');
 
 const MemberAttributionService = require('../../../../../core/server/services/member-attribution/member-attribution-service');
 
+// Mocks a Bookshelf model that is queried via `.where(...).query(...).fetch(...)`,
+// resolving the fetch to the given event (or null).
+function createEventModelMock(event) {
+    const chainable = {
+        where: () => chainable,
+        query: () => chainable,
+        fetch: async () => event
+    };
+    return chainable;
+}
+
 describe('MemberAttributionService', function () {
     describe('Constructor', function () {
         it('doesn\'t throw', function () {
@@ -268,9 +279,7 @@ describe('MemberAttributionService', function () {
         it('returns null when no event exists', async function () {
             const service = new MemberAttributionService({
                 models: {
-                    MemberCreatedEvent: {
-                        findOne: () => null
-                    }
+                    MemberCreatedEvent: createEventModelMock(null)
                 }
             });
 
@@ -281,21 +290,19 @@ describe('MemberAttributionService', function () {
         it('returns attribution from event', async function () {
             const service = new MemberAttributionService({
                 models: {
-                    MemberCreatedEvent: {
-                        findOne: () => ({
-                            get: function (key) {
-                                const values = {
-                                    attribution_id: 'attr_123',
-                                    attribution_url: '/test',
-                                    attribution_type: 'post',
-                                    referrer_source: 'source',
-                                    referrer_medium: 'medium',
-                                    referrer_url: 'https://referrer.com'
-                                };
-                                return values[key];
-                            }
-                        })
-                    }
+                    MemberCreatedEvent: createEventModelMock({
+                        get: function (key) {
+                            const values = {
+                                attribution_id: 'attr_123',
+                                attribution_url: '/test',
+                                attribution_type: 'post',
+                                referrer_source: 'source',
+                                referrer_medium: 'medium',
+                                referrer_url: 'https://referrer.com'
+                            };
+                            return values[key];
+                        }
+                    })
                 },
                 attributionBuilder: {
                     build: function (attribution) {
@@ -326,9 +333,7 @@ describe('MemberAttributionService', function () {
         it('returns null when no event exists', async function () {
             const service = new MemberAttributionService({
                 models: {
-                    SubscriptionCreatedEvent: {
-                        findOne: () => null
-                    }
+                    SubscriptionCreatedEvent: createEventModelMock(null)
                 }
             });
 
@@ -339,21 +344,19 @@ describe('MemberAttributionService', function () {
         it('returns attribution from event', async function () {
             const service = new MemberAttributionService({
                 models: {
-                    SubscriptionCreatedEvent: {
-                        findOne: () => ({
-                            get: function (key) {
-                                const values = {
-                                    attribution_id: 'attr_123',
-                                    attribution_url: '/test',
-                                    attribution_type: 'post',
-                                    referrer_source: 'source',
-                                    referrer_medium: 'medium',
-                                    referrer_url: 'https://referrer.com'
-                                };
-                                return values[key];
-                            }
-                        })
-                    }
+                    SubscriptionCreatedEvent: createEventModelMock({
+                        get: function (key) {
+                            const values = {
+                                attribution_id: 'attr_123',
+                                attribution_url: '/test',
+                                attribution_type: 'post',
+                                referrer_source: 'source',
+                                referrer_medium: 'medium',
+                                referrer_url: 'https://referrer.com'
+                            };
+                            return values[key];
+                        }
+                    })
                 },
                 attributionBuilder: {
                     build: function (attribution) {

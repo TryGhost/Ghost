@@ -1,5 +1,5 @@
 /* eslint-env node */
-const tailwindConfig = `${__dirname}/tailwind.config.cjs`;
+const tailwindConfig = `${__dirname}/tailwind.config.js`;
 
 module.exports = {
     root: true,

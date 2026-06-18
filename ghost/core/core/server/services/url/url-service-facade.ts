@@ -15,6 +15,12 @@
  * swapped in behind a config flag without touching individual callers.
  */
 
+/* eslint-disable @typescript-eslint/no-require-imports */
+const _ = require('lodash');
+const logging = require('@tryghost/logging');
+const errors = require('@tryghost/errors');
+/* eslint-enable @typescript-eslint/no-require-imports */
+
 /**
  * Routing-level resource. `type` is one of the plural router keys
  * ('posts', 'pages', 'tags', 'authors'). Concrete records carry additional
@@ -72,17 +78,24 @@ export interface LazyUrlServiceBackend {
 export class UrlServiceFacade {
     private urlService: EagerUrlService;
     private lazyUrlService: LazyUrlServiceBackend | null;
+    private compare: boolean;
 
     constructor({
         urlService,
-        lazyUrlService = null
-    }: {urlService: EagerUrlService; lazyUrlService?: LazyUrlServiceBackend | null}) {
+        lazyUrlService = null,
+        compare = false
+    }: {urlService: EagerUrlService; lazyUrlService?: LazyUrlServiceBackend | null; compare?: boolean}) {
         this.urlService = urlService;
         this.lazyUrlService = lazyUrlService;
+        this.compare = compare;
     }
 
     isLazy(): boolean {
-        return !!this.lazyUrlService;
+        return !!this.lazyUrlService && !this.compare;
+    }
+
+    isComparing(): boolean {
+        return this.compare && !!this.lazyUrlService;
     }
 
     /**
@@ -90,17 +103,29 @@ export class UrlServiceFacade {
      * filters and applies permalink templates against it.
      */
     getUrlForResource(resource: Resource, options?: UrlOptions): string {
-        if (this.lazyUrlService) {
-            return this.lazyUrlService.getUrlForResource(resource, options);
+        if (this.isLazy()) {
+            return this.lazyUrlService!.getUrlForResource(resource, options);
         }
-        return this.urlService.getUrlByResourceId(resource.id, options);
+        const url = this.urlService.getUrlByResourceId(resource.id, options);
+        if (this.isComparing()) {
+            setImmediate(() => this._compare('getUrlForResource', url,
+                () => this.lazyUrlService!.getUrlForResource(resource, options),
+                {type: resource.type, id: resource.id}));
+        }
+        return url;
     }
 
     ownsResource(routerIdentifier: string, resource: Resource): boolean {
-        if (this.lazyUrlService) {
-            return this.lazyUrlService.ownsResource(routerIdentifier, resource);
+        if (this.isLazy()) {
+            return this.lazyUrlService!.ownsResource(routerIdentifier, resource);
         }
-        return this.urlService.owns(routerIdentifier, resource.id);
+        const owns = this.urlService.owns(routerIdentifier, resource.id);
+        if (this.isComparing()) {
+            setImmediate(() => this._compare('ownsResource', owns,
+                () => this.lazyUrlService!.ownsResource(routerIdentifier, resource),
+                {type: resource.type, id: resource.id, routerIdentifier}));
+        }
+        return owns;
     }
 
     /**
@@ -109,27 +134,41 @@ export class UrlServiceFacade {
      * match the lazy implementation's contract.
      */
     async resolveUrl(urlPath: string): Promise<Resource | null> {
-        if (this.lazyUrlService) {
-            return this.lazyUrlService.resolveUrl(urlPath);
+        if (this.isLazy()) {
+            return this.lazyUrlService!.resolveUrl(urlPath);
         }
         const resource = this.urlService.getResource(urlPath);
-        if (!resource) {
-            return null;
-        }
         // The routing-level type ('posts', 'pages', 'tags', 'authors') wins
         // over any DB type field on resource.data so the flat Resource is
         // unambiguous.
-        return Object.assign({}, resource.data, {type: resource.config.type}) as Resource;
+        const eagerResult = resource
+            ? Object.assign({}, resource.data, {type: resource.config.type}) as Resource
+            : null;
+        if (this.isComparing()) {
+            // Fire-and-forget: don't await lazy so the reverse lookup adds no
+            // latency for its callers; the lazy DB read runs in the background.
+            void this._compareAsync('resolveUrl', eagerResult,
+                () => this.lazyUrlService!.resolveUrl(urlPath),
+                {path: urlPath},
+                (a, b) => _.isEqual(a, b));
+        }
+        return eagerResult;
     }
 
     hasFinished(): boolean {
-        if (this.lazyUrlService) {
-            return this.lazyUrlService.hasFinished();
+        if (this.isLazy()) {
+            return this.lazyUrlService!.hasFinished();
         }
+        // Track eager when comparing: lazy always reports ready and would gate traffic in early.
         return this.urlService.hasFinished();
     }
 
+    // While comparing, register on both so lazy sees the same routers as eager.
     onRouterAddedType(...args: unknown[]): unknown {
+        if (this.isComparing()) {
+            this._runLazyHook('onRouterAddedType', () => this.lazyUrlService!.onRouterAddedType(...args));
+            return this.urlService.onRouterAddedType(...args);
+        }
         if (this.lazyUrlService) {
             return this.lazyUrlService.onRouterAddedType(...args);
         }
@@ -137,6 +176,10 @@ export class UrlServiceFacade {
     }
 
     onRouterUpdated(...args: unknown[]): unknown {
+        if (this.isComparing()) {
+            this._runLazyHook('onRouterUpdated', () => this.lazyUrlService!.onRouterUpdated(...args));
+            return this.urlService.onRouterUpdated(...args);
+        }
         if (this.lazyUrlService) {
             return this.lazyUrlService.onRouterUpdated(...args);
         }
@@ -149,8 +192,84 @@ export class UrlServiceFacade {
      */
     reset(): void {
         if (this.lazyUrlService) {
-            this.lazyUrlService.reset();
+            this._runLazyHook('reset', () => this.lazyUrlService!.reset());
         }
+    }
+
+    // Runs a lazy router hook in compare mode. Lazy failures are swallowed and
+    // reported so they can never block the authoritative eager hook (or, for
+    // reset, break a routes reload).
+    private _runLazyHook(method: string, fn: () => void): void {
+        try {
+            fn();
+        } catch (err) {
+            this._reportLazyError(method, err as Error, {});
+        }
+    }
+
+    // Runs lazy alongside eager and logs any divergence; eager's value is always
+    // returned. Lazy errors are swallowed so a comparison can't break a request.
+    private _compare(
+        method: string,
+        eagerValue: unknown,
+        getLazyValue: () => unknown,
+        context: Record<string, unknown>,
+        isEqual: (a: unknown, b: unknown) => boolean = (a, b) => a === b
+    ): void {
+        let lazyValue: unknown;
+        try {
+            lazyValue = getLazyValue();
+        } catch (err) {
+            this._reportLazyError(method, err as Error, context);
+            return;
+        }
+        this._reportMismatch(method, eagerValue, lazyValue, context, isEqual);
+    }
+
+    private async _compareAsync(
+        method: string,
+        eagerValue: unknown,
+        getLazyValue: () => Promise<unknown>,
+        context: Record<string, unknown>,
+        isEqual: (a: unknown, b: unknown) => boolean = (a, b) => a === b
+    ): Promise<void> {
+        let lazyValue: unknown;
+        try {
+            lazyValue = await getLazyValue();
+        } catch (err) {
+            this._reportLazyError(method, err as Error, context);
+            return;
+        }
+        this._reportMismatch(method, eagerValue, lazyValue, context, isEqual);
+    }
+
+    private _reportMismatch(
+        method: string,
+        eagerValue: unknown,
+        lazyValue: unknown,
+        context: Record<string, unknown>,
+        isEqual: (a: unknown, b: unknown) => boolean
+    ): void {
+        if (!isEqual(eagerValue, lazyValue)) {
+            this._report(new errors.InternalServerError({
+                message: 'URL service parity mismatch',
+                code: 'LAZY_URL_PARITY_MISMATCH',
+                errorDetails: {method, eager: eagerValue, lazy: lazyValue, ...context}
+            }));
+        }
+    }
+
+    private _reportLazyError(method: string, err: Error, context: Record<string, unknown>): void {
+        this._report(new errors.InternalServerError({
+            message: 'Lazy URL service threw during comparison',
+            code: 'LAZY_URL_COMPARE_ERROR',
+            err,
+            errorDetails: {method, ...context}
+        }));
+    }
+
+    private _report(error: Error): void {
+        logging.error(error);
     }
 }
 

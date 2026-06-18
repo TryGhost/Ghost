@@ -17,8 +17,8 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange
     } = useSettingGroup();
 
-    const [trackEmailOpens, trackEmailClicks, trackMemberSources, outboundLinkTagging, isWebAnalyticsConfigured, isWebAnalyticsEnabled] = getSettingValues(localSettings, [
-        'email_track_opens', 'email_track_clicks', 'members_track_sources', 'outbound_link_tagging', 'web_analytics_configured', 'web_analytics_enabled'
+    const [trackEmailOpens, trackEmailClicks, trackMemberSources, outboundLinkTagging, didUserEnableWebAnalytics, isWebAnalyticsConfigured] = getSettingValues(localSettings, [
+        'email_track_opens', 'email_track_clicks', 'members_track_sources', 'outbound_link_tagging', 'web_analytics', 'web_analytics_configured'
     ]) as boolean[];
     const isEmailTrackClicksReadOnly = isSettingReadOnly(localSettings, 'email_track_clicks');
 
@@ -43,14 +43,16 @@ const Analytics: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange(true);
     };
 
+    const isWebAnalyticsAvailable = isWebAnalyticsConfigured && !isWebAnalyticsLimited;
+
     const inputs = (
         <SettingGroupContent className="analytics-settings gap-y-0!" columns={1}>
             <Toggle
                 align='center'
-                checked={isWebAnalyticsEnabled}
+                checked={didUserEnableWebAnalytics && isWebAnalyticsAvailable}
                 containerClasses='py-4'
                 direction='rtl'
-                disabled={!isWebAnalyticsConfigured || isWebAnalyticsLimited}
+                disabled={!isWebAnalyticsAvailable}
                 gap='gap-0'
                 hint={
                     !isWebAnalyticsConfigured ?

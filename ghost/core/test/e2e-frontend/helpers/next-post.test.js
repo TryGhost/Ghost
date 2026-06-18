@@ -30,7 +30,7 @@ describe('e2e {{#next_post}} helper', function () {
     let inverse;
     let publicPost, membersPost, paidPost, basicTierPost, publicPost2;
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost({
             backend: true,
             frontend: false

@@ -3,9 +3,16 @@
   "version": "0.0.0-private",
   "description": "The professional publishing platform",
   "private": true,
-  "packageManager": "pnpm@11.4.0+sha512.f0febc7e37552ab485494a914241b338e0b3580b93d54ce31f00933015880863129038a1b4ae4e414a0ee63ac35bf21197e990172c4a68256450b5636310968f",
+  "packageManager": "pnpm@11.6.0+sha512.9a36518224080c6fe5165afdcfe79bfa118c29be703f3f462b1e32efe1e98e47e8750b148e08286250aad4113cc7993ca413c4e2cd447752708c2ee5751bc95f",
   "engines": {
-    "node": "^22.13.1"
+    "node": "^22.18.0"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "22.18.0",
+      "onFail": "download"
+    }
   },
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -37,7 +44,9 @@
     "dev:status": "node scripts/dev-supervisor.js status",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
-    "setup": "pnpm install && git submodule update --init --recursive",
+    "setup": "pnpm install && git submodule update --init --recursive && pnpm build",
+    "reset:db": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && pnpm knex-migrator reset && pnpm knex-migrator init'",
+    "reset:db:volume": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down && docker volume rm ghost-dev_mysql-data",
     "reset:data": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123'",
     "reset:data:empty": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123'",
     "reset:data:xxl": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123'",
@@ -77,12 +86,12 @@
     "eslint-plugin-react": "7.37.5",
     "husky": "9.1.7",
     "jsonc-parser": "catalog:",
-    "knip": "6.14.2",
-    "lint-staged": "17.0.5",
-    "nx": "22.7.4",
+    "knip": "6.16.1",
+    "lint-staged": "17.0.7",
+    "nx": "22.7.5",
     "rimraf": "6.1.3",
     "secretlint": "13.0.2",
-    "semver": "7.7.4",
+    "semver": "7.8.4",
     "typescript": "catalog:",
     "vitest": "catalog:"
   },

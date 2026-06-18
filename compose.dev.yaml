@@ -39,7 +39,7 @@ services:
       retries: 120
 
   mailpit:
-    image: axllent/mailpit@sha256:3bd7c2f2696deb35a4780d152b404dceec99cb041b942c0877b3b22384714f85
+    image: axllent/mailpit@sha256:37a38e48e9338cd7e89dfeb487f37b02ebfcd9cb23111bed2d345e79d37d6dd6
     container_name: ghost-dev-mailpit
     ports:
       - "1025:1025"  # SMTP server
@@ -60,13 +60,13 @@ services:
     working_dir: /home/ghost/ghost/core
     command: ["pnpm", "dev"]
     volumes:
-      - ./ghost:/home/ghost/ghost
-      # ghost/admin has workspace:* deps on apps/* (e.g. @tryghost/admin-x-framework).
-      # The dev Dockerfile only stages ghost/{core,i18n,parse-email-address}
-      # package.jsons at build time; mounting apps/ here makes the workspace
-      # graph complete at runtime. pnpm 10 tolerated the missing packages;
-      # pnpm 11 strict-validates and fails without this mount.
-      - ./apps:/home/ghost/apps
+      # Keep the runtime workspace graph aligned with the packages installed
+      # by docker/ghost-dev/Dockerfile. Mounting all of ghost/ exposes
+      # ghost/admin, which depends on apps/* and causes pnpm to repair the
+      # workspace before running scripts.
+      - ./ghost/core:/home/ghost/ghost/core
+      - ./ghost/i18n:/home/ghost/ghost/i18n
+      - ./ghost/parse-email-address:/home/ghost/ghost/parse-email-address
       # Mount specific content subdirectories to preserve themes/adapters from source
       - ghost-dev-data:/home/ghost/ghost/core/content/data
       - ghost-dev-images:/home/ghost/ghost/core/content/images
@@ -78,6 +78,7 @@ services:
       NODE_ENV: development
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
       DEBUG: ${DEBUG:-}
+      pnpm_config_verify_deps_before_run: "false"
       database__client: mysql2
       database__connection__host: mysql
       database__connection__user: root
@@ -127,7 +128,7 @@ services:
         condition: service_healthy
 
   stripe:
-    image: stripe/stripe-cli:latest@sha256:91f8f262453f9ab3690bd4aaa3ba27e6902b5b8fb62a635bad20246e414fbadc
+    image: stripe/stripe-cli:latest@sha256:2daa6a2046e0a8f5608b5c4f04dd72f28db184889dc23c75611b10d6b91ff108
     container_name: ghost-dev-stripe
     entrypoint: ["/entrypoint.sh"]
     profiles: ["stripe"]

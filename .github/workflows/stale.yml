@@ -3,6 +3,11 @@ on:
   workflow_dispatch:
   schedule:
     - cron: '0 6 * * *'
+# actions/stale labels, comments on, and closes stale issues and PRs.
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
 jobs:
   stale:
     if: github.repository_owner == 'TryGhost'

@@ -498,7 +498,6 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({actionErrors = {}, a
                     onClose={closeEmailModal}
                     onSave={({subject, lexical}) => {
                         onChange(updateSendEmailAction({detail: automation, actionId: emailModalAction.id, emailSubject: subject, emailLexical: lexical}));
-                        closeEmailModal();
                     }}
                 />
             )}

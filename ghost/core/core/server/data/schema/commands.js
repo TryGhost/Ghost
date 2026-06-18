@@ -58,6 +58,8 @@ function addTableColumn(tableName, tableBuilder, columnName, columnSpec = schema
 
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'cascadeDelete') && columnSpec.cascadeDelete === true) {
         column.onDelete('CASCADE');
+    } else if (Object.prototype.hasOwnProperty.call(columnSpec, 'restrictDelete') && columnSpec.restrictDelete === true) {
+        column.onDelete('RESTRICT');
     } else if (Object.prototype.hasOwnProperty.call(columnSpec, 'setNullDelete') && columnSpec.setNullDelete === true) {
         column.onDelete('SET NULL');
     }
@@ -502,6 +504,9 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
         }
         if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
             tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
+        }
+        if (tableSpec['@@PRIMARY_KEY@@']) {
+            t.primary(tableSpec['@@PRIMARY_KEY@@']);
         }
     });
 }

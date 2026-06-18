@@ -131,6 +131,12 @@
     cursor: zoom-in;
 }
 
+@media (pointer: coarse) {
+    .gh-unsplash-photo {
+        cursor: default;
+    }
+}
+
 .gh-unsplash-photo-container > img {
     position: absolute;
     display: block;

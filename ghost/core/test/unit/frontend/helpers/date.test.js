@@ -116,6 +116,44 @@ describe('{{date}} helper', function () {
         });
     });
 
+    it('resolves i18n locales to regional moment locales', function () {
+        const testDate = '2014-11-20T01:28:58.593-04:00';
+        const timezone = 'Europe/Dublin';
+        const format = 'll';
+
+        // Ghost i18n locale -> moment locale that should be used for rendering
+        const expectations = {
+            zh: 'zh-cn',
+            'zh-Hant': 'zh-tw',
+            pa: 'pa-in',
+            en: 'en',
+            fr: 'fr',
+            kz: 'en', // not shipped by moment, falls back to the default locale
+            'not-a-real-locale-tag': 'en' // invalid tag, falls back to the default locale
+        };
+
+        Object.keys(expectations).forEach(function (locale) {
+            const context = {
+                hash: {format},
+                data: {
+                    site: {
+                        timezone,
+                        locale
+                    }
+                }
+            };
+
+            const rendered = date.call({published_at: testDate}, context);
+
+            assertExists(rendered);
+            assert.equal(
+                String(rendered),
+                moment(testDate).tz(timezone).locale(expectations[locale]).format(format),
+                `locale "${locale}" should render as moment locale "${expectations[locale]}"`
+            );
+        });
+    });
+
     it('creates properly formatted time ago date strings', function () {
         const testDates = [
             '2013-12-31T23:58:58.593+02:00',

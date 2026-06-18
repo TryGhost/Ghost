@@ -11,7 +11,7 @@ const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator
 const exporter = require('../../../core/server/data/exporter');
 
 describe('Exporter', function () {
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
     afterEach(testUtils.teardownDb);
     afterEach(function () {
         sinon.restore();
@@ -25,6 +25,11 @@ describe('Exporter', function () {
         const tables = [
             'actions',
             'api_keys',
+            'automation_action_edges',
+            'automation_action_revisions',
+            'automation_actions',
+            'automation_run_steps',
+            'automation_runs',
             'automated_email_recipients',
             'automations',
             'benefits',
@@ -42,6 +47,7 @@ describe('Exporter', function () {
             'email_recipients',
             'email_spam_complaint_events',
             'emails',
+            'gift_links',
             'gifts',
             'integrations',
             'invites',
@@ -138,7 +144,8 @@ describe('Exporter', function () {
             'members_paid_subscription_events',
             'members_subscribe_events',
             'outbox',
-            'gifts'
+            'gifts',
+            'gift_links'
         ];
 
         excludedTables.forEach((tableName) => {

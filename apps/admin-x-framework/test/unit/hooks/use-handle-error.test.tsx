@@ -176,6 +176,20 @@ describe('useHandleError', () => {
         expect(showToast).not.toHaveBeenCalled();
     });
 
+    it('still clears lingering toasts for 418 status', () => {
+        const wrapper = createWrapper();
+        const {result} = renderHook(() => useHandleError(), {wrapper});
+
+        const mockResponse = new Response(null, {status: 418});
+        const error = new APIError(mockResponse);
+
+        result.current(error);
+
+        // A stale toast can cover UI and block clicks in tests, so the
+        // unmocked-request path must clear toasts even without showing one
+        expect(toast.remove).toHaveBeenCalled();
+    });
+
     it('shows validation error message from context', () => {
         const wrapper = createWrapper();
         const {result} = renderHook(() => useHandleError(), {wrapper});

@@ -41,7 +41,8 @@ describe('memberFields', () => {
             'opened_emails.post_id',
             'clicked_links.post_id',
             'newsletter_feedback',
-            'offer_redemptions'
+            'offer_redemptions',
+            'count.active_stripe_customers'
         ]);
     });
 
@@ -135,6 +136,60 @@ describe('dateCodec', () => {
         expect(memberFields.created_at.codec.serialize(predicate, dateContext)).toEqual([
             'created_at:<=\'2024-01-01T23:59:59.999Z\''
         ]);
+    });
+});
+
+describe('multipleActiveSubscriptionsCodec', () => {
+    const field = memberFields['count.active_stripe_customers'];
+    const context: CodecContext = {
+        key: 'count.active_stripe_customers',
+        pattern: 'count.active_stripe_customers',
+        params: {},
+        timezone: 'UTC'
+    };
+
+    it('serializes the Yes/No predicate to count comparisons', () => {
+        const predicate: FilterPredicate = {
+            id: '1',
+            field: 'count.active_stripe_customers',
+            operator: 'is',
+            values: ['true']
+        };
+
+        expect(field.codec.serialize(predicate, context)).toEqual([
+            'count.active_stripe_customers:>1'
+        ]);
+        expect(field.codec.serialize({...predicate, values: ['false']}, context)).toEqual([
+            'count.active_stripe_customers:<2'
+        ]);
+    });
+
+    it('rejects unknown values and other operators', () => {
+        const predicate: FilterPredicate = {
+            id: '1',
+            field: 'count.active_stripe_customers',
+            operator: 'is',
+            values: [true]
+        };
+
+        expect(field.codec.serialize(predicate, context)).toBeNull();
+        expect(field.codec.serialize({...predicate, values: [1]}, context)).toBeNull();
+        expect(field.codec.serialize({...predicate, operator: 'is-greater', values: ['true']}, context)).toBeNull();
+    });
+
+    it('parses only the comparisons it serializes', () => {
+        expect(field.codec.parse({'count.active_stripe_customers': {$gt: 1}}, context)).toEqual({
+            field: 'count.active_stripe_customers',
+            operator: 'is',
+            values: ['true']
+        });
+        expect(field.codec.parse({'count.active_stripe_customers': {$lt: 2}}, context)).toEqual({
+            field: 'count.active_stripe_customers',
+            operator: 'is',
+            values: ['false']
+        });
+        expect(field.codec.parse({'count.active_stripe_customers': {$gt: 2}}, context)).toBeNull();
+        expect(field.codec.parse({'count.active_stripe_customers': 1}, context)).toBeNull();
     });
 });
 

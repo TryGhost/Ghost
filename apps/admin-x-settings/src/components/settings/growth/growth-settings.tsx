@@ -19,9 +19,16 @@ export const searchKeywords = {
 const GrowthSettings: React.FC = () => {
     const {config, settings} = useGlobalData();
     const hasStripeEnabled = checkStripeEnabled(settings || [], config || {});
+    const visibleSearchKeywords = [
+        searchKeywords.network,
+        searchKeywords.explore,
+        searchKeywords.recommendations,
+        searchKeywords.embedSignupForm,
+        ...(hasStripeEnabled ? [searchKeywords.offers] : [])
+    ].flat();
 
     return (
-        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Growth'>
+        <SearchableSection keywords={visibleSearchKeywords} title='Growth'>
             <Network keywords={searchKeywords.network} />
             <Explore keywords={searchKeywords.explore} />
             <Recommendations keywords={searchKeywords.recommendations} />

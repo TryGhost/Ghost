@@ -22,6 +22,8 @@ const {sequence} = require('@tryghost/promise');
 const urlServiceUtils = require('./url-service-utils');
 
 let dbInitialized = false;
+let mysqlSnapshotDatabase = null;
+const mysqlSnapshotTablePrefix = '__ghost_snapshot_';
 
 /**
  * Checks if the current active connection is a MySQL database
@@ -69,11 +71,11 @@ module.exports.reset = async ({truncate} = {truncate: false}) => {
         if (truncate) {
             // Perform a fast reset by tearing down all the tables and inserting the fixtures
             try {
-                await truncateAll();
-                await knexMigrator.init({only: 3});
+                await resetMySQLFromSnapshot();
             } catch (err) {
                 // If it fails, try a normal restore
                 await forceReinit();
+                await createMySQLSnapshot();
             }
         } else {
             // Do a full database reset + initialisation
@@ -93,6 +95,8 @@ module.exports.teardown = async () => {
     } catch (err) {
         await knexMigrator.reset({force: true});
     }
+
+    await dropMySQLSnapshots();
 };
 
 /**
@@ -124,6 +128,96 @@ module.exports.truncate = async (tableName) => {
 const forceReinit = async () => {
     await knexMigrator.reset({force: true});
     await knexMigrator.init();
+    await dropMySQLSnapshots();
+};
+
+const getResetTables = () => {
+    return schemaTables.concat(['migrations']);
+};
+
+const getMySQLSnapshotTableName = (table) => {
+    return `${mysqlSnapshotTablePrefix}${table}`;
+};
+
+const getMySQLDatabaseName = () => {
+    return config.get('database:connection:database');
+};
+
+const isMySQLSnapshotCurrent = () => {
+    return mysqlSnapshotDatabase === getMySQLDatabaseName();
+};
+
+const resetMySQLFromSnapshot = async () => {
+    if (!isMySQLSnapshotCurrent()) {
+        await truncateAll();
+        await knexMigrator.init({only: 3});
+        await createMySQLSnapshot();
+        return;
+    }
+
+    await restoreMySQLSnapshot();
+};
+
+const createMySQLSnapshot = async () => {
+    if (!module.exports.isMySQL()) {
+        return;
+    }
+
+    const tables = getResetTables();
+
+    await sequence(tables.map(table => async () => {
+        const snapshotTable = getMySQLSnapshotTableName(table);
+
+        await db.knex.schema.dropTableIfExists(snapshotTable);
+        await db.knex.raw('CREATE TABLE ?? LIKE ??', [snapshotTable, table]);
+        await db.knex.raw('INSERT INTO ?? SELECT * FROM ??', [snapshotTable, table]);
+    }));
+
+    mysqlSnapshotDatabase = getMySQLDatabaseName();
+};
+
+const restoreMySQLSnapshot = async () => {
+    debug('Database snapshot restore');
+    urlServiceUtils.reset();
+
+    const tables = getResetTables();
+
+    await db.knex.transaction(async (trx) => {
+        try {
+            await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;').transacting(trx);
+
+            await sequence(tables.map(table => async () => {
+                const snapshotTable = getMySQLSnapshotTableName(table);
+
+                await db.knex.raw('DELETE FROM ??', [table]).transacting(trx);
+                await db.knex.raw('INSERT INTO ?? SELECT * FROM ??', [table, snapshotTable]).transacting(trx);
+            }));
+        } finally {
+            await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
+            debug('Database snapshot restore end');
+        }
+    });
+};
+
+const dropMySQLSnapshots = async () => {
+    if (!module.exports.isMySQL()) {
+        return;
+    }
+
+    mysqlSnapshotDatabase = null;
+
+    try {
+        await sequence(getResetTables().map(table => () => {
+            return db.knex.schema.dropTableIfExists(getMySQLSnapshotTableName(table));
+        }));
+    } catch (err) {
+        // CASE: table does not exist || DB does not exist
+        if (err.errno === 1146 || err.errno === 1049) {
+            return Promise.resolve();
+        }
+
+        throw err;
+    }
 };
 
 /**
@@ -135,7 +229,7 @@ const truncateAll = async () => {
     debug('Database teardown');
     urlServiceUtils.reset();
 
-    const tables = schemaTables.concat(['migrations']);
+    const tables = getResetTables();
 
     if (module.exports.isSQLite()) {
         try {

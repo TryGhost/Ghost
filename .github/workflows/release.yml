@@ -32,6 +32,11 @@ concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false
 
+# The release job pushes via an SSH deploy key and authenticates to the
+# GitHub API with a PAT, so the default GITHUB_TOKEN only needs read access.
+permissions:
+  contents: read
+
 jobs:
   release:
     if: github.repository == 'TryGhost/Ghost'
@@ -42,7 +47,7 @@ jobs:
         with:
           ssh-private-key: ${{ secrets.DEPLOY_KEY }}
 
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           # Deploy key (via ssh-agent) is used for git push — it bypasses
           # branch protection and triggers downstream workflows (unlike GITHUB_TOKEN)

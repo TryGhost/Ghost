@@ -5,7 +5,7 @@ import {poll} from '../../../../../core/server/services/automations/poll';
 import type {AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../../../core/server/services/member-welcome-emails/constants';
 // @ts-expect-error Models currently lack type definitions.
-import {Member} from '../../../../../core/server/models';
+import {AutomatedEmailRecipient, Member} from '../../../../../core/server/models';
 
 const MAX_STEPS_PER_BATCH = 100;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
@@ -17,9 +17,6 @@ type StepSpecificField =
     | 'wait_hours'
     | 'email_subject'
     | 'email_lexical'
-    | 'email_sender_name'
-    | 'email_sender_email'
-    | 'email_sender_reply_to'
     | 'email_design_setting_id';
 type StepBase = Omit<AutomationStepToRun, StepSpecificField>;
 type PollOptions = Parameters<typeof poll>[0];
@@ -44,6 +41,7 @@ type PollOptionsStubs = PollOptions & {
     enqueueAnotherPollAt: StubbedFunction<PollOptions['enqueueAnotherPollAt']>;
     memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
 };
+type AutomatedEmailRecipientAdd = typeof AutomatedEmailRecipient.add;
 
 type MemberFixture = {
     email: string;
@@ -105,9 +103,6 @@ function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
         type: 'send_email',
         email_subject: 'Welcome!',
         email_lexical: JSON.stringify({root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}}),
-        email_sender_name: null,
-        email_sender_email: null,
-        email_sender_reply_to: null,
         email_design_setting_id: null,
         ...attrs
     } satisfies SendEmailStep;
@@ -115,6 +110,7 @@ function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
 
 describe('automations poll', function () {
     let automationsApi: AutomationsApiStubs;
+    let automatedEmailRecipientAdd: sinon.SinonStub<Parameters<AutomatedEmailRecipientAdd>, ReturnType<AutomatedEmailRecipientAdd>>;
     let memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
     let options: PollOptionsStubs;
 
@@ -143,21 +139,11 @@ describe('automations poll', function () {
         };
 
         sinon.stub(Member, 'findOne').resolves(buildMember());
+        automatedEmailRecipientAdd = sinon.stub(AutomatedEmailRecipient, 'add').resolves();
     });
 
     afterEach(function () {
         sinon.restore();
-    });
-
-    it('does nothing in production (for now)', async function () {
-        // NOTE: We'll remove this test once we go live.
-        sinon.stub(process.env, 'NODE_ENV').value('production');
-
-        await poll(options);
-
-        sinon.assert.notCalled(automationsApi.fetchAndLockSteps);
-        sinon.assert.notCalled(options.enqueueAnotherPollAt);
-        sinon.assert.notCalled(memberWelcomeEmailService.init);
     });
 
     it('does nothing when no steps are ready', async function () {
@@ -275,12 +261,7 @@ describe('automations poll', function () {
 
     it('sends email revision content and enqueues the next step', async function () {
         const nextReadyAt = new Date(Date.now() + 60 * 1000);
-        const step = buildEmailStep({
-            email_design_setting_id: 'design-id',
-            email_sender_email: 'sender@example.com',
-            email_sender_name: 'Sender',
-            email_sender_reply_to: 'reply@example.com'
-        });
+        const step = buildEmailStep({email_design_setting_id: 'design-id'});
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
         automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
 
@@ -291,14 +272,47 @@ describe('automations poll', function () {
             email: {
                 designSettingId: 'design-id',
                 lexical: step.email_lexical,
-                senderEmail: 'sender@example.com',
-                senderName: 'Sender',
-                senderReplyTo: 'reply@example.com',
                 subject: 'Welcome!'
             },
             memberStatus: 'free'
         }));
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
+    });
+
+    it('records the automated email recipient after sending email revision content', async function () {
+        const step = buildEmailStep({
+            automation_action_revision_id: 'revision-id'
+        });
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automatedEmailRecipientAdd, {
+            member_id: step.member_id,
+            member_uuid: '00000000-0000-4000-8000-000000000001',
+            member_email: 'member@example.com',
+            member_name: 'Test Member',
+            automation_action_revision_id: 'revision-id'
+        });
+        sinon.assert.callOrder(
+            memberWelcomeEmailService.api.sendAutomationEmail,
+            automatedEmailRecipientAdd,
+            automationsApi.finishStepAndEnqueueNext
+        );
+    });
+
+    it('does not retry the email send when recording the automated email recipient fails', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        automatedEmailRecipientAdd.rejects(new Error('recipient persistence failed'));
+
+        await poll(options);
+
+        sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.calledOnce(automatedEmailRecipientAdd);
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.retryStep);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
     });
 
     it('enqueues the earlier pending step instead of a later processed next step', async function () {

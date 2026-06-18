@@ -104,6 +104,24 @@ describe('oembed-service', function () {
         });
     });
 
+    describe('fetchPage', function () {
+        it('requests pages with a 5 second timeout', async function () {
+            const externalRequest = sinon.stub().resolves({});
+
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest
+            });
+
+            await service.fetchPage('https://www.example.com', {});
+
+            const options = externalRequest.firstCall.args[1];
+            assert.equal(options.timeout.request, 5000);
+        });
+    });
+
     describe('fetchOembedData', function () {
         const pageHtml = `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"></head></html>`;
 
@@ -180,6 +198,24 @@ describe('oembed-service', function () {
             assert.equal(response.type, 'bookmark');
             assert.equal(response.url, 'https://www.example.com');
             assert.equal(response.metadata.title, 'Example');
+        });
+
+        it('extracts Amazon product metadata via the metascraper-amazon ruleset', async function () {
+            nock('https://www.amazon.com')
+                .get('/dp/B08N5WRWNW')
+                .query(true)
+                .reply(200, `<html><head><title>Amazon.com</title></head><body>
+                    <span id="productTitle">Example Product Title</span>
+                    <img class="a-dynamic-image" src="https://m.media-amazon.com/images/I/example.jpg" data-old-hires="https://m.media-amazon.com/images/I/example-hires.jpg">
+                </body></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.amazon.com/dp/B08N5WRWNW', 'bookmark');
+
+            assert.equal(response.version, '1.0');
+            assert.equal(response.type, 'bookmark');
+            assert.equal(response.metadata.title, 'Example Product Title');
+            assert.equal(response.metadata.publisher, 'Amazon');
+            assert.equal(response.metadata.thumbnail, 'https://m.media-amazon.com/images/I/example-hires.jpg');
         });
 
         it('should return a bookmark response when the oembed endpoint returns a link type', async function () {

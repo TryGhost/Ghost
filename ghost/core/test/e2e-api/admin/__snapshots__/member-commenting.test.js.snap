@@ -51,6 +51,7 @@ Object {
         "info": null,
         "suppressed": false,
       },
+      "enable_comment_notifications": true,
       "geolocation": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "labels": Array [],

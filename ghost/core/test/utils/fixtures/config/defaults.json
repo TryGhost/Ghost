@@ -60,6 +60,18 @@
             "lifetime": 43200,
             "freeRetries": 8
         },
+        "checkout_session_global": {
+            "minWait": 3600000,
+            "maxWait": 3600000,
+            "lifetime": 3600,
+            "freeRetries": 99
+        },
+        "checkout_session_email": {
+            "minWait": 600000,
+            "maxWait": 43200000,
+            "lifetime": 43200,
+            "freeRetries": 8
+        },
         "webmentions_block": {
             "minWait": 3600000,
             "maxWait": 3600000,

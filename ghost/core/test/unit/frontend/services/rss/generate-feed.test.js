@@ -6,6 +6,7 @@ const testUtils = require('../../../../utils');
 const configUtils = require('../../../../utils/config-utils');
 const routerManager = require('../../../../../core/frontend/services/routing').routerManager;
 const generateFeed = require('../../../../../core/frontend/services/rss/generate-feed');
+const {callRenderer} = require('../../../server/services/koenig/test-utils');
 
 describe('RSS: Generate Feed', function () {
     const data = {};
@@ -217,6 +218,142 @@ describe('RSS: Generate Feed', function () {
 
             // absolute URL - <a href="http:\/\/somewhere.com\/link#nowhere" title="Absolute URL">
             assert.match(xmlData, /<a href="http:\/\/somewhere.com\/link#nowhere" title="Absolute URL">/);
+        });
+    });
+
+    describe('Card reformatting', function () {
+        // The card markup we care about lives in <content:encoded>. The feed also
+        // emits a plain-text <description> excerpt that is generated before the
+        // card cleanup runs, so assertions are scoped to content:encoded.
+        function getEncodedContent(xmlData) {
+            const match = xmlData.match(/<content:encoded><!\[CDATA\[([\s\S]*?)\]\]><\/content:encoded>/);
+            return match ? match[1] : '';
+        }
+
+        beforeEach(function () {
+            configUtils.set({url: 'http://my-ghost-blog.com'});
+        });
+
+        it('strips bookmark thumbnail, icon and metadata', async function () {
+            const html = callRenderer('bookmark', {
+                url: 'https://www.ghost.org/',
+                icon: 'https://www.ghost.org/favicon.ico',
+                title: 'Ghost',
+                description: 'doing kewl stuff',
+                author: 'ghost',
+                publisher: 'Ghost',
+                thumbnail: 'https://ghost.org/images/meta/ghost.png'
+            }).html;
+
+            // sanity check: the rendered card contains the chrome we expect to remove
+            assert.match(html, /kg-bookmark-thumbnail/);
+            assert.match(html, /kg-bookmark-icon/);
+            assert.match(html, /kg-bookmark-metadata/);
+
+            data.posts = [Object.assign({}, posts[0], {html})];
+
+            const xmlData = await generateFeed(baseUrl, data);
+            assertExists(xmlData);
+
+            const content = getEncodedContent(xmlData);
+            assert.doesNotMatch(content, /kg-bookmark-thumbnail/);
+            assert.doesNotMatch(content, /kg-bookmark-icon/);
+            assert.doesNotMatch(content, /kg-bookmark-metadata/);
+        });
+
+        it('strips video player chrome and leaves a playable video with poster and controls', async function () {
+            const html = callRenderer('video', {
+                src: '/content/x.mp4',
+                mimeType: 'video/mp4',
+                width: 200,
+                height: 100,
+                duration: 60,
+                thumbnailSrc: '/content/images/x.jpg',
+                customThumbnailSrc: '/content/images/x-custom.jpg'
+            }).html;
+
+            // sanity check: the rendered card contains the chrome we expect to remove
+            assert.match(html, /kg-video-overlay/);
+            assert.match(html, /kg-video-player-container/);
+
+            data.posts = [Object.assign({}, posts[1], {html})];
+
+            const xmlData = await generateFeed(baseUrl, data);
+            assertExists(xmlData);
+
+            const content = getEncodedContent(xmlData);
+            assert.doesNotMatch(content, /kg-video-overlay/);
+            assert.doesNotMatch(content, /kg-video-player-container/);
+
+            // the native <video> survives with a poster and is playable via controls
+            const video = content.match(/<video[^>]*>/);
+            assertExists(video);
+            assert.match(video[0], /poster=/);
+            assert.match(video[0], /controls/);
+            // the redundant inline CSS-thumbnail style is dropped now there's a real poster
+            assert.doesNotMatch(video[0], /style=/);
+        });
+
+        it('strips audio player chrome including the title and adds controls', async function () {
+            const html = callRenderer('audio', {
+                src: '/content/audio/x.mp3',
+                title: 'My Episode Title',
+                duration: 60,
+                mimeType: 'audio/mp3',
+                thumbnailSrc: '/content/images/x.jpg'
+            }).html;
+
+            // sanity check: the rendered card contains the chrome we expect to remove
+            assert.match(html, /kg-audio-thumbnail/);
+            assert.match(html, /class="kg-audio-player"/);
+
+            data.posts = [Object.assign({}, posts[2], {html})];
+
+            const xmlData = await generateFeed(baseUrl, data);
+            assertExists(xmlData);
+
+            const content = getEncodedContent(xmlData);
+            assert.doesNotMatch(content, /kg-audio-thumbnail/);
+            assert.doesNotMatch(content, /class="kg-audio-player"/);
+            // the now-purposeless player container wrapper is removed too
+            assert.doesNotMatch(content, /kg-audio-player-container/);
+
+            // the title is stripped along with the rest of the card chrome
+            assert.doesNotMatch(content, /My Episode Title/);
+
+            // the native <audio> survives and is playable via controls
+            const audio = content.match(/<audio[^>]*>/);
+            assertExists(audio);
+            assert.match(audio[0], /controls/);
+        });
+
+        it('cleans the generated excerpt so card chrome does not leak into the description', async function () {
+            const html = callRenderer('audio', {
+                src: '/content/audio/x.mp3',
+                title: 'Episode 1',
+                duration: 60,
+                mimeType: 'audio/mp3',
+                thumbnailSrc: '/content/images/x.jpg'
+            }).html;
+
+            // sanity check: the raw card carries chrome text we don't want in the excerpt
+            assert.match(html, /kg-audio-player/);
+            assert.match(html, /Unmute/);
+
+            // a post with no custom_excerpt/meta_description falls back to a generated excerpt
+            const post = Object.assign({}, posts[0], {html, custom_excerpt: null, meta_description: null});
+            data.posts = [post];
+
+            const xmlData = await generateFeed(baseUrl, data);
+            assertExists(xmlData);
+
+            // the item <description> is the generated excerpt (last <description> in the doc)
+            const descriptions = xmlData.match(/<description><!\[CDATA\[([\s\S]*?)\]\]><\/description>/g);
+            const itemDescription = descriptions[descriptions.length - 1];
+            // the excerpt is built after the card cleanup, so chrome must not appear
+            assert.doesNotMatch(itemDescription, /kg-audio-player/);
+            assert.doesNotMatch(itemDescription, /Unmute/);
+            assert.doesNotMatch(itemDescription, /Play audio/);
         });
     });
 });

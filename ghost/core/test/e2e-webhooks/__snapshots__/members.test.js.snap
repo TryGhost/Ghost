@@ -3,7 +3,8 @@
 exports[`member.* events member.added event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -12,6 +13,7 @@ Object {
 
 exports[`member.* events member.added event is triggered 2: [body] 1`] = `
 Object {
+  "event": "member.added",
   "member": Object {
     "current": Object {
       "avatar_image": null,
@@ -28,6 +30,7 @@ Object {
       "email_count": 0,
       "email_open_rate": null,
       "email_opened_count": 0,
+      "enable_comment_notifications": true,
       "geolocation": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "labels": Array [],
@@ -57,7 +60,8 @@ Object {
 exports[`member.* events member.deleted event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -66,6 +70,7 @@ Object {
 
 exports[`member.* events member.deleted event is triggered 2: [body] 1`] = `
 Object {
+  "event": "member.deleted",
   "member": Object {
     "current": Object {},
     "previous": Object {
@@ -80,6 +85,7 @@ Object {
       "email_count": 0,
       "email_open_rate": null,
       "email_opened_count": 0,
+      "enable_comment_notifications": true,
       "geolocation": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "last_seen_at": null,
@@ -104,7 +110,8 @@ Object {
 exports[`member.* events member.edited event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -113,6 +120,7 @@ Object {
 
 exports[`member.* events member.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "member.edited",
   "member": Object {
     "current": Object {
       "avatar_image": null,
@@ -129,6 +137,7 @@ Object {
       "email_count": 0,
       "email_open_rate": null,
       "email_opened_count": 0,
+      "enable_comment_notifications": true,
       "geolocation": null,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
       "labels": Array [],

@@ -278,6 +278,19 @@ const controller = {
             method: 'destroy'
         },
         async query(frame) {
+            const postsToDelete = await models.Post.findAll({
+                filter: frame.options.filter,
+                status: 'all',
+                columns: ['status']
+            });
+
+            const allDraft = postsToDelete.length > 0 && postsToDelete.every((post) => {
+                return post.get('status') === 'draft';
+            });
+            if (allDraft) {
+                frame.setHeader('X-Cache-Invalidate', '');
+            }
+
             return await postsService.bulkDestroy(frame.options);
         }
     },
@@ -304,7 +317,16 @@ const controller = {
         permissions: {
             unsafeAttrs: unsafeAttrs
         },
-        query(frame) {
+        async query(frame) {
+            const post = await models.Post.findOne({
+                id: frame.options.id,
+                status: 'all'
+            }, {require: false, columns: ['status']});
+
+            if (post && post.get('status') === 'draft') {
+                frame.setHeader('X-Cache-Invalidate', '');
+            }
+
             return models.Post.destroy({...frame.options, require: true});
         }
     },

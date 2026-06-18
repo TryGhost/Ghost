@@ -373,6 +373,21 @@ describe('{{ghost_head}} helper', function () {
             published_at: new Date(0),
             updated_at: new Date(0)
         }));
+
+        posts.push(createPost({ // Post 11
+            meta_description: 'site description',
+            title: 'Welcome to Ghost',
+            feature_image: '/content/images/test-image.png',
+            tags: [
+                createTag({name: 'Tom & Jerry'})
+            ],
+            authors: [
+                authors[3]
+            ],
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
+        }));
     };
 
     beforeEach(function () {
@@ -595,6 +610,27 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+        });
+
+        it('single-escapes special characters in article:tag meta values', async function () {
+            const renderObject = {
+                post: posts[11]
+            };
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            // The tag name "Tom & Jerry" must be HTML-escaped exactly once, so that
+            // consumers decode it back to the original "Tom & Jerry".
+            assert.match(rendered, /<meta property="article:tag" content="Tom &amp; Jerry">/);
+            // Guard against the double-escaping regression (&amp;amp;).
+            assert.doesNotMatch(rendered, /&amp;amp;/);
         });
 
         it('returns structured data without tags if there are no tags', async function () {
@@ -1034,6 +1070,30 @@ describe('{{ghost_head}} helper', function () {
             }));
         });
 
+        it('includes style tag in design preview when announcement bar renders nothing', async function () {
+            const loggingErrorStub = sinon.stub(logging, 'error');
+            getStub.withArgs('members_track_sources').returns(false);
+
+            const templateOptions = {
+                site: {
+                    accent_color: '#123456',
+                    _preview: 'test'
+                }
+            };
+
+            const rendered = await testGhostHead({hash: {exclude: 'card_assets,comment_counts'}, ...testUtils.createHbsResponse({
+                templateOptions,
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            })});
+
+            assert.match(rendered, /--ghost-accent-color: #123456/);
+            sinon.assert.notCalled(loggingErrorStub);
+        });
+
         it('does not override code injection', async function () {
             getStub.withArgs('codeinjection_head').returns('<style>:root {--ghost-accent-color: #site-code-injection}</style>');
 
@@ -1270,6 +1330,22 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '4.3'
                 }
             }));
+        });
+        it('does not inject the portal script when portal url is disabled', async function () {
+            getStub.withArgs('members_enabled').returns(true);
+            getStub.withArgs('paid_members_enabled').returns(true);
+            configUtils.set({'portal:url': false});
+
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                locals: {
+                    relativeUrl: '/',
+                    context: ['home', 'index'],
+                    safeVersion: '4.3'
+                }
+            }))).toString();
+
+            assert.doesNotMatch(rendered, /src="false"/);
+            assert.doesNotMatch(rendered, /data-ghost=/);
         });
     });
 

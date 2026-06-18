@@ -2,18 +2,17 @@
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
-import type {DatabaseSync} from 'node:sqlite';
 import {z} from 'zod';
-import {createFakeDatabaseAutomationsRepository} from './fake-database-automations-repository';
+import {createDatabaseAutomationsRepository} from './database-automations-repository';
 import type {
     AutomationsRepository,
     EditAutomationData
 } from './automations-repository';
 
+const {knex} = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
-const temporaryFakeAutomationsDatabase = require('./temporary-fake-database');
 
 const MAX_AUTOMATION_ACTIONS = 20;
 
@@ -53,9 +52,6 @@ const sendEmailActionSchema = z.object({
                 return false;
             }
         }),
-        email_sender_name: z.string().nullable(),
-        email_sender_email: z.string().nullable(),
-        email_sender_reply_to: z.string().nullable(),
         email_design_setting_id: z.string().min(1)
     }).strict()
 }).strict();
@@ -74,17 +70,7 @@ const editAutomationDataSchema = z.object({
     edges: z.array(edgeSchema)
 }).strict();
 
-let testDatabase: DatabaseSync | null = null;
-
-const repository = createFakeDatabaseAutomationsRepository({
-    getDatabase: () => {
-        if (process.env.NODE_ENV?.startsWith('testing')) {
-            testDatabase ??= temporaryFakeAutomationsDatabase.createTemporaryFakeAutomationsDatabase();
-            return testDatabase;
-        }
-        return temporaryFakeAutomationsDatabase.getTemporaryFakeAutomationsDatabase();
-    }
-});
+const repository = createDatabaseAutomationsRepository(knex);
 
 export async function browse() {
     return await repository.browse();
@@ -291,12 +277,7 @@ export async function trigger(options: TriggerOptions) {
         });
     }
 
-    const isAllowedEnvironment = (
-        process.env.NODE_ENV === 'development' ||
-        process.env.NODE_ENV?.startsWith('testing')
-    );
-    const shouldTrigger = isAllowedEnvironment && labs.isSet('automations');
-    if (!shouldTrigger) {
+    if (!labs.isSet('automations')) {
         return;
     }
 
@@ -319,10 +300,4 @@ export async function markStepTerminal(...args: Parameters<AutomationsRepository
 
 export async function retryStep(...args: Parameters<AutomationsRepository['retryStep']>) {
     return await repository.retryStep(...args);
-}
-
-export function _resetTestDatabase() {
-    if (process.env.NODE_ENV?.startsWith('testing')) {
-        testDatabase = null;
-    }
 }

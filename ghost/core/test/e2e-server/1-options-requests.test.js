@@ -10,7 +10,7 @@ describe('OPTIONS requests', function () {
     let contentAPIAgent;
     let ghostServer;
 
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
         adminAgent = agents.adminAgent;
         membersAgent = agents.membersAgent;
@@ -19,7 +19,7 @@ describe('OPTIONS requests', function () {
         ghostServer = agents.ghostServer;
     });
 
-    after(async function () {
+    afterAll(async function () {
         await ghostServer.stop();
     });
 

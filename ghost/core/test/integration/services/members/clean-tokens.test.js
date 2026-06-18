@@ -17,7 +17,7 @@ describe('Job: Clean tokens', function () {
         jobsService = require('../../../../core/server/services/jobs');
     });
 
-    this.afterAll(function () {
+    after(function () {
         sinon.restore();
     });
 

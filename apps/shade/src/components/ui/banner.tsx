@@ -87,7 +87,7 @@ const Banner = React.forwardRef<HTMLDivElement, BannerProps>(
                 {dismissible && (
                     <Button
                         aria-label="Dismiss notification"
-                        className="absolute top-1 right-1 size-8 text-text-secondary hover:text-text-primary"
+                        className="absolute top-1 right-1 size-8 text-text-secondary hover:bg-transparent hover:text-text-primary"
                         size="icon"
                         variant="ghost"
                         onClick={handleDismiss}

@@ -4,7 +4,7 @@ import errors from '@tryghost/errors';
 import {MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
 // @ts-expect-error Models currently lack type definitions.
-import {Member} from '../../models';
+import {AutomatedEmailRecipient, Member} from '../../models';
 
 type MemberWelcomeEmailService = {
     init: () => unknown;
@@ -13,9 +13,6 @@ type MemberWelcomeEmailService = {
             email: {
                 designSettingId: string | null;
                 lexical: string;
-                senderEmail: string | null;
-                senderName: string | null;
-                senderReplyTo: string | null;
                 subject: string;
             };
             member: {
@@ -160,9 +157,6 @@ const processStep = async ({
                 email: {
                     designSettingId: step.email_design_setting_id,
                     lexical: step.email_lexical,
-                    senderEmail: step.email_sender_email,
-                    senderName: step.email_sender_name,
-                    senderReplyTo: step.email_sender_reply_to,
                     subject: step.email_subject
                 },
                 member: {
@@ -172,6 +166,24 @@ const processStep = async ({
                 },
                 memberStatus
             });
+            try {
+                await AutomatedEmailRecipient.add({
+                    member_id: step.member_id,
+                    member_uuid: member.get('uuid'),
+                    member_email: member.get('email'),
+                    member_name: member.get('name'),
+                    automation_action_revision_id: step.automation_action_revision_id
+                });
+            } catch (err) {
+                logging.error({
+                    err,
+                    system: {
+                        event: 'automations.poll.recipient_persistence_failed',
+                        member_id: step.member_id,
+                        step_id: step.id
+                    }
+                }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
+            }
             nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
             break;
         }
@@ -208,18 +220,6 @@ export const poll = async ({
     enqueueAnotherPollAt,
     memberWelcomeEmailService
 }: Readonly<PollOptions>): Promise<void> => {
-    // TODO(NY-1311) Once we're using real tables, we should remove this conditional.
-    // Note that unlike triggering, where we only continue if the "automations"
-    // flag is enabled, for polling we want to run in all cases. If an
-    // automation was enqueued while the flag was on, we want it to run even if
-    // the feature was turned off.
-    if (
-        process.env.NODE_ENV !== 'development'
-        && !process.env.NODE_ENV?.startsWith('test')
-    ) {
-        return;
-    }
-
     const {steps, nextStepReadyAt} = await automationsApi.fetchAndLockSteps(MAX_STEPS_PER_BATCH);
 
     let nextPollAt = nextStepReadyAt;
@@ -247,9 +247,10 @@ export const poll = async ({
             logging.error({
                 err,
                 system: {
-                    event: 'automations.poll.step_failed'
+                    event: 'automations.poll.step_failed',
+                    step_id: step.id
                 }
-            }, '[AUTOMATIONS] Failed to process automation step');
+            }, `[AUTOMATIONS] Failed to process automation step ${step.id}`);
             return;
         }
     }));

@@ -88,13 +88,15 @@
         renderCounts();
     };
 
+    const debouncedFetchCounts = debounce(fetchCounts);
+
     const countElemObserver = new MutationObserver((mutationsList) => {
         mutationsList.forEach((mutation) => {
             mutation.addedNodes.forEach((addedNode) => {
                 addIdsFromElement(addedNode);
-                debounce(fetchCounts);
             });
         });
+        debouncedFetchCounts();
     });
 
     countElemObserver.observe(document.body, {subtree: true, childList: true});

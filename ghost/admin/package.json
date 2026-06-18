@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.45.0-rc.0",
+  "version": "6.46.0-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -25,7 +25,7 @@
     "lint": "pnpm lint:js && pnpm lint:hbs"
   },
   "engines": {
-    "node": "^22.13.1"
+    "node": "^22.18.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "7.28.6",
@@ -37,7 +37,7 @@
     "@ember/test-helpers": "2.9.6",
     "@ember/test-waiters": "3.1.0",
     "@embroider/macros": "1.16.13",
-    "@faker-js/faker": "7.6.0",
+    "@faker-js/faker": "10.4.0",
     "@glimmer/component": "1.1.2",
     "@html-next/vertical-collection": "3.0.0",
     "@sentry/ember": "7.120.3",
@@ -175,6 +175,16 @@
       "!ghost"
     ],
     "targets": {
+      "dev": {
+        "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/admin-x-framework"
+            ],
+            "target": "build"
+          }
+        ]
+      },
       "build:dev": {
         "dependsOn": [
           "build:dev",

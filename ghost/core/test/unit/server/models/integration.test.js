@@ -29,7 +29,7 @@ describe('Unit: models/integration', function () {
     });
 
     describe('findOne', function () {
-        const mockDb = require('mock-knex');
+        const mockDb = require('../../../utils/mock-knex');
         let tracker;
 
         beforeAll(function () {
@@ -63,7 +63,7 @@ describe('Unit: models/integration', function () {
     });
 
     describe('getApiKeyBySlug', function () {
-        const mockDb = require('mock-knex');
+        const mockDb = require('../../../utils/mock-knex');
         let tracker;
 
         beforeAll(function () {

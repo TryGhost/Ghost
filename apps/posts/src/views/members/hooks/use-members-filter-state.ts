@@ -43,10 +43,13 @@ export function shouldDelayMembersDateFilterHydration(
     return Boolean(filterParam) && isLoadingDependencies && !hasResolvedDependencies && hasTimezoneSensitiveMemberFilter(filterParam);
 }
 
+function getEnabledFilters(filters: Filter[], fields: MemberFields): Filter[] {
+    return filters.filter(predicate => isPredicateEnabled(predicate, fields));
+}
+
 function toSearchParams({baseSearchParams, filters, search, timezone, fields}: ToSearchParamsOptions): URLSearchParams {
     const params = new URLSearchParams(baseSearchParams);
-    const enabled = filters.filter(predicate => isPredicateEnabled(predicate, fields));
-    const filter = serializeMemberFilters(enabled, timezone);
+    const filter = serializeMemberFilters(getEnabledFilters(filters, fields), timezone);
 
     params.delete('filter');
     params.delete('search');
@@ -70,7 +73,7 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
     const currentQuery = useMemo(() => searchParams.toString(), [searchParams]);
 
     const parsedFilters = useMemo(() => {
-        return parseMemberFilter(filterParam, timezone).filter(predicate => isPredicateEnabled(predicate, fields));
+        return getEnabledFilters(parseMemberFilter(filterParam, timezone), fields);
     }, [filterParam, timezone, fields]);
     const [filters, setDraftFilters] = useState<Filter[]>(parsedFilters);
 
@@ -79,8 +82,7 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
     }, [searchParams]);
 
     const nql = useMemo(() => {
-        const enabled = filters.filter(predicate => isPredicateEnabled(predicate, fields));
-        return serializeMemberFilters(enabled, timezone);
+        return serializeMemberFilters(getEnabledFilters(filters, fields), timezone);
     }, [filters, timezone, fields]);
 
     useEffect(() => {
