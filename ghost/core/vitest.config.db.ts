@@ -2,25 +2,27 @@ import path from 'node:path';
 import {defineConfig} from 'vitest/config';
 
 // DB-backed suite runner (integration / e2e / legacy) — separate from the unit
-// vitest.config.ts because these suites need a fundamentally different execution
-// model.
+// vitest.config.ts because these suites boot a real Ghost against a database.
 //
-//  - pool 'threads' + isolate:false + fileParallelism:false → a single worker
-//    with one shared module registry, running files sequentially. Ghost's server
-//    is effectively a process-wide singleton (db/knex, @tryghost/domain-events,
-//    the jobs manager, nconf, the settings cache, the url service) that is reset
-//    in place between boots, never duplicated — so exactly one Ghost can exist
-//    per process. That's the same constraint mocha ran these suites under.
-//  - threads, not forks, so the worker is torn down with worker.terminate() at
-//    the end of the run — sidestepping the forks-teardown deadlock noted in
-//    vitest.config.ts. (A parallel model — a fork per worker, each with its own
-//    provisioned DB — is the follow-up; it needs clean per-worker teardown.)
-//  - test/utils/vitest-setup-db.ts provisions a per-session DB + port and
+//  - pool 'forks' + isolate:false → N child processes, each booting ONE Ghost
+//    against its own per-process database + port (derived in vitest-setup-db.ts
+//    before Ghost's config loads). Within a fork, files run serially sharing that
+//    single Ghost (Ghost's db/knex, @tryghost/domain-events, the jobs manager,
+//    nconf, the settings cache and the url service are process-wide singletons
+//    reset in place between boots, never duplicated — exactly one Ghost per
+//    process, the constraint mocha ran under). Across forks, files shard in
+//    parallel — the speedup over the old serial model (~4x locally).
+//  - forks, not threads: worker threads share one process.env, so the
+//    per-process DB derivation would collide. Separate processes each get their
+//    own env → collision-free DBs, the same isolation each mocha process had.
+//    (The forks-teardown deadlock the unit config avoids does not reproduce here
+//    on vitest 4 — the heavy DB forks exit cleanly.)
+//  - test/utils/vitest-setup-db.ts provisions the per-process DB + port and
 //    bridges @tryghost/express-test's snapshot/mocha hooks onto vitest.
 //
 // Suites move onto vitest one at a time. As each ports, add (or widen) a project
 // below and drop that directory from the mocha run in package.json (`test:base`
-// globs the rest). Today only e2e-webhooks has moved.
+// globs the rest).
 
 // Ghost's snapshot tests use @tryghost/jest-snapshot, which manages its own
 // __snapshots__/*.snap files. Point vitest's *native* snapshot system at a
@@ -37,9 +39,13 @@ const resolveSnapshotPath = (testPath: string, snapExtension: string) => path.jo
 const sharedDbConfig = {
     globals: true,
     environment: 'node' as const,
-    pool: 'threads' as const,
+    // forks (one child process per worker) + isolate:false → each fork boots a
+    // single Ghost against its own per-process DB+port (derived in
+    // vitest-setup-db.ts) and runs its share of files serially, sharing that one
+    // Ghost; files shard across forks in parallel. Threads can't do this: worker
+    // threads share process.env, so the per-process DB derivation would collide.
+    pool: 'forks' as const,
     isolate: false,
-    fileParallelism: false,
     setupFiles: ['./test/utils/vitest-setup-db.ts'],
     resolveSnapshotPath,
     // Keep the testing env (CI sets `testing-mysql` on the MySQL leg; default to
@@ -77,14 +83,86 @@ export default defineConfig({
                     // Matches the mocha `--timeout=15000` for the e2e suites.
                     testTimeout: 15000
                 }
+            },
+            {
+                test: {
+                    ...sharedDbConfig,
+                    name: 'integration',
+                    // isolate:true (overriding the shared default) gives each file
+                    // its own fork → its own fresh per-process DB + Ghost. The
+                    // integration suite has inter-file state pollution that the old
+                    // fixed serial order masked but nondeterministic fork sharding
+                    // exposes — e.g. migration.test.js can leave a rolled-back
+                    // schema that a co-located file then inherits. Per-file
+                    // isolation removes it by construction. The e2e project keeps
+                    // isolate:false (it has no such pollution and is fastest that
+                    // way); sqlite per-file init is cheap so the cost here is small.
+                    isolate: true,
+                    include: ['test/integration/**/*.test.{js,ts}'],
+                    // These stay on mocha (kept green via the test:integration:mocha
+                    // sidecar) pending vitest fixes:
+                    //  - update-check: bree worker_thread can't resolve .ts (PLA-157)
+                    //  - domain-warming: batch-send job hangs under vitest (PLA-158)
+                    //  - welcome-email-automation-poll / clean-tokens / last-seen-at-updater:
+                    //    sinon fake timers break the mysql2 driver's internal pool/query
+                    //    timers, so DB I/O hangs under vitest on MySQL (pass on sqlite,
+                    //    which has no network/pool timers) (PLA-160).
+                    exclude: [
+                        '**/node_modules/**',
+                        '**/jobs/update-check.test.js',
+                        '**/email-service/domain-warming.test.js',
+                        '**/automations/welcome-email-automation-poll.test.js',
+                        '**/members/clean-tokens.test.js',
+                        '**/last-seen-at-updater.test.js'
+                    ],
+                    // Matches the mocha `--timeout=10000` for the integration suite.
+                    testTimeout: 10000
+                }
+            },
+            {
+                test: {
+                    ...sharedDbConfig,
+                    name: 'legacy',
+                    // isolate:true for the same reason as integration: the legacy
+                    // suite is the most state-pollution-prone (it was parked on
+                    // exactly that under the old serial model), so per-file
+                    // isolation removes the inter-file bleed by construction.
+                    isolate: true,
+                    include: ['test/legacy/**/*.test.{js,ts}'],
+                    exclude: ['**/node_modules/**'],
+                    // Matches the mocha `--timeout=60000` (boot-heavy model/api/site tests).
+                    testTimeout: 60000
+                }
+            },
+            {
+                test: {
+                    ...sharedDbConfig,
+                    name: 'e2e-api',
+                    // isolate:true like integration/legacy: this large (~97-file)
+                    // snapshot-heavy suite is state-pollution-prone, so per-file
+                    // isolation removes the inter-file bleed by construction.
+                    isolate: true,
+                    include: ['test/e2e-api/**/*.test.{js,ts}'],
+                    exclude: [
+                        '**/node_modules/**',
+                        // sinon fake timers freeze the awaited magic-link / email /
+                        // job flows in these → they hang under vitest. Carved to the
+                        // test:e2e-api:mocha sidecar pending fixes (PLA-160 class).
+                        '**/e2e-api/admin/actions.test.js',
+                        '**/e2e-api/admin/images.test.js',
+                        '**/e2e-api/admin/links.test.js',
+                        '**/e2e-api/admin/members.test.js',
+                        '**/e2e-api/members/automations.test.js',
+                        '**/e2e-api/members/feedback.test.js',
+                        '**/e2e-api/members/send-magic-link.test.js',
+                        '**/e2e-api/members/signin.test.js',
+                        // bree job awaitCompletion hangs under vitest (PLA-158 class).
+                        '**/e2e-api/admin/emails.test.js'
+                    ],
+                    // Matches the mocha `--timeout=15000` for the e2e suites.
+                    testTimeout: 15000
+                }
             }
-            // Added as these suites port (see the note at the top of the file):
-            //   {test: {...sharedDbConfig, name: 'integration',
-            //       include: ['test/integration/**/*.test.{js,ts}'],
-            //       exclude: ['**/node_modules/**'], testTimeout: 10000}},
-            //   {test: {...sharedDbConfig, name: 'legacy',
-            //       include: ['test/legacy/**/*.test.{js,ts}'],
-            //       exclude: ['**/node_modules/**'], testTimeout: 60000}}
         ]
     }
 });

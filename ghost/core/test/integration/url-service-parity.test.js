@@ -66,9 +66,9 @@ function waitUntilFinished(urlService, timeout = 5000) {
 describe('Integration: eager/lazy URL service parity', function () {
     let zeroPostTag;
 
-    before(testUtils.teardownDb);
-    before(testUtils.setup('users:roles', 'posts'));
-    before(async function () {
+    beforeAll(testUtils.teardownDb);
+    beforeAll(testUtils.setup('users:roles', 'posts'));
+    beforeAll(async function () {
         // An explicit public tag with no posts, so the zero-post gating case is
         // deterministic instead of depending on fixture composition.
         zeroPostTag = await models.Tag.add(
@@ -76,9 +76,9 @@ describe('Integration: eager/lazy URL service parity', function () {
             {context: {internal: true}}
         );
     });
-    after(testUtils.teardownDb);
+    afterAll(testUtils.teardownDb);
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
@@ -87,7 +87,7 @@ describe('Integration: eager/lazy URL service parity', function () {
             let eager;
             let lazy;
 
-            before(async function () {
+            beforeAll(async function () {
                 eager = new UrlService();
                 scenario.routes.forEach(r => eager.onRouterAddedType(r.identifier, r.filter, r.resourceType, r.permalink));
                 eager.init();
@@ -97,7 +97,7 @@ describe('Integration: eager/lazy URL service parity', function () {
                 scenario.routes.forEach(r => lazy.onRouterAddedType(r.identifier, r.filter, r.resourceType, r.permalink));
             });
 
-            after(function () {
+            afterAll(function () {
                 eager.reset();
             });
 

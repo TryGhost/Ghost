@@ -7,7 +7,7 @@ const MemberWelcomeEmailRenderer = require('../../../core/server/services/member
 describe('Member Welcome Email Renderer Snapshots', function () {
     let renderer;
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.setup('default')();
     });
 

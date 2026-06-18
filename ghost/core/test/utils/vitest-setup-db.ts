@@ -40,14 +40,67 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 // Generate unique session values for database and port BEFORE loading Ghost, so
 // nconf picks them up naturally via nconf.env(). Worker threads spawned by bree
 // inherit these env vars and get the same values when they load a fresh nconf
-// instance. Values already set externally (e.g. by CI or the user) are
-// respected. Mirrors ./overrides.js.
+// instance.
+//
+// Each worker is its own process, so it gets its own database — that's what lets
+// the DB suites run fork-parallel (PLA-156). The per-process sessionId is
+// appended even to a CI-pinned *base*: the sqlite leg exports a single
+// database__connection__filename=/dev/shm/ghost-test.db for the whole job, so
+// without a unique suffix every fork would hammer the same file. (The mysql leg
+// pins only host/port, so the database name is generated outright here.)
 const sessionId = crypto.randomBytes(4).toString('hex');
-process.env.database__connection__filename = process.env.database__connection__filename || `/tmp/ghost-test-${sessionId}.db`;
-process.env.database__connection__database = process.env.database__connection__database || `ghost_testing_${sessionId}`;
+const sqliteBase = process.env.database__connection__filename;
+process.env.database__connection__filename = sqliteBase
+    ? `${sqliteBase.replace(/\.db$/i, '')}-${sessionId}.db`
+    : `/tmp/ghost-test-${sessionId}.db`;
+const mysqlBase = process.env.database__connection__database;
+process.env.database__connection__database = mysqlBase
+    ? `${mysqlBase}_${sessionId}`
+    : `ghost_testing_${sessionId}`;
+
+// Flush this worker's V8 coverage after every file. The external c8 collector
+// reads NODE_V8_COVERAGE, which Node writes only on a clean process exit — but
+// vitest force-terminates the forks (the same reason the forks-teardown deadlock
+// doesn't bite). Under isolate:true each file runs in its own short-lived fork
+// that's recycled mid-run, so most never reach that flush and their coverage is
+// lost (a SIGTERM handler is unreliable: recycled forks don't all get one).
+// Running v8.takeCoverage() in this per-file afterAll writes each file's coverage
+// to disk before its fork is torn down, so c8 captures every file. No-op off
+// coverage runs. (PLA-156)
+if (process.env.NODE_V8_COVERAGE) {
+    afterAll(() => {
+        try {
+            require('v8').takeCoverage();
+        } catch (e) {
+            // best effort
+        }
+    });
+}
+
+// NOTE: each fork leaves its per-process DB behind (sqlite file / mysql db).
+// vitest force-terminates forks (which is also why the forks-teardown deadlock
+// doesn't bite), so a process 'exit' handler can't reclaim them. On CI both are
+// ephemeral (the runner's /dev/shm and the mysql container die with the job);
+// locally they accumulate under /tmp. Proper reclamation (a globalSetup teardown
+// that sweeps the run's DBs) is tracked in PLA-156.
 
 const canonicalTestPort = 2369;
-process.env.server__port = process.env.server__port || String(2370 + Math.floor(Math.random() * 7630));
+// The per-fork port must be unique among forks running concurrently. Each test
+// file boots a real HTTP server on this port (e2e-api tests hit it via
+// supertest.agent(config.get('url'))); if two concurrent forks land on the same
+// port, one Ghost ends up serving the other's requests — or boots unready — and
+// every request 404s with an HTML body (e.g. the whole invites suite failing
+// intermittently). vitest gives each concurrent fork a distinct VITEST_POOL_ID
+// (1..poolSize); a recycled slot's port is reused only after its previous fork
+// has exited and freed it, so base+poolId never collides among live forks. The
+// old `Math.random()` port in a 7630-wide range collided often enough across ~90
+// parallel boots to flake. (The DB name already uses a 2^32 sessionId, which is
+// collision-resistant; only the port was under-spread.) (PLA-153)
+const poolId = parseInt(process.env.VITEST_POOL_ID || '', 10);
+const derivedPort = Number.isInteger(poolId)
+    ? 2370 + poolId
+    : 2370 + Math.floor(Math.random() * 7630);
+process.env.server__port = process.env.server__port || String(derivedPort);
 process.env.url = process.env.url || `http://127.0.0.1:${process.env.server__port}`;
 const sessionPort = parseInt(process.env.server__port, 10);
 

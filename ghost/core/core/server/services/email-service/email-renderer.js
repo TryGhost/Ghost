@@ -244,7 +244,10 @@ class EmailRenderer {
     }
 
     #getRawFromAddress(post, newsletter) {
-        let senderName = this.#settingsCache.get('title') ? this.#settingsCache.get('title').replace(/"/g, '\\"') : '';
+        // Pass the raw name through; EmailAddressParser.stringify() is the single
+        // point that escapes it for the RFC5322 quoted-string From header. Escaping
+        // here too would double-escape (e.g. a title containing a double quote).
+        let senderName = this.#settingsCache.get('title') || '';
         if (newsletter.get('sender_name')) {
             senderName = newsletter.get('sender_name');
         }
@@ -1055,19 +1058,10 @@ class EmailRenderer {
         const signupUrl = new URL(postUrl);
         signupUrl.hash = `/portal/signup`;
 
-        // Audience feedback
-        const positiveLink = this.#audienceFeedbackService.buildLink(
-            '--uuid--',
-            post,
-            1,
-            '--key--'
-        ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
-        const negativeLink = this.#audienceFeedbackService.buildLink(
-            '--uuid--',
-            post,
-            0,
-            '--key--'
-        ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
+        // Audience feedback — durable, id-based links resolved to the post's
+        // current URL at click time so they survive slug changes
+        const positiveLink = this.#audienceFeedbackService.buildEmailLink(post, 1);
+        const negativeLink = this.#audienceFeedbackService.buildEmailLink(post, 0);
 
         const commentUrl = new URL(postUrl);
         commentUrl.hash = '#ghost-comments-root';

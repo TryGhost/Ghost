@@ -3,6 +3,7 @@ import logging from '@tryghost/logging';
 import {GhostInstance, MySQLManager} from './service-managers';
 import {GhostManager} from './service-managers/ghost-manager';
 import {randomUUID} from 'crypto';
+import type {EgressMonitor} from './service-managers/egress-monitor';
 import type {GhostConfig} from '@/helpers/playwright/fixture';
 
 const debug = baseDebug('e2e:EnvironmentManager');
@@ -144,6 +145,14 @@ export class EnvironmentManager {
      */
     async perTestTeardown(instance: GhostInstance): Promise<void> {
         await this.mysql.cleanupTestDatabase(instance.database);
+    }
+
+    /**
+     * Egress monitor for this worker, or null when disabled / unavailable.
+     * Records external hostnames the Ghost container resolves.
+     */
+    getEgressMonitor(): EgressMonitor | null {
+        return this.ghost.getEgressMonitor();
     }
 
     private async cleanupResources(): Promise<void> {

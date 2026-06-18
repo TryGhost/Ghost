@@ -1088,6 +1088,12 @@ module.exports = class RouterController {
         }
 
         const requestedNewsletterNames = requestedNewsletters.map(newsletter => newsletter.name);
+        // Each name is embedded in a single-quoted item of an NQL `name:[...]`
+        // array, so both quote characters are escaped (a name may contain either).
+        // NQL has no `\\` escape — a lone backslash is read literally — so we
+        // escape quotes only; doubling backslashes would corrupt names that
+        // legitimately contain one. This keeps any injected operators inside the
+        // quoted string, preventing filter breakout.
         const requestedNewsletterNamesFilter = requestedNewsletterNames.map(newsletter => `'${newsletter.replace(/("|')/g, '\\$1')}'`);
         const matchedNewsletters = (await this._newslettersService.getAll({
             filter: `name:[${requestedNewsletterNamesFilter}]`,

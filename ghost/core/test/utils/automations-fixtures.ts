@@ -1,22 +1,27 @@
-const ObjectId = require('bson-objectid').default;
-const moment = require('moment');
-const db = require('../../core/server/data/db');
-const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../core/server/services/member-welcome-emails/constants');
+import ObjectId from 'bson-objectid';
+import moment from 'moment';
+import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../core/server/services/member-welcome-emails/constants';
+// @ts-expect-error Database has not been converted to TypeScript yet.
+import * as db from '../../core/server/data/db';
 
-const TEST_EMAIL_DESIGN_SETTING_ID = '64b6f7b7c8f1a2b3c4d5e6f7';
+export const TEST_EMAIL_DESIGN_SETTING_ID = '64b6f7b7c8f1a2b3c4d5e6f7';
 
 const TEST_AUTOMATION_SLUGS = [
     MEMBER_WELCOME_EMAIL_SLUGS.free,
     MEMBER_WELCOME_EMAIL_SLUGS.paid
 ];
 
-const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
+export const EMPTY_EMAIL_LEXICAL = JSON.stringify({
+    root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}
+});
+
+export const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
     root: {children: [{type: 'paragraph', children: [{type: 'text', text: 'Lorem ipsum.'}]}], direction: null, format: '', indent: 0, type: 'root', version: 1}
 });
 
-const timestamp = offset => moment(new Date(Date.UTC(2026, 0, 1, 0, 0, offset))).format('YYYY-MM-DD HH:mm:ss');
+const timestamp = (offset: number): string => moment(new Date(Date.UTC(2026, 0, 1, 0, 0, offset))).format('YYYY-MM-DD HH:mm:ss');
 
-async function setupAutomationsFixture() {
+export async function setupAutomationsFixture(): Promise<void> {
     await cleanupAutomationsFixture();
     await upsertEmailDesignSetting();
 
@@ -40,28 +45,34 @@ async function setupAutomationsFixture() {
 
     const freeActions = buildAutomationActions(freeAutomationId, 10);
     const paidActions = buildAutomationActions(paidAutomationId, 20);
-    const actionRows = [...freeActions, ...paidActions].map(({id, automation_id, type, created_at}) => ({
-        id,
-        created_at,
-        updated_at: created_at,
-        automation_id,
-        type
-    }));
 
     await db.knex('automations').insert(automationRows);
-    await db.knex('automation_actions').insert(actionRows);
+
+    await db.knex('automation_actions').insert(
+        /* eslint-disable camelcase */
+        [...freeActions, ...paidActions].map(({id, automation_id, type, created_at}) => ({
+            id,
+            created_at,
+            updated_at: created_at,
+            automation_id,
+            type
+        }))
+        /* eslint-enable camelcase */
+    );
+
     await db.knex('automation_action_revisions').insert([
         ...buildAutomationActionRevisions(freeActions, ['Welcome!', 'Follow up']),
         ...buildAutomationActionRevisions(paidActions, ['Welcome to Paid!', 'Exclusive Insights'])
     ]);
+
     await db.knex('automation_action_edges').insert([
         ...buildLinearEdges(freeActions),
         ...buildLinearEdges(paidActions)
     ]);
 }
 
-async function cleanupAutomationsFixture() {
-    const automationIds = await db.knex('automations')
+export async function cleanupAutomationsFixture(): Promise<void> {
+    const automationIds: string[] = await db.knex('automations')
         .whereIn('slug', TEST_AUTOMATION_SLUGS)
         .pluck('id');
 
@@ -72,10 +83,10 @@ async function cleanupAutomationsFixture() {
         return;
     }
 
-    const actionIds = await db.knex('automation_actions')
+    const actionIds: string[] = await db.knex('automation_actions')
         .whereIn('automation_id', automationIds)
         .pluck('id');
-    const runIds = await db.knex('automation_runs')
+    const runIds: string[] = await db.knex('automation_runs')
         .whereIn('automation_id', automationIds)
         .pluck('id');
 
@@ -89,7 +100,7 @@ async function cleanupAutomationsFixture() {
     }
 
     if (actionIds.length > 0) {
-        const revisionIds = await db.knex('automation_action_revisions')
+        const revisionIds: string[] = await db.knex('automation_action_revisions')
             .whereIn('action_id', actionIds)
             .pluck('id');
 
@@ -119,7 +130,7 @@ async function cleanupAutomationsFixture() {
         .del();
 }
 
-function buildAutomationActions(automationId, startOffset) {
+function buildAutomationActions(automationId: string, startOffset: number) {
     return [{
         id: ObjectId().toHexString(),
         automation_id: automationId,
@@ -143,7 +154,13 @@ function buildAutomationActions(automationId, startOffset) {
     }];
 }
 
-function buildAutomationActionRevisions(actions, emailSubjects) {
+function buildAutomationActionRevisions(
+    actions: ReadonlyArray<{
+        id: string,
+        created_at: string
+    }>,
+    emailSubjects: ReadonlyArray<string>
+) {
     return [{
         id: ObjectId().toHexString(),
         created_at: actions[0].created_at,
@@ -179,14 +196,14 @@ function buildAutomationActionRevisions(actions, emailSubjects) {
     }];
 }
 
-function buildLinearEdges(actions) {
+function buildLinearEdges(actions: ReadonlyArray<{id: string}>) {
     return actions.slice(1).map((action, index) => ({
         source_action_id: actions[index].id,
         target_action_id: action.id
     }));
 }
 
-async function upsertEmailDesignSetting() {
+async function upsertEmailDesignSetting(): Promise<void> {
     const currentTime = new Date();
 
     await db.knex('email_design_settings')
@@ -221,9 +238,3 @@ async function upsertEmailDesignSetting() {
             updated_at: currentTime
         });
 }
-
-module.exports = {
-    cleanupAutomationsFixture,
-    setupAutomationsFixture,
-    TEST_EMAIL_DESIGN_SETTING_ID
-};

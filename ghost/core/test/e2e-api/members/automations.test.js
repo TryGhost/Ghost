@@ -107,6 +107,28 @@ async function updateAutomationEmailDesignSetting(automation, emailDesignSetting
     return body.automations[0];
 }
 
+async function updateAutomation(automation, overrides = {}) {
+    const {body} = await agent
+        .put(`automations/${automation.id}`)
+        .body({
+            automations: [{
+                status: automation.status,
+                actions: automation.actions,
+                edges: automation.edges,
+                ...overrides
+            }]
+        })
+        .expectStatus(200);
+
+    return body.automations[0];
+}
+
+function getMemberWelcomeEmailSends() {
+    return mailService.GhostMailer.prototype.send.getCalls()
+        .map(call => call.args[0])
+        .filter(emailToSend => emailToSend.tags?.includes('member-welcome-email'));
+}
+
 describe('Members Automations', function () {
     before(async function () {
         agent = await agentProvider.getAdminAPIAgent();
@@ -181,9 +203,7 @@ describe('Members Automations', function () {
             clock.restore();
         }
 
-        const sentEmails = mailService.GhostMailer.prototype.send.getCalls()
-            .map(call => call.args[0])
-            .filter(emailToSend => emailToSend.tags?.includes('member-welcome-email'));
+        const sentEmails = getMemberWelcomeEmailSends();
         assert.equal(sentEmails.length, 2);
         assert.deepEqual(sentEmails.map(({to}) => to), [email, email]);
         assert.deepEqual(sentEmails.map(({subject}) => subject), ['Welcome!', 'Follow up']);
@@ -203,5 +223,87 @@ describe('Members Automations', function () {
             to: email,
             subject: 'Follow up'
         });
+    });
+
+    it('does nothing when the automation is inactive', async function () {
+        const automation = await getFreeMemberSignupAutomation();
+        await updateAutomation(automation, {status: 'inactive'});
+
+        const email = `automation-free-member-${Date.now()}@test.example`;
+        const member = await membersService.api.members.create({
+            email,
+            name: 'Inactive Automation Test Member',
+            status: 'free',
+            email_disabled: false
+        });
+        assert.equal(member.get('status'), 'free');
+
+        await DomainEvents.allSettled();
+        await runSchedulerPoll();
+
+        assert.equal(getMemberWelcomeEmailSends().length, 0);
+    });
+
+    it('stops an automation run when its automation is deactivated before poll', async function () {
+        const automation = await getFreeMemberSignupAutomation();
+        const firstWaitAction = automation.actions.find(action => action.type === 'wait');
+        assert(firstWaitAction, 'Expected free automation to start with a wait action');
+
+        const email = `automation-free-member-${Date.now()}@test.example`;
+        const member = await membersService.api.members.create({
+            email,
+            name: 'Disabled Step Test Member',
+            status: 'free',
+            email_disabled: false
+        });
+        assert.equal(member.get('status'), 'free');
+
+        await DomainEvents.allSettled();
+        await updateAutomation(automation, {status: 'inactive'});
+
+        const clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true, shouldClearNativeTimers: true});
+
+        try {
+            clock.setSystemTime(new Date(Date.now() + firstWaitAction.data.wait_hours * HOUR_MS));
+            await runSchedulerPoll();
+        } finally {
+            clock.restore();
+        }
+
+        assert.equal(getMemberWelcomeEmailSends().length, 0);
+    });
+
+    it('stops an automation run when the associated member changes their status', async function () {
+        const automation = await getFreeMemberSignupAutomation();
+        const firstWaitAction = automation.actions.find(action => action.type === 'wait');
+        assert(firstWaitAction, 'Expected free automation to start with a wait action');
+
+        const email = `automation-status-changed-${Date.now()}@test.example`;
+        const member = await membersService.api.members.create({
+            email,
+            name: 'Changed Status Test Member',
+            status: 'free',
+            email_disabled: false
+        });
+        assert.equal(member.get('status'), 'free');
+        await DomainEvents.allSettled();
+
+        await db.knex('members')
+            .where('id', member.id)
+            .update({
+                status: 'paid',
+                updated_at: new Date()
+            });
+
+        const clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true, shouldClearNativeTimers: true});
+
+        try {
+            clock.setSystemTime(new Date(Date.now() + firstWaitAction.data.wait_hours * HOUR_MS));
+            await runSchedulerPoll();
+        } finally {
+            clock.restore();
+        }
+
+        assert.equal(getMemberWelcomeEmailSends().length, 0);
     });
 });

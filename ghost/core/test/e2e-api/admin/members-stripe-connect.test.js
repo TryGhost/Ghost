@@ -4,7 +4,7 @@ const {anyContentVersion, stringMatching} = matchers;
 describe('Members Stripe Connect API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
