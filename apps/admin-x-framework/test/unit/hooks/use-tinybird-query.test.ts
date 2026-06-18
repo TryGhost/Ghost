@@ -85,6 +85,58 @@ describe('useTinybirdQuery', () => {
         }));
     });
 
+    it('should not fetch a token or query Tinybird when disabled', () => {
+        const mockError = new Error('Token error');
+        mockUseTinybirdToken.mockReturnValue({
+            token: 'mock-token',
+            isLoading: true,
+            error: mockError,
+            refetch: vi.fn()
+        });
+        mockUseQuery.mockReturnValue({
+            data: [{visits: 1}],
+            loading: true,
+            error: 'Query error',
+            meta: [{name: 'visits'}],
+            statistics: null,
+            endpoint: 'https://api.example.com/test',
+            token: 'mock-token',
+            refresh: vi.fn()
+        });
+
+        const {result} = renderHook(() => useTinybirdQuery({
+            statsConfig: {id: '123'},
+            endpoint: 'test',
+            params: {},
+            enabled: false
+        }), {wrapper});
+
+        expect(mockUseTinybirdToken).toHaveBeenCalledWith({enabled: false});
+        expect(mockGetStatEndpointUrl).not.toHaveBeenCalled();
+        expect(mockUseQuery).toHaveBeenCalledWith(expect.objectContaining({
+            endpoint: undefined,
+            token: undefined
+        }));
+        expect(result.current.loading).toBe(false);
+        expect(result.current.error).toBe(null);
+        expect(result.current.data).toBe(null);
+        expect(result.current.meta).toBe(null);
+    });
+
+    it('should not fetch a token or query Tinybird without statsConfig', () => {
+        renderHook(() => useTinybirdQuery({
+            endpoint: 'test',
+            params: {}
+        }), {wrapper});
+
+        expect(mockUseTinybirdToken).toHaveBeenCalledWith({enabled: false});
+        expect(mockGetStatEndpointUrl).not.toHaveBeenCalled();
+        expect(mockUseQuery).toHaveBeenCalledWith(expect.objectContaining({
+            endpoint: undefined,
+            token: undefined
+        }));
+    });
+
     it('should call useQuery with the correct token', () => {
         mockUseTinybirdToken.mockReturnValue({
             token: 'mock-token',

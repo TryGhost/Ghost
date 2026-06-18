@@ -57,6 +57,7 @@ const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
+    const webAnalyticsEnabled = appSettings?.analytics?.webAnalytics === true;
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -155,21 +156,24 @@ const Web: React.FC = () => {
     const {data: kpiData, loading: kpiLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
         statsConfig,
-        params
+        params,
+        enabled: webAnalyticsEnabled
     });
 
     // Get top sources data
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
         statsConfig,
-        params
+        params,
+        enabled: webAnalyticsEnabled
     });
 
     // Get top locations data
     const {data: locationsData, loading: isLocationsLoading} = useTinybirdQuery({
         endpoint: 'api_top_locations',
         statsConfig,
-        params
+        params,
+        enabled: webAnalyticsEnabled
     });
 
     // Get total visitors for table
@@ -178,7 +182,7 @@ const Web: React.FC = () => {
     // Calculate combined loading state
     const isPageLoading = isConfigLoading;
 
-    if (!appSettings?.analytics.webAnalytics) {
+    if (!webAnalyticsEnabled) {
         return (
             <Navigate to='/' />
         );

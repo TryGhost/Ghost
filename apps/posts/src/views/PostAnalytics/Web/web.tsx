@@ -14,6 +14,7 @@ import {createFilter} from '@tryghost/shade/patterns';
 import {formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {useAppContext} from '@src/providers/posts-app-context';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useFilterParams} from '@src/hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/post-analytics-context';
@@ -31,6 +32,8 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
     const {statsConfig, isLoading: isConfigLoading, range, data: globalData, post, isPostLoading} = useGlobalData();
+    const {appSettings} = useAppContext();
+    const webAnalyticsEnabled = appSettings?.analytics?.webAnalytics === true;
     const containerRef = useRef<HTMLElement>(null);
 
     // Use URL-synced filter state for bookmarking and sharing
@@ -143,22 +146,25 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Get web kpi data
     const {data: kpiData, loading: isKpisLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
-        statsConfig: statsConfig || {id: ''},
-        params: params
+        statsConfig,
+        params: params,
+        enabled: webAnalyticsEnabled
     });
 
     // Get locations data
     const {data: locationsData, loading: isLocationsLoading} = useTinybirdQuery({
         endpoint: 'api_top_locations',
-        statsConfig: statsConfig || {id: ''},
-        params: params
+        statsConfig,
+        params: params,
+        enabled: webAnalyticsEnabled
     });
 
     // Get sources data
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
-        statsConfig: statsConfig || {id: ''},
-        params: params
+        statsConfig,
+        params: params,
+        enabled: webAnalyticsEnabled
     });
 
     // Calculate total visits for percentage calculation

@@ -27,6 +27,7 @@ const Overview: React.FC = () => {
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {appSettings} = useAppContext();
     const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
+    const webAnalyticsEnabled = appSettings?.analytics?.webAnalytics === true;
 
     // Gift link card: only for eligible posts. Read the active link (without
     // minting) to scope the usage count to the current token, matching the modal.
@@ -68,8 +69,9 @@ const Overview: React.FC = () => {
 
     const {data: chartData, loading: chartLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
-        statsConfig: statsConfig || {id: ''},
-        params: params
+        statsConfig,
+        params: params,
+        enabled: webAnalyticsEnabled
     });
 
     // Calculate total visitors as a number for WebOverview component
@@ -98,8 +100,9 @@ const Overview: React.FC = () => {
     // Get sources data
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
-        statsConfig: statsConfig || {id: ''},
-        params: params
+        statsConfig,
+        params: params,
+        enabled: webAnalyticsEnabled
     });
 
     const kpiIsLoading = isConfigLoading || isTotalsLoading || isPostLoading || chartLoading;
@@ -107,17 +110,17 @@ const Overview: React.FC = () => {
 
     // Use the utility function from admin-x-framework
     const showNewsletterSection = hasBeenEmailed(post as Post) && emailTrackOpensEnabled && emailTrackClicksEnabled;
-    const showWebSection = !post?.email_only && appSettings?.analytics.webAnalytics;
+    const showWebSection = !post?.email_only && webAnalyticsEnabled;
     const showGrowthSection = appSettings?.analytics.membersTrackSources;
     const showGiftLinkCard = Boolean(canManageGiftLink && post && appSettings?.analytics.webAnalytics);
 
     // Redirect to Growth tab if this is a published-only post with web analytics disabled
     // Only redirect if Growth section is available
     useEffect(() => {
-        if (!isPostLoading && post && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics && showGrowthSection) {
+        if (!isPostLoading && post && isPublishedOnly(post as Post) && !webAnalyticsEnabled && showGrowthSection) {
             navigate(`/posts/analytics/${postId}/growth`, {replace: true});
         }
-    }, [isPostLoading, post, appSettings?.analytics.webAnalytics, navigate, postId, showGrowthSection]);
+    }, [isPostLoading, post, webAnalyticsEnabled, navigate, postId, showGrowthSection]);
 
     // First we have to wait for the post to be loaded to determine what sections (web, newsletter etc.) should be displayed
     if (isPostLoading) {
