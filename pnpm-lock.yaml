@@ -97,8 +97,8 @@ catalogs:
       specifier: 1.2.2
       version: 1.2.2
     '@tryghost/koenig-lexical':
-      specifier: 1.8.2
-      version: 1.8.2
+      specifier: 1.8.3
+      version: 1.8.3
     '@tryghost/limit-service':
       specifier: 1.5.6
       version: 1.5.6
@@ -532,7 +532,7 @@ importers:
         version: 0.4.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/koenig-lexical':
         specifier: 'catalog:'
-        version: 1.8.2
+        version: 1.8.3
       '@tryghost/posts':
         specifier: workspace:*
         version: link:../posts
@@ -872,7 +872,7 @@ importers:
         version: 14.3.1(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       '@tryghost/koenig-lexical':
         specifier: 'catalog:'
-        version: 1.8.2
+        version: 1.8.3
       '@types/react':
         specifier: 'catalog:'
         version: 18.3.31
@@ -1329,7 +1329,7 @@ importers:
         version: 0.2.19
       '@tryghost/koenig-lexical':
         specifier: 'catalog:'
-        version: 1.8.2
+        version: 1.8.3
       '@tryghost/nql-lang':
         specifier: 'catalog:'
         version: 0.6.6
@@ -2016,7 +2016,7 @@ importers:
         version: 1.2.2
       '@tryghost/koenig-lexical':
         specifier: 'catalog:'
-        version: 1.8.2
+        version: 1.8.3
       '@tryghost/limit-service':
         specifier: 'catalog:'
         version: 1.5.6
@@ -8867,8 +8867,8 @@ packages:
   '@tryghost/kg-utils@1.1.2':
     resolution: {integrity: sha512-pATOtb4JhSm+Tx8+7FxHdEkBIi8h43ZffPQu1Mr8bdHVLzN4FalB4fHukRYy53JZc3UEtxSVBZHeg7Q2ZPFR1Q==}
 
-  '@tryghost/koenig-lexical@1.8.2':
-    resolution: {integrity: sha512-pnb3jcrksqimtE8wWo2Rd95Fmi6a1D5St9BqkeE/rpETMAg7e3cYVyssK9+fbT0zvlL6W3n396Yp4nuL+tbtbA==}
+  '@tryghost/koenig-lexical@1.8.3':
+    resolution: {integrity: sha512-LbiM6T95ZvXaQwGgEpbch0opcWMLYhG3kk/ZB3sONoR8q4Yfo32CXL7G+eJGqZXbEOH7CBERLSGPzF2qW+oduA==}
 
   '@tryghost/limit-service@1.5.6':
     resolution: {integrity: sha512-wR+Hm2v5k2FjOUhLhfPZ0p0acCfaTQoSEhuw96uw8c15CLZtm/HKsLnxA5d3AXwYmjRo5gkYskP8UYxrCKNcoQ==}
@@ -28987,7 +28987,7 @@ snapshots:
     dependencies:
       semver: 7.8.1
 
-  '@tryghost/koenig-lexical@1.8.2': {}
+  '@tryghost/koenig-lexical@1.8.3': {}
 
   '@tryghost/limit-service@1.5.6':
     dependencies:
