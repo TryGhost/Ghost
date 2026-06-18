@@ -1,7 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const logging = require('@tryghost/logging');
-const sentry = require('../../../../../core/shared/sentry');
 const UrlServiceFacade = require('../../../../../core/server/services/url/url-service-facade');
 
 describe('UrlServiceFacade', function () {
@@ -156,6 +155,10 @@ describe('UrlServiceFacade', function () {
         let lazyUrlService;
         let compareFacade;
 
+        const flush = () => new Promise((resolve) => {
+            setImmediate(resolve);
+        });
+
         beforeEach(function () {
             lazyUrlService = {
                 getUrlForResource: sinon.stub().returns('/lazy/'),
@@ -168,7 +171,6 @@ describe('UrlServiceFacade', function () {
             };
             compareFacade = new UrlServiceFacade({urlService, lazyUrlService, compare: true});
             sinon.stub(logging, 'error');
-            sinon.stub(sentry, 'captureException');
         });
 
         afterEach(function () {
@@ -180,55 +182,50 @@ describe('UrlServiceFacade', function () {
             assert.equal(compareFacade.isLazy(), false);
         });
 
-        it('getUrlForResource returns the eager answer, not lazy', function () {
+        it('getUrlForResource returns the eager answer, not lazy', async function () {
             const url = compareFacade.getUrlForResource({type: 'posts', id: 'a'}, {absolute: true});
             sinon.assert.calledWith(urlService.getUrlByResourceId, 'a', {absolute: true});
-            sinon.assert.calledWith(lazyUrlService.getUrlForResource, {type: 'posts', id: 'a'}, {absolute: true});
             assert.equal(url, '/hello-world/');
+            await flush();
+            sinon.assert.calledWith(lazyUrlService.getUrlForResource, {type: 'posts', id: 'a'}, {absolute: true});
         });
 
-        it('ownsResource returns the eager answer, not lazy', function () {
+        it('ownsResource returns the eager answer, not lazy', async function () {
             const owned = compareFacade.ownsResource('routerA', {type: 'posts', id: 'a'});
             sinon.assert.calledWith(urlService.owns, 'routerA', 'a');
-            sinon.assert.calledWith(lazyUrlService.ownsResource, 'routerA', {type: 'posts', id: 'a'});
             assert.equal(owned, true);
+            await flush();
+            sinon.assert.calledWith(lazyUrlService.ownsResource, 'routerA', {type: 'posts', id: 'a'});
         });
 
-        it('reports a parity mismatch to logs and Sentry when the lazy forward URL differs', function () {
+        it('reports a parity mismatch to logs when the lazy forward URL differs', async function () {
             compareFacade.getUrlForResource({type: 'posts', id: 'a'});
+            await flush();
             sinon.assert.calledOnce(logging.error);
-            sinon.assert.calledOnce(sentry.captureException);
             assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
-            assert.equal(sentry.captureException.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
         });
 
-        it('does not report when the lazy forward URL matches', function () {
+        it('does not report when the lazy forward URL matches', async function () {
             lazyUrlService.getUrlForResource.returns('/hello-world/');
             compareFacade.getUrlForResource({type: 'posts', id: 'a'});
+            await flush();
             sinon.assert.notCalled(logging.error);
-            sinon.assert.notCalled(sentry.captureException);
         });
 
-        it('reports a mismatch when lazy ownership differs', function () {
+        it('reports a mismatch when lazy ownership differs', async function () {
             compareFacade.ownsResource('routerA', {type: 'posts', id: 'a'});
+            await flush();
             sinon.assert.calledOnce(logging.error);
-            sinon.assert.calledOnce(sentry.captureException);
-            assert.equal(sentry.captureException.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
         });
 
-        it('swallows a lazy throw, reports it, and still returns the eager answer', function () {
+        it('swallows a lazy throw, reports it, and still returns the eager answer', async function () {
             lazyUrlService.getUrlForResource.throws(new Error('boom'));
             const url = compareFacade.getUrlForResource({type: 'posts', id: 'a'});
             assert.equal(url, '/hello-world/');
+            await flush();
             sinon.assert.calledOnce(logging.error);
-            sinon.assert.calledOnce(sentry.captureException);
-            assert.equal(sentry.captureException.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
-        });
-
-        // resolveUrl tees lazy fire-and-forget, so flush the microtask queue
-        // before asserting on what the background comparison reported.
-        const flush = () => new Promise((resolve) => {
-            setImmediate(resolve);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
         });
 
         it('resolveUrl returns the eager answer without awaiting lazy', async function () {
@@ -249,8 +246,7 @@ describe('UrlServiceFacade', function () {
             await flush();
 
             sinon.assert.calledOnce(logging.error);
-            sinon.assert.calledOnce(sentry.captureException);
-            assert.equal(sentry.captureException.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_PARITY_MISMATCH');
         });
 
         it('does not report when eager and lazy resources are deep equal', async function () {
@@ -262,7 +258,6 @@ describe('UrlServiceFacade', function () {
             await flush();
 
             sinon.assert.notCalled(logging.error);
-            sinon.assert.notCalled(sentry.captureException);
         });
 
         it('does not report when both eager and lazy miss (null)', async function () {
@@ -273,7 +268,7 @@ describe('UrlServiceFacade', function () {
             await flush();
 
             assert.equal(result, null);
-            sinon.assert.notCalled(sentry.captureException);
+            sinon.assert.notCalled(logging.error);
         });
 
         it('swallows a lazy rejection, reports it, and still returns the eager answer', async function () {
@@ -284,8 +279,8 @@ describe('UrlServiceFacade', function () {
             await flush();
 
             assert.deepEqual(result, {type: 'posts', id: 'eager', slug: 's'});
-            sinon.assert.calledOnce(sentry.captureException);
-            assert.equal(sentry.captureException.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
+            sinon.assert.calledOnce(logging.error);
+            assert.equal(logging.error.firstCall.args[0].code, 'LAZY_URL_COMPARE_ERROR');
         });
 
         it('hasFinished tracks eager readiness, not the always-ready lazy backend', function () {

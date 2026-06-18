@@ -19,7 +19,6 @@
 const _ = require('lodash');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
-const sentry = require('../../../shared/sentry');
 /* eslint-enable @typescript-eslint/no-require-imports */
 
 /**
@@ -109,9 +108,9 @@ export class UrlServiceFacade {
         }
         const url = this.urlService.getUrlByResourceId(resource.id, options);
         if (this.isComparing()) {
-            this._compare('getUrlForResource', url,
+            setImmediate(() => this._compare('getUrlForResource', url,
                 () => this.lazyUrlService!.getUrlForResource(resource, options),
-                {type: resource.type, id: resource.id});
+                {type: resource.type, id: resource.id}));
         }
         return url;
     }
@@ -122,9 +121,9 @@ export class UrlServiceFacade {
         }
         const owns = this.urlService.owns(routerIdentifier, resource.id);
         if (this.isComparing()) {
-            this._compare('ownsResource', owns,
+            setImmediate(() => this._compare('ownsResource', owns,
                 () => this.lazyUrlService!.ownsResource(routerIdentifier, resource),
-                {type: resource.type, id: resource.id, routerIdentifier});
+                {type: resource.type, id: resource.id, routerIdentifier}));
         }
         return owns;
     }
@@ -260,7 +259,6 @@ export class UrlServiceFacade {
 
     private _report(error: Error): void {
         logging.error(error);
-        sentry.captureException(error);
     }
 }
 
