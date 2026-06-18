@@ -16,7 +16,21 @@ export const EMPTY_EMAIL_LEXICAL = JSON.stringify({
 });
 
 export const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
-    root: {children: [{type: 'paragraph', children: [{type: 'text', text: 'Lorem ipsum.'}]}], direction: null, format: '', indent: 0, type: 'root', version: 1}
+    root: {
+        children: [{
+            children: [{detail: 0, format: 0, mode: 'normal', style: '', text: 'Lorem ipsum.', type: 'text', version: 1}],
+            direction: null,
+            format: '',
+            indent: 0,
+            type: 'paragraph',
+            version: 1
+        }],
+        direction: null,
+        format: '',
+        indent: 0,
+        type: 'root',
+        version: 1
+    }
 });
 
 const timestamp = (offset: number): string => moment(new Date(Date.UTC(2026, 0, 1, 0, 0, offset))).format('YYYY-MM-DD HH:mm:ss');
