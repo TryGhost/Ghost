@@ -1055,19 +1055,10 @@ class EmailRenderer {
         const signupUrl = new URL(postUrl);
         signupUrl.hash = `/portal/signup`;
 
-        // Audience feedback
-        const positiveLink = this.#audienceFeedbackService.buildLink(
-            '--uuid--',
-            post,
-            1,
-            '--key--'
-        ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
-        const negativeLink = this.#audienceFeedbackService.buildLink(
-            '--uuid--',
-            post,
-            0,
-            '--key--'
-        ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
+        // Audience feedback — durable, id-based links resolved to the post's
+        // current URL at click time so they survive slug changes
+        const positiveLink = this.#audienceFeedbackService.buildEmailLink(post, 1);
+        const negativeLink = this.#audienceFeedbackService.buildEmailLink(post, 0);
 
         const commentUrl = new URL(postUrl);
         commentUrl.hash = '#ghost-comments-root';
