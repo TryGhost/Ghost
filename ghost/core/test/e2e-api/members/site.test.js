@@ -13,7 +13,7 @@ const siteMatcherObject = {
 describe('Site Public Settings', function () {
     let membersAgent;
 
-    before(async function () {
+    beforeAll(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
         await fixtureManager.init();
     });

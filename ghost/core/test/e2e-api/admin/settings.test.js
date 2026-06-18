@@ -47,7 +47,7 @@ const matchSettingsArray = (length) => {
 describe('Settings API', function () {
     let agent;
     let emailMockReceiver;
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
@@ -548,7 +548,7 @@ describe('Settings API', function () {
     });
 
     describe('Managed email without custom sending domain', function () {
-        this.beforeEach(function () {
+        beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', true);
             configUtils.set('hostSettings:managedEmail:sendingDomain', null);
             configUtils.set('mail:from', 'default@email.com');
@@ -609,7 +609,7 @@ describe('Settings API', function () {
     });
 
     describe('Managed email with custom sending domain', function () {
-        this.beforeEach(function () {
+        beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', true);
             configUtils.set('hostSettings:managedEmail:sendingDomain', 'sendingdomain.com');
             configUtils.set('mail:from', 'default@email.com');
@@ -692,7 +692,7 @@ describe('Settings API', function () {
     });
 
     describe('Self hoster without managed email', function () {
-        this.beforeEach(function () {
+        beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', false);
             configUtils.set('hostSettings:managedEmail:sendingDomain', '');
         });
@@ -825,7 +825,7 @@ describe('Settings API', function () {
     });
 
     describe('Settings overrides', function () {
-        this.beforeEach(async function () {
+        beforeEach(async function () {
             const settingsOverrides = {
                 email_track_clicks: false
             };

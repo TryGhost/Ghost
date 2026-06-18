@@ -35,7 +35,7 @@ const buildMemberMatcher = (newslettersCount) => {
 };
 
 describe('Comments API', function () {
-    before(async function () {
+    beforeAll(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
 
         await fixtureManager.init('newsletters', 'members:newsletters');
@@ -88,7 +88,7 @@ describe('Comments API', function () {
     describe('when authenticated', function () {
         let member;
 
-        before(async function () {
+        beforeAll(async function () {
             await membersAgent.loginAs('member@example.com');
             member = await models.Member.findOne({email: 'member@example.com'}, {require: true});
         });
