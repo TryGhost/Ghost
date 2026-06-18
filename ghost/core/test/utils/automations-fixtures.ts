@@ -11,6 +11,10 @@ const TEST_AUTOMATION_SLUGS = [
     MEMBER_WELCOME_EMAIL_SLUGS.paid
 ];
 
+export const EMPTY_EMAIL_LEXICAL = JSON.stringify({
+    root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}
+});
+
 export const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
     root: {children: [{type: 'paragraph', children: [{type: 'text', text: 'Lorem ipsum.'}]}], direction: null, format: '', indent: 0, type: 'root', version: 1}
 });

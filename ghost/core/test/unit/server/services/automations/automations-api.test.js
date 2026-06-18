@@ -2,11 +2,7 @@ const assert = require('node:assert/strict');
 const ObjectId = require('bson-objectid').default;
 
 const automationsApi = require('../../../../../core/server/services/automations/automations-api');
-const {NON_EMPTY_EMAIL_LEXICAL} = require('../../../../utils/automations-fixtures');
-
-const EMPTY_EMAIL_LEXICAL = JSON.stringify({
-    root: {children: [], direction: null, format: '', indent: 0, type: 'root', version: 1}
-});
+const {EMPTY_EMAIL_LEXICAL, NON_EMPTY_EMAIL_LEXICAL} = require('../../../../utils/automations-fixtures');
 
 const buildSendEmailAction = (dataOverrides = {}) => ({
     id: ObjectId().toHexString(),
