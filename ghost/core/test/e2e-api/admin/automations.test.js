@@ -79,7 +79,7 @@ describe('Automations API', function () {
     let schedulerKey;
     let schedulerToken;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'integrations', 'api_keys');
         await agent.loginAsOwner();

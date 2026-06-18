@@ -133,6 +133,35 @@ export default defineConfig({
                     // Matches the mocha `--timeout=60000` (boot-heavy model/api/site tests).
                     testTimeout: 60000
                 }
+            },
+            {
+                test: {
+                    ...sharedDbConfig,
+                    name: 'e2e-api',
+                    // isolate:true like integration/legacy: this large (~97-file)
+                    // snapshot-heavy suite is state-pollution-prone, so per-file
+                    // isolation removes the inter-file bleed by construction.
+                    isolate: true,
+                    include: ['test/e2e-api/**/*.test.{js,ts}'],
+                    exclude: [
+                        '**/node_modules/**',
+                        // sinon fake timers freeze the awaited magic-link / email /
+                        // job flows in these → they hang under vitest. Carved to the
+                        // test:e2e-api:mocha sidecar pending fixes (PLA-160 class).
+                        '**/e2e-api/admin/actions.test.js',
+                        '**/e2e-api/admin/images.test.js',
+                        '**/e2e-api/admin/links.test.js',
+                        '**/e2e-api/admin/members.test.js',
+                        '**/e2e-api/members/automations.test.js',
+                        '**/e2e-api/members/feedback.test.js',
+                        '**/e2e-api/members/send-magic-link.test.js',
+                        '**/e2e-api/members/signin.test.js',
+                        // bree job awaitCompletion hangs under vitest (PLA-158 class).
+                        '**/e2e-api/admin/emails.test.js'
+                    ],
+                    // Matches the mocha `--timeout=15000` for the e2e suites.
+                    testTimeout: 15000
+                }
             }
         ]
     }

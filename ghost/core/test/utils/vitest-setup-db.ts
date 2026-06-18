@@ -85,7 +85,22 @@ if (process.env.NODE_V8_COVERAGE) {
 // that sweeps the run's DBs) is tracked in PLA-156.
 
 const canonicalTestPort = 2369;
-process.env.server__port = process.env.server__port || String(2370 + Math.floor(Math.random() * 7630));
+// The per-fork port must be unique among forks running concurrently. Each test
+// file boots a real HTTP server on this port (e2e-api tests hit it via
+// supertest.agent(config.get('url'))); if two concurrent forks land on the same
+// port, one Ghost ends up serving the other's requests — or boots unready — and
+// every request 404s with an HTML body (e.g. the whole invites suite failing
+// intermittently). vitest gives each concurrent fork a distinct VITEST_POOL_ID
+// (1..poolSize); a recycled slot's port is reused only after its previous fork
+// has exited and freed it, so base+poolId never collides among live forks. The
+// old `Math.random()` port in a 7630-wide range collided often enough across ~90
+// parallel boots to flake. (The DB name already uses a 2^32 sessionId, which is
+// collision-resistant; only the port was under-spread.) (PLA-153)
+const poolId = parseInt(process.env.VITEST_POOL_ID || '', 10);
+const derivedPort = Number.isInteger(poolId)
+    ? 2370 + poolId
+    : 2370 + Math.floor(Math.random() * 7630);
+process.env.server__port = process.env.server__port || String(derivedPort);
 process.env.url = process.env.url || `http://127.0.0.1:${process.env.server__port}`;
 const sessionPort = parseInt(process.env.server__port, 10);
 

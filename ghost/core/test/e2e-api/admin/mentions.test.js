@@ -12,7 +12,7 @@ const matchMentionShallowIncludes = {
 describe('Mentions API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         // TODO: test various users' access
         await fixtureManager.init('users','mentions');
