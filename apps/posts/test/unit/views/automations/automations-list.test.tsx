@@ -24,9 +24,9 @@ describe('AutomationsList', () => {
 
         expect(screen.getAllByTestId('automation-list-row')).toHaveLength(2);
         expect(screen.getByText('Welcome Email (Free)')).toBeInTheDocument();
-        expect(screen.getByText('Onboard new free members with a short welcome email.')).toBeInTheDocument();
+        expect(screen.getByText('Welcome new free members after they sign up.')).toBeInTheDocument();
         expect(screen.getByText('Welcome Email (Paid)')).toBeInTheDocument();
-        expect(screen.getByText('Greet new paid members and point them at member-only content.')).toBeInTheDocument();
+        expect(screen.getByText('Welcome new paid members after they start their subscription.')).toBeInTheDocument();
         expect(screen.getByText('Live')).toBeInTheDocument();
         expect(screen.getByText('Off')).toBeInTheDocument();
     });
