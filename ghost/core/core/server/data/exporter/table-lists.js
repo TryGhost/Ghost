@@ -60,6 +60,7 @@ const BACKUP_TABLES = [
     'outbox',
     'gifts',
     'gift_links',
+    'gift_links_active',
     'automations',
     'automation_actions',
     'automation_action_edges',
