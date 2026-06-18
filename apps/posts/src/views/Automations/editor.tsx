@@ -1,4 +1,4 @@
-import AutomationCanvas from './components/canvas/automation-canvas';
+import AutomationCanvas, {EMAIL_STEP_QUERY_PARAM} from './components/canvas/automation-canvas';
 import AutomationHeader from './components/automation-header';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator} from '@tryghost/shade/components';
@@ -13,7 +13,6 @@ import type {AutomationEditState} from './types';
 const SUBJECT_REQUIRED_MESSAGE = 'Add a subject line.';
 const BODY_REQUIRED_MESSAGE = 'Add an email body.';
 const SUBJECT_AND_BODY_REQUIRED_MESSAGE = 'Add a subject line and email body.';
-const EMAIL_STEP_QUERY_PARAM = 'emailStep';
 
 const editableSlice = (automation: AutomationDetail) => ({
     status: automation.status,

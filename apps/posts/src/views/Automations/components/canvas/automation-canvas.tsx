@@ -23,7 +23,7 @@ const INITIAL_VIEWPORT_Y = 40;
 const NODE_ENTER_ANIMATION_DURATION = 250;
 const DISABLED_REASON = 'Maximum steps added';
 const DEFAULT_EDGE_STROKE = 'var(--xy-edge-stroke)';
-const EMAIL_STEP_QUERY_PARAM = 'emailStep';
+export const EMAIL_STEP_QUERY_PARAM = 'emailStep';
 
 const edgeTypes = {
     'add-step-edge': AddStepEdge
