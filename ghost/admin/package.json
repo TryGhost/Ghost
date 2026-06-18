@@ -175,6 +175,16 @@
       "!ghost"
     ],
     "targets": {
+      "dev": {
+        "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/admin-x-framework"
+            ],
+            "target": "build"
+          }
+        ]
+      },
       "build:dev": {
         "dependsOn": [
           "build:dev",
