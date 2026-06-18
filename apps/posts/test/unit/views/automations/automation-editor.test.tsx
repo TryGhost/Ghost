@@ -1135,7 +1135,7 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Turn off'}));
 
         const dialog = await screen.findByRole('alertdialog');
-        expect(within(dialog).getByText('Turn off this automation?')).toBeInTheDocument();
+        expect(within(dialog).getByText('Turn off automation?')).toBeInTheDocument();
         fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
 
         expect(mockEditMutation.mutate).toHaveBeenCalledWith(
@@ -1186,7 +1186,7 @@ describe('AutomationEditor', () => {
         const button = await screen.findByRole('button', {name: 'Retry'});
         expect(button).not.toBeDisabled();
         expect(button).toHaveClass('bg-destructive');
-        expect(screen.getByText('Turn off this automation?')).toBeInTheDocument();
+        expect(screen.getByText('Turn off automation?')).toBeInTheDocument();
         expect(screen.queryByText(/Couldn.t turn off automation/)).not.toBeInTheDocument();
     });
 
@@ -1207,7 +1207,7 @@ describe('AutomationEditor', () => {
         fireEvent.click(within(dialog).getByRole('button', {name: 'Turn off'}));
 
         await waitFor(() => {
-            expect(screen.queryByText('Turn off this automation?')).not.toBeInTheDocument();
+            expect(screen.queryByText('Turn off automation?')).not.toBeInTheDocument();
         });
     });
 

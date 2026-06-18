@@ -450,9 +450,9 @@ const AutomationEditor: React.FC = () => {
             >
                 <AlertDialogContent>
                     <AlertDialogHeader>
-                        <AlertDialogTitle>Turn off this automation?</AlertDialogTitle>
+                        <AlertDialogTitle>Turn off automation?</AlertDialogTitle>
                         <AlertDialogDescription>
-                            It will stop running until you turn it back on.
+                            Your automation will no longer run, and any members currently in progress will be removed.
                         </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter>
