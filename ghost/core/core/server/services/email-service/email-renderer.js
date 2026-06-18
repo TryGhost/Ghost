@@ -244,7 +244,10 @@ class EmailRenderer {
     }
 
     #getRawFromAddress(post, newsletter) {
-        let senderName = this.#settingsCache.get('title') ? this.#settingsCache.get('title').replace(/"/g, '\\"') : '';
+        // Pass the raw name through; EmailAddressParser.stringify() is the single
+        // point that escapes it for the RFC5322 quoted-string From header. Escaping
+        // here too would double-escape (e.g. a title containing a double quote).
+        let senderName = this.#settingsCache.get('title') || '';
         if (newsletter.get('sender_name')) {
             senderName = newsletter.get('sender_name');
         }
