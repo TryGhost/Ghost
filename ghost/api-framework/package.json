@@ -7,7 +7,10 @@
   "scripts": {
     "dev": "echo \"Implement me!\"",
     "test:unit": "NODE_ENV=testing vitest run",
-    "test": "pnpm test:unit"
+    "test": "pnpm test:unit",
+    "lint": "oxlint -c .oxlintrc.json .",
+    "format": "oxfmt -c .oxfmtrc.json \"**/*.{js,ts,md}\"",
+    "format:check": "oxfmt -c .oxfmtrc.json --check \"**/*.{js,ts,md}\""
   },
   "dependencies": {
     "@tryghost/debug": "catalog:",
@@ -18,6 +21,8 @@
     "lodash": "catalog:"
   },
   "devDependencies": {
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
     "sinon": "catalog:",
     "vitest": "catalog:"
   }
