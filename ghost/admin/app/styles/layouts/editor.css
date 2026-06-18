@@ -812,7 +812,12 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     background-color: transparent !important;
     transition: border-color .15s linear;
     -webkit-appearance: none;
+    appearance: none;
     overflow: hidden; /* Hides any indicators such as TK */
+}
+
+.gh-editor-feature-image-caption {
+    text-align: center;
 }
 
 .gh-editor-feature-image-alttext::placeholder,
