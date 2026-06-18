@@ -39,7 +39,7 @@ const StepPicker: React.FC<StepPickerProps> = ({onPick}) => (
             onClick={() => onPick('send_email')}
         />
         <PickerOption
-            description='Wait a set amount of time'
+            description='Add a delay before the next step'
             icon={LucideIcon.Clock}
             label='Wait'
             onClick={() => onPick('wait')}

@@ -201,7 +201,7 @@ const SendEmailSidebarBody: React.FC<{
                 onClick={onEditEmail}
             >
                 <LucideIcon.Pencil className='size-4' />
-              Edit email content
+              Edit email
             </Button>
             <div className='mt-auto pt-6'>
                 <DeleteStepButton onClick={onDelete} />
@@ -313,7 +313,7 @@ const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait, onUpd
     }
 };
 
-type StepSidebarProps = { 
+type StepSidebarProps = {
     automation: AutomationDetail
     stepId: string | null
     onDelete: (actionId: string) => void;
@@ -333,7 +333,7 @@ export const StepSidebar: React.FC<StepSidebarProps> = ({automation, stepId, onD
         onUpdateSubject,
         onEditEmail
     });
-    
+
     useEffect(() => {
         if (!detail) {
             return;

@@ -6,12 +6,12 @@ const db = require('../../../../core/server/data/db');
 const models = require('../../../../core/server/models');
 
 describe('Models: Base plugins: Overrides', function () {
-    before(testUtils.teardownDb);
-    before(testUtils.stopGhost);
-    after(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
+    beforeAll(testUtils.stopGhost);
+    afterAll(testUtils.teardownDb);
 
     // initializes models
-    before(testUtils.setup('users:roles'));
+    beforeAll(testUtils.setup('users:roles'));
 
     describe('formatOnWrite', function () {
         // using CustomThemeSetting model because it transforms .value relative URLs
