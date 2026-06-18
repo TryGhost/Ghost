@@ -625,7 +625,7 @@ describe('AutomationEditor', () => {
         expect(within(sidebar).getByDisplayValue('Welcome to The Blueprint')).toHaveFocus();
         expect(within(sidebar).queryByText('Sender')).not.toBeInTheDocument();
         expect(within(sidebar).queryByText('Reply-to')).not.toBeInTheDocument();
-        expect(within(sidebar).getByRole('button', {name: 'Edit email content'})).toBeEnabled();
+        expect(within(sidebar).getByRole('button', {name: 'Edit email'})).toBeEnabled();
         expect(within(sidebar).getByRole('button', {name: 'Delete step'})).toBeEnabled();
     });
 
@@ -679,7 +679,7 @@ describe('AutomationEditor', () => {
 
         fireEvent.click(screen.getByRole('button', {name: 'Send email: Welcome to The Blueprint'}));
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
-        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email content'}));
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email'}));
 
         // The modal opens, seeded from the step's current content.
         expect(screen.getByTestId('email-content-modal')).toBeInTheDocument();
@@ -727,7 +727,7 @@ describe('AutomationEditor', () => {
         const sidebar = screen.getByRole('complementary', {name: 'Step details'});
         expect(within(sidebar).getByDisplayValue('Welcome to The Blueprint')).toBeInTheDocument();
 
-        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email content'}));
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email'}));
         fireEvent.click(screen.getByTestId('modal-save'));
 
         expect(within(sidebar).getByDisplayValue('Edited via modal')).toBeInTheDocument();
@@ -1363,7 +1363,7 @@ describe('AutomationEditor', () => {
         expect(emailStep).toHaveClass('border-destructive');
 
         // Adding body content via the modal clears the error and lets the publish through.
-        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email content'}));
+        fireEvent.click(within(sidebar).getByRole('button', {name: 'Edit email'}));
         fireEvent.click(await screen.findByTestId('modal-save'));
 
         emailStep = screen.getByRole('button', {name: 'Send email: Edited via modal'});
