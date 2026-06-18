@@ -33,7 +33,7 @@ const verifyJWKS = (endpoint, token) => {
 
 describe('Identities API', function () {
     describe('As Owner', function () {
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             await localUtils.doAuth(request);
@@ -67,7 +67,7 @@ describe('Identities API', function () {
     });
 
     describe('As Administrator', function () {
-        before(function () {
+        beforeAll(function () {
             return localUtils.startGhost()
                 .then(function () {
                     request = supertest.agent(config.get('url'));
@@ -113,7 +113,7 @@ describe('Identities API', function () {
     });
 
     describe('As Editor', function () {
-        before(function () {
+        beforeAll(function () {
             return localUtils.startGhost()
                 .then(function () {
                     request = supertest.agent(config.get('url'));

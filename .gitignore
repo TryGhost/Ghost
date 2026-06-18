@@ -97,6 +97,9 @@ typings/
 /ghost/core/content/media/**/*
 /ghost/core/content/files/**/*
 /ghost/core/content/public/*
+# Boot-generated public assets (admin-auth, .well-known) when tests use the
+# fixtures dir as the content path — same as content/public above (PLA-152).
+/ghost/core/test/utils/fixtures/public/
 /ghost/core/content/adapters/storage/**/*
 /ghost/core/content/adapters/scheduling/**/*
 /ghost/core/content/themes/casper
