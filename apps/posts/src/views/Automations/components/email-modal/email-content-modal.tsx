@@ -175,6 +175,10 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
     };
 
     const closeModal = () => {
+        if (isClosingFromModalHistory.current) {
+            return;
+        }
+
         if (!hasModalHistoryEntry.current) {
             onCloseRef.current();
             return;
