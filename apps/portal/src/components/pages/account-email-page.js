@@ -95,11 +95,10 @@ export default function AccountEmailPage() {
             subscribedNewsletters={subscribedNewsletters}
             updateSubscribedNewsletters={(updatedNewsletters, enableUpdatesAndAnnouncementsValue) => {
                 setSubscribedNewsletters(updatedNewsletters);
-                const data = {newsletters: updatedNewsletters};
-                if (enableUpdatesAndAnnouncementsValue !== undefined) {
-                    data.enableUpdatesAndAnnouncements = enableUpdatesAndAnnouncementsValue;
-                }
-                doAction('updateNewsletterPreference', data);
+                doAction('updateNewsletterPreference', {
+                    newsletters: updatedNewsletters,
+                    enableUpdatesAndAnnouncements: enableUpdatesAndAnnouncementsValue
+                });
                 doAction('showPopupNotification', {
                     action: 'updated:success',
                     message: t('Email preferences updated.')
