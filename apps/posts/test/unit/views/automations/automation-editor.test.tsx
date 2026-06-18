@@ -947,7 +947,7 @@ describe('AutomationEditor', () => {
 
         expect(screen.queryByRole('alertdialog', {name: 'Publish automation with empty emails?'})).not.toBeInTheDocument();
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
-        expect(mockToastError).toHaveBeenCalledWith('Automation couldn’t be saved', {
+        expect(mockToastError).toHaveBeenCalledWith('Automation needs a few details', {
             description: 'Fix the highlighted steps and try again.'
         });
 
@@ -1082,7 +1082,7 @@ describe('AutomationEditor', () => {
         expect(button).not.toBeDisabled();
         expect(button).toHaveClass('bg-destructive');
         expect(mockToastError).toHaveBeenCalledWith('Automation couldn’t be saved');
-        expect(mockToastError).not.toHaveBeenCalledWith('Automation couldn’t be saved', {
+        expect(mockToastError).not.toHaveBeenCalledWith('Automation needs a few details', {
             description: 'Fix the highlighted steps and try again.'
         });
         expect(screen.queryByText(/Couldn.t publish automation/)).not.toBeInTheDocument();
@@ -1338,7 +1338,7 @@ describe('AutomationEditor', () => {
         fireEvent.click(screen.getByRole('button', {name: 'Publish'}));
 
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
-        expect(mockToastError).toHaveBeenCalledWith('Automation couldn’t be saved', {
+        expect(mockToastError).toHaveBeenCalledWith('Automation needs a few details', {
             description: 'Fix the highlighted steps and try again.'
         });
 
@@ -1846,7 +1846,7 @@ describe('AutomationEditor', () => {
 
         expect(screen.queryByRole('alertdialog', {name: 'Update automation?'})).not.toBeInTheDocument();
         expect(mockEditMutation.mutate).not.toHaveBeenCalled();
-        expect(mockToastError).toHaveBeenCalledWith('Automation couldn’t be saved', {
+        expect(mockToastError).toHaveBeenCalledWith('Automation needs a few details', {
             description: 'Fix the highlighted steps and try again.'
         });
         expect(screen.getByRole('button', {name: 'Publish changes'})).toBeEnabled();
