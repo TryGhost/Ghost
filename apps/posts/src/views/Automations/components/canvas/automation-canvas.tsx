@@ -289,6 +289,13 @@ const insertActionByType = {
     send_email: insertSendEmailAction
 };
 
+const hasAutomationEmailModalState = (state: unknown): state is {automationEmailModal: boolean} => (
+    !!state
+    && typeof state === 'object'
+    && 'automationEmailModal' in state
+    && typeof state.automationEmailModal === 'boolean'
+);
+
 const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     actionErrors = {},
     automation,
@@ -309,7 +316,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
     const [deleteConfirmationActionId, setDeleteConfirmationActionId] = useState<string | null>(null);
     const selectedStepId = selectedStep?.id ?? null;
     const emailModalStepId = searchParams.get(EMAIL_STEP_QUERY_PARAM);
-    const isRouterOpenedEmailModal = Boolean((location.state as {automationEmailModal?: boolean} | null)?.automationEmailModal);
+    const isRouterOpenedEmailModal = hasAutomationEmailModalState(location.state) && location.state.automationEmailModal;
 
     const removeEmailStepParam = useCallback((options?: {replace?: boolean}) => {
         const nextSearchParams = new URLSearchParams(searchParams);
