@@ -3,27 +3,12 @@ import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import createKnex, {type Knex} from 'knex';
 import moment from 'moment';
+import {NON_EMPTY_EMAIL_LEXICAL} from '../../../../utils/automations-fixtures';
 import {createDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/database-automations-repository';
 import type {AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 
 const HOUR_MS = 60 * 60 * 1000;
 const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
-const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
-    root: {
-        children: [{
-            type: 'paragraph',
-            children: [{
-                type: 'text',
-                text: 'Lorem ipsum.'
-            }]
-        }],
-        direction: null,
-        format: '',
-        indent: 0,
-        type: 'root',
-        version: 1
-    }
-});
 
 const toDatabaseDate = (date: Date | string): string => moment(date).format(DATABASE_DATE_FORMAT);
 const toRepositoryDateISOString = (date: Date | string): string => new Date(toDatabaseDate(date)).toISOString();
