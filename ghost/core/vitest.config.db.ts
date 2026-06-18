@@ -2,25 +2,27 @@ import path from 'node:path';
 import {defineConfig} from 'vitest/config';
 
 // DB-backed suite runner (integration / e2e / legacy) — separate from the unit
-// vitest.config.ts because these suites need a fundamentally different execution
-// model.
+// vitest.config.ts because these suites boot a real Ghost against a database.
 //
-//  - pool 'threads' + isolate:false + fileParallelism:false → a single worker
-//    with one shared module registry, running files sequentially. Ghost's server
-//    is effectively a process-wide singleton (db/knex, @tryghost/domain-events,
-//    the jobs manager, nconf, the settings cache, the url service) that is reset
-//    in place between boots, never duplicated — so exactly one Ghost can exist
-//    per process. That's the same constraint mocha ran these suites under.
-//  - threads, not forks, so the worker is torn down with worker.terminate() at
-//    the end of the run — sidestepping the forks-teardown deadlock noted in
-//    vitest.config.ts. (A parallel model — a fork per worker, each with its own
-//    provisioned DB — is the follow-up; it needs clean per-worker teardown.)
-//  - test/utils/vitest-setup-db.ts provisions a per-session DB + port and
+//  - pool 'forks' + isolate:false → N child processes, each booting ONE Ghost
+//    against its own per-process database + port (derived in vitest-setup-db.ts
+//    before Ghost's config loads). Within a fork, files run serially sharing that
+//    single Ghost (Ghost's db/knex, @tryghost/domain-events, the jobs manager,
+//    nconf, the settings cache and the url service are process-wide singletons
+//    reset in place between boots, never duplicated — exactly one Ghost per
+//    process, the constraint mocha ran under). Across forks, files shard in
+//    parallel — the speedup over the old serial model (~4x locally).
+//  - forks, not threads: worker threads share one process.env, so the
+//    per-process DB derivation would collide. Separate processes each get their
+//    own env → collision-free DBs, the same isolation each mocha process had.
+//    (The forks-teardown deadlock the unit config avoids does not reproduce here
+//    on vitest 4 — the heavy DB forks exit cleanly.)
+//  - test/utils/vitest-setup-db.ts provisions the per-process DB + port and
 //    bridges @tryghost/express-test's snapshot/mocha hooks onto vitest.
 //
 // Suites move onto vitest one at a time. As each ports, add (or widen) a project
 // below and drop that directory from the mocha run in package.json (`test:base`
-// globs the rest). Today only e2e-webhooks has moved.
+// globs the rest).
 
 // Ghost's snapshot tests use @tryghost/jest-snapshot, which manages its own
 // __snapshots__/*.snap files. Point vitest's *native* snapshot system at a
@@ -37,9 +39,13 @@ const resolveSnapshotPath = (testPath: string, snapExtension: string) => path.jo
 const sharedDbConfig = {
     globals: true,
     environment: 'node' as const,
-    pool: 'threads' as const,
+    // forks (one child process per worker) + isolate:false → each fork boots a
+    // single Ghost against its own per-process DB+port (derived in
+    // vitest-setup-db.ts) and runs its share of files serially, sharing that one
+    // Ghost; files shard across forks in parallel. Threads can't do this: worker
+    // threads share process.env, so the per-process DB derivation would collide.
+    pool: 'forks' as const,
     isolate: false,
-    fileParallelism: false,
     setupFiles: ['./test/utils/vitest-setup-db.ts'],
     resolveSnapshotPath,
     // Keep the testing env (CI sets `testing-mysql` on the MySQL leg; default to
@@ -82,6 +88,16 @@ export default defineConfig({
                 test: {
                     ...sharedDbConfig,
                     name: 'integration',
+                    // isolate:true (overriding the shared default) gives each file
+                    // its own fork → its own fresh per-process DB + Ghost. The
+                    // integration suite has inter-file state pollution that the old
+                    // fixed serial order masked but nondeterministic fork sharding
+                    // exposes — e.g. migration.test.js can leave a rolled-back
+                    // schema that a co-located file then inherits. Per-file
+                    // isolation removes it by construction. The e2e project keeps
+                    // isolate:false (it has no such pollution and is fastest that
+                    // way); sqlite per-file init is cheap so the cost here is small.
+                    isolate: true,
                     include: ['test/integration/**/*.test.{js,ts}'],
                     // These stay on mocha (kept green via the test:integration:mocha
                     // sidecar) pending vitest fixes:
