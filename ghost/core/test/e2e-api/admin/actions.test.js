@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
@@ -22,7 +23,7 @@ describe('Actions API', function () {
     it('Can request actions for resource', async function () {
         let postUpdatedAt;
 
-        const clock = sinon.useFakeTimers({now: Date.now(), toFake: ['Date']});
+        const clock = mockSystemTime(Date.now());
 
         const res = await request
             .post(localUtils.API.getApiQuery('posts/'))

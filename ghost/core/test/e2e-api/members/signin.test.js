@@ -2,7 +2,7 @@ const {assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
-const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 const members = require('../../../core/server/services/members');
 let membersAgent, membersService;
 
@@ -230,7 +230,7 @@ describe('Members Signin', function () {
             // Remove ms precision (not supported by MySQL)
             startDate.setMilliseconds(0);
 
-            clock = sinon.useFakeTimers({now: startDate, toFake: ['Date']});
+            clock = mockSystemTime(startDate);
         });
 
         afterEach(function () {

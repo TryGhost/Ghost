@@ -8,6 +8,7 @@ const crypto = require('node:crypto');
 const {assertExists, assertArrayContainsDeep, assertObjectMatches, assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 
 const testUtils = require('../../utils');
 
@@ -2500,7 +2501,7 @@ describe('Members API', function () {
     });
 
     it('Can subscribe to a newsletter', async function () {
-        const clock = sinon.useFakeTimers({now: Date.now(), toFake: ['Date']});
+        const clock = mockSystemTime(Date.now());
         const memberToChange = {
             name: 'change me',
             email: 'member3change@test.com',

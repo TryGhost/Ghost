@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const ObjectId = require('bson-objectid').default;
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../../utils/clock-utils');
 const testUtils = require('../../../utils');
 
 const {welcomeEmailAutomationPoll} = require('../../../../core/server/services/automations/welcome-email-automation-poll');
@@ -23,7 +24,7 @@ describe('automations poll', function () {
     beforeEach(async function () {
         await cleanupTables();
 
-        sinon.useFakeTimers({now: new Date('2026-04-12T12:00:00.000Z'), toFake: ['Date']});
+        mockSystemTime(new Date('2026-04-12T12:00:00.000Z'));
 
         options = {
             memberWelcomeEmailService: {

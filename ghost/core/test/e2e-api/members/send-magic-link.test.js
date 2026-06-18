@@ -1,5 +1,6 @@
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 const assert = require('node:assert/strict');
 const cheerio = require('cheerio');
 const {assertMatchSnapshot} = require('../../utils/assertions');
@@ -514,7 +515,7 @@ describe('sendMagicLink', function () {
         beforeEach(async function () {
             await dbUtils.truncate('brute');
             await resetRateLimits();
-            clock = sinon.useFakeTimers({now: new Date(), toFake: ['Date']});
+            clock = mockSystemTime(new Date());
         });
 
         afterEach(function () {

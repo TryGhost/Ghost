@@ -3,6 +3,7 @@ const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = requ
 const {anyEtag, anyObjectId, anyLocationFor, anyErrorId} = matchers;
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const crypto = require('crypto');
 
@@ -260,7 +261,7 @@ describe('Members Feedback', function () {
     });
 
     it('Can change existing feedback', async function () {
-        clock = sinon.useFakeTimers({now: new Date(), toFake: ['Date']});
+        clock = mockSystemTime(new Date());
         const postId = fixtureManager.get('posts', 1).id;
 
         const {body} = await membersAgent

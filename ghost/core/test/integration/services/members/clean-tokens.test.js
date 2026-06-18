@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../../utils/clock-utils');
 const {agentProvider, fixtureManager} = require('../../../utils/e2e-framework');
 const assert = require('node:assert/strict');
 const models = require('../../../../core/server/models');
@@ -23,7 +24,7 @@ describe('Job: Clean tokens', function () {
 
     it('Deletes tokens that are older than 24 hours', async function () {
         // Go back 25 hours (reason: the job will be run at the current time, no way to change that)
-        clock = sinon.useFakeTimers({now: Date.now() - 25 * 60 * 60 * 1000, toFake: ['Date']});
+        clock = mockSystemTime(Date.now() - 25 * 60 * 60 * 1000);
 
         // Create some tokens
         const firstToken = await models.SingleUseToken.add({data: 'test'});

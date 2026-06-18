@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 const DomainEvents = require('@tryghost/domain-events');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
@@ -187,7 +188,7 @@ describe('Members Automations', function () {
 
         await DomainEvents.allSettled();
 
-        const clock = sinon.useFakeTimers({now: new Date(), toFake: ['Date']});
+        const clock = mockSystemTime(new Date());
 
         try {
             for (const action of automation.actions) {
@@ -261,7 +262,7 @@ describe('Members Automations', function () {
         await DomainEvents.allSettled();
         await updateAutomation(automation, {status: 'inactive'});
 
-        const clock = sinon.useFakeTimers({now: new Date(), toFake: ['Date']});
+        const clock = mockSystemTime(new Date());
 
         try {
             clock.setSystemTime(new Date(Date.now() + firstWaitAction.data.wait_hours * HOUR_MS));
@@ -295,7 +296,7 @@ describe('Members Automations', function () {
                 updated_at: new Date()
             });
 
-        const clock = sinon.useFakeTimers({now: new Date(), toFake: ['Date']});
+        const clock = mockSystemTime(new Date());
 
         try {
             clock.setSystemTime(new Date(Date.now() + firstWaitAction.data.wait_hours * HOUR_MS));

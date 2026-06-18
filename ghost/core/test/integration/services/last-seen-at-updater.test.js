@@ -2,6 +2,7 @@ const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-fr
 const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 let agent;
 
 describe('Last Seen At Updater', function () {
@@ -75,7 +76,7 @@ describe('Last Seen At Updater', function () {
 
             mockManager.mockSetting('timezone', 'CET');
 
-            const clock = sinon.useFakeTimers({now: firstDate, toFake: ['Date']});
+            const clock = mockSystemTime(firstDate);
 
             await membersEvents.lastSeenAtUpdater.cachedUpdateLastSeenAt(memberId, previousLastSeen, firstDate);
 
@@ -107,7 +108,7 @@ describe('Last Seen At Updater', function () {
 
             mockManager.mockSetting('timezone', 'CET');
 
-            const clock = sinon.useFakeTimers({now: firstDate, toFake: ['Date']});
+            const clock = mockSystemTime(firstDate);
 
             const spy = sinon.spy(membersEvents.lastSeenAtUpdater, 'updateLastSeenAt');
 
