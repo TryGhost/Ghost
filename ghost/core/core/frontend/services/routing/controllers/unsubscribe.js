@@ -17,7 +17,7 @@ module.exports = async function unsubscribeController(req, res) {
     }
 
     if (req.method === 'POST') {
-        logging.info('[List-Unsubscribe] Received POST unsubscribe for ' + query.uuid + ', newsletter: ' + (query.newsletter ?? 'null') + ', comments: ' + (query.comments ?? 'false') + ', updates: ' + (query.updates ?? 'false'));
+        logging.info('[List-Unsubscribe] Received POST unsubscribe for ' + query.uuid + ', newsletter: ' + (query.newsletter ?? 'null') + ', comments: ' + (query.comments ?? 'false') + ', updates & announcements: ' + (query.updatesandannouncements ?? 'false'));
 
         // Do an actual unsubscribe
         try {
@@ -41,7 +41,7 @@ module.exports = async function unsubscribeController(req, res) {
                     }, {
                         id: member.id
                     });
-                } else if (query.updates) {
+                } else if (query.updatesandannouncements) {
                     // Unsubscribe from updates & announcements (automation emails)
                     await members.api.members.update({
                         enable_updates_and_announcements: false
@@ -80,8 +80,8 @@ module.exports = async function unsubscribeController(req, res) {
     if (query.comments) {
         redirectUrl.searchParams.append('comments', query.comments);
     }
-    if (query.updates) {
-        redirectUrl.searchParams.append('updates', query.updates);
+    if (query.updatesandannouncements) {
+        redirectUrl.searchParams.append('updatesandannouncements', query.updatesandannouncements);
     }
     if (query.key) {
         redirectUrl.searchParams.append('key', query.key);

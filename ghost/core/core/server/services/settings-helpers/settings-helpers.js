@@ -196,7 +196,7 @@ class SettingsHelpers {
             unsubscribeUrl.searchParams.set('comments', '1');
         }
         if (options.updatesAndAnnouncements) {
-            unsubscribeUrl.searchParams.set('updates', '1');
+            unsubscribeUrl.searchParams.set('updatesandannouncements', '1');
         }
 
         return unsubscribeUrl.href;

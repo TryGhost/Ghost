@@ -161,12 +161,12 @@ export default function UnsubscribePage() {
             } else if (pageData.comments && commentsEnabled) {
                 // Unsubscribe link for comments
                 await updateCommentNotifications(false);
-            } else if (pageData.updates && updatesAndAnnouncementsEnabled) {
+            } else if (pageData.updatesAndAnnouncements && updatesAndAnnouncementsEnabled) {
                 // Unsubscribe link for updates & announcements (automation emails)
                 await updateUpdatesAndAnnouncements(false);
             }
         })();
-    }, [commentsEnabled, updatesAndAnnouncementsEnabled, pageData.uuid, pageData.newsletterUuid, pageData.comments, pageData.updates, site.url, siteNewsletters?.length]);
+    }, [commentsEnabled, updatesAndAnnouncementsEnabled, pageData.uuid, pageData.newsletterUuid, pageData.comments, pageData.updatesAndAnnouncements, site.url, siteNewsletters?.length]);
 
     if (loading) {
         // Loading member data from the API based on the uuid
@@ -252,7 +252,7 @@ export default function UnsubscribePage() {
                 </>
             );
         }
-        if (pageData.updates && updatesAndAnnouncementsEnabled) {
+        if (pageData.updatesAndAnnouncements && updatesAndAnnouncementsEnabled) {
             const hideClassName = hasInteracted ? 'gh-portal-hide' : '';
             return (
                 <>

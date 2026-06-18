@@ -634,8 +634,8 @@ describe('Member Welcome Emails Integration', function () {
             const sendCall = mailService.GhostMailer.prototype.send.firstCall;
             const message = sendCall.args[0];
 
-            assert.match(message.html, /\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&amp;key=[a-f0-9]+&amp;updates=1/);
-            assert.match(message.headers['List-Unsubscribe'], /^<http.*\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&key=[a-f0-9]+&updates=1>$/);
+            assert.match(message.html, /\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&amp;key=[a-f0-9]+&amp;updatesandannouncements=1/);
+            assert.match(message.headers['List-Unsubscribe'], /^<http.*\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&key=[a-f0-9]+&updatesandannouncements=1>$/);
             assert.equal(message.headers['List-Unsubscribe-Post'], 'List-Unsubscribe=One-Click');
         });
 
@@ -645,7 +645,7 @@ describe('Member Welcome Emails Integration', function () {
             sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
             const message = mailService.GhostMailer.prototype.send.firstCall.args[0];
 
-            assert.doesNotMatch(message.html, /updates=1/);
+            assert.doesNotMatch(message.html, /updatesandannouncements=1/);
             assert.equal(message.headers, undefined);
         });
 

@@ -350,9 +350,9 @@ describe('Front-end members behavior', function () {
         });
 
         it('should pass through an optional updates param', async function () {
-            await request.get('/unsubscribe/?uuid=XXX&updates=1')
+            await request.get('/unsubscribe/?uuid=XXX&updatesandannouncements=1')
                 .expect(302)
-                .expect('Location', `${config.get('url')}/?uuid=XXX&updates=1&action=unsubscribe`);
+                .expect('Location', `${config.get('url')}/?uuid=XXX&updatesandannouncements=1&action=unsubscribe`);
         });
 
         it('should reject when missing a uuid', async function () {
@@ -489,7 +489,7 @@ describe('Front-end members behavior', function () {
             sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
             const memberHmac = crypto.createHmac('sha256','test').update(memberUUID).digest('hex');
 
-            await request.post(`/unsubscribe/?uuid=${memberUUID}&key=${memberHmac}&updates=1`)
+            await request.post(`/unsubscribe/?uuid=${memberUUID}&key=${memberHmac}&updatesandannouncements=1`)
                 .expect(201);
 
             const updatedMember = await members.api.members.get({id: member.id}, {withRelated: ['newsletters']});

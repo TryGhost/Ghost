@@ -155,7 +155,7 @@ describe('Settings Helpers', function () {
         it('returns a url that can be used to unsubscribe a member from updates & announcements', function () {
             const settingsHelpers = new SettingsHelpers({settingsCache: fakeSettings, config: configUtils.config, urlUtils, labs: {}, limitService});
             const url = settingsHelpers.createUnsubscribeUrl(memberUuid, {updatesAndAnnouncements: true});
-            assert.equal(url, `http://domain.com/unsubscribe/?uuid=memberuuid&key=${memberUuidHash}&updates=1`);
+            assert.equal(url, `http://domain.com/unsubscribe/?uuid=memberuuid&key=${memberUuidHash}&updatesandannouncements=1`);
         });
     });
 

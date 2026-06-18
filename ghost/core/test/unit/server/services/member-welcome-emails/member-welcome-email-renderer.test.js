@@ -286,11 +286,11 @@ describe('MemberWelcomeEmailRenderer', function () {
                 subject: 'Test Subject',
                 member: {name: 'John', email: 'john@example.com'},
                 siteSettings: defaultSiteSettings,
-                unsubscribeUrl: 'https://example.com/unsubscribe/?uuid=abc&key=def&updates=1'
+                unsubscribeUrl: 'https://example.com/unsubscribe/?uuid=abc&key=def&updatesandannouncements=1'
             });
 
             const $ = cheerio.load(result.html);
-            assert.equal($('a[href="https://example.com/unsubscribe/?uuid=abc&key=def&updates=1"]').text().trim(), 'Unsubscribe');
+            assert.equal($('a[href="https://example.com/unsubscribe/?uuid=abc&key=def&updatesandannouncements=1"]').text().trim(), 'Unsubscribe');
             assert.equal($('a:contains("Manage your preferences")').length, 0);
         });
 

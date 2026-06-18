@@ -500,8 +500,9 @@ class MemberWelcomeEmailService {
 
         // Real automation sends carry an unsubscribe link to the "Updates & Announcements"
         // preference. The visible footer link and the one-click List-Unsubscribe header both point
-        // at the same /unsubscribe/?...&updates=1 URL (handled by the unsubscribe controller), just
-        // like newsletters. Preview/test sends render separately and never reach this path.
+        // at the same /unsubscribe/?...&updatesAndAnnouncements=1 URL (handled by the unsubscribe
+        // controller), just like newsletters. Preview/test sends render separately and never reach
+        // this path.
         const unsubscribeUrl = labs.isSet('automations') && member.uuid ?
             settingsHelpers.createUnsubscribeUrl(member.uuid, {updatesAndAnnouncements: true}) :
             null;
