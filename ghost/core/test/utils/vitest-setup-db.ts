@@ -58,20 +58,22 @@ process.env.database__connection__database = mysqlBase
     ? `${mysqlBase}_${sessionId}`
     : `ghost_testing_${sessionId}`;
 
-// Vitest force-terminates the DB-suite forks at end-of-run via SIGTERM (which
-// is also why the forks-teardown deadlock doesn't bite). On a coverage run that
-// would lose each fork's coverage: the external c8 collector reads
-// NODE_V8_COVERAGE, but Node only writes it on a *clean* exit, not on SIGTERM.
-// Flush explicitly in a SIGTERM handler so c8 sees every fork's coverage.
-// Guarded so it's a no-op off coverage runs. (PLA-156)
+// Flush this worker's V8 coverage after every file. The external c8 collector
+// reads NODE_V8_COVERAGE, which Node writes only on a clean process exit — but
+// vitest force-terminates the forks (the same reason the forks-teardown deadlock
+// doesn't bite). Under isolate:true each file runs in its own short-lived fork
+// that's recycled mid-run, so most never reach that flush and their coverage is
+// lost (a SIGTERM handler is unreliable: recycled forks don't all get one).
+// Running v8.takeCoverage() in this per-file afterAll writes each file's coverage
+// to disk before its fork is torn down, so c8 captures every file. No-op off
+// coverage runs. (PLA-156)
 if (process.env.NODE_V8_COVERAGE) {
-    process.on('SIGTERM', () => {
+    afterAll(() => {
         try {
             require('v8').takeCoverage();
         } catch (e) {
-            // ignore — best effort
+            // best effort
         }
-        process.exit(0);
     });
 }
 
