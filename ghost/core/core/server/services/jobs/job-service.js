@@ -17,6 +17,13 @@ const errorHandler = (error, workerMeta) => {
 const events = require('../../lib/common/events');
 
 const workerMessageHandler = ({name, message}) => {
+    // Events emitted on the shared events bus from inside a worker are
+    // forwarded across the IPC boundary by core/server/lib/common/events.js
+    // and replayed here so parent-side subscribers (e.g. settingsCache) react
+    // as if the event originated locally.
+    if (events.replayForwarded(message)) {
+        return;
+    }
     if (typeof message === 'string') {
         logging.info(`Worker for job ${name} sent a message: ${message}`);
     }
