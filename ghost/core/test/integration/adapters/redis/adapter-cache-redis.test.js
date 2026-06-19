@@ -1,3 +1,4 @@
+/* eslint-disable ghost/mocha/no-top-level-hooks -- false positive: the hooks are inside the describe, but the lint plugin can't see through the describe.skipIf()() gate below. (PLA-170) */
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const _ = require('lodash');
@@ -30,8 +31,11 @@ const SCENARIOS = [
     {label: 'deep-cloned instance', wrap: c => _.cloneDeep(c)}
 ];
 
+// Skip the whole parameterised set when Redis is unreachable. The flag is set by
+// the integration globalSetup (vitest-globalsetup-services.ts), which probes
+// Redis once before the forks spawn. (PLA-170)
 SCENARIOS.forEach(({label, wrap}) => {
-    describe(`Integration: AdapterCacheRedis on a ${label}`, function () {
+    describe.skipIf(process.env.GHOST_TEST_REDIS_AVAILABLE !== '1')(`Integration: AdapterCacheRedis on a ${label}`, function () {
         const caches = [];
 
         afterEach(async function () {

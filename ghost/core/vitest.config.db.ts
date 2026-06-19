@@ -107,6 +107,12 @@ export default defineConfig({
                     isolate: true,
                     include: ['test/integration/**/*.test.{js,ts}'],
                     exclude: ['**/node_modules/**'],
+                    // Probes the optional Docker services (Redis, MinIO) once in
+                    // the main process and exports GHOST_TEST_{REDIS,MINIO}_AVAILABLE
+                    // so the adapter suites skip when their service is down and run
+                    // when it's up. Integration-only — no adapter tests live in the
+                    // other DB suites. (PLA-170)
+                    globalSetup: ['./test/utils/vitest-globalsetup-services.ts'],
                     // Matches the mocha `--timeout=10000` for the integration suite.
                     testTimeout: 10000
                 }
