@@ -26,7 +26,14 @@ function getRedisTarget(): {host: string; port: number} {
 }
 
 function getMinioTarget(): {host: string; port: number} {
-    const url = new URL(process.env.MINIO_TEST_ENDPOINT || 'http://127.0.0.1:9000');
+    let url: URL;
+    try {
+        url = new URL(process.env.MINIO_TEST_ENDPOINT || 'http://127.0.0.1:9000');
+    } catch (e) {
+        // A malformed endpoint can't be probed; fall back to the default target so
+        // a bad env var skips the suite rather than crashing globalSetup.
+        url = new URL('http://127.0.0.1:9000');
+    }
     return {
         host: url.hostname,
         port: parseInt(url.port || '9000')
@@ -65,10 +72,9 @@ export async function setup(): Promise<void> {
         isReachable(minio.host, minio.port)
     ]);
 
-    if (redisUp) {
-        process.env.GHOST_TEST_REDIS_AVAILABLE = '1';
-    }
-    if (minioUp) {
-        process.env.GHOST_TEST_MINIO_AVAILABLE = '1';
-    }
+    // Set both flags to reflect THIS run's probe unconditionally, so a stale value
+    // inherited from the parent environment can't leave a suite enabled against a
+    // service that is actually down.
+    process.env.GHOST_TEST_REDIS_AVAILABLE = redisUp ? '1' : '0';
+    process.env.GHOST_TEST_MINIO_AVAILABLE = minioUp ? '1' : '0';
 }
