@@ -349,7 +349,7 @@ describe('Front-end members behavior', function () {
                 .expect('Location', `${config.get('url')}/?uuid=XXX&key=YYY&action=unsubscribe`);
         });
 
-        it('should pass through an optional updates param', async function () {
+        it('should pass through an optional updates & announcements param', async function () {
             await request.get('/unsubscribe/?uuid=XXX&updatesandannouncements=1')
                 .expect(302)
                 .expect('Location', `${config.get('url')}/?uuid=XXX&updatesandannouncements=1&action=unsubscribe`);

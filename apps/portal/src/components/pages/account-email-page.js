@@ -82,7 +82,10 @@ export default function AccountEmailPage() {
     const [subscribedNewsletters, setSubscribedNewsletters] = useState(defaultSubscribedNewsletters);
     const {comments_enabled: commentsEnabled} = site;
     const canChangeUpdatesAndAnnouncements = !!site.labs?.automations;
-    const {enable_comment_notifications: enableCommentNotifications, enable_updates_and_announcements: enableUpdatesAndAnnouncements} = member || {};
+    const {
+        enable_comment_notifications: enableCommentNotifications,
+        enable_updates_and_announcements: enableUpdatesAndAnnouncements
+    } = member || {};
 
     useEffect(() => {
         setSubscribedNewsletters(member?.newsletters || []);

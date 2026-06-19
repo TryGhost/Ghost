@@ -56,7 +56,10 @@ export default function UnsubscribePage() {
     const [showPrefs, setShowPrefs] = useState(false);
     const {comments_enabled: commentsEnabled} = site;
     const canChangeUpdatesAndAnnouncements = !!site.labs?.automations;
-    const {enable_comment_notifications: enableCommentNotifications = false, enable_updates_and_announcements: enableUpdatesAndAnnouncements} = member || {};
+    const {
+        enable_comment_notifications: enableCommentNotifications = false,
+        enable_updates_and_announcements: enableUpdatesAndAnnouncements
+    } = member || {};
 
     const hasNewslettersEnabled = hasNewsletterSendingEnabled({site});
 

@@ -1,7 +1,7 @@
 import AppContext from '../../app-context';
 import CloseButton from './close-button';
 import BackButton from './back-button';
-import {useContext, useState} from 'react';
+import {useContext, useState, useRef} from 'react';
 import Switch from './switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../utils/helpers';
 import ActionButton from './action-button';
@@ -160,9 +160,9 @@ export default function NewsletterManagement({
     // explicit preference yet (null), derive it from whether any newsletter is subscribed at open
     // time and keep it fixed while open, so toggling a newsletter doesn't also appear to flip
     // updates & announcements.
+    const wasInitiallySubscribedToAnyNewsletters = useRef(() => !!subscribedNewsletters?.length).current;
     const hasExplicitUpdatesPreference = enableUpdatesAndAnnouncements !== null && enableUpdatesAndAnnouncements !== undefined;
-    const [updatesPreferenceWhenNull] = useState(() => !!subscribedNewsletters?.length);
-    const effectiveEnableUpdatesAndAnnouncements = hasExplicitUpdatesPreference ? !!enableUpdatesAndAnnouncements : updatesPreferenceWhenNull;
+    const effectiveEnableUpdatesAndAnnouncements = hasExplicitUpdatesPreference ? enableUpdatesAndAnnouncements : wasInitiallySubscribedToAnyNewsletters;
 
     const hasNoCommentSubscription = (isCommentsEnabled && !enableCommentNotifications) || !isCommentsEnabled;
     const hasNoUpdatesSubscription = (canChangeUpdatesAndAnnouncements && !effectiveEnableUpdatesAndAnnouncements) || !canChangeUpdatesAndAnnouncements;
@@ -187,12 +187,11 @@ export default function NewsletterManagement({
                                     id: d.id
                                 };
                             });
-                            // When there's no explicit updates & announcements preference yet, persist
-                            // the value computed at open so the member only changes one thing at a time.
-                            const computedUpdatesAndAnnouncements = canChangeUpdatesAndAnnouncements && !hasExplicitUpdatesPreference ?
-                                effectiveEnableUpdatesAndAnnouncements :
-                                undefined;
-                            updateSubscribedNewsletters(newsletters, computedUpdatesAndAnnouncements);
+                            if (canChangeUpdatesAndAnnouncements && !hasExplicitUpdatesPreference) {
+                                updateSubscribedNewsletters(newsletters, effectiveEnableUpdatesAndAnnouncements);
+                            } else {
+                                updateSubscribedNewsletters(newsletters);
+                            }
                         }}
                     />
                     <CommentsSection
