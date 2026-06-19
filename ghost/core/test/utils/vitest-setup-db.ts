@@ -57,6 +57,27 @@ process.env.database__connection__database = mysqlBase
     ? `${mysqlBase}_${sessionId}`
     : `ghost_testing_${sessionId}`;
 
+// Record this fork's derived DB(s) in the run-scoped manifest so the
+// globalSetup teardown (./vitest-globalsetup-db.ts) can reclaim them after the
+// run — vitest force-terminates forks, so an in-process 'exit' handler can't.
+// GHOST_TEST_DB_MANIFEST is exported by that globalSetup and inherited here.
+// Best-effort: a manifest write must never disturb the DB derivation or the
+// boot, so failures are swallowed. Both legs are always derived (only one is
+// live per run), so both are tagged; the inactive leg's DB is never created and
+// its teardown is a harmless no-op.
+const dbManifestPath = process.env.GHOST_TEST_DB_MANIFEST;
+if (dbManifestPath) {
+    try {
+        require('fs').appendFileSync(
+            dbManifestPath,
+            `sqlite\t${process.env.database__connection__filename}\n` +
+            `mysql\t${process.env.database__connection__database}\n`
+        );
+    } catch (e) {
+        // best effort — leaked DBs are reclaimed opportunistically, never required
+    }
+}
+
 // Flush this worker's V8 coverage after every file. The external c8 collector
 // reads NODE_V8_COVERAGE, which Node writes only on a clean process exit — but
 // vitest force-terminates the forks (the same reason the forks-teardown deadlock
@@ -80,8 +101,9 @@ if (process.env.NODE_V8_COVERAGE) {
 // vitest force-terminates forks (which is also why the forks-teardown deadlock
 // doesn't bite), so a process 'exit' handler can't reclaim them. On CI both are
 // ephemeral (the runner's /dev/shm and the mysql container die with the job);
-// locally they accumulate under /tmp. Proper reclamation (a globalSetup teardown
-// that sweeps the run's DBs) is tracked in PLA-156.
+// locally they accumulate under /tmp. Reclamation is handled out-of-band: the
+// fork records its DB(s) in the run-scoped manifest above, and the globalSetup
+// teardown (./vitest-globalsetup-db.ts) sweeps them after the run. (PLA-168)
 
 const canonicalTestPort = 2369;
 // The per-fork port must be unique among forks running concurrently. Each test

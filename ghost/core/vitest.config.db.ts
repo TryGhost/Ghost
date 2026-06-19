@@ -70,6 +70,15 @@ const sharedDbConfig = {
 export default defineConfig({
     test: {
         resolveSnapshotPath,
+        // Reclaim every per-fork DB this run leaves behind. setup() runs once in
+        // the main process and exports a run-scoped manifest path that the forks
+        // (spawned afterwards) inherit and append their derived DBs to;
+        // teardown() runs once after all forks exit and sweeps them. Defined at
+        // the top level (not per-project) so a single manifest spans every
+        // project a run includes — e.g. `--project e2e --project e2e-api`. It
+        // only records/cleans; the per-fork DB derivation in vitest-setup-db.ts
+        // is untouched. (PLA-168)
+        globalSetup: ['./test/utils/vitest-globalsetup-db.ts'],
         // Local runs use the compact `dot` reporter. CI uses `default` plus
         // `github-actions` for inline annotations (mirrors vitest.config.ts).
         reporters: process.env.GITHUB_ACTIONS
