@@ -80,7 +80,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
 
     getRequiredRelations(): string[] {
         if (this.requiredRelations !== null) {
-            return this.requiredRelations;
+            return [...this.requiredRelations];
         }
         const required = new Set<string>();
         for (const config of this.routerConfigs) {
@@ -95,7 +95,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             }
         }
         this.requiredRelations = [...required];
-        return this.requiredRelations;
+        return [...this.requiredRelations];
     }
 
     hasFinished(): boolean {
