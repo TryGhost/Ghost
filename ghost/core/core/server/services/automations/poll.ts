@@ -56,7 +56,8 @@ const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
         return preference;
     }
 
-    return member.related('newsletters').models.length > 0;
+    const isSubscribedToAnyNewsletters = member.related('newsletters').models.length > 0;
+    return isSubscribedToAnyNewsletters;
 };
 
 const markMaxAttemptsExceeded = async (automationsApi: PollOptions['automationsApi'], step: AutomationStepToRun): Promise<void> => {
