@@ -557,6 +557,20 @@ describe('LazyUrlService', function () {
             assert.deepEqual(service.getRequiredRelations().sort(), ['authors', 'tags']);
         });
 
+        it('requires the relation a permalink derives even when no filter references it', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:primary_tag/:slug/');
+
+            assert.deepEqual(service.getRequiredRelations(), ['tags']);
+        });
+
+        it('requires authors when a permalink derives primary_author', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', 'featured:true', 'posts', '/:primary_author/:slug/');
+
+            assert.deepEqual(service.getRequiredRelations(), ['authors']);
+        });
+
         it('recomputes after routers are reset', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('news', 'tag:news', 'posts', '/news/:slug/');

@@ -84,14 +84,21 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         }
         const required = new Set<string>();
         for (const config of this.routerConfigs) {
-            if (!config.filter) {
-                continue;
+            if (config.filter) {
+                if (/\btags?\b/.test(config.filter) || /\bprimary_tag\b/.test(config.filter)) {
+                    required.add('tags');
+                }
+                if (/\bauthors?\b/.test(config.filter) || /\bprimary_author\b/.test(config.filter)) {
+                    required.add('authors');
+                }
             }
-            if (/\btags?\b/.test(config.filter) || /\bprimary_tag\b/.test(config.filter)) {
-                required.add('tags');
-            }
-            if (/\bauthors?\b/.test(config.filter) || /\bprimary_author\b/.test(config.filter)) {
-                required.add('authors');
+            if (config.permalink) {
+                if (/\bprimary_tag\b/.test(config.permalink)) {
+                    required.add('tags');
+                }
+                if (/\bprimary_author\b/.test(config.permalink)) {
+                    required.add('authors');
+                }
             }
         }
         this.requiredRelations = [...required];
