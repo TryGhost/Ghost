@@ -37,6 +37,15 @@ const NavigationVisibilityDropdown: React.FC<NavigationVisibilityDropdownProps> 
             ...audienceVisibility,
             [audience]: checked
         };
+
+        // When the paid-members control is hidden (Stripe disconnected) there's no
+        // way to target paid separately, so paid follows free. This keeps results on
+        // the general values ("Members only"/"Public") rather than collapsing to the
+        // free-specific ones ("Free only"/"Public + free").
+        if (!showPaidVisibility) {
+            nextAudiences['paid-members'] = nextAudiences['free-members'];
+        }
+
         const nextVisibility = getVisibilityFromAudiences(nextAudiences);
 
         if (!showPaidVisibility && paidVisibilityValues.includes(nextVisibility)) {
