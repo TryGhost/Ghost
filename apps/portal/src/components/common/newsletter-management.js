@@ -81,7 +81,6 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
 function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChangeUpdatesAndAnnouncements, enableUpdatesAndAnnouncements}) {
     const {doAction, site} = useContext(AppContext);
     const [isUpdating, setIsUpdating] = useState(false);
-    const isChecked = !!enableUpdatesAndAnnouncements;
 
     if (!canChangeUpdatesAndAnnouncements) {
         return null;
@@ -107,7 +106,7 @@ function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChang
                 <p>{t('Occasional updates from {siteTitle}', {siteTitle: site?.title})}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
-                <Switch id="updates-and-announcements" onToggle={handleToggle} checked={isChecked} disabled={isUpdating} dataTestId="switch-input" />
+                <Switch id="updates-and-announcements" onToggle={handleToggle} checked={enableUpdatesAndAnnouncements} disabled={isUpdating} dataTestId="switch-input" />
             </div>
         </section>
     );
