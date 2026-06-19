@@ -2432,8 +2432,8 @@ importers:
         specifier: 1.0.43
         version: 1.0.43
       '@tryghost/mongo-utils':
-        specifier: 0.6.4
-        version: 0.6.4
+        specifier: 0.6.5
+        version: 0.6.5
       '@tryghost/mw-error-handler':
         specifier: 1.0.13
         version: 1.0.13
@@ -8881,9 +8881,6 @@ packages:
 
   '@tryghost/mongo-knex@0.9.5':
     resolution: {integrity: sha512-etO6Kz8a1dgMV6yapD2C2JsoeLrUjkIoIUdXrkV9ELHQsMjMhtI2SAUnMV9AcLhxv0P7h8UWWD2rlNBwo8JJig==}
-
-  '@tryghost/mongo-utils@0.6.4':
-    resolution: {integrity: sha512-4ZGl9QXoMTQb9qb5HGjMjVLkV39FO0F/0cM4Z3i/9gUXXfdmGZwPdcAMBRT7oRhqng3/4uSRpvQ/Rk0oASM+kg==}
 
   '@tryghost/mongo-utils@0.6.5':
     resolution: {integrity: sha512-fMEfdlVaVkr7SJwVxBxVDfUQ+x4DVF4PMet698PLzabqSnGsaWcruBaQlOuNvtf8ITNXKFUAqZMdmSUTIAHU+Q==}
@@ -29039,10 +29036,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/mongo-utils@0.6.4':
-    dependencies:
-      lodash: 4.18.1
-
   '@tryghost/mongo-utils@0.6.5':
     dependencies:
       lodash: 4.18.1
@@ -29131,7 +29124,7 @@ snapshots:
   '@tryghost/nql@0.12.11':
     dependencies:
       '@tryghost/mongo-knex': 0.9.5
-      '@tryghost/mongo-utils': 0.6.4
+      '@tryghost/mongo-utils': 0.6.5
       '@tryghost/nql-lang': 0.6.6
       lodash: 4.18.1
       mingo: 2.5.3
@@ -29141,7 +29134,7 @@ snapshots:
   '@tryghost/nql@0.13.0':
     dependencies:
       '@tryghost/mongo-knex': 0.10.1
-      '@tryghost/mongo-utils': 0.6.4
+      '@tryghost/mongo-utils': 0.6.5
       '@tryghost/nql-lang': 0.6.6
       lodash: 4.18.1
       mingo: 2.5.3
