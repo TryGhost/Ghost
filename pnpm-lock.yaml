@@ -2946,8 +2946,8 @@ importers:
         specifier: 'catalog:'
         version: 7.2.2
       tmp:
-        specifier: 0.2.6
-        version: 0.2.6
+        specifier: 0.2.7
+        version: 0.2.7
       tsx:
         specifier: 'catalog:'
         version: 4.22.4
@@ -21064,6 +21064,10 @@ packages:
     resolution: {integrity: sha512-5sJPdPjfI5Kx+qbrDesxkglRBxW//g7hCsqspEjwkewGvBMGIKMOTKzLt1hFVJzyadba3lDUN20O9qhvbQUSTA==}
     engines: {node: '>=14.14'}
 
+  tmp@0.2.7:
+    resolution: {integrity: sha512-e0votIpp4Uo2AJYSzVHV6xCcawuiez3DzqDAbrTc3YxBkplN6e+dM13ZeIcZnDg/QpSuU2zfZ3rzwY8ukEnaXw==}
+    engines: {node: '>=14.14'}
+
   tmpl@1.0.5:
     resolution: {integrity: sha512-3f0uOEAQwIqGuWW2MVzYg8fV/QNnc/IpuJNG837rLuczAaLVHslWHZQj4IGiEl5Hs3kkbhwL9Ab7Hrsmuj+Smw==}
 
@@ -32472,7 +32476,7 @@ snapshots:
       resolve-path: 1.4.0
       rimraf: 3.0.2
       sane: 4.1.0
-      tmp: 0.2.6
+      tmp: 0.2.7
       tree-sync: 2.1.0
       underscore.string: 3.3.6
       watch-detector: 1.0.2
@@ -32778,7 +32782,7 @@ snapshots:
 
   can-symlink@1.0.0:
     dependencies:
-      tmp: 0.2.6
+      tmp: 0.2.7
 
   caniuse-api@3.0.0:
     dependencies:
@@ -35732,7 +35736,7 @@ snapshots:
       globby: 11.1.0
       ora: 5.4.1
       slash: 3.0.0
-      tmp: 0.2.6
+      tmp: 0.2.7
       workerpool: 6.5.1
     transitivePeerDependencies:
       - supports-color
@@ -36782,7 +36786,7 @@ snapshots:
     dependencies:
       chardet: 0.7.0
       iconv-lite: 0.4.24
-      tmp: 0.2.6
+      tmp: 0.2.7
 
   extract-stack@2.0.0: {}
 
@@ -37081,12 +37085,12 @@ snapshots:
   fixturify-project@1.10.0:
     dependencies:
       fixturify: 1.3.0
-      tmp: 0.2.6
+      tmp: 0.2.7
 
   fixturify-project@2.1.1:
     dependencies:
       fixturify: 2.1.1
-      tmp: 0.2.6
+      tmp: 0.2.7
       type-fest: 0.11.0
 
   fixturify@1.3.0:
@@ -45492,7 +45496,7 @@ snapshots:
       spawn-args: 0.2.0
       styled_string: 0.0.1
       tap-parser: 7.0.0
-      tmp: 0.2.6
+      tmp: 0.2.7
     transitivePeerDependencies:
       - '@babel/core'
       - arc-templates
@@ -45643,6 +45647,8 @@ snapshots:
       tldts-core: 7.4.0
 
   tmp@0.2.6: {}
+
+  tmp@0.2.7: {}
 
   tmpl@1.0.5: {}
 
@@ -46588,7 +46594,7 @@ snapshots:
     dependencies:
       heimdalljs-logger: 0.1.10
       silent-error: 1.1.1
-      tmp: 0.2.6
+      tmp: 0.2.7
     transitivePeerDependencies:
       - supports-color
 
