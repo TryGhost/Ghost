@@ -161,18 +161,12 @@ const processStep = async ({
 
     try {
         switch (step.type) {
-        case 'wait': {
-            nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
+        case 'wait':
             break;
-        }
-        case 'send_email': {
-            // The member opted out of updates & announcements, so skip this email but keep
-            // the automation run moving.
+        case 'send_email':
             if (!hasUpdatesAndAnnouncementsEnabled(member)) {
-                nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
                 break;
             }
-
             memberWelcomeEmailService.init();
             await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
@@ -205,9 +199,7 @@ const processStep = async ({
                     }
                 }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
             }
-            nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
             break;
-        }
         default: {
             const _exhaustive: never = step;
             throw new errors.InternalServerError({
@@ -215,6 +207,8 @@ const processStep = async ({
             });
         }
         }
+
+        nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
     } catch (err) {
         return await handleStepExecutionFailure({
             automationsApi,
