@@ -1,6 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
+const urlService = require('../../services/url');
 const ALLOWED_INCLUDES = ['authors', 'tags', 'tiers'];
 
 const messages = {
@@ -38,7 +39,7 @@ const controller = {
             const callerIncludes = Array.isArray(frame.options.withRelated) ? frame.options.withRelated : [];
             const options = {
                 ...frame.options,
-                withRelated: [...new Set([...callerIncludes, 'tags', 'authors'])]
+                withRelated: [...new Set([...callerIncludes, ...urlService.facade.getRequiredRelations()])]
             };
             const model = await models.Post.findOne(Object.assign(frame.data, {status: 'sent'}), options);
 

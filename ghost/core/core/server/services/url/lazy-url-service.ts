@@ -43,6 +43,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     private findResource: FindResource;
     // Router configs in registration order, which is also their priority.
     private routerConfigs: RouterConfig[];
+    private requiredRelations: string[] | null;
 
     constructor({urlUtils = localUtils, findResource}: LazyUrlServiceDeps) {
         if (typeof findResource !== 'function') {
@@ -53,6 +54,7 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         this.urlUtils = urlUtils;
         this.findResource = findResource;
         this.routerConfigs = [];
+        this.requiredRelations = null;
     }
 
     onRouterAddedType(identifier: string, filter: string | null, resourceType: string, permalink: string): void {
@@ -64,14 +66,45 @@ export class LazyUrlService implements LazyUrlServiceBackend {
             permalink,
             compiledFilter: buildFilter(filter)
         });
+        this.requiredRelations = null;
     }
 
     onRouterUpdated(): void {
-        // No precomputed state to regenerate.
+        // Defensive: a router update could change a filter the cache derived
+        // from, so drop it and recompute lazily on next read.
+        this.requiredRelations = null;
     }
 
     reset(): void {
         this.routerConfigs = [];
+        this.requiredRelations = null;
+    }
+
+    getRequiredRelations(): string[] {
+        if (this.requiredRelations !== null) {
+            return [...this.requiredRelations];
+        }
+        const required = new Set<string>();
+        for (const config of this.routerConfigs) {
+            if (config.filter) {
+                if (/\btags?\b/.test(config.filter) || /\bprimary_tag\b/.test(config.filter)) {
+                    required.add('tags');
+                }
+                if (/\bauthors?\b/.test(config.filter) || /\bprimary_author\b/.test(config.filter)) {
+                    required.add('authors');
+                }
+            }
+            if (config.permalink) {
+                if (/\bprimary_tag\b/.test(config.permalink)) {
+                    required.add('tags');
+                }
+                if (/\bprimary_author\b/.test(config.permalink)) {
+                    required.add('authors');
+                }
+            }
+        }
+        this.requiredRelations = [...required];
+        return [...this.requiredRelations];
     }
 
     hasFinished(): boolean {

@@ -69,6 +69,7 @@ export interface LazyUrlServiceBackend {
     getUrlForResource(resource: Resource, options?: UrlOptions): string;
     ownsResource(routerId: string, resource: Resource): boolean;
     resolveUrl(path: string): Promise<Resource | null>;
+    getRequiredRelations(): string[];
     hasFinished(): boolean;
     onRouterAddedType(...args: unknown[]): unknown;
     onRouterUpdated(...args: unknown[]): unknown;
@@ -153,6 +154,15 @@ export class UrlServiceFacade {
                 (a, b) => _.isEqual(a, b));
         }
         return eagerResult;
+    }
+
+    // Returns [] when there is no lazy backend: eager looks URLs up by id and
+    // never touches a resource's relations.
+    getRequiredRelations(): string[] {
+        if (this.lazyUrlService) {
+            return this.lazyUrlService.getRequiredRelations();
+        }
+        return [];
     }
 
     hasFinished(): boolean {

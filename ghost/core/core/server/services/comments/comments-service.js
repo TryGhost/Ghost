@@ -107,6 +107,9 @@ class CommentsService {
         /** @private */
         this.contentGating = contentGating;
 
+        /** @private */
+        this.urlService = urlService;
+
         const Emails = require('./comments-service-emails');
         /** @private */
         this.emails = new Emails({
@@ -465,7 +468,8 @@ class CommentsService {
      * @param {AdminBrowseAllOptions} options
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
-        const withRelated = ['member', 'post', 'post.tags', 'post.authors', 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.net_score', 'count.reports', 'in_reply_to', 'parent'];
+        const postUrlRelations = this.urlService.facade.getRequiredRelations().map(relation => `post.${relation}`);
+        const withRelated = ['member', 'post', ...postUrlRelations, 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.net_score', 'count.reports', 'in_reply_to', 'parent'];
 
         return await this.models.Comment.findPage({
             withRelated,

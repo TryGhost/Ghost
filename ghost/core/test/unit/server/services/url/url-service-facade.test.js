@@ -44,6 +44,12 @@ describe('UrlServiceFacade', function () {
         });
     });
 
+    describe('getRequiredRelations', function () {
+        it('returns [] with no lazy backend (eager touches no resource relations)', function () {
+            assert.deepEqual(facade.getRequiredRelations(), []);
+        });
+    });
+
     describe('resolveUrl', function () {
         it('returns null when the underlying lookup misses', async function () {
             urlService.getResource.returns(null);
@@ -104,6 +110,7 @@ describe('UrlServiceFacade', function () {
                 getUrlForResource: sinon.stub().returns('/lazy/'),
                 ownsResource: sinon.stub().returns(true),
                 resolveUrl: sinon.stub().resolves({type: 'posts', id: 'p1'}),
+                getRequiredRelations: sinon.stub().returns(['tags']),
                 hasFinished: sinon.stub().returns(true),
                 onRouterAddedType: sinon.stub(),
                 onRouterUpdated: sinon.stub(),
@@ -114,6 +121,11 @@ describe('UrlServiceFacade', function () {
 
         it('isLazy() reports true', function () {
             assert.equal(lazyFacade.isLazy(), true);
+        });
+
+        it('delegates getRequiredRelations to the lazy backend', function () {
+            assert.deepEqual(lazyFacade.getRequiredRelations(), ['tags']);
+            sinon.assert.calledOnce(lazyUrlService.getRequiredRelations);
         });
 
         it('routes getUrlForResource through the lazy backend', function () {
