@@ -16,6 +16,17 @@ describe('PostScheduling', function () {
 
     beforeEach(function () {
         adapter = new SchedulingDefault();
+        // These tests only assert that schedule/unschedule are called with the
+        // right arguments — they don't need the adapter to actually run. Stub
+        // the internals that arm real setTimeout loops and fire real HTTP pings
+        // (run = recursive 5-min loop, _execute = per-job ping timers,
+        // _pingUrl = the got request). Otherwise the adapter leaves live timers
+        // and in-flight requests behind that, under the shared module registry
+        // (isolate: false), hang whichever file runs next in the worker — e.g.
+        // scheduling-default's own real-HTTP pingUrl tests then time out.
+        sinon.stub(adapter, 'run');
+        sinon.stub(adapter, '_execute');
+        sinon.stub(adapter, '_pingUrl').resolves();
         sinon.stub(schedulingUtils, 'createAdapter').returns(Promise.resolve(adapter));
         sinon.spy(adapter, 'schedule');
         sinon.spy(adapter, 'unschedule');
