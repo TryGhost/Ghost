@@ -171,8 +171,7 @@ module.exports = {
                 // Leaks that bypass the proxy (fix first).
                 'core/frontend/services/routing/controllers/unsubscribe.js', // services/members + settings-helpers
                 'core/frontend/services/routing/router-manager.js', // server/lib/common/events bus
-                'core/frontend/services/sitemap/site-map-manager.js', // server/lib/common/events bus
-                'core/frontend/utils/images.js' // server/adapters/storage/utils
+                'core/frontend/services/sitemap/site-map-manager.js' // server/lib/common/events bus
             ],
             rules: {
                 'ghost/node/no-restricted-require': ['error', [
