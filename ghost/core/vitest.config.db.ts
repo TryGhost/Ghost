@@ -18,11 +18,10 @@ import {defineConfig} from 'vitest/config';
 //    (The forks-teardown deadlock the unit config avoids does not reproduce here
 //    on vitest 4 — the heavy DB forks exit cleanly.)
 //  - test/utils/vitest-setup-db.ts provisions the per-process DB + port and
-//    bridges @tryghost/express-test's snapshot/mocha hooks onto vitest.
+//    bridges @tryghost/express-test's snapshot hooks onto vitest.
 //
-// Suites move onto vitest one at a time. As each ports, add (or widen) a project
-// below and drop that directory from the mocha run in package.json (`test:base`
-// globs the rest).
+// Every DB-backed suite (integration / e2e / e2e-api / legacy) now runs here;
+// each is a project below, keyed by its include globs.
 
 // Ghost's snapshot tests use @tryghost/jest-snapshot, which manages its own
 // __snapshots__/*.snap files. Point vitest's *native* snapshot system at a
@@ -58,7 +57,7 @@ const sharedDbConfig = {
         WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET',
         // Bree runs jobs in worker_threads that inherit this NODE_OPTIONS; tsx lets
         // them require() Ghost's .ts sources (job files pull in e.g.
-        // labs-flag-overrides.ts). The mocha lane gets tsx from `--node-option
+        // labs-flag-overrides.ts). The old mocha lane got tsx from `--node-option
         // import=tsx`; vitest only registers tsx in-process (not in the fork
         // execArgv worker_threads inherit) and ignores poolOptions.forks.execArgv
         // here, so route it through the env. Applied on test.env (after fork

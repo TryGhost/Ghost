@@ -1,11 +1,10 @@
 // Vitest setup for the DB-backed suites (integration / e2e / legacy).
 //
 // These suites boot a real Ghost server against a provisioned database — unlike
-// the unit suite (./vitest-setup.ts), which never touches a DB. This file is the
-// vitest equivalent of ./overrides.js (the mocha `--require`): it derives a
-// per-session database + port BEFORE Ghost's config loads, loads Ghost's
-// runtime overrides, and bridges @tryghost/express-test's mochaHooks contract
-// onto vitest's globals.
+// the unit suite (./vitest-setup.ts), which never touches a DB. This file
+// derives a per-session database + port BEFORE Ghost's config loads, loads
+// Ghost's runtime overrides, and bridges @tryghost/express-test's mochaHooks
+// contract onto vitest's globals.
 //
 // Execution model: one Ghost server == one process (Ghost's db/knex,
 // @tryghost/domain-events, the jobs manager, nconf, settings cache, and the url
@@ -114,7 +113,6 @@ const {snapshotManager, mochaHooks} = snapshotExports;
 // Normalize URLs before snapshot comparison. When a random port is in use,
 // response URLs contain the session port but committed snapshots use the
 // canonical port (2369). Keeps snapshot comparisons stable across sessions.
-// Mirrors ./overrides.js.
 if (sessionPort !== canonicalTestPort && snapshotManager) {
     const originalMatch = snapshotManager.match.bind(snapshotManager);
     const portRegex = new RegExp(`127\\.0\\.0\\.1:${sessionPort}`, 'g');
@@ -154,7 +152,6 @@ if (sessionPort !== canonicalTestPort && snapshotManager) {
 const mockManager = require('./e2e-framework-mock-manager');
 
 // Bridge @tryghost/express-test's mochaHooks contract onto vitest's globals.
-// Order matches ./overrides.js for parity.
 //
 // NOTE: vitest runs setup-file hooks per *file*, not once per run like mocha's
 // root hooks. That's fine for these (disableNetwork is idempotent; the snapshot
