@@ -3,7 +3,8 @@ const sinon = require('sinon');
 const {captureLoggerOutput, findByEvent} = require('../../../../../utils/logging-utils');
 const handler = require('../../../../../../core/server/services/outbox/handlers/member-created.js');
 const memberWelcomeEmailService = require('../../../../../../core/server/services/member-welcome-emails/service');
-const {Automation, AutomatedEmailRecipient} = require('../../../../../../core/server/models');
+const {Automation} = require('../../../../../../core/server/models/automation');
+const {AutomatedEmailRecipient} = require('../../../../../../core/server/models/automated-email-recipient');
 
 describe('member-created handler', function () {
     let memberWelcomeEmailServiceSendStub;
