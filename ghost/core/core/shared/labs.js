@@ -50,6 +50,7 @@ const PRIVATE_FEATURES = [
     'emailUniqueid',
     'themeTranslation',
     'pictureImageFormats',
+<<<<<<< HEAD
     'getHelperDeduplication',
     'membersCustomFields',
     'paywallImprovements',
@@ -57,6 +58,12 @@ const PRIVATE_FEATURES = [
     'tagDetailsReact',
     'selfServeArchives',
     'machinePayments'
+=======
+    'smarterCounts',
+    'llmsTxt',
+    'getHelperDeduplication',
+    'navigationIcons'
+>>>>>>> 136a54bc7f (Added navigationIcons labs flag to gate icon/visibility controls)
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

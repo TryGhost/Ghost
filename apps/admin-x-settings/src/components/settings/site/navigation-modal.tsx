@@ -29,7 +29,9 @@ const NavigationModal = NiceModal.create(() => {
         localSettings,
         ['navigation', 'secondary_navigation', 'members_signup_access']
     );
-    const showVisibility = membersSignupAccess !== 'none';
+    const navigationIconsEnabled = !!config.labs.navigationIcons;
+    const showIcon = navigationIconsEnabled;
+    const showVisibility = navigationIconsEnabled && membersSignupAccess !== 'none';
     const showPaidVisibility = checkStripeEnabled(localSettings, config);
     const parseNavigationItems = (value?: string) => JSON.parse(value || '[]') as NavigationItem[];
 
@@ -119,12 +121,12 @@ const NavigationModal = NiceModal.create(() => {
                         {
                             id: 'primary-nav',
                             title: 'Primary',
-                            contents: <NavigationEditForm baseUrl={siteData!.url} idPrefix='primary-navigation' navigation={navigation} showPaidVisibility={showPaidVisibility} showVisibility={showVisibility} uploadIcon={uploadIcon} />
+                            contents: <NavigationEditForm baseUrl={siteData!.url} idPrefix='primary-navigation' navigation={navigation} showIcon={showIcon} showPaidVisibility={showPaidVisibility} showVisibility={showVisibility} uploadIcon={uploadIcon} />
                         },
                         {
                             id: 'secondary-nav',
                             title: 'Secondary',
-                            contents: <NavigationEditForm baseUrl={siteData!.url} idPrefix='secondary-navigation' navigation={secondaryNavigation} showPaidVisibility={showPaidVisibility} showVisibility={showVisibility} uploadIcon={uploadIcon} />
+                            contents: <NavigationEditForm baseUrl={siteData!.url} idPrefix='secondary-navigation' navigation={secondaryNavigation} showIcon={showIcon} showPaidVisibility={showPaidVisibility} showVisibility={showVisibility} uploadIcon={uploadIcon} />
                         }
                     ]}
                     onTabChange={setSelectedTab}

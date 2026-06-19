@@ -1,7 +1,12 @@
 import {expect, test} from '@playwright/test';
-import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
+import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe, toggleLabsFlag, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
 test.describe('Navigation settings', async () => {
+    test.beforeEach(() => {
+        // Icon + visibility controls are gated behind the navigationIcons labs flag.
+        toggleLabsFlag('navigationIcons', true);
+    });
+
     test('Editing primary and secondary navigation', async ({page}) => {
         const {lastApiRequests} = await mockApi({page, requests: {
             ...globalDataRequests,
@@ -310,5 +315,31 @@ test.describe('Navigation settings', async () => {
 
         await expect(modal).toBeHidden();
         expect(lastApiRequests.editSettings).toBeUndefined();
+    });
+
+    test('Hides icon and visibility controls when navigationIcons flag is disabled', async ({page}) => {
+        toggleLabsFlag('navigationIcons', false);
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {...globalDataRequests.browseSettings, response: settingsWithStripe}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('navigation');
+        await section.getByRole('button', {name: 'Customize'}).click();
+
+        const modal = page.getByTestId('navigation-modal');
+        const primaryNavigationTab = modal.getByRole('tabpanel').first();
+
+        // Label and URL fields are still editable
+        await expect(primaryNavigationTab.getByTestId('navigation-item-editor').first().getByLabel('Label')).toBeVisible();
+        await expect(primaryNavigationTab.getByTestId('navigation-item-editor').first().getByLabel('URL')).toBeVisible();
+
+        // Icon column, icon upload, and visibility controls are all hidden
+        await expect(primaryNavigationTab.getByText('Icon', {exact: true})).toHaveCount(0);
+        await expect(primaryNavigationTab.locator('input[type="file"]')).toHaveCount(0);
+        await expect(primaryNavigationTab.getByTestId('navigation-item-visibility')).toHaveCount(0);
     });
 });

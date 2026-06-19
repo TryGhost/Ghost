@@ -26,10 +26,12 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
     textFieldClasses?: string
     action?: ReactNode
     addItem?: () => void
+    showIcon: boolean
     showPaidVisibility: boolean
     showVisibility: boolean
 }
 
+<<<<<<< HEAD:apps/admin/src/settings/app/components/settings/site/navigation/navigation-item-editor.tsx
 <<<<<<< HEAD:apps/admin/src/settings/app/components/settings/site/navigation/navigation-item-editor.tsx
 const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, item, updateItem, addItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, className, ...props}) => {
     const urlInput = useUrlInput({
@@ -52,17 +54,22 @@ const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, ite
                         value={item.label}
 =======
 const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, idPrefix, item, updateItem, uploadIcon, addItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, showPaidVisibility, showVisibility, className, ...props}) => {
+=======
+const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, idPrefix, item, updateItem, uploadIcon, addItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, showIcon, showPaidVisibility, showVisibility, className, ...props}) => {
+>>>>>>> 136a54bc7f (Added navigationIcons labs flag to gate icon/visibility controls):apps/admin-x-settings/src/components/settings/site/navigation/navigation-item-editor.tsx
     return (
         <div className={clsx(navigationRowClasses, className)} data-testid='navigation-item-editor' {...props}>
-            <div className={clsx('flex flex-col', navigationColumnClasses.icon, navigationFieldOffsetClass)}>
-                <NavigationIconUpload
-                    clearError={clearError}
-                    idPrefix={idPrefix}
-                    item={item}
-                    updateItem={updateItem}
-                    uploadIcon={uploadIcon}
-                />
-            </div>
+            {showIcon && (
+                <div className={clsx('flex flex-col', navigationColumnClasses.icon, navigationFieldOffsetClass)}>
+                    <NavigationIconUpload
+                        clearError={clearError}
+                        idPrefix={idPrefix}
+                        item={item}
+                        updateItem={updateItem}
+                        uploadIcon={uploadIcon}
+                    />
+                </div>
+            )}
             <div className={clsx('flex', navigationColumnClasses.label, navigationFieldOffsetClass)}>
                 <TextField
                     className={textFieldClasses}
