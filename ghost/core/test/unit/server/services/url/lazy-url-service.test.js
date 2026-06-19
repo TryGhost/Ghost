@@ -532,4 +532,38 @@ describe('LazyUrlService', function () {
             assert.equal(url, '/hello/');
         });
     });
+
+    describe('getRequiredRelations', function () {
+        it('returns [] when no router references tags or authors', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+            service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
+
+            assert.deepEqual(service.getRequiredRelations(), []);
+        });
+
+        it('returns only the relations the registered filters reference', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/news/:slug/');
+
+            assert.deepEqual(service.getRequiredRelations(), ['tags']);
+        });
+
+        it('unions relations across all routers and maps primary_* tokens', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/news/:slug/');
+            service.onRouterAddedType('staff', 'primary_author:jane', 'posts', '/staff/:slug/');
+
+            assert.deepEqual(service.getRequiredRelations().sort(), ['authors', 'tags']);
+        });
+
+        it('recomputes after routers are reset', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news', 'posts', '/news/:slug/');
+            assert.deepEqual(service.getRequiredRelations(), ['tags']);
+
+            service.reset();
+            assert.deepEqual(service.getRequiredRelations(), []);
+        });
+    });
 });
