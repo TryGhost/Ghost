@@ -9,6 +9,7 @@ export * from './whats-new';
 export * from './analytics';
 export * from './onboarding';
 export * from './posts';
+export * from './restore';
 export * from './tags';
 export * from './sidebar';
 export * from './billing';
