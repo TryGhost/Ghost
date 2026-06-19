@@ -77,7 +77,7 @@ const MainForm: React.FC<Props> = ({commentsCount}) => {
         window.addEventListener('keydown', keyDownListener, {passive: true});
 
         return () => {
-            window.removeEventListener('keydown', keyDownListener, {passive: true} as EventListenerOptions);
+            window.removeEventListener('keydown', keyDownListener);
         };
     }, [editor]);
 

@@ -38,9 +38,9 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
         }
 
         return () => {
-            window.removeEventListener('click', listener, {passive: true} as any);
+            window.removeEventListener('click', listener);
             if (el && el !== window) {
-                el.removeEventListener('click', listener, {passive: true} as any);
+                el.removeEventListener('click', listener);
             }
         };
     }, [close]);
@@ -56,7 +56,7 @@ const CommentContextMenu: React.FC<Props> = ({comment, close, toggleEdit}) => {
         window.addEventListener('keydown', listener, {passive: true});
 
         return () => {
-            window.removeEventListener('keydown', listener, {passive: true} as EventListenerOptions);
+            window.removeEventListener('keydown', listener);
         };
     }, [close]);
 
