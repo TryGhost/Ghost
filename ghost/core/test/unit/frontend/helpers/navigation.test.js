@@ -61,19 +61,34 @@ describe('{{navigation}} helper', function () {
 
         // Test 3: invalid label
         optionsData.data.site.navigation = [{label: 1, url: 'bar'}];
-        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url, Label and Icon must be strings'});
+        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url and Label must be strings'});
 
         // Test 4: invalid url
         optionsData.data.site.navigation = [{label: 'foo', url: 1}];
-        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url, Label and Icon must be strings'});
+        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url and Label must be strings'});
+    });
 
-        // Test 5: invalid icon
+    it('coerces a non-string icon to no icon instead of throwing', function () {
+        // Bad data (e.g. from an older Ghost or a direct DB write) must not 500 the
+        // whole front end — the item renders without an icon.
         optionsData.data.site.navigation = [{label: 'foo', url: '/foo', icon: 1}];
-        assert.throws(runHelperThunk(optionsData), {message: 'Invalid value, Url, Label and Icon must be strings'});
 
-        // Test 6: invalid visibility
+        const rendered = runHelper(optionsData);
+
+        assertExists(rendered);
+        assert(!rendered.string.includes('class="nav-icon"'));
+        assert(rendered.string.includes('<span class="nav-label">foo</span>'));
+    });
+
+    it('coerces an unrecognised visibility to public instead of throwing', function () {
+        // An unknown visibility value falls back to public (visible) rather than
+        // throwing — the link target enforces its own access control regardless.
         optionsData.data.site.navigation = [{label: 'foo', url: '/foo', visibility: 'invalid'}];
-        assert.throws(runHelperThunk(optionsData), {message: 'Invalid navigation visibility value'});
+
+        const rendered = runHelper(optionsData);
+
+        assertExists(rendered);
+        assert(rendered.string.includes('<span class="nav-label">foo</span>'));
     });
 
     it('can render empty nav', function () {

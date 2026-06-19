@@ -11,12 +11,10 @@ const _ = require('lodash');
 const messages = {
     invalidData: 'navigation data is not an object or is a function',
     valuesMustBeDefined: 'All values must be defined for label, url and current',
-    valuesMustBeString: 'Invalid value, Url, Label and Icon must be strings',
-    invalidVisibility: 'Invalid navigation visibility value'
+    valuesMustBeString: 'Invalid value, Url and Label must be strings'
 };
 
 const createFrame = hbs.handlebars.createFrame;
-const visibilityValues = ['public', 'members', 'paid', 'public_free', 'public_paid', 'public_only', 'free_members', 'none'];
 
 function getNavigationIconName(icon) {
     if (!icon) {
@@ -66,21 +64,16 @@ module.exports = function navigation(options) {
     // check for non-null string values
     if (navigationData.filter(function (e) {
         return ((!_.isUndefined(e.label) && !_.isNull(e.label) && !_.isString(e.label)) ||
-            (!_.isNull(e.url) && !_.isString(e.url)) ||
-            (!_.isUndefined(e.icon) && !_.isNull(e.icon) && !_.isString(e.icon)));
+            (!_.isNull(e.url) && !_.isString(e.url)));
     }).length > 0) {
         throw new errors.IncorrectUsageError({
             message: tpl(messages.valuesMustBeString)
         });
     }
 
-    if (navigationData.filter(function (e) {
-        return !_.isUndefined(e.visibility) && !visibilityValues.includes(e.visibility);
-    }).length > 0) {
-        throw new errors.IncorrectUsageError({
-            message: tpl(messages.invalidVisibility)
-        });
-    }
+    // Icon and visibility are coerced rather than thrown on (see map/_isVisible
+    // below): a bad icon is dropped and an unrecognised visibility falls back to
+    // public, so malformed data can never 500 a whole site's front end.
 
     // strips trailing slashes and compares urls
     function _isCurrentUrl(href, url) {
@@ -137,11 +130,12 @@ module.exports = function navigation(options) {
 
     output = navigationData.filter(_isVisible).map(function (e) {
         const out = {};
-        const iconName = getNavigationIconName(e.icon);
+        const icon = _.isString(e.icon) ? e.icon : null;
+        const iconName = getNavigationIconName(icon);
         const hasLabel = _.isString(e.label) && e.label.trim().length > 0;
 
         out.current = _isCurrentUrl(e.url, currentUrl);
-        out.icon = e.icon || null;
+        out.icon = icon || null;
         out.iconAlt = hasLabel ? '' : iconName;
         out.label = e.label;
         out.slug = slugify(hasLabel ? e.label : iconName);
