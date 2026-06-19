@@ -23,10 +23,10 @@ import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 const HOUR_MS = 60 * 60 * 1000;
 const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [{
-    name: 'Welcome Email (Free)',
+    name: 'Free member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free
 }, {
-    name: 'Welcome Email (Paid)',
+    name: 'Paid member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid
 }];
 

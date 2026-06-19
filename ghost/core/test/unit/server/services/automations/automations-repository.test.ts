@@ -137,14 +137,14 @@ const createDatabase = async (): Promise<Knex> => {
         created_at: now(),
         updated_at: now(),
         slug: 'member-welcome-email-free',
-        name: 'Welcome Email (Free)',
+        name: 'Free member welcome flow',
         status: 'active'
     }, {
         id: paidAutomationId,
         created_at: now(),
         updated_at: now(),
         slug: 'member-welcome-email-paid',
-        name: 'Welcome Email (Paid)',
+        name: 'Paid member welcome flow',
         status: 'active'
     }]);
 
@@ -595,11 +595,11 @@ describe('automations repository', function () {
                 .orderBy('slug');
 
             assert.deepEqual(automations.map(({name, slug, status}) => ({name, slug, status})), [{
-                name: 'Welcome Email (Free)',
+                name: 'Free member welcome flow',
                 slug: 'member-welcome-email-free',
                 status: 'inactive'
             }, {
-                name: 'Welcome Email (Paid)',
+                name: 'Paid member welcome flow',
                 slug: 'member-welcome-email-paid',
                 status: 'inactive'
             }]);
