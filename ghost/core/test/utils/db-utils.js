@@ -20,6 +20,7 @@ const {sequence} = require('@tryghost/promise');
 
 // Other Test Utilities
 const urlServiceUtils = require('./url-service-utils');
+const dbTemplate = require('./db-template');
 
 let dbInitialized = false;
 let mysqlSnapshotDatabase = null;
@@ -149,8 +150,17 @@ const isMySQLSnapshotCurrent = () => {
 
 const resetMySQLFromSnapshot = async () => {
     if (!isMySQLSnapshotCurrent()) {
-        await truncateAll();
-        await knexMigrator.init({only: 3});
+        if (dbTemplate.hasTemplate()) {
+            // First provision in this fork: load the schema + fixtures from the
+            // run's shared (migrated + seeded) template — a same-server bulk
+            // table copy rather than a full migrate+seed — then build the
+            // per-process snapshot tables so later in-fork resets take the fast
+            // restoreMySQLSnapshot path.
+            await dbTemplate.restoreFromTemplate();
+        } else {
+            await truncateAll();
+            await knexMigrator.init({only: 3});
+        }
         await createMySQLSnapshot();
         return;
     }

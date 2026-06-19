@@ -70,6 +70,15 @@ const sharedDbConfig = {
 export default defineConfig({
     test: {
         resolveSnapshotPath,
+        // Build ONE migrated+seeded "template" database for the whole run, before
+        // any worker fork spawns; each fork then restores its per-process DB from
+        // that template (a cheap bulk copy) on first provision instead of running
+        // a full migrate+seed per file. This is the lever for the MySQL
+        // acceptance-test runtime regression (PLA-165) — per-file migrate+seed is
+        // its dominant cost. Defined at the root (not per-project) so a single
+        // template is shared across every project in the invocation. See
+        // test/utils/vitest-global-db-setup.ts and test/utils/db-template.js.
+        globalSetup: ['./test/utils/vitest-global-db-setup.ts'],
         // Local runs use the compact `dot` reporter. CI uses `default` plus
         // `github-actions` for inline annotations (mirrors vitest.config.ts).
         reporters: process.env.GITHUB_ACTIONS
