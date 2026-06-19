@@ -63,21 +63,21 @@
         {{#if this.canAddToPrimaryNavigation}}
             <li>
                 <button class="mr2" type="button" {{on "click" this.addToPrimaryNavigation}} data-test-button="add-to-primary-navigation">
-                    <span>{{svg-jar "navigation"}}{{this.primaryNavigationActionLabel}}</span>
+                    <span>{{svg-jar "navigation-primary"}}{{this.primaryNavigationActionLabel}}</span>
                 </button>
             </li>
         {{/if}}
         {{#if this.canAddToSecondaryNavigation}}
             <li>
                 <button class="mr2" type="button" {{on "click" this.addToSecondaryNavigation}} data-test-button="add-to-secondary-navigation">
-                    <span>{{svg-jar "navigation"}}{{this.secondaryNavigationActionLabel}}</span>
+                    <span>{{svg-jar "navigation-secondary"}}{{this.secondaryNavigationActionLabel}}</span>
                 </button>
             </li>
         {{/if}}
         {{#if this.canRemoveFromNavigation}}
             <li>
                 <button class="mr2" type="button" {{on "click" this.removeFromNavigation}} data-test-button="remove-from-navigation">
-                    <span>{{svg-jar "close-stroke"}}Remove from navigation</span>
+                    <span>{{svg-jar "navigation-remove"}}Remove from navigation</span>
                 </button>
             </li>
         {{/if}}
