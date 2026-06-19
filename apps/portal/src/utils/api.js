@@ -250,7 +250,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        update({name, subscribed, newsletters, enableCommentNotifications}) {
+        update({name, subscribed, newsletters, enableCommentNotifications, enableUpdatesAndAnnouncements}) {
             const url = endpointFor({type: 'members', resource: 'member'});
             const body = {
                 name,
@@ -259,6 +259,9 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             };
             if (enableCommentNotifications !== undefined) {
                 body.enable_comment_notifications = enableCommentNotifications;
+            }
+            if (enableUpdatesAndAnnouncements !== undefined) {
+                body.enable_updates_and_announcements = enableUpdatesAndAnnouncements;
             }
 
             return makeRequest({
@@ -435,7 +438,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
             });
         },
 
-        async updateNewsletters({uuid, newsletters, key, enableCommentNotifications}) {
+        async updateNewsletters({uuid, newsletters, key, enableCommentNotifications, enableUpdatesAndAnnouncements}) {
             let url = endpointFor({type: 'members', resource: `member/newsletters`});
             url = url + `?uuid=${uuid}&key=${key}`;
             const body = {
@@ -444,6 +447,10 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
 
             if (enableCommentNotifications !== undefined) {
                 body.enable_comment_notifications = enableCommentNotifications;
+            }
+
+            if (enableUpdatesAndAnnouncements !== undefined) {
+                body.enable_updates_and_announcements = enableUpdatesAndAnnouncements;
             }
 
             return makeRequest({
