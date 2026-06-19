@@ -104,6 +104,13 @@ test.describe('Navigation settings', async () => {
         await page.getByRole('switch', {name: /^Public visitors$/}).click();
         await expect(primaryItem.getByTestId('navigation-item-visibility')).toHaveText(/Members only/);
 
+        // The dropdown stays open after toggling (so multiple audiences can be set);
+        // close it by re-clicking its trigger before saving. (force: the open dropdown
+        // locks page pointer events; Escape can't be used as it bubbles to the modal's
+        // "unsaved changes" guard.)
+        await primaryItem.getByTestId('navigation-item-visibility').click({force: true});
+        await expect(page.getByRole('menu')).toHaveCount(0);
+
         await modal.getByRole('button', {name: 'Save'}).click();
 
         await expect(modal).not.toBeVisible();
@@ -268,7 +275,7 @@ test.describe('Navigation settings', async () => {
         await expect(primaryNavigationTab.getByTestId('navigation-item-editor')).toHaveCount(4);
         await expect(primaryNavigationTab.getByTestId('navigation-item-editor').last().locator('img[src="http://example.com/nav-icon.svg"]')).toBeVisible();
         await expect(primaryNavigationTab.getByTestId('navigation-item-editor').last().getByLabel('Label')).toHaveValue('');
-        await expect(primaryNavigationTab.getByTestId('navigation-item-editor').last().getByLabel('URL')).toHaveValue('https://example.com/icon-only/');
+        await expect(primaryNavigationTab.getByTestId('navigation-item-editor').last().getByLabel('URL')).toHaveValue('https://example.com/icon-only');
     });
 
     test('Warns when leaving without saving', async ({page}) => {
