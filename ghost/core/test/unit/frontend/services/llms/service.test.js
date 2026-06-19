@@ -332,7 +332,7 @@ describe('Unit: frontend/services/llms/service', function () {
             assert.equal(page.title, 'Page');
             assert.equal(calls[0].controller, 'pages');
             assert.equal(calls[0].opts.id, 'p1');
-            assert.equal(calls[0].opts.formats, 'html,plaintext');
+            assert.equal(calls[0].opts.formats, 'html');
             assert.equal(calls[0].opts.include, 'authors,tags');
 
             const post = await service.fetchPublicEntry('posts', 'p2');
@@ -440,7 +440,7 @@ describe('Unit: frontend/services/llms/service', function () {
         const postCall = calls.find(call => call.key === 'posts');
 
         assert.ok(postCall, 'expected postsPublic.browse to be called');
-        assert.equal(postCall.options.formats, 'html,plaintext');
+        assert.equal(postCall.options.formats, 'html');
         assert.equal(postCall.options.fields, 'id,title,slug,featured,published_at,updated_at,created_at,url,visibility,custom_excerpt');
         assert.equal(postCall.options.limit, 100);
     });
