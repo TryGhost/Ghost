@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
 const mockDb = require('../../../utils/mock-knex');
-const models = require('../../../../core/server/models');
+const {Settings} = require('../../../../core/server/models/settings');
 const config = require('../../../../core/shared/config');
 const {knex} = require('../../../../core/server/data/db');
 const events = require('../../../../core/server/lib/common/events');
@@ -41,7 +41,7 @@ describe('Unit: models/settings', function () {
                 ][step - 1]();
             });
 
-            return models.Settings.add({
+            return Settings.add({
                 key: 'description',
                 value: 'added value',
                 type: 'string'
@@ -66,7 +66,7 @@ describe('Unit: models/settings', function () {
                 return query.response([{}]);
             });
 
-            return models.Settings.edit({
+            return Settings.edit({
                 key: 'description',
                 value: 'edited value'
             })
@@ -80,7 +80,7 @@ describe('Unit: models/settings', function () {
 
     describe('format', function () {
         it('transforms urls when persisting to db', function () {
-            const setting = models.Settings.forge();
+            const setting = Settings.forge();
             const siteUrl = config.get('url');
 
             let returns = setting.formatOnWrite({key: 'cover_image', value: `${siteUrl}/cover_image.png`, type: 'string'});
@@ -105,7 +105,7 @@ describe('Unit: models/settings', function () {
 
     describe('parse', function () {
         it('ensure correct parsing when fetching from db', function () {
-            const setting = models.Settings.forge();
+            const setting = Settings.forge();
             const siteUrl = config.get('url');
 
             let returns = setting.parse({key: 'is_private', value: 'false', type: 'boolean'});
@@ -151,7 +151,7 @@ describe('Unit: models/settings', function () {
 
     describe('validation', function () {
         async function testInvalidSetting({key, value, type, group}) {
-            const setting = models.Settings.forge({key, value, type, group});
+            const setting = Settings.forge({key, value, type, group});
 
             let error;
             try {
@@ -174,7 +174,7 @@ describe('Unit: models/settings', function () {
                 query.response([{}]);
             });
 
-            const setting = models.Settings.forge({key, value, type, group});
+            const setting = Settings.forge({key, value, type, group});
 
             // This should not reject.
             await setting.save();

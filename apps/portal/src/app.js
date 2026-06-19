@@ -619,7 +619,8 @@ export default class App extends React.Component {
                         uuid: qParams.get('uuid'),
                         key: qParams.get('key'),
                         newsletterUuid: qParams.get('newsletter'),
-                        comments: qParams.get('comments')
+                        comments: qParams.get('comments'),
+                        updatesAndAnnouncements: qParams.get('updatesandannouncements')
                     }
                 };
             } else { // any malformed unsubscribe links should simply go to email prefs

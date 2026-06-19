@@ -11,7 +11,7 @@ const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator
 const exporter = require('../../../core/server/data/exporter');
 
 describe('Exporter', function () {
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
     afterEach(testUtils.teardownDb);
     afterEach(function () {
         sinon.restore();

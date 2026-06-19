@@ -14,7 +14,7 @@ describe('Webhooks API', function () {
     let createdWebhookId;
     let webhookData;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('integrations');
         await agent.loginAsOwner();

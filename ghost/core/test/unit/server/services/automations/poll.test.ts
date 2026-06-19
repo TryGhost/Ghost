@@ -48,6 +48,8 @@ type MemberFixture = {
     name: string;
     status: string;
     uuid: string;
+    enable_updates_and_announcements: boolean | null;
+    newsletters: unknown[];
 };
 
 const fake = <TFunction extends(..._args: never[]) => unknown>(): StubbedFunction<TFunction> => (
@@ -55,17 +57,24 @@ const fake = <TFunction extends(..._args: never[]) => unknown>(): StubbedFunctio
 );
 
 function buildMember(attrs: Partial<MemberFixture> = {}) {
-    const values = {
+    const values: MemberFixture = {
         email: 'member@example.com',
         name: 'Test Member',
         status: 'free',
         uuid: '00000000-0000-4000-8000-000000000001',
+        enable_updates_and_announcements: true,
+        newsletters: [{}],
         ...attrs
     };
 
     return {
-        get(key: keyof MemberFixture): string {
+        get(key: keyof MemberFixture): string | boolean | null | unknown[] {
             return values[key];
+        },
+        related(key: 'newsletters') {
+            return {
+                models: values[key]
+            };
         }
     };
 }
@@ -242,6 +251,58 @@ describe('automations poll', function () {
 
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
         sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member changed status');
+    });
+
+    it('skips sending email if the member unsubscribed from updates & announcements', async function () {
+        const nextReadyAt = new Date(Date.now() + 60 * 1000);
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
+        Member.findOne.resolves(buildMember({enable_updates_and_announcements: false}));
+
+        await poll(options);
+
+        sinon.assert.notCalled(memberWelcomeEmailService.init);
+        sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.notCalled(automatedEmailRecipientAdd);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
+    });
+
+    it('sends email if updates & announcements is unset and the member has newsletter subscriptions', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        Member.findOne.resolves(buildMember({
+            enable_updates_and_announcements: null,
+            newsletters: [{}]
+        }));
+
+        await poll(options);
+
+        sinon.assert.calledOnce(memberWelcomeEmailService.init);
+        sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+    });
+
+    it('skips sending email if updates & announcements is unset and the member has no newsletter subscriptions', async function () {
+        const nextReadyAt = new Date(Date.now() + 60 * 1000);
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        automationsApi.finishStepAndEnqueueNext.resolves(nextReadyAt);
+        Member.findOne.resolves(buildMember({
+            enable_updates_and_announcements: null,
+            newsletters: []
+        }));
+
+        await poll(options);
+
+        sinon.assert.notCalled(memberWelcomeEmailService.init);
+        sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.notCalled(automatedEmailRecipientAdd);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
     });
 
     it('gift members run through paid automations', async function () {

@@ -1,28 +1,15 @@
 import assert from 'node:assert/strict';
+import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import createKnex, {type Knex} from 'knex';
 import moment from 'moment';
+import {NON_EMPTY_EMAIL_LEXICAL} from '../../../../utils/automations-fixtures';
 import {createDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/database-automations-repository';
 import type {AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 
 const HOUR_MS = 60 * 60 * 1000;
+const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
 const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
-const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
-    root: {
-        children: [{
-            type: 'paragraph',
-            children: [{
-                type: 'text',
-                text: 'Lorem ipsum.'
-            }]
-        }],
-        direction: null,
-        format: '',
-        indent: 0,
-        type: 'root',
-        version: 1
-    }
-});
 
 const toDatabaseDate = (date: Date | string): string => moment(date).format(DATABASE_DATE_FORMAT);
 const toRepositoryDateISOString = (date: Date | string): string => new Date(toDatabaseDate(date)).toISOString();
@@ -150,14 +137,14 @@ const createDatabase = async (): Promise<Knex> => {
         created_at: now(),
         updated_at: now(),
         slug: 'member-welcome-email-free',
-        name: 'Welcome Email (Free)',
+        name: 'Free member welcome flow',
         status: 'active'
     }, {
         id: paidAutomationId,
         created_at: now(),
         updated_at: now(),
         slug: 'member-welcome-email-paid',
-        name: 'Welcome Email (Paid)',
+        name: 'Paid member welcome flow',
         status: 'active'
     }]);
 
@@ -521,7 +508,10 @@ describe('automations repository', function () {
 
     beforeEach(async function () {
         knex = await createDatabase();
-        repo = createDatabaseAutomationsRepository(knex);
+        repo = createDatabaseAutomationsRepository({
+            knex,
+            fakeWaitHoursMultiplier: null
+        });
     });
 
     afterEach(async function () {
@@ -605,11 +595,11 @@ describe('automations repository', function () {
                 .orderBy('slug');
 
             assert.deepEqual(automations.map(({name, slug, status}) => ({name, slug, status})), [{
-                name: 'Welcome Email (Free)',
+                name: 'Free member welcome flow',
                 slug: 'member-welcome-email-free',
                 status: 'inactive'
             }, {
-                name: 'Welcome Email (Paid)',
+                name: 'Paid member welcome flow',
                 slug: 'member-welcome-email-paid',
                 status: 'inactive'
             }]);
@@ -675,6 +665,30 @@ describe('automations repository', function () {
             assert.equal(step.status, 'pending');
             assert.equal(step.locked_by, null);
             assert.equal(step.locked_at, null);
+        });
+
+        it('uses the fake wait hours multiplier for triggered wait actions when configured', async function () {
+            repo = createDatabaseAutomationsRepository({
+                knex,
+                fakeWaitHoursMultiplier: FAKE_WAIT_HOURS_MULTIPLIER
+            });
+
+            const beforeTrigger = Date.now();
+            await repo.trigger({
+                memberEmail: 'fake-wait@example.com',
+                memberId: 'member_123',
+                memberStatus: 'free'
+            });
+            const afterTrigger = Date.now();
+
+            const run = await getRunByMemberEmail('fake-wait@example.com');
+            assert(run);
+
+            const step = await getStepByRunId(run.id);
+            assert(step);
+            const readyAtMs = moment(step.ready_at, DATABASE_DATE_FORMAT).valueOf();
+            assert(readyAtMs >= beforeTrigger + (48 * FAKE_WAIT_HOURS_MULTIPLIER) - 999);
+            assert(readyAtMs <= afterTrigger + (48 * FAKE_WAIT_HOURS_MULTIPLIER));
         });
 
         it('can trigger an automation for a paid member', async function () {
@@ -778,6 +792,15 @@ describe('automations repository', function () {
     });
 
     describe('edit', function () {
+        const assertValidationError = async (fn: () => Promise<unknown>, property: string, message: RegExp) => {
+            await assert.rejects(fn, (error: unknown) => {
+                assert(error instanceof errors.ValidationError);
+                assert.equal(error.property, property);
+                assert.match(error.message, message);
+                return true;
+            });
+        };
+
         it('only inserts action revisions when action data changes', async function () {
             const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
             const initialRevisionCount = await getRevisionCount();
@@ -871,6 +894,62 @@ describe('automations repository', function () {
 
             assert.equal(revision.email_design_setting_id, defaultDesignSetting.id);
         });
+
+        it('rejects changing an action that is part of another automation', async function () {
+            const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+            const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+            const paidAction = paidAutomation.actions[0];
+
+            await assertValidationError(async () => repo.edit(freeAutomation.id, {
+                status: 'inactive',
+                actions: [paidAction],
+                edges: []
+            }), 'actions.id', /already exists/);
+        });
+
+        it('rejects changing a soft-deleted action', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const now = toDatabaseDate(new Date());
+            const softDeletedActionId = ObjectId().toString();
+            await knex('automation_actions').insert({
+                id: softDeletedActionId,
+                created_at: now,
+                updated_at: now,
+                deleted_at: now,
+                automation_id: automation.id,
+                type: 'wait'
+            });
+
+            await assertValidationError(async () => repo.edit(automation.id, {
+                status: 'inactive',
+                actions: [{
+                    id: softDeletedActionId,
+                    type: 'wait',
+                    data: {
+                        wait_hours: 24
+                    }
+                }],
+                edges: []
+            }), 'actions.id', /already exists/);
+        });
+
+        it('rejects changing the type of an action', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const waitAction = automation.actions.find(action => action.type === 'wait');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(waitAction, 'test setup expects wait action');
+            assert.equal(emailAction?.type, 'send_email', 'test setup expects email action');
+
+            await assertValidationError(async () => repo.edit(automation.id, {
+                status: 'inactive',
+                actions: [{
+                    id: waitAction.id,
+                    type: 'send_email',
+                    data: emailAction.data
+                }],
+                edges: []
+            }), 'actions.type', /different type/);
+        });
     });
 
     describe('fetchAndLockSteps', function () {
@@ -941,7 +1020,10 @@ describe('automations repository', function () {
                 }
             }) as Knex;
 
-            repo = createDatabaseAutomationsRepository(mockKnex);
+            repo = createDatabaseAutomationsRepository({
+                knex: mockKnex,
+                fakeWaitHoursMultiplier: null
+            });
         };
 
         const assertContendedStepWasLocked = async (stepId: string) => {
@@ -1214,6 +1296,29 @@ describe('automations repository', function () {
             assert(nextReadyAt);
             assert(nextReadyAt.getTime() >= beforeFinish + (72 * HOUR_MS));
             assert(nextReadyAt.getTime() <= afterFinish + (72 * HOUR_MS));
+        });
+
+        it('uses the fake wait hours multiplier when configured', async function () {
+            repo = createDatabaseAutomationsRepository({
+                knex,
+                fakeWaitHoursMultiplier: FAKE_WAIT_HOURS_MULTIPLIER
+            });
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const sendEmailAction = await getActionByIndex(automation.id, 1);
+            assert.equal(sendEmailAction.action_type, 'send_email');
+            const run = await insertRun(automation.id);
+            const stepRow = await insertStep(run.id, sendEmailAction.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+
+            const beforeFinish = Date.now();
+            const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+            const afterFinish = Date.now();
+
+            assert(nextReadyAt);
+            assert(nextReadyAt.getTime() >= beforeFinish + (72 * FAKE_WAIT_HOURS_MULTIPLIER));
+            assert(nextReadyAt.getTime() <= afterFinish + (72 * FAKE_WAIT_HOURS_MULTIPLIER));
         });
 
         it('does not enqueue a duplicate next step when called again with the same locked step', async function () {

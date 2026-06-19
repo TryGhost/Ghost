@@ -5,7 +5,7 @@ const errors = require('@tryghost/errors');
 const db = require('../../../../../core/server/data/db');
 const exporter = require('../../../../../core/server/data/exporter');
 const schema = require('../../../../../core/server/data/schema');
-const models = require('../../../../../core/server/models');
+const {Settings} = require('../../../../../core/server/models/settings');
 const logging = require('@tryghost/logging');
 const schemaTables = Object.keys(schema.tables);
 
@@ -133,7 +133,7 @@ describe('Exporter', function () {
 
     describe('exportFileName', function () {
         it('should return a correctly structured filename', async function () {
-            const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
+            const settingsStub = sinon.stub(Settings, 'findOne').returns(
                 Promise.resolve({
                     get: function () {
                         return 'testblog';
@@ -148,7 +148,7 @@ describe('Exporter', function () {
         });
 
         it('should return a correctly structured filename if settings is empty', async function () {
-            const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
+            const settingsStub = sinon.stub(Settings, 'findOne').returns(
                 Promise.resolve()
             );
 
@@ -159,7 +159,7 @@ describe('Exporter', function () {
         });
 
         it('should return a correctly structured filename if settings errors', async function () {
-            const settingsStub = sinon.stub(models.Settings, 'findOne').returns(
+            const settingsStub = sinon.stub(Settings, 'findOne').returns(
                 Promise.reject()
             );
             const loggingStub = sinon.stub(logging, 'error');

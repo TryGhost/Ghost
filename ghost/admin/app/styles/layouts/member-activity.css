@@ -167,6 +167,7 @@
     font-size: 1.3rem;
     letter-spacing: 0;
     color: var(--middarkgrey);
+    white-space: nowrap;
     text-overflow: ellipsis;
     overflow: hidden;
 }

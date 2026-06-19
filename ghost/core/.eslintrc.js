@@ -139,26 +139,6 @@ module.exports = {
                 'no-console': 'off'
             }
         },
-        /**
-         * @TODO: enable these soon
-         */
-        {
-            files: 'core/frontend/**',
-            rules: {
-                'ghost/node/no-restricted-require': ['off', [
-                    // If we make the frontend entirely independent, these have to be solved too
-                    // {
-                    //     name: path.resolve(__dirname, 'core/shared/**'),
-                    //     message: 'Invalid require of core/shared from core/frontend.'
-                    // },
-                    // These are critical refactoring issues that we need to tackle ASAP
-                    {
-                        name: [path.resolve(__dirname, 'core/server/**')],
-                        message: 'Invalid require of core/server from core/frontend.'
-                    }
-                ]]
-            }
-        },
         {
             // Frontend must not access the model layer directly; use the public Content API via services/proxy
             files: 'core/frontend/**',
@@ -172,13 +152,53 @@ module.exports = {
             }
         },
         {
-            files: 'core/server/**',
+            // Prevent new direct requires of core/server from the frontend.
+            // Adding files to this list is an anti-pattern
+            // Work down until only proxy.js remains
+            files: 'core/frontend/**',
+            excludedFiles: [
+                // The sanctioned seam.
+                'core/frontend/services/proxy.js',
+
+                // Composition root wiring (less wrong).
+                'core/frontend/web/site.js',
+                'core/frontend/web/middleware/frontend-caching.js',
+                'core/frontend/web/middleware/handle-image-sizes.js',
+                'core/frontend/web/routers/link-redirects.js',
+                'core/frontend/web/routers/serve-favicon.js',
+                'core/frontend/apps/private-blogging/lib/router.js',
+
+                // Leaks that bypass the proxy (fix first).
+                'core/frontend/services/routing/controllers/unsubscribe.js', // services/members + settings-helpers
+                'core/frontend/services/routing/router-manager.js', // server/lib/common/events bus
+                'core/frontend/services/sitemap/site-map-manager.js' // server/lib/common/events bus
+            ],
             rules: {
-                'ghost/node/no-restricted-require': ['warn', [
+                'ghost/node/no-restricted-require': ['error', [
                     {
-                        // Throw an error for all requires of the frontend, _except_ the url service which will be moved soon
+                        name: [path.resolve(__dirname, 'core/server/**')],
+                        message: 'Invalid require of core/server from core/frontend. Cross only via the proxy seam (core/frontend/services/proxy.js).'
+                    }
+                ]]
+            }
+        },
+        {
+            // Prevent new direct requires of core/frontend from the server.
+            // Adding files to this list is an anti-pattern
+            // Work down until the list is empty
+            files: 'core/server/**',
+            excludedFiles: [
+                // Composition root: mounts the frontend Express app onto the server (less wrong).
+                'core/server/web/parent/frontend.js',
+
+                // Leak: reaches into the frontend routing config for QUERY/TAXONOMIES (fix first — config should be injected, see the in-file TODO).
+                'core/server/services/route-settings/validate.js'
+            ],
+            rules: {
+                'ghost/node/no-restricted-require': ['error', [
+                    {
                         name: [path.resolve(__dirname, 'core/frontend/**')],
-                        message: 'Invalid require of core/frontend from core/server.'
+                        message: 'Invalid require of core/frontend from core/server. The server must not depend on the frontend rendering layer.'
                     }
                 ]]
             }

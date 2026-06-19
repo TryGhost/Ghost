@@ -1,5 +1,5 @@
 const urlUtils = require('../../shared/url-utils');
-const urlService = require('../../server/services/url');
+const {urlService} = require('../services/proxy');
 const {checks} = require('../services/data');
 
 function getUrl(data, absolute) {

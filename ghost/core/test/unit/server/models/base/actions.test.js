@@ -1,13 +1,13 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const models = require('../../../../../core/server/models');
+const Base = require('../../../../../core/server/models/base');
 
 describe('Unit: models/base/plugins/actions', function () {
     let TestModel;
 
     beforeEach(function () {
         // Create a test model that has actions enabled
-        TestModel = models.Base.Model.extend({
+        TestModel = Base.Model.extend({
             tableName: 'test_models',
             actionsCollectCRUD: true,
             actionsResourceType: 'test_resource',
@@ -22,7 +22,7 @@ describe('Unit: models/base/plugins/actions', function () {
     describe('getAction', function () {
         describe('Missing configuration', function () {
             it('should return undefined when actionsCollectCRUD is false', function () {
-                const UnconfiguredModel = models.Base.Model.extend({
+                const UnconfiguredModel = Base.Model.extend({
                     tableName: 'test',
                     actionsCollectCRUD: false
                 });
@@ -36,7 +36,7 @@ describe('Unit: models/base/plugins/actions', function () {
                 assert.equal(action, undefined);
             });
             it('should return undefined when actionsResourceType is not set', function () {
-                const UnconfiguredModel = models.Base.Model.extend({
+                const UnconfiguredModel = Base.Model.extend({
                     tableName: 'test',
                     actionsCollectCRUD: true,
                     actionsResourceType: null
@@ -260,7 +260,7 @@ describe('Unit: models/base/plugins/actions', function () {
 
         describe('Primary name extraction', function () {
             it('should handle models with title field', function () {
-                const TitleModel = models.Base.Model.extend({
+                const TitleModel = Base.Model.extend({
                     tableName: 'title_models',
                     actionsCollectCRUD: true,
                     actionsResourceType: 'post'
@@ -279,7 +279,7 @@ describe('Unit: models/base/plugins/actions', function () {
             });
 
             it('should handle models with name field', function () {
-                const NameModel = models.Base.Model.extend({
+                const NameModel = Base.Model.extend({
                     tableName: 'name_models',
                     actionsCollectCRUD: true,
                     actionsResourceType: 'tag'
@@ -298,7 +298,7 @@ describe('Unit: models/base/plugins/actions', function () {
             });
 
             it('should fallback through title -> name -> email for primary name', function () {
-                const FallbackModel = models.Base.Model.extend({
+                const FallbackModel = Base.Model.extend({
                     tableName: 'fallback_models',
                     actionsCollectCRUD: true,
                     actionsResourceType: 'resource'

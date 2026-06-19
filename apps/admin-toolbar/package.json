@@ -1,6 +1,6 @@
 {
   "name": "@tryghost/admin-toolbar",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -21,7 +21,8 @@
     "build:watch": "pnpm exec vite build --watch",
     "dev": "concurrently --kill-others --names preview,build \"pnpm exec vite preview -l silent\" \"pnpm build:watch\"",
     "lint": "pnpm exec eslint src --ext .js --cache",
-    "test": "pnpm run build && pnpm exec mocha --exit --trace-warnings --timeout=60000 \"test/**/*.test.js\"",
+    "test": "pnpm test:unit",
+    "test:unit": "pnpm run build && pnpm exec mocha --exit --trace-warnings --timeout=60000 \"test/**/*.test.js\"",
     "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "pnpm build"

@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
@@ -8,13 +9,13 @@ const config = require('../../../core/shared/config');
 describe('Actions API', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'integrations', 'api_keys');
     });
 
-    after(async function () {
+    afterAll(async function () {
         sinon.restore();
     });
 
@@ -22,8 +23,7 @@ describe('Actions API', function () {
     it('Can request actions for resource', async function () {
         let postUpdatedAt;
 
-        // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
-        const clock = sinon.useFakeTimers({now: Date.now(), shouldAdvanceTime: true});
+        const clock = mockSystemTime(Date.now());
 
         const res = await request
             .post(localUtils.API.getApiQuery('posts/'))

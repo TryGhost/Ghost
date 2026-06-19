@@ -25,6 +25,8 @@ class EmailServiceWrapper {
         const {DomainWarmingService} = require('./domain-warming-service');
 
         const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
+        const urlService = require('../url');
+        const getRequiredUrlRelations = () => urlService.facade.getRequiredRelations();
         const MailgunClient = require('../lib/mailgun-client');
         const configService = require('../../../shared/config');
         const settingsCache = require('../../../shared/settings-cache');
@@ -83,6 +85,7 @@ class EmailServiceWrapper {
             urlUtils,
             storageUtils,
             getPostUrl: this.getPostUrl,
+            getRequiredUrlRelations,
             linkReplacer,
             linkTracking,
             memberAttributionService: memberAttribution.service,
@@ -124,6 +127,7 @@ class EmailServiceWrapper {
             domainWarmingService,
             db,
             sentry,
+            getRequiredUrlRelations,
             debugStorageFilePath: configService.getContentPath('data')
         });
 
@@ -151,7 +155,8 @@ class EmailServiceWrapper {
                 Post,
                 Newsletter,
                 Email
-            }
+            },
+            getRequiredUrlRelations
         });
     }
 }

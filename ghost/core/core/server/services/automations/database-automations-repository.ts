@@ -23,10 +23,10 @@ import type {ExclusifyUnion, ReadonlyDeep} from 'type-fest';
 const HOUR_MS = 60 * 60 * 1000;
 const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 const DEFAULT_WELCOME_EMAIL_AUTOMATIONS = [{
-    name: 'Welcome Email (Free)',
+    name: 'Free member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.free
 }, {
-    name: 'Welcome Email (Paid)',
+    name: 'Paid member welcome flow',
     slug: MEMBER_WELCOME_EMAIL_SLUGS.paid
 }];
 
@@ -111,7 +111,13 @@ type RevisionDataFor<ActionDataT> = {
 type WaitRevisionData = RevisionDataFor<WaitActionData>;
 type SendEmailRevisionData = RevisionDataFor<SendEmailActionData>;
 
-export function createDatabaseAutomationsRepository(knex: Knex): AutomationsRepository {
+export function createDatabaseAutomationsRepository({
+    knex,
+    fakeWaitHoursMultiplier
+}: {
+    knex: Knex;
+    fakeWaitHoursMultiplier: number | null;
+}): AutomationsRepository {
     return {
         async browse(): Promise<Page<AutomationSummary>> {
             return await knex.transaction(async (trx) => {
@@ -163,7 +169,10 @@ export function createDatabaseAutomationsRepository(knex: Knex): AutomationsRepo
             memberId: string;
             memberStatus: 'free' | 'paid';
         }): Promise<void> {
-            return await knex.transaction(trx => trigger(trx, options));
+            return await knex.transaction(trx => trigger(trx, {
+                ...options,
+                fakeWaitHoursMultiplier
+            }));
         },
 
         async fetchAndLockSteps(limit: number): Promise<{
@@ -174,7 +183,10 @@ export function createDatabaseAutomationsRepository(knex: Knex): AutomationsRepo
         },
 
         async finishStepAndEnqueueNext(step: AutomationStepToRun): Promise<Date | null> {
-            return await knex.transaction(trx => finishStepAndEnqueueNext(trx, step));
+            return await knex.transaction(trx => finishStepAndEnqueueNext(trx, {
+                step,
+                fakeWaitHoursMultiplier
+            }));
         },
 
         async markStepTerminal(step: AutomationStepToRun, status: AutomationStepTerminalStatus): Promise<boolean> {
@@ -265,15 +277,19 @@ async function ensureWelcomeEmailAction(trx: Knex.Transaction, automationId: str
     }, now, null);
 }
 
-async function trigger(trx: Knex.Transaction, {
-    memberEmail,
-    memberId,
-    memberStatus
-}: Readonly<{
+async function trigger(trx: Knex.Transaction, options: Readonly<{
     memberEmail: string;
     memberId: string;
     memberStatus: 'free' | 'paid';
+    fakeWaitHoursMultiplier: number | null;
 }>): Promise<void> {
+    const {
+        memberEmail,
+        memberId,
+        memberStatus,
+        fakeWaitHoursMultiplier
+    } = options;
+
     const firstAction = await findFirstActionRevision(trx, memberStatus);
     if (!firstAction) {
         return;
@@ -282,7 +298,7 @@ async function trigger(trx: Knex.Transaction, {
     const now = new Date();
     const nowString = toDatabaseDate(now);
 
-    const readyAt = getReadyAtForAction(firstAction, now);
+    const readyAt = getReadyAtForAction(firstAction, now, fakeWaitHoursMultiplier);
 
     const run = {
         id: ObjectId().toHexString(),
@@ -513,8 +529,16 @@ async function findFirstActionRevision(trx: Knex.Transaction, memberStatus: 'fre
 
 async function finishStepAndEnqueueNext(
     trx: Knex.Transaction,
-    step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>
+    options: Readonly<{
+        step: Pick<AutomationStepToRun, 'id' | 'locked_by' | 'action_id' | 'automation_run_id'>;
+        fakeWaitHoursMultiplier: number | null;
+    }>
 ): Promise<Date | null> {
+    const {
+        step,
+        fakeWaitHoursMultiplier
+    } = options;
+
     const didFinish = await markStepTerminal(trx, step, 'finished');
     if (!didFinish) {
         return null;
@@ -527,7 +551,7 @@ async function finishStepAndEnqueueNext(
     }
 
     const now = new Date();
-    const nextReadyAt = getReadyAtForAction(next, now);
+    const nextReadyAt = getReadyAtForAction(next, now, fakeWaitHoursMultiplier);
 
     await insertRunStep(trx, {
         automationRunId: step.automation_run_id,
@@ -591,7 +615,8 @@ async function retryStep(
 
 function getReadyAtForAction(
     action: ReadonlyDeep<Pick<NextActionRevisionRow, 'action_id' | 'type' | 'wait_hours'>>,
-    now: Readonly<Date>
+    now: Readonly<Date>,
+    fakeWaitHoursMultiplier: number | null
 ): Date {
     switch (action.type) {
     case 'wait': {
@@ -599,7 +624,7 @@ function getReadyAtForAction(
             ...action,
             id: action.action_id
         }, 'wait_hours');
-        const waitMs = waitHours * HOUR_MS;
+        const waitMs = waitHours * (fakeWaitHoursMultiplier || HOUR_MS);
         return new Date(now.getTime() + waitMs);
     }
     case 'send_email':
@@ -904,7 +929,8 @@ function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreat
 }
 
 function buildActionRevision(actionId: string, action: AutomationAction, createdAt: string) {
-    if (action.type === 'wait') {
+    switch (action.type) {
+    case 'wait':
         return {
             id: ObjectId().toString(),
             created_at: createdAt,
@@ -914,17 +940,23 @@ function buildActionRevision(actionId: string, action: AutomationAction, created
             email_lexical: null,
             email_design_setting_id: null
         };
+    case 'send_email':
+        return {
+            id: ObjectId().toString(),
+            created_at: createdAt,
+            action_id: actionId,
+            wait_hours: null,
+            email_subject: action.data.email_subject,
+            email_lexical: action.data.email_lexical,
+            email_design_setting_id: action.data.email_design_setting_id
+        };
+    default: {
+        const _exhaustive: never = action;
+        throw new errors.InternalServerError({
+            message: `Unexpected action type ${_exhaustive}`
+        });
     }
-
-    return {
-        id: ObjectId().toString(),
-        created_at: createdAt,
-        action_id: actionId,
-        wait_hours: null,
-        email_subject: action.data.email_subject,
-        email_lexical: action.data.email_lexical,
-        email_design_setting_id: action.data.email_design_setting_id
-    };
+    }
 }
 
 async function deleteAutomationEdges(trx: Knex.Transaction, automationId: string): Promise<void> {

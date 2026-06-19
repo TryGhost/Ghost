@@ -448,6 +448,7 @@ module.exports = {
         note: {type: 'string', maxlength: 2000, nullable: true},
         geolocation: {type: 'string', maxlength: 2000, nullable: true},
         enable_comment_notifications: {type: 'boolean', nullable: false, defaultTo: true},
+        enable_updates_and_announcements: {type: 'boolean', nullable: true},
         email_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_opened_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_open_rate: {type: 'integer', unsigned: true, nullable: true, index: true},

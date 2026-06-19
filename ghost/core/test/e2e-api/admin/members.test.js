@@ -8,6 +8,7 @@ const crypto = require('node:crypto');
 const {assertExists, assertArrayContainsDeep, assertObjectMatches, assertArrayMatchesWithoutOrder} = require('../../utils/assertions');
 const nock = require('nock');
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 
 const testUtils = require('../../utils');
 
@@ -270,7 +271,7 @@ const createMemberThroughApi = async (options) => {
 let agent;
 
 describe('Members API without Stripe', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
@@ -314,7 +315,7 @@ describe('Members API without Stripe', function () {
 describe('Members API - member attribution', function () {
     const signupAttributions = [];
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments');
         await agent.loginAsOwner();
@@ -570,7 +571,7 @@ describe('Members API', function () {
     let newsletters;
     let emailMockReceiver;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks');
         await agent.loginAsOwner();
@@ -1340,122 +1341,6 @@ describe('Members API', function () {
                     to_status: 'free'
                 }
             ]
-        });
-    });
-
-    describe('Email verification trigger', function () {
-        beforeEach(async function () {
-            agent = await agentProvider.getAdminAPIAgent();
-            await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks');
-            await agent.loginAsOwner();
-
-            newsletters = await getNewsletters();
-        });
-
-        afterEach(async function () {
-            await restoreEmailVerificationUtils();
-        });
-
-        it('Can add a member and trigger host email verification limits', async function () {
-            const {webhookSecret, receivedWebhookRequests} = await setupEmailVerificationUtils({
-                adminThreshold: 1
-            });
-
-            assert.equal(settingsCache.get('email_verification_required'), false, 'Before import: email verification should NOT be required');
-
-            const member = {
-                name: 'pass webhook verification',
-                email: 'memberPassWebhookVerification@test.com'
-            };
-
-            const passVerificationMember = await createMemberThroughApi({member, agent, tiersCount: 0, newsletterCount: 2});
-
-            await DomainEvents.allSettled();
-
-            assert.equal(settingsCache.get('email_verification_required'), false, 'After one import: Email verification should NOT be required');
-
-            const memberFailLimit = {
-                name: 'fail webhook verification',
-                email: 'memberFailWebhookVerification@test.com'
-            };
-
-            const triggerVerificationMember = await createMemberThroughApi({member: memberFailLimit, agent, tiersCount: 0, newsletterCount: 2});
-
-            await DomainEvents.allSettled();
-
-            // Crossing the admin threshold must flip email verification on.
-            //
-            // The verification trigger and the members_created_events writer are
-            // two independent MemberCreatedEvent subscribers (VerificationTrigger
-            // and EventStorage) with no ordering guarantee between them. When the
-            // trigger's count query beats EventStorage's insert, it misses the
-            // row for the member that just crossed the threshold, undercounts by
-            // one, and fires one member creation late instead of on the boundary.
-            // This is a known, low-impact off-by-one with no user-facing effect
-            // (the next member creation re-counts and triggers). See BER-3507.
-            //
-            // To stay deterministic the test adds a second member past the
-            // boundary: by the time its event is handled the two earlier members'
-            // rows are guaranteed committed, so the trigger reliably counts past
-            // the threshold however the race landed. This member only needs to
-            // emit a MemberCreatedEvent, so it skips the response-body snapshot.
-            //
-            // TODO: once the trigger no longer depends on a sibling subscriber's
-            // write (e.g. it counts signup events excluding the current member,
-            // then adds a deterministic +1), restore the precise assertion:
-            // create exactly one member past the threshold, assert verification
-            // triggered on that member, and assert the webhook reported
-            // amountTriggered === 2.
-            const {body: recoveryMemberBody} = await agent
-                .post('/members/')
-                .body({members: [{
-                    name: 'fail webhook verification recovery',
-                    email: 'memberFailWebhookVerificationRecovery@test.com'
-                }]})
-                .expectStatus(201);
-            const recoveryMember = recoveryMemberBody.members[0];
-
-            await DomainEvents.allSettled();
-
-            assert.equal(settingsCache.get('email_verification_required'), true, 'After exceeding limit: Email verification should be required');
-
-            emailMockReceiver.assertSentEmailCount(0, 'No verification email to be sent when webhook verification is enabled');
-
-            // Verification triggers at most once: once email_verification_required
-            // is set, later member creations short-circuit, so exactly one webhook
-            // is sent regardless of which member crossed the boundary.
-            const matchingRequests = receivedWebhookRequests.filter((request) => {
-                return request.body.type === 'mock_verification_event' &&
-                    request.body.siteId === '1' &&
-                    request.body.threshold === 1 &&
-                    request.body.method === 'admin';
-            });
-
-            assert.equal(matchingRequests.length, 1, 'Expected exactly one verification webhook to be sent');
-
-            const matchingRequest = matchingRequests[0];
-
-            // amountTriggered is the member count observed when verification fired.
-            // It is past the threshold (1); the exact value (2 or 3) depends on the
-            // off-by-one race described above.
-            assert.ok(matchingRequest.body.amountTriggered >= 2, 'Expected the webhook to report a member count past the threshold');
-
-            const requestTimestamp = Array.isArray(matchingRequest.headers['x-ghost-request-timestamp']) ?
-                matchingRequest.headers['x-ghost-request-timestamp'][0] :
-                matchingRequest.headers['x-ghost-request-timestamp'];
-            const requestSignature = Array.isArray(matchingRequest.headers['x-ghost-signature']) ?
-                matchingRequest.headers['x-ghost-signature'][0] :
-                matchingRequest.headers['x-ghost-signature'];
-            const expectedSignature = crypto.createHmac('sha256', webhookSecret)
-                .update(`${requestTimestamp}:${matchingRequest.rawBody}`)
-                .digest('base64');
-
-            assert.ok(requestTimestamp, 'Expected the verification webhook request to include a timestamp header');
-            assert.equal(requestSignature, expectedSignature, 'Expected the verification webhook request to be signed');
-
-            await agent.delete(`/members/${passVerificationMember.id}`);
-            await agent.delete(`/members/${triggerVerificationMember.id}`);
-            await agent.delete(`/members/${recoveryMember.id}`);
         });
     });
 
@@ -2616,8 +2501,7 @@ describe('Members API', function () {
     });
 
     it('Can subscribe to a newsletter', async function () {
-        // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
-        const clock = sinon.useFakeTimers({now: Date.now(), shouldAdvanceTime: true});
+        const clock = mockSystemTime(Date.now());
         const memberToChange = {
             name: 'change me',
             email: 'member3change@test.com',
@@ -3885,6 +3769,122 @@ describe('Members API', function () {
                     newsletter_id: n.id
                 };
             })
+        });
+    });
+
+    describe('Email verification trigger', function () {
+        beforeEach(async function () {
+            agent = await agentProvider.getAdminAPIAgent();
+            await fixtureManager.init('posts', 'newsletters', 'members:newsletters', 'comments', 'redirects', 'clicks');
+            await agent.loginAsOwner();
+
+            newsletters = await getNewsletters();
+        });
+
+        afterEach(async function () {
+            await restoreEmailVerificationUtils();
+        });
+
+        it('Can add a member and trigger host email verification limits', async function () {
+            const {webhookSecret, receivedWebhookRequests} = await setupEmailVerificationUtils({
+                adminThreshold: 1
+            });
+
+            assert.equal(settingsCache.get('email_verification_required'), false, 'Before import: email verification should NOT be required');
+
+            const member = {
+                name: 'pass webhook verification',
+                email: 'memberPassWebhookVerification@test.com'
+            };
+
+            const passVerificationMember = await createMemberThroughApi({member, agent, tiersCount: 0, newsletterCount: 2});
+
+            await DomainEvents.allSettled();
+
+            assert.equal(settingsCache.get('email_verification_required'), false, 'After one import: Email verification should NOT be required');
+
+            const memberFailLimit = {
+                name: 'fail webhook verification',
+                email: 'memberFailWebhookVerification@test.com'
+            };
+
+            const triggerVerificationMember = await createMemberThroughApi({member: memberFailLimit, agent, tiersCount: 0, newsletterCount: 2});
+
+            await DomainEvents.allSettled();
+
+            // Crossing the admin threshold must flip email verification on.
+            //
+            // The verification trigger and the members_created_events writer are
+            // two independent MemberCreatedEvent subscribers (VerificationTrigger
+            // and EventStorage) with no ordering guarantee between them. When the
+            // trigger's count query beats EventStorage's insert, it misses the
+            // row for the member that just crossed the threshold, undercounts by
+            // one, and fires one member creation late instead of on the boundary.
+            // This is a known, low-impact off-by-one with no user-facing effect
+            // (the next member creation re-counts and triggers). See BER-3507.
+            //
+            // To stay deterministic the test adds a second member past the
+            // boundary: by the time its event is handled the two earlier members'
+            // rows are guaranteed committed, so the trigger reliably counts past
+            // the threshold however the race landed. This member only needs to
+            // emit a MemberCreatedEvent, so it skips the response-body snapshot.
+            //
+            // TODO: once the trigger no longer depends on a sibling subscriber's
+            // write (e.g. it counts signup events excluding the current member,
+            // then adds a deterministic +1), restore the precise assertion:
+            // create exactly one member past the threshold, assert verification
+            // triggered on that member, and assert the webhook reported
+            // amountTriggered === 2.
+            const {body: recoveryMemberBody} = await agent
+                .post('/members/')
+                .body({members: [{
+                    name: 'fail webhook verification recovery',
+                    email: 'memberFailWebhookVerificationRecovery@test.com'
+                }]})
+                .expectStatus(201);
+            const recoveryMember = recoveryMemberBody.members[0];
+
+            await DomainEvents.allSettled();
+
+            assert.equal(settingsCache.get('email_verification_required'), true, 'After exceeding limit: Email verification should be required');
+
+            emailMockReceiver.assertSentEmailCount(0, 'No verification email to be sent when webhook verification is enabled');
+
+            // Verification triggers at most once: once email_verification_required
+            // is set, later member creations short-circuit, so exactly one webhook
+            // is sent regardless of which member crossed the boundary.
+            const matchingRequests = receivedWebhookRequests.filter((request) => {
+                return request.body.type === 'mock_verification_event' &&
+                    request.body.siteId === '1' &&
+                    request.body.threshold === 1 &&
+                    request.body.method === 'admin';
+            });
+
+            assert.equal(matchingRequests.length, 1, 'Expected exactly one verification webhook to be sent');
+
+            const matchingRequest = matchingRequests[0];
+
+            // amountTriggered is the member count observed when verification fired.
+            // It is past the threshold (1); the exact value (2 or 3) depends on the
+            // off-by-one race described above.
+            assert.ok(matchingRequest.body.amountTriggered >= 2, 'Expected the webhook to report a member count past the threshold');
+
+            const requestTimestamp = Array.isArray(matchingRequest.headers['x-ghost-request-timestamp']) ?
+                matchingRequest.headers['x-ghost-request-timestamp'][0] :
+                matchingRequest.headers['x-ghost-request-timestamp'];
+            const requestSignature = Array.isArray(matchingRequest.headers['x-ghost-signature']) ?
+                matchingRequest.headers['x-ghost-signature'][0] :
+                matchingRequest.headers['x-ghost-signature'];
+            const expectedSignature = crypto.createHmac('sha256', webhookSecret)
+                .update(`${requestTimestamp}:${matchingRequest.rawBody}`)
+                .digest('base64');
+
+            assert.ok(requestTimestamp, 'Expected the verification webhook request to include a timestamp header');
+            assert.equal(requestSignature, expectedSignature, 'Expected the verification webhook request to be signed');
+
+            await agent.delete(`/members/${passVerificationMember.id}`);
+            await agent.delete(`/members/${triggerVerificationMember.id}`);
+            await agent.delete(`/members/${recoveryMember.id}`);
         });
     });
 });

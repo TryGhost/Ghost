@@ -12,13 +12,13 @@ describe('Files API', function () {
     const files = [];
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request);
     });
 
-    after(function () {
+    afterAll(function () {
         files.forEach(function (file) {
             fs.removeSync(config.get('paths').appRoot + file);
         });

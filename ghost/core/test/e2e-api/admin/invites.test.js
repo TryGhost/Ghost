@@ -11,7 +11,7 @@ describe('Invites API', function () {
     let request;
 
     describe('As Owner', function () {
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             await localUtils.doAuth(request, 'invites');
@@ -144,7 +144,7 @@ describe('Invites API', function () {
     });
     
     describe('As Admin Integration', function () {
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             await testUtils.initFixtures('api_keys');
