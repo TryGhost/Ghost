@@ -70,7 +70,9 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     }
 
     onRouterUpdated(): void {
-        // No precomputed state to regenerate.
+        // Defensive: a router update could change a filter the cache derived
+        // from, so drop it and recompute lazily on next read.
+        this.requiredRelations = null;
     }
 
     reset(): void {
