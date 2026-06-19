@@ -13,15 +13,16 @@ const NavigationEditForm: React.FC<{
     baseUrl: string;
     idPrefix: string;
     navigation: NavigationEditor;
+    showIcon: boolean;
     showPaidVisibility: boolean;
     showVisibility: boolean;
     uploadIcon?: (file: File) => Promise<string | undefined>;
-}> = ({baseUrl, idPrefix, navigation, showPaidVisibility, showVisibility, uploadIcon}) => {
+}> = ({baseUrl, idPrefix, navigation, showIcon, showPaidVisibility, showVisibility, uploadIcon}) => {
     return <div className="w-full pt-4">
         <div className='-mb-1 flex w-full items-center gap-3'>
             <div className={navigationDragHandleSpacerClasses} />
             <div className={navigationRowClasses}>
-                <div className={`${navigationColumnClasses.icon} ${columnLabelClasses}`}>Icon</div>
+                {showIcon && <div className={`${navigationColumnClasses.icon} ${columnLabelClasses}`}>Icon</div>}
                 <div className={`${navigationColumnClasses.label} ${columnLabelClasses}`}>Label</div>
                 <div className={`${navigationColumnClasses.url} ${columnLabelClasses}`}>URL</div>
                 {showVisibility && <div className={`${navigationColumnClasses.visibility} ${columnLabelClasses}`}>Visibility</div>}
@@ -39,6 +40,7 @@ const NavigationEditForm: React.FC<{
                     clearError={key => navigation.clearError(item.id, key)}
                     idPrefix={idPrefix}
                     item={item}
+                    showIcon={showIcon}
                     showPaidVisibility={showPaidVisibility}
                     showVisibility={showVisibility}
                     updateItem={updates => navigation.updateItem(item.id, updates)}
@@ -58,6 +60,7 @@ const NavigationEditForm: React.FC<{
                 idPrefix={idPrefix}
                 item={navigation.newItem}
                 labelPlaceholder="New item label"
+                showIcon={showIcon}
                 showPaidVisibility={showPaidVisibility}
                 showVisibility={showVisibility}
                 updateItem={navigation.setNewItem}

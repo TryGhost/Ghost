@@ -71,6 +71,10 @@ const features: Feature[] = [{
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
+}, {
+    title: 'Navigation icons & visibility',
+    description: 'Add icons and member-visibility controls to navigation menu items. Requires theme support to render icons.',
+    flag: 'navigationIcons'
 }];
 
 const AlphaFeatures: React.FC = () => {

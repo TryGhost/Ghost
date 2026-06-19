@@ -18,22 +18,25 @@ export type NavigationItemEditorProps = React.HTMLAttributes<HTMLDivElement> & {
     textFieldClasses?: string
     action?: ReactNode
     addItem?: () => void
+    showIcon: boolean
     showPaidVisibility: boolean
     showVisibility: boolean
 }
 
-const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, idPrefix, item, updateItem, uploadIcon, addItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, showPaidVisibility, showVisibility, className, ...props}) => {
+const NavigationItemEditor: React.FC<NavigationItemEditorProps> = ({baseUrl, idPrefix, item, updateItem, uploadIcon, addItem, clearError, labelPlaceholder, unstyled, textFieldClasses, action, showIcon, showPaidVisibility, showVisibility, className, ...props}) => {
     return (
         <div className={clsx(navigationRowClasses, className)} data-testid='navigation-item-editor' {...props}>
-            <div className={clsx('flex flex-col', navigationColumnClasses.icon, navigationFieldOffsetClass)}>
-                <NavigationIconUpload
-                    clearError={clearError}
-                    idPrefix={idPrefix}
-                    item={item}
-                    updateItem={updateItem}
-                    uploadIcon={uploadIcon}
-                />
-            </div>
+            {showIcon && (
+                <div className={clsx('flex flex-col', navigationColumnClasses.icon, navigationFieldOffsetClass)}>
+                    <NavigationIconUpload
+                        clearError={clearError}
+                        idPrefix={idPrefix}
+                        item={item}
+                        updateItem={updateItem}
+                        uploadIcon={uploadIcon}
+                    />
+                </div>
+            )}
             <div className={clsx('flex', navigationColumnClasses.label, navigationFieldOffsetClass)}>
                 <TextField
                     className={textFieldClasses}
