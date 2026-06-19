@@ -159,7 +159,7 @@ export default function NewsletterManagement({
     // explicit preference yet (null), derive it from whether any newsletter is subscribed at open
     // time and keep it fixed while open, so toggling a newsletter doesn't also appear to flip
     // updates & announcements.
-    const wasInitiallySubscribedToAnyNewsletters = useRef(() => !!subscribedNewsletters?.length).current;
+    const wasInitiallySubscribedToAnyNewsletters = useRef(!!subscribedNewsletters?.length).current;
     const hasExplicitUpdatesPreference = enableUpdatesAndAnnouncements !== null && enableUpdatesAndAnnouncements !== undefined;
     const effectiveEnableUpdatesAndAnnouncements = hasExplicitUpdatesPreference ? enableUpdatesAndAnnouncements : wasInitiallySubscribedToAnyNewsletters;
 
