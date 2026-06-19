@@ -162,6 +162,7 @@ class EmailRenderer {
     #imageSize;
     #urlUtils;
     #getPostUrl;
+    #getRequiredUrlRelations;
     #storageUtils;
 
     #linkReplacer;
@@ -189,6 +190,7 @@ class EmailRenderer {
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
      * @param {{isLocalImage(url: string): boolean, isInternalImage(url: string): boolean}} dependencies.storageUtils
      * @param {(post: Post) => string} dependencies.getPostUrl
+     * @param {() => string[]} [dependencies.getRequiredUrlRelations] Post relations the live routes need loaded to generate URLs (lazy routing); defaults to none
      * @param {object} dependencies.linkReplacer
      * @param {object} dependencies.linkTracking
      * @param {object} dependencies.memberAttributionService
@@ -208,6 +210,7 @@ class EmailRenderer {
         urlUtils,
         storageUtils,
         getPostUrl,
+        getRequiredUrlRelations = () => [],
         linkReplacer,
         linkTracking,
         memberAttributionService,
@@ -226,6 +229,7 @@ class EmailRenderer {
         this.#urlUtils = urlUtils;
         this.#storageUtils = storageUtils;
         this.#getPostUrl = getPostUrl;
+        this.#getRequiredUrlRelations = getRequiredUrlRelations;
         this.#linkReplacer = linkReplacer;
         this.#linkTracking = linkTracking;
         this.#memberAttributionService = memberAttributionService;
@@ -1077,11 +1081,12 @@ class EmailRenderer {
         let latestPostsHasImages = false;
         if (newsletter.get('show_latest_posts')) {
             // Fetch last 3 published posts
+            const urlRelations = this.#getRequiredUrlRelations();
             const {data} = await this.#models.Post.findPage({
                 filter: `status:published+id:-'${post.id}'`,
                 order: 'published_at DESC',
                 limit: 3,
-                withRelated: ['tags', 'authors']
+                ...(urlRelations.length ? {withRelated: urlRelations} : {})
             });
 
             for (const latestPost of data) {
