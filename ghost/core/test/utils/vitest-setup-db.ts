@@ -73,13 +73,18 @@ process.env.database__connection__database = mysqlBase
     : `ghost_testing_${mysqlId}`;
 
 // Delete this slot's leftover sqlite file (+ sidecars) before Ghost loads, so a
-// reused pool name boots from a clean slate — see the note above. force:true
-// makes it a no-op on first use and on the mysql leg (no such file).
-for (const suffix of ['', '-journal', '-wal', '-shm', '-orig']) {
-    try {
-        require('fs').rmSync(process.env.database__connection__filename + suffix, {force: true});
-    } catch (e) {
-        // best effort — a fresh boot recreates it
+// reused pool name boots from a clean slate — see the note above. SQLITE LEG ONLY:
+// on the mysql leg (NODE_ENV testing-mysql) this derived filename is never ours —
+// it belongs to a concurrent sqlite run on the same machine, and deleting it out
+// from under that run destroys its database mid-write (SQLITE_READONLY). force:true
+// makes the sqlite delete a no-op on a slot's first use.
+if (!process.env.NODE_ENV.includes('mysql')) {
+    for (const suffix of ['', '-journal', '-wal', '-shm', '-orig']) {
+        try {
+            require('fs').rmSync(process.env.database__connection__filename + suffix, {force: true});
+        } catch (e) {
+            // best effort — a fresh boot recreates it
+        }
     }
 }
 
