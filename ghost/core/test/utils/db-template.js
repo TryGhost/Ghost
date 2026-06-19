@@ -88,7 +88,7 @@ const ensureForkDatabaseExists = async () => {
     try {
         // CHARACTER SET only (no explicit collation), matching knex-migrator's
         // createDatabaseIfNotExist. Table collations come from the template via
-        // CREATE TABLE ... LIKE, so the DB default here is not load-bearing.
+        // the replayed CREATE TABLE DDL, so the DB default here is not load-bearing.
         const charset = connectionConfig.charset || 'utf8mb4';
         await admin.raw('CREATE DATABASE IF NOT EXISTS ?? CHARACTER SET ??', [database, charset]);
     } finally {
@@ -133,9 +133,9 @@ const buildTemplate = async (base) => {
 /**
  * Restore the current fork's per-process database from the shared template.
  * Assumes the caller has verified hasTemplate(). Copies every table from the
- * template DB into the fork DB on the same server (CREATE TABLE ... LIKE +
- * INSERT ... SELECT). The fork's connection is bound to its own database, so the
- * template is referenced by qualified name.
+ * template DB into the fork DB on the same server (replay the template's exact
+ * CREATE TABLE DDL + INSERT ... SELECT). The fork's connection is bound to its
+ * own database, so the template is referenced by qualified name.
  */
 const restoreFromTemplate = async () => {
     const templateDb = getForkTemplateDatabase();
@@ -151,19 +151,32 @@ const restoreFromTemplate = async () => {
     await ensureForkDatabaseExists();
 
     // Fresh fork DB: create each table from the template and bulk-copy its rows.
-    // Foreign key checks are disabled so tables can be loaded in any order.
+    // Foreign key checks are disabled so tables can be loaded in any order (and so
+    // a table's FK can reference one created later in the sequence).
+    //
+    // We replay the template's `SHOW CREATE TABLE` DDL rather than `CREATE TABLE
+    // ... LIKE`: LIKE copies columns and indexes but DROPS foreign key constraints
+    // (a documented MySQL behaviour), so a LIKE-restored fork loses all ~96 FKs a
+    // fresh knex-migrator init creates. That breaks FK-dependent tests — orphaned
+    // inserts that should 422 succeed, and `ON DELETE CASCADE` no longer prunes
+    // child rows (e.g. deleting members leaves stale members_* events behind),
+    // surfacing as extra rows in attribution / activity-feed snapshots. The DDL
+    // string is unqualified, so replaying it on the fork's connection creates the
+    // table in the fork DB; its FK REFERENCES resolve to the fork's own copies.
+    // This makes the restore byte-faithful to a fresh init (PLA-165).
     await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;');
     try {
         await sequence(tables.map(table => async () => {
+            const [[{'Create Table': createTableSql}]] = await db.knex.raw('SHOW CREATE TABLE ??.??', [templateDb, table]);
             await db.knex.schema.dropTableIfExists(table);
-            await db.knex.raw('CREATE TABLE ?? LIKE ??.??', [table, templateDb, table]);
+            await db.knex.raw(createTableSql);
             await db.knex.raw('INSERT INTO ?? SELECT * FROM ??.??', [table, templateDb, table]);
         }));
     } finally {
         await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;');
     }
 
-    // CREATE TABLE ... LIKE only copies base tables; views are not snapshotted by
+    // The table copy above only covers base tables; views are not in
     // getResetTables (the existing snapshot path relies on init() having created
     // them once). Recreate them here from the schema definitions, exactly as
     // migrations/init/1-create-tables.js does, so a template-provisioned fork DB
