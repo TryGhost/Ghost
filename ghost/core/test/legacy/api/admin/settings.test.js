@@ -63,7 +63,7 @@ describe('Settings API', function () {
     }
 
     describe('As Owner', function () {
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             await localUtils.doAuth(request);
@@ -379,24 +379,8 @@ describe('Settings API', function () {
         });
     });
 
-    describe('As Admin', function () {
-        before(async function () {
-            await localUtils.startGhost();
-            request = supertest.agent(config.get('url'));
-
-            // create admin
-            const admin = await testUtils.createUser({
-                user: testUtils.DataGenerator.forKnex.createUser({email: 'admin+1@ghost.org'}),
-                role: testUtils.DataGenerator.Content.roles[0].name
-            });
-            request.user = admin;
-            // by default we login with the owner
-            await localUtils.doAuth(request);
-        });
-    });
-
     describe('As Editor', function () {
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             // create editor
@@ -449,7 +433,7 @@ describe('Settings API', function () {
     });
 
     describe('As Author', function () {
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
 
@@ -505,7 +489,7 @@ describe('Settings API', function () {
     describe('edit via context internal', function () {
         const api = require('../../../../core/server/api').endpoints;
 
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
         });
 

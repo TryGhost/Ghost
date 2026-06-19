@@ -1,6 +1,6 @@
 import FeedItemMenu from './feed-item-menu';
 import React, {useEffect, useRef, useState} from 'react';
-import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
+import {ActivityPubAttachment, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Skeleton} from '@tryghost/shade/components';
 import {H4} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
@@ -12,19 +12,26 @@ import ProfilePreviewHoverCard from '../global/profile-preview-hover-card';
 
 import FeedItemStats from './feed-item-stats';
 import clsx from 'clsx';
+import getHandle from '../../utils/get-handle';
 import getReadingTime from '../../utils/get-reading-time';
-import getUsername from '../../utils/get-username';
 import {handleProfileClick} from '../../utils/handle-profile-click';
 import {openLinksInNewTab, sanitizeHtml, stripHtml} from '../../utils/content-formatters';
 import {renderTimestamp} from '../../utils/render-timestamp';
 import {useDeleteMutationForUser, useFollowMutationForUser, useUnfollowMutationForUser} from '../../hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
-export function getAttachment(object: ObjectProperties) {
-    let attachment;
+export function getAttachment(object: ObjectProperties): ActivityPubAttachment | ActivityPubAttachment[] | null {
+    let attachment: ActivityPubAttachment | ActivityPubAttachment[] | undefined;
 
     if (object.image) {
-        attachment = object.image;
+        attachment = typeof object.image === 'string' ? {
+            type: 'Image',
+            url: object.image
+        } : {
+            type: object.image.type ?? 'Image',
+            mediaType: object.image.mediaType,
+            url: object.image.url
+        };
     }
 
     if (object.type === 'Note' && !attachment) {
@@ -379,7 +386,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
         author = typeof object.attributedTo === 'object' ? object.attributedTo as ActorProperties : actor;
     }
 
-    const authorHandle = author ? getUsername(author) : null;
+    const authorHandle = author ? getHandle(author) : null;
 
     const followedByMe = author?.followedByMe || false;
 
@@ -455,7 +462,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             </span>
                                             <div className={`flex w-full text-md text-gray-700 dark:text-gray-600`}>
                                                 <span className={`truncate ${!isPending ? 'hover-underline' : ''}`}>
-                                                    {!isLoading ? getUsername(author) : <Skeleton className='w-56' />}
+                                                    {!isLoading ? getHandle(author) : <Skeleton className='w-56' />}
                                                 </span>
                                                 <div className={`ml-1 before:mr-1 ${!isLoading && 'before:content-["·"]'}`} title={`${timestamp}`}>
                                                     {!isLoading ? renderTimestamp(object, (isPending === false && !object.authored)) : <Skeleton className='w-4' />}
@@ -564,7 +571,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                             <div>{renderTimestamp(object, !object.authored)}</div>
                                         </div>
                                         <div className='flex w-full'>
-                                            <span className='min-w-0 truncate text-gray-700 dark:text-gray-600'>{getUsername(author)}</span>
+                                            <span className='min-w-0 truncate text-gray-700 dark:text-gray-600'>{getHandle(author)}</span>
                                         </div>
                                     </div>
                                 </>}
@@ -626,7 +633,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                                 <div>{renderTimestamp(object, (isPending === false && !object.authored))}</div>
                                             </div>
                                             <div className='flex'>
-                                                <span className='truncate text-gray-700'>{getUsername(author)}</span>
+                                                <span className='truncate text-gray-700'>{getHandle(author)}</span>
                                             </div>
                                         </div>
                                     </div>

@@ -2,6 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const DomainEvents = require('@tryghost/domain-events');
+const labs = require('../../../../../../../core/shared/labs');
 const MemberRepository = require('../../../../../../../core/server/services/members/members-api/repositories/member-repository');
 const {SubscriptionCreatedEvent, OfferRedemptionEvent} = require('../../../../../../../core/shared/events');
 
@@ -26,6 +27,7 @@ describe('MemberRepository', function () {
     let productRepository;
     let stripeAPIService;
     let tokenService;
+    let labsIsSet;
 
     /**
      * @param {Partial<Record<keyof ConstructorParameters<typeof MemberRepository>[0], any>>} overrides
@@ -56,6 +58,8 @@ describe('MemberRepository', function () {
     });
 
     beforeEach(function () {
+        labsIsSet = sinon.stub(labs, 'isSet').returns(false);
+
         mockOfferRedemption = {
             add: sinon.stub().resolves(),
             findOne: sinon.stub().resolves(null)
@@ -509,6 +513,7 @@ describe('MemberRepository', function () {
         });
 
         beforeEach(async function () {
+            sinon.stub(MemberRepository.prototype, '_updateCurrentSubscription').resolves();
             subscriptionCreatedNotifySpy = sinon.spy();
             offerRedemptionNotifySpy = sinon.spy();
 
@@ -1749,6 +1754,32 @@ describe('MemberRepository', function () {
                 assert.equal(runCall.exit_reason, null);
             });
 
+            it('does NOT create automation run when the automations labs flag is enabled', async function () {
+                labsIsSet.withArgs('automations').returns(true);
+
+                const repo = buildRepo({
+                    Member,
+                    Outbox,
+                    WelcomeEmailAutomationRun,
+                    MemberStatusEvent,
+                    MemberSubscribeEventModel: MemberSubscribeEvent,
+                    newslettersService,
+                    Automation,
+                    OfferRedemption: mockOfferRedemption
+                });
+
+                await repo.create({email: 'test@example.com', name: 'Test Member'}, {});
+
+                sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+                    event: 'member_sign_up',
+                    memberId: 'member_id_123',
+                    memberEmail: 'test@example.com',
+                    memberStatus: 'free'
+                });
+                sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
+                sinon.assert.notCalled(Automation.findOne);
+            });
+
             it('does not create automation run for disallowed sources', async function () {
                 const repo = buildRepo({
                     Member,
@@ -1870,7 +1901,12 @@ describe('MemberRepository', function () {
     describe('linkSubscription - automation integration', function () {
         let subscriptionData;
 
+        afterEach(function () {
+            sinon.restore();
+        });
+
         beforeEach(function () {
+            sinon.stub(MemberRepository.prototype, '_updateCurrentSubscription').resolves();
             subscriptionData = {
                 id: 'sub_123',
                 customer: 'cus_123',
@@ -2095,6 +2131,54 @@ describe('MemberRepository', function () {
                 assert.equal(runCall.step_started_at, null);
                 assert.equal(runCall.step_attempts, 0);
                 assert.equal(runCall.exit_reason, null);
+            });
+
+            it('does NOT create automation run when the automations labs flag is enabled', async function () {
+                labsIsSet.withArgs('automations').returns(true);
+
+                Member.edit.resolves({
+                    attributes: {status: 'paid'},
+                    _previousAttributes: {status: 'free'},
+                    get: sinon.stub().callsFake((key) => {
+                        const data = {status: 'paid'};
+                        return data[key];
+                    })
+                });
+
+                const repo = buildRepo({
+                    Member,
+                    Outbox,
+                    WelcomeEmailAutomationRun,
+                    MemberPaidSubscriptionEvent,
+                    StripeCustomerSubscription,
+                    MemberProductEvent,
+                    MemberStatusEvent,
+                    stripeAPIService,
+                    productRepository,
+                    Automation,
+                    OfferRedemption: mockOfferRedemption
+                });
+
+                sinon.stub(repo, 'getSubscriptionByStripeID').resolves(null);
+
+                await repo.linkSubscription({
+                    id: 'member_id_123',
+                    subscription: subscriptionData
+                }, {
+                    transacting: {
+                        executionPromise: Promise.resolve()
+                    },
+                    context: {}
+                });
+
+                sinon.assert.calledOnceWithExactly(automationsApi.trigger, {
+                    event: 'member_sign_up',
+                    memberId: 'member_id_123',
+                    memberEmail: 'test@example.com',
+                    memberStatus: 'paid'
+                });
+                sinon.assert.notCalled(WelcomeEmailAutomationRun.add);
+                sinon.assert.notCalled(Automation.findOne);
             });
 
             it('does NOT create automation run for disallowed sources', async function () {

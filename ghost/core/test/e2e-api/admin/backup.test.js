@@ -9,7 +9,7 @@ const assert = require('node:assert/strict');
 describe('Backup Integration', function () {
     let agent, fsStub;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'members');
     });
@@ -24,7 +24,7 @@ describe('Backup Integration', function () {
 
     describe('Backup API', function () {
         describe('Backup Integration', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.useBackupAdminAPIKey();
             });
 
@@ -82,7 +82,7 @@ describe('Backup Integration', function () {
                     .expectEmptyBody()
                     .matchHeaderSnapshot({
                         'content-version': anyContentVersion,
-                        'content-disposition': stringMatching(/attachment; filename="members\./)
+                        'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.members\.\d{4}-\d{2}-\d{2}\.csv"$/)
                     })
                     .expect(({text}) => {
                         assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
@@ -91,7 +91,7 @@ describe('Backup Integration', function () {
         });
 
         describe('Zapier Integration', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.useZapierAdminAPIKey();
             });
 
@@ -133,7 +133,7 @@ describe('Backup Integration', function () {
                     .expectEmptyBody()
                     .matchHeaderSnapshot({
                         'content-version': anyContentVersion,
-                        'content-disposition': stringMatching(/attachment; filename="members\./)
+                        'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.members\.\d{4}-\d{2}-\d{2}\.csv"$/)
                     })
                     .expect(({text}) => {
                         assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
@@ -142,7 +142,7 @@ describe('Backup Integration', function () {
         });
 
         describe('Owner: User authentication', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.loginAsOwner();
             });
 
@@ -178,7 +178,7 @@ describe('Backup Integration', function () {
                     .expectEmptyBody()
                     .matchHeaderSnapshot({
                         'content-version': anyContentVersion,
-                        'content-disposition': stringMatching(/attachment; filename="members\./)
+                        'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.members\.\d{4}-\d{2}-\d{2}\.csv"$/)
                     })
                     .expect(({text}) => {
                         assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
@@ -187,7 +187,7 @@ describe('Backup Integration', function () {
         });
 
         describe('Owner: Staff token', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.useStaffTokenForAdmin();
             });
 
@@ -223,7 +223,7 @@ describe('Backup Integration', function () {
                     .expectEmptyBody()
                     .matchHeaderSnapshot({
                         'content-version': anyContentVersion,
-                        'content-disposition': stringMatching(/attachment; filename="members\./)
+                        'content-disposition': stringMatching(/^Attachment; filename="(?:[a-z0-9-]+\.)?ghost\.members\.\d{4}-\d{2}-\d{2}\.csv"$/)
                     })
                     .expect(({text}) => {
                         assert.match(text, /id,email,name,note,subscribed_to_emails,complimentary_plan,stripe_customer_id,created_at,deleted_at,labels,tiers,gift_id/);
@@ -232,7 +232,7 @@ describe('Backup Integration', function () {
         });
 
         describe('Editor: User authentication', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await agent.loginAsEditor();
             });
 

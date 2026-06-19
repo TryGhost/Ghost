@@ -4,7 +4,8 @@ const Mention = ghostBookshelf.Model.extend({
     tableName: 'mentions',
     defaults: {
         deleted: false,
-        verified: false
+        verified: false,
+        revalidation_failure_count: 0
     },
     defaultFilters() {
         return 'deleted:false';

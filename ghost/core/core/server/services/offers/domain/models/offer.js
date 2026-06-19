@@ -307,8 +307,7 @@ class Offer {
         const stripeCouponId = data.stripe_coupon_id ?? null;
 
         if (isNew && data.redemptionCount !== undefined) {
-            // TODO correct error
-            throw new errors.InvalidOfferCode({
+            throw new errors.InvalidOfferRedemptionCount({
                 message: 'An Offer cannot be created with redemptionCount'
             });
         }

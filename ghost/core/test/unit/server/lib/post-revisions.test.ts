@@ -198,6 +198,27 @@ describe('PostRevisions', function () {
 
             assert.deepEqual(actual, expected);
         });
+
+        it('treats the last revision in the array as the latest', function () {
+            const postRevisions = new PostRevisions({config, model: {}});
+
+            const expected = {value: false};
+            const actual = postRevisions.shouldGenerateRevision(makePostLike({
+                lexical: 'current',
+                html: 'current',
+                title: 'blah'
+            }), [{
+                lexical: 'older',
+                title: 'blah',
+                created_at_ts: Date.now() - 2000
+            }, {
+                lexical: 'current',
+                title: 'blah',
+                created_at_ts: Date.now() - 100
+            }].map(makeRevision), {});
+
+            assert.deepEqual(actual, expected);
+        });
     });
 
     describe('getRevisions', function () {
@@ -305,6 +326,35 @@ describe('PostRevisions', function () {
             });
 
             assert.equal(actual.length, 1);
+        });
+
+        it('keeps the newest revisions when limiting to the max_revisions count', async function () {
+            const postRevisions = new PostRevisions({
+                config: {
+                    max_revisions: 2,
+                    revision_interval_ms: config.revision_interval_ms
+                },
+                model: {}
+            });
+            const now = Date.now();
+
+            const actual = await postRevisions.getRevisions(makePostLike({
+                id: '1',
+                lexical: 'current',
+                html: 'current'
+            }), [{
+                lexical: 'oldest',
+                created_at_ts: now - 2000
+            }, {
+                lexical: 'newer',
+                created_at_ts: now - 1000
+            }].map(makeRevision), {
+                forceRevision: true
+            });
+
+            assert.equal(actual.length, 2);
+            assert.equal(actual[0].lexical, 'newer');
+            assert.equal(actual[1].lexical, 'current');
         });
     });
 

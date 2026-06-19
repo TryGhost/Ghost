@@ -208,11 +208,11 @@ async function initServicesForFrontend({bootLogger}) {
 /**
  * Frontend is intended to be just Ghost's frontend
  */
-async function initFrontend() {
+function initFrontend() {
     debug('Begin: initFrontend');
 
     const helperService = require('./frontend/services/helpers');
-    await helperService.init();
+    helperService.init();
 
     debug('End: initFrontend');
 }
@@ -431,6 +431,13 @@ async function initBackgroundServices({config}) {
 
     const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
+    if (config.get('updateCheck:forceUpdate')) {
+        updateCheck.scheduleBootJob();
+    }
+
+    // Remote feature-flag overrides (config-gated; inert unless explicitly configured).
+    const remoteFlags = require('./server/services/remote-flags');
+    remoteFlags.init(config);
 
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
@@ -552,7 +559,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         await initServicesForFrontend({bootLogger});
 
         if (frontend) {
-            await initFrontend();
+            initFrontend();
         }
         const ghostApp = await initExpressApps({frontend, backend, config});
 

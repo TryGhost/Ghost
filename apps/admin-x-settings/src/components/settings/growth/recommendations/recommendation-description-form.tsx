@@ -1,6 +1,6 @@
 import React from 'react';
 import RecommendationIcon from './recommendation-icon';
-import {type EditOrAddRecommendation, type Recommendation} from '@tryghost/admin-x-framework/api/recommendations';
+import {type EditOrAddRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type ErrorMessages} from '@tryghost/admin-x-framework/hooks';
 import {Form, Heading, Hint, TextArea, TextField, URLTextField} from '@tryghost/admin-x-design-system';
 
@@ -45,7 +45,7 @@ export const validateDescriptionForm = function (formState: EditOrAddRecommendat
     return newErrors;
 };
 
-const RecommendationDescriptionForm: React.FC<Props<EditOrAddRecommendation | Recommendation>> = ({showURL, formState, updateForm, errors, clearError, setErrors}) => {
+function RecommendationDescriptionForm<T extends EditOrAddRecommendation>({showURL, formState, updateForm, errors, clearError, setErrors}: Props<T>) {
     const [descriptionLength, setDescriptionLength] = React.useState(formState?.description?.length || 0);
     const descriptionLengthColor = descriptionLength > 200 ? 'text-red' : 'text-green';
 
@@ -122,6 +122,6 @@ const RecommendationDescriptionForm: React.FC<Props<EditOrAddRecommendation | Re
             }}
         />
     </Form>;
-};
+}
 
 export default RecommendationDescriptionForm;

@@ -2,7 +2,8 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
+const {settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
+const metaData = require('../meta');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
@@ -34,8 +35,7 @@ function finaliseStructuredData(meta) {
             _.each(meta.keywords, function (keyword) {
                 if (keyword !== '') {
                     keyword = escapeExpression(keyword);
-                    head.push(writeMetaTag(property,
-                        escapeExpression(keyword)));
+                    head.push(writeMetaTag(property, keyword));
                 }
             });
             head.push('');
@@ -57,19 +57,21 @@ function getMembersHelper(data, frontendKey, excludeList) {
     if (!excludeList.has('portal')) {
         const {scriptUrl} = getFrontendAppConfig('portal');
 
-        const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
-        const attributes = {
-            i18n: true,
-            ghost: urlUtils.getSiteUrl(),
-            key: frontendKey,
-            api: urlUtils.urlFor('api', {type: 'content'}, true),
-            locale: settingsCache.get('locale') || 'en'
-        };
-        if (colorString) {
-            attributes['accent-color'] = colorString;
+        if (scriptUrl) {
+            const colorString = (_.has(data, 'site._preview') && data.site.accent_color) ? data.site.accent_color : '';
+            const attributes = {
+                i18n: true,
+                ghost: urlUtils.getSiteUrl(),
+                key: frontendKey,
+                api: urlUtils.urlFor('api', {type: 'content'}, true),
+                locale: settingsCache.get('locale') || 'en'
+            };
+            if (colorString) {
+                attributes['accent-color'] = colorString;
+            }
+            const dataAttributes = getDataAttributes(attributes);
+            membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
         }
-        const dataAttributes = getDataAttributes(attributes);
-        membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
     }
     if (!excludeList.has('cta_styles')) {
         membersHelper += (`<style id="gh-members-styles">${templateStyles}</style>`);
@@ -123,7 +125,7 @@ function getAnnouncementBarHelper(data) {
         const announcementVisibility = searchParam.has('announcement_vis');
 
         if (!announcement || !announcementVisibility) {
-            return;
+            return '';
         }
         attrs.announcement = escapeExpression(announcement);
         attrs['announcement-background'] = escapeExpression(announcementBackground);
@@ -383,7 +385,7 @@ module.exports = async function ghost_head(options) { // eslint-disable-line cam
         if (options.data.site.accent_color) {
             const accentColor = escapeExpression(options.data.site.accent_color);
             const styleTag = `<style>:root {--ghost-accent-color: ${accentColor};}</style>`;
-            const existingScriptIndex = _.findLastIndex(head, str => str.match(/<\/(style|script)>/));
+            const existingScriptIndex = _.findLastIndex(head, str => typeof str === 'string' && /<\/(style|script)>/.test(str));
 
             if (existingScriptIndex !== -1) {
                 head[existingScriptIndex] = head[existingScriptIndex] + styleTag;

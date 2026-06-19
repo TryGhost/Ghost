@@ -93,7 +93,7 @@ describe('automations api helpers', () => {
     });
 
     describe('insertWaitAction', () => {
-        it('creates a wait action with placeholder defaults', () => {
+        it('creates a wait action with default values', () => {
             const detail = baseDetail([], []);
 
             const next = insertWaitAction({detail, anchor: {}});
@@ -182,10 +182,10 @@ describe('automations api helpers', () => {
             expect(next.actions).toHaveLength(1);
             const newAction = next.actions[0];
             expectSendEmailAction(newAction);
-            expect(newAction.data.email_subject).toBe('Untitled email');
+            expect(newAction.data.email_subject).toBe('');
             expect(() => JSON.parse(newAction.data.email_lexical)).not.toThrow();
             expect(JSON.parse(newAction.data.email_lexical).root.children).toEqual([]);
-            expect(newAction.data.email_design_setting_id).toBe('placeholder');
+            expect(newAction.data.email_design_setting_id).toBe('default-automated-email');
         });
 
         it('returns an action id that the backend schema treats as a valid ObjectId', () => {
@@ -318,10 +318,7 @@ describe('automations api helpers', () => {
                         data: {
                             email_subject: 'Hi',
                             email_lexical: '{}',
-                            email_sender_name: null,
-                            email_sender_email: null,
-                            email_sender_reply_to: null,
-                            email_design_setting_id: 'placeholder'
+                            email_design_setting_id: 'default-automated-email'
                         }
                     }
                 ],
@@ -374,10 +371,7 @@ describe('automations api helpers', () => {
             data: {
                 email_subject: 'Original subject',
                 email_lexical: '{"root":{"children":[]}}',
-                email_sender_name: null,
-                email_sender_email: null,
-                email_sender_reply_to: null,
-                email_design_setting_id: 'placeholder',
+                email_design_setting_id: 'default-automated-email',
                 ...overrides
             }
         });
@@ -399,7 +393,7 @@ describe('automations api helpers', () => {
         });
 
         it('updates subject and lexical, preserving the rest of data', () => {
-            const detail = baseDetail([sendEmailAction('a', {email_sender_name: 'Jane'})], []);
+            const detail = baseDetail([sendEmailAction('a', {email_design_setting_id: 'design-setting-id'})], []);
 
             const next = updateSendEmailAction({
                 detail,
@@ -412,8 +406,7 @@ describe('automations api helpers', () => {
             expectSendEmailAction(updated);
             expect(updated.data.email_subject).toBe('Just the subject');
             expect(updated.data.email_lexical).toBe('{"root":{"children":[{"type":"paragraph"}]}}');
-            expect(updated.data.email_sender_name).toBe('Jane');
-            expect(updated.data.email_design_setting_id).toBe('placeholder');
+            expect(updated.data.email_design_setting_id).toBe('design-setting-id');
         });
 
         it('does not mutate the original detail or action', () => {

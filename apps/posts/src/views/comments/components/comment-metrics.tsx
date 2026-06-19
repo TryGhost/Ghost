@@ -3,7 +3,7 @@ import CommentReportsModal from './comment-reports-modal';
 import {Comment} from '@tryghost/admin-x-framework/api/comments';
 import {Link, useSearchParams} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn, formatNumber} from '@tryghost/shade/utils';
-import {Tooltip, TooltipContent, TooltipProvider, TooltipTrigger} from '@tryghost/shade/components';
+import {Tooltip, TooltipContent, TooltipTrigger} from '@tryghost/shade/components';
 import {useState} from 'react';
 
 interface MetricProps {
@@ -28,41 +28,39 @@ function Metric({icon, count, label, to, onClick, className, testId}: MetricProp
     const isClickable = to || onClick;
 
     return (
-        <TooltipProvider>
-            <Tooltip>
-                <TooltipTrigger asChild>
-                    {to ? (
-                        <Link
-                            className={cn(baseClassName, 'cursor-pointer hover:opacity-70')}
-                            data-testid={testId}
-                            to={to}
-                            onClick={(e: React.MouseEvent) => {
-                                e.stopPropagation();
-                            }}
-                        >
-                            {content}
-                        </Link>
-                    ) : onClick ? (
-                        <button
-                            className={cn(baseClassName, 'cursor-pointer hover:opacity-70')}
-                            data-testid={testId}
-                            type="button"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                onClick();
-                            }}
-                        >
-                            {content}
-                        </button>
-                    ) : (
-                        <div className={baseClassName} data-testid={testId}>
-                            {content}
-                        </div>
-                    )}
-                </TooltipTrigger>
-                <TooltipContent>{isClickable ? `View ${label.toLowerCase()}` : label}</TooltipContent>
-            </Tooltip>
-        </TooltipProvider>
+        <Tooltip>
+            <TooltipTrigger asChild>
+                {to ? (
+                    <Link
+                        className={cn(baseClassName, 'cursor-pointer hover:opacity-70')}
+                        data-testid={testId}
+                        to={to}
+                        onClick={(e: React.MouseEvent) => {
+                            e.stopPropagation();
+                        }}
+                    >
+                        {content}
+                    </Link>
+                ) : onClick ? (
+                    <button
+                        className={cn(baseClassName, 'cursor-pointer hover:opacity-70')}
+                        data-testid={testId}
+                        type="button"
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            onClick();
+                        }}
+                    >
+                        {content}
+                    </button>
+                ) : (
+                    <div className={baseClassName} data-testid={testId}>
+                        {content}
+                    </div>
+                )}
+            </TooltipTrigger>
+            <TooltipContent>{isClickable ? `View ${label.toLowerCase()}` : label}</TooltipContent>
+        </Tooltip>
     );
 }
 
@@ -95,7 +93,7 @@ export function CommentMetrics({
     const [reportsModalOpen, setReportsModalOpen] = useState(false);
     const repliesLink = buildThreadLink(searchParams, comment.id);
 
-    const repliesCount = comment.count?.direct_replies ?? comment.count?.replies ?? comment.replies?.length ?? 0; // TODO: remove replies fallback once backend is fully rolled out
+    const repliesCount = comment.count?.direct_replies ?? comment.replies?.length ?? 0;
     const likesCount = comment.count?.likes ?? 0;
     const dislikesCount = dislikesEnabled ? (comment.count?.dislikes ?? 0) : 0;
     const reportsCount = comment.count?.reports ?? 0;

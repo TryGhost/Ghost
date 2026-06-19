@@ -433,6 +433,13 @@
         padding: 0;
         overflow-x: auto;
         overflow-y: visible;
+        /* the overlay scrollbar floats over the chips and can't be pushed below with
+           padding; hide it and let the row scroll by swipe/trackpad instead */
+        scrollbar-width: none;
+    }
+
+    .post-header .view-actions-bottom-row::-webkit-scrollbar {
+        display: none;
     }
 
     .post-header .view-actions::before {

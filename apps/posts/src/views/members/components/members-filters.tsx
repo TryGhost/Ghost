@@ -21,6 +21,7 @@ import type {MemberView} from '../hooks/use-member-views';
 
 interface MembersFiltersProps {
     filters: Filter[];
+    multipleActiveSubscriptionsCount: number;
     nql?: string;
     onFiltersChange: (filters: Filter[]) => void;
     savedViews?: MemberView[];
@@ -48,6 +49,7 @@ function mapOfferRedemptionFilters(
 
 const MembersFilters: React.FC<MembersFiltersProps> = ({
     filters,
+    multipleActiveSubscriptionsCount,
     nql,
     onFiltersChange,
     savedViews = [],
@@ -104,6 +106,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         labelValueSource,
         tierValueSource,
         offers,
+        multipleActiveSubscriptionsCount,
         postValueSource,
         emailValueSource,
         membersTrackSources,

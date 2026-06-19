@@ -89,7 +89,7 @@ function UserMenu(props: UserMenuProps) {
 
     return (
         <DropdownMenu {...props}>
-            <DropdownMenuTrigger asChild className="focus-visible:ring-0">
+            <DropdownMenuTrigger asChild>
                 <SidebarMenuButton
                     size="lg"
                     className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"

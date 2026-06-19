@@ -12,7 +12,7 @@ const offerSnapshot = {
 describe('Offers Content API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('api_keys', 'members');
         await agent.authenticate();

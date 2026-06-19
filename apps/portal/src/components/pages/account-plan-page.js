@@ -5,7 +5,7 @@ import CloseButton from '../common/close-button';
 import BackButton from '../common/back-button';
 import {MultipleProductsPlansSection} from '../common/plans-section';
 import {getDateString} from '../../utils/date-time';
-import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isArchivedTier, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, hasMultipleProductsFeature, isComplimentaryMember, isGiftMember, isPaidMember} from '../../utils/helpers';
+import {addMonths, formatNumber, formatPrice, getAvailablePrices, getCurrencySymbol, getFilteredPrices, isArchivedTier, isFreeMonthsOffer, getMemberActivePrice, getMemberActiveProduct, getMemberSubscription, getOfferOffAmount, getPriceFromSubscription, getProductFromPrice, getSubscriptionFromId, getUpdatedOfferPrice, getUpgradeProducts, isComplimentaryMember, isGiftMember, isPaidMember} from '../../utils/helpers';
 import Interpolate from '@doist/react-interpolate';
 import {t} from '../../utils/i18n';
 import {translateCadence} from '../../utils/helpers';
@@ -91,7 +91,6 @@ const Header = ({showConfirmation, confirmationType, pendingOffer}) => {
 };
 
 const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandColor}) => {
-    const {site} = useContext(AppContext);
     if (!member.paid) {
         return null;
     }
@@ -127,7 +126,7 @@ const CancelSubscriptionButton = ({member, onCancelSubscription, action, brandCo
                 disabled={disabled}
                 isPrimary={isPrimary}
                 isDestructive={isDestructive}
-                classes={hasMultipleProductsFeature({site}) ? 'gh-portal-btn-text mt2 mb4' : ''}
+                classes='gh-portal-btn-text mt2 mb4'
                 brandColor={brandColor}
                 label={label}
                 style={{
@@ -154,7 +153,7 @@ const PlanConfirmationSection = ({plan, type, onConfirm}) => {
     const priceString = formatNumber(plan.price);
     const planStartMessage = `${plan.currency_symbol}${priceString}/${translateCadence(plan.interval)} – ${planStartingMessage}`;
     const product = getProductFromPrice({site, priceId: plan?.id});
-    const priceLabel = hasMultipleProductsFeature({site}) ? product?.name : t('Price');
+    const priceLabel = product?.name;
     if (type === 'changePlan') {
         return (
             <div className='gh-portal-logged-out-form-container'>
@@ -438,6 +437,23 @@ const UpgradePlanSection = ({
     );
 };
 
+// Shown when there are no paid plans to display (e.g. a member reaches the
+// plans page via a theme button or deep link while the site has no paid tiers).
+const NoPlansAvailableMessage = () => {
+    return (
+        <section>
+            <div className='gh-portal-section'>
+                <p
+                    className='gh-portal-no-plans-available-notification'
+                    data-testid="no-plans-available-notification-text"
+                >
+                    {t('Sorry, no paid plans are available.')}
+                </p>
+            </div>
+        </section>
+    );
+};
+
 const PlansContainer = ({
     plans, selectedPlan, confirmationPlan, confirmationType, showConfirmation = false,
     pendingOffer, onPlanSelect, onPlanCheckout, onConfirm, onCancelSubscription,
@@ -446,6 +462,14 @@ const PlansContainer = ({
     const {member} = useContext(AppContext);
     // Plan upgrade flow for free, complimentary, or gift members.
     if (!isPaidMember({member}) || isComplimentaryMember({member}) || isGiftMember({member})) {
+        // No paid plans to choose from. This covers the deep-link / theme-button
+        // entry point (#/portal/account/plans), which cannot be gated in-app,
+        // where the body would otherwise render blank under the page header.
+        if (plans.length === 0) {
+            return (
+                <NoPlansAvailableMessage />
+            );
+        }
         return (
             <UpgradePlanSection
                 {...{plans, selectedPlan, onPlanSelect, onPlanCheckout}}

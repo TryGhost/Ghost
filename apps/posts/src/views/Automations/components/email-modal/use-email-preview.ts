@@ -66,6 +66,7 @@ export const useEmailPreview = ({automatedEmailId, previewWelcomeEmail, setError
     const exitPreview = () => {
         previewRequestIdRef.current += 1;
         setPreviewState({status: 'idle'});
+        setErrors({});
     };
 
     const enterPreview = async (draft: EmailDraft) => {
@@ -73,17 +74,16 @@ export const useEmailPreview = ({automatedEmailId, previewWelcomeEmail, setError
         previewRequestIdRef.current = requestId;
 
         const validationErrors = getEmailValidationErrors(draft);
-        setErrors(validationErrors);
-
-        const hasValidationErrors = Boolean(validationErrors.subject || validationErrors.lexical);
-        if (hasValidationErrors) {
+        if (validationErrors.lexical) {
+            setErrors({lexical: validationErrors.lexical});
             setPreviewState({
                 status: 'invalid',
-                message: validationErrors.subject || validationErrors.lexical
+                message: validationErrors.lexical
             });
             return;
         }
 
+        setErrors({});
         setPreviewState({status: 'loading'});
 
         try {

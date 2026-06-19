@@ -186,10 +186,10 @@ function testBasicErrorResponse(method, url, status, errors) {
  * @param {number} status
  * @returns {any} ExpectRequest
  */
-function testBasicEmptyResponse(method, url, status) {
+function testBasicEmptyResponse(method, url, status, headerMatchers = {}) {
     return membersAgent[method](url)
         .expectStatus(status)
-        .matchHeaderSnapshot({etag: anyEtag})
+        .matchHeaderSnapshot({etag: anyEtag, ...headerMatchers})
         .expectEmptyBody();
 }
 
@@ -356,7 +356,7 @@ async function testCannotReply(parentId, status = 403) {
 describe('Comments API', function () {
     let loggedInMember;
 
-    before(async function () {
+    beforeAll(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
         membersAgent2 = membersAgent.duplicate();
 
@@ -418,16 +418,6 @@ describe('Comments API', function () {
                 await testGetComments(`/api/comments/post/${postId}/`, [
                     commentMatcherWithReplies({replies: 1})
                 ]);
-            });
-
-            it('advertises dislike support on comment list responses', async function () {
-                const {body} = await membersAgent
-                    .get(`/api/comments/post/${postId}/`)
-                    .expectStatus(200);
-
-                assert.deepEqual(body.meta.capabilities, {
-                    dislikes: true
-                });
             });
 
             it('excludes hidden comments', async function () {
@@ -619,7 +609,7 @@ describe('Comments API', function () {
         describe('when authenticated', function () {
             let getStub;
 
-            before(async function () {
+            beforeAll(async function () {
                 await membersAgent.loginAs('member@example.com');
                 loggedInMember = await models.Member.findOne({email: 'member@example.com'}, {require: true});
                 await membersAgent2.loginAs('member2@example.com');
@@ -1522,7 +1512,10 @@ describe('Comments API', function () {
                     .post(`/api/comments/${comment.get('id')}/like/`)
                     .expectStatus(204)
                     .matchHeaderSnapshot({
-                        etag: anyEtag
+                        etag: anyEtag,
+                        'x-cache-invalidate': stringMatching(
+                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                        )
                     })
                     .expectEmptyBody();
 
@@ -1543,7 +1536,10 @@ describe('Comments API', function () {
                     .post(`/api/comments/${comment.get('id')}/dislike/`)
                     .expectStatus(204)
                     .matchHeaderSnapshot({
-                        etag: anyEtag
+                        etag: anyEtag,
+                        'x-cache-invalidate': stringMatching(
+                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                        )
                     })
                     .expectEmptyBody();
 
@@ -1563,7 +1559,11 @@ describe('Comments API', function () {
                     member_id: loggedInMember.id
                 });
 
-                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/dislike/`, 204);
+                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/dislike/`, 204, {
+                    'x-cache-invalidate': stringMatching(
+                        new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                    )
+                });
 
                 await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
                     .expect(({body}) => {
@@ -1709,7 +1709,11 @@ describe('Comments API', function () {
                 });
 
                 // Unlike
-                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/like/`, 204);
+                await testBasicEmptyResponse('delete', `/api/comments/${comment.get('id')}/like/`, 204, {
+                    'x-cache-invalidate': stringMatching(
+                        new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                    )
+                });
 
                 // Check not liked
                 await testGetComments(`/api/comments/${comment.get('id')}/`, [commentMatcher])
@@ -1805,7 +1809,10 @@ describe('Comments API', function () {
                     }]})
                     .expectStatus(200)
                     .matchHeaderSnapshot({
-                        etag: anyEtag
+                        etag: anyEtag,
+                        'x-cache-invalidate': stringMatching(
+                            new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                        )
                     })
                     .matchBodySnapshot({
                         comments: [{
@@ -2241,6 +2248,53 @@ describe('Comments API', function () {
         });
     });
 
+    describe('When authenticated as post author', function () {
+        beforeAll(async function () {
+            await membersAgent.loginAs(postAuthorEmail);
+        });
+
+        beforeEach(function () {
+            const getStub = sinon.stub(settingsCache, 'get');
+            getStub.callsFake((key, options) => {
+                if (key === 'comments_enabled') {
+                    return 'all';
+                }
+                return getStub.wrappedMethod.call(settingsCache, key, options);
+            });
+        });
+
+        it('does NOT notify post author when they comment on their own post', async function () {
+            await testPostComment({
+                post_id: postId,
+                html: 'This is a comment'
+            });
+
+            // Post author should NOT receive a notification for their own comment
+            emailMockReceiver.assertSentEmailCount(0);
+        });
+
+        it('does NOT notify post author when they reply to a comment on their own post', async function () {
+            // Create a parent comment from another member
+            const parentComment = await dbFns.addComment({
+                member_id: fixtureManager.get('members', 1).id
+            });
+
+            // Post author replies
+            await testPostComment({
+                post_id: postId,
+                parent_id: parentComment.get('id'),
+                html: 'Reply from post author'
+            });
+
+            // Post author should NOT receive a notification for their own reply
+            emailMockReceiver.assertSentEmailCount(1); // Only the parent comment author is notified
+            mockManager.assert.sentEmail({
+                subject: '↪️ New reply to your comment on Ghost',
+                to: fixtureManager.get('members', 1).email
+            });
+        });
+    });
+
     describe('when commenting disabled', function () {
         beforeEach(async function () {
             await membersAgent.loginAs('member@example.com');
@@ -2273,7 +2327,7 @@ describe('Comments API', function () {
         let disabledMember;
         let existingComment;
 
-        before(async function () {
+        beforeAll(async function () {
             adminAgent = await agentProvider.getAdminAPIAgent();
             await fixtureManager.init('posts', 'members');
             await adminAgent.loginAsOwner();
@@ -2310,7 +2364,7 @@ describe('Comments API', function () {
             sinon.restore();
         });
 
-        after(async function () {
+        afterAll(async function () {
             if (disabledMember) {
                 await models.Member.destroy({id: disabledMember.id});
             }
@@ -2370,7 +2424,7 @@ describe('Comments API', function () {
         });
 
         describe('Members with access', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await membersAgent.loginAs('paid@example.com');
                 loggedInMember = await models.Member.findOne({email: 'paid@example.com'}, {require: true});
 
@@ -2397,7 +2451,7 @@ describe('Comments API', function () {
         });
 
         describe('Members without access', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await membersAgent.loginAs('free@example.com');
             });
 
@@ -2416,7 +2470,7 @@ describe('Comments API', function () {
         let post;
         let product;
 
-        before(async function () {
+        beforeAll(async function () {
             product = await getPaidProduct();
 
             // Limit post access
@@ -2447,7 +2501,7 @@ describe('Comments API', function () {
         });
 
         describe('Members with access', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await membersAgent.loginAs('member-premium@example.com');
                 loggedInMember = await models.Member.findOne({email: 'member-premium@example.com'}, {require: true});
 
@@ -2472,7 +2526,7 @@ describe('Comments API', function () {
         });
 
         describe('Members without access', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await membersAgent.loginAs('member-not-premium@example.com');
             });
 

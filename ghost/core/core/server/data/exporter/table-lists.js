@@ -38,6 +38,7 @@ const BACKUP_TABLES = [
     'members_subscribe_events',
     'members_product_events',
     'members_created_events',
+    'members_current_subscription',
     'members_subscription_created_events',
     'members_newsletters',
     'mentions',
@@ -58,7 +59,13 @@ const BACKUP_TABLES = [
     'recommendation_subscribe_events',
     'outbox',
     'gifts',
+    'gift_links',
     'automations',
+    'automation_actions',
+    'automation_action_edges',
+    'automation_action_revisions',
+    'automation_run_steps',
+    'automation_runs',
     'welcome_email_automation_runs',
     'welcome_email_automated_emails'
 ];

@@ -132,7 +132,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
     return (
         <>
             <div
-                className={`text-md min-h-[120px] w-full rounded-lg border border-black/10 bg-white/75 p-2 pb-[68px] font-sans leading-normal transition-all delay-100 duration-150 focus:outline-0 sm:px-3 sm:text-lg dark:bg-white/10 dark:text-neutral-300 ${isOpen ? 'cursor-text' : 'cursor-pointer'}`}
+                className={`min-h-[120px] w-full rounded-lg border border-black/10 bg-white/75 p-2 pb-[68px] font-sans text-md leading-normal transition-all delay-100 duration-150 focus:outline-0 dark:bg-white/10 dark:text-neutral-300 sm:px-3 sm:text-lg ${isOpen ? 'cursor-text' : 'cursor-pointer'}`}
                 data-testid="form-editor">
                 <EditorContent
                     editor={editor} onMouseDown={stopIfFocused}
@@ -144,7 +144,7 @@ export const FormEditor: React.FC<FormEditorProps> = ({comment, submit, progress
                     <button className="ml-2.5 font-sans text-sm font-medium text-neutral-900/50 outline-0 transition-all hover:text-neutral-900/70 dark:text-white/60 dark:hover:text-white/75" type="button" onClick={close}>{t('Cancel')}</button>
                 }
                 <button
-                    className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-md bg-[var(--gh-accent-color)] px-3 py-2 text-center font-sans text-base font-medium text-white outline-0 transition-colors duration-200 hover:brightness-105 disabled:bg-black/5 disabled:text-neutral-900/30 sm:text-sm dark:disabled:bg-white/15 dark:disabled:text-white/35`}
+                    className={`flex w-auto items-center justify-center ${submitSize === 'medium' && 'sm:min-w-[100px]'} ${submitSize === 'small' && 'sm:min-w-[64px]'} h-[40px] rounded-md bg-[var(--gh-accent-color)] px-3 py-2 text-center font-sans text-base font-medium text-white outline-0 transition-colors duration-200 hover:brightness-105 disabled:bg-black/5 disabled:text-neutral-900/30 dark:disabled:bg-white/15 dark:disabled:text-white/35 sm:text-sm`}
                     data-testid="submit-form-button"
                     disabled={!editor || editor.isEmpty}
                     type="button"
@@ -186,7 +186,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
         >
             <div className="flex flex-wrap">
                 <div
-                    className="w-full font-sans text-base font-bold leading-snug text-neutral-900 sm:w-auto sm:text-sm dark:text-white/85"
+                    className="w-full font-sans text-base font-bold leading-snug text-neutral-900 dark:text-white/85 sm:w-auto sm:text-sm"
                     data-testid="member-name"
                     onMouseDown={editName}
                 >
@@ -194,7 +194,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                 </div>
                 <div className="flex items-baseline justify-start">
                     <button
-                        className={`group flex items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-neutral-900/50 transition duration-150 hover:text-black/75 sm:text-sm dark:text-white/60 dark:hover:text-white/75 ${!expertise && 'text-black/30 hover:text-black/50 dark:text-white/30 dark:hover:text-white/50'}`}
+                        className={`group flex items-center justify-start whitespace-nowrap text-left font-sans text-base leading-snug text-neutral-900/50 transition duration-150 hover:text-black/75 dark:text-white/60 dark:hover:text-white/75 sm:text-sm ${!expertise && 'text-black/30 hover:text-black/50 dark:text-white/30 dark:hover:text-white/50'}`}
                         data-testid="expertise-button"
                         type="button"
                         onMouseDown={editExpertise}
@@ -205,7 +205,7 @@ const FormHeader: React.FC<FormHeaderProps> = ({show, name, expertise, replyingT
                 </div>
             </div>
             {isReplyingToReply && (
-                <div className="mt-0.5 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 sm:text-sm dark:text-white/60" data-testid="replying-to">
+                <div className="mt-0.5 line-clamp-1 font-sans text-base leading-snug text-neutral-900/50 dark:text-white/60 sm:text-sm" data-testid="replying-to">
                     <span>{t('Reply to')}:</span>&nbsp;<span className="font-semibold text-neutral-900/60 dark:text-white/70">{replyingToText}</span>
                 </div>
             )}

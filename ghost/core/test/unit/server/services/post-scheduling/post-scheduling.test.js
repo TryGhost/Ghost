@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const moment = require('moment');
 const testUtils = require('../../../../utils');
-const models = require('../../../../../core/server/models');
+const {Post} = require('../../../../../core/server/models/post');
 const events = require('../../../../../core/server/lib/common/events');
 const schedulingUtils = require('../../../../../core/server/adapters/scheduling/utils');
 const SchedulingDefault = require('../../../../../core/server/adapters/scheduling/scheduling-default');
@@ -31,7 +31,7 @@ describe('PostScheduling', function () {
 
     describe('constructor', function () {
         it('wires event handlers and starts the adapter', async function () {
-            const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({
+            const post = Post.forge(testUtils.DataGenerator.forKnex.createPost({
                 id: 1337,
                 mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')
             }));
@@ -58,11 +58,11 @@ describe('PostScheduling', function () {
 
     describe('rescheduleAll', function () {
         function stubScheduledPost() {
-            const post = models.Post.forge(testUtils.DataGenerator.forKnex.createPost({
+            const post = Post.forge(testUtils.DataGenerator.forKnex.createPost({
                 id: 4004,
                 mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('something')
             }));
-            sinon.stub(models.Post, 'findAll').callsFake(({filter}) => {
+            sinon.stub(Post, 'findAll').callsFake(({filter}) => {
                 return Promise.resolve(filter.includes('type:post') ? [post] : []);
             });
             return post;

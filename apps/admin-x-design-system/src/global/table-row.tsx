@@ -40,7 +40,7 @@ const TableRow = forwardRef<HTMLTableRowElement, TableRowProps>(function TableRo
         <tr ref={ref} className={tableRowClasses} data-testid={testId} id={id} style={style} onClick={handleClick}>
             <td className="p-0" colSpan={1000}>
                 <div className="relative z-10 flex items-center">
-                    <div className="grow py-2">{children}</div>
+                    <div className="grow py-1">{children}</div>
                     {action &&
                         <div className={`flex items-center justify-end p-2${hideActions ? ' opacity-0 group-hover/table-row:opacity-100' : ''}`}>
                             {action}

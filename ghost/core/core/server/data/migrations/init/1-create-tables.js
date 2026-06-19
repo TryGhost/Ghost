@@ -1,5 +1,6 @@
 const commands = require('../../schema').commands;
 const schema = require('../../schema').tables;
+const views = require('../../schema').views;
 const logging = require('@tryghost/logging');
 const schemaTables = Object.keys(schema);
 const {sequence} = require('@tryghost/promise');
@@ -14,6 +15,19 @@ module.exports.up = async (options) => {
         logging.info('Creating table: ' + table);
         await commands.createTable(table, connection);
     }));
+
+    // Create views after tables exist. View creation is idempotent
+    // (createViewOrReplace) so adding a new view to views.js does not require
+    // a new init script — and crucially, no init script can be added because
+    // that triggers knex-migrator's init() flow on upgrades, which records
+    // all unapplied versioned migrations as applied WITHOUT running them.
+    // Existing installs receive new views via versioned migrations.
+    for (const [name, sql] of Object.entries(views)) {
+        logging.info('Creating view: ' + name);
+        await connection.schema.createViewOrReplace(name, function (view) {
+            view.as(connection.raw(sql));
+        });
+    }
 };
 
 /**

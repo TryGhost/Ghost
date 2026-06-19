@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/types.ts because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 export interface EmailDesignSettings {
     background_color: string;
     title_font_category: string;

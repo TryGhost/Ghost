@@ -9,7 +9,6 @@ const contextualRender = (ui, {appContext, ...renderOptions} = {}) => {
         comments: [],
         openCommentForms: [],
         member: null,
-        pageUrl: 'https://example.com/post',
         commentIdToScrollTo: null,
         t: str => str,
         ...appContext

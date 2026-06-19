@@ -101,8 +101,7 @@ test.describe('Ghost Admin - Members Export', () => {
 
         expect(contentIds).toHaveLength(MEMBERS_FIXTURE.length);
         expect(contentTimestamps).toHaveLength(MEMBERS_FIXTURE.length);
-        expect(suggestedFilename.startsWith('members')).toBe(true);
-        expect(suggestedFilename.endsWith('.csv')).toBe(true);
+        expect(suggestedFilename).toMatch(/ghost\.members\.\d{4}-\d{2}-\d{2}\.csv$/);
     });
 
     test('exports filtered members by label to CSV', async ({page}) => {
@@ -124,7 +123,6 @@ test.describe('Ghost Admin - Members Export', () => {
 
         expect(contentIds).toHaveLength(filteredMembers.length);
         expect(contentTimestamps).toHaveLength(filteredMembers.length);
-        expect(suggestedFilename.startsWith('members')).toBe(true);
-        expect(suggestedFilename.endsWith('.csv')).toBe(true);
+        expect(suggestedFilename).toMatch(/ghost\.members\.\d{4}-\d{2}-\d{2}\.csv$/);
     });
 });

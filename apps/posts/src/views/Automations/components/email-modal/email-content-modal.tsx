@@ -111,7 +111,10 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
         || automatedEmails[0]
     )?.id || '';
 
-    const {formState, saveState, updateForm, setFormState, setErrors, handleSave, okProps, errors, validate} = useForm({
+    // Saving commits whatever the user has — including an empty subject or body — to the
+    // automation draft. Completeness is only enforced when publishing the automation or
+    // sending a test email (see validateForTest below), not when saving a draft.
+    const {formState, saveState, updateForm, setFormState, setErrors, handleSave, okProps, errors, clearError} = useForm({
         initialState: {
             subject: initialSubject || '',
             lexical: initialLexical || ''
@@ -120,9 +123,14 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
         onSave: async (state) => {
             onSave({subject: state.subject, lexical: state.lexical});
         },
-        onSaveError: handleError,
-        onValidate: getEmailValidationErrors
+        onSaveError: handleError
     });
+
+    const validateForTest = useCallback((): boolean => {
+        const newErrors = getEmailValidationErrors(formState);
+        setErrors(newErrors);
+        return Object.values(newErrors).every(error => !error);
+    }, [formState, setErrors]);
     const saveButtonLabel = okProps.label || 'Save';
     const {previewFrameState, enterPreview, exitPreview} = useEmailPreview({
         automatedEmailId: previewAutomatedEmailId,
@@ -149,13 +157,10 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
         }
     }, [isDirty, onClose]);
 
-    // Commit to the automation draft, then close the modal.
-    const handleSaveAndClose = useCallback(async () => {
-        const result = await handleSave({fakeWhenUnchanged: true});
-        if (result) {
-            onClose();
-        }
-    }, [handleSave, onClose]);
+    // Commit to the automation draft. The Close button is the only way out of the modal.
+    const handleSaveClick = useCallback(async () => {
+        await handleSave({fakeWhenUnchanged: true});
+    }, [handleSave]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -174,16 +179,16 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
         };
     }, [showTestDropdown]);
 
-    const handleSaveAndCloseRef = useRef(handleSaveAndClose);
+    const handleSaveClickRef = useRef(handleSaveClick);
     useEffect(() => {
-        handleSaveAndCloseRef.current = handleSaveAndClose;
-    }, [handleSaveAndClose]);
+        handleSaveClickRef.current = handleSaveClick;
+    }, [handleSaveClick]);
 
     useEffect(() => {
         const handleCMDS = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 's') {
                 e.preventDefault();
-                handleSaveAndCloseRef.current();
+                handleSaveClickRef.current();
             }
         };
         window.addEventListener('keydown', handleCMDS);
@@ -263,7 +268,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
                                 <Button variant="outline" onClick={attemptClose}>Close</Button>
                                 <Button
                                     disabled={okProps.disabled}
-                                    onClick={handleSaveAndClose}
+                                    onClick={handleSaveClick}
                                 >
                                     {saveButtonLabel}
                                 </Button>
@@ -290,7 +295,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
                                                     Test
                                                 </Button>
                                                 {showTestDropdown && (
-                                                    <TestEmailDropdown automatedEmailId={previewAutomatedEmailId} lexical={formState.lexical} subject={formState.subject} validateForm={validate} onClose={() => setShowTestDropdown(false)} />
+                                                    <TestEmailDropdown automatedEmailId={previewAutomatedEmailId} lexical={formState.lexical} subject={formState.subject} validateForm={validateForTest} onClose={() => setShowTestDropdown(false)} />
                                                 )}
                                             </div>
                                         </div>
@@ -313,6 +318,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
                                                         const nextSubject = e.target.value;
                                                         setPreviewSubjectOverride(nextSubject);
                                                         updateForm(state => ({...state, subject: nextSubject}));
+                                                        clearError('subject');
                                                     }}
                                                 />
                                                 {errors.subject && <span className='mt-2 block text-xs text-destructive'>{errors.subject}</span>}
@@ -339,7 +345,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
                                 >
                                     <EmailEditor
                                         className='automation-email-editor'
-                                        placeholder='Write your email content...'
+                                        placeholder='Begin writing your email...'
                                         value={formState.lexical}
                                         onChange={handleEditorChange}
                                     />

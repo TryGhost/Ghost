@@ -8,7 +8,7 @@ const {anyContentVersion, anyEtag, anyISODateTimeWithTZ, anyString} = matchers;
 describe('Search Index Content API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('posts', 'api_keys');
         await agent.authenticate();

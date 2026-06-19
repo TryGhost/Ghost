@@ -48,10 +48,6 @@ const features: Feature[] = [{
     description: 'Enable theme translation using i18next instead of the old translation package.',
     flag: 'themeTranslation'
 }, {
-    title: 'IndexNow',
-    description: 'Automatically notify search engines when content is published or updated for faster indexing.',
-    flag: 'indexnow'
-}, {
     title: 'Featurebase Feedback',
     description: 'Display a Feedback menu item in the admin sidebar. Requires the new admin experience.',
     flag: 'featurebaseFeedback'
@@ -71,6 +67,10 @@ const features: Feature[] = [{
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
+}, {
+    title: 'Gift links',
+    description: 'Tokenized links that let anyone read a single gated post or page in full, no account required',
+    flag: 'giftLinks'
 }, {
     title: 'Navigation icons & visibility',
     description: 'Add icons and member-visibility controls to navigation menu items. Requires theme support to render icons.',

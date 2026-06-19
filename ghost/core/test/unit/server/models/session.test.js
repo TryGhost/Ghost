@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
+const {Session} = require('../../../../core/server/models/session');
+const Base = require('../../../../core/server/models/base');
 
 describe('Unit: models/session', function () {
     afterEach(function () {
@@ -9,7 +10,7 @@ describe('Unit: models/session', function () {
 
     describe('parse', function () {
         const parse = function parse(attrs) {
-            return new models.Session().parse(attrs);
+            return new Session().parse(attrs);
         };
 
         it('converts session_data to an object', function () {
@@ -27,7 +28,7 @@ describe('Unit: models/session', function () {
 
     describe('format', function () {
         const format = function format(attrs) {
-            return new models.Session().format(attrs);
+            return new Session().format(attrs);
         };
 
         it('converts session_data to a string', function () {
@@ -55,7 +56,7 @@ describe('Unit: models/session', function () {
 
     describe('user', function () {
         it('sets up the relation to the "User" model', function () {
-            const model = models.Session.forge({});
+            const model = Session.forge({});
             const belongsToSpy = sinon.spy(model, 'belongsTo');
             model.user();
 
@@ -69,32 +70,32 @@ describe('Unit: models/session', function () {
 
         beforeEach(function () {
             basePermittedOptionsReturnVal = ['super', 'doopa'];
-            basePermittedOptionsStub = sinon.stub(models.Base.Model, 'permittedOptions')
+            basePermittedOptionsStub = sinon.stub(Base.Model, 'permittedOptions')
                 .returns(basePermittedOptionsReturnVal);
         });
 
         it('passes the methodName and the context to the base permittedOptions method', function () {
             const methodName = 'methodName';
-            models.Session.permittedOptions(methodName);
+            Session.permittedOptions(methodName);
 
             assert.equal(basePermittedOptionsStub.args[0][0], methodName);
-            assert.equal(basePermittedOptionsStub.thisValues[0], models.Session);
+            assert.equal(basePermittedOptionsStub.thisValues[0], Session);
         });
 
         it('returns the base permittedOptions result', function () {
-            const returnedOptions = models.Session.permittedOptions();
+            const returnedOptions = Session.permittedOptions();
 
             assert.deepEqual(returnedOptions, basePermittedOptionsReturnVal);
         });
 
         it('returns the base permittedOptions result plus "session_id" when methodName is upsert', function () {
-            const returnedOptions = models.Session.permittedOptions('upsert');
+            const returnedOptions = Session.permittedOptions('upsert');
 
             assert.deepEqual(returnedOptions, basePermittedOptionsReturnVal.concat('session_id'));
         });
 
         it('returns the base permittedOptions result plus "session_id" when methodName is destroy', function () {
-            const returnedOptions = models.Session.permittedOptions('destroy');
+            const returnedOptions = Session.permittedOptions('destroy');
 
             assert.deepEqual(returnedOptions, basePermittedOptionsReturnVal.concat('session_id'));
         });
@@ -103,32 +104,32 @@ describe('Unit: models/session', function () {
     describe('destroy', function () {
         it('calls and returns the Base Model destroy if an id is passed', function () {
             const baseDestroyReturnVal = {};
-            const baseDestroyStub = sinon.stub(models.Base.Model, 'destroy')
+            const baseDestroyStub = sinon.stub(Base.Model, 'destroy')
                 .returns(baseDestroyReturnVal);
 
             const options = {id: 1};
-            const returnVal = models.Session.destroy(options);
+            const returnVal = Session.destroy(options);
 
             assert.equal(baseDestroyStub.args[0][0], options);
             assert.equal(returnVal, baseDestroyReturnVal);
         });
 
         it('calls forge with the session_id, fetchs with the filtered options and then destroys with the options', async function () {
-            const model = models.Session.forge({});
+            const model = Session.forge({});
             const session_id = 23;
             const unfilteredOptions = {session_id};
             const filteredOptions = {session_id};
 
-            const filterOptionsStub = sinon.stub(models.Session, 'filterOptions')
+            const filterOptionsStub = sinon.stub(Session, 'filterOptions')
                 .returns(filteredOptions);
-            const forgeStub = sinon.stub(models.Session, 'forge')
+            const forgeStub = sinon.stub(Session, 'forge')
                 .returns(model);
             const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(model);
             const destroyStub = sinon.stub(model, 'destroy')
                 .resolves();
 
-            await models.Session.destroy(unfilteredOptions);
+            await Session.destroy(unfilteredOptions);
 
             assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
             assert.equal(filterOptionsStub.args[0][1], 'destroy');
@@ -151,15 +152,15 @@ describe('Unit: models/session', function () {
                 }
             };
 
-            const filterOptionsStub = sinon.stub(models.Session, 'filterOptions')
+            const filterOptionsStub = sinon.stub(Session, 'filterOptions')
                 .returns(filteredOptions);
 
-            const findOneStub = sinon.stub(models.Session, 'findOne')
+            const findOneStub = sinon.stub(Session, 'findOne')
                 .resolves();
 
-            const addStub = sinon.stub(models.Session, 'add');
+            const addStub = sinon.stub(Session, 'add');
 
-            await models.Session.upsert(data, unfilteredOptions);
+            await Session.upsert(data, unfilteredOptions);
 
             assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
             assert.equal(filterOptionsStub.args[0][1], 'upsert');
@@ -179,7 +180,7 @@ describe('Unit: models/session', function () {
         });
 
         it('calls findOne and then edit if findOne results in nothing', async function () {
-            const model = models.Session.forge({id: 2});
+            const model = Session.forge({id: 2});
             const session_id = 314;
             const unfilteredOptions = {session_id};
             const filteredOptions = {session_id};
@@ -189,15 +190,15 @@ describe('Unit: models/session', function () {
                 }
             };
 
-            const filterOptionsStub = sinon.stub(models.Session, 'filterOptions')
+            const filterOptionsStub = sinon.stub(Session, 'filterOptions')
                 .returns(filteredOptions);
 
-            const findOneStub = sinon.stub(models.Session, 'findOne')
+            const findOneStub = sinon.stub(Session, 'findOne')
                 .resolves(model);
 
-            const editStub = sinon.stub(models.Session, 'edit');
+            const editStub = sinon.stub(Session, 'edit');
 
-            await models.Session.upsert(data, unfilteredOptions);
+            await Session.upsert(data, unfilteredOptions);
 
             assert.equal(filterOptionsStub.args[0][0], unfilteredOptions);
             assert.equal(filterOptionsStub.args[0][1], 'upsert');

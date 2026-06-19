@@ -141,24 +141,30 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     onDestroyed: function onDestroyed(model, options) {
-        ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
 
         model.emitChange('deleted', options);
         model.emitChange(model._previousAttributes.key + '.' + 'deleted', options);
+
+        return result;
     },
 
     onCreated: function onCreated(model, options) {
-        ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
         model.emitChange('added', options);
         model.emitChange(model.attributes.key + '.' + 'added', options);
+
+        return result;
     },
 
     onUpdated: function onUpdated(model, options) {
-        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
 
         model.emitChange('edited', options);
         model.emitChange(model.attributes.key + '.' + 'edited', options);
+
+        return result;
     },
 
     async onValidate(model, attr, options) {
@@ -355,7 +361,7 @@ Settings = ghostBookshelf.Model.extend({
     },
 
     validators: {
-        async all(model) {
+        all(model) {
             const settingName = model.get('key');
             const settingDefault = getDefaultSettings()[settingName];
 
@@ -375,7 +381,7 @@ Settings = ghostBookshelf.Model.extend({
                 throw new errors.ValidationError({message: validationErrors.join('\n')});
             }
         },
-        async labs(model) {
+        labs(model) {
             const flags = JSON.parse(model.get('value'));
 
             for (const flag in flags) {
@@ -386,7 +392,7 @@ Settings = ghostBookshelf.Model.extend({
                 }
             }
         },
-        async stripe_plans(model, options) {
+        stripe_plans(model, options) {
             const plans = JSON.parse(model.get('value'));
             for (const plan of plans) {
                 // Stripe plans used to be allowed (and defaulted to!) 0 amount plans
@@ -423,7 +429,7 @@ Settings = ghostBookshelf.Model.extend({
         },
         // @TODO: Maybe move some of the logic into the members service, exporting an isValidStripeKey
         // method which can be called here, cleaning up the duplication, but not removing control
-        async stripe_secret_key(model) {
+        stripe_secret_key(model) {
             const value = model.get('value');
             if (value === null) {
                 return;
@@ -437,7 +443,7 @@ Settings = ghostBookshelf.Model.extend({
                 });
             }
         },
-        async stripe_publishable_key(model) {
+        stripe_publishable_key(model) {
             const value = model.get('value');
             if (value === null) {
                 return;
@@ -451,7 +457,7 @@ Settings = ghostBookshelf.Model.extend({
                 });
             }
         },
-        async stripe_connect_secret_key(model) {
+        stripe_connect_secret_key(model) {
             const value = model.get('value');
             if (value === null) {
                 return;
@@ -465,7 +471,7 @@ Settings = ghostBookshelf.Model.extend({
                 });
             }
         },
-        async stripe_connect_publishable_key(model) {
+        stripe_connect_publishable_key(model) {
             const value = model.get('value');
             if (value === null) {
                 return;

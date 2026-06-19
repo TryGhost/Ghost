@@ -7,7 +7,7 @@ const {
     dbUtils,
     matchers
 } = require('../../utils/e2e-framework');
-const {anyEtag, anyErrorId, anyObjectId, anyISODateTime, anyUuid, anyNumber, anyBoolean, anyString, nullable} = matchers;
+const {anyEtag, anyErrorId, anyObjectId, anyISODateTime, anyUuid, anyNumber, anyBoolean, anyString, nullable, stringMatching} = matchers;
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');
 const security = require('@tryghost/security');
@@ -109,7 +109,7 @@ async function getMemberComments(url, commentsMatcher = [membersCommentMatcher])
 }
 
 describe(`Admin Comments API`, function () {
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsForMembers();
         adminApi = agents.adminAgent;
         membersApi = agents.membersAgent;
@@ -135,7 +135,7 @@ describe(`Admin Comments API`, function () {
         mockManager.mockLabsEnabled('commentsPinning');
     });
 
-    after(function () {
+    afterAll(function () {
         mockManager.restore();
     });
 
@@ -154,7 +154,7 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            assert.equal(res.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/`);
+            assert.equal(res.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/, /api/members/comments/${commentToHide.id}/`);
 
             const {body: {comments: [afterHiding]}} = await getMemberComments(`/api/comments/${commentToHide.id}/`);
 
@@ -182,7 +182,7 @@ describe(`Admin Comments API`, function () {
 
             assert.equal(
                 res.headers['x-cache-invalidate'],
-                `/api/members/comments/post/${postId}/, /api/members/comments/${parent.id}/replies/`
+                `/api/members/comments/post/${postId}/, /api/members/comments/${parent.id}/replies/, /api/members/comments/${commentToHide.id}/`
             );
 
             const {body: {comments: [afterHiding]}} = await getMemberComments(`/api/comments/${commentToHide.id}/`);
@@ -202,7 +202,7 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            assert.equal(pinRes.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/`);
+            assert.equal(pinRes.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/, /api/members/comments/${commentToPin.id}/`);
             assert.equal(pinRes.body.comments[0].pinned, true);
 
             const pinnedComment = await models.Comment.findOne({id: commentToPin.id});
@@ -226,7 +226,7 @@ describe(`Admin Comments API`, function () {
                 }]
             });
 
-            assert.equal(unpinRes.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/`);
+            assert.equal(unpinRes.headers['x-cache-invalidate'], `/api/members/comments/post/${postId}/, /api/members/comments/${commentToPin.id}/`);
             assert.equal(unpinRes.body.comments[0].pinned, false);
 
             const unpinnedComment = await models.Comment.findOne({id: commentToPin.id});
@@ -1161,7 +1161,7 @@ describe(`Admin Comments API`, function () {
     describe('Logged in member gets own likes via admin api', function () {
         let comment;
         let post;
-        this.beforeEach(async function () {
+        beforeEach(async function () {
             post = fixtureManager.get('posts', 1);
             comment = await dbFns.addComment({
                 post_id: post.id,
@@ -1173,7 +1173,10 @@ describe(`Admin Comments API`, function () {
                 .post(`/api/comments/${comment.get('id')}/like/`)
                 .expectStatus(204)
                 .matchHeaderSnapshot({
-                    etag: anyEtag
+                    etag: anyEtag,
+                    'x-cache-invalidate': stringMatching(
+                        new RegExp('/api/members/comments/post/[0-9a-f]{24}/, /api/members/comments/[0-9a-f]{24}/$')
+                    )
                 })
                 .expectEmptyBody();
         });
@@ -2346,7 +2349,7 @@ describe(`Admin Comments API`, function () {
         let restrictedApiKeyId;
         let restrictedApiKeySecret;
 
-        before(async function () {
+        beforeAll(async function () {
             // Create a role with NO comment permissions for testing
             const roleId = ObjectId().toHexString();
             await db.knex('roles').insert({

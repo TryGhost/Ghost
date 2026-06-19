@@ -16,7 +16,7 @@ describe('Process Outbox Job', function () {
     let jobService;
     let defaultEmailDesignSettingId;
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost();
         jobService = require('../../../core/server/services/jobs/job-service');
         defaultEmailDesignSettingId = await db.knex('email_design_settings')

@@ -1,9 +1,8 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const configUtils = require('../../../../../utils/config-utils');
 
-let cors = rewire('../../../../../../core/server/web/members/middleware/cors');
+const cors = require('../../../../../../core/server/web/members/middleware/cors');
 
 describe('members cors middleware', function () {
     let res;
@@ -36,7 +35,6 @@ describe('members cors middleware', function () {
     afterEach(async function () {
         sinon.restore();
         await configUtils.restore();
-        cors = rewire('../../../../../../core/server/web/members/middleware/cors');
     });
 
     it('should return wildcard without a request origin header', function () {

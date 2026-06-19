@@ -163,9 +163,7 @@ export function MappingStep({
                         <div className="mt-5">
                             <label className="mb-1 block text-sm font-semibold">Label these members</label>
                             <LabelPicker
-                                canCreateFromSearch={labelPicker.canCreateFromSearch}
                                 isCreating={labelPicker.isCreating}
-                                isDuplicateName={labelPicker.isDuplicateName}
                                 labels={labelPicker.labels}
                                 optionSource={labelPicker.optionSource}
                                 resolvedSelectedLabels={labelPicker.resolvedSelectedLabels}

@@ -3,9 +3,9 @@ const path = require('path');
 const debug = require('@tryghost/debug')('web:shared:mw:url-redirects');
 const urlUtils = require('../../../../shared/url-utils');
 
-const _private = {};
+const urlRedirects = {};
 
-_private.redirectUrl = ({redirectTo, query, pathname}) => {
+urlRedirects.redirectUrl = ({redirectTo, query, pathname}) => {
     const parts = url.parse(redirectTo);
 
     // CASE: ensure we always add a trailing slash to reduce the number of redirects
@@ -30,7 +30,7 @@ _private.redirectUrl = ({redirectTo, query, pathname}) => {
  * 1. required SSL redirects
  * 2. redirect to the correct admin url
  */
-_private.getAdminRedirectUrl = ({requestedHost, requestedUrl, queryParameters, secure}) => {
+urlRedirects.getAdminRedirectUrl = ({requestedHost, requestedUrl, queryParameters, secure}) => {
     const siteUrl = urlUtils.urlFor('home', true);
     const adminUrl = urlUtils.urlFor('admin', true);
     const siteHost = url.parse(siteUrl).host;
@@ -46,7 +46,7 @@ _private.getAdminRedirectUrl = ({requestedHost, requestedUrl, queryParameters, s
         adminHost !== requestedHost) {
         debug('redirect because admin host does not match');
 
-        return _private.redirectUrl({
+        return urlRedirects.redirectUrl({
             redirectTo: adminUrl,
             pathname: requestedUrl,
             query: queryParameters
@@ -57,7 +57,7 @@ _private.getAdminRedirectUrl = ({requestedHost, requestedUrl, queryParameters, s
     if (urlUtils.isSSL(adminUrl) && !secure) {
         debug('redirect because protocol does not match');
 
-        return _private.redirectUrl({
+        return urlRedirects.redirectUrl({
             redirectTo: adminUrl,
             pathname: requestedUrl,
             query: queryParameters
@@ -70,7 +70,7 @@ _private.getAdminRedirectUrl = ({requestedHost, requestedUrl, queryParameters, s
  *
  * 1. required SSL redirects
  */
-_private.getFrontendRedirectUrl = ({requestedHost, requestedUrl, queryParameters, secure}) => {
+urlRedirects.getFrontendRedirectUrl = ({requestedHost, requestedUrl, queryParameters, secure}) => {
     const siteUrl = urlUtils.urlFor('home', true);
 
     debug('getFrontendRedirectUrl', requestedHost, requestedUrl, siteUrl);
@@ -79,7 +79,7 @@ _private.getFrontendRedirectUrl = ({requestedHost, requestedUrl, queryParameters
     if (urlUtils.isSSL(siteUrl) && !secure) {
         debug('redirect because protocol does not match');
 
-        return _private.redirectUrl({
+        return urlRedirects.redirectUrl({
             redirectTo: `https://${requestedHost}`,
             pathname: requestedUrl,
             query: queryParameters
@@ -87,7 +87,7 @@ _private.getFrontendRedirectUrl = ({requestedHost, requestedUrl, queryParameters
     }
 };
 
-_private.redirect = function urlRedirectsRedirect(req, res, next, redirectFn) {
+urlRedirects.redirect = function urlRedirectsRedirect(req, res, next, redirectFn) {
     const redirectUrl = redirectFn({
         requestedHost: req.vhost ? req.vhost.host : req.get('host'),
         requestedUrl: url.parse(req.originalUrl || req.url).pathname,
@@ -105,12 +105,14 @@ _private.redirect = function urlRedirectsRedirect(req, res, next, redirectFn) {
 };
 
 const frontendRedirect = function frontendRedirect(req, res, next) {
-    _private.redirect(req, res, next, _private.getFrontendRedirectUrl);
+    urlRedirects.redirect(req, res, next, urlRedirects.getFrontendRedirectUrl);
 };
 
 const adminRedirect = function adminRedirect(req, res, next) {
-    _private.redirect(req, res, next, _private.getAdminRedirectUrl);
+    urlRedirects.redirect(req, res, next, urlRedirects.getAdminRedirectUrl);
 };
 
-module.exports.frontendSSLRedirect = frontendRedirect;
-module.exports.adminSSLAndHostRedirect = adminRedirect;
+urlRedirects.frontendSSLRedirect = frontendRedirect;
+urlRedirects.adminSSLAndHostRedirect = adminRedirect;
+
+module.exports = urlRedirects;

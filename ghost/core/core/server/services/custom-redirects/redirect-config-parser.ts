@@ -131,11 +131,13 @@ export const serializeToYaml = (redirects: RedirectConfig[]): string => {
 // Section headers are emitted by hand because js-yaml quotes
 // numeric-string keys (`"301":`), diverging from the unquoted form
 // every existing redirects.yaml file ships with. Pairs go through
-// js-yaml so block scalars and special-char escaping stay correct.
+// js-yaml so special-char escaping stays correct. lineWidth: -1
+// disables line folding so long URLs aren't rewritten into `>-`
+// block scalars the user never authored.
 const formatSection = (statusCode: '301' | '302', redirects: RedirectConfig[]): string => {
     const lines = [`${statusCode}:`];
     for (const redirect of redirects) {
-        const pair = yaml.dump({[redirect.from]: redirect.to});
+        const pair = yaml.dump({[redirect.from]: redirect.to}, {lineWidth: -1});
         for (const line of pair.split('\n')) {
             if (line === '') {
                 continue;

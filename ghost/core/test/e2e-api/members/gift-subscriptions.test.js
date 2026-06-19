@@ -115,7 +115,7 @@ async function expectGiftCheckoutError(bodyOverrides = {}) {
 }
 
 describe('Gift Subscriptions', function () {
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsForMembers();
 
         membersAgent = agents.membersAgent;
@@ -733,6 +733,8 @@ describe('Gift Subscriptions', function () {
         describe('Anonymous visitor (gift redemption via magic link)', function () {
             describe('New member', function () {
                 it('signs up and redeems a gift during magic link confirmation', async function () {
+                    mockManager.mockLabsDisabled('automations');
+
                     const email = 'gift-redemption-member@test.com';
                     const gift = await createGift();
                     const originalWelcomePageUrl = paidProduct.get('welcome_page_url');
@@ -863,6 +865,8 @@ describe('Gift Subscriptions', function () {
 
             describe('Existing member', function () {
                 it('signs in and redeems a gift during magic link confirmation', async function () {
+                    mockManager.mockLabsDisabled('automations');
+
                     const email = 'gift-existing-member@test.com';
 
                     // Create member first
@@ -1162,6 +1166,8 @@ describe('Gift Subscriptions', function () {
         });
 
         it('does not enqueue a second paid welcome email when a gift member upgrades to paid', async function () {
+            mockManager.mockLabsDisabled('automations');
+
             const {member, gift} = await setupGiftMember({cadence: 'month', consumesInDays: 30});
 
             let paidWelcomeAutomation;

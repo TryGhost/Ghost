@@ -6,7 +6,7 @@ import Layout from '@src/components/layout/layout';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
 import React, {useEffect, useRef, useState} from 'react';
 import ShowRepliesButton from '@src/components/global/show-replies-button';
-import getUsername from '@src/utils/get-username';
+import getHandle from '@src/utils/get-handle';
 import {Activity} from '@tryghost/admin-x-framework/api/activitypub';
 import {EmptyViewIcon, EmptyViewIndicator} from '@src/components/global/empty-view-indicator';
 import {LoadingIndicator, Skeleton} from '@tryghost/shade/components';
@@ -206,7 +206,7 @@ const Note = () => {
                                             <span className='min-w-0 truncate font-semibold whitespace-nowrap hover:underline'>{currentPost.actor.name}</span>
                                         </div>
                                         <div className='flex w-full'>
-                                            <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getUsername(currentPost.actor)}</span>
+                                            <span className='truncate text-gray-700 after:mx-1 after:font-normal after:text-gray-700 after:content-["·"]'>{getHandle(currentPost.actor)}</span>
                                             <span className='text-gray-700'>{renderTimestamp(object, !object.authored)}</span>
                                         </div>
                                     </div>

@@ -3,8 +3,8 @@ import ActivityItem from '@src/components/activities/activity-item';
 import FollowButton from '@src/components/global/follow-button';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
 import React, {useEffect, useRef} from 'react';
+import getHandle from '@src/utils/get-handle';
 import getName from '@src/utils/get-name';
-import getUsername from '@src/utils/get-username';
 import {Actor} from '@src/api/activitypub';
 import {Button, LoadingIndicator, NoValueLabel, NoValueLabelIcon} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
@@ -70,7 +70,7 @@ const ActorList: React.FC<ActorListProps> = ({
                 ) : (
                     <div className='flex flex-col'>
                         {actors.map(({actor, isFollowing, blockedByMe, domainBlockedByMe}) => {
-                            const actorHandle = actor.handle || getUsername(actor);
+                            const actorHandle = getHandle(actor);
                             const isCurrentUser = actorHandle === currentUser?.handle;
 
                             return (

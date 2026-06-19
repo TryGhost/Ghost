@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/design-fields/index.ts because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 export {BackgroundColorField} from './background-color-field';
 export {BodyFontField} from './body-font-field';
 export {ButtonColorField} from './button-color-field';
