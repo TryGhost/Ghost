@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const security = require('@tryghost/security');
-const models = require('../../../../../core/server/models');
+const Base = require('../../../../../core/server/models/base');
 const urlUtils = require('../../../../../core/shared/url-utils');
 const testUtils = require('../../../../utils');
 
@@ -29,7 +29,7 @@ describe('Models: base', function () {
             Model.findOne.resolves(false);
             securityStringSafeStub.withArgs('My-Slug').returns('my-slug');
 
-            return models.Base.Model.generateSlug(Model, 'My-Slug', options)
+            return Base.Model.generateSlug(Model, 'My-Slug', options)
                 .then((slug) => {
                     assert.equal(slug, 'my-slug');
                 });
@@ -47,7 +47,7 @@ describe('Models: base', function () {
 
             securityStringSafeStub.withArgs('My-Slug').returns('my-slug');
 
-            return models.Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'incorrect-model-id'})
+            return Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'incorrect-model-id'})
                 .then((slug) => {
                     assert.equal(slug, 'my-slug-2');
                 });
@@ -65,7 +65,7 @@ describe('Models: base', function () {
 
             securityStringSafeStub.withArgs('My-Slug').returns('my-slug');
 
-            return models.Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'correct-model-id'})
+            return Base.Model.generateSlug(Model, 'My-Slug', {modelId: 'correct-model-id'})
                 .then((slug) => {
                     assert.equal(slug, 'my-slug');
                 });
@@ -83,7 +83,7 @@ describe('Models: base', function () {
 
             securityStringSafeStub.withArgs('My-Slug').returns('my-slug');
 
-            return models.Base.Model.generateSlug(Model, 'My-Slug', options)
+            return Base.Model.generateSlug(Model, 'My-Slug', options)
                 .then((slug) => {
                     assert.equal(slug, 'my-slug-2');
                 });
@@ -95,7 +95,7 @@ describe('Models: base', function () {
 
             securityStringSafeStub.withArgs(slug).returns(slug);
 
-            return models.Base.Model.generateSlug(Model, slug, options)
+            return Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
                     assert.equal(generatedSlug, 'a'.repeat(185));
                 });
@@ -107,7 +107,7 @@ describe('Models: base', function () {
 
             securityStringSafeStub.withArgs(slug).returns(slug);
 
-            return models.Base.Model.generateSlug(Model, slug, options)
+            return Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
                     assert.equal(generatedSlug, 'upsi-tableName');
                 });
@@ -123,7 +123,7 @@ describe('Models: base', function () {
 
             securityStringSafeStub.withArgs(slug).returns(slug);
 
-            return models.Base.Model.generateSlug(Model, slug, options)
+            return Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
                     assert.equal(generatedSlug, 'hash-#lul');
                 });
@@ -133,7 +133,7 @@ describe('Models: base', function () {
             Model.findOne.resolves(false);
             securityStringSafeStub.withArgs('abc\u0008').returns('abc');
 
-            return models.Base.Model.generateSlug(Model, 'abc\u0008', options)
+            return Base.Model.generateSlug(Model, 'abc\u0008', options)
                 .then((slug) => {
                     assert.equal(slug, 'abc');
                 });
@@ -145,7 +145,7 @@ describe('Models: base', function () {
             const data = testUtils.DataGenerator.forKnex.createPost({updated_at: '0000-00-00 00:00:00'});
 
             try {
-                models.Base.Model.sanitizeData
+                Base.Model.sanitizeData
                     .bind({prototype: {tableName: 'posts'}})(data);
             } catch (err) {
                 assert.equal(err.code, 'DATE_INVALID');
@@ -157,7 +157,7 @@ describe('Models: base', function () {
 
             assert.equal(typeof data.updated_at, 'string');
 
-            models.Base.Model.sanitizeData
+            Base.Model.sanitizeData
                 .bind({prototype: {tableName: 'posts'}})(data);
 
             assert(data.updated_at instanceof Date);
@@ -168,7 +168,7 @@ describe('Models: base', function () {
 
             assert(data.updated_at instanceof Date);
 
-            models.Base.Model.sanitizeData
+            Base.Model.sanitizeData
                 .bind({prototype: {tableName: 'posts'}})(data);
 
             assert(data.updated_at instanceof Date);
@@ -184,7 +184,7 @@ describe('Models: base', function () {
 
             assert.equal(typeof data.authors[0].updated_at, 'string');
 
-            models.Base.Model.sanitizeData
+            Base.Model.sanitizeData
                 .bind({
                     prototype: {
                         tableName: 'posts',
@@ -200,7 +200,7 @@ describe('Models: base', function () {
 
     describe('setEmptyValuesToNull', function () {
         it('resets given empty value to null', function () {
-            const base = models.Base.Model.forge({a: '', b: ''});
+            const base = Base.Model.forge({a: '', b: ''});
 
             base.getNullableStringProperties = sinon.stub();
             base.getNullableStringProperties.returns(['a']);
