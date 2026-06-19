@@ -260,6 +260,35 @@ describe('Settings API', function () {
             emailMockReceiver.assertSentEmailCount(0);
         });
 
+        it('can disable llms_enabled', async function () {
+            try {
+                await agent.put('settings/')
+                    .body({
+                        settings: [{key: 'llms_enabled', value: false}]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                    })
+                    .matchHeaderSnapshot({
+                        etag: anyEtag,
+                        // Special rule for this test, as the labs setting changes a lot
+                        'content-length': anyContentLength,
+                        'content-version': anyContentVersion
+                    })
+                    .expect(({body}) => {
+                        const llmsEnabled = body.settings.find(setting => setting.key === 'llms_enabled');
+                        assert.equal(llmsEnabled.value, false);
+                    });
+
+                assert.equal(settingsCache.get('llms_enabled'), false);
+                emailMockReceiver.assertSentEmailCount(0);
+            } finally {
+                // Restore so later tests see the default value
+                await models.Settings.edit({key: 'llms_enabled', value: true});
+            }
+        });
+
         it('does not trigger email verification flow if members_support_address remains the same', async function () {
             await models.Settings.edit({
                 key: 'members_support_address',
