@@ -1,5 +1,6 @@
 import {InfiniteData} from '@tanstack/react-query';
 import {Meta, createInfiniteQuery, createQuery, createQueryWithId, createMutation} from '../utils/api/hooks';
+import {insertToQueryCache} from '../utils/api/update-queries';
 
 export type Email = {
     opened_count: number;
@@ -9,12 +10,17 @@ export type Email = {
 
 export type Post = {
     id: string;
+    authors?: {id: string}[];
     url: string;
     slug: string;
+    lexical?: string;
     title: string;
+    type?: string;
     visibility?: string;
     uuid: string;
+    tags?: unknown[];
     feature_image?: string;
+    post_revisions?: unknown[];
     count?: {
         clicks?: number;
         positive_feedback?: number;
@@ -73,6 +79,17 @@ export const useBrowsePostsInfinite = createInfiniteQuery<PostsResponseType & {i
 export const getPost = createQueryWithId<PostsResponseType>({
     dataType,
     path: id => `/posts/${id}/`
+});
+
+export const useAddPost = createMutation<PostsResponseType, Partial<Post>>({
+    method: 'POST',
+    path: () => '/posts/',
+    body: post => ({posts: [post]}),
+    updateQueries: {
+        dataType,
+        emberUpdateType: 'createOrUpdate',
+        update: insertToQueryCache('posts')
+    }
 });
 
 export const useDeletePost = createMutation<unknown, string>({

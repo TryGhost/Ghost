@@ -1,7 +1,8 @@
-import {Button, EmptyIndicator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@tryghost/shade/components";
+import {Button, EmptyIndicator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow, toast} from "@tryghost/shade/components";
 import {ListPage} from "@tryghost/shade/page-templates";
 import {PageHeader} from "@tryghost/shade/patterns";
 import {LucideIcon} from "@tryghost/shade/utils";
+import {useAddPost, type Post} from "@tryghost/admin-x-framework/api/posts";
 import {useCallback, useState} from "react";
 import {findAll, type LocalRevision} from "./local-revisions";
 
@@ -17,6 +18,10 @@ const RELATIVE_TIME_UNITS = [
 
 function asString(value: unknown): string {
     return typeof value === "string" ? value : "";
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
 function getRevisionTitle(revision: LocalRevision): string {
@@ -76,11 +81,57 @@ function getRevisionDate(timestamp: unknown): Date | null {
     return date;
 }
 
+function getRelationReferences(value: unknown): {id: string}[] | undefined {
+    if (!Array.isArray(value)) {
+        return undefined;
+    }
+
+    const relations = value.flatMap((item) => {
+        if (isRecord(item) && typeof item.id === "string") {
+            return [{id: item.id}];
+        }
+
+        return [];
+    });
+
+    return relations.length > 0 ? relations : undefined;
+}
+
+function getRevisionTags(value: unknown): unknown[] | undefined {
+    return Array.isArray(value) ? value : undefined;
+}
+
+function getRestoredPost(revision: LocalRevision): Partial<Post> {
+    const slug = asString(revision.slug);
+
+    return {
+        authors: getRelationReferences(revision.authors),
+        lexical: asString(revision.lexical),
+        post_revisions: [],
+        ...(slug ? {slug} : {}),
+        status: "draft",
+        tags: getRevisionTags(revision.tags),
+        title: `(Restored) ${getRevisionTitle(revision)}`,
+        type: asString(revision.type) || "post"
+    };
+}
+
 export default function RestoreRoute() {
     const [revisions] = useState(() => findAll());
-    const handleRestore = useCallback((revision: LocalRevision) => {
-        console.log("Restore revision", revision);
-    }, []);
+    const [restoringRevisionKey, setRestoringRevisionKey] = useState<string | null>(null);
+    const addPost = useAddPost();
+    const handleRestore = useCallback(async (revision: LocalRevision) => {
+        setRestoringRevisionKey(revision.key);
+
+        try {
+            await addPost.mutateAsync(getRestoredPost(revision));
+            toast.success("Post restored successfully");
+        } catch {
+            toast.error("Failed to restore post");
+        } finally {
+            setRestoringRevisionKey(null);
+        }
+    }, [addPost]);
 
     return (
         <div className="size-full">
@@ -112,6 +163,8 @@ export default function RestoreRoute() {
                                         </TableHeader>
                                         <TableBody>
                                             {revisions.map((revision) => {
+                                                const isRestoring = restoringRevisionKey === revision.key;
+
                                                 return (
                                                     <TableRow
                                                         key={revision.key}
@@ -136,14 +189,18 @@ export default function RestoreRoute() {
                                                         <TableCell className="p-0 text-right sm:p-4">
                                                             <Button
                                                                 data-test-id="restore-post-button"
+                                                                disabled={isRestoring}
                                                                 onClick={() => {
-                                                                    handleRestore(revision);
+                                                                    void handleRestore(revision);
                                                                 }}
                                                                 size="sm"
                                                                 type="button"
                                                                 variant="outline"
                                                             >
-                                                                Restore
+                                                                {isRestoring && (
+                                                                    <LucideIcon.Loader2 aria-hidden="true" className="mr-2 size-4 animate-spin" />
+                                                                )}
+                                                                {isRestoring ? "Restoring" : "Restore"}
                                                             </Button>
                                                         </TableCell>
                                                     </TableRow>

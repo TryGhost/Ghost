@@ -83,6 +83,17 @@ describe('Unit: Service: state-bridge', function () {
             expect(store.pushPayload.calledWith('integration', response)).to.be.true;
         });
 
+        it('pushes post data to store', function () {
+            const response = {posts: [{id: '1', title: 'Restored post'}]};
+
+            run(() => {
+                service.onUpdate('PostsResponseType', response);
+            });
+
+            expect(store.pushPayload.calledOnce).to.be.true;
+            expect(store.pushPayload.calledWith('post', response)).to.be.true;
+        });
+
         it('pushes data to store for settings (singleton)', function () {
             const response = {
                 settings: [

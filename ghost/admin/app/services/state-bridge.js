@@ -16,6 +16,7 @@ const emberDataTypeMapping = {
     MembersResponseType: null, // members only exist in React admin
     OffersResponseType: {type: 'offer'},
     NewslettersResponseType: {type: 'newsletter'},
+    PostsResponseType: {type: 'post'},
     RecommendationResponseType: {type: 'recommendation'},
     SettingsResponseType: {type: 'setting', singleton: true},
     ThemesResponseType: {type: 'theme'},
