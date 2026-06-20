@@ -111,6 +111,12 @@ const _startGhost = async (options) => {
     // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
     adapterManager.clearCache();
 
+    // Reset the image-size cache. core/server/lib/image captures its cache adapter
+    // at module load and never refreshes it, so under the shared boot (isolate:false)
+    // a prior file's probe result leaks into this one (e.g. resizing email-preview
+    // images that should stay un-resized). Clear it so each boot probes fresh. (PLA-173)
+    require('../../core/server/lib/image').cachedImageSizeFromUrl.cache.reset();
+
     // Reset the settings cache and disable listeners so they don't get triggered further
     settingsService.reset();
 
