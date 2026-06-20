@@ -6,7 +6,7 @@
 // calls — those rules guard against accidental top-level hooks in mocha
 // test files, but vitest setup files are *meant* to register global hooks
 // at the top level. Disable for this file only.
-/* eslint-disable ghost/mocha/no-top-level-hooks, ghost/mocha/no-sibling-hooks, ghost/mocha/handle-done-callback */
+/* eslint-disable ghost/mocha/no-top-level-hooks, ghost/mocha/handle-done-callback */
 
 import chalk from 'chalk';
 import {beforeAll, beforeEach, afterEach, afterAll} from 'vitest';
