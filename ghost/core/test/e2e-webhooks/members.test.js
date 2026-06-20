@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, dbUtils, matchers} = require('../utils/e2e-framework');
 const {anyGhostAgent, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyContentLength} = matchers;
 
 const buildNewsletterSnapshot = () => {
@@ -32,7 +32,13 @@ describe('member.* events', function () {
         await adminAPIAgent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        // Each test registers another member.* webhook; without a reset they
+        // accumulate in the DB, so an event fired by a later test gets delivered
+        // to an earlier test's now-unmocked URL. Clearing just the webhooks table
+        // keeps the suite order-independent without the churn of a full DB
+        // reset. (PLA-173)
+        await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
 

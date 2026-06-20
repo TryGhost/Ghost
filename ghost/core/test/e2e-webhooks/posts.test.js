@@ -1,5 +1,5 @@
 const moment = require('moment-timezone');
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, dbUtils, matchers} = require('../utils/e2e-framework');
 const {anyGhostAgent, anyArray, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyContentLength, anyLocalURL, anyString} = matchers;
 
 const tierSnapshot = {
@@ -119,7 +119,13 @@ describe('post.* events', function () {
         await adminAPIAgent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        // Each test registers another post.* webhook; without a reset they
+        // accumulate in the DB, so an action in a later test (e.g. editing a
+        // published post also fires post.edited) gets delivered to an earlier
+        // test's now-unmocked URL. Clearing just the webhooks table keeps the
+        // suite order-independent without the churn of a full DB reset. (PLA-173)
+        await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
 
@@ -191,7 +197,11 @@ describe('post.* events', function () {
             .body({
                 posts: [
                     {
-                        title: 'webhookz',
+                        // Distinct from the post.published test's 'webhookz' title:
+                        // both posts persist in the shared DB, so a shared title
+                        // would collide on slug (webhookz vs webhookz-2) depending
+                        // on which test ran first. (PLA-173)
+                        title: 'webhookz unpublished',
                         status: 'published',
                         mobiledoc: fixtureManager.get('posts', 1).mobiledoc
                     }
