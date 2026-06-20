@@ -254,9 +254,14 @@ const restoreFromTemplateSQLite = async () => {
         } finally {
             await run('PRAGMA foreign_keys = ON');
         }
-
-        await run('DETACH DATABASE template');
     } finally {
+        // Always detach before releasing the connection — an error mid-restore must
+        // not return a connection still attached to the template back to the pool.
+        try {
+            await run('DETACH DATABASE template');
+        } catch (e) {
+            // nothing attached (ATTACH may have failed)
+        }
         await db.knex.client.releaseConnection(connection);
     }
 };
