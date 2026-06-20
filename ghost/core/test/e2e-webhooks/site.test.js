@@ -11,7 +11,14 @@ describe('site.* events', function () {
         await adminAPIAgent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        // Each test registers another site.changed webhook; without a reset they
+        // accumulate in the DB and a single site.changed fired by one test gets
+        // delivered to every prior test's URL, contaminating the negative tests.
+        // Reset to a clean slate so each test only sees its own webhook. (PLA-173)
+        await fixtureManager.restore();
+        await fixtureManager.init('integrations');
+        await adminAPIAgent.loginAsOwner();
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
 
@@ -172,6 +179,15 @@ describe('site.* events', function () {
             url: webhookURL
         });
 
+        // External webhooks are only held back here by the customIntegrations
+        // limit; the precondition used to come from limit-service state leaking
+        // out of the tests above. Set it explicitly so the test is
+        // order-independent. (PLA-173)
+        mockManager.mockLimitService('customIntegrations', {
+            isLimited: true,
+            wouldGoOverLimit: true
+        });
+
         await adminAPIAgent
             .post('posts/')
             .body({
@@ -270,6 +286,15 @@ describe('site.* events', function () {
         await fixtureManager.insertWebhook({
             event: 'site.changed',
             url: webhookURL
+        });
+
+        // External webhooks are only held back here by the customIntegrations
+        // limit; the precondition used to come from limit-service state leaking
+        // out of the tests above. Set it explicitly so the test is
+        // order-independent. (PLA-173)
+        mockManager.mockLimitService('customIntegrations', {
+            isLimited: true,
+            wouldGoOverLimit: true
         });
 
         await adminAPIAgent
