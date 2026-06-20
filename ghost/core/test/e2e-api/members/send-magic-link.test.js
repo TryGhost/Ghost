@@ -344,8 +344,10 @@ describe('sendMagicLink', function () {
             await settingsService.init();
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            // await the async restore so spam:blocked_email_domains can't leak
+            // into a later file under the shared boot (isolate:false). (PLA-173)
+            await configUtils.restore();
         });
 
         it('blocks signups from email domains blocked in config', async function () {
