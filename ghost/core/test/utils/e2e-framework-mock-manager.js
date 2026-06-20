@@ -6,7 +6,8 @@ const nock = require('nock');
 // nock 14 can't intercept the Stripe SDK's default NodeHttpClient (it flushes
 // the request body on a socket 'connect' event the mocked socket never emits,
 // so every Stripe call hangs). Force the fetch-based client, which nock 14 can
-// intercept. Loaded via overrides.js before Ghost boots.
+// intercept. Runs when the vitest setup files (test/utils/vitest-setup*.ts)
+// require this module, before Ghost boots.
 const {Stripe} = require('stripe');
 Stripe.createNodeHttpClient = () => Stripe.createFetchHttpClient();
 
