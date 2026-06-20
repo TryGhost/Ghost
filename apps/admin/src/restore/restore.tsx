@@ -1,4 +1,4 @@
-import {Button, EmptyIndicator} from "@tryghost/shade/components";
+import {Button, EmptyIndicator, Table, TableBody, TableCell, TableHead, TableHeader, TableRow} from "@tryghost/shade/components";
 import {ListPage} from "@tryghost/shade/page-templates";
 import {PageHeader} from "@tryghost/shade/patterns";
 import {LucideIcon} from "@tryghost/shade/utils";
@@ -6,6 +6,14 @@ import {useState} from "react";
 import {findAll, type LocalRevision} from "./local-revisions";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const RELATIVE_TIME_UNITS = [
+    {unit: "year", milliseconds: 365 * 24 * 60 * 60 * 1000},
+    {unit: "month", milliseconds: 30 * 24 * 60 * 60 * 1000},
+    {unit: "week", milliseconds: 7 * 24 * 60 * 60 * 1000},
+    {unit: "day", milliseconds: 24 * 60 * 60 * 1000},
+    {unit: "hour", milliseconds: 60 * 60 * 1000},
+    {unit: "minute", milliseconds: 60 * 1000}
+] as const;
 
 function asString(value: unknown): string {
     return typeof value === "string" ? value : "";
@@ -26,13 +34,32 @@ function formatCreatedDate(timestamp: unknown): string {
         return "";
     }
 
-    const month = MONTHS[date.getMonth()];
-    const day = date.getDate();
-    const year = date.getFullYear();
-    const hours = String(date.getHours()).padStart(2, "0");
-    const minutes = String(date.getMinutes()).padStart(2, "0");
+    const month = MONTHS[date.getUTCMonth()];
+    const day = date.getUTCDate();
+    const year = date.getUTCFullYear();
 
-    return `${month} ${day}, ${year} ${hours}:${minutes}`;
+    return `${day} ${month} ${year}`;
+}
+
+function formatRelativeCreatedDate(timestamp: unknown): string {
+    const date = getRevisionDate(timestamp);
+
+    if (!date) {
+        return "";
+    }
+
+    const diff = Date.now() - date.getTime();
+    const direction = diff < 0 ? "from now" : "ago";
+    const absoluteDiff = Math.abs(diff);
+
+    for (const {unit, milliseconds} of RELATIVE_TIME_UNITS) {
+        if (absoluteDiff >= milliseconds) {
+            const value = Math.round(absoluteDiff / milliseconds);
+            return `${value} ${unit}${value === 1 ? "" : "s"} ${direction}`;
+        }
+    }
+
+    return direction === "ago" ? "just now" : "in a few seconds";
 }
 
 function getRevisionDate(timestamp: unknown): Date | null {
@@ -53,75 +80,98 @@ export default function RestoreRoute() {
     const [revisions] = useState(() => findAll());
 
     return (
-        <ListPage>
-            <ListPage.Header>
-                <PageHeader blurredBackground={false} sticky={false}>
-                    <PageHeader.Left>
-                        <PageHeader.Title>Restore Posts</PageHeader.Title>
-                    </PageHeader.Left>
-                </PageHeader>
-            </ListPage.Header>
+        <div className="size-full">
+            <div className="relative mx-auto flex h-full max-w-page flex-col">
+                <ListPage>
+                    <ListPage.Header>
+                        <PageHeader blurredBackground={false} sticky={false}>
+                            <PageHeader.Left>
+                                <PageHeader.Title>Restore Posts</PageHeader.Title>
+                            </PageHeader.Left>
+                        </PageHeader>
+                    </ListPage.Header>
 
-            <ListPage.Body className="px-0">
-                <section className="flex w-full flex-col gap-6">
-                    <p className="text-sm leading-6 text-muted-foreground">
-                        Posts are regularly saved locally on your device. If you&apos;ve lost a post, you can restore it from here as long as too much time hasn&apos;t passed.
-                    </p>
+                    <ListPage.Body>
+                        <section className="flex w-full flex-col gap-6">
+                            <p className="text-sm leading-6 text-muted-foreground">
+                                Posts are regularly saved locally on your device. If you&apos;ve lost a post, you can restore it from here as long as too much time hasn&apos;t passed.
+                            </p>
 
-                    {revisions.length > 0 ? (
-                        <div className="overflow-hidden rounded-md border border-border bg-background">
-                            <div className="hidden grid-cols-12 items-center gap-4 border-b border-border bg-muted/40 px-4 py-2.5 text-xs font-semibold tracking-normal text-muted-foreground uppercase sm:grid">
-                                <div className="col-span-7">Title</div>
-                                <div className="col-span-3">Created</div>
-                                <div className="col-span-2" aria-hidden="true" />
-                            </div>
+                            {revisions.length > 0 ? (
+                                <div className="w-full overflow-x-auto">
+                                    <Table className="w-full table-fixed border-collapse">
+                                        <TableHeader className="hidden bg-transparent sm:table-header-group">
+                                            <TableRow>
+                                                <TableHead className="w-auto px-4">Title</TableHead>
+                                                <TableHead className="hidden w-48 px-4 sm:table-cell">Created</TableHead>
+                                                <TableHead className="w-28 px-4" aria-label="Actions" />
+                                            </TableRow>
+                                        </TableHeader>
+                                        <TableBody>
+                                            {revisions.map((revision) => {
+                                                return (
+                                                    <TableRow
+                                                        key={revision.key}
+                                                        className="grid grid-cols-[minmax(0,1fr)_auto] items-center gap-x-4 px-4 py-3 sm:table-row sm:p-0"
+                                                    >
+                                                        <TableCell className="min-w-0 p-0 sm:p-4">
+                                                            <h2 className="truncate text-sm font-semibold text-foreground" data-test-id="restore-post-title">
+                                                                {getRevisionTitle(revision)}
+                                                            </h2>
+                                                            <p className="mt-1 truncate text-sm text-muted-foreground">
+                                                                {getRevisionExcerpt(revision)}
+                                                            </p>
+                                                            <div className="mt-1 sm:hidden">
+                                                                <RestoreRevisionCreatedDate timestamp={revision.revisionTimestamp} />
+                                                            </div>
+                                                        </TableCell>
 
-                            <ol className="divide-y divide-border">
-                                {revisions.map((revision) => {
-                                    const revisionDate = getRevisionDate(revision.revisionTimestamp);
+                                                        <TableCell className="hidden px-4 py-3 sm:table-cell">
+                                                            <RestoreRevisionCreatedDate timestamp={revision.revisionTimestamp} />
+                                                        </TableCell>
 
-                                    return (
-                                        <li
-                                            key={revision.key}
-                                            className="grid grid-cols-1 gap-3 px-4 py-3 sm:grid-cols-12 sm:items-center sm:gap-4"
-                                        >
-                                            <div className="min-w-0 sm:col-span-7">
-                                                <h2 className="truncate text-sm font-semibold text-foreground" data-test-id="restore-post-title">
-                                                    {getRevisionTitle(revision)}
-                                                </h2>
-                                                <p className="mt-1 truncate text-sm text-muted-foreground">
-                                                    {getRevisionExcerpt(revision)}
-                                                </p>
-                                            </div>
+                                                        <TableCell className="p-0 text-right sm:p-4">
+                                                            <Button
+                                                                data-test-id="restore-post-button"
+                                                                size="sm"
+                                                                type="button"
+                                                                variant="outline"
+                                                            >
+                                                                Restore
+                                                            </Button>
+                                                        </TableCell>
+                                                    </TableRow>
+                                                );
+                                            })}
+                                        </TableBody>
+                                    </Table>
+                                </div>
+                            ) : (
+                                <div className="flex min-h-[320px] items-center justify-center rounded-md border border-dashed border-border">
+                                    <EmptyIndicator title="No local revisions found.">
+                                        <LucideIcon.FileClock />
+                                    </EmptyIndicator>
+                                </div>
+                            )}
+                        </section>
+                    </ListPage.Body>
+                </ListPage>
+            </div>
+        </div>
+    );
+}
 
-                                            <time className="text-sm text-muted-foreground sm:col-span-3" dateTime={revisionDate?.toISOString()}>
-                                                {formatCreatedDate(revision.revisionTimestamp)}
-                                            </time>
+function RestoreRevisionCreatedDate({timestamp}: { timestamp: unknown }) {
+    const revisionDate = getRevisionDate(timestamp);
 
-                                            <div className="flex justify-start sm:col-span-2 sm:justify-end">
-                                                <Button
-                                                    data-test-id="restore-post-button"
-                                                    size="sm"
-                                                    type="button"
-                                                    variant="outline"
-                                                >
-                                                    Restore
-                                                </Button>
-                                            </div>
-                                        </li>
-                                    );
-                                })}
-                            </ol>
-                        </div>
-                    ) : (
-                        <div className="flex min-h-[320px] items-center justify-center rounded-md border border-dashed border-border">
-                            <EmptyIndicator title="No local revisions found.">
-                                <LucideIcon.FileClock />
-                            </EmptyIndicator>
-                        </div>
-                    )}
-                </section>
-            </ListPage.Body>
-        </ListPage>
+    return (
+        <div>
+            <time className="block text-base" dateTime={revisionDate?.toISOString()}>
+                {formatCreatedDate(timestamp)}
+            </time>
+            <div className="text-base text-muted-foreground">
+                {formatRelativeCreatedDate(timestamp)}
+            </div>
+        </div>
     );
 }

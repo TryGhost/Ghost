@@ -1,5 +1,5 @@
 import {render, screen} from "@testing-library/react";
-import {beforeEach, describe, expect, it} from "vitest";
+import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import RestoreRoute from "./restore";
 
 function getRestorePostTitle(container: HTMLElement): HTMLElement {
@@ -13,6 +13,12 @@ function getRestorePostButton(container: HTMLElement): HTMLElement {
 describe("RestoreRoute", () => {
     beforeEach(() => {
         window.localStorage.clear();
+        vi.useFakeTimers();
+        vi.setSystemTime(new Date(2026, 5, 20, 11, 5));
+    });
+
+    afterEach(() => {
+        vi.useRealTimers();
     });
 
     it("renders an empty state when there are no local revisions", () => {
@@ -20,6 +26,7 @@ describe("RestoreRoute", () => {
 
         expect(screen.getByRole("heading", {name: "Restore Posts"})).toBeInTheDocument();
         expect(screen.getByText("No local revisions found.")).toBeInTheDocument();
+        expect(screen.queryByRole("table")).not.toBeInTheDocument();
         expect(container.querySelector('[data-test-id="restore-post-title"]')).not.toBeInTheDocument();
     });
 
@@ -37,9 +44,13 @@ describe("RestoreRoute", () => {
 
         const {container} = render(<RestoreRoute />);
 
+        expect(screen.getByRole("table")).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", {name: "Title"})).toBeInTheDocument();
+        expect(screen.getByRole("columnheader", {name: "Created"})).toBeInTheDocument();
         expect(getRestorePostTitle(container)).toHaveTextContent("Recovered draft");
         expect(screen.getByText(excerpt.slice(0, 100))).toBeInTheDocument();
-        expect(screen.getByText("Jun 20, 2026 09:05")).toBeInTheDocument();
+        expect(screen.getAllByText("20 Jun 2026")).toHaveLength(2);
+        expect(screen.getAllByText("2 hours ago")).toHaveLength(2);
         expect(getRestorePostButton(container)).toHaveTextContent("Restore");
     });
 
