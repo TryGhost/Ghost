@@ -10,7 +10,14 @@ import net from 'node:net';
 // cleanly when the service is down and RUN when it's up — CI starts both
 // services, so they always run there. (PLA-170)
 
-const PROBE_TIMEOUT_MS = 400;
+// 1s, not a few hundred ms: this probe runs in the vitest main process right
+// before the worker forks spawn, when the event loop is busiest (config load,
+// transforms). socket.setTimeout is an inactivity timeout, so a busy loop that
+// can't fire the 'connect' callback in time trips it and the probe reports a
+// running service as down — silently SKIPPING an adapter suite that should run.
+// A down service still resolves instantly (connection refused), so the wider
+// ceiling only adds latency in the rare case where it prevents a false skip.
+const PROBE_TIMEOUT_MS = 1000;
 
 // Resolve a service's host:port the same way the code under test does:
 //   - Redis: nconf maps `adapters:Redis:{host,port}` from these `__`-separated
