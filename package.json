@@ -22,7 +22,7 @@
     "test": "NODE_ENV=testing vitest run --coverage",
     "lint": "oxlint -c ../../.oxlintrc.json ."
   },
-  "devDependencies": {
+  "dependencies": {
     "@tryghost/logging": "workspace:*"
   }
 }
