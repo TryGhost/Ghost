@@ -2,7 +2,7 @@ import {Button, EmptyIndicator, Table, TableBody, TableCell, TableHead, TableHea
 import {ListPage} from "@tryghost/shade/page-templates";
 import {PageHeader} from "@tryghost/shade/patterns";
 import {LucideIcon} from "@tryghost/shade/utils";
-import {useState} from "react";
+import {useCallback, useState} from "react";
 import {findAll, type LocalRevision} from "./local-revisions";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
@@ -78,6 +78,9 @@ function getRevisionDate(timestamp: unknown): Date | null {
 
 export default function RestoreRoute() {
     const [revisions] = useState(() => findAll());
+    const handleRestore = useCallback((revision: LocalRevision) => {
+        console.log("Restore revision", revision);
+    }, []);
 
     return (
         <div className="size-full">
@@ -133,6 +136,9 @@ export default function RestoreRoute() {
                                                         <TableCell className="p-0 text-right sm:p-4">
                                                             <Button
                                                                 data-test-id="restore-post-button"
+                                                                onClick={() => {
+                                                                    handleRestore(revision);
+                                                                }}
                                                                 size="sm"
                                                                 type="button"
                                                                 variant="outline"

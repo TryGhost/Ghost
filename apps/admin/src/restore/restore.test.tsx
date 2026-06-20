@@ -1,4 +1,4 @@
-import {render, screen} from "@testing-library/react";
+import {fireEvent, render, screen} from "@testing-library/react";
 import {afterEach, beforeEach, describe, expect, it, vi} from "vitest";
 import RestoreRoute from "./restore";
 
@@ -66,5 +66,29 @@ describe("RestoreRoute", () => {
         const {container} = render(<RestoreRoute />);
 
         expect(getRestorePostTitle(container)).toHaveTextContent("(no title)");
+    });
+
+    it("passes the selected revision to the restore handler", () => {
+        const revision = {
+            excerpt: "Selected revision excerpt",
+            id: "draft",
+            revisionTimestamp: 1000,
+            title: "Selected revision",
+            type: "post"
+        };
+        const consoleLog = vi.spyOn(console, "log").mockImplementation(() => undefined);
+
+        window.localStorage.setItem("post-revision-draft-1000", JSON.stringify(revision));
+
+        const {container} = render(<RestoreRoute />);
+
+        fireEvent.click(getRestorePostButton(container));
+
+        expect(consoleLog).toHaveBeenCalledWith("Restore revision", {
+            key: "post-revision-draft-1000",
+            ...revision
+        });
+
+        consoleLog.mockRestore();
     });
 });
