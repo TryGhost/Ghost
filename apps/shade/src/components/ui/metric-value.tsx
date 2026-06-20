@@ -17,7 +17,7 @@ const metricValueNumberVariants = cva(
         variants: {
             size: {
                 md: 'text-[2.2rem]',
-                lg: 'text-[2.3rem] xl:text-[2.6rem]'
+                lg: 'text-[1.9rem] xl:text-[2.1rem]'
             }
         },
         defaultVariants: {

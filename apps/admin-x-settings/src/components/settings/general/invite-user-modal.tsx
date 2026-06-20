@@ -1,6 +1,6 @@
 import NiceModal from '@ebay/nice-modal-react';
 import validator from 'validator';
-import {APIError} from '@tryghost/admin-x-framework/errors';
+import {APIError, ValidationError} from '@tryghost/admin-x-framework/errors';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {Modal, Radio, TextField, showToast} from '@tryghost/admin-x-design-system';
 import {useAddInvite, useBrowseInvites} from '@tryghost/admin-x-framework/api/invites';
@@ -12,6 +12,9 @@ import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 type RoleType = 'administrator' | 'editor' | 'author' | 'contributor' | 'super editor';
+
+const USER_ALREADY_REGISTERED_CODE = 'USER_ALREADY_REGISTERED';
+const USER_ALREADY_EXISTS_ERROR = 'A user with that email address already exists.';
 
 const InviteUserModal = NiceModal.create(() => {
     const modal = NiceModal.useModal();
@@ -99,7 +102,7 @@ const InviteUserModal = NiceModal.create(() => {
 
         if (users?.some(({email: userEmail}) => userEmail === email)) {
             setErrors({
-                email: 'A user with that email address already exists.'
+                email: USER_ALREADY_EXISTS_ERROR
             });
             return;
         }
@@ -133,6 +136,16 @@ const InviteUserModal = NiceModal.create(() => {
             modal.remove();
             updateRoute('staff?tab=invited');
         } catch (e) {
+            const validationError = e instanceof ValidationError ? e.data?.errors[0] : undefined;
+
+            if (validationError?.code === USER_ALREADY_REGISTERED_CODE) {
+                setSaveState('');
+                setErrors({
+                    email: USER_ALREADY_EXISTS_ERROR
+                });
+                return;
+            }
+
             setSaveState('error');
             let title = 'Failed to send invitation';
             let message = (<span>If the problem persists, <a href="https://ghost.org/contact"><u>contact support</u>.</a>.</span>);

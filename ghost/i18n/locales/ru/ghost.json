@@ -65,6 +65,7 @@
     "Someone just replied to your comment": "Кто-то только что ответил на ваш комментарий",
     "Someone just replied to your comment on {postTitle}.": "Кто-то только что ответил на ваш комментарий к записи {postTitle}.",
     "Subscription details": "Детали подписки",
+    "Support {siteTitle}": "",
     "Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:": "Нажмите на ссылку ниже, чтобы завершить процесс регистрации на {siteTitle} и автоматически войти:",
     "Thank you for signing up to {siteTitle}!": "Спасибо за регистрацию на {siteTitle}!",
     "Thank you for subscribing to {siteTitle}!": "Спасибо за подписку на {siteTitle}!",

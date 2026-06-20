@@ -148,7 +148,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
                     return;
                 }
 
-                const randomMonthDiff = faker.datatype.number({min: 1, max: monthDiff});
+                const randomMonthDiff = faker.number.int({min: 1, max: monthDiff});
                 endDate.setMonth(startDate.getMonth() + randomMonthDiff);
             } else {
                 // What is the year difference between startDate and now? Pick a random number in between
@@ -158,7 +158,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
                     // Not possible to create an invalid subscription here
                     return;
                 }
-                const randomYearDiff = faker.datatype.number({min: 1, max: yearDiff});
+                const randomYearDiff = faker.number.int({min: 1, max: yearDiff});
 
                 endDate.setFullYear(startDate.getFullYear() + randomYearDiff);
             }
@@ -235,7 +235,7 @@ class MembersStripeCustomersSubscriptionsImporter extends TableImporter {
         return {
             id: this.fastFakeObjectId(),
             customer_id: customer.customer_id,
-            subscription_id: `sub_${faker.random.alphaNumeric(14)}`,
+            subscription_id: `sub_${faker.string.alphanumeric(14)}`,
             stripe_price_id: stripePrice.stripe_price_id,
             start_date: dateToDatabaseString(startDate),
             created_at: dateToDatabaseString(startDate),

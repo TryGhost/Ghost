@@ -28,7 +28,7 @@ const HeaderTitle: React.FC<HeaderTitleProps> = ({title, backIcon}) => {
     }
 
     return (
-        <H1 className='max-md:text-[2.4rem]'>{title}</H1>
+        <H1 className='!text-[1.5rem] font-semibold tracking-normal'>{title}</H1>
     );
 };
 
@@ -66,13 +66,13 @@ const Header: React.FC<HeaderProps> = ({onToggleMobileSidebar, showBorder = true
     return (
         <>
             {onlyBackButton ?
-                <div className='sticky top-8 left-0 z-50 inline-block max-lg:flex max-lg:items-center max-lg:justify-between max-lg:pr-[15.5px] max-md:top-4'>
+                <div className='sticky top-5 left-0 z-50 inline-block max-lg:flex max-lg:items-center max-lg:justify-between max-lg:pr-[15.5px] max-md:top-4'>
                     <div>{backActive && <BackButton className='ml-6 max-md:ml-[10px]' />}</div>
                     {!backActive && <MobileMenuButton onToggleMobileSidebar={onToggleMobileSidebar} />}
                 </div>
                 :
                 <div className='sticky top-0 z-50 bg-white/85 backdrop-blur-md dark:bg-black'>
-                    <div className={`relative flex h-[102px] items-center justify-between gap-5 px-[min(4vw,32px)] max-md:h-[68px] ${showBorder ? 'before:absolute before:inset-x-[min(4vw,32px)] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] dark:before:border-gray-950' : ''}`}>
+                    <div className={`relative flex h-[72px] items-center justify-between gap-5 px-[min(4vw,24px)] max-md:h-[68px] ${showBorder ? 'before:absolute before:inset-x-[min(4vw,24px)] before:bottom-0 before:block before:border-b before:border-gray-200 before:content-[""] dark:before:border-gray-950' : ''}`}>
                         <HeaderTitle
                             backIcon={backActive}
                             title={activeRoute?.pageTitle || ''}

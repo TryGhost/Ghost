@@ -15,7 +15,7 @@ const ImportButton: React.FC<{
     onClick
 }) => {
     const classNames = clsx(
-        'flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md bg-grey-100 px-2 text-sm font-semibold transition-all hover:bg-grey-200 dark:bg-grey-900'
+        'flex h-9 cursor-pointer items-center justify-center gap-2 rounded-md bg-grey-100 px-2 font-semibold transition-all hover:bg-grey-200 dark:bg-grey-900'
     );
     if (onClick) {
         return (

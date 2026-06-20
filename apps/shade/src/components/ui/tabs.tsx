@@ -87,13 +87,13 @@ const tabsTriggerVariants = cva(
     {
         variants: {
             variant: {
-                segmented: 'h-7 rounded-md text-sm font-medium data-[state=active]:shadow-md',
-                'segmented-sm': 'h-[26px] rounded-md text-xs font-medium data-[state=active]:shadow-md',
-                button: 'h-(--control-height) gap-1.5 rounded-md py-2 text-sm font-normal hover:bg-muted data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-medium',
-                'button-sm': 'h-6 gap-1.5 rounded-md p-2 text-xs font-normal text-text-secondary hover:bg-muted data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-medium data-[state=active]:text-foreground',
-                underline: 'relative h-9 px-0 text-md font-semibold text-text-secondary after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
-                navbar: 'relative h-[52px] px-px text-md font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
-                pill: 'relative h-[30px] rounded-md px-3 text-md font-medium text-text-secondary hover:text-foreground data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-semibold data-[state=active]:text-foreground',
+                segmented: 'h-7 rounded-md text-control font-medium data-[state=active]:shadow-md',
+                'segmented-sm': 'h-[26px] rounded-md text-sm font-medium data-[state=active]:shadow-md',
+                button: 'h-(--control-height) gap-1.5 rounded-md py-2 text-control font-normal hover:bg-muted data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-medium',
+                'button-sm': 'h-6 gap-1.5 rounded-md p-2 text-sm font-normal text-text-secondary hover:bg-muted data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-medium data-[state=active]:text-foreground',
+                underline: 'relative h-9 px-0 text-control font-semibold text-text-secondary after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:after:opacity-10 data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
+                navbar: 'relative h-[52px] px-px text-control font-semibold text-muted-foreground after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] hover:text-foreground data-[state=active]:bg-transparent data-[state=active]:text-foreground data-[state=active]:after:opacity-100!',
+                pill: 'relative h-[30px] rounded-md px-3 text-control font-medium text-text-secondary hover:text-foreground data-[state=active]:bg-muted-foreground/10 data-[state=active]:font-semibold data-[state=active]:text-foreground',
                 kpis: 'relative h-full! items-start! rounded-none border-border bg-transparent px-6 py-5 text-foreground ring-0 transition-all after:absolute after:inset-x-0 after:-bottom-px after:h-0.5 after:bg-foreground after:opacity-0 after:content-[""] first:rounded-tl-md last:rounded-tr-md hover:bg-accent/50 data-[state=active]:bg-transparent data-[state=active]:after:opacity-100 [&:not(:last-child)]:border-r [&[data-state=active]_[data-type="value"]]:text-foreground'
             }
         },
@@ -125,7 +125,7 @@ interface TabsTriggerCountProps {
 
 const TabsTriggerCount: React.FC<TabsTriggerCountProps> = ({className = '', children}) => {
     return (
-        <span className={`mt-px ml-1.5 flex h-5 items-center justify-center rounded-full bg-surface-elevated px-1.5 py-0 text-xs leading-[21px] font-semibold text-text-secondary ${className}`}>{children}</span>
+        <span className={`mt-px ml-1.5 flex h-5 items-center justify-center rounded-full bg-surface-elevated px-1.5 py-0 text-sm leading-[21px] font-semibold text-text-secondary ${className}`}>{children}</span>
     );
 };
 TabsTriggerCount.displayName = 'TabsTriggerCount';

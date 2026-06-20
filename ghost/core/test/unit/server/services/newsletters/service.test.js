@@ -2,7 +2,8 @@ const sinon = require('sinon');
 const assert = require('node:assert/strict');
 
 // DI requirements
-const models = require('../../../../../core/server/models');
+const {Newsletter} = require('../../../../../core/server/models/newsletter');
+const {Member} = require('../../../../../core/server/models/member');
 const mail = require('../../../../../core/server/services/mail');
 
 // Mocked utilities
@@ -35,8 +36,8 @@ describe('NewslettersService', function () {
         };
 
         newsletterService = new NewslettersService({
-            NewsletterModel: models.Newsletter,
-            MemberModel: models.Member,
+            NewsletterModel: Newsletter,
+            MemberModel: Member,
             mail,
             singleUseTokenProvider: tokenProvider,
             urlUtils: urlUtils.stubUrlUtilsFromConfig(),
@@ -87,7 +88,7 @@ describe('NewslettersService', function () {
         let findOneStub;
         beforeEach(function () {
             // Stub edit as a function that returns its first argument
-            findOneStub = sinon.stub(models.Newsletter, 'findOne').returns({get: getStub, id: 'test'});
+            findOneStub = sinon.stub(Newsletter, 'findOne').returns({get: getStub, id: 'test'});
         });
 
         it('returns the result of findOne', async function () {
@@ -106,7 +107,7 @@ describe('NewslettersService', function () {
     // @TODO replace this with a specific function for fetching all available newsletters
     describe('browse', function () {
         it('lists all newsletters by calling findPage', async function () {
-            const findAllStub = sinon.stub(models.Newsletter, 'findPage').returns({data: []});
+            const findAllStub = sinon.stub(Newsletter, 'findPage').returns({data: []});
 
             await newsletterService.browse({});
 
@@ -121,10 +122,10 @@ describe('NewslettersService', function () {
             subscribeStub = sinon.stub().returns(fakeMemberIds);
 
             // Stub add as a function that returns get & subscribeMembersById methods
-            addStub = sinon.stub(models.Newsletter, 'add').returns({get: getStub, id: 'test', subscribeMembersById: subscribeStub});
-            fetchMembersStub = sinon.stub(models.Member, 'fetchAllSubscribed').returns([]);
-            getNextAvailableSortOrderStub = sinon.stub(models.Newsletter, 'getNextAvailableSortOrder').returns(1);
-            findOneStub = sinon.stub(models.Newsletter, 'findOne').returns({get: getStub, id: 'test', subscribeMembersById: subscribeStub});
+            addStub = sinon.stub(Newsletter, 'add').returns({get: getStub, id: 'test', subscribeMembersById: subscribeStub});
+            fetchMembersStub = sinon.stub(Member, 'fetchAllSubscribed').returns([]);
+            getNextAvailableSortOrderStub = sinon.stub(Newsletter, 'getNextAvailableSortOrder').returns(1);
+            findOneStub = sinon.stub(Newsletter, 'findOne').returns({get: getStub, id: 'test', subscribeMembersById: subscribeStub});
         });
 
         it('rejects if the limit services determines it would be over the limit', async function () {
@@ -224,8 +225,8 @@ describe('NewslettersService', function () {
         let editStub, findOneStub;
         beforeEach(function () {
             // Stub edit as a function that returns its first argument
-            editStub = sinon.stub(models.Newsletter, 'edit').returns({get: getStub, id: 'test'});
-            findOneStub = sinon.stub(models.Newsletter, 'findOne').returns({get: getStub, id: 'test'});
+            editStub = sinon.stub(Newsletter, 'edit').returns({get: getStub, id: 'test'});
+            findOneStub = sinon.stub(Newsletter, 'findOne').returns({get: getStub, id: 'test'});
         });
 
         it('rejects if called with no data', async function () {
@@ -259,7 +260,7 @@ describe('NewslettersService', function () {
         let editStub;
 
         beforeEach(function () {
-            editStub = sinon.stub(models.Newsletter, 'edit').returns({get: getStub});
+            editStub = sinon.stub(Newsletter, 'edit').returns({get: getStub});
             sinon.assert.notCalled(editStub);
         });
 

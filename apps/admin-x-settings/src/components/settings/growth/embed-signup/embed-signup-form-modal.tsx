@@ -1,6 +1,6 @@
 import EmbedSignupPreview from './embed-signup-preview';
 import EmbedSignupSidebar, {type SelectedLabelTypes} from './embed-signup-sidebar';
-import NiceModal from '@ebay/nice-modal-react';
+import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import useSettingGroup from '../../../../hooks/use-setting-group';
 import {Modal, type MultiSelectOption} from '@tryghost/admin-x-design-system';
 import {type MultiValue} from 'react-select';
@@ -11,6 +11,8 @@ import {useGlobalData} from '../../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
 const EmbedSignupFormModal = NiceModal.create(() => {
+    const modal = useModal();
+
     const [selectedColor, setSelectedColor] = useState<string>('#08090c');
     const [selectedLabels, setSelectedLabels] = useState<SelectedLabelTypes[]>([]);
     const [selectedLayout, setSelectedLayout] = useState<string>('all-in-one');
@@ -77,6 +79,11 @@ const EmbedSignupFormModal = NiceModal.create(() => {
         setSelectedColor(e);
     };
 
+    const handleClose = () => {
+        modal.remove();
+        updateRoute('embed-signup-form');
+    };
+
     const addSelectedLabel = (selected: MultiValue<MultiSelectOption>) => {
         if (selected?.length) {
             const chosenLabels = selected?.map(({value}) => ({label: value, value: value}));
@@ -100,7 +107,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
             topRightContent='close'
             width={1120}
         >
-            <div className='grid grid-cols-[5.2fr_2.8fr]'>
+            <div className='grid grid-cols-1 lg:grid-cols-[5.2fr_2.8fr]'>
                 <EmbedSignupPreview
                     html={previewScript}
                     style={selectedLayout}
@@ -109,6 +116,7 @@ const EmbedSignupFormModal = NiceModal.create(() => {
                     accentColor={accentColor}
                     customColor={customColor}
                     embedScript={generatedScript}
+                    handleClose={handleClose}
                     handleColorToggle={handleColorToggle}
                     handleCopyClick={handleCopyClick}
                     handleLabelClick={addSelectedLabel}

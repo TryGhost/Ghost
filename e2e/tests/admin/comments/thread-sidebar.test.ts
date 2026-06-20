@@ -17,8 +17,6 @@ test.describe('Ghost Admin - Thread Sidebar', () => {
     let post: Awaited<ReturnType<PostFactory['create']>>;
     let member: Awaited<ReturnType<MemberFactory['create']>>;
 
-    test.use({labs: {commentModeration: true}});
-
     test.beforeEach(async ({page}) => {
         postFactory = createPostFactory(page.request);
         memberFactory = createMemberFactory(page.request);

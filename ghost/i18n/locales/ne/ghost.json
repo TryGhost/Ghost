@@ -61,6 +61,7 @@
     "Someone just replied to your comment": "कसैले भर्खरै तपाईंको प्रतिक्रियामा नयाँ प्रत्युत्तर दिएको छ",
     "Someone just replied to your comment on {postTitle}.": "{postTitle} मा तपाईंको प्रतिक्रियामा कसैले भर्खरै प्रत्युत्तर दिएको छ।",
     "Subscription details": "सदस्यता विवरण",
+    "Support {siteTitle}": "",
     "Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:": "तलको लिङ्कमा ट्याप गरी {siteTitle} को दर्ता प्रक्रिया पुरा गर्नुहोस्, र स्वचालित रूपमा साइन इन हुनुहोस्:",
     "Thank you for signing up to {siteTitle}!": "{siteTitle} मा दर्ता गर्नुभएकोमा धन्यवाद!",
     "Thank you for subscribing to {siteTitle}!": "{siteTitle} मा सदस्यता लिनुभएकोमा धन्यवाद!",

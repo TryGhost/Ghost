@@ -1,4 +1,3 @@
-const path = require('path');
 const tpl = require('@tryghost/tpl');
 const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
@@ -18,10 +17,8 @@ const messages = {
 const PRIVATE_KEYWORD = 'private';
 
 let checkSubdir = function checkSubdir() {
-    let paths = '';
-
     if (urlUtils.getSubdir()) {
-        paths = urlUtils.getSubdir().split('/');
+        const paths = urlUtils.getSubdir().split('/');
 
         if (paths.pop() === PRIVATE_KEYWORD) {
             logging.error(new errors.InternalServerError({
@@ -43,7 +40,7 @@ module.exports = {
         checkSubdir();
 
         ghost.routeService.registerRouter(privateRoute, router);
-        ghost.helperService.registerDir(path.resolve(__dirname, './lib/helpers'));
+        ghost.helperService.registerHelper('input_password', require('./lib/helpers/input_password'));
     },
 
     setupMiddleware: function setupMiddleware(siteApp) {

@@ -212,6 +212,33 @@ describe('Themes middleware', function () {
                 `admin_url should end with /ghost/ but got: ${data.site.admin_url}`);
             assert.equal(data.site.admin_url, 'https://admin.example.com/ghost/');
         });
+
+        it('does not add a _queryCache when the getHelperDeduplication flag is disabled', async function () {
+            // fakeLabsData does not include getHelperDeduplication, so the flag is off
+            await request(app)
+                .get('/')
+                .expect(200);
+
+            sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+            const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+            const data = templateOptions.data;
+
+            assert.ok(!('_queryCache' in data), '_queryCache should not be set when the flag is disabled');
+        });
+
+        it('adds a _queryCache Map when the getHelperDeduplication flag is enabled', async function () {
+            fakeLabsData.getHelperDeduplication = true;
+
+            await request(app)
+                .get('/')
+                .expect(200);
+
+            sinon.assert.calledOnce(hbsUpdateLocalTemplateOptionsStub);
+            const templateOptions = hbsUpdateLocalTemplateOptionsStub.firstCall.args[1];
+            const data = templateOptions.data;
+
+            assert.ok(data._queryCache instanceof Map, '_queryCache should be a Map when the flag is enabled');
+        });
     });
 
     describe('Preview Mode', function () {

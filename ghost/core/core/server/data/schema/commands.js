@@ -58,6 +58,8 @@ function addTableColumn(tableName, tableBuilder, columnName, columnSpec = schema
 
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'cascadeDelete') && columnSpec.cascadeDelete === true) {
         column.onDelete('CASCADE');
+    } else if (Object.prototype.hasOwnProperty.call(columnSpec, 'restrictDelete') && columnSpec.restrictDelete === true) {
+        column.onDelete('RESTRICT');
     } else if (Object.prototype.hasOwnProperty.call(columnSpec, 'setNullDelete') && columnSpec.setNullDelete === true) {
         column.onDelete('SET NULL');
     }
@@ -503,6 +505,9 @@ function createTable(table, transaction = db.knex, tableSpec = schema[table]) {
         if (tableSpec['@@UNIQUE_CONSTRAINTS@@']) {
             tableSpec['@@UNIQUE_CONSTRAINTS@@'].forEach(unique => t.unique(unique));
         }
+        if (tableSpec['@@PRIMARY_KEY@@']) {
+            t.primary(tableSpec['@@PRIMARY_KEY@@']);
+        }
     });
 }
 
@@ -524,8 +529,8 @@ async function getTables(transaction = db.knex) {
         const response = await transaction.raw('select * from sqlite_master where type = "table"');
         return _.reject(_.map(response, 'tbl_name'), name => name === 'sqlite_sequence');
     } else if (client === 'mysql2') {
-        const response = await transaction.raw('show tables');
-        return _.flatten(_.map(response[0], entry => _.values(entry)));
+        const response = await transaction.raw('show full tables where Table_type = \'BASE TABLE\'');
+        return _.map(response[0], entry => _.values(entry)[0]);
     }
 
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));

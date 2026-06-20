@@ -23,7 +23,7 @@ class PostsAuthorsImporter extends TableImporter {
         return {
             id: this.fastFakeObjectId(),
             post_id: this.model.id,
-            author_id: this.users[faker.datatype.number(this.users.length - 1)].id,
+            author_id: this.users[faker.number.int(this.users.length - 1)].id,
             sort_order: sortOrder
         };
     }

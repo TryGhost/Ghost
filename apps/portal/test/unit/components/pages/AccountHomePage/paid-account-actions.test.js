@@ -554,7 +554,7 @@ describe('PaidAccountActions', () => {
             const site = getSiteData({
                 products,
                 portalProducts: products.map(p => p.id),
-                isStripeConfigured: false
+                paidMembersEnabled: false
             });
             const member = buildGiftMember({tierId: products[0].id});
 

@@ -55,8 +55,8 @@ const WebhooksTable: React.FC<{integration: Integration}> = ({integration}) => {
                 }}
                 >
                     <TableCell className='w-3/4'>
-                        <div className='text-sm font-semibold'>{webhook.name}</div>
-                        <div className='grid grid-cols-[max-content_1fr] gap-x-1 text-xs leading-snug'>
+                        <div className='font-semibold'>{webhook.name}</div>
+                        <div className='mt-1 grid grid-cols-[max-content_1fr] gap-1 text-sm leading-snug'>
                             <span className='text-grey-600'>Event:</span>
                             <span>{getWebhookEventLabel(webhook.event)}</span>
                             <span className='text-grey-600'>URL:</span>

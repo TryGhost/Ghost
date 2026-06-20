@@ -2,7 +2,6 @@ const config = require('../../../shared/config');
 const LocalFileCache = require('./local-file-cache');
 const UrlService = require('./url-service');
 const UrlServiceFacade = require('./url-service-facade');
-const LazyUrlService = require('./lazy-url-service');
 
 // NOTE: instead of a path we could give UrlService a "data-resolver" of some sort
 //       so it doesn't have to contain the logic to read data at all. This would be
@@ -24,20 +23,20 @@ if (process.env.NODE_ENV.startsWith('test')){
 const cache = new LocalFileCache({storagePath, writeDisabled});
 const urlService = new UrlService({cache});
 
-// LazyUrlService is only attached to the facade when the lazyRouting flag is
-// on. The eager UrlService stays in the require graph either way so test code
-// and partially-migrated callers continue to work. The model layer is only
-// pulled in when the flag is on so flag-off boot keeps its existing
-// require-graph shape.
+// Build a lazy backend alongside eager for shadow comparison, gated by the
+// existing `lazyRouting` flag (unset by default = pure eager, unchanged).
+// models is already loaded via url-service -> resources, so this require is safe.
 let lazyUrlService = null;
 if (config.get('lazyRouting')) {
-    const models = require('../../models');
+    const LazyUrlService = require('./lazy-url-service');
     const {createFindResource} = require('./lazy-find-resource');
-
+    const models = require('../../models');
     lazyUrlService = new LazyUrlService({findResource: createFindResource(models)});
 }
 
-const urlServiceFacade = new UrlServiceFacade({urlService, lazyUrlService});
+const urlServiceFacade = lazyUrlService
+    ? new UrlServiceFacade({urlService, lazyUrlService, compare: true})
+    : new UrlServiceFacade({urlService});
 
 // Singleton: default export remains the eager UrlService for backwards
 // compatibility with existing imports. The new facade is exposed alongside

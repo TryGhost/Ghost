@@ -80,9 +80,9 @@ class ProductsImporter extends TableImporter {
         return Object.assign({}, {
             id: this.fastFakeObjectId(),
             name: name,
-            slug: `${slugify(name)}-${faker.random.numeric(3)}`,
+            slug: `${slugify(name)}-${faker.string.numeric(3)}`,
             visibility: 'public',
-            created_at: faker.date.between(blogStartDate, sixMonthsLater)
+            created_at: faker.date.between({from: blogStartDate, to: sixMonthsLater})
         }, tierInfo);
     }
 }

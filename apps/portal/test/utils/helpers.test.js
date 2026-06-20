@@ -1,8 +1,6 @@
 import {
     getActiveInterval,
-    hasGiftSubscriptions,
-    isStripeConfigured,
-    canPurchaseGift,
+    arePaidMembersEnabled,
     hasAvailablePrices,
     getAllProductsForSite,
     getAvailableProducts,
@@ -709,7 +707,7 @@ describe('Helpers - ', () => {
             const actual = getAvailableProducts({
                 site: {
                     ...FixturesSite.multipleTiers.basic,
-                    is_stripe_configured: false
+                    paid_members_enabled: false
                 }
             });
 
@@ -920,57 +918,21 @@ describe('Helpers - ', () => {
         });
     });
 
-    describe('hasGiftSubscriptions', () => {
-        test('returns true when labs flag is enabled', () => {
-            expect(hasGiftSubscriptions({site: {labs: {giftSubscriptions: true}}})).toBe(true);
+    describe('arePaidMembersEnabled', () => {
+        test('returns true when paid_members_enabled is true', () => {
+            expect(arePaidMembersEnabled({site: {paid_members_enabled: true}})).toBe(true);
         });
 
-        test('returns false when labs flag is disabled', () => {
-            expect(hasGiftSubscriptions({site: {labs: {giftSubscriptions: false}}})).toBe(false);
+        test('returns false when paid_members_enabled is false', () => {
+            expect(arePaidMembersEnabled({site: {paid_members_enabled: false}})).toBe(false);
         });
 
-        test('returns false when labs flag is missing', () => {
-            expect(hasGiftSubscriptions({site: {labs: {}}})).toBe(false);
-        });
-
-        test('returns false when labs is undefined', () => {
-            expect(hasGiftSubscriptions({site: {}})).toBe(false);
-        });
-    });
-
-    describe('isStripeConfigured', () => {
-        test('returns true when is_stripe_configured is true', () => {
-            expect(isStripeConfigured({site: {is_stripe_configured: true}})).toBe(true);
-        });
-
-        test('returns false when is_stripe_configured is false', () => {
-            expect(isStripeConfigured({site: {is_stripe_configured: false}})).toBe(false);
-        });
-
-        test('returns false when is_stripe_configured is missing', () => {
-            expect(isStripeConfigured({site: {}})).toBe(false);
+        test('returns false when paid_members_enabled is missing', () => {
+            expect(arePaidMembersEnabled({site: {}})).toBe(false);
         });
 
         test('returns false when site is undefined', () => {
-            expect(isStripeConfigured({})).toBe(false);
-        });
-    });
-
-    describe('canPurchaseGift', () => {
-        test('returns true when gift subscriptions enabled and Stripe configured', () => {
-            expect(canPurchaseGift({site: {labs: {giftSubscriptions: true}, is_stripe_configured: true}})).toBe(true);
-        });
-
-        test('returns false when gift subscriptions disabled', () => {
-            expect(canPurchaseGift({site: {labs: {giftSubscriptions: false}, is_stripe_configured: true}})).toBe(false);
-        });
-
-        test('returns false when Stripe is not configured', () => {
-            expect(canPurchaseGift({site: {labs: {giftSubscriptions: true}, is_stripe_configured: false}})).toBe(false);
-        });
-
-        test('returns false when both are missing', () => {
-            expect(canPurchaseGift({site: {}})).toBe(false);
+            expect(arePaidMembersEnabled({})).toBe(false);
         });
     });
 

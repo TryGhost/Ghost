@@ -73,8 +73,8 @@ class ImageSize {
     // use probe-image-size to download enough of an image to get it's dimensions
     // returns promise which resolves dimensions
     _probeImageSizeFromUrl(imageUrl) {
-        // probe-image-size uses `request` npm module which doesn't have our `got`
-        // override with custom URL validation so it needs duplicating here
+        // Fast-fail invalid URLs; the underlying got instance also enforces
+        // URL validation + SSRF protection in its beforeRequest hooks.
         if (_.isEmpty(imageUrl) || !this.validator.isURL(imageUrl)) {
             return Promise.reject(new errors.InternalServerError({
                 message: 'URL empty or invalid.',
@@ -83,18 +83,25 @@ class ImageSize {
             }));
         }
 
-        // wrap probe-image-size in a promise in case it is unresponsive/the timeout itself doesn't work
-        return (Promise.race([
-            this.probe(imageUrl, this.NEEDLE_OPTIONS),
-            new Promise((res, rej) => {
-                setTimeout(() => {
-                    rej(new errors.InternalServerError({
-                        message: 'Probe unresponsive.',
-                        code: 'IMAGE_SIZE_URL'
-                    }));
-                }, this.NEEDLE_OPTIONS.response_timeout);
-            })
-        ]));
+        // wrap probe-image-size in a promise in case it is unresponsive/the timeout itself doesn't work.
+        // If the outer timeout wins, destroy the underlying stream (when available) so the pooled
+        // keep-alive socket isn't leaked.
+        const probeResult = this.probe(imageUrl, this.NEEDLE_OPTIONS);
+        let timeoutHandle;
+        const timeoutPromise = new Promise((res, rej) => {
+            timeoutHandle = setTimeout(() => {
+                if (probeResult && probeResult.stream && typeof probeResult.stream.destroy === 'function') {
+                    probeResult.stream.destroy();
+                }
+                rej(new errors.InternalServerError({
+                    message: 'Probe unresponsive.',
+                    code: 'IMAGE_SIZE_URL'
+                }));
+            }, this.NEEDLE_OPTIONS.response_timeout);
+        });
+        return Promise.race([probeResult, timeoutPromise]).finally(() => {
+            clearTimeout(timeoutHandle);
+        });
     }
 
     // download full image then use image-size to get it's dimensions

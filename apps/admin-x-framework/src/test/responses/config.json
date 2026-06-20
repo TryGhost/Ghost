@@ -15,6 +15,10 @@
             "googleApiKey": null,
             "contentFilter": "off"
         },
+        "klipy": {
+            "apiKey": null,
+            "contentFilter": "off"
+        },
         "editor": {
             "url": "http://editor.test/koenig-lexical.umd.js",
             "version": ""

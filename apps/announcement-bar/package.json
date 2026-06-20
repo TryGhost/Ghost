@@ -14,11 +14,11 @@
     "registry": "https://registry.npmjs.org/"
   },
   "dependencies": {
-    "react": "17.0.2",
-    "react-dom": "17.0.2"
+    "react": "catalog:react17",
+    "react-dom": "catalog:react17"
   },
   "scripts": {
-    "dev": "concurrently --kill-others --names preview,build \"vite preview -l silent\" \"pnpm build:watch\"",
+    "dev": "pnpm build && concurrently --kill-others --names preview,build \"vite preview -l silent\" \"pnpm build:watch\"",
     "build": "vite build",
     "build:watch": "vite build --watch",
     "test": "vitest run",

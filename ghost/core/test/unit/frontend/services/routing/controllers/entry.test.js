@@ -53,8 +53,13 @@ describe('Unit - services/routing/controllers/entry', function () {
         };
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
+        // Some tests below toggle config (e.g. admin:redirects) and restore it
+        // inline from async callbacks. Restore unconditionally here too so a
+        // config change can never leak into a co-scheduled file under the
+        // shared module registry (isolate: false).
+        await configUtils.restore();
     });
 
     it('resource not found', function () {
@@ -202,6 +207,91 @@ describe('Unit - services/routing/controllers/entry', function () {
                 done(err);
             });
             return promise;
+        });
+    });
+
+    describe('markdown requests (llms.txt)', function () {
+        let llmsService;
+
+        beforeEach(function () {
+            llmsService = {
+                isEnabled: sinon.stub()
+            };
+
+            req.app = {
+                get: sinon.stub()
+            };
+            req.app.get.withArgs('llmsService').returns(llmsService);
+
+            res.status = sinon.stub().returns(res);
+            res.type = sinon.stub().returns(res);
+            res.send = sinon.spy();
+            res.set = sinon.spy();
+            res.vary = sinon.spy();
+
+            res.routerOptions.isMarkdownRequest = true;
+            res.routerOptions.resourceType = 'posts';
+
+            post.url = '/does-exist/';
+            req.path = '/does-exist.md';
+            req.originalUrl = req.path;
+        });
+
+        it('does not return 403 for non-public posts when the llms feature is disabled', async function () {
+            post.visibility = 'paid';
+            llmsService.isEnabled.returns(false);
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({entry: post});
+
+            await controllers.entry(req, res, sinon.stub());
+
+            sinon.assert.notCalled(res.status);
+            sinon.assert.notCalled(res.send);
+            sinon.assert.calledWith(res.redirect, 302, '/does-exist/');
+        });
+
+        it('redirects public posts to the canonical URL when the llms feature is disabled', async function () {
+            post.visibility = 'public';
+            llmsService.isEnabled.returns(false);
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({entry: post});
+
+            await controllers.entry(req, res, sinon.stub());
+
+            sinon.assert.notCalled(res.send);
+            sinon.assert.calledWith(res.redirect, 302, '/does-exist/');
+        });
+
+        it('returns 403 for non-public posts when the llms feature is enabled', async function () {
+            post.visibility = 'members';
+            llmsService.isEnabled.returns(true);
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({entry: post});
+
+            await controllers.entry(req, res, sinon.stub());
+
+            sinon.assert.calledWith(res.status, 403);
+            sinon.assert.calledWith(res.type, 'text/markdown');
+            sinon.assert.calledOnce(res.send);
+            sinon.assert.notCalled(res.redirect);
+        });
+
+        it('serves markdown for public posts when the llms feature is enabled', async function () {
+            post.url = 'http://127.0.0.1:2369/does-exist/';
+            post.visibility = 'public';
+            llmsService.isEnabled.returns(true);
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({entry: post});
+
+            await controllers.entry(req, res, sinon.stub());
+
+            sinon.assert.calledWith(res.type, 'text/markdown');
+            sinon.assert.calledOnce(res.send);
+            sinon.assert.notCalled(res.redirect);
         });
     });
 });

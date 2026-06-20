@@ -45,7 +45,7 @@ describe('Email Preview API', function () {
         sinon.stub(Date.prototype, 'getFullYear').returns(2025);
     });
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'newsletters', 'posts');
         await agent.loginAsOwner();
@@ -358,7 +358,7 @@ describe('Email Preview API', function () {
     });
 
     describe('As Admin', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsAdmin();
         });
 
@@ -378,7 +378,7 @@ describe('Email Preview API', function () {
     });
 
     describe('As Editor', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsEditor();
         });
 
@@ -398,7 +398,7 @@ describe('Email Preview API', function () {
     });
 
     describe('As Author', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsAuthor();
         });
 
@@ -424,7 +424,7 @@ describe('Email Preview API', function () {
     });
 
     describe('As Contributor', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsContributor();
         });
 

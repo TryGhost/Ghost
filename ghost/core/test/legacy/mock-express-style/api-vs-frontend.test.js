@@ -13,21 +13,21 @@ const themeEngine = require('../../../core/frontend/services/theme-engine');
 describe('Frontend behavior tests', function () {
     let app;
 
-    before(localUtils.urlService.resetGenerators);
-    before(testUtils.teardownDb);
-    before(testUtils.setup('users:roles', 'posts'));
+    beforeAll(localUtils.urlService.resetGenerators);
+    beforeAll(testUtils.teardownDb);
+    beforeAll(testUtils.setup('users:roles', 'posts'));
 
     let postSpy;
 
     describe('default routes.yaml', function () {
-        before(async function () {
+        beforeAll(async function () {
             localUtils.defaultMocks(sinon);
             localUtils.overrideGhostConfig(configUtils);
 
             app = await localUtils.initGhost();
         });
 
-        before(function () {
+        beforeAll(function () {
             configUtils.set('url', 'http://example.com');
             urlUtils.stubUrlUtilsFromConfig();
         });
@@ -43,7 +43,7 @@ describe('Frontend behavior tests', function () {
             sinon.restore();
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
             await urlUtils.restore();
             sinon.restore();
@@ -251,12 +251,12 @@ describe('Frontend behavior tests', function () {
     });
 
     describe('https site: http requests redirect to https', function () {
-        before(function () {
+        beforeAll(function () {
             configUtils.set('url', 'https://example.com');
             urlUtils.stubUrlUtilsFromConfig();
         });
 
-        after(async function () {
+        afterAll(async function () {
             await urlUtils.restore();
             await configUtils.restore();
         });
@@ -328,7 +328,7 @@ describe('Frontend behavior tests', function () {
 
     describe('extended routes.yaml: collections', function () {
         describe('2 collections', function () {
-            before(async function () {
+            beforeAll(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettings').get(() => () => ({
                     routes: {
                         '/': {templates: ['home']}
@@ -367,7 +367,7 @@ describe('Frontend behavior tests', function () {
                 await urlUtils.restore();
             });
 
-            after(function () {
+            afterAll(function () {
                 sinon.restore();
             });
 
@@ -446,7 +446,7 @@ describe('Frontend behavior tests', function () {
         });
 
         describe('no collections', function () {
-            before(async function () {
+            beforeAll(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettings').get(() => () => ({
                     routes: {
                         '/something/': {
@@ -472,7 +472,7 @@ describe('Frontend behavior tests', function () {
                 await urlUtils.restore();
             });
 
-            after(function () {
+            afterAll(function () {
                 sinon.restore();
             });
 
@@ -492,7 +492,7 @@ describe('Frontend behavior tests', function () {
         });
 
         describe('static permalink route', function () {
-            before(async function () {
+            beforeAll(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettings').get(() => () => ({
                     routes: {},
 
@@ -525,7 +525,7 @@ describe('Frontend behavior tests', function () {
                 await urlUtils.restore();
             });
 
-            after(function () {
+            afterAll(function () {
                 sinon.restore();
             });
 
@@ -589,7 +589,7 @@ describe('Frontend behavior tests', function () {
         });
 
         describe('primary author permalink', function () {
-            before(async function () {
+            beforeAll(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettings').get(() => () => ({
                     routes: {},
 
@@ -617,7 +617,7 @@ describe('Frontend behavior tests', function () {
                 await urlUtils.restore();
             });
 
-            after(function () {
+            afterAll(function () {
                 sinon.restore();
             });
 
@@ -665,7 +665,7 @@ describe('Frontend behavior tests', function () {
         });
 
         describe('primary tag permalink', function () {
-            before(async function () {
+            beforeAll(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettings').get(() => () => ({
                     routes: {},
 
@@ -693,7 +693,7 @@ describe('Frontend behavior tests', function () {
                 await urlUtils.restore();
             });
 
-            after(function () {
+            afterAll(function () {
                 sinon.restore();
             });
 
@@ -755,7 +755,7 @@ describe('Frontend behavior tests', function () {
         });
 
         describe('collection/routes with data key', function () {
-            before(async function () {
+            beforeAll(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettings').get(() => () => ({
                     routes: {
                         '/my-page/': {
@@ -840,7 +840,7 @@ describe('Frontend behavior tests', function () {
                 await urlUtils.restore();
             });
 
-            after(function () {
+            afterAll(function () {
                 sinon.restore();
             });
 
@@ -915,7 +915,7 @@ describe('Frontend behavior tests', function () {
 
     describe('extended routes.yaml: templates', function () {
         describe('default template, no template', function () {
-            before(async function () {
+            beforeAll(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettings').get(() => () => ({
                     routes: {},
 
@@ -976,7 +976,7 @@ describe('Frontend behavior tests', function () {
         });
 
         describe('two templates', function () {
-            before(async function () {
+            beforeAll(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettings').get(() => () => ({
                     routes: {},
 
@@ -1003,7 +1003,7 @@ describe('Frontend behavior tests', function () {
                 await urlUtils.restore();
             });
 
-            after(function () {
+            afterAll(function () {
                 sinon.restore();
             });
 
@@ -1023,7 +1023,7 @@ describe('Frontend behavior tests', function () {
         });
 
         describe('home.hbs priority', function () {
-            before(async function () {
+            beforeAll(async function () {
                 sinon.stub(routeSettingsService, 'loadRouteSettings').get(() => () => ({
                     routes: {},
 
@@ -1087,11 +1087,11 @@ describe('Frontend behavior tests', function () {
 
     describe('extended routes.yaml: routes', function () {
         describe('channels', function () {
-            before(localUtils.urlService.resetGenerators);
-            before(testUtils.teardownDb);
-            before(testUtils.setup('users:roles', 'posts'));
+            beforeAll(localUtils.urlService.resetGenerators);
+            beforeAll(testUtils.teardownDb);
+            beforeAll(testUtils.setup('users:roles', 'posts'));
 
-            before(async function () {
+            beforeAll(async function () {
                 localUtils.defaultMocks(sinon, {theme: 'test-theme-channels'});
 
                 sinon.stub(routeSettingsService, 'loadRouteSettings').get(() => () => ({
@@ -1229,7 +1229,7 @@ describe('Frontend behavior tests', function () {
                 await urlUtils.restore();
             });
 
-            after(function () {
+            afterAll(function () {
                 sinon.restore();
             });
 
@@ -1410,7 +1410,7 @@ describe('Frontend behavior tests', function () {
     });
 
     describe('extended routes.yaml (5): rss override', function () {
-        before(async function () {
+        beforeAll(async function () {
             sinon.stub(routeSettingsService, 'loadRouteSettings').get(() => () => ({
                 routes: {
                     '/podcast/rss/': {
@@ -1460,7 +1460,7 @@ describe('Frontend behavior tests', function () {
             await urlUtils.restore();
         });
 
-        after(function () {
+        afterAll(function () {
             sinon.restore();
         });
 

@@ -12,7 +12,6 @@ Router.map(function () {
     this.route('home', {path: '/'});
 
     this.route('setup');
-    this.route('setup.done', {path: '/setup/done'});
 
     this.route('signin');
     this.route('signin-verify', {path: '/signin/verify'});

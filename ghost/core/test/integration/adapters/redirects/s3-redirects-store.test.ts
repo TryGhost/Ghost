@@ -1,4 +1,5 @@
-/* eslint-disable ghost/mocha/no-setup-in-describe -- runStoreContract is the parameterised-test seam; calling it inside describe is the intended use. */
+/* eslint-disable ghost/mocha/no-top-level-hooks -- false positive: the hooks are inside the describe, but the lint plugin can't see through the describe.skipIf()() gate below. (PLA-170) */
+import {describe, it, beforeAll, afterEach, afterAll} from 'vitest';
 import assert from 'node:assert/strict';
 import {ListObjectsV2Command, S3Client} from '@aws-sdk/client-s3';
 
@@ -32,12 +33,15 @@ const backupKeyPattern = (tenantPrefix = '') => new RegExp(
     `^${tenantPrefix ? `${tenantPrefix}/` : ''}${STATIC_PREFIX}/redirects-\\d{4}-\\d{2}-\\d{2}-\\d{2}-\\d{2}-\\d{2}\\.json$`
 );
 
-describe('Integration: S3RedirectsStore', function () {
+// Skip when MinIO is unreachable. The flag is set by the integration
+// globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
+// the forks spawn. (PLA-170)
+describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: S3RedirectsStore', function () {
     let adminClient: S3Client;
     let bucket: string;
     const minioConfig = getMinioConfig();
 
-    before(async function () {
+    beforeAll(async function () {
         adminClient = createTestS3Client();
         bucket = await createTestBucket(adminClient);
     });
@@ -46,7 +50,7 @@ describe('Integration: S3RedirectsStore', function () {
         await emptyTestBucket(adminClient, bucket);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await deleteTestBucket(adminClient, bucket);
     });
 
@@ -91,11 +95,10 @@ describe('Integration: S3RedirectsStore', function () {
             assert.equal(backupBody?.toString('utf-8'), JSON.stringify(initial));
         });
 
-        it('creates a new backup on every overwrite', async function () {
+        it('creates a new backup on every overwrite', {timeout: 15000}, async function () {
             // The backup key generator uses a per-second timestamp, so
             // real waits between writes are needed to guarantee distinct
             // backup keys.
-            this.timeout(15000);
             const store = new S3RedirectsStore({...minioConfig, bucket, staticFileURLPrefix: STATIC_PREFIX});
 
             await store.replaceAll([{from: '/a', to: '/a', permanent: true}]);

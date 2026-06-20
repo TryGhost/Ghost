@@ -27,6 +27,49 @@ describe('Unit: Service: unsplash', function () {
         it('can load next page of search results');
         it('clears photos when starting new search');
         it('loads new when query is cleared');
+
+        it('discards responses that no longer match the current search term', async function () {
+            server.get('https://api.unsplash.com/photos', function () {
+                return [200, {'Content-Type': 'application/json'}, JSON.stringify([])];
+            });
+            server.get('https://api.unsplash.com/search/photos', function () {
+                return [200, {
+                    'Content-Type': 'application/json',
+                    Link: '<https://api.unsplash.com/search/photos?query=cat&page=2>; rel="next"'
+                }, JSON.stringify({results: [{id: 'cat-photo', width: 100, height: 100}]})];
+            });
+
+            let service = this.owner.lookup('service:unsplash');
+            await settled();
+
+            // response for "cat" arrives after the term has changed to "dog"
+            service.set('searchTerm', 'dog');
+            await service._makeRequest('https://api.unsplash.com/search/photos?query=cat', {searchTermAtRequest: 'cat'});
+
+            expect(service.photos.length).to.equal(0);
+            expect(service._pagination.next).to.not.exist;
+        });
+
+        it('adds photos and pagination when the response matches the current search term', async function () {
+            server.get('https://api.unsplash.com/photos', function () {
+                return [200, {'Content-Type': 'application/json'}, JSON.stringify([])];
+            });
+            server.get('https://api.unsplash.com/search/photos', function () {
+                return [200, {
+                    'Content-Type': 'application/json',
+                    Link: '<https://api.unsplash.com/search/photos?query=cat&page=2>; rel="next"'
+                }, JSON.stringify({results: [{id: 'cat-photo', width: 100, height: 100}]})];
+            });
+
+            let service = this.owner.lookup('service:unsplash');
+            await settled();
+
+            service.set('searchTerm', 'cat');
+            await service._makeRequest('https://api.unsplash.com/search/photos?query=cat', {searchTermAtRequest: 'cat'});
+
+            expect(service.photos.length).to.equal(1);
+            expect(service._pagination.next).to.exist;
+        });
     });
 
     describe('columns', function () {

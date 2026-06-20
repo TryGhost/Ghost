@@ -227,17 +227,23 @@ describe('MentionsAPI', function () {
 
     it('Can update recommendations', async function () {
         const repository = new InMemoryMentionRepository();
+        const fetchStub = sinon.stub();
+        // First two calls succeed (processWebmention for source1 and source2)
+        fetchStub.onCall(0).resolves(mockWebmentionMetadata.fetch());
+        fetchStub.onCall(1).resolves(mockWebmentionMetadata.fetch());
+        // refreshMentions: source1 succeeds, source2 fails 3 times in a row
+        fetchStub.onCall(2).resolves(mockWebmentionMetadata.fetch()); // refresh source1 pass 1
+        fetchStub.onCall(3).rejects(new Error('fail')); // refresh source2 fail 1
+        fetchStub.onCall(4).resolves(mockWebmentionMetadata.fetch()); // refresh source1 pass 2
+        fetchStub.onCall(5).rejects(new Error('fail')); // refresh source2 fail 2
+        fetchStub.onCall(6).resolves(mockWebmentionMetadata.fetch()); // refresh source1 pass 3
+        fetchStub.onCall(7).rejects(new Error('fail')); // refresh source2 fail 3 → deleted
+
         const api = new MentionsAPI({
             repository,
             routingService: mockRoutingService,
             resourceService: mockResourceService,
-            webmentionMetadata: {
-                fetch: sinon.stub()
-                    .onFirstCall().resolves(mockWebmentionMetadata.fetch())
-                    .onSecondCall().resolves(mockWebmentionMetadata.fetch())
-                    .onThirdCall().resolves(mockWebmentionMetadata.fetch())
-                    .onCall(3).rejects()
-            }
+            webmentionMetadata: {fetch: fetchStub}
         });
 
         await api.processWebmention({
@@ -259,16 +265,112 @@ describe('MentionsAPI', function () {
         });
         assert(page.meta.pagination.total === 2);
 
-        // Now we invalidate the second mention
+        // First refresh: source2 gets failure 1 of 3 — not deleted yet
+        await api.refreshMentions({limit: 'all'});
+        page = await api.listMentions({limit: 'all'});
+        assert.equal(page.meta.pagination.total, 2, 'Mention should survive first hard failure');
 
-        await api.refreshMentions({
-            limit: 'all'
+        // Second refresh: source2 gets failure 2 of 3 — still not deleted
+        await api.refreshMentions({limit: 'all'});
+        page = await api.listMentions({limit: 'all'});
+        assert.equal(page.meta.pagination.total, 2, 'Mention should survive second hard failure');
+
+        // Third refresh: source2 gets failure 3 of 3 — now deleted
+        await api.refreshMentions({limit: 'all'});
+        page = await api.listMentions({limit: 'all'});
+        assert.equal(page.meta.pagination.total, 1, 'Mention should be deleted after 3rd consecutive hard failure');
+    });
+
+    it('Does not delete mention on transient error during refresh', async function () {
+        const repository = new InMemoryMentionRepository();
+        const transientErr = new Error('Too Many Requests');
+        transientErr.transient = true;
+        transientErr.statusCode = 429;
+
+        const api = new MentionsAPI({
+            repository,
+            routingService: mockRoutingService,
+            resourceService: mockResourceService,
+            webmentionMetadata: {
+                fetch: sinon.stub()
+                    .onFirstCall().resolves(mockWebmentionMetadata.fetch())
+                    .onSecondCall().rejects(transientErr)
+            }
         });
 
-        page = await api.listMentions({
-            limit: 'all'
+        await api.processWebmention({
+            source: new URL('https://source.com'),
+            target: new URL('https://target.com'),
+            payload: {}
         });
-        assert(page.meta.pagination.total === 1);
+
+        await api.refreshMentions({limit: 'all'});
+
+        const page = await api.listMentions({limit: 'all'});
+        assert.equal(page.meta.pagination.total, 1, 'Mention should not be deleted on transient error');
+    });
+
+    it('Increments hard failure count but does not delete when count < 3', async function () {
+        const repository = new InMemoryMentionRepository();
+        const api = new MentionsAPI({
+            repository,
+            routingService: mockRoutingService,
+            resourceService: mockResourceService,
+            webmentionMetadata: {
+                fetch: sinon.stub()
+                    .onFirstCall().resolves(mockWebmentionMetadata.fetch())
+                    .onSecondCall().rejects(new Error('404'))
+            }
+        });
+
+        await api.processWebmention({
+            source: new URL('https://source.com'),
+            target: new URL('https://target.com'),
+            payload: {}
+        });
+
+        await api.refreshMentions({limit: 'all'});
+
+        const page = await api.listMentions({limit: 'all'});
+        assert.equal(page.meta.pagination.total, 1, 'Mention should survive a single hard failure');
+    });
+
+    it('Successful fetch after failures resets the failure count', async function () {
+        const repository = new InMemoryMentionRepository();
+        const fetchStub = sinon.stub();
+        fetchStub.onCall(0).resolves(mockWebmentionMetadata.fetch()); // processWebmention
+        fetchStub.onCall(1).rejects(new Error('fail')); // refresh 1: hard failure 1
+        fetchStub.onCall(2).rejects(new Error('fail')); // refresh 2: hard failure 2
+        fetchStub.onCall(3).resolves(mockWebmentionMetadata.fetch()); // refresh 3: success → resets count
+        fetchStub.onCall(4).rejects(new Error('fail')); // refresh 4: hard failure 1 again
+        fetchStub.onCall(5).rejects(new Error('fail')); // refresh 5: hard failure 2
+
+        const api = new MentionsAPI({
+            repository,
+            routingService: mockRoutingService,
+            resourceService: mockResourceService,
+            webmentionMetadata: {fetch: fetchStub}
+        });
+
+        await api.processWebmention({
+            source: new URL('https://source.com'),
+            target: new URL('https://target.com'),
+            payload: {}
+        });
+
+        // Two hard failures
+        await api.refreshMentions({limit: 'all'});
+        await api.refreshMentions({limit: 'all'});
+
+        // One success — should reset count
+        await api.refreshMentions({limit: 'all'});
+
+        // Two more hard failures — count should be 2, not 4
+        await api.refreshMentions({limit: 'all'});
+        await api.refreshMentions({limit: 'all'});
+
+        const page = await api.listMentions({limit: 'all'});
+        assert.equal(page.meta.pagination.total, 1, 'Mention should survive because success reset the failure count');
     });
 
     it('Can handle updating mentions', async function () {
@@ -449,8 +551,10 @@ describe('MentionsAPI', function () {
             webmentionMetadata: {
                 fetch: sinon.stub()
                     .onFirstCall().resolves(mockWebmentionMetadata.fetch())
-                    .onSecondCall().rejects()
-                    .onThirdCall().resolves(mockWebmentionMetadata.fetch())
+                    .onSecondCall().rejects(new Error('fail'))
+                    .onThirdCall().rejects(new Error('fail'))
+                    .onCall(3).rejects(new Error('fail'))
+                    .onCall(4).resolves(mockWebmentionMetadata.fetch())
             }
         });
 
@@ -470,6 +574,17 @@ describe('MentionsAPI', function () {
         }
 
         checkMentionDeleted: {
+            // Need 3 consecutive hard failures to delete
+            await api.processWebmention({
+                source: new URL('https://source.com'),
+                target: new URL('https://target.com'),
+                payload: {}
+            });
+            await api.processWebmention({
+                source: new URL('https://source.com'),
+                target: new URL('https://target.com'),
+                payload: {}
+            });
             await api.processWebmention({
                 source: new URL('https://source.com'),
                 target: new URL('https://target.com'),

@@ -24,7 +24,7 @@ const Growth: React.FC<postAnalyticsProps> = () => {
     const {stats: postReferrers, totals, isLoading, currencySymbol} = usePostReferrers(postId || '');
     const {appSettings} = useAppContext();
     const navigate = useNavigate();
-    const navigateToMembers = (filter: string) => navigate(buildMembersUrl({filter}), {crossApp: true});
+    const navigateToMembers = (filter: string) => navigate(buildMembersUrl({filter}));
 
     // Get site URL and icon from global data
     const siteUrl = globalData?.url as string | undefined;

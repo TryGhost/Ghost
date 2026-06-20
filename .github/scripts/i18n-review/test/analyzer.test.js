@@ -63,6 +63,73 @@ test('ignores English source locale files', async () => {
     assert.equal(anthropicCalled, false);
 });
 
+test('ignores empty-string placeholder additions seeded by `pnpm translate`', async () => {
+    let anthropicCalled = false;
+    const octokit = createOctokit({
+        files: [{
+            filename: 'ghost/i18n/locales/de/ghost.json',
+            status: 'modified',
+            patch: '@@ -1,1 +1,3 @@\n {\n+  "New key one": "",\n+  "New key two": ""\n }'
+        }]
+    });
+    const anthropic = {
+        messages: {
+            create: async () => {
+                anthropicCalled = true;
+            }
+        }
+    };
+
+    const review = await analyzePR(123, {
+        octokit,
+        anthropic,
+        owner: 'TryGhost',
+        repo: 'Ghost'
+    });
+
+    assert.equal(review, null);
+    assert.equal(anthropicCalled, false);
+    // No file contents should have been fetched — we bail before the network calls.
+    assert.equal(octokit.getContentCalls.length, 0);
+});
+
+test('reviews real translations even when the PR also adds empty placeholders', async () => {
+    let anthropicCalled = false;
+    const octokit = createOctokit({
+        files: [{
+            filename: 'ghost/i18n/locales/de/ghost.json',
+            status: 'modified',
+            patch: '@@ -1,1 +1,3 @@\n {\n+  "Translated": "Übersetzt",\n+  "Placeholder": ""\n }'
+        }]
+    });
+    const anthropic = {
+        messages: {
+            create: async () => {
+                anthropicCalled = true;
+                return {
+                    content: [{
+                        type: 'tool_use',
+                        name: 'post_translation_review',
+                        input: {verdict: 'ok', overall: 'Looks good.', comments: []}
+                    }],
+                    usage: null
+                };
+            }
+        }
+    };
+
+    const review = await analyzePR(123, {
+        octokit,
+        anthropic,
+        owner: 'TryGhost',
+        repo: 'Ghost'
+    });
+
+    assert.equal(anthropicCalled, true);
+    // Only the non-empty line counts toward the review.
+    assert.equal(review.stats.linesReviewed, 1);
+});
+
 test('skips the model call when the PR exceeds the per-PR line cap', async () => {
     const lines = [];
     for (let i = 0; i < 600; i++) {

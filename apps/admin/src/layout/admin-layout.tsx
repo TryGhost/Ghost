@@ -2,7 +2,7 @@ import React from "react";
 import {SidebarInset, SidebarProvider} from "@tryghost/shade/components";
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { isContributorUser } from "@tryghost/admin-x-framework/api/users";
-import { useSidebarVisibility } from "@/ember-bridge/ember-bridge";
+import { useAdminSidebarVisibility } from "@/layout/sidebar-visibility";
 import AppSidebar from "./app-sidebar";
 import { MobileNavBar } from "./app-sidebar/mobile-nav-bar";
 import { ContributorUserMenu } from "./app-sidebar/user-menu";
@@ -13,7 +13,7 @@ interface AdminLayoutProps {
 
 export function AdminLayout({ children }: AdminLayoutProps) {
     const { data: currentUser } = useCurrentUser();
-    const sidebarVisible = useSidebarVisibility();
+    const sidebarVisible = useAdminSidebarVisibility();
     const isContributor = currentUser && isContributorUser(currentUser);
 
     // Contributors get a floating profile menu instead of the full sidebar
@@ -32,7 +32,7 @@ export function AdminLayout({ children }: AdminLayoutProps) {
 
     return (
         <SidebarProvider open={!!currentUser && sidebarVisible}>
-            <AppSidebar />
+            {sidebarVisible && <AppSidebar />}
             <SidebarInset className={`overflow-y-auto bg-background sidebar:max-h-full ${sidebarVisible ? 'max-h-[calc(100%-var(--mobile-navbar-height))]' : 'max-h-full'}`}>
                 <main className="flex-1">{children}</main>
                 <MobileNavBar />

@@ -110,12 +110,12 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                 :
                                                 <FeatureImagePlaceholder className='hidden aspect-[16/10] w-[80px] shrink-0 group-hover:bg-muted-foreground/10 sm:visible! sm:flex! lg:w-[100px]' />
                                             }
-                                            <div className='flex flex-col'>
-                                                <span className='line-clamp-2 text-lg leading-[1.35em] font-semibold'>{post.title}</span>
-                                                <span className='text-sm text-muted-foreground'>
+                                            <div className='flex flex-col gap-0.5'>
+                                                <span className='line-clamp-2 text-md font-semibold'>{post.title}</span>
+                                                <span className='text text-muted-foreground'>
                                                     By {post.authors} &ndash; {formatDisplayDate(post.published_at, siteTimezone)}
                                                 </span>
-                                                <span className='text-sm text-muted-foreground'>
+                                                <span className='text text-muted-foreground'>
                                                     {getPostStatusText(post)}
                                                 </span>
                                             </div>

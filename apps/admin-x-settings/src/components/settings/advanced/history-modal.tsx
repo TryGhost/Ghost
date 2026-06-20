@@ -49,7 +49,6 @@ const HistoryFilterToggle: React.FC<{
         checked={!excludedItems.includes(item)}
         direction='rtl'
         label={label}
-        labelClasses='text-sm'
         onChange={e => toggleItem(item, e.target.checked)}
     />;
 };
@@ -125,7 +124,7 @@ const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
 
         return <>
             {group.slice(0, 1).toUpperCase()}{group.slice(1)}
-            {group !== key && <span className='text-xs'> <code className='mb-1 bg-white text-grey-800 dark:bg-grey-900 dark:text-white'>({key})</code></span>}
+            {group !== key && <span> <code className='mb-1 bg-white text-grey-800 dark:bg-grey-900 dark:text-white'>({key})</code></span>}
         </>;
     } else if (action.resource?.title || action.resource?.name || action.context?.primary_name) {
         const linkTarget = getLinkTarget(action);
@@ -234,7 +233,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                                         new Date(action.created_at).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit', second: '2-digit'})
                                     ].join(' | ')}
                                     title={
-                                        <div className='text-sm'>
+                                        <div>
                                             {getActionTitle(action)}{isBulkAction(action) ? '' : ': '}
                                             {!isBulkAction(action) && <HistoryActionDescription action={action} />}
                                             {action.count ? <> {action.count} times</> : null}

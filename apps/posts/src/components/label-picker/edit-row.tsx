@@ -1,16 +1,16 @@
 import React, {useEffect, useRef, useState} from 'react';
 import {Button} from '@tryghost/shade/components';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
+import {getErrorMessage} from '@tryghost/admin-x-framework/errors';
 
 interface EditRowProps {
     label: Label;
     onSave: (id: string, name: string) => Promise<void>;
     onCancel: () => void;
     onDelete: (id: string) => Promise<void>;
-    isDuplicateName?: (name: string, excludeId?: string) => boolean;
 }
 
-export const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete, isDuplicateName}) => {
+export const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDelete}) => {
     const [name, setName] = useState(label.name);
     const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
     const [error, setError] = useState('');
@@ -24,28 +24,17 @@ export const EditRow: React.FC<EditRowProps> = ({label, onSave, onCancel, onDele
         inputRef.current?.select();
     }, []);
 
-    const validate = (value: string): string => {
-        const trimmed = value.trim();
-        if (!trimmed) {
-            return 'Name is required';
-        }
-        if (isDuplicateName?.(trimmed, label.id)) {
-            return 'A label with this name already exists';
-        }
-        return '';
-    };
-
     const handleSave = async () => {
-        const validationError = validate(name);
-        if (validationError) {
-            setError(validationError);
+        if (!name.trim()) {
+            setError('Name is required');
             return;
         }
         setIsSaving(true);
         try {
             await onSave(label.id, name.trim());
             onCancel();
-        } catch {
+        } catch (saveError) {
+            setError(getErrorMessage(saveError, 'Failed to save label, please try again.'));
             setIsSaving(false);
         }
     };

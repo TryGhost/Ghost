@@ -1,3 +1,4 @@
+/* eslint-disable ghost/mocha/no-top-level-hooks -- false positive: the hooks are inside the describe, but the lint plugin can't see through the describe.skipIf()() gate below. (PLA-170) */
 const assert = require('node:assert/strict');
 const {
     createTestS3Client,
@@ -9,11 +10,14 @@ const {
     deleteObject
 } = require('../../utils/minio');
 
-describe('Integration: MinIO test helper', function () {
+// Skip when MinIO is unreachable. The flag is set by the integration
+// globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
+// the forks spawn. (PLA-170)
+describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: MinIO test helper', function () {
     let client;
     let bucket;
 
-    before(async function () {
+    beforeAll(async function () {
         client = createTestS3Client();
         bucket = await createTestBucket(client);
     });
@@ -22,7 +26,7 @@ describe('Integration: MinIO test helper', function () {
         await emptyTestBucket(client, bucket);
     });
 
-    after(async function () {
+    afterAll(async function () {
         await deleteTestBucket(client, bucket);
     });
 

@@ -242,10 +242,10 @@ export const calculateYAxisWidth = (ticks: number[], formatter: (value: number) 
 
 // Get range for date
 export const getRangeForStartDate = (startDate: string) => {
-    const publishedDate = new Date(startDate);
-    const today = new Date();
-    const diffInTime = today.getTime() - publishedDate.getTime();
-    const diffInDays = Math.ceil(diffInTime / (1000 * 3600 * 24));
+    const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    const publishedDate = moment(startDate).tz(timezone).startOf('day');
+    const today = moment().tz(timezone).startOf('day');
+    const diffInDays = today.diff(publishedDate, 'days') + 1;
 
     // Ensure minimum of 1 day to avoid issues with same-day publications
     return Math.max(diffInDays, 1);

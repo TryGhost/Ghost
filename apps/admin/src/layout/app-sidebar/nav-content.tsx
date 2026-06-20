@@ -3,10 +3,10 @@ import React from "react"
 import {SidebarGroup, SidebarGroupContent, SidebarMenu, SidebarMenuBadge} from "@tryghost/shade/components"
 import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
+import { useMemberCount } from "@tryghost/admin-x-framework/api/members";
 import {getSettingValue, useBrowseSettings} from "@tryghost/admin-x-framework/api/settings";
 import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
-import { useMemberCount } from "./hooks/use-member-count";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
 import { NavMemberViews } from "./nav-member-views";
@@ -25,12 +25,12 @@ function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
                 to={to}
                 isActive={isActive}
             >
-                <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" />
+                <LucideIcon.PenLine className="pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" />
                 <NavMenuItem.Label>Posts</NavMenuItem.Label>
             </NavMenuItem.Link>
             <a href="#/editor/post"
                 aria-label="Create new post"
-                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
+                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2"
             >
                 <LucideIcon.Plus
                     size={20}
@@ -58,7 +58,7 @@ function MembersNavItemContent({
                 to={to}
                 isActive={isActive}
             >
-                <LucideIcon.Users className={collapsible ? "pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0" : ""} />
+                <LucideIcon.Users className={collapsible ? "pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" : ""} />
                 <NavMenuItem.Label>Members</NavMenuItem.Label>
             </NavMenuItem.Link>
             {count != null && (
@@ -78,14 +78,13 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const hasMemberViews = memberViews.length > 0;
     const memberCount = useMemberCount();
     const routing = useEmberRouting();
-    const commentModerationEnabled = useFeatureFlag('commentModeration');
     const automationsEnabled = useFeatureFlag('automations');
     const isMembersRouteActive = useIsActiveLink({path: 'members', activeOnSubpath: true});
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
     const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
-    const showComments = !!showMembers && commentModerationEnabled && commentsEnabled !== 'off';
+    const showComments = !!showMembers && commentsEnabled !== 'off';
     const isDraftPostsRouteActive = routing.isRouteActive('posts', {type: 'draft'});
     const isScheduledPostsRouteActive = routing.isRouteActive('posts', {type: 'scheduled'});
     const isPublishedPostsRouteActive = routing.isRouteActive('posts', {type: 'published'});
@@ -116,35 +115,26 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem.CollapsibleItem>
 
                         <NavMenuItem.CollapsibleMenu>
-                            <NavMenuItem>
-                                <NavMenuItem.Link
-                                    className="pl-9"
-                                    to="posts?type=draft"
-                                    isActive={isDraftPostsRouteActive}
-                                >
-                                    <NavMenuItem.Label>Drafts</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
+                            <NavMenuItem.SubmenuItem
+                                to="posts?type=draft"
+                                isActive={isDraftPostsRouteActive}
+                            >
+                                <NavMenuItem.Label>Drafts</NavMenuItem.Label>
+                            </NavMenuItem.SubmenuItem>
 
-                            <NavMenuItem>
-                                <NavMenuItem.Link
-                                    className="pl-9"
-                                    to="posts?type=scheduled"
-                                    isActive={isScheduledPostsRouteActive}
-                                >
-                                    <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
+                            <NavMenuItem.SubmenuItem
+                                to="posts?type=scheduled"
+                                isActive={isScheduledPostsRouteActive}
+                            >
+                                <NavMenuItem.Label>Scheduled</NavMenuItem.Label>
+                            </NavMenuItem.SubmenuItem>
 
-                            <NavMenuItem>
-                                <NavMenuItem.Link
-                                    className="pl-9"
-                                    to="posts?type=published"
-                                    isActive={isPublishedPostsRouteActive}
-                                >
-                                    <NavMenuItem.Label>Published</NavMenuItem.Label>
-                                </NavMenuItem.Link>
-                            </NavMenuItem>
+                            <NavMenuItem.SubmenuItem
+                                to="posts?type=published"
+                                isActive={isPublishedPostsRouteActive}
+                            >
+                                <NavMenuItem.Label>Published</NavMenuItem.Label>
+                            </NavMenuItem.SubmenuItem>
 
                             <NavCustomViews />
                         </NavMenuItem.CollapsibleMenu>

@@ -135,8 +135,8 @@ const TipsAndDonations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     </div>
                 </div>
             </SettingGroupContent>
-            <div className='items-center-mt-1 flex text-sm'>
-                All tips and donations are subject to Stripe&apos;s <a className='ml-1 text-green' href="https://ghost.org/help/tips-donations/" rel="noopener noreferrer" target="_blank"> tipping policy</a>.
+            <div className='items-center-mt-1 flex'>
+                All tips and donations are subject to Stripe&apos;s <a className='ml-1 font-medium text-green' href="https://ghost.org/help/tips-donations/" rel="noopener noreferrer" target="_blank"> tipping policy</a>.
             </div>
         </TopLevelGroup>
     );

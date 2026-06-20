@@ -19,6 +19,7 @@ module.exports = {
             'emailAnalytics',
             'hostSettings',
             'tenor',
+            'klipy',
             'pintura',
             'signupForm',
             'stats',

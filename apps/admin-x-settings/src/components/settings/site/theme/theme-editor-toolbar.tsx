@@ -1,5 +1,6 @@
 import React from 'react';
 import {Save, X} from 'lucide-react';
+import {formatNumber} from '@tryghost/shade/utils';
 import {ghostButtonClass, primaryButtonClass} from './theme-editor-styles';
 import type {ThemeChange} from './theme-editor-utils';
 
@@ -7,7 +8,6 @@ type ThemeEditorToolbarProps = {
     currentThemeName: string;
     changes: ThemeChange[];
     isSaving: boolean;
-    onOpenReview: () => void;
     onClose: () => void;
     onSave: () => void;
 };
@@ -16,7 +16,6 @@ const ThemeEditorToolbar: React.FC<ThemeEditorToolbarProps> = ({
     currentThemeName,
     changes,
     isSaving,
-    onOpenReview,
     onClose,
     onSave
 }) => {
@@ -27,13 +26,9 @@ const ThemeEditorToolbar: React.FC<ThemeEditorToolbarProps> = ({
                 <span className='truncate text-[12px] text-[#8a8f98]'>{currentThemeName}</span>
             </div>
             {changes.length > 0 && (
-                <button
-                    className='rounded-full border border-transparent bg-[#3b2a16] px-2.5 py-1 text-[11px] leading-none text-[#f5a623] hover:bg-[#49311a]'
-                    type='button'
-                    onClick={onOpenReview}
-                >
-                    {changes.length} {changes.length === 1 ? 'file modified' : 'files modified'}
-                </button>
+                <span className='rounded-full border border-transparent bg-[#3b2a16] px-2.5 py-1 text-[11px] leading-none text-[#f5a623]'>
+                    {formatNumber(changes.length)} {changes.length === 1 ? 'file modified' : 'files modified'}
+                </span>
             )}
             <div className='grow' />
             <button className={ghostButtonClass} type='button' onClick={onClose}>

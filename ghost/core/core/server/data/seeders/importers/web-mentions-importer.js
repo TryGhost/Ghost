@@ -16,7 +16,7 @@ class WebMentionsImporter extends TableImporter {
     generate() {
         const id = this.fastFakeObjectId();
 
-        const author = `${faker.name.fullName()}`;
+        const author = `${faker.person.fullName()}`;
 
         // Generating only incoming recommendations for now, since we don't use webmentions for other things atm
         return {

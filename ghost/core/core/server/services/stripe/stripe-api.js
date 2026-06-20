@@ -3,8 +3,8 @@ const {VersionMismatchError} = require('@tryghost/errors');
 // @ts-ignore
 const debug = require('@tryghost/debug')('stripe');
 const ghostConfig = require('../../../shared/config');
-const Stripe = require('stripe').Stripe;
-const {t} = require('../i18n');
+const stripe = require('stripe');
+const i18n = require('../i18n');
 
 /* Stripe has the following rate limits:
 *  - For most APIs, 100 read requests per second in live mode, 25 read requests per second in test mode
@@ -142,7 +142,7 @@ module.exports = class StripeAPI {
         if (stripeApiProtocol) {
             stripeConfig.protocol = stripeApiProtocol;
         }
-        this._stripe = new Stripe(config.secretKey, stripeConfig);
+        this._stripe = new stripe.Stripe(config.secretKey, stripeConfig);
         this._config = config;
         this._testMode = config.secretKey && config.secretKey.startsWith('sk_test_');
         if (this._testMode) {
@@ -629,11 +629,9 @@ module.exports = class StripeAPI {
          * @type {Stripe.Checkout.SessionCreateParams}
          */
 
-        // TODO - add it higher up the stack to the metadata object.
-        // add ghost_donation key to metadata object
         metadata = {
-            ghost_donation: true,
-            ...metadata
+            ...metadata,
+            ghost_donation: true
         };
 
         const stripeSessionOptions = {
@@ -650,11 +648,8 @@ module.exports = class StripeAPI {
             invoice_creation: {
                 enabled: true,
                 invoice_data: {
-                    // Make sure we pass the data through to the invoice
-                    metadata: {
-                        ghost_donation: true,
-                        ...metadata
-                    }
+                    // Stripe does not inherit Checkout Session metadata for invoice records
+                    metadata
                 }
             },
             line_items: [{
@@ -704,8 +699,8 @@ module.exports = class StripeAPI {
         await this._rateLimitBucket.throttle();
 
         const cadenceLabel = cadence === 'year' ?
-            t('{count} year', {count: duration}) :
-            t('{count} month', {count: duration});
+            i18n.t('{count} year', {count: duration}) :
+            i18n.t('{count} month', {count: duration});
 
         const stripeSessionOptions = {
             mode: 'payment',
@@ -718,12 +713,15 @@ module.exports = class StripeAPI {
             customer: customer ? customer.id : undefined,
             customer_email: !customer && customerEmail ? customerEmail : undefined,
             submit_type: 'pay',
+            invoice_creation: {
+                enabled: true
+            },
             line_items: [{
                 price_data: {
                     currency,
                     unit_amount: amount,
                     product_data: {
-                        name: `${t('Gift subscription')} — ${tierName} (${cadenceLabel})`
+                        name: `${i18n.t('Gift subscription')} — ${tierName} (${cadenceLabel})`
                     }
                 },
                 quantity: 1

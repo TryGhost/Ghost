@@ -8,7 +8,7 @@ describe('Middleware Execution', function () {
     let loadMemberSessionMiddlewareSpy;
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         loadMemberSessionMiddlewareSpy = sinon.spy(membersService.middleware, 'loadMemberSession');
 
         // Ensure we do a forced start so that spy is in place when the server starts
@@ -17,7 +17,7 @@ describe('Middleware Execution', function () {
         request = supertest.agent(configUtils.config.get('url'));
     });
 
-    after(async function () {
+    afterAll(async function () {
         sinon.restore();
 
         await testUtils.stopGhost();

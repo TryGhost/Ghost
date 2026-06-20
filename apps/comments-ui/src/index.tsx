@@ -45,24 +45,17 @@ function handleTokenUrl() {
     }
 }
 
-function getPageUrl(): string {
-    const url = new URL(window.location.href);
-    url.hash = '';
-    return url.toString();
-}
-
 function init() {
     const scriptTag = getScriptTag();
     const root = getRootDiv(scriptTag);
     const initialCommentId = parseCommentIdFromHash(window.location.hash);
-    const pageUrl = getPageUrl();
 
     try {
         handleTokenUrl();
 
         ReactDOM.render(
             <React.StrictMode>
-                {<App initialCommentId={initialCommentId} pageUrl={pageUrl} scriptTag={scriptTag} />}
+                {<App initialCommentId={initialCommentId} scriptTag={scriptTag} />}
             </React.StrictMode>,
             root
         );

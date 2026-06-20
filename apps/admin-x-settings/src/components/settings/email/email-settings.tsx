@@ -11,22 +11,28 @@ export const searchKeywords = {
     enableNewsletters: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off'],
     newsletters: ['newsletters', 'emails', 'design', 'customization'],
     defaultRecipients: ['newsletters', 'default recipients', 'emails'],
-    mailgun: ['mailgun', 'emails', 'newsletters'],
-    newslettersNavMenu: ['emails', 'newsletters', 'newsletter sending', 'enable', 'disable', 'turn on', 'turn off', 'design', 'customization', 'default recipients', 'mailgun', 'tips', 'donations', 'one time', 'payment']
+    mailgun: ['mailgun', 'emails', 'newsletters']
 };
 
 const EmailSettings: React.FC = () => {
     const {settings, config} = useGlobalData();
     const [newslettersEnabled] = getSettingValues(settings, ['editor_default_email_recipients']) as [string];
+    const hasNewslettersEnabled = newslettersEnabled !== 'disabled';
+    const hasMailgun = hasNewslettersEnabled && !config.mailgunIsConfigured;
+    const visibleSearchKeywords = [
+        searchKeywords.enableNewsletters,
+        ...(hasNewslettersEnabled ? [searchKeywords.defaultRecipients, searchKeywords.newsletters] : []),
+        ...(hasMailgun ? [searchKeywords.mailgun] : [])
+    ].flat();
 
     return (
-        <SearchableSection keywords={Object.values(searchKeywords).flat()} title='Newsletters'>
+        <SearchableSection keywords={visibleSearchKeywords} title='Newsletters'>
             <EnableNewsletters keywords={searchKeywords.enableNewsletters} />
-            {newslettersEnabled !== 'disabled' && (
+            {hasNewslettersEnabled && (
                 <>
                     <DefaultRecipients keywords={searchKeywords.defaultRecipients} />
                     <Newsletters keywords={searchKeywords.newsletters} />
-                    {!config.mailgunIsConfigured && <MailGun keywords={searchKeywords.mailgun} />}
+                    {hasMailgun && <MailGun keywords={searchKeywords.mailgun} />}
                 </>
             )}
         </SearchableSection>

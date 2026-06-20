@@ -68,7 +68,7 @@ const EnableNewsletters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                                 <span>Disabled</span>
                             </div>
                             {isDisabled &&
-                            <Banner className='mt-6 text-sm' color='grey'>
+                            <Banner className='mt-6' color='grey'>
                                 Your <button className='underline!' type="button" onClick={() => {
                                     updateRoute('members');
                                 }}>Subscription access</button> is set to &lsquo;Nobody&rsquo;, which disables all newsletter sending. Change to &lsquo;Invite-only&rsquo; to send newsletters to existing members without allowing new signups.

@@ -30,7 +30,7 @@ const Styles = () => {
 
 const NotificationText = ({type, status, message, context}) => {
     const signinPortalLink = getPortalLink({page: 'signin', siteUrl: context.site.url});
-    const singupPortalLink = getPortalLink({page: 'signup', siteUrl: context.site.url});
+    const signupPortalLink = getPortalLink({page: 'signup', siteUrl: context.site.url});
 
     if (message) {
         if (typeof message === 'object') {
@@ -98,13 +98,13 @@ const NotificationText = ({type, status, message, context}) => {
     } else if (type === 'signup' && status === 'error') {
         return (
             <p>
-                {t('Signup error: Invalid link')}<br /><a href={singupPortalLink} target="_parent">{t('Click here to retry')}</a>
+                {t('Signup error: Invalid link')}<br /><a href={signupPortalLink} target="_parent">{t('Click here to retry')}</a>
             </p>
         );
     } else if (type === 'signup-paid' && status === 'error') {
         return (
             <p>
-                {t('Signup error: Invalid link')}<br /><a href={singupPortalLink} target="_parent">{t('Click here to retry')}</a>
+                {t('Signup error: Invalid link')}<br /><a href={signupPortalLink} target="_parent">{t('Click here to retry')}</a>
             </p>
         );
     } else if (type === 'giftRedeem' && status === 'success') {

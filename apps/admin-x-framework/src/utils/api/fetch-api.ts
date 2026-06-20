@@ -1,4 +1,5 @@
 import * as Sentry from '@sentry/react';
+import {useCallback} from 'react';
 import {useFramework} from '../../providers/framework-provider';
 import {APIError, MaintenanceError, ServerUnreachableError, TimeoutError} from '../errors';
 import {getGhostPaths} from '../helpers';
@@ -120,8 +121,9 @@ const fetchWithXhr = (
 export const useFetchApi = () => {
     const {ghostVersion, sentryDSN} = useFramework();
 
+    // Memoized so hooks that depend on fetchApi can cache
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return async <ResponseData = any>(
+    return useCallback(async <ResponseData = any>(
         endpoint: string | URL,
         {
             method = 'GET',
@@ -222,7 +224,7 @@ export const useFetchApi = () => {
         // this can't happen, but TS isn't smart enough to undeerstand that the loop will never exit without an error or return
         // because of retry + attempts usage combination
         return undefined as never;
-    };
+    }, [ghostVersion, sentryDSN]);
 };
 
 const {apiRoot, activityPubRoot} = getGhostPaths();

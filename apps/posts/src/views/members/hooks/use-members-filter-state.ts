@@ -1,7 +1,9 @@
 import {Filter} from '@tryghost/shade/patterns';
-import {hasTimezoneSensitiveMemberFilter, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
+import {getMemberFields} from '../member-fields';
+import {hasTimezoneSensitiveMemberFilter, isPredicateEnabled, parseMemberFilter, serializeMemberFilters} from '../member-filter-query';
 import {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useSearchParams} from 'react-router';
+import type {MemberFields} from '../member-fields';
 
 interface SetFiltersOptions {
     replace?: boolean;
@@ -23,19 +25,31 @@ interface ToSearchParamsOptions {
     filters: Filter[];
     search: string;
     timezone: string;
+    fields: MemberFields;
 }
 
+/**
+ * Should the page hold off parsing the URL filter until more data is in?
+ *
+ * Parsing a date-sensitive filter needs the timezone from settings. If we parse
+ * before it resolves, the writeback effect can round-trip the date in UTC
+ * instead of site time.
+ */
 export function shouldDelayMembersDateFilterHydration(
     filterParam: string | undefined,
-    hasResolvedTimezone: boolean,
-    isSettingsLoading: boolean = !hasResolvedTimezone
+    hasResolvedDependencies: boolean,
+    isLoadingDependencies: boolean = !hasResolvedDependencies
 ): boolean {
-    return Boolean(filterParam) && isSettingsLoading && !hasResolvedTimezone && hasTimezoneSensitiveMemberFilter(filterParam);
+    return Boolean(filterParam) && isLoadingDependencies && !hasResolvedDependencies && hasTimezoneSensitiveMemberFilter(filterParam);
 }
 
-function toSearchParams({baseSearchParams, filters, search, timezone}: ToSearchParamsOptions): URLSearchParams {
+function getEnabledFilters(filters: Filter[], fields: MemberFields): Filter[] {
+    return filters.filter(predicate => isPredicateEnabled(predicate, fields));
+}
+
+function toSearchParams({baseSearchParams, filters, search, timezone, fields}: ToSearchParamsOptions): URLSearchParams {
     const params = new URLSearchParams(baseSearchParams);
-    const filter = serializeMemberFilters(filters, timezone);
+    const filter = serializeMemberFilters(getEnabledFilters(filters, fields), timezone);
 
     params.delete('filter');
     params.delete('search');
@@ -52,14 +66,15 @@ function toSearchParams({baseSearchParams, filters, search, timezone}: ToSearchP
 }
 
 export function useMembersFilterState(timezone: string): UseMembersFilterStateReturn {
+    const fields = useMemo(() => getMemberFields(), []);
     const [searchParams, setSearchParams] = useSearchParams();
     const lastWrittenQueryRef = useRef<string | null>(null);
     const filterParam = useMemo(() => searchParams.get('filter') ?? undefined, [searchParams]);
     const currentQuery = useMemo(() => searchParams.toString(), [searchParams]);
 
     const parsedFilters = useMemo(() => {
-        return parseMemberFilter(filterParam, timezone);
-    }, [filterParam, timezone]);
+        return getEnabledFilters(parseMemberFilter(filterParam, timezone), fields);
+    }, [filterParam, timezone, fields]);
     const [filters, setDraftFilters] = useState<Filter[]>(parsedFilters);
 
     const search = useMemo(() => {
@@ -67,8 +82,8 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
     }, [searchParams]);
 
     const nql = useMemo(() => {
-        return serializeMemberFilters(filters, timezone);
-    }, [filters, timezone]);
+        return serializeMemberFilters(getEnabledFilters(filters, fields), timezone);
+    }, [filters, timezone, fields]);
 
     useEffect(() => {
         if (currentQuery !== lastWrittenQueryRef.current) {
@@ -86,7 +101,8 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
             baseSearchParams: searchParams,
             filters,
             search,
-            timezone
+            timezone,
+            fields
         });
         const nextQuery = nextParams.toString();
 
@@ -94,60 +110,64 @@ export function useMembersFilterState(timezone: string): UseMembersFilterStateRe
             lastWrittenQueryRef.current = nextQuery;
             setSearchParams(nextParams, {replace: true});
         }
-    }, [currentQuery, filters, search, searchParams, setSearchParams, timezone]);
+    }, [currentQuery, filters, search, searchParams, setSearchParams, timezone, fields]);
 
-    const setFilters = useCallback((nextFilters: Filter[], options: SetFiltersOptions = {}) => {
-        const replace = options.replace ?? true;
+    const setFilters = useCallback((nextFilters: Filter[], setOptions: SetFiltersOptions = {}) => {
+        const replace = setOptions.replace ?? true;
         const nextParams = toSearchParams({
             baseSearchParams: searchParams,
             filters: nextFilters,
             search,
-            timezone
+            timezone,
+            fields
         });
 
         setDraftFilters(nextFilters);
         lastWrittenQueryRef.current = nextParams.toString();
         setSearchParams(nextParams, {replace});
-    }, [search, searchParams, setSearchParams, timezone]);
+    }, [search, searchParams, setSearchParams, timezone, fields]);
 
-    const setSearch = useCallback((nextSearch: string, options: SetFiltersOptions = {}) => {
-        const replace = options.replace ?? true;
+    const setSearch = useCallback((nextSearch: string, setOptions: SetFiltersOptions = {}) => {
+        const replace = setOptions.replace ?? true;
         const nextParams = toSearchParams({
             baseSearchParams: searchParams,
             filters,
             search: nextSearch,
-            timezone
+            timezone,
+            fields
         });
 
         lastWrittenQueryRef.current = nextParams.toString();
         setSearchParams(nextParams, {replace});
-    }, [filters, searchParams, setSearchParams, timezone]);
+    }, [filters, searchParams, setSearchParams, timezone, fields]);
 
     const clearFilters = useCallback(({replace = true}: SetFiltersOptions = {}) => {
         const nextParams = toSearchParams({
             baseSearchParams: searchParams,
             filters: [],
             search,
-            timezone
+            timezone,
+            fields
         });
 
         setDraftFilters([]);
         lastWrittenQueryRef.current = nextParams.toString();
         setSearchParams(nextParams, {replace});
-    }, [search, searchParams, setSearchParams, timezone]);
+    }, [search, searchParams, setSearchParams, timezone, fields]);
 
     const clearAll = useCallback(({replace = true}: SetFiltersOptions = {}) => {
         const nextParams = toSearchParams({
             baseSearchParams: searchParams,
             filters: [],
             search: '',
-            timezone
+            timezone,
+            fields
         });
 
         setDraftFilters([]);
         lastWrittenQueryRef.current = nextParams.toString();
         setSearchParams(nextParams, {replace});
-    }, [searchParams, setSearchParams, timezone]);
+    }, [searchParams, setSearchParams, timezone, fields]);
 
     return {
         filters,

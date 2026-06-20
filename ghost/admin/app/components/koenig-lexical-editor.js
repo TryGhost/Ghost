@@ -301,7 +301,7 @@ export default class KoenigLexicalEditor extends Component {
             };
 
             const giftLink = () => {
-                if (this.feature.giftSubscriptions) {
+                if (this.membersUtils.paidMembersEnabled) {
                     return [{
                         label: 'Gift subscriptions',
                         value: '#/portal/gift'
@@ -426,6 +426,7 @@ export default class KoenigLexicalEditor extends Component {
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
+            klipy: this.config.klipy?.apiKey ? this.config.klipy : null,
             fetchAutocompleteLinks,
             fetchEmbed,
             fetchLabels,

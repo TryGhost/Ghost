@@ -11,7 +11,7 @@ const localUtils = require('./utils');
 describe('Pages API', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'users:extra', 'posts');
@@ -34,9 +34,13 @@ describe('Pages API', function () {
         localUtils.API.checkResponse(jsonResponse.meta.pagination, 'pagination');
         assert.equal(_.isBoolean(jsonResponse.pages[0].featured), true);
 
-        // Absolute urls by default
-        assert.match(new URL(jsonResponse.pages[0].url).pathname, /\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}/);
-        assert.equal(new URL(jsonResponse.pages[1].url).pathname, '/contribute/');
+        // Absolute urls by default. Match pages by url rather than by sort index:
+        // fixture pages are seeded with near-identical timestamps, so the relative
+        // order of same-status pages is not stable across databases (PLA-165).
+        const draftPage = jsonResponse.pages.find(page => /\/p\/[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}\//.test(new URL(page.url).pathname));
+        assertExists(draftPage);
+        const contributePage = jsonResponse.pages.find(page => new URL(page.url).pathname === '/contribute/');
+        assertExists(contributePage);
     });
 
     it('Can retrieve pages with just lexical format', async function () {

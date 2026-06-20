@@ -1,25 +1,7 @@
 // @ts-check
+const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {oneAtATime} = require('../../../core/shared/one-at-a-time');
-
-/**
- * Ponyfill of `Promise.withResolvers`.
- *
- * @template T
- * @returns {{
- *     promise: Promise<T>;
- *     resolve: (value: T) => void;
- *     reject: (err: unknown) => void;
- * }}
- */
-const promiseWithResolvers = () => {
-    let resolve, reject;
-    const promise = new Promise((res, rej) => {
-        resolve = res;
-        reject = rej;
-    });
-    return {promise, resolve, reject};
-};
 
 /**
  * A helper function to give the event loop a little time.
@@ -45,7 +27,7 @@ describe('oneAtATime', function () {
     });
 
     it('enqueues a second call while the first is still running', async function () {
-        const first = promiseWithResolvers();
+        const first = Promise.withResolvers();
         const fn = sinon.stub()
             .onFirstCall().returns(first.promise)
             .resolves();
@@ -67,8 +49,8 @@ describe('oneAtATime', function () {
     });
 
     it('only enqueues, at most, one additional call', async function () {
-        const first = promiseWithResolvers();
-        const second = promiseWithResolvers();
+        const first = Promise.withResolvers();
+        const second = Promise.withResolvers();
         const fn = sinon.stub()
             .onFirstCall().returns(first.promise)
             .onSecondCall().returns(second.promise)
@@ -103,8 +85,8 @@ describe('oneAtATime', function () {
     });
 
     it('ignores all errors', async function () {
-        const first = promiseWithResolvers();
-        const second = promiseWithResolvers();
+        const first = Promise.withResolvers();
+        const second = Promise.withResolvers();
         const fn = sinon.stub()
             .onFirstCall().returns(first.promise)
             .onSecondCall().returns(second.promise);
@@ -125,5 +107,44 @@ describe('oneAtATime', function () {
         // running -> idle
         second.reject(new Error('failure'));
         await eventLoop();
+    });
+
+    it('returns a promise that resolves when all work is done', async function () {
+        const first = Promise.withResolvers();
+        const fn = sinon.stub()
+            .onFirstCall().returns(first.promise)
+            .resolves();
+        const run = oneAtATime(fn);
+
+        // idle -> running
+        const p1 = run();
+        let isP1Resolved = false;
+        p1.then(() => {
+            isP1Resolved = true;
+        });
+        await eventLoop();
+        assert.equal(isP1Resolved, false);
+
+        // running -> running+queued
+        const p2 = run();
+        assert.equal(p1, p2, 'concurrent callers receive same promise');
+        await eventLoop();
+        assert.equal(isP1Resolved, false);
+
+        // running+queued -> running
+        first.resolve();
+        await Promise.all([p1, p2]);
+        assert.equal(isP1Resolved, true);
+    });
+
+    it('returns a new promise for each fresh invocation after going idle', async function () {
+        const fn = sinon.stub().resolves();
+        const run = oneAtATime(fn);
+
+        const p1 = run();
+        await p1;
+        const p2 = run();
+
+        assert.notEqual(p1, p2);
     });
 });

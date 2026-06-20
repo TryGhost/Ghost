@@ -2,7 +2,6 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const _ = require('lodash');
 const testUtils = require('../../../../utils');
 const moment = require('moment');
@@ -13,18 +12,29 @@ const fs = require('fs-extra');
 const ImportManager = require('../../../../../core/server/data/importer');
 
 const JSONHandler = require('../../../../../core/server/data/importer/handlers/json');
-let ImageHandler = rewire('../../../../../core/server/data/importer/handlers/image');
+const ImageHandler = Object.assign({}, require('../../../../../core/server/data/importer/handlers/image'));
 const MarkdownHandler = require('../../../../../core/server/data/importer/handlers/markdown');
 const RevueHandler = require('../../../../../core/server/data/importer/handlers/revue');
 const DataImporter = require('../../../../../core/server/data/importer/importers/data');
 const RevueImporter = require('../../../../../core/server/data/importer/importers/importer-revue');
+const UsersImporter = require('../../../../../core/server/data/importer/importers/data/users-importer');
+const RolesImporter = require('../../../../../core/server/data/importer/importers/data/roles-importer');
+const TagsImporter = require('../../../../../core/server/data/importer/importers/data/tags-importer');
+const NewslettersImporter = require('../../../../../core/server/data/importer/importers/data/newsletters-importer');
+const SettingsImporter = require('../../../../../core/server/data/importer/importers/data/settings-importer');
+const ProductsImporter = require('../../../../../core/server/data/importer/importers/data/products-importer');
+const StripeProductsImporter = require('../../../../../core/server/data/importer/importers/data/stripe-products-importer');
+const StripePricesImporter = require('../../../../../core/server/data/importer/importers/data/stripe-prices-importer');
+const PostsImporter = require('../../../../../core/server/data/importer/importers/data/posts-importer');
+const CustomThemeSettingsImporter = require('../../../../../core/server/data/importer/importers/data/custom-theme-settings-importer');
+const RevueSubscriberImporter = require('../../../../../core/server/data/importer/importers/data/revue-subscriber-importer');
+const Base = require('../../../../../core/server/models/base');
 const configUtils = require('../../../../utils/config-utils');
 const logging = require('@tryghost/logging');
 
 describe('Importer', function () {
     afterEach(async function () {
         sinon.restore();
-        ImageHandler = rewire('../../../../../core/server/data/importer/handlers/image');
         await configUtils.restore();
     });
 
@@ -681,6 +691,49 @@ describe('Importer', function () {
             assert.deepEqual(inputData.data.data.posts[0], outputData.data.data.posts[0]);
             assert.deepEqual(inputData.data.data.tags[0], outputData.data.data.tags[0]);
             assert.deepEqual(inputData.data.data.users[0], outputData.data.data.users[0]);
+        });
+
+        it('rejects with a DataImportError carrying the importer errors when the import fails', async function () {
+            const importError = new errors.ValidationError({
+                message: 'Value in [posts.title] exceeds maximum length of 2000 characters.',
+                context: '{"title":"..."}'
+            });
+
+            [
+                UsersImporter,
+                RolesImporter,
+                TagsImporter,
+                NewslettersImporter,
+                SettingsImporter,
+                ProductsImporter,
+                StripeProductsImporter,
+                StripePricesImporter,
+                CustomThemeSettingsImporter,
+                RevueSubscriberImporter
+            ].forEach((Importer) => {
+                sinon.stub(Importer.prototype, 'fetchExisting').resolves();
+                sinon.stub(Importer.prototype, 'beforeImport').resolves();
+                sinon.stub(Importer.prototype, 'replaceIdentifiers').resolves();
+                sinon.stub(Importer.prototype, 'doImport').resolves();
+            });
+
+            sinon.stub(PostsImporter.prototype, 'fetchExisting').resolves();
+            sinon.stub(PostsImporter.prototype, 'beforeImport').resolves();
+            sinon.stub(PostsImporter.prototype, 'replaceIdentifiers').resolves();
+            sinon.stub(PostsImporter.prototype, 'doImport').callsFake(function () {
+                this.errors.push(importError);
+            });
+
+            sinon.stub(Base, 'transaction').callsFake(fn => fn({fake: 'transacting'}));
+
+            await assert.rejects(DataImporter.doImport({meta: {version: '4.0.0'}, data: {}}, {}), (err) => {
+                assert(err instanceof Error);
+                assert(err instanceof errors.DataImportError);
+                assert.equal(err.message, importError.message);
+                assert.equal(err.context, importError.context);
+                assert.deepEqual(err.errorDetails, [importError]);
+                return true;
+            });
         });
     });
 });

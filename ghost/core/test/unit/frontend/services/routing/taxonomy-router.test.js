@@ -5,7 +5,8 @@ const settingsCache = require('../../../../../core/shared/settings-cache');
 const controllers = require('../../../../../core/frontend/services/routing/controllers');
 const TaxonomyRouter = require('../../../../../core/frontend/services/routing/taxonomy-router');
 
-const RESOURCE_CONFIG = require('../../../../../core/frontend/services/routing/config');
+const {QUERY, TAXONOMIES} = require('../../../../../core/frontend/services/routing/config');
+const RESOURCE_CONFIG = {QUERY, TAXONOMIES};
 
 describe('UNIT - services/routing/TaxonomyRouter', function () {
     let req;

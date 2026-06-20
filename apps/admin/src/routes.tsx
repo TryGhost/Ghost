@@ -25,7 +25,7 @@ const EMBER_ROUTES: string[] = [
     "/dashboard",
     "/site",
     "/launch",
-    "/setup/*",
+    "/setup",
     "/signin/*",
     "/signout",
     "/signup/*",

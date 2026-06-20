@@ -1,7 +1,10 @@
 import {DATE_FILTER_OPERATORS, DEFAULT_DATE_OPERATOR} from '../filters/filter-date';
+import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD, MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER, NO_MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER} from './multiple-active-subscriptions';
 import {dateCodec, numberCodec, scalarCodec, setCodec, textCodec} from '../filters/filter-codecs';
 import {defineFields} from '../filters/filter-types';
 import {escapeNqlString} from '../filters/filter-normalization';
+import {extractComparator} from '../filters/filter-ast';
+import {withFutureRelativeOperator, withPastRelativeOperator} from '../filters/filter-relative-date';
 import type {FilterCodec} from '../filters/filter-types';
 
 const TEXT_OPERATORS = ['is', 'contains', 'does-not-contain', 'starts-with', 'ends-with'] as const;
@@ -90,7 +93,52 @@ const feedbackCodec: FilterCodec = {
     }
 };
 
-export const memberFields = defineFields({
+const multipleActiveSubscriptionsCodec: FilterCodec = {
+    parse(node, ctx) {
+        const comparator = extractComparator(node as Record<string, unknown>);
+
+        if (!comparator || comparator.field !== ctx.key) {
+            return null;
+        }
+
+        if (comparator.operator === '$gt' && comparator.value === 1) {
+            return {
+                field: ctx.key,
+                operator: 'is',
+                values: ['true']
+            };
+        }
+
+        if (comparator.operator === '$lt' && comparator.value === 2) {
+            return {
+                field: ctx.key,
+                operator: 'is',
+                values: ['false']
+            };
+        }
+
+        return null;
+    },
+    serialize(predicate) {
+        const value = predicate.values[0];
+
+        if (predicate.operator !== 'is') {
+            return null;
+        }
+
+        if (value === 'true') {
+            return [MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER];
+        }
+
+        if (value === 'false') {
+            return [NO_MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER];
+        }
+
+        return null;
+    }
+};
+
+const baseMemberFields = defineFields({
     name: {
         operators: TEXT_OPERATORS,
         ui: {
@@ -396,5 +444,33 @@ export const memberFields = defineFields({
             }
         },
         codec: setCodec({quoteStrings: true, serializeSingletonAsScalar: true})
+    },
+    [MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD]: {
+        operators: ['is'],
+        ui: {
+            label: 'Multiple active subscriptions',
+            type: 'select',
+            searchable: false,
+            hideOperatorSelect: true
+        },
+        options: [
+            {value: 'true', label: 'Yes'},
+            {value: 'false', label: 'No'}
+        ],
+        codec: multipleActiveSubscriptionsCodec
     }
 });
+
+export const memberFields = defineFields({
+    ...baseMemberFields,
+    last_seen_at: withPastRelativeOperator(baseMemberFields.last_seen_at),
+    created_at: withPastRelativeOperator(baseMemberFields.created_at),
+    'subscriptions.start_date': withPastRelativeOperator(baseMemberFields['subscriptions.start_date']),
+    'subscriptions.current_period_end': withFutureRelativeOperator(baseMemberFields['subscriptions.current_period_end'])
+});
+
+export type MemberFields = typeof memberFields;
+
+export function getMemberFields(): MemberFields {
+    return memberFields;
+}

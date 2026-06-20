@@ -29,6 +29,7 @@ module.exports.formattedMemberResponse = function formattedMemberResponse(member
         paid: member.status !== 'free',
         created_at: member.created_at,
         enable_comment_notifications: member.enable_comment_notifications,
+        enable_updates_and_announcements: member.enable_updates_and_announcements,
         can_comment: member.can_comment,
         commenting: member.commenting
     };

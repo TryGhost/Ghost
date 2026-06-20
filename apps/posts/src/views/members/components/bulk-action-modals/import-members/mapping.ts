@@ -1,6 +1,5 @@
 type FieldMappingOptions = {
     importMemberTier?: boolean;
-    giftSubscriptionsEnabled?: boolean;
 };
 
 export const FIELD_MAPPINGS = [
@@ -11,11 +10,11 @@ export const FIELD_MAPPINGS = [
     {label: 'Stripe Customer ID', value: 'stripe_customer_id'},
     {label: 'Complimentary plan', value: 'complimentary_plan'},
     {label: 'Labels', value: 'labels'},
-    {label: 'Created at', value: 'created_at'}
+    {label: 'Created at', value: 'created_at'},
+    {label: 'Gift ID', value: 'gift_id'}
 ];
 
 const IMPORT_TIER_FIELD_MAPPING = {label: 'Tier', value: 'import_tier'};
-const GIFT_ID_FIELD_MAPPING = {label: 'Gift ID', value: 'gift_id'};
 
 const SUPPORTED_TYPES = [
     'email',
@@ -25,22 +24,21 @@ const SUPPORTED_TYPES = [
     'complimentary_plan',
     'stripe_customer_id',
     'labels',
-    'created_at'
+    'created_at',
+    'gift_id'
 ];
 
-function getSupportedTypes({importMemberTier = false, giftSubscriptionsEnabled = false}: FieldMappingOptions = {}): string[] {
+function getSupportedTypes({importMemberTier = false}: FieldMappingOptions = {}): string[] {
     return [
         ...SUPPORTED_TYPES,
-        ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING.value] : []),
-        ...(giftSubscriptionsEnabled ? [GIFT_ID_FIELD_MAPPING.value] : [])
+        ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING.value] : [])
     ];
 }
 
-export function getFieldMappings({importMemberTier = false, giftSubscriptionsEnabled = false}: FieldMappingOptions = {}) {
+export function getFieldMappings({importMemberTier = false}: FieldMappingOptions = {}) {
     return [
         ...FIELD_MAPPINGS,
-        ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : []),
-        ...(giftSubscriptionsEnabled ? [GIFT_ID_FIELD_MAPPING] : [])
+        ...(importMemberTier ? [IMPORT_TIER_FIELD_MAPPING] : [])
     ];
 }
 

@@ -11,13 +11,14 @@ import { useNotificationsCountForUser } from "@tryghost/activitypub/api";
 import NetworkIcon from "./icons/network-icon";
 import { NavMenuItem } from "./nav-menu-item";
 import { useIsActiveLink } from "./use-is-active-link";
+import { getAdminToolbarUrl } from "@/utils/admin-toolbar-url";
 
 function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const { data: settings } = useBrowseSettings();
     const networkEnabled = getSettingValue<boolean>(settings?.settings, 'social_web_enabled') ?? false;
     const site = useBrowseSite();
-    const url = site.data?.site.url;
+    const url = getAdminToolbarUrl(site.data?.site.url);
 
 
     // The network app has its own notification state, so we don't want to show
@@ -62,7 +63,7 @@ function NavMain({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             target="_blank"
                             aria-label="View site in new tab"
                             rel="noopener noreferrer"
-                            className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground">
+                            className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full text-gray-700 opacity-0 ring-sidebar-ring outline-hidden transition-all group-hover/viewsite:opacity-100 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:opacity-100 focus-visible:ring-2">
                                 <LucideIcon.ExternalLink size={16} />
                         </a>
                     </NavMenuItem>

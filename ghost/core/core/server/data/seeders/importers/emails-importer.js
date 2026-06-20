@@ -56,25 +56,25 @@ class EmailsImporter extends TableImporter {
         const recipientCount = this.membersSubscribeEvents
             .filter(entry => entry.newsletter_id === newsletter.id)
             .filter(entry => dateToDatabaseString.parse(entry.created_at) < timestamp).length;
-        const deliveredCount = Math.ceil(recipientCount * faker.datatype.float({
+        const deliveredCount = Math.ceil(recipientCount * faker.number.float({
             max: 1,
             min: 0.9,
-            precision: 0.001
+            multipleOf: 0.001
         }));
-        const openedCount = Math.ceil(deliveredCount * faker.datatype.float({
+        const openedCount = Math.ceil(deliveredCount * faker.number.float({
             max: 0.95,
             min: 0.6,
-            precision: 0.001
+            multipleOf: 0.001
         }));
-        const failedCount = Math.floor((recipientCount - deliveredCount) * faker.datatype.float({
+        const failedCount = Math.floor((recipientCount - deliveredCount) * faker.number.float({
             max: 0.05,
             min: 0,
-            precision: 0.001
+            multipleOf: 0.001
         }));
 
         return {
             id,
-            uuid: faker.datatype.uuid(),
+            uuid: faker.string.uuid(),
             post_id: this.model.id,
             status: 'submitted',
             recipient_filter: '', // TODO: Add recipient filter?

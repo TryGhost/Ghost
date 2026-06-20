@@ -6,7 +6,7 @@
  * }} facade
  */
 
-const toPlain = require('../../lib/common/to-plain');
+const {toPlain} = require('../../lib/common/to-plain');
 
 const TYPE_TO_RESOURCE = {
     post: 'posts',

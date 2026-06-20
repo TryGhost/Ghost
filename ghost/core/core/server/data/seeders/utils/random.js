@@ -5,7 +5,7 @@ const {faker} = require('@faker-js/faker');
  * @param {number} lowerThan Only this % of people will achieve this luck
  * @returns {boolean} Whether this person is lucky enough for the condition
  */
-const luck = lowerThan => faker.datatype.number({
+const luck = lowerThan => faker.number.int({
     min: 1,
     max: 100
 }) <= lowerThan;

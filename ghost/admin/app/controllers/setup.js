@@ -17,6 +17,7 @@ export default class SetupController extends Controller.extend(ValidationEngine)
     @service ajax;
     @service ghostPaths;
     @service notifications;
+    @service onboarding;
     @service router;
     @service session;
 
@@ -61,7 +62,7 @@ export default class SetupController extends Controller.extend(ValidationEngine)
 
             return true;
         } catch (error) {
-            // handle setup/done route redirecting to dashboard
+            // handle React onboarding handoff
             if (error.message === 'TransitionAborted') {
                 return true;
             }
@@ -146,7 +147,7 @@ export default class SetupController extends Controller.extend(ValidationEngine)
             let [apiError] = error.payload.errors;
             this.set('flowErrors', [apiError.message, apiError.context].join(' '));
         } else {
-            // ignore setup/done route redirecting to dashboard
+            // ignore React onboarding handoff
             if (error.message === 'TransitionAborted') {
                 return true;
             }
@@ -158,7 +159,8 @@ export default class SetupController extends Controller.extend(ValidationEngine)
 
     async _afterAuthentication() {
         await this.session.handleAuthentication();
+        await this.onboarding.startChecklist();
 
-        return this.router.transitionTo('setup.done');
+        window.location.hash = '/setup/onboarding?returnTo=/analytics';
     }
 }

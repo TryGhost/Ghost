@@ -1,6 +1,6 @@
 import FollowButton from './follow-button';
 import React, {useEffect, useState} from 'react';
-import getUsername from '../../utils/get-username';
+import getHandle from '../../utils/get-handle';
 import {Account} from '@src/api/activitypub';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Avatar, AvatarFallback, AvatarImage, Badge, HoverCard, HoverCardContent, HoverCardTrigger, Skeleton} from '@tryghost/shade/components';
@@ -36,7 +36,7 @@ const ProfilePreviewHoverCard: React.FC<ProfilePreviewHoverCardProps> = ({
 
     let targetHandle = actor?.handle;
     if (!targetHandle && actor && isActorProperties(actor)) {
-        targetHandle = getUsername(actor);
+        targetHandle = getHandle(actor);
     }
 
     const bypassHover = disabled || (!targetHandle && !actor);

@@ -22,11 +22,11 @@ class StripeProductsImporter extends TableImporter {
         return {
             id: this.fastFakeObjectId(),
             product_id: this.model.id,
-            stripe_product_id: faker.datatype.hexadecimal({
+            stripe_product_id: faker.string.hexadecimal({
                 length: 64,
                 prefix: ''
             }),
-            created_at: faker.date.between(blogStartDate, sixWeeksLater)
+            created_at: faker.date.between({from: blogStartDate, to: sixWeeksLater})
         };
     }
 }

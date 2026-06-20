@@ -40,11 +40,11 @@ Object {
 exports[`Backup Integration Backup API Backup Integration Can export members CSV 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-disposition": StringMatching /attachment; filename="members\\\\\\./,
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": StringMatching /\\^Attachment; filename="\\(\\?:\\[a-z0-9-\\]\\+\\\\\\.\\)\\?ghost\\\\\\.members\\\\\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\\\\\.csv"\\$/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -168,11 +168,11 @@ Object {
 exports[`Backup Integration Backup API Owner: Staff token Can export members CSV 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-disposition": StringMatching /attachment; filename="members\\\\\\./,
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": StringMatching /\\^Attachment; filename="\\(\\?:\\[a-z0-9-\\]\\+\\\\\\.\\)\\?ghost\\\\\\.members\\\\\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\\\\\.csv"\\$/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -203,11 +203,11 @@ Object {
 exports[`Backup Integration Backup API Owner: User authentication Can export members CSV 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-disposition": StringMatching /attachment; filename="members\\\\\\./,
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": StringMatching /\\^Attachment; filename="\\(\\?:\\[a-z0-9-\\]\\+\\\\\\.\\)\\?ghost\\\\\\.members\\\\\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\\\\\.csv"\\$/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;
@@ -215,11 +215,11 @@ Object {
 exports[`Backup Integration Backup API Zapier Integration Can export members CSV 1: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
-  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-disposition": StringMatching /attachment; filename="members\\\\\\./,
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0, no-transform",
+  "content-disposition": StringMatching /\\^Attachment; filename="\\(\\?:\\[a-z0-9-\\]\\+\\\\\\.\\)\\?ghost\\\\\\.members\\\\\\.\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}\\\\\\.csv"\\$/,
   "content-type": "text/csv; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
-  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "vary": "Accept-Version, Origin",
   "x-powered-by": "Express",
 }
 `;

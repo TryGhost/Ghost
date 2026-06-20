@@ -33,10 +33,16 @@ describe('generateCode', function () {
         assert.equal(generateCode(genOptions), '<div style="min-height: 58px;max-width: 440px;margin: 0 auto;width: 100%"><script src="https://example.com" data-label-1="label1" data-label-2="label2" data-button-color="#000000" data-button-text-color="#FFFFFF" data-site="https://example.com" data-locale="af" async></script></div>');
     });
 
-    it('generated an embed with an icon', function () {
+    it('generated an embed with an icon that has no size segment', function () {
+        genOptions.settings.icon = 'https://example.com/content/images/2023/09/snoopy.png';
+        genOptions.layout = 'all-in-one';
+        assert.equal(generateCode(genOptions), '<div style="height: 40vmin;min-height: 360px"><script src="https://example.com" data-background-color="#000000" data-text-color="#FFFFFF" data-button-color="#000000" data-button-text-color="#FFFFFF" data-title="" data-description="" data-icon="https://example.com/content/images/size/w192h192/2023/09/snoopy.png" data-site="https://example.com" data-locale="af" async></script></div>');
+    });
+
+    it('generated an embed with an icon that already has a size segment', function () {
         genOptions.settings.icon = 'https://example.com/content/images/size/w256h256/2023/09/snoopy.png';
         genOptions.layout = 'all-in-one';
-        assert.equal(generateCode(genOptions), '<div style="height: 40vmin;min-height: 360px"><script src="https://example.com" data-background-color="#000000" data-text-color="#FFFFFF" data-button-color="#000000" data-button-text-color="#FFFFFF" data-title="" data-description="" data-icon="https://example.com/content/images/size/w192h192/size/w256h256/2023/09/snoopy.png" data-site="https://example.com" data-locale="af" async></script></div>');
+        assert.equal(generateCode(genOptions), '<div style="height: 40vmin;min-height: 360px"><script src="https://example.com" data-background-color="#000000" data-text-color="#FFFFFF" data-button-color="#000000" data-button-text-color="#FFFFFF" data-title="" data-description="" data-icon="https://example.com/content/images/size/w192h192/2023/09/snoopy.png" data-site="https://example.com" data-locale="af" async></script></div>');
     });
 
     it('renders a full preview', function () {

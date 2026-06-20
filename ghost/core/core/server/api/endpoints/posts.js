@@ -1,5 +1,6 @@
 const urlUtils = require('../../../shared/url-utils');
 const models = require('../../models');
+const {getCSVExportFileName} = require('./utils/csv-export-filename');
 const getPostServiceInstance = require('../../services/posts/posts-service-instance');
 const allowedIncludes = [
     'tags',
@@ -91,8 +92,7 @@ const controller = {
             disposition: {
                 type: 'csv',
                 value() {
-                    const datetime = (new Date()).toJSON().substring(0, 10);
-                    return `post-analytics.${datetime}.csv`;
+                    return getCSVExportFileName('analytics');
                 }
             },
             cacheInvalidate: false
@@ -107,7 +107,8 @@ const controller = {
         validation: {},
         async query(frame) {
             return {
-                data: await postsService.export(frame)
+                data: await postsService.export(frame),
+                filename: getCSVExportFileName('analytics')
             };
         }
     },
@@ -277,6 +278,19 @@ const controller = {
             method: 'destroy'
         },
         async query(frame) {
+            const postsToDelete = await models.Post.findAll({
+                filter: frame.options.filter,
+                status: 'all',
+                columns: ['status']
+            });
+
+            const allDraft = postsToDelete.length > 0 && postsToDelete.every((post) => {
+                return post.get('status') === 'draft';
+            });
+            if (allDraft) {
+                frame.setHeader('X-Cache-Invalidate', '');
+            }
+
             return await postsService.bulkDestroy(frame.options);
         }
     },
@@ -303,7 +317,16 @@ const controller = {
         permissions: {
             unsafeAttrs: unsafeAttrs
         },
-        query(frame) {
+        async query(frame) {
+            const post = await models.Post.findOne({
+                id: frame.options.id,
+                status: 'all'
+            }, {require: false, columns: ['status']});
+
+            if (post && post.get('status') === 'draft') {
+                frame.setHeader('X-Cache-Invalidate', '');
+            }
+
             return models.Post.destroy({...frame.options, require: true});
         }
     },

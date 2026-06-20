@@ -19,7 +19,7 @@ import {
 
 const SIDEBAR_COOKIE_NAME = 'sidebar:state';
 const SIDEBAR_COOKIE_MAX_AGE = 60 * 60 * 24 * 7;
-const SIDEBAR_WIDTH = '30rem';
+const SIDEBAR_WIDTH = '300px';
 const SIDEBAR_WIDTH_MOBILE = '28rem';
 const SIDEBAR_WIDTH_ICON = '4rem';
 const SIDEBAR_KEYBOARD_SHORTCUT = 'b';
@@ -33,6 +33,7 @@ type SidebarContext = {
     setOpenMobile: (open: boolean) => void
     isMobile: boolean
     toggleSidebar: () => void
+    sidebarId: string
 }
 
 const SidebarContext = React.createContext<SidebarContext | null>(null);
@@ -68,6 +69,7 @@ React.ComponentProps<'div'> & {
         ) => {
             const isMobile = useIsMobile();
             const [openMobile, setOpenMobile] = React.useState(false);
+            const sidebarId = React.useId();
 
             // This is the internal state of the sidebar.
             // We use openProp and setOpenProp for control from outside the component.
@@ -123,9 +125,10 @@ React.ComponentProps<'div'> & {
                     isMobile,
                     openMobile,
                     setOpenMobile,
-                    toggleSidebar
+                    toggleSidebar,
+                    sidebarId
                 }),
-                [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar]
+                [state, open, setOpen, isMobile, openMobile, setOpenMobile, toggleSidebar, sidebarId]
             );
 
             return (
@@ -174,7 +177,7 @@ const Sidebar = React.forwardRef<
         },
         ref
     ) => {
-        const {isMobile, state, openMobile, setOpenMobile} = useSidebar();
+        const {isMobile, state, openMobile, setOpenMobile, sidebarId} = useSidebar();
 
         if (collapsible === 'none') {
             return (
@@ -184,6 +187,7 @@ const Sidebar = React.forwardRef<
                         'flex h-full w-(--sidebar-width) flex-col bg-sidebar text-sidebar-foreground',
                         className
                     )}
+                    id={sidebarId}
                     role="navigation"
                     {...props}
                 >
@@ -199,6 +203,7 @@ const Sidebar = React.forwardRef<
                         className="w-(--sidebar-width) bg-sidebar p-0 text-sidebar-foreground [&>button]:hidden"
                         data-mobile="true"
                         data-sidebar="sidebar"
+                        id={sidebarId}
                         role="navigation"
                         side={side}
                         style={
@@ -221,6 +226,7 @@ const Sidebar = React.forwardRef<
                 data-side={side}
                 data-state={state}
                 data-variant={variant}
+                id={sidebarId}
                 role="navigation"
             >
                 {/* This is what handles the sidebar gap on desktop */}
@@ -265,11 +271,13 @@ const SidebarTrigger = React.forwardRef<
     React.ElementRef<typeof Button>,
     React.ComponentProps<typeof Button>
 >(({children, className, onClick, ...props}, ref) => {
-    const {toggleSidebar} = useSidebar();
+    const {toggleSidebar, open, openMobile, isMobile, sidebarId} = useSidebar();
 
     return (
         <Button
             ref={ref}
+            aria-controls={sidebarId}
+            aria-expanded={isMobile ? openMobile : open}
             className={cn('h-7 w-7', className)}
             data-sidebar="trigger"
             size="icon"
@@ -488,7 +496,7 @@ const SidebarGroupContent = React.forwardRef<
 >(({className, ...props}, ref) => (
     <div
         ref={ref}
-        className={cn('w-full text-sm', className)}
+        className={cn('w-full text-control', className)}
         data-sidebar="group-content"
         {...props}
     />
@@ -501,7 +509,7 @@ const SidebarMenu = React.forwardRef<
 >(({className, ...props}, ref) => (
     <ul
         ref={ref}
-        className={cn('flex w-full min-w-0 flex-col gap-0.5', className)}
+        className={cn('flex w-full min-w-0 flex-col gap-px', className)}
         data-sidebar="menu"
         {...props}
     />
@@ -522,18 +530,18 @@ const SidebarMenuItem = React.forwardRef<
 SidebarMenuItem.displayName = 'SidebarMenuItem';
 
 const sidebarMenuButtonVariants = cva(
-    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md px-3 py-2 text-left text-md font-medium text-sidebar-foreground ring-sidebar-ring outline-hidden transition-all group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
+    'peer/menu-button flex w-full items-center gap-2 overflow-hidden rounded-md px-3 py-2 text-left text-control font-medium text-sidebar-foreground ring-sidebar-ring outline-hidden transition-all group-has-[[data-sidebar=menu-action]]/menu-item:pr-8 group-data-[collapsible=icon]:size-8! group-data-[collapsible=icon]:p-2! hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground focus-visible:ring-2 active:bg-sidebar-accent active:text-sidebar-accent-foreground disabled:pointer-events-none disabled:opacity-50 aria-disabled:pointer-events-none aria-disabled:opacity-50 data-[active=true]:bg-sidebar-accent data-[active=true]:text-sidebar-accent-foreground data-[state=open]:hover:bg-sidebar-accent data-[state=open]:hover:text-sidebar-accent-foreground [&>span:last-child]:truncate [&>svg]:size-4 [&>svg]:shrink-0',
     {
         variants: {
             variant: {
-                default: 'hover:bg-sidebar-accent hover:text-sidebar-accent-foreground',
+                default: 'hover:bg-sidebar-accent/70 hover:text-sidebar-accent-foreground',
                 outline:
         'border border-sidebar-border bg-background hover:border-sidebar-accent hover:bg-sidebar-accent hover:text-sidebar-accent-foreground'
             },
             size: {
-                default: `h-${SIDEBAR_MENU_HEIGHT} text-md`,
-                sm: 'h-7 text-xs',
-                lg: 'h-12 text-sm group-data-[collapsible=icon]:p-0!'
+                default: `h-${SIDEBAR_MENU_HEIGHT} text-control`,
+                sm: 'h-7 text-sm',
+                lg: 'h-12 text-md group-data-[collapsible=icon]:p-0!'
             }
         },
         defaultVariants: {
@@ -640,7 +648,7 @@ const SidebarMenuBadge = React.forwardRef<
     <div
         ref={ref}
         className={cn(
-            'absolute right-2 flex h-5 min-w-5 items-center justify-center rounded-md px-1 text-sm font-medium tabular-nums text-text-secondary select-none pointer-events-none',
+            'absolute right-2 flex items-center justify-center rounded-md px-1 text-sm font-medium tabular-nums text-text-secondary select-none pointer-events-none',
             'peer-hover/menu-button: peer-data-[active=true]/menu-button:text-sidebar-accent-foreground',
             'peer-data-[size=sm]/menu-button:top-1.5',
             'peer-data-[size=default]/menu-button:top-2',
