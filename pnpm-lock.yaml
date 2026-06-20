@@ -2441,8 +2441,8 @@ importers:
         specifier: 1.0.6
         version: 1.0.6
       '@tryghost/nodemailer':
-        specifier: 2.2.4
-        version: 2.2.4(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
+        specifier: 2.3.0
+        version: 2.3.0(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       '@tryghost/nql':
         specifier: 'catalog:'
         version: 0.13.1
@@ -3100,8 +3100,8 @@ packages:
     resolution: {integrity: sha512-lFgaIpxZvloNbJvQ337YPdMXhzI2zJdDw13nATVGnkAGNoNPx4ksD84AQAcuW75hsaaMaIuNmXU9sSx6+FTirA==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-sesv2@3.1064.0':
-    resolution: {integrity: sha512-iPKTvvo39PNJpqQAAZe+rz74TODUY0CXlbJPX5YK2Mxp9t2RCjfE0OuklYTWUnmRfQpJcTjWPbRJW45T+MvYSQ==}
+  '@aws-sdk/client-sesv2@3.1067.0':
+    resolution: {integrity: sha512-rOgc9pUdH6Zh0Aaaa7SDUFqK3+nogqN2Abk1FtDtoZC6StOGtXPTvlIdcyM44hpRBj1ttETmiI/VCWLXKUb2EQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.974.20':
@@ -8891,8 +8891,8 @@ packages:
   '@tryghost/mw-vhost@1.0.6':
     resolution: {integrity: sha512-FKoSdBw5+fZNbzC58LD3ZLbMEj2UI5+4XOnEau7xINuYBP/c4wN0TXHuJT8y6H1wnYvO4Qu9L+PwHxe1yHBA+Q==}
 
-  '@tryghost/nodemailer@2.2.4':
-    resolution: {integrity: sha512-sYFbDS6ceS72qXVeHiE+23Si+JwfDo3Gx+UcGLfmXPR+mW5VvkehoL1QFg/VOKv6mB2kA2Dknk2lPmJuQAw3Jw==}
+  '@tryghost/nodemailer@2.3.0':
+    resolution: {integrity: sha512-exgG9a1og1dWVXGCseuH3LuHySiqGYdiDMiywBY3B2gUzUZctjBW/LTkeREtlbR7JpNLw367ib1Dpp/F3zEpqg==}
 
   '@tryghost/nql-lang@0.6.6':
     resolution: {integrity: sha512-ZWEUN92fVnxavf+matwASvi7pom0i1jhAtNCuoCN9f3ShtyrVm92m1SfvY+x/XuEvbefXAzCGzSEMcaQ4cqoXw==}
@@ -8979,6 +8979,9 @@ packages:
 
   '@tryghost/tpl@2.2.3':
     resolution: {integrity: sha512-OSd+b5RNwPwWxDLlGO/1D0jRb5Xy/dx55rGzSb66+/OauVH5tI4pJVgpavo+W4FjH1cnccVBLjDyaX8Xc1eScg==}
+
+  '@tryghost/tpl@2.3.0':
+    resolution: {integrity: sha512-/AFHJLd5U6MYWlIbQ1AdAqa5vozLbiWcItdN6XJFpjCdDPHbL9zTtoChdrX8CqP4/8ZcNLZPAJ1w5PiAaF3twg==}
 
   '@tryghost/url-utils@5.2.4':
     resolution: {integrity: sha512-Q/8D3/+d9I/SF2XCIUR0mBDeKbeEz8VchtgiasOCzuKPddUvACZ6O1DnEosxlDQ+2B9BjPyVp15VoqAkgWRR/Q==}
@@ -14766,7 +14769,7 @@ packages:
       csstype: ^3.0.10
 
   google-caja-bower@https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
+    resolution: {gitHosted: true, integrity: sha512-mmCXdxGKGKDznjgkNzVqzTslaldslk5KMb/A7l8rxWnqyxzwsdPhuBJ6oT1Kh/Y3k4jN54ISee/2AgjFyCBxYw==, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
     version: 6011.0.0
 
   gopd@1.2.0:
@@ -16159,7 +16162,7 @@ packages:
     engines: {node: '>= 0.6'}
 
   keymaster@https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
+    resolution: {gitHosted: true, integrity: sha512-/WVovQslVEqPGNoD97TbqNHuCDPYu2v4/ggrZj0a+9PVPw3Rud4Ut2K7fOi0kMqzoJINkgP68e9m09Al/wFZ8g==, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
     version: 1.6.3
 
   keypair@1.0.4:
@@ -17734,10 +17737,6 @@ packages:
 
   nodemailer-stub-transport@1.1.0:
     resolution: {integrity: sha512-4fwl2f+647IIyuNuf6wuEMqK4oEU9FMJSYme8kPckVSr1rXIXcmI6BNcIWO+1cAK8XeexYKxYoFztam0jAwjkA==}
-
-  nodemailer@8.0.10:
-    resolution: {integrity: sha512-BLFuSth7QtHOkBzyqTehWWyub0NTRDuK2Q2SQfnGLsrJnzyU+Yeh4WpV1eZGuARFj1xQJHIdnTuJZLP+b9R1GQ==}
-    engines: {node: '>=6.0.0'}
 
   nodemailer@8.0.11:
     resolution: {integrity: sha512-nrO/pDAUKl+wXX+lx16tDLbnm0fW6sK/x8mgohaCpg+CdCEl482bD4tCuAZk2DyliruiNTIZxRCoWkDqJEnAiA==}
@@ -20527,10 +20526,6 @@ packages:
     resolution: {integrity: sha512-aqD2Q0144Z+/RqG52NeHEkZauTAUWJO8c6yTftGJKO3Tja5tUgIfmIl6kExvhtxSDP7fXB6DvzkfMpCd/F3G+Q==}
     engines: {node: '>=0.6.19'}
 
-  string-length@1.0.1:
-    resolution: {integrity: sha512-MNCACnufWUf3pQ57O5WTBMkKhzYIaKEcUioO0XHrTMafrbBaNk4IyDOLHBv5xbXO0jLLdsYWeFjpjG2hVHRDtw==}
-    engines: {node: '>=0.10.0'}
-
   string-length@4.0.2:
     resolution: {integrity: sha512-+l6rNN5fYHNhZZy41RXsYptCjA2Igmq4EG7kZAYFQI1E1VTXarr6ZPXBg6eq7Y6eK4FEhY6AJlyuFIb/v/S0VQ==}
     engines: {node: '>=10'}
@@ -22411,7 +22406,7 @@ snapshots:
       '@smithy/types': 4.14.3
       tslib: 2.8.1
 
-  '@aws-sdk/client-sesv2@3.1064.0':
+  '@aws-sdk/client-sesv2@3.1067.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
@@ -29053,11 +29048,12 @@ snapshots:
 
   '@tryghost/mw-vhost@1.0.6': {}
 
-  '@tryghost/nodemailer@2.2.4(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)':
+  '@tryghost/nodemailer@2.3.0(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)':
     dependencies:
-      '@aws-sdk/client-sesv2': 3.1064.0
+      '@aws-sdk/client-sesv2': 3.1067.0
       '@tryghost/errors': 1.3.13
-      nodemailer: 8.0.10
+      '@tryghost/tpl': 2.3.0
+      nodemailer: 8.0.11
       nodemailer-mailgun-transport: 2.1.5(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       nodemailer-stub-transport: 1.1.0
     transitivePeerDependencies:
@@ -29267,6 +29263,8 @@ snapshots:
   '@tryghost/tpl@2.2.0': {}
 
   '@tryghost/tpl@2.2.3': {}
+
+  '@tryghost/tpl@2.3.0': {}
 
   '@tryghost/url-utils@5.2.4':
     dependencies:
@@ -41467,8 +41465,6 @@ snapshots:
 
   nodemailer-stub-transport@1.1.0: {}
 
-  nodemailer@8.0.10: {}
-
   nodemailer@8.0.11: {}
 
   nodemon@3.1.14:
@@ -44913,10 +44909,6 @@ snapshots:
   strict-event-emitter@0.5.1: {}
 
   string-argv@0.3.2: {}
-
-  string-length@1.0.1:
-    dependencies:
-      strip-ansi: 3.0.1
 
   string-length@4.0.2:
     dependencies:
