@@ -1,4 +1,4 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, dbUtils, matchers} = require('../utils/e2e-framework');
 const {anyGhostAgent, anyContentVersion, anyContentLength} = matchers;
 
 describe('site.* events', function () {
@@ -12,13 +12,10 @@ describe('site.* events', function () {
     });
 
     beforeEach(async function () {
-        // Each test registers another site.changed webhook; without a reset they
-        // accumulate in the DB and a single site.changed fired by one test gets
-        // delivered to every prior test's URL, contaminating the negative tests.
-        // Reset to a clean slate so each test only sees its own webhook. (PLA-173)
-        await fixtureManager.restore();
-        await fixtureManager.init('integrations');
-        await adminAPIAgent.loginAsOwner();
+        // Truncate the webhooks each test registers so they don't accumulate and
+        // cross-deliver into later tests. A full fixtureManager.restore() here would
+        // wipe the owner seeded in beforeAll, breaking loginAsOwner on mysql8. (PLA-173)
+        await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
 
