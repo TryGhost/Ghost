@@ -112,6 +112,10 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import("./onboarding/onboarding-route")),
             },
             {
+                path: "/restore-react",
+                lazy: lazyComponent(() => import("./restore/restore")),
+            },
+            {
                 path: `network`,
                 loader: () => redirect("/activitypub"),
             },
