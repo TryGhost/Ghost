@@ -99,6 +99,15 @@ const _startGhost = async (options) => {
     // Stop the server -- noops if it's not running
     await stopGhost();
 
+    // Reset the URL service unconditionally — stopGhost only resets it when THIS
+    // harness booted the previous server, but under the shared-boot e2e runner a
+    // file using e2e-framework can leave the url service `finished` with stale
+    // generators. Without this reset, isFinished() below can observe that stale
+    // `finished` before the new boot's queue starts, so requests run against the
+    // old routing (e.g. custom-routes' /blog/ permalinks 301 instead of 200).
+    // Mirrors e2e-framework.startGhost. (PLA-173)
+    urlServiceUtils.resetGenerators();
+
     // Adapter cache has to be cleared to avoid reusing cached adapter instances between restarts
     adapterManager.clearCache();
 
