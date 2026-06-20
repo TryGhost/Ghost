@@ -7,59 +7,59 @@
     "private": true,
     "exports": {
         ".": {
+            "types": "./types/index.d.ts",
             "import": "./dist/index.js",
-            "require": "./dist/index.cjs",
-            "types": "./types/index.d.ts"
+            "require": "./dist/index.cjs"
         },
         "./errors": {
+            "types": "./types/errors.d.ts",
             "import": "./dist/errors.js",
-            "require": "./dist/errors.cjs",
-            "types": "./types/errors.d.ts"
+            "require": "./dist/errors.cjs"
         },
         "./helpers": {
+            "types": "./types/helpers.d.ts",
             "import": "./dist/helpers.js",
-            "require": "./dist/helpers.cjs",
-            "types": "./types/helpers.d.ts"
+            "require": "./dist/helpers.cjs"
         },
         "./hooks": {
+            "types": "./types/hooks.d.ts",
             "import": "./dist/hooks.js",
-            "require": "./dist/hooks.cjs",
-            "types": "./types/hooks.d.ts"
+            "require": "./dist/hooks.cjs"
         },
         "./routing": {
+            "types": "./types/routing.d.ts",
             "import": "./dist/routing.js",
-            "require": "./dist/routing.cjs",
-            "types": "./types/routing.d.ts"
+            "require": "./dist/routing.cjs"
         },
         "./api/*": {
+            "types": "./types/api/*.d.ts",
             "import": "./dist/api/*.js",
-            "require": "./dist/api/*.cjs",
-            "types": "./types/api/*.d.ts"
+            "require": "./dist/api/*.cjs"
         },
         "./utils/post-utils": {
+            "types": "./types/utils/post-utils.d.ts",
             "import": "./dist/utils/post-utils.js",
-            "require": "./dist/utils/post-utils.cjs",
-            "types": "./types/utils/post-utils.d.ts"
+            "require": "./dist/utils/post-utils.cjs"
         },
         "./utils/nql": {
+            "types": "./types/utils/nql.d.ts",
             "import": "./dist/utils/nql.js",
-            "require": "./dist/utils/nql.cjs",
-            "types": "./types/utils/nql.d.ts"
+            "require": "./dist/utils/nql.cjs"
         },
         "./vite": {
+            "types": "./types/vite.d.ts",
             "import": "./dist/vite.js",
-            "require": "./dist/vite.cjs",
-            "types": "./types/vite.d.ts"
+            "require": "./dist/vite.cjs"
         },
         "./playwright": {
+            "types": "./types/playwright.d.ts",
             "import": "./dist/playwright.js",
-            "require": "./dist/playwright.cjs",
-            "types": "./types/playwright.d.ts"
+            "require": "./dist/playwright.cjs"
         },
         "./test/*": {
+            "types": "./types/test/*.d.ts",
             "import": "./dist/test/*.js",
-            "require": "./dist/test/*.cjs",
-            "types": "./types/test/*.d.ts"
+            "require": "./dist/test/*.cjs"
         }
     },
     "sideEffects": false,
