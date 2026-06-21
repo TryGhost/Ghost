@@ -37,7 +37,13 @@ export function keys(storage: Storage = window.localStorage): string[] {
 }
 
 export function find(key: string, storage: Storage = window.localStorage): LocalRevision | null {
-    const revision: unknown = JSON.parse(storage.getItem(key) || "null");
+    let revision: unknown;
+
+    try {
+        revision = JSON.parse(storage.getItem(key) || "null");
+    } catch {
+        return null;
+    }
 
     if (!isRecord(revision)) {
         return null;

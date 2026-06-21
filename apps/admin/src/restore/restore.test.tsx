@@ -162,6 +162,55 @@ describe("RestoreRoute", () => {
         }]);
     });
 
+    restoreTest("ignores duplicate restore clicks while the revision is already restoring", async ({server}) => {
+        const revision = {
+            excerpt: "Selected revision excerpt",
+            id: "draft",
+            lexical: "{\"root\":{\"children\":[],\"type\":\"root\",\"version\":1}}",
+            revisionTimestamp: 1000,
+            title: "Selected revision",
+            type: "post"
+        };
+        const requests: unknown[] = [];
+        let resolveRequest: () => void = () => {};
+        const requestPromise = new Promise<void>((resolve) => {
+            resolveRequest = resolve;
+        });
+
+        server.use(
+            http.post(POSTS_API_URL, async ({request}) => {
+                requests.push(await request.json());
+                await requestPromise;
+
+                return HttpResponse.json({
+                    posts: [{
+                        id: "post-1",
+                        title: "(Restored) Selected revision",
+                        url: "https://example.com/selected-revision/",
+                        uuid: "post-uuid"
+                    }]
+                });
+            })
+        );
+
+        window.localStorage.setItem("post-revision-draft-1000", JSON.stringify(revision));
+
+        const {container} = renderRestoreRoute();
+
+        fireEvent.click(getRestorePostButton(container));
+        fireEvent.click(getRestorePostButton(container));
+
+        await waitFor(() => {
+            expect(requests).toHaveLength(1);
+        });
+
+        resolveRequest();
+
+        await waitFor(() => {
+            expect(mockToastSuccess).toHaveBeenCalledWith("Post restored successfully");
+        });
+    });
+
     restoreTest("shows an error toast when restoring fails", async ({server}) => {
         server.use(
             http.post(POSTS_API_URL, () => {

@@ -3,10 +3,14 @@ import {ListPage} from "@tryghost/shade/page-templates";
 import {PageHeader} from "@tryghost/shade/patterns";
 import {LucideIcon} from "@tryghost/shade/utils";
 import {useAddPost, type Post} from "@tryghost/admin-x-framework/api/posts";
-import {useCallback, useState} from "react";
+import {useCallback, useRef, useState} from "react";
 import {findAll, type LocalRevision} from "./local-revisions";
 
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+const CREATED_DATE_FORMATTER = new Intl.DateTimeFormat("en-GB", {
+    day: "numeric",
+    month: "short",
+    year: "numeric"
+});
 const RELATIVE_TIME_UNITS = [
     {unit: "year", milliseconds: 365 * 24 * 60 * 60 * 1000},
     {unit: "month", milliseconds: 30 * 24 * 60 * 60 * 1000},
@@ -39,11 +43,7 @@ function formatCreatedDate(timestamp: unknown): string {
         return "";
     }
 
-    const month = MONTHS[date.getUTCMonth()];
-    const day = date.getUTCDate();
-    const year = date.getUTCFullYear();
-
-    return `${day} ${month} ${year}`;
+    return CREATED_DATE_FORMATTER.format(date);
 }
 
 function formatRelativeCreatedDate(timestamp: unknown): string {
@@ -118,10 +118,16 @@ function getRestoredPost(revision: LocalRevision): Partial<Post> {
 
 export default function RestoreRoute() {
     const [revisions] = useState(() => findAll());
-    const [restoringRevisionKey, setRestoringRevisionKey] = useState<string | null>(null);
+    const restoringRevisionKeysRef = useRef(new Set<string>());
+    const [restoringRevisionKeys, setRestoringRevisionKeys] = useState<Set<string>>(() => new Set());
     const addPost = useAddPost();
     const handleRestore = useCallback(async (revision: LocalRevision) => {
-        setRestoringRevisionKey(revision.key);
+        if (restoringRevisionKeysRef.current.has(revision.key)) {
+            return;
+        }
+
+        restoringRevisionKeysRef.current = new Set(restoringRevisionKeysRef.current).add(revision.key);
+        setRestoringRevisionKeys(restoringRevisionKeysRef.current);
 
         try {
             await addPost.mutateAsync(getRestoredPost(revision));
@@ -129,7 +135,10 @@ export default function RestoreRoute() {
         } catch {
             toast.error("Failed to restore post");
         } finally {
-            setRestoringRevisionKey(null);
+            const nextRestoringRevisionKeys = new Set(restoringRevisionKeysRef.current);
+            nextRestoringRevisionKeys.delete(revision.key);
+            restoringRevisionKeysRef.current = nextRestoringRevisionKeys;
+            setRestoringRevisionKeys(nextRestoringRevisionKeys);
         }
     }, [addPost]);
 
@@ -163,7 +172,7 @@ export default function RestoreRoute() {
                                         </TableHeader>
                                         <TableBody>
                                             {revisions.map((revision) => {
-                                                const isRestoring = restoringRevisionKey === revision.key;
+                                                const isRestoring = restoringRevisionKeys.has(revision.key);
 
                                                 return (
                                                     <TableRow

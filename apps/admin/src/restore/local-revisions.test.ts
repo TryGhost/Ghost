@@ -39,7 +39,7 @@ describe("local revisions", () => {
         ]);
     });
 
-    it("ignores non-revision keys and non-object revision values", () => {
+    it("ignores non-revision keys, malformed JSON and non-object revision values", () => {
         const revision = {
             id: "draft",
             revisionTimestamp: 1000,
@@ -49,6 +49,7 @@ describe("local revisions", () => {
 
         window.localStorage.setItem("ghost-revisions", JSON.stringify(["post-revision-draft-1000"]));
         window.localStorage.setItem("not-post-revision-draft-1000", JSON.stringify(revision));
+        window.localStorage.setItem("post-revision-broken-1000", "{");
         window.localStorage.setItem("post-revision-null-1000", "null");
         window.localStorage.setItem("post-revision-draft-1000", JSON.stringify(revision));
 
@@ -58,6 +59,12 @@ describe("local revisions", () => {
                 ...revision
             }
         ]);
+    });
+
+    it("returns null when the stored revision is malformed JSON", () => {
+        window.localStorage.setItem("post-revision-broken-1000", "{");
+
+        expect(find("post-revision-broken-1000")).toBeNull();
     });
 
     it("finds a revision by key", () => {

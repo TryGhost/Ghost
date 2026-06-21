@@ -18,7 +18,6 @@ export class RestorePage extends AdminPage {
     public readonly postTitle: Locator;
     public readonly restoreButton: Locator;
     public readonly emptyState: Locator;
-
     constructor(page: Page) {
         super(page);
 
@@ -28,8 +27,16 @@ export class RestorePage extends AdminPage {
         this.emptyState = page.getByText('No local revisions found.');
     }
 
+    async waitFor() {
+        await Promise.race([
+            this.postTitle.first().waitFor({state: 'visible'}),
+            this.emptyState.waitFor({state: 'visible'})
+        ]);
+    }
+
     async visit() {
         await this.goto(this.pageUrl, {waitUntil: 'load'});
+        await this.waitFor();
     }
 
     async seedRevisionAndVisit(revision: RestoreRevision) {
@@ -39,5 +46,6 @@ export class RestorePage extends AdminPage {
             window.localStorage.setItem(key, JSON.stringify(rev));
         }, revision);
         await this.page.reload({waitUntil: 'load'});
+        await this.waitFor();
     }
 }
