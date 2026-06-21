@@ -209,6 +209,7 @@ describe("RestoreRoute", () => {
         await waitFor(() => {
             expect(mockToastSuccess).toHaveBeenCalledWith("Post restored successfully");
         });
+        expect(mockToastError).not.toHaveBeenCalled();
     });
 
     restoreTest("shows an error toast when restoring fails", async ({server}) => {
