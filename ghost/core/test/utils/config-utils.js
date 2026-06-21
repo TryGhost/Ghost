@@ -6,6 +6,19 @@ const configUtils = {};
 configUtils.config = config;
 configUtils.defaultConfig = _.cloneDeep(config.get());
 
+// The redirects FileStore basePath is lazily derived from the content path
+// (adapter-manager/config.js: `basePath ||= getContentPath('data')`) and then
+// cached on the shared nconf `adapters` object. In production the content path
+// is fixed for the process lifetime, so freezing it is fine; under the shared
+// e2e boot (isolate:false) each file points the content path at a fresh tmp
+// folder, but the frozen basePath keeps the redirects adapter reading the first
+// booter's folder — leaking another file's redirects.yaml/json into e.g. the
+// redirects download suite. Clear it whenever the content path moves so the next
+// boot re-derives it. (PLA-173)
+const clearDerivedContentPaths = function () {
+    config.set('adapters:redirects:FileStore:basePath', undefined);
+};
+
 /**
  * configUtils.set({});
  * configUtils.set('key', 'value');
@@ -18,8 +31,14 @@ configUtils.set = function () {
         _.each(key, function (settingValue, settingKey) {
             config.set(settingKey, settingValue);
         });
+        if (Object.prototype.hasOwnProperty.call(key, 'paths:contentPath')) {
+            clearDerivedContentPaths();
+        }
     } else {
         config.set(key, value);
+        if (key === 'paths:contentPath') {
+            clearDerivedContentPaths();
+        }
     }
 };
 
