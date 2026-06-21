@@ -4,21 +4,8 @@ import {PageHeader} from "@tryghost/shade/patterns";
 import {LucideIcon} from "@tryghost/shade/utils";
 import {useAddPost, type Post} from "@tryghost/admin-x-framework/api/posts";
 import {useCallback, useRef, useState} from "react";
+import moment from "moment-timezone";
 import {findAll, type LocalRevision} from "./local-revisions";
-
-const CREATED_DATE_FORMATTER = new Intl.DateTimeFormat("en-GB", {
-    day: "numeric",
-    month: "short",
-    year: "numeric"
-});
-const RELATIVE_TIME_UNITS = [
-    {unit: "year", milliseconds: 365 * 24 * 60 * 60 * 1000},
-    {unit: "month", milliseconds: 30 * 24 * 60 * 60 * 1000},
-    {unit: "week", milliseconds: 7 * 24 * 60 * 60 * 1000},
-    {unit: "day", milliseconds: 24 * 60 * 60 * 1000},
-    {unit: "hour", milliseconds: 60 * 60 * 1000},
-    {unit: "minute", milliseconds: 60 * 1000}
-] as const;
 
 function asString(value: unknown): string {
     return typeof value === "string" ? value : "";
@@ -43,7 +30,7 @@ function formatCreatedDate(timestamp: unknown): string {
         return "";
     }
 
-    return CREATED_DATE_FORMATTER.format(date);
+    return moment.utc(date).format("D MMM YYYY");
 }
 
 function formatRelativeCreatedDate(timestamp: unknown): string {
@@ -53,18 +40,7 @@ function formatRelativeCreatedDate(timestamp: unknown): string {
         return "";
     }
 
-    const diff = Date.now() - date.getTime();
-    const direction = diff < 0 ? "from now" : "ago";
-    const absoluteDiff = Math.abs(diff);
-
-    for (const {unit, milliseconds} of RELATIVE_TIME_UNITS) {
-        if (absoluteDiff >= milliseconds) {
-            const value = Math.round(absoluteDiff / milliseconds);
-            return `${value} ${unit}${value === 1 ? "" : "s"} ${direction}`;
-        }
-    }
-
-    return direction === "ago" ? "just now" : "in a few seconds";
+    return moment.utc(date).fromNow();
 }
 
 function getRevisionDate(timestamp: unknown): Date | null {

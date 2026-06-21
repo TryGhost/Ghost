@@ -545,6 +545,9 @@ importers:
       mingo:
         specifier: 'catalog:'
         version: 2.5.3
+      moment-timezone:
+        specifier: 0.5.45
+        version: 0.5.45
       react:
         specifier: 'catalog:'
         version: 18.3.1

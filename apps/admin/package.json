@@ -22,6 +22,7 @@
     "@tryghost/shade": "workspace:*",
     "@tryghost/stats": "workspace:*",
     "mingo": "catalog:",
+    "moment-timezone": "0.5.45",
     "react": "catalog:",
     "react-dom": "catalog:",
     "zod": "catalog:"
