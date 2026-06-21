@@ -345,8 +345,6 @@ describe('sendMagicLink', function () {
         });
 
         afterEach(async function () {
-            // await the async restore so spam:blocked_email_domains can't leak
-            // into a later file under the shared boot (isolate:false).
             await configUtils.restore();
         });
 

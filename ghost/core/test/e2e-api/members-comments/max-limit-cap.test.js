@@ -35,11 +35,6 @@ describe('Comments API - Max Limit Cap', function () {
     afterAll(function () {
         // Restore the original middleware
         sharedMiddleware.maxLimitCap[0] = originalMiddleware;
-        // beforeAll stubs settingsCache.get directly (not via mockManager), and
-        // there is no global sinon.restore() in the shared boot (isolate:false).
-        // Without this the stub leaks into the next file: the first later file to
-        // (re)stub settingsCache.get — e.g. any mockManager.mockMailgun/mockSetting
-        // — throws "Attempted to wrap get which is already wrapped".
         sinon.restore();
     });
 

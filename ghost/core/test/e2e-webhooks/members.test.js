@@ -33,8 +33,6 @@ describe('member.* events', function () {
     });
 
     beforeEach(async function () {
-        // Clear the webhooks each test registers, or a later test's event gets
-        // delivered to an earlier test's now-unmocked URL.
         await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });

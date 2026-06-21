@@ -120,8 +120,6 @@ describe('post.* events', function () {
     });
 
     beforeEach(async function () {
-        // Clear the webhooks each test registers, or a later test's event gets
-        // delivered to an earlier test's now-unmocked URL.
         await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
@@ -194,10 +192,6 @@ describe('post.* events', function () {
             .body({
                 posts: [
                     {
-                        // Distinct from the post.published test's 'webhookz' title:
-                        // both posts persist in the shared DB, so a shared title
-                        // would collide on slug (webhookz vs webhookz-2) depending
-                        // on which test ran first.
                         title: 'webhookz unpublished',
                         status: 'published',
                         mobiledoc: fixtureManager.get('posts', 1).mobiledoc

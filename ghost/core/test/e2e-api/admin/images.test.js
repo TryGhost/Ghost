@@ -154,10 +154,6 @@ describe('Images API', function () {
     });
 
     afterAll(async function () {
-        // configUtils.restore() is async (config.reset + re-apply defaults). Left
-        // un-awaited it raced the next file under the shared boot (isolate:false),
-        // leaking this suite's imageOptimization:contentImageSizes (w1/w10) into
-        // e.g. posts-legacy's srcset rendering.
         await configUtils.restore();
         await ghostServer.stop();
     });

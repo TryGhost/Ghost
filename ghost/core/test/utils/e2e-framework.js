@@ -205,7 +205,6 @@ const resetData = async () => {
     // Reset rate limiting instances (resetting the table is not enough!)
     await resetRateLimits();
 
-    // Reset the image-size cache (a module-level singleton not cleared by boot)
     resetImageSizeCache();
 };
 

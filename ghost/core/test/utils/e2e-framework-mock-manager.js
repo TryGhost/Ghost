@@ -295,14 +295,7 @@ const mockLimitService = (limit, options) => {
             isDisabled: sinon.stub(limitService, 'isDisabled'),
             checkWouldGoOverLimit: sinon.stub(limitService, 'checkWouldGoOverLimit'),
             errorIfWouldGoOverLimit: sinon.stub(limitService, 'errorIfWouldGoOverLimit'),
-            // Whether limitService.limits existed at all before we touched it, so
-            // restore can put it back to undefined rather than an empty object.
             limitsExisted: !!limitService.limits,
-            // Per-key snapshot of any pre-existing entry we overwrite, so restore
-            // is precise. `limitService.limits` is the shared singleton's object,
-            // so it must NOT be captured by reference and reassigned — that leaves
-            // our mocked entry in place and breaks errorIfWouldGoOverLimit for the
-            // next file.
             originalEntries: new Map(),
             mockedLimits: new Set() // Track which limits we've mocked
         };
@@ -355,10 +348,6 @@ const restoreLimitService = () => {
             mocks.limitService.isDisabled.restore();
         }
 
-        // Put the shared limits object back exactly as we found it: restore any
-        // pre-existing entry we overwrote, delete the ones we added. Mutating in
-        // place (rather than reassigning a captured reference) is what keeps the
-        // singleton clean for the next file.
         if (limitService.limits && mocks.limitService.originalEntries) {
             for (const [limit, original] of mocks.limitService.originalEntries) {
                 if (original === undefined) {
@@ -369,8 +358,6 @@ const restoreLimitService = () => {
             }
         }
 
-        // If limits never existed before we mocked, and we emptied it again,
-        // drop it back to undefined so the fingerprint matches a fresh service.
         if (!mocks.limitService.limitsExisted &&
             limitService.limits && Object.keys(limitService.limits).length === 0) {
             limitService.limits = undefined;
@@ -384,10 +371,6 @@ const restore = () => {
     // eslint-disable-next-line no-console
     configUtils.restore().catch(console.error);
 
-    // Remove any mocked limit-service entries from the shared singleton before
-    // we drop our bookkeeping. Reassigning a captured reference here used to
-    // leave the mocked entry behind, breaking errorIfWouldGoOverLimit for every
-    // later file in the fork.
     restoreLimitService();
 
     sinon.restore();
