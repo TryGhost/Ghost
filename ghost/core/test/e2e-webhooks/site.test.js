@@ -12,9 +12,8 @@ describe('site.* events', function () {
     });
 
     beforeEach(async function () {
-        // Truncate the webhooks each test registers so they don't accumulate and
-        // cross-deliver into later tests. A full fixtureManager.restore() here would
-        // wipe the owner seeded in beforeAll, breaking loginAsOwner on mysql8. (PLA-173)
+        // Clear the webhooks each test registers so they don't cross-deliver into
+        // later tests. A full reset would wipe the beforeAll owner (breaks mysql8).
         await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
@@ -176,10 +175,8 @@ describe('site.* events', function () {
             url: webhookURL
         });
 
-        // External webhooks are only held back here by the customIntegrations
-        // limit; the precondition used to come from limit-service state leaking
-        // out of the tests above. Set it explicitly so the test is
-        // order-independent. (PLA-173)
+        // Set the customIntegrations limit explicitly — it used to rely on
+        // limit-service state leaking from the tests above.
         mockManager.mockLimitService('customIntegrations', {
             isLimited: true,
             wouldGoOverLimit: true
@@ -285,10 +282,8 @@ describe('site.* events', function () {
             url: webhookURL
         });
 
-        // External webhooks are only held back here by the customIntegrations
-        // limit; the precondition used to come from limit-service state leaking
-        // out of the tests above. Set it explicitly so the test is
-        // order-independent. (PLA-173)
+        // Set the customIntegrations limit explicitly — it used to rely on
+        // limit-service state leaking from the tests above.
         mockManager.mockLimitService('customIntegrations', {
             isLimited: true,
             wouldGoOverLimit: true

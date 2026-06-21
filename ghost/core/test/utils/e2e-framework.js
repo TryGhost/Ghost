@@ -183,7 +183,7 @@ const resetRateLimits = async () => {
  * the first file to probe an image (e.g. the test content folder's test.jpg)
  * caches a result that every later file reads — flaking email previews, whose
  * committed snapshot expects the un-resized URL (a fresh probe of the 1x1 fixture
- * yields no dimensions). Clear it between boots so each file probes fresh. (PLA-173)
+ * yields no dimensions). Clear it between boots so each file probes fresh.
  */
 const resetImageSizeCache = () => {
     require('../../core/server/lib/image').cachedImageSizeFromUrl.cache.reset();

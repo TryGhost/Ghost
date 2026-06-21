@@ -113,11 +113,8 @@ describe('page.* events', function () {
     });
 
     beforeEach(async function () {
-        // Each test registers another page.* webhook; without a reset they
-        // accumulate in the DB, so an action in a later test (e.g. editing a
-        // published page also fires page.edited) gets delivered to an earlier
-        // test's now-unmocked URL. Clearing just the webhooks table keeps the
-        // suite order-independent without the churn of a full DB reset. (PLA-173)
+        // Clear the webhooks each test registers, or a later test's event gets
+        // delivered to an earlier test's now-unmocked URL.
         await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });

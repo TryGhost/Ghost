@@ -302,7 +302,7 @@ const mockLimitService = (limit, options) => {
             // is precise. `limitService.limits` is the shared singleton's object,
             // so it must NOT be captured by reference and reassigned — that leaves
             // our mocked entry in place and breaks errorIfWouldGoOverLimit for the
-            // next file. (PLA-173)
+            // next file.
             originalEntries: new Map(),
             mockedLimits: new Set() // Track which limits we've mocked
         };
@@ -387,7 +387,7 @@ const restore = () => {
     // Remove any mocked limit-service entries from the shared singleton before
     // we drop our bookkeeping. Reassigning a captured reference here used to
     // leave the mocked entry behind, breaking errorIfWouldGoOverLimit for every
-    // later file in the fork. (PLA-173)
+    // later file in the fork.
     restoreLimitService();
 
     sinon.restore();

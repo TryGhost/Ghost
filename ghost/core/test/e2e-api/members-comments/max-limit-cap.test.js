@@ -39,7 +39,7 @@ describe('Comments API - Max Limit Cap', function () {
         // there is no global sinon.restore() in the shared boot (isolate:false).
         // Without this the stub leaks into the next file: the first later file to
         // (re)stub settingsCache.get — e.g. any mockManager.mockMailgun/mockSetting
-        // — throws "Attempted to wrap get which is already wrapped". (PLA-173)
+        // — throws "Attempted to wrap get which is already wrapped".
         sinon.restore();
     });
 

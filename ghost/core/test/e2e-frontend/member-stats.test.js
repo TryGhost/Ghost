@@ -5,7 +5,7 @@ const {getMemberStats} = require('../../core/frontend/utils/member-count.js');
 describe('Front-end member stats ', function () {
     // getMemberStats reads statsService.api, which only exists once Ghost has
     // booted. Boot a backend here rather than depending on whichever file ran
-    // before in the shared fork having left the service initialised. (PLA-173)
+    // before in the shared fork having left the service initialised.
     beforeAll(async function () {
         await testUtils.startGhost({
             backend: true,

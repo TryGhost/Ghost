@@ -14,7 +14,7 @@ configUtils.defaultConfig = _.cloneDeep(config.get());
 // folder, but the frozen basePath keeps the redirects adapter reading the first
 // booter's folder — leaking another file's redirects.yaml/json into e.g. the
 // redirects download suite. Clear it whenever the content path moves so the next
-// boot re-derives it. (PLA-173)
+// boot re-derives it.
 const clearDerivedContentPaths = function () {
     config.set('adapters:redirects:FileStore:basePath', undefined);
 };
