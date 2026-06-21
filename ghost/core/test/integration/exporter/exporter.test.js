@@ -39,6 +39,8 @@ describe('Exporter', function () {
             'comments',
             'comment_likes',
             'comment_reports',
+            'content_import_rows',
+            'content_imports',
             'custom_theme_settings',
             'donation_payment_events',
             'email_batches',
