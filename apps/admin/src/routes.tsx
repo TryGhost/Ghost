@@ -34,7 +34,6 @@ const EMBER_ROUTES: string[] = [
     "/posts",
     "/posts/analytics/:postId/mentions",
     "/posts/analytics/:postId/debug",
-    "/restore",
     "/pages",
     "/editor/*",
     "/tags/new",
@@ -112,7 +111,7 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import("./onboarding/onboarding-route")),
             },
             {
-                path: "/restore-react",
+                path: "/restore",
                 lazy: lazyComponent(() => import("./restore/restore")),
             },
             {

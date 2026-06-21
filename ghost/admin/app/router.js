@@ -29,7 +29,6 @@ Router.map(function () {
 
     this.route('posts');
     this.route('posts.debug', {path: '/posts/analytics/:post_id/debug'});
-    this.route('restore-posts', {path: '/restore'});
 
     this.route('pages');
 
