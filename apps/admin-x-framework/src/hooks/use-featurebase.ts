@@ -59,6 +59,36 @@ const getTheme = (): 'light' | 'dark' => {
     return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
 };
 
+// Featurebase's SDK silently drops a second `initialize_feedback_widget` call —
+// the callback never fires, leaving any deferred awaiting it stuck forever.
+// Multiple hook instances (sidebar + embedded apps) must therefore share a
+// single init promise.
+let sharedInitPromise: Promise<void> | null = null;
+
+function initFeaturebaseWidget(organization: string, theme: 'light' | 'dark', token: string): Promise<void> {
+    if (sharedInitPromise) {
+        return sharedInitPromise;
+    }
+    sharedInitPromise = loadFeaturebaseSDK().then(() => new Promise<void>((resolve, reject) => {
+        window.Featurebase?.('initialize_feedback_widget', {
+            organization,
+            theme,
+            featurebaseJwt: token
+        }, (err) => {
+            if (err) {
+                sharedInitPromise = null;
+                reject(err);
+            } else {
+                resolve();
+            }
+        });
+    }));
+    sharedInitPromise.catch(() => {
+        sharedInitPromise = null;
+    });
+    return sharedInitPromise;
+}
+
 /**
  * Lazy-loads the Featurebase SDK and opens the feedback widget.
  *
@@ -98,23 +128,16 @@ export function useFeaturebase(): Featurebase {
         if (!shouldLoad || !organization || !token) {
             return;
         }
-        void featurebaseSDKPromise?.then(() => {
-            window.Featurebase?.('initialize_feedback_widget', {
-                organization,
-                theme: getTheme(),
-                featurebaseJwt: token
-            }, (err) => {
-                if (err) {
-                    // eslint-disable-next-line no-console
-                    console.error('[Featurebase] Failed to initialize widget:', err);
-                    deferredInitRef.current.reject(err);
-                    deferredInitRef.current = deferred();
-                    setShouldLoad(false);
-                } else {
-                    deferredInitRef.current.resolve();
-                }
-            });
-        });
+        initFeaturebaseWidget(organization, getTheme(), token).then(
+            () => deferredInitRef.current.resolve(),
+            (err) => {
+                // eslint-disable-next-line no-console
+                console.error('[Featurebase] Failed to initialize widget:', err);
+                deferredInitRef.current.reject(err);
+                deferredInitRef.current = deferred();
+                setShouldLoad(false);
+            }
+        );
     }, [organization, token, shouldLoad]);
 
     const preloadFeedbackWidget = useCallback(() => {
