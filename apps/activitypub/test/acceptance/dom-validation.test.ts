@@ -1,4 +1,4 @@
-import inboxFixture from '../utils/responses/activitypub/inbox.json';
+import inboxFixture from '../utils/responses/activitypub/inbox.json' with {type: 'json'};
 import {expect, test} from '@playwright/test';
 import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 import {mockInitialApiRequests} from '../utils/initial-api-requests';
