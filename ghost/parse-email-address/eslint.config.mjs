@@ -76,6 +76,7 @@ export default tseslint.config(
             ghost: ghostPlugin
         },
         rules: {
+            ...js.configs.recommended.rules,
             ...ghostRules,
             ...mochaRulesOff,
             'no-undef': 'off'
