@@ -12,6 +12,10 @@ module.exports = {
         return apiFramework.pipeline(require('./automations'), localUtils);
     },
 
+    get automationEmailPreviews() {
+        return apiFramework.pipeline(require('./automation-email-previews'), localUtils);
+    },
+
     get authentication() {
         return apiFramework.pipeline(require('./authentication'), localUtils);
     },

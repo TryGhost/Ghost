@@ -4,6 +4,7 @@ import HeaderImageField from '../../email-design/header-image-field';
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import ShowBadgeField from '../../email-design/show-badge-field';
 import WelcomeEmailPreviewContent from '../../email-design/welcome-email-preview-content';
+import useFeatureFlag from '../../../../hooks/use-feature-flag';
 import validator from 'validator';
 import {type AutomatedEmailDesign, type EditAutomatedEmailDesign, useEditAutomatedEmailDesign, useReadAutomatedEmailDesign} from '@tryghost/admin-x-framework/api/automated-email-design';
 import {
@@ -346,6 +347,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
     const {mutateAsync: editDesign} = useEditAutomatedEmailDesign();
     const {mutateAsync: addAutomatedEmail} = useAddAutomatedEmail();
     const {mutateAsync: editAutomatedEmailSenders} = useEditAutomatedEmailSenders();
+    const hasAutomations = useFeatureFlag('automations');
     const [hasSaveError, setHasSaveError] = useState(false);
     const [senderInputsHydrated, setSenderInputsHydrated] = useState(false);
     const automatedEmails = automatedEmailsData?.automated_emails || [];
@@ -409,7 +411,9 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
                 throw new Error('Unable to load email design settings');
             }
 
-            await ensureWelcomeEmailRows();
+            if (!hasAutomations) {
+                await ensureWelcomeEmailRows();
+            }
             const senderPayload = {
                 sender_name: normalizeSenderValue(state.generalSettings.senderName),
                 sender_reply_to: normalizeSenderValue(state.generalSettings.replyToEmail),

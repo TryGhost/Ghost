@@ -554,6 +554,7 @@ const AutomationCanvas: React.FC<AutomationCanvasProps> = ({
             />
             {emailModalAction && automation && (
                 <EmailContentModal
+                    automationId={automation.id}
                     initialLexical={emailModalAction.data.email_lexical}
                     initialMode={emailModalMode}
                     initialSubject={emailModalAction.data.email_subject}
