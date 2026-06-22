@@ -146,6 +146,14 @@ test.describe('File card', async () => {
         await page.locator('[data-kg-file-card="fileDescription"]').fill('Enjoy this free download of a puppy pdf');
         await expect(await page.locator('[data-kg-file-card="fileDescription"]')).toHaveValue('Enjoy this free download of a puppy pdf');
     });
+
+    test('can show errors for failed file upload', async function () {
+        await focusEditor(page);
+        await uploadFile(page, 'print-img-fail.pdf');
+
+        // Errors should be visible in the placeholder
+        await expect(await page.getByTestId('media-placeholder-errors')).toBeVisible();
+    });
 });
 
 async function uploadFile(page, fileName = 'print-img.pdf') {

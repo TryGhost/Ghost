@@ -22,10 +22,11 @@ function FileUploading({progress}) {
     );
 }
 
-function EmptyFileCard({handleSelectorClick, fileDragHandler}) {
+function EmptyFileCard({handleSelectorClick, fileDragHandler, errors}) {
     return (
         <MediaPlaceholder
             desc="Click to upload a file"
+            errors={errors}
             filePicker={() => handleSelectorClick()}
             icon='file'
             isDraggedOver={fileDragHandler.isDraggedOver}
@@ -95,7 +96,7 @@ export function FileCard(
         handleFileDesc,
         fileUploader,
         ...args}) {
-    const {isLoading: isUploading, progress} = fileUploader || {};
+    const {isLoading: isUploading, progress, errors} = fileUploader || {};
     const setFileInputRef = (ref) => {
         if (fileInputRef) {
             fileInputRef.current = ref.current;
@@ -133,6 +134,7 @@ export function FileCard(
     return (
         <>
             <EmptyFileCard
+                errors={errors}
                 fileDragHandler={fileDragHandler}
                 handleSelectorClick={handleOpenFileSelection}
             />
@@ -167,6 +169,7 @@ FileUploading.propTypes = {
 };
 
 EmptyFileCard.propTypes = {
+    errors: PropTypes.array,
     fileDragHandler: PropTypes.object,
     handleSelectorClick: PropTypes.func
 };

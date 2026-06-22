@@ -11,6 +11,14 @@ export const fileUploadHandler = async (files, nodeKey, editor, upload) => {
         return;
     }
     const result = await upload(files);
+
+    // upload() resolves to null when the upload fails (e.g. a host limit or
+    // validation error). Bail out so we don't throw trying to read the result,
+    // and so the card falls back to its empty state where the error is shown.
+    if (!result || !result[0]) {
+        return;
+    }
+
     const meta = files;
     const fileName = meta?.[0].name;
     const fileSize = meta?.[0].size;
