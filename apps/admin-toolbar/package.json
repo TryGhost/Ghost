@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/admin-toolbar",
-  "version": "0.1.2",
+  "type": "module",
+  "version": "0.1.3",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -20,7 +21,7 @@
     "build": "pnpm exec vite build",
     "build:watch": "pnpm exec vite build --watch",
     "dev": "concurrently --kill-others --names preview,build \"pnpm exec vite preview -l silent\" \"pnpm build:watch\"",
-    "lint": "pnpm exec eslint src --ext .js --cache",
+    "lint": "pnpm exec eslint src test --cache",
     "test": "pnpm test:unit",
     "test:unit": "pnpm run build && pnpm exec vitest run",
     "preship": "pnpm lint",
@@ -28,53 +29,13 @@
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
+    "@eslint/js": "catalog:eslint9",
     "concurrently": "catalog:",
-    "eslint": "catalog:",
+    "eslint": "catalog:eslint9",
+    "eslint-plugin-ghost": "3.5.0",
+    "globals": "17.6.0",
     "jsdom": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
-  },
-  "eslintConfig": {
-    "ignorePatterns": [
-      "umd/**/*.js"
-    ],
-    "env": {
-      "browser": true
-    },
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2022
-    },
-    "extends": [
-      "plugin:ghost/browser"
-    ],
-    "plugins": [
-      "ghost"
-    ],
-    "overrides": [
-      {
-        "files": [
-          "test/**/*.js"
-        ],
-        "env": {
-          "node": true
-        },
-        "globals": {
-          "afterEach": "readonly",
-          "describe": "readonly",
-          "it": "readonly"
-        },
-        "parserOptions": {
-          "sourceType": "script"
-        }
-      }
-    ],
-    "rules": {
-      "ghost/filenames/match-regex": [
-        "error",
-        "^[a-z0-9.-]+$",
-        false
-      ]
-    }
   }
 }
