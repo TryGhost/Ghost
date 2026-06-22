@@ -727,7 +727,7 @@ describe('Member Data attributes:', () => {
     });
 });
 
-const setup = async ({site, member = null, showPopup = true, waitForTrigger = true, offer = null}) => {
+const setup = async ({site, member = null, showPopup = true, waitForTrigger = true, offer = null, checkoutPlan = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
     ghostApi.init = vi.fn(() => {
         return Promise.resolve({
@@ -740,9 +740,9 @@ const setup = async ({site, member = null, showPopup = true, waitForTrigger = tr
         return Promise.resolve('success');
     });
 
-    ghostApi.member.checkoutPlan = vi.fn(() => {
+    ghostApi.member.checkoutPlan = vi.fn(checkoutPlan || (() => {
         return Promise.resolve();
-    });
+    }));
 
     ghostApi.site.offer = vi.fn(() => {
         return Promise.resolve({
@@ -940,6 +940,86 @@ describe('Portal Data attributes:', () => {
                 expect(within(popupFrame.contentDocument).queryByText(FixtureOffer.display_title)).toBeInTheDocument();
             });
             expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
+        });
+
+        test('does not open Portal when a paid member opens an offer link', async () => {
+            document.body.innerHTML = `
+                <button data-portal="offers/${FixtureOffer.id}">Offer</button>
+            `;
+
+            let {
+                ghostApi, popupFrame, ...utils
+            } = await setup({
+                site: FixturesSite.singleTier.basic,
+                member: FixtureMember.paid,
+                showPopup: false,
+                waitForTrigger: false,
+                offer: FixtureOffer
+            });
+            expect(popupFrame).not.toBeInTheDocument();
+
+            const offerElement = document.querySelector('[data-portal^="offers"]');
+            await waitFor(() => {
+                expect(offerElement).toHaveClass('gh-portal-close');
+            });
+
+            fireEvent.click(offerElement);
+
+            await waitFor(() => {
+                expect(utils.queryByTitle(/portal-popup/i)).not.toBeInTheDocument();
+            });
+            const notificationFrame = await utils.findByTitle(/portal-notification/i);
+            expect(within(notificationFrame.contentDocument).queryByText(/You already have an active subscription\./i)).toBeInTheDocument();
+            expect(ghostApi.site.offer).not.toHaveBeenCalled();
+            expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
+        });
+
+        test('closes a stale loading modal when a paid member opens an offer link', async () => {
+            const paidTier = FixturesSite.singleTier.basic.products.find(p => p.type === 'paid');
+            const pendingCheckout = new Promise((resolve) => {
+                void resolve;
+            });
+
+            document.body.innerHTML = `
+                <button data-portal="signup/${paidTier.id}/monthly">Checkout</button>
+                <button data-portal="offers/${FixtureOffer.id}">Offer</button>
+            `;
+
+            let {
+                ghostApi, popupFrame, ...utils
+            } = await setup({
+                site: FixturesSite.singleTier.basic,
+                member: FixtureMember.paid,
+                showPopup: false,
+                waitForTrigger: false,
+                offer: FixtureOffer,
+                checkoutPlan: () => pendingCheckout
+            });
+            expect(popupFrame).not.toBeInTheDocument();
+
+            const checkoutElement = document.querySelector('[data-portal^="signup"]');
+            const offerElement = document.querySelector('[data-portal^="offers"]');
+            await waitFor(() => {
+                expect(checkoutElement).toHaveClass('gh-portal-close');
+                expect(offerElement).toHaveClass('gh-portal-close');
+            });
+
+            fireEvent.click(checkoutElement);
+
+            popupFrame = await utils.findByTitle(/portal-popup/i);
+            await waitFor(() => {
+                expect(within(popupFrame.contentDocument).queryByTestId('loaderIcon')).toBeInTheDocument();
+            });
+
+            fireEvent.click(offerElement);
+
+            await waitFor(() => {
+                expect(utils.queryByTitle(/portal-popup/i)).not.toBeInTheDocument();
+            });
+            const notificationFrame = await utils.findByTitle(/portal-notification/i);
+            expect(within(notificationFrame.contentDocument).queryByText(/You already have an active subscription\./i)).toBeInTheDocument();
+            expect(ghostApi.member.checkoutPlan).toHaveBeenCalledTimes(1);
+            expect(ghostApi.site.offer).not.toHaveBeenCalled();
         });
     });
 
