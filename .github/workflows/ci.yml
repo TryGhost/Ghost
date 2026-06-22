@@ -467,21 +467,24 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306
+        # Poll the healthcheck every 2s instead of 10s — same max wait window
+        # (120s = 60 × 2s), but ready-state is discovered ~8s earlier on a
+        # typical boot. Same change on the redis service below.
         options: >-
           --tmpfs /var/lib/mysql
           --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
+          --health-interval=2s
           --health-timeout=5s
-          --health-retries=12
+          --health-retries=60
       redis:
         image: redis:7.0@sha256:352c1fdadc91926edda08f45aeb3f27f37194c2f14101229c0523a11195c96e3
         ports:
           - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval=10s
+          --health-interval=2s
           --health-timeout=5s
-          --health-retries=12
+          --health-retries=60
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
