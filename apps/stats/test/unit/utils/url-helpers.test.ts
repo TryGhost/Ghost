@@ -262,8 +262,16 @@ describe('url-helpers', () => {
             expect(mockWindowOpen).toHaveBeenCalledWith('https://example.com/my-post/', '_blank', 'noopener,noreferrer');
         });
 
-        it('opens frontend URL for pages', () => {
+        it('navigates to analytics page for pages with postId and page attribution type', () => {
             const handler = getClickHandler('/about/', 'page-456', 'https://example.com', mockNavigate, 'page');
+            handler();
+
+            expect(mockNavigate).toHaveBeenCalledWith('/pages/analytics/page-456', {crossApp: true});
+            expect(mockWindowOpen).not.toHaveBeenCalled();
+        });
+
+        it('opens frontend URL for pages without postId', () => {
+            const handler = getClickHandler('/about/', null, 'https://example.com', mockNavigate, 'page');
             handler();
 
             expect(mockNavigate).not.toHaveBeenCalled();

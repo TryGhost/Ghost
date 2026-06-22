@@ -1,7 +1,7 @@
 import React, {useMemo} from 'react';
 import Sources from '../../Web/components/sources';
 import {BarChartLoadingIndicator, Button, Card, CardContent, CardHeader, CardTitle, EmptyIndicator, Separator} from '@tryghost/shade/components';
-import {BaseSourceData, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {BaseSourceData, useNavigate} from '@tryghost/admin-x-framework';
 import {GhAreaChart, GhAreaChartDataItem, KpiCardHeader, KpiCardHeaderLabel, KpiCardHeaderValue} from '@tryghost/shade/patterns';
 import {HTable} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
@@ -17,11 +17,10 @@ interface WebOverviewProps {
 }
 
 const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, visitors, sourcesData, isNewsletterShown = true}) => {
-    const {postId} = useParams();
     const navigate = useNavigate();
 
     // Get global data for site info
-    const {data: globalData} = useGlobalData();
+    const {data: globalData, analyticsBasePath} = useGlobalData();
     const siteUrl = globalData?.url as string | undefined;
     const siteIcon = globalData?.icon as string | undefined;
 
@@ -44,7 +43,7 @@ const WebOverview: React.FC<WebOverviewProps> = ({chartData, range, isLoading, v
                         </CardTitle>
                     </CardHeader>
                     <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100' size='sm' variant='outline' onClick={() => {
-                        navigate(`/posts/analytics/${postId}/web`);
+                        navigate(`${analyticsBasePath}/web`);
                     }}>View more</Button>
                 </div>
                 <CardContent>

@@ -14,9 +14,9 @@ export const routes: RouteObject[] = [
         path: '',
         errorElement: <ErrorPage onBackToDashboard={() => {}} />, // @TODO: add back to dashboard click handle
         children: [
-            {
-                // Post Analytics
-                path: 'posts/analytics/:postId',
+            ...(['posts', 'pages'] as const).map(contentGroup => ({
+                // Post/Page Analytics
+                path: `${contentGroup}/analytics/:postId`,
                 lazy: async () => {
                     const [
                         {default: PostAnalyticsProvider},
@@ -27,7 +27,7 @@ export const routes: RouteObject[] = [
                     ]);
                     return {
                         element: (
-                            <PostAnalyticsProvider>
+                            <PostAnalyticsProvider contentType={contentGroup === 'pages' ? 'page' : 'post'}>
                                 <PostAnalytics />
                             </PostAnalyticsProvider>
                         )
@@ -42,16 +42,16 @@ export const routes: RouteObject[] = [
                         path: 'web',
                         lazy: lazyComponent(() => import('@views/PostAnalytics/Web/web'))
                     },
-                    {
+                    ...(contentGroup === 'posts' ? [{
                         path: 'growth',
                         lazy: lazyComponent(() => import('@views/PostAnalytics/Growth/growth'))
                     },
                     {
                         path: 'newsletter',
                         lazy: lazyComponent(() => import('@views/PostAnalytics/Newsletter/newsletter'))
-                    }
+                    }] : [])
                 ]
-            },
+            })),
             {
                 path: 'tags',
                 children: [

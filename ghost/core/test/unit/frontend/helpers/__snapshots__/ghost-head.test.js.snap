@@ -1657,6 +1657,148 @@ Object {
 }
 `;
 
+exports[`{{ghost_head}} helper includes tinybird tracker script when config is set sets tb_post_uuid on page page 1 1`] = `
+Object {
+  "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
+    <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/about/\\">
+    <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
+    
+    <meta property=\\"og:site_name\\" content=\\"Ghost\\">
+    <meta property=\\"og:type\\" content=\\"website\\">
+    <meta property=\\"og:title\\" content=\\"About\\">
+    <meta property=\\"og:description\\" content=\\"all about our site\\">
+    <meta property=\\"og:url\\" content=\\"http://127.0.0.1:2369/about/\\">
+    <meta property=\\"og:image\\" content=\\"http://127.0.0.1:2369/content/images/test-image-about.png\\">
+    <meta property=\\"article:published_time\\" content=\\"1970-01-01T00:00:00.000Z\\">
+    <meta property=\\"article:modified_time\\" content=\\"1970-01-01T00:00:00.000Z\\">
+    <meta property=\\"article:author\\" content=\\"https://www.facebook.com/testuser\\">
+    <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
+    <meta name=\\"twitter:title\\" content=\\"About\\">
+    <meta name=\\"twitter:description\\" content=\\"all about our site\\">
+    <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/about/\\">
+    <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/test-image-about.png\\">
+    <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
+    
+    <script type=\\"application/ld+json\\">
+{
+    \\"@context\\": \\"https://schema.org\\",
+    \\"@type\\": \\"Article\\",
+    \\"publisher\\": {
+        \\"@type\\": \\"Organization\\",
+        \\"name\\": \\"Ghost\\",
+        \\"url\\": \\"http://127.0.0.1:2369/\\",
+        \\"logo\\": {
+            \\"@type\\": \\"ImageObject\\",
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+        }
+    },
+    \\"author\\": {
+        \\"@type\\": \\"Person\\",
+        \\"name\\": \\"name\\",
+        \\"image\\": {
+            \\"@type\\": \\"ImageObject\\",
+            \\"url\\": \\"http://127.0.0.1:2369/content/images/test-author-image.png\\"
+        },
+        \\"url\\": \\"https://mysite.com/fakeauthor/\\",
+        \\"sameAs\\": [
+            \\"http://authorwebsite.com\\",
+            \\"https://www.facebook.com/testuser\\",
+            \\"https://x.com/testuser\\"
+        ]
+    },
+    \\"headline\\": \\"About\\",
+    \\"url\\": \\"http://127.0.0.1:2369/about/\\",
+    \\"datePublished\\": \\"1970-01-01T00:00:00.000Z\\",
+    \\"dateModified\\": \\"1970-01-01T00:00:00.000Z\\",
+    \\"image\\": {
+        \\"@type\\": \\"ImageObject\\",
+        \\"url\\": \\"http://127.0.0.1:2369/content/images/test-image-about.png\\"
+    },
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/about/\\"
+}
+    </script>
+
+    <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
+    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
+    
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
+    
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
+    <script defer src=\\"/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"77f09c60-5a34-4b4c-a3f6-e1b1d78f7412\\" tb_post_uuid=\\"11f01ac0-fb9c-4c0f-b8d0-ce2d01430ea3\\" tb_post_type=\\"page\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+}
+`;
+
+exports[`{{ghost_head}} helper includes tinybird tracker script when config is set sets tb_post_uuid on page route 1 1`] = `
+Object {
+  "rendered": "<meta name=\\"description\\" content=\\"all about our site\\">
+    <link rel=\\"canonical\\" href=\\"http://127.0.0.1:2369/about/\\">
+    <meta name=\\"referrer\\" content=\\"no-referrer-when-downgrade\\">
+    
+    <meta property=\\"og:site_name\\" content=\\"Ghost\\">
+    <meta property=\\"og:type\\" content=\\"website\\">
+    <meta property=\\"og:title\\" content=\\"About\\">
+    <meta property=\\"og:description\\" content=\\"all about our site\\">
+    <meta property=\\"og:url\\" content=\\"http://127.0.0.1:2369/about/\\">
+    <meta property=\\"og:image\\" content=\\"http://127.0.0.1:2369/content/images/test-image-about.png\\">
+    <meta property=\\"article:published_time\\" content=\\"1970-01-01T00:00:00.000Z\\">
+    <meta property=\\"article:modified_time\\" content=\\"1970-01-01T00:00:00.000Z\\">
+    <meta property=\\"article:author\\" content=\\"https://www.facebook.com/testuser\\">
+    <meta name=\\"twitter:card\\" content=\\"summary_large_image\\">
+    <meta name=\\"twitter:title\\" content=\\"About\\">
+    <meta name=\\"twitter:description\\" content=\\"all about our site\\">
+    <meta name=\\"twitter:url\\" content=\\"http://127.0.0.1:2369/about/\\">
+    <meta name=\\"twitter:image\\" content=\\"http://127.0.0.1:2369/content/images/test-image-about.png\\">
+    <meta name=\\"twitter:creator\\" content=\\"@testuser\\">
+    
+    <script type=\\"application/ld+json\\">
+{
+    \\"@context\\": \\"https://schema.org\\",
+    \\"@type\\": \\"Article\\",
+    \\"publisher\\": {
+        \\"@type\\": \\"Organization\\",
+        \\"name\\": \\"Ghost\\",
+        \\"url\\": \\"http://127.0.0.1:2369/\\",
+        \\"logo\\": {
+            \\"@type\\": \\"ImageObject\\",
+            \\"url\\": \\"http://127.0.0.1:2369/favicon.ico\\"
+        }
+    },
+    \\"author\\": {
+        \\"@type\\": \\"Person\\",
+        \\"name\\": \\"name\\",
+        \\"image\\": {
+            \\"@type\\": \\"ImageObject\\",
+            \\"url\\": \\"http://127.0.0.1:2369/content/images/test-author-image.png\\"
+        },
+        \\"url\\": \\"https://mysite.com/fakeauthor/\\",
+        \\"sameAs\\": [
+            \\"http://authorwebsite.com\\",
+            \\"https://www.facebook.com/testuser\\",
+            \\"https://x.com/testuser\\"
+        ]
+    },
+    \\"headline\\": \\"About\\",
+    \\"url\\": \\"http://127.0.0.1:2369/about/\\",
+    \\"datePublished\\": \\"1970-01-01T00:00:00.000Z\\",
+    \\"dateModified\\": \\"1970-01-01T00:00:00.000Z\\",
+    \\"image\\": {
+        \\"@type\\": \\"ImageObject\\",
+        \\"url\\": \\"http://127.0.0.1:2369/content/images/test-image-about.png\\"
+    },
+    \\"mainEntityOfPage\\": \\"http://127.0.0.1:2369/about/\\"
+}
+    </script>
+
+    <meta name=\\"generator\\" content=\\"Ghost 0.3\\">
+    <link rel=\\"alternate\\" type=\\"application/rss+xml\\" title=\\"Ghost\\" href=\\"http://localhost:65530/rss/\\">
+    
+    <script defer src=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/sodo-search.min.js\\" data-key=\\"xyz\\" data-styles=\\"https://cdn.jsdelivr.net/ghost/sodo-search@~[[VERSION]]/umd/main.css\\" data-sodo-search=\\"http://127.0.0.1:2369/\\" data-locale=\\"en\\" crossorigin=\\"anonymous\\"></script>
+    
+    <link href=\\"http://127.0.0.1:2369/webmentions/receive/\\" rel=\\"webmention\\">
+    <script defer src=\\"/public/ghost-stats.min.js?v=asset-hash\\" data-stringify-payload=\\"false\\" data-datasource=\\"analytics_events\\" data-storage=\\"localStorage\\" data-host=\\"https://e.ghost.org/tb/web_analytics\\" data-token=\\"tinybird_token\\" tb_site_uuid=\\"77f09c60-5a34-4b4c-a3f6-e1b1d78f7412\\" tb_post_uuid=\\"848325d4-e124-424b-a6b4-abe791ccb0ec\\" tb_post_type=\\"page\\" tb_member_uuid=\\"undefined\\" tb_member_status=\\"undefined\\"></script>",
+}
+`;
+
 exports[`{{ghost_head}} helper includes tinybird tracker script when config is set uses the provided host/endpoint from config 1 1`] = `
 Object {
   "rendered": "<meta name=\\"description\\" content=\\"site description\\">

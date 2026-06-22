@@ -19,9 +19,10 @@ import {usePostReferrers} from '@hooks/use-post-referrers';
 
 const Overview: React.FC = () => {
     const navigate = useNavigate();
-    const {statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId, contentType, analyticsBasePath} = useGlobalData();
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {appSettings} = useAppContext();
+    const isPage = contentType === 'page';
     const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
 
     // Calculate chart range based on days between today and post publication date
@@ -95,17 +96,17 @@ const Overview: React.FC = () => {
     const chartIsLoading = isPostLoading || isConfigLoading || chartLoading;
 
     // Use the utility function from admin-x-framework
-    const showNewsletterSection = hasBeenEmailed(post as Post) && emailTrackOpensEnabled && emailTrackClicksEnabled;
-    const showWebSection = !post?.email_only && appSettings?.analytics.webAnalytics;
-    const showGrowthSection = appSettings?.analytics.membersTrackSources;
+    const showNewsletterSection = !isPage && hasBeenEmailed(post as Post) && emailTrackOpensEnabled && emailTrackClicksEnabled;
+    const showWebSection = (isPage || !post?.email_only) && appSettings?.analytics.webAnalytics;
+    const showGrowthSection = !isPage && appSettings?.analytics.membersTrackSources;
 
     // Redirect to Growth tab if this is a published-only post with web analytics disabled
     // Only redirect if Growth section is available
     useEffect(() => {
-        if (!isPostLoading && post && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics && showGrowthSection) {
+        if (!isPage && !isPostLoading && post && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics && showGrowthSection) {
             navigate(`/posts/analytics/${postId}/growth`, {replace: true});
         }
-    }, [isPostLoading, post, appSettings?.analytics.webAnalytics, navigate, postId, showGrowthSection]);
+    }, [isPage, isPostLoading, post, appSettings?.analytics.webAnalytics, navigate, postId, showGrowthSection]);
 
     // First we have to wait for the post to be loaded to determine what sections (web, newsletter etc.) should be displayed
     if (isPostLoading) {
@@ -146,7 +147,7 @@ const Overview: React.FC = () => {
                                     </CardTitle>
                                 </CardHeader>
                                 <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
-                                    navigate(`/posts/analytics/${postId}/growth`);
+                                    navigate(`${analyticsBasePath}/growth`);
                                 }}>View more</Button>
                             </div>
                             <CardContent className='flex flex-col gap-6 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0'>

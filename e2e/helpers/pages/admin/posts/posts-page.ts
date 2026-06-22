@@ -91,4 +91,12 @@ export class PostsPage extends AdminPage {
     async getActiveViewName(): Promise<string | null> {
         return await this.pageTitle.textContent();
     }
+
+    getWebTrafficMetricForPost(title: string): Locator {
+        return this.getPostByTitle(title).getByTestId('posts-list-web-traffic');
+    }
+
+    getWebTrafficLinkForPost(title: string): Locator {
+        return this.getPostByTitle(title).getByTestId('posts-list-web-traffic-link');
+    }
 }

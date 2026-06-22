@@ -119,6 +119,10 @@ export const defaultMockData = {
             tiers: []
         },
         isPostLoading: false,
+        contentType: 'post' as const,
+        analyticsBasePath: '/posts/analytics/test-post-id',
+        editorPath: '/editor/post/test-post-id',
+        listPath: '/posts/',
         postType: {
             isEmailOnly: false,
             isPublishedOnly: false,

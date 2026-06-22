@@ -7,7 +7,7 @@ import Sources from './components/sources';
 import StatsFilter from '../components/stats-filter';
 import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, NavbarActions} from '@tryghost/shade/components';
 import {BaseSourceData, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
-import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
+import {KpiDataItem, hasWebKpiData} from '@src/utils/kpi-helpers';
 import {LucideIcon, getScrollParent} from '@tryghost/shade/utils';
 import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
 import {createFilter} from '@tryghost/shade/patterns';
@@ -30,7 +30,8 @@ interface postAnalyticsProps {}
 const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
-    const {statsConfig, isLoading: isConfigLoading, range, data: globalData, post, isPostLoading} = useGlobalData();
+    const {statsConfig, isLoading: isConfigLoading, range, data: globalData, post, isPostLoading, contentType, analyticsBasePath} = useGlobalData();
+    const isPage = contentType === 'page';
     const containerRef = useRef<HTMLElement>(null);
 
     // Use URL-synced filter state for bookmarking and sharing
@@ -44,10 +45,10 @@ const Web: React.FC<postAnalyticsProps> = () => {
 
     // Redirect to Overview if this is an email-only post
     useEffect(() => {
-        if (!isPostLoading && post?.email_only) {
-            navigate(`/posts/analytics/${postId}`);
+        if (!isPage && !isPostLoading && post?.email_only) {
+            navigate(analyticsBasePath);
         }
-    }, [isPostLoading, post?.email_only, navigate, postId]);
+    }, [isPage, isPostLoading, post?.email_only, navigate, postId, analyticsBasePath]);
 
     // Calculate chart range based on days between today and post publication date
     const chartRange = useMemo(() => {
@@ -204,7 +205,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
 
     const isPageLoading = isConfigLoading || isPostLoading || isKpisLoading || isLocationsLoading || isSourcesLoading;
 
-    const kpiValues = getWebKpiValues(kpiData as unknown as KpiDataItem[] | null);
+    const hasKpiData = hasWebKpiData(kpiData as unknown as KpiDataItem[] | null);
 
     // Check if filters are applied
     const hasFilters = analyticsFilters.length > 0;
@@ -233,7 +234,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
                         </CardContent>
                     </Card>
                     :
-                    kpiData && kpiData.length !== 0 && kpiValues.visits !== '0' ?
+                    kpiData && kpiData.length !== 0 && hasKpiData ?
                         <>
                             <Kpis
                                 data={kpiData as KpiDataItem[] | null}

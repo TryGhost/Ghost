@@ -45,3 +45,8 @@ export const getWebKpiValues = (data: KpiDataItem[] | null | undefined) => {
         duration: formatDuration(avgDuration)
     };
 };
+
+export const hasWebKpiData = (data: KpiDataItem[] | null | undefined) => {
+    const kpiValues = getWebKpiValues(data);
+    return kpiValues.visits !== '0' || kpiValues.views !== '0';
+};

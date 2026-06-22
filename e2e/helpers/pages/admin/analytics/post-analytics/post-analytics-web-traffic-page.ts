@@ -4,6 +4,7 @@ import {Locator, Page} from '@playwright/test';
 export class PostAnalyticsWebTrafficPage extends AdminPage {
     readonly uniqueVisitorsKpi: Locator;
     readonly totalViewsKpi: Locator;
+    readonly webTrafficChart: Locator;
 
     readonly topSourcesCard: Locator;
     readonly locationsCard: Locator;
@@ -21,6 +22,7 @@ export class PostAnalyticsWebTrafficPage extends AdminPage {
 
         this.uniqueVisitorsKpi = page.getByTestId('unique-visitors-kpi');
         this.totalViewsKpi = page.getByTestId('total-views-kpi');
+        this.webTrafficChart = page.getByTestId('web-traffic-chart');
 
         this.topSourcesCard = page.getByTestId('top-sources-card');
         this.locationsCard = page.getByTestId('locations-card');
@@ -38,6 +40,12 @@ export class PostAnalyticsWebTrafficPage extends AdminPage {
 
     async gotoForPost(postId: string) {
         this.setPostId(postId);
+        await this.goto();
+    }
+
+    async gotoForPage(pageId: string) {
+        this.postId = pageId;
+        this.pageUrl = `/ghost/#/pages/analytics/${pageId}/web`;
         await this.goto();
     }
 

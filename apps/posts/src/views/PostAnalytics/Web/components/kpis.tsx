@@ -72,12 +72,12 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
                         <KpiTabTrigger value="visits" onClick={() => {
                             setCurrentTab('visits');
                         }}>
-                            <KpiTabValue color={KPI_METRICS.visits.color} label="Unique visitors" value={kpiValues.visits} />
+                            <KpiTabValue color={KPI_METRICS.visits.color} data-testid='unique-visitors-kpi' label="Unique visitors" value={kpiValues.visits} />
                         </KpiTabTrigger>
                         <KpiTabTrigger value="views" onClick={() => {
                             setCurrentTab('views');
                         }}>
-                            <KpiTabValue color={KPI_METRICS.views.color} label="Total views" value={kpiValues.views} />
+                            <KpiTabValue color={KPI_METRICS.views.color} data-testid='total-views-kpi' label="Total views" value={kpiValues.views} />
                         </KpiTabTrigger>
                     </TabsList>
                     <DropdownMenu>
@@ -96,7 +96,7 @@ const Kpis:React.FC<KpisProps> = ({data, range}) => {
                             <DropdownMenuItem onClick={() => setCurrentTab('views')}>Total views</DropdownMenuItem>
                         </DropdownMenuContent>
                     </DropdownMenu>
-                    <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
+                    <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500' data-testid='web-traffic-chart'>
                         <GhAreaChart
                             className={'-mb-3 aspect-auto h-[16vw] max-h-[320px] min-h-[180px] w-full'}
                             color={currentMetric.color}

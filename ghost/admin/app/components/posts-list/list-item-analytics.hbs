@@ -172,7 +172,7 @@
             {{!-- Visitor count column (only when web analytics is enabled) --}}
             {{#if this.settings.webAnalyticsEnabled}}
                 {{#if @post.isPublished}}
-                    <a href="#/posts/analytics/{{@post.id}}/web" class="permalink gh-list-data gh-post-list-metrics gh-post-list-analytics-tt-container">
+                    <a href="#/{{if @post.isPage "pages" "posts"}}/analytics/{{@post.id}}/web" class="permalink gh-list-data gh-post-list-metrics gh-post-list-analytics-tt-container" data-testid="posts-list-web-traffic-link">
                         <div class="gh-post-list-analytics-tooltip {{this.tooltipPosition}}">
                             <h3>Web traffic</h3>
                             <div class="metrics">
@@ -191,7 +191,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="gh-post-list-analytics-metric" data-test-analytics-visitors>
+                        <div class="gh-post-list-analytics-metric" data-test-analytics-visitors data-testid="posts-list-web-traffic">
                             {{svg-jar "analytics-visitors" class="gh-list-analytics-icon"}}
                             <span class="gh-content-email-stats-value">
                                 {{#if this.hasVisitorData}}
@@ -332,7 +332,7 @@
 
         {{!-- Button column --}}
         {{#if @post.hasAnalyticsPage }}
-            <a href="#/posts/analytics/{{@post.id}}" class="permalink gh-list-data gh-post-list-button" title="">
+            <a href="#/{{if @post.isPage "pages" "posts"}}/analytics/{{@post.id}}" class="permalink gh-list-data gh-post-list-button" title="">
                 <span class="gh-post-list-cta stats {{if this.isHovered "is-hovered"}}" title="Go to Analytics" data-ignore-select>
                     {{svg-jar "stats" title="Go to Analytics"}}
                 </span>

@@ -203,9 +203,11 @@ function getTinybirdTrackerScript(dataRoot) {
     const token = localEnabled ? localConfig.token : statsConfig.token;
     const datasource = localEnabled ? localConfig.datasource : statsConfig.datasource;
 
+    const entry = dataRoot.post || dataRoot.page;
+
     const tbParams = _.map({
         site_uuid: settingsCache.get('site_uuid'),
-        post_uuid: dataRoot.post?.uuid,
+        post_uuid: entry?.uuid,
         post_type: dataRoot.context?.includes('post') ? 'post' : dataRoot.context?.includes('page') ? 'page' : null,
         member_uuid: dataRoot.member?.uuid,
         member_status: dataRoot.member?.status

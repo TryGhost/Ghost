@@ -1489,7 +1489,7 @@ describe('{{ghost_head}} helper', function () {
                 post: posts[10]
             };
 
-            await testGhostHead(testUtils.createHbsResponse({
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
                 renderObject: renderObject,
                 locals: {
                     relativeUrl: '/post/',
@@ -1497,6 +1497,27 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+
+            assert.match(rendered, new RegExp(`tb_post_uuid="${posts[10].uuid}"`));
+            assert.match(rendered, /tb_post_type="post"/);
+        });
+
+        it('sets tb_post_uuid on page route', async function () {
+            const renderObject = {
+                page: posts[0]
+            };
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/about/',
+                    context: ['page'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            assert.match(rendered, new RegExp(`tb_post_uuid="${posts[0].uuid}"`));
+            assert.match(rendered, /tb_post_type="page"/);
         });
 
         it('sets tb_member_x variables on logged in home page', async function () {

@@ -1,5 +1,5 @@
 import {describe, expect, it} from 'vitest';
-import {getWebKpiValues} from '@src/utils/kpi-helpers';
+import {getWebKpiValues, hasWebKpiData} from '@src/utils/kpi-helpers';
 
 describe('kpi-helpers', () => {
     describe('getWebKpiValues', () => {
@@ -109,6 +109,20 @@ describe('kpi-helpers', () => {
             expect(result.views).toBe('84');
             expect(result.bounceRate).toBe('33%');
             expect(result.duration).toBe('2m 7s');
+        });
+    });
+
+    describe('hasWebKpiData', () => {
+        it('returns true when pageviews exist without session-derived visits', () => {
+            expect(hasWebKpiData([
+                {visits: 0, pageviews: 1, bounce_rate: 0, avg_session_sec: 0, date: '2023-01-01'}
+            ])).toBe(true);
+        });
+
+        it('returns false when there are no visits or pageviews', () => {
+            expect(hasWebKpiData([
+                {visits: 0, pageviews: 0, bounce_rate: 0, avg_session_sec: 0, date: '2023-01-01'}
+            ])).toBe(false);
         });
     });
 });

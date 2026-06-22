@@ -1,4 +1,5 @@
 import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
+import {Page as PageBase, useBrowsePages} from '@tryghost/admin-x-framework/api/pages';
 import {Post as PostBase, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {ReactNode, createContext, useContext, useState} from 'react';
 import {STATS_RANGES} from '@src/utils/constants';
@@ -7,8 +8,10 @@ import {StatsConfig, useTinybirdToken} from '@tryghost/admin-x-framework';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useParams} from '@tryghost/admin-x-framework';
 
-// Comprehensive Post type with all the includes we fetch in PostAnalytics
-export interface Post extends PostBase {
+export type ContentType = 'post' | 'page';
+
+// Comprehensive analytics content type with all the includes we fetch in PostAnalytics
+export interface Post extends Omit<PageBase, keyof PostBase>, PostBase {
     published_at?: string;
     excerpt?: string;
     authors?: {
@@ -49,6 +52,10 @@ type PostAnalyticsContextType = {
     postId: string;
     post: Post | undefined;
     isPostLoading: boolean;
+    contentType: ContentType;
+    analyticsBasePath: string;
+    editorPath: string;
+    listPath: string;
 }
 
 const PostAnalyticsContext = createContext<PostAnalyticsContextType | undefined>(undefined);
@@ -61,7 +68,7 @@ export const useGlobalData = () => {
     return context;
 };
 
-const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
+const PostAnalyticsProvider = ({children, contentType = 'post'}: { children: ReactNode; contentType?: ContentType }) => {
     const {postId} = useParams();
     
     // Validate that postId exists - the app cannot function without it
@@ -78,13 +85,26 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
     const hasStatsConfig = Boolean(config.data?.config?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
 
-    // Fetch post data with all required includes
+    const isPage = contentType === 'page';
+
+    // Fetch content data with all required includes. Both hooks are called to keep hook ordering stable;
+    // the inactive query is disabled.
     const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
             include: 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions,count.positive_feedback,count.negative_feedback,newsletter'
-        }
+        },
+        enabled: !isPage
     });
+    const {data: {pages: [page]} = {pages: []}, isLoading: isPageLoading} = useBrowsePages({
+        searchParams: {
+            filter: `id:${postId}`,
+            include: 'authors,tags,tiers,count.signups,count.paid_conversions'
+        },
+        enabled: isPage
+    });
+
+    const content = isPage ? page : post;
 
     // Check for errors in the ghost requests
     const ghostRequests = [config, site, settings];
@@ -117,8 +137,12 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         setRange,
         settings: settings.data?.settings || [],
         postId: postId,
-        post: post as Post | undefined,
-        isPostLoading
+        post: content as Post | undefined,
+        isPostLoading: isPage ? isPageLoading : isPostLoading,
+        contentType,
+        analyticsBasePath: `/${isPage ? 'pages' : 'posts'}/analytics/${postId}`,
+        editorPath: `/editor/${isPage ? 'page' : 'post'}/${postId}`,
+        listPath: `/${isPage ? 'pages' : 'posts'}/`
     }}>
         {children}
     </PostAnalyticsContext.Provider>;

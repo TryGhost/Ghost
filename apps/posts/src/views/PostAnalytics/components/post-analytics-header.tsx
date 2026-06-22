@@ -7,6 +7,7 @@ import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
+import {useDeletePage} from '@tryghost/admin-x-framework/api/pages';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -22,10 +23,12 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const navigate = useNavigate();
     const {fromAnalytics, appSettings} = useAppContext();
     const {mutateAsync: deletePost} = useDeletePost();
+    const {mutateAsync: deletePage} = useDeletePage();
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const {settings, site, statsConfig, post, isPostLoading, postId} = useGlobalData();
+    const {settings, site, statsConfig, post, isPostLoading, postId, contentType, analyticsBasePath, editorPath, listPath} = useGlobalData();
+    const isPage = contentType === 'page';
 
     const siteTimezone = getSiteTimezone(settings);
 
@@ -44,23 +47,23 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
         const tabs = [];
 
         // Only show Overview and Web tabs if it's NOT a published-only post with web analytics disabled
-        const isPublishedOnlyWithoutWebAnalytics = isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics;
+        const isPublishedOnlyWithoutWebAnalytics = !isPage && isPublishedOnly(post as Post) && !appSettings?.analytics.webAnalytics;
         if (!isPublishedOnlyWithoutWebAnalytics) {
             tabs.push('Overview');
-            if (!post.email_only && appSettings?.analytics.webAnalytics) {
+            if ((isPage || !post.email_only) && appSettings?.analytics.webAnalytics) {
                 tabs.push('Web');
             }
         }
-        if (hasBeenEmailed(post as Post)) {
+        if (!isPage && hasBeenEmailed(post as Post)) {
             tabs.push('Newsletter');
         }
         // Only show Growth tab if member source tracking is enabled
-        if (appSettings?.analytics.membersTrackSources) {
+        if (!isPage && appSettings?.analytics.membersTrackSources) {
             tabs.push('Growth');
         }
 
         return tabs;
-    }, [post, appSettings?.analytics.webAnalytics, appSettings?.analytics.membersTrackSources]);
+    }, [post, isPage, appSettings?.analytics.webAnalytics, appSettings?.analytics.membersTrackSources]);
 
     const handleDeletePost = () => {
         if (!post) {
@@ -76,10 +79,13 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
             return;
         }
         try {
-            await deletePost(postId);
+            if (isPage) {
+                await deletePage(postId);
+            } else {
+                await deletePost(postId);
+            }
             setShowDeleteDialog(false);
-            // Navigate back to posts list
-            navigate('/posts/', {crossApp: true});
+            navigate(listPath, {crossApp: true});
         } catch (e) {
             handleError(e);
         }
@@ -103,19 +109,19 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                         </BreadcrumbItem>
                                         :
                                         <BreadcrumbItem>
-                                            <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/posts/', {crossApp: true})}>Posts</BreadcrumbLink>
+                                            <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate(listPath, {crossApp: true})}>{isPage ? 'Pages' : 'Posts'}</BreadcrumbLink>
                                         </BreadcrumbItem>
                                     }
                                     <BreadcrumbSeparator />
                                     <BreadcrumbItem>
                                         <BreadcrumbPage className='leading-[24px]'>
-                                        Post analytics
+                                            {isPage ? 'Page analytics' : 'Post analytics'}
                                         </BreadcrumbPage>
                                     </BreadcrumbItem>
                                 </BreadcrumbList>
                             </Breadcrumb>
                             <div className='flex w-full items-center gap-2 md:w-auto'>
-                                {appSettings?.analytics.webAnalytics && !post?.email_only && (
+                                {appSettings?.analytics.webAnalytics && (isPage || !post?.email_only) && (
                                     <div className='mr-3 flex grow items-center gap-2 md:grow-0'>
                                         <div className='flex items-center gap-2 text-muted-foreground' title='Active readers in the last 5 minutes · Updates every 60 seconds'>
                                             <span>
@@ -129,7 +135,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 {/* <Button variant='outline'><LucideIcon.Share /></Button> */}
                                 {!isPostLoading &&
                                 <>
-                                    {!post?.email_only && (
+                                    {(isPage || !post?.email_only) && (
                                         <PostShareModal
                                             author={post?.authors?.[0]?.name || ''}
                                             description=''
@@ -159,10 +165,10 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                                     </a>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => {
-                                                    navigate(`/editor/post/${postId}`, {crossApp: true});
+                                                    navigate(editorPath, {crossApp: true});
                                                 }}>
                                                     <LucideIcon.Pen />
-                                                Edit post
+                                                    {isPage ? 'Edit page' : 'Edit post'}
                                                     {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
                                                 </DropdownMenuItem>
                                             </DropdownMenuGroup>
@@ -173,7 +179,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                                     onClick={handleDeletePost}
                                                 >
                                                     <LucideIcon.Trash />
-                                                Delete post
+                                                    {isPage ? 'Delete page' : 'Delete post'}
                                                 </DropdownMenuItem>
                                             </DropdownMenuGroup>
                                         </DropdownMenuContent>
@@ -195,9 +201,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                 </H1>
                                 {post?.published_at && (
                                     <div className='mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground'>
-                                        {isEmailOnly(post) && `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                                        {isPublishedOnly(post) && `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                                        {isPublishedAndEmailed(post) && `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                                        {!isPage && isEmailOnly(post) && `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                                        {(isPage || isPublishedOnly(post)) && `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                                        {!isPage && isPublishedAndEmailed(post) && `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
                                     </div>
                                 )}
                             </div>
@@ -211,28 +217,28 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     <PageMenu className='min-h-[34px]' defaultValue={currentTab} responsive>
                         {availableTabs.includes('Overview') && (
                             <PageMenuItem value="Overview" onClick={() => {
-                                navigate(`/posts/analytics/${postId}`);
+                                navigate(analyticsBasePath);
                             }}>
                                 Overview
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Web') && (
                             <PageMenuItem value="Web" onClick={() => {
-                                navigate(`/posts/analytics/${postId}/web`);
+                                navigate(`${analyticsBasePath}/web`);
                             }}>
                                 Web traffic
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Newsletter') && (
                             <PageMenuItem value="Newsletter" onClick={() => {
-                                navigate(`/posts/analytics/${postId}/newsletter`);
+                                navigate(`${analyticsBasePath}/newsletter`);
                             }}>
                                 Newsletter
                             </PageMenuItem>
                         )}
                         {availableTabs.includes('Growth') && (
                             <PageMenuItem value="Growth" onClick={() => {
-                                navigate(`/posts/analytics/${postId}/growth`);
+                                navigate(`${analyticsBasePath}/growth`);
                             }}>
                                 Growth
                             </PageMenuItem>
@@ -246,7 +252,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            Are you sure you want to delete this post?
+                            Are you sure you want to delete this {isPage ? 'page' : 'post'}?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             You&apos;re about to delete &quot;<strong>{post?.title}</strong>&quot;.

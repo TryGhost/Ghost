@@ -54,8 +54,7 @@ const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, d
             }
             <DataListBody>
                 {data?.map((row: UnifiedContentData) => {
-                    // Only make posts clickable (not pages), since there's no analytics route for pages
-                    const isClickable = row.post_id && row.post_type === 'post';
+                    const isClickable = row.post_id && (row.post_type === 'post' || row.post_type === 'page');
                     const clickHandler = isClickable ? getClickHandler(row.pathname, row.post_id, site.url || '', navigate, row.post_type) : () => {};
 
                     return (
