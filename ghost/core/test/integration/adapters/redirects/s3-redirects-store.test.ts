@@ -35,7 +35,7 @@ const backupKeyPattern = (tenantPrefix = '') => new RegExp(
 
 // Skip when MinIO is unreachable. The flag is set by the integration
 // globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
-// the forks spawn. (PLA-170)
+// the forks spawn.
 describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: S3RedirectsStore', function () {
     let adminClient: S3Client;
     let bucket: string;

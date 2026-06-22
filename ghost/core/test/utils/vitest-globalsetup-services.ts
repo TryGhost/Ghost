@@ -8,7 +8,7 @@ import net from 'node:net';
 // connect to their backing service in beforeAll, so they hard-fail locally when
 // the service isn't running. Gating each suite on these flags lets them SKIP
 // cleanly when the service is down and RUN when it's up — CI starts both
-// services, so they always run there. (PLA-170)
+// services, so they always run there.
 
 // 1s, not a few hundred ms: this probe runs in the vitest main process right
 // before the worker forks spawn, when the event loop is busiest (config load,

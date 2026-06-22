@@ -4,11 +4,11 @@
 // It builds the run's migrated + seeded "template" database once; each fork then
 // RESTORES from it when it first provisions its per-process DB (see
 // test/utils/db-utils.js) instead of running a full migrate+seed per file. That
-// per-file init is the dominant cost of the acceptance-test runtime regression
-// (PLA-165 mysql, PLA-172 sqlite). MySQL restores from a same-server template via
+// per-file init is the dominant cost of the acceptance-test runtime regression.
+// MySQL restores from a same-server template via
 // a bulk table copy; sqlite ATTACHes the template file and bulk-copies it onto
-// the fork's own connection (never copying the file over an open connection — the
-// approach reverted in PLA-165). Both keep the restore byte-faithful to a fresh
+// the fork's own connection (never copying the file over an open connection — a
+// previously-reverted approach). Both keep the restore byte-faithful to a fresh
 // init.
 //
 // The fork learns the template is ready via an inherited env var — env set here,
