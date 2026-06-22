@@ -168,7 +168,7 @@ const processStep = async ({
             if (!hasUpdatesAndAnnouncementsEnabled(member)) {
                 logging.info({
                     system: {
-                        event: 'automations.poll.member_unsubscribed',
+                        event: 'automations.poll.skipped_unsubscribed_member',
                         member_id: step.member_id,
                         step_id: step.id
                     }
