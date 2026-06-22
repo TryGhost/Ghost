@@ -277,7 +277,7 @@
     "chai": "catalog:",
     "cli-progress": "3.12.0",
     "cssnano": "7.1.9",
-    "esbuild": "0.28.0",
+    "esbuild": "0.28.1",
     "@eslint/js": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "3.5.0",
