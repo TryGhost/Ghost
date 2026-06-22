@@ -1,4 +1,5 @@
 import Component from '@ember/component';
+import GiftLinkModal from 'ghost-admin/components/posts-list/modals/gift-link';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import moment from 'moment-timezone';
@@ -8,7 +9,6 @@ import {canCopyGiftLink, giftLinkUrl} from 'ghost-admin/utils/gift-link';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
-import {task} from 'ember-concurrency';
 import {trackEvent} from 'ghost-admin/utils/analytics';
 import {tracked} from '@glimmer/tracking';
 
@@ -16,6 +16,7 @@ import {tracked} from '@glimmer/tracking';
 @tagName('')
 export default class GhPostSettingsMenu extends Component {
     @service feature;
+    @service modals;
     @service store;
     @service ajax;
     @service ghostPaths;
@@ -31,9 +32,6 @@ export default class GhPostSettingsMenu extends Component {
     @tracked showPostHistory = false;
     @tracked giftLink = null;
     @tracked giftLinkCopied = false;
-    @tracked giftLinkModalOpen = false;
-    @tracked giftLinkResetConfirming = false;
-    @tracked giftLinkResetting = false;
 
     post = null;
     isViewingSubview = false;
@@ -213,39 +211,6 @@ export default class GhPostSettingsMenu extends Component {
         });
     }
 
-    get giftLinkRedemptionsCount() {
-        return this.giftLink ? this.giftLink.redeemed_count : 0;
-    }
-
-    get giftLinkRedemptionsLabel() {
-        const count = this.giftLinkRedemptionsCount;
-        if (count === 0) {
-            return 'Not used yet';
-        }
-        return `${count} ${count === 1 ? 'redemption' : 'redemptions'}`;
-    }
-
-    get giftLinkDescription() {
-        const memberType = this.post.visibility === 'members' ? 'member' : 'paid member';
-        return `Anyone you share this link with will be able to access this post without becoming a ${memberType}.`;
-    }
-
-    // Load the post's existing gift link (if any) when the control is shown, so
-    // the usage counter is populated without the author having to copy first.
-    @action
-    async loadGiftLink() {
-        if (!this.canCopyGiftLink) {
-            return;
-        }
-        try {
-            const url = this.ghostPaths.url.api('gift_links', this.post.id);
-            const response = await this.ajax.request(url);
-            this.giftLink = response.gift_links[0] || null;
-        } catch (e) {
-            // Non-fatal: leave unset so the counter reads "0 redemptions".
-        }
-    }
-
     async ensureGiftLink() {
         const url = this.ghostPaths.url.api('gift_links', this.post.id);
         const response = await this.ajax.post(url);
@@ -277,56 +242,12 @@ export default class GhPostSettingsMenu extends Component {
         }
     }
 
-    @task
-    *copyGiftLinkTask() {
-        yield this.copyGiftLink();
-        return true;
-    }
-
+    // Surfaces the shared gift-link modal. The modal owns its own API state and
+    // mutates its own copy of the link, so we don't need to invalidate or sync
+    // back to `this.giftLink` afterwards.
     @action
-    async openGiftLinkModal() {
-        try {
-            await this.ensureGiftLink();
-            this.giftLinkResetConfirming = false;
-            this.giftLinkModalOpen = true;
-        } catch (e) {
-            this.notifications.showAPIError(e, {key: 'gift-link.open'});
-        }
-    }
-
-    @action
-    closeGiftLinkModal() {
-        this.giftLinkModalOpen = false;
-        this.giftLinkResetConfirming = false;
-    }
-
-    @action
-    startResetGiftLink() {
-        this.giftLinkResetConfirming = true;
-    }
-
-    @action
-    cancelResetGiftLink() {
-        this.giftLinkResetConfirming = false;
-    }
-
-    @action
-    async confirmResetGiftLink() {
-        if (this.giftLinkResetting) {
-            return;
-        }
-        this.giftLinkResetting = true;
-        try {
-            const url = this.ghostPaths.url.api('gift_links', this.post.id, 'reset');
-            const response = await this.ajax.put(url);
-            this.giftLink = response.gift_links[0];
-            trackEvent('gift_link_reset', {surface: 'editor-psm'});
-        } catch (e) {
-            this.notifications.showAPIError(e, {key: 'gift-link.reset'});
-        } finally {
-            this.giftLinkResetting = false;
-            this.giftLinkResetConfirming = false;
-        }
+    openGiftLinkModal() {
+        this.modals.open(GiftLinkModal, {post: this.post});
     }
 
     @action

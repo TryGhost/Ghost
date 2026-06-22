@@ -2,16 +2,16 @@ import AddPostTagsModal from './modals/add-tag';
 import Component from '@glimmer/component';
 import DeletePostsModal from './modals/delete-posts';
 import EditPostsAccessModal from './modals/edit-posts-access';
+import GiftLinkModal from './modals/gift-link';
 import UnpublishPostsModal from './modals/unpublish-posts';
 import UnschedulePostsModal from './modals/unschedule-posts';
 import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import nql from '@tryghost/nql';
 import {action} from '@ember/object';
-import {canCopyGiftLink, giftLinkUrl} from 'ghost-admin/utils/gift-link';
+import {canCopyGiftLink} from 'ghost-admin/utils/gift-link';
 import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
-import {trackEvent} from 'ghost-admin/utils/analytics';
 
 /**
  * @tryghost/tpl doesn't work in admin yet (Safari)
@@ -57,15 +57,11 @@ const messages = {
     },
     copiedPreviewUrl: {
         single: 'Preview link copied'
-    },
-    copiedGiftLink: {
-        single: 'Gift link copied'
     }
 };
 
 export default class PostsContextMenu extends Component {
     @service ajax;
-    @service config;
     @service ghostPaths;
     @service session;
     @service infinity;
@@ -118,9 +114,13 @@ export default class PostsContextMenu extends Component {
         this.menu.performTask(this.copyPreviewLinkTask);
     }
 
+    // Surfaces the shared gift-link modal (same one as the post-settings sidebar).
+    // The modal self-manages its API state, so we only need to hand it the post.
     @action
-    async copyGiftLink() {
-        this.menu.performTask(this.copyGiftLinkTask);
+    async openGiftLink() {
+        await this.menu.openModal(GiftLinkModal, {
+            post: this.selectionList.first
+        });
     }
 
     @action
@@ -453,25 +453,6 @@ export default class PostsContextMenu extends Component {
         copyTextToClipboard(this.selectionList.availableModels[0].url);
         this.notifications.showNotification(this.#getToastMessage('copiedPreviewUrl'), {type: 'success'});
         yield timeout(1000);
-        return true;
-    }
-
-    @task
-    *copyGiftLinkTask() {
-        try {
-            const post = this.selectionList.availableModels[0];
-            // Idempotent ensure: returns the active gift link, creating it if absent.
-            const url = this.ghostPaths.url.api('gift_links', post.id);
-            const response = yield this.ajax.post(url);
-            const token = response.gift_links[0].token;
-            const giftUrl = giftLinkUrl({blogUrl: this.config.blogUrl, slug: post.slug, token});
-            copyTextToClipboard(giftUrl);
-            trackEvent('gift_link_copied', {surface: 'posts-list-context-menu'});
-            this.notifications.showNotification(this.#getToastMessage('copiedGiftLink'), {type: 'success'});
-            yield timeout(1000);
-        } catch (error) {
-            this.notifications.showAPIError(error, {key: 'gift-link.copy.failed'});
-        }
         return true;
     }
 

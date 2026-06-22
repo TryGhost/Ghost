@@ -1,0 +1,49 @@
+<div class="modal-content gh-gift-link-modal" role="dialog" aria-modal="true" aria-labelledby="gift-link-modal-title" data-test-modal="gift-link" {{did-insert this.setup}}>
+    <div class="modal-body gh-gift-link-modal-body">
+        <div class="gh-gift-link-modal-header">
+            <h1 id="gift-link-modal-title" class="gh-gift-link-modal-title">Gift link</h1>
+            <span class="gh-gift-link-modal-views" data-test-text="gift-link-views">
+                {{this.viewsLabel}}
+            </span>
+        </div>
+        <p class="gh-gift-link-modal-description">{{this.description}}</p>
+
+        <div class="gh-gift-link-modal-url-box">
+            <span class="gh-gift-link-modal-url" title={{this.giftLinkUrl}} data-test-text="gift-link-url">
+                {{if this.ensuring "Generating link…" this.giftLinkUrl}}
+            </span>
+            <button
+                type="button"
+                class="gh-btn gh-btn-black gh-gift-link-modal-copy"
+                disabled={{not this.giftLinkUrl}}
+                data-test-button="copy-gift-link"
+                {{on "click" this.copyLink}}
+            >
+                <span>
+                    {{svg-jar "link"}}
+                    {{if this.copied "Copied!" "Copy link"}}
+                </span>
+            </button>
+        </div>
+    </div>
+
+    <div class="modal-footer gh-gift-link-modal-footer">
+        <button
+            type="button"
+            class="gh-btn gh-btn-red"
+            disabled={{not this.giftLinkUrl}}
+            data-test-button="reset-gift-link"
+            {{on "click" this.startReset}}
+        >
+            <span>Reset</span>
+        </button>
+        <button
+            type="button"
+            class="gh-btn gh-btn-outline"
+            data-test-button="close-gift-link-modal"
+            {{on "click" @close}}
+        >
+            <span>Close</span>
+        </button>
+    </div>
+</div>

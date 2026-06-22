@@ -1,3 +1,4 @@
+{{!-- template-lint-disable no-action no-passed-in-event-handlers --}}
 <div
     class="settings-menu-container {{if (or (eq this.subview "codeinjection") (eq this.subview "meta-data") (eq this.subview "twitter-data") (eq this.subview "facebook-data")) "settings-menu-container-wide"}}"
     {{did-insert this.setSidebarWidthFromElement}}
@@ -79,7 +80,7 @@
                                 <div class="gh-psm-setting-label-row">
                                     <label for="visibility-input">{{capitalize @post.displayName}} access</label>
                                     {{#if this.canCopyGiftLink}}
-                                        <div class="gh-psm-gift-link-actions" {{did-insert this.loadGiftLink}}>
+                                        <div class="gh-psm-gift-link-actions">
                                             <button type="button" class="gh-psm-gift-link-action gh-psm-gift-link-copy" {{on "click" this.copyGiftLink}} data-test-button="copy-gift-link">{{if this.giftLinkCopied "Link copied!" "Copy gift link"}}</button>
                                             <button type="button" class="gh-psm-gift-link-icon-button" aria-label="Manage gift link" title="Manage gift link" {{on "click" this.openGiftLinkModal}} data-test-button="manage-gift-link">
                                                 {{svg-jar "settings"}}
@@ -869,56 +870,5 @@
                 @modifier="total-overlay post-history" />
         {{/if}}
 
-        {{#if this.giftLinkModalOpen}}
-            <GhFullscreenModal @close={{this.closeGiftLinkModal}} @modifier="action gift-link">
-                <div class="modal-content gh-psm-gift-link-modal" role="dialog" aria-modal="true" aria-labelledby="gift-link-modal-title" data-test-modal="manage-gift-link">
-                    <header class="modal-header gh-psm-gift-link-modal-header">
-                        <h1 id="gift-link-modal-title">Manage gift link</h1>
-                    </header>
-                    <button type="button" class="close" aria-label="Close" title="Close" {{on "click" this.closeGiftLinkModal}} data-test-button="close-gift-link-modal">
-                        {{svg-jar "close"}}
-                    </button>
-
-                    <div class="modal-body">
-                        <p id="gift-link-description" class="gh-psm-gift-link-description">{{this.giftLinkDescription}}</p>
-
-                        <div class="gh-psm-gift-link-modal-input">
-                            <div class="gh-input-group">
-                                <GhTextInput
-                                    data-test-input="gift-link-url"
-                                    aria-label="Gift link"
-                                    aria-describedby="gift-link-description gift-link-redemptions"
-                                    @id="gift-link-url"
-                                    @name="gift-link-url"
-                                    @disabled={{true}}
-                                    @value={{readonly this.giftLinkUrl}}
-                                    @placeholder={{concat this.config.blogUrl "/g/" this.post.slug "/?key=xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"}}
-                                />
-                                <GhTaskButton
-                                    data-test-button="copy-gift-link-modal"
-                                    @buttonText="Copy link"
-                                    @task={{this.copyGiftLinkTask}}
-                                    @successText="Link copied"
-                                    @class="gh-btn gh-btn-black gh-btn-icon" />
-                            </div>
-                            <p id="gift-link-redemptions" class="gh-psm-gift-link-redemptions" data-test-text="gift-link-redemptions">{{this.giftLinkRedemptionsLabel}}</p>
-                        </div>
-                    </div>
-
-                    <footer class="modal-footer modal-footer-spread gh-psm-gift-link-modal-footer">
-                        {{#if this.giftLinkResetConfirming}}
-                            <span class="gh-psm-gift-link-warning">If you reset, the current link will no longer work</span>
-                            <span class="gh-psm-gift-link-reset-actions">
-                                <button type="button" class="gh-btn gh-btn-outline" {{on "click" this.cancelResetGiftLink}} data-test-button="cancel-reset-gift-link"><span>Cancel</span></button>
-                                <button type="button" class="gh-btn gh-btn-red" {{on "click" this.confirmResetGiftLink}} disabled={{this.giftLinkResetting}} data-test-button="confirm-reset-gift-link"><span>{{if this.giftLinkResetting "Resetting" "Reset"}}</span></button>
-                            </span>
-                        {{else}}
-                            <span></span>
-                            <button type="button" class="gh-btn gh-btn-outline" {{on "click" this.startResetGiftLink}} data-test-button="reset-gift-link"><span>Reset</span></button>
-                        {{/if}}
-                    </footer>
-                </div>
-            </GhFullscreenModal>
-        {{/if}}
     </div>
 </div>

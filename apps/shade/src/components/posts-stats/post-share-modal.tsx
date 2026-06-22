@@ -6,12 +6,18 @@ import React from 'react';
 
 interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root> {
     author?: string;
+    canShareAsGift?: boolean;
     children?: React.ReactNode;
     description?: React.ReactNode;
     emailOnly?: boolean;
     faviconURL?: string;
     featureImageURL?: string;
+    // Access label used in the gift-link CTA copy (e.g. "members-only",
+    // "paid-members-only"). The full sentence is composed in this modal so the
+    // wording stays consistent across consumers.
+    giftAccessLabel?: string;
     onClose?: () => void;
+    onShareAsGift?: () => void;
     postExcerpt?: string;
     postTitle?: string;
     postURL?: string;
@@ -22,12 +28,15 @@ interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof Dial
 
 const PostShareModal: React.FC<PostShareModalProps> = ({
     author = '',
+    canShareAsGift = false,
     children,
     description = '',
     emailOnly = false,
     faviconURL = '',
     featureImageURL = '',
+    giftAccessLabel = 'members-only',
     onClose = () => {},
+    onShareAsGift,
     postExcerpt = '',
     postTitle = '',
     postURL = '',
@@ -120,6 +129,18 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
                         </>
                     )}
                 </ShareModal.Footer>
+                {!emailOnly && canShareAsGift && onShareAsGift && (
+                    <p className="text-center text-sm text-muted-foreground">
+                        Want to share full access to this {giftAccessLabel} post?{' '}
+                        <button
+                            className="font-medium text-foreground underline-offset-4 hover:underline"
+                            type="button"
+                            onClick={onShareAsGift}
+                        >
+                            Share as a gift
+                        </button>
+                    </p>
+                )}
             </ShareModal.Content>
         </ShareModal.Root>
     );

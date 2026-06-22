@@ -281,105 +281,125 @@
     height: 14px;
 }
 
-.fullscreen-modal-gift-link {
-    width: 100%;
-    max-width: 540px;
-}
+/* Gift link modal (shared between post-settings sidebar and posts-list row menu).
+   Standard left-aligned layout: header row with title (left) and redemption
+   badge (right), then description, URL box, and footer below. */
 
-.gh-psm-gift-link-modal {
+.gh-gift-link-modal {
     padding: 32px;
     border-radius: 8px;
 }
 
-.gh-psm-gift-link-modal-header {
-    margin-bottom: 24px;
+.gh-gift-link-modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 0;
+    padding: 0;
 }
 
-.gh-psm-gift-link-modal .modal-header h1 {
-    margin-top: 0;
+.gh-gift-link-modal-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gh-gift-link-modal-title {
+    margin: 0;
     font-size: 2rem;
     line-height: 1.2;
     font-weight: 600;
     letter-spacing: 0;
 }
 
-.gh-psm-gift-link-description {
-    margin: -12px 0 24px;
+/* Mirrors Shade's <Badge variant="secondary">: rounded-xs, bg-secondary,
+   muted text, semibold, text-xs. */
+.gh-gift-link-modal-views {
+    display: inline-flex;
+    align-items: center;
+    margin: 0;
+    padding: 2px 6px;
+    border-radius: 2px;
+    background: var(--whitegrey);
+    color: color-mix(in srgb, var(--darkgrey) 70%, transparent);
+    font-size: 1.2rem;
+    font-weight: 600;
+    line-height: 1.4;
+}
+
+.gh-gift-link-modal-description {
+    margin: 12px 0 0;
     color: var(--midgrey);
     font-size: 1.4rem;
     line-height: 1.5;
 }
 
-.gh-psm-gift-link-modal-footer .gh-btn {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    height: 36px;
-    border-radius: 6px;
-    box-shadow: none;
-    transition-property: color, border-color, background;
-}
-
-.gh-psm-gift-link-modal-footer .gh-btn span {
+.gh-gift-link-modal-url-box {
     display: flex;
     align-items: center;
-    justify-content: center;
-    gap: 6px;
-    height: 36px;
-    padding: 0 10px;
-    font-size: 1.4rem;
-    line-height: 36px;
-    border-radius: 6px;
-}
-
-.gh-psm-gift-link-modal-footer .gh-btn {
-    min-width: 80px;
-}
-
-.gh-psm-gift-link-modal-footer .gh-btn-outline {
-    border-color: var(--whitegrey-d1);
-    background: var(--white);
-    box-shadow: none;
-}
-
-.gh-psm-gift-link-modal-footer .gh-btn-outline:hover {
-    border-color: var(--lightgrey);
+    gap: 8px;
+    width: 100%;
+    margin-top: 12px;
+    padding: 6px 6px 6px 14px;
     background: var(--whitegrey-l2);
-    box-shadow: none;
+    border: 1px solid var(--whitegrey-d1);
+    border-radius: 8px;
 }
 
-.gh-psm-gift-link-modal-footer .gh-btn-red,
-.gh-psm-gift-link-modal-footer .gh-btn-red:hover {
-    box-shadow: none;
-}
-
-.gh-psm-gift-link-modal .gh-psm-gift-link-redemptions {
-    margin: 6px 0 0;
+.gh-gift-link-modal-url {
+    flex: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    text-align: left;
     color: var(--midgrey);
     font-size: 1.3rem;
-    font-weight: 400;
     line-height: 1.4;
 }
 
-.gh-psm-gift-link-modal-footer {
+/* Button geometry mirrors Shade's default Button (size='default'):
+   --control-height: 32px, px-2.5 (10px), text-control (1.3rem), rounded-md (6px).
+   We override gh-btn's wider default span (32px tall, 14px padding) so the
+   modal feels consistent with the React analytics version. */
+.gh-gift-link-modal .gh-btn,
+.gh-gift-link-modal .gh-btn span {
+    border-radius: 6px;
+}
+
+.gh-gift-link-modal .gh-btn span {
+    height: 32px;
+    padding: 0 10px;
+    line-height: 32px;
+    font-size: 1.3rem;
+    font-weight: 500;
+}
+
+.gh-gift-link-modal-copy {
+    flex-shrink: 0;
+}
+
+.gh-gift-link-modal-copy span {
+    display: inline-flex !important;
     align-items: center;
-    margin-top: 32px;
+    gap: 6px;
 }
 
-.gh-psm-gift-link-warning {
-    color: var(--midgrey);
-    font-size: 1.3rem;
-    line-height: 1.4;
+.gh-gift-link-modal-copy svg {
+    width: 12px;
+    height: 12px;
 }
 
-.gh-psm-gift-link-reset-actions {
+.gh-gift-link-modal-footer {
     display: flex;
     align-items: center;
-    gap: 12px;
+    justify-content: space-between;
+    margin-top: 24px;
+    padding: 0;
 }
 
-.gh-psm-gift-link-reset-actions .gh-btn:not(:first-child) {
-    margin-left: 0;
+.gh-gift-link-modal-footer .gh-btn {
+    box-shadow: none;
 }
 
 @media (max-width: 1024px) {

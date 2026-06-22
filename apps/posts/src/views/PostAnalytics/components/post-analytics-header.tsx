@@ -1,3 +1,4 @@
+import GiftLinkModal from '../modals/gift-link-modal';
 import React, {useMemo, useState} from 'react';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {H1} from '@tryghost/shade/primitives';
@@ -6,7 +7,9 @@ import {Post, useGlobalData} from '@src/providers/post-analytics-context';
 import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
+import {isAdminUser, isAuthorUser, isEditorUser, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
 import {useAppContext} from '@src/providers/posts-app-context';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -25,7 +28,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const {settings, site, statsConfig, post, isPostLoading, postId} = useGlobalData();
+    const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
+    const {data: globalData, settings, site, statsConfig, post, isPostLoading, postId} = useGlobalData();
+    const {data: currentUser} = useCurrentUser();
 
     const siteTimezone = getSiteTimezone(settings);
 
@@ -61,6 +66,17 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
 
         return tabs;
     }, [post, appSettings?.analytics.webAnalytics, appSettings?.analytics.membersTrackSources]);
+
+    // Gift link eligibility mirrors canCopyGiftLink in app/utils/gift-link.js:
+    // requires the labs flag, a published gated post/page, and a managing role.
+    const canManageGiftLink = useMemo(() => {
+        if (!globalData?.labs?.giftLinks || !post || !currentUser) {
+            return false;
+        }
+        const eligible = post.status === 'published' && Boolean(post.visibility) && post.visibility !== 'public';
+        const canManage = isOwnerUser(currentUser) || isAdminUser(currentUser) || isEditorUser(currentUser) || isAuthorUser(currentUser);
+        return eligible && canManage;
+    }, [globalData?.labs?.giftLinks, post, currentUser]);
 
     const handleDeletePost = () => {
         if (!post) {
@@ -132,9 +148,11 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     {!post?.email_only && (
                                         <PostShareModal
                                             author={post?.authors?.[0]?.name || ''}
+                                            canShareAsGift={canManageGiftLink}
                                             description=''
                                             faviconURL={site?.icon || ''}
                                             featureImageURL={post?.feature_image}
+                                            giftAccessLabel={post?.visibility === 'members' ? 'members-only' : 'paid-members-only'}
                                             open={isShareOpen}
                                             postExcerpt={post?.excerpt || ''}
                                             postTitle={post?.title}
@@ -142,8 +160,17 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                             siteTitle={site?.title || ''}
                                             onClose={() => setIsShareOpen(false)}
                                             onOpenChange={setIsShareOpen}
+                                            onShareAsGift={() => {
+                                                setIsShareOpen(false);
+                                                setIsGiftLinkOpen(true);
+                                            }}
                                         >
-                                            <Button variant='outline' onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share</Button>
+                                            <Button
+                                                variant='outline'
+                                                onClick={() => setIsShareOpen(true)}
+                                            >
+                                                <LucideIcon.Share /> Share
+                                            </Button>
                                         </PostShareModal>
                                     )}
                                     <DropdownMenu>
@@ -194,10 +221,12 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     {post?.title}
                                 </H1>
                                 {post?.published_at && (
-                                    <div className='mt-0.5 flex items-center justify-start leading-[1.65em] text-muted-foreground'>
-                                        {isEmailOnly(post) && `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                                        {isPublishedOnly(post) && `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
-                                        {isPublishedAndEmailed(post) && `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                                    <div className='mt-0.5 flex items-center justify-start gap-2 leading-[1.65em] text-muted-foreground'>
+                                        <span>
+                                            {isEmailOnly(post) && `Sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                                            {isPublishedOnly(post) && `Published on your site on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                                            {isPublishedAndEmailed(post) && `Published and sent on ${formatDisplayDate(post.published_at, siteTimezone)} at ${formatDisplayTime(post.published_at, siteTimezone)}`}
+                                        </span>
                                     </div>
                                 )}
                             </div>
@@ -241,6 +270,14 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                 )}
                 {children}
             </Navbar>
+
+            {canManageGiftLink && post && (
+                <GiftLinkModal
+                    open={isGiftLinkOpen}
+                    post={post}
+                    onOpenChange={setIsGiftLinkOpen}
+                />
+            )}
 
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <AlertDialogContent>

@@ -1,0 +1,177 @@
+const {escapeExpression} = require('../../services/handlebars');
+
+// Self-contained HTML+CSS+JS injected at the bottom of the body on gift-link
+// renders (when `@gift` is set). Renders a pill toast at the top of the viewport
+// announcing the gift, with a persistent close button and a subscribe CTA. The
+// toast tucks below the nav initially and follows the scroll up to a 32px
+// sticky offset from the top.
+//
+// Designed to be theme-agnostic: scoped class names with a `gh-gift-toast`
+// prefix, an `accent` CSS custom property fed from the site's accent color, and
+// no global selectors so it cannot leak into theme styles.
+module.exports = function buildGiftToast({siteTitle, accentColor}) {
+    const safeTitle = escapeExpression(siteTitle || '');
+    const safeAccent = escapeExpression(accentColor || '#000000');
+
+    // Initial offset from the top of the viewport (~ a typical theme nav).
+    // The scroll handler shrinks this down to STICKY_TOP_PX as the user scrolls.
+    // Themes that want a different starting offset can override
+    // `--gh-gift-toast-initial-top` from their CSS.
+    return `
+<style>
+.gh-gift-toast {
+    --gh-gift-toast-initial-top: 80px;
+    --gh-gift-toast-sticky-top: 32px;
+    --gh-gift-toast-accent: ${safeAccent};
+
+    position: fixed;
+    top: var(--gh-gift-toast-initial-top);
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 99998;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    max-width: min(560px, calc(100vw - 32px));
+    padding: 16px;
+    background: #ffffff;
+    color: #15171a;
+    border-radius: 16px;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04), 0 8px 24px rgba(0, 0, 0, 0.08);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: top 200ms ease, opacity 200ms ease, transform 200ms ease;
+    box-sizing: border-box;
+}
+
+.gh-gift-toast-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: color-mix(in srgb, var(--gh-gift-toast-accent) 15%, transparent);
+}
+
+.gh-gift-toast-icon svg {
+    width: 18px;
+    height: 18px;
+    color: var(--gh-gift-toast-accent);
+    fill: var(--gh-gift-toast-accent);
+}
+
+.gh-gift-toast-text {
+    flex: 1;
+    min-width: 0;
+    color: #15171a;
+    font-weight: 400;
+}
+
+.gh-gift-toast-close {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: #f4f5f6;
+    color: #5b6573;
+    cursor: pointer;
+    transition: background 120ms ease, color 120ms ease;
+}
+
+.gh-gift-toast-close:hover {
+    background: #e8eaed;
+    color: #15171a;
+}
+
+.gh-gift-toast-close svg {
+    width: 12px;
+    height: 12px;
+}
+
+.gh-gift-toast.is-dismissed {
+    opacity: 0;
+    transform: translate(-50%, -16px);
+    pointer-events: none;
+}
+
+@media (max-width: 600px) {
+    .gh-gift-toast {
+        width: calc(100vw - 32px);
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .gh-gift-toast {
+        transition: none;
+    }
+}
+</style>
+<aside id="gh-gift-toast" class="gh-gift-toast" role="status" aria-live="polite">
+    <div class="gh-gift-toast-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 21.488H4v-10.75a.75.75 0 0 0-1.5 0v10.75c0 .914.586 1.5 1.5 1.5h8a.75.75 0 0 0 0-1.5z"/>
+            <path d="M12.25 21.488h8v-10.75a.75.75 0 0 1 1.5 0v10.75c0 .914-.586 1.5-1.5 1.5h-8a.75.75 0 0 1 0-1.5z"/>
+            <path d="M2.682 6.238h18.636c1.004 0 1.682.546 1.682 1.5v2.25c0 .954-.678 1.5-1.682 1.5H2.682c-1.004 0-1.682-.546-1.682-1.5v-2.25c0-.954.678-1.5 1.682-1.5zm0 1.5c-.239 0-.182-.046-.182 0v2.25c0 .046-.057 0 .182 0h18.636c.239 0 .182.046.182 0v-2.25c0-.046.057 0-.182 0H2.682z"/>
+            <path d="M12.75 22.238V6.988a.75.75 0 0 0-1.5 0v15.25a.75.75 0 0 0 1.5 0z"/>
+            <path d="M3.5 17.25h17a.75.75 0 0 0 0-1.5h-17a.75.75 0 0 0 0 1.5zM7.271 5.457a12.506 12.506 0 0 0 4.51 2.255.75.75 0 0 0 .92-.918 12.473 12.473 0 0 0-2.256-4.511C8.947.777 7.705.657 6.671 1.683c-1.033 1.027-.908 2.273.533 3.714l.067.06zm.458-2.709c.397-.395.702-.366 1.596.528.587.755 1.079 1.6 1.456 2.516a11.002 11.002 0 0 1-2.549-1.487c-.865-.872-.89-1.173-.503-1.557z"/>
+            <path d="m16.796 5.397-.067.06a12.5 12.5 0 0 1-4.512 2.255.75.75 0 0 1-.918-.918 12.502 12.502 0 0 1 2.315-4.579c1.44-1.438 2.681-1.558 3.715-.531 1.033 1.026.908 2.272-.533 3.713zm-.525-2.649c-.397-.395-.702-.366-1.537.46a11.024 11.024 0 0 0-1.515 2.584 11.038 11.038 0 0 0 2.549-1.487c.865-.872.89-1.173.503-1.557z"/>
+        </svg>
+    </div>
+    <span class="gh-gift-toast-text">${safeTitle} unlocked this post so you can read it for free.</span>
+    <button type="button" class="gh-gift-toast-close" aria-label="Dismiss">
+        <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
+            <path d="M3 3 L13 13 M13 3 L3 13"/>
+        </svg>
+    </button>
+</aside>
+<script>
+(function(){
+    var toast = document.getElementById('gh-gift-toast');
+    if (!toast) return;
+
+    // Scroll the toast up with the page until it reaches a 32px sticky offset.
+    // Reading inline styles back as numbers means themes that override the
+    // CSS variables still get a consistent scroll behaviour.
+    var styles = getComputedStyle(toast);
+    var initialTop = parseFloat(styles.getPropertyValue('--gh-gift-toast-initial-top')) || 80;
+    var stickyTop = parseFloat(styles.getPropertyValue('--gh-gift-toast-sticky-top')) || 32;
+    var ticking = false;
+
+    function applyTop(){
+        ticking = false;
+        var y = window.pageYOffset || document.documentElement.scrollTop || 0;
+        var next = Math.max(stickyTop, initialTop - y);
+        toast.style.top = next + 'px';
+    }
+
+    function onScroll(){
+        if (!ticking) {
+            window.requestAnimationFrame(applyTop);
+            ticking = true;
+        }
+    }
+
+    applyTop();
+    window.addEventListener('scroll', onScroll, {passive: true});
+
+    var closeBtn = toast.querySelector('.gh-gift-toast-close');
+    if (closeBtn) {
+        closeBtn.addEventListener('click', function(){
+            toast.classList.add('is-dismissed');
+            window.removeEventListener('scroll', onScroll);
+            // Defer removal so the fade/slide-out transition runs to completion.
+            setTimeout(function(){ if (toast.parentNode) toast.parentNode.removeChild(toast); }, 260);
+        });
+    }
+})();
+</script>
+`;
+};

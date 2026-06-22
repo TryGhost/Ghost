@@ -1,4 +1,5 @@
 import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
+import GiftLinkModal from '../modals/gift-link-modal';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/kpi-card';
 import NewsletterOverview from './components/newsletter-overview';
 import PostAnalyticsContent from '../components/post-analytics-content';
@@ -13,16 +14,35 @@ import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/growth';
 import {formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade/app';
 import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {isAdminUser, isAuthorUser, isEditorUser, isOwnerUser} from '@tryghost/admin-x-framework/api/users';
 import {useAppContext} from '@src/providers/posts-app-context';
-import {useEffect, useMemo} from 'react';
+import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
+import {useEffect, useMemo, useState} from 'react';
 import {usePostReferrers} from '@hooks/use-post-referrers';
+import {useReadGiftLink} from '@tryghost/admin-x-framework/api/gift-links';
 
 const Overview: React.FC = () => {
     const navigate = useNavigate();
-    const {statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId} = useGlobalData();
+    const {data: globalData, statsConfig, isLoading: isConfigLoading, post, isPostLoading, postId} = useGlobalData();
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {appSettings} = useAppContext();
+    const {data: currentUser} = useCurrentUser();
     const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
+
+    // Gift-link eligibility mirrors the analytics header's check (and ultimately
+    // app/utils/gift-link.js): labs flag on, published gated post, managing role.
+    const canManageGiftLink = useMemo(() => {
+        if (!globalData?.labs?.giftLinks || !post || !currentUser) {
+            return false;
+        }
+        const eligible = post.status === 'published' && Boolean(post.visibility) && post.visibility !== 'public';
+        const canManage = isOwnerUser(currentUser) || isAdminUser(currentUser) || isEditorUser(currentUser) || isAuthorUser(currentUser);
+        return eligible && canManage;
+    }, [globalData?.labs?.giftLinks, post, currentUser]);
+
+    const {data: giftLinkData} = useReadGiftLink(postId, {enabled: canManageGiftLink});
+    const giftLinkViewCount = giftLinkData?.gift_links?.[0]?.redeemed_count ?? 0;
+    const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
 
     // Calculate chart range based on days between today and post publication date
     const chartRange = useMemo(() => {
@@ -136,38 +156,40 @@ const Overview: React.FC = () => {
                             post={post as Post}
                         />
                     )}
-                    {showGrowthSection && (
-                        <Card className='group col-span-2 overflow-hidden p-0' data-testid='growth'>
-                            <div className='relative flex items-center justify-between gap-6'>
-                                <CardHeader>
-                                    <CardTitle className='flex items-center gap-1.5 text-lg'>
-                                        <LucideIcon.Sprout size={16} strokeWidth={1.5} />
+                    {(showGrowthSection || (canManageGiftLink && post)) && (
+                        <div className='col-span-2 flex flex-col gap-6 lg:grid lg:grid-cols-3'>
+                            {showGrowthSection && (
+                                <Card className={`group overflow-hidden p-0 ${canManageGiftLink && post ? 'lg:col-span-2' : 'lg:col-span-3'}`} data-testid='growth'>
+                                    <div className='relative flex items-center justify-between gap-6'>
+                                        <CardHeader>
+                                            <CardTitle className='flex items-center gap-1.5 text-lg'>
+                                                <LucideIcon.Sprout size={16} strokeWidth={1.5} />
                                 Growth
-                                    </CardTitle>
-                                </CardHeader>
-                                <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
-                                    navigate(`/posts/analytics/${postId}/growth`);
-                                }}>View more</Button>
-                            </div>
-                            <CardContent className='flex flex-col gap-6 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0'>
-                                {kpiIsLoading ?
-                                    Array.from({length: 3}, (_, i) => (
-                                        <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
-                                            <Skeleton className='w-2/3' />
-                                            <Skeleton className='h-7 w-12' />
-                                        </div>
-                                    ))
-                                    :
-                                    <>
-                                        <KpiCard className='grow gap-1 py-0'>
-                                            <KpiCardLabel>
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
+                                            navigate(`/posts/analytics/${postId}/growth`);
+                                        }}>View more</Button>
+                                    </div>
+                                    <CardContent className='flex flex-col gap-6 px-0 md:grid md:grid-cols-3 md:items-stretch md:gap-0'>
+                                        {kpiIsLoading ?
+                                            Array.from({length: 3}, (_, i) => (
+                                                <div key={i} className='h-[98px] gap-1 border-r px-6 py-5 last:border-r-0'>
+                                                    <Skeleton className='w-2/3' />
+                                                    <Skeleton className='h-7 w-12' />
+                                                </div>
+                                            ))
+                                            :
+                                            <>
+                                                <KpiCard className='grow gap-1 py-0'>
+                                                    <KpiCardLabel>
                                         Free members
-                                            </KpiCardLabel>
-                                            <KpiCardContent>
-                                                <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.free_members || 0))}</KpiCardValue>
-                                            </KpiCardContent>
-                                        </KpiCard>
-                                        {appSettings?.paidMembersEnabled &&
+                                                    </KpiCardLabel>
+                                                    <KpiCardContent>
+                                                        <KpiCardValue className='text-[2.2rem]'>{formatNumber((totals?.free_members || 0))}</KpiCardValue>
+                                                    </KpiCardContent>
+                                                </KpiCard>
+                                                {appSettings?.paidMembersEnabled &&
                                 <>
                                     <KpiCard className='grow gap-1 py-0'>
                                         <KpiCardLabel>
@@ -186,17 +208,58 @@ const Overview: React.FC = () => {
                                         </KpiCardContent>
                                     </KpiCard>
                                 </>
+                                                }
+                                            </>
                                         }
-                                    </>
-                                }
-                            </CardContent>
-                        </Card>
+                                    </CardContent>
+                                </Card>
+                            )}
+                            {canManageGiftLink && post && (
+                                <Card className={`group/datalist overflow-hidden ${showGrowthSection ? 'lg:col-span-1' : 'lg:col-span-3'}`} data-testid='gift-link-views'>
+                                    <div className='relative flex items-center justify-between gap-6'>
+                                        <CardHeader>
+                                            <CardTitle className='flex items-center gap-1.5 text-lg'>
+                                                <LucideIcon.Gift size={16} strokeWidth={1.5} />
+                                        Gift link
+                                            </CardTitle>
+                                        </CardHeader>
+                                        {/* Mirrors the View-more affordance on the Web/Growth cards:
+                                    sits flush-right, hidden until hover, slides in on reveal. */}
+                                        <Button
+                                            className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100'
+                                            size='sm'
+                                            variant='outline'
+                                            onClick={() => setIsGiftLinkOpen(true)}
+                                        >
+                                    Share
+                                        </Button>
+                                    </div>
+                                    <CardContent className='flex flex-col gap-1'>
+                                        {/* Always plural for the card label so it reads as a
+                                    metric ("Views: 1") rather than a sentence. */}
+                                        <span className='text-sm text-muted-foreground'>
+                                    Views
+                                        </span>
+                                        <span className='text-[2.2rem] leading-none font-semibold'>
+                                            {formatNumber(giftLinkViewCount)}
+                                        </span>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
                     )}
-                    {!showWebSection && !showNewsletterSection && !showGrowthSection && (
+                    {!showWebSection && !showNewsletterSection && !showGrowthSection && !canManageGiftLink && (
                         <DisabledSourcesIndicator className='col-span-2 py-20' />
                     )}
                 </div>
             </PostAnalyticsContent>
+            {canManageGiftLink && post && (
+                <GiftLinkModal
+                    open={isGiftLinkOpen}
+                    post={post as Post}
+                    onOpenChange={setIsGiftLinkOpen}
+                />
+            )}
         </>
     );
 };
