@@ -16,10 +16,6 @@
 // forks-based parallel model, where each fork is its own process with its own
 // DB) never collide.
 
-// vitest setup files are *meant* to register top-level hooks; the ghost/mocha
-// lint plugin (aimed at mocha test files) flags them. Disable for this file.
-/* eslint-disable ghost/mocha/no-top-level-hooks, ghost/mocha/no-sibling-hooks, ghost/mocha/handle-done-callback */
-
 import {beforeAll, beforeEach, afterEach, afterAll} from 'vitest';
 
 const crypto = require('crypto');
