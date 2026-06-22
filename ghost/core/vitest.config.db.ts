@@ -45,6 +45,7 @@ const sharedDbConfig = {
     // threads share process.env, so the per-process DB derivation would collide.
     pool: 'forks' as const,
     isolate: false,
+    sequence: {shuffle: {files: !!process.env.CI}},
     setupFiles: ['./test/utils/vitest-setup-db.ts'],
     resolveSnapshotPath,
     // Keep the testing env (CI sets `testing-mysql` on the MySQL leg; default to
