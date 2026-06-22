@@ -84,10 +84,13 @@ describe('Front-end gift links', function () {
     });
 
     it('paywalls the paid post for an anonymous visitor on the canonical URL', async function () {
-        await request
+        const res = await request
             .get(`/${slug}/`)
             .expect(200)
             .expect(assertLocked);
+
+        // No gift → no toast on the canonical URL.
+        assert.doesNotMatch(res.text, /gh-gift-toast/, 'gift toast must not appear on the canonical URL');
     });
 
     it('unlocks the full post for an anonymous visitor with a valid /g/ + key', async function () {
@@ -100,6 +103,10 @@ describe('Front-end gift links', function () {
         assert.match(res.headers['cache-control'], /no-store/);
         assert.equal(res.headers['x-robots-tag'], 'noindex');
         assert.equal(res.headers['referrer-policy'], 'no-referrer');
+
+        // The default gift toast renders on the verified gift view.
+        assert.match(res.text, /id="gh-gift-toast"/, 'default gift toast renders on a gift view');
+        assert.match(res.text, /unlocked this post/, 'toast announces the gift');
     });
 
     it('canonicalises a stale slug to the current slug, keeping the key', async function () {
@@ -148,6 +155,9 @@ describe('Front-end gift links', function () {
     });
 
     it('counts a human gift read once and de-dupes repeat views via the ghost-gift-seen cookie', async function () {
+        // Baseline-relative so the assertion doesn't depend on whether earlier
+        // tests' reads were counted (UA classification of the default agent).
+        const baseline = await pollRedeemedCount(token, 0, 6);
         // Fresh client (no prior cookie) with a real browser UA so it isn't bot-filtered.
         const humanAgent = supertest.agent(configUtils.config.get('url'));
 
@@ -160,27 +170,30 @@ describe('Front-end gift links', function () {
         assert.match(setCookie, /ghost-gift-seen-/, 'sets the per-post de-dup cookie');
 
         // The count is incremented out-of-band (non-blocking), so poll briefly.
-        assert.equal(await pollRedeemedCount(token, 1), 1);
+        assert.equal(await pollRedeemedCount(token, baseline + 1), baseline + 1);
 
         // A second view from the same client must NOT double-count (cookie matches token).
         await humanAgent
             .get(`/g/${slug}/?key=${token}`)
             .set('User-Agent', HUMAN_UA)
             .expect(200);
-        assert.equal(await pollRedeemedCount(token, 1), 1, 'repeat view from same client is de-duped');
+        assert.equal(await pollRedeemedCount(token, baseline + 1), baseline + 1, 'repeat view from same client is de-duped');
     });
 
     it('does not count a read from a bot user-agent', async function () {
         const botAgent = supertest.agent(configUtils.config.get('url'));
+        // Self-contained: capture the current count, then assert a bot read
+        // doesn't bump it (rather than depending on a prior test's value).
+        const baseline = await pollRedeemedCount(token, 0, 6);
 
         await botAgent
             .get(`/g/${slug}/?key=${token}`)
             .set('User-Agent', 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)')
             .expect(200);
 
-        // The human test above already brought the count to 1; a bot read must
-        // not bump it further.
-        const count = await pollRedeemedCount(token, 2, 6);
-        assert.equal(count, 1, 'bot read is not counted');
+        // Give any (erroneous) async count write a chance to land, then confirm
+        // the count is unchanged.
+        const count = await pollRedeemedCount(token, baseline + 1, 6);
+        assert.equal(count, baseline, 'bot read is not counted');
     });
 });
