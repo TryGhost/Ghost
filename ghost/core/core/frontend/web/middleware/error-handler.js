@@ -1,5 +1,4 @@
 const hbs = require('express-hbs');
-const _ = require('lodash');
 const path = require('path');
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
@@ -7,6 +6,7 @@ const sentry = require('../../../shared/sentry');
 
 const config = require('../../../shared/config');
 const renderer = require('../../services/rendering');
+const themeEngine = require('../../services/theme-engine');
 
 // @TODO: make this properly shared code
 const {prepareError, prepareErrorCacheControl, prepareStack} = require('@tryghost/mw-error-handler');
@@ -93,14 +93,29 @@ const themeErrorRenderer = function themeErrorRenderer(err, req, res, next) {
     // @TODO: very dirty !!!!!!
     renderer.templates.setTemplate(req, res);
 
-    // It can be that something went wrong with the theme or otherwise loading handlebars
-    // This ensures that no matter what res.render will work here
+    // If the active theme isn't mounted into Express we cannot render a theme error template.
+    // This happens when the error was thrown before the theme middleware ran (e.g. early in
+    // the request pipeline, or on the first requests after a boot): the theme's engine and
+    // views directory aren't set up, and neither is the per-request/global template data
+    // (@site, @custom, member, ...) that theme error pages such as error-404.hbs depend on.
+    // Fall back to Ghost's self-contained built-in error template instead.
+    //
+    // The built-in template is referenced by absolute path rather than by repointing the
+    // app-wide `views` directory, because mutating `views` here persists on the Express app
+    // and would break theme template lookups (e.g. error-404) on subsequent requests.
     // @TODO: split the error handler for assets, admin & theme to refactor this away
-    if (_.isEmpty(req.app.engines)) {
-        res._template = 'error';
-        req.app.engine('hbs', createHbsEngine());
-        req.app.set('view engine', 'hbs');
-        req.app.set('views', config.get('paths').defaultViews);
+    const activeTheme = themeEngine.getActive();
+    if (!activeTheme || !activeTheme.mounted) {
+        res._template = path.resolve(config.get('paths').defaultViews, 'error.hbs');
+
+        // Register the bare-minimum hbs engine if it isn't already available. We check for the
+        // `hbs` engine specifically rather than testing whether req.app.engines is empty, so the
+        // fallback still works if some other engine happens to be registered. Express keys
+        // engines by file extension with a leading dot, hence `.hbs`.
+        if (!req.app.engines || !req.app.engines['.hbs']) {
+            req.app.engine('hbs', createHbsEngine());
+            req.app.set('view engine', 'hbs');
+        }
     }
 
     // @TODO use renderer here?!
