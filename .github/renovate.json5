@@ -459,12 +459,20 @@
             "automerge": true
         },
 
-        // Allow internal Docker digest pins to automerge once the relevant
-        // CI checks have gone green. Scoped to base images we control or
+        // Batch internal Docker digest pins into a single weekly PR and
+        // automerge after CI passes. Scoped to base images we control or
         // pin purely for build reproducibility, so digest rotations don't
-        // change runtime behavior.
+        // change runtime behavior. Frequently-rotating upstream tags
+        // (notably `tinybird-local:latest`) were opening ~5 individual PRs
+        // per week, each running the full E2E lane (~70-150 job-min) for a
+        // tweak with no runtime impact. Saturday-only `schedule` batches the
+        // week's churn into one PR + one CI run; the global automergeSchedule
+        // (all weekend, weekday evenings) lands it without human review.
+        // Digests for images not in this list (e.g. the pinned `redis` in
+        // ci.yml services) still open individually — they're rare and
+        // intentionally human-reviewed.
         {
-            "description": "Automerge internal Docker digest updates after CI passes",
+            "description": "Group + weekly-schedule internal Docker digest updates; automerge after CI passes",
             "matchDatasources": [
                 "docker"
             ],
@@ -479,6 +487,10 @@
             ],
             "matchUpdateTypes": [
                 "digest"
+            ],
+            "groupName": "Docker image digests",
+            "schedule": [
+                "* * * * 6"
             ],
             "automerge": true,
             "automergeType": "pr"
