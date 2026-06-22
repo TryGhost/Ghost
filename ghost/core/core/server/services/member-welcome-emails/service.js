@@ -643,13 +643,15 @@ class MemberWelcomeEmailService {
             return {
                 data: response.models,
                 meta: {
+                    ...response.meta,
                     sent_email_verification: emailsToVerify.map(({property}) => property)
                 }
             };
         }
 
         return {
-            data: response.models
+            data: response.models,
+            meta: response.meta
         };
     }
 
@@ -675,6 +677,7 @@ class MemberWelcomeEmailService {
         return {
             data: response.models,
             meta: {
+                ...response.meta,
                 email_verified: property
             }
         };

@@ -91,9 +91,10 @@ const controller = {
                 ...frame.options,
                 withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
             });
+            const defaultDesignSettings = await getDefaultEmailDesignSettings();
             return {
                 ...result,
-                data: result.data.map(automation => flattenAutomation(automation))
+                data: result.data.map(automation => flattenAutomationWithDefaultSenderSettings(automation, defaultDesignSettings))
             };
         }
     },
@@ -121,7 +122,8 @@ const controller = {
                 });
             }
 
-            return flattenAutomation(model);
+            const defaultDesignSettings = await getDefaultEmailDesignSettings();
+            return flattenAutomationWithDefaultSenderSettings(model, defaultDesignSettings);
         }
     },
 

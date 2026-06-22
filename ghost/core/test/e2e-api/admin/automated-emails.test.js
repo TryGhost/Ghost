@@ -700,7 +700,7 @@ describe('Automated Emails API', function () {
             });
         });
 
-        it('Can edit shared sender settings without welcome email automation rows', async function () {
+        it('Can edit shared sender settings without automation rows', async function () {
             await models.Base.knex('welcome_email_automated_emails').del();
             await models.Base.knex('automations').del();
 
@@ -856,6 +856,11 @@ describe('Automated Emails API', function () {
                 .where('welcome_email_automation_id', automatedEmailId)
                 .del();
 
+            const welcomeEmailRow = await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automatedEmailId)
+                .first('id');
+            assert.equal(welcomeEmailRow, undefined);
+
             await agent
                 .post(`automated_emails/${automatedEmailId}/preview/`)
                 .body({
@@ -867,11 +872,6 @@ describe('Automated Emails API', function () {
                     assert.equal(body.errors.length, 1);
                     assert.equal(typeof body.errors[0].id, 'string');
                 });
-
-            const welcomeEmailRow = await models.Base.knex('welcome_email_automated_emails')
-                .where('welcome_email_automation_id', automatedEmailId)
-                .first('id');
-            assert.equal(welcomeEmailRow, undefined);
         });
 
         it('Can preview inactive automated email', async function () {
