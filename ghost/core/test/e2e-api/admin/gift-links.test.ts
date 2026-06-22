@@ -13,7 +13,7 @@ describe('Gift Links Admin API', function () {
     };
     let postId: string;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'posts');
         await agent.loginAsOwner();
