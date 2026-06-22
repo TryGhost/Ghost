@@ -304,7 +304,18 @@ class OEmbedService {
             };
         }
 
-        const pickFn = (sizes, pickDefault) => {
+        // metascraper-logo-favicon 5.50.x awaits pickFn and passes the resolved
+        // value straight to its logo sanitizer, so pickFn must return a URL
+        // string, not a size entry like the pre-5.43 API. Its bundled default
+        // picker (pickBiggerSize) also network-validates every candidate via
+        // reachable-url before returning it, which drops icons whenever probes
+        // are blocked (tests) or slow. Icon URLs here come from the page's own
+        // markup, so keep the pre-5.43 behavior and pick purely by parsed size.
+        const pickBiggest = (iconSizes) => {
+            const sorted = [...iconSizes].sort((a, b) => (b.size?.priority ?? 0) - (a.size?.priority ?? 0));
+            return (sorted.find(item => item.size?.square) || sorted[0])?.url;
+        };
+        const pickFn = (sizes) => {
             const appleTouchIcon = sizes.find(item => item.rel?.includes('apple') && item.sizes && item.size?.width >= 180);
             // Bookmark cards (including the oembed fallback, which resolves to a
             // bookmark) render the icon inline in the post body, where the site's
@@ -319,10 +330,10 @@ class OEmbedService {
                 // favicon, so skip them when picking what to show in a bookmark card.
                 const standardIcons = sizes.filter(item => !/apple|mask-icon|fluid-icon/.test(item.rel ?? ''));
                 const svgIcon = standardIcons.find(item => item.href?.endsWith('svg'));
-                return svgIcon || pickDefault(standardIcons) || appleTouchIcon;
+                return svgIcon?.url || pickBiggest(standardIcons) || appleTouchIcon?.url;
             }
             const svgIcon = sizes.find(item => item.href?.endsWith('svg'));
-            return appleTouchIcon || svgIcon || pickDefault(sizes);
+            return appleTouchIcon?.url || svgIcon?.url || pickBiggest(sizes);
         };
 
         const scrapers = [
