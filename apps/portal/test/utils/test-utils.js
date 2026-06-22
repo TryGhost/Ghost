@@ -1,5 +1,6 @@
 // Common test setup util - Ref: https://testing-library.com/docs/react-testing-library/setup#custom-render
 import {render} from '@testing-library/react';
+import i18n from '@tryghost/i18n';
 import AppContext from '../../src/app-context';
 import {testSite, member} from '../../src/utils/fixtures';
 
@@ -19,7 +20,7 @@ const customRender = (ui, {options = {}, overrideContext = {}} = {}) => {
     const mockDoActionFn = vi.fn().mockResolvedValue(undefined);
 
     // Hardcode the locale to 'en' for testing
-    const {t} = require('@tryghost/i18n')('en');
+    const {t} = i18n('en');
 
     const context = {
         site: testSite,

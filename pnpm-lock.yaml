@@ -1258,6 +1258,9 @@ importers:
       '@doist/react-interpolate':
         specifier: 2.2.2
         version: 2.2.2(prop-types@15.8.1)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+      '@eslint/js':
+        specifier: catalog:eslint9
+        version: 9.39.4
       '@sentry/react':
         specifier: 'catalog:'
         version: 7.120.4(react@17.0.2)
@@ -1273,12 +1276,6 @@ importers:
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../ghost/i18n
-      '@typescript-eslint/eslint-plugin':
-        specifier: 8.49.0
-        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@8.57.1)(typescript@5.9.3))(eslint@8.57.1)(typescript@5.9.3)
-      '@typescript-eslint/parser':
-        specifier: 'catalog:'
-        version: 8.49.0(eslint@8.57.1)(typescript@5.9.3)
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 4.7.0(vite@7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
@@ -1295,11 +1292,20 @@ importers:
         specifier: 'catalog:'
         version: 3.4.9
       eslint:
-        specifier: 'catalog:'
-        version: 8.57.1
+        specifier: catalog:eslint9
+        version: 9.39.4(jiti@2.7.0)
+      eslint-plugin-ghost:
+        specifier: 3.5.0
+        version: 3.5.0(@babel/core@7.29.7)(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-i18next:
         specifier: 6.1.4
         version: 6.1.4
+      eslint-plugin-react:
+        specifier: 7.37.5
+        version: 7.37.5(eslint@9.39.4(jiti@2.7.0))
+      globals:
+        specifier: 17.6.0
+        version: 17.6.0
       jsdom:
         specifier: 'catalog:'
         version: 29.1.1(@noble/hashes@1.8.0)
@@ -1309,6 +1315,9 @@ importers:
       react-dom:
         specifier: catalog:react17
         version: 17.0.2(react@17.0.2)
+      typescript-eslint:
+        specifier: 8.58.0
+        version: 8.58.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       vite:
         specifier: 'catalog:'
         version: 7.3.2(@types/node@25.9.1)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)
@@ -36361,6 +36370,28 @@ snapshots:
       doctrine: 2.1.0
       es-iterator-helpers: 1.3.2
       eslint: 8.57.1
+      estraverse: 5.3.0
+      hasown: 2.0.4
+      jsx-ast-utils: 3.3.5
+      minimatch: 3.1.5
+      object.entries: 1.1.9
+      object.fromentries: 2.0.8
+      object.values: 1.2.1
+      prop-types: 15.8.1
+      resolve: 2.0.0-next.7
+      semver: 6.3.1
+      string.prototype.matchall: 4.0.12
+      string.prototype.repeat: 1.0.0
+
+  eslint-plugin-react@7.37.5(eslint@9.39.4(jiti@2.7.0)):
+    dependencies:
+      array-includes: 3.1.9
+      array.prototype.findlast: 1.2.5
+      array.prototype.flatmap: 1.3.3
+      array.prototype.tosorted: 1.1.4
+      doctrine: 2.1.0
+      es-iterator-helpers: 1.3.2
+      eslint: 9.39.4(jiti@2.7.0)
       estraverse: 5.3.0
       hasown: 2.0.4
       jsx-ast-utils: 3.3.5

@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/portal",
-  "version": "2.69.7",
+  "type": "module",
+  "version": "2.69.8",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -22,79 +23,12 @@
     "test:watch": "vitest",
     "test:ci": "pnpm test --coverage",
     "test:unit": "pnpm test:ci",
-    "lint:code": "eslint src test --ext .js,.ts --cache",
+    "lint:code": "eslint src test --cache",
     "lint:types": "tsc --noEmit",
     "lint": "pnpm lint:code && pnpm lint:types",
     "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true
-    },
-    "globals": {
-      "vi": "readonly",
-      "describe": "readonly",
-      "it": "readonly",
-      "test": "readonly",
-      "expect": "readonly",
-      "beforeEach": "readonly",
-      "afterEach": "readonly",
-      "beforeAll": "readonly",
-      "afterAll": "readonly",
-      "require": "readonly"
-    },
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2022
-    },
-    "extends": [
-      "plugin:ghost/browser",
-      "plugin:i18next/recommended",
-      "plugin:react/recommended",
-      "plugin:react/jsx-runtime"
-    ],
-    "plugins": [
-      "ghost",
-      "i18next"
-    ],
-    "rules": {
-      "react/prop-types": "off",
-      "ghost/filenames/match-regex": [
-        "error",
-        "^[a-z0-9.-]+$",
-        false
-      ]
-    },
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
-    },
-    "overrides": [
-      {
-        "files": [
-          "*.ts",
-          "*.tsx"
-        ],
-        "parser": "@typescript-eslint/parser",
-        "parserOptions": {
-          "sourceType": "module",
-          "ecmaVersion": 2022,
-          "ecmaFeatures": {
-            "jsx": true
-          },
-          "project": "./tsconfig.json"
-        },
-        "extends": [
-          "plugin:@typescript-eslint/recommended"
-        ],
-        "plugins": [
-          "@typescript-eslint"
-        ]
-      }
-    ]
   },
   "browserslist": {
     "production": [
@@ -110,21 +44,24 @@
   },
   "devDependencies": {
     "@doist/react-interpolate": "2.2.2",
+    "@eslint/js": "catalog:eslint9",
     "@sentry/react": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:react17",
     "@testing-library/user-event": "14.6.1",
     "@tryghost/i18n": "workspace:*",
-    "@typescript-eslint/eslint-plugin": "8.49.0",
-    "@typescript-eslint/parser": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "concurrently": "catalog:",
     "cross-fetch": "catalog:",
     "dompurify": "catalog:",
-    "eslint": "catalog:",
+    "eslint": "catalog:eslint9",
+    "eslint-plugin-ghost": "3.5.0",
     "eslint-plugin-i18next": "6.1.4",
+    "eslint-plugin-react": "7.37.5",
+    "globals": "17.6.0",
     "jsdom": "catalog:",
+    "typescript-eslint": "8.58.0",
     "react": "catalog:react17",
     "react-dom": "catalog:react17",
     "vite": "catalog:",
