@@ -49,7 +49,7 @@
     "@prettier/sync": "0.6.1",
     "@types/jsdom": "28.0.3",
     "@types/lodash": "4.17.24",
-    "@types/luxon": "3.7.1",
+    "@types/luxon": "3.7.2",
     "@types/mocha": "10.0.10",
     "@types/node": "24.13.2",
     "@types/should": "13.0.0",
