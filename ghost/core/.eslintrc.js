@@ -21,7 +21,17 @@ module.exports = {
             extends: [
                 'plugin:ghost/ts'
             ],
-            parser: '@typescript-eslint/parser'
+            parser: '@typescript-eslint/parser',
+            rules: {
+                // The @typescript-eslint v8.49 plugin's no-unused-expressions
+                // rule fails to apply its default options under ESLint 8 in
+                // this workspace's current pnpm peer-dep resolution, throwing
+                // "Cannot read properties of undefined (reading
+                // 'allowShortCircuit')" at lint time. Disabling here as an
+                // interim fix; the rule comes back when ghost/core migrates
+                // to ESLint 9 / flat config.
+                '@typescript-eslint/no-unused-expressions': 'off'
+            }
         },
         {
             files: 'core/server/api/endpoints/*',
