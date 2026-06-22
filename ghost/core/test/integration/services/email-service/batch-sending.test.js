@@ -88,8 +88,9 @@ async function testEmailBatches(settings, email_recipient_filter, expectedBatche
 describe('Batch sending tests', function () {
     let linkRedirectService, linkRedirectRepository, linkTrackingService, linkClickRepository;
     let ghostServer;
+    let seededMemberIds;
 
-    beforeEach(function () {
+    beforeEach(async function () {
         configUtils.set('bulkEmail:batchSize', 100);
         stubbedSend = sinon.fake.resolves({
             id: 'stubbed-email-id'
@@ -100,6 +101,11 @@ describe('Batch sending tests', function () {
             return stubbedSend.call(this, ...arguments);
         });
         mockManager.mockStripe();
+
+        // Snapshot the seeded members so afterEach can drop any a test creates,
+        // keeping recipient counts deterministic even if a test throws before
+        // its own cleanup runs.
+        seededMemberIds = new Set((await models.Member.findAll()).models.map(member => member.id));
     });
 
     afterEach(async function () {
@@ -110,6 +116,13 @@ describe('Batch sending tests', function () {
         }], {context: {internal: true}});
         mockManager.restore();
         await jobManager.allSettled();
+
+        // Drop any members a test created so they don't leak into later tests —
+        // a leaked subscriber shifts recipient counts and cascades failures.
+        const leaked = (await models.Member.findAll()).models.filter(member => !seededMemberIds.has(member.id));
+        for (const member of leaked) {
+            await models.Member.destroy({id: member.id});
+        }
     });
 
     beforeAll(async function () {
@@ -193,7 +206,6 @@ describe('Batch sending tests', function () {
         assert.equal(batches.models.length, 1);
     });
 
-    // FLAKEY
     it('Doesn\'t include members created after the email in the batches', async function () {
         // If we create a new member (e.g. a member that was imported) after the email was created, they should not be included in the email
         const addStub = sinon.stub(models.Email, 'add');
@@ -246,7 +258,6 @@ describe('Batch sending tests', function () {
         await models.Member.destroy({id: laterMember.id});
     });
 
-    // FLAKEY
     it('Splits recipients in free and paid batch', async function () {
         await testEmailBatches({
             // Requires a paywall = different content for paid and free members
@@ -551,7 +562,6 @@ describe('Batch sending tests', function () {
         await restoreEmailVerificationUtils();
     });
 
-    // FLAKEY
     describe('Target Delivery Window', function () {
         it('can send an email with a target delivery window set', async function () {
             const t0 = new Date();
