@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
+const {MemberPaidSubscriptionEvent} = require('../../../../core/server/models/member-paid-subscription-event');
 
 describe('Unit: models/MemberPaidSubscriptionEvent', function () {
     afterEach(function () {
@@ -7,13 +7,13 @@ describe('Unit: models/MemberPaidSubscriptionEvent', function () {
     });
 
     it('Has member and subscriptionCreatedEvent relations', function () {
-        const model = models.MemberPaidSubscriptionEvent.forge({id: 'any'});
+        const model = MemberPaidSubscriptionEvent.forge({id: 'any'});
         model.member();
         model.subscriptionCreatedEvent();
     });
 
     it('Has filter relations', function () {
-        const model = models.MemberPaidSubscriptionEvent.forge({id: 'any'});
+        const model = MemberPaidSubscriptionEvent.forge({id: 'any'});
         model.filterRelations();
     });
 });

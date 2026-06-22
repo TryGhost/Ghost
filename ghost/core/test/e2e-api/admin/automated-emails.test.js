@@ -20,7 +20,7 @@ describe('Automated Emails API', function () {
         const {body} = await agent
             .post('automated_emails')
             .body({automated_emails: [{
-                name: 'Welcome Email (Free)',
+                name: 'Free member welcome flow',
                 slug: 'member-welcome-email-free',
                 status: 'inactive',
                 subject: 'Welcome to the site!',
@@ -61,7 +61,7 @@ describe('Automated Emails API', function () {
         }
     };
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
         await agent.loginAsOwner();
@@ -232,7 +232,7 @@ describe('Automated Emails API', function () {
             await agent
                 .post('automated_emails')
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     status: 'inactive',
                     subject: 'Welcome to the site!',
@@ -278,7 +278,7 @@ describe('Automated Emails API', function () {
             await agent
                 .post('automated_emails')
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     status: 'invalid-status',
                     subject: 'Test'
@@ -319,7 +319,7 @@ describe('Automated Emails API', function () {
             await agent
                 .post('automated_emails')
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     status: 'active',
                     subject: 'Test',
@@ -352,7 +352,7 @@ describe('Automated Emails API', function () {
                 const {body} = await agent
                     .post('automated_emails')
                     .body({automated_emails: [{
-                        name: 'Welcome Email (Free)',
+                        name: 'Free member welcome flow',
                         slug: 'member-welcome-email-free',
                         status: 'active',
                         subject: 'Welcome to the site!',
@@ -375,7 +375,7 @@ describe('Automated Emails API', function () {
                 await agent
                     .post('automated_emails')
                     .body({automated_emails: [{
-                        name: 'Welcome Email (Free)',
+                        name: 'Free member welcome flow',
                         slug: 'member-welcome-email-free',
                         status: 'inactive',
                         subject: 'Welcome to the site!',
@@ -402,7 +402,7 @@ describe('Automated Emails API', function () {
             await agent
                 .put(`automated_emails/${id}`)
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     subject: 'Updated subject',
                     status: 'active'
                 }]})
@@ -422,7 +422,7 @@ describe('Automated Emails API', function () {
             await agent
                 .put(`automated_emails/${automatedEmail.id}`)
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     sender_name: 'Custom Sender',
                     sender_email: 'sender@example.com',
                     sender_reply_to: 'reply@example.com'
@@ -455,7 +455,7 @@ describe('Automated Emails API', function () {
             await agent
                 .put(`automated_emails/${id}`)
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     status: 'invalid-status'
                 }]})
                 .expectStatus(422)
@@ -522,7 +522,7 @@ describe('Automated Emails API', function () {
             await agent
                 .put(`automated_emails/${id}`)
                 .body({automated_emails: [{
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     lexical: 'not-valid-json'
                 }]})
                 .expectStatus(422)
@@ -554,7 +554,7 @@ describe('Automated Emails API', function () {
                 await agent
                     .put(`automated_emails/${automatedEmail.id}`)
                     .body({automated_emails: [{
-                        name: 'Welcome Email (Free)',
+                        name: 'Free member welcome flow',
                         status: 'active'
                     }]})
                     .expectStatus(200);
@@ -574,7 +574,7 @@ describe('Automated Emails API', function () {
                 await agent
                     .put(`automated_emails/${automatedEmail.id}`)
                     .body({automated_emails: [{
-                        name: 'Welcome Email (Free)',
+                        name: 'Free member welcome flow',
                         status: 'inactive'
                     }]})
                     .expectStatus(200);
@@ -594,7 +594,7 @@ describe('Automated Emails API', function () {
                 await agent
                     .put(`automated_emails/${automatedEmail.id}`)
                     .body({automated_emails: [{
-                        name: 'Welcome Email (Free)',
+                        name: 'Free member welcome flow',
                         subject: 'Updated subject only'
                     }]})
                     .expectStatus(200);
@@ -621,7 +621,7 @@ describe('Automated Emails API', function () {
         beforeEach(async function () {
             await createAutomatedEmail();
             await createAutomatedEmail({
-                name: 'Welcome Email (Paid)',
+                name: 'Paid member welcome flow',
                 slug: 'member-welcome-email-paid',
                 subject: 'Welcome paid member'
             });
@@ -793,7 +793,7 @@ describe('Automated Emails API', function () {
 
         it('Can preview inactive automated email', async function () {
             const automatedEmail = await createAutomatedEmail({
-                name: 'Welcome Email (Paid)',
+                name: 'Paid member welcome flow',
                 slug: 'member-welcome-email-paid',
                 status: 'inactive',
                 lexical: validLexical

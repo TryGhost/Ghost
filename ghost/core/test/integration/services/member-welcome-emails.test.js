@@ -625,6 +625,30 @@ describe('Member Welcome Emails Integration', function () {
             }));
         });
 
+        it('adds an updates & announcements unsubscribe link and one-click headers when automations is enabled', async function () {
+            mockManager.mockLabsEnabled('automations');
+
+            await sendAutomationEmail();
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const sendCall = mailService.GhostMailer.prototype.send.firstCall;
+            const message = sendCall.args[0];
+
+            assert.match(message.html, /\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&amp;key=[a-f0-9]+&amp;updatesandannouncements=1/);
+            assert.match(message.headers['List-Unsubscribe'], /^<http.*\/unsubscribe\/\?uuid=99999999-9999-4999-8999-999999999999&key=[a-f0-9]+&updatesandannouncements=1>$/);
+            assert.equal(message.headers['List-Unsubscribe-Post'], 'List-Unsubscribe=One-Click');
+        });
+
+        it('does not add an unsubscribe link or one-click headers when automations is disabled', async function () {
+            await sendAutomationEmail();
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+            const message = mailService.GhostMailer.prototype.send.firstCall.args[0];
+
+            assert.doesNotMatch(message.html, /updatesandannouncements=1/);
+            assert.equal(message.headers, undefined);
+        });
+
         it('uses mock member UUID when sending test welcome emails', async function () {
             const automation = await db.knex('automations')
                 .where('slug', MEMBER_WELCOME_EMAIL_SLUGS.free)

@@ -91,7 +91,7 @@
     "html2canvas-objectfit-fix": "1.2.0",
     "react": "catalog:",
     "react-dom": "catalog:",
-    "react-hook-form": "7.78.0",
+    "react-hook-form": "7.79.0",
     "react-router": "catalog:",
     "sonner": "catalog:",
     "use-debounce": "10.1.1",

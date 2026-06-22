@@ -28,7 +28,7 @@ const StripePricesImporter = require('../../../../../core/server/data/importer/i
 const PostsImporter = require('../../../../../core/server/data/importer/importers/data/posts-importer');
 const CustomThemeSettingsImporter = require('../../../../../core/server/data/importer/importers/data/custom-theme-settings-importer');
 const RevueSubscriberImporter = require('../../../../../core/server/data/importer/importers/data/revue-subscriber-importer');
-const models = require('../../../../../core/server/models');
+const Base = require('../../../../../core/server/models/base');
 const configUtils = require('../../../../utils/config-utils');
 const logging = require('@tryghost/logging');
 
@@ -724,7 +724,7 @@ describe('Importer', function () {
                 this.errors.push(importError);
             });
 
-            sinon.stub(models.Base, 'transaction').callsFake(fn => fn({fake: 'transacting'}));
+            sinon.stub(Base, 'transaction').callsFake(fn => fn({fake: 'transacting'}));
 
             await assert.rejects(DataImporter.doImport({meta: {version: '4.0.0'}, data: {}}, {}), (err) => {
                 assert(err instanceof Error);

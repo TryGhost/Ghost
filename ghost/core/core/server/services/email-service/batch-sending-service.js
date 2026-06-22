@@ -32,6 +32,7 @@ class BatchSendingService {
     #db;
     #sentry;
     #debugStorageFilePath;
+    #getRequiredUrlRelations;
 
     // Retry database queries happening before sending the email
     #BEFORE_RETRY_CONFIG = {maxRetries: 10, maxTime: 10 * 60 * 1000, sleep: 2000};
@@ -51,6 +52,7 @@ class BatchSendingService {
      * @param {Email} dependencies.models.Email
      * @param {object} dependencies.models.Member
      * @param {object} dependencies.db
+     * @param {() => string[]} [dependencies.getRequiredUrlRelations] Post relations the live routes need loaded to generate URLs (lazy routing); defaults to none
      * @param {object} [dependencies.sentry]
      * @param {object} [dependencies.BEFORE_RETRY_CONFIG]
      * @param {object} [dependencies.AFTER_RETRY_CONFIG]
@@ -66,6 +68,7 @@ class BatchSendingService {
         models,
         db,
         sentry,
+        getRequiredUrlRelations = () => [],
         BEFORE_RETRY_CONFIG,
         AFTER_RETRY_CONFIG,
         MAILGUN_API_RETRY_CONFIG,
@@ -80,6 +83,7 @@ class BatchSendingService {
         this.#db = db;
         this.#sentry = sentry;
         this.#debugStorageFilePath = debugStorageFilePath;
+        this.#getRequiredUrlRelations = getRequiredUrlRelations;
 
         if (BEFORE_RETRY_CONFIG) {
             this.#BEFORE_RETRY_CONFIG = BEFORE_RETRY_CONFIG;
@@ -202,8 +206,10 @@ class BatchSendingService {
             return await email.getLazyRelation('newsletter', {require: true});
         }, {...this.#getBeforeRetryConfig(email), description: `getLazyRelation newsletter for email ${email.id}`});
 
+        // 'tiers' is required by the email tier-gating logic (renderer/segmenter), not for URL generation
+        const postRelations = [...new Set(['posts_meta', 'authors', 'tiers', ...this.#getRequiredUrlRelations()])];
         const post = await this.retryDb(async () => {
-            return await email.getLazyRelation('post', {require: true, withRelated: ['posts_meta', 'authors', 'tags']});
+            return await email.getLazyRelation('post', {require: true, withRelated: postRelations});
         }, {...this.#getBeforeRetryConfig(email), description: `getLazyRelation post for email ${email.id}`});
 
         let batches = await this.retryDb(async () => {

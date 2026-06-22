@@ -2,30 +2,17 @@ import path from 'node:path';
 import {defineConfig} from 'vitest/config';
 
 // ghost/core's unit tests run under vitest. The DB-backed integration,
-// e2e-api, and legacy suites still run under mocha via `pnpm test:base`
-// — see ghost/core/package.json.
+// e2e-api, and legacy suites run under vitest too, via the separate
+// vitest.config.db.ts — see ghost/core/package.json.
 //
-// The unit suite is split into two vitest projects:
-//
-//  - `unit` runs with `isolate: false` — one shared module registry per
-//    worker (the model mocha always used). Ghost's server modules are
-//    heavy; isolating each file cold-imports them ~550 times over, which
-//    is roughly an order of magnitude slower.
-//  - `unit-isolated` runs the handful of files that are not yet safe
-//    under a shared registry: they fail intermittently when run alongside
-//    other files (root causes still under investigation). They run with
-//    `isolate: true` until fixed, then move into `unit`.
-
-// Files quarantined to the isolated project. Keep this list short — each
-// entry is a known bug to fix, not a permanent home.
-const isolatedFiles = [
-    'test/unit/bin/create-migration.test.js',
-    'test/unit/frontend/helpers/asset.test.js',
-    'test/unit/frontend/services/routing/taxonomy-router.test.js',
-    'test/unit/server/adapters/scheduling/scheduling-default.test.js',
-    'test/unit/server/services/public-config/config.test.js',
-    'test/unit/server/services/themes/upload-size-limit-reporter.test.js'
-];
+// The whole unit suite runs in a single `unit` project with `isolate: false`
+// — one shared module registry per worker (the model mocha always used).
+// Ghost's server modules are heavy; isolating each file cold-imports them
+// ~550 times over, which is roughly an order of magnitude slower. Files that
+// share a worker therefore share module state, so a test that mutates a
+// singleton (config, a sinon stub on a shared module, the sentry require-cache
+// entry, a live timer/HTTP client) must restore it or it leaks into whichever
+// file runs next.
 
 // Ghost's snapshot tests use @tryghost/jest-snapshot, which manages its own
 // `__snapshots__/*.snap` files. Point vitest's *native* snapshot system at a
@@ -39,8 +26,7 @@ const resolveSnapshotPath = (testPath: string, snapExtension: string) => path.jo
     path.basename(testPath) + snapExtension
 );
 
-// Configuration shared by both projects.
-const sharedConfig = {
+const unitConfig = {
     globals: true,
     environment: 'node' as const,
     // The `forks` pool deadlocks at teardown once the run is large enough
@@ -84,19 +70,10 @@ export default defineConfig({
         projects: [
             {
                 test: {
-                    ...sharedConfig,
+                    ...unitConfig,
                     name: 'unit',
                     isolate: false,
                     include: ['test/unit/**/*.test.{js,ts}'],
-                    exclude: ['**/node_modules/**', ...isolatedFiles]
-                }
-            },
-            {
-                test: {
-                    ...sharedConfig,
-                    name: 'unit-isolated',
-                    isolate: true,
-                    include: isolatedFiles,
                     exclude: ['**/node_modules/**']
                 }
             }

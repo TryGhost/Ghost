@@ -32,7 +32,7 @@ describe('Frontend Routing', function () {
         sinon.restore();
     });
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost({
             copyThemes: true,
             copySettings: true,
@@ -101,7 +101,7 @@ describe('Frontend Routing', function () {
     });
 
     describe('Test with added posts', function () {
-        before(addPosts);
+        beforeAll(addPosts);
 
         describe('Static page', function () {
             it('should respond with html', async function () {
@@ -163,7 +163,7 @@ describe('Frontend Routing', function () {
             });
 
             describe('edit with admin redirects disabled', function () {
-                before(async function () {
+                beforeAll(async function () {
                     configUtils.set('admin:redirects', false);
 
                     await testUtils.startGhost();
@@ -171,8 +171,8 @@ describe('Frontend Routing', function () {
                     await addPosts();
                 });
 
-                after(async function () {
-                    configUtils.restore();
+                afterAll(async function () {
+                    await configUtils.restore();
                     await testUtils.startGhost();
                     request = supertest.agent(config.get('url'));
                     await addPosts();

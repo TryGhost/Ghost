@@ -148,7 +148,7 @@
         "react-day-picker": "9.14.0",
         "react-dom": "catalog:",
         "react-dropzone": "14.4.1",
-        "react-hook-form": "7.78.0",
+        "react-hook-form": "7.79.0",
         "react-world-flags": "1.6.0",
         "recharts": "2.15.4",
         "sonner": "catalog:",
@@ -162,6 +162,11 @@
     },
     "nx": {
         "targets": {
+            "dev": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
             "build": {
                 "dependsOn": [
                     "^build"

@@ -558,8 +558,8 @@ async function showPopupNotification({data, state}) {
 
 async function updateNewsletterPreference({data, state, api}) {
     try {
-        const {newsletters, enableCommentNotifications} = data;
-        if (!newsletters && enableCommentNotifications === undefined) {
+        const {newsletters, enableCommentNotifications, enableUpdatesAndAnnouncements} = data;
+        if (!newsletters && enableCommentNotifications === undefined && enableUpdatesAndAnnouncements === undefined) {
             return {};
         }
         const updateData = {};
@@ -568,6 +568,9 @@ async function updateNewsletterPreference({data, state, api}) {
         }
         if (enableCommentNotifications !== undefined) {
             updateData.enableCommentNotifications = enableCommentNotifications;
+        }
+        if (enableUpdatesAndAnnouncements !== undefined) {
+            updateData.enableUpdatesAndAnnouncements = enableUpdatesAndAnnouncements;
         }
         const member = await api.member.update(updateData);
         const action = 'updateNewsletterPref:success';

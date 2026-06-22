@@ -21,14 +21,14 @@ describe('Offers API', function () {
     let savedOffer;
     let trialOffer;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
         defaultTier = await getPaidProduct();
     });
 
-    this.afterEach(function () {
+    afterEach(function () {
         sinon.restore();
     });
 

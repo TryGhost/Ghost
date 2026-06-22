@@ -623,6 +623,7 @@ module.exports = class MemberRepository {
             'products',
             'newsletters',
             'enable_comment_notifications',
+            'enable_updates_and_announcements',
             'last_seen_at',
             'last_commented_at',
             'expertise',

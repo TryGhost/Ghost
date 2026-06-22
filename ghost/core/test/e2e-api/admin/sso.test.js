@@ -8,11 +8,13 @@ const models = require('../../../core/server/models');
 describe('SSO API', function () {
     let agent;
 
-    before(async function () {
-        // Configure mock SSO adapter that always returns owner
-        const owner = await models.User.getOwnerUser();
-
-        // Create a mock adapter that always returns the owner
+    beforeAll(async function () {
+        // Mock SSO adapter that always returns the owner. The stub stays registered
+        // before Ghost boots (the original ordering, in case the adapter resolves
+        // during boot); the owner is looked up lazily per request, because under
+        // per-file isolation the DB isn't seeded until getGhostAPIAgent() /
+        // fixtureManager.init() run below — an eager lookup hits an unmigrated
+        // database (the old serial suite inherited a prior file's schema). (PLA-153)
         class MockSSOAdapter {
             async getRequestCredentials() {
                 return {
@@ -27,7 +29,7 @@ describe('SSO API', function () {
             }
 
             async getUserForIdentity() {
-                return owner;
+                return models.User.getOwnerUser();
             }
         }
 
@@ -44,7 +46,7 @@ describe('SSO API', function () {
         await fixtureManager.init();
     });
 
-    after(function () {
+    afterAll(function () {
         restore();
         sinon.restore();
     });

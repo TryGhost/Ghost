@@ -423,7 +423,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: 5.4.0
-        version: 5.4.0(react-hook-form@7.78.0(react@18.3.1))
+        version: 5.4.0(react-hook-form@7.79.0(react@18.3.1))
       '@radix-ui/react-form':
         specifier: 'catalog:'
         version: 0.1.9(@types/react-dom@18.3.7(@types/react@18.3.31))(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -452,8 +452,8 @@ importers:
         specifier: 'catalog:'
         version: 18.3.1(react@18.3.1)
       react-hook-form:
-        specifier: 7.78.0
-        version: 7.78.0(react@18.3.1)
+        specifier: 7.79.0
+        version: 7.79.0(react@18.3.1)
       react-router:
         specifier: 'catalog:'
         version: 7.14.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1441,7 +1441,7 @@ importers:
     dependencies:
       '@hookform/resolvers':
         specifier: 5.4.0
-        version: 5.4.0(react-hook-form@7.78.0(react@18.3.1))
+        version: 5.4.0(react-hook-form@7.79.0(react@18.3.1))
       '@number-flow/react':
         specifier: 0.6.0
         version: 0.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -1542,8 +1542,8 @@ importers:
         specifier: 14.4.1
         version: 14.4.1(react@18.3.1)
       react-hook-form:
-        specifier: 7.78.0
-        version: 7.78.0(react@18.3.1)
+        specifier: 7.79.0
+        version: 7.79.0(react@18.3.1)
       react-world-flags:
         specifier: 1.6.0
         version: 1.6.0(react@18.3.1)
@@ -2432,8 +2432,8 @@ importers:
         specifier: 1.0.43
         version: 1.0.43
       '@tryghost/mongo-utils':
-        specifier: 0.6.4
-        version: 0.6.4
+        specifier: 0.6.5
+        version: 0.6.5
       '@tryghost/mw-error-handler':
         specifier: 1.0.13
         version: 1.0.13
@@ -2441,8 +2441,8 @@ importers:
         specifier: 1.0.6
         version: 1.0.6
       '@tryghost/nodemailer':
-        specifier: 2.2.4
-        version: 2.2.4(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
+        specifier: 2.3.0
+        version: 2.3.0(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       '@tryghost/nql':
         specifier: 'catalog:'
         version: 0.13.1
@@ -2849,9 +2849,6 @@ importers:
       '@types/mime-types':
         specifier: 3.0.1
         version: 3.0.1
-      '@types/mocha':
-        specifier: 10.0.10
-        version: 10.0.10
       '@types/node':
         specifier: 'catalog:'
         version: 22.19.21
@@ -2927,12 +2924,6 @@ importers:
       lodash-es:
         specifier: 4.18.1
         version: 4.18.1
-      mocha:
-        specifier: 'catalog:'
-        version: 11.7.6
-      mocha-slow-test-reporter:
-        specifier: 0.1.2
-        version: 0.1.2
       nock:
         specifier: 14.0.15
         version: 14.0.15
@@ -2955,8 +2946,8 @@ importers:
         specifier: 'catalog:'
         version: 7.2.2
       tmp:
-        specifier: 0.2.6
-        version: 0.2.6
+        specifier: 0.2.7
+        version: 0.2.7
       tsx:
         specifier: 'catalog:'
         version: 4.22.4
@@ -3109,8 +3100,8 @@ packages:
     resolution: {integrity: sha512-lFgaIpxZvloNbJvQ337YPdMXhzI2zJdDw13nATVGnkAGNoNPx4ksD84AQAcuW75hsaaMaIuNmXU9sSx6+FTirA==}
     engines: {node: '>=20.0.0'}
 
-  '@aws-sdk/client-sesv2@3.1064.0':
-    resolution: {integrity: sha512-iPKTvvo39PNJpqQAAZe+rz74TODUY0CXlbJPX5YK2Mxp9t2RCjfE0OuklYTWUnmRfQpJcTjWPbRJW45T+MvYSQ==}
+  '@aws-sdk/client-sesv2@3.1067.0':
+    resolution: {integrity: sha512-rOgc9pUdH6Zh0Aaaa7SDUFqK3+nogqN2Abk1FtDtoZC6StOGtXPTvlIdcyM44hpRBj1ttETmiI/VCWLXKUb2EQ==}
     engines: {node: '>=20.0.0'}
 
   '@aws-sdk/core@3.974.20':
@@ -8891,9 +8882,6 @@ packages:
   '@tryghost/mongo-knex@0.9.5':
     resolution: {integrity: sha512-etO6Kz8a1dgMV6yapD2C2JsoeLrUjkIoIUdXrkV9ELHQsMjMhtI2SAUnMV9AcLhxv0P7h8UWWD2rlNBwo8JJig==}
 
-  '@tryghost/mongo-utils@0.6.4':
-    resolution: {integrity: sha512-4ZGl9QXoMTQb9qb5HGjMjVLkV39FO0F/0cM4Z3i/9gUXXfdmGZwPdcAMBRT7oRhqng3/4uSRpvQ/Rk0oASM+kg==}
-
   '@tryghost/mongo-utils@0.6.5':
     resolution: {integrity: sha512-fMEfdlVaVkr7SJwVxBxVDfUQ+x4DVF4PMet698PLzabqSnGsaWcruBaQlOuNvtf8ITNXKFUAqZMdmSUTIAHU+Q==}
 
@@ -8903,8 +8891,8 @@ packages:
   '@tryghost/mw-vhost@1.0.6':
     resolution: {integrity: sha512-FKoSdBw5+fZNbzC58LD3ZLbMEj2UI5+4XOnEau7xINuYBP/c4wN0TXHuJT8y6H1wnYvO4Qu9L+PwHxe1yHBA+Q==}
 
-  '@tryghost/nodemailer@2.2.4':
-    resolution: {integrity: sha512-sYFbDS6ceS72qXVeHiE+23Si+JwfDo3Gx+UcGLfmXPR+mW5VvkehoL1QFg/VOKv6mB2kA2Dknk2lPmJuQAw3Jw==}
+  '@tryghost/nodemailer@2.3.0':
+    resolution: {integrity: sha512-exgG9a1og1dWVXGCseuH3LuHySiqGYdiDMiywBY3B2gUzUZctjBW/LTkeREtlbR7JpNLw367ib1Dpp/F3zEpqg==}
 
   '@tryghost/nql-lang@0.6.6':
     resolution: {integrity: sha512-ZWEUN92fVnxavf+matwASvi7pom0i1jhAtNCuoCN9f3ShtyrVm92m1SfvY+x/XuEvbefXAzCGzSEMcaQ4cqoXw==}
@@ -8991,6 +8979,9 @@ packages:
 
   '@tryghost/tpl@2.2.3':
     resolution: {integrity: sha512-OSd+b5RNwPwWxDLlGO/1D0jRb5Xy/dx55rGzSb66+/OauVH5tI4pJVgpavo+W4FjH1cnccVBLjDyaX8Xc1eScg==}
+
+  '@tryghost/tpl@2.3.0':
+    resolution: {integrity: sha512-/AFHJLd5U6MYWlIbQ1AdAqa5vozLbiWcItdN6XJFpjCdDPHbL9zTtoChdrX8CqP4/8ZcNLZPAJ1w5PiAaF3twg==}
 
   '@tryghost/url-utils@5.2.4':
     resolution: {integrity: sha512-Q/8D3/+d9I/SF2XCIUR0mBDeKbeEz8VchtgiasOCzuKPddUvACZ6O1DnEosxlDQ+2B9BjPyVp15VoqAkgWRR/Q==}
@@ -9275,9 +9266,6 @@ packages:
   '@types/minimatch@6.0.0':
     resolution: {integrity: sha512-zmPitbQ8+6zNutpwgcQuLcsEpn/Cj54Kbn7L5pX0Os5kdWplB7xPgEh/g+SWOB/qmows2gpuCaPyduq8ZZRnxA==}
     deprecated: This is a stub types definition. minimatch provides its own type definitions, so you do not need this installed.
-
-  '@types/mocha@10.0.10':
-    resolution: {integrity: sha512-xPyYSz1cMPnJQhl0CLMH68j3gprKZaTjG3s5Vi+fDgx+uhG9NOXwbVt52eFS8ECyXhyKcjDLCBEqBExKuiZb7Q==}
 
   '@types/ms@2.1.0':
     resolution: {integrity: sha512-GsCCIZDE/p3i96vtEqx+7dBUGXrc7zeSK3wwPHIaRThS+9OhWIXRqzs4d6k1SVU8g91DrNRWxWUGhp5KXQb2VA==}
@@ -14781,7 +14769,7 @@ packages:
       csstype: ^3.0.10
 
   google-caja-bower@https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
+    resolution: {gitHosted: true, integrity: sha512-mmCXdxGKGKDznjgkNzVqzTslaldslk5KMb/A7l8rxWnqyxzwsdPhuBJ6oT1Kh/Y3k4jN54ISee/2AgjFyCBxYw==, tarball: https://codeload.github.com/acburdine/google-caja-bower/tar.gz/275cb75249f038492094a499756a73719ae071fd}
     version: 6011.0.0
 
   gopd@1.2.0:
@@ -16174,7 +16162,7 @@ packages:
     engines: {node: '>= 0.6'}
 
   keymaster@https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49:
-    resolution: {gitHosted: true, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
+    resolution: {gitHosted: true, integrity: sha512-/WVovQslVEqPGNoD97TbqNHuCDPYu2v4/ggrZj0a+9PVPw3Rud4Ut2K7fOi0kMqzoJINkgP68e9m09Al/wFZ8g==, tarball: https://codeload.github.com/madrobby/keymaster/tar.gz/f8f43ddafad663b505dc0908e72853bcf8daea49}
     version: 1.6.3
 
   keypair@1.0.4:
@@ -17373,9 +17361,6 @@ packages:
   mobiledoc-text-renderer@0.4.0:
     resolution: {integrity: sha512-+Tzfo0hhUFxS0n5FWZ0nf6WUrvnVmsxaIdq0CyeLYD1lk8oW2ml+6WLdeLlzKM5OYYi3PWV6NR9HCUG01cdvWQ==}
 
-  mocha-slow-test-reporter@0.1.2:
-    resolution: {integrity: sha512-c970lxDVywGYUMoDhp8x718hEYkCHXmMNtS+rJDGrDahd1cizo67zrBkxVQULcw0QotZmvKSp0ZLhlIKkPSAFw==}
-
   mocha@11.7.6:
     resolution: {integrity: sha512-nS9xOGbw2I3cjCpxwZAEJ9xK9lmJ08vEkQvLtz4du9ZrF9UrjRpeJGiIgl2Z+Qs++pmB4ecDe48Fwsh+j+j7xA==}
     engines: {node: ^18.18.0 || ^20.9.0 || >=21.1.0}
@@ -17752,10 +17737,6 @@ packages:
 
   nodemailer-stub-transport@1.1.0:
     resolution: {integrity: sha512-4fwl2f+647IIyuNuf6wuEMqK4oEU9FMJSYme8kPckVSr1rXIXcmI6BNcIWO+1cAK8XeexYKxYoFztam0jAwjkA==}
-
-  nodemailer@8.0.10:
-    resolution: {integrity: sha512-BLFuSth7QtHOkBzyqTehWWyub0NTRDuK2Q2SQfnGLsrJnzyU+Yeh4WpV1eZGuARFj1xQJHIdnTuJZLP+b9R1GQ==}
-    engines: {node: '>=6.0.0'}
 
   nodemailer@8.0.11:
     resolution: {integrity: sha512-nrO/pDAUKl+wXX+lx16tDLbnm0fW6sK/x8mgohaCpg+CdCEl482bD4tCuAZk2DyliruiNTIZxRCoWkDqJEnAiA==}
@@ -19432,8 +19413,8 @@ packages:
     peerDependencies:
       react: '>=16.13.1'
 
-  react-hook-form@7.78.0:
-    resolution: {integrity: sha512-EEZqc+N23moyzTlz61Pj+JvcXo76ICkpfOZo8JZw+sM4+wLQGh6nI2Ms+PdMOYNluFu0ghlM7B8mCzhRYtJCnA==}
+  react-hook-form@7.79.0:
+    resolution: {integrity: sha512-mhYp/MTmXvzYX6AJcJVko0rktoIhhmRnEouObj4wF5i/tCttgJvnp1+9wRkpITZjDTqpo4IOSJqu0dBlPlV/Lw==}
     engines: {node: '>=18.0.0'}
     peerDependencies:
       react: ^16.8.0 || ^17 || ^18 || ^19
@@ -20545,10 +20526,6 @@ packages:
     resolution: {integrity: sha512-aqD2Q0144Z+/RqG52NeHEkZauTAUWJO8c6yTftGJKO3Tja5tUgIfmIl6kExvhtxSDP7fXB6DvzkfMpCd/F3G+Q==}
     engines: {node: '>=0.6.19'}
 
-  string-length@1.0.1:
-    resolution: {integrity: sha512-MNCACnufWUf3pQ57O5WTBMkKhzYIaKEcUioO0XHrTMafrbBaNk4IyDOLHBv5xbXO0jLLdsYWeFjpjG2hVHRDtw==}
-    engines: {node: '>=0.10.0'}
-
   string-length@4.0.2:
     resolution: {integrity: sha512-+l6rNN5fYHNhZZy41RXsYptCjA2Igmq4EG7kZAYFQI1E1VTXarr6ZPXBg6eq7Y6eK4FEhY6AJlyuFIb/v/S0VQ==}
     engines: {node: '>=10'}
@@ -21077,6 +21054,10 @@ packages:
 
   tmp@0.2.6:
     resolution: {integrity: sha512-5sJPdPjfI5Kx+qbrDesxkglRBxW//g7hCsqspEjwkewGvBMGIKMOTKzLt1hFVJzyadba3lDUN20O9qhvbQUSTA==}
+    engines: {node: '>=14.14'}
+
+  tmp@0.2.7:
+    resolution: {integrity: sha512-e0votIpp4Uo2AJYSzVHV6xCcawuiez3DzqDAbrTc3YxBkplN6e+dM13ZeIcZnDg/QpSuU2zfZ3rzwY8ukEnaXw==}
     engines: {node: '>=14.14'}
 
   tmpl@1.0.5:
@@ -22425,7 +22406,7 @@ snapshots:
       '@smithy/types': 4.14.3
       tslib: 2.8.1
 
-  '@aws-sdk/client-sesv2@3.1064.0':
+  '@aws-sdk/client-sesv2@3.1067.0':
     dependencies:
       '@aws-crypto/sha256-browser': 5.2.0
       '@aws-crypto/sha256-js': 5.2.0
@@ -24821,10 +24802,10 @@ snapshots:
       react: 17.0.2
       react-dom: 17.0.2(react@17.0.2)
 
-  '@hookform/resolvers@5.4.0(react-hook-form@7.78.0(react@18.3.1))':
+  '@hookform/resolvers@5.4.0(react-hook-form@7.79.0(react@18.3.1))':
     dependencies:
       '@standard-schema/utils': 0.3.0
-      react-hook-form: 7.78.0(react@18.3.1)
+      react-hook-form: 7.79.0(react@18.3.1)
 
   '@html-next/vertical-collection@3.0.0(@babel/core@7.29.7)':
     dependencies:
@@ -29050,10 +29031,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@tryghost/mongo-utils@0.6.4':
-    dependencies:
-      lodash: 4.18.1
-
   '@tryghost/mongo-utils@0.6.5':
     dependencies:
       lodash: 4.18.1
@@ -29071,11 +29048,12 @@ snapshots:
 
   '@tryghost/mw-vhost@1.0.6': {}
 
-  '@tryghost/nodemailer@2.2.4(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)':
+  '@tryghost/nodemailer@2.3.0(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)':
     dependencies:
-      '@aws-sdk/client-sesv2': 3.1064.0
+      '@aws-sdk/client-sesv2': 3.1067.0
       '@tryghost/errors': 1.3.13
-      nodemailer: 8.0.10
+      '@tryghost/tpl': 2.3.0
+      nodemailer: 8.0.11
       nodemailer-mailgun-transport: 2.1.5(babel-core@6.26.3)(handlebars@4.7.9)(lodash@4.18.1)(underscore@1.13.8)
       nodemailer-stub-transport: 1.1.0
     transitivePeerDependencies:
@@ -29142,7 +29120,7 @@ snapshots:
   '@tryghost/nql@0.12.11':
     dependencies:
       '@tryghost/mongo-knex': 0.9.5
-      '@tryghost/mongo-utils': 0.6.4
+      '@tryghost/mongo-utils': 0.6.5
       '@tryghost/nql-lang': 0.6.6
       lodash: 4.18.1
       mingo: 2.5.3
@@ -29152,7 +29130,7 @@ snapshots:
   '@tryghost/nql@0.13.0':
     dependencies:
       '@tryghost/mongo-knex': 0.10.1
-      '@tryghost/mongo-utils': 0.6.4
+      '@tryghost/mongo-utils': 0.6.5
       '@tryghost/nql-lang': 0.6.6
       lodash: 4.18.1
       mingo: 2.5.3
@@ -29285,6 +29263,8 @@ snapshots:
   '@tryghost/tpl@2.2.0': {}
 
   '@tryghost/tpl@2.2.3': {}
+
+  '@tryghost/tpl@2.3.0': {}
 
   '@tryghost/url-utils@5.2.4':
     dependencies:
@@ -29685,8 +29665,6 @@ snapshots:
   '@types/minimatch@6.0.0':
     dependencies:
       minimatch: 3.1.5
-
-  '@types/mocha@10.0.10': {}
 
   '@types/ms@2.1.0': {}
 
@@ -32489,7 +32467,7 @@ snapshots:
       resolve-path: 1.4.0
       rimraf: 3.0.2
       sane: 4.1.0
-      tmp: 0.2.6
+      tmp: 0.2.7
       tree-sync: 2.1.0
       underscore.string: 3.3.6
       watch-detector: 1.0.2
@@ -32795,7 +32773,7 @@ snapshots:
 
   can-symlink@1.0.0:
     dependencies:
-      tmp: 0.2.6
+      tmp: 0.2.7
 
   caniuse-api@3.0.0:
     dependencies:
@@ -35749,7 +35727,7 @@ snapshots:
       globby: 11.1.0
       ora: 5.4.1
       slash: 3.0.0
-      tmp: 0.2.6
+      tmp: 0.2.7
       workerpool: 6.5.1
     transitivePeerDependencies:
       - supports-color
@@ -36799,7 +36777,7 @@ snapshots:
     dependencies:
       chardet: 0.7.0
       iconv-lite: 0.4.24
-      tmp: 0.2.6
+      tmp: 0.2.7
 
   extract-stack@2.0.0: {}
 
@@ -37098,12 +37076,12 @@ snapshots:
   fixturify-project@1.10.0:
     dependencies:
       fixturify: 1.3.0
-      tmp: 0.2.6
+      tmp: 0.2.7
 
   fixturify-project@2.1.1:
     dependencies:
       fixturify: 2.1.1
-      tmp: 0.2.6
+      tmp: 0.2.7
       type-fest: 0.11.0
 
   fixturify@1.3.0:
@@ -41018,13 +40996,6 @@ snapshots:
   mobiledoc-text-renderer@0.4.0:
     optional: true
 
-  mocha-slow-test-reporter@0.1.2:
-    dependencies:
-      chalk: 1.1.3
-      string-length: 1.0.1
-      text-table: 0.2.0
-      wordwrap: 1.0.0
-
   mocha@11.7.6:
     dependencies:
       browser-stdout: 1.3.1
@@ -41493,8 +41464,6 @@ snapshots:
       - whiskers
 
   nodemailer-stub-transport@1.1.0: {}
-
-  nodemailer@8.0.10: {}
 
   nodemailer@8.0.11: {}
 
@@ -43495,7 +43464,7 @@ snapshots:
       '@babel/runtime': 7.29.7
       react: 18.3.1
 
-  react-hook-form@7.78.0(react@18.3.1):
+  react-hook-form@7.79.0(react@18.3.1):
     dependencies:
       react: 18.3.1
 
@@ -44941,10 +44910,6 @@ snapshots:
 
   string-argv@0.3.2: {}
 
-  string-length@1.0.1:
-    dependencies:
-      strip-ansi: 3.0.1
-
   string-length@4.0.2:
     dependencies:
       char-regex: 1.0.2
@@ -45516,7 +45481,7 @@ snapshots:
       spawn-args: 0.2.0
       styled_string: 0.0.1
       tap-parser: 7.0.0
-      tmp: 0.2.6
+      tmp: 0.2.7
     transitivePeerDependencies:
       - '@babel/core'
       - arc-templates
@@ -45667,6 +45632,8 @@ snapshots:
       tldts-core: 7.4.0
 
   tmp@0.2.6: {}
+
+  tmp@0.2.7: {}
 
   tmpl@1.0.5: {}
 
@@ -46612,7 +46579,7 @@ snapshots:
     dependencies:
       heimdalljs-logger: 0.1.10
       silent-error: 1.1.1
-      tmp: 0.2.6
+      tmp: 0.2.7
     transitivePeerDependencies:
       - supports-color
 

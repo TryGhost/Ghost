@@ -11,7 +11,7 @@ const localUtils = require('./utils');
 describe('Tags Content API', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await testUtils.initFixtures('users', 'user:inactive', 'posts', 'tags:extra', 'api_keys');

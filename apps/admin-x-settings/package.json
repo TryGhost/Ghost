@@ -16,9 +16,9 @@
   "module": "./dist/admin-x-settings.js",
   "exports": {
     ".": {
+      "types": "./src/index.tsx",
       "import": "./dist/admin-x-settings.js",
-      "require": "./dist/admin-x-settings.umd.cjs",
-      "types": "./src/index.tsx"
+      "require": "./dist/admin-x-settings.umd.cjs"
     },
     "./src/*": {
       "import": "./src/*.tsx",
