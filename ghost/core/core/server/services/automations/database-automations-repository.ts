@@ -716,10 +716,7 @@ async function loadAutomationBySlug(trx: Knex.Transaction, slug: string): Promis
 async function loadAutomations(trx: Knex.Transaction): Promise<AutomationRow[]> {
     return await trx('automations')
         .select('id', 'slug', 'name', 'status', 'created_at', 'updated_at')
-        .orderBy([
-            'created_at',
-            'id'
-        ]);
+        .orderBy('name');
 }
 
 async function updateAutomation(trx: Knex.Transaction, automation: AutomationRow): Promise<AutomationRow> {
