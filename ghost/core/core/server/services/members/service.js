@@ -171,6 +171,10 @@ module.exports = {
     },
     contentGating: require('./content-gating'),
 
+    // Synthesize an "all active paid tiers" member for rendering gated content
+    // without a logged-in member (post previews, gift-links reader path).
+    synthesizePaidMember: require('./synthesize-member'),
+
     config: membersConfig,
 
     get api() {

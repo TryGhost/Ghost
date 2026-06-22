@@ -50,9 +50,18 @@ export function liveLinksForPost(postId: string) {
         .select<LiveLinkRow[]>(giftLinkColumns);
 }
 
+// The reader path (/g/) only needs which post a live token unlocks and whether
+// it's a post or page (to pick the public read controller). Anchored on
+// post_gift_links, so a revoked/reissued token (no live association) yields no
+// row — exactly the "invalid → 301-to-canonical" trigger. Redemption stats are
+// deliberately not selected here; this is a resolve, not a stats read.
 export function liveLinkForToken(token: string) {
     return (knex: Knex) => knex('post_gift_links')
         .join('gift_links', 'gift_links.token', 'post_gift_links.gift_link_token')
+        .join('posts', 'posts.id', 'post_gift_links.post_id')
         .where('gift_links.token', token)
-        .first<z.input<typeof GiftLinkRow> & {post_id: string}>([...giftLinkColumns, 'post_gift_links.post_id as post_id']);
+        .first<{post_id: string; post_type: string}>([
+            'post_gift_links.post_id as post_id',
+            'posts.type as post_type'
+        ]);
 }

@@ -15,6 +15,10 @@ module.exports = {
         return require('./previews');
     },
 
+    get giftLinks() {
+        return require('./gift-links');
+    },
+
     get email() {
         return require('./email-post');
     },

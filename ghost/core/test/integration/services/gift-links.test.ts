@@ -117,12 +117,13 @@ describe('GiftLinksService (integration)', function () {
     });
 
     describe('getPostByToken', function () {
-        it('resolves a live token, and stops resolving once reissued', async function () {
+        it('resolves a live token to the post id and type, and stops resolving once reissued', async function () {
             const original = await service.issue(postId);
             const token = original.giftLinks[0]!.token;
 
             const found = await service.getPostByToken(token);
-            assert.equal(found?.giftLinks[0]?.token, token);
+            assert.equal(found?.id, postId);
+            assert.equal(found?.type, 'post');
 
             await service.reissue(postId);
             assert.equal(await service.getPostByToken(token), null);
@@ -155,9 +156,10 @@ describe('GiftLinksService (integration)', function () {
             assert.equal(await service.recordRedemption(token), 1);
             assert.equal(await service.recordRedemption(token), 1);
 
-            const reloaded = await service.getPostByToken(token);
-            assert.equal(reloaded?.giftLinks[0]?.redeemedCount, 2);
-            assert.notEqual(reloaded?.giftLinks[0]?.lastRedeemedAt, null);
+            const reloaded = await models.Base.knex('gift_links').where({token}).first();
+            assert.ok(reloaded, 'gift_links row should exist for the issued token');
+            assert.equal(reloaded.redeemed_count, 2);
+            assert.notEqual(reloaded.last_redeemed_at, null);
         });
 
         it('counts a read against a since-reissued token (history is retained)', async function () {

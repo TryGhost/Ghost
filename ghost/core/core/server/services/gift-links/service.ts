@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import errors from '@tryghost/errors';
 import {z} from 'zod';
 import type {Knex} from 'knex';
-import {GiftLinkRow, GiftLinkToken, giftLinkCodec, type GiftLink, type Post} from './model';
+import {GiftLinkRow, GiftLinkToken, giftLinkCodec, type GiftLink, type Post, type PostRef} from './model';
 import * as queries from './queries';
 
 export function generateGiftLinkToken(): GiftLinkToken {
@@ -20,9 +20,12 @@ export class GiftLinksService {
         return this.requirePost(postId);
     }
 
-    async getPostByToken(token: string): Promise<Post | null> {
+    // Resolves a live token to the post it unlocks (id + type). Live links only:
+    // a revoked/reissued/unknown token resolves to null, which the reader path
+    // treats as "invalid → 301 to canonical".
+    async getPostByToken(token: string): Promise<PostRef | null> {
         const row = await this.run(queries.liveLinkForToken(token));
-        return row ? {id: row.post_id, giftLinks: [z.decode(giftLinkCodec, row)]} : null;
+        return row ? {id: row.post_id, type: row.post_type} : null;
     }
 
     async issue(postId: string): Promise<Post> {

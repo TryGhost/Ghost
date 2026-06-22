@@ -2,9 +2,11 @@
  * @file Middleware to set the appropriate cache headers on the frontend
  */
 const config = require('../../../shared/config');
+const labs = require('../../../shared/labs');
 const shared = require('../../../server/web/shared');
 const {api} = require('../../services/proxy');
 const preview = require('../../services/theme-engine/preview');
+const {GIFT_LINK_PREFIX} = require('../../services/routing/gift-links-router');
 
 /**
  * Calculate the member's active tier.
@@ -66,6 +68,15 @@ const getMiddleware = async (getFreeTier = async () => {
 
         // CASE: Never cache preview routes
         if (req.path?.startsWith('/p/')) {
+            return shared.middleware.cacheControl('noCache')(req, res, next);
+        }
+
+        // CASE: Never cache gift-link requests. A /g/<slug>/?key=TOKEN render
+        // contains unlocked gated content and carries no member cookie, so the
+        // edge would otherwise cache it and serve unlocked content to everyone.
+        // Covers both the render and the 301s emitted by the gift controller.
+        // Flag-gated so /g/ paths don't bypass cache when the feature is off.
+        if (req.path?.startsWith(GIFT_LINK_PREFIX) && labs.isSet('giftLinks')) {
             return shared.middleware.cacheControl('noCache')(req, res, next);
         }
 

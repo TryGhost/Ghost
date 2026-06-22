@@ -70,6 +70,17 @@ module.exports = {
 
     // Labs utils for enabling/disabling helpers
     labs: require('../../shared/labs'),
+    // Gift links service — the /g/ reader controller resolves gift tokens
+    // through this seam, per the frontend→server boundary rule (not a direct
+    // require).
+    giftLinks: require('../../server/services/gift-links'),
+    // Synthesize an all-paid-tiers member for gift-link reads (shared with
+    // post previews). Lazy getter so the members service is resolved at call
+    // time, avoiding any boot-time require-order coupling.
+    get synthesizePaidMember() {
+        // eslint-disable-next-line @typescript-eslint/no-require-imports
+        return require('../../server/services/members').synthesizePaidMember;
+    },
     // URGH... Yuk (unhelpful comment :D)
     urlService: require('../../server/services/url'),
     urlUtils: require('../../shared/url-utils')

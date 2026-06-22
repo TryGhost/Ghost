@@ -47,3 +47,9 @@ export interface Post {
     id: string;
     giftLinks: GiftLink[];
 }
+
+/** A live token resolved to the post it unlocks: just the id and resource type. */
+export interface PostRef {
+    id: string;
+    type: string;
+}
