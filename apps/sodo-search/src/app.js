@@ -60,7 +60,7 @@ export default class App extends React.Component {
                         window.document.body.style.marginRight = this.bodyMargin;
                     }
                 }
-            } catch (e) {
+            } catch {
                 /** Ignore any errors for scroll handling */
             }
         }

@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/announcement-bar",
-  "version": "1.1.21",
+  "type": "module",
+  "version": "1.1.22",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -24,40 +25,10 @@
     "test": "vitest run",
     "test:ci": "pnpm test --coverage",
     "test:unit": "pnpm test:ci",
-    "lint": "eslint src --ext .js --cache",
+    "lint": "eslint src test --cache",
     "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "jest": true
-    },
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2022
-    },
-    "extends": [
-      "plugin:ghost/browser",
-      "plugin:react/recommended"
-    ],
-    "plugins": [
-      "ghost"
-    ],
-    "rules": {
-      "react/prop-types": "off",
-      "ghost/filenames/match-regex": [
-        "error",
-        "^[a-z0-9.-]+$",
-        false
-      ]
-    },
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
-    }
   },
   "browserslist": {
     "production": [
@@ -79,11 +50,15 @@
     ]
   },
   "devDependencies": {
+    "@eslint/js": "catalog:eslint9",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "concurrently": "catalog:",
     "cross-fetch": "catalog:",
-    "eslint": "catalog:",
+    "eslint": "catalog:eslint9",
+    "eslint-plugin-ghost": "3.5.0",
+    "eslint-plugin-react": "7.37.5",
+    "globals": "17.6.0",
     "jsdom": "catalog:",
     "vite": "catalog:",
     "vite-plugin-svgr": "catalog:",
