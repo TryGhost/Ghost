@@ -273,7 +273,7 @@ class PostsStatsService {
                 paid_members: row.paid_members,
                 mrr: row.mrr,
                 post_type: row.attribution_type === 'post' ? 'post' : (row.attribution_type === 'page' ? 'page' : null),
-                url: resolvedUrl,
+                ...(resolvedUrl ? {url: resolvedUrl} : {}),
                 url_exists: urlExists
             };
         }));
