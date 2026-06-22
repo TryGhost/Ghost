@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.23",
+  "type": "module",
+  "version": "1.8.24",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -27,51 +28,10 @@
     "tailwind": "pnpm tailwind:base --watch ",
     "tailwind:base": "tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
     "test": "vitest run",
-    "lint": "eslint src --ext .js --cache",
+    "lint": "eslint src test --cache",
     "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "jest": true
-    },
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2022
-    },
-    "extends": [
-      "plugin:ghost/browser",
-      "plugin:react/recommended"
-    ],
-    "plugins": [
-      "ghost"
-    ],
-    "rules": {
-      "react/prop-types": "off",
-      "ghost/filenames/match-regex": [
-        "error",
-        "^[a-z0-9.-]+$",
-        false
-      ],
-      "ghost/sort-imports-es6-autofix/sort-imports-es6": [
-        "error",
-        {
-          "memberSyntaxSortOrder": [
-            "none",
-            "all",
-            "single",
-            "multiple"
-          ]
-        }
-      ]
-    },
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
-    }
   },
   "browserslist": {
     "production": [
@@ -93,13 +53,17 @@
     ]
   },
   "devDependencies": {
+    "@eslint/js": "catalog:eslint9",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:react17",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "concurrently": "catalog:",
     "cross-fetch": "catalog:",
-    "eslint": "catalog:",
+    "eslint": "catalog:eslint9",
+    "eslint-plugin-ghost": "3.5.0",
+    "eslint-plugin-react": "7.37.5",
+    "globals": "17.6.0",
     "jsdom": "catalog:",
     "nock": "14.0.15",
     "tailwindcss": "catalog:tailwind3",

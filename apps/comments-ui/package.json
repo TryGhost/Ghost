@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/comments-ui",
-  "version": "1.5.12",
+  "type": "module",
+  "version": "1.5.13",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -25,7 +26,7 @@
     "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
     "test:acceptance:slowmo": "TIMEOUT=100000 PLAYWRIGHT_SLOWMO=1000 pnpm test:acceptance --headed",
     "test:acceptance:full": "ALL_BROWSERS=1 pnpm test:acceptance",
-    "lint": "eslint src --ext .js,.ts,.jsx,.tsx --cache",
+    "lint": "eslint src --cache",
     "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
@@ -61,6 +62,7 @@
     "react-string-replace": "2.0.1"
   },
   "devDependencies": {
+    "@eslint/js": "catalog:eslint9",
     "@playwright/test": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:react17",
@@ -71,10 +73,14 @@
     "autoprefixer": "10.5.0",
     "bson-objectid": "catalog:",
     "concurrently": "catalog:",
-    "eslint": "catalog:",
+    "eslint": "catalog:eslint9",
+    "eslint-plugin-ghost": "3.5.0",
     "eslint-plugin-i18next": "6.1.4",
+    "eslint-plugin-react": "7.37.5",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",
+    "globals": "17.6.0",
     "jsdom": "catalog:",
+    "typescript-eslint": "8.58.0",
     "moment": "2.30.1",
     "postcss": "catalog:",
     "postcss-import": "16.1.1",
