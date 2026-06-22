@@ -166,7 +166,7 @@ const processStep = async ({
             break;
         case 'send_email':
             if (!hasUpdatesAndAnnouncementsEnabled(member)) {
-                logging.warn({
+                logging.info({
                     system: {
                         event: 'automations.poll.member_unsubscribed',
                         member_id: step.member_id,
