@@ -577,6 +577,27 @@ describe('automations repository', function () {
             }
         };
 
+        it('returns a list of automations, ordered by name', async function () {
+            await knex('automations').insert({
+                id: ObjectId().toHexString(),
+                created_at: toDatabaseDate(new Date()),
+                updated_at: toDatabaseDate(new Date()),
+                slug: 'alpha-flow',
+                name: 'Alpha flow',
+                status: 'inactive'
+            });
+
+            const result = await repo.browse();
+
+            const names = result.data.map(automation => automation.name);
+
+            assert.deepEqual(names, [
+                'Alpha flow',
+                'Free member welcome flow',
+                'Paid member welcome flow'
+            ]);
+        });
+
         it('creates missing default free and paid automations', async function () {
             const automationIds = await knex('automations')
                 .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])

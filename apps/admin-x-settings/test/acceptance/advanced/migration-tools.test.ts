@@ -1,6 +1,7 @@
 import {expect, test} from '@playwright/test';
 import {expectExternalNavigate, globalDataRequests, mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 
+
 test.describe('Migration tools', async () => {
     test('Built-in migrators', async ({page}) => {
         await mockApi({page, requests: {

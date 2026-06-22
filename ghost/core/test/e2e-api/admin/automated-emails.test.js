@@ -5,6 +5,7 @@ const sinon = require('sinon');
 const logging = require('@tryghost/logging');
 const mailService = require('../../../core/server/services/mail');
 const SingleUseTokenProvider = require('../../../core/server/services/members/single-use-token-provider');
+const emailAddressService = require('../../../core/server/services/email-address');
 const models = require('../../../core/server/models');
 
 const matchAutomatedEmail = {
@@ -78,6 +79,10 @@ describe('Automated Emails API', function () {
                 sender_email: null,
                 sender_reply_to: null
             });
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     describe('Browse', function () {
@@ -274,6 +279,75 @@ describe('Automated Emails API', function () {
             });
         });
 
+        it('Rejects disallowed sender email on add', async function () {
+            emailAddressService.init();
+            const validateStub = sinon.stub(emailAddressService.service, 'validate')
+                .returns({allowed: false, verificationEmailRequired: false});
+
+            await agent
+                .post('automated_emails')
+                .body({automated_emails: [{
+                    name: 'Free member welcome flow',
+                    slug: 'member-welcome-email-free',
+                    status: 'inactive',
+                    subject: 'Welcome to the site!',
+                    lexical: JSON.stringify({root: {children: []}}),
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                }]})
+                .expectStatus(422);
+
+            sinon.assert.calledOnceWithExactly(validateStub, 'sender@example.com', 'from');
+
+            const designSettings = await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .first('sender_name', 'sender_email', 'sender_reply_to');
+
+            assert.deepEqual(designSettings, {
+                sender_name: null,
+                sender_email: null,
+                sender_reply_to: null
+            });
+        });
+
+        it('Rejects sender reply-to that requires verification on add', async function () {
+            emailAddressService.init();
+            const validateStub = sinon.stub(emailAddressService.service, 'validate')
+                .callsFake((email, type) => {
+                    if (email === 'reply@example.com' && type === 'replyTo') {
+                        return {allowed: true, verificationEmailRequired: true};
+                    }
+
+                    return {allowed: true, verificationEmailRequired: false};
+                });
+
+            await agent
+                .post('automated_emails')
+                .body({automated_emails: [{
+                    name: 'Free member welcome flow',
+                    slug: 'member-welcome-email-free',
+                    status: 'inactive',
+                    subject: 'Welcome to the site!',
+                    lexical: JSON.stringify({root: {children: []}}),
+                    sender_name: 'Custom Sender',
+                    sender_reply_to: 'reply@example.com'
+                }]})
+                .expectStatus(422);
+
+            sinon.assert.calledOnceWithExactly(validateStub, 'reply@example.com', 'replyTo');
+
+            const designSettings = await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .first('sender_name', 'sender_email', 'sender_reply_to');
+
+            assert.deepEqual(designSettings, {
+                sender_name: null,
+                sender_email: null,
+                sender_reply_to: null
+            });
+        });
+
         it('Validates status on add', async function () {
             await agent
                 .post('automated_emails')
@@ -342,10 +416,6 @@ describe('Automated Emails API', function () {
 
             beforeEach(function () {
                 infoStub = sinon.stub(logging, 'info');
-            });
-
-            afterEach(function () {
-                sinon.restore();
             });
 
             it('Logs when a welcome email is created as active', async function () {
@@ -447,6 +517,146 @@ describe('Automated Emails API', function () {
             });
         });
 
+        it('Rejects disallowed sender email on edit', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                designSettings: {
+                    sender_name: 'Existing Sender',
+                    sender_email: 'existing@example.com',
+                    sender_reply_to: 'existing-reply@example.com'
+                }
+            });
+
+            emailAddressService.init();
+            const validateStub = sinon.stub(emailAddressService.service, 'validate')
+                .returns({allowed: false, verificationEmailRequired: false});
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    name: 'Free member welcome flow',
+                    sender_name: 'Custom Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                }]})
+                .expectStatus(422);
+
+            sinon.assert.calledOnceWithExactly(validateStub, 'sender@example.com', 'from');
+
+            const {designSettings} = await getSenderStorage(automatedEmail.id);
+            assert.deepEqual(designSettings, {
+                sender_name: 'Existing Sender',
+                sender_email: 'existing@example.com',
+                sender_reply_to: 'existing-reply@example.com'
+            });
+        });
+
+        it('Rejects sender reply-to that requires verification on edit', async function () {
+            const automatedEmail = await createAutomatedEmail();
+
+            emailAddressService.init();
+            const validateStub = sinon.stub(emailAddressService.service, 'validate')
+                .returns({allowed: true, verificationEmailRequired: true});
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    name: 'Free member welcome flow',
+                    sender_reply_to: 'reply@example.com'
+                }]})
+                .expectStatus(422);
+
+            sinon.assert.calledOnceWithExactly(validateStub, 'reply@example.com', 'replyTo');
+
+            const {designSettings} = await getSenderStorage(automatedEmail.id);
+            assert.deepEqual(designSettings, {
+                sender_name: null,
+                sender_email: null,
+                sender_reply_to: null
+            });
+        });
+
+        it('Does not validate unchanged sender fields on edit', async function () {
+            const automatedEmail = await createAutomatedEmail();
+            await updateSenderStorage(automatedEmail.id, {
+                designSettings: {
+                    sender_name: 'Existing Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                }
+            });
+
+            emailAddressService.init();
+            const validateStub = sinon.stub(emailAddressService.service, 'validate')
+                .callsFake((email, type) => {
+                    if (email === 'reply@example.com' && type === 'replyTo') {
+                        return {allowed: true, verificationEmailRequired: true};
+                    }
+
+                    return {allowed: true, verificationEmailRequired: false};
+                });
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    ...automatedEmail,
+                    status: 'active',
+                    subject: 'Updated subject',
+                    sender_name: 'Existing Sender',
+                    sender_email: 'sender@example.com',
+                    sender_reply_to: 'reply@example.com'
+                }]})
+                .expectStatus(200);
+
+            sinon.assert.notCalled(validateStub);
+
+            const {designSettings} = await getSenderStorage(automatedEmail.id);
+            assert.deepEqual(designSettings, {
+                sender_name: 'Existing Sender',
+                sender_email: 'sender@example.com',
+                sender_reply_to: 'reply@example.com'
+            });
+
+            const email = await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automatedEmail.id)
+                .first('subject');
+            assert.equal(email.subject, 'Updated subject');
+
+            const automation = await models.Base.knex('automations')
+                .where('id', automatedEmail.id)
+                .first('status');
+            assert.equal(automation.status, 'active');
+        });
+
+        it('Can enable a legacy automated email without a welcome email content row', async function () {
+            const automatedEmail = await createAutomatedEmail({status: 'inactive'});
+            await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automatedEmail.id)
+                .del();
+
+            const {body} = await agent
+                .get(`automated_emails/${automatedEmail.id}`)
+                .expectStatus(200);
+
+            await agent
+                .put(`automated_emails/${automatedEmail.id}`)
+                .body({automated_emails: [{
+                    ...body.automated_emails[0],
+                    status: 'active'
+                }]})
+                .expectStatus(200);
+
+            const welcomeEmailRow = await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automatedEmail.id)
+                .first('id');
+            assert.equal(welcomeEmailRow, undefined);
+
+            const automation = await models.Base.knex('automations')
+                .where('id', automatedEmail.id)
+                .first('status');
+            assert.equal(automation.status, 'active');
+        });
+
         it('Validates status on edit', async function () {
             const automatedEmail = await createAutomatedEmail();
 
@@ -542,10 +752,6 @@ describe('Automated Emails API', function () {
 
             beforeEach(function () {
                 infoStub = sinon.stub(logging, 'info');
-            });
-
-            afterEach(function () {
-                sinon.restore();
             });
 
             it('Logs when a welcome email is enabled', async function () {
@@ -832,10 +1038,6 @@ describe('Automated Emails API', function () {
             automatedEmailId = automatedEmail.id;
         });
 
-        afterEach(function () {
-            sinon.restore();
-        });
-
         it('Can render preview', async function () {
             await agent
                 .post(`automated_emails/${automatedEmailId}/preview/`)
@@ -1047,10 +1249,6 @@ describe('Automated Emails API', function () {
                 lexical: validLexical
             });
             automatedEmailId = automatedEmail.id;
-        });
-
-        afterEach(function () {
-            sinon.restore();
         });
 
         it('Can send test email', async function () {

@@ -3,7 +3,9 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
+const emailAddressService = require('../../services/email-address');
 const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../../services/member-welcome-emails/constants');
+const {validateEmailSenderFields} = require('./utils/validate-email-sender-fields');
 
 const messages = {
     automatedEmailNotFound: 'Automated email not found.'
@@ -36,8 +38,8 @@ function flattenAutomation(automation, email = automation.related('welcomeEmailA
     return result;
 }
 
-async function getDefaultEmailDesignSettings() {
-    const designSettings = await models.EmailDesignSetting.findOne({slug: DEFAULT_EMAIL_DESIGN_SETTING_SLUG});
+async function getDefaultEmailDesignSettings(options = {}) {
+    const designSettings = await models.EmailDesignSetting.findOne({slug: DEFAULT_EMAIL_DESIGN_SETTING_SLUG}, options);
 
     if (!designSettings?.id) {
         throw new errors.NotFoundError({
@@ -68,6 +70,10 @@ async function updateEmailDesignSenderFields(email, senderData, options) {
     }
 
     return models.EmailDesignSetting.findOne({id}, options);
+}
+
+function getChangedSenderData(senderData, designSettings) {
+    return _.pickBy(senderData, (value, field) => value !== designSettings?.get(field));
 }
 
 /** @type {import('@tryghost/api-framework').Controller} */
@@ -139,6 +145,8 @@ const controller = {
             const emailData = _.pick(data, EMAIL_FIELDS);
             const senderData = _.pick(data, SENDER_FIELDS);
             const automationData = _.pick(data, AUTOMATION_FIELDS);
+            emailAddressService.init();
+            validateEmailSenderFields(emailAddressService.service, senderData);
 
             return models.Base.transaction(async (transacting) => {
                 const automation = await models.Automation.add(automationData, {...frame.options, transacting});
@@ -190,8 +198,14 @@ const controller = {
                     });
                 }
                 let email = automation.related('welcomeEmailAutomatedEmail');
+                const hasEmailContent = Boolean(email.id);
+                const designSettings = hasEmailContent ? email.related('emailDesignSetting') : null;
+                const changedSenderData = hasEmailContent ? getChangedSenderData(senderData, designSettings) : {};
 
-                if (Object.keys(emailData).length > 0) {
+                emailAddressService.init();
+                validateEmailSenderFields(emailAddressService.service, changedSenderData);
+
+                if (hasEmailContent && Object.keys(emailData).length > 0) {
                     email = await models.WelcomeEmailAutomatedEmail.edit(emailData, {
                         ...frame.options,
                         transacting,
@@ -199,11 +213,15 @@ const controller = {
                     });
                 }
 
-                const designSettings = await updateEmailDesignSenderFields(
-                    email,
-                    senderData,
-                    {...frame.options, transacting}
-                );
+                let updatedDesignSettings = designSettings;
+
+                if (hasEmailContent) {
+                    updatedDesignSettings = await updateEmailDesignSenderFields(
+                        email,
+                        changedSenderData,
+                        {...frame.options, transacting}
+                    );
+                }
 
                 if (Object.keys(automationData).length > 0) {
                     automation = await models.Automation.edit(automationData, {
@@ -212,7 +230,11 @@ const controller = {
                     });
                 }
 
-                return flattenAutomation(automation, email, designSettings);
+                if (!hasEmailContent) {
+                    updatedDesignSettings = await getDefaultEmailDesignSettings({...frame.options, transacting});
+                }
+
+                return flattenAutomation(automation, email, updatedDesignSettings);
             });
         }
     },

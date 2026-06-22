@@ -109,7 +109,6 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
             const result = await handleSave();
             if (result) {
                 setEditing(false);
-            } else {
             }
             return result;
         },
