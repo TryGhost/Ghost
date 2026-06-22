@@ -1,4 +1,7 @@
 module.exports = {
+    globals: {
+        beforeAll: 'readonly'
+    },
     plugins: ['ghost'],
     extends: [
         'plugin:ghost/test'
