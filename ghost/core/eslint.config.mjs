@@ -190,6 +190,10 @@ export default tseslint.config(
     // API endpoints
     // ============================================================
     {
+        // Single-level glob is intentional. The rule guards the endpoint files
+        // themselves (one per resource: posts.js, members.js, etc.); nested
+        // endpoints/utils/ holds helpers that aren't endpoints and are
+        // deliberately exempt from the complexity guard.
         files: ['core/server/api/endpoints/*'],
         rules: {
             'ghost/ghost-custom/max-api-complexity': 'error'
