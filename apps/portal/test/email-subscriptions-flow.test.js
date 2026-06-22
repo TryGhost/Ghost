@@ -23,7 +23,8 @@ const setup = async ({site, member = null, newsletters}, loggedOut = false) => {
 
     ghostApi.member.newsletters = vi.fn(() => {
         return Promise.resolve({
-            newsletters
+            newsletters,
+            status: member?.status
         });
     });
 
@@ -279,6 +280,66 @@ describe('Newsletter Subscriptions', () => {
             expect(ghostApi.member.newsletters).not.toHaveBeenCalled();
             // expect sign in page
             expect(within(popupIframeDocument).queryByText('Sign in')).toBeInTheDocument();
+        });
+
+        test('does not show a cancel subscription link for free members', async () => {
+            // Mock window.location
+            Object.defineProperty(window, 'location', {
+                value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.subbedToNewsletter.uuid}&newsletter=${Newsletters[0].uuid}&key=hashedMemberUuid`),
+                writable: true
+            });
+
+            const {popupIframeDocument} = await setup({
+                site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+                member: FixtureMember.subbedToNewsletter,
+                newsletters: Newsletters
+            }, true);
+
+            expect(within(popupIframeDocument).queryByTestId('manage-subscription')).not.toBeInTheDocument();
+        });
+
+        test('routes paid members to sign in to manage their subscription when logged out', async () => {
+            // Mock window.location
+            Object.defineProperty(window, 'location', {
+                value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.paid.uuid}&newsletter=${Newsletters[0].uuid}&key=hashedMemberUuid`),
+                writable: true
+            });
+
+            const {popupIframeDocument} = await setup({
+                site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+                member: FixtureMember.paid,
+                newsletters: Newsletters
+            }, true);
+
+            const manageButton = within(popupIframeDocument).queryByTestId('manage-subscription');
+            expect(manageButton).toBeInTheDocument();
+            expect(manageButton).toHaveTextContent('Manage your paid subscription');
+
+            // Logged-out members must authenticate before they can manage billing
+            await userEvent.click(manageButton);
+            expect(within(popupIframeDocument).queryByText('Sign in')).toBeInTheDocument();
+        });
+
+        test('routes paid members to their account to manage their subscription when logged in', async () => {
+            // Mock window.location
+            Object.defineProperty(window, 'location', {
+                value: new URL(`https://portal.localhost/?action=unsubscribe&uuid=${FixtureMember.paid.uuid}&newsletter=${Newsletters[0].uuid}&key=hashedMemberUuid`),
+                writable: true
+            });
+
+            const {popupIframeDocument} = await setup({
+                site: FixtureSite.singleTier.onlyFreePlanWithoutStripe,
+                member: FixtureMember.paid,
+                newsletters: Newsletters
+            });
+
+            const manageButton = within(popupIframeDocument).queryByTestId('manage-subscription');
+            expect(manageButton).toBeInTheDocument();
+            expect(manageButton).toHaveTextContent('Manage your paid subscription');
+
+            // Logged-in members are taken straight to their account to manage their subscription
+            await userEvent.click(manageButton);
+            expect(within(popupIframeDocument).queryByText('Your account')).toBeInTheDocument();
         });
     });
 });

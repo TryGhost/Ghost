@@ -130,13 +130,25 @@ function NewsletterPrefs({subscribedNewsletters, setSubscribedNewsletters, hasNe
     });
 }
 
-function ShowPaidMemberMessage({site, isPaid}) {
-    if (isPaid) {
-        return (
-            <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {title}', {title: site?.title})}</p>
-        );
+function ShowPaidMemberMessage({site, isPaid, onManageSubscription}) {
+    if (!isPaid) {
+        return null;
     }
-    return null;
+
+    return (
+        <>
+            <p style={{textAlign: 'center', marginTop: '12px', marginBottom: '0', color: 'var(--grey6)'}}>{t('Unsubscribing from emails will not cancel your paid subscription to {title}', {title: site?.title})}</p>
+            <p style={{textAlign: 'center', marginTop: '4px', marginBottom: '0'}}>
+                <button
+                    className="gh-portal-btn-link gh-portal-btn-branded gh-portal-btn-inline"
+                    onClick={onManageSubscription}
+                    data-testid="manage-subscription"
+                >
+                    {t('Manage your paid subscription')}
+                </button>
+            </p>
+        </>
+    );
 }
 
 export default function NewsletterManagement({
@@ -225,7 +237,12 @@ export default function NewsletterManagement({
                     <ShowPaidMemberMessage
                         isPaid={isPaidMember}
                         site={site}
-                        subscribedNewsletters={subscribedNewsletters}
+                        onManageSubscription={() => {
+                            // Logged-in members go straight to their account to manage their
+                            // subscription; logged-out members (e.g. arriving from an email link)
+                            // are routed to sign in first, as account pages require authentication.
+                            doAction('switchPage', {page: member ? 'accountHome' : 'signin'});
+                        }}
                     />
                 </div>
                 {hasMemberGotEmailSuppression({member}) && !isDisabled &&
