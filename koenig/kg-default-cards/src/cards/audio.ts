@@ -5,7 +5,7 @@ import {
     htmlRelativeToAbsolute,
     htmlToTransformReady,
     toTransformReady
-} from '@tryghost/url-utils/lib/utils';
+} from '@tryghost/url-utils/lib/utils/index.js';
 import {
     hbs,
     dedent

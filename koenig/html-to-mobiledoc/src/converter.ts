@@ -1,6 +1,6 @@
-import DOMParserModule from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom';
-import BuilderModule from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder';
-import mobiledocRendererModule from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/renderers/mobiledoc';
+import DOMParserModule from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom.js';
+import BuilderModule from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder.js';
+import mobiledocRendererModule from '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/renderers/mobiledoc/index.js';
 import {createParserPlugins} from '@tryghost/kg-parser-plugins';
 import {JSDOM} from 'jsdom';
 

@@ -31,7 +31,7 @@ declare module '@tryghost/string' {
     export function escapeHtml(str: string): string;
 }
 
-declare module '@tryghost/url-utils/lib/utils' {
+declare module '@tryghost/url-utils/lib/utils/index.js' {
     export function absoluteToRelative(url: string, siteUrl: string, options?: unknown): string;
     export function relativeToAbsolute(url: string, siteUrl: string, itemUrl: string, options?: unknown): string;
     export function toTransformReady(url: string, siteUrl: string, ...args: unknown[]): string;

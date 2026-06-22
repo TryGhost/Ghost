@@ -1,4 +1,4 @@
-import cloneDeep from 'lodash/cloneDeep';
+import cloneDeep from 'lodash/cloneDeep.js';
 import {generateDecoratorNode, type DecoratorNodeProperty} from '../../generate-decorator-node.js';
 import {renderTransistorNode} from './transistor-renderer.js';
 import {ALL_MEMBERS_SEGMENT} from '../../utils/visibility.js';

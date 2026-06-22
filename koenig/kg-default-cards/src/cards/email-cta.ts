@@ -6,7 +6,7 @@ import {
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady
-} from '@tryghost/url-utils/lib/utils';
+} from '@tryghost/url-utils/lib/utils/index.js';
 import type {Card} from '../types.js';
 
 const emailCtaCard: Card = {

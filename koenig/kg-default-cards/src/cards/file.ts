@@ -2,7 +2,7 @@ import {
     absoluteToRelative,
     relativeToAbsolute,
     toTransformReady
-} from '@tryghost/url-utils/lib/utils';
+} from '@tryghost/url-utils/lib/utils/index.js';
 import {
     escapeHtml
 } from '@tryghost/string';

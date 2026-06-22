@@ -2,7 +2,7 @@ import {
     htmlAbsoluteToRelative,
     htmlRelativeToAbsolute,
     htmlToTransformReady
-} from '@tryghost/url-utils/lib/utils';
+} from '@tryghost/url-utils/lib/utils/index.js';
 import nftCard from './embed/nft.js';
 import twitterCard from './embed/twitter.js';
 import type {Card} from '../types.js';

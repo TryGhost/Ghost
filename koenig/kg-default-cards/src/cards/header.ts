@@ -5,7 +5,7 @@ import {
     htmlRelativeToAbsolute,
     toTransformReady,
     htmlToTransformReady
-} from '@tryghost/url-utils/lib/utils';
+} from '@tryghost/url-utils/lib/utils/index.js';
 import {
     slugify
 } from '@tryghost/kg-utils';

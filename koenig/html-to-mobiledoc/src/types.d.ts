@@ -1,4 +1,4 @@
-declare module '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom' {
+declare module '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom.js' {
     class DOMParser {
         constructor(builder: unknown, options: unknown);
         parse(element: unknown): unknown;
@@ -6,14 +6,14 @@ declare module '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/parsers/dom'
     export default DOMParser;
 }
 
-declare module '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder' {
+declare module '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/models/post-node-builder.js' {
     class Builder {
         constructor();
     }
     export default Builder;
 }
 
-declare module '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/renderers/mobiledoc' {
+declare module '@tryghost/mobiledoc-kit/dist/commonjs/mobiledoc-kit/renderers/mobiledoc/index.js' {
     const mobiledocRenderer: {
         render(post: unknown, version: string): unknown;
     };
