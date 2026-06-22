@@ -4,6 +4,7 @@ const {http} = require('@tryghost/api-framework');
 const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
+const labs = require('../../../../../shared/labs');
 
 const shared = require('../../../shared');
 
@@ -61,6 +62,15 @@ module.exports = function apiRoutes() {
     router.put('/pages/:id', mw.authAdminApi, http(api.pages.edit));
     router.delete('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
     router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
+
+    // Gift links (behind the giftLinks flag)
+    router.get('/posts/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.read));
+    router.put('/posts/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.issue));
+    router.post('/posts/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.reissue));
+    router.get('/pages/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.read));
+    router.put('/pages/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.issue));
+    router.post('/pages/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.reissue));
+    router.put('/gift_links/revoke_all', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.revokeAll));
 
     // # Integrations
 

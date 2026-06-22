@@ -27,16 +27,16 @@ const BetaFeatures: React.FC = () => {
                 <LabItem
                     action={<FeatureToggle
                         confirmation={{
-                            title: 'Enable Automations?',
-                            prompt: 'Enabling Automations is a one-way street: once it is on, it cannot be turned off.',
-                            okLabel: 'Enable Automations',
+                            title: 'Automations (beta)',
+                            prompt: 'This is a one-way street. Once enabled, the automations beta can\'t be turned off. Existing welcome emails will move into your automations automatically.',
+                            okLabel: 'Enable',
                             okRunningLabel: 'Enabling...'
                         }}
                         disabled={isAutomationsEnabled}
                         flag="automations"
-                        label='Automations' />}
-                    detail={<>Create powerful workflows that handle repetitive publishing and member tasks automatically.</>}
-                    title='Automations' />
+                        label='Automations (beta)' />}
+                    detail={<>Build automated email flows for your members, and get early access to new automation features as they ship. <a className='text-green' href="https://ghost.org/help/automations-beta" rel="noopener noreferrer" target="_blank">Learn more &rarr;</a></>}
+                    title='Automations (beta)' />
             ) : null}
             <LabItem
                 action={<FeatureToggle flag="superEditors" />}

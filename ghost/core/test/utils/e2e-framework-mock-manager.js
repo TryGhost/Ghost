@@ -295,7 +295,8 @@ const mockLimitService = (limit, options) => {
             isDisabled: sinon.stub(limitService, 'isDisabled'),
             checkWouldGoOverLimit: sinon.stub(limitService, 'checkWouldGoOverLimit'),
             errorIfWouldGoOverLimit: sinon.stub(limitService, 'errorIfWouldGoOverLimit'),
-            originalLimits: limitService.limits || {},
+            limitsExisted: !!limitService.limits,
+            originalEntries: new Map(),
             mockedLimits: new Set() // Track which limits we've mocked
         };
     }
@@ -307,6 +308,12 @@ const mockLimitService = (limit, options) => {
     // Mock the limits property for checking allowlist
     if (!limitService.limits) {
         limitService.limits = {};
+    }
+    if (!mocks.limitService.originalEntries.has(limit)) {
+        mocks.limitService.originalEntries.set(
+            limit,
+            Object.prototype.hasOwnProperty.call(limitService.limits, limit) ? limitService.limits[limit] : undefined
+        );
     }
     limitService.limits[limit] = {
         allowlist: options.allowlist || []
@@ -328,32 +335,32 @@ const mockLimitService = (limit, options) => {
 
 const restoreLimitService = () => {
     if (mocks.limitService) {
-        if (mocks.limitService.isLimited) {
+        if (mocks.limitService.isLimited && mocks.limitService.isLimited.restore) {
             mocks.limitService.isLimited.restore();
         }
-        if (mocks.limitService.checkWouldGoOverLimit) {
+        if (mocks.limitService.checkWouldGoOverLimit && mocks.limitService.checkWouldGoOverLimit.restore) {
             mocks.limitService.checkWouldGoOverLimit.restore();
         }
-        if (mocks.limitService.errorIfWouldGoOverLimit) {
+        if (mocks.limitService.errorIfWouldGoOverLimit && mocks.limitService.errorIfWouldGoOverLimit.restore) {
             mocks.limitService.errorIfWouldGoOverLimit.restore();
         }
-        if (mocks.limitService.isDisabled) {
+        if (mocks.limitService.isDisabled && mocks.limitService.isDisabled.restore) {
             mocks.limitService.isDisabled.restore();
         }
 
-        // Remove any limits we mocked
-        if (mocks.limitService.mockedLimits && limitService.limits) {
-            for (const limit of mocks.limitService.mockedLimits) {
-                delete limitService.limits[limit];
+        if (limitService.limits && mocks.limitService.originalEntries) {
+            for (const [limit, original] of mocks.limitService.originalEntries) {
+                if (original === undefined) {
+                    delete limitService.limits[limit];
+                } else {
+                    limitService.limits[limit] = original;
+                }
             }
         }
 
-        // If limits object is now empty and was originally empty, restore it
-        if (mocks.limitService.originalLimits !== undefined) {
-            if (Object.keys(mocks.limitService.originalLimits).length === 0 &&
-                limitService.limits && Object.keys(limitService.limits).length === 0) {
-                limitService.limits = mocks.limitService.originalLimits;
-            }
+        if (!mocks.limitService.limitsExisted &&
+            limitService.limits && Object.keys(limitService.limits).length === 0) {
+            limitService.limits = undefined;
         }
 
         delete mocks.limitService;
@@ -364,10 +371,7 @@ const restore = () => {
     // eslint-disable-next-line no-console
     configUtils.restore().catch(console.error);
 
-    // Restore limit service limits if we mocked them
-    if (mocks.limitService && mocks.limitService.originalLimits) {
-        limitService.limits = mocks.limitService.originalLimits;
-    }
+    restoreLimitService();
 
     sinon.restore();
     mocks = {};
@@ -378,10 +382,6 @@ const restore = () => {
     nock.cleanAll();
     nock.enableNetConnect();
     stripeMocker.reset();
-
-    if (mocks.webhookMockReceiver) {
-        mocks.webhookMockReceiver.reset();
-    }
 
     mailService.GhostMailer.prototype.sendMail = originalMailServiceSendMail;
 

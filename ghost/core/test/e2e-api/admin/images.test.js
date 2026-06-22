@@ -153,9 +153,9 @@ describe('Images API', function () {
         await agent.loginAsOwner();
     });
 
-    afterAll(function () {
-        configUtils.restore();
-        ghostServer.stop();
+    afterAll(async function () {
+        await configUtils.restore();
+        await ghostServer.stop();
     });
 
     afterEach(async function () {

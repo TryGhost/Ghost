@@ -344,8 +344,8 @@ describe('sendMagicLink', function () {
             await settingsService.init();
         });
 
-        afterEach(function () {
-            configUtils.restore();
+        afterEach(async function () {
+            await configUtils.restore();
         });
 
         it('blocks signups from email domains blocked in config', async function () {

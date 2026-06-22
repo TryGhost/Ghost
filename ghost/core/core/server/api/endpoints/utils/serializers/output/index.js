@@ -37,6 +37,10 @@ module.exports = {
         return require('./pages');
     },
 
+    get gift_links() {
+        return require('./gift-links');
+    },
+
     get redirects() {
         return require('./redirects');
     },

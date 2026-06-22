@@ -145,10 +145,9 @@ export default defineConfig({
                 test: {
                     ...sharedDbConfig,
                     name: 'e2e-api',
-                    // isolate:true like integration/legacy: this large (~97-file)
-                    // snapshot-heavy suite is state-pollution-prone, so per-file
-                    // isolation removes the inter-file bleed by construction.
-                    isolate: true,
+                    // Shares the default isolate:false (one shared boot per fork):
+                    // the cross-file leakers that forced per-file isolation here are
+                    // fixed at the source, dropping the dominant boot cost.
                     include: ['test/e2e-api/**/*.test.{js,ts}'],
                     exclude: ['**/node_modules/**'],
                     // Matches the mocha `--timeout=15000` for the e2e suites.

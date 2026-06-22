@@ -1,5 +1,5 @@
 import App from '../src/app';
-import {site as FixtureSite, member as FixtureMember} from './utils/test-fixtures';
+import {offer as FixtureOffer, site as FixtureSite, member as FixtureMember} from './utils/test-fixtures';
 import {appRender, fireEvent, waitFor, within} from './utils/test-utils';
 import setupGhostApi from '../src/utils/api';
 
@@ -21,7 +21,7 @@ const defaultGiftResponse = {
     ]
 };
 
-const setup = async ({site, member = null, showPopup = true, giftResponse = defaultGiftResponse, giftError = null}) => {
+const setup = async ({site, member = null, showPopup = true, giftResponse = defaultGiftResponse, giftError = null, offer = null}) => {
     const ghostApi = setupGhostApi({siteUrl: 'https://example.com'});
 
     ghostApi.init = vi.fn(() => {
@@ -61,6 +61,12 @@ const setup = async ({site, member = null, showPopup = true, giftResponse = defa
                 token: giftResponse.gifts[0].token,
                 status: 'redeemed'
             }]
+        });
+    });
+
+    ghostApi.site.offer = vi.fn(() => {
+        return Promise.resolve({
+            offers: [offer]
         });
     });
 
@@ -244,6 +250,29 @@ describe('Portal Data links:', () => {
             expect(shareTitle).toBeInTheDocument();
             const poweredBy = within(popupFrame.contentDocument).queryByText(/Powered by Ghost/i);
             expect(poweredBy).not.toBeInTheDocument();
+        });
+    });
+
+    describe('#/portal/offers/:offerid', () => {
+        test('does not open Portal when a paid member opens an offer link directly', async () => {
+            window.location.hash = `#/portal/offers/${FixtureOffer.id}`;
+
+            let {
+                ghostApi, popupFrame, triggerButtonFrame, ...utils
+            } = await setup({
+                site: FixtureSite.singleTier.basic,
+                member: FixtureMember.paid,
+                showPopup: false,
+                offer: FixtureOffer
+            });
+
+            expect(triggerButtonFrame).toBeInTheDocument();
+            expect(popupFrame).not.toBeInTheDocument();
+            expect(utils.queryByTitle(/portal-popup/i)).not.toBeInTheDocument();
+            const notificationFrame = await utils.findByTitle(/portal-notification/i);
+            expect(within(notificationFrame.contentDocument).queryByText(/You already have an active subscription\./i)).toBeInTheDocument();
+            expect(ghostApi.site.offer).not.toHaveBeenCalled();
+            expect(ghostApi.member.checkoutPlan).not.toHaveBeenCalled();
         });
     });
 
