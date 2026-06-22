@@ -510,9 +510,15 @@ jobs:
       - name: Install dependencies
         # sqlite3 is an optionalDependency. Without --force, pnpm may skip
         # installing/linking it when restoring from a cached store. --force
-        # ensures all optional deps are installed regardless.
+        # ensures all optional deps are installed regardless. The mysql leg
+        # doesn't need sqlite3, so it skips --force and gets a fast cache
+        # restore (matches the legacy-tests job below).
         run: |
-          pnpm install --frozen-lockfile --force
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm install --frozen-lockfile --force
+          else
+            pnpm install --frozen-lockfile
+          fi
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
