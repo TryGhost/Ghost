@@ -2981,6 +2981,9 @@ importers:
       '@actions/core':
         specifier: 3.0.1
         version: 3.0.1
+      '@eslint/js':
+        specifier: catalog:eslint9
+        version: 9.39.4
       '@prettier/sync':
         specifier: 0.6.1
         version: 0.6.1(prettier@3.8.3)
@@ -3052,7 +3055,7 @@ importers:
         version: 6.0.3
       '@typescript-eslint/parser':
         specifier: 'catalog:'
-        version: 8.49.0(eslint@8.57.1)(typescript@5.9.3)
+        version: 8.49.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.8(vitest@4.1.8)
@@ -3075,11 +3078,17 @@ importers:
         specifier: 0.28.0
         version: 0.28.0
       eslint:
-        specifier: 'catalog:'
-        version: 8.57.1
+        specifier: catalog:eslint9
+        version: 9.39.4(jiti@2.7.0)
+      eslint-plugin-ghost:
+        specifier: 3.5.0
+        version: 3.5.0(@babel/core@7.29.7)(eslint@9.39.4(jiti@2.7.0))
       expect:
         specifier: 29.7.0
         version: 29.7.0
+      globals:
+        specifier: 17.6.0
+        version: 17.6.0
       html-minifier:
         specifier: 4.0.0
         version: 4.0.0
@@ -3128,6 +3137,9 @@ importers:
       typescript:
         specifier: 'catalog:'
         version: 5.9.3
+      typescript-eslint:
+        specifier: 8.58.0
+        version: 8.58.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       validator:
         specifier: 'catalog:'
         version: 13.12.0
