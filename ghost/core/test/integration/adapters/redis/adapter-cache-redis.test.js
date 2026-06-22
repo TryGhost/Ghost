@@ -1,4 +1,3 @@
-/* eslint-disable ghost/mocha/no-top-level-hooks -- false positive: the hooks are inside the describe, but the lint plugin can't see through the describe.skipIf()() gate below. (PLA-170) */
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const _ = require('lodash');

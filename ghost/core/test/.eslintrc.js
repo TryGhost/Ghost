@@ -21,10 +21,7 @@ module.exports = {
     overrides: [
         {
             files: ['**/*.ts'],
-            parser: '@typescript-eslint/parser',
-            extends: [
-                'plugin:ghost/test'
-            ]
+            parser: '@typescript-eslint/parser'
         }
     ],
     rules: {
@@ -45,11 +42,16 @@ module.exports = {
         ],
         'no-useless-escape': 'off',
 
+        // Kept: catches committed .skip/.only (applies to Vitest too).
         'ghost/mocha/no-skipped-tests': 'error',
         'ghost/filenames/match-regex': ['error', '^[a-z0-9-.]+$', null, true],
 
-        // TODO: remove these custom rules and fix problems in test files
+        // Mocha-mechanics checks that misfire on Vitest patterns (setup-file
+        // top-level hooks, describe.each, async tests with no done callback).
+        // Off post-migration; revisited when we move to oxlint.
         'ghost/mocha/no-setup-in-describe': 'off',
-        'ghost/mocha/no-sibling-hooks': 'off'
+        'ghost/mocha/no-sibling-hooks': 'off',
+        'ghost/mocha/no-top-level-hooks': 'off',
+        'ghost/mocha/handle-done-callback': 'off'
     }
 };

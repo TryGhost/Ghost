@@ -1,4 +1,3 @@
-/* eslint-disable ghost/mocha/no-setup-in-describe -- describe.each is the parameterised-test seam; the mocha-era rule doesn't recognise Vitest's native .each and flags it like a manual loop. */
 import assert from 'node:assert/strict';
 
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
