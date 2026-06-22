@@ -30,7 +30,7 @@ describe('i18n', function () {
         describe('Dutch', function () {
             let t;
 
-            before(function () {
+            beforeAll(function () {
                 t = i18n('nl', 'portal').t;
             });
 
@@ -44,7 +44,7 @@ describe('i18n', function () {
         describe('Afrikaans', function () {
             let t;
 
-            before(function () {
+            beforeAll(function () {
                 t = i18n('af', 'signup-form').t;
             });
 
@@ -57,7 +57,7 @@ describe('i18n', function () {
     describe('Fallback when no language is chosen will be english', function () {
         describe('English fallback', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n().t;
             });
             it('can translate with english when no language selected', function () {
@@ -69,7 +69,7 @@ describe('i18n', function () {
     describe('Fallback will be nb when no is chosen', function () {
         describe('Norwegian bokmål fallback', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n('no', 'portal').t;
             });
             it('Norwegian bokmål used when no is chosen', function () {
@@ -81,7 +81,7 @@ describe('i18n', function () {
     describe('Language will be nb when nb is chosen', function () {
         describe('Norwegian bokmål', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n('nb', 'portal').t;
             });
             it('Norwegian bokmål used when "nb" is chosen', function () {
@@ -93,7 +93,7 @@ describe('i18n', function () {
     describe('Language is properly "nn" when "nn" is chosen', function () {
         describe('Norwegian Nynorsk', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n('nn', 'portal').t;
             });
             it('Norwegian Nynorsk used when selected', function () {
