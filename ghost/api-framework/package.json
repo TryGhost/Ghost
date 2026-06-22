@@ -1,0 +1,29 @@
+{
+  "name": "@tryghost/api-framework",
+  "version": "0.0.0",
+  "private": true,
+  "author": "Ghost Foundation",
+  "main": "index.js",
+  "scripts": {
+    "dev": "echo \"Implement me!\"",
+    "test:unit": "NODE_ENV=testing vitest run",
+    "test": "pnpm test:unit",
+    "lint": "oxlint -c .oxlintrc.json .",
+    "format": "oxfmt -c .oxfmtrc.json \"**/*.{js,ts,md}\"",
+    "format:check": "oxfmt -c .oxfmtrc.json --check \"**/*.{js,ts,md}\""
+  },
+  "dependencies": {
+    "@tryghost/debug": "catalog:",
+    "@tryghost/errors": "1.3.13",
+    "@tryghost/promise": "2.2.3",
+    "@tryghost/tpl": "2.2.3",
+    "@tryghost/validator": "0.2.22",
+    "lodash": "catalog:"
+  },
+  "devDependencies": {
+    "oxfmt": "catalog:",
+    "oxlint": "catalog:",
+    "sinon": "catalog:",
+    "vitest": "catalog:"
+  }
+}

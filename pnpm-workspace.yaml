@@ -47,7 +47,6 @@ catalog:
   '@tanstack/react-query': 4.44.0
   '@testing-library/jest-dom': 6.9.1
   '@testing-library/react': 14.3.1
-  '@tryghost/api-framework': 3.2.4
   '@tryghost/color-utils': 0.2.19
   '@tryghost/custom-fonts': 1.0.11
   '@tryghost/debug': 2.2.3
@@ -98,6 +97,8 @@ catalog:
   mocha: 11.7.6
   msw: 2.14.6
   node-html-markdown: 2.0.0
+  oxfmt: 0.54.0
+  oxlint: 1.69.0
   postcss: 8.5.15
   preact: ^10.29.2
   react: 18.3.1

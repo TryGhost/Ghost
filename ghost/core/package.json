@@ -95,7 +95,7 @@
     "@slack/webhook": "7.0.9",
     "@tryghost/adapter-base-cache": "0.1.26",
     "@tryghost/admin-api-schema": "4.7.5",
-    "@tryghost/api-framework": "catalog:",
+    "@tryghost/api-framework": "workspace:*",
     "@tryghost/bookshelf-plugins": "2.2.4",
     "@tryghost/color-utils": "catalog:",
     "@tryghost/config-url-helpers": "1.0.26",

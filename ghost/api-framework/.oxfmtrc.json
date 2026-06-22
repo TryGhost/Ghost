@@ -1,0 +1,13 @@
+{
+    "singleQuote": true,
+    "ignorePatterns": [
+        "**/node_modules/**",
+        "**/build/**",
+        "**/coverage/**",
+        "**/cjs/**",
+        "**/es/**",
+        "**/types/**",
+        "**/*.hbs",
+        "**/test/fixtures/**"
+    ]
+}

@@ -1,0 +1,12 @@
+{
+    "plugins": ["node", "typescript"],
+    "ignorePatterns": [
+        "**/node_modules/**",
+        "**/build/**",
+        "**/coverage/**",
+        "**/cjs/**",
+        "**/es/**",
+        "**/types/**",
+        "**/test/fixtures/**"
+    ]
+}

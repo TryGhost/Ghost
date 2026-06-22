@@ -14,6 +14,7 @@ export default defineConfig({
     test: {
         projects: [
             'ghost/core',
+            'ghost/api-framework',
             'apps/*',
             '!apps/admin-x-activitypub',
             '!apps/signup-form'
