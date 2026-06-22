@@ -127,11 +127,13 @@ async function initCore({ghostServer, config, frontend}) {
     });
     debug('End: Url Service');
 
-    // Gift links service: wires the (knex-backed) repository once the DB is ready.
-    debug('Begin: Gift Links Service');
-    const giftLinksService = require('./server/services/gift-links');
-    giftLinksService.init();
-    debug('End: Gift Links Service');
+    // Gift links: construct the service against the ready DB and inject it into the API controller.
+    debug('Begin: Gift Links');
+    const {GiftLinksService} = require('./server/services/gift-links');
+    const {knex: giftLinksKnex} = require('./server/data/db');
+    const giftLinksEndpoint = require('./server/api/endpoints/gift-links');
+    giftLinksEndpoint.controller = giftLinksEndpoint.createController(new GiftLinksService({knex: giftLinksKnex}));
+    debug('End: Gift Links');
 
     if (ghostServer) {
         // Job Service allows parts of Ghost to run in the background

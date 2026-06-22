@@ -1,4 +1,4 @@
-import {service} from '../../services/gift-links';
+import type {GiftLinksService} from '../../services/gift-links';
 
 // permissions is untyped JS; require, don't import.
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -21,59 +21,65 @@ async function assertCanManageGiftLink(frame: Frame): Promise<void> {
 
 const noCacheInvalidation = {cacheInvalidate: false};
 
-const controller = {
-    docName: 'gift_links',
+function createController(service: GiftLinksService) {
+    return {
+        docName: 'gift_links',
 
-    read: {
-        headers: noCacheInvalidation,
-        options: ['id'],
-        validation: {options: {id: {required: true}}},
-        permissions(frame: Frame) {
-            return assertCanManageGiftLink(frame);
+        read: {
+            headers: noCacheInvalidation,
+            options: ['id'],
+            validation: {options: {id: {required: true}}},
+            permissions(frame: Frame) {
+                return assertCanManageGiftLink(frame);
+            },
+            query(frame: Frame) {
+                return service.getPost(frame.options.id);
+            }
         },
-        query(frame: Frame) {
-            return service!.getPost(frame.options.id);
-        }
-    },
 
-    issue: {
-        headers: noCacheInvalidation,
-        statusCode: 200,
-        options: ['id'],
-        validation: {options: {id: {required: true}}},
-        permissions(frame: Frame) {
-            return assertCanManageGiftLink(frame);
+        issue: {
+            headers: noCacheInvalidation,
+            statusCode: 200,
+            options: ['id'],
+            validation: {options: {id: {required: true}}},
+            permissions(frame: Frame) {
+                return assertCanManageGiftLink(frame);
+            },
+            query(frame: Frame) {
+                return service.issue(frame.options.id);
+            }
         },
-        query(frame: Frame) {
-            return service!.issue(frame.options.id);
-        }
-    },
 
-    reissue: {
-        headers: noCacheInvalidation,
-        statusCode: 200,
-        options: ['id'],
-        validation: {options: {id: {required: true}}},
-        permissions(frame: Frame) {
-            return assertCanManageGiftLink(frame);
+        reissue: {
+            headers: noCacheInvalidation,
+            statusCode: 200,
+            options: ['id'],
+            validation: {options: {id: {required: true}}},
+            permissions(frame: Frame) {
+                return assertCanManageGiftLink(frame);
+            },
+            query(frame: Frame) {
+                return service.reissue(frame.options.id);
+            }
         },
-        query(frame: Frame) {
-            return service!.reissue(frame.options.id);
-        }
-    },
 
-    revokeAll: {
-        headers: noCacheInvalidation,
-        statusCode: 200,
-        permissions(frame: Frame) {
-            return permissionsService.canThis(frame.options.context).revokeAll.gift_link();
-        },
-        async query() {
-            const count = await service!.revokeAll();
-            return {count};
+        revokeAll: {
+            headers: noCacheInvalidation,
+            statusCode: 200,
+            permissions(frame: Frame) {
+                return permissionsService.canThis(frame.options.context).revokeAll.gift_link();
+            },
+            async query() {
+                const count = await service.revokeAll();
+                return {count};
+            }
         }
-    }
+    };
+}
+
+// module.exports (not export): boot (the composition root) calls createController with the
+// constructed service and assigns the result to `controller`; the API endpoints index reads it.
+module.exports = {
+    createController,
+    controller: undefined as ReturnType<typeof createController> | undefined
 };
-
-// module.exports (not export): the API framework loads controllers via require().
-module.exports = controller;

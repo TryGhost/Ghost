@@ -302,7 +302,7 @@ module.exports = {
     },
 
     get giftLinks() {
-        return apiFramework.pipeline(require('./gift-links'), localUtils);
+        return apiFramework.pipeline(require('./gift-links').controller, localUtils);
     },
 
     get giftReminders() {
