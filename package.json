@@ -84,6 +84,7 @@
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-react": "catalog:",
+    "globals": "catalog:",
     "husky": "9.1.7",
     "jsonc-parser": "catalog:",
     "knip": "6.16.1",

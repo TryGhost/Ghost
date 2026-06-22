@@ -44,7 +44,7 @@
   },
   "devDependencies": {
     "@doist/react-interpolate": "2.2.2",
-    "@eslint/js": "catalog:eslint9",
+    "@eslint/js": "catalog:",
     "@sentry/react": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:react17",
@@ -55,7 +55,7 @@
     "concurrently": "catalog:",
     "cross-fetch": "catalog:",
     "dompurify": "catalog:",
-    "eslint": "catalog:eslint9",
+    "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-i18next": "6.1.4",
     "eslint-plugin-react": "catalog:",

@@ -61,7 +61,6 @@ export default tseslint.config(
             ghost: ghostPlugin,
             'react-hooks': reactHooksPlugin,
             'react-refresh': reactRefreshPlugin,
-            storybook: storybookPlugin,
             tailwindcss: tailwindcssPlugin
         },
         settings: {
@@ -98,14 +97,7 @@ export default tseslint.config(
             'tailwindcss/no-contradicting-classname': 'error'
         }
     },
-    // Storybook story files — render() functions intentionally use hooks
-    // and don't need to look like React components
-    {
-        files: ['**/*.stories.{ts,tsx,js,jsx}'],
-        rules: {
-            'react-hooks/rules-of-hooks': 'off'
-        }
-    },
+    ...storybookPlugin.configs['flat/recommended'],
     {
         files: ['test/**/*.{js,ts,cjs,tsx}'],
         extends: [...tseslint.configs.recommended],

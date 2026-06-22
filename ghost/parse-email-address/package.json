@@ -25,11 +25,11 @@
     "access": "public"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:eslint9",
+    "@eslint/js": "catalog:",
     "@types/node": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "eslint": "catalog:eslint9",
+    "eslint": "catalog:",
     "eslint-plugin-ghost": "3.5.0",
     "globals": "17.6.0",
     "tsx": "catalog:",
