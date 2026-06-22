@@ -3,7 +3,9 @@ const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const models = require('../../models');
 const memberWelcomeEmailService = require('../../services/member-welcome-emails/service');
+const emailAddressService = require('../../services/email-address');
 const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG} = require('../../services/member-welcome-emails/constants');
+const {validateEmailSenderFields} = require('./utils/validate-email-sender-fields');
 
 const messages = {
     automatedEmailNotFound: 'Automated email not found.'
@@ -139,6 +141,8 @@ const controller = {
             const emailData = _.pick(data, EMAIL_FIELDS);
             const senderData = _.pick(data, SENDER_FIELDS);
             const automationData = _.pick(data, AUTOMATION_FIELDS);
+            emailAddressService.init();
+            validateEmailSenderFields(emailAddressService.service, senderData);
 
             return models.Base.transaction(async (transacting) => {
                 const automation = await models.Automation.add(automationData, {...frame.options, transacting});
@@ -178,6 +182,8 @@ const controller = {
             const emailData = _.pick(data, EMAIL_FIELDS);
             const senderData = _.pick(data, SENDER_FIELDS);
             const automationData = _.pick(data, AUTOMATION_FIELDS);
+            emailAddressService.init();
+            validateEmailSenderFields(emailAddressService.service, senderData);
 
             return models.Base.transaction(async (transacting) => {
                 let automation = await models.Automation.findOne({id: frame.options.id}, {

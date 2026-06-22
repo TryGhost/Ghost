@@ -1,6 +1,9 @@
 const assert = require('node:assert/strict');
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyISODateTime, anyErrorId, anyEtag} = matchers;
+const sinon = require('sinon');
+const emailAddressService = require('../../../core/server/services/email-address');
+const models = require('../../../core/server/models');
 
 const matchEmailDesignSetting = {
     id: anyObjectId,
@@ -106,6 +109,48 @@ describe('Automated Email Design API', function () {
                     'content-version': anyContentVersion,
                     etag: anyEtag
                 });
+        });
+
+        it('Rejects disallowed sender email', async function () {
+            await models.Base.knex('email_design_settings')
+                .where('slug', 'default-automated-email')
+                .update({
+                    background_color: 'light',
+                    sender_name: 'Existing Sender',
+                    sender_email: 'existing@example.com',
+                    sender_reply_to: 'existing-reply@example.com'
+                });
+
+            emailAddressService.init();
+            const validateStub = sinon.stub(emailAddressService.service, 'validate')
+                .returns({allowed: false, verificationEmailRequired: false});
+
+            try {
+                await agent
+                    .put('automated_emails/design')
+                    .body({automated_email_design: [{
+                        background_color: 'dark',
+                        sender_name: 'Custom Sender',
+                        sender_email: 'sender@example.com',
+                        sender_reply_to: 'reply@example.com'
+                    }]})
+                    .expectStatus(422);
+
+                sinon.assert.calledOnceWithExactly(validateStub, 'sender@example.com', 'from');
+
+                const designSettings = await models.Base.knex('email_design_settings')
+                    .where('slug', 'default-automated-email')
+                    .first('background_color', 'sender_name', 'sender_email', 'sender_reply_to');
+
+                assert.deepEqual(designSettings, {
+                    background_color: 'light',
+                    sender_name: 'Existing Sender',
+                    sender_email: 'existing@example.com',
+                    sender_reply_to: 'existing-reply@example.com'
+                });
+            } finally {
+                validateStub.restore();
+            }
         });
     });
 
