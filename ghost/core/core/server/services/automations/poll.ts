@@ -166,6 +166,13 @@ const processStep = async ({
             break;
         case 'send_email':
             if (!hasUpdatesAndAnnouncementsEnabled(member)) {
+                logging.warn({
+                    system: {
+                        event: 'automations.poll.member_unsubscribed',
+                        member_id: step.member_id,
+                        step_id: step.id
+                    }
+                }, `[AUTOMATIONS] Member ${step.member_id} for step ${step.id} has unsubscribed from emails. Fast-finishing this step`);
                 break;
             }
             memberWelcomeEmailService.init();
