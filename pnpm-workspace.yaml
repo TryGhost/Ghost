@@ -90,6 +90,7 @@ catalog:
   eslint-plugin-tailwindcss: 4.0.0-beta.0
   fs-extra: 11.3.5
   glob: 13.0.6
+  isbot: ^5.1.42
   jsdom: 29.1.1
   jsonc-parser: 3.3.1
   lodash: 4.18.1

@@ -70,9 +70,9 @@ module.exports = {
 
     // Labs utils for enabling/disabling helpers
     labs: require('../../shared/labs'),
-    // Gift links service — the /g/ reader controller resolves gift tokens
-    // through this seam, per the frontend→server boundary rule (not a direct
-    // require).
+    // Gift links service — the /g/ reader controller resolves gift tokens and
+    // records reads (via the read-counter) through this seam, per the
+    // frontend→server boundary rule (not a direct require).
     giftLinks: require('../../server/services/gift-links'),
     // Synthesize an all-paid-tiers member for gift-link reads (shared with
     // post previews). Lazy getter so the members service is resolved at call

@@ -167,6 +167,12 @@ async function giftLinksController(req: Request, res: GiftResponse, next: NextFu
                         data: {_gift: true}
                     }));
 
+                    // Count the read (bot-filtered, cookie-deduped, fire-and-
+                    // forget). Only here, on the verified render path — never on
+                    // redirects or 404s — so a bad slug or invalid key can't
+                    // inflate the count.
+                    giftLinksService.recordRead(req, res, {token: key, postId: resolved.id});
+
                     return renderer.renderEntry(req, res)(entry);
                 }
             }

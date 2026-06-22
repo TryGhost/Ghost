@@ -9,6 +9,26 @@ import {afterAll, beforeAll} from 'vitest';
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const settingsCache = require('../../core/shared/settings-cache');
+const models = require('../../core/server/models');
+
+const HUMAN_UA = 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Safari/605.1.15';
+
+// The redemption counter lives directly on the gift_links row (no Bookshelf
+// model), and the write is fire-and-forget, so poll briefly off the table.
+async function pollRedeemedCount(token: string, atLeast: number, tries = 30): Promise<number> {
+    const knex = models.Base.knex;
+    for (let i = 0; i < tries; i += 1) {
+        const link = await knex('gift_links').where({token}).first();
+        if (link && link.redeemed_count >= atLeast) {
+            return link.redeemed_count;
+        }
+        await new Promise<void>((resolve) => {
+            setTimeout(resolve, 50);
+        });
+    }
+    const link = await knex('gift_links').where({token}).first();
+    return link ? link.redeemed_count : -1;
+}
 
 // Default member-test-theme renders `{{content}}`; a paid post with a
 // `<!--members-only-->` marker truncates at the paywall when the reader has no
@@ -125,5 +145,42 @@ describe('Front-end gift links', function () {
             .expect(404);
 
         assert.doesNotMatch(res.text, /After paywall/, 'no gated content leaks on the 404 path');
+    });
+
+    it('counts a human gift read once and de-dupes repeat views via the ghost-gift-seen cookie', async function () {
+        // Fresh client (no prior cookie) with a real browser UA so it isn't bot-filtered.
+        const humanAgent = supertest.agent(configUtils.config.get('url'));
+
+        const res = await humanAgent
+            .get(`/g/${slug}/?key=${token}`)
+            .set('User-Agent', HUMAN_UA)
+            .expect(200);
+
+        const setCookie = ((res.headers['set-cookie'] as unknown as string[]) || []).join(';');
+        assert.match(setCookie, /ghost-gift-seen-/, 'sets the per-post de-dup cookie');
+
+        // The count is incremented out-of-band (non-blocking), so poll briefly.
+        assert.equal(await pollRedeemedCount(token, 1), 1);
+
+        // A second view from the same client must NOT double-count (cookie matches token).
+        await humanAgent
+            .get(`/g/${slug}/?key=${token}`)
+            .set('User-Agent', HUMAN_UA)
+            .expect(200);
+        assert.equal(await pollRedeemedCount(token, 1), 1, 'repeat view from same client is de-duped');
+    });
+
+    it('does not count a read from a bot user-agent', async function () {
+        const botAgent = supertest.agent(configUtils.config.get('url'));
+
+        await botAgent
+            .get(`/g/${slug}/?key=${token}`)
+            .set('User-Agent', 'Mozilla/5.0 (compatible; Googlebot/2.1; +http://www.google.com/bot.html)')
+            .expect(200);
+
+        // The human test above already brought the count to 1; a bot read must
+        // not bump it further.
+        const count = await pollRedeemedCount(token, 2, 6);
+        assert.equal(count, 1, 'bot read is not counted');
     });
 });

@@ -14,6 +14,7 @@ describe('Unit - services/routing/controllers/gift-links', function () {
     let postsReadStub: any;
     let pagesReadStub: any;
     let getPostByTokenStub: any;
+    let recordReadStub: any;
     let renderEntryInner: any;
     let handleErrorStub: any;
 
@@ -28,8 +29,10 @@ describe('Unit - services/routing/controllers/gift-links', function () {
         });
 
         getPostByTokenStub = sinon.stub().resolves(null);
+        recordReadStub = sinon.spy();
         sinon.stub(proxy, 'giftLinks').value({
-            service: {getPostByToken: getPostByTokenStub}
+            service: {getPostByToken: getPostByTokenStub},
+            recordRead: recordReadStub
         });
 
         // `synthesizePaidMember` is a lazy getter on the proxy; stub it to return
@@ -92,6 +95,8 @@ describe('Unit - services/routing/controllers/gift-links', function () {
 
             sinon.assert.calledWith(res.set, 'X-Robots-Tag', 'noindex');
             sinon.assert.calledWith(res.set, 'Referrer-Policy', 'no-referrer');
+            // Read counted on the verified render path with the token + post id.
+            sinon.assert.calledOnceWithExactly(recordReadStub, req, res, {token: 'good-token', postId: 'post-id-1'});
             sinon.assert.calledOnce(renderEntryInner);
             sinon.assert.notCalled(res.redirect);
             sinon.assert.notCalled(next);
@@ -105,6 +110,8 @@ describe('Unit - services/routing/controllers/gift-links', function () {
 
             sinon.assert.calledWith(res.redirect, 301, '/g/my-post/?key=good-token');
             sinon.assert.notCalled(renderEntryInner);
+            // A redirect is not a read — must not count.
+            sinon.assert.notCalled(recordReadStub);
         });
 
         it('reads pages via pagesPublic when the token resolves to a page', async function () {
