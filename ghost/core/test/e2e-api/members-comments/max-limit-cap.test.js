@@ -35,6 +35,7 @@ describe('Comments API - Max Limit Cap', function () {
     afterAll(function () {
         // Restore the original middleware
         sharedMiddleware.maxLimitCap[0] = originalMiddleware;
+        sinon.restore();
     });
 
     it('should call maxLimitCap middleware when browsing posts', async function () {
