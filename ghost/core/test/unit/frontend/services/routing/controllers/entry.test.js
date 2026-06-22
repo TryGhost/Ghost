@@ -53,8 +53,13 @@ describe('Unit - services/routing/controllers/entry', function () {
         };
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
+        // Some tests below toggle config (e.g. admin:redirects) and restore it
+        // inline from async callbacks. Restore unconditionally here too so a
+        // config change can never leak into a co-scheduled file under the
+        // shared module registry (isolate: false).
+        await configUtils.restore();
     });
 
     it('resource not found', function () {

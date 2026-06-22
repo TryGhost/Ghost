@@ -17,7 +17,7 @@ const automatedEmailsFixture = {
     automated_emails: [{
         id: 'free-welcome-email-id',
         status: 'active',
-        name: 'Welcome Email (Free)',
+        name: 'Free member welcome flow',
         slug: 'member-welcome-email-free',
         subject: 'Welcome to Test Site',
         // Note the lexical content includes a template token ({name})
@@ -1016,7 +1016,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'paid-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Paid)',
+                    name: 'Paid member welcome flow',
                     slug: 'member-welcome-email-paid',
                     subject: 'Welcome to your paid subscription',
                     lexical: '{"root":{"children":[]}}',
@@ -1221,7 +1221,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'paid-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Paid)',
+                    name: 'Paid member welcome flow',
                     slug: 'member-welcome-email-paid',
                     subject: 'Welcome to your paid subscription',
                     lexical: '{"root":{"children":[]}}',
@@ -1363,7 +1363,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'new-free-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',
@@ -1411,7 +1411,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Welcome!","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}',
@@ -1458,7 +1458,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'new-free-welcome-email-id',
                     status: 'active',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',
@@ -1502,7 +1502,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',
@@ -1553,7 +1553,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
                     status: 'active',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',

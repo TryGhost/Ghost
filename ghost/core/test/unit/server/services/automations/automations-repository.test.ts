@@ -8,6 +8,7 @@ import {createDatabaseAutomationsRepository} from '../../../../../core/server/se
 import type {AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 
 const HOUR_MS = 60 * 60 * 1000;
+const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
 const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
 
 const toDatabaseDate = (date: Date | string): string => moment(date).format(DATABASE_DATE_FORMAT);
@@ -136,14 +137,14 @@ const createDatabase = async (): Promise<Knex> => {
         created_at: now(),
         updated_at: now(),
         slug: 'member-welcome-email-free',
-        name: 'Welcome Email (Free)',
+        name: 'Free member welcome flow',
         status: 'active'
     }, {
         id: paidAutomationId,
         created_at: now(),
         updated_at: now(),
         slug: 'member-welcome-email-paid',
-        name: 'Welcome Email (Paid)',
+        name: 'Paid member welcome flow',
         status: 'active'
     }]);
 
@@ -507,7 +508,10 @@ describe('automations repository', function () {
 
     beforeEach(async function () {
         knex = await createDatabase();
-        repo = createDatabaseAutomationsRepository(knex);
+        repo = createDatabaseAutomationsRepository({
+            knex,
+            fakeWaitHoursMultiplier: null
+        });
     });
 
     afterEach(async function () {
@@ -591,11 +595,11 @@ describe('automations repository', function () {
                 .orderBy('slug');
 
             assert.deepEqual(automations.map(({name, slug, status}) => ({name, slug, status})), [{
-                name: 'Welcome Email (Free)',
+                name: 'Free member welcome flow',
                 slug: 'member-welcome-email-free',
                 status: 'inactive'
             }, {
-                name: 'Welcome Email (Paid)',
+                name: 'Paid member welcome flow',
                 slug: 'member-welcome-email-paid',
                 status: 'inactive'
             }]);
@@ -661,6 +665,30 @@ describe('automations repository', function () {
             assert.equal(step.status, 'pending');
             assert.equal(step.locked_by, null);
             assert.equal(step.locked_at, null);
+        });
+
+        it('uses the fake wait hours multiplier for triggered wait actions when configured', async function () {
+            repo = createDatabaseAutomationsRepository({
+                knex,
+                fakeWaitHoursMultiplier: FAKE_WAIT_HOURS_MULTIPLIER
+            });
+
+            const beforeTrigger = Date.now();
+            await repo.trigger({
+                memberEmail: 'fake-wait@example.com',
+                memberId: 'member_123',
+                memberStatus: 'free'
+            });
+            const afterTrigger = Date.now();
+
+            const run = await getRunByMemberEmail('fake-wait@example.com');
+            assert(run);
+
+            const step = await getStepByRunId(run.id);
+            assert(step);
+            const readyAtMs = moment(step.ready_at, DATABASE_DATE_FORMAT).valueOf();
+            assert(readyAtMs >= beforeTrigger + (48 * FAKE_WAIT_HOURS_MULTIPLIER) - 999);
+            assert(readyAtMs <= afterTrigger + (48 * FAKE_WAIT_HOURS_MULTIPLIER));
         });
 
         it('can trigger an automation for a paid member', async function () {
@@ -992,7 +1020,10 @@ describe('automations repository', function () {
                 }
             }) as Knex;
 
-            repo = createDatabaseAutomationsRepository(mockKnex);
+            repo = createDatabaseAutomationsRepository({
+                knex: mockKnex,
+                fakeWaitHoursMultiplier: null
+            });
         };
 
         const assertContendedStepWasLocked = async (stepId: string) => {
@@ -1265,6 +1296,29 @@ describe('automations repository', function () {
             assert(nextReadyAt);
             assert(nextReadyAt.getTime() >= beforeFinish + (72 * HOUR_MS));
             assert(nextReadyAt.getTime() <= afterFinish + (72 * HOUR_MS));
+        });
+
+        it('uses the fake wait hours multiplier when configured', async function () {
+            repo = createDatabaseAutomationsRepository({
+                knex,
+                fakeWaitHoursMultiplier: FAKE_WAIT_HOURS_MULTIPLIER
+            });
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const sendEmailAction = await getActionByIndex(automation.id, 1);
+            assert.equal(sendEmailAction.action_type, 'send_email');
+            const run = await insertRun(automation.id);
+            const stepRow = await insertStep(run.id, sendEmailAction.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+
+            const beforeFinish = Date.now();
+            const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+            const afterFinish = Date.now();
+
+            assert(nextReadyAt);
+            assert(nextReadyAt.getTime() >= beforeFinish + (72 * FAKE_WAIT_HOURS_MULTIPLIER));
+            assert(nextReadyAt.getTime() <= afterFinish + (72 * FAKE_WAIT_HOURS_MULTIPLIER));
         });
 
         it('does not enqueue a duplicate next step when called again with the same locked step', async function () {

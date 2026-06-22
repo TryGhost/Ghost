@@ -20,6 +20,7 @@ const {sequence} = require('@tryghost/promise');
 
 // Other Test Utilities
 const urlServiceUtils = require('./url-service-utils');
+const dbTemplate = require('./db-template');
 
 let dbInitialized = false;
 let mysqlSnapshotDatabase = null;
@@ -56,6 +57,19 @@ module.exports.reset = async ({truncate} = {truncate: false}) => {
 
         if (dbInitialized) {
             await fs.copyFile(filenameOrig, filename);
+        } else if (dbTemplate.hasTemplate()) {
+            // First provision in this fork: build the schema + fixtures from the
+            // run's shared (migrated + seeded) template — ATTACH the template file
+            // and bulk-copy it onto db.knex's own connection — instead of a full
+            // per-file migrate+seed (PLA-172). Then snapshot to `-orig` so later
+            // in-fork resets take the fast file-copy path above. The fork file is
+            // already fresh (deleted at boot, see vitest-setup-db.ts), and the
+            // restore writes db.knex's inode, so we must NOT fs.remove() it here —
+            // that would strand db.knex on a stale empty handle.
+            await dbTemplate.restoreFromTemplate();
+
+            await fs.copyFile(filename, filenameOrig);
+            dbInitialized = true;
         } else {
             await fs.remove(filename);
             await fs.remove(`${filename}-journal`);
@@ -149,8 +163,17 @@ const isMySQLSnapshotCurrent = () => {
 
 const resetMySQLFromSnapshot = async () => {
     if (!isMySQLSnapshotCurrent()) {
-        await truncateAll();
-        await knexMigrator.init({only: 3});
+        if (dbTemplate.hasTemplate()) {
+            // First provision in this fork: load the schema + fixtures from the
+            // run's shared (migrated + seeded) template — a same-server bulk
+            // table copy rather than a full migrate+seed — then build the
+            // per-process snapshot tables so later in-fork resets take the fast
+            // restoreMySQLSnapshot path.
+            await dbTemplate.restoreFromTemplate();
+        } else {
+            await truncateAll();
+            await knexMigrator.init({only: 3});
+        }
         await createMySQLSnapshot();
         return;
     }

@@ -190,11 +190,11 @@ describe('Automations API', function () {
                 .orderBy('slug');
 
             assert.deepEqual(automations.map(({name, slug, status}) => ({name, slug, status})), [{
-                name: 'Welcome Email (Free)',
+                name: 'Free member welcome flow',
                 slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
                 status: 'inactive'
             }, {
-                name: 'Welcome Email (Paid)',
+                name: 'Paid member welcome flow',
                 slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
                 status: 'inactive'
             }].sort((left, right) => left.slug.localeCompare(right.slug)));

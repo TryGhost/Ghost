@@ -1,14 +1,12 @@
-// Vitest setup — mirrors the behavior of ./overrides.js (used by mocha
-// via --require) for tests that run under vitest. As buckets migrate
-// from mocha to vitest, this file's responsibility grows; for now it's
-// scoped to what the unit-test spike subtree needs plus the snapshot
-// hook bridge from @tryghost/express-test so it's exercised end-to-end.
+// Vitest setup for the unit suite. Bootstraps the test environment and
+// bridges the snapshot hook contract from @tryghost/express-test onto
+// vitest's globals so it's exercised end-to-end.
 
 // The ghost/mocha lint plugin flags top-level beforeAll/afterEach/afterAll
 // calls — those rules guard against accidental top-level hooks in mocha
 // test files, but vitest setup files are *meant* to register global hooks
 // at the top level. Disable for this file only.
-/* eslint-disable ghost/mocha/no-top-level-hooks, ghost/mocha/no-sibling-hooks, ghost/mocha/handle-done-callback */
+/* eslint-disable ghost/mocha/no-top-level-hooks, ghost/mocha/handle-done-callback */
 
 import chalk from 'chalk';
 import {beforeAll, beforeEach, afterEach, afterAll} from 'vitest';
@@ -63,7 +61,7 @@ const getMockManager = () => {
 
 // Bridge @tryghost/express-test's mochaHooks contract onto vitest's
 // globals. The hooks are plain async functions so they translate
-// directly. Order matches overrides.js for parity.
+// directly.
 beforeAll(async () => {
     const {mochaHooks} = getSnapshotExports();
     if (mochaHooks?.beforeAll) {

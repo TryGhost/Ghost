@@ -285,7 +285,7 @@ const getMemberNewsletters = async function getMemberNewsletters(req, res) {
             return res.end('Email address not found.');
         }
 
-        const data = _.pick(memberData, 'uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'status');
+        const data = _.pick(memberData, 'uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'enable_updates_and_announcements', 'status');
 
         if (data.newsletters) {
             data.newsletters = formatNewsletterResponse(data.newsletters);
@@ -306,14 +306,14 @@ const updateMemberNewsletters = async function updateMemberNewsletters(req, res)
             return res.end('Email address not found.');
         }
 
-        const data = _.pick(req.body, 'newsletters', 'enable_comment_notifications');
+        const data = _.pick(req.body, 'newsletters', 'enable_comment_notifications', 'enable_updates_and_announcements');
         const options = {
             id: memberData.id,
             withRelated: ['newsletters']
         };
 
         const updatedMember = await membersService.api.members.update(data, options);
-        const updatedMemberData = _.pick(updatedMember.toJSON(), ['uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'status']);
+        const updatedMemberData = _.pick(updatedMember.toJSON(), ['uuid', 'email', 'name', 'newsletters', 'enable_comment_notifications', 'enable_updates_and_announcements', 'status']);
 
         if (updatedMemberData.newsletters) {
             updatedMemberData.newsletters = formatNewsletterResponse(updatedMemberData.newsletters);
@@ -328,7 +328,7 @@ const updateMemberNewsletters = async function updateMemberNewsletters(req, res)
 
 const updateMemberData = async function updateMemberData(req, res) {
     try {
-        const data = _.pick(req.body, 'name', 'expertise', 'subscribed', 'newsletters', 'enable_comment_notifications');
+        const data = _.pick(req.body, 'name', 'expertise', 'subscribed', 'newsletters', 'enable_comment_notifications', 'enable_updates_and_announcements');
         const member = await membersService.ssr.getMemberDataFromSession(req, res);
         if (member) {
             const options = {

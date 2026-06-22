@@ -4,6 +4,7 @@ import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
 import {z} from 'zod';
 import {createDatabaseAutomationsRepository} from './database-automations-repository';
+import {parseFakeWaitHoursMultiplier} from './fake-wait-hours-multiplier';
 import type {
     AutomationsRepository,
     EditAutomationData
@@ -12,6 +13,7 @@ import type {
 const {knex} = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
+const config = require('../../../shared/config');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 
 const MAX_AUTOMATION_ACTIONS = 20;
@@ -70,7 +72,10 @@ const editAutomationDataSchema = z.object({
     edges: z.array(edgeSchema)
 }).strict();
 
-const repository = createDatabaseAutomationsRepository(knex);
+const repository = createDatabaseAutomationsRepository({
+    knex,
+    fakeWaitHoursMultiplier: parseFakeWaitHoursMultiplier(config.get('automations:fakeWaitHoursMultiplier'))
+});
 
 export async function browse() {
     return await repository.browse();

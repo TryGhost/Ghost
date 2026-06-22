@@ -1,6 +1,6 @@
 const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-framework');
 const {anyContentVersion, anyObjectId, anyString, anyEtag, anyNumber} = matchers;
-const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 const config = require('../../../core/shared/config');
 
 const matchLink = {
@@ -24,8 +24,7 @@ describe('Links API', function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'links');
         await agent.loginAsOwner();
-        // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
-        clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true});
+        clock = mockSystemTime(new Date());
     });
 
     afterEach(async function () {
