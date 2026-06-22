@@ -2,7 +2,7 @@ import crypto from 'crypto';
 import errors from '@tryghost/errors';
 import {z} from 'zod';
 import type {Knex} from 'knex';
-import {GiftLinkRow, GiftLinkToken, giftLinkCodec, type GiftLink, type Post} from './model';
+import {GiftLinkToken, type GiftLink, type Post} from './models';
 import * as queries from './queries';
 
 export function generateGiftLinkToken(): GiftLinkToken {
@@ -21,8 +21,8 @@ export class GiftLinksService {
     }
 
     async getPostByToken(token: string): Promise<Post | null> {
-        const row = await this.run(queries.liveLinkForToken(token));
-        return row ? {id: row.post_id, giftLinks: [z.decode(giftLinkCodec, row)]} : null;
+        const row = await queries.liveLinkForToken(token)(this.knex);
+        return row ? {id: row.post_id, giftLinks: [z.decode(queries.giftLinkCodec, row)]} : null;
     }
 
     async issue(postId: string): Promise<Post> {
@@ -58,21 +58,16 @@ export class GiftLinksService {
             .increment('redeemed_count', 1);
     }
 
-    // Binds an executor-agnostic read statement to this service's connection.
-    private run<T>(statement: (knex: Knex) => T): T {
-        return statement(this.knex);
-    }
-
     // A missing post is a 404, not a post with no live links: no rows means no post, and the
     // remaining rows carrying a token are the live links.
     private async requirePost(postId: string): Promise<Post> {
-        const rows = await this.run(queries.liveLinksForPost(postId));
+        const rows = await queries.liveLinksForPost(postId)(this.knex);
         if (rows.length === 0) {
             throw new errors.NotFoundError({message: `Post ${postId} does not exist.`});
         }
         const giftLinks = rows
-            .filter((row): row is z.input<typeof GiftLinkRow> => row.token !== null)
-            .map(row => z.decode(giftLinkCodec, row));
+            .filter((row): row is z.input<typeof queries.GiftLinkRow> => row.token !== null)
+            .map(row => z.decode(queries.giftLinkCodec, row));
         return {id: postId, giftLinks};
     }
 
@@ -86,7 +81,7 @@ export class GiftLinksService {
             if (replacing) {
                 await trx('gift_links').where({token: replacing}).update({revoked_at: now, updated_at: now});
             }
-            await trx('gift_links').insert({...z.encode(giftLinkCodec, link), post_id: postId});
+            await trx('gift_links').insert({...z.encode(queries.giftLinkCodec, link), post_id: postId});
             await trx('post_gift_links')
                 .insert({post_id: postId, gift_link_token: link.token, created_at: now})
                 .onConflict('post_id')

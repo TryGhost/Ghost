@@ -1,6 +1,6 @@
 import {z} from 'zod';
-import {GiftLink} from '../../../../../services/gift-links/model';
-import type {Post} from '../../../../../services/gift-links/model';
+import {GiftLink} from '../../../../../services/gift-links/models';
+import type {Post} from '../../../../../services/gift-links/models';
 
 interface Frame {
     response?: unknown;

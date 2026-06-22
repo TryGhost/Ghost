@@ -1,38 +1,33 @@
 import {z} from 'zod';
 import type {Knex} from 'knex';
-import {GIFT_LINK_COLUMNS, GiftLinkRow} from './model';
+import {DbGiftLink} from './database';
+import {GiftLink} from './models';
 
-interface GiftLinkTableRow {
-    token: string;
-    post_id: string;
-    redeemed_count: number;
-    last_redeemed_at: Date | null;
-    revoked_at: Date | null;
-    created_at: Date;
-    updated_at: Date | null;
-}
-interface PostGiftLinkTableRow {
-    post_id: string;
-    gift_link_token: string;
-    created_at: Date;
-    updated_at: Date | null;
-}
-declare module 'knex/types/tables' {
-    interface Tables {
-        gift_links: Knex.CompositeTableType<
-            GiftLinkTableRow,
-            z.input<typeof GiftLinkRow> & {post_id: string},
-            Partial<GiftLinkTableRow>
-        >;
-        post_gift_links: Knex.CompositeTableType<
-            PostGiftLinkTableRow,
-            Pick<PostGiftLinkTableRow, 'post_id' | 'gift_link_token' | 'created_at'>,
-            Partial<PostGiftLinkTableRow>
-        >;
-    }
-}
+// The columns the read path selects and the codec decodes into a GiftLink.
+export const GiftLinkRow = DbGiftLink.pick({
+    token: true,
+    redeemed_count: true,
+    last_redeemed_at: true,
+    created_at: true
+});
 
-const giftLinkColumns = GIFT_LINK_COLUMNS.map(column => `gift_links.${column}`);
+// Maps a selected row to/from the domain GiftLink (snake_case to camelCase, token branding).
+export const giftLinkCodec = z.codec(GiftLinkRow, GiftLink, {
+    decode: row => ({
+        token: row.token,
+        redeemedCount: row.redeemed_count,
+        lastRedeemedAt: row.last_redeemed_at,
+        createdAt: row.created_at
+    }),
+    encode: link => ({
+        token: link.token,
+        redeemed_count: link.redeemedCount,
+        last_redeemed_at: link.lastRedeemedAt,
+        created_at: link.createdAt
+    })
+});
+
+const giftLinkColumns = Object.keys(GiftLinkRow.shape).map(column => `gift_links.${column}`);
 
 // Executor-agnostic statements for the read shapes (joins, filters, columns): each is
 // parameterised by domain args and takes the connection at execution, so the service binds

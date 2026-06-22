@@ -2,7 +2,7 @@ import {afterAll, afterEach, beforeAll, describe, it} from 'vitest';
 import assert from 'node:assert/strict';
 import errors from '@tryghost/errors';
 import {GiftLinksService} from '../../../core/server/services/gift-links/service';
-import type {GiftLink} from '../../../core/server/services/gift-links/model';
+import type {GiftLink} from '../../../core/server/services/gift-links/models';
 
 const testUtils = require('../../utils');
 const models = require('../../../core/server/models');
