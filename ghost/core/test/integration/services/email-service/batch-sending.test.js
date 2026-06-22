@@ -85,10 +85,7 @@ async function testEmailBatches(settings, email_recipient_filter, expectedBatche
     assert.equal(memberIds.length, _.uniq(memberIds).length);
 }
 
-// The batch sending tests have some sort of ordering issue that causes them to fail intermittently
-// We need to decide if they are worth keeping, or if we should rewrite them to be more reliable
-// eslint-disable-next-line ghost/mocha/no-skipped-tests
-describe.skip('Batch sending tests', function () {
+describe('Batch sending tests', function () {
     let linkRedirectService, linkRedirectRepository, linkTrackingService, linkClickRepository;
     let ghostServer;
 
@@ -713,12 +710,12 @@ describe.skip('Batch sending tests', function () {
             assert.match(html, /Hey there, Hey ,/);
 
             // The unsubscribe link is replaced
-            assert.match(html, /<a href="http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
+            assert.match(html, /<a href="http:\/\/127.0.0.1:\d+\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
 
             // Same for plaintext:
             assert.match(plaintext, /Hello {first_name},/);
             assert.match(plaintext, /Hey there, Hey ,/);
-            assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
+            assert.match(plaintext, /\[http:\/\/127.0.0.1:\d+\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
 
             await matchEmailSnapshot();
         });
@@ -747,12 +744,12 @@ describe.skip('Batch sending tests', function () {
             assert.match(html, /Hey Simon, Hey Simon,/);
 
             // The unsubscribe link is replaced
-            assert.match(html, /<a href="http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
+            assert.match(html, /<a href="http:\/\/127.0.0.1:\d+\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
 
             // Same for plaintext:
             assert.match(plaintext, /Hello {first_name},/);
             assert.match(plaintext, /Hey Simon, Hey Simon,/);
-            assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
+            assert.match(plaintext, /\[http:\/\/127.0.0.1:\d+\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
 
             await matchEmailSnapshot();
         });
