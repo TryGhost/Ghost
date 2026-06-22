@@ -84,11 +84,25 @@ export interface EmailContentModalProps {
     initialLexical: string;
     initialMode?: EmailModalMode;
     initialSubject: string;
+    isDiscardNavigationBlocked?: boolean;
     onClose: () => void;
+    onDirtyChange?: (isDirty: boolean) => void;
+    onDiscardBlockedNavigation?: () => void;
+    onKeepEditingAfterBlockedNavigation?: () => void;
     onSave: (data: {subject: string; lexical: string}) => void;
 }
 
-const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edit', initialSubject, initialLexical, onClose, onSave}) => {
+const EmailContentModal: React.FC<EmailContentModalProps> = ({
+    initialMode = 'edit',
+    initialSubject,
+    initialLexical,
+    isDiscardNavigationBlocked = false,
+    onClose,
+    onDirtyChange,
+    onDiscardBlockedNavigation,
+    onKeepEditingAfterBlockedNavigation,
+    onSave
+}) => {
     const {mutateAsync: previewWelcomeEmail} = usePreviewWelcomeEmail();
     const {data: automatedEmailsData} = useBrowseAutomatedEmails();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
@@ -99,6 +113,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
     const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(initialLexical || '');
     const hasEditorBeenFocused = useRef(false);
+    const allowDirtyCloseRef = useRef(false);
     const handleError = useHandleError();
     const automatedEmails = automatedEmailsData?.automated_emails || [];
     const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useEmailSenderDetails(automatedEmails);
@@ -147,6 +162,13 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
     }, [enterPreview, formState, initialMode]);
 
     const isDirty = saveState === 'unsaved';
+
+    useEffect(() => {
+        onDirtyChange?.(isDirty && !allowDirtyCloseRef.current);
+        return () => {
+            onDirtyChange?.(false);
+        };
+    }, [isDirty, onDirtyChange]);
 
     // Single close funnel: Esc, overlay click, and the Close button all route here.
     const attemptClose = useCallback(() => {
@@ -359,7 +381,20 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
                     </EmailPreviewModalContent>
                 </DialogContent>
             </Dialog>
-            <AlertDialog open={confirmDiscardOpen} onOpenChange={setConfirmDiscardOpen}>
+            <AlertDialog
+                open={confirmDiscardOpen || isDiscardNavigationBlocked}
+                onOpenChange={(open) => {
+                    if (open) {
+                        setConfirmDiscardOpen(true);
+                        return;
+                    }
+
+                    setConfirmDiscardOpen(false);
+                    if (isDiscardNavigationBlocked) {
+                        onKeepEditingAfterBlockedNavigation?.();
+                    }
+                }}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Discard changes?</AlertDialogTitle>
@@ -371,6 +406,13 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialMode = 'edi
                             variant='destructive'
                             onClick={() => {
                                 setConfirmDiscardOpen(false);
+                                if (isDiscardNavigationBlocked) {
+                                    onDiscardBlockedNavigation?.();
+                                    return;
+                                }
+
+                                allowDirtyCloseRef.current = true;
+                                onDirtyChange?.(false);
                                 onClose();
                             }}
                         >
