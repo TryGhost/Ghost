@@ -5,6 +5,8 @@ import {expectExternalNavigate, globalDataRequests, limitRequests, mockApi, resp
 import {readFileSync} from 'fs';
 import type {Page} from '@playwright/test';
 
+const __dirname = import.meta.dirname;
+
 const themeEditorZip = readFileSync(path.join(__dirname, '../../utils/responses/theme.zip'));
 
 const customThemesLimitConfig = (allowlist: string[], error: string) => ({

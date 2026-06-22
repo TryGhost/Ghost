@@ -1,7 +1,7 @@
-import myFollowers from '../utils/responses/activitypub/my-profile-followers.json';
-import myFollowing from '../utils/responses/activitypub/my-profile-following.json';
-import myLikedPosts from '../utils/responses/activitypub/my-profile-liked.json';
-import myPosts from '../utils/responses/activitypub/my-profile-posts.json';
+import myFollowers from '../utils/responses/activitypub/my-profile-followers.json' with {type: 'json'};
+import myFollowing from '../utils/responses/activitypub/my-profile-following.json' with {type: 'json'};
+import myLikedPosts from '../utils/responses/activitypub/my-profile-liked.json' with {type: 'json'};
+import myPosts from '../utils/responses/activitypub/my-profile-posts.json' with {type: 'json'};
 import {expect, test} from '@playwright/test';
 import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 import {mockInitialApiRequests} from '../utils/initial-api-requests';
