@@ -1,9 +1,7 @@
+import {type Deferred, deferred} from '../utils/deferred';
+import {getFeaturebaseToken} from '../api/featurebase';
+import {useBrowseConfig} from '../api/config';
 import {useCallback, useEffect, useRef, useState} from 'react';
-import {getFeaturebaseToken} from '@tryghost/admin-x-framework';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {useFeatureFlag} from '@/hooks/use-feature-flag';
-import {useUserPreferences} from '@/hooks/user-preferences';
-import {deferred, type Deferred} from '@/utils/deferred';
 
 type FeaturebaseCallback = (err: unknown, data?: unknown) => void;
 type FeaturebaseFunction = (action: string, options: Record<string, unknown>, callback?: FeaturebaseCallback) => void;
@@ -22,7 +20,12 @@ function loadFeaturebaseSDK(): Promise<void> {
         featurebaseSDKPromise = new Promise((resolve, reject) => {
             const existingScript = document.querySelector(`script[src="${SDK_URL}"]`);
             if (existingScript) {
-                resolve();
+                if (window.Featurebase) {
+                    resolve();
+                    return;
+                }
+                existingScript.addEventListener('load', () => resolve(), {once: true});
+                existingScript.addEventListener('error', reject, {once: true});
                 return;
             }
 
@@ -31,8 +34,9 @@ function loadFeaturebaseSDK(): Promise<void> {
             script.onload = () => resolve();
             script.onerror = (event) => {
                 script.remove();
-                featurebaseSDKPromise = null; // Allow retry on next interaction
+                featurebaseSDKPromise = null;
                 const error = new Error(`[Featurebase] Failed to load SDK from ${SDK_URL}`, {cause: event});
+                // eslint-disable-next-line no-console
                 console.error(error);
                 reject(error);
             };
@@ -43,36 +47,47 @@ function loadFeaturebaseSDK(): Promise<void> {
 }
 
 interface Featurebase {
+    isAvailable: boolean;
     openFeedbackWidget: (options?: {board?: string}) => void;
     preloadFeedbackWidget: () => void;
 }
 
+const getTheme = (): 'light' | 'dark' => {
+    if (typeof document === 'undefined') {
+        return 'light';
+    }
+    return document.documentElement.classList.contains('dark') ? 'dark' : 'light';
+};
+
 /**
- * Hook for lazy-loading and interacting with the Featurebase feedback widget.
+ * Lazy-loads the Featurebase SDK and opens the feedback widget.
  *
- * The SDK and authentication token are NOT fetched on mount. Instead, loading
- * is deferred until user interaction (hover/focus/click on the Feedback button).
- * This improves initial page load performance.
+ * `isAvailable` reflects whether Featurebase is enabled for the current site.
+ * The server only exposes `config.featurebase` when the `featurebaseFeedback`
+ * lab is on AND the org config is set, so checking it here is sufficient.
+ * Callers still need to gate by user role (e.g. exclude contributors) if
+ * relevant to their surface.
+ *
+ * The SDK and JWT are NOT fetched on mount — loading is deferred until the
+ * first call to `openFeedbackWidget` or `preloadFeedbackWidget`, so initial
+ * page load isn't slowed down.
  */
 export function useFeaturebase(): Featurebase {
     const {data: config} = useBrowseConfig();
-    const {data: preferences} = useUserPreferences();
-    const featureFlagEnabled = useFeatureFlag('featurebaseFeedback');
     const [shouldLoad, setShouldLoad] = useState(false);
 
     const {organization, enabled} = config?.config.featurebase ?? {};
-    const featurebaseEnabled = !!(featureFlagEnabled && enabled);
-    const theme = preferences?.nightShift ? 'dark' : 'light';
+    const isAvailable = !!enabled;
 
-    // Token is only fetched once shouldLoad becomes true (on user interaction)
     const {data: tokenData} = getFeaturebaseToken({
-        enabled: featurebaseEnabled && shouldLoad
+        enabled: isAvailable && shouldLoad
     });
     const token = tokenData?.featurebase?.token;
 
     useEffect(() => {
         if (shouldLoad) {
             loadFeaturebaseSDK().catch((err) => {
+                // eslint-disable-next-line no-console
                 console.error('[Featurebase] Failed to load SDK:', err);
             });
         }
@@ -86,14 +101,13 @@ export function useFeaturebase(): Featurebase {
         void featurebaseSDKPromise?.then(() => {
             window.Featurebase?.('initialize_feedback_widget', {
                 organization,
-                theme,
+                theme: getTheme(),
                 featurebaseJwt: token
             }, (err) => {
                 if (err) {
+                    // eslint-disable-next-line no-console
                     console.error('[Featurebase] Failed to initialize widget:', err);
                     deferredInitRef.current.reject(err);
-
-                    // reset so we can retry on next interaction
                     deferredInitRef.current = deferred();
                     setShouldLoad(false);
                 } else {
@@ -101,27 +115,20 @@ export function useFeaturebase(): Featurebase {
                 }
             });
         });
-    }, [organization, theme, token, shouldLoad]);
+    }, [organization, token, shouldLoad]);
 
-    /**
-     * Called on hover/focus to start loading SDK + fetching token in advance.
-     * This makes the widget open faster when the user actually clicks.
-     */
     const preloadFeedbackWidget = useCallback(() => {
-        if (!featurebaseEnabled) {
+        if (!isAvailable) {
             return;
         }
-        // Trigger SDK loading and initialization via effects above
         setShouldLoad(true);
-    }, [featurebaseEnabled]);
+    }, [isAvailable]);
 
     const openFeedbackWidget = useCallback((options?: {board?: string}) => {
-        if (!featurebaseEnabled) {
+        if (!isAvailable) {
             return;
         }
-
         setShouldLoad(true);
-
         void deferredInitRef.current.promise.then(() => {
             window.postMessage({
                 target: 'FeaturebaseWidget',
@@ -131,7 +138,7 @@ export function useFeaturebase(): Featurebase {
                 }
             }, '*');
         });
-    }, [featurebaseEnabled]);
+    }, [isAvailable]);
 
-    return {openFeedbackWidget, preloadFeedbackWidget};
+    return {isAvailable, openFeedbackWidget, preloadFeedbackWidget};
 }
