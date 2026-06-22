@@ -12,7 +12,7 @@ describe('Settings Model', function () {
     // assert populateDefaults() starting from an empty settings table (setup()
     // itself populates the 112 defaults, hence the teardown). Under the old
     // serial model this free-rode on an earlier file's init + truncated state;
-    // per-file isolation (PLA-152) means each file does its own.
+    // per-file isolation means each file does its own.
     beforeAll(testUtils.setup());
     beforeEach(testUtils.teardownDb);
 

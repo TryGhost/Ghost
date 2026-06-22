@@ -17,8 +17,7 @@ const {deriveMySQLTemplateDatabase, deriveSQLiteTemplateFilename} = require('./d
 // insert every default fixture). On MySQL each step is a network round-trip; on
 // sqlite each is a file write. The DB-suite runner's `isolate:true` projects run
 // every test FILE in a fresh fork, so without help each file pays that full init
-// once — the bulk of the acceptance-test runtime regression (PLA-165 mysql,
-// PLA-172 sqlite).
+// once — the bulk of the acceptance-test runtime regression.
 //
 // Instead we build ONE migrated + seeded "template" database for the whole run
 // (in the vitest globalSetup, before any fork spawns) and have each fork RESTORE
@@ -30,9 +29,9 @@ const {deriveMySQLTemplateDatabase, deriveSQLiteTemplateFilename} = require('./d
 // replaying the template's schema from its sqlite_master, and bulk-copying every
 // table with `INSERT ... SELECT`. We deliberately do NOT copy the template .db
 // file over a fork's open connection — that approach destabilized sqlite read
-// order for order-dependent tests and was reverted (PLA-165); building the fork
+// order for order-dependent tests and was reverted; building the fork
 // DB from the template's CONTENTS via SQL keeps physical row order identical to a
-// fresh init (PLA-172).
+// fresh init.
 //
 // Readiness is published from globalSetup to the forks via an env var (forks
 // inherit the main process env at spawn time). When it is unset — e.g.
@@ -42,8 +41,8 @@ const {deriveMySQLTemplateDatabase, deriveSQLiteTemplateFilename} = require('./d
 // SCOPE: only the db.reset() provisioning path (agentProvider-based e2e / e2e-api
 // / e2e-* suites) uses this. The getFixtureOps `testUtils.setup()` path
 // (integration/legacy) opens Ghost's bookshelf connection BEFORE provisioning, so
-// that path still does a full init. See the PLA-165 / PLA-171 notes for the
-// deferred follow-up.
+// that path still does a full init — those suites run isolate:true (a fresh
+// process per file), so the per-file boot, not provisioning, is their cost.
 
 const TEMPLATE_ENV_VAR = 'GHOST_TEST_DB_TEMPLATE_READY';
 
@@ -191,8 +190,8 @@ const buildTemplate = async (base) => {
  * template: replay every sqlite_master object's DDL in creation (rowid) order —
  * tables, then their indexes, triggers and views, which always follow their table
  * in that order — then bulk-copy each table's rows, foreign keys off during the
- * load. This keeps physical row order identical to a fresh init (PLA-172) — we do
- * NOT copy the template file over the connection, the approach reverted in PLA-165.
+ * load. This keeps physical row order identical to a fresh init — we do
+ * NOT copy the template file over the connection (the previously-reverted approach).
  */
 const restoreFromTemplateSQLite = async () => {
     const templateFile = getForkTemplateFilename();
@@ -227,7 +226,7 @@ const restoreFromTemplateSQLite = async () => {
         // reference one not yet populated. Replaying the template's exact CREATE
         // TABLE DDL (rather than a column-only copy) preserves its foreign keys,
         // making the restore byte-faithful to a fresh init — the same faithfulness
-        // the mysql path needs (PLA-165/PLA-172).
+        // the mysql path needs.
         await run('PRAGMA foreign_keys = OFF');
         try {
             for (const object of objects) {
@@ -304,7 +303,7 @@ const restoreFromTemplate = async () => {
     // surfacing as extra rows in attribution / activity-feed snapshots. The DDL
     // string is unqualified, so replaying it on the fork's connection creates the
     // table in the fork DB; its FK REFERENCES resolve to the fork's own copies.
-    // This makes the restore byte-faithful to a fresh init (PLA-165).
+    // This makes the restore byte-faithful to a fresh init.
     await db.knex.raw('SET FOREIGN_KEY_CHECKS=0;');
     try {
         await sequence(tables.map(table => async () => {
