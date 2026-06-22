@@ -377,6 +377,7 @@ const AutomationEditor: React.FC = () => {
 
         if (hasUnsavedChanges && currentLocation.pathname !== nextLocation.pathname) {
             navigationBlockerReasonRef.current = 'automation';
+            isBlockedEmailNavigationLeavingEditorRef.current = false;
             return true;
         }
 
