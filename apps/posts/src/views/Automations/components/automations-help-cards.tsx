@@ -5,7 +5,7 @@ import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
 import {useFeaturebase} from '@tryghost/admin-x-framework';
 
 const FORUM_URL = 'https://forum.ghost.org';
-const HELP_URL = 'https://ghost.org/help';
+const HELP_URL = 'https://ghost.org/help/automations-beta';
 
 interface HelpCardLayoutProps {
     title: string;
@@ -65,8 +65,8 @@ const FeedbackIconTile: React.FC = () => (
     </div>
 );
 
-const FEEDBACK_TITLE = 'Feedback';
-const FEEDBACK_DESCRIPTION = 'Tell us what’s working and what’s missing — your input shapes how automations evolve.';
+const FEEDBACK_TITLE = 'Share your feedback';
+const FEEDBACK_DESCRIPTION = 'Tell us what’s working and what’s missing — your input shapes what we build next.';
 
 const AutomationsHelpCards: React.FC = () => {
     const {data: currentUser} = useCurrentUser();
@@ -77,7 +77,7 @@ const AutomationsHelpCards: React.FC = () => {
     return (
         <div className='mt-auto grid grid-cols-1 gap-6 pt-10 lg:grid-cols-2'>
             <HelpLinkCard
-                description='Learn how automations save you time by handling repetitive tasks across your publication.'
+                description='Learn how to set up automations, customize your emails, and get the most out of the beta.'
                 title='Automations in Ghost'
                 url={HELP_URL}
             >
