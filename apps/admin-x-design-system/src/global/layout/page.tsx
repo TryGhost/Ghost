@@ -64,7 +64,7 @@ interface PageProps {
 
 /**
  * The page component is the main container in Ghost Admin. It consists of a
- * page level toolbar (`pageToolbar` — unused ATM, it's for page level views and
+ * page level toolbar (`pageToolbar` — unused ATM, it's for page level views and
  * navigation in the future), and the main content area.
  *
  * ### Examples
