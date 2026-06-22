@@ -24,7 +24,7 @@
     "test:unit": "pnpm test",
     "prepare": "npm run build",
     "preship": "pnpm test",
-    "ship": "STATUS=$(git status --porcelain); echo $STATUS; if [ -z \"$STATUS\" ]; then pnpm publish && git push --follow-tags; fi"
+    "ship": "node scripts/ship.js"
   },
   "license": "MIT",
   "main": "./dist/BaseStorage.js",
