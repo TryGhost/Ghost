@@ -18,6 +18,7 @@ Object {
       "automations": true,
       "commentsPinning": true,
       "commentsThreads": true,
+      "csvContentImporter": true,
       "customFonts": true,
       "dangerZoneResetAuth": true,
       "editorExcerpt": true,
