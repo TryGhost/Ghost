@@ -15,7 +15,6 @@ export const DbGiftLink = z.object({
     post_id: z.string(),
     redeemed_count: z.number().int().nonnegative(),
     last_redeemed_at: DbDate.nullable(),
-    revoked_at: DbDate.nullable(),
     created_at: DbDate,
     updated_at: DbDate.nullable()
 });
@@ -33,7 +32,7 @@ declare module 'knex/types/tables' {
     interface Tables {
         gift_links: Knex.CompositeTableType<
             z.infer<typeof DbGiftLink>,
-            Omit<z.input<typeof DbGiftLink>, 'revoked_at' | 'updated_at'>,
+            Omit<z.input<typeof DbGiftLink>, 'updated_at'>,
             Partial<z.infer<typeof DbGiftLink>>
         >;
         post_gift_links: Knex.CompositeTableType<
