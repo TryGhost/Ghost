@@ -90,11 +90,7 @@ const controller = {
         },
         permissions: true,
         query(frame) {
-            const tagData = frame.data.tags[0];
-            if (tagData.slug === 'new' || (!tagData.slug && tagData.name && tagData.name.toLowerCase() === 'new')) {
-                tagData.slug = 'new-tag';
-            }
-            return models.Tag.add(tagData, frame.options);
+            return models.Tag.add(frame.data.tags[0], frame.options);
         }
     },
 
@@ -118,11 +114,7 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            const tagData = frame.data.tags[0];
-            if (tagData.slug === 'new' || (!tagData.slug && tagData.name && tagData.name.toLowerCase() === 'new')) {
-                tagData.slug = 'new-tag';
-            }
-            const model = await models.Tag.edit(tagData, frame.options);
+            const model = await models.Tag.edit(frame.data.tags[0], frame.options);
             if (!model) {
                 throw new errors.NotFoundError({
                     message: tpl(messages.tagNotFound)
