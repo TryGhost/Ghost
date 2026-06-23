@@ -46,6 +46,6 @@
     "mysql2": "3.22.5",
     "stripe": "8.222.0",
     "typescript": "catalog:",
-    "typescript-eslint": "8.58.0"
+    "typescript-eslint": "catalog:"
   }
 }

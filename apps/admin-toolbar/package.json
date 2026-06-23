@@ -32,8 +32,8 @@
     "@eslint/js": "catalog:eslint9",
     "concurrently": "catalog:",
     "eslint": "catalog:eslint9",
-    "eslint-plugin-ghost": "3.5.0",
-    "globals": "17.6.0",
+    "eslint-plugin-ghost": "catalog:",
+    "globals": "catalog:",
     "jsdom": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"

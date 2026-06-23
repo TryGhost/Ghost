@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/activitypub",
   "type": "module",
-  "version": "3.1.44",
+  "version": "3.1.45",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -47,15 +47,15 @@
     "@typescript-eslint/eslint-plugin": "catalog:",
     "@typescript-eslint/parser": "catalog:",
     "eslint": "catalog:eslint9",
-    "eslint-plugin-ghost": "3.5.0",
-    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-ghost": "catalog:",
+    "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:",
-    "globals": "17.6.0",
+    "globals": "catalog:",
     "jest": "29.7.0",
     "jsdom": "catalog:",
-    "typescript-eslint": "8.58.0",
+    "typescript-eslint": "catalog:",
     "tailwindcss": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
