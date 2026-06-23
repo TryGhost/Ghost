@@ -3,7 +3,10 @@ import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
 import reactPlugin from 'eslint-plugin-react';
 
-import {correctnessRules} from '../../eslint.shared.mjs';
+import {
+    jsReactAppRules,
+    strictLinterOptions
+} from '../../eslint.shared.mjs';
 
 const baseConfig = {
     ...js.configs.recommended,
@@ -18,14 +21,17 @@ const baseConfig = {
     rules: {
         ...js.configs.recommended.rules,
         ...reactPlugin.configs.flat.recommended.rules,
-        ...correctnessRules,
-        'react/prop-types': 'off'
+        ...jsReactAppRules
     }
 };
 
 export default [
     {
         ignores: ['umd/**/*', 'dist/**/*']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         ...baseConfig,

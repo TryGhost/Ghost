@@ -4,7 +4,7 @@ import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
 import tseslint from 'typescript-eslint';
 
-import {localFilenamesPlugin} from '../../eslint.shared.mjs';
+import {localFilenamesPlugin, strictLinterOptions} from '../../eslint.shared.mjs';
 
 const __dirname = import.meta.dirname;
 
@@ -62,6 +62,10 @@ export default tseslint.config(
             '!core/frontend/src/member-attribution/**/*.js'
         ]
     },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
+    },
     // ============================================================
     // Base: server / shared / frontend / root JS files
     // ============================================================
@@ -116,7 +120,7 @@ export default tseslint.config(
             // legacy ghost/ts config enforced. Match the previous posture
             // until a separate cleanup pass tightens them.
             '@typescript-eslint/no-inferrable-types': 'off',
-            '@typescript-eslint/no-explicit-any': 'warn',
+            '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/no-require-imports': 'off',
             '@typescript-eslint/no-unused-expressions': 'off',
             '@typescript-eslint/no-unsafe-function-type': 'off',
@@ -132,7 +136,7 @@ export default tseslint.config(
     {
         files: ['core/**/*.ts', '*.ts'],
         rules: {
-            '@typescript-eslint/no-explicit-any': 'warn',
+            '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/no-require-imports': 'off',
             '@typescript-eslint/no-unused-expressions': 'off',
             '@typescript-eslint/no-unsafe-function-type': 'off',
@@ -392,7 +396,7 @@ export default tseslint.config(
         files: ['**/*.ts'],
         extends: [...tseslint.configs.recommended],
         rules: {
-            '@typescript-eslint/no-explicit-any': 'warn',
+            '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/no-require-imports': 'off',
             '@typescript-eslint/no-unused-expressions': 'off',
             '@typescript-eslint/no-unsafe-function-type': 'off',
@@ -409,7 +413,7 @@ export default tseslint.config(
         extends: [...tseslint.configs.recommended],
         rules: {
             '@typescript-eslint/no-unused-vars': 'off',
-            '@typescript-eslint/no-explicit-any': 'warn',
+            '@typescript-eslint/no-explicit-any': 'error',
             '@typescript-eslint/no-require-imports': 'off',
             '@typescript-eslint/no-unused-expressions': 'off',
             '@typescript-eslint/no-unsafe-function-type': 'off',

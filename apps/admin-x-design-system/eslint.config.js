@@ -8,12 +8,11 @@ import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
 import tseslint from 'typescript-eslint';
 
 import {
-    correctnessRules,
     mochaRulesOff,
-    reactDefaultsOff,
-    reactStrictRules,
+    strictLinterOptions,
     tailwindRulesV4,
-    tsUnusedVarsRule
+    tsReactAppRules,
+    viteTsReactExtras
 } from '../../eslint.shared.mjs';
 
 const tailwindCssConfig = `${import.meta.dirname}/../admin/src/index.css`;
@@ -23,6 +22,10 @@ const reactFlat = reactPlugin.configs.flat.recommended;
 export default tseslint.config(
     {
         ignores: ['dist/**/*', 'storybook-static/**/*']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['src/**/*.{js,ts,cjs,tsx}'],
@@ -51,19 +54,11 @@ export default tseslint.config(
             ...js.configs.recommended.rules,
             ...reactFlat.rules,
             ...reactHooksPlugin.configs.recommended.rules,
-            ...correctnessRules,
-            ...tsUnusedVarsRule,
-            ...reactDefaultsOff,
-            ...reactStrictRules,
-            ...tailwindRulesV4,
-            // TS handles these — disable the base ESLint variants
-            'no-undef': 'off',
-            'no-redeclare': 'off',
-            'no-unexpected-multiline': 'off',
-            '@typescript-eslint/no-inferrable-types': 'off'
+            ...tsReactAppRules,
+            ...viteTsReactExtras,
+            ...tailwindRulesV4
         }
     },
-    // Storybook story files — render() functions intentionally use hooks
     {
         files: ['**/*.stories.{ts,tsx,js,jsx}'],
         rules: {
@@ -87,10 +82,8 @@ export default tseslint.config(
             ghost: ghostPlugin
         },
         rules: {
-            ...correctnessRules,
-            ...tsUnusedVarsRule,
-            ...mochaRulesOff(ghostPlugin),
-            '@typescript-eslint/no-inferrable-types': 'off'
+            ...tsReactAppRules,
+            ...mochaRulesOff(ghostPlugin)
         }
     }
 );

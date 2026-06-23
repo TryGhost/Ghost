@@ -109,6 +109,96 @@ export function tailwindRulesWithConfig(config) {
     };
 }
 
+// === Profile presets ===
+//
+// Composite rule sets a workspace can spread wholesale. Every rule resolves
+// to 'error' or 'off' — no 'warn' anywhere. Rules that would surface real
+// violations were left 'off' (drop) rather than 'error' (fix). Decisions are
+// data-driven: a rule is 'error' only if it has 0 incidences across the
+// workspaces in its profile.
+
+// Profile A: TypeScript React app — universal subset (works in any TS React
+// workspace regardless of which React-adjacent plugins it registers).
+// Compose with `viteTsReactExtras` if the workspace also loads
+// eslint-plugin-react-hooks + eslint-plugin-react-refresh.
+export const tsReactAppRules = {
+    ...correctnessRules,
+    ...tsUnusedVarsRule,
+    ...reactDefaultsOff,
+    'react/jsx-sort-props': ['error', {
+        reservedFirst: true,
+        callbacksLast: true,
+        shorthandLast: true,
+        locale: 'en'
+    }],
+    'react/button-has-type': 'error',
+    'react/no-array-index-key': 'error',
+    'react/jsx-key': 'off',
+    'no-var': 'error',
+    // TS handles these at compile time.
+    'no-undef': 'off',
+    'no-redeclare': 'off',
+    'no-unexpected-multiline': 'off',
+    '@typescript-eslint/no-inferrable-types': 'off',
+    // Enforced — @typescript-eslint/no-explicit-any catches real type-safety
+    // regressions. Workspaces with legacy violations override to 'off'
+    // explicitly (admin-x-settings: 2 cases, comments-ui: 41 cases).
+    '@typescript-eslint/no-explicit-any': 'error',
+    // Dropped — each surfaces 100+ existing violations across consumers.
+    // Workspaces wanting these enforced should override per-rule to 'error'.
+    '@typescript-eslint/no-non-null-assertion': 'off',
+    '@typescript-eslint/no-empty-function': 'off'
+};
+
+// Extras for Vite-based TS React apps with eslint-plugin-react-hooks +
+// eslint-plugin-react-refresh registered as plugins. Both rules are dropped
+// to 'off' (each surfaces existing violations across consumers).
+export const viteTsReactExtras = {
+    'react-hooks/exhaustive-deps': 'off',
+    'react-refresh/only-export-components': 'off'
+};
+
+// Profile B: vanilla JS React app (portal, sodo-search, announcement-bar).
+export const jsReactAppRules = {
+    ...correctnessRules,
+    ...jsUnusedVarsRule,
+    ...reactDefaultsOff,
+    'no-var': 'error'
+};
+
+// Profile D: backend Node library (ghost/i18n, ghost/parse-email-address;
+// ghost/core spreads this in its base block too).
+export const nodeLibRules = {
+    ...correctnessRules,
+    'no-var': 'error',
+    'one-var': ['error', 'never'],
+    'ghost/ghost-custom/no-native-error': 'error',
+    'ghost/ghost-custom/ghost-error-usage': 'error',
+    'ghost/ghost-custom/ghost-tpl-usage': 'error'
+};
+
+// Restricted-require rule blocking ghost-ignition imports — used by
+// ghost/i18n. Kept as its own export since it's not universal.
+export const noGhostIgnitionRequireRule = {
+    'ghost/node/no-restricted-require': ['error', [
+        {
+            name: 'ghost-ignition',
+            message: '@deprecated, please use @tryghost/errors, @tryghost/logging or @tryghost/debug. Config and Server are coming soon!'
+        }
+    ]]
+};
+
+// Strict linter options. Spread into a top-level config block (with `files`
+// covering everything) so it applies workspace-wide. Sets unused-disable to
+// 'off' — Ghost's stance is opinionated (error or off, no warns). The
+// codebase has accumulated inline directives that flipping to 'error' would
+// surface in bulk; promoting this to 'error' is a separate cleanup PR.
+export const strictLinterOptions = {
+    linterOptions: {
+        reportUnusedDisableDirectives: 'off'
+    }
+};
+
 // === Helpers ===
 
 // Build an object that disables every `ghost/mocha/*` rule shipped by

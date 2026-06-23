@@ -7,11 +7,10 @@ import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
 import tseslint from 'typescript-eslint';
 
 import {
-    correctnessRules,
-    reactDefaultsOff,
     sortImportsRule,
+    strictLinterOptions,
     tailwindRulesWithConfig,
-    tsUnusedVarsRule
+    tsReactAppRules
 } from '../../eslint.shared.mjs';
 
 const tailwindConfig = `${import.meta.dirname}/tailwind.config.js`;
@@ -22,6 +21,10 @@ const i18nextFlat = i18nextPlugin.configs['flat/recommended'];
 export default tseslint.config(
     {
         ignores: ['umd/**/*', 'dist/**/*']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['src/**/*.{js,jsx,ts,tsx}'],
@@ -48,22 +51,11 @@ export default tseslint.config(
             ...js.configs.recommended.rules,
             ...reactFlat.rules,
             ...i18nextFlat.rules,
-            ...correctnessRules,
-            ...tsUnusedVarsRule,
+            ...tsReactAppRules,
             ...sortImportsRule,
-            ...reactDefaultsOff,
-            'react/jsx-sort-props': ['error', {
-                reservedFirst: true,
-                callbacksLast: true,
-                shorthandLast: true,
-                locale: 'en'
-            }],
-            'react/button-has-type': 'error',
-            'react/no-array-index-key': 'error',
             ...tailwindRulesWithConfig(tailwindConfig),
-            '@typescript-eslint/no-inferrable-types': 'off',
-            '@typescript-eslint/no-explicit-any': 'warn',
-            'no-undef': 'off'
+            // 41 legacy violations not yet cleaned up. Tracked for follow-up.
+            '@typescript-eslint/no-explicit-any': 'off'
         }
     }
 );

@@ -5,7 +5,7 @@ import ghostPlugin from 'eslint-plugin-ghost';
 import emberPlugin from 'eslint-plugin-ember';
 import reactPlugin from 'eslint-plugin-react';
 
-import {localFilenamesPlugin} from '../../eslint.shared.mjs';
+import {localFilenamesPlugin, strictLinterOptions} from '../../eslint.shared.mjs';
 
 const ghostBaseRules = {
     curly: 'error',
@@ -120,6 +120,10 @@ export default [
             'config/**',
             'node_modules/**'
         ]
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['**/*.js'],

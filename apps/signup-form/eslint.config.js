@@ -6,11 +6,10 @@ import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
 import tseslint from 'typescript-eslint';
 
 import {
-    correctnessRules,
-    reactDefaultsOff,
     sortImportsRule,
+    strictLinterOptions,
     tailwindRulesWithConfig,
-    tsUnusedVarsRule
+    tsReactAppRules
 } from '../../eslint.shared.mjs';
 
 const tailwindConfig = `${import.meta.dirname}/tailwind.config.cjs`;
@@ -20,6 +19,10 @@ const reactFlat = reactPlugin.configs.flat.recommended;
 export default tseslint.config(
     {
         ignores: ['umd/**/*', 'dist/**/*', 'storybook-static/**/*']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['src/**/*.{js,jsx,ts,tsx,cjs}', 'test/**/*.{js,jsx,ts,tsx,cjs}'],
@@ -44,20 +47,9 @@ export default tseslint.config(
         rules: {
             ...js.configs.recommended.rules,
             ...reactFlat.rules,
-            ...correctnessRules,
-            ...tsUnusedVarsRule,
+            ...tsReactAppRules,
             ...sortImportsRule,
-            ...reactDefaultsOff,
-            'react/jsx-sort-props': ['error', {
-                reservedFirst: true,
-                callbacksLast: true,
-                shorthandLast: true,
-                locale: 'en'
-            }],
-            'react/button-has-type': 'error',
-            'react/no-array-index-key': 'error',
-            ...tailwindRulesWithConfig(tailwindConfig),
-            '@typescript-eslint/no-inferrable-types': 'off'
+            ...tailwindRulesWithConfig(tailwindConfig)
         }
     }
 );

@@ -4,8 +4,9 @@ import ghostPlugin from 'eslint-plugin-ghost';
 import reactPlugin from 'eslint-plugin-react';
 
 import {
-    correctnessRules,
-    sortImportsRule
+    jsReactAppRules,
+    sortImportsRule,
+    strictLinterOptions
 } from '../../eslint.shared.mjs';
 
 const baseConfig = {
@@ -21,15 +22,18 @@ const baseConfig = {
     rules: {
         ...js.configs.recommended.rules,
         ...reactPlugin.configs.flat.recommended.rules,
-        ...correctnessRules,
-        ...sortImportsRule,
-        'react/prop-types': 'off'
+        ...jsReactAppRules,
+        ...sortImportsRule
     }
 };
 
 export default [
     {
         ignores: ['umd/**/*', 'dist/**/*']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         ...baseConfig,

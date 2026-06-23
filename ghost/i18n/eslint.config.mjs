@@ -3,26 +3,18 @@ import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
 
 import {
-    correctnessRules,
     jsUnusedVarsRule,
     localFilenamesPlugin,
-    mochaRulesOff
+    mochaRulesOff,
+    noGhostIgnitionRequireRule,
+    nodeLibRules,
+    strictLinterOptions
 } from '../../eslint.shared.mjs';
 
+// ghost/i18n uses the local-filenames variant of the rule; turn off the
+// eslint-plugin-ghost one that nodeLibRules enables via correctnessRules.
 const ghostI18nExtras = {
-    'no-var': 'warn',
-    'one-var': ['warn', 'never'],
-    'ghost/node/no-restricted-require': ['warn', [
-        {
-            name: 'ghost-ignition',
-            message: '@deprecated, please use @tryghost/errors, @tryghost/logging or @tryghost/debug. Config and Server are coming soon!'
-        }
-    ]],
-    'ghost/ghost-custom/no-native-error': 'error',
-    'ghost/ghost-custom/ghost-error-usage': 'error',
-    'ghost/ghost-custom/ghost-tpl-usage': 'error',
-    // This workspace uses the local-filenames variant of the rule; turn off
-    // the eslint-plugin-ghost one that correctnessRules enables.
+    ...noGhostIgnitionRequireRule,
     'ghost/filenames/match-regex': 'off',
     'local-filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
 };
@@ -30,6 +22,10 @@ const ghostI18nExtras = {
 export default [
     {
         ignores: ['build/**/*']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['*.js', 'lib/**/*.js'],
@@ -45,7 +41,7 @@ export default [
         },
         rules: {
             ...js.configs.recommended.rules,
-            ...correctnessRules,
+            ...nodeLibRules,
             ...jsUnusedVarsRule,
             ...ghostI18nExtras
         }
@@ -78,7 +74,7 @@ export default [
         },
         rules: {
             ...js.configs.recommended.rules,
-            ...correctnessRules,
+            ...nodeLibRules,
             ...jsUnusedVarsRule,
             ...ghostI18nExtras,
             ...mochaRulesOff(ghostPlugin),

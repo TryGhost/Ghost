@@ -7,12 +7,11 @@ import reactRefreshPlugin from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
 import {
-    correctnessRules,
     mochaRulesOff,
-    reactDefaultsOff,
-    reactStrictRules,
     shadeLayeredImportsRule,
-    tsUnusedVarsRule
+    strictLinterOptions,
+    tsReactAppRules,
+    viteTsReactExtras
 } from '../../eslint.shared.mjs';
 
 const reactFlat = reactPlugin.configs.flat.recommended;
@@ -20,6 +19,10 @@ const reactFlat = reactPlugin.configs.flat.recommended;
 export default tseslint.config(
     {
         ignores: ['dist/**/*']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['src/**/*.{js,ts,cjs,tsx}'],
@@ -46,16 +49,9 @@ export default tseslint.config(
             ...js.configs.recommended.rules,
             ...reactFlat.rules,
             ...reactHooksPlugin.configs.recommended.rules,
-            ...correctnessRules,
-            ...tsUnusedVarsRule,
-            ...reactDefaultsOff,
-            ...reactStrictRules,
-            ...shadeLayeredImportsRule,
-            // TS handles these — disable the base ESLint variants
-            'no-undef': 'off',
-            'no-redeclare': 'off',
-            'no-unexpected-multiline': 'off',
-            '@typescript-eslint/no-inferrable-types': 'off'
+            ...tsReactAppRules,
+            ...viteTsReactExtras,
+            ...shadeLayeredImportsRule
         }
     },
     {
@@ -75,11 +71,8 @@ export default tseslint.config(
             ghost: ghostPlugin
         },
         rules: {
-            ...correctnessRules,
-            ...tsUnusedVarsRule,
-            ...mochaRulesOff(ghostPlugin),
-            '@typescript-eslint/no-inferrable-types': 'off',
-            '@typescript-eslint/no-explicit-any': 'off'
+            ...tsReactAppRules,
+            ...mochaRulesOff(ghostPlugin)
         }
     }
 );

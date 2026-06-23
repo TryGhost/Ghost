@@ -6,8 +6,8 @@ import i18nextPlugin from 'eslint-plugin-i18next';
 import tseslint from 'typescript-eslint';
 
 import {
-    correctnessRules,
-    jsUnusedVarsRule
+    jsReactAppRules,
+    strictLinterOptions
 } from '../../eslint.shared.mjs';
 
 const i18nextFlat = i18nextPlugin.configs['flat/recommended'];
@@ -17,6 +17,10 @@ const reactJsxRuntime = reactPlugin.configs.flat['jsx-runtime'];
 export default tseslint.config(
     {
         ignores: ['umd/**/*', 'dist/**/*']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['src/**/*.{js,jsx}', 'test/**/*.{js,jsx}'],
@@ -46,9 +50,7 @@ export default tseslint.config(
             ...reactFlat.rules,
             ...reactJsxRuntime.rules,
             ...i18nextFlat.rules,
-            ...correctnessRules,
-            ...jsUnusedVarsRule,
-            'react/prop-types': 'off'
+            ...jsReactAppRules
         }
     },
     {
@@ -81,9 +83,7 @@ export default tseslint.config(
             ...reactFlat.rules,
             ...reactJsxRuntime.rules,
             ...i18nextFlat.rules,
-            ...correctnessRules,
-            ...jsUnusedVarsRule,
-            'react/prop-types': 'off'
+            ...jsReactAppRules
         }
     }
 );

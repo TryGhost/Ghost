@@ -4,22 +4,19 @@ import ghostPlugin from 'eslint-plugin-ghost';
 import tseslint from 'typescript-eslint';
 
 import {
-    correctnessRules,
     mochaRulesOff,
+    nodeLibRules,
+    strictLinterOptions,
     tsUnusedVarsRule
 } from '../../eslint.shared.mjs';
-
-const ghostParseEmailExtras = {
-    'no-var': 'warn',
-    'one-var': ['warn', 'never'],
-    'ghost/ghost-custom/no-native-error': 'error',
-    'ghost/ghost-custom/ghost-error-usage': 'error',
-    'ghost/ghost-custom/ghost-tpl-usage': 'error'
-};
 
 export default tseslint.config(
     {
         ignores: ['build/**/*']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['src/**/*.ts'],
@@ -34,9 +31,8 @@ export default tseslint.config(
         },
         rules: {
             ...js.configs.recommended.rules,
-            ...correctnessRules,
+            ...nodeLibRules,
             ...tsUnusedVarsRule,
-            ...ghostParseEmailExtras,
             'no-undef': 'off'
         }
     },
@@ -60,9 +56,8 @@ export default tseslint.config(
         },
         rules: {
             ...js.configs.recommended.rules,
-            ...correctnessRules,
+            ...nodeLibRules,
             ...tsUnusedVarsRule,
-            ...ghostParseEmailExtras,
             ...mochaRulesOff(ghostPlugin),
             'no-undef': 'off'
         }

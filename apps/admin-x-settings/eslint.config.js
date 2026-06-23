@@ -8,14 +8,12 @@ import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
 import tseslint from 'typescript-eslint';
 
 import {
-    correctnessRules,
     mochaRulesOff,
-    reactDefaultsOff,
-    reactStrictRules,
     shadeLayeredImportsRule,
-    sortImportsRule,
+    strictLinterOptions,
     tailwindRulesV4,
-    tsUnusedVarsRule
+    tsReactAppRules,
+    viteTsReactExtras
 } from '../../eslint.shared.mjs';
 
 const tailwindCssConfig = `${import.meta.dirname}/../admin/src/index.css`;
@@ -25,6 +23,10 @@ const reactFlat = reactPlugin.configs.flat.recommended;
 export default tseslint.config(
     {
         ignores: ['dist/**/*']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['src/**/*.{js,ts,cjs,tsx}'],
@@ -53,30 +55,13 @@ export default tseslint.config(
             ...js.configs.recommended.rules,
             ...reactFlat.rules,
             ...reactHooksPlugin.configs.recommended.rules,
-            ...correctnessRules,
-            ...tsUnusedVarsRule,
-            ...reactDefaultsOff,
-            ...reactStrictRules,
-            ...sortImportsRule,
+            ...tsReactAppRules,
+            ...viteTsReactExtras,
             ...shadeLayeredImportsRule,
             ...tailwindRulesV4,
-            'no-undef': 'off',
-            'no-redeclare': 'off',
-            'no-unexpected-multiline': 'off',
-            'prefer-const': 'off',
-            'react-refresh/only-export-components': 'off',
-            '@typescript-eslint/no-inferrable-types': 'off',
-            '@typescript-eslint/no-explicit-any': 'warn',
-            '@typescript-eslint/no-non-null-assertion': 'off',
-            '@typescript-eslint/no-empty-function': 'off'
-        }
-    },
-    // Final overrides for src files. Kept in a separate block to guarantee
-    // these win over typescript-eslint's recommended rules.
-    {
-        files: ['src/**/*.{js,ts,cjs,tsx}'],
-        rules: {
-            '@typescript-eslint/no-explicit-any': 'warn'
+            // Legacy violations not yet cleaned up. Tracked for follow-up.
+            'prefer-const': 'off',                       // 43 violations
+            '@typescript-eslint/no-explicit-any': 'off'  // 2 violations
         }
     },
     {
@@ -96,12 +81,8 @@ export default tseslint.config(
             ghost: ghostPlugin
         },
         rules: {
-            ...correctnessRules,
-            ...tsUnusedVarsRule,
-            ...mochaRulesOff(ghostPlugin),
-            'no-undef': 'off',
-            '@typescript-eslint/no-inferrable-types': 'off',
-            '@typescript-eslint/no-explicit-any': 'off'
+            ...tsReactAppRules,
+            ...mochaRulesOff(ghostPlugin)
         }
     }
 );
