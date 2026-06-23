@@ -52,23 +52,34 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
 }
 
 function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableCommentNotifications}) {
-    const {doAction} = useContext(AppContext);
+    const {doAction} = useContext(AppContext); // Removed 't' from here
     const isChecked = !!enableCommentNotifications;
+    const [isUpdating, setIsUpdating] = useState(false);
 
     if (!isCommentsEnabled) {
         return null;
     }
 
     const handleToggle = async (e, checked) => {
-        await updateCommentNotifications(checked);
-        doAction('showPopupNotification', {
-            action: 'updated:success',
-            message: t('Comment preferences updated.')
-        });
+        if (isUpdating) {
+            return;
+        }
+        setIsUpdating(true);
+        try {
+            await updateCommentNotifications(checked);
+            doAction('showPopupNotification', {
+                action: 'updated:success',
+                message: t('Comment preferences updated.')
+            });
+        } finally {
+            setIsUpdating(false);
+        }
     };
 
     const handleSectionClick = () => {
-        handleToggle(null, !isChecked);
+        if (!isUpdating) {
+            handleToggle(null, !isChecked);
+        }
     };
 
     return (
@@ -78,7 +89,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
                 <p>{t('Get notified when someone replies to your comment')}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
-                <Switch id="comments" onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" />
+                <Switch id="comments" onToggle={handleToggle} checked={isChecked} disabled={isUpdating} dataTestId="switch-input" />
             </div>
         </section>
     );
