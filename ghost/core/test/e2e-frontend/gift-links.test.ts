@@ -89,6 +89,8 @@ describe('Front-end gift links', function () {
             .expect(200)
             .expect(assertLocked);
 
+        // No gift → no toast on the canonical URL.
+        assert.doesNotMatch(res.text, /gh-gift-toast/, 'gift toast must not appear on the canonical URL');
         // The bare URL has no ?gift, so it isn't no-store bypassed — it stays cacheable.
         assert.doesNotMatch(res.headers['cache-control'] || '', /no-store/, 'the bare URL is cacheable');
     });
@@ -103,6 +105,10 @@ describe('Front-end gift links', function () {
         assert.match(res.headers['cache-control'], /no-store/);
         assert.equal(res.headers['x-robots-tag'], 'noindex');
         assert.equal(res.headers['referrer-policy'], 'no-referrer');
+
+        // The default gift toast renders on the verified gift view.
+        assert.match(res.text, /id="gh-gift-toast"/, 'default gift toast renders on a gift view');
+        assert.match(res.text, /gifted access to this post/, 'toast announces the gift');
     });
 
     it('301s to the canonical URL, dropping ?gift, when the token is invalid', async function () {
