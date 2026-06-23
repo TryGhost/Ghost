@@ -93,7 +93,7 @@ function Switch({id, label = '', onToggle, checked = false, disabled = false, da
     }, [isChecked, id]);
 
     return (
-        <div className="gh-portal-for-switch" data-test-switch={dataTestId}>
+        <div className="gh-portal-for-switch" data-test-switch={dataTestId} onClick={(e) => e.stopPropagation()}>
             <label className="switch" htmlFor={id}>
                 <input
                     ref={inputRef}

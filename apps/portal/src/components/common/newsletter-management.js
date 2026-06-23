@@ -24,26 +24,28 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
         return d.id === newsletter?.id;
     });
 
+    const handleToggle = () => {
+        let updatedNewsletters = [];
+        if (isChecked) {
+            updatedNewsletters = subscribedNewsletters.filter((d) => {
+                return d.id !== newsletter.id;
+            });
+        } else {
+            updatedNewsletters = subscribedNewsletters.filter((d) => {
+                return d.id !== newsletter.id;
+            }).concat(newsletter);
+        }
+        setSubscribedNewsletters(updatedNewsletters);
+    };
+
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="newsletter-toggle">
+        <section className='gh-portal-list-toggle-wrapper' data-testid="newsletter-toggle" onClick={handleToggle}>
             <div className='gh-portal-list-detail'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter?.description}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}}>
-                <Switch id={newsletter.id} onToggle={(e, checked) => {
-                    let updatedNewsletters = [];
-                    if (!checked) {
-                        updatedNewsletters = subscribedNewsletters.filter((d) => {
-                            return d.id !== newsletter.id;
-                        });
-                    } else {
-                        updatedNewsletters = subscribedNewsletters.filter((d) => {
-                            return d.id !== newsletter.id;
-                        }).concat(newsletter);
-                    }
-                    setSubscribedNewsletters(updatedNewsletters);
-                }} checked={isChecked} dataTestId="switch-input" />
+                <Switch id={newsletter.id} onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" />
             </div>
         </section>
     );
@@ -65,8 +67,12 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
         });
     };
 
+    const handleSectionClick = () => {
+        handleToggle(null, !isChecked);
+    };
+
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="comment-toggle">
+        <section className='gh-portal-list-toggle-wrapper' data-testid="comment-toggle" onClick={handleSectionClick}>
             <div className='gh-portal-list-detail'>
                 <h3>{t('Comments')}</h3>
                 <p>{t('Get notified when someone replies to your comment')}</p>
@@ -99,8 +105,14 @@ function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChang
         }
     };
 
+    const handleSectionClick = () => {
+        if (!isUpdating) {
+            handleToggle(null, !enableUpdatesAndAnnouncements);
+        }
+    };
+
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="updates-and-announcements-toggle">
+        <section className='gh-portal-list-toggle-wrapper' data-testid="updates-and-announcements-toggle" onClick={handleSectionClick}>
             <div className='gh-portal-list-detail'>
                 <h3>{t('Updates & announcements')}</h3>
                 <p>{t('Occasional updates from {siteTitle}', {siteTitle: site?.title})}</p>

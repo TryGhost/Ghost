@@ -18,12 +18,15 @@ function EmailNewsletterAction() {
     };
 
     return (
-        <section>
+        <section onClick={onToggleSubscription}>
             <div className='gh-portal-list-detail email-newsletter'>
                 <h3>{t('Email newsletter')}</h3>
                 <p>{label} {hasMemberGotEmailSuppression({member}) && subscribed && <button
                     className='gh-portal-btn-text gh-email-faq-page-button'
-                    onClick={() => doAction('switchPage', {page: 'emailReceivingFAQ', lastPage: 'accountHome'})}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        doAction('switchPage', {page: 'emailReceivingFAQ', lastPage: 'accountHome'});
+                    }}
                 >
                     {t('Not receiving emails?')}
                 </button>}</p>

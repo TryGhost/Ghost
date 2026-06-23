@@ -693,6 +693,7 @@ html[dir="rtl"] .gh-portal-logout-container {
     margin: 0 -20px 20px;
     padding: 0 20px 20px;
     border-bottom: 1px solid var(--grey12);
+    cursor: pointer;
 }
 
 .gh-portal-list section:last-of-type {

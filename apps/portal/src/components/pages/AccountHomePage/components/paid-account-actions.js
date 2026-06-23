@@ -120,7 +120,10 @@ const PaidAccountActions = () => {
         if (canContinueGiftSubscription) {
             return (
                 <button
-                    className='gh-portal-btn gh-portal-btn-list' onClick={() => doAction('continueGiftSubscription')}
+                    className='gh-portal-btn gh-portal-btn-list' onClick={(e) => {
+                        e.stopPropagation();
+                        doAction('continueGiftSubscription');
+                    }}
                     data-test-button='continue-gift-subscription'
                 >
                     {t('Continue')}
@@ -129,7 +132,10 @@ const PaidAccountActions = () => {
         }
         return (
             <button
-                className='gh-portal-btn gh-portal-btn-list' onClick={e => openUpdatePlan(e)}
+                className='gh-portal-btn gh-portal-btn-list' onClick={(e) => {
+                    e.stopPropagation();
+                    openUpdatePlan(e);
+                }}
                 data-test-button='change-plan'
             >
                 {t('Change')}
@@ -156,14 +162,17 @@ const PaidAccountActions = () => {
         ) : t('Update');
 
         return (
-            <section>
+            <section onClick={onManageBilling}>
                 <div className='gh-portal-list-detail'>
                     <h3>{t('Billing info & receipts')}</h3>
                     <CardLabel defaultCardLast4={defaultCardLast4} />
                 </div>
                 <button
                     className='gh-portal-btn gh-portal-btn-list'
-                    onClick={e => onManageBilling(e)}
+                    onClick={(e) => {
+                        e.stopPropagation();
+                        onManageBilling(e);
+                    }}
                     data-test-button='manage-billing'
                 >
                     {label}
@@ -193,7 +202,7 @@ const PaidAccountActions = () => {
         // }
         return (
             <>
-                <section>
+                <section onClick={openUpdatePlan}>
                     <div className='gh-portal-list-detail'>
                         <h3>
                             {planLabel}

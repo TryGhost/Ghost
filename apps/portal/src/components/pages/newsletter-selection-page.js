@@ -12,7 +12,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     });
     if (newsletter.paid) {
         return (
-            <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
+            <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper" style={{cursor: 'default'}}>
                 <div className='gh-portal-list-detail gh-portal-list-big'>
                     <h3>{newsletter.name}</h3>
                     <p>{newsletter.description}</p>
@@ -23,26 +23,29 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
             </section>
         );
     }
+
+    const handleToggle = () => {
+        let updatedNewsletters = [];
+        if (isChecked) {
+            updatedNewsletters = subscribedNewsletters.filter((d) => {
+                return d.id !== newsletter.id;
+            });
+        } else {
+            updatedNewsletters = subscribedNewsletters.filter((d) => {
+                return d.id !== newsletter.id;
+            }).concat(newsletter);
+        }
+        setSubscribedNewsletters(updatedNewsletters);
+    };
+
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
+        <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper" onClick={handleToggle}>
             <div className='gh-portal-list-detail gh-portal-list-big'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter.description}</p>
             </div>
             <div>
-                <Switch id={newsletter.id} onToggle={(e, checked) => {
-                    let updatedNewsletters = [];
-                    if (!checked) {
-                        updatedNewsletters = subscribedNewsletters.filter((d) => {
-                            return d.id !== newsletter.id;
-                        });
-                    } else {
-                        updatedNewsletters = subscribedNewsletters.filter((d) => {
-                            return d.id !== newsletter.id;
-                        }).concat(newsletter);
-                    }
-                    setSubscribedNewsletters(updatedNewsletters);
-                }} checked={isChecked} />
+                <Switch id={newsletter.id} onToggle={handleToggle} checked={isChecked} />
             </div>
         </section>
     );

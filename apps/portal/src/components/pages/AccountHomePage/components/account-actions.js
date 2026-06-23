@@ -43,7 +43,7 @@ const AccountActions = () => {
     return (
         <div>
             <div className='gh-portal-list'>
-                <section>
+                <section onClick={openEditProfile}>
                     <div className='gh-portal-list-detail'>
                         <h3>{(name ? name : t('Account'))}</h3>
                         <p>{email}</p>
@@ -51,7 +51,10 @@ const AccountActions = () => {
                     <button
                         data-test-button='edit-profile'
                         className='gh-portal-btn gh-portal-btn-list'
-                        onClick={e => openEditProfile(e)}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            openEditProfile(e);
+                        }}
                     >
                         {t('Edit')}
                     </button>

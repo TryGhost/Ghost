@@ -31,19 +31,24 @@ function EmailPreferencesAction() {
         return <p>{t('Update your preferences')}</p>;
     };
 
+    const handleClick = () => {
+        doAction('switchPage', {
+            page,
+            lastPage: 'accountHome'
+        });
+    };
+
     return (
-        <section>
+        <section onClick={handleClick}>
             <div className="gh-portal-list-detail">
                 <h3>{t('Emails')}</h3>
                 {renderEmailNotice()}
             </div>
             <button
                 className="gh-portal-btn gh-portal-btn-list"
-                onClick={() => {
-                    doAction('switchPage', {
-                        page,
-                        lastPage: 'accountHome'
-                    });
+                onClick={(e) => {
+                    e.stopPropagation();
+                    handleClick();
                 }}
                 data-test-button="manage-newsletters"
             >
