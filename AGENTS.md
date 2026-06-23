@@ -121,6 +121,8 @@ The `pnpm dev` command uses a **hybrid Docker + host development** setup:
 - Frontend dev servers (Admin, Portal, Comments UI, etc.) in watch mode with HMR
 - Foundation libraries (shade, admin-x-framework, etc.)
 
+Container `node_modules` lives in named volumes that survive `docker:build`. After adding/removing a dep on host, run `pnpm docker:refresh-deps` to rebuild the image and reseed the volumes.
+
 **Setup:**
 ```bash
 # Start everything (Docker + frontend dev servers)

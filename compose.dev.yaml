@@ -67,6 +67,17 @@ services:
       - ./ghost/core:/home/ghost/ghost/core
       - ./ghost/i18n:/home/ghost/ghost/i18n
       - ./ghost/parse-email-address:/home/ghost/ghost/parse-email-address
+      # Shield container node_modules from the host bind-mount. With
+      # `enableGlobalVirtualStore: true` (pnpm-workspace.yaml) the host's
+      # node_modules symlinks point at the host's pnpm store (`pnpm store
+      # path`) — paths the Linux container can't resolve, and the binaries
+      # there are the host arch. Named volumes hide the host bind-mount so
+      # the container's own pnpm install (Dockerfile) populates Linux
+      # node_modules in-place.
+      - ghost-dev-node-modules-root:/home/ghost/node_modules
+      - ghost-dev-node-modules-core:/home/ghost/ghost/core/node_modules
+      - ghost-dev-node-modules-i18n:/home/ghost/ghost/i18n/node_modules
+      - ghost-dev-node-modules-parse-email:/home/ghost/ghost/parse-email-address/node_modules
       # Mount specific content subdirectories to preserve themes/adapters from source
       - ghost-dev-data:/home/ghost/ghost/core/content/data
       - ghost-dev-images:/home/ghost/ghost/core/content/images
@@ -78,7 +89,6 @@ services:
       NODE_ENV: development
       NODE_TLS_REJECT_UNAUTHORIZED: "0"
       DEBUG: ${DEBUG:-}
-      pnpm_config_verify_deps_before_run: "false"
       database__client: mysql2
       database__connection__host: mysql
       database__connection__user: root
@@ -152,6 +162,10 @@ volumes:
   ghost-dev-media:
   ghost-dev-files:
   ghost-dev-logs:
+  ghost-dev-node-modules-root:
+  ghost-dev-node-modules-core:
+  ghost-dev-node-modules-i18n:
+  ghost-dev-node-modules-parse-email:
 
 networks:
   default:
