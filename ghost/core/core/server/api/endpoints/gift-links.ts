@@ -24,7 +24,7 @@ const noCacheInvalidation = {cacheInvalidate: false};
 const controller = {
     docName: 'gift_links',
 
-    read: {
+    browse: {
         headers: noCacheInvalidation,
         options: ['id'],
         validation: {options: {id: {required: true}}},
@@ -36,7 +36,7 @@ const controller = {
         }
     },
 
-    issue: {
+    ensure: {
         headers: noCacheInvalidation,
         statusCode: 200,
         options: ['id'],
@@ -45,11 +45,11 @@ const controller = {
             return assertCanManageGiftLink(frame);
         },
         query(frame: Frame) {
-            return service!.issue(frame.options.id);
+            return service!.ensure(frame.options.id);
         }
     },
 
-    reissue: {
+    create: {
         headers: noCacheInvalidation,
         statusCode: 200,
         options: ['id'],
@@ -58,18 +58,18 @@ const controller = {
             return assertCanManageGiftLink(frame);
         },
         query(frame: Frame) {
-            return service!.reissue(frame.options.id);
+            return service!.create(frame.options.id);
         }
     },
 
-    revokeAll: {
+    removeAll: {
         headers: noCacheInvalidation,
         statusCode: 200,
         permissions(frame: Frame) {
-            return permissionsService.canThis(frame.options.context).revokeAll.gift_link();
+            return permissionsService.canThis(frame.options.context).removeAll.gift_link();
         },
         async query() {
-            const count = await service!.revokeAll();
+            const count = await service!.removeAll();
             return {count};
         }
     }

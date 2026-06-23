@@ -25,31 +25,22 @@ export class GiftLinksService {
         return row ? {id: row.post_id, giftLinks: [z.decode(queries.giftLinkCodec, row)]} : null;
     }
 
-    async issue(postId: string): Promise<Post> {
+    async ensure(postId: string): Promise<Post> {
         const post = await this.requirePost(postId);
         return post.giftLinks.length ? post : this.mint(postId);
     }
 
-    async reissue(postId: string): Promise<Post> {
-        const post = await this.requirePost(postId);
-        return this.mint(postId, post.giftLinks[0]?.token);
+    async create(postId: string): Promise<Post> {
+        await this.requirePost(postId);
+        return this.mint(postId);
     }
 
-    // Stamp revoked_at on the live links, then drop their associations. The link records stay
-    // as history; liveness is the association, so revoked_at only marks deliberate revocation.
-    async revokeAll(): Promise<number> {
-        const now = new Date();
-        let revoked = 0;
-        await this.knex.transaction(async (trx) => {
-            await trx('gift_links')
-                .whereIn('token', trx('post_gift_links').select('gift_link_token'))
-                .update({revoked_at: now, updated_at: now});
-            revoked = await trx('post_gift_links').del();
-        });
-        return revoked;
+    // Remove every live association; the gift_links rows stay as history.
+    async removeAll(): Promise<number> {
+        return this.knex('post_gift_links').del();
     }
 
-    // Keyed by token, not liveness: a read against a since-reissued token still counts for it.
+    // Keyed by token, not liveness: a read against a since-replaced token still counts for it.
     async recordRedemption(token: string): Promise<number> {
         const now = new Date();
         return this.knex('gift_links')
@@ -71,16 +62,12 @@ export class GiftLinksService {
         return {id: postId, giftLinks};
     }
 
-    // Issue and reissue are one upsert: a new store row, with the live association repointed to
-    // it. On reissue the replaced link is stamped revoked_at as history. Concurrent issues are
-    // last-writer-wins, not an error.
-    private async mint(postId: string, replacing?: GiftLinkToken): Promise<Post> {
+    // A new store row with the live association repointed to it. The replaced link's row stays as
+    // history. Concurrent adds are last-writer-wins, not an error.
+    private async mint(postId: string): Promise<Post> {
         const now = new Date();
         const link: GiftLink = {token: generateGiftLinkToken(), redeemedCount: 0, lastRedeemedAt: null, createdAt: now};
         await this.knex.transaction(async (trx) => {
-            if (replacing) {
-                await trx('gift_links').where({token: replacing}).update({revoked_at: now, updated_at: now});
-            }
             await trx('gift_links').insert({...z.encode(queries.giftLinkCodec, link), post_id: postId});
             await trx('post_gift_links')
                 .insert({post_id: postId, gift_link_token: link.token, created_at: now})

@@ -64,13 +64,13 @@ module.exports = function apiRoutes() {
     router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
 
     // Gift links (behind the giftLinks flag)
-    router.get('/posts/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.read));
-    router.put('/posts/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.issue));
-    router.post('/posts/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.reissue));
-    router.get('/pages/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.read));
-    router.put('/pages/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.issue));
-    router.post('/pages/:id/gift_link', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.reissue));
-    router.put('/gift_links/revoke_all', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.revokeAll));
+    router.get('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.browse));
+    router.put('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.ensure));
+    router.post('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.create));
+    router.get('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.browse));
+    router.put('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.ensure));
+    router.post('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.create));
+    router.put('/gift_links/remove_all', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.removeAll));
 
     // # Integrations
 
