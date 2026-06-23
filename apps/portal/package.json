@@ -17,7 +17,7 @@
   "scripts": {
     "dev": "pnpm build && concurrently --kill-others --names preview,build \"pnpm preview -l silent\" \"pnpm build:watch\"",
     "build": "vite build",
-    "build:watch": "vite build --watch",
+    "build:watch": "vite build --watch --mode development",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
