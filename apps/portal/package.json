@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/portal",
   "type": "module",
-  "version": "2.69.8",
+  "version": "2.69.9",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
