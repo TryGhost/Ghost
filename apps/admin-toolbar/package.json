@@ -37,5 +37,15 @@
     "jsdom": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "targets": {
+      "dev": {
+        "dependsOn": [
+          "^dev",
+          "build"
+        ]
+      }
+    }
   }
 }
