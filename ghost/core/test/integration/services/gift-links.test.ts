@@ -134,6 +134,27 @@ describe('GiftLinksService (integration)', function () {
         });
     });
 
+    describe('isValidTokenForPost', function () {
+        it('is true only for a live token bound to the given post', async function () {
+            const post = await service.ensure(postId);
+            const token = post.giftLinks[0]!.token;
+
+            assert.equal(await service.isValidTokenForPost(token, postId), true);
+
+            // Defence in depth: a token for one post must not validate another.
+            assert.equal(await service.isValidTokenForPost(token, otherPostId), false);
+
+            // Once replaced, the old token no longer validates.
+            await service.create(postId);
+            assert.equal(await service.isValidTokenForPost(token, postId), false);
+        });
+
+        it('is false for unknown and empty tokens', async function () {
+            assert.equal(await service.isValidTokenForPost('nope', postId), false);
+            assert.equal(await service.isValidTokenForPost('', postId), false);
+        });
+    });
+
     describe('removeAll', function () {
         it('drops every live link across posts and returns the count', async function () {
             await service.ensure(postId);
