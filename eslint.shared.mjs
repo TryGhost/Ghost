@@ -81,24 +81,28 @@ export const reactStrictRules = {
 
 // Tailwind v4 ruleset using settings-based config (consumer sets
 // `settings.tailwindcss.config`). For v3 workspaces use tailwindRulesWithConfig().
+// All rules are 'error' or 'off' — Ghost's stance is no warnings (warnings
+// get ignored and pollute context). migration-from-tailwind-2 is off since
+// Ghost is already on v4; the rule is no longer providing value.
 export const tailwindRulesV4 = {
     'tailwindcss/classnames-order': 'error',
-    'tailwindcss/enforces-negative-arbitrary-values': 'warn',
-    'tailwindcss/enforces-shorthand': 'warn',
-    'tailwindcss/migration-from-tailwind-2': 'warn',
+    'tailwindcss/enforces-negative-arbitrary-values': 'error',
+    'tailwindcss/enforces-shorthand': 'error',
+    'tailwindcss/migration-from-tailwind-2': 'off',
     'tailwindcss/no-arbitrary-value': 'off',
     'tailwindcss/no-custom-classname': 'off',
     'tailwindcss/no-contradicting-classname': 'error'
 };
 
 // Tailwind v3 ruleset with config passed per-rule (v3 didn't read `settings`
-// the same way). Use the consumer's tailwind config absolute path.
+// the same way). Use the consumer's tailwind config absolute path. Same
+// error-or-off stance as tailwindRulesV4.
 export function tailwindRulesWithConfig(config) {
     return {
         'tailwindcss/classnames-order': ['error', {config}],
-        'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config}],
-        'tailwindcss/enforces-shorthand': ['warn', {config}],
-        'tailwindcss/migration-from-tailwind-2': ['warn', {config}],
+        'tailwindcss/enforces-negative-arbitrary-values': ['error', {config}],
+        'tailwindcss/enforces-shorthand': ['error', {config}],
+        'tailwindcss/migration-from-tailwind-2': 'off',
         'tailwindcss/no-arbitrary-value': 'off',
         'tailwindcss/no-custom-classname': 'off',
         'tailwindcss/no-contradicting-classname': ['error', {config}]
