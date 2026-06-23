@@ -69,6 +69,13 @@ export default defineConfig({
         },
         projects: [
             {
+                // Vitest projects re-create their own Vite config — settings on
+                // the parent `defineConfig` aren't inherited here. The unit
+                // runner uses Vite's SSR pipeline, so workspace TS deps with a
+                // `source` exports condition (e.g. @tryghost/parse-email-address)
+                // need `ssr.resolve.conditions` to resolve to src/*.ts. Matches
+                // the runtime backend's `--conditions=source` (nodemon.json).
+                ssr: {resolve: {conditions: ['source', 'node']}},
                 test: {
                     ...unitConfig,
                     name: 'unit',

@@ -33,6 +33,15 @@ const resolveSnapshotPath = (testPath: string, snapExtension: string) => path.jo
     path.basename(testPath) + snapExtension
 );
 
+// Vitest projects re-create their own Vite config — settings on the parent
+// `defineConfig` aren't inherited. The DB-backed runners use Vite's SSR
+// pipeline, so workspace TS deps with a `source` exports condition (e.g.
+// @tryghost/parse-email-address) need this on every project. Matches the
+// runtime backend's `--conditions=source` (ghost/core/nodemon.json).
+const sharedSsrConfig = {
+    resolve: {conditions: ['source', 'node']}
+};
+
 // Shared by every DB-backed project — the execution model is identical for all
 // of them; only the include globs and per-suite timeouts differ.
 const sharedDbConfig = {
@@ -63,7 +72,7 @@ const sharedDbConfig = {
         // execArgv worker_threads inherit) and ignores poolOptions.forks.execArgv
         // here, so route it through the env. Applied on test.env (after fork
         // startup) so only the spawned workers pick it up, not the fork.
-        NODE_OPTIONS: (process.env.NODE_OPTIONS ? process.env.NODE_OPTIONS + ' ' : '') + '--import tsx'
+        NODE_OPTIONS: (process.env.NODE_OPTIONS ? process.env.NODE_OPTIONS + ' ' : '') + '--import tsx --conditions=source'
     },
     hookTimeout: 60000
 };
@@ -87,6 +96,7 @@ export default defineConfig({
             : ['dot'],
         projects: [
             {
+                ssr: sharedSsrConfig,
                 test: {
                     ...sharedDbConfig,
                     name: 'e2e',
@@ -102,6 +112,7 @@ export default defineConfig({
                 }
             },
             {
+                ssr: sharedSsrConfig,
                 test: {
                     ...sharedDbConfig,
                     name: 'integration',
@@ -128,6 +139,7 @@ export default defineConfig({
                 }
             },
             {
+                ssr: sharedSsrConfig,
                 test: {
                     ...sharedDbConfig,
                     name: 'legacy',
@@ -143,6 +155,7 @@ export default defineConfig({
                 }
             },
             {
+                ssr: sharedSsrConfig,
                 test: {
                     ...sharedDbConfig,
                     name: 'e2e-api',
