@@ -1,31 +1,23 @@
 const {escapeExpression} = require('../../services/handlebars');
 
 // Self-contained HTML+CSS+JS injected at the bottom of the body on gift-link
-// renders (when `@gift` is set). Renders a pill toast at the top of the viewport
-// announcing the gift, with a persistent close button and a subscribe CTA. The
-// toast tucks below the nav initially and follows the scroll up to a 32px
-// sticky offset from the top.
+// renders (when `@gift` is set). Renders a pill toast at the bottom of the
+// viewport announcing the gift, with a persistent close button.
 //
 // Designed to be theme-agnostic: scoped class names with a `gh-gift-toast`
 // prefix, an `accent` CSS custom property fed from the site's accent color, and
 // no global selectors so it cannot leak into theme styles.
-module.exports = function buildGiftToast({siteTitle, accentColor}) {
-    const safeTitle = escapeExpression(siteTitle || '');
+module.exports = function buildGiftToast({accentColor}) {
     const safeAccent = escapeExpression(accentColor || '#000000');
 
-    // Initial offset from the top of the viewport (~ a typical theme nav).
-    // The scroll handler shrinks this down to STICKY_TOP_PX as the user scrolls.
-    // Themes that want a different starting offset can override
-    // `--gh-gift-toast-initial-top` from their CSS.
     return `
 <style>
 .gh-gift-toast {
-    --gh-gift-toast-initial-top: 80px;
-    --gh-gift-toast-sticky-top: 32px;
+    --gh-gift-toast-bottom: 32px;
     --gh-gift-toast-accent: ${safeAccent};
 
     position: fixed;
-    top: var(--gh-gift-toast-initial-top);
+    bottom: var(--gh-gift-toast-bottom);
     left: 50%;
     transform: translateX(-50%);
     z-index: 99998;
@@ -41,7 +33,7 @@ module.exports = function buildGiftToast({siteTitle, accentColor}) {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     font-size: 13px;
     line-height: 1.4;
-    transition: top 200ms ease, opacity 200ms ease, transform 200ms ease;
+    transition: opacity 200ms ease, transform 200ms ease;
     box-sizing: border-box;
 }
 
@@ -98,7 +90,7 @@ module.exports = function buildGiftToast({siteTitle, accentColor}) {
 
 .gh-gift-toast.is-dismissed {
     opacity: 0;
-    transform: translate(-50%, -16px);
+    transform: translate(-50%, 16px);
     pointer-events: none;
 }
 
@@ -125,7 +117,7 @@ module.exports = function buildGiftToast({siteTitle, accentColor}) {
             <path d="m16.796 5.397-.067.06a12.5 12.5 0 0 1-4.512 2.255.75.75 0 0 1-.918-.918 12.502 12.502 0 0 1 2.315-4.579c1.44-1.438 2.681-1.558 3.715-.531 1.033 1.026.908 2.272-.533 3.713zm-.525-2.649c-.397-.395-.702-.366-1.537.46a11.024 11.024 0 0 0-1.515 2.584 11.038 11.038 0 0 0 2.549-1.487c.865-.872.89-1.173.503-1.557z"/>
         </svg>
     </div>
-    <span class="gh-gift-toast-text">${safeTitle} unlocked this post so you can read it for free.</span>
+    <span class="gh-gift-toast-text">You’ve been gifted access to this post.</span>
     <button type="button" class="gh-gift-toast-close" aria-label="Dismiss">
         <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">
             <path d="M3 3 L13 13 M13 3 L3 13"/>
@@ -137,36 +129,10 @@ module.exports = function buildGiftToast({siteTitle, accentColor}) {
     var toast = document.getElementById('gh-gift-toast');
     if (!toast) return;
 
-    // Scroll the toast up with the page until it reaches a 32px sticky offset.
-    // Reading inline styles back as numbers means themes that override the
-    // CSS variables still get a consistent scroll behaviour.
-    var styles = getComputedStyle(toast);
-    var initialTop = parseFloat(styles.getPropertyValue('--gh-gift-toast-initial-top')) || 80;
-    var stickyTop = parseFloat(styles.getPropertyValue('--gh-gift-toast-sticky-top')) || 32;
-    var ticking = false;
-
-    function applyTop(){
-        ticking = false;
-        var y = window.pageYOffset || document.documentElement.scrollTop || 0;
-        var next = Math.max(stickyTop, initialTop - y);
-        toast.style.top = next + 'px';
-    }
-
-    function onScroll(){
-        if (!ticking) {
-            window.requestAnimationFrame(applyTop);
-            ticking = true;
-        }
-    }
-
-    applyTop();
-    window.addEventListener('scroll', onScroll, {passive: true});
-
     var closeBtn = toast.querySelector('.gh-gift-toast-close');
     if (closeBtn) {
         closeBtn.addEventListener('click', function(){
             toast.classList.add('is-dismissed');
-            window.removeEventListener('scroll', onScroll);
             // Defer removal so the fade/slide-out transition runs to completion.
             setTimeout(function(){ if (toast.parentNode) toast.parentNode.removeChild(toast); }, 260);
         });

@@ -41,7 +41,7 @@ const Overview: React.FC = () => {
     }, [globalData?.labs?.giftLinks, post, currentUser]);
 
     const {data: giftLinkData} = useReadGiftLink(postId, {enabled: canManageGiftLink});
-    const giftLinkViewCount = giftLinkData?.gift_links?.[0]?.redeemed_count ?? 0;
+    const giftLinkVisitorCount = giftLinkData?.gift_links?.[0]?.redeemed_count ?? 0;
     const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
 
     // Calculate chart range based on days between today and post publication date
@@ -236,12 +236,12 @@ const Overview: React.FC = () => {
                                     </div>
                                     <CardContent className='flex flex-col gap-1'>
                                         {/* Always plural for the card label so it reads as a
-                                    metric ("Views: 1") rather than a sentence. */}
+                                    metric ("Visitors: 1") rather than a sentence. */}
                                         <span className='text-sm text-muted-foreground'>
-                                    Views
+                                    Visitors
                                         </span>
                                         <span className='text-[2.2rem] leading-none font-semibold'>
-                                            {formatNumber(giftLinkViewCount)}
+                                            {formatNumber(giftLinkVisitorCount)}
                                         </span>
                                     </CardContent>
                                 </Card>

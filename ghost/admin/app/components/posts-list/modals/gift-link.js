@@ -37,16 +37,16 @@ export default class GiftLinkModal extends Component {
         });
     }
 
-    get viewCount() {
+    get visitorCount() {
         return this.giftLink ? this.giftLink.redeemed_count : 0;
     }
 
-    get viewsLabel() {
-        const count = this.viewCount;
+    get visitorsLabel() {
+        const count = this.visitorCount;
         if (count === 0) {
-            return 'No views yet';
+            return 'No visitors yet';
         }
-        return `${count} ${count === 1 ? 'view' : 'views'}`;
+        return `${count} ${count === 1 ? 'visitor' : 'visitors'}`;
     }
 
     get description() {
@@ -62,7 +62,7 @@ export default class GiftLinkModal extends Component {
     }
 
     // Idempotent ensure on open: returns the active link, creating it if absent.
-    // We always ensure so the URL and view counter populate immediately and
+    // We always ensure so the URL and visitor counter populate immediately and
     // the modal is useful without an extra round-trip.
     @action
     async setup() {

@@ -16,14 +16,14 @@ function buildGiftLinkUrl({blogUrl, slug, token}: {blogUrl?: string; slug?: stri
     return `${base}/g/${encodeURIComponent(slug)}/?key=${encodeURIComponent(token)}&utm_campaign=gift-link`;
 }
 
-function viewsLabel(count: number) {
+function visitorsLabel(count: number) {
     if (count === 0) {
-        return 'No views yet';
+        return 'No visitors yet';
     }
-    return `${formatNumber(count)} ${count === 1 ? 'view' : 'views'}`;
+    return `${formatNumber(count)} ${count === 1 ? 'visitor' : 'visitors'}`;
 }
 
-type ResetState = 'idle' | 'confirm' | 'done';
+type ResetState = 'idle' | 'confirm';
 
 interface GiftLinkModalProps {
     open: boolean;
@@ -38,15 +38,14 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, post})
     const {mutateAsync: resetGiftLink} = useResetGiftLink();
 
     const [token, setToken] = useState<string | undefined>(undefined);
-    const [viewCount, setViewCount] = useState(0);
+    const [visitorCount, setVisitorCount] = useState(0);
     const [resetState, setResetState] = useState<ResetState>('idle');
     const [resetting, setResetting] = useState(false);
     const [ensuring, setEnsuring] = useState(false);
-    const openRef = useRef(open);
     const cancelResetRef = useRef<HTMLButtonElement>(null);
 
     // Ensure (create-or-get) the link as soon as the modal opens, so we have a
-    // URL to show and an up-to-date view count. Idempotent on the server.
+    // URL to show and an up-to-date visitor count. Idempotent on the server.
     useEffect(() => {
         if (!open) {
             return;
@@ -61,7 +60,7 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, post})
                 const link = response.gift_links[0];
                 if (link) {
                     setToken(link.token);
-                    setViewCount(link.redeemed_count);
+                    setVisitorCount(link.redeemed_count);
                 }
             })
             .catch((e) => {
@@ -81,20 +80,10 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, post})
 
     // Reset transient UI on close so the next open starts clean.
     useEffect(() => {
-        openRef.current = open;
         if (!open) {
             setResetState('idle');
         }
     }, [open]);
-
-    useEffect(() => {
-        if (resetState !== 'done') {
-            return;
-        }
-
-        const timeout = window.setTimeout(() => setResetState('idle'), 1700);
-        return () => window.clearTimeout(timeout);
-    }, [resetState]);
 
     useEffect(() => {
         if (resetState === 'confirm') {
@@ -116,11 +105,9 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, post})
             const link = response.gift_links[0];
             if (link) {
                 setToken(link.token);
-                setViewCount(link.redeemed_count);
+                setVisitorCount(link.redeemed_count);
             }
-            if (openRef.current) {
-                setResetState('done');
-            }
+            setResetState('idle');
         } catch (e) {
             handleError(e);
         } finally {
@@ -135,13 +122,11 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, post})
         onOpenChange(isOpen);
     };
 
-    const isConfirmingReset = resetState === 'confirm';
-
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>
-            <DialogContent className='flex max-w-lg flex-col gap-0 overflow-hidden p-0'>
-                <div className={`transition-colors duration-200 motion-reduce:transition-none ${isConfirmingReset ? 'bg-muted/90 dark:bg-muted/80' : 'bg-transparent'}`}>
-                    <div className={`flex flex-col gap-3 px-6 pt-6 pb-2 transition-[filter] duration-200 motion-reduce:transition-none ${isConfirmingReset ? 'blur-[1.5px]' : 'blur-0'}`}>
+            <DialogContent className='max-w-lg gap-5'>
+                {resetState === 'idle' && (
+                    <>
                         <DialogHeader className='gap-3'>
                             <div className='flex items-center gap-2'>
                                 <DialogTitle className='text-xl leading-none'>Gift link</DialogTitle>
@@ -149,7 +134,7 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, post})
                                     data-testid='gift-link-views'
                                     variant='secondary'
                                 >
-                                    {viewsLabel(viewCount)}
+                                    {visitorsLabel(visitorCount)}
                                 </Badge>
                             </div>
                             <DialogDescription className='text-sm leading-5'>
@@ -166,12 +151,8 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, post})
                                 size='sm'
                             />
                         </ShareModal.CopyURLBox>
-                    </div>
-                </div>
 
-                <DialogFooter className='!flex-row !items-center !justify-between gap-3 bg-popover p-6'>
-                    {resetState === 'idle' && (
-                        <div className='flex w-full animate-in items-center justify-between gap-3 duration-150 fade-in-0 motion-reduce:animate-none'>
+                        <DialogFooter className='sm:items-center sm:justify-between'>
                             <Button
                                 data-testid='reset-gift-link'
                                 disabled={!giftLinkUrl}
@@ -183,39 +164,35 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, post})
                             <Button variant='outline' onClick={() => handleOpenChange(false)}>
                                 Close
                             </Button>
-                        </div>
-                    )}
+                        </DialogFooter>
+                    </>
+                )}
 
-                    {resetState === 'confirm' && (
-                        <div className='flex w-full animate-in items-center justify-between gap-3 duration-150 fade-in-0 motion-reduce:animate-none'>
-                            <span className='text-sm font-medium whitespace-nowrap text-foreground'>Reset this link?</span>
-                            <div className='flex items-center gap-2'>
-                                <Button ref={cancelResetRef} disabled={resetting} variant='outline' onClick={() => setResetState('idle')}>
-                                    Cancel
-                                </Button>
-                                <Button
-                                    data-testid='confirm-reset-gift-link'
-                                    disabled={resetting}
-                                    variant='destructive'
-                                    onClick={() => {
-                                        void handleConfirmReset();
-                                    }}
-                                >
-                                    {resetting ? 'Resetting' : 'Reset link'}
-                                </Button>
-                            </div>
-                        </div>
-                    )}
-
-                    {resetState === 'done' && (
-                        <div className='flex w-full animate-in items-center justify-between gap-3 duration-150 fade-in-0 motion-reduce:animate-none' role='status'>
-                            <span className='text-sm font-medium whitespace-nowrap text-foreground'>Link reset</span>
-                            <Button variant='outline' onClick={() => handleOpenChange(false)}>
-                                Close
+                {resetState === 'confirm' && (
+                    <>
+                        <DialogHeader>
+                            <DialogTitle>Reset gift link</DialogTitle>
+                            <DialogDescription>
+                                Aare you sure you want to reset this link?
+                            </DialogDescription>
+                        </DialogHeader>
+                        <DialogFooter>
+                            <Button ref={cancelResetRef} disabled={resetting} variant='outline' onClick={() => setResetState('idle')}>
+                                Cancel
                             </Button>
-                        </div>
-                    )}
-                </DialogFooter>
+                            <Button
+                                data-testid='confirm-reset-gift-link'
+                                disabled={resetting}
+                                variant='destructive'
+                                onClick={() => {
+                                    void handleConfirmReset();
+                                }}
+                            >
+                                {resetting ? 'Resetting' : 'Reset link'}
+                            </Button>
+                        </DialogFooter>
+                    </>
+                )}
             </DialogContent>
         </Dialog>
     );

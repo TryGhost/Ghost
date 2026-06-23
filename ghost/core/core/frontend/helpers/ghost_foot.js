@@ -32,7 +32,6 @@ module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
     // toast appears exactly on gift renders and never on canonical post URLs.
     if (options.data && options.data.gift) {
         foot.push(buildGiftToast({
-            siteTitle: settingsCache.get('title'),
             accentColor: settingsCache.get('accent_color') || '#15171a'
         }));
     }
