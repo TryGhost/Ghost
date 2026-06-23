@@ -298,7 +298,14 @@ export const localFilenamesPlugin = {
  *   `.js` and `.ts` source files mixed in `src/`. When true, emits two src
  *   blocks: one for `src/**\/*.{js,jsx}` (vanilla rules) and one for
  *   `src/**\/*.{ts,tsx}` (TS rules + project: './tsconfig.json'). Remove when
- *   portal's JS files are fully migrated to TS.
+ *   portal's JS files are fully migrated to TS. When used, pass
+ *   `tsconfigRootDir: import.meta.dirname` so the TS block resolves
+ *   `tsconfig.json` from the workspace, not the factory's directory.
+ * @property {string} [tsconfigRootDir]
+ *   Workspace directory containing `tsconfig.json` for type-aware lint blocks.
+ *   Only consulted when `legacyJsTsSplit: true`. Defaults to `process.cwd()`
+ *   (works when ESLint is invoked from the workspace directory, which is the
+ *   `pnpm --filter ... exec eslint` pattern).
  * @property {string[]} [ignores=['dist/**\/*']]
  *   Extra ignore globs (replaces the default — pass an array including your
  *   defaults).
@@ -360,6 +367,7 @@ export async function reactAppConfig({
     shadeRestricted = false,
     sortImports = false,
     legacyJsTsSplit = false,
+    tsconfigRootDir,
     ignores = ['dist/**/*'],
     srcGlobs,
     testGlobs,
@@ -497,7 +505,9 @@ export async function reactAppConfig({
                 parserOptions: {
                     ecmaFeatures: {jsx: true},
                     project: './tsconfig.json',
-                    tsconfigRootDir: import.meta.dirname
+                    // BUG-FIX: was `import.meta.dirname` which resolves to the
+                    // factory's directory (repo root), not the workspace.
+                    tsconfigRootDir: tsconfigRootDir ?? process.cwd()
                 },
                 globals: {
                     ...globals.browser,
@@ -509,9 +519,8 @@ export async function reactAppConfig({
             plugins: basePlugins,
             settings: baseSettings,
             rules: {
-                ...reactFlat.rules,
+                ...baseSrcRules,         // includes js.recommended + reactFlat + i18nextFlat + react-hooks + viteOnlyExtras + tailwindRules
                 ...reactJsxRuntime.rules,
-                ...(i18nextFlat?.rules ?? {}),
                 ...jsReactAppRules,
                 ...extraSrcRules
             }
@@ -594,6 +603,21 @@ export async function reactAppConfig({
     const storybookBlocks = [];
     if (storybook === 'plugin') {
         storybookBlocks.push(...storybookPlugin.configs['flat/recommended']);
+        // The storybook preset ships 3 warn-level rules. Ghost's stance is
+        // error-or-off, never warn — normalize them. hierarchy-separator and
+        // no-redundant-story-name have zero violations across shade so they
+        // flip to error for free; prefer-pascal-case has 29 violations so
+        // it's off until cleanup.
+        storybookBlocks.push({
+            files: ['**/*.stories.{ts,tsx,js,jsx,mjs,cjs}', '**/*.story.{ts,tsx,js,jsx,mjs,cjs}'],
+            rules: {
+                'storybook/hierarchy-separator': 'error',
+                'storybook/no-redundant-story-name': 'error',
+                // TODO: 29 legacy violations in shade. Flip to 'error' after the
+                // cleanup PR renames story exports to PascalCase.
+                'storybook/prefer-pascal-case': 'off'
+            }
+        });
     } else if (storybook === 'storiesBlock') {
         storybookBlocks.push({
             files: ['**/*.stories.{ts,tsx,js,jsx}'],

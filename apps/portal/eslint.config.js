@@ -7,6 +7,7 @@ export default await reactAppConfig({
     // migration lands, drop this flag and the workspace becomes a vanilla
     // reactAppConfig() call.
     legacyJsTsSplit: true,
+    tsconfigRootDir: import.meta.dirname,  // workspace tsconfig.json, not the factory's
     reactRefresh: false,  // portal is bundled as UMD for theme distribution
     i18next: true,
     ignores: ['umd/**/*', 'dist/**/*']
