@@ -54,12 +54,25 @@ export default defineConfig((config) => {
             emptyOutDir: true,
             minify: config.mode === 'production',
             sourcemap: true,
-            cssCodeSplit: true,
+            cssCodeSplit: false,
             lib: {
                 entry: resolve(__dirname, 'src/index.js'),
                 formats: ['umd'],
                 name: pkg.name,
                 fileName: format => `${outputFileName}.min.js`
+            },
+            rollupOptions: {
+                output: {
+                    // Theme templates reference umd/main.css by name (see
+                    // ghost/core defaults.json → sodoSearch.styles), so the
+                    // CSS sibling emitted by Vite must keep that filename.
+                    assetFileNames: (assetInfo) => {
+                        if (assetInfo.name && assetInfo.name.endsWith('.css')) {
+                            return 'main.css';
+                        }
+                        return 'assets/[name]-[hash][extname]';
+                    }
+                }
             },
             commonjsOptions: {
                 include: [/ghost/, /node_modules/],

@@ -1918,6 +1918,9 @@ importers:
       '@vitest/coverage-v8':
         specifier: 'catalog:'
         version: 4.1.8(vitest@4.1.8)
+      autoprefixer:
+        specifier: 10.5.0
+        version: 10.5.0(postcss@8.5.15)
       concurrently:
         specifier: 'catalog:'
         version: 10.0.3
@@ -1942,6 +1945,12 @@ importers:
       nock:
         specifier: 14.0.15
         version: 14.0.15
+      postcss:
+        specifier: 'catalog:'
+        version: 8.5.15
+      postcss-import:
+        specifier: 16.1.1
+        version: 16.1.1(postcss@8.5.15)
       tailwindcss:
         specifier: catalog:tailwind3
         version: 3.4.19(tsx@4.22.4)(yaml@2.9.0)
