@@ -5,24 +5,10 @@ import reactPlugin from 'eslint-plugin-react';
 import i18nextPlugin from 'eslint-plugin-i18next';
 import tseslint from 'typescript-eslint';
 
-const ghostRules = {
-    curly: 'error',
-    camelcase: ['error', {properties: 'never'}],
-    'dot-notation': 'error',
-    eqeqeq: ['error', 'always'],
-    'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-    'no-eval': 'error',
-    'no-useless-call': 'error',
-    'no-console': 'error',
-    'no-shadow': 'error',
-    'array-callback-return': 'error',
-    'no-constructor-return': 'error',
-    'no-promise-executor-return': 'error',
-    // ESLint 9 flipped no-unused-vars caughtErrors default from 'none' to 'all' —
-    // restore the previous behavior so unused catch bindings stay tolerated.
-    'no-unused-vars': ['error', {caughtErrors: 'none'}],
-    'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
-};
+import {
+    correctnessRules,
+    jsUnusedVarsRule
+} from '../../eslint.shared.mjs';
 
 const i18nextFlat = i18nextPlugin.configs['flat/recommended'];
 const reactFlat = reactPlugin.configs.flat.recommended;
@@ -60,7 +46,8 @@ export default tseslint.config(
             ...reactFlat.rules,
             ...reactJsxRuntime.rules,
             ...i18nextFlat.rules,
-            ...ghostRules,
+            ...correctnessRules,
+            ...jsUnusedVarsRule,
             'react/prop-types': 'off'
         }
     },
@@ -94,7 +81,8 @@ export default tseslint.config(
             ...reactFlat.rules,
             ...reactJsxRuntime.rules,
             ...i18nextFlat.rules,
-            ...ghostRules,
+            ...correctnessRules,
+            ...jsUnusedVarsRule,
             'react/prop-types': 'off'
         }
     }

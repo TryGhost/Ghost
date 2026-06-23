@@ -5,32 +5,15 @@ import reactPlugin from 'eslint-plugin-react';
 import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
 import tseslint from 'typescript-eslint';
 
-const tailwindConfig = `${import.meta.dirname}/tailwind.config.cjs`;
+import {
+    correctnessRules,
+    reactDefaultsOff,
+    sortImportsRule,
+    tailwindRulesWithConfig,
+    tsUnusedVarsRule
+} from '../../eslint.shared.mjs';
 
-const ghostRules = {
-    curly: 'error',
-    camelcase: ['error', {properties: 'never'}],
-    'dot-notation': 'error',
-    eqeqeq: ['error', 'always'],
-    'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-    'no-eval': 'error',
-    'no-useless-call': 'error',
-    'no-console': 'error',
-    'no-shadow': 'error',
-    'array-callback-return': 'error',
-    'no-constructor-return': 'error',
-    'no-promise-executor-return': 'error',
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {
-        args: 'after-used',
-        argsIgnorePattern: '^_',
-        caughtErrors: 'none'
-    }],
-    'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
-    'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
-        memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
-    }]
-};
+const tailwindConfig = `${import.meta.dirname}/tailwind.config.cjs`;
 
 const reactFlat = reactPlugin.configs.flat.recommended;
 
@@ -61,10 +44,10 @@ export default tseslint.config(
         rules: {
             ...js.configs.recommended.rules,
             ...reactFlat.rules,
-            ...ghostRules,
-            '@typescript-eslint/no-inferrable-types': 'off',
-            'react/react-in-jsx-scope': 'off',
-            'react/prop-types': 'off',
+            ...correctnessRules,
+            ...tsUnusedVarsRule,
+            ...sortImportsRule,
+            ...reactDefaultsOff,
             'react/jsx-sort-props': ['error', {
                 reservedFirst: true,
                 callbacksLast: true,
@@ -73,13 +56,8 @@ export default tseslint.config(
             }],
             'react/button-has-type': 'error',
             'react/no-array-index-key': 'error',
-            'tailwindcss/classnames-order': ['error', {config: tailwindConfig}],
-            'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: tailwindConfig}],
-            'tailwindcss/enforces-shorthand': ['warn', {config: tailwindConfig}],
-            'tailwindcss/migration-from-tailwind-2': ['warn', {config: tailwindConfig}],
-            'tailwindcss/no-arbitrary-value': 'off',
-            'tailwindcss/no-custom-classname': 'off',
-            'tailwindcss/no-contradicting-classname': ['error', {config: tailwindConfig}]
+            ...tailwindRulesWithConfig(tailwindConfig),
+            '@typescript-eslint/no-inferrable-types': 'off'
         }
     }
 );

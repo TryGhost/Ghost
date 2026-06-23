@@ -7,34 +7,18 @@ import reactRefreshPlugin from 'eslint-plugin-react-refresh';
 import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
 import tseslint from 'typescript-eslint';
 
+import {
+    correctnessRules,
+    mochaRulesOff,
+    reactDefaultsOff,
+    reactStrictRules,
+    shadeLayeredImportsRule,
+    sortImportsRule,
+    tailwindRulesV4,
+    tsUnusedVarsRule
+} from '../../eslint.shared.mjs';
+
 const tailwindCssConfig = `${import.meta.dirname}/../admin/src/index.css`;
-
-const ghostRules = {
-    curly: 'error',
-    camelcase: ['error', {properties: 'never'}],
-    'dot-notation': 'error',
-    eqeqeq: ['error', 'always'],
-    'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-    'no-eval': 'error',
-    'no-useless-call': 'error',
-    'no-console': 'error',
-    'array-callback-return': 'error',
-    'no-constructor-return': 'error',
-    'no-promise-executor-return': 'error',
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {
-        args: 'after-used',
-        argsIgnorePattern: '^_',
-        caughtErrors: 'none'
-    }],
-    'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
-};
-
-const mochaRulesOff = Object.fromEntries(
-    Object.keys(ghostPlugin.rules || {})
-        .filter(rule => rule.startsWith('mocha/'))
-        .map(rule => [`ghost/${rule}`, 'off'])
-);
 
 const reactFlat = reactPlugin.configs.flat.recommended;
 
@@ -69,43 +53,22 @@ export default tseslint.config(
             ...js.configs.recommended.rules,
             ...reactFlat.rules,
             ...reactHooksPlugin.configs.recommended.rules,
-            ...ghostRules,
+            ...correctnessRules,
+            ...tsUnusedVarsRule,
+            ...reactDefaultsOff,
+            ...reactStrictRules,
+            ...sortImportsRule,
+            ...shadeLayeredImportsRule,
+            ...tailwindRulesV4,
             'no-undef': 'off',
             'no-redeclare': 'off',
             'no-unexpected-multiline': 'off',
             'no-shadow': 'off',
             '@typescript-eslint/no-shadow': 'error',
-            'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
-                memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
-            }],
-            'no-restricted-imports': ['error', {
-                paths: [{
-                    name: '@tryghost/shade',
-                    message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).'
-                }]
-            }],
             'react-refresh/only-export-components': 'off',
-            'react/react-in-jsx-scope': 'off',
-            'react/prop-types': 'off',
             '@typescript-eslint/no-inferrable-types': 'off',
             '@typescript-eslint/no-non-null-assertion': 'off',
-            '@typescript-eslint/no-empty-function': 'off',
-            'react/jsx-sort-props': ['error', {
-                reservedFirst: true,
-                callbacksLast: true,
-                shorthandLast: true,
-                locale: 'en'
-            }],
-            'react/button-has-type': 'error',
-            'react/no-array-index-key': 'error',
-            'react/jsx-key': 'off',
-            'tailwindcss/classnames-order': 'error',
-            'tailwindcss/enforces-negative-arbitrary-values': 'warn',
-            'tailwindcss/enforces-shorthand': 'warn',
-            'tailwindcss/migration-from-tailwind-2': 'warn',
-            'tailwindcss/no-arbitrary-value': 'off',
-            'tailwindcss/no-custom-classname': 'off',
-            'tailwindcss/no-contradicting-classname': 'error'
+            '@typescript-eslint/no-empty-function': 'off'
         }
     },
     {
@@ -125,8 +88,9 @@ export default tseslint.config(
             ghost: ghostPlugin
         },
         rules: {
-            ...ghostRules,
-            ...mochaRulesOff,
+            ...correctnessRules,
+            ...tsUnusedVarsRule,
+            ...mochaRulesOff(ghostPlugin),
             'no-undef': 'off',
             '@typescript-eslint/no-inferrable-types': 'off'
         }
