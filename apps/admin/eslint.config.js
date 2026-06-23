@@ -8,6 +8,8 @@ import { globalIgnores } from 'eslint/config'
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
 import ghostPlugin from 'eslint-plugin-ghost';
 
+import {shadeLayeredImportsRule} from '../../eslint.shared.mjs';
+
 const noHardcodedGhostPaths = {
   meta: {
     type: 'problem',
@@ -74,12 +76,7 @@ export default tseslint.config([
     },
     rules: {
       'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
-      'no-restricted-imports': ['error', {
-        paths: [{
-          name: '@tryghost/shade',
-          message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).',
-        }],
-      }],
+      ...shadeLayeredImportsRule,
       'tailwindcss/classnames-order': 'error',
       'tailwindcss/no-contradicting-classname': 'error',
     },

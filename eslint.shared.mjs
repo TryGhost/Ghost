@@ -150,7 +150,11 @@ export const tsReactAppRules = {
 // (react-hooks is loaded by every React app now, including UMD — react-refresh
 // is the Vite-specific HMR rule.)
 export const viteOnlyExtras = {
-    // TODO: 195 violations across 7 Vite apps. Cleanup PR will flip to 'error'.
+    // LEGACY: 195 violations across 7 Vite apps. The rule fires on any module
+    // that exports a non-component alongside a component (utils, constants,
+    // hooks). React/Vite patterns mix these constantly — fixing 195 cases means
+    // splitting hundreds of files. Practically permanent; the rule's HMR
+    // benefit doesn't justify the codebase upheaval.
     'react-refresh/only-export-components': 'off'
 };
 
@@ -179,10 +183,13 @@ export const noGhostIgnitionRequireRule = {
     ]]
 };
 
-// Strict linter options. reportUnusedDisableDirectives is 'off' — the codebase
-// has accumulated stale inline `eslint-disable` comments that flipping this to
-// 'error' would surface in bulk. TODO: cleanup PR to delete the stale ones and
-// flip this to 'error'.
+// Strict linter options. reportUnusedDisableDirectives is 'off' for now.
+// TODO: ~50 stale inline `eslint-disable` comments across the codebase (rough
+// estimate based on prior autofix runs). Flipping this to 'error' requires
+// either deleting each manually (eslint --fix tends to leave whitespace
+// residue) or a careful autofix + cleanup pass. Worth doing — once flipped,
+// the lint output stays honest about whether each inline disable is suppressing
+// an actual violation.
 export const strictLinterOptions = {
     linterOptions: {
         reportUnusedDisableDirectives: 'off'
@@ -274,15 +281,20 @@ export const localFilenamesPlugin = {
  * @property {boolean} [i18next=false]
  *   When true: load eslint-plugin-i18next and apply its flat/recommended preset.
  * @property {'plugin' | 'storiesBlock' | null} [storybook=null]
- *   `'plugin'` spreads eslint-plugin-storybook's flat/recommended (shade).
- *   `'storiesBlock'` adds an inline override turning off
- *   `react-hooks/rules-of-hooks` for `**\/*.stories.*` files only
- *   (admin-x-design-system — Storybook story `render()` functions call hooks
- *   but aren't React components).
- *   `null` skips Storybook handling entirely.
+ *   - `'plugin'`: applies eslint-plugin-storybook's full flat/recommended
+ *     ruleset (story-exports check, prefer-pascal-case, hierarchy-separator,
+ *     no-redundant-story-name, etc.) — this is what you want for any workspace
+ *     with a proper Storybook setup. Used by shade.
+ *   - `'storiesBlock'`: a minimal escape hatch — adds just one rule override
+ *     (`react-hooks/rules-of-hooks: 'off'`) scoped to `**\/*.stories.*` files,
+ *     for workspaces that have Storybook stories but don't want the full
+ *     storybook ruleset. Used by admin-x-design-system.
+ *   - `null` (default): skip Storybook handling entirely.
  * @property {string} [tailwindCssPath]
  *   Absolute path to a Tailwind v4 CSS config. Omit to skip Tailwind. Setting
- *   both this and `legacyTailwindV3ConfigPath` throws.
+ *   both this and `legacyTailwindV3ConfigPath` throws. NOTE: the workspace
+ *   must also have `tailwindcss` as a (dev)Dependency — the
+ *   eslint-plugin-tailwindcss settings-based resolver requires it locally.
  * @property {string} [legacyTailwindV3ConfigPath]
  *   LEGACY escape hatch. Absolute path to a Tailwind v3 JS/CJS config. Used by
  *   comments-ui and signup-form until they migrate to v4. The migration
@@ -454,8 +466,9 @@ export async function reactAppConfig({
         ...reactFlat.rules,
         ...(i18nextFlat?.rules ?? {}),
         ...reactHooksPlugin.configs.recommended.rules,
-        // TODO: ~24 legacy violations across the Vite TS apps + 1 in
-        // announcement-bar. Real bug-catcher (missing useEffect/useMemo deps);
+        // TODO: ~46 legacy violations (~24 across Vite TS apps + 22 in
+        // comments-ui surfaced when react-hooks plugin was added there + 1 in
+        // announcement-bar). Real bug-catcher (missing useEffect/useMemo deps);
         // cleanup PR will fix per-call-site and flip this to 'error'. Until
         // then 'off' is intentional — the plugin's default is 'warn' which
         // Ghost's stance forbids.

@@ -255,7 +255,23 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
 
 ### ESLint Config
-Every workspace's `eslint.config.js` calls a factory from `eslint.shared.mjs` — two factories (`reactAppConfig` for frontend apps, `nodeLibConfig` for Node libs) cover 14 of 18 workspaces. Hover the factory call in your editor for JSDoc on every param. Standalone configs (ghost/core, ghost/admin, apps/admin, apps/admin-toolbar) exist because their rule sets don't fit the factory shape — read the file directly. Rules are `'error'` or `'off'` — never `'warn'`. Params prefixed `legacy*` mark migrations that haven't shipped yet (Tailwind v3 → v4, portal's JS → TS finish); they're intentional escape hatches, not nice-to-haves.
+Source of truth: [eslint.shared.mjs](eslint.shared.mjs) at the repo root. Two factories cover most workspaces — `reactAppConfig` (every `apps/*` workspace) and `nodeLibConfig` (Node libs in `ghost/`). Each factory has full JSDoc with `@example`s; hover the call site in your editor.
+
+Minimal example for a new admin React app (`apps/new-feature/eslint.config.js`):
+
+```js
+import {reactAppConfig} from '../../eslint.shared.mjs';
+export default await reactAppConfig({
+    tailwindCssPath: `${import.meta.dirname}/../admin/src/index.css`,
+    shadeRestricted: true
+});
+```
+
+Conventions:
+- **Rules are `'error'` or `'off'` — never `'warn'`.** Warnings get ignored and pollute output.
+- **Params prefixed `legacy*`** (`legacyTailwindV3ConfigPath`, `legacyJsTsSplit`) are escape hatches for migrations that haven't shipped yet. Intentional and visible — PRs to remove them are scoped.
+- **Standalone configs** (`ghost/core`, `ghost/admin`, `apps/admin`, `apps/admin-toolbar`) exist because their rule sets genuinely don't fit a factory — read the file directly. They import shared atoms (`correctnessRules`, `nodeLibRules`, `localFilenamesPlugin`, `strictLinterOptions`) where applicable.
+- **Plugin deps**: workspaces that use Tailwind must list `tailwindcss` as a (dev)Dependency themselves; other eslint plugins are root devDeps because the factory imports them dynamically.
 
 ### When Working on Admin UI
 - **New features:** Build in React (`apps/admin-x-*` or `apps/posts`)

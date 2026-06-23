@@ -4,39 +4,53 @@ import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
 import tseslint from 'typescript-eslint';
 
-import {localFilenamesPlugin, strictLinterOptions} from '../../eslint.shared.mjs';
+import {
+    correctnessRules,
+    jsUnusedVarsRule,
+    localFilenamesPlugin,
+    mochaRulesOff,
+    nodeLibRules,
+    strictLinterOptions
+} from '../../eslint.shared.mjs';
 
 const __dirname = import.meta.dirname;
 
+// nodeLibRules + jsUnusedVarsRule covers the bulk. Two workspace-specific:
+// turn off ghost/filenames/match-regex (we use local-filenames/match-regex in
+// scoped blocks below) and no-unused-private-class-members (codebase has
+// intentional placeholder private fields; ESLint 9 added this rule to
+// recommended without warning).
 const ghostBaseRules = {
-    curly: 'error',
-    camelcase: ['error', {properties: 'never'}],
-    'dot-notation': 'error',
-    eqeqeq: ['error', 'always'],
-    'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-    'no-eval': 'error',
-    'no-useless-call': 'error',
-    'no-console': 'error',
-    'no-shadow': 'error',
-    'array-callback-return': 'error',
-    'no-constructor-return': 'error',
-    'no-promise-executor-return': 'error',
-    'no-unused-vars': ['error', {caughtErrors: 'none'}],
-    // ESLint 9 added this to eslint:recommended; the codebase has intentional
-    // placeholder private fields and was not previously linted for them.
-    'no-unused-private-class-members': 'off',
-    'no-var': 'error',
-    'one-var': ['error', 'never'],
-    'ghost/ghost-custom/no-native-error': 'error',
-    'ghost/ghost-custom/ghost-error-usage': 'error',
-    'ghost/ghost-custom/ghost-tpl-usage': 'error'
+    ...nodeLibRules,
+    ...jsUnusedVarsRule,
+    'ghost/filenames/match-regex': 'off',
+    'no-unused-private-class-members': 'off'
 };
 
-const mochaRulesOff = Object.fromEntries(
-    Object.keys(ghostPlugin.rules || {})
-        .filter(rule => rule.startsWith('mocha/'))
-        .map(rule => [`ghost/${rule}`, 'off'])
-);
+const mochaRulesOffForGhost = mochaRulesOff(ghostPlugin);
+
+// LEGACY: typescript-eslint v8's recommended ruleset is stricter than the old
+// plugin:ghost/ts posture. These overrides restore the previous behavior so
+// the TS migration isn't blocked. Re-enabling each is its own cleanup PR
+// (counts are codebase-wide and large — flipping any would block this PR).
+// Applied across 4 file-glob blocks in ghost/core to ensure they win over
+// every tseslint extends in the chain.
+const tsLegacyRelaxations = {
+    // LEGACY: tseslint v8 default. Switching means cleaning up CommonJS
+    // `require()` calls across hundreds of .ts files.
+    '@typescript-eslint/no-require-imports': 'off',
+    // LEGACY: tseslint v8 default. Codebase uses `expect(x).to.be.true`
+    // patterns that read as unused expressions.
+    '@typescript-eslint/no-unused-expressions': 'off',
+    // LEGACY: tseslint v8 default. `Function` used as a type for callbacks.
+    '@typescript-eslint/no-unsafe-function-type': 'off',
+    // LEGACY: tseslint v8 default. `// @ts-ignore` comments still exist.
+    '@typescript-eslint/ban-ts-comment': 'off',
+    // LEGACY: previous posture from plugin:ghost/ts allowed inferrable types.
+    '@typescript-eslint/no-inferrable-types': 'off',
+    // LEGACY: `let` declarations across the codebase could be `const`.
+    'prefer-const': 'off'
+};
 
 const migrationLoopRules = ['error',
     {selector: 'ForStatement', message: 'For statements can perform badly in migrations'},
@@ -116,33 +130,18 @@ export default tseslint.config(
                 caughtErrors: 'none'
             }],
             'no-undef': 'off',
-            // typescript-eslint v8's recommended is stricter than what the
-            // legacy ghost/ts config enforced. Match the previous posture
-            // until a separate cleanup pass tightens them.
-            '@typescript-eslint/no-inferrable-types': 'off',
             '@typescript-eslint/no-explicit-any': 'error',
-            '@typescript-eslint/no-require-imports': 'off',
-            '@typescript-eslint/no-unused-expressions': 'off',
-            '@typescript-eslint/no-unsafe-function-type': 'off',
-            '@typescript-eslint/ban-ts-comment': 'off',
-            'prefer-const': 'off'
+            ...tsLegacyRelaxations
         }
     },
     // ============================================================
-    // TypeScript override block: relax tseslint v8 recommended back to
-    // the posture the legacy plugin:ghost/ts enforced. Must come AFTER the
-    // tseslint extends to win.
+    // TypeScript override block: must come AFTER tseslint extends to win.
     // ============================================================
     {
         files: ['core/**/*.ts', '*.ts'],
         rules: {
             '@typescript-eslint/no-explicit-any': 'error',
-            '@typescript-eslint/no-require-imports': 'off',
-            '@typescript-eslint/no-unused-expressions': 'off',
-            '@typescript-eslint/no-unsafe-function-type': 'off',
-            '@typescript-eslint/ban-ts-comment': 'off',
-            '@typescript-eslint/no-inferrable-types': 'off',
-            'prefer-const': 'off'
+            ...tsLegacyRelaxations
         }
     },
     // ============================================================
@@ -354,21 +353,14 @@ export default tseslint.config(
         rules: {
             ...js.configs.recommended.rules,
             // Tests historically extended ghost/test (= base + test-rules).
-            // Re-applying only the rules that the legacy config actually had:
-            curly: 'error',
-            'dot-notation': 'error',
-            eqeqeq: ['error', 'always'],
-            'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-            'no-eval': 'error',
-            'no-useless-call': 'error',
-            'no-console': 'error',
-            'array-callback-return': 'error',
-            'no-constructor-return': 'error',
-            'no-promise-executor-return': 'error',
+            // Base rules come from correctnessRules (minus the ghost-filenames
+            // rule we replace with local-filenames below); test-rules are the
+            // workspace-specific extras after.
+            ...correctnessRules,
+            'ghost/filenames/match-regex': 'off',
             'no-unused-private-class-members': 'off',
-            ...mochaRulesOff,
+            ...mochaRulesOffForGhost,
             'ghost/mocha/no-skipped-tests': 'error',
-            'no-shadow': 'error',
             camelcase: 'off',
             'no-prototype-builtins': 'off',
             'no-unused-vars': ['error', {
@@ -397,12 +389,7 @@ export default tseslint.config(
         extends: [...tseslint.configs.recommended],
         rules: {
             '@typescript-eslint/no-explicit-any': 'error',
-            '@typescript-eslint/no-require-imports': 'off',
-            '@typescript-eslint/no-unused-expressions': 'off',
-            '@typescript-eslint/no-unsafe-function-type': 'off',
-            '@typescript-eslint/ban-ts-comment': 'off',
-            '@typescript-eslint/no-inferrable-types': 'off',
-            'prefer-const': 'off'
+            ...tsLegacyRelaxations
         }
     },
     // Test files override — must come AFTER the final relaxation so the
@@ -414,12 +401,7 @@ export default tseslint.config(
         rules: {
             '@typescript-eslint/no-unused-vars': 'off',
             '@typescript-eslint/no-explicit-any': 'error',
-            '@typescript-eslint/no-require-imports': 'off',
-            '@typescript-eslint/no-unused-expressions': 'off',
-            '@typescript-eslint/no-unsafe-function-type': 'off',
-            '@typescript-eslint/ban-ts-comment': 'off',
-            '@typescript-eslint/no-inferrable-types': 'off',
-            'prefer-const': 'off'
+            ...tsLegacyRelaxations
         }
     }
 );
