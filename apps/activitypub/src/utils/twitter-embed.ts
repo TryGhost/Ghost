@@ -1,10 +1,13 @@
 const TWITTER_WIDGET_SCRIPT_URL = 'https://platform.twitter.com/widgets.js';
+const TWITTER_DIRECT_EMBED_URL = 'https://platform.twitter.com/embed/Tweet.html';
+const TWITTER_DIRECT_EMBED_ORIGIN = 'https://platform.twitter.com';
+const TWITTER_DIRECT_EMBED_PATH = '/embed/Tweet.html';
+const TWITTER_WIDGET_SCRIPT_HOSTS = new Set(['platform.twitter.com', 'platform.x.com']);
 export const TWITTER_EMBED_SELECTOR = 'blockquote.twitter-tweet';
 
 export const TWITTER_EMBED_MIN_HEIGHT = 120;
-const TWITTER_EMBED_INITIAL_HEIGHT = 240;
-export const TWITTER_EMBED_MAX_HEIGHT = 1200;
-export const TWITTER_EMBED_RESIZE_MESSAGE = 'ghost-twitter-embed-resize';
+const TWITTER_EMBED_INITIAL_HEIGHT = 720;
+export const TWITTER_EMBED_MAX_HEIGHT = 2000;
 export const TWITTER_EMBED_STYLE_MESSAGE = 'ghost-twitter-embed-style';
 
 export interface TwitterEmbedSandboxOptions {
@@ -14,18 +17,9 @@ export interface TwitterEmbedSandboxOptions {
     sepia?: boolean;
 }
 
-export interface TwitterEmbedSandboxStyle {
-    fontSize: string;
-    fontSizeMultiplier: string;
-    textColor: string;
-    secondaryTextColor: string;
-    linkColor: string;
-    bodyClass: 'has-sans-body' | 'has-serif-body';
-}
-
 export interface TwitterEmbedStyleMessage {
     type: typeof TWITTER_EMBED_STYLE_MESSAGE;
-    style: TwitterEmbedSandboxStyle;
+    style: TwitterEmbedSandboxOptions;
 }
 
 export interface TwitterEmbedStyleOptions {
@@ -40,178 +34,18 @@ export interface TwitterEmbeddedArticle {
     html: string;
 }
 
-const buildTwitterEmbedSrcDoc = (blockquoteHtml: string, options: TwitterEmbedSandboxOptions = {}) => {
-    const style = getTwitterEmbedSandboxStyle(options);
+interface TwitterEmbedResizeMessage {
+    height: number;
+    tweetId: string | null;
+}
 
-    return `<!doctype html>
-<html>
-<head>
-    <base target="_blank">
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <style>
-        :root {
-            --color-primary-text: ${style.textColor};
-            --color-secondary-text: ${style.secondaryTextColor};
-            --font-sans: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu", "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-            --font-serif-alt: Georgia, Times, serif;
-            --font-size: ${style.fontSize};
-            --font-size-multiplier: ${style.fontSizeMultiplier};
-            --twitter-link-color: ${style.linkColor};
-        }
-
-        *,
-        *::before,
-        *::after {
-            box-sizing: border-box;
-        }
-
-        * {
-            margin: 0;
-        }
-
-        html {
-            font-size: 62.5%;
-        }
-
-        html,
-        body {
-            padding: 0;
-            overflow: hidden;
-            background: transparent;
-        }
-
-        body {
-            min-width: 0;
-            color: var(--color-primary-text);
-            font-family: var(--font-sans);
-            font-size: calc(var(--font-size) * var(--font-size-multiplier));
-            line-height: 1.5;
-            -webkit-font-smoothing: antialiased;
-            -moz-osx-font-smoothing: grayscale;
-        }
-
-        .has-serif-body blockquote.twitter-tweet {
-            font-family: var(--font-serif-alt);
-        }
-
-        blockquote.twitter-tweet {
-            width: 100% !important;
-            max-width: none !important;
-            padding: 0 !important;
-            border: 0 !important;
-        }
-
-        iframe.twitter-tweet-rendered,
-        .twitter-rendered-card {
-            margin: 0 auto !important;
-            max-width: 550px;
-        }
-
-        blockquote.twitter-tweet a:not([class]),
-        .twitter-rendered-card__meta a {
-            color: var(--twitter-link-color) !important;
-            text-decoration: underline !important;
-        }
-
-    </style>
-</head>
-<body class="${style.bodyClass}">
-    ${blockquoteHtml}
-    <script>
-        (function () {
-            const minHeight = ${TWITTER_EMBED_MIN_HEIGHT};
-            const maxHeight = ${TWITTER_EMBED_MAX_HEIGHT};
-            const styleMessageType = '${TWITTER_EMBED_STYLE_MESSAGE}';
-
-            function setCustomProperty(name, value) {
-                if (typeof value === 'string') {
-                    document.documentElement.style.setProperty(name, value);
-                }
-            }
-
-            function applyStyle(style) {
-                if (!style) {
-                    return;
-                }
-
-                setCustomProperty('--color-primary-text', style.textColor);
-                setCustomProperty('--color-secondary-text', style.secondaryTextColor);
-                setCustomProperty('--font-size', style.fontSize);
-                setCustomProperty('--font-size-multiplier', style.fontSizeMultiplier);
-                setCustomProperty('--twitter-link-color', style.linkColor);
-
-                if (style.bodyClass === 'has-serif-body' || style.bodyClass === 'has-sans-body') {
-                    document.body.classList.remove('has-serif-body', 'has-sans-body');
-                    document.body.classList.add(style.bodyClass);
-                }
-
-                sendHeight();
-            }
-
-            function getHeight() {
-                const elements = Array.from(document.body.children).filter(function (element) {
-                    return element.tagName !== 'SCRIPT';
-                });
-                const contentHeight = elements.reduce(function (maxHeight, element) {
-                    return Math.max(maxHeight, element.getBoundingClientRect().bottom);
-                }, 0);
-
-                return Math.min(Math.max(
-                    Math.ceil(contentHeight),
-                    minHeight
-                ), maxHeight);
-            }
-
-            function sendHeight() {
-                window.parent.postMessage({
-                    type: '${TWITTER_EMBED_RESIZE_MESSAGE}',
-                    height: getHeight()
-                }, '*');
-            }
-
-            if (typeof ResizeObserver === 'function') {
-                new ResizeObserver(sendHeight).observe(document.body);
-            }
-
-            document.addEventListener('DOMContentLoaded', sendHeight);
-            window.addEventListener('load', sendHeight);
-            window.addEventListener('message', function (event) {
-                const data = event.data || {};
-
-                if (data.type === styleMessageType) {
-                    applyStyle(data.style);
-                }
-            });
-
-            let attempts = 0;
-            const interval = window.setInterval(function () {
-                sendHeight();
-                attempts += 1;
-
-                if (attempts > 20) {
-                    window.clearInterval(interval);
-                }
-            }, 250);
-        })();
-    </script>
-    <script async src="${TWITTER_WIDGET_SCRIPT_URL}" charset="utf-8"></script>
-</body>
-</html>`;
+const isObjectRecord = (value: unknown): value is Record<string, unknown> => {
+    return Boolean(value) && typeof value === 'object';
 };
-
-export const getTwitterEmbedSandboxStyle = (options: TwitterEmbedSandboxOptions = {}): TwitterEmbedSandboxStyle => ({
-    fontSize: options.fontSize || '1.7rem',
-    fontSizeMultiplier: options.fontStyle === 'serif' ? '1.1' : '1',
-    textColor: options.darkMode ? '#fff' : '#15171a',
-    secondaryTextColor: options.darkMode ? 'rgb(255 255 255 / 0.64)' : 'rgb(124 139 154)',
-    linkColor: options.sepia ? '#DD6B02' : '#14B8FF',
-    bodyClass: options.fontStyle === 'serif' ? 'has-serif-body' : 'has-sans-body'
-});
 
 export const getTwitterEmbedStyleMessage = (options: TwitterEmbedSandboxOptions = {}): TwitterEmbedStyleMessage => ({
     type: TWITTER_EMBED_STYLE_MESSAGE,
-    style: getTwitterEmbedSandboxStyle(options)
+    style: options
 });
 
 export const getTwitterEmbedOptions = (style: TwitterEmbedStyleOptions): TwitterEmbedSandboxOptions => ({
@@ -220,6 +54,144 @@ export const getTwitterEmbedOptions = (style: TwitterEmbedStyleOptions): Twitter
     darkMode: style.darkMode,
     sepia: style.backgroundColor === 'SEPIA'
 });
+
+const getTweetIdFromUrl = (href: string) => {
+    try {
+        const url = new URL(href, window.location.href);
+
+        if (url.hostname !== 'twitter.com' && url.hostname !== 'www.twitter.com' && url.hostname !== 'x.com' && url.hostname !== 'www.x.com') {
+            return null;
+        }
+
+        return url.pathname.match(/^\/[^/]+\/status(?:es)?\/(\d+)/)?.[1] || null;
+    } catch {
+        return null;
+    }
+};
+
+const getTweetIdFromBlockquote = (blockquoteHtml: string) => {
+    const div = document.createElement('div');
+    div.innerHTML = blockquoteHtml;
+
+    const links = Array.from(div.querySelectorAll('a[href]'));
+
+    for (const link of links) {
+        const tweetId = getTweetIdFromUrl(link.getAttribute('href') || '');
+
+        if (tweetId) {
+            return tweetId;
+        }
+    }
+
+    return null;
+};
+
+const getDirectTwitterEmbedUrl = (tweetId: string, options: TwitterEmbedSandboxOptions = {}) => {
+    const url = new URL(TWITTER_DIRECT_EMBED_URL);
+
+    url.searchParams.set('dnt', 'true');
+    url.searchParams.set('id', tweetId);
+    url.searchParams.set('theme', options.darkMode ? 'dark' : 'light');
+
+    return url.toString();
+};
+
+const parseTwitterEmbedMessageData = (data: unknown): Record<string, unknown> | null => {
+    if (typeof data === 'string') {
+        try {
+            const parsedData: unknown = JSON.parse(data);
+            return isObjectRecord(parsedData) ? parsedData : null;
+        } catch {
+            return null;
+        }
+    }
+
+    if (isObjectRecord(data)) {
+        return data;
+    }
+
+    return null;
+};
+
+const getTwitterEmbedResizeMessage = (data: unknown): TwitterEmbedResizeMessage | null => {
+    const messageData = parseTwitterEmbedMessageData(data);
+    const twttr = isObjectRecord(messageData?.twttr) ? messageData.twttr : null;
+    const embedMessage = isObjectRecord(twttr?.embed) ? twttr.embed : null;
+
+    if (!embedMessage || embedMessage.method !== 'twttr.private.resize') {
+        return null;
+    }
+
+    const paramsList = Array.isArray(embedMessage.params) ? embedMessage.params : [];
+    const params = isObjectRecord(paramsList[0]) ? paramsList[0] : {};
+    const height = Number(params.height);
+
+    if (!Number.isFinite(height)) {
+        return null;
+    }
+
+    const dataObject = isObjectRecord(params.data) ? params.data : null;
+    const tweetId = dataObject?.tweet_id;
+
+    return {
+        height,
+        tweetId: tweetId === undefined || tweetId === null ? null : String(tweetId)
+    };
+};
+
+const isDirectTwitterEmbedFrame = (frame: HTMLIFrameElement) => {
+    try {
+        const url = new URL(frame.getAttribute('src') || '', window.location.href);
+        return url.origin === TWITTER_DIRECT_EMBED_ORIGIN && url.pathname === TWITTER_DIRECT_EMBED_PATH;
+    } catch {
+        return false;
+    }
+};
+
+const getDirectTwitterEmbedFrameFromMessage = (doc: Document, event: MessageEvent, tweetId: string | null) => {
+    const frames = Array.from(doc.querySelectorAll<HTMLIFrameElement>('iframe[data-gh-twitter-direct-embed]'));
+
+    for (const frame of frames) {
+        if (!isDirectTwitterEmbedFrame(frame)) {
+            continue;
+        }
+
+        if (frame.contentWindow === event.source) {
+            return frame;
+        }
+
+        if (event.origin === TWITTER_DIRECT_EMBED_ORIGIN && tweetId && frame.getAttribute('data-tweet-id') === tweetId) {
+            return frame;
+        }
+    }
+
+    return null;
+};
+
+const setDirectTwitterEmbedHeight = (frame: HTMLIFrameElement, height: number) => {
+    const boundedHeight = Math.min(Math.max(height, TWITTER_EMBED_MIN_HEIGHT), TWITTER_EMBED_MAX_HEIGHT);
+    frame.style.height = `${boundedHeight}px`;
+};
+
+export const resizeTwitterEmbedFromMessage = (articleIframe: HTMLIFrameElement | null, event: MessageEvent) => {
+    const resizeMessage = getTwitterEmbedResizeMessage(event.data);
+    const articleDocument = articleIframe?.contentDocument;
+
+    if (!resizeMessage || !articleDocument) {
+        return false;
+    }
+
+    const frame = getDirectTwitterEmbedFrameFromMessage(articleDocument, event, resizeMessage.tweetId);
+
+    if (!frame) {
+        return false;
+    }
+
+    setDirectTwitterEmbedHeight(frame, resizeMessage.height);
+    articleIframe.contentWindow?.postMessage({type: 'triggerResize'}, '*');
+
+    return true;
+};
 
 export const hasTwitterEmbed = (content: string) => {
     if (!content.includes('twitter-tweet')) {
@@ -246,59 +218,121 @@ export const isTwitterWidgetScript = (script: HTMLScriptElement) => {
     try {
         const url = new URL(src, window.location.href);
         const twitterWidgetUrl = new URL(TWITTER_WIDGET_SCRIPT_URL);
-        return url.origin === twitterWidgetUrl.origin && url.pathname === twitterWidgetUrl.pathname;
+        return TWITTER_WIDGET_SCRIPT_HOSTS.has(url.hostname) && url.pathname === twitterWidgetUrl.pathname;
     } catch {
         return false;
     }
 };
 
 export const getTwitterEmbedBridgeScript = () => `
-                const twitterEmbedResizeMessageType = '${TWITTER_EMBED_RESIZE_MESSAGE}';
                 const twitterEmbedStyleMessageType = '${TWITTER_EMBED_STYLE_MESSAGE}';
-                let currentTwitterEmbedStyleMessage = null;
+                const twitterDirectEmbedOrigin = '${TWITTER_DIRECT_EMBED_ORIGIN}';
+                const twitterDirectEmbedPath = '${TWITTER_DIRECT_EMBED_PATH}';
 
-                function forwardTwitterEmbedStyle(frame) {
-                    if (currentTwitterEmbedStyleMessage && frame.contentWindow) {
-                        frame.contentWindow.postMessage(currentTwitterEmbedStyleMessage, '*');
+                function parseTwitterEmbedMessageData(data) {
+                    if (typeof data === 'string') {
+                        try {
+                            return JSON.parse(data);
+                        } catch {
+                            return null;
+                        }
                     }
+
+                    if (data && typeof data === 'object') {
+                        return data;
+                    }
+
+                    return null;
+                }
+
+                function getDirectTwitterEmbedTheme(style) {
+                    return style && style.darkMode ? 'dark' : 'light';
+                }
+
+                function isDirectTwitterEmbedFrame(frame) {
+                    try {
+                        const url = new URL(frame.getAttribute('src') || '', window.location.href);
+                        return url.origin === twitterDirectEmbedOrigin && url.pathname === twitterDirectEmbedPath;
+                    } catch {
+                        return false;
+                    }
+                }
+
+                function getDirectTwitterEmbedFrameFromMessage(event, tweetId) {
+                    const frames = document.querySelectorAll('iframe[data-gh-twitter-direct-embed]');
+
+                    for (const frame of frames) {
+                        if (!isDirectTwitterEmbedFrame(frame)) {
+                            continue;
+                        }
+
+                        if (frame.contentWindow === event.source) {
+                            return frame;
+                        }
+
+                        if (event.origin === twitterDirectEmbedOrigin && tweetId && frame.getAttribute('data-tweet-id') === String(tweetId)) {
+                            return frame;
+                        }
+                    }
+
+                    return null;
                 }
 
                 function updateTwitterEmbedStyle(data) {
-                    currentTwitterEmbedStyleMessage = data;
-                    const frames = document.querySelectorAll('iframe[data-gh-twitter-embed]');
+                    const theme = getDirectTwitterEmbedTheme(data.style);
+                    const frames = document.querySelectorAll('iframe[data-gh-twitter-direct-embed]');
 
                     for (const frame of frames) {
-                        forwardTwitterEmbedStyle(frame);
+                        try {
+                            const url = new URL(frame.getAttribute('src') || '', window.location.href);
+
+                            if (url.origin !== twitterDirectEmbedOrigin || url.pathname !== twitterDirectEmbedPath) {
+                                continue;
+                            }
+
+                            if (url.searchParams.get('theme') === theme) {
+                                continue;
+                            }
+
+                            url.searchParams.set('theme', theme);
+                            frame.style.height = '${TWITTER_EMBED_INITIAL_HEIGHT}px';
+                            frame.setAttribute('src', url.toString());
+                        } catch {
+                            continue;
+                        }
                     }
 
-                    resizeIframe();
+                    if (typeof resizeIframe === 'function') {
+                        resizeIframe();
+                    }
                 }
 
-                function resizeTwitterEmbed(event) {
-                    const data = event.data || {};
+                function resizeDirectTwitterEmbed(event) {
+                    const data = parseTwitterEmbedMessageData(event.data);
+                    const embedMessage = data && data.twttr && data.twttr.embed;
 
-                    if (data.type !== twitterEmbedResizeMessageType) {
+                    if (!embedMessage || embedMessage.method !== 'twttr.private.resize') {
                         return false;
                     }
 
-                    const height = Number(data.height);
+                    const params = embedMessage.params && embedMessage.params[0] || {};
+                    const tweetId = params.data && params.data.tweet_id;
+                    const height = Number(params.height);
 
                     if (!Number.isFinite(height)) {
                         return true;
                     }
 
-                    const boundedHeight = Math.min(Math.max(height, ${TWITTER_EMBED_MIN_HEIGHT}), ${TWITTER_EMBED_MAX_HEIGHT});
-                    const frames = document.querySelectorAll('iframe[data-gh-twitter-embed]');
+                    const frame = getDirectTwitterEmbedFrameFromMessage(event, tweetId);
 
-                    for (const frame of frames) {
-                        if (frame.contentWindow === event.source) {
-                            frame.style.height = boundedHeight + 'px';
-                            forwardTwitterEmbedStyle(frame);
-                            break;
-                        }
+                    if (frame) {
+                        const boundedHeight = Math.min(Math.max(height, ${TWITTER_EMBED_MIN_HEIGHT}), ${TWITTER_EMBED_MAX_HEIGHT});
+                        frame.style.height = boundedHeight + 'px';
                     }
 
-                    resizeIframe();
+                    if (typeof resizeIframe === 'function') {
+                        resizeIframe();
+                    }
                     return true;
                 }
 
@@ -310,24 +344,40 @@ export const getTwitterEmbedBridgeScript = () => `
                         return;
                     }
 
-                    resizeTwitterEmbed(event);
+                    if (resizeDirectTwitterEmbed(event)) {
+                        return;
+                    }
                 });
 `;
 
 export const renderTwitterEmbedInSandbox = (blockquoteHtml: string, options: TwitterEmbedSandboxOptions = {}) => {
+    const tweetId = getTweetIdFromBlockquote(blockquoteHtml);
+
+    if (!tweetId) {
+        return null;
+    }
+
+    return buildDirectTwitterEmbedIframe(tweetId, options);
+};
+
+const buildDirectTwitterEmbedIframe = (tweetId: string, options: TwitterEmbedSandboxOptions = {}) => {
     const iframe = document.createElement('iframe');
 
     iframe.className = 'gh-twitter-embed';
     iframe.title = 'Embedded Twitter post';
-    iframe.srcdoc = buildTwitterEmbedSrcDoc(blockquoteHtml, options);
-    iframe.setAttribute('data-gh-twitter-embed', '');
-    iframe.setAttribute('sandbox', 'allow-scripts allow-popups allow-popups-to-escape-sandbox');
+    iframe.src = getDirectTwitterEmbedUrl(tweetId, options);
+    iframe.loading = 'lazy';
+    iframe.setAttribute('data-gh-twitter-direct-embed', '');
+    iframe.setAttribute('data-tweet-id', tweetId);
+    iframe.setAttribute('sandbox', 'allow-scripts allow-same-origin allow-popups allow-popups-to-escape-sandbox');
+    iframe.setAttribute('scrolling', 'auto');
     iframe.style.width = '100%';
+    iframe.style.maxWidth = '550px';
     iframe.style.height = `${TWITTER_EMBED_INITIAL_HEIGHT}px`;
     iframe.style.border = '0';
     iframe.style.display = 'block';
-    iframe.style.margin = '0';
-    iframe.style.overflow = 'hidden';
+    iframe.style.margin = '0 auto';
+    iframe.style.overflow = 'auto';
 
     return iframe;
 };
@@ -345,7 +395,8 @@ export const renderTwitterEmbedsInArticle = (content: string, getOptions: () => 
         };
     }
 
-    const options = getOptions();
+    let options: TwitterEmbedSandboxOptions | null = null;
+    let hasRenderedTwitterEmbeds = false;
 
     div.querySelectorAll('script').forEach((script) => {
         if (isTwitterWidgetScript(script)) {
@@ -354,11 +405,19 @@ export const renderTwitterEmbedsInArticle = (content: string, getOptions: () => 
     });
 
     for (const twitterEmbed of twitterEmbeds) {
-        twitterEmbed.replaceWith(renderTwitterEmbedInSandbox(twitterEmbed.outerHTML, options));
+        const tweetId = getTweetIdFromBlockquote(twitterEmbed.outerHTML);
+
+        if (!tweetId) {
+            continue;
+        }
+
+        options = options || getOptions();
+        twitterEmbed.replaceWith(buildDirectTwitterEmbedIframe(tweetId, options));
+        hasRenderedTwitterEmbeds = true;
     }
 
     return {
-        hasTwitterEmbeds: true,
+        hasTwitterEmbeds: hasRenderedTwitterEmbeds,
         html: div.innerHTML
     };
 };

@@ -268,12 +268,18 @@ const ArticleBody: React.FC<{
         }
 
         const handleMessage = (event: MessageEvent) => {
-            if (event.data.type === 'resize') {
-                const newHeight = `${event.data.bodyHeight + 24}px`;
+            if (articleHtml.hasTwitterEmbeds && twitterEmbed.resizeTwitterEmbedFromMessage(iframe, event)) {
+                return;
+            }
+
+            const data = event.data || {};
+
+            if (data.type === 'resize') {
+                const newHeight = `${data.bodyHeight + 24}px`;
                 setIframeHeight(newHeight);
                 iframe.style.height = newHeight;
 
-                if (event.data.isLoaded) {
+                if (data.isLoaded) {
                     setIsLoading(false);
                 }
             }

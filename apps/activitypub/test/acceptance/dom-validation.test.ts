@@ -158,17 +158,50 @@ test.describe('DOM validation for rendered AP content', async () => {
         expect(sourceText?.trim()).not.toContain('javascript');
     });
 
-    test('Twitter fallback embed follows reader customizer changes', async ({page}) => {
+    test('Twitter embed uses the direct iframe after sanitizer removes widget scripts', async ({page}) => {
         await page.addInitScript(() => {
             localStorage.setItem('ghost-ap-background-color', 'light');
             localStorage.setItem('ghost-ap-font-size', '2');
             localStorage.setItem('ghost-ap-font-style', 'sans');
         });
 
+        let widgetScriptRequests = 0;
         await page.route('https://platform.twitter.com/widgets.js', async (route) => {
+            widgetScriptRequests += 1;
             await route.fulfill({
                 body: '',
                 contentType: 'application/javascript',
+                status: 200
+            });
+        });
+        await page.route('https://platform.twitter.com/embed/Tweet.html**', async (route) => {
+            await route.fulfill({
+                body: `
+                    <html>
+                        <body>
+                            <script>
+                                window.addEventListener('message', (event) => {
+                                    if (event.data && event.data.type === 'sendTwitterResize') {
+                                        window.top.postMessage({
+                                            twttr: {
+                                                embed: {
+                                                    method: 'twttr.private.resize',
+                                                    params: [{
+                                                        height: 480
+                                                    }]
+                                                }
+                                            }
+                                        }, '*');
+                                    }
+                                });
+                                window.parent.postMessage({
+                                    type: 'twitterEmbedReady'
+                                }, '*');
+                            </script>
+                        </body>
+                    </html>
+                `,
+                contentType: 'text/html',
                 status: 200
             });
         });
@@ -193,8 +226,8 @@ test.describe('DOM validation for rendered AP content', async () => {
         const testPost = {
             ...inboxFixture.posts[0],
             content: twitterContent,
-            excerpt: 'Twitter embed fallback test',
-            title: 'Twitter embed fallback test'
+            excerpt: 'Twitter embed direct iframe test',
+            title: 'Twitter embed direct iframe test'
         };
         const testInbox = {
             ...inboxFixture,
@@ -248,15 +281,23 @@ test.describe('DOM validation for rendered AP content', async () => {
         const articleFrame = modal.locator('iframe').first().contentFrame();
         await expect(articleFrame.locator('script[src="https://platform.twitter.com/widgets.js"]')).toHaveCount(0);
         await expect(articleFrame.locator('script[src="https://example.com/rich-card.js"]')).toHaveCount(1);
+        expect(widgetScriptRequests).toBe(0);
 
-        const twitterEmbed = articleFrame.locator('iframe[data-gh-twitter-embed]');
+        const twitterEmbed = articleFrame.locator('iframe[data-gh-twitter-direct-embed]');
         await expect(twitterEmbed).toBeVisible();
-
-        const twitterFrame = twitterEmbed.contentFrame();
-        await expect(twitterFrame.getByText('Ghost ActivityPub renders this embedded post')).toBeVisible();
-
-        await expect.poll(() => twitterFrame.locator('body').evaluate(body => getComputedStyle(body).color)).toBe('rgb(21, 23, 26)');
-        await expect.poll(() => twitterFrame.locator('html').evaluate(html => getComputedStyle(html).getPropertyValue('--font-size').trim())).toBe('1.7rem');
+        await expect(twitterEmbed).toHaveAttribute('data-tweet-id', '1234567890');
+        await expect(twitterEmbed).toHaveAttribute('sandbox', /allow-scripts/);
+        await expect(twitterEmbed).toHaveAttribute('sandbox', /allow-same-origin/);
+        await expect.poll(() => twitterEmbed.getAttribute('src')).toContain('https://platform.twitter.com/embed/Tweet.html');
+        await expect.poll(() => twitterEmbed.getAttribute('src')).toContain('id=1234567890');
+        await expect.poll(() => twitterEmbed.getAttribute('src')).toContain('theme=light');
+        await expect.poll(() => twitterEmbed.evaluate(iframe => (iframe as HTMLIFrameElement).style.height)).toBe('720px');
+        await expect.poll(() => twitterEmbed.evaluate(iframe => (iframe as HTMLIFrameElement).getAttribute('scrolling'))).toBe('auto');
+        await expect.poll(() => twitterEmbed.evaluate(iframe => (iframe as HTMLIFrameElement).style.overflow)).toBe('auto');
+        await twitterEmbed.evaluate((iframe) => {
+            (iframe as HTMLIFrameElement).contentWindow?.postMessage({type: 'sendTwitterResize'}, '*');
+        });
+        await expect.poll(() => twitterEmbed.evaluate(iframe => (iframe as HTMLIFrameElement).style.height)).toBe('480px');
 
         await modal.locator('.sticky button').last().click();
 
@@ -265,9 +306,7 @@ test.describe('DOM validation for rendered AP content', async () => {
         await customizerButtons.nth(8).click();
         await page.getByRole('button', {name: 'Serif'}).click();
 
-        await expect.poll(() => twitterFrame.locator('body').evaluate(body => getComputedStyle(body).color)).toBe('rgb(255, 255, 255)');
-        await expect.poll(() => twitterFrame.locator('html').evaluate(html => getComputedStyle(html).getPropertyValue('--font-size').trim())).toBe('1.8rem');
-        await expect.poll(() => twitterFrame.locator('body').evaluate(body => body.classList.contains('has-serif-body'))).toBe(true);
+        await expect.poll(() => twitterEmbed.getAttribute('src')).toContain('theme=dark');
     });
 
     test('Article with a non-Twitter embed keeps the embed iframe in the reader', async ({page}) => {
