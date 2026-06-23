@@ -8,7 +8,8 @@ import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
 import {useGlobalData} from '../../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
-const IS_AUTOMATIONS_BETA_ACTIVE = true;
+// We'll flip this once we're ready to enable the automations beta.
+const IS_AUTOMATIONS_BETA_ACTIVE = false;
 
 const BetaFeatures: React.FC = () => {
     const {settings} = useGlobalData();
