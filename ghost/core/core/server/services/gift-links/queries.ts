@@ -1,5 +1,6 @@
 import {z} from 'zod';
 import type {Knex} from 'knex';
+import {camelKeys, snakeKeys} from './case-keys';
 import {DbGiftLink} from './database';
 import {GiftLink} from './models';
 
@@ -13,18 +14,8 @@ export const GiftLinkRow = DbGiftLink.pick({
 
 // Maps a selected row to/from the domain GiftLink (snake_case to camelCase, token branding).
 export const giftLinkCodec = z.codec(GiftLinkRow, GiftLink, {
-    decode: row => ({
-        token: row.token,
-        redeemedCount: row.redeemed_count,
-        lastRedeemedAt: row.last_redeemed_at,
-        createdAt: row.created_at
-    }),
-    encode: link => ({
-        token: link.token,
-        redeemed_count: link.redeemedCount,
-        last_redeemed_at: link.lastRedeemedAt,
-        created_at: link.createdAt
-    })
+    decode: row => camelKeys(row),
+    encode: link => snakeKeys(link)
 });
 
 const giftLinkColumns = Object.keys(GiftLinkRow.shape).map(column => `gift_links.${column}`);
