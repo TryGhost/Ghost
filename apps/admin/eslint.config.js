@@ -84,6 +84,10 @@ export default tseslint.config([
       ...shadeLayeredImportsRule,
       'tailwindcss/classnames-order': 'error',
       'tailwindcss/no-contradicting-classname': 'error',
+      // TODO: leaked warn from reactHooks.configs['recommended-latest']. The
+      // shared factory drops this to 'off' across the rest of the React apps;
+      // this workspace isn't on the factory yet, so override explicitly.
+      'react-hooks/exhaustive-deps': 'off',
     },
   },
   // Apply no-relative-import-paths rule for src files (auto-fix supported)

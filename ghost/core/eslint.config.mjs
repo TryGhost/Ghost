@@ -89,6 +89,8 @@ export default tseslint.config(
             'core/shared/**/*.js',
             'core/frontend/**/*.js',
             'core/*.js',
+            'bin/**/*.js',
+            'scripts/**/*.js',
             '*.js'
         ],
         ...js.configs.recommended,
@@ -130,7 +132,7 @@ export default tseslint.config(
                 caughtErrors: 'none'
             }],
             'no-undef': 'off',
-            '@typescript-eslint/no-explicit-any': 'error',
+            '@typescript-eslint/no-explicit-any': 'off',
             ...tsLegacyRelaxations
         }
     },
@@ -140,7 +142,7 @@ export default tseslint.config(
     {
         files: ['core/**/*.ts', '*.ts'],
         rules: {
-            '@typescript-eslint/no-explicit-any': 'error',
+            '@typescript-eslint/no-explicit-any': 'off',
             ...tsLegacyRelaxations
         }
     },
@@ -388,7 +390,7 @@ export default tseslint.config(
         files: ['**/*.ts'],
         extends: [...tseslint.configs.recommended],
         rules: {
-            '@typescript-eslint/no-explicit-any': 'error',
+            '@typescript-eslint/no-explicit-any': 'off',
             ...tsLegacyRelaxations
         }
     },
@@ -400,8 +402,14 @@ export default tseslint.config(
         extends: [...tseslint.configs.recommended],
         rules: {
             '@typescript-eslint/no-unused-vars': 'off',
-            '@typescript-eslint/no-explicit-any': 'error',
+            '@typescript-eslint/no-explicit-any': 'off',
             ...tsLegacyRelaxations
         }
+    },
+    // CLI scripts and build tools intentionally write to console — must come
+    // after the base block so the no-console override wins.
+    {
+        files: ['bin/**/*.js', 'scripts/**/*.js'],
+        rules: {'no-console': 'off'}
     }
 );

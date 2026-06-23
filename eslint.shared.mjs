@@ -499,9 +499,10 @@ export async function reactAppConfig({
     const srcBlocks = [];
 
     if (legacyJsTsSplit) {
-        // Portal — split blocks.
+        // Portal — split blocks. The validator above guarantees srcGlobs and
+        // testGlobs are not set when legacyJsTsSplit is true.
         srcBlocks.push({
-            files: srcGlobs?.[0] ? [srcGlobs[0]] : ['src/**/*.{js,jsx}', 'test/**/*.{js,jsx}'],
+            files: ['src/**/*.{js,jsx}', 'test/**/*.{js,jsx}'],
             ...js.configs.recommended,
             languageOptions: {
                 ...reactFlat.languageOptions,
@@ -613,12 +614,16 @@ export async function reactAppConfig({
                     vi: 'readonly'
                 }
             };
+        // Test blocks need the same plugins as src because the spread rules
+        // (tsReactAppRules / jsReactAppRules) reference react/*, react-hooks/*,
+        // etc. — ESLint flat config errors if a rule references a plugin not
+        // registered in the same block.
         testBlocks.push({
             files: resolvedTestGlobs,
             ...(typescript ? {extends: [...tseslint.configs.recommended]} : js.configs.recommended),
             languageOptions: testLanguageOptions,
-            plugins: typescript ? {ghost: ghostPlugin} : basePlugins,
-            settings: typescript ? undefined : baseSettings,
+            plugins: basePlugins,
+            settings: baseSettings,
             rules: {
                 ...(typescript ? tsReactAppRules : {...js.configs.recommended.rules, ...reactFlat.rules, ...jsReactAppRules}),
                 ...mochaRulesOff(ghostPlugin),
@@ -693,7 +698,9 @@ export async function reactAppConfig({
  *   Per-workspace test rule overrides.
  * @property {Array<import('eslint').Linter.Config>} [extraBlocks]
  *   Append extra config blocks (e.g. ghost/i18n's `max-lines` override on
- *   `lib/index.js`).
+ *   `lib/index.js`). Each block SHOULD set its own `files:` glob — flat config
+ *   treats a block without `files:` as applying to all files, which is rarely
+ *   what consumers want.
  */
 
 /**
