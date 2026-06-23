@@ -3,21 +3,7 @@ import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
 import reactPlugin from 'eslint-plugin-react';
 
-const ghostRules = {
-    curly: 'error',
-    camelcase: ['error', {properties: 'never'}],
-    'dot-notation': 'error',
-    eqeqeq: ['error', 'always'],
-    'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-    'no-eval': 'error',
-    'no-useless-call': 'error',
-    'no-console': 'error',
-    'no-shadow': 'error',
-    'array-callback-return': 'error',
-    'no-constructor-return': 'error',
-    'no-promise-executor-return': 'error',
-    'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
-};
+import {correctnessRules} from '../../eslint.shared.mjs';
 
 const baseConfig = {
     ...js.configs.recommended,
@@ -32,7 +18,7 @@ const baseConfig = {
     rules: {
         ...js.configs.recommended.rules,
         ...reactPlugin.configs.flat.recommended.rules,
-        ...ghostRules,
+        ...correctnessRules,
         'react/prop-types': 'off'
     }
 };
