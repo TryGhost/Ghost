@@ -1,4 +1,3 @@
-import path from 'node:path';
 import js from '@eslint/js';
 import globals from 'globals';
 import babelParser from '@babel/eslint-parser';
@@ -6,36 +5,7 @@ import ghostPlugin from 'eslint-plugin-ghost';
 import emberPlugin from 'eslint-plugin-ember';
 import reactPlugin from 'eslint-plugin-react';
 
-// eslint-plugin-filenames-ts@1.3.2's match-regex calls context.getScope(),
-// which ESLint 9 removed. Replace it with a minimal equivalent.
-const filenamesMatchRegex = {
-    meta: {
-        type: 'problem',
-        schema: [
-            {type: 'string'},
-            {type: ['boolean', 'null']},
-            {type: ['boolean', 'null']}
-        ]
-    },
-    create(context) {
-        const pattern = new RegExp(context.options[0]);
-        return {
-            Program(node) {
-                const filename = path.parse(context.filename).name;
-                if (!pattern.test(filename)) {
-                    context.report({
-                        node,
-                        message: `Filename '${filename}' does not match the naming convention.`
-                    });
-                }
-            }
-        };
-    }
-};
-
-const localFilenamesPlugin = {
-    rules: {'match-regex': filenamesMatchRegex}
-};
+import {localFilenamesPlugin} from '../../eslint.shared.mjs';
 
 const ghostBaseRules = {
     curly: 'error',

@@ -6,33 +6,14 @@ import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import reactRefreshPlugin from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 
-const ghostRules = {
-    curly: 'error',
-    camelcase: ['error', {properties: 'never'}],
-    'dot-notation': 'error',
-    eqeqeq: ['error', 'always'],
-    'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-    'no-eval': 'error',
-    'no-useless-call': 'error',
-    'no-console': 'error',
-    'no-shadow': 'error',
-    'array-callback-return': 'error',
-    'no-constructor-return': 'error',
-    'no-promise-executor-return': 'error',
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {
-        args: 'after-used',
-        argsIgnorePattern: '^_',
-        caughtErrors: 'none'
-    }],
-    'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
-};
-
-const mochaRulesOff = Object.fromEntries(
-    Object.keys(ghostPlugin.rules || {})
-        .filter(rule => rule.startsWith('mocha/'))
-        .map(rule => [`ghost/${rule}`, 'off'])
-);
+import {
+    correctnessRules,
+    mochaRulesOff,
+    reactDefaultsOff,
+    reactStrictRules,
+    shadeLayeredImportsRule,
+    tsUnusedVarsRule
+} from '../../eslint.shared.mjs';
 
 const reactFlat = reactPlugin.configs.flat.recommended;
 
@@ -65,29 +46,16 @@ export default tseslint.config(
             ...js.configs.recommended.rules,
             ...reactFlat.rules,
             ...reactHooksPlugin.configs.recommended.rules,
-            ...ghostRules,
+            ...correctnessRules,
+            ...tsUnusedVarsRule,
+            ...reactDefaultsOff,
+            ...reactStrictRules,
+            ...shadeLayeredImportsRule,
             // TS handles these — disable the base ESLint variants
             'no-undef': 'off',
             'no-redeclare': 'off',
             'no-unexpected-multiline': 'off',
-            '@typescript-eslint/no-inferrable-types': 'off',
-            'react/react-in-jsx-scope': 'off',
-            'react/prop-types': 'off',
-            'no-restricted-imports': ['error', {
-                paths: [{
-                    name: '@tryghost/shade',
-                    message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).'
-                }]
-            }],
-            'react/jsx-sort-props': ['error', {
-                reservedFirst: true,
-                callbacksLast: true,
-                shorthandLast: true,
-                locale: 'en'
-            }],
-            'react/button-has-type': 'error',
-            'react/no-array-index-key': 'error',
-            'react/jsx-key': 'off'
+            '@typescript-eslint/no-inferrable-types': 'off'
         }
     },
     {
@@ -107,8 +75,9 @@ export default tseslint.config(
             ghost: ghostPlugin
         },
         rules: {
-            ...ghostRules,
-            ...mochaRulesOff,
+            ...correctnessRules,
+            ...tsUnusedVarsRule,
+            ...mochaRulesOff(ghostPlugin),
             '@typescript-eslint/no-inferrable-types': 'off',
             '@typescript-eslint/no-explicit-any': 'off'
         }

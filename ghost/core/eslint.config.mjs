@@ -4,54 +4,9 @@ import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
 import tseslint from 'typescript-eslint';
 
+import {localFilenamesPlugin} from '../../eslint.shared.mjs';
+
 const __dirname = import.meta.dirname;
-
-// eslint-plugin-filenames-ts@1.3.2's match-regex calls context.getScope(),
-// which ESLint 9 removed. Replace it with a minimal equivalent that does
-// the filename check (+ ignoreExporting via AST scan, no scope traversal).
-const filenamesMatchRegex = {
-    meta: {
-        type: 'problem',
-        schema: [
-            {type: 'string'},
-            {type: ['boolean', 'null']},
-            {type: ['boolean', 'null']}
-        ]
-    },
-    create(context) {
-        const pattern = new RegExp(context.options[0]);
-        const ignoreExporting = Boolean(context.options[1]);
-        return {
-            Program(node) {
-                if (ignoreExporting) {
-                    const hasExport = node.body.some(stmt =>
-                        stmt.type === 'ExportDefaultDeclaration' ||
-                        stmt.type === 'ExportNamedDeclaration' ||
-                        (stmt.type === 'ExpressionStatement' &&
-                         stmt.expression.type === 'AssignmentExpression' &&
-                         stmt.expression.left.type === 'MemberExpression' &&
-                         stmt.expression.left.object.type === 'Identifier' &&
-                         stmt.expression.left.object.name === 'module' &&
-                         stmt.expression.left.property.type === 'Identifier' &&
-                         stmt.expression.left.property.name === 'exports')
-                    );
-                    if (hasExport) return;
-                }
-                const filename = path.parse(context.filename).name;
-                if (!pattern.test(filename)) {
-                    context.report({
-                        node,
-                        message: `Filename '${filename}' does not match the naming convention.`
-                    });
-                }
-            }
-        };
-    }
-};
-
-const localFilenamesPlugin = {
-    rules: {'match-regex': filenamesMatchRegex}
-};
 
 const ghostBaseRules = {
     curly: 'error',
