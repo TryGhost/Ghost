@@ -1,55 +1,13 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import ghostPlugin from 'eslint-plugin-ghost';
-import reactPlugin from 'eslint-plugin-react';
-import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
-import tseslint from 'typescript-eslint';
+import {reactAppConfig} from '../../eslint.shared.mjs';
 
-import {
-    sortImportsRule,
-    strictLinterOptions,
-    tailwindRulesWithConfig,
-    tsReactAppRules
-} from '../../eslint.shared.mjs';
-
-const tailwindConfig = `${import.meta.dirname}/tailwind.config.cjs`;
-
-const reactFlat = reactPlugin.configs.flat.recommended;
-
-export default tseslint.config(
-    {
-        ignores: ['umd/**/*', 'dist/**/*', 'storybook-static/**/*']
-    },
-    {
-        files: ['**/*'],
-        ...strictLinterOptions
-    },
-    {
-        files: ['src/**/*.{js,jsx,ts,tsx,cjs}', 'test/**/*.{js,jsx,ts,tsx,cjs}'],
-        extends: [...tseslint.configs.recommended],
-        languageOptions: {
-            ...reactFlat.languageOptions,
-            ecmaVersion: 2022,
-            sourceType: 'module',
-            globals: {
-                ...globals.browser,
-                ...globals.node
-            }
-        },
-        plugins: {
-            ...reactFlat.plugins,
-            ghost: ghostPlugin,
-            tailwindcss: tailwindcssPlugin
-        },
-        settings: {
-            react: {version: 'detect'}
-        },
-        rules: {
-            ...js.configs.recommended.rules,
-            ...reactFlat.rules,
-            ...tsReactAppRules,
-            ...sortImportsRule,
-            ...tailwindRulesWithConfig(tailwindConfig)
-        }
-    }
-);
+export default await reactAppConfig({
+    // UMD bundle (no Vite HMR runtime), so the react-refresh rule is meaningless.
+    reactRefresh: false,
+    // LEGACY: Tailwind v3. Migration to v4 is a multi-day class/theme rewrite +
+    // CDN regression testing. Tracked separately.
+    legacyTailwindV3ConfigPath: `${import.meta.dirname}/tailwind.config.cjs`,
+    sortImports: true,
+    ignores: ['umd/**/*', 'dist/**/*', 'storybook-static/**/*'],
+    srcGlobs: ['src/**/*.{js,jsx,ts,tsx,cjs}', 'test/**/*.{js,jsx,ts,tsx,cjs}'],
+    testGlobs: false  // single combined src+test block
+});

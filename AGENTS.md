@@ -254,6 +254,9 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 ### Commit Messages
 When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
 
+### ESLint Config
+Every workspace's `eslint.config.js` calls a factory from `eslint.shared.mjs` — two factories (`reactAppConfig` for frontend apps, `nodeLibConfig` for Node libs) cover 14 of 18 workspaces. Hover the factory call in your editor for JSDoc on every param. Standalone configs (ghost/core, ghost/admin, apps/admin, apps/admin-toolbar) exist because their rule sets don't fit the factory shape — read the file directly. Rules are `'error'` or `'off'` — never `'warn'`. Params prefixed `legacy*` mark migrations that haven't shipped yet (Tailwind v3 → v4, portal's JS → TS finish); they're intentional escape hatches, not nice-to-haves.
+
 ### When Working on Admin UI
 - **New features:** Build in React (`apps/admin-x-*` or `apps/posts`)
 - **Use:** `admin-x-framework` for API hooks (`useBrowse`, `useEdit`, etc.)

@@ -1,84 +1,30 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import ghostPlugin from 'eslint-plugin-ghost';
+import {nodeLibConfig, noGhostIgnitionRequireRule} from '../../eslint.shared.mjs';
 
-import {
-    jsUnusedVarsRule,
-    localFilenamesPlugin,
-    mochaRulesOff,
-    noGhostIgnitionRequireRule,
-    nodeLibRules,
-    strictLinterOptions
-} from '../../eslint.shared.mjs';
-
-// ghost/i18n uses the local-filenames variant of the rule; turn off the
-// eslint-plugin-ghost one that nodeLibRules enables via correctnessRules.
-const ghostI18nExtras = {
-    ...noGhostIgnitionRequireRule,
-    'ghost/filenames/match-regex': 'off',
-    'local-filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
-};
-
-export default [
-    {
-        ignores: ['build/**/*']
+export default await nodeLibConfig({
+    // ghost/i18n is JS-only (CommonJS) and uses the local-filenames variant of
+    // match-regex instead of the ghost-plugin one. localFilenamesMode handles both.
+    typescript: false,
+    commonjs: true,
+    localFilenamesMode: true,
+    srcGlobs: ['*.js', 'lib/**/*.js'],
+    testGlobs: ['test/**/*.js'],
+    extraSrcRules: {
+        ...noGhostIgnitionRequireRule,
+        // Use the local-filenames variant (workspace-local plugin). The shared
+        // factory's localFilenamesMode flag turned off the ghost/filenames one
+        // for us already.
+        'local-filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
     },
-    {
-        files: ['**/*'],
-        ...strictLinterOptions
+    extraTestRules: {
+        ...noGhostIgnitionRequireRule,
+        'local-filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+        'ghost/ghost-custom/node-assert-strict': 'error'
     },
-    {
-        files: ['*.js', 'lib/**/*.js'],
-        ...js.configs.recommended,
-        languageOptions: {
-            ecmaVersion: 2022,
-            sourceType: 'commonjs',
-            globals: globals.node
-        },
-        plugins: {
-            ghost: ghostPlugin,
-            'local-filenames': localFilenamesPlugin
-        },
-        rules: {
-            ...js.configs.recommended.rules,
-            ...nodeLibRules,
-            ...jsUnusedVarsRule,
-            ...ghostI18nExtras
+    extraBlocks: [
+        {
+            // Keep the index entry points small — they're public surface.
+            files: ['lib/**/index.js', 'index.js'],
+            rules: {'max-lines': ['error', {skipBlankLines: true, skipComments: true, max: 50}]}
         }
-    },
-    {
-        files: ['lib/**/index.js', 'index.js'],
-        rules: {
-            'max-lines': ['error', {skipBlankLines: true, skipComments: true, max: 50}]
-        }
-    },
-    {
-        files: ['test/**/*.js'],
-        ...js.configs.recommended,
-        languageOptions: {
-            ecmaVersion: 2022,
-            sourceType: 'commonjs',
-            globals: {
-                ...globals.node,
-                ...globals.mocha,
-                ...globals.vitest,
-                vi: 'readonly',
-                beforeAll: 'readonly',
-                should: 'readonly',
-                sinon: 'readonly'
-            }
-        },
-        plugins: {
-            ghost: ghostPlugin,
-            'local-filenames': localFilenamesPlugin
-        },
-        rules: {
-            ...js.configs.recommended.rules,
-            ...nodeLibRules,
-            ...jsUnusedVarsRule,
-            ...ghostI18nExtras,
-            ...mochaRulesOff(ghostPlugin),
-            'ghost/ghost-custom/node-assert-strict': 'error'
-        }
-    }
-];
+    ]
+});

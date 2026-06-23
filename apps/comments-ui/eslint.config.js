@@ -1,61 +1,27 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import ghostPlugin from 'eslint-plugin-ghost';
-import reactPlugin from 'eslint-plugin-react';
-import i18nextPlugin from 'eslint-plugin-i18next';
-import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
-import tseslint from 'typescript-eslint';
+import {reactAppConfig} from '../../eslint.shared.mjs';
 
-import {
-    sortImportsRule,
-    strictLinterOptions,
-    tailwindRulesWithConfig,
-    tsReactAppRules
-} from '../../eslint.shared.mjs';
-
-const tailwindConfig = `${import.meta.dirname}/tailwind.config.js`;
-
-const reactFlat = reactPlugin.configs.flat.recommended;
-const i18nextFlat = i18nextPlugin.configs['flat/recommended'];
-
-export default tseslint.config(
-    {
-        ignores: ['umd/**/*', 'dist/**/*']
-    },
-    {
-        files: ['**/*'],
-        ...strictLinterOptions
-    },
-    {
-        files: ['src/**/*.{js,jsx,ts,tsx}'],
-        extends: [...tseslint.configs.recommended],
-        languageOptions: {
-            ...reactFlat.languageOptions,
-            ecmaVersion: 2022,
-            sourceType: 'module',
-            globals: {
-                ...globals.browser,
-                ...globals.node
-            }
-        },
-        plugins: {
-            ...reactFlat.plugins,
-            ...i18nextFlat.plugins,
-            ghost: ghostPlugin,
-            tailwindcss: tailwindcssPlugin
-        },
-        settings: {
-            react: {version: 'detect'}
-        },
-        rules: {
-            ...js.configs.recommended.rules,
-            ...reactFlat.rules,
-            ...i18nextFlat.rules,
-            ...tsReactAppRules,
-            ...sortImportsRule,
-            ...tailwindRulesWithConfig(tailwindConfig),
-            // 41 legacy violations not yet cleaned up. Tracked for follow-up.
-            '@typescript-eslint/no-explicit-any': 'off'
-        }
+export default await reactAppConfig({
+    // UMD bundle (no Vite HMR runtime), so the react-refresh rule is meaningless.
+    reactRefresh: false,
+    // LEGACY: Tailwind v3. Migration to v4 is a multi-day class/theme rewrite +
+    // CDN regression testing. Tracked separately; this override stays until
+    // the migration lands.
+    legacyTailwindV3ConfigPath: `${import.meta.dirname}/tailwind.config.js`,
+    i18next: true,
+    sortImports: true,
+    ignores: ['umd/**/*', 'dist/**/*'],
+    srcGlobs: ['src/**/*.{js,jsx,ts,tsx}'],
+    testGlobs: false,  // comments-ui lints a single src+test combined block (no separate test/ tree)
+    extraSrcRules: {
+        // TODO: 41 legacy `any` violations. Remove this override after typing
+        // them properly (mostly external API response shapes — needs careful
+        // typing, not a 1-line fix per).
+        '@typescript-eslint/no-explicit-any': 'off',
+        // TODO: 22 legacy `exhaustive-deps` violations from newly-loading the
+        // react-hooks plugin in this workspace (it was previously silent because
+        // the plugin wasn't registered). Each fix is a per-call-site judgment
+        // (add dep / wrap in useCallback / suppress with reason). Remove this
+        // override after the cleanup PR.
+        'react-hooks/exhaustive-deps': 'off'
     }
-);
+});
