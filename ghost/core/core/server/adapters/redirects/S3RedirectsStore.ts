@@ -14,7 +14,8 @@ import * as errors from '@tryghost/errors';
 import RedirectsStoreBase from './RedirectsStoreBase';
 import {parseJson} from '../../services/custom-redirects/redirect-config-parser';
 import {getBackupRedirectsFilePath} from '../../services/custom-redirects/utils';
-import type {RedirectConfig, RedirectsStore} from '../../services/custom-redirects/types';
+import type {RedirectConfig} from '../../services/custom-redirects/redirect-config';
+import type {RedirectsStore} from '../../services/custom-redirects/redirects-service';
 
 const DEFAULT_FILENAME = 'redirects.json';
 

@@ -3,7 +3,16 @@ import tpl from '@tryghost/tpl';
 import * as errors from '@tryghost/errors';
 
 import DynamicRedirectManager from '../lib/dynamic-redirect-manager';
-import type {RedirectConfig, RedirectsStore} from './types';
+import type {RedirectConfig} from './redirect-config';
+
+/**
+ * Concurrent `replaceAll` calls have no ordering guarantee — serialize
+ * externally if that matters.
+ */
+export interface RedirectsStore {
+    getAll(): Promise<RedirectConfig[]>;
+    replaceAll(redirects: RedirectConfig[]): Promise<void>;
+}
 
 const messages = {
     redirectsRegister: 'Could not register custom redirects.',

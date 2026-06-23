@@ -1,4 +1,5 @@
-import type {RedirectConfig, RedirectsStore} from '../../../../../../core/server/services/custom-redirects/types';
+import type {RedirectConfig} from '../../../../../../core/server/services/custom-redirects/redirect-config';
+import type {RedirectsStore} from '../../../../../../core/server/services/custom-redirects/redirects-service';
 
 export class InMemoryStore implements RedirectsStore {
     private redirects: RedirectConfig[] = [];

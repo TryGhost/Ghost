@@ -2,7 +2,7 @@ import yaml from 'js-yaml';
 import tpl from '@tryghost/tpl';
 import * as errors from '@tryghost/errors';
 
-import type {RedirectConfig} from './types';
+import type {RedirectConfig} from './redirect-config';
 
 const messages = {
     jsonParse: 'Could not parse JSON: {context}.',

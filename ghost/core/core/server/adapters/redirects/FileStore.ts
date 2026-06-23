@@ -4,7 +4,8 @@ import path from 'path';
 import RedirectsStoreBase from './RedirectsStoreBase';
 import {parseJson, parseYaml} from '../../services/custom-redirects/redirect-config-parser';
 import {getBackupRedirectsFilePath} from '../../services/custom-redirects/utils';
-import type {RedirectConfig, RedirectsStore} from '../../services/custom-redirects/types';
+import type {RedirectConfig} from '../../services/custom-redirects/redirect-config';
+import type {RedirectsStore} from '../../services/custom-redirects/redirects-service';
 
 const YAML_FILENAME = 'redirects.yaml';
 const JSON_FILENAME = 'redirects.json';
