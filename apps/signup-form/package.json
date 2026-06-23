@@ -36,7 +36,7 @@
     "react-dom": "catalog:"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:eslint9",
+    "@eslint/js": "catalog:",
     "@playwright/test": "catalog:",
     "@storybook/addon-docs": "catalog:",
     "@storybook/addon-links": "catalog:",
@@ -48,7 +48,7 @@
     "@vitejs/plugin-react": "catalog:",
     "autoprefixer": "10.5.0",
     "concurrently": "catalog:",
-    "eslint": "catalog:eslint9",
+    "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-react": "catalog:",
     "eslint-plugin-tailwindcss": "catalog:tailwind3",

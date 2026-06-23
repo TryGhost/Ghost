@@ -29,9 +29,9 @@
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
-    "@eslint/js": "catalog:eslint9",
+    "@eslint/js": "catalog:",
     "concurrently": "catalog:",
-    "eslint": "catalog:eslint9",
+    "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "globals": "catalog:",
     "jsdom": "catalog:",

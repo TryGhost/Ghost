@@ -50,12 +50,12 @@
     ]
   },
   "devDependencies": {
-    "@eslint/js": "catalog:eslint9",
+    "@eslint/js": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "concurrently": "catalog:",
     "cross-fetch": "catalog:",
-    "eslint": "catalog:eslint9",
+    "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
     "eslint-plugin-react": "catalog:",
     "globals": "catalog:",

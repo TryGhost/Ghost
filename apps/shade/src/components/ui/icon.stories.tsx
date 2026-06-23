@@ -29,7 +29,6 @@ type Story = StoryObj<typeof Icon.Typography>;
 export const IconGallery = {
     render: (args: Story['args']) => {
         const icons = Object.keys(Icon) as IconName[];
-        // eslint-disable-next-line react-hooks/rules-of-hooks
         const [copiedIcon, setCopiedIcon] = useState<string | null>(null);
 
         const copyToClipboard = (iconName: string) => {

@@ -31,9 +31,9 @@
     "locales"
   ],
   "devDependencies": {
-    "@eslint/js": "catalog:eslint9",
+    "@eslint/js": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "eslint": "catalog:eslint9",
+    "eslint": "catalog:",
     "eslint-plugin-ghost": "3.5.0",
     "fs-extra": "catalog:",
     "globals": "17.6.0",
