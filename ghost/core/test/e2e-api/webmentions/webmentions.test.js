@@ -17,6 +17,17 @@ async function allSettled() {
     await DomainEvents.allSettled();
 }
 
+async function receiveWebmention(agent, body) {
+    const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
+
+    await agent.post('/receive')
+        .body(body)
+        .expectStatus(202);
+
+    await processWebmentionJob;
+    await DomainEvents.allSettled();
+}
+
 describe('Webmentions (receiving)', function () {
     let agent;
 
@@ -162,14 +173,10 @@ describe('Webmentions (receiving)', function () {
             .reply(200, html, {'Content-Type': 'text/html'});
 
         testCreatingTheMention: {
-            await agent.post('/receive')
-                .body({
-                    source: sourceUrl.href,
-                    target: targetUrl.href
-                })
-                .expectStatus(202);
-
-            await allSettled();
+            await receiveWebmention(agent, {
+                source: sourceUrl.href,
+                target: targetUrl.href
+            });
 
             const mention = await models.Mention.findOne({source: 'http://testpage.com/update-mention-test-2/'});
             assert(mention);
@@ -190,14 +197,10 @@ describe('Webmentions (receiving)', function () {
             .reply(404);
 
         testUpdatingTheMention: {
-            await agent.post('/receive')
-                .body({
-                    source: sourceUrl.href,
-                    target: targetUrl.href
-                })
-                .expectStatus(202);
-
-            await allSettled();
+            await receiveWebmention(agent, {
+                source: sourceUrl.href,
+                target: targetUrl.href
+            });
 
             const mention = await models.Mention.findOne({source: 'http://testpage.com/update-mention-test-2/'});
             assert(mention);
