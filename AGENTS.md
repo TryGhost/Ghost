@@ -49,7 +49,7 @@ pnpm run setup                 # First-time setup (installs deps + submodules + 
 pnpm dev                       # Start development (Docker backend + host frontend dev servers)
 ```
 
-> **Fresh worktree / first run — run `pnpm setup` before anything else.** It installs deps, syncs submodules, and builds workspace packages (Nx-cached, fast). `pnpm fix` does a clean reinstall if anything misbehaves after a branch switch.
+> **Fresh worktree / first run — run `pnpm setup` before anything else.** It installs deps and syncs submodules. `pnpm fix` does a clean reinstall if anything misbehaves after a branch switch.
 
 ### Building
 ```bash
