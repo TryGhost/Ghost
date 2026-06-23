@@ -25,6 +25,12 @@ export class GiftLinksService {
         return row ? {id: row.post_id, giftLinks: [z.decode(queries.giftLinkCodec, row)]} : null;
     }
 
+    // True only when `token` is a live gift link bound to `postId`, so a token
+    // for one post can never validate against another.
+    async isValidTokenForPost(token: string, postId: string): Promise<boolean> {
+        return (await this.getPostByToken(token))?.id === postId;
+    }
+
     async ensure(postId: string): Promise<Post> {
         const post = await this.requirePost(postId);
         return post.giftLinks.length ? post : this.mint(postId);
