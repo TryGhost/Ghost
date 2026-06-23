@@ -2,16 +2,16 @@ import {nodeLibConfig, noGhostIgnitionRequireRule} from '../../eslint.shared.mjs
 
 export default await nodeLibConfig({
     // ghost/i18n is JS-only (CommonJS) and uses the local-filenames variant of
-    // match-regex instead of the ghost-plugin one. localFilenamesMode handles both.
+    // match-regex instead of the ghost-plugin one. legacyLocalFilenames handles both.
     typescript: false,
     commonjs: true,
-    localFilenamesMode: true,
+    legacyLocalFilenames: true,
     srcGlobs: ['*.js', 'lib/**/*.js'],
     testGlobs: ['test/**/*.js'],
     extraSrcRules: {
         ...noGhostIgnitionRequireRule,
         // Use the local-filenames variant (workspace-local plugin). The shared
-        // factory's localFilenamesMode flag turned off the ghost/filenames one
+        // factory's legacyLocalFilenames flag turned off the ghost/filenames one
         // for us already.
         'local-filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
     },

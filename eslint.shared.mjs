@@ -392,6 +392,21 @@ export async function reactAppConfig({
     if (legacyJsTsSplit && !typescript) {
         throw new Error('reactAppConfig: legacyJsTsSplit requires typescript: true (the TS block uses tseslint).');
     }
+    if (legacyJsTsSplit && (srcGlobs || testGlobs !== undefined)) {
+        // The split branch hardcodes its file globs by extension (.js,.jsx vs
+        // .ts,.tsx) — if a consumer passes srcGlobs/testGlobs we'd silently
+        // ignore them. Throw rather than confuse.
+        throw new Error('reactAppConfig: legacyJsTsSplit does not honor srcGlobs/testGlobs; they would be silently dropped.');
+    }
+    if (shadeRestricted && extraSrcRules['no-restricted-imports']) {
+        // Setting both would silently replace the shade restriction with the
+        // user's rule (last-key-wins on spread). If a workspace needs both,
+        // add the user's paths to shadeLayeredImportsRule via a custom
+        // `no-restricted-imports` value that includes both shade + the
+        // workspace's paths. Throwing rather than silently losing the shade
+        // restriction (which is security-shaped).
+        throw new Error('reactAppConfig: shadeRestricted + extraSrcRules[\'no-restricted-imports\'] would silently override the shade restriction. Merge them in your workspace config.');
+    }
 
     // Lazy-load plugins so a Node lib calling nodeLibConfig never loads React.
     // typescript-eslint is loaded unconditionally because we use its `config()`
@@ -660,10 +675,12 @@ export async function reactAppConfig({
  *   When false: vanilla JS with jsUnusedVarsRule.
  * @property {boolean} [commonjs=false]
  *   When true: sourceType is 'commonjs' instead of 'module'.
- * @property {boolean} [localFilenamesMode=false]
- *   LEGACY for ghost/i18n. When true: register the localFilenamesPlugin and
- *   turn off `ghost/filenames/match-regex` (the workspace uses
- *   `local-filenames/match-regex` instead — a workspace-local quirk).
+ * @property {boolean} [legacyLocalFilenames=false]
+ *   LEGACY escape hatch for ghost/i18n. When true: register the
+ *   localFilenamesPlugin and turn off `ghost/filenames/match-regex` so the
+ *   workspace can use `local-filenames/match-regex` (its workspace-local
+ *   variant) instead. Should be unified with the rest of the codebase
+ *   eventually so we only have one filename-matching rule.
  * @property {string[]} [srcGlobs]
  *   Override src globs. Default depends on typescript flag.
  * @property {string[]} [testGlobs]
@@ -696,7 +713,7 @@ export async function reactAppConfig({
  * export default await nodeLibConfig({
  *   typescript: false,
  *   commonjs: true,
- *   localFilenamesMode: true,
+ *   legacyLocalFilenames: true,
  *   srcGlobs: ['*.js', 'lib/**\/*.js'],
  *   extraSrcRules: noGhostIgnitionRequireRule,
  *   extraBlocks: [{
@@ -708,7 +725,7 @@ export async function reactAppConfig({
 export async function nodeLibConfig({
     typescript = true,
     commonjs = false,
-    localFilenamesMode = false,
+    legacyLocalFilenames = false,
     srcGlobs,
     testGlobs,
     ignores = ['build/**/*'],
@@ -741,12 +758,12 @@ export async function nodeLibConfig({
         ...unusedVarsRule,
         // Turn off the eslint-plugin-ghost filename rule when using the
         // local-filenames variant — they're equivalent in intent.
-        ...(localFilenamesMode ? {'ghost/filenames/match-regex': 'off'} : {})
+        ...(legacyLocalFilenames ? {'ghost/filenames/match-regex': 'off'} : {})
     };
 
     const plugins = {
         ghost: ghostPlugin,
-        ...(localFilenamesMode && {'local-filenames': localFilenamesPlugin})
+        ...(legacyLocalFilenames && {'local-filenames': localFilenamesPlugin})
     };
 
     const srcLanguageOptions = {

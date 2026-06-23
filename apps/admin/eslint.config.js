@@ -8,7 +8,7 @@ import { globalIgnores } from 'eslint/config'
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
 import ghostPlugin from 'eslint-plugin-ghost';
 
-import {shadeLayeredImportsRule} from '../../eslint.shared.mjs';
+import {shadeLayeredImportsRule, strictLinterOptions} from '../../eslint.shared.mjs';
 
 const noHardcodedGhostPaths = {
   meta: {
@@ -45,8 +45,13 @@ const localPlugin = {
 };
 const tailwindCssConfig = `${import.meta.dirname}/src/index.css`;
 
+// TODO: this workspace doesn't yet apply `correctnessRules` from the shared
+// module. Doing so would surface 14 violations (4 no-console, 5 curly, 2
+// no-promise-executor-return, etc.) that need source cleanup. Follow-up PR
+// will fix the violations + add the spread.
 export default tseslint.config([
   globalIgnores(['dist']),
+  {files: ['**/*'], ...strictLinterOptions},
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
