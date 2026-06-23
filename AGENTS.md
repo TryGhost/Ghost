@@ -49,7 +49,7 @@ pnpm run setup                 # First-time setup (installs deps + submodules + 
 pnpm dev                       # Start development (Docker backend + host frontend dev servers)
 ```
 
-> **Fresh worktree / first run — run `pnpm setup` before running tests or booting Ghost.** It installs deps, syncs submodules, and **builds the workspace packages** (Nx-cached, so it's fast). DB-backed tests and a real Ghost boot will not start until built deps like `@tryghost/parse-email-address` exist. If an incremental install over a branch switch leaves the dependency hoist tree incomplete (symptom: `Cannot find module '@tryghost/...'` at boot), do a clean reinstall with `pnpm fix`.
+> **Fresh worktree / first run — run `pnpm setup` before anything else.** It installs deps, syncs submodules, and builds workspace packages (Nx-cached, fast). `pnpm fix` does a clean reinstall if anything misbehaves after a branch switch.
 
 ### Building
 ```bash
