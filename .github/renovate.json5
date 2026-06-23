@@ -20,14 +20,12 @@
     "toolSettings": {
         "nodeMaxMemory": 1024
     },
-    // Run `pnpm dedupe` after every lockfile update. The shared preset still
-    // passes `yarnDedupeHighest`, which is a no-op for pnpm — Renovate's array
-    // merge concats both, so this entry is what actually consolidates duplicate
-    // transitive versions in `pnpm-lock.yaml`. Local override pending an upstream
-    // swap in tryghost/renovate-config.
-    "postUpdateOptions": [
-        "pnpmDedupe"
-    ],
+    // `pnpmDedupe` intentionally NOT in postUpdateOptions — Renovate dedupes
+    // on its Linux runner, but `pnpm install` on macOS produces a different
+    // lockfile (platform-sensitive peer-suffix resolution), so every stale
+    // Renovate branch fails --frozen-lockfile. Upstream: pnpm/pnpm#10258,
+    // renovatebot/renovate#31867. Ad-hoc `pnpm dedupe` PR or scheduled
+    // lockFileMaintenance when bloat becomes a problem.
     // We have to disable platform based automerge (forcing renovate to do it manually)
     // as otherwise renovate wont follow our schedule
     "platformAutomerge": false,
