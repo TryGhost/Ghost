@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/sodo-search",
   "type": "module",
-  "version": "1.8.24",
+  "version": "1.8.25",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -24,7 +24,7 @@
   "scripts": {
     "dev": "pnpm build && concurrently --kill-others --names preview,build,tailwind \"vite preview -l silent\" \"pnpm build:watch\" \"pnpm tailwind\"",
     "build": "vite build && pnpm tailwind:base",
-    "build:watch": "vite build --watch",
+    "build:watch": "vite build --watch --mode development",
     "tailwind": "pnpm tailwind:base --watch ",
     "tailwind:base": "tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
     "test": "vitest run",

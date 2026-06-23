@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/portal",
   "type": "module",
-  "version": "2.69.8",
+  "version": "2.69.9",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -17,7 +17,7 @@
   "scripts": {
     "dev": "pnpm build && concurrently --kill-others --names preview,build \"pnpm preview -l silent\" \"pnpm build:watch\"",
     "build": "vite build",
-    "build:watch": "vite build --watch",
+    "build:watch": "vite build --watch --mode development",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
