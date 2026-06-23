@@ -1,4 +1,5 @@
 import {z} from 'zod';
+import {snakeKeys} from './case-keys';
 import {GiftLink} from './models';
 
 // Response schemas — the shapes the admin endpoints emit.
@@ -13,12 +14,7 @@ const RevokeAllResponse = z.object({meta: z.object({count: z.number()})});
 
 export const toGiftLinksResponse = z.array(GiftLink)
     .transform((links): z.input<typeof GiftLinksResponse> => ({
-        gift_links: links.map(link => ({
-            token: link.token,
-            redeemed_count: link.redeemedCount,
-            last_redeemed_at: link.lastRedeemedAt,
-            created_at: link.createdAt
-        }))
+        gift_links: links.map(link => snakeKeys(link))
     }))
     .pipe(GiftLinksResponse);
 
