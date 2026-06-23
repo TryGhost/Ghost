@@ -173,7 +173,7 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, post})
                         <DialogHeader>
                             <DialogTitle>Reset gift link</DialogTitle>
                             <DialogDescription>
-                                Aare you sure you want to reset this link?
+                                Are you sure you want to reset this link? Visitors using the existing link will no longer be able to access this post.
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
