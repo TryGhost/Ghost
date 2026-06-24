@@ -188,8 +188,16 @@ export const formatNumber = (value: number): string => {
 };
 
 // Abbreviate numbers
-export function abbreviateNumber(number: number) {
+export function abbreviateNumber(number: number): string {
     const num = Number(number);
+
+    if (Number.isNaN(num) || !Number.isFinite(number)) {
+        return formatNumber(num);
+    }
+
+    if (num < 0) {
+        return `-${abbreviateNumber(-num)}`;
+    }
 
     if (num < 1000) {
         return formatNumber(num);
