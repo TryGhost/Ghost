@@ -654,19 +654,12 @@ export async function reactAppConfig(options = {}) {
     const storybookBlocks = [];
     if (storybook === 'plugin') {
         storybookBlocks.push(...storybookPlugin.configs['flat/recommended']);
-        // The storybook preset ships 3 warn-level rules. Ghost's stance is
-        // error-or-off, never warn — normalize them. hierarchy-separator and
-        // no-redundant-story-name have zero violations across shade so they
-        // flip to error for free; prefer-pascal-case has 29 violations so
-        // it's off until cleanup.
         storybookBlocks.push({
             files: ['**/*.stories.{ts,tsx,js,jsx,mjs,cjs}', '**/*.story.{ts,tsx,js,jsx,mjs,cjs}'],
             rules: {
                 'storybook/hierarchy-separator': 'error',
                 'storybook/no-redundant-story-name': 'error',
-                // TODO: 29 legacy violations in shade. Flip to 'error' after the
-                // cleanup PR renames story exports to PascalCase.
-                'storybook/prefer-pascal-case': 'off'
+                'storybook/prefer-pascal-case': 'error'
             }
         });
     } else if (storybook === 'storiesBlock') {
