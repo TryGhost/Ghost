@@ -122,7 +122,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         }
 
         didInitialRender.current = true;
-    }, [formState.currency]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [formState.currency]);  
 
     const confirmTierStatusChange = () => {
         if (tier) {

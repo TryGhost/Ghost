@@ -439,7 +439,6 @@ describe('API hooks', () => {
                     path: '/test/',
                     defaultNextPageParams: (lastPage, otherParams) => ({
                         ...otherParams,
-                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         page: ((lastPage as any).pagination.next || 1).toString()
                     }),
                     returnData: (originalData) => {

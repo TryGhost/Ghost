@@ -170,7 +170,6 @@ function createApiInstance(config) {
                         `;
                 case 'signin':
                 default:
-                    /* eslint-disable indent */
                     return trimLeadingWhitespace`
                         ${t(`Hey there,`)}
 
@@ -190,7 +189,6 @@ function createApiInstance(config) {
                         ${t('Sent to {email}', {email})}
                         ${t('If you did not make this request, you can safely ignore this email.')}
                     `;
-                    /* eslint-enable indent */
                 }
             },
             getHTML(url, type, email, otc) {

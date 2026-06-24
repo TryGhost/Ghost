@@ -27,7 +27,6 @@ const SignupOptions: React.FC<{
 
     const handleError = useCallback((key: string, error: string | undefined) => {
         setError(key, error);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
