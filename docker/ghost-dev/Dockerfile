@@ -29,7 +29,7 @@ COPY ghost/parse-email-address/package.json ghost/parse-email-address/package.js
 # works under named-volume mounts (vstore symlinks would otherwise dangle
 # into the ephemeral BuildKit cache and break on first run).
 RUN sed -i '/^enableGlobalVirtualStore:/d' pnpm-workspace.yaml && \
-    ! grep -q '^enableGlobalVirtualStore' pnpm-workspace.yaml
+    ! grep -qE '^[[:space:]]*enableGlobalVirtualStore' pnpm-workspace.yaml
 
 # Install dependencies
 # Note: Dependencies are installed at build time, but source code is mounted at runtime.
@@ -41,9 +41,13 @@ COPY .github/hooks .github/hooks
 # Enable corepack so it can read packageManager from package.json and provide pnpm
 RUN corepack enable
 
-# Install deps with a persistent pnpm store cache to speed up rebuilds
+# Install deps with a persistent pnpm store cache to speed up rebuilds.
+# Write the lockfile hash to a marker file; the entrypoint compares this on
+# every boot against the host's mounted lockfile so drift triggers a
+# container-side reinstall without needing an image rebuild.
 RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
-    pnpm install --frozen-lockfile --prefer-offline
+    pnpm install --frozen-lockfile --prefer-offline && \
+    sha256sum pnpm-lock.yaml | awk '{print $1}' > /home/ghost/node_modules/.lockfile-hash
 
 # Copy entrypoint script that optionally loads Tinybird config
 COPY docker/ghost-dev/entrypoint.sh entrypoint.sh
