@@ -55,7 +55,7 @@ const AutomationsList: React.FC<AutomationsListProps> = ({automations = [], isLo
                             className="grid w-full cursor-pointer grid-cols-[1fr_auto] items-center gap-x-4 p-2 lg:table-row lg:p-0"
                             data-testid="automation-list-row"
                         >
-                            <TableCell className="static min-w-0 lg:p-4">
+                            <TableCell className="min-w-0 lg:p-4">
                                 <Link
                                     className="before:absolute before:inset-0 before:z-10 before:rounded-sm focus-visible:outline-hidden focus-visible:before:ring-2 focus-visible:before:ring-focus-ring"
                                     to={`/automations/${automation.id}`}
