@@ -191,7 +191,7 @@
     "juice": "9.1.0",
     "keypair": "1.0.4",
     "knex": "2.4.2",
-    "knex-migrator": "5.3.2",
+    "knex-migrator": "catalog:",
     "leaky-bucket": "2.2.0",
     "lodash": "catalog:",
     "luxon": "3.7.2",

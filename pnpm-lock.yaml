@@ -219,6 +219,9 @@ catalogs:
     jsonc-parser:
       specifier: 3.3.1
       version: 3.3.1
+    knex-migrator:
+      specifier: 5.4.0
+      version: 5.4.0
     lodash:
       specifier: 4.18.1
       version: 4.18.1
@@ -325,6 +328,7 @@ catalogs:
       version: 3.4.19
 
 overrides:
+  knex-migrator>knex: 2.4.2
   '@tryghost/errors': ^1.3.7
   '@tryghost/logging': 4.2.1
   jackspeak: 4.2.3
@@ -2741,10 +2745,10 @@ importers:
         version: 1.20.5
       bookshelf:
         specifier: 1.2.0
-        version: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7))
+        version: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21)))
       bookshelf-relations:
         specifier: 2.8.0
-        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)))
+        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))))
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -2902,8 +2906,8 @@ importers:
         specifier: 2.4.2
         version: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
       knex-migrator:
-        specifier: 5.3.2
-        version: 5.3.2(better-sqlite3@12.11.1)
+        specifier: 'catalog:'
+        version: 5.4.0(@types/node@22.19.21)(supports-color@5.5.0)
       leaky-bucket:
         specifier: 2.2.0
         version: 2.2.0
@@ -3063,7 +3067,7 @@ importers:
         version: 2.1.0
       '@types/bookshelf':
         specifier: 1.2.9
-        version: 1.2.9(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
+        version: 1.2.9(mysql2@3.22.5(@types/node@22.19.21))
       '@types/common-tags':
         specifier: 1.8.4
         version: 1.8.4
@@ -9017,9 +9021,6 @@ packages:
   '@tryghost/custom-fonts@1.0.11':
     resolution: {integrity: sha512-WAc3LkrgMKBk+pGyFfkR+5eoS4C52RXMBWBj4kNa+tcP51f/U3DIl8QKfp9M3XrcGS44Qpwq9C5nYKRp+sz1ig==}
 
-  '@tryghost/database-info@0.3.22':
-    resolution: {integrity: sha512-AwljcoXFUjSKFIoB/V9uohTLvWY8g+fIaHHjgPLH4Cq1tBZgcAlBIZR2ridhXiY1iDX7m3cws36uAxrN0KnoUw==}
-
   '@tryghost/database-info@0.3.35':
     resolution: {integrity: sha512-S9OapApwzdh3GS0d3m+KgwH7IhZII6b9Aw5I89HA5VJRPeo6HdaDXiZzSDNcFaUzpx1FFBR0kDu7G+IRPD0eFA==}
 
@@ -9193,8 +9194,8 @@ packages:
   '@tryghost/prometheus-metrics@1.0.8':
     resolution: {integrity: sha512-E1LRRwLgiWIN/P20uHgpTK+JVYYQ3+BarKCBszB6qmK5IBANJvQHI3LQV0wDWefVwFyl5FI6AqxLpOOpquvahA==}
 
-  '@tryghost/promise@0.3.8':
-    resolution: {integrity: sha512-ppcnLBWczpbo4sQcGWtjEA82kdZMv4NFF2MvZRi1MBP4lSOSgh9A636eUxlB1/FpIG+D5ixq84xlY4QJMqW2kA==}
+  '@tryghost/promise@0.3.20':
+    resolution: {integrity: sha512-afHCBoS72XabqRi7GmHdVAWC/UMsVPGlxnL/epNVp0c/C7tEn6+MgHABXNAW4wViZFhuOda3k7fk3i2K0FAZQg==}
 
   '@tryghost/promise@2.2.3':
     resolution: {integrity: sha512-16iSlwcIeQzbPEOBvvR4bfBe/hb6XGXg6/IcoYh6zootyt10I38//IGYf73MJvaGAvQu12JYMC8nIlpXzp1UTA==}
@@ -12852,15 +12853,6 @@ packages:
       supports-color:
         optional: true
 
-  debug@4.4.1:
-    resolution: {integrity: sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==}
-    engines: {node: '>=6.0'}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-
   debug@4.4.3:
     resolution: {integrity: sha512-RGwwWnwQvkVfavKVt22FGLw+xYSdzARwm0ru6DhTVA3umU5hZc28V3kO4stgYryrTlLpuvgI9GiijltAjNbcqA==}
     engines: {node: '>=6.0'}
@@ -16369,8 +16361,8 @@ packages:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
 
-  knex-migrator@5.3.2:
-    resolution: {integrity: sha512-E8yLL2IWAni0yWWt1uq+x6qS80E+YVLQqwFFw1vkCQ+hq65MggHS3HjrZFXZqPv3cFrpyxHbdehwQoGQE3FC1g==}
+  knex-migrator@5.4.0:
+    resolution: {integrity: sha512-fpVjmT/4T0iQiYZW7vgKuD71VlX9oI8djp3afy2hg83GDfvcN2VxrpivCbJIdl+nXjDk09G2I/JKuGEMheZsAw==}
     engines: {node: ^14.18.0 || ^16.13.0 || ^18.12.1 || ^20.11.1 || ^22.13.1}
     hasBin: true
 
@@ -17631,10 +17623,6 @@ packages:
     resolution: {integrity: sha512-BzQguy9W9NJgoVn2mRWzbFrFWWztGCcng2QI9+41frfk+Athwgx3qhqhvStz7ExeUUu7Kzw427sNzHpEZNINog==}
     engines: {node: '>=16.0.0'}
 
-  mysql2@3.14.1:
-    resolution: {integrity: sha512-7ytuPQJjQB8TNAYX/H2yhL+iQOnIBjAMam361R7UAL0lOVXWjtdrmoL9HYKqKoLp/8UUTRcvo1QPvK9KL7wA8w==}
-    engines: {node: '>= 8.0'}
-
   mysql2@3.22.5:
     resolution: {integrity: sha512-95uZ2TrPWAZdwpB3vvvDbmEMcNG8yIeNCyu6GUcr/QnWEE/wXm7+mhOCsdQfWQDTV7qYT/PDUZ4U4UPP4AsXqQ==}
     engines: {node: '>= 8.0'}
@@ -17668,10 +17656,6 @@ packages:
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
-
-  nconf@0.12.1:
-    resolution: {integrity: sha512-p2cfF+B3XXacQdswUYWZ0w6Vld0832A/tuqjLBu3H1sfUcby4N2oVbGhyuCkZv+t3iY3aiFEj7gZGqax9Q2c1w==}
-    engines: {node: '>= 0.4.0'}
 
   nconf@0.13.0:
     resolution: {integrity: sha512-hJ/u2xCpA663h6xyOiztx3y+lg9eU0rdkwJ+c4FtiHo2g/gB0sjXtW31yTdMLWLOIj1gL2FcJMwfOqouuUK/Wg==}
@@ -19997,10 +19981,6 @@ packages:
     engines: {node: '>= 0.4'}
     hasBin: true
 
-  resolve@1.22.8:
-    resolution: {integrity: sha512-oKWePCxqpd6FlLvGV1VU0x7bkPmmCNolxzjMf4NczoDnQcIWrAF+cPtZn5i6n+RfD2d9i0tzpKnG6Yk168yIyw==}
-    hasBin: true
-
   resolve@2.0.0-next.7:
     resolution: {integrity: sha512-tqt+NBWwyaMgw3zDsnygx4CByWjQEJHOPMdslYhppaQSJUtL/D4JO9CcBBlhPoI8lz9oJIDXkwXfhF4aWqP8xQ==}
     engines: {node: '>= 0.4'}
@@ -20292,9 +20272,6 @@ packages:
 
   sentry-testkit@6.4.1:
     resolution: {integrity: sha512-T0L4bHMEXoOdIT1O087VuZM1bJD9dtOWSf1QgOxst9J03nDsnvU0TuXYtBuwAwZ1MG17EmXjjxvpSa7z+mJoPg==}
-
-  seq-queue@0.0.5:
-    resolution: {integrity: sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q==}
 
   serialize-javascript@4.0.0:
     resolution: {integrity: sha512-GaNA54380uFefWghODBWEGisLZFj00nS5ACs6yHa9nLqlLpVLO8ChDGeKRjZnV4Nh4n0Qi7nhYZD/9fCPzEqkw==}
@@ -20605,10 +20582,6 @@ packages:
 
   sqlite3@5.1.7:
     resolution: {integrity: sha512-GGIyOiFaG+TUra3JIfkI/zGP8yZYLPQ0pl1bH+ODjiX57sPhrLU5sQJn1y9bDKZUFYkX1crlrPfSYt0BKKdkog==}
-
-  sqlstring@2.3.3:
-    resolution: {integrity: sha512-qC9iz2FlN7DQl3+wjwn3802RTyjCx7sDvfQEXchwa6CWOx07/WVfh91gBmQ9fahw8snwGEWU3xGzOt4tFyHLxg==}
-    engines: {node: '>= 0.6'}
 
   ssh2@1.17.0:
     resolution: {integrity: sha512-wPldCk3asibAjQ/kziWQQt1Wh3PgDFpC0XpwclzKcdT1vql6KeYxf5LIt4nlFkUeR8WuphYMKqUA56X4rjbfgQ==}
@@ -28890,8 +28863,6 @@ snapshots:
 
   '@tryghost/custom-fonts@1.0.11': {}
 
-  '@tryghost/database-info@0.3.22': {}
-
   '@tryghost/database-info@0.3.35': {}
 
   '@tryghost/debug@0.1.40':
@@ -29356,7 +29327,7 @@ snapshots:
       - '@75lb/nature'
       - supports-color
 
-  '@tryghost/promise@0.3.8': {}
+  '@tryghost/promise@0.3.20': {}
 
   '@tryghost/promise@2.2.3': {}
 
@@ -29563,12 +29534,12 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/node': 26.0.0
 
-  '@types/bookshelf@1.2.9(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)':
+  '@types/bookshelf@1.2.9(mysql2@3.22.5(@types/node@22.19.21))':
     dependencies:
       '@types/bluebird': 3.5.42
       '@types/create-error': 0.3.33
       '@types/lodash': 4.17.24
-      knex: 0.21.21(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
+      knex: 0.21.21(mysql2@3.22.5(@types/node@22.19.21))
     transitivePeerDependencies:
       - mssql
       - mysql
@@ -32179,17 +32150,17 @@ snapshots:
       raw-body: 1.1.7
       safe-json-parse: 1.0.1
 
-  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7))):
+  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21)))):
     dependencies:
       '@tryghost/debug': 0.1.40
       '@tryghost/errors': 1.3.13
       bluebird: 3.7.2
-      bookshelf: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7))
+      bookshelf: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21)))
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
-  bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)):
+  bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))):
     dependencies:
       bluebird: 3.7.2
       create-error: 0.3.1
@@ -34261,10 +34232,6 @@ snapshots:
   debug@4.3.4:
     dependencies:
       ms: 2.1.2
-
-  debug@4.4.1:
-    dependencies:
-      ms: 2.1.3
 
   debug@4.4.3(supports-color@5.5.0):
     dependencies:
@@ -37291,7 +37258,7 @@ snapshots:
       qs: 6.15.2
       range-parser: 1.2.1
       safe-buffer: 5.2.1
-      send: 0.19.2
+      send: 0.19.2(supports-color@1.2.0)
       serve-static: 1.16.3
       setprototypeof: 1.2.0
       statuses: 2.0.2
@@ -37327,7 +37294,7 @@ snapshots:
       qs: 6.15.2
       range-parser: 1.2.1
       safe-buffer: 5.2.1
-      send: 0.19.2
+      send: 0.19.2(supports-color@1.2.0)
       serve-static: 1.16.3
       setprototypeof: 1.2.0
       statuses: 2.0.2
@@ -40079,26 +40046,27 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  knex-migrator@5.3.2(better-sqlite3@12.11.1):
+  knex-migrator@5.4.0(@types/node@22.19.21)(supports-color@5.5.0):
     dependencies:
-      '@tryghost/database-info': 0.3.22
+      '@tryghost/database-info': 0.3.35
       '@tryghost/errors': 1.3.13
       '@tryghost/logging': 4.2.1(supports-color@5.5.0)
-      '@tryghost/promise': 0.3.8
+      '@tryghost/promise': 0.3.20
       commander: 5.1.0
       compare-ver: 2.0.2
-      debug: 4.4.1
-      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.14.1)(sqlite3@5.1.7)
+      debug: 4.4.3(supports-color@5.5.0)
+      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
       lodash: 4.18.1
       moment: 2.30.1
-      mysql2: 3.14.1
-      nconf: 0.12.1
-      resolve: 1.22.8
+      mysql2: 3.22.5(@types/node@22.19.21)
+      nconf: 0.13.0
+      resolve: 1.22.12
     optionalDependencies:
+      better-sqlite3: 12.11.1
       sqlite3: 5.1.7
     transitivePeerDependencies:
       - '@75lb/nature'
-      - better-sqlite3
+      - '@types/node'
       - bluebird
       - mysql
       - pg
@@ -40106,7 +40074,29 @@ snapshots:
       - supports-color
       - tedious
 
-  knex@0.21.21(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7):
+  knex@0.20.15(mysql2@3.22.5(@types/node@22.19.21))(supports-color@5.5.0):
+    dependencies:
+      colorette: 1.1.0
+      commander: 4.1.1
+      debug: 4.4.3(supports-color@5.5.0)
+      esm: 3.2.25
+      getopts: 2.2.5
+      inherits: 2.0.4
+      interpret: 2.2.0
+      liftoff: 3.1.0
+      lodash: 4.18.1
+      mkdirp: 0.5.6
+      pg-connection-string: 2.1.0
+      tarn: 2.0.0
+      tildify: 2.0.0
+      uuid: 7.0.3
+      v8flags: 3.2.0
+    optionalDependencies:
+      mysql2: 3.22.5(@types/node@22.19.21)
+    transitivePeerDependencies:
+      - supports-color
+
+  knex@0.21.21(mysql2@3.22.5(@types/node@22.19.21)):
     dependencies:
       colorette: 1.2.1
       commander: 6.2.1
@@ -40122,30 +40112,6 @@ snapshots:
       v8flags: 3.2.0
     optionalDependencies:
       mysql2: 3.22.5(@types/node@22.19.21)
-      sqlite3: 5.1.7
-    transitivePeerDependencies:
-      - supports-color
-
-  knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.14.1)(sqlite3@5.1.7):
-    dependencies:
-      colorette: 2.0.19
-      commander: 9.5.0
-      debug: 4.3.4
-      escalade: 3.2.0
-      esm: 3.2.25
-      get-package-type: 0.1.0
-      getopts: 2.3.0
-      interpret: 2.2.0
-      lodash: 4.18.1
-      pg-connection-string: 2.5.0
-      rechoir: 0.8.0
-      resolve-from: 5.0.0
-      tarn: 3.0.2
-      tildify: 2.0.0
-    optionalDependencies:
-      better-sqlite3: 12.11.1
-      mysql2: 3.14.1
-      sqlite3: 5.1.7
     transitivePeerDependencies:
       - supports-color
 
@@ -40255,7 +40221,7 @@ snapshots:
       ee-log: 3.0.9
       ee-types: 2.2.1
 
-  leek@0.0.24:
+  leek@0.0.24(supports-color@1.2.0):
     dependencies:
       debug: 2.6.9(supports-color@1.2.0)
       lodash.assign: 3.2.0
@@ -41655,18 +41621,6 @@ snapshots:
     optional: true
 
   mylas@2.1.14: {}
-
-  mysql2@3.14.1:
-    dependencies:
-      aws-ssl-profiles: 1.1.2
-      denque: 2.1.0
-      generate-function: 2.3.1
-      iconv-lite: 0.6.3
-      long: 5.3.2
-      lru.min: 1.1.4
-      named-placeholders: 1.1.6
-      seq-queue: 0.0.5
-      sqlstring: 2.3.3
 
   mysql2@3.22.5(@types/node@22.19.21):
     dependencies:
@@ -44471,12 +44425,6 @@ snapshots:
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
-  resolve@1.22.8:
-    dependencies:
-      is-core-module: 2.16.2
-      path-parse: 1.0.7
-      supports-preserve-symlinks-flag: 1.0.0
-
   resolve@2.0.0-next.7:
     dependencies:
       es-errors: 1.3.0
@@ -44850,8 +44798,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  seq-queue@0.0.5: {}
-
   serialize-javascript@4.0.0:
     dependencies:
       randombytes: 2.1.0
@@ -44861,7 +44807,7 @@ snapshots:
       encodeurl: 2.0.0
       escape-html: 1.0.3
       parseurl: 1.3.3
-      send: 0.19.2
+      send: 0.19.2(supports-color@1.2.0)
     transitivePeerDependencies:
       - supports-color
 
@@ -45275,8 +45221,6 @@ snapshots:
       - bluebird
       - supports-color
     optional: true
-
-  sqlstring@2.3.3: {}
 
   ssh2@1.17.0:
     dependencies:
