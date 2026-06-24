@@ -8,13 +8,13 @@ importers:
 
   .:
     dependencies:
-      '@types/express':
-        specifier: 5.0.6
-        version: 5.0.6
       moment:
         specifier: 2.30.1
         version: 2.30.1
     devDependencies:
+      '@types/express':
+        specifier: 5.0.6
+        version: 5.0.6
       '@types/node':
         specifier: 24.13.2
         version: 24.13.2

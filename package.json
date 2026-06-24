@@ -33,13 +33,13 @@
     "dist"
   ],
   "dependencies": {
-    "@types/express": "5.0.6",
     "moment": "2.30.1"
   },
   "engines": {
     "node": "^22.13.1 || ^24.0.0"
   },
   "devDependencies": {
+    "@types/express": "5.0.6",
     "@types/node": "24.13.2",
     "@vitest/coverage-v8": "4.1.9",
     "oxlint": "1.70.0",
