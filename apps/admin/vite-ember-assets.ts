@@ -82,6 +82,7 @@ export function emberAssetsPlugin() {
                     // Generate the virtual module content
                     return [...styles, ...scripts, ...metaTags];
                 } catch (error) {
+                    // eslint-disable-next-line no-console
                     console.warn('Failed to read Ghost admin index.html:', error);
                     return;
                 }

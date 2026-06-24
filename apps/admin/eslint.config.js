@@ -80,9 +80,6 @@ export default tseslint.config([
       ...shadeLayeredImportsRule,
       'tailwindcss/classnames-order': 'error',
       'tailwindcss/no-contradicting-classname': 'error',
-      // Browser app — console.error/warn is the conventional error sink.
-      // console.log etc. still error.
-      'no-console': ['error', {allow: ['error', 'warn']}],
       // Leaked warn from reactHooks.configs['recommended-latest']. The shared
       // factory drops this to 'off' across the rest of the React apps; this
       // workspace isn't on the factory yet, so override explicitly.
