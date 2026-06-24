@@ -130,6 +130,12 @@ export const tsReactAppRules = {
     ...tsUnusedVarsRule,
     ...reactDefaultsOff,
     ...reactStrictRules,
+    // Apply react-hooks rules at the rule-set level so they cover BOTH src and
+    // test blocks. The src block ALSO extends reactHooks.configs.recommended-latest
+    // which is fine — these match. exhaustive-deps stays off everywhere; the
+    // workspace-specific overrides for src already handle TODO counts.
+    'react-hooks/rules-of-hooks': 'error',
+    'react-hooks/exhaustive-deps': 'off',
     'no-var': 'error',
     // TS handles these at compile time; turning them off in ESLint avoids
     // duplicate/contradictory reports.
@@ -369,23 +375,35 @@ export const localFilenamesPlugin = {
  *   ignores: ['umd/**\/*', 'dist/**\/*']
  * });
  */
-export async function reactAppConfig({
-    typescript = true,
-    reactRefresh = true,
-    i18next = false,
-    storybook = null,
-    tailwindCssPath,
-    legacyTailwindV3ConfigPath,
-    shadeRestricted = false,
-    sortImports = false,
-    legacyJsTsSplit = false,
-    tsconfigRootDir,
-    ignores = ['dist/**/*'],
-    srcGlobs,
-    testGlobs,
-    extraSrcRules = {},
-    extraTestRules = {}
-} = {}) {
+const REACT_APP_PARAMS = new Set([
+    'typescript', 'reactRefresh', 'i18next', 'storybook', 'tailwindCssPath',
+    'legacyTailwindV3ConfigPath', 'shadeRestricted', 'sortImports',
+    'legacyJsTsSplit', 'tsconfigRootDir', 'ignores', 'srcGlobs', 'testGlobs',
+    'extraSrcRules', 'extraTestRules'
+]);
+
+export async function reactAppConfig(options = {}) {
+    const unknown = Object.keys(options).filter(k => !REACT_APP_PARAMS.has(k));
+    if (unknown.length) {
+        throw new Error(`reactAppConfig: unknown options ${JSON.stringify(unknown)}. Valid keys: ${JSON.stringify([...REACT_APP_PARAMS])}`);
+    }
+    const {
+        typescript = true,
+        reactRefresh = true,
+        i18next = false,
+        storybook = null,
+        tailwindCssPath,
+        legacyTailwindV3ConfigPath,
+        shadeRestricted = false,
+        sortImports = false,
+        legacyJsTsSplit = false,
+        tsconfigRootDir,
+        ignores = ['dist/**/*'],
+        srcGlobs,
+        testGlobs,
+        extraSrcRules = {},
+        extraTestRules = {}
+    } = options;
     if (tailwindCssPath && legacyTailwindV3ConfigPath) {
         throw new Error('reactAppConfig: pass either tailwindCssPath (v4) or legacyTailwindV3ConfigPath (v3), not both.');
     }
@@ -729,17 +747,27 @@ export async function reactAppConfig({
  *   }]
  * });
  */
-export async function nodeLibConfig({
-    typescript = true,
-    commonjs = false,
-    legacyLocalFilenames = false,
-    srcGlobs,
-    testGlobs,
-    ignores = ['build/**/*'],
-    extraSrcRules = {},
-    extraTestRules = {},
-    extraBlocks = []
-} = {}) {
+const NODE_LIB_PARAMS = new Set([
+    'typescript', 'commonjs', 'legacyLocalFilenames', 'srcGlobs', 'testGlobs',
+    'ignores', 'extraSrcRules', 'extraTestRules', 'extraBlocks'
+]);
+
+export async function nodeLibConfig(options = {}) {
+    const unknown = Object.keys(options).filter(k => !NODE_LIB_PARAMS.has(k));
+    if (unknown.length) {
+        throw new Error(`nodeLibConfig: unknown options ${JSON.stringify(unknown)}. Valid keys: ${JSON.stringify([...NODE_LIB_PARAMS])}`);
+    }
+    const {
+        typescript = true,
+        commonjs = false,
+        legacyLocalFilenames = false,
+        srcGlobs,
+        testGlobs,
+        ignores = ['build/**/*'],
+        extraSrcRules = {},
+        extraTestRules = {},
+        extraBlocks = []
+    } = options;
     const [
         {default: js},
         {default: globals},

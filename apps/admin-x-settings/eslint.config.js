@@ -3,6 +3,7 @@ import {reactAppConfig} from '../../eslint.shared.mjs';
 export default await reactAppConfig({
     tailwindCssPath: `${import.meta.dirname}/../admin/src/index.css`,
     shadeRestricted: true,
+    sortImports: true,
     extraSrcRules: {
         // TODO: 43 legacy violations. Remove this override after the cleanup PR
         // converts all `let` → `const` where reassignment never happens.
