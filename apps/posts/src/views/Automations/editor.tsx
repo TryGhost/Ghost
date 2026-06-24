@@ -74,6 +74,8 @@ const AutomationEditor: React.FC = () => {
             });
         }
     }, [automation]);
+    const isInitializingDraft = !!automation && !draft;
+    const isEditorLoading = isLoadingAutomation || isInitializingDraft;
 
     // Only compare the fields the user can edit; server-stamped fields like `updated_at` would
     // otherwise flip the dirty flag immediately after every successful publish.
@@ -403,7 +405,7 @@ const AutomationEditor: React.FC = () => {
         <div className='fixed inset-0 z-50 flex flex-col bg-background' data-testid='automation-editor'>
             <AutomationHeader
                 automation={draft}
-                isLoadingAutomation={isLoadingAutomation}
+                isLoadingAutomation={isEditorLoading}
                 isPublishButtonEnabled={isPublishButtonEnabled}
                 isSaveButtonEnabled={isSaveButtonEnabled}
                 isTurnOffButtonEnabled={isTurnOffButtonEnabled}
@@ -421,7 +423,7 @@ const AutomationEditor: React.FC = () => {
                 automation={draft}
                 isEmailNavigationBlocked={isEmailNavigationBlocked}
                 isError={isError}
-                isLoading={isLoadingAutomation}
+                isLoading={isEditorLoading}
                 onChange={onDraftChange}
                 onDiscardBlockedEmailNavigation={(closeEmailModal) => {
                     onEmailDirtyChange(false);
