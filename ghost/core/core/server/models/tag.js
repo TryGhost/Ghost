@@ -128,7 +128,20 @@ Tag = ghostBookshelf.Model.extend({
                 {transacting: options.transacting})
                 .then(function then(slug) {
                     self.set({slug: slug});
+
+                    if (slug === 'new') {
+                        throw new errors.ValidationError({
+                            message: 'Tag slug "new" is reserved and cannot be used.'
+                        });
+                    }
                 });
+        }
+
+        // Prevent direct assignment of the reserved slug "new"
+        if (self.get('slug') === 'new') {
+            throw new errors.ValidationError({
+                message: 'Tag slug "new" is reserved and cannot be used.'
+            });
         }
     },
 
