@@ -89,24 +89,6 @@ export default tseslint.config([
       'react-hooks/exhaustive-deps': 'off',
     },
   },
-  // Test files: relax counters + promise-executor-return patterns common in
-  // setup (renderCount++, await new Promise(r => setTimeout(r, N))).
-  {
-    files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', 'test-utils/**/*'],
-    rules: {
-      'no-plusplus': 'off',
-      'no-promise-executor-return': 'off',
-    },
-  },
-  // Build/dev scripts at workspace root — Node-side, console + sleep patterns
-  // are intentional.
-  {
-    files: ['*.ts', '*.mts', '*.cts'],
-    rules: {
-      'no-console': 'off',
-      'no-promise-executor-return': 'off',
-    },
-  },
   // Apply no-relative-import-paths rule for src files (auto-fix supported)
   {
     files: ['src/**/*.{ts,tsx}'],

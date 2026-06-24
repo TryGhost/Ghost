@@ -19,7 +19,9 @@ async function resolveGhostSiteUrl() {
             };
         } catch (error) {
             if (attempt === MAX_ATTEMPTS) {throw error;}
-            await new Promise((resolve) => setTimeout(resolve, attempt * 1000));
+            await new Promise((resolve) => {
+                setTimeout(resolve, attempt * 1000);
+            });
         }
     }
 
