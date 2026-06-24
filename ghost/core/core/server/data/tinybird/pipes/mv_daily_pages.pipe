@@ -14,10 +14,11 @@ SQL >
         pathname,
         post_type,
         member_status,
+        gift_link,
         uniqExactState(session_id) as visits,
         countState() as hits
     FROM _mv_hits
-    GROUP BY site_uuid, day, post_uuid, pathname, post_type, member_status
+    GROUP BY site_uuid, day, post_uuid, pathname, post_type, member_status, gift_link
 
 TYPE materialized
 DATASOURCE _mv_daily_pages

@@ -24,6 +24,7 @@ SQL >
         JSONExtractString(payload, 'member_status') as member_status,
         JSONExtractString(payload, 'post_uuid') as post_uuid,
         JSONExtractString(payload, 'post_type') as post_type,
+        JSONExtractString(payload, 'gift_link') as gift_link,
         lower(JSONExtractString(payload, 'user-agent')) as user_agent,
         JSONExtractString(payload, 'device') as device,
         JSONExtractString(payload, 'utm_source') as utm_source,
@@ -57,6 +58,7 @@ SQL >
         member_status,
         post_uuid,
         post_type,
+        gift_link,
         location,
         case
             when referrer = '' then ''
