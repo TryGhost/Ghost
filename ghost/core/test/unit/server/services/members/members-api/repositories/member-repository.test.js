@@ -214,6 +214,11 @@ describe('MemberRepository', function () {
 
     afterEach(function () {
         sinon.restore();
+        // MemberRepository's constructor subscribes to DomainEvents on every build.
+        // These tests construct the repository many times over a shared static
+        // EventEmitter, so clear listeners between tests to avoid a leak warning
+        // and to stop this file's listeners leaking into other files (isolate:false).
+        DomainEvents.ee.removeAllListeners();
     });
 
     describe('#isComplimentarySubscription', function () {

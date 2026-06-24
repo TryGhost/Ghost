@@ -4,8 +4,33 @@ const sinon = require('sinon');
 const validators = require('../../../../../../../core/server/api/endpoints/utils/validators');
 
 describe('Unit: endpoints/utils/validators/input/tags', function () {
+    let warnStub;
+    let sawExpectedStrictWarning = false;
+
+    beforeEach(function () {
+        // The published `tags-add` schema in @tryghost/admin-api-schema declares
+        // `additionalProperties` on its `tags` property without a `type: object`,
+        // so Ajv emits a one-off strict-mode warning via console.warn when it
+        // compiles the schema on the first validate() call. Capture it so a
+        // passing run stays clean; allow only that exact warning through.
+        warnStub = sinon.stub(console, 'warn');
+    });
+
     afterEach(function () {
+        for (const call of warnStub.getCalls()) {
+            const message = String(call.args[0]);
+            if (/strict mode: missing type "object" for keyword "additionalProperties"/.test(message)) {
+                sawExpectedStrictWarning = true;
+            } else {
+                assert.fail(`Unexpected console.warn during tags validator test: ${message}`);
+            }
+        }
+
         sinon.restore();
+    });
+
+    afterAll(function () {
+        assert.ok(sawExpectedStrictWarning, 'expected the Ajv strict-mode warning to be emitted and captured');
     });
 
     describe('add', function () {
