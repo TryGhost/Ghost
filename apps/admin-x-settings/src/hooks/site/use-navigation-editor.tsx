@@ -100,7 +100,7 @@ const useNavigationEditor = ({items, setItems}: {
             let isValid = true;
 
             list.items.forEach(({item, id}) => {
-                let errors = validateItem(item);
+                const errors = validateItem(item);
 
                 if (Object.values(errors).some(message => message)) {
                     isValid = false;

@@ -66,7 +66,7 @@ const SignupOptions: React.FC<{
     const isFreeSignupAllowed = membersSignupAccess === 'all';
     const isStripeEnabled = checkStripeEnabled(localSettings, config!);
 
-    let tiersCheckboxes: CheckboxProps[] = [];
+    const tiersCheckboxes: CheckboxProps[] = [];
 
     if (localTiers) {
         localTiers.forEach((tier) => {

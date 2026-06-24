@@ -72,8 +72,8 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
             } else {
                 handleError(e);
             }
-            let title = 'Theme not activated';
-            let prompt = <>This theme couldn&apos;t be activated because Ghost found a blocking validation error. Fix the issue below and try again.</>;
+            const title = 'Theme not activated';
+            const prompt = <>This theme couldn&apos;t be activated because Ghost found a blocking validation error. Fix the issue below and try again.</>;
 
             if (fatalErrors) {
                 NiceModal.show(InvalidThemeModal, {
@@ -140,7 +140,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         updateRoute(`theme/edit/${encodeURIComponent(theme.name)}?from=${encodeURIComponent(route ?? '')}`);
     };
 
-    let actions = [];
+    const actions = [];
 
     if (!isActiveTheme(theme)) {
         actions.push(
@@ -155,7 +155,7 @@ const ThemeActions: React.FC<ThemeActionProps> = ({
         );
     }
 
-    let menuItems = [
+    const menuItems = [
         {
             id: 'edit-code',
             label: 'Edit code',
