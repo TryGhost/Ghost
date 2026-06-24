@@ -93,7 +93,7 @@
     "@tryghost/color-utils": "catalog:",
     "@tryghost/config-url-helpers": "1.0.26",
     "@tryghost/custom-fonts": "catalog:",
-    "@tryghost/database-info": "0.3.35",
+    "@tryghost/database-info": "2.3.1",
     "@tryghost/debug": "catalog:",
     "@tryghost/domain-events": "catalog:",
     "@tryghost/email-mock-receiver": "2.1.0",
