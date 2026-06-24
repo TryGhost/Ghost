@@ -17,7 +17,7 @@ describe('MailgunEmailSuppressionList', function () {
         // starts at ~now and the events (being "too close to NOW") are never
         // fetched, so no suppression is created. The suite previously passed only
         // by free-riding on an earlier file's timestamp state, which breaks under
-        // per-file isolation (PLA-156). Mirrors email-event-storage.test.js.
+        // per-file isolation. Mirrors email-event-storage.test.js.
         const queries = require('../../../core/server/services/email-analytics/lib/queries');
         sinon.stub(queries, 'getLastEventTimestamp').callsFake(async function () {
             return new Date(2000, 0, 1);

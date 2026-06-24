@@ -49,7 +49,7 @@ pnpm run setup                 # First-time setup (installs deps + submodules + 
 pnpm dev                       # Start development (Docker backend + host frontend dev servers)
 ```
 
-> **Fresh worktree / first run — run `pnpm setup` before running tests or booting Ghost.** It installs deps, syncs submodules, and **builds the workspace packages** (Nx-cached, so it's fast). DB-backed tests and a real Ghost boot will not start until built deps like `@tryghost/parse-email-address` exist. If an incremental install over a branch switch leaves the dependency hoist tree incomplete (symptom: `Cannot find module '@tryghost/...'` at boot), do a clean reinstall with `pnpm fix`.
+> **Fresh worktree / first run — run `pnpm setup` before anything else.** It installs deps and syncs submodules. `pnpm fix` does a clean reinstall if anything misbehaves after a branch switch.
 
 ### Building
 ```bash
@@ -68,15 +68,23 @@ cd ghost/core
 pnpm test:unit                 # Unit tests only (Vitest, run once)
 pnpm test:watch                # Watch mode — ghost/core unit tests only
 pnpm test:integration          # Integration tests
-pnpm test:e2e                  # E2E API tests (not browser)
+pnpm test:e2e                  # Server-side e2e suites (webhooks/server/frontend/api) — not browser
 pnpm test:all                  # All test types
+
+# These run on sqlite with no extra services. The Redis/MinIO/S3 adapter suites
+# probe for their service and auto-skip when it's down (run `pnpm dev:storage`
+# etc. to exercise them); they always run in CI, which starts the services.
 
 # E2E browser tests (from root)
 pnpm test:e2e                  # Run e2e/ Playwright tests
 
 # Running a single test
 cd ghost/core
-pnpm test:single test/unit/path/to/test.test.js
+pnpm test:single test/unit/path/to/test.test.js   # routes test/unit/* → unit config, test/* → DB config
+
+# Watch a single DB-backed file (integration/e2e) — the default test:watch only
+# covers unit tests, so point it at the DB config explicitly:
+pnpm exec vitest -c vitest.config.db.ts test/integration/path/to/test.test.js
 ```
 
 ### Linting

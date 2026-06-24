@@ -2,12 +2,6 @@
 // bridges the snapshot hook contract from @tryghost/express-test onto
 // vitest's globals so it's exercised end-to-end.
 
-// The ghost/mocha lint plugin flags top-level beforeAll/afterEach/afterAll
-// calls — those rules guard against accidental top-level hooks in mocha
-// test files, but vitest setup files are *meant* to register global hooks
-// at the top level. Disable for this file only.
-/* eslint-disable ghost/mocha/no-top-level-hooks, ghost/mocha/handle-done-callback */
-
 import chalk from 'chalk';
 import {beforeAll, beforeEach, afterEach, afterAll} from 'vitest';
 

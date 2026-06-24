@@ -43,7 +43,6 @@ const unitConfig = {
     // 5000ms (vitest's default) — generous headroom over the slowest unit
     // test (~1s locally) for loaded CI runners.
     testTimeout: 5000,
-    hookTimeout: 60000,
     // Retry a failed test up to twice (3 attempts total) before reporting
     // it as failed — absorbs transient flakiness on loaded CI runners.
     retry: 2
@@ -69,6 +68,13 @@ export default defineConfig({
         },
         projects: [
             {
+                // Vitest projects re-create their own Vite config — settings on
+                // the parent `defineConfig` aren't inherited here. The unit
+                // runner uses Vite's SSR pipeline, so workspace TS deps with a
+                // `source` exports condition (e.g. @tryghost/parse-email-address)
+                // need `ssr.resolve.conditions` to resolve to src/*.ts. Matches
+                // the runtime backend's `--conditions=source` (nodemon.json).
+                ssr: {resolve: {conditions: ['source', 'node']}},
                 test: {
                     ...unitConfig,
                     name: 'unit',

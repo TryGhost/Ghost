@@ -12,7 +12,7 @@ const mail = require('../mail');
 const labs = require('../../../shared/labs');
 const {Automation, EmailDesignSetting, Newsletter} = require('../../models');
 const MemberWelcomeEmailRenderer = require('./member-welcome-email-renderer');
-const {MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
+const {DEFAULT_EMAIL_DESIGN_SETTING_SLUG, MEMBER_WELCOME_EMAIL_LOG_KEY, MEMBER_WELCOME_EMAIL_TAG, MEMBER_WELCOME_EMAIL_SLUGS, MESSAGES} = require('./constants');
 
 const VERIFIED_SENDER_PROPERTIES = ['sender_reply_to'];
 const WELCOME_EMAIL_FILTER = `slug:${MEMBER_WELCOME_EMAIL_SLUGS.free},slug:${MEMBER_WELCOME_EMAIL_SLUGS.paid}`;
@@ -206,32 +206,18 @@ class MemberWelcomeEmailService {
         });
     }
 
-    async #loadWelcomeEmailsMap({requireAll = false} = {}) {
-        const rows = await this.#loadWelcomeEmailsCollection();
-        const bySlug = new Map(rows.models.map(model => [model.get('slug'), model]));
+    async #getDefaultEmailDesignSettings() {
+        const designSettings = await EmailDesignSetting.findOne({
+            slug: DEFAULT_EMAIL_DESIGN_SETTING_SLUG
+        });
 
-        const free = bySlug.get(MEMBER_WELCOME_EMAIL_SLUGS.free);
-        const paid = bySlug.get(MEMBER_WELCOME_EMAIL_SLUGS.paid);
-
-        if (requireAll && (!free || !paid)) {
+        if (!designSettings?.id) {
             throw new errors.NotFoundError({
-                message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
+                message: 'Default automated email design setting not found'
             });
         }
 
-        return {free, paid};
-    }
-
-    async #loadRequiredWelcomeEmailRows() {
-        const {free, paid} = await this.#loadWelcomeEmailsMap({requireAll: true});
-
-        if (!free.related('welcomeEmailAutomatedEmail')?.id || !paid.related('welcomeEmailAutomatedEmail')?.id) {
-            throw new errors.NotFoundError({
-                message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
-            });
-        }
-
-        return [free, paid];
+        return designSettings;
     }
 
     #normalizeSharedSenderValue(value) {
@@ -257,14 +243,6 @@ class MemberWelcomeEmailService {
         return normalized;
     }
 
-    #hasSharedSenderFieldChanged(rows, field, value) {
-        return rows.some((row) => {
-            const email = row.related('welcomeEmailAutomatedEmail');
-            const currentValue = email?.related('emailDesignSetting')?.get(field);
-            return trimValue(currentValue) !== trimValue(value);
-        });
-    }
-
     #validateSharedSenderField(field, value) {
         const validationType = EMAIL_VALIDATION_TYPE_BY_FIELD[field];
 
@@ -286,13 +264,14 @@ class MemberWelcomeEmailService {
         };
     }
 
-    #prepareSharedSenderUpdate(rows, attrs = {}) {
+    async #prepareSharedSenderUpdate(attrs = {}) {
+        const designSettings = await this.#getDefaultEmailDesignSettings();
         const normalizedAttrs = this.#normalizeSharedSenderAttrs(attrs);
         const attrsToPersist = {};
         const emailsToVerify = [];
 
         for (const [field, value] of Object.entries(normalizedAttrs)) {
-            if (!this.#hasSharedSenderFieldChanged(rows, field, value)) {
+            if (trimValue(designSettings.get(field)) === trimValue(value)) {
                 continue;
             }
 
@@ -307,23 +286,9 @@ class MemberWelcomeEmailService {
 
         return {
             attrsToPersist,
-            emailsToVerify
+            emailsToVerify,
+            designSettings
         };
-    }
-
-    async #applySharedSenderAttrs(rows, attrs = {}) {
-        if (Object.keys(attrs).length === 0) {
-            return;
-        }
-
-        // De-dupe so we don't write to the same design row twice.
-        const designSettingIds = new Set(
-            rows.map(row => row.related('welcomeEmailAutomatedEmail')?.get('email_design_setting_id')).filter(Boolean)
-        );
-
-        await Promise.all([...designSettingIds].map(async (id) => {
-            await EmailDesignSetting.edit(attrs, {id});
-        }));
     }
 
     async #sendSharedSenderVerifications(emailsToVerify = []) {
@@ -536,14 +501,13 @@ class MemberWelcomeEmailService {
         return Boolean(email && email.get('lexical') && row.get('status') === 'active');
     }
 
-    async #renderWelcomeEmailPreview({automatedEmailId, subject, lexical, memberEmail = 'jamie@example.com'}) {
-        // Still validate the automated email exists (for permission purposes)
-        const automation = await Automation.findOne({id: automatedEmailId}, {
+    async #renderAutomationEmailPreview({automationId, subject, lexical, memberEmail = 'jamie@example.com', requireWelcomeEmail = false}) {
+        const automation = await Automation.findOne({id: automationId}, {
             withRelated: ['welcomeEmailAutomatedEmail', 'welcomeEmailAutomatedEmail.emailDesignSetting']
         });
         const automatedEmail = automation?.related('welcomeEmailAutomatedEmail');
 
-        if (!automation || !automatedEmail?.id) {
+        if (!automation || (requireWelcomeEmail && !automatedEmail?.id)) {
             throw new errors.NotFoundError({
                 message: MESSAGES.NO_MEMBER_WELCOME_EMAIL
             });
@@ -567,7 +531,9 @@ class MemberWelcomeEmailService {
             uuid: '00000000-0000-4000-8000-000000000000'
         };
 
-        const designSettings = automatedEmail.related('emailDesignSetting');
+        const designSettings = requireWelcomeEmail ?
+            automatedEmail.related('emailDesignSetting') :
+            await this.#getDefaultEmailDesignSettings();
         const designSettingsJson = designSettings?.id ? designSettings.toJSON() : null;
 
         const preview = await this.#renderer.render({
@@ -585,8 +551,23 @@ class MemberWelcomeEmailService {
     }
 
     async previewEmail({subject, lexical, automatedEmailId}) {
-        const {html, text, subject: renderedSubject} = await this.#renderWelcomeEmailPreview({
-            automatedEmailId,
+        const {html, text, subject: renderedSubject} = await this.#renderAutomationEmailPreview({
+            automationId: automatedEmailId,
+            requireWelcomeEmail: true,
+            subject,
+            lexical
+        });
+
+        return {
+            html,
+            plaintext: text,
+            subject: renderedSubject
+        };
+    }
+
+    async previewAutomationEmail({subject, lexical, automationId}) {
+        const {html, text, subject: renderedSubject} = await this.#renderAutomationEmailPreview({
+            automationId,
             subject,
             lexical
         });
@@ -599,13 +580,33 @@ class MemberWelcomeEmailService {
     }
 
     async sendTestEmail({email, subject, lexical, automatedEmailId}) {
+        await this.#sendTestAutomationEmail({
+            email,
+            subject,
+            lexical,
+            automationId: automatedEmailId,
+            requireWelcomeEmail: true
+        });
+    }
+
+    async sendTestAutomationEmail({email, subject, lexical, automationId}) {
+        await this.#sendTestAutomationEmail({
+            email,
+            subject,
+            lexical,
+            automationId
+        });
+    }
+
+    async #sendTestAutomationEmail({email, subject, lexical, automationId, requireWelcomeEmail = false}) {
         const {
             html,
             text,
             subject: renderedSubject,
             designSettings
-        } = await this.#renderWelcomeEmailPreview({
-            automatedEmailId,
+        } = await this.#renderAutomationEmailPreview({
+            automationId,
+            requireWelcomeEmail,
             subject,
             lexical,
             memberEmail: email
@@ -629,16 +630,23 @@ class MemberWelcomeEmailService {
     }
 
     async editSharedSenderOptions(attrs = {}) {
-        const rows = await this.#loadRequiredWelcomeEmailRows();
-        const {attrsToPersist, emailsToVerify} = this.#prepareSharedSenderUpdate(rows, attrs);
+        const {attrsToPersist, emailsToVerify, designSettings} = await this.#prepareSharedSenderUpdate(attrs);
 
-        await this.#applySharedSenderAttrs(rows, attrsToPersist);
+        if (Object.keys(attrsToPersist).length > 0) {
+            await EmailDesignSetting.edit(attrsToPersist, {id: designSettings.id});
+        }
+
         await this.#sendSharedSenderVerifications(emailsToVerify);
 
         const response = await this.#loadWelcomeEmailsCollection();
         if (emailsToVerify.length > 0) {
-            response.meta = response.meta || {};
-            response.meta.sent_email_verification = emailsToVerify.map(({property}) => property);
+            return {
+                data: response.models,
+                meta: {
+                    ...response.meta,
+                    sent_email_verification: emailsToVerify.map(({property}) => property)
+                }
+            };
         }
 
         return {
@@ -657,20 +665,21 @@ class MemberWelcomeEmailService {
             });
         }
 
-        const rows = await this.#loadRequiredWelcomeEmailRows();
         const normalizedValue = this.#normalizeSharedSenderValue(value);
         const attrs = {
             [property]: normalizedValue
         };
 
-        await this.#applySharedSenderAttrs(rows, attrs);
+        const designSettings = await this.#getDefaultEmailDesignSettings();
+        await EmailDesignSetting.edit(attrs, {id: designSettings.id});
 
         const response = await this.#loadWelcomeEmailsCollection();
-        response.meta = response.meta || {};
-        response.meta.email_verified = property;
         return {
             data: response.models,
-            meta: response.meta
+            meta: {
+                ...response.meta,
+                email_verified: property
+            }
         };
     }
 }

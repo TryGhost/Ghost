@@ -50,7 +50,7 @@ async function trackDb(fn, skip) {
 
 // trackDb introspects sqlite query traffic, so its tests are sqlite-only; the
 // invalid-filter test is mysql-only. Decided at registration from NODE_ENV
-// (vitest has no runtime this.skip). (PLA-153)
+// (vitest has no runtime this.skip).
 const isMySQL = (process.env.NODE_ENV || '').includes('mysql');
 
 describe('Posts Content API', function () {

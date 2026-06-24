@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.46.1-rc.0",
+  "version": "6.47.1-rc.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -74,12 +74,12 @@
     "test:int:slow": "pnpm test:integration",
     "test:e2e:slow": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --reporter=verbose",
     "test:leg:slow": "vitest run -c vitest.config.db.ts --project legacy --reporter=verbose",
-    "lint:server": "eslint --ignore-path .eslintignore 'core/server/**/*.js' 'core/*.js' '*.js' --cache",
-    "lint:shared": "eslint --ignore-path .eslintignore 'core/shared/**/*.js' --cache",
-    "lint:frontend": "eslint --ignore-path .eslintignore 'core/frontend/**/*.js' --cache",
-    "lint:test": "eslint -c test/.eslintrc.js --ignore-path test/.eslintignore 'test/**/*.js' --cache",
+    "lint:server": "eslint 'core/server/**/*.js' 'core/*.js' '*.js' --cache",
+    "lint:shared": "eslint 'core/shared/**/*.js' --cache",
+    "lint:frontend": "eslint 'core/frontend/**/*.js' --cache",
+    "lint:test": "eslint 'test/**/*.js' --cache",
     "lint:code": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend",
-    "lint:types": "eslint --ignore-path .eslintignore '**/*.ts' --cache && tsc --noEmit",
+    "lint:types": "pnpm --filter @tryghost/parse-email-address build && eslint '**/*.ts' --cache && tsc --noEmit",
     "lint": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend && pnpm lint:test && pnpm lint:types"
   },
   "engines": {
@@ -127,7 +127,7 @@
     "@tryghost/mongo-utils": "0.6.5",
     "@tryghost/mw-error-handler": "1.0.13",
     "@tryghost/mw-vhost": "1.0.6",
-    "@tryghost/nodemailer": "2.2.4",
+    "@tryghost/nodemailer": "2.3.0",
     "@tryghost/nql": "catalog:",
     "@tryghost/nql-lang": "catalog:",
     "@tryghost/parse-email-address": "workspace:*",
@@ -179,12 +179,12 @@
     "express-queue": "0.0.13",
     "express-session": "1.19.0",
     "file-type": "21.3.4",
-    "form-data": "4.0.5",
+    "form-data": "4.0.6",
     "fs-extra": "catalog:",
-    "ghost-storage-base": "2.0.0",
+    "ghost-storage-base": "2.1.0",
     "glob": "catalog:",
     "got": "13.0.0",
-    "gscan": "6.3.0",
+    "gscan": "6.4.0",
     "handlebars": "4.7.9",
     "heic-convert": "2.1.0",
     "html-to-text": "5.1.1",
@@ -236,7 +236,7 @@
     "rss": "1.2.2",
     "sanitize-html": "2.17.5",
     "semver": "7.8.4",
-    "sharp": "0.35.1",
+    "sharp": "0.35.2",
     "simple-dom": "1.4.0",
     "stoppable": "1.1.0",
     "stripe": "8.222.0",
@@ -286,9 +286,13 @@
     "cli-progress": "3.12.0",
     "cssnano": "7.1.9",
     "esbuild": "0.28.0",
+    "@eslint/js": "catalog:",
     "eslint": "catalog:",
+    "eslint-plugin-ghost": "3.5.0",
+    "globals": "17.6.0",
+    "typescript-eslint": "8.58.0",
     "expect": "29.7.0",
-    "form-data": "4.0.5",
+    "form-data": "4.0.6",
     "html-minifier": "4.0.0",
     "html-validate": "11.5.3",
     "inquirer": "8.2.7",
@@ -354,6 +358,9 @@
       "test:ci:e2e": {
         "dependsOn": [
           "^build"
+        ],
+        "outputs": [
+          "{projectRoot}/coverage-e2e"
         ]
       },
       "test:ci:e2e:no-coverage": {
@@ -369,6 +376,9 @@
       "test:ci:integration": {
         "dependsOn": [
           "^build"
+        ],
+        "outputs": [
+          "{projectRoot}/coverage-integration"
         ]
       },
       "test:ci:integration:no-coverage": {

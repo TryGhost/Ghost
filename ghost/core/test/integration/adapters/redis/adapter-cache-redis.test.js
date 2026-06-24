@@ -1,4 +1,3 @@
-/* eslint-disable ghost/mocha/no-top-level-hooks -- false positive: the hooks are inside the describe, but the lint plugin can't see through the describe.skipIf()() gate below. (PLA-170) */
 const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const _ = require('lodash');
@@ -33,7 +32,7 @@ const SCENARIOS = [
 
 // Skip the whole parameterised set when Redis is unreachable. The flag is set by
 // the integration globalSetup (vitest-globalsetup-services.ts), which probes
-// Redis once before the forks spawn. (PLA-170)
+// Redis once before the forks spawn.
 SCENARIOS.forEach(({label, wrap}) => {
     describe.skipIf(process.env.GHOST_TEST_REDIS_AVAILABLE !== '1')(`Integration: AdapterCacheRedis on a ${label}`, function () {
         const caches = [];
@@ -235,7 +234,7 @@ SCENARIOS.forEach(({label, wrap}) => {
                     // This delayed fetch is deliberately orphaned (cache.get
                     // resolves null at the 1ms timeout first); swallow its
                     // rejection so it doesn't surface as an unhandled error when
-                    // it fires after the worker is torn down (PLA-156).
+                    // it fires after the worker is torn down.
                     setTimeout(() => original(k).then(resolve).catch(() => {}), 50);
                 });
 
@@ -251,7 +250,7 @@ SCENARIOS.forEach(({label, wrap}) => {
                 cache.redisClient.get = k => new Promise((resolve) => {
                     // Orphaned delayed fetch (see the prior test) — swallow its
                     // rejection so it doesn't become an unhandled error after the
-                    // worker is torn down under per-file isolation (PLA-156).
+                    // worker is torn down under per-file isolation.
                     setTimeout(() => original(k).then(resolve).catch(() => {}), 50);
                 });
 

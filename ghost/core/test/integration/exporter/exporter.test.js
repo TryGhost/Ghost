@@ -84,6 +84,7 @@ describe('Exporter', function () {
             'permissions',
             'permissions_roles',
             'permissions_users',
+            'post_gift_links',
             'post_revisions',
             'posts',
             'posts_authors',
@@ -145,7 +146,8 @@ describe('Exporter', function () {
             'members_subscribe_events',
             'outbox',
             'gifts',
-            'gift_links'
+            'gift_links',
+            'post_gift_links'
         ];
 
         excludedTables.forEach((tableName) => {

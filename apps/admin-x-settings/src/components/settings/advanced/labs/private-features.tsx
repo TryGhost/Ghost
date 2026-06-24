@@ -28,6 +28,10 @@ const features: Feature[] = [{
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
 }, {
+    title: 'CSV Content Importer',
+    description: 'Enables importing posts from CSV files in the Universal Importer',
+    flag: 'csvContentImporter'
+}, {
     title: 'Admin UI Refresh',
     description: 'Enable Admin UI refresh (exploration)',
     flag: 'adminUIRefresh'

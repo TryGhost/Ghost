@@ -33,6 +33,15 @@ const resolveSnapshotPath = (testPath: string, snapExtension: string) => path.jo
     path.basename(testPath) + snapExtension
 );
 
+// Vitest projects re-create their own Vite config — settings on the parent
+// `defineConfig` aren't inherited. The DB-backed runners use Vite's SSR
+// pipeline, so workspace TS deps with a `source` exports condition (e.g.
+// @tryghost/parse-email-address) need this on every project. Matches the
+// runtime backend's `--conditions=source` (ghost/core/nodemon.json).
+const sharedSsrConfig = {
+    resolve: {conditions: ['source', 'node']}
+};
+
 // Shared by every DB-backed project — the execution model is identical for all
 // of them; only the include globs and per-suite timeouts differ.
 const sharedDbConfig = {
@@ -45,6 +54,7 @@ const sharedDbConfig = {
     // threads share process.env, so the per-process DB derivation would collide.
     pool: 'forks' as const,
     isolate: false,
+    sequence: {shuffle: {files: !!process.env.CI}},
     setupFiles: ['./test/utils/vitest-setup-db.ts'],
     resolveSnapshotPath,
     // Keep the testing env (CI sets `testing-mysql` on the MySQL leg; default to
@@ -61,8 +71,8 @@ const sharedDbConfig = {
         // import=tsx`; vitest only registers tsx in-process (not in the fork
         // execArgv worker_threads inherit) and ignores poolOptions.forks.execArgv
         // here, so route it through the env. Applied on test.env (after fork
-        // startup) so only the spawned workers pick it up, not the fork. (PLA-157/158)
-        NODE_OPTIONS: (process.env.NODE_OPTIONS ? process.env.NODE_OPTIONS + ' ' : '') + '--import tsx'
+        // startup) so only the spawned workers pick it up, not the fork.
+        NODE_OPTIONS: (process.env.NODE_OPTIONS ? process.env.NODE_OPTIONS + ' ' : '') + '--import tsx --conditions=source'
     },
     hookTimeout: 60000
 };
@@ -74,7 +84,7 @@ export default defineConfig({
         // any worker fork spawns; each fork then restores its per-process DB from
         // that template (a cheap bulk copy) on first provision instead of running
         // a full migrate+seed per file. This is the lever for the MySQL
-        // acceptance-test runtime regression (PLA-165) — per-file migrate+seed is
+        // acceptance-test runtime regression — per-file migrate+seed is
         // its dominant cost. Defined at the root (not per-project) so a single
         // template is shared across every project in the invocation. See
         // test/utils/vitest-global-db-setup.ts and test/utils/db-template.js.
@@ -86,6 +96,7 @@ export default defineConfig({
             : ['dot'],
         projects: [
             {
+                ssr: sharedSsrConfig,
                 test: {
                     ...sharedDbConfig,
                     name: 'e2e',
@@ -101,6 +112,7 @@ export default defineConfig({
                 }
             },
             {
+                ssr: sharedSsrConfig,
                 test: {
                     ...sharedDbConfig,
                     name: 'integration',
@@ -120,13 +132,14 @@ export default defineConfig({
                     // the main process and exports GHOST_TEST_{REDIS,MINIO}_AVAILABLE
                     // so the adapter suites skip when their service is down and run
                     // when it's up. Integration-only — no adapter tests live in the
-                    // other DB suites. (PLA-170)
+                    // other DB suites.
                     globalSetup: ['./test/utils/vitest-globalsetup-services.ts'],
                     // Matches the mocha `--timeout=10000` for the integration suite.
                     testTimeout: 10000
                 }
             },
             {
+                ssr: sharedSsrConfig,
                 test: {
                     ...sharedDbConfig,
                     name: 'legacy',
@@ -142,13 +155,13 @@ export default defineConfig({
                 }
             },
             {
+                ssr: sharedSsrConfig,
                 test: {
                     ...sharedDbConfig,
                     name: 'e2e-api',
-                    // isolate:true like integration/legacy: this large (~97-file)
-                    // snapshot-heavy suite is state-pollution-prone, so per-file
-                    // isolation removes the inter-file bleed by construction.
-                    isolate: true,
+                    // Shares the default isolate:false (one shared boot per fork):
+                    // the cross-file leakers that forced per-file isolation here are
+                    // fixed at the source, dropping the dominant boot cost.
                     include: ['test/e2e-api/**/*.test.{js,ts}'],
                     exclude: ['**/node_modules/**'],
                     // Matches the mocha `--timeout=15000` for the e2e suites.

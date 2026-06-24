@@ -111,6 +111,7 @@ jobs:
                 - '!.github/renovate-bot.cjs'
                 - '!.github/workflows/renovate.yml'
               - '.npmrc'
+              - 'nx.json'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
@@ -177,6 +178,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Start Nx Cloud CI run
+        run: pnpm nx start-ci-run
 
       - name: Determine Affected Projects
         id: affected
@@ -312,7 +316,7 @@ jobs:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
 
-      - uses: tryghost/actions/actions/slack-build@a6201b612c6b77c5b210e96e6ff31b8886b93966 # main
+      - uses: tryghost/actions/actions/slack-build@acee0acf6c537eca953cb54ee843eaa1c3d91f01 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -376,7 +380,7 @@ jobs:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@a6201b612c6b77c5b210e96e6ff31b8886b93966 # main
+      - uses: tryghost/actions/actions/slack-build@acee0acf6c537eca953cb54ee843eaa1c3d91f01 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -448,7 +452,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@a6201b612c6b77c5b210e96e6ff31b8886b93966 # main
+      - uses: tryghost/actions/actions/slack-build@acee0acf6c537eca953cb54ee843eaa1c3d91f01 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -467,21 +471,24 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306
+        # Poll the healthcheck every 2s instead of 10s — same max wait window
+        # (120s = 60 × 2s), but ready-state is discovered ~8s earlier on a
+        # typical boot. Same change on the redis service below.
         options: >-
           --tmpfs /var/lib/mysql
           --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
+          --health-interval=2s
           --health-timeout=5s
-          --health-retries=12
+          --health-retries=60
       redis:
         image: redis:7.0@sha256:352c1fdadc91926edda08f45aeb3f27f37194c2f14101229c0523a11195c96e3
         ports:
           - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval=10s
+          --health-interval=2s
           --health-timeout=5s
-          --health-retries=12
+          --health-retries=60
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -510,9 +517,15 @@ jobs:
       - name: Install dependencies
         # sqlite3 is an optionalDependency. Without --force, pnpm may skip
         # installing/linking it when restoring from a cached store. --force
-        # ensures all optional deps are installed regardless.
+        # ensures all optional deps are installed regardless. The mysql leg
+        # doesn't need sqlite3, so it skips --force and gets a fast cache
+        # restore (matches the legacy-tests job below).
         run: |
-          pnpm install --frozen-lockfile --force
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm install --frozen-lockfile --force
+          else
+            pnpm install --frozen-lockfile
+          fi
 
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
@@ -584,7 +597,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@a6201b612c6b77c5b210e96e6ff31b8886b93966 # main
+      - uses: tryghost/actions/actions/slack-build@acee0acf6c537eca953cb54ee843eaa1c3d91f01 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -670,7 +683,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@a6201b612c6b77c5b210e96e6ff31b8886b93966 # main
+      - uses: tryghost/actions/actions/slack-build@acee0acf6c537eca953cb54ee843eaa1c3d91f01 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -723,7 +736,7 @@ jobs:
           path: apps/${{ steps.app_name.outputs.name }}/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@a6201b612c6b77c5b210e96e6ff31b8886b93966 # main
+      - uses: tryghost/actions/actions/slack-build@acee0acf6c537eca953cb54ee843eaa1c3d91f01 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -740,7 +753,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:0b6225bcaa3283b8abd40b577ef9523fa1feed9e90c751dfa5190ed422b40684
+        image: tinybirdco/tinybird-local:latest@sha256:2b324f280a56dbd6ea33ee773acc2e11680512feab315bf684c9bd782b359795
         ports:
           - 7181:7181
     steps:
@@ -822,7 +835,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@a6201b612c6b77c5b210e96e6ff31b8886b93966 # main
+      - uses: tryghost/actions/actions/slack-build@acee0acf6c537eca953cb54ee843eaa1c3d91f01 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1406,7 +1419,7 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@a6201b612c6b77c5b210e96e6ff31b8886b93966 # main
+      - uses: tryghost/actions/actions/slack-build@acee0acf6c537eca953cb54ee843eaa1c3d91f01 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}

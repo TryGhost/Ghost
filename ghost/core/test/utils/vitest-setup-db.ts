@@ -16,10 +16,6 @@
 // forks-based parallel model, where each fork is its own process with its own
 // DB) never collide.
 
-// vitest setup files are *meant* to register top-level hooks; the ghost/mocha
-// lint plugin (aimed at mocha test files) flags them. Disable for this file.
-/* eslint-disable ghost/mocha/no-top-level-hooks, ghost/mocha/no-sibling-hooks, ghost/mocha/handle-done-callback */
-
 import {beforeAll, beforeEach, afterEach, afterAll} from 'vitest';
 
 const crypto = require('crypto');
@@ -42,7 +38,7 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 // instance.
 //
 // Each worker is its own process, so it gets its own database — that's what lets
-// the DB suites run fork-parallel (PLA-156). The per-fork sessionId is appended
+// the DB suites run fork-parallel. The per-fork sessionId is appended
 // even to a CI-pinned *base*: the sqlite leg exports a single
 // database__connection__filename=/dev/shm/ghost-test.db for the whole job, so
 // without a unique suffix every fork would hammer the same file. (The mysql leg
@@ -57,7 +53,7 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 // file is deleted just below, before Ghost loads, so a reused slot boots from
 // nothing exactly as a fresh name would. mysql keeps a random per-fork name: it
 // has no /tmp to bound (CI databases die with the job) and a random name sidesteps
-// the same stale-reuse hazard without a pre-boot DROP. (PLA-168)
+// the same stale-reuse hazard without a pre-boot DROP.
 const poolSlot = parseInt(process.env.VITEST_POOL_ID || '', 10);
 const sqliteId = Number.isInteger(poolSlot)
     ? `pool_${poolSlot}`
@@ -96,7 +92,7 @@ if (!process.env.NODE_ENV.includes('mysql')) {
 // lost (a SIGTERM handler is unreliable: recycled forks don't all get one).
 // Running v8.takeCoverage() in this per-file afterAll writes each file's coverage
 // to disk before its fork is torn down, so c8 captures every file. No-op off
-// coverage runs. (PLA-156)
+// coverage runs.
 if (process.env.NODE_V8_COVERAGE) {
     afterAll(() => {
         try {
@@ -113,7 +109,7 @@ if (process.env.NODE_V8_COVERAGE) {
 // deletes the file at boot (see the derivation above) and recreates it, so a run
 // reuses at most ~poolSize files in /tmp instead of leaving a fresh random one
 // behind every run. mysql names are random per fork but ephemeral on CI (the
-// container dies with the job); locally the mysql suite is rarely run. (PLA-168)
+// container dies with the job); locally the mysql suite is rarely run.
 
 const canonicalTestPort = 2369;
 // The per-fork port must be unique among forks running concurrently. Each test
@@ -126,7 +122,7 @@ const canonicalTestPort = 2369;
 // has exited and freed it, so base+poolId never collides among live forks. The
 // old `Math.random()` port in a 7630-wide range collided often enough across ~90
 // parallel boots to flake. (The DB name already uses a 2^32 sessionId, which is
-// collision-resistant; only the port was under-spread.) (PLA-153)
+// collision-resistant; only the port was under-spread.)
 const poolId = parseInt(process.env.VITEST_POOL_ID || '', 10);
 const derivedPort = Number.isInteger(poolId)
     ? 2370 + poolId

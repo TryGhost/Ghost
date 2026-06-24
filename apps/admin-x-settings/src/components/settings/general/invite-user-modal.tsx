@@ -208,7 +208,7 @@ const InviteUserModal = NiceModal.create(() => {
         });
     });
 
-    if (!!errors.email) {
+    if (errors.email) {
         okLabel = 'Retry';
     }
 

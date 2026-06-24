@@ -1,4 +1,4 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, dbUtils, matchers} = require('../utils/e2e-framework');
 const {anyGhostAgent, anyObjectId, anyISODateTime, anyString, anyContentVersion, anyContentLength, anyLocalURL} = matchers;
 
 const tagSnapshot = {
@@ -18,7 +18,8 @@ describe('tag.* events', function () {
         await adminAPIAgent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
 
