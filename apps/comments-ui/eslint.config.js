@@ -10,9 +10,10 @@ export default await reactAppConfig({
     i18next: true,
     sortImports: true,
     ignores: ['umd/**/*', 'dist/**/*'],
-    // Lint src + test together (no separate test block). 33 test files use the
-    // same rules as src.
-    srcGlobs: ['src/**/*.{js,jsx,ts,tsx}', 'test/**/*.{js,jsx,ts,tsx}'],
+    // Matches main's behavior: package.json lints `src` only — test/ is not
+    // linted in CI. Keep test/ out of srcGlobs so test-only relaxations
+    // (Playwright fixture destructure pattern, `let` in HSL helper) don't
+    // bleed into src.
     testGlobs: false,
     extraSrcRules: {
         // TODO: 41 legacy `any` violations. Remove this override after typing
@@ -24,13 +25,6 @@ export default await reactAppConfig({
         // the plugin wasn't registered). Each fix is a per-call-site judgment
         // (add dep / wrap in useCallback / suppress with reason). Remove this
         // override after the cleanup PR.
-        'react-hooks/exhaustive-deps': 'off',
-        // Playwright's `test.beforeEach(async ({}) => ...)` fixture-destructure
-        // pattern is intentional. The rule fires on the empty pattern even
-        // though it's how Playwright APIs are commonly called.
-        'no-empty-pattern': 'off',
-        // TODO: 1 violation in test/e2e/options.test.ts (a `let` that should be
-        // `const` in an HSL color util). Fix and drop this override.
-        'prefer-const': 'off'
+        'react-hooks/exhaustive-deps': 'off'
     }
 });

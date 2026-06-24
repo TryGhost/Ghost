@@ -568,7 +568,7 @@ export async function reactAppConfig(options = {}) {
             rules: {
                 ...baseSrcRules,         // includes js.recommended + reactFlat + i18nextFlat + react-hooks + viteOnlyExtras + tailwindRules
                 ...reactJsxRuntime.rules,
-                ...jsReactAppRules,
+                ...tsReactAppRules,      // TS branch needs TS-safe defaults (no-undef: off, no-explicit-any: error, react strict rules)
                 ...extraSrcRules
             }
         });
