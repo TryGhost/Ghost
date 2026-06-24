@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/sodo-search",
   "type": "module",
-  "version": "1.8.26",
+  "version": "1.8.27",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",

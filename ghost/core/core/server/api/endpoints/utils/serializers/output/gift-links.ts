@@ -1,42 +1,21 @@
-import {z} from 'zod';
-import {GiftLink} from '../../../../../services/gift-links/model';
-import type {Post} from '../../../../../services/gift-links/model';
+import {toGiftLinksResponse, toRevokeAllResponse} from '../../../../../services/gift-links/serializers';
+import type {Post} from '../../../../../services/gift-links/models';
 
 interface Frame {
     response?: unknown;
 }
 
-const GiftLinkApiResponse = z.object({
-    token: z.string(),
-    redeemed_count: z.number(),
-    last_redeemed_at: z.date().nullable(),
-    created_at: z.date()
-});
-const GiftLinksResponse = z.object({gift_links: z.array(GiftLinkApiResponse)});
+const serializeGiftLinks = (post: Post, _apiConfig: unknown, frame: Frame): void => {
+    frame.response = toGiftLinksResponse.parse(post.giftLinks);
+};
 
-const toGiftLinksResponse = z.array(GiftLink)
-    .transform((links): z.input<typeof GiftLinksResponse> => ({
-        gift_links: links.map(link => ({
-            token: link.token,
-            redeemed_count: link.redeemedCount,
-            last_redeemed_at: link.lastRedeemedAt,
-            created_at: link.createdAt
-        }))
-    }))
-    .pipe(GiftLinksResponse);
-
-// module.exports (not export): the API framework loads serializers via require().
+// module.exports (not export): the API framework loads serializers via require(). The endpoint ->
+// serializer mapping lives here; the response shaping lives with the gift-links service module.
 module.exports = {
-    read(post: Post, _apiConfig: unknown, frame: Frame) {
-        frame.response = toGiftLinksResponse.parse(post.giftLinks);
-    },
-    issue(post: Post, _apiConfig: unknown, frame: Frame) {
-        frame.response = toGiftLinksResponse.parse(post.giftLinks);
-    },
-    reissue(post: Post, _apiConfig: unknown, frame: Frame) {
-        frame.response = toGiftLinksResponse.parse(post.giftLinks);
-    },
-    revokeAll(data: {count: number}, _apiConfig: unknown, frame: Frame) {
-        frame.response = {meta: {count: data.count}};
+    browse: serializeGiftLinks,
+    ensure: serializeGiftLinks,
+    create: serializeGiftLinks,
+    removeAll(data: {count: number}, _apiConfig: unknown, frame: Frame): void {
+        frame.response = toRevokeAllResponse.parse(data);
     }
 };
