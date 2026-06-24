@@ -294,4 +294,82 @@ describe('Unit - services/routing/controllers/entry', function () {
             sinon.assert.notCalled(res.redirect);
         });
     });
+
+    describe('Accept header markdown negotiation', function () {
+        let llmsService;
+
+        beforeEach(function () {
+            llmsService = {
+                isEnabled: sinon.stub()
+            };
+
+            req.app = {
+                get: sinon.stub()
+            };
+            req.app.get.withArgs('llmsService').returns(llmsService);
+
+            req.get = sinon.stub();
+            req.get.withArgs('Accept').returns('text/markdown');
+            req.accepts = sinon.stub().returns('text/markdown');
+
+            res.type = sinon.stub().returns(res);
+            res.send = sinon.spy();
+            res.set = sinon.spy();
+            res.vary = sinon.spy();
+
+            req.path = '/does-exist/';
+            req.originalUrl = req.path;
+            post.visibility = 'public';
+        });
+
+        it('serves markdown when the entry is public, Accept negotiates markdown and llms is enabled', async function () {
+            post.url = 'http://localhost:2368/does-exist/';
+            // serveMarkdown needs an absolute entry.url; keep req.path canonical
+            // so the permalink-redirect guard doesn't fire first.
+            req.path = urlUtils.absoluteToRelative(post.url, {withoutSubdirectory: true});
+            req.originalUrl = req.path;
+            llmsService.isEnabled.returns(true);
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({entry: post});
+
+            await controllers.entry(req, res, sinon.stub());
+
+            sinon.assert.calledWith(res.vary, 'Accept');
+            sinon.assert.calledWith(res.type, 'text/markdown');
+            sinon.assert.calledOnce(res.send);
+            sinon.assert.notCalled(renderStub);
+        });
+
+        it('renders normally when llms is disabled', async function () {
+            post.url = '/does-exist/';
+            llmsService.isEnabled.returns(false);
+            const renderEntry = sinon.spy();
+            renderStub.returns(renderEntry);
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({entry: post});
+
+            await controllers.entry(req, res, sinon.stub());
+
+            sinon.assert.notCalled(res.send);
+            sinon.assert.calledWith(renderEntry, post);
+        });
+
+        it('renders normally when the entry is not public', async function () {
+            post.url = '/does-exist/';
+            post.visibility = 'paid';
+            llmsService.isEnabled.returns(true);
+            const renderEntry = sinon.spy();
+            renderStub.returns(renderEntry);
+
+            entryLookUpStub.withArgs(req.path, res.routerOptions)
+                .resolves({entry: post});
+
+            await controllers.entry(req, res, sinon.stub());
+
+            sinon.assert.notCalled(res.send);
+            sinon.assert.calledWith(renderEntry, post);
+        });
+    });
 });
