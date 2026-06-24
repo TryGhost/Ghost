@@ -2,7 +2,6 @@ import js from '@eslint/js';
 import globals from 'globals';
 import babelParser from '@babel/eslint-parser';
 import ghostPlugin from 'eslint-plugin-ghost';
-import emberPlugin from 'eslint-plugin-ember';
 import reactPlugin from 'eslint-plugin-react';
 
 import {
@@ -151,7 +150,6 @@ export default [
         },
         plugins: {
             ghost: ghostPlugin,
-            ember: emberPlugin,
             react: reactPlugin,
             'local-filenames': localFilenamesPlugin
         },
