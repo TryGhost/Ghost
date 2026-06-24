@@ -11,6 +11,7 @@ blockExoticSubdeps: true
 
 allowBuilds:
   '@swc/core': true
+  better-sqlite3: true
   core-js: true
   cpu-features: false
   dtrace-provider: true
@@ -75,6 +76,7 @@ catalog:
   '@typescript-eslint/parser': 8.49.0
   '@vitejs/plugin-react': 4.7.0
   '@vitest/coverage-v8': 4.1.9
+  better-sqlite3: 12.11.1
   bson-objectid: 2.0.4
   c8: 11.0.0
   chai: 4.5.0

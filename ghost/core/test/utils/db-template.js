@@ -53,7 +53,7 @@ const getResetTables = () => {
 // Client detection from config (NOT db.knex) for the build/teardown paths, which
 // run in globalSetup where touching db.knex would bind Ghost's singleton
 // connection to a template location.
-const configuredClientIsSQLite = () => config.get('database:client') === 'sqlite3';
+const configuredClientIsSQLite = () => ['sqlite3', 'better-sqlite3'].includes(config.get('database:client'));
 
 /**
  * Whether the shared template has been built for this run (published by

@@ -122,7 +122,8 @@ class Resources {
         debug('_fetch', resourceConfig.type, resourceConfig.modelOptions);
 
         let modelOptions = _.cloneDeep(resourceConfig.modelOptions);
-        const isSQLite = config.get('database:client') === 'sqlite3';
+        const dbClient = config.get('database:client');
+        const isSQLite = dbClient === 'sqlite3' || dbClient === 'better-sqlite3';
 
         // CASE: prevent "too many SQL variables" error on SQLite3 (https://github.com/TryGhost/Ghost/issues/5810)
         if (isSQLite) {

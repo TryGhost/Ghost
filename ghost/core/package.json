@@ -100,7 +100,6 @@
     "@tryghost/errors": "1.3.13",
     "@tryghost/helpers": "catalog:",
     "@tryghost/html-to-plaintext": "1.0.11",
-    "@tryghost/i18n": "workspace:*",
     "@tryghost/image-transform": "1.4.16",
     "@tryghost/job-manager": "1.0.9",
     "@tryghost/kg-card-factory": "5.2.3",
@@ -123,7 +122,6 @@
     "@tryghost/nodemailer": "2.3.1",
     "@tryghost/nql": "catalog:",
     "@tryghost/nql-lang": "catalog:",
-    "@tryghost/parse-email-address": "workspace:*",
     "@tryghost/pretty-cli": "3.2.3",
     "@tryghost/prometheus-metrics": "1.0.8",
     "@tryghost/promise": "2.2.3",
@@ -244,7 +242,9 @@
   },
   "optionalDependencies": {
     "@tryghost/html-to-mobiledoc": "3.3.3",
-    "sqlite3": "5.1.7"
+    "@tryghost/i18n": "workspace:*",
+    "@tryghost/parse-email-address": "workspace:*",
+    "better-sqlite3": "catalog:"
   },
   "devDependencies": {
     "@actions/core": "3.0.1",

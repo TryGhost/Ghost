@@ -408,10 +408,10 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+        # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
         # installing/linking it when restoring from a cached store. --force
         # ensures all optional deps are installed regardless.
-        # (ghost core's test:unit job requires sqlite3)
+        # (ghost core's test:unit job requires better-sqlite3)
         run: pnpm install --frozen-lockfile --force
 
       - name: Set timezone (non-UTC)
@@ -515,10 +515,10 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+        # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
         # installing/linking it when restoring from a cached store. --force
         # ensures all optional deps are installed regardless. The mysql leg
-        # doesn't need sqlite3, so it skips --force and gets a fast cache
+        # doesn't need better-sqlite3, so it skips --force and gets a fast cache
         # restore (matches the legacy-tests job below).
         run: |
           if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
@@ -650,7 +650,7 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        # sqlite3 is an optionalDependency. Without --force, pnpm may skip
+        # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
         # installing/linking it when restoring from a cached store. --force
         # ensures all optional deps are installed regardless.
         run: |
