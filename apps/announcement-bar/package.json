@@ -63,5 +63,10 @@
     "vite": "catalog:",
     "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "public-app"
+    ]
   }
 }
