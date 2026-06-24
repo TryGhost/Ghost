@@ -448,10 +448,6 @@ async function initBackgroundServices({config}) {
     const milestonesService = require('./server/services/milestones');
     milestonesService.initAndRun();
 
-    // TODO(NY-1220): The outbox is deprecated and will soon be removed.
-    const outboxService = require('./server/services/outbox');
-    outboxService.init();
-
     debug('End: initBackgroundServices');
 }
 
