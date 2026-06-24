@@ -11,9 +11,36 @@ import {
     mochaRulesOff,
     reactDefaultsOff,
     reactStrictRules,
-    shadeLayeredImportsRule,
     tsUnusedVarsRule
 } from '../../eslint.shared.mjs';
+
+// Framework-specific boundary: shade must be imported via layered subpaths,
+// and the framework must not depend on a design system at all. The DS rule is
+// the architectural seam — invert via FrameworkProvider instead.
+const frameworkBoundaryRule = {
+    'no-restricted-imports': ['error', {
+        paths: [{
+            name: '@tryghost/shade',
+            message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).'
+        }, {
+            name: '@tryghost/admin-x-design-system',
+            message: 'Framework must not depend on a design system. Inline the type, relocate the logic, or invert the dependency via FrameworkProvider.'
+        }]
+    }]
+};
+
+// Files still bleeding DS while their runtime inversion is in flight. Each
+// entry is a TODO: remove the file from this list once the inversion lands.
+// - use-handle-error.ts: removes showToast when FrameworkProvider gains a
+//   notifyError injection (next PR).
+const frameworkBoundaryAllowlist = {
+    'no-restricted-imports': ['error', {
+        paths: [{
+            name: '@tryghost/shade',
+            message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).'
+        }]
+    }]
+};
 
 const reactFlat = reactPlugin.configs.flat.recommended;
 
@@ -50,13 +77,17 @@ export default tseslint.config(
             ...tsUnusedVarsRule,
             ...reactDefaultsOff,
             ...reactStrictRules,
-            ...shadeLayeredImportsRule,
+            ...frameworkBoundaryRule,
             // TS handles these — disable the base ESLint variants
             'no-undef': 'off',
             'no-redeclare': 'off',
             'no-unexpected-multiline': 'off',
             '@typescript-eslint/no-inferrable-types': 'off'
         }
+    },
+    {
+        files: ['src/hooks/use-handle-error.ts'],
+        rules: frameworkBoundaryAllowlist
     },
     {
         files: ['test/**/*.{js,ts,cjs,tsx}'],

@@ -2,7 +2,7 @@ import PortalFrame from '../../membership/portal/portal-frame';
 import toast from 'react-hot-toast';
 import {ButtonSelect, type OfferType} from './add-offer-modal';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle, showToast} from '@tryghost/admin-x-design-system';
+import {Form, PreviewModalContent, Select, type SelectOption, TextArea, TextField, Toggle, getFormButtonProps, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useAddOffer, useBrowseOffers, useEditOffer, useInvalidateOffers} from '@tryghost/admin-x-framework/api/offers';
 import {createOfferRedemptionsFilterUrl, formatOfferTimestamp, generateRetentionOfferName} from './offer-helpers';
@@ -431,7 +431,7 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
         });
     };
 
-    const {formState, setFormState, updateForm, handleSave, saveState, okProps, errors, clearError} = useForm({
+    const {formState, setFormState, updateForm, handleSave, saveState, errors, clearError} = useForm({
         initialState: getDefaultState(cadence),
         savingDelay: 500,
         onSave: async () => {
@@ -545,6 +545,8 @@ const EditRetentionOfferModal: React.FC<{id: string}> = ({id}) => {
             return newErrors;
         }
     });
+
+    const okProps = getFormButtonProps(saveState);
 
     const activeRetentionOfferId = editableRetentionOffer?.id || 'none';
     const currentOfferKey = `${id}:${activeRetentionOfferId}`;

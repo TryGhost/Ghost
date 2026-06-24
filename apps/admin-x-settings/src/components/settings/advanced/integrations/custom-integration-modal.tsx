@@ -4,7 +4,7 @@ import React, {useEffect, useState} from 'react';
 import WebhooksTable from './webhooks-table';
 import {APIError} from '@tryghost/admin-x-framework/errors';
 import {type APIKey, useRefreshAPIKey} from '@tryghost/admin-x-framework/api/api-keys';
-import {ConfirmationModal, Form, ImageUpload, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Form, ImageUpload, Modal, TextField, getFormButtonProps} from '@tryghost/admin-x-design-system';
 import {type Integration, useBrowseIntegrations, useEditIntegration} from '@tryghost/admin-x-framework/api/integrations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getGhostPaths} from '@tryghost/admin-x-framework/helpers';
@@ -20,7 +20,7 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
     const {mutateAsync: uploadImage} = useUploadImage();
     const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, saveState, errors, clearError, okProps} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError} = useForm({
         initialState: integration,
         savingDelay: 500,
         savedDelay: 500,
@@ -41,6 +41,8 @@ const CustomIntegrationModalContent: React.FC<{integration: Integration}> = ({in
             return newErrors;
         }
     });
+
+    const okProps = getFormButtonProps(saveState);
 
     const adminApiKey = integration.api_keys?.find(key => key.type === 'admin');
     const contentApiKey = integration.api_keys?.find(key => key.type === 'content');

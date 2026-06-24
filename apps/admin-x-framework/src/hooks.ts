@@ -1,7 +1,7 @@
 export {default as useFilterableApi} from './hooks/use-filterable-api';
 export {useConfirmUnload} from './hooks/use-confirm-unload';
 export {default as useForm} from './hooks/use-form';
-export type {Dirtyable, ErrorMessages, FormHook, OkProps, SaveHandler, SaveState} from './hooks/use-form';
+export type {Dirtyable, ErrorMessages, FormHook, SaveHandler, SaveState} from './hooks/use-form';
 export {default as useHandleError} from './hooks/use-handle-error';
 export {usePermission} from './hooks/use-permissions';
 export {useKoenigFileUpload, koenigFileUploadTypes} from './hooks/use-koenig-file-upload';

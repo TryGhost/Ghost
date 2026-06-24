@@ -4,7 +4,7 @@ import {useCallback, useEffect, useRef, useState} from 'react';
 
 import MemberEmailEditor from './member-email-editor';
 import WelcomeEmailPreviewFrame from './welcome-email-preview-frame';
-import {Hint, Button as LegacyButton, Modal, TextField} from '@tryghost/admin-x-design-system';
+import {Hint, Button as LegacyButton, Modal, TextField, getFormButtonProps} from '@tryghost/admin-x-design-system';
 import {confirmIfDirty} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {getWelcomeEmailValidationErrors} from './welcome-email-validation';
@@ -121,7 +121,7 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
     const emailTypeLabel = emailType === 'paid' ? 'Paid' : 'Free';
     const modalTitle = `${emailTypeLabel} members welcome email`;
 
-    const {formState, saveState, updateForm, setFormState, setErrors, handleSave, okProps, errors, validate} = useForm({
+    const {formState, saveState, updateForm, setFormState, setErrors, handleSave, errors, validate} = useForm({
         initialState: {
             subject: automatedEmail?.subject || 'Welcome',
             lexical: automatedEmail?.lexical || ''
@@ -133,6 +133,8 @@ const WelcomeEmailModal = NiceModal.create<WelcomeEmailModalProps>(({emailType =
         onSaveError: handleError,
         onValidate: getWelcomeEmailValidationErrors
     });
+
+    const okProps = getFormButtonProps(saveState);
     const saveButtonLabel = okProps.label || 'Save';
     const {previewFrameState, enterPreview, exitPreview} = useWelcomeEmailPreview({
         automatedEmailId: automatedEmail.id,

@@ -5,7 +5,7 @@ import PortalPreview from './portal-preview';
 import React, {useEffect, useState} from 'react';
 import SignupOptions from './signup-options';
 import useQueryParams from '../../../../hooks/use-query-params';
-import {ConfirmationModal, PreviewModalContent, type Tab, TabView} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, PreviewModalContent, type Tab, TabView, getFormButtonProps} from '@tryghost/admin-x-design-system';
 import {type Dirtyable, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {type Tier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
@@ -109,7 +109,7 @@ const PortalModal: React.FC = () => {
         }
     }, [handleError, verifyEmail, verifyToken]);
 
-    const {formState, setFormState, saveState, handleSave, updateForm, okProps} = useForm({
+    const {formState, setFormState, saveState, handleSave, updateForm} = useForm({
         initialState: {
             settings: settings as Dirtyable<Setting>[],
             tiers: allTiers as Dirtyable<Tier>[] || []
@@ -150,6 +150,8 @@ const PortalModal: React.FC = () => {
 
         onSaveError: handleError
     });
+
+    const okProps = getFormButtonProps(saveState);
 
     useEffect(() => {
         if (!formState.tiers.length && allTiers?.length) {

@@ -1,6 +1,5 @@
 import {InvalidateOptions, InvalidateQueryFilters, UseInfiniteQueryOptions, UseQueryOptions, UseQueryResult, useInfiniteQuery, useMutation, useQuery, useQueryClient} from '@tanstack/react-query';
-import {usePagination} from '@tryghost/admin-x-design-system';
-import {useCallback, useEffect, useMemo, useState} from 'react';
+import {useCallback, useEffect, useMemo} from 'react';
 import useHandleError from '../../hooks/use-handle-error';
 import {usePermission} from '../../hooks/use-permissions';
 import {UserRoleType} from '../../api/roles';
@@ -62,50 +61,6 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
     return {
         ...result,
         data
-    };
-};
-
-export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options: QueryOptions<ResponseData>) => ({searchParams, ...query}: QueryHookOptions<ResponseData> = {}) => {
-    const [page, setPage] = useState(1);
-    const limit = (searchParams?.limit || options.defaultSearchParams?.limit) ? parseInt(searchParams?.limit || options.defaultSearchParams?.limit || '15') : 15;
-
-    const paginatedSearchParams = searchParams || options.defaultSearchParams || {};
-    paginatedSearchParams.page = page.toString();
-
-    const url = apiUrl(options.path, paginatedSearchParams, options?.useActivityPub);
-    const fetchApi = useFetchApi();
-    const handleError = useHandleError();
-    const hasPermission = usePermission(options.permissions);
-
-    const result = useQuery<ResponseData>({
-        ...query,
-        enabled: hasPermission && (query.enabled ?? true),
-        queryKey: [options.dataType, url],
-        queryFn: () => fetchApi(url, {...options})
-    });
-
-    const data = useMemo(() => (
-        (result.data && options.returnData) ? options.returnData(result.data) : result.data)
-    , [result.data]);
-
-    const pagination = usePagination({
-        page,
-        setPage,
-        limit,
-        // Don't pass the meta data if we are fetching, because then it is probably out of date and this causes issues
-        meta: result.isFetching ? undefined : data?.meta?.pagination
-    });
-
-    useEffect(() => {
-        if (result.error && query.defaultErrorHandler !== false) {
-            handleError(result.error);
-        }
-    }, [handleError, result.error, query.defaultErrorHandler]);
-
-    return {
-        ...result,
-        data,
-        pagination
     };
 };
 

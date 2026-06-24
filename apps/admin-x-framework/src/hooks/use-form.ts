@@ -1,4 +1,3 @@
-import {ButtonColor} from '@tryghost/admin-x-design-system';
 import {useCallback, useEffect, useState} from 'react';
 
 export type Dirtyable<Data> = Data & {
@@ -8,12 +7,6 @@ export type Dirtyable<Data> = Data & {
 export type SaveState = 'unsaved' | 'saving' | 'saved' | 'error' | '';
 
 export type ErrorMessages = Record<string, string | undefined>
-
-export interface OkProps {
-    disabled: boolean;
-    color: ButtonColor;
-    label?: string;
-}
 
 export type SaveHandler = (options?: {force?: boolean; fakeWhenUnchanged?: boolean}) => Promise<boolean>
 
@@ -39,8 +32,6 @@ export interface FormHook<State> {
     isValid: boolean;
     errors: ErrorMessages;
     setErrors: (errors: ErrorMessages) => void;
-
-    okProps: OkProps;
 }
 
 const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, onSaveError, onSavedStateReset: onSaveCompleted, onValidate}: {
@@ -123,28 +114,6 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
         setSaveState('unsaved');
     }, []);
 
-    let okColor: ButtonColor = 'black';
-    if (saveState === 'saved') {
-        okColor = 'green';
-    } else if (saveState === 'error') {
-        okColor = 'red';
-    }
-
-    let okLabel = '';
-    if (saveState === 'saved') {
-        okLabel = 'Saved';
-    } else if (saveState === 'saving') {
-        okLabel = 'Saving...';
-    } else if (saveState === 'error') {
-        okLabel = 'Retry';
-    }
-
-    const okProps: OkProps = {
-        disabled: saveState === 'saving',
-        color: okColor,
-        label: okLabel || undefined
-    };
-
     return {
         formState,
         saveState,
@@ -161,8 +130,7 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
             setErrors(state => ({...state, [field]: ''}));
         },
         errors,
-        setErrors,
-        okProps
+        setErrors
     };
 };
 
