@@ -1583,8 +1583,8 @@ jobs:
         job_build_e2e_public_apps,
         job_build_e2e_image,
         job_e2e_tests,
-        build_packages,
-        publish_packages
+        build_public_apps,
+        publish_public_apps
       ]
     if: always()
     runs-on: ubuntu-latest
@@ -1601,34 +1601,17 @@ jobs:
   # Runs on PRs and pushes. Intentionally has no `id-token: write` — PR-controlled
   # code (nx build) must never execute in a job that can mint an npm OIDC token.
   # The privileged publish flow lives in publish_packages below, gated to main pushes.
-  build_packages:
+  build_public_apps:
     needs: [
       job_setup,
       job_lint,
       job_unit-tests
     ]
-    name: Build ${{ matrix.package_name }}
+    name: Build Public Apps
     runs-on: ubuntu-latest
     if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.run_e2e == 'true'
     permissions:
       contents: read
-    strategy:
-      matrix:
-        include:
-          - package_name: '@tryghost/activitypub'
-            package_path: 'apps/activitypub'
-          - package_name: '@tryghost/portal'
-            package_path: 'apps/portal'
-          - package_name: '@tryghost/sodo-search'
-            package_path: 'apps/sodo-search'
-          - package_name: '@tryghost/comments-ui'
-            package_path: 'apps/comments-ui'
-          - package_name: '@tryghost/signup-form'
-            package_path: 'apps/signup-form'
-          - package_name: '@tryghost/announcement-bar'
-            package_path: 'apps/announcement-bar'
-          - package_name: '@tryghost/admin-toolbar'
-            package_path: 'apps/admin-toolbar'
     steps:
       - name: Checkout code
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
@@ -1644,17 +1627,17 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build the package
-        run: pnpm nx build ${{ matrix.package_name }}
+        run: pnpm nx run-many --target=build --projects='tag:public-app'
 
   # Publishes @tryghost/* public apps to npm via OIDC trusted publishing.
   # Runs only on push-to-main — never on pull_request — so the `id-token: write`
   # permission is never exposed to PR-controlled code (ref: ONC-1677).
-  publish_packages:
+  publish_public_apps:
     needs: [
       job_setup,
       job_lint,
       job_unit-tests,
-      build_packages
+      build_public_apps
     ]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
@@ -1665,7 +1648,7 @@ jobs:
       && needs.job_setup.result == 'success'
       && needs.job_lint.result == 'success'
       && needs.job_unit-tests.result == 'success'
-      && needs.build_packages.result == 'success'
+      && needs.build_public_apps.result == 'success'
     permissions:
       id-token: write
     strategy:

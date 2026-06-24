@@ -65,7 +65,8 @@
   },
   "nx": {
     "tags": [
-      "i18n"
+      "i18n",
+      "public-app"
     ]
   }
 }

@@ -37,5 +37,10 @@
     "jsdom": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "public-app"
+    ]
   }
 }
