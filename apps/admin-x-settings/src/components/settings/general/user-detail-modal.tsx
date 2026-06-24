@@ -272,7 +272,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     };
 
     const showMenu = hasAdminAccess(currentUser) || (isEditorUser(currentUser) && isAuthorOrContributor(user));
-    let menuItems: MenuItem[] = [];
+    const menuItems: MenuItem[] = [];
 
     if (isOwnerUser(currentUser) && isAdminUser(formState) && formState.status !== 'inactive') {
         menuItems.push({
@@ -295,7 +295,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         (hasAdminAccess(currentUser) && !isOwnerUser(user)) ||
         (isEditorUser(currentUser) && isAuthorOrContributor(user))
     )) {
-        let suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
+        const suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
         menuItems.push({
             id: 'suspend-user',

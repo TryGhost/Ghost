@@ -158,8 +158,8 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         }
 
         if (fatalErrors && !data) {
-            let title = 'Theme not uploaded';
-            let prompt = <>This theme couldn&apos;t be uploaded because Ghost found a blocking validation error. Fix the issue below and upload the theme again.</>;
+            const title = 'Theme not uploaded';
+            const prompt = <>This theme couldn&apos;t be uploaded because Ghost found a blocking validation error. Fix the issue below and upload the theme again.</>;
             NiceModal.show(InvalidThemeModal, {
                 title,
                 prompt,
@@ -343,13 +343,13 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     return;
                 }
 
-                let titleText = 'Install Theme';
+                const titleText = 'Install Theme';
                 const existingThemeNames = themes?.map(t => t.name) || [];
-                let willOverwrite = existingThemeNames.includes(themeName.toLowerCase());
+                const willOverwrite = existingThemeNames.includes(themeName.toLowerCase());
                 const index = existingThemeNames.indexOf(themeName.toLowerCase());
                 // get the theme that will be overwritten
                 const themeToOverwrite = themes?.[index];
-                let prompt = <>By clicking below, <strong>{themeName}</strong> will automatically be activated as the theme for your site.
+                const prompt = <>By clicking below, <strong>{themeName}</strong> will automatically be activated as the theme for your site.
                     {willOverwrite &&
                     <>
                         <br/>

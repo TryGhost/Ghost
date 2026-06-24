@@ -2,9 +2,20 @@ import js from '@eslint/js';
 import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
 
+import {correctnessRules, strictLinterOptions} from '../../eslint.shared.mjs';
+
+// Standalone (not factory-based) because admin-toolbar is vanilla JS + jQuery,
+// no React. Adding it to reactAppConfig with `typescript: false, reactRefresh:
+// false` would still load eslint-plugin-react unnecessarily. The base rules
+// come from the shared correctnessRules atom.
+
 export default [
     {
         ignores: ['umd/**/*.js']
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['src/**/*.js'],
@@ -21,19 +32,7 @@ export default [
             ghost: ghostPlugin
         },
         rules: {
-            curly: 'error',
-            camelcase: ['error', {properties: 'never'}],
-            'dot-notation': 'error',
-            eqeqeq: ['error', 'always'],
-            'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-            'no-eval': 'error',
-            'no-useless-call': 'error',
-            'no-console': 'error',
-            'no-shadow': 'error',
-            'array-callback-return': 'error',
-            'no-constructor-return': 'error',
-            'no-promise-executor-return': 'error',
-            'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
+            ...correctnessRules
         }
     },
     {
@@ -53,19 +52,7 @@ export default [
             ghost: ghostPlugin
         },
         rules: {
-            curly: 'error',
-            camelcase: ['error', {properties: 'never'}],
-            'dot-notation': 'error',
-            eqeqeq: ['error', 'always'],
-            'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-            'no-eval': 'error',
-            'no-useless-call': 'error',
-            'no-console': 'error',
-            'no-shadow': 'error',
-            'array-callback-return': 'error',
-            'no-constructor-return': 'error',
-            'no-promise-executor-return': 'error',
-            'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false]
+            ...correctnessRules
         }
     }
 ];

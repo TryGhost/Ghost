@@ -319,7 +319,9 @@ describe("useUserPreferences", () => {
                 http.put<{ id: string }, UpdateUserRequestBody, UsersResponseType>(USER_UPDATE_API_URL, async ({ request }) => {
                     const body = await request.json();
 
-                    await new Promise(resolve => setTimeout(resolve, 25));
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, 25);
+                    });
 
                     return HttpResponse.json({
                         users: [

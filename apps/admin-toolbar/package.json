@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/admin-toolbar",
   "type": "module",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -37,5 +37,10 @@
     "jsdom": "catalog:",
     "vite": "catalog:",
     "vitest": "catalog:"
+  },
+  "nx": {
+    "tags": [
+      "public-app"
+    ]
   }
 }
