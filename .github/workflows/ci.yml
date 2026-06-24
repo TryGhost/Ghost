@@ -421,6 +421,9 @@ jobs:
         # (ghost core's test:unit job requires sqlite3)
         run: pnpm install --frozen-lockfile --force
 
+      - name: Start Nx Cloud CI run
+        run: npx nx start-ci-run
+
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
@@ -458,6 +461,10 @@ jobs:
             git diff
             exit 1
           fi
+
+      - name: Nx fix-ci
+        if: always()
+        run: npx nx fix-ci
 
       - uses: tryghost/actions/actions/slack-build@acee0acf6c537eca953cb54ee843eaa1c3d91f01 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
@@ -534,6 +541,9 @@ jobs:
             pnpm install --frozen-lockfile
           fi
 
+      - name: Start Nx Cloud CI run
+        run: npx nx start-ci-run
+
       - name: Set timezone (non-UTC)
         uses: szenius/set-timezone@1f9716b0f7120e344f0c62bb7b1ee98819aefd42 # v2.0
         with:
@@ -604,6 +614,10 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
+      - name: Nx fix-ci
+        if: always()
+        run: npx nx fix-ci
+
       - uses: tryghost/actions/actions/slack-build@acee0acf6c537eca953cb54ee843eaa1c3d91f01 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
@@ -667,6 +681,9 @@ jobs:
             pnpm install --frozen-lockfile
           fi
 
+      - name: Start Nx Cloud CI run
+        run: npx nx start-ci-run
+
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
         run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
@@ -689,6 +706,10 @@ jobs:
             git diff
             exit 1
           fi
+
+      - name: Nx fix-ci
+        if: always()
+        run: npx nx fix-ci
 
       - uses: tryghost/actions/actions/slack-build@acee0acf6c537eca953cb54ee843eaa1c3d91f01 # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
