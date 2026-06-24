@@ -14,10 +14,10 @@
         <button class="gh-btn" data-test-button="cancel" type="button" {{on "click" (fn @close false)}}><span>Cancel</span></button>
 
         <GhTaskButton
-            @buttonText="Reset"
+            @buttonText="Reset link"
             @runningText="Resetting"
             @showSuccess={{false}}
-            @task={{@data.confirm}}
+            @task={{this.confirmResetTask}}
             @taskArgs={{@close}}
             @class="gh-btn gh-btn-red gh-btn-icon"
             data-test-button="confirm"

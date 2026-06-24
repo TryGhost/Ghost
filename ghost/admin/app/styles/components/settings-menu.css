@@ -214,80 +214,18 @@
     padding: 0 24px;
 }
 
-.gh-psm-setting-label-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-}
-
-.gh-psm-setting-label-row label {
-    margin-bottom: 4px;
-}
-
-.gh-psm-gift-link-actions {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    margin-bottom: 4px;
-    font-size: 1.3rem;
-    line-height: 1;
-}
-
-.gh-psm-gift-link-action {
-    padding: 0;
-    border: none;
-    background: none;
-    font-family: inherit;
-    font-size: inherit;
-    line-height: inherit;
-    color: var(--midgrey);
-    cursor: pointer;
-}
-
-.gh-psm-gift-link-action:hover {
-    color: var(--darkgrey);
-}
-
-.gh-psm-gift-link-copy,
-.gh-psm-gift-link-copy:hover {
-    color: var(--green);
-    font-weight: 500;
-}
-
-.gh-psm-gift-link-copy:hover {
-    color: var(--green-d1);
-}
-
-.gh-psm-gift-link-icon-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    padding: 0;
-    border: none;
-    background: none;
-    color: var(--midgrey);
-    cursor: pointer;
-}
-
-.gh-psm-gift-link-icon-button:hover {
-    color: var(--darkgrey);
-}
-
-.gh-psm-gift-link-icon-button svg {
-    width: 14px;
-    height: 14px;
-}
-
-/* Gift link modal (shared between post-settings sidebar and posts-list row menu).
-   Standard left-aligned layout: header row with title (left) and redemption
-   badge (right), then description, URL box, and footer below. */
+/* Gift link modal opened from the posts-list row menu.
+   Standard left-aligned layout: header row with title (left) and visitor badge
+   (right), then description, URL box, and footer below. */
 
 .gh-gift-link-modal {
     padding: 32px;
     border-radius: 8px;
+}
+
+.gh-gift-link-modal.is-replacing {
+    visibility: hidden;
+    pointer-events: none;
 }
 
 .gh-gift-link-modal-body {

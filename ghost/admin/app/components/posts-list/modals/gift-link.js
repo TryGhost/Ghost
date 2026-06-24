@@ -4,13 +4,11 @@ import {action} from '@ember/object';
 import {giftLinkUrl} from 'ghost-admin/utils/gift-link';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
 import {trackEvent} from 'ghost-admin/utils/analytics';
 import {tracked} from '@glimmer/tracking';
 
-// Shared gift-link modal opened from the post-settings sidebar and the posts-list
-// row context menu. It self-manages its API state (ensure-on-open, copy, reset)
-// so it can be invoked from anywhere with just a post — no parent wiring needed.
+// Gift-link modal opened from the posts-list row context menu. It self-manages
+// its API state (ensure-on-open, copy, reset) so callers only need a post.
 export default class GiftLinkModal extends Component {
     @service ajax;
     @service ghostPaths;
@@ -22,6 +20,7 @@ export default class GiftLinkModal extends Component {
     @tracked giftLink = null;
     @tracked copied = false;
     @tracked ensuring = false;
+    @tracked isReplacing = false;
 
     copiedResetTimer = null;
 
@@ -66,6 +65,11 @@ export default class GiftLinkModal extends Component {
     // the modal is useful without an extra round-trip.
     @action
     async setup() {
+        if (this.args.data.giftLink) {
+            this.giftLink = this.args.data.giftLink;
+            return;
+        }
+
         this.ensuring = true;
         try {
             const url = this.ghostPaths.url.api('gift_links', this.post.id);
@@ -102,26 +106,25 @@ export default class GiftLinkModal extends Component {
         }
     }
 
-    // Open the confirmation modal stacked on top of this one. The gift-link
-    // modal stays mounted, so when the reset task updates this.giftLink the
-    // new link + zeroed counter show through immediately on confirmation.
     @action
     async startReset() {
-        await this.modals.open(ResetGiftLinkModal, {
-            confirm: this.confirmResetTask
-        });
-    }
+        this.isReplacing = true;
 
-    @task
-    *confirmResetTask(close) {
         try {
-            const url = this.ghostPaths.url.api('gift_links', this.post.id, 'reset');
-            const response = yield this.ajax.put(url);
-            this.giftLink = response.gift_links[0];
-            trackEvent('gift_link_reset', {surface: 'gift-link-modal'});
-            close(true);
-        } catch (e) {
-            this.notifications.showAPIError(e, {key: 'gift-link.reset'});
+            const resetModal = this.modals.open(ResetGiftLinkModal, {post: this.post}, {omitBackdrop: true});
+            const result = await resetModal;
+
+            if (result?.giftLink) {
+                this.giftLink = result.giftLink;
+            }
+
+            if (resetModal._deferredOutAnimation) {
+                await resetModal._deferredOutAnimation.promise;
+            }
+        } finally {
+            if (!this.isDestroying && !this.isDestroyed) {
+                this.isReplacing = false;
+            }
         }
     }
 }

@@ -1,25 +1,18 @@
 import Component from '@ember/component';
-import GiftLinkModal from 'ghost-admin/components/posts-list/modals/gift-link';
 import boundOneWay from 'ghost-admin/utils/bound-one-way';
 import classic from 'ember-classic-decorator';
 import moment from 'moment-timezone';
 import {action, computed} from '@ember/object';
 import {alias, or} from '@ember/object/computed';
-import {canCopyGiftLink, giftLinkUrl} from 'ghost-admin/utils/gift-link';
 import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {tagName} from '@ember-decorators/component';
-import {trackEvent} from 'ghost-admin/utils/analytics';
 import {tracked} from '@glimmer/tracking';
 
 @classic
 @tagName('')
 export default class GhPostSettingsMenu extends Component {
-    @service feature;
-    @service modals;
     @service store;
-    @service ajax;
-    @service ghostPaths;
     @service notifications;
     @service slugGenerator;
     @service session;
@@ -30,8 +23,6 @@ export default class GhPostSettingsMenu extends Component {
     @inject config;
 
     @tracked showPostHistory = false;
-    @tracked giftLink = null;
-    @tracked giftLinkCopied = false;
 
     post = null;
     isViewingSubview = false;
@@ -192,62 +183,6 @@ export default class GhPostSettingsMenu extends Component {
         }
 
         this.setSidebarWidthVariable(0);
-    }
-
-    // Gift links: only for a published, gated (non-public) post/page, and only
-    // for users who can manage them (Owner/Administrator/Editor). Eligibility
-    // and URL shape are shared with the posts-list context menu via
-    // app/utils/gift-link.js.
-    @computed('feature.giftLinks', 'session.user.{isAdmin,isEitherEditor,isAuthor}', 'post.{isPublished,visibility}')
-    get canCopyGiftLink() {
-        return canCopyGiftLink({feature: this.feature, user: this.session.user, post: this.post});
-    }
-
-    get giftLinkUrl() {
-        return giftLinkUrl({
-            blogUrl: this.config.blogUrl,
-            slug: this.post?.slug,
-            token: this.giftLink?.token
-        });
-    }
-
-    async ensureGiftLink() {
-        const url = this.ghostPaths.url.api('gift_links', this.post.id);
-        const response = await this.ajax.post(url);
-        this.giftLink = response.gift_links[0];
-        return this.giftLink;
-    }
-
-    // Copy is a creation intent: the post may not have a link yet, so the
-    // idempotent POST creates it when missing and otherwise returns the current
-    // active token, which also refreshes the usage counter.
-    @action
-    async copyGiftLink() {
-        try {
-            await this.ensureGiftLink();
-            // Await the clipboard write so we only show "copied" on real
-            // success — in Safari/Firefox the write can reject after the awaited
-            // POST loses the user-activation, and we must not claim success then.
-            await navigator.clipboard.writeText(this.giftLinkUrl);
-            trackEvent('gift_link_copied', {surface: 'editor-psm'});
-            this.giftLinkCopied = true;
-            setTimeout(() => {
-                if (this.isDestroying || this.isDestroyed) {
-                    return;
-                }
-                this.giftLinkCopied = false;
-            }, 2000);
-        } catch (e) {
-            this.notifications.showAPIError(e, {key: 'gift-link.copy'});
-        }
-    }
-
-    // Surfaces the shared gift-link modal. The modal owns its own API state and
-    // mutates its own copy of the link, so we don't need to invalidate or sync
-    // back to `this.giftLink` afterwards.
-    @action
-    openGiftLinkModal() {
-        this.modals.open(GiftLinkModal, {post: this.post});
     }
 
     @action

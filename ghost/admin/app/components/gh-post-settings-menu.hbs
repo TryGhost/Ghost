@@ -77,17 +77,7 @@
 
                         {{#if this.showVisibilityInput}}
                             <GhFormGroup @errors={{this.post.errors}} @hasValidated={{this.post.hasValidated}} @property="visibility">
-                                <div class="gh-psm-setting-label-row">
-                                    <label for="visibility-input">{{capitalize @post.displayName}} access</label>
-                                    {{#if this.canCopyGiftLink}}
-                                        <div class="gh-psm-gift-link-actions">
-                                            <button type="button" class="gh-psm-gift-link-action gh-psm-gift-link-copy" {{on "click" this.copyGiftLink}} data-test-button="copy-gift-link">{{if this.giftLinkCopied "Link copied!" "Copy gift link"}}</button>
-                                            <button type="button" class="gh-psm-gift-link-icon-button" aria-label="Manage gift link" title="Manage gift link" {{on "click" this.openGiftLinkModal}} data-test-button="manage-gift-link">
-                                                {{svg-jar "settings"}}
-                                            </button>
-                                        </div>
-                                    {{/if}}
-                                </div>
+                                <label for="visibility-input">{{capitalize @post.displayName}} access</label>
                                 <GhPsmVisibilityInput @post={{this.post}} @savePostOnChange={{this.savePost}} @triggerId="visibility-input" />
                             </GhFormGroup>
 

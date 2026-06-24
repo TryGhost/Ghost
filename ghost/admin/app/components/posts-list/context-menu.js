@@ -71,9 +71,8 @@ export default class PostsContextMenu extends Component {
     @service feature;
 
     // Gift links: only for a single published, gated (non-public) post/page, and
-    // only for users who can manage them (Owner/Administrator/Editor).
-    // Eligibility and URL shape are shared with the post-settings menu via
-    // app/utils/gift-link.js.
+    // only for users who can manage them.
+    // Eligibility and URL shape live in app/utils/gift-link.js.
     get canCopyGiftLink() {
         if (!this.selectionList.isSingle) {
             return false;
@@ -114,8 +113,8 @@ export default class PostsContextMenu extends Component {
         this.menu.performTask(this.copyPreviewLinkTask);
     }
 
-    // Surfaces the shared gift-link modal (same one as the post-settings sidebar).
-    // The modal self-manages its API state, so we only need to hand it the post.
+    // Surfaces the gift-link modal. The modal self-manages its API state, so we
+    // only need to hand it the post.
     @action
     async openGiftLink() {
         await this.menu.openModal(GiftLinkModal, {
