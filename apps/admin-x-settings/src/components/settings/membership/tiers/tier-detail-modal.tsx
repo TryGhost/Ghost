@@ -2,7 +2,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import TierDetailPreview from './tier-detail-preview';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Button, type ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
+import {Button, type ButtonProps, ConfirmationModal, CurrencyField, Form, Heading, Icon, Modal, Select, SortableList, TextField, Toggle, URLTextField, getFormButtonProps, showToast, useSortableIndexedList} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {type Tier, useAddTier, useBrowseTiers, useEditTier} from '@tryghost/admin-x-framework/api/tiers';
@@ -32,7 +32,7 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         yearly_price: () => (formState.type !== 'free' ? validateCurrencyAmount(formState.yearly_price || 0, formState.currency, {allowZero: false}) : undefined)
     };
 
-    const {formState, saveState, updateForm, handleSave, errors, clearError, okProps} = useForm<TierFormState>({
+    const {formState, saveState, updateForm, handleSave, errors, clearError} = useForm<TierFormState>({
         initialState: {
             ...(tier || {}),
             trial_days: tier?.trial_days?.toString() || '',
@@ -95,6 +95,8 @@ const TierDetailModalContent: React.FC<{tier?: Tier}> = ({tier}) => {
         },
         onSaveError: handleError
     });
+
+    const okProps = getFormButtonProps(saveState);
 
     const benefits = useSortableIndexedList({
         items: formState.benefits || [],

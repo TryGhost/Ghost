@@ -1,7 +1,7 @@
 import NiceModal, {useModal} from '@ebay/nice-modal-react';
 import React from 'react';
 import RecommendationDescriptionForm, {validateDescriptionForm} from './recommendation-description-form';
-import {ConfirmationModal, Modal, dismissAllToasts, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Modal, dismissAllToasts, getFormButtonProps, showToast} from '@tryghost/admin-x-design-system';
 import {type Recommendation, useDeleteRecommendation, useEditRecommendation} from '@tryghost/admin-x-framework/api/recommendations';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
@@ -18,7 +18,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
     const {mutateAsync: deleteRecommendation} = useDeleteRecommendation();
     const handleError = useHandleError();
 
-    const {formState, updateForm, handleSave, errors, clearError, setErrors, okProps} = useForm({
+    const {formState, updateForm, handleSave, saveState, errors, clearError, setErrors} = useForm({
         initialState: {
             ...recommendation
         },
@@ -33,6 +33,8 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
             return newErrors;
         }
     });
+
+    const okProps = getFormButtonProps(saveState);
 
     let leftButtonProps = {
         label: 'Delete',

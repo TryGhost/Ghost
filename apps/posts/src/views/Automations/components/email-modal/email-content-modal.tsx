@@ -3,7 +3,7 @@ import EmailPreviewFrame from './preview-frame';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import TestEmailDropdown from './test-email-dropdown';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogTitle, Input, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
-import {LucideIcon, cn} from '@tryghost/shade/utils';
+import {LucideIcon, cn, getFormButtonProps} from '@tryghost/shade/utils';
 import {getEmailValidationErrors} from './validation';
 import {useBrowseAutomatedEmails} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useEmailPreview} from './use-email-preview';
@@ -123,7 +123,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
     // Saving commits whatever the user has — including an empty subject or body — to the
     // automation draft. Completeness is only enforced when publishing the automation or
     // sending a test email (see validateForTest below), not when saving a draft.
-    const {formState, saveState, updateForm, setFormState, setErrors, handleSave, okProps, errors, clearError} = useForm({
+    const {formState, saveState, updateForm, setFormState, setErrors, handleSave, errors, clearError} = useForm({
         initialState: {
             subject: initialSubject || '',
             lexical: initialLexical || ''
@@ -140,6 +140,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
         setErrors(newErrors);
         return Object.values(newErrors).every(error => !error);
     }, [formState, setErrors]);
+    const okProps = getFormButtonProps(saveState);
     const saveButtonLabel = okProps.label || 'Save';
     const {previewFrameState, enterPreview, exitPreview} = useEmailPreview({
         automationId,

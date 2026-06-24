@@ -4,7 +4,7 @@ import ThemePreview from './design-and-branding/theme-preview';
 import ThemeSettings from './design-and-branding/theme-settings';
 import useQueryParams from '../../../hooks/use-query-params';
 import {type CustomThemeSetting, useBrowseCustomThemeSettings, useEditCustomThemeSettings} from '@tryghost/admin-x-framework/api/custom-theme-settings';
-import {PreviewModalContent, type Tab, TabView} from '@tryghost/admin-x-design-system';
+import {PreviewModalContent, type Tab, TabView, getFormButtonProps} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, getSettingValues, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
@@ -86,8 +86,7 @@ const DesignModal: React.FC = () => {
         saveState,
         handleSave,
         updateForm,
-        setFormState,
-        okProps
+        setFormState
     } = useForm({
         initialState: {
             settings: settings as Array<Setting & { dirty?: boolean }>,
@@ -107,6 +106,8 @@ const DesignModal: React.FC = () => {
         },
         onSaveError: handleError
     });
+
+    const okProps = getFormButtonProps(saveState);
 
     useEffect(() => {
         if (themeSettings) {

@@ -1,9 +1,9 @@
 import React, {useEffect, useRef, useState} from 'react';
-import {type ErrorMessages, type OkProps, type SaveHandler, type SaveState, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {type ErrorMessages, type SaveHandler, type SaveState, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {type OkProps, getFormButtonProps, useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 import {type Setting, type SettingValue, useEditSettings} from '@tryghost/admin-x-framework/api/settings';
 import {type SiteData} from '@tryghost/admin-x-framework/api/site';
 import {useGlobalData} from '../components/providers/global-data-provider';
-import {useGlobalDirtyState} from '@tryghost/admin-x-design-system';
 
 interface LocalSetting extends Setting {
     dirty?: boolean;
@@ -35,7 +35,7 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
 
     const [isEditing, setEditing] = useState(false);
 
-    const {formState: localSettings, saveState, handleSave, updateForm, setFormState, reset, validate, errors, clearError, okProps} = useForm<LocalSetting[]>({
+    const {formState: localSettings, saveState, handleSave, updateForm, setFormState, reset, validate, errors, clearError} = useForm<LocalSetting[]>({
         initialState: settings || [],
         savingDelay,
         onSave: async () => {
@@ -44,6 +44,8 @@ const useSettingGroup = ({savingDelay, onValidate}: {savingDelay?: number; onVal
         onSaveError: handleError,
         onValidate
     });
+
+    const okProps = getFormButtonProps(saveState);
 
     const {setGlobalDirtyState} = useGlobalDirtyState();
 

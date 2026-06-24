@@ -2,7 +2,7 @@ import DirtyConfirmModal from './dirty-confirm-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
 import {Button, Dialog, DialogContent, DialogTitle} from '@tryghost/shade/components';
-import {type OkProps} from '@tryghost/admin-x-framework/hooks';
+import {type OkProps} from '@tryghost/admin-x-design-system';
 import {cn} from '@tryghost/shade/utils';
 
 interface EmailDesignModalProps {

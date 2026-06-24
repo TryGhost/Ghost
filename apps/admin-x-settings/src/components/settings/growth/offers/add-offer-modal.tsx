@@ -2,7 +2,7 @@ import PortalFrame from '../../membership/portal/portal-frame';
 import toast from 'react-hot-toast';
 import {Button} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm} from '@tryghost/admin-x-framework/hooks';
-import {Form, Icon, PreviewModalContent, Select, type SelectOption, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Form, Icon, PreviewModalContent, Select, type SelectOption, TextArea, TextField, getFormButtonProps, showToast} from '@tryghost/admin-x-design-system';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {getHomepageUrl} from '@tryghost/admin-x-framework/api/site';
 import {getOfferPortalPreviewUrl, type offerPortalPreviewUrlTypes} from '../../../../utils/get-offers-portal-preview-url';
@@ -348,7 +348,7 @@ const AddOfferModal = () => {
 
     const {data: {offers: allOffers = []} = {}} = useBrowseOffers();
 
-    const {formState, updateForm, handleSave, saveState, okProps, validate, errors, clearError} = useForm({
+    const {formState, updateForm, handleSave, saveState, validate, errors, clearError} = useForm({
         initialState: {
             disableBackground: false,
             name: '',
@@ -444,6 +444,8 @@ const AddOfferModal = () => {
         },
         savingDelay: 500
     });
+
+    const okProps = getFormButtonProps(saveState);
 
     const amountOptions = [
         {value: 'percent', label: '%'},

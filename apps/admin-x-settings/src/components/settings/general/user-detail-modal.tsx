@@ -8,7 +8,7 @@ import usePinturaEditor from '../../../hooks/use-pintura-editor';
 import useStaffUsers from '../../../hooks/use-staff-users';
 import validator from 'validator';
 import {APIError} from '@tryghost/admin-x-framework/errors';
-import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, type MenuItem, Modal, TabView, showToast} from '@tryghost/admin-x-design-system';
+import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, type MenuItem, Modal, TabView, getFormButtonProps, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
@@ -81,7 +81,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     const {ownerUser} = useStaffUsers();
     const {currentUser} = useGlobalData();
     const handleError = useHandleError();
-    const {formState, setFormState, saveState, handleSave, updateForm, errors, setErrors, clearError, okProps} = useForm({
+    const {formState, setFormState, saveState, handleSave, updateForm, errors, setErrors, clearError} = useForm({
         initialState: user,
         savingDelay: 500,
         savedDelay: 500,
@@ -99,6 +99,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         },
         onSaveError: handleError
     });
+
+    const okProps = getFormButtonProps(saveState);
+
     const setUserData = (newData: User) => updateForm(() => newData);
     const validateField = <K extends keyof User>(key: K, value: User[K]) => {
         const error = validators[key]?.({[key]: value});

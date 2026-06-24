@@ -171,6 +171,8 @@ export {default as useSortableIndexedList} from './hooks/use-sortable-indexed-li
 export {debounce} from './utils/debounce';
 export {confirmIfDirty} from './utils/modals';
 export {formatUrl} from './utils/format-url';
+export {getFormButtonProps} from './utils/form-button-props';
+export type {OkProps} from './utils/form-button-props';
 
 export {default as DesignSystemApp} from './design-system-app';
 export type {DesignSystemAppProps} from './design-system-app';

@@ -26,6 +26,7 @@ import {DEFAULT_EMAIL_DESIGN, type EmailDesignSettings} from '../../email-design
 import {EmailDesignProvider} from '../../email-design/email-design-context';
 import {Input, LoadingIndicator, Separator, Switch, Tabs, TabsContent, TabsList, TabsTrigger, Textarea} from '@tryghost/shade/components';
 import {WELCOME_EMAIL_SLUGS, type WelcomeEmailType, getDefaultWelcomeEmailValues} from './default-welcome-email-values';
+import {getFormButtonProps} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useAddAutomatedEmail, useBrowseAutomatedEmails, useEditAutomatedEmailSenders} from '@tryghost/admin-x-framework/api/automated-emails';
@@ -396,7 +397,7 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
         }
     }, [addAutomatedEmail, automatedEmailsData?.automated_emails, siteTitle]);
 
-    const {formState, saveState, updateForm, setFormState, handleSave, okProps, errors} = useForm<WelcomeEmailCustomizeFormState>({
+    const {formState, saveState, updateForm, setFormState, handleSave, errors} = useForm<WelcomeEmailCustomizeFormState>({
         initialState: {
             designSettings: {...DEFAULT_EMAIL_DESIGN},
             generalSettings: defaultGeneralSettings
@@ -459,6 +460,9 @@ const WelcomeEmailCustomizeModal = NiceModal.create(() => {
             return validationErrors;
         }
     });
+
+    const okProps = getFormButtonProps(saveState);
+
     const [hydratedDesignVersion, setHydratedDesignVersion] = useState<string | null>(null);
     const design = designData?.automated_email_design?.[0];
     const designVersion = design ? `${design.id}:${design.updated_at ?? 'initial'}` : null;

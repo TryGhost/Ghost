@@ -1,7 +1,7 @@
 import NiceModal from '@ebay/nice-modal-react';
 import PortalFrame from '../../membership/portal/portal-frame';
 import toast from 'react-hot-toast';
-import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, showToast} from '@tryghost/admin-x-design-system';
+import {Button, ConfirmationModal, Form, PreviewModalContent, TextArea, TextField, getFormButtonProps, showToast} from '@tryghost/admin-x-design-system';
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {JSONError} from '@tryghost/admin-x-framework/errors';
 import {type Offer, useBrowseOffersById, useEditOffer} from '@tryghost/admin-x-framework/api/offers';
@@ -188,7 +188,7 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
 
     const {data: {offers: offerById = []} = {}} = useBrowseOffersById(id ? id : '');
 
-    const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError, okProps} = useForm({
+    const {formState, saveState, updateForm, setFormState, handleSave, validate, errors, clearError} = useForm({
         initialState: offerById[0],
         savingDelay: 500,
         onSave: async () => {
@@ -213,6 +213,8 @@ const EditOfferModal: React.FC<{id: string}> = ({id}) => {
             return newErrors;
         }
     });
+
+    const okProps = getFormButtonProps(saveState);
 
     useEffect(() => {
         setFormState(() => offerById[0]);
