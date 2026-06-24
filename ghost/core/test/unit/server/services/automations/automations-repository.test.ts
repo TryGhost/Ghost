@@ -822,6 +822,98 @@ describe('automations repository', function () {
             });
         };
 
+        it('cancels pending unlocked steps when disabling an automation', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 0);
+            const run = await insertRun(automation.id);
+            const step = await insertStep(run.id, action.revision_id);
+
+            const beforeEdit = Date.now();
+            await repo.edit(automation.id, {
+                ...automation,
+                status: 'inactive'
+            });
+            const afterEdit = Date.now();
+
+            const cancelled = await getStepById(step.id);
+            assert.equal(cancelled.status, 'automation disabled');
+            assert.equal(cancelled.locked_by, null);
+            assert.equal(cancelled.locked_at, null);
+            assert.equal(cancelled.started_at, null);
+            const cancelledFinishedAt = cancelled.finished_at;
+            assert(typeof cancelledFinishedAt === 'string');
+            assert(cancelledFinishedAt >= toDatabaseDate(new Date(beforeEdit - 1000)));
+            assert(cancelledFinishedAt <= toDatabaseDate(new Date(afterEdit)));
+        });
+
+        it('cancels pending steps with expired locks when disabling an automation', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 0);
+            const run = await insertRun(automation.id);
+            const step = await insertStep(run.id, action.revision_id, {
+                locked_by: 'expired-lock',
+                locked_at: new Date(Date.now() - (31 * 60 * 1000)).toISOString(),
+                started_at: new Date(Date.now() - (31 * 60 * 1000)).toISOString()
+            });
+
+            await repo.edit(automation.id, {
+                ...automation,
+                status: 'inactive'
+            });
+
+            const cancelled = await getStepById(step.id);
+            assert.equal(cancelled.status, 'automation disabled');
+            assert.equal(cancelled.locked_by, null);
+            assert.equal(cancelled.locked_at, null);
+            assert.equal(typeof cancelled.finished_at, 'string');
+        });
+
+        it('does not cancel pending steps with fresh locks when disabling an automation', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 0);
+            const run = await insertRun(automation.id);
+            const lockedAt = toDatabaseDate(new Date(Date.now() - (29 * 60 * 1000)));
+            const step = await insertStep(run.id, action.revision_id, {
+                locked_by: 'fresh-lock',
+                locked_at: lockedAt,
+                started_at: lockedAt
+            });
+
+            await repo.edit(automation.id, {
+                ...automation,
+                status: 'inactive'
+            });
+
+            const unchanged = await getStepById(step.id);
+            assert.equal(unchanged.status, 'pending');
+            assert.equal(unchanged.locked_by, 'fresh-lock');
+            assert.equal(unchanged.locked_at, lockedAt);
+            assert.equal(unchanged.finished_at, null);
+        });
+
+        it('does not cancel pending steps for other automations when disabling an automation', async function () {
+            const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+            const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+            const freeAction = await getActionByIndex(freeAutomation.id, 0);
+            const paidAction = await getActionByIndex(paidAutomation.id, 0);
+            const freeRun = await insertRun(freeAutomation.id);
+            const paidRun = await insertRun(paidAutomation.id);
+            const freeStep = await insertStep(freeRun.id, freeAction.revision_id);
+            const paidStep = await insertStep(paidRun.id, paidAction.revision_id);
+
+            await repo.edit(freeAutomation.id, {
+                ...freeAutomation,
+                status: 'inactive'
+            });
+
+            const cancelledFreeStep = await getStepById(freeStep.id);
+            assert.equal(cancelledFreeStep.status, 'automation disabled');
+
+            const unchangedPaidStep = await getStepById(paidStep.id);
+            assert.equal(unchangedPaidStep.status, 'pending');
+            assert.equal(unchangedPaidStep.finished_at, null);
+        });
+
         it('only inserts action revisions when action data changes', async function () {
             const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
             const initialRevisionCount = await getRevisionCount();
@@ -1366,6 +1458,35 @@ describe('automations repository', function () {
             assert.equal(finished.locked_at, null);
         });
 
+        it('does not enqueue the next step when the automation was disabled after the step was locked', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 0);
+            const run = await insertRun(automation.id);
+            const stepRow = await insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+
+            await knex('automations')
+                .update({
+                    status: 'inactive',
+                    updated_at: toDatabaseDate(new Date())
+                })
+                .where('id', automation.id);
+
+            const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+
+            assert.equal(nextReadyAt, null);
+
+            const finished = await getStepById(stepRow.id);
+            assert.equal(finished.status, 'finished');
+            assert.equal(finished.locked_by, null);
+            assert.equal(finished.locked_at, null);
+
+            const allSteps = await getStepsByRunId(run.id);
+            assert.equal(allSteps.length, 1);
+        });
+
         it('does not finish or enqueue if the step lock has been taken by another runner', async function () {
             const automation = await getAutomationBySlug('member-welcome-email-free');
             const action = await getActionByIndex(automation.id, 0);
@@ -1610,6 +1731,36 @@ describe('automations repository', function () {
 
             const unchanged = await getStepById(step.id);
             assert.deepEqual(unchanged, beforeRetry);
+        });
+
+        it('marks the step disabled instead of retrying when the automation was disabled after the step was locked', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 0);
+            const run = await insertRun(automation.id);
+            const stepRow = await insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+            const lockedStep = await getStepById(step.id);
+
+            await knex('automations')
+                .update({
+                    status: 'inactive',
+                    updated_at: toDatabaseDate(new Date())
+                })
+                .where('id', automation.id);
+
+            const didRetry = await repo.retryStep(step, new Date(Date.now() + 1000));
+
+            assert.equal(didRetry, false);
+
+            const disabled = await getStepById(step.id);
+            assert.equal(disabled.status, 'automation disabled');
+            assert.equal(disabled.locked_by, null);
+            assert.equal(disabled.locked_at, null);
+            assert.equal(disabled.started_at, lockedStep.started_at);
+            assert.equal(disabled.ready_at, stepRow.ready_at);
+            assert.equal(typeof disabled.finished_at, 'string');
         });
     });
 });
