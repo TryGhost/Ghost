@@ -78,6 +78,14 @@ services:
       - ghost-dev-node-modules-core:/home/ghost/ghost/core/node_modules
       - ghost-dev-node-modules-i18n:/home/ghost/ghost/i18n/node_modules
       - ghost-dev-node-modules-parse-email:/home/ghost/ghost/parse-email-address/node_modules
+      # Read-only snapshots of host pnpm config files. The container entrypoint
+      # copies them over the image-baked versions on every boot and checks the
+      # lockfile hash against `node_modules/.lockfile-hash` — drift triggers a
+      # container-side `pnpm install`, so host-side dep changes are picked up
+      # automatically without rebuilding the image.
+      - ./pnpm-lock.yaml:/home/ghost/pnpm-lock.yaml.host:ro
+      - ./pnpm-workspace.yaml:/home/ghost/pnpm-workspace.yaml.host:ro
+      - ./package.json:/home/ghost/package.json.host:ro
       # Mount specific content subdirectories to preserve themes/adapters from source
       - ghost-dev-data:/home/ghost/ghost/core/content/data
       - ghost-dev-images:/home/ghost/ghost/core/content/images
