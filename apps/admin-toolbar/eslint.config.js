@@ -4,10 +4,11 @@ import ghostPlugin from 'eslint-plugin-ghost';
 
 import {correctnessRules, strictLinterOptions} from '../../eslint.shared.mjs';
 
-// Standalone (not factory-based) because admin-toolbar is vanilla JS + jQuery,
-// no React. Adding it to reactAppConfig with `typescript: false, reactRefresh:
-// false` would still load eslint-plugin-react unnecessarily. The base rules
-// come from the shared correctnessRules atom.
+// Standalone (not factory-based) because admin-toolbar is Preact (~3KB) + JS
+// hyperscript, served as a UMD bundle via CDN — see README. Neither factory
+// fits: reactAppConfig would load eslint-plugin-react/react-hooks for code
+// that doesn't use them, and nodeLibConfig assumes Node globals. The base
+// rules come from the shared correctnessRules atom.
 
 export default [
     {
@@ -23,10 +24,7 @@ export default [
         languageOptions: {
             ecmaVersion: 2022,
             sourceType: 'module',
-            globals: {
-                ...globals.browser,
-                ...globals.jquery
-            }
+            globals: globals.browser
         },
         plugins: {
             ghost: ghostPlugin
