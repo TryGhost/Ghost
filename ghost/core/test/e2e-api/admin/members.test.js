@@ -2198,10 +2198,10 @@ describe('Members API', function () {
         memberWithPaidSubscription = newMember;
     });
 
-    it('Returns an identical member format for read, edit and browse', async function () {
+    it('Returns an identical member format for read, edit and browse', async function (ctx) {
         if (!memberWithPaidSubscription) {
             // Previous test failed
-            this.skip();
+            return ctx.skip();
         }
 
         // Check status has been updated to 'free' after cancelling
@@ -2254,10 +2254,10 @@ describe('Members API', function () {
             });
     });
 
-    it('Cannot add complimentary subscriptions to a member with an active subscription', async function () {
+    it('Cannot add complimentary subscriptions to a member with an active subscription', async function (ctx) {
         if (!memberWithPaidSubscription) {
             // Previous test failed
-            this.skip();
+            return ctx.skip();
         }
         const product = await getOtherPaidProduct();
 
@@ -2278,10 +2278,10 @@ describe('Members API', function () {
             .expectStatus(400);
     });
 
-    it('Cannot remove non complimentary subscriptions directly from a member', async function () {
+    it('Cannot remove non complimentary subscriptions directly from a member', async function (ctx) {
         if (!memberWithPaidSubscription) {
             // Previous test failed
-            this.skip();
+            return ctx.skip();
         }
 
         const compedPayload = {
@@ -2297,13 +2297,13 @@ describe('Members API', function () {
             .expectStatus(400);
     });
 
-    it('Can remove a complimentary subscription directly from a member with other active subscriptions', async function () {
+    it('Can remove a complimentary subscription directly from a member with other active subscriptions', async function (ctx) {
         // This tests for an edge case that shouldn't be possible, but the API should support this to resolve issues
         // refs https://github.com/TryGhost/Team/issues/1859
 
         if (!memberWithPaidSubscription) {
             // Previous test failed
-            this.skip();
+            return ctx.skip();
         }
 
         // Check that the product that we are going to add is not the same as the existing one
@@ -2357,10 +2357,10 @@ describe('Members API', function () {
         assert.equal(updatedMember.tiers[0].id, memberWithPaidSubscription.tiers[0].id, 'The member should have the paid product');
     });
 
-    it('Can keep tiers unchanged when modifying a paid member', async function () {
+    it('Can keep tiers unchanged when modifying a paid member', async function (ctx) {
         if (!memberWithPaidSubscription) {
             // Previous test failed
-            this.skip();
+            return ctx.skip();
         }
 
         const compedPayload = {

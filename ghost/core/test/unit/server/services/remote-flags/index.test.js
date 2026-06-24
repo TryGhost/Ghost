@@ -162,11 +162,7 @@ describe('remote-flags integration: kill-switch through the real labs flag set',
         flagOverrides.clear();
     });
 
-    it('honors a remote kill of a real GA flag end-to-end', function () {
-        if (labs.GA_KEYS.length === 0) {
-            this.skip();
-            return;
-        }
+    it.skipIf(labs.GA_KEYS.length === 0)('honors a remote kill of a real GA flag end-to-end', function () {
         const gaKey = labs.GA_KEYS[0];
 
         assert.equal(labs.isSet(gaKey), true);
@@ -178,11 +174,7 @@ describe('remote-flags integration: kill-switch through the real labs flag set',
         assert.equal(labs.isSet(gaKey), false, 'remote kill must flip a GA flag off end-to-end');
     });
 
-    it('honors a remote enable of a real private/beta flag end-to-end', function () {
-        if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
-            this.skip();
-            return;
-        }
+    it.skipIf(labs.WRITABLE_KEYS_ALLOWLIST.length === 0)('honors a remote enable of a real private/beta flag end-to-end', function () {
         const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
 
         assert.equal(labs.isSet(flag), false);
