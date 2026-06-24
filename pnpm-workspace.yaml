@@ -12,7 +12,7 @@ blockExoticSubdeps: true
 allowBuilds:
   '@swc/core': true
   core-js: true
-  cpu-features: true
+  cpu-features: false
   dtrace-provider: true
   esbuild: true
   fsevents: true
@@ -22,7 +22,7 @@ allowBuilds:
   re2: true
   sharp: true
   sqlite3: true
-  ssh2: true
+  ssh2: false
 
 catalog:
   '@ebay/nice-modal-react': 1.2.13

@@ -79,7 +79,7 @@
     "lint:frontend": "eslint 'core/frontend/**/*.js' --cache",
     "lint:test": "eslint 'test/**/*.js' --cache",
     "lint:code": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend",
-    "lint:types": "eslint '**/*.ts' --cache && tsc --noEmit",
+    "lint:types": "pnpm --filter @tryghost/parse-email-address build && eslint '**/*.ts' --cache && tsc --noEmit",
     "lint": "pnpm lint:server && pnpm lint:shared && pnpm lint:frontend && pnpm lint:test && pnpm lint:types"
   },
   "engines": {
@@ -358,6 +358,9 @@
       "test:ci:e2e": {
         "dependsOn": [
           "^build"
+        ],
+        "outputs": [
+          "{projectRoot}/coverage-e2e"
         ]
       },
       "test:ci:e2e:no-coverage": {
@@ -373,6 +376,9 @@
       "test:ci:integration": {
         "dependsOn": [
           "^build"
+        ],
+        "outputs": [
+          "{projectRoot}/coverage-integration"
         ]
       },
       "test:ci:integration:no-coverage": {

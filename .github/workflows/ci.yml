@@ -111,6 +111,7 @@ jobs:
                 - '!.github/renovate-bot.cjs'
                 - '!.github/workflows/renovate.yml'
               - '.npmrc'
+              - 'nx.json'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
