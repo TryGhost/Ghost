@@ -78,7 +78,13 @@ export default tseslint.config(
     },
     {
         files: ['**/*'],
-        ...strictLinterOptions
+        ...strictLinterOptions,
+        // Overrides strictLinterOptions's 'off' default — workspace is now
+        // clean, so guard against new stale directives. Shared default stays
+        // 'off' until the other workspaces are cleaned in a follow-up.
+        linterOptions: {
+            reportUnusedDisableDirectives: 'error'
+        }
     },
     // ============================================================
     // Base: server / shared / frontend / root JS files

@@ -8,7 +8,6 @@ export function init(): void {
         return;
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
     const {knex} = require('../../data/db');
 
     service = new GiftLinksService({knex});

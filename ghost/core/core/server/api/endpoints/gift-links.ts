@@ -1,7 +1,6 @@
 import {service} from '../../services/gift-links';
 
 // permissions is untyped JS; require, don't import.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const permissionsService = require('../../services/permissions');
 
 interface Frame {
