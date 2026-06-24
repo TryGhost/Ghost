@@ -51,7 +51,7 @@ describe('Gift Links Admin API', function () {
             // Allow-list — the response exposes only these fields.
             assert.deepEqual(
                 Object.keys(body.gift_links[0]).sort(),
-                ['created_at', 'last_redeemed_at', 'redeemed_count', 'token']
+                ['created_at', 'token']
             );
         });
 
@@ -78,7 +78,6 @@ describe('Gift Links Admin API', function () {
             body = (await agent.put(`${name}/${id()}/gift_links/`).expectStatus(200)).body;
             const first = body.gift_links[0].token;
             assert.ok(first);
-            assert.equal(body.gift_links[0].redeemed_count, 0);
 
             // create
             body = (await agent.post(`${name}/${id()}/gift_links/`).expectStatus(200)).body;

@@ -40,15 +40,6 @@ export class GiftLinksService {
         return this.knex('post_gift_links').del();
     }
 
-    // Keyed by token, not liveness: a read against a since-replaced token still counts for it.
-    async recordRedemption(token: string): Promise<number> {
-        const now = new Date();
-        return this.knex('gift_links')
-            .where({token})
-            .update({last_redeemed_at: now, updated_at: now})
-            .increment('redeemed_count', 1);
-    }
-
     // A missing post is a 404, not a post with no live links: no rows means no post, and the
     // remaining rows carrying a token are the live links.
     private async requirePost(postId: string): Promise<Post> {
@@ -66,7 +57,7 @@ export class GiftLinksService {
     // history. Concurrent adds are last-writer-wins, not an error.
     private async mint(postId: string): Promise<Post> {
         const now = new Date();
-        const link: GiftLink = {token: generateGiftLinkToken(), redeemedCount: 0, lastRedeemedAt: null, createdAt: now};
+        const link: GiftLink = {token: generateGiftLinkToken(), createdAt: now};
         await this.knex.transaction(async (trx) => {
             await trx('gift_links').insert({...z.encode(queries.giftLinkCodec, link), post_id: postId});
             await trx('post_gift_links')

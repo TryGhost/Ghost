@@ -5,8 +5,6 @@ export type GiftLinkToken = z.infer<typeof GiftLinkToken>;
 
 export const GiftLink = z.object({
     token: GiftLinkToken,
-    redeemedCount: z.number().int().nonnegative(),
-    lastRedeemedAt: z.date().nullable(),
     createdAt: z.date()
 });
 export type GiftLink = z.infer<typeof GiftLink>;

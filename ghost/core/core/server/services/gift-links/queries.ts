@@ -7,8 +7,6 @@ import {GiftLink} from './models';
 // The columns the read path selects and the codec decodes into a GiftLink.
 export const GiftLinkRow = DbGiftLink.pick({
     token: true,
-    redeemed_count: true,
-    last_redeemed_at: true,
     created_at: true
 });
 
