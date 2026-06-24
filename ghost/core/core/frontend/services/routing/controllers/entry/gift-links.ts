@@ -1,5 +1,8 @@
-const url = require('url');
-const _ = require('lodash');
+import {format, parse} from 'node:url';
+import type {ParsedUrlQueryInput} from 'node:querystring';
+import type {Request} from 'express';
+import type {Entry, EntryResponse} from '../entry';
+
 const dataService = require('../../../data');
 const renderer = require('../../../rendering');
 const proxy = require('../../../proxy');
@@ -9,50 +12,42 @@ const hbs = require('../../../theme-engine/engine');
  * Build this request's URL with `?gift` removed, preserving path, subdirectory
  * and other query params. Rebuilt from req.query (qs-parsed) so bracket forms
  * like `?gift[]=x` are dropped too — otherwise the stripped redirect would loop.
- *
- * @param {Object} req
- * @returns {string}
  */
-function strippedGiftUrl(req) {
-    const query = {...req.query};
+function strippedGiftUrl(req: Request): string {
+    const query = {...req.query} as ParsedUrlQueryInput;
     delete query.gift;
-    return url.format({pathname: url.parse(req.originalUrl).pathname, query});
+    return format({pathname: parse(req.originalUrl).pathname, query});
 }
 
 /**
  * Flag the render as a gift view so `ghost_foot` injects the toast. Stores the
  * token (not just a boolean) for a later analytics pass-through. Internal flag,
  * not a public theme API.
- *
- * @param {Object} res
- * @param {string} token
  */
-function setGiftTemplateFlag(res, token) {
+function setGiftTemplateFlag(res: EntryResponse, token: string): void {
     const localTemplateOptions = hbs.getLocalTemplateOptions(res.locals);
-    hbs.updateLocalTemplateOptions(res.locals, _.merge({}, localTemplateOptions, {
-        data: {_gift: token}
-    }));
+    hbs.updateLocalTemplateOptions(res.locals, {
+        ...localTemplateOptions,
+        data: {
+            ...localTemplateOptions.data,
+            _gift: token
+        }
+    });
 }
 
 /**
  * Whether this request is an attempt to use a gift link: the feature is enabled
  * and a `?gift` param is present (in any form).
- *
- * @param {Object} req
- * @returns {boolean}
  */
-function isGiftRequest(req) {
-    return proxy.labs.isSet('giftLinks') && req.query?.gift !== undefined;
+export function isGiftRequest(req: Request): boolean {
+    return proxy.labs.isSet('giftLinks') && req.query.gift !== undefined;
 }
 
 /**
  * The gift token from the request, or null. A non-string form (e.g. `?gift[]=x`)
  * isn't a token.
- *
- * @param {Object} req
- * @returns {string|null}
  */
-function giftToken(req) {
+function giftToken(req: Request): string | null {
     return typeof req.query.gift === 'string' ? req.query.gift : null;
 }
 
@@ -60,13 +55,8 @@ function giftToken(req) {
  * Re-read the entry as a paid-member shim (the grant `/p/` previews use) to
  * reveal gated content, then render it. The shim is passed as the read context
  * only, so it never leaks into res.locals/@member.
- *
- * @param {Object} req
- * @param {Object} res
- * @param {string} token
- * @returns {Promise}
  */
-async function renderUnlocked(req, res, token) {
+async function renderUnlocked(req: Request, res: EntryResponse, token: string) {
     const giftLookup = await dataService.entryLookup(req.path, res.routerOptions, {
         ...res.locals,
         member: await proxy.createPaidMemberShim()
@@ -86,13 +76,8 @@ async function renderUnlocked(req, res, token) {
  * `?gift=TOKEN`; the token is verified against the entry living at this URL, so
  * a token for one post can never unlock another. A valid token unlocks the
  * entry; anything else strips `?gift` and 301s to the clean URL.
- *
- * @param {Object} req
- * @param {Object} res
- * @param {Object} entry
- * @returns {Promise}
  */
-async function serveGiftRequest(req, res, entry) {
+export async function serveGiftRequest(req: Request, res: EntryResponse, entry: Entry) {
     const token = giftToken(req);
 
     if (token && await proxy.giftLinks.service.isValidTokenForPost(token, entry.id)) {
@@ -105,8 +90,3 @@ async function serveGiftRequest(req, res, entry) {
     // the token-bearing redirect isn't cached.
     return res.redirect(301, strippedGiftUrl(req));
 }
-
-module.exports = {
-    isGiftRequest,
-    serveGiftRequest
-};
