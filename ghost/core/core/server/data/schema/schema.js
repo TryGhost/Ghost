@@ -1151,26 +1151,6 @@ module.exports = {
         member_id: {type: 'string', maxlength: 24, nullable: true, references: 'members.id', unique: false, setNullDelete: true},
         created_at: {type: 'dateTime', nullable: false}
     },
-    outbox: {
-        id: {type: 'string', maxlength: 24, nullable: false, primary: true},
-        event_type: {type: 'string', maxlength: 50, nullable: false},
-        status: {
-            type: 'string',
-            maxlength: 50,
-            nullable: false,
-            defaultTo: 'pending',
-            validations: {isIn: [['pending', 'processing', 'failed', 'completed']]}
-        },
-        payload: {type: 'text', maxlength: 65535, nullable: false},
-        created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true},
-        retry_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
-        last_retry_at: {type: 'dateTime', nullable: true},
-        message: {type: 'string', maxlength: 2000, nullable: true},
-        '@@INDEXES@@': [
-            ['event_type', 'status', 'created_at']
-        ]
-    },
     email_design_settings: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         slug: {type: 'string', maxlength: 191, nullable: false, unique: true},
