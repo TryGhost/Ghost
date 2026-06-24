@@ -208,6 +208,39 @@ packageExtensions:
   '@doist/react-interpolate@2.2.1':
     dependencies:
       '@babel/runtime': ^7.26.10
+  # Keep packages that resolve peers from their own global virtual-store path
+  # able to find repo-level secretlint rules and React type packages.
+  '@secretlint/resolver@13.0.2':
+    dependencies:
+      '@secretlint/secretlint-rule-pattern': 13.0.2
+      '@secretlint/secretlint-rule-preset-recommend': 13.0.2
+      '@secretlint/secretlint-rule-privatekey': 13.0.2
+      '@secretlint/secretlint-rule-stripe': 13.0.2
+  '@dnd-kit/core@6.3.1':
+    dependencies:
+      '@types/react': 18.3.31
+      '@types/react-dom': 18.3.7
+  '@ebay/nice-modal-react@1.2.13':
+    dependencies:
+      '@types/react': 18.3.31
+      '@types/react-dom': 18.3.7
+  '@sentry/react@7.120.4':
+    dependencies:
+      '@types/react': 18.3.31
+  'lucide-react@1.18.0':
+    dependencies:
+      '@types/react': 18.3.31
+  'react-dropzone@14.4.1':
+    dependencies:
+      '@types/react': 18.3.31
+  'react-select@5.10.2':
+    dependencies:
+      '@types/react': 18.3.31
+      '@types/react-dom': 18.3.7
+  'recharts@2.15.4':
+    dependencies:
+      '@types/react': 18.3.31
+      '@types/react-dom': 18.3.7
 minimumReleaseAgeExclude:
   # Our own packages are published by us, so the release-age delay doesn't apply
   - "@tryghost/*"

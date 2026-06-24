@@ -363,7 +363,7 @@ overrides:
   '@xmldom/xmldom@<0.8.13': ^0.9.0
   perf-primitives: ^0.0.6
 
-packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
+packageExtensionsChecksum: sha256-joxbkdxF/Ld/13fnjoxE4XsHHFPqETTooUKCHz896IQ=
 
 importers:
 
@@ -761,7 +761,7 @@ importers:
         version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-select:
         specifier: 5.10.2
-        version: 5.10.2(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 5.10.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     devDependencies:
       '@codemirror/lang-html':
         specifier: 6.4.11
@@ -1093,7 +1093,7 @@ importers:
         version: 2.6.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       react-select:
         specifier: 5.10.2
-        version: 5.10.2(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+        version: 5.10.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       sonner:
         specifier: 'catalog:'
         version: 2.0.7(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
@@ -7293,6 +7293,14 @@ packages:
 
   '@secretlint/secretlint-rule-preset-recommend@13.0.2':
     resolution: {integrity: sha512-D03Kw51qOgffj9zNlJFZUarVmP8zGcCZNi7A14+vZtHskbbBPEsS/f09idb48rrlMSaRMBN29IkqfbmPyL9xtw==}
+    engines: {node: '>=22.0.0'}
+
+  '@secretlint/secretlint-rule-privatekey@13.0.2':
+    resolution: {integrity: sha512-u/dIkif3oflAzZDJmoXChyfMzgBqZzj3jqa4rRgrkv8baeMTocjyVnDGdCj/YzKUXN2zKXi81z+h0Lz3C/WLSw==}
+    engines: {node: '>=22.0.0'}
+
+  '@secretlint/secretlint-rule-stripe@13.0.2':
+    resolution: {integrity: sha512-/pThB12CiJix90JYxM5TTCsy3Re8JYnD/25KIiUHY35Gi0m+uOlbAYI9+o4+jq1SKatt9xtbR0OngO4tYjamRg==}
     engines: {node: '>=22.0.0'}
 
   '@secretlint/source-creator@13.0.2':
@@ -23880,6 +23888,8 @@ snapshots:
     dependencies:
       '@dnd-kit/accessibility': 3.1.1(react@18.3.1)
       '@dnd-kit/utilities': 3.2.2(react@18.3.1)
+      '@types/react': 18.3.31
+      '@types/react-dom': 18.3.7(@types/react@18.3.31)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
       tslib: 2.8.1
@@ -23904,6 +23914,8 @@ snapshots:
 
   '@ebay/nice-modal-react@1.2.13(react-dom@18.3.1(react@18.3.1))(react@18.3.1)':
     dependencies:
+      '@types/react': 18.3.31
+      '@types/react-dom': 18.3.7(@types/react@18.3.31)
       react: 18.3.1
       react-dom: 18.3.1(react@18.3.1)
 
@@ -26866,7 +26878,14 @@ snapshots:
 
   '@secretlint/profiler@13.0.2': {}
 
-  '@secretlint/resolver@13.0.2': {}
+  '@secretlint/resolver@13.0.2':
+    dependencies:
+      '@secretlint/secretlint-rule-pattern': 13.0.2(supports-color@5.5.0)
+      '@secretlint/secretlint-rule-preset-recommend': 13.0.2
+      '@secretlint/secretlint-rule-privatekey': 13.0.2
+      '@secretlint/secretlint-rule-stripe': 13.0.2
+    transitivePeerDependencies:
+      - supports-color
 
   '@secretlint/secretlint-rule-pattern@13.0.2(supports-color@5.5.0)':
     dependencies:
@@ -26878,6 +26897,15 @@ snapshots:
       - supports-color
 
   '@secretlint/secretlint-rule-preset-recommend@13.0.2': {}
+
+  '@secretlint/secretlint-rule-privatekey@13.0.2':
+    dependencies:
+      '@textlint/regexp-string-matcher': 2.0.2
+
+  '@secretlint/secretlint-rule-stripe@13.0.2':
+    dependencies:
+      '@secretlint/types': 13.0.2
+      '@textlint/regexp-string-matcher': 2.0.2
 
   '@secretlint/source-creator@13.0.2':
     dependencies:
@@ -27080,6 +27108,7 @@ snapshots:
       '@sentry/core': 7.120.4
       '@sentry/types': 7.120.4
       '@sentry/utils': 7.120.4
+      '@types/react': 18.3.31
       hoist-non-react-statics: 3.3.2
       react: 17.0.2
 
@@ -27089,6 +27118,7 @@ snapshots:
       '@sentry/core': 7.120.4
       '@sentry/types': 7.120.4
       '@sentry/utils': 7.120.4
+      '@types/react': 18.3.31
       hoist-non-react-statics: 3.3.2
       react: 18.3.1
 
@@ -40741,6 +40771,7 @@ snapshots:
 
   lucide-react@1.18.0(react@18.3.1):
     dependencies:
+      '@types/react': 18.3.31
       react: 18.3.1
 
   luxon@3.7.2: {}
@@ -44018,6 +44049,7 @@ snapshots:
 
   react-dropzone@14.4.1(react@18.3.1):
     dependencies:
+      '@types/react': 18.3.31
       attr-accept: 2.2.5
       file-selector: 2.1.2
       prop-types: 15.8.1
@@ -44076,12 +44108,14 @@ snapshots:
     optionalDependencies:
       react-dom: 18.3.1(react@18.3.1)
 
-  react-select@5.10.2(@types/react@18.3.31)(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
+  react-select@5.10.2(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
       '@babel/runtime': 7.29.7
       '@emotion/cache': 11.14.0
       '@emotion/react': 11.14.0(@types/react@18.3.31)(react@18.3.1)
       '@floating-ui/dom': 1.7.6
+      '@types/react': 18.3.31
+      '@types/react-dom': 18.3.7(@types/react@18.3.31)
       '@types/react-transition-group': 4.4.12(@types/react@18.3.31)
       memoize-one: 6.0.0
       prop-types: 15.8.1
@@ -44090,7 +44124,6 @@ snapshots:
       react-transition-group: 4.4.5(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       use-isomorphic-layout-effect: 1.2.1(@types/react@18.3.31)(react@18.3.1)
     transitivePeerDependencies:
-      - '@types/react'
       - supports-color
 
   react-smooth@4.0.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
@@ -44234,6 +44267,8 @@ snapshots:
 
   recharts@2.15.4(react-dom@18.3.1(react@18.3.1))(react@18.3.1):
     dependencies:
+      '@types/react': 18.3.31
+      '@types/react-dom': 18.3.7(@types/react@18.3.31)
       clsx: 2.1.1
       eventemitter3: 4.0.7
       lodash: 4.18.1
