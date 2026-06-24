@@ -65,7 +65,7 @@ const useForm = <State>({initialState, savingDelay, savedDelay = 2000, onSave, o
                 setSaveState(state => (state === 'saved' ? '' : state));
             }, savedDelay);
         }
-    }, [saveState, savedDelay]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [saveState, savedDelay]);  
 
     const isValid = (errs: ErrorMessages) => Object.values(errs).filter(Boolean).length === 0;
 

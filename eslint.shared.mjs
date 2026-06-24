@@ -189,16 +189,9 @@ export const noGhostIgnitionRequireRule = {
     ]]
 };
 
-// Strict linter options. reportUnusedDisableDirectives is 'off' for now.
-// TODO: ~50 stale inline `eslint-disable` comments across the codebase (rough
-// estimate based on prior autofix runs). Flipping this to 'error' requires
-// either deleting each manually (eslint --fix tends to leave whitespace
-// residue) or a careful autofix + cleanup pass. Worth doing — once flipped,
-// the lint output stays honest about whether each inline disable is suppressing
-// an actual violation.
 export const strictLinterOptions = {
     linterOptions: {
-        reportUnusedDisableDirectives: 'off'
+        reportUnusedDisableDirectives: 'error'
     }
 };
 

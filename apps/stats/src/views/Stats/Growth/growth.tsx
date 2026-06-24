@@ -65,7 +65,6 @@ const Growth: React.FC = () => {
         if (initialTab !== currentKpiTab) {
             setCurrentKpiTab(initialTab);
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [initialTab]);
 
     // Get stats from custom hook once

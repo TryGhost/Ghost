@@ -29,7 +29,6 @@ describe.skip('Integration: Component: tags/tag-form', function () {
             errors: Errors.create(),
             hasValidated: []
         });
-        /* eslint-enable camelcase */
 
         this.set('tag', tag);
         this.set('setProperty', function (property, value) {

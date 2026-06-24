@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 
 import {Knex} from 'knex';
 import {mapKeys, chainTransformers} from '@tryghost/mongo-utils';
@@ -38,11 +37,8 @@ type OptionalPropertyOf<T extends object> = Exclude<{
     : K
 }[keyof T], undefined>
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type OrderOption<T extends Entity<any> = any> = Order<T>[];
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type IncludeOption<T extends Entity<any> = any> = OptionalPropertyOf<T>[];
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export type AllOptions<T extends Entity<any> = any> = { filter?: string; order?: OrderOption<T>; page?: number; limit?: number, include?: IncludeOption<T> }
 
 export abstract class BookshelfRepository<IDType, T extends Entity<IDType>> {

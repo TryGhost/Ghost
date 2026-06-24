@@ -91,4 +91,30 @@ describe('lib/lexical', function () {
             assert(rendered.includes('<span>CUSTOM</span>'));
         });
     });
+
+    describe('validate()', function () {
+        it('returns true for well-formed lexical', async function () {
+            const lexical = `{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Lexical is valid.","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`;
+
+            assert.equal(await lexicalLib.validate(lexical), true);
+        });
+
+        it('returns false for malformed lexical', async function () {
+            const lexical = JSON.stringify({
+                root: {
+                    children: [{
+                        type: 'unknown-node',
+                        version: 1
+                    }],
+                    direction: null,
+                    format: '',
+                    indent: 0,
+                    type: 'root',
+                    version: 1
+                }
+            });
+
+            assert.equal(await lexicalLib.validate(lexical), false);
+        });
+    });
 });

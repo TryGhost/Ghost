@@ -154,7 +154,6 @@ const AddRecommendationModal: React.FC<RoutingModalProps & AddRecommendationModa
             onOk();
             setEnterPressed(false); // Reset for future use
         }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [formState]);
 
     if (showLoadingView) {
