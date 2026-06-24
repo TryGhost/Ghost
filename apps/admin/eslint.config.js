@@ -8,6 +8,8 @@ import { globalIgnores } from 'eslint/config'
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
 import ghostPlugin from 'eslint-plugin-ghost';
 
+import {shadeLayeredImportsRule, strictLinterOptions} from '../../eslint.shared.mjs';
+
 const noHardcodedGhostPaths = {
   meta: {
     type: 'problem',
@@ -43,8 +45,13 @@ const localPlugin = {
 };
 const tailwindCssConfig = `${import.meta.dirname}/src/index.css`;
 
+// TODO: this workspace doesn't yet apply `correctnessRules` from the shared
+// module. Doing so would surface 14 violations (4 no-console, 5 curly, 2
+// no-promise-executor-return, etc.) that need source cleanup. Follow-up PR
+// will fix the violations + add the spread.
 export default tseslint.config([
   globalIgnores(['dist']),
+  {files: ['**/*'], ...strictLinterOptions},
   {
     files: ['**/*.{ts,tsx}'],
     extends: [
@@ -74,14 +81,13 @@ export default tseslint.config([
     },
     rules: {
       'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
-      'no-restricted-imports': ['error', {
-        paths: [{
-          name: '@tryghost/shade',
-          message: 'Import from layered subpaths instead (components/primitives/patterns/utils/app/tokens).',
-        }],
-      }],
+      ...shadeLayeredImportsRule,
       'tailwindcss/classnames-order': 'error',
       'tailwindcss/no-contradicting-classname': 'error',
+      // TODO: leaked warn from reactHooks.configs['recommended-latest']. The
+      // shared factory drops this to 'off' across the rest of the React apps;
+      // this workspace isn't on the factory yet, so override explicitly.
+      'react-hooks/exhaustive-deps': 'off',
     },
   },
   // Apply no-relative-import-paths rule for src files (auto-fix supported)
