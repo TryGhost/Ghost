@@ -1,5 +1,6 @@
-import {ButtonColor} from '@tryghost/admin-x-design-system';
 import {useCallback, useEffect, useState} from 'react';
+
+type ButtonColor = 'clear' | 'light-grey' | 'grey' | 'black' | 'green' | 'red' | 'white' | 'outline';
 
 export type Dirtyable<Data> = Data & {
     dirty?: boolean;

@@ -1,7 +1,12 @@
-import {DesignSystemAppProps} from '@tryghost/admin-x-design-system';
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import {TopLevelFrameworkProps} from '../providers/framework-provider';
+
+interface DesignSystemAppProps extends React.HTMLProps<HTMLDivElement> {
+    darkMode: boolean;
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    fetchKoenigLexical: () => Promise<any>;
+}
 
 const fetchKoenigLexical: DesignSystemAppProps['fetchKoenigLexical'] = async () => {
     // @ts-expect-error koenig-lexical doesn't currently ship TypeScript declarations.
