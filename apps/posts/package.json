@@ -46,6 +46,7 @@
         "@types/jest": "catalog:",
         "@types/papaparse": "5.5.2",
         "@types/react": "catalog:",
+        "@types/react-dom": "catalog:",
         "@types/validator": "catalog:",
         "@eslint/js": "catalog:",
         "@vitest/coverage-v8": "catalog:",
