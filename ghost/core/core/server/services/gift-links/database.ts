@@ -13,8 +13,6 @@ const DbDate = z.codec(z.union([z.date(), z.string(), z.number()]), z.date(), {
 export const DbGiftLink = z.object({
     token: z.string(),
     post_id: z.string(),
-    redeemed_count: z.number().int().nonnegative(),
-    last_redeemed_at: DbDate.nullable(),
     created_at: DbDate,
     updated_at: DbDate.nullable()
 });

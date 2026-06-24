@@ -125,8 +125,6 @@ module.exports = {
     gift_links: {
         token: {type: 'string', maxlength: 32, nullable: false, primary: true},
         post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
-        redeemed_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
-        last_redeemed_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },
