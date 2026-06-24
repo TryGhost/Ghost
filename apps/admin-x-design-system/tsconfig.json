@@ -17,7 +17,19 @@
       "noUnusedLocals": true,
       "noUnusedParameters": true,
       "erasableSyntaxOnly": true,
-      "noFallthroughCasesInSwitch": true
+      "noFallthroughCasesInSwitch": true,
+
+      // Pin React type resolution to this workspace's @types/react copy.
+      // See apps/shade/tsconfig.json for the full explanation — same
+      // vstore / third-party-.d.ts issue.
+      "baseUrl": ".",
+      "paths": {
+        "react": ["./node_modules/@types/react"],
+        "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+        "react/jsx-dev-runtime": ["./node_modules/@types/react/jsx-dev-runtime"],
+        "react-dom": ["./node_modules/@types/react-dom"],
+        "react-dom/client": ["./node_modules/@types/react-dom/client"]
+      }
     },
     "include": ["src"],
     "references": [{ "path": "./tsconfig.node.json" }]

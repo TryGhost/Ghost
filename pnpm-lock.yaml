@@ -363,7 +363,7 @@ overrides:
   '@xmldom/xmldom@<0.8.13': ^0.9.0
   perf-primitives: ^0.0.6
 
-packageExtensionsChecksum: sha256-gFsvptlcVXY90ntXWh9ANUP1/LYyeqXjWoDGw6BCfOY=
+packageExtensionsChecksum: sha256-IPoJpRxL0fBEspKEjXcEysDQIHnj+jbR6Pbd5k8BeSo=
 
 importers:
 
@@ -377,7 +377,7 @@ importers:
         version: 1.60.0
       '@secretlint/secretlint-rule-pattern':
         specifier: 13.0.2
-        version: 13.0.2(supports-color@5.5.0)
+        version: 13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0)
       '@secretlint/secretlint-rule-preset-recommend':
         specifier: 13.0.2
         version: 13.0.2
@@ -431,7 +431,7 @@ importers:
         version: 6.1.3
       secretlint:
         specifier: 13.0.2
-        version: 13.0.2(supports-color@5.5.0)
+        version: 13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0)
       semver:
         specifier: 7.8.4
         version: 7.8.4
@@ -7286,6 +7286,14 @@ packages:
 
   '@secretlint/resolver@13.0.2':
     resolution: {integrity: sha512-Ko50V0P3YAtEO20xBTczOzguBVk6+taSqkoAPHoOSdsTsSq1gzeYggY1UC8vVEHPGyRp/mb2QOuwIShdJZ8JFg==}
+    peerDependencies:
+      '@secretlint/secretlint-rule-pattern': '*'
+      '@secretlint/secretlint-rule-preset-recommend': '*'
+    peerDependenciesMeta:
+      '@secretlint/secretlint-rule-pattern':
+        optional: true
+      '@secretlint/secretlint-rule-preset-recommend':
+        optional: true
 
   '@secretlint/secretlint-rule-pattern@13.0.2':
     resolution: {integrity: sha512-ntXHndXRJLB4TEt9bGY+dKH4naOq3mHM8h4hwftg/HA1EyrmuRN8+6qPUbBzsJvZWmMd7CZBBBU7DsNERdMqCQ==}
@@ -26815,15 +26823,17 @@ snapshots:
     dependencies:
       '@secretlint/types': 13.0.2
 
-  '@secretlint/config-loader@13.0.2(supports-color@5.5.0)':
+  '@secretlint/config-loader@13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0)':
     dependencies:
       '@secretlint/profiler': 13.0.2
-      '@secretlint/resolver': 13.0.2
+      '@secretlint/resolver': 13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)
       '@secretlint/types': 13.0.2
       ajv: 8.20.0
       debug: 4.4.3(supports-color@5.5.0)
       rc-config-loader: 4.1.4(supports-color@5.5.0)
     transitivePeerDependencies:
+      - '@secretlint/secretlint-rule-pattern'
+      - '@secretlint/secretlint-rule-preset-recommend'
       - supports-color
 
   '@secretlint/core@13.0.2(supports-color@5.5.0)':
@@ -26835,9 +26845,9 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@secretlint/formatter@13.0.2':
+  '@secretlint/formatter@13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)':
     dependencies:
-      '@secretlint/resolver': 13.0.2
+      '@secretlint/resolver': 13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)
       '@secretlint/types': 13.0.2
       '@textlint/linter-formatter': 15.7.1
       '@textlint/module-interop': 15.7.1
@@ -26849,32 +26859,40 @@ snapshots:
       table: 6.9.0
       terminal-link: 5.0.0
     transitivePeerDependencies:
+      - '@secretlint/secretlint-rule-pattern'
+      - '@secretlint/secretlint-rule-preset-recommend'
       - supports-color
 
-  '@secretlint/node@13.0.2(supports-color@5.5.0)':
+  '@secretlint/node@13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0)':
     dependencies:
-      '@secretlint/config-loader': 13.0.2(supports-color@5.5.0)
+      '@secretlint/config-loader': 13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0)
       '@secretlint/core': 13.0.2(supports-color@5.5.0)
-      '@secretlint/formatter': 13.0.2
+      '@secretlint/formatter': 13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)
       '@secretlint/profiler': 13.0.2
       '@secretlint/source-creator': 13.0.2
       '@secretlint/types': 13.0.2
       debug: 4.4.3(supports-color@5.5.0)
       p-map: 7.0.4
     transitivePeerDependencies:
+      - '@secretlint/secretlint-rule-pattern'
+      - '@secretlint/secretlint-rule-preset-recommend'
       - supports-color
 
   '@secretlint/profiler@13.0.2': {}
 
-  '@secretlint/resolver@13.0.2': {}
+  '@secretlint/resolver@13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)':
+    optionalDependencies:
+      '@secretlint/secretlint-rule-pattern': 13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0)
+      '@secretlint/secretlint-rule-preset-recommend': 13.0.2
 
-  '@secretlint/secretlint-rule-pattern@13.0.2(supports-color@5.5.0)':
+  '@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0)':
     dependencies:
-      '@secretlint/tester': 13.0.2(supports-color@5.5.0)
+      '@secretlint/tester': 13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0)
       '@secretlint/types': 13.0.2
       '@textlint/regexp-string-matcher': 2.0.2
       micromatch: 4.0.8
     transitivePeerDependencies:
+      - '@secretlint/secretlint-rule-preset-recommend'
       - supports-color
 
   '@secretlint/secretlint-rule-preset-recommend@13.0.2': {}
@@ -26884,13 +26902,15 @@ snapshots:
       '@secretlint/types': 13.0.2
       istextorbinary: 9.5.0
 
-  '@secretlint/tester@13.0.2(supports-color@5.5.0)':
+  '@secretlint/tester@13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0)':
     dependencies:
-      '@secretlint/config-loader': 13.0.2(supports-color@5.5.0)
+      '@secretlint/config-loader': 13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0)
       '@secretlint/core': 13.0.2(supports-color@5.5.0)
       '@secretlint/source-creator': 13.0.2
       '@secretlint/types': 13.0.2
     transitivePeerDependencies:
+      - '@secretlint/secretlint-rule-pattern'
+      - '@secretlint/secretlint-rule-preset-recommend'
       - supports-color
 
   '@secretlint/types@13.0.2': {}
@@ -44817,17 +44837,19 @@ snapshots:
       ajv-formats: 2.1.1(ajv@8.20.0)
       ajv-keywords: 5.1.0(ajv@8.20.0)
 
-  secretlint@13.0.2(supports-color@5.5.0):
+  secretlint@13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0):
     dependencies:
       '@secretlint/config-creator': 13.0.2
-      '@secretlint/formatter': 13.0.2
-      '@secretlint/node': 13.0.2(supports-color@5.5.0)
+      '@secretlint/formatter': 13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)
+      '@secretlint/node': 13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0)
       '@secretlint/profiler': 13.0.2
-      '@secretlint/resolver': 13.0.2
+      '@secretlint/resolver': 13.0.2(@secretlint/secretlint-rule-pattern@13.0.2(@secretlint/secretlint-rule-preset-recommend@13.0.2)(supports-color@5.5.0))(@secretlint/secretlint-rule-preset-recommend@13.0.2)
       '@secretlint/walker': 13.0.2
       debug: 4.4.3(supports-color@5.5.0)
       read-pkg: 10.1.0
     transitivePeerDependencies:
+      - '@secretlint/secretlint-rule-pattern'
+      - '@secretlint/secretlint-rule-preset-recommend'
       - supports-color
 
   section-tests@1.3.1:

@@ -20,7 +20,21 @@
 
         "baseUrl": ".",
         "paths": {
-            "@/*": ["./src/*"]
+            "@/*": ["./src/*"],
+            // Pin React type resolution to this workspace's @types/react copy.
+            // Third-party .d.ts in recharts/react-dropzone/etc. say
+            // `import * as React from 'react'` and only declare `react` as a
+            // peer dep — never `@types/react`. With `enableGlobalVirtualStore`
+            // their .d.ts is read from the global pnpm store, where the
+            // upward `node_modules` walk for `@types/react` never reaches
+            // this workspace, so JSX shapes degrade to the runtime `react`
+            // module and `<XAxis />` etc. stop being valid JSX components.
+            // CI disables vstore, so this is local-dev only.
+            "react": ["./node_modules/@types/react"],
+            "react/jsx-runtime": ["./node_modules/@types/react/jsx-runtime"],
+            "react/jsx-dev-runtime": ["./node_modules/@types/react/jsx-dev-runtime"],
+            "react-dom": ["./node_modules/@types/react-dom"],
+            "react-dom/client": ["./node_modules/@types/react-dom/client"]
         }
     },
     "include": ["src", "test", "scripts"],

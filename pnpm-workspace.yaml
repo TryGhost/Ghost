@@ -208,6 +208,28 @@ packageExtensions:
   '@doist/react-interpolate@2.2.1':
     dependencies:
       '@babel/runtime': ^7.26.10
+  # secretlint's @secretlint/resolver does `createRequire(import.meta.url)` from
+  # its own install path, then `require.resolve('@secretlint/secretlint-rule-…')`
+  # to load rules referenced by name from `.secretlintrc.json`. Under
+  # `enableGlobalVirtualStore: true` the resolver's install path is in the
+  # global pnpm store, and the rule packages — installed only at the workspace
+  # root — aren't reachable via Node's upward `node_modules` walk from there,
+  # so the pre-commit hook (and any local `pnpm exec secretlint`) crashes with
+  # "Failed to load secretlint's rule module". Declaring the rules as optional
+  # peer deps of the resolver makes pnpm symlink them next to it in the store,
+  # so `require.resolve` succeeds. (The mirror issue for TypeScript — third-
+  # party .d.ts not finding @types/react via the vstore — is solved per-
+  # workspace via tsconfig `paths` rather than another packageExtensions block,
+  # because it only affects the consumer's typecheck.)
+  '@secretlint/resolver@13.0.2':
+    peerDependencies:
+      '@secretlint/secretlint-rule-pattern': '*'
+      '@secretlint/secretlint-rule-preset-recommend': '*'
+    peerDependenciesMeta:
+      '@secretlint/secretlint-rule-pattern':
+        optional: true
+      '@secretlint/secretlint-rule-preset-recommend':
+        optional: true
 minimumReleaseAgeExclude:
   # Our own packages are published by us, so the release-age delay doesn't apply
   - "@tryghost/*"
