@@ -654,11 +654,6 @@ export async function reactAppConfig(options = {}) {
     const storybookBlocks = [];
     if (storybook === 'plugin') {
         storybookBlocks.push(...storybookPlugin.configs['flat/recommended']);
-        // The storybook preset ships 3 warn-level rules. Ghost's stance is
-        // error-or-off, never warn — normalize them to error. (The earlier
-        // "29 legacy violations" count for prefer-pascal-case was a measurement
-        // artifact from forcing the rule globally via --rule; scoped to actual
-        // story files, all three rules are clean.)
         storybookBlocks.push({
             files: ['**/*.stories.{ts,tsx,js,jsx,mjs,cjs}', '**/*.story.{ts,tsx,js,jsx,mjs,cjs}'],
             rules: {
