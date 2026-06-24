@@ -34,7 +34,6 @@ const App = Application.extend({
 });
 
 // TODO: remove once the validations refactor is complete
-// eslint-disable-next-line
 registerWarnHandler((message, options, next) => {
     let skip = [
         'ds.errors.add',

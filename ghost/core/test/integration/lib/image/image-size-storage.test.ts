@@ -1,4 +1,3 @@
-/* eslint-disable ghost/mocha/no-top-level-hooks -- false positive: hooks are inside the describe, hidden behind the describe.skipIf() gate. */
 import {describe, it, beforeAll, afterEach, afterAll} from 'vitest';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';

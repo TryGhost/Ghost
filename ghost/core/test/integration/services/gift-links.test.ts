@@ -50,8 +50,6 @@ describe('GiftLinksService (integration)', function () {
 
             assert.equal(post.giftLinks.length, 1, 'a link should be created');
             assert.ok(post.giftLinks[0].token, 'token should be set');
-            assert.equal(post.giftLinks[0].redeemedCount, 0);
-            assert.equal(post.giftLinks[0].lastRedeemedAt, null);
             assert.equal((await liveLinks(postId)).length, 1);
         });
 
@@ -92,16 +90,6 @@ describe('GiftLinksService (integration)', function () {
             assert.equal(live[0]?.token, created.giftLinks[0]?.token);
         });
 
-        it('starts the new link with zeroed counters', async function () {
-            const original = await service.ensure(postId);
-            await service.recordRedemption(original.giftLinks[0]!.token);
-            await service.recordRedemption(original.giftLinks[0]!.token);
-
-            const created = await service.create(postId);
-            assert.equal(created.giftLinks[0]?.redeemedCount, 0);
-            assert.equal(created.giftLinks[0]?.lastRedeemedAt, null);
-        });
-
         it('mints a link even when none existed', async function () {
             const created = await service.create(postId);
             assert.equal((await liveLinks(postId)).length, 1);
@@ -134,6 +122,27 @@ describe('GiftLinksService (integration)', function () {
         });
     });
 
+    describe('isValidTokenForPost', function () {
+        it('is true only for a live token bound to the given post', async function () {
+            const post = await service.ensure(postId);
+            const token = post.giftLinks[0]!.token;
+
+            assert.equal(await service.isValidTokenForPost(token, postId), true);
+
+            // Defence in depth: a token for one post must not validate another.
+            assert.equal(await service.isValidTokenForPost(token, otherPostId), false);
+
+            // Once replaced, the old token no longer validates.
+            await service.create(postId);
+            assert.equal(await service.isValidTokenForPost(token, postId), false);
+        });
+
+        it('is false for unknown and empty tokens', async function () {
+            assert.equal(await service.isValidTokenForPost('nope', postId), false);
+            assert.equal(await service.isValidTokenForPost('', postId), false);
+        });
+    });
+
     describe('removeAll', function () {
         it('drops every live link across posts and returns the count', async function () {
             await service.ensure(postId);
@@ -147,38 +156,12 @@ describe('GiftLinksService (integration)', function () {
         });
     });
 
-    describe('recordRedemption', function () {
-        it('atomically increments the counter and stamps last_redeemed_at, keyed by token', async function () {
-            const post = await service.ensure(postId);
-            const token = post.giftLinks[0]!.token;
-
-            assert.equal(await service.recordRedemption(token), 1);
-            assert.equal(await service.recordRedemption(token), 1);
-
-            const reloaded = await service.getPostByToken(token);
-            assert.equal(reloaded?.giftLinks[0]?.redeemedCount, 2);
-            assert.notEqual(reloaded?.giftLinks[0]?.lastRedeemedAt, null);
-        });
-
-        it('counts a read against a since-replaced token (history is retained)', async function () {
-            const original = await service.ensure(postId);
-            const token = original.giftLinks[0]!.token;
-            await service.create(postId);
-
-            assert.equal(await service.recordRedemption(token), 1);
-        });
-
-        it('affects no rows for an unknown token', async function () {
-            assert.equal(await service.recordRedemption('unknown-token'), 0);
-        });
-    });
-
     describe('the <=1-live-link-per-post invariant (database-enforced)', function () {
         it('rejects a second live association for the same post', async function () {
             await service.ensure(postId);
 
             await models.Base.knex('gift_links').insert({
-                token: 'second-live-token', post_id: postId, redeemed_count: 0, created_at: new Date()
+                token: 'second-live-token', post_id: postId, created_at: new Date()
             });
             await assert.rejects(
                 models.Base.knex('post_gift_links').insert({

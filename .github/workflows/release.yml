@@ -28,6 +28,8 @@ on:
 env:
   FORCE_COLOR: 1
   NODE_VERSION: 22.18.0
+  # Disable enableGlobalVirtualStore on CI; see ci.yml for full rationale.
+  pnpm_config_enable_global_virtual_store: "false"
 concurrency:
   group: ${{ github.workflow }}
   cancel-in-progress: false

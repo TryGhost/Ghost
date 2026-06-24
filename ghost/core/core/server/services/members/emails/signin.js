@@ -1,4 +1,3 @@
-/* eslint-disable indent */
 module.exports = ({t, siteTitle, email, url, otc, accentColor = '#15212A', siteDomain, siteUrl}) => `
 <!doctype html>
 <html>

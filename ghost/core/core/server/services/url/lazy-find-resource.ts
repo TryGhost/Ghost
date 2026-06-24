@@ -1,7 +1,5 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 const _ = require('lodash');
 const resourcesConfig = require('./config');
-/* eslint-enable @typescript-eslint/no-require-imports */
 
 import type {ResourceLookupParams, FindResource} from './lazy-url-service';
 

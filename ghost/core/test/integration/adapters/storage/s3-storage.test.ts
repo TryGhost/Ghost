@@ -1,4 +1,3 @@
-/* eslint-disable ghost/mocha/no-top-level-hooks -- false positive: the hooks are inside the describe, but the lint plugin can't see through the describe.skipIf()() gate below. (PLA-170) */
 import {describe, it, beforeAll, afterEach, afterAll} from 'vitest';
 import assert from 'node:assert/strict';
 
