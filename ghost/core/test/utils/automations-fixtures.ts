@@ -49,7 +49,6 @@ export async function setupAutomationsFixture(): Promise<void> {
     await db.knex('automations').insert(automationRows);
 
     await db.knex('automation_actions').insert(
-        /* eslint-disable camelcase */
         [...freeActions, ...paidActions].map(({id, automation_id, type, created_at}) => ({
             id,
             created_at,
@@ -57,7 +56,6 @@ export async function setupAutomationsFixture(): Promise<void> {
             automation_id,
             type
         }))
-        /* eslint-enable camelcase */
     );
 
     await db.knex('automation_action_revisions').insert([

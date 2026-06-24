@@ -20,7 +20,7 @@ type AnnouncementBarSettings = {
 
 const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, url, visibility}) => {
     // Avoid re-rendering iframe if an equivalent array is initialised each render
-    const visibilityMemo = useMemo(() => visibility, [visibility?.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+    const visibilityMemo = useMemo(() => visibility, [visibility?.join(',')]);  
 
     const injectContentIntoIframe = useCallback((iframe: HTMLIFrameElement) => {
         if (!url) {

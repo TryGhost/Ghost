@@ -51,7 +51,6 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
             return;
         }
         setUrls(getSocialUrls(localSettings));
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [handles.map(value => value ?? '').join('|')]);
 
     const handleSocialChange = (key: SocialPlatformKey, value: string) => {

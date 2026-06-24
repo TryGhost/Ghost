@@ -74,13 +74,11 @@ export default class LocalRevisionsService extends Service {
             this.storage.setItem(key, JSON.stringify(data));
             // Apply the filter after saving
             this.filterRevisions(data.id);
-            
             return key;
         } catch (err) {
             if (err.name === 'QuotaExceededError') {
                 // Remove the current key in case it's already in the index
                 this.remove(key);
-                
                 // If there are any revisions, remove the oldest one and try to save again
                 if (this.keys().length) {
                     Sentry.captureMessage('LocalStorage quota exceeded. Removing old revisions.', {tags: {localRevisions: 'quotaExceeded'}});
@@ -132,10 +130,8 @@ export default class LocalRevisionsService extends Service {
                 ...revision
             };
         });
-        
         // Sort revisions by timestamp, newest first
         revisions.sort((a, b) => b.revisionTimestamp - a.revisionTimestamp);
-        
         return revisions;
     }
 
@@ -208,10 +204,8 @@ export default class LocalRevisionsService extends Service {
         /* eslint-disable no-console */
         console.groupCollapsed('Local revisions');
         for (const [title, row] of Object.entries(data)) {
-            // eslint-disable-next-line no-console
             console.groupCollapsed(`${title}`);
             for (const item of row.sort((a, b) => b.timestamp - a.timestamp)) {
-                // eslint-disable-next-line no-console
                 console.groupCollapsed(`${item.time}`);
                 console.log('Revision ID: ', item.key);
                 console.groupEnd();
