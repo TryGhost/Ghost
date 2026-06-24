@@ -30,7 +30,7 @@ const ReplyToEmailField: React.FC<{
     // Because 'newsletter' 'support' or an empty value can be mapped to a default value, we don't want those changes to happen when entering text
     const [senderReplyTo, setSenderReplyTo] = useState(renderReplyToEmail(newsletter, config, supportEmailAddress, defaultEmailAddress) || '');
 
-    let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
+    const newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
 
     const onChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
         setSenderReplyTo(e.target.value);
@@ -80,7 +80,7 @@ const Sidebar: React.FC<{
     const {data: {newsletters: apiNewsletters} = {}} = useBrowseNewsletters();
     const commentsEnabled = ['all', 'paid'].includes(getSettingValue(settings, 'comments_enabled') || '');
 
-    let newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
+    const newsletterAddress = renderSenderEmail(newsletter, config, defaultEmailAddress);
     const [newsletters, setNewsletters] = useState<Newsletter[]>(apiNewsletters || []);
     const activeNewsletters = newsletters.filter(n => n.status === 'active');
 
