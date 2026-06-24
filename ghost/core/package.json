@@ -63,7 +63,7 @@
     "test:integration:vitest": "vitest run -c vitest.config.db.ts --project integration",
     "test:integration:ci": "pnpm test:integration:vitest",
     "test:e2e": "pnpm test:e2e:vitest",
-    "test:e2e:vitest": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api",
+    "test:e2e:vitest": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
     "test:e2e:ci": "pnpm test:e2e:vitest",
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e pnpm test:e2e:ci",
