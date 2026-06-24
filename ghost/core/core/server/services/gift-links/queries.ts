@@ -26,6 +26,8 @@ const giftLinkColumns = Object.keys(GiftLinkRow.shape).map(column => `gift_links
 // post exists with no live link (hence the nullable columns).
 type LiveLinkRow = {[K in keyof z.input<typeof GiftLinkRow>]: z.input<typeof GiftLinkRow>[K] | null};
 
+// LEFT JOINs from posts: a missing post yields zero rows, while a post with no live link yields one
+// row with null link columns. So zero rows means "no such post".
 export function liveLinksForPost(postId: string) {
     return (knex: Knex) => knex('posts')
         .where('posts.id', postId)
