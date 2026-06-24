@@ -93,7 +93,7 @@ export const reactStrictRules = {
     }],
     'react/button-has-type': 'error',
     'react/no-array-index-key': 'error',
-    'react/jsx-key': 'off'  // TODO: 22 legacy violations across 4 workspaces; flip back to error after cleanup
+    'react/jsx-key': 'error'
 };
 
 // Tailwind v4 ruleset (settings-based config).

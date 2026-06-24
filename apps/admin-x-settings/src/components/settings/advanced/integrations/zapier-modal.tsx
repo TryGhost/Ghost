@@ -111,6 +111,7 @@ const ZapierModal = NiceModal.create(() => {
             <List>
                 {zapierTemplates.map(template => (
                     <ListItem
+                        key={template.url}
                         action={<Button className='font-semibold whitespace-nowrap text-[#FF4A00]' href={template.url} label='Use this Zap' tag='a' target='_blank' link unstyled />}
                         bgOnHover={false}
                         className='flex items-center gap-3 py-2 pl-3'
