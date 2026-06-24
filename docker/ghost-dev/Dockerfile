@@ -23,14 +23,6 @@ COPY ghost/core/package.json ghost/core/package.json
 COPY ghost/i18n/package.json ghost/i18n/package.json
 COPY ghost/parse-email-address/package.json ghost/parse-email-address/package.json
 
-# Strip enableGlobalVirtualStore from the workspace file inside the image.
-# The host repo enables it for cross-worktree disk sharing, but inside the
-# Linux container we want a self-contained node_modules tree so the install
-# works under named-volume mounts (vstore symlinks would otherwise dangle
-# into the ephemeral BuildKit cache and break on first run).
-RUN sed -i '/^enableGlobalVirtualStore:/d' pnpm-workspace.yaml && \
-    ! grep -q '^enableGlobalVirtualStore' pnpm-workspace.yaml
-
 # Install dependencies
 # Note: Dependencies are installed at build time, but source code is mounted at runtime.
 

@@ -22,13 +22,6 @@ env:
   # so disabling it has no meaningful performance impact in CI.
   # See: https://github.com/nodejs/node/issues/51555
   DISABLE_V8_COMPILE_CACHE: 1
-  # Disable enableGlobalVirtualStore on CI. The setting lives in pnpm-workspace.yaml
-  # for the local-dev devx win (cross-worktree sharing). pnpm auto-disables vstore
-  # in CI ONLY when the user hasn't set it explicitly; our explicit-true defeats
-  # that, so we override here. CI has no warm cache to benefit from + vstore's
-  # NODE_PATH-based peer-dep resolution breaks for ESM consumers (postcss-cli,
-  # recharts/JSX types). See pnpm settings docs for `enableGlobalVirtualStore`.
-  pnpm_config_enable_global_virtual_store: "false"
 
 concurrency:
   # Tag pushes get a unique uninterruptible group so a release CI run always
