@@ -1,6 +1,8 @@
-const assert = require('node:assert/strict');
+import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import type {Entry, RouterOptions} from '../../../../../../core/frontend/services/routing/controllers/entry';
+
 const {assertExists} = require('../../../../../utils/assertions');
-const sinon = require('sinon');
 const testUtils = require('../../../../../utils');
 const configUtils = require('../../../../../utils/config-utils');
 const deferred = require('../../../../../utils/deferred');
@@ -10,14 +12,36 @@ const renderer = require('../../../../../../core/frontend/services/rendering');
 const dataService = require('../../../../../../core/frontend/services/data');
 const EDITOR_URL = `/#/editor/post/`;
 
+interface MockRequest {
+    path: string;
+    originalUrl: string;
+    params: object;
+    route: object;
+    app: {get: sinon.SinonStub};
+    get: sinon.SinonStub;
+    accepts: sinon.SinonStub;
+}
+
+interface MockResponse {
+    routerOptions: RouterOptions;
+    locals: Record<string, unknown>;
+    render: sinon.SinonSpy;
+    redirect: sinon.SinonSpy;
+    status: sinon.SinonStub;
+    type: sinon.SinonStub;
+    send: sinon.SinonSpy;
+    set: sinon.SinonSpy;
+    vary: sinon.SinonSpy;
+}
+
 describe('Unit - services/routing/controllers/entry', function () {
-    let req;
-    let res;
-    let entryLookUpStub;
-    let renderStub;
-    let urlUtilsRedirect301Stub;
-    let urlUtilsRedirectToAdminStub;
-    let post;
+    let req: MockRequest;
+    let res: MockResponse;
+    let entryLookUpStub: sinon.SinonStub;
+    let renderStub: sinon.SinonStub;
+    let urlUtilsRedirect301Stub: sinon.SinonStub;
+    let urlUtilsRedirectToAdminStub: sinon.SinonStub;
+    let post: Entry;
 
     beforeEach(function () {
         post = testUtils.DataGenerator.forKnex.createPost();
@@ -37,20 +61,31 @@ describe('Unit - services/routing/controllers/entry', function () {
         urlUtilsRedirectToAdminStub = sinon.stub(urlUtils, 'redirectToAdmin');
         urlUtilsRedirect301Stub = sinon.stub(urlUtils, 'redirect301');
 
+        // A complete mock built up front so its shape is stable across the suite;
+        // individual tests configure the stubs rather than adding properties.
         req = {
             path: '/',
+            originalUrl: '/',
             params: {},
-            route: {}
+            route: {},
+            app: {get: sinon.stub()},
+            get: sinon.stub(),
+            accepts: sinon.stub()
         };
 
         res = {
-            routerOptions: {
-                resourceType: 'posts'
-            },
+            routerOptions: {resourceType: 'posts'},
+            locals: {},
             render: sinon.spy(),
             redirect: sinon.spy(),
-            locals: {}
+            status: sinon.stub(),
+            type: sinon.stub(),
+            send: sinon.spy(),
+            set: sinon.spy(),
+            vary: sinon.spy()
         };
+        res.status.returns(res);
+        res.type.returns(res);
     });
 
     afterEach(async function () {
@@ -69,7 +104,7 @@ describe('Unit - services/routing/controllers/entry', function () {
         entryLookUpStub.withArgs(req.path, res.routerOptions)
             .resolves(null);
 
-        controllers.entry(req, res, function (err) {
+        controllers.entry(req, res, function (err?: Error) {
             assert.equal(err, undefined);
             done();
         });
@@ -105,7 +140,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            controllers.entry(req, res, function (err) {
+            controllers.entry(req, res, function (err?: Error) {
                 assert.equal(err, undefined);
                 done();
             });
@@ -122,13 +157,13 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlUtilsRedirectToAdminStub.callsFake(function (statusCode, _res, editorUrl) {
+            urlUtilsRedirectToAdminStub.callsFake(function (statusCode: number, _res: unknown, editorUrl: string) {
                 assert.equal(statusCode, 302);
                 assert.equal(editorUrl, EDITOR_URL + post.id);
                 done();
             });
 
-            controllers.entry(req, res, (err) => {
+            controllers.entry(req, res, (err?: Error) => {
                 done(err);
             });
             return promise;
@@ -151,7 +186,7 @@ describe('Unit - services/routing/controllers/entry', function () {
                 done(new Error('redirectToAdmin was called'));
             });
 
-            controllers.entry(req, res, async (err) => {
+            controllers.entry(req, res, async (err?: Error) => {
                 await configUtils.restore();
                 sinon.assert.notCalled(urlUtilsRedirectToAdminStub);
                 assert.equal(err, undefined);
@@ -173,12 +208,12 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
+            urlUtilsRedirect301Stub.callsFake(function (_res: unknown, postUrl: string) {
                 assert.equal(postUrl, post.url);
                 done();
             });
 
-            controllers.entry(req, res, function (err) {
+            controllers.entry(req, res, function (err?: Error) {
                 assertExists(err);
                 done(err);
             });
@@ -198,12 +233,12 @@ describe('Unit - services/routing/controllers/entry', function () {
                     entry: post
                 });
 
-            urlUtilsRedirect301Stub.callsFake(function (_res, postUrl) {
+            urlUtilsRedirect301Stub.callsFake(function (_res: unknown, postUrl: string) {
                 assert.equal(postUrl, post.url + '?query=true');
                 done();
             });
 
-            controllers.entry(req, res, function (err) {
+            controllers.entry(req, res, function (err?: Error) {
                 done(err);
             });
             return promise;
@@ -211,26 +246,15 @@ describe('Unit - services/routing/controllers/entry', function () {
     });
 
     describe('markdown requests (llms.txt)', function () {
-        let llmsService;
+        let llmsService: {isEnabled: sinon.SinonStub};
 
         beforeEach(function () {
             llmsService = {
                 isEnabled: sinon.stub()
             };
-
-            req.app = {
-                get: sinon.stub()
-            };
             req.app.get.withArgs('llmsService').returns(llmsService);
 
-            res.status = sinon.stub().returns(res);
-            res.type = sinon.stub().returns(res);
-            res.send = sinon.spy();
-            res.set = sinon.spy();
-            res.vary = sinon.spy();
-
             res.routerOptions.isMarkdownRequest = true;
-            res.routerOptions.resourceType = 'posts';
 
             post.url = '/does-exist/';
             req.path = '/does-exist.md';
@@ -296,26 +320,16 @@ describe('Unit - services/routing/controllers/entry', function () {
     });
 
     describe('Accept header markdown negotiation', function () {
-        let llmsService;
+        let llmsService: {isEnabled: sinon.SinonStub};
 
         beforeEach(function () {
             llmsService = {
                 isEnabled: sinon.stub()
             };
-
-            req.app = {
-                get: sinon.stub()
-            };
             req.app.get.withArgs('llmsService').returns(llmsService);
 
-            req.get = sinon.stub();
             req.get.withArgs('Accept').returns('text/markdown');
-            req.accepts = sinon.stub().returns('text/markdown');
-
-            res.type = sinon.stub().returns(res);
-            res.send = sinon.spy();
-            res.set = sinon.spy();
-            res.vary = sinon.spy();
+            req.accepts.returns('text/markdown');
 
             req.path = '/does-exist/';
             req.originalUrl = req.path;

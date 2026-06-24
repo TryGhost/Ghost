@@ -1,52 +1,57 @@
+import type {NextFunction, Request, Response} from 'express';
+import * as markdown from './entry/markdown';
+import * as giftLinks from './entry/gift-links';
+import buildCanonicalUrl from './entry/canonical-url';
+
 const debug = require('@tryghost/debug')('services:routing:controllers:entry');
 const config = require('../../../../shared/config');
 const urlUtils = require('../../../../shared/url-utils');
 const dataService = require('../../data');
 const renderer = require('../../rendering');
-const markdown = require('./entry/markdown');
-const giftLinks = require('./entry/gift-links');
-const buildCanonicalUrl = require('./entry/canonical-url');
+
+// Routing context the router attaches to the matched entry's response.
+export interface RouterOptions {
+    isMarkdownRequest?: boolean;
+    context?: string[];
+    [key: string]: unknown;
+}
+
+export interface EntryResponse extends Response {
+    routerOptions: RouterOptions;
+}
+
+// The resolved post/page entry from the data layer; only the fields used here are typed.
+export interface Entry {
+    id: string;
+    url: string;
+    visibility: string;
+    [key: string]: unknown;
+}
 
 /**
  * The request's last url param is `/edit`: redirect to the admin editor, or fall
  * through to a 404 when admin redirects are disabled.
- *
- * @param {Object} res
- * @param {Function} next
- * @param {Object} entry
- * @returns {*}
  */
-function editRedirect(res, next, entry) {
+function editRedirect(res: EntryResponse, next: NextFunction, entry: Entry) {
     if (!config.get('admin:redirects')) {
         debug('is edit url but admin redirects are disabled');
         return next();
     }
 
     debug('redirect. is edit url');
-    const resourceType = res.routerOptions?.context?.includes('page') ? 'page' : 'post';
+    const resourceType = res.routerOptions.context?.includes('page') ? 'page' : 'post';
     return urlUtils.redirectToAdmin(302, res, `/#/editor/${resourceType}/${entry.id}`);
 }
 
 /**
  * The requested path no longer matches the entry's canonical url — happens with
  * date permalinks after a publish date change.
- *
- * @param {Object} req
- * @param {Object} entry
- * @returns {boolean}
  */
-function isPermalinkStale(req, entry) {
+function isPermalinkStale(req: Request, entry: Entry): boolean {
     return urlUtils.absoluteToRelative(entry.url, {withoutSubdirectory: true}) !== req.path;
 }
 
-/**
- * @description Entry controller.
- * @param {Object} req
- * @param {Object} res
- * @param {Function} next
- * @returns {Promise}
- */
-module.exports = async function entryController(req, res, next) {
+export async function entryController(req: Request, res: EntryResponse, next: NextFunction): Promise<void | Response> {
     debug('entryController', res.routerOptions);
 
     try {
