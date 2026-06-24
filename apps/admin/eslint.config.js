@@ -8,7 +8,7 @@ import { globalIgnores } from 'eslint/config'
 import noRelativeImportPaths from 'eslint-plugin-no-relative-import-paths'
 import ghostPlugin from 'eslint-plugin-ghost';
 
-import {shadeLayeredImportsRule, strictLinterOptions} from '../../eslint.shared.mjs';
+import {correctnessRules, shadeLayeredImportsRule, strictLinterOptions} from '../../eslint.shared.mjs';
 
 const noHardcodedGhostPaths = {
   meta: {
@@ -45,10 +45,6 @@ const localPlugin = {
 };
 const tailwindCssConfig = `${import.meta.dirname}/src/index.css`;
 
-// TODO: this workspace doesn't yet apply `correctnessRules` from the shared
-// module. Doing so would surface 14 violations (4 no-console, 5 curly, 2
-// no-promise-executor-return, etc.) that need source cleanup. Follow-up PR
-// will fix the violations + add the spread.
 export default tseslint.config([
   globalIgnores(['dist']),
   {files: ['**/*'], ...strictLinterOptions},
@@ -80,14 +76,35 @@ export default tseslint.config([
       },
     },
     rules: {
-      'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
+      ...correctnessRules,
       ...shadeLayeredImportsRule,
       'tailwindcss/classnames-order': 'error',
       'tailwindcss/no-contradicting-classname': 'error',
-      // TODO: leaked warn from reactHooks.configs['recommended-latest']. The
-      // shared factory drops this to 'off' across the rest of the React apps;
-      // this workspace isn't on the factory yet, so override explicitly.
+      // Browser app — console.error/warn is the conventional error sink.
+      // console.log etc. still error.
+      'no-console': ['error', {allow: ['error', 'warn']}],
+      // Leaked warn from reactHooks.configs['recommended-latest']. The shared
+      // factory drops this to 'off' across the rest of the React apps; this
+      // workspace isn't on the factory yet, so override explicitly.
       'react-hooks/exhaustive-deps': 'off',
+    },
+  },
+  // Test files: relax counters + promise-executor-return patterns common in
+  // setup (renderCount++, await new Promise(r => setTimeout(r, N))).
+  {
+    files: ['**/*.test.{ts,tsx}', '**/*.spec.{ts,tsx}', 'test-utils/**/*'],
+    rules: {
+      'no-plusplus': 'off',
+      'no-promise-executor-return': 'off',
+    },
+  },
+  // Build/dev scripts at workspace root — Node-side, console + sleep patterns
+  // are intentional.
+  {
+    files: ['*.ts', '*.mts', '*.cts'],
+    rules: {
+      'no-console': 'off',
+      'no-promise-executor-return': 'off',
     },
   },
   // Apply no-relative-import-paths rule for src files (auto-fix supported)

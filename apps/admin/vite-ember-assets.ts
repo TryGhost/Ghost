@@ -13,7 +13,7 @@ function isAbsoluteUrl(url: string): boolean {
 }
 
 function prefixUrl(url: string, base: string): string {
-    if (isAbsoluteUrl(url)) return url;
+    if (isAbsoluteUrl(url)) {return url;}
     const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base;
     return `${normalizedBase}/${url}`;
 }
