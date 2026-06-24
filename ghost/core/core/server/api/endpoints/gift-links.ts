@@ -1,6 +1,5 @@
-import {service} from '../../services/gift-links';
+import {service, type RequestContext} from '../../services/gift-links';
 
-// permissions is untyped JS; require, don't import.
 const permissionsService = require('../../services/permissions');
 
 interface Frame {
@@ -11,11 +10,21 @@ interface Frame {
     };
 }
 
-// Also requires edit access to the post — you can gift a post only if you can edit it.
-async function assertCanManageGiftLink(frame: Frame): Promise<void> {
+async function assertCanEditAndGift(frame: Frame): Promise<void> {
     const {context, id} = frame.options;
     await permissionsService.canThis(context).manage.gift_link(id);
     await permissionsService.canThis(context).edit.post(id);
+}
+
+function requestContextFromFrame(frame: Frame): RequestContext {
+    const context = (frame.options.context ?? {}) as {user?: string; integration?: {id: string}};
+    if (context.integration) {
+        return {actor: {id: context.integration.id, type: 'integration'}};
+    }
+    if (context.user) {
+        return {actor: {id: context.user, type: 'user'}};
+    }
+    return {actor: null};
 }
 
 const noCacheInvalidation = {cacheInvalidate: false};
@@ -28,7 +37,7 @@ const controller = {
         options: ['id'],
         validation: {options: {id: {required: true}}},
         permissions(frame: Frame) {
-            return assertCanManageGiftLink(frame);
+            return assertCanEditAndGift(frame);
         },
         query(frame: Frame) {
             return service!.getPost(frame.options.id);
@@ -41,10 +50,10 @@ const controller = {
         options: ['id'],
         validation: {options: {id: {required: true}}},
         permissions(frame: Frame) {
-            return assertCanManageGiftLink(frame);
+            return assertCanEditAndGift(frame);
         },
         query(frame: Frame) {
-            return service!.ensure(frame.options.id);
+            return service!.ensure(requestContextFromFrame(frame), frame.options.id);
         }
     },
 
@@ -54,10 +63,10 @@ const controller = {
         options: ['id'],
         validation: {options: {id: {required: true}}},
         permissions(frame: Frame) {
-            return assertCanManageGiftLink(frame);
+            return assertCanEditAndGift(frame);
         },
         query(frame: Frame) {
-            return service!.create(frame.options.id);
+            return service!.create(requestContextFromFrame(frame), frame.options.id);
         }
     },
 
@@ -67,8 +76,8 @@ const controller = {
         permissions(frame: Frame) {
             return permissionsService.canThis(frame.options.context).removeAll.gift_link();
         },
-        async query() {
-            const count = await service!.removeAll();
+        async query(frame: Frame) {
+            const count = await service!.removeAll(requestContextFromFrame(frame));
             return {count};
         }
     }

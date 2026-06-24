@@ -165,6 +165,8 @@ function getAction(ev) {
         resourceType = 'settings';
     } else if (resourceType === 'product') {
         resourceType = 'tier';
+    } else if (resourceType === 'gift_link') {
+        resourceType = 'gift link';
     }
 
     // Because a `page` and `post` both use the same model, we store the
