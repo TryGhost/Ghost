@@ -3,6 +3,23 @@ packages:
   - 'apps/*'
   - 'e2e'
 
+# Share one virtual store across every git worktree (run `pnpm store path`
+# to see where pnpm puts it on your platform — macOS ~/Library/pnpm/store,
+# Linux ~/.local/share/pnpm/store). See pnpm.io/git-worktrees.
+enableGlobalVirtualStore: true
+
+# Auto-purge `node_modules` on the first install when toggling
+# enableGlobalVirtualStore — pnpm 11.8 otherwise prompts interactively
+# (pnpm/pnpm#12142, fixed upstream, not yet in our pinned version).
+confirmModulesPurge: false
+
+# Disable pnpm's pre-run dep-status verifier — it walks the legacy
+# `node_modules/.pnpm` layout and crashes when enableGlobalVirtualStore moves
+# the symlink farm out of the workspace. Cost: pnpm no longer warns about
+# out-of-date installs before running scripts; rely on `pnpm install` after
+# branch switches (already in CLAUDE.md).
+verifyDepsBeforeRun: false
+
 strictDepBuilds: true
 catalogMode: strict
 
