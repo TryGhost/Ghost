@@ -167,6 +167,18 @@ export default defineConfig({
                     // Matches the mocha `--timeout=15000` for the e2e suites.
                     testTimeout: 15000
                 }
+            },
+            {
+                ssr: sharedSsrConfig,
+                test: {
+                    ...sharedDbConfig,
+                    name: 'e2e-isolated',
+                    isolate: true,
+                    include: ['test/e2e-server/**/*.isolated.test.{js,ts}'],
+                    exclude: ['**/node_modules/**'],
+                    // Matches the mocha `--timeout=15000` for the e2e suites.
+                    testTimeout: 15000
+                }
             }
         ]
     }
