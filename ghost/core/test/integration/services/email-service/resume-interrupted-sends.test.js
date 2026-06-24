@@ -12,7 +12,7 @@ describe('Resume interrupted sends', function () {
     let stubbedSend;
     let ghostServer;
 
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
         agent = agents.adminAgent;
         ghostServer = agents.ghostServer;
@@ -39,7 +39,7 @@ describe('Resume interrupted sends', function () {
         await jobManager.allSettled();
     });
 
-    after(async function () {
+    afterAll(async function () {
         mockManager.restore();
         await ghostServer.stop();
     });
