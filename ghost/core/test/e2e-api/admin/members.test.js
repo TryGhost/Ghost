@@ -2067,170 +2067,6 @@ describe('Members API', function () {
         });
     });
 
-    let memberWithPaidSubscription;
-
-    it('Can create a member with an existing paid subscription', async function () {
-        const fakePrice = {
-            id: 'price_1',
-            product: 'product_1234',
-            active: true,
-            nickname: 'Paid',
-            unit_amount: 1200,
-            currency: 'usd',
-            type: 'recurring',
-            recurring: {
-                interval: 'year'
-            }
-        };
-
-        const fakeSubscription = {
-            id: 'sub_987623',
-            customer: 'cus_12345',
-            status: 'active',
-            cancel_at_period_end: false,
-            metadata: {},
-            current_period_end: Date.now() / 1000 + 1000,
-            start_date: Date.now() / 1000,
-            plan: fakePrice,
-            items: {
-                data: [{
-                    id: 'item_123',
-                    price: fakePrice
-                }]
-            }
-        };
-
-        const fakeCustomer = {
-            id: 'cus_12345',
-            name: 'Test Member',
-            email: 'create-member-paid-test@email.com',
-            subscriptions: {
-                type: 'list',
-                data: [fakeSubscription]
-            }
-        };
-
-        stripeMocker.customers.push(fakeCustomer);
-        stripeMocker.subscriptions.push(fakeSubscription);
-        stripeMocker.prices.push(fakePrice);
-
-        const initialMember = {
-            name: fakeCustomer.name,
-            email: fakeCustomer.email,
-            subscribed: true,
-            newsletters: [newsletters[0]],
-            stripe_customer_id: fakeCustomer.id
-        };
-
-        const {body} = await agent
-            .post(`/members/`)
-            .body({members: [initialMember]})
-            .expectStatus(201)
-            .matchBodySnapshot({
-                members: new Array(1).fill({
-                    id: anyObjectId,
-                    uuid: anyUuid,
-                    created_at: anyISODateTime,
-                    updated_at: anyISODateTime,
-                    labels: anyArray,
-                    subscriptions: anyArray,
-                    current_subscription: nullable(anyObject),
-                    tiers: new Array(1).fill(tierMatcher),
-                    newsletters: new Array(1).fill(newsletterSnapshot)
-                })
-            })
-            .matchHeaderSnapshot({
-                'content-version': anyContentVersion,
-                etag: anyEtag,
-                location: anyLocationFor('members')
-            });
-
-        const newMember = body.members[0];
-
-        assert.equal(newMember.status, 'paid', 'The created member should have the paid status');
-        assert.equal(newMember.subscriptions.length, 1, 'The member should have a single subscription');
-        assert.equal(newMember.subscriptions[0].id, fakeSubscription.id, 'The returned subscription should have an ID assigned');
-
-        await assertMemberEvents({
-            eventType: 'MemberStatusEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    from_status: null,
-                    to_status: 'free'
-                }, {
-                    from_status: 'free',
-                    to_status: 'paid'
-                }
-            ]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberSubscribeEvent',
-            memberId: newMember.id,
-            asserts: [{
-                subscribed: true,
-                source: 'admin'
-            }]
-        });
-
-        await assertMemberEvents({
-            eventType: 'MemberPaidSubscriptionEvent',
-            memberId: newMember.id,
-            asserts: [
-                {
-                    mrr_delta: 100
-                }
-            ]
-        });
-
-        await assertSubscription(fakeSubscription.id, {
-            subscription_id: fakeSubscription.id,
-            status: 'active',
-            cancel_at_period_end: false,
-            plan_amount: 1200,
-            plan_interval: 'year',
-            plan_currency: 'usd',
-            mrr: 100
-        });
-
-        // Save this member for the next tests
-        memberWithPaidSubscription = newMember;
-    });
-
-    it('Returns an identical member format for read, edit and browse', async function (ctx) {
-        if (!memberWithPaidSubscription) {
-            // Previous test failed
-            return ctx.skip();
-        }
-
-        // Check status has been updated to 'free' after cancelling
-        const {body: readBody} = await agent.get('/members/' + memberWithPaidSubscription.id + '/');
-        assert.equal(readBody.members.length, 1, 'The member was not found in read');
-        const readMember = readBody.members[0];
-
-        // Note that we explicitly need to ask to include tiers while browsing
-        const {body: browseBody} = await agent.get(`/members/?search=${memberWithPaidSubscription.email}&include=tiers`);
-        assert.equal(browseBody.members.length, 1, 'The member was not found in browse');
-        const browseMember = browseBody.members[0];
-
-        // Ignore attribution for now
-        delete readMember.attribution;
-        for (const sub of readMember.subscriptions) {
-            delete sub.attribution;
-        }
-
-        // Ignore attribution for now
-        delete memberWithPaidSubscription.attribution;
-        for (const sub of memberWithPaidSubscription.subscriptions) {
-            delete sub.attribution;
-        }
-
-        // Check for this member with a paid subscription that the body results for the patch, get and browse endpoints are 100% identical
-        assert.deepEqual(browseMember, readMember, 'Browsing a member returns a different format than reading a member');
-        assert.deepEqual(memberWithPaidSubscription, readMember, 'Editing a member returns a different format than reading a member');
-    });
-
     it('Cannot add unknown tiers to a member', async function () {
         const memberId = testUtils.DataGenerator.Content.members[0].id;
         const unknownProductId = 'blahblahid';
@@ -2254,125 +2090,266 @@ describe('Members API', function () {
             });
     });
 
-    it('Cannot add complimentary subscriptions to a member with an active subscription', async function (ctx) {
-        if (!memberWithPaidSubscription) {
-            // Previous test failed
-            return ctx.skip();
-        }
-        const product = await getOtherPaidProduct();
+    describe('with a paid subscription', function () {
+        let memberWithPaidSubscription;
 
-        const compedPayload = {
-            id: memberWithPaidSubscription.id,
-            tiers: [
-                ...memberWithPaidSubscription.tiers,
-                {
-                    id: product.id
+        beforeAll(async function () {
+            const fakePrice = {
+                id: 'price_1',
+                product: 'product_1234',
+                active: true,
+                nickname: 'Paid',
+                unit_amount: 1200,
+                currency: 'usd',
+                type: 'recurring',
+                recurring: {
+                    interval: 'year'
                 }
-            ]
-        };
+            };
 
-        sinon.stub(logging, 'error');
-        await agent
-            .put(`/members/${memberWithPaidSubscription.id}/`)
-            .body({members: [compedPayload]})
-            .expectStatus(400);
-    });
-
-    it('Cannot remove non complimentary subscriptions directly from a member', async function (ctx) {
-        if (!memberWithPaidSubscription) {
-            // Previous test failed
-            return ctx.skip();
-        }
-
-        const compedPayload = {
-            id: memberWithPaidSubscription.id,
-            // Remove all paid subscriptions (= not allowed atm)
-            tiers: []
-        };
-
-        sinon.stub(logging, 'error');
-        await agent
-            .put(`/members/${memberWithPaidSubscription.id}/`)
-            .body({members: [compedPayload]})
-            .expectStatus(400);
-    });
-
-    it('Can remove a complimentary subscription directly from a member with other active subscriptions', async function (ctx) {
-        // This tests for an edge case that shouldn't be possible, but the API should support this to resolve issues
-        // refs https://github.com/TryGhost/Team/issues/1859
-
-        if (!memberWithPaidSubscription) {
-            // Previous test failed
-            return ctx.skip();
-        }
-
-        // Check that the product that we are going to add is not the same as the existing one
-        const product = await getOtherPaidProduct();
-        assert.equal(memberWithPaidSubscription.tiers.length, 1);
-        assert.notEqual(memberWithPaidSubscription.tiers[0].id, product.id);
-
-        // Add it manually
-        await models.Member.edit({
-            products: [
-                ...memberWithPaidSubscription.tiers,
-                {
-                    id: product.id
+            const fakeSubscription = {
+                id: 'sub_987623',
+                customer: 'cus_12345',
+                status: 'active',
+                cancel_at_period_end: false,
+                metadata: {},
+                current_period_end: Date.now() / 1000 + 1000,
+                start_date: Date.now() / 1000,
+                plan: fakePrice,
+                items: {
+                    data: [{
+                        id: 'item_123',
+                        price: fakePrice
+                    }]
                 }
-            ]
-        }, {id: memberWithPaidSubscription.id});
+            };
 
-        // Check status
-        const {body: body2} = await agent
-            .get(`/members/${memberWithPaidSubscription.id}/`)
-            .expectStatus(200);
+            const fakeCustomer = {
+                id: 'cus_12345',
+                name: 'Test Member',
+                email: 'create-member-paid-test@email.com',
+                subscriptions: {
+                    type: 'list',
+                    data: [fakeSubscription]
+                }
+            };
 
-        const beforeMember = body2.members[0];
-        assert.equal(beforeMember.tiers.length, 2, 'The member should have two tiers now');
-        assert.equal(
-            beforeMember.subscriptions.length,
-            1,
-            'Only the Stripe-backed paid subscription should be returned while the member status is paid'
-        );
-        assert.equal(
-            beforeMember.subscriptions[0].tier.id,
-            memberWithPaidSubscription.tiers[0].id,
-            'The returned subscription should stay attached to the paid tier'
-        );
+            stripeMocker.customers.push(fakeCustomer);
+            stripeMocker.subscriptions.push(fakeSubscription);
+            stripeMocker.prices.push(fakePrice);
 
-        // Now try to remove only the complimentary one
-        const compedPayload = {
-            id: memberWithPaidSubscription.id,
-            // Remove all complimentary subscriptions
-            tiers: memberWithPaidSubscription.tiers
-        };
+            const initialMember = {
+                name: fakeCustomer.name,
+                email: fakeCustomer.email,
+                subscribed: true,
+                newsletters: [newsletters[0]],
+                stripe_customer_id: fakeCustomer.id
+            };
 
-        const {body} = await agent
-            .put(`/members/${memberWithPaidSubscription.id}/`)
-            .body({members: [compedPayload]})
-            .expectStatus(200);
+            const {body} = await agent
+                .post(`/members/`)
+                .body({members: [initialMember]})
+                .expectStatus(201)
+                .matchBodySnapshot({
+                    members: new Array(1).fill({
+                        id: anyObjectId,
+                        uuid: anyUuid,
+                        created_at: anyISODateTime,
+                        updated_at: anyISODateTime,
+                        labels: anyArray,
+                        subscriptions: anyArray,
+                        current_subscription: nullable(anyObject),
+                        tiers: new Array(1).fill(tierMatcher),
+                        newsletters: new Array(1).fill(newsletterSnapshot)
+                    })
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag,
+                    location: anyLocationFor('members')
+                });
 
-        const updatedMember = body.members[0];
-        assert.equal(updatedMember.status, 'paid', 'Member should still have the paid status');
-        assert.equal(updatedMember.tiers.length, 1, 'The member should have one product now');
-        assert.equal(updatedMember.tiers[0].id, memberWithPaidSubscription.tiers[0].id, 'The member should have the paid product');
-    });
+            const newMember = body.members[0];
 
-    it('Can keep tiers unchanged when modifying a paid member', async function (ctx) {
-        if (!memberWithPaidSubscription) {
-            // Previous test failed
-            return ctx.skip();
-        }
+            assert.equal(newMember.status, 'paid', 'The created member should have the paid status');
+            assert.equal(newMember.subscriptions.length, 1, 'The member should have a single subscription');
+            assert.equal(newMember.subscriptions[0].id, fakeSubscription.id, 'The returned subscription should have an ID assigned');
 
-        const compedPayload = {
-            id: memberWithPaidSubscription.id,
-            // Not changed tiers
-            tiers: [...memberWithPaidSubscription.tiers]
-        };
+            await assertMemberEvents({
+                eventType: 'MemberStatusEvent',
+                memberId: newMember.id,
+                asserts: [
+                    {
+                        from_status: null,
+                        to_status: 'free'
+                    }, {
+                        from_status: 'free',
+                        to_status: 'paid'
+                    }
+                ]
+            });
 
-        await agent
-            .put(`/members/${memberWithPaidSubscription.id}/`)
-            .body({members: [compedPayload]})
-            .expectStatus(200);
+            await assertMemberEvents({
+                eventType: 'MemberSubscribeEvent',
+                memberId: newMember.id,
+                asserts: [{
+                    subscribed: true,
+                    source: 'admin'
+                }]
+            });
+
+            await assertMemberEvents({
+                eventType: 'MemberPaidSubscriptionEvent',
+                memberId: newMember.id,
+                asserts: [
+                    {
+                        mrr_delta: 100
+                    }
+                ]
+            });
+
+            await assertSubscription(fakeSubscription.id, {
+                subscription_id: fakeSubscription.id,
+                status: 'active',
+                cancel_at_period_end: false,
+                plan_amount: 1200,
+                plan_interval: 'year',
+                plan_currency: 'usd',
+                mrr: 100
+            });
+
+            memberWithPaidSubscription = newMember;
+        });
+
+        it('Returns an identical member format for read, edit and browse', async function () {
+            // Check status has been updated to 'free' after cancelling
+            const {body: readBody} = await agent.get('/members/' + memberWithPaidSubscription.id + '/');
+            assert.equal(readBody.members.length, 1, 'The member was not found in read');
+            const readMember = readBody.members[0];
+
+            // Note that we explicitly need to ask to include tiers while browsing
+            const {body: browseBody} = await agent.get(`/members/?search=${memberWithPaidSubscription.email}&include=tiers`);
+            assert.equal(browseBody.members.length, 1, 'The member was not found in browse');
+            const browseMember = browseBody.members[0];
+
+            // Ignore attribution for now
+            delete readMember.attribution;
+            for (const sub of readMember.subscriptions) {
+                delete sub.attribution;
+            }
+
+            // Ignore attribution for now
+            delete memberWithPaidSubscription.attribution;
+            for (const sub of memberWithPaidSubscription.subscriptions) {
+                delete sub.attribution;
+            }
+
+            // Check for this member with a paid subscription that the body results for the patch, get and browse endpoints are 100% identical
+            assert.deepEqual(browseMember, readMember, 'Browsing a member returns a different format than reading a member');
+            assert.deepEqual(memberWithPaidSubscription, readMember, 'Editing a member returns a different format than reading a member');
+        });
+
+        it('Cannot add complimentary subscriptions to a member with an active subscription', async function () {
+            const product = await getOtherPaidProduct();
+
+            const compedPayload = {
+                id: memberWithPaidSubscription.id,
+                tiers: [
+                    ...memberWithPaidSubscription.tiers,
+                    {
+                        id: product.id
+                    }
+                ]
+            };
+
+            sinon.stub(logging, 'error');
+            await agent
+                .put(`/members/${memberWithPaidSubscription.id}/`)
+                .body({members: [compedPayload]})
+                .expectStatus(400);
+        });
+
+        it('Cannot remove non complimentary subscriptions directly from a member', async function () {
+            const compedPayload = {
+                id: memberWithPaidSubscription.id,
+                // Remove all paid subscriptions (= not allowed atm)
+                tiers: []
+            };
+
+            sinon.stub(logging, 'error');
+            await agent
+                .put(`/members/${memberWithPaidSubscription.id}/`)
+                .body({members: [compedPayload]})
+                .expectStatus(400);
+        });
+
+        it('Can remove a complimentary subscription directly from a member with other active subscriptions', async function () {
+            // This tests for an edge case that shouldn't be possible, but the API should support this to resolve issues
+            // refs https://github.com/TryGhost/Team/issues/1859
+
+            // Check that the product that we are going to add is not the same as the existing one
+            const product = await getOtherPaidProduct();
+            assert.equal(memberWithPaidSubscription.tiers.length, 1);
+            assert.notEqual(memberWithPaidSubscription.tiers[0].id, product.id);
+
+            // Add it manually
+            await models.Member.edit({
+                products: [
+                    ...memberWithPaidSubscription.tiers,
+                    {
+                        id: product.id
+                    }
+                ]
+            }, {id: memberWithPaidSubscription.id});
+
+            // Check status
+            const {body: body2} = await agent
+                .get(`/members/${memberWithPaidSubscription.id}/`)
+                .expectStatus(200);
+
+            const beforeMember = body2.members[0];
+            assert.equal(beforeMember.tiers.length, 2, 'The member should have two tiers now');
+            assert.equal(
+                beforeMember.subscriptions.length,
+                1,
+                'Only the Stripe-backed paid subscription should be returned while the member status is paid'
+            );
+            assert.equal(
+                beforeMember.subscriptions[0].tier.id,
+                memberWithPaidSubscription.tiers[0].id,
+                'The returned subscription should stay attached to the paid tier'
+            );
+
+            // Now try to remove only the complimentary one
+            const compedPayload = {
+                id: memberWithPaidSubscription.id,
+                // Remove all complimentary subscriptions
+                tiers: memberWithPaidSubscription.tiers
+            };
+
+            const {body} = await agent
+                .put(`/members/${memberWithPaidSubscription.id}/`)
+                .body({members: [compedPayload]})
+                .expectStatus(200);
+
+            const updatedMember = body.members[0];
+            assert.equal(updatedMember.status, 'paid', 'Member should still have the paid status');
+            assert.equal(updatedMember.tiers.length, 1, 'The member should have one product now');
+            assert.equal(updatedMember.tiers[0].id, memberWithPaidSubscription.tiers[0].id, 'The member should have the paid product');
+        });
+
+        it('Can keep tiers unchanged when modifying a paid member', async function () {
+            const compedPayload = {
+                id: memberWithPaidSubscription.id,
+                // Not changed tiers
+                tiers: [...memberWithPaidSubscription.tiers]
+            };
+
+            await agent
+                .put(`/members/${memberWithPaidSubscription.id}/`)
+                .body({members: [compedPayload]})
+                .expectStatus(200);
+        });
     });
 
     it('Can edit by id', async function () {
