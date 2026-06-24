@@ -43,7 +43,7 @@ const unitConfig = {
     // 5000ms (vitest's default) — generous headroom over the slowest unit
     // test (~1s locally) for loaded CI runners.
     testTimeout: 5000,
-    hookTimeout: 60000,
+    hookTimeout: 10000,
     // Retry a failed test up to twice (3 attempts total) before reporting
     // it as failed — absorbs transient flakiness on loaded CI runners.
     retry: 2
