@@ -181,7 +181,7 @@
     "file-type": "21.3.4",
     "form-data": "4.0.6",
     "fs-extra": "catalog:",
-    "ghost-storage-base": "2.0.0",
+    "ghost-storage-base": "2.1.0",
     "glob": "catalog:",
     "got": "13.0.0",
     "gscan": "6.3.0",
