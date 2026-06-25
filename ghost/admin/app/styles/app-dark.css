@@ -1116,6 +1116,10 @@ kbd {
 
 /* Post rows */
 
+.gh-posts-list-item-group:before {
+    background-color: oklch(0.23 0.009 260);
+}
+
 .gh-posts-list-item .gh-content-entry-meta,
 .gh-posts-list-item .gh-content-entry-status,
 .gh-posts-list-item .gh-content-email-stats {
@@ -1255,11 +1259,11 @@ New form styles */
 }
 
 .gh-post-list-feature-image {
-    background-color: var(--whitegrey-l2);
+    background-color: oklch(0.27 0.009 260);
 }
 
 .gh-posts-list-item-group:hover .gh-post-list-feature-image {
-    background-color: #36373A;
+    background-color: oklch(0.27 0.009 260);
 }
 
 /* .gh-post-list-feature-image-placeholder,
