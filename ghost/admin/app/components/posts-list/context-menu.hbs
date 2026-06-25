@@ -29,6 +29,13 @@
             </li>
         {{/if}}
     {{/if}}
+    {{#if this.canCopyGiftLink}}
+        <li>
+            <button class="mr2" type="button" {{on "click" this.openGiftLink}} data-test-button="gift-link">
+                <span>{{svg-jar "link"}}Gift link</span>
+            </button>
+        </li>
+    {{/if}}
     {{#if this.canFeatureSelection}}
         {{#if this.shouldFeatureSelection}}
             <li>

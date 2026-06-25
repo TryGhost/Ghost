@@ -1,3 +1,4 @@
+import GiftLinkModal from '../modals/gift-link-modal';
 import React, {useMemo, useState} from 'react';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {H1} from '@tryghost/shade/primitives';
@@ -7,6 +8,7 @@ import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
+import {useCanManageGiftLink} from '@src/hooks/use-can-manage-gift-link';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -25,7 +27,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
+    const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
     const {settings, site, statsConfig, post, isPostLoading, postId} = useGlobalData();
+    const canManageGiftLink = useCanManageGiftLink(post);
 
     const siteTimezone = getSiteTimezone(settings);
 
@@ -132,9 +136,11 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     {!post?.email_only && (
                                         <PostShareModal
                                             author={post?.authors?.[0]?.name || ''}
+                                            canShareAsGift={canManageGiftLink}
                                             description=''
                                             faviconURL={site?.icon || ''}
                                             featureImageURL={post?.feature_image}
+                                            giftAccessLabel={post?.visibility === 'members' ? 'members-only' : 'paid-members-only'}
                                             open={isShareOpen}
                                             postExcerpt={post?.excerpt || ''}
                                             postTitle={post?.title}
@@ -142,6 +148,10 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                             siteTitle={site?.title || ''}
                                             onClose={() => setIsShareOpen(false)}
                                             onOpenChange={setIsShareOpen}
+                                            onShareAsGift={() => {
+                                                setIsShareOpen(false);
+                                                setIsGiftLinkOpen(true);
+                                            }}
                                         >
                                             <Button variant='outline' onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share</Button>
                                         </PostShareModal>
@@ -241,6 +251,15 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                 )}
                 {children}
             </Navbar>
+
+            {canManageGiftLink && postId && (
+                <GiftLinkModal
+                    key={postId}
+                    open={isGiftLinkOpen}
+                    postId={postId}
+                    onOpenChange={setIsGiftLinkOpen}
+                />
+            )}
 
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <AlertDialogContent>

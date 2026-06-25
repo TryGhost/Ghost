@@ -10,6 +10,7 @@ const emberDataTypeMapping = {
     AutomatedEmailsResponseType: null, // automated emails only exist in React admin
     AutomationsResponseType: null, // automations only exist in React admin
     CommentsResponseType: null, // comments only exist in React admin
+    GiftLinksResponseType: null, // gift links only exist in React admin
     IntegrationsResponseType: {type: 'integration'},
     InvitesResponseType: {type: 'invite'},
     LabelsResponseType: null, // labels only exist in React admin
@@ -231,6 +232,14 @@ export default class StateBridgeService extends Service.extend(Evented) {
         this.trigger('sidebarVisibilityChange', {
             isVisible
         });
+    }
+
+    // The gift-link modal lives in React. Ember surfaces (the posts/pages
+    // context menu) ask React to open it for a given post/page rather than
+    // duplicating the modal — see useOpenGiftLinkModal on the React side.
+    @action
+    triggerOpenGiftLinkModal({id, resource}) {
+        this.trigger('openGiftLinkModal', {id, resource});
     }
 
     get sidebarVisible() {

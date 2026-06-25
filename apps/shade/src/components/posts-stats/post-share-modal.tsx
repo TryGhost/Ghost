@@ -6,12 +6,15 @@ import React from 'react';
 
 interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root> {
     author?: string;
+    canShareAsGift?: boolean;
     children?: React.ReactNode;
     description?: React.ReactNode;
     emailOnly?: boolean;
     faviconURL?: string;
     featureImageURL?: string;
+    giftAccessLabel?: string;
     onClose?: () => void;
+    onShareAsGift?: () => void;
     postExcerpt?: string;
     postTitle?: string;
     postURL?: string;
@@ -22,12 +25,15 @@ interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof Dial
 
 const PostShareModal: React.FC<PostShareModalProps> = ({
     author = '',
+    canShareAsGift = false,
     children,
     description = '',
     emailOnly = false,
     faviconURL = '',
     featureImageURL = '',
+    giftAccessLabel = '',
     onClose = () => {},
+    onShareAsGift = () => {},
     postExcerpt = '',
     postTitle = '',
     postURL = '',
@@ -104,6 +110,19 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
                         </div>
                     </div>
                 </ShareModal.Preview>
+                {canShareAsGift && !emailOnly && (
+                    <div className="flex items-center justify-between gap-4 rounded-md border border-border p-4">
+                        <div className="flex flex-col">
+                            <strong>Share as a gift</strong>
+                            <span className="text-sm text-muted-foreground">
+                                Let anyone read this {giftAccessLabel} post without an account.
+                            </span>
+                        </div>
+                        <Button className="shrink-0 cursor-pointer" type="button" variant="outline" onClick={onShareAsGift}>
+                            Gift link
+                        </Button>
+                    </div>
+                )}
                 <ShareModal.Footer>
                     {emailOnly ? (
                         <Button className="cursor-pointer" type="button" onClick={onClose}>

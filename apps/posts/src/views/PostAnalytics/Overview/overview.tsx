@@ -1,4 +1,5 @@
 import DisabledSourcesIndicator from '../components/disabled-sources-indicator';
+import GiftLinkModal from '../modals/gift-link-modal';
 import KpiCard, {KpiCardContent, KpiCardLabel, KpiCardValue} from '../components/kpi-card';
 import NewsletterOverview from './components/newsletter-overview';
 import PostAnalyticsContent from '../components/post-analytics-content';
@@ -14,8 +15,11 @@ import {centsToDollars} from '../Growth/growth';
 import {formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade/app';
 import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
-import {useEffect, useMemo} from 'react';
+import {useCanManageGiftLink} from '@src/hooks/use-can-manage-gift-link';
+import {useEffect, useMemo, useState} from 'react';
+import {useGiftLinkUsage} from '@src/hooks/use-gift-link-usage';
 import {usePostReferrers} from '@hooks/use-post-referrers';
+import {useReadGiftLink} from '@tryghost/admin-x-framework/api/gift-links';
 
 const Overview: React.FC = () => {
     const navigate = useNavigate();
@@ -23,6 +27,14 @@ const Overview: React.FC = () => {
     const {totals, isLoading: isTotalsLoading, currencySymbol} = usePostReferrers(postId);
     const {appSettings} = useAppContext();
     const {emailTrackClicks: emailTrackClicksEnabled, emailTrackOpens: emailTrackOpensEnabled} = appSettings?.analytics || {};
+
+    // Gift link card: only for eligible posts. Read the active link (without
+    // minting) to scope the usage count to the current token, matching the modal.
+    const canManageGiftLink = useCanManageGiftLink(post);
+    const {data: giftLinkData} = useReadGiftLink(postId, {enabled: canManageGiftLink});
+    const giftToken = giftLinkData?.gift_links?.[0]?.token;
+    const {usage: giftLinkUsage} = useGiftLinkUsage({postUuid: post?.uuid, token: giftToken, enabled: canManageGiftLink});
+    const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
 
     // Calculate chart range based on days between today and post publication date
     const chartRange = useMemo(() => {
@@ -136,12 +148,14 @@ const Overview: React.FC = () => {
                             post={post as Post}
                         />
                     )}
-                    {showGrowthSection && (
-                        <Card className='group col-span-2 overflow-hidden p-0' data-testid='growth'>
-                            <div className='relative flex items-center justify-between gap-6'>
-                                <CardHeader>
-                                    <CardTitle className='flex items-center gap-1.5 text-lg'>
-                                        <LucideIcon.Sprout size={16} strokeWidth={1.5} />
+                    {(showGrowthSection || (canManageGiftLink && post)) && (
+                        <div className='col-span-2 flex flex-col gap-6 lg:grid lg:grid-cols-3'>
+                            {showGrowthSection && (
+                                <Card className={`group overflow-hidden p-0 ${canManageGiftLink && post ? 'lg:col-span-2' : 'lg:col-span-3'}`} data-testid='growth'>
+                                    <div className='relative flex items-center justify-between gap-6'>
+                                        <CardHeader>
+                                            <CardTitle className='flex items-center gap-1.5 text-lg'>
+                                                <LucideIcon.Sprout size={16} strokeWidth={1.5} />
                                 Growth
                                     </CardTitle>
                                 </CardHeader>
@@ -190,13 +204,51 @@ const Overview: React.FC = () => {
                                     </>
                                 }
                             </CardContent>
-                        </Card>
+                                </Card>
+                            )}
+                            {canManageGiftLink && post && (
+                                <Card className={`group/datalist overflow-hidden ${showGrowthSection ? 'lg:col-span-1' : 'lg:col-span-3'}`} data-testid='gift-link-card'>
+                                    <div className='relative flex items-center justify-between gap-6'>
+                                        <CardHeader>
+                                            <CardTitle className='flex items-center gap-1.5 text-lg'>
+                                                <LucideIcon.Gift size={16} strokeWidth={1.5} />
+                                                Gift link
+                                            </CardTitle>
+                                        </CardHeader>
+                                        <Button
+                                            className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100'
+                                            size='sm'
+                                            variant='outline'
+                                            onClick={() => setIsGiftLinkOpen(true)}
+                                        >
+                                            Share
+                                        </Button>
+                                    </div>
+                                    <CardContent className='flex flex-col gap-1'>
+                                        <span className='text-sm text-muted-foreground'>
+                                            Visitors
+                                        </span>
+                                        <span className='text-[2.2rem] leading-none font-semibold'>
+                                            {giftLinkUsage ? formatNumber(giftLinkUsage.visits) : '—'}
+                                        </span>
+                                    </CardContent>
+                                </Card>
+                            )}
+                        </div>
                     )}
-                    {!showWebSection && !showNewsletterSection && !showGrowthSection && (
+                    {!showWebSection && !showNewsletterSection && !showGrowthSection && !canManageGiftLink && (
                         <DisabledSourcesIndicator className='col-span-2 py-20' />
                     )}
                 </div>
             </PostAnalyticsContent>
+            {canManageGiftLink && post && (
+                <GiftLinkModal
+                    key={postId}
+                    open={isGiftLinkOpen}
+                    postId={postId}
+                    onOpenChange={setIsGiftLinkOpen}
+                />
+            )}
         </>
     );
 };
