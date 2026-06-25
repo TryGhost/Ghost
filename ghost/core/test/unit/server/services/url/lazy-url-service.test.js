@@ -665,5 +665,25 @@ describe('LazyUrlService', function () {
             assert.deepEqual(service.getRequiredFields('authors'), []);
             assert.deepEqual(service.getRequiredFields('unknown'), []);
         });
+
+        it('adds the scalar columns a registered permalink substitutes', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('tagsRouter', null, 'tags', '/tag/:slug/');
+            service.onRouterAddedType('authorsRouter', null, 'authors', '/author/:slug/');
+
+            // slug is needed to build the permalink even though eager (id-based)
+            // never reads it; authors have no base filter, only the permalink slug.
+            assert.deepEqual(service.getRequiredFields('tags').sort(), ['slug', 'visibility']);
+            assert.deepEqual(service.getRequiredFields('authors'), ['slug']);
+        });
+
+        it('requires published_at for date-based permalinks and id for :id permalinks', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('dated', null, 'posts', '/:year/:month/:slug/');
+            service.onRouterAddedType('byId', null, 'pages', '/:id/');
+
+            assert.deepEqual(service.getRequiredFields('posts').sort(), ['published_at', 'slug', 'status', 'type']);
+            assert.deepEqual(service.getRequiredFields('pages').sort(), ['id', 'status', 'type']);
+        });
     });
 });

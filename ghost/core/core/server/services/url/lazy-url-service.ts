@@ -141,12 +141,31 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return [...this.requiredRelations];
     }
 
-    // The record columns the base filter for a type reads (e.g. ['status',
-    // 'type'] for posts, ['visibility'] for tags). Callers serializing a
-    // resource's URL must load these or the resource is rejected as thin.
+    // Columns a resource of this type must carry for the lazy service to build
+    // its URL: its base-filter columns plus the scalar columns its routers'
+    // permalinks substitute. Permalink relations are covered separately by
+    // getRequiredRelations; eager needs none of this (it looks URLs up by id).
     getRequiredFields(routerType: string): string[] {
+        const fields = new Set<string>();
         const base = this.baseFilters.get(routerType);
-        return base ? [...base.fields] : [];
+        if (base) {
+            base.fields.forEach(field => fields.add(field));
+        }
+        for (const config of this.routerConfigs) {
+            if (config.resourceType !== routerType) {
+                continue;
+            }
+            if (/\bslug\b/.test(config.permalink)) {
+                fields.add('slug');
+            }
+            if (/\bid\b/.test(config.permalink)) {
+                fields.add('id');
+            }
+            if (/\b(year|month|day)\b/.test(config.permalink)) {
+                fields.add('published_at');
+            }
+        }
+        return [...fields];
     }
 
     hasFinished(): boolean {
