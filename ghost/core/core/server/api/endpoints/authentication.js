@@ -14,6 +14,7 @@ const UsersService = require('../../services/users');
 const userService = new UsersService({dbBackup, models, auth, apiMail, apiSettings});
 const adapterManager = require('../../services/adapter-manager');
 const schedulerAdapter = adapterManager.getAdapter('scheduling');
+const {requestContextFromFrame} = require('./utils/request-context');
 
 async function destroyRequestSession(req) {
     if (!req || !req.session) {
@@ -241,7 +242,7 @@ const controller = {
         },
         permissions: true,
         async query(frame) {
-            const result = await auth.resetAuthentication({
+            const result = await auth.resetAuthentication(requestContextFromFrame(frame), {
                 schedulerAdapter,
                 userService,
                 options: frame.options

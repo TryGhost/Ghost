@@ -1,7 +1,8 @@
 import {afterAll, afterEach, beforeAll, describe, it} from 'vitest';
 import assert from 'node:assert/strict';
 import errors from '@tryghost/errors';
-import {GiftLinksService, type RequestContext} from '../../../core/server/services/gift-links/service';
+import {GiftLinksService} from '../../../core/server/services/gift-links/service';
+import {actionLogger, type RequestContext} from '../../../core/server/services/actions';
 import type {GiftLink} from '../../../core/server/services/gift-links/models';
 
 const testUtils = require('../../utils');
@@ -26,7 +27,7 @@ describe('GiftLinksService (integration)', function () {
         otherPostId = testUtils.DataGenerator.Content.posts[1].id;
         service = new GiftLinksService({
             knex: models.Base.knex,
-            Action: models.Action
+            logAction: actionLogger(models.Action)
         });
     });
 
@@ -182,9 +183,9 @@ describe('GiftLinksService (integration)', function () {
         it('does not fail the command when recording the action throws', async function () {
             const failing = new GiftLinksService({
                 knex: models.Base.knex,
-                Action: {add: async () => {
+                logAction: actionLogger({add: async () => {
                     throw new Error('action write failed');
-                }}
+                }})
             });
 
             await assert.doesNotReject(() => failing.create(CTX, postId));

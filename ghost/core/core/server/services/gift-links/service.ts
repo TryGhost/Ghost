@@ -1,26 +1,13 @@
 import crypto from 'crypto';
 import errors from '@tryghost/errors';
-import logging from '@tryghost/logging';
 import {z} from 'zod';
 import type {Knex} from 'knex';
+import {type ActionEvent, type LogAction, type RequestContext} from '../actions';
 import {GiftLinkToken, type GiftLink, type Post} from './models';
 import * as queries from './queries';
 
 export function generateGiftLinkToken(): GiftLinkToken {
     return GiftLinkToken.parse(crypto.randomBytes(24).toString('base64url'));
-}
-
-export interface Actor {
-    id: string;
-    type: 'user' | 'integration';
-}
-
-interface ActionRecorder {
-    add(data: Record<string, unknown>, options: {autoRefresh: boolean}): Promise<unknown>;
-}
-
-export interface RequestContext {
-    actor: Actor | null;
 }
 
 // The history UI only surfaces a verb-specific label (action_name) for 'edited' events; 'added' and
@@ -30,17 +17,17 @@ const COMMANDS = {
     add: 'added',
     reset: 'edited',
     remove: 'deleted'
-} as const satisfies Record<string, 'added' | 'edited' | 'deleted'>;
+} as const satisfies Record<string, ActionEvent>;
 
 type GiftLinkVerb = keyof typeof COMMANDS;
 
 export class GiftLinksService {
     private knex: Knex;
-    private Action: ActionRecorder;
+    private logAction: LogAction;
 
-    constructor({knex, Action}: {knex: Knex; Action: ActionRecorder}) {
+    constructor({knex, logAction}: {knex: Knex; logAction: LogAction}) {
         this.knex = knex;
-        this.Action = Action;
+        this.logAction = logAction;
     }
 
     async getPost(postId: string): Promise<Post> {
@@ -111,17 +98,12 @@ export class GiftLinksService {
             return;
         }
         const event = COMMANDS[verb];
-        try {
-            await this.Action.add({
-                event,
-                resource_type: 'gift_link',
-                resource_id: subject,
-                actor_type: context.actor.type,
-                actor_id: context.actor.id,
-                ...(event === 'edited' ? {context: {action_name: verb}} : {})
-            }, {autoRefresh: false});
-        } catch (err) {
-            logging.error(err);
-        }
+        await this.logAction({
+            event,
+            resourceType: 'gift_link',
+            resourceId: subject,
+            actor: context.actor,
+            ...(event === 'edited' ? {actionName: verb} : {})
+        });
     }
 }
