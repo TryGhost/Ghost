@@ -162,7 +162,12 @@
 
                         {{#if this.navigationPlacement}}
                             <span class="gh-content-entry-nav" title="In {{this.navigationPlacement}} navigation" data-test-nav-indicator={{this.navigationPlacement}}>
-                                {{svg-jar "navigation"}} In {{this.navigationPlacement}} navigation
+                                {{#if (eq this.navigationPlacement "primary")}}
+                                    {{svg-jar "navigation-primary"}}
+                                {{else}}
+                                    {{svg-jar "navigation-secondary"}}
+                                {{/if}}
+                                In {{this.navigationPlacement}} navigation
                             </span>
                         {{/if}}
                     </p>
