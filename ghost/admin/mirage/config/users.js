@@ -17,21 +17,35 @@ export default function mockUsers(server) {
 
     server.get('/users/', function ({users}, {queryParams}) {
         let page = +queryParams.page || 1;
+        let filter = queryParams.filter || '';
+
+        // author search e.g. `(name:~'John',slug:~'John',email:~'John')` - all
+        // three fields use the same term, so extract it from the name clause
+        // (unescaping NQL-escaped single quotes) and match any of the fields
+        let searchFilter = filter.match(/name:~'((?:\\.|[^'\\])*)'/);
+        let searchTerm = searchFilter ? searchFilter[1].replace(/\\'/g, '\'').toLowerCase() : null;
 
         // NOTE: this is naive and only set up to work with queries that are
         // actually used - if you use a different filter in the app, add it here!
         let collection = users.where(function (user) {
             let statusMatch = true;
+            let searchMatch = true;
 
-            if (queryParams.filter === 'status:-inactive') {
+            if (filter === 'status:-inactive') {
                 statusMatch = user.status !== 'inactive';
-            } else if (queryParams.filter === 'status:inactive') {
+            } else if (filter === 'status:inactive') {
                 statusMatch = user.status === 'inactive';
             } else if (queryParams.status && queryParams.status !== 'all') {
                 statusMatch = user.status === queryParams.status;
             }
 
-            return statusMatch;
+            if (searchTerm !== null) {
+                searchMatch = ['name', 'slug', 'email'].some((field) => {
+                    return (user[field] || '').toLowerCase().includes(searchTerm);
+                });
+            }
+
+            return statusMatch && searchMatch;
         });
 
         return paginateModelCollection('users', collection, page, queryParams.limit);

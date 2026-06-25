@@ -2,6 +2,12 @@
     @options={{this.availableAuthors}}
     @selected={{this.selectedAuthors}}
     @onChange={{action "updateAuthors"}}
+    @search={{if this.useServerSideSearch (perform this.searchAuthorsTask) null}}
+    {{!-- null searchField passes the whole author to matchAuthor so client-side
+         filtering can match name, slug, and email (not just the name field) --}}
+    @searchField={{null}}
+    @matcher={{this.matchAuthor}}
+    @loadingMessage="Loading authors..."
     @allowCreation={{false}}
     @renderInPlace={{true}}
     @triggerId={{this.triggerId}}
