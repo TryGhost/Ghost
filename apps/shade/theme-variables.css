@@ -82,6 +82,30 @@
 }
 
 .dark {
+    /* Less-saturated gray scale for dark mode (lightness + hue preserved, chroma roughly halved) */
+    --color-gray-50: oklch(98.54% 0.0006 286.4);
+    --color-gray-100: oklch(96.97% 0.0008 247.8);
+    --color-gray-200: oklch(94.74% 0.0021 236.5);
+    --color-gray-300: oklch(90.78% 0.0035 247.9);
+    --color-gray-400: oklch(86.68% 0.0047 242.9);
+    --color-gray-500: oklch(77.55% 0.0087 250.9);
+    --color-gray-600: oklch(70.33% 0.0111 248.1);
+    --color-gray-700: oklch(62.98% 0.0143 248.3);
+    --color-gray-800: oklch(52.97% 0.0116 250.6);
+    --color-gray-900: oklch(36.77% 0.0076 248.2);
+    --color-gray-950: oklch(25.95% 0.0031 258.4);
+    --color-grey-50: oklch(98.54% 0.0006 286.4);
+    --color-grey-100: oklch(96.97% 0.0008 247.8);
+    --color-grey-200: oklch(94.74% 0.0021 236.5);
+    --color-grey-300: oklch(90.78% 0.0035 247.9);
+    --color-grey-400: oklch(86.68% 0.0047 242.9);
+    --color-grey-500: oklch(77.55% 0.0087 250.9);
+    --color-grey-600: oklch(70.33% 0.0111 248.1);
+    --color-grey-700: oklch(62.98% 0.0143 248.3);
+    --color-grey-800: oklch(52.97% 0.0116 250.6);
+    --color-grey-900: oklch(36.77% 0.0076 248.2);
+    --color-grey-950: oklch(25.95% 0.0031 258.4);
+
     /* One-off colors (not in the standard color scale) */
     --color-sidebar-bg: oklch(0.23 0.009 260);
 
