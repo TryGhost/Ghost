@@ -59,7 +59,7 @@
     "test:debug": "DEBUG=ghost:test* pnpm test",
     "test:unit": "vitest run",
     "test:integration": "vitest run -c vitest.config.db.ts --project integration",
-    "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api",
+    "test:e2e": "vitest run -c vitest.config.db.ts --project e2e --project e2e-api --project e2e-isolated",
     "test:legacy": "vitest run -c vitest.config.db.ts --project legacy",
     "test:ci:e2e": "c8 -c ./.c8rc.e2e.json -o coverage-e2e pnpm test:e2e",
     "test:ci:integration": "c8 -c ./.c8rc.e2e.json -o coverage-integration --lines 52 --functions 47 --branches 73 --statements 52 pnpm test:integration",
