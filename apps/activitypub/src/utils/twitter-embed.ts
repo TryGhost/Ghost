@@ -3,11 +3,11 @@ const TWITTER_DIRECT_EMBED_URL = 'https://platform.twitter.com/embed/Tweet.html'
 const TWITTER_DIRECT_EMBED_ORIGIN = 'https://platform.twitter.com';
 const TWITTER_DIRECT_EMBED_PATH = '/embed/Tweet.html';
 const TWITTER_WIDGET_SCRIPT_HOSTS = new Set(['platform.twitter.com', 'platform.x.com']);
-export const TWITTER_EMBED_SELECTOR = 'blockquote.twitter-tweet';
+const TWITTER_EMBED_SELECTOR = 'blockquote.twitter-tweet';
 
-export const TWITTER_EMBED_MIN_HEIGHT = 120;
+const TWITTER_EMBED_MIN_HEIGHT = 120;
 const TWITTER_EMBED_INITIAL_HEIGHT = 720;
-export const TWITTER_EMBED_MAX_HEIGHT = 2000;
+const TWITTER_EMBED_MAX_HEIGHT = 2000;
 
 export interface TwitterEmbeddedArticle {
     hasTwitterEmbeds: boolean;
