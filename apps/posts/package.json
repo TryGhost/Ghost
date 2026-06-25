@@ -76,7 +76,7 @@
         "i18n-iso-countries": "7.14.0",
         "lucide-react": "catalog:",
         "moment-timezone": "0.5.45",
-        "papaparse": "5.5.3",
+        "papaparse": "5.5.4",
         "react": "catalog:",
         "react-dom": "catalog:",
         "react-router": "catalog:",

@@ -1483,8 +1483,8 @@ importers:
         specifier: 0.5.45
         version: 0.5.45
       papaparse:
-        specifier: 5.5.3
-        version: 5.5.3
+        specifier: 5.5.4
+        version: 5.5.4
       react:
         specifier: 'catalog:'
         version: 18.3.1
@@ -2974,8 +2974,8 @@ importers:
         specifier: 12.0.1
         version: 12.0.1
       papaparse:
-        specifier: 5.5.3
-        version: 5.5.3
+        specifier: 5.5.4
+        version: 5.5.4
       path-match:
         specifier: 1.2.4
         version: 1.2.4
@@ -18339,8 +18339,8 @@ packages:
   papaparse@5.3.2:
     resolution: {integrity: sha512-6dNZu0Ki+gyV0eBsFKJhYr+MdQYAzFUGlBMNj3GNrmHxmz1lfRa24CjFObPXtjcetlOv5Ad299MhIK0znp3afw==}
 
-  papaparse@5.5.3:
-    resolution: {integrity: sha512-5QvjGxYVjxO59MGU2lHVYpRWBBtKHnlIAcSe1uNFCkkptUh63NFRj0FJQm7nR67puEruUci/ZkjmEFrjCAyP4A==}
+  papaparse@5.5.4:
+    resolution: {integrity: sha512-SwzWD9gl/ElwYLCI0nUja1mFJzjq2D8ziShfNBa7zCHzkOozeOGDwHWQ+tvCzEZcewecWZ5U7kUopDnG+DFYEQ==}
 
   parallel-transform@1.2.0:
     resolution: {integrity: sha512-P2vSmIu38uIlvdcU7fDkyrxj33gTUy/ABO5ZUbGowxNCopBq/OoD42bP4UmMrJoPyk4Uqf0mu3mtWBhHCZD8yg==}
@@ -42336,7 +42336,7 @@ snapshots:
 
   papaparse@5.3.2: {}
 
-  papaparse@5.5.3: {}
+  papaparse@5.5.4: {}
 
   parallel-transform@1.2.0:
     dependencies:
