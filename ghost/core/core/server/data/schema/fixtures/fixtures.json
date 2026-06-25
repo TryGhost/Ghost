@@ -1090,8 +1090,7 @@
                     "product": ["browse", "read"],
                     "newsletter": ["browse", "read"],
                     "collection": ["browse", "read", "add"],
-                    "recommendation": ["browse", "read"],
-                    "gift_link": "manage"
+                    "recommendation": ["browse", "read"]
                 },
                 "Contributor": {
                     "post": ["browse", "read", "edit", "add", "destroy"],
