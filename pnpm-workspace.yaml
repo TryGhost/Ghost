@@ -53,8 +53,8 @@ catalog:
   '@tryghost/debug': 2.2.3
   '@tryghost/domain-events': 3.2.5
   '@tryghost/helpers': 1.1.106
-  '@tryghost/kg-clean-basic-html': 4.3.2
-  '@tryghost/kg-converters': 1.2.2
+  '@tryghost/kg-clean-basic-html': 4.3.3
+  '@tryghost/kg-converters': 1.2.3
   '@tryghost/koenig-lexical': 1.8.3
   '@tryghost/limit-service': 1.5.6
   '@tryghost/logging': 4.2.1

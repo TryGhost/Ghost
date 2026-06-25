@@ -56,7 +56,7 @@
     "@tryghost/color-utils": "catalog:",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/string": "catalog:",
-    "@tryghost/kg-unsplash-selector": "0.4.2",
+    "@tryghost/kg-unsplash-selector": "0.4.3",
     "@tryghost/limit-service": "catalog:",
     "@tryghost/nql": "catalog:",
     "@tryghost/timezone-data": "catalog:",
