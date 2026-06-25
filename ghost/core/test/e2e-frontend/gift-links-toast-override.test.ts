@@ -85,7 +85,7 @@ describe('Front-end gift links — theme toast override', function () {
         await testUtils.fixtures.insertPosts([paidPost]);
 
         const giftLinksService = require('../../core/server/services/gift-links');
-        const post = await giftLinksService.service.ensure(paidPost.id);
+        const post = await giftLinksService.service.ensure({actor: null}, paidPost.id);
         token = post.giftLinks[0].token;
 
         request = supertest.agent(configUtils.config.get('url'));
