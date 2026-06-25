@@ -204,6 +204,27 @@ describe('NewsletterSelectionPage', () => {
         }));
     });
 
+    test('pressing Space on the inner switch does not double-fire the section toggle', async () => {
+        const {getAllByTestId, continueBtn, mockDoActionFn} = setup();
+
+        // Simulate Space-keydown on the nested checkbox: the native checkbox
+        // toggles itself and the keydown bubbles to the section, but the
+        // section's handler must bail out because target !== currentTarget.
+        const switches = getAllByTestId('switch-input');
+        fireEvent.click(switches[1]); // native toggle on the checkbox
+        fireEvent.keyDown(switches[1], {key: ' ', bubbles: true});
+        fireEvent.click(continueBtn);
+
+        // Without the target guard, the bubbled keydown would re-toggle the
+        // section, leaving "Another Free Newsletter" unsubscribed again.
+        expect(mockDoActionFn).toHaveBeenCalledWith('signup', expect.objectContaining({
+            newsletters: expect.arrayContaining([
+                {name: 'Free Newsletter', id: '1'},
+                {name: 'Another Free Newsletter', id: '3'}
+            ])
+        }));
+    });
+
     test('section rows expose role="button" and tabIndex for keyboard reachability', () => {
         const {getAllByTestId} = setup();
 

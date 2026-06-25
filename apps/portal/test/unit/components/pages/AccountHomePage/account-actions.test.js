@@ -109,6 +109,37 @@ describe('AccountActions', () => {
             expect(queryByText('Podcasts')).not.toBeInTheDocument();
         });
 
+        test('calls Transistor API with correct member UUID', async () => {
+            vi.spyOn(window, 'fetch').mockResolvedValue({
+                ok: true,
+                json: async () => ({member: true, shows: []})
+            });
+
+            render(<AccountActions />, {
+                overrideContext: {site, member}
+            });
+
+            await waitFor(() => {
+                expect(window.fetch).toHaveBeenCalledWith(
+                    `https://partner.transistor.fm/ghost/member/${member.uuid}`,
+                    expect.objectContaining({signal: expect.any(AbortSignal)})
+                );
+            });
+        });
+    });
+
+    describe('Profile row keyboard activation', () => {
+        // Use the default site (transistor_portal_enabled is false) so these
+        // row-interaction tests don't render the Transistor fetch path and can
+        // stay synchronous without stubbing window.fetch.
+        const site = getSiteData();
+        const member = getMemberData({
+            name: 'Test User',
+            email: 'test@example.com',
+            paid: false,
+            subscriptions: []
+        });
+
         test('profile section is keyboard-activatable and opens the edit profile page', () => {
             const {getByText, mockDoActionFn} = render(<AccountActions />, {
                 overrideContext: {site, member}
@@ -146,24 +177,6 @@ describe('AccountActions', () => {
 
             const switchPageCalls = mockDoActionFn.mock.calls.filter(call => call[0] === 'switchPage');
             expect(switchPageCalls).toHaveLength(1);
-        });
-
-        test('calls Transistor API with correct member UUID', async () => {
-            vi.spyOn(window, 'fetch').mockResolvedValue({
-                ok: true,
-                json: async () => ({member: true, shows: []})
-            });
-
-            render(<AccountActions />, {
-                overrideContext: {site, member}
-            });
-
-            await waitFor(() => {
-                expect(window.fetch).toHaveBeenCalledWith(
-                    `https://partner.transistor.fm/ghost/member/${member.uuid}`,
-                    expect.objectContaining({signal: expect.any(AbortSignal)})
-                );
-            });
         });
     });
 });

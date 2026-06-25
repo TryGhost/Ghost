@@ -46,6 +46,9 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
             tabIndex={0}
             onClick={handleToggle}
             onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     handleToggle();
@@ -100,6 +103,9 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
             tabIndex={0}
             onClick={handleSectionClick}
             onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     handleSectionClick();
@@ -153,6 +159,9 @@ function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChang
             tabIndex={0}
             onClick={handleSectionClick}
             onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
                     handleSectionClick();

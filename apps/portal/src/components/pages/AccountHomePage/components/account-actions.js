@@ -49,6 +49,9 @@ const AccountActions = () => {
                     tabIndex={0}
                     onClick={openEditProfile}
                     onKeyDown={(e) => {
+                        if (e.target !== e.currentTarget) {
+                            return;
+                        }
                         if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             openEditProfile();

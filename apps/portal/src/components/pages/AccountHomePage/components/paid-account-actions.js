@@ -168,6 +168,9 @@ const PaidAccountActions = () => {
                 tabIndex={0}
                 onClick={onManageBilling}
                 onKeyDown={(e) => {
+                    if (e.target !== e.currentTarget) {
+                        return;
+                    }
                     if (e.key === 'Enter' || e.key === ' ') {
                         e.preventDefault();
                         onManageBilling();
