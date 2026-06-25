@@ -143,14 +143,26 @@ export default class FeatureService extends Service {
             nightShift = enabled || this.nightShift;
         }
 
-        document.documentElement.classList.toggle('dark', nightShift ?? false);
+        const html = document.documentElement;
+        html.classList.add('theme-switching');
+        html.classList.toggle('dark', nightShift ?? false);
+
+        // Double-rAF: first frame paints the new theme, second frame releases
+        // the suppression so subsequent hover/focus transitions resume cleanly.
+        const releaseSuppression = () => {
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                html.classList.remove('theme-switching');
+            }));
+        };
 
         return this.lazyLoader.loadStyle('dark', 'assets/ghost-dark.css', true).then(() => {
             $('link[title=dark]').prop('disabled', !nightShift);
+            releaseSuppression();
         }).catch(() => {
             //TODO: Also disable toggle from settings and Labs hover
             $('link[title=dark]').prop('disabled', true);
-            document.documentElement.classList.remove('dark');
+            html.classList.remove('dark');
+            releaseSuppression();
         });
     }
 }
