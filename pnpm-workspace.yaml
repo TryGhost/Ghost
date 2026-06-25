@@ -98,7 +98,7 @@ catalog:
   globals: 17.6.0
   jsdom: 29.1.1
   jsonc-parser: 3.3.1
-  knex-migrator: 5.4.0
+  knex-migrator: 5.4.1
   lodash: 4.18.1
   lucide-react: 1.18.0
   mingo: 2.5.3
@@ -139,7 +139,7 @@ catalogs:
     eslint-plugin-tailwindcss: 3.18.3
 
 overrides:
-  # knex-migrator 5.4.0 bundles knex 3.x, but ghost/core is pinned to knex 2.4.2.
+  # knex-migrator 5.4.x bundles knex 3.x, but ghost/core is pinned to knex 2.4.2.
   # Ghost's migrations build queries with the 2.4.2 query builder and knex-migrator
   # executes them, so its knex must match Ghost's major or the 3.x runner throws on
   # the 2.x builder. Pin it back to 2.4.2 until ghost/core itself moves to knex 3.x.
