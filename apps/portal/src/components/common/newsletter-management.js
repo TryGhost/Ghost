@@ -1,7 +1,7 @@
 import AppContext from '../../app-context';
 import CloseButton from './close-button';
 import BackButton from './back-button';
-import {useContext, useState, useRef} from 'react';
+import {useContext, useRef} from 'react';
 import Switch from './switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../utils/helpers';
 import ActionButton from './action-button';
@@ -44,6 +44,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
             data-testid="newsletter-toggle"
             role="button"
             tabIndex={0}
+            aria-pressed={isChecked}
             onClick={handleToggle}
             onKeyDown={(e) => {
                 if (e.target !== e.currentTarget) {
@@ -60,7 +61,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
                 <p>{newsletter?.description}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>
-                <Switch id={newsletter.id} label={newsletter.name} onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" />
+                <Switch id={newsletter.id} label={newsletter.name} onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" presentational={true} />
             </div>
         </section>
     );
@@ -69,29 +70,29 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
 function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableCommentNotifications}) {
     const {doAction} = useContext(AppContext);
     const isChecked = !!enableCommentNotifications;
-    const [isUpdating, setIsUpdating] = useState(false);
+    // Ref-based guard so rapid synchronous clicks see the in-flight state
+    // immediately — state updates wouldn't be visible until the next render.
+    const isUpdatingRef = useRef(false);
 
     if (!isCommentsEnabled) {
         return null;
     }
 
-    const handleToggle = async (e, checked) => {
-        await updateCommentNotifications(checked);
-        doAction('showPopupNotification', {
-            action: 'updated:success',
-            message: t('Comment preferences updated.')
-        });
-    };
-
-    const handleSectionClick = async () => {
-        if (isUpdating) {
+    // Guard inside handleToggle so both the row click path and the inner
+    // Switch's onToggle path are protected from concurrent updates.
+    const handleToggle = async () => {
+        if (isUpdatingRef.current) {
             return;
         }
-        setIsUpdating(true);
+        isUpdatingRef.current = true;
         try {
-            await handleToggle(null, !isChecked);
+            await updateCommentNotifications(!isChecked);
+            doAction('showPopupNotification', {
+                action: 'updated:success',
+                message: t('Comment preferences updated.')
+            });
         } finally {
-            setIsUpdating(false);
+            isUpdatingRef.current = false;
         }
     };
 
@@ -101,14 +102,15 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
             data-testid="comment-toggle"
             role="button"
             tabIndex={0}
-            onClick={handleSectionClick}
+            aria-pressed={isChecked}
+            onClick={handleToggle}
             onKeyDown={(e) => {
                 if (e.target !== e.currentTarget) {
                     return;
                 }
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    handleSectionClick();
+                    handleToggle();
                 }
             }}
         >
@@ -117,7 +119,7 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
                 <p>{t('Get notified when someone replies to your comment')}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>
-                <Switch id="comments" label={t('Comments')} onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" />
+                <Switch id="comments" label={t('Comments')} onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" presentational={true} />
             </div>
         </section>
     );
@@ -125,29 +127,29 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
 
 function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChangeUpdatesAndAnnouncements, enableUpdatesAndAnnouncements}) {
     const {doAction, site} = useContext(AppContext);
-    const [isUpdating, setIsUpdating] = useState(false);
+    // Ref-based guard so rapid synchronous clicks see the in-flight state
+    // immediately — state updates wouldn't be visible until the next render.
+    const isUpdatingRef = useRef(false);
 
     if (!canChangeUpdatesAndAnnouncements) {
         return null;
     }
 
-    const handleToggle = async (e, checked) => {
-        await updateUpdatesAndAnnouncements(checked);
-        doAction('showPopupNotification', {
-            action: 'updated:success',
-            message: t('Email preferences updated.')
-        });
-    };
-
-    const handleSectionClick = async () => {
-        if (isUpdating) {
+    // Guard inside handleToggle so both the row click path and the inner
+    // Switch's onToggle path are protected from concurrent updates.
+    const handleToggle = async () => {
+        if (isUpdatingRef.current) {
             return;
         }
-        setIsUpdating(true);
+        isUpdatingRef.current = true;
         try {
-            await handleToggle(null, !enableUpdatesAndAnnouncements);
+            await updateUpdatesAndAnnouncements(!enableUpdatesAndAnnouncements);
+            doAction('showPopupNotification', {
+                action: 'updated:success',
+                message: t('Email preferences updated.')
+            });
         } finally {
-            setIsUpdating(false);
+            isUpdatingRef.current = false;
         }
     };
 
@@ -157,14 +159,15 @@ function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChang
             data-testid="updates-and-announcements-toggle"
             role="button"
             tabIndex={0}
-            onClick={handleSectionClick}
+            aria-pressed={!!enableUpdatesAndAnnouncements}
+            onClick={handleToggle}
             onKeyDown={(e) => {
                 if (e.target !== e.currentTarget) {
                     return;
                 }
                 if (e.key === 'Enter' || e.key === ' ') {
                     e.preventDefault();
-                    handleSectionClick();
+                    handleToggle();
                 }
             }}
         >
@@ -173,7 +176,7 @@ function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChang
                 <p>{t('Occasional updates from {siteTitle}', {siteTitle: site?.title})}</p>
             </div>
             <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>
-                <Switch id="updates-and-announcements" label={t('Updates & announcements')} onToggle={handleToggle} checked={enableUpdatesAndAnnouncements} dataTestId="switch-input" />
+                <Switch id="updates-and-announcements" label={t('Updates & announcements')} onToggle={handleToggle} checked={enableUpdatesAndAnnouncements} dataTestId="switch-input" presentational={true} />
             </div>
         </section>
     );

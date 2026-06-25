@@ -235,4 +235,39 @@ describe('NewsletterSelectionPage', () => {
             expect(section).toHaveAttribute('tabindex', '0');
         });
     });
+
+    test('section rows expose aria-pressed matching the subscribed state', () => {
+        const {getAllByTestId} = setup();
+
+        const interactiveSections = getAllByTestId('toggle-wrapper').filter(s => s.getAttribute('role') === 'button');
+        // Default: "Free Newsletter" is subscribed-on-signup; "Another Free Newsletter" is not.
+        expect(interactiveSections[0]).toHaveAttribute('aria-pressed', 'true');
+        expect(interactiveSections[1]).toHaveAttribute('aria-pressed', 'false');
+
+        // Toggling flips aria-pressed.
+        fireEvent.click(interactiveSections[1]);
+        expect(interactiveSections[1]).toHaveAttribute('aria-pressed', 'true');
+    });
+
+    test('inner Switch is removed from the accessibility tree and focus order', () => {
+        const {getAllByTestId, container} = setup();
+
+        // Each interactive row's Switch is the single visual indicator, not an
+        // independent accessible control. Verify both the wrapper is hidden
+        // from SR and the input is removed from the tab order.
+        const switchWrappers = container.querySelectorAll('.gh-portal-for-switch');
+        expect(switchWrappers.length).toBeGreaterThan(0);
+        switchWrappers.forEach((wrapper) => {
+            expect(wrapper).toHaveAttribute('aria-hidden', 'true');
+        });
+
+        const inputs = container.querySelectorAll('input[type="checkbox"]');
+        expect(inputs.length).toBeGreaterThan(0);
+        inputs.forEach((input) => {
+            expect(input).toHaveAttribute('tabindex', '-1');
+        });
+
+        // Sanity check: switches still exist as visible toggles.
+        expect(getAllByTestId('switch-input').length).toBeGreaterThan(0);
+    });
 });

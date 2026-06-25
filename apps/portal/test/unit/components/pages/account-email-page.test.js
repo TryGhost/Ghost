@@ -50,8 +50,8 @@ describe('Account Email Page', () => {
         const siteData = getSiteData({
             newsletters: newsletterData
         });
-        const {mockDoActionFn, unsubscribeAllBtn, getAllByRole} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
-        let checkboxes = getAllByRole('checkbox');
+        const {mockDoActionFn, unsubscribeAllBtn, container} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
+        let checkboxes = container.querySelectorAll('input[type="checkbox"]');
         let newsletter1Checkbox = checkboxes[0];
         let newsletter2Checkbox = checkboxes[1];
         // each newsletter should have the checked class (this is how we know they're enabled/subscribed to)
@@ -63,7 +63,7 @@ describe('Account Email Page', () => {
         expect(mockDoActionFn).toHaveBeenCalledWith('showPopupNotification', {action: 'updated:success', message: 'Unsubscribed from all emails.'});
         expect(mockDoActionFn).toHaveBeenLastCalledWith('updateNewsletterPreference', {newsletters: [], enableCommentNotifications: false});
 
-        checkboxes = getAllByRole('checkbox');
+        checkboxes = container.querySelectorAll('input[type="checkbox"]');
         expect(checkboxes).toHaveLength(3);
         checkboxes.forEach((checkbox) => {
             // each newsletter htmlElement should not have the checked class
@@ -84,8 +84,8 @@ describe('Account Email Page', () => {
         const siteData = getSiteData({
             newsletters: newsletterData
         });
-        const {mockDoActionFn, getAllByTestId, getAllByRole} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
-        let checkboxes = getAllByRole('checkbox');
+        const {mockDoActionFn, getAllByTestId, container} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
+        let checkboxes = container.querySelectorAll('input[type="checkbox"]');
         let newsletter1Checkbox = checkboxes[0];
         // each newsletter should have the checked class (this is how we know they're enabled/subscribed to)
         expect(newsletter1Checkbox).toBeChecked();
@@ -98,12 +98,20 @@ describe('Account Email Page', () => {
 
     test('can update comment notifications', async () => {
         const siteData = getSiteData();
-        const {mockDoActionFn, getAllByTestId} = setup({site: siteData, member: getMemberData()});
-        let subscriptionToggles = getAllByTestId('switch-input');
-        fireEvent.click(subscriptionToggles[0]);
-        expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {enableCommentNotifications: true});
-        fireEvent.click(subscriptionToggles[0]);
-        expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {enableCommentNotifications: false});
+        // The row is the single accessible toggle; it derives the next value
+        // from the parent prop (member.enable_comment_notifications), not from
+        // the inner checkbox's local state. So the dispatched value flips when
+        // the parent prop flips between renders.
+        const memberOff = {...getMemberData(), enable_comment_notifications: false};
+        const {mockDoActionFn: mockA, getAllByTestId: getA, unmount} = setup({site: siteData, member: memberOff});
+        fireEvent.click(getA('switch-input')[0]);
+        expect(mockA).toHaveBeenCalledWith('updateNewsletterPreference', {enableCommentNotifications: true});
+        unmount();
+
+        const memberOn = {...getMemberData(), enable_comment_notifications: true};
+        const {mockDoActionFn: mockB, getAllByTestId: getB} = setup({site: siteData, member: memberOn});
+        fireEvent.click(getB('switch-input')[0]);
+        expect(mockB).toHaveBeenCalledWith('updateNewsletterPreference', {enableCommentNotifications: false});
     });
 
     test('displays help for members with email suppressions', async () => {
@@ -226,5 +234,41 @@ describe('Account Email Page', () => {
 
         fireEvent.keyDown(commentsRow, {key: 'Enter'});
         expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {enableCommentNotifications: true});
+    });
+
+    test('toggle rows expose aria-pressed matching the subscribed state', () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({newsletters: newsletterData});
+        // Only the first newsletter is subscribed; comments are off by default.
+        const member = {
+            ...getMemberData({newsletters: [newsletterData[0]]}),
+            enable_comment_notifications: false
+        };
+        const {getAllByTestId, getByTestId} = setup({site: siteData, member});
+
+        const newsletterRows = getAllByTestId('newsletter-toggle');
+        expect(newsletterRows[0]).toHaveAttribute('aria-pressed', 'true');
+        expect(newsletterRows[1]).toHaveAttribute('aria-pressed', 'false');
+
+        const commentsRow = getByTestId('comment-toggle');
+        expect(commentsRow).toHaveAttribute('aria-pressed', 'false');
+    });
+
+    test('toggle row Switches are hidden from screen readers and the focus order', () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({newsletters: newsletterData});
+        const {container} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
+
+        const switchWrappers = container.querySelectorAll('.gh-portal-for-switch');
+        expect(switchWrappers.length).toBeGreaterThan(0);
+        switchWrappers.forEach((wrapper) => {
+            expect(wrapper).toHaveAttribute('aria-hidden', 'true');
+        });
+
+        const checkboxes = container.querySelectorAll('input[type="checkbox"]');
+        expect(checkboxes.length).toBeGreaterThan(0);
+        checkboxes.forEach((checkbox) => {
+            expect(checkbox).toHaveAttribute('tabindex', '-1');
+        });
     });
 });

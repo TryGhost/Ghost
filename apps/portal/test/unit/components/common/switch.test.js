@@ -78,4 +78,35 @@ describe('Switch', () => {
 
         expect(input).toHaveAttribute('aria-label', 'My nice toggle');
     });
+
+    test('in presentational mode, hides itself from the accessibility tree and focus order', () => {
+        const {container} = render(
+            <Switch id="pres-switch" label="Presentational" onToggle={() => {}} presentational={true} />
+        );
+        const wrapper = container.querySelector('.gh-portal-for-switch');
+        const input = container.querySelector('input[type="checkbox"]');
+
+        // The whole widget is hidden from screen readers; the parent row
+        // exposes role=button + aria-pressed instead.
+        expect(wrapper).toHaveAttribute('aria-hidden', 'true');
+        // The input is removed from the focus order so keyboard users do not
+        // get a second tab stop after the row.
+        expect(input).toHaveAttribute('tabindex', '-1');
+        // aria-label is dropped because the input is no longer an accessible
+        // control — leaving it would just clutter the SR tree if anything else
+        // re-exposed it.
+        expect(input).not.toHaveAttribute('aria-label');
+    });
+
+    test('non-presentational mode keeps the input accessible', () => {
+        const {container} = render(
+            <Switch id="acc-switch" label="Accessible" onToggle={() => {}} />
+        );
+        const wrapper = container.querySelector('.gh-portal-for-switch');
+        const input = container.querySelector('input[type="checkbox"]');
+
+        expect(wrapper).not.toHaveAttribute('aria-hidden');
+        expect(input).not.toHaveAttribute('tabindex');
+        expect(input).toHaveAttribute('aria-label', 'Accessible');
+    });
 });

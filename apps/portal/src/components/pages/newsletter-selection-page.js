@@ -44,6 +44,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
             data-testid="toggle-wrapper"
             role="button"
             tabIndex={0}
+            aria-pressed={isChecked}
             onClick={handleToggle}
             onKeyDown={(e) => {
                 if (e.target !== e.currentTarget) {
@@ -60,7 +61,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
                 <p>{newsletter.description}</p>
             </div>
             <div onClick={(e) => e.stopPropagation()}>
-                <Switch id={newsletter.id} label={newsletter.name} onToggle={handleToggle} checked={isChecked} />
+                <Switch id={newsletter.id} label={newsletter.name} onToggle={handleToggle} checked={isChecked} presentational={true} />
             </div>
         </section>
     );

@@ -21,6 +21,7 @@ function EmailNewsletterAction() {
             className='gh-portal-list-clickable'
             role="button"
             tabIndex={0}
+            aria-pressed={subscribed}
             onClick={onToggleSubscription}
             onKeyDown={(e) => {
                 if (e.target !== e.currentTarget) {
@@ -52,6 +53,7 @@ function EmailNewsletterAction() {
                     onToggle={(e) => {
                         onToggleSubscription(e, subscribed);
                     }} checked={subscribed}
+                    presentational={true}
                 />
             </div>
         </section>
