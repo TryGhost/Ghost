@@ -59,7 +59,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
     const shouldGoToEditor = postDestination.startsWith('/editor/');
 
     return (
-        <Card className='group/card bg-gradient-to-tr from-muted/40 to-muted/0 to-50%' data-testid='latest-post'>
+        <Card className='group/card' data-testid='latest-post'>
             <CardHeader>
                 <CardTitle className='flex items-baseline justify-between leading-snug font-medium text-muted-foreground'>
                     Latest post performance
