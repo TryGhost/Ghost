@@ -1,12 +1,12 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
-const nock = require('nock');
+const rewire = require('rewire');
 const testUtils = require('../../../utils');
 const configUtils = require('../../../utils/config-utils');
 
 // Stuff we test
-const slack = require('../../../../core/server/services/slack');
+const slack = rewire('../../../../core/server/services/slack');
 
 const events = require('../../../../core/server/lib/common/events');
 const logging = require('@tryghost/logging');
@@ -16,53 +16,45 @@ const settingsCache = require('../../../../core/shared/settings-cache');
 
 // Test data
 const slackURL = 'https://hooks.slack.com/services/a-b-c-d';
-const slackURLPath = '/services/a-b-c-d';
-
-const wait = ms => new Promise((resolve) => {
-    setTimeout(resolve, ms);
-});
-
-async function waitFor(assertion, timeout = 1000) {
-    const deadline = Date.now() + timeout;
-
-    while (!assertion() && Date.now() < deadline) {
-        await wait(50);
-    }
-}
 
 describe('Slack', function () {
     let eventStub;
+    let loggingStub;
 
     beforeEach(function () {
         eventStub = sinon.stub(events, 'on');
-        sinon.stub(events, 'hasRegisteredListener').returns(false);
     });
 
     afterEach(async function () {
         sinon.restore();
-        nock.cleanAll();
         await configUtils.restore();
     });
 
-    function getListeners() {
+    it('listen() should initialise event correctly', function () {
         slack.listen();
+        sinon.assert.calledTwice(eventStub);
+        sinon.assert.calledWith(eventStub.firstCall, 'post.published', slack.__get__('slackListener'));
+        sinon.assert.calledWith(eventStub.secondCall, 'slack.test', slack.__get__('slackTestPing'));
+    });
 
-        return {
-            slackListener: eventStub.firstCall.args[1],
-            slackTestPing: eventStub.secondCall.args[1]
-        };
-    }
+    it('listener() calls ping() with toJSONified model including tags and authors', function () {
+        const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+        const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+        const testTag = _.clone(testUtils.DataGenerator.Content.tags[0]);
 
-    function createPostModel(post, authors = []) {
-        return {
+        const testModel = {
             toJSON: function () {
-                return post;
+                return testPost;
             },
             related: function (relation) {
                 return {
                     toJSON: function () {
                         if (relation === 'authors') {
-                            return authors;
+                            return [testAuthor];
+                        }
+
+                        if (relation === 'tags') {
+                            return [testTag];
                         }
 
                         return [];
@@ -70,96 +62,235 @@ describe('Slack', function () {
                 };
             }
         };
-    }
 
-    function mockSlackWebhook() {
-        const requests = [];
-        const scope = nock('https://hooks.slack.com')
-            .post(slackURLPath, (body) => {
-                requests.push(typeof body === 'string' ? JSON.parse(body) : body);
-                return true;
-            })
-            .reply(200);
+        const pingStub = sinon.stub();
+        const resetSlack = slack.__set__('ping', pingStub);
+        const listener = slack.__get__('slackListener');
 
-        return {
-            requests,
-            scope
-        };
-    }
+        listener(testModel);
 
-    it('listen() should initialise event correctly', function () {
-        slack.listen();
-        sinon.assert.calledTwice(eventStub);
-        sinon.assert.calledWith(eventStub.firstCall, 'post.published', sinon.match.func);
-        sinon.assert.calledWith(eventStub.secondCall, 'slack.test', sinon.match.func);
-        assert.equal(eventStub.firstCall.args[1].name, 'slackListener');
-        assert.equal(eventStub.secondCall.args[1].name, 'slackTestPing');
-    });
+        sinon.assert.calledOnce(pingStub);
+        // tags must be attached so the lazy URL service can evaluate
+        // collection filters like `tag:foo` when building the post URL
+        sinon.assert.calledWith(pingStub, {
+            ...testPost,
+            authors: [testAuthor],
+            tags: [testTag]
+        });
 
-    it('listener() sends a ping with toJSONified model and related authors', async function () {
-        const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
-        const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
-        const settingsCacheStub = sinon.stub(settingsCache, 'get');
-        const urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
-        const {requests, scope} = mockSlackWebhook();
-        const {slackListener} = getListeners();
-
-        settingsCacheStub.withArgs('slack_url').returns(slackURL);
-        sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('http://myblog.com/favicon.ico');
-        urlServiceGetUrlForResourceStub
-            .withArgs(sinon.match({id: testPost.id, type: 'posts'}), {absolute: true})
-            .returns('http://myblog.com/' + testPost.slug + '/');
-        urlServiceGetUrlForResourceStub
-            .withArgs(sinon.match({id: testAuthor.id, type: 'authors'}), {absolute: true})
-            .returns('http://myblog.com/author/' + testAuthor.slug + '/');
-
-        configUtils.set('url', 'http://myblog.com');
-
-        slackListener(createPostModel(testPost, [testAuthor]));
-
-        await waitFor(() => scope.isDone());
-
-        assert.equal(scope.isDone(), true);
-        assert.equal(requests[0].attachments[1].fields[0].value, `<http://myblog.com/author/${testAuthor.slug}/ | ${testAuthor.name}>`);
+        // Reset slack ping method
+        resetSlack();
     });
 
     it('listener() does not call ping() when importing', function () {
         const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
-        const settingsCacheStub = sinon.stub(settingsCache, 'get');
-        const urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
-        const {scope} = mockSlackWebhook();
-        const {slackListener} = getListeners();
 
-        settingsCacheStub.withArgs('slack_url').returns(slackURL);
+        const testModel = {
+            toJSON: function () {
+                return testPost;
+            }
+        };
 
-        slackListener(createPostModel(testPost), {importing: true});
+        const pingStub = sinon.stub();
+        const resetSlack = slack.__set__('ping', pingStub);
+        const listener = slack.__get__('slackListener');
 
-        assert.equal(scope.isDone(), false);
-        sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
+        listener(testModel, {importing: true});
+
+        sinon.assert.notCalled(pingStub);
+
+        // Reset slack ping method
+        resetSlack();
+    });
+
+    it('listener() passes all tags when model has multiple related tags', function () {
+        const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+        const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+        const testTag1 = _.clone(testUtils.DataGenerator.Content.tags[0]);
+        const testTag2 = _.clone(testUtils.DataGenerator.Content.tags[1]);
+
+        const testModel = {
+            toJSON: function () {
+                return testPost;
+            },
+            related: function (relation) {
+                return {
+                    toJSON: function () {
+                        if (relation === 'authors') {
+                            return [testAuthor];
+                        }
+                        if (relation === 'tags') {
+                            return [testTag1, testTag2];
+                        }
+                        return [];
+                    }
+                };
+            }
+        };
+
+        const pingStub = sinon.stub();
+        const resetSlack = slack.__set__('ping', pingStub);
+        const listener = slack.__get__('slackListener');
+
+        listener(testModel);
+
+        sinon.assert.calledOnce(pingStub);
+        const pingArg = pingStub.firstCall.args[0];
+        assert.deepEqual(pingArg.tags, [testTag1, testTag2]);
+
+        resetSlack();
+    });
+
+    it('listener() tags from model.related() override any tags embedded in toJSON result', function () {
+        const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+        // Embed a stale tag directly in the post JSON - related() result must win
+        const embeddedTag = {id: 'stale-tag-id', name: 'Stale Tag', slug: 'stale-tag'};
+        testPost.tags = [embeddedTag];
+
+        const relatedTag = _.clone(testUtils.DataGenerator.Content.tags[2]);
+        const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+
+        const testModel = {
+            toJSON: function () {
+                return testPost;
+            },
+            related: function (relation) {
+                return {
+                    toJSON: function () {
+                        if (relation === 'authors') {
+                            return [testAuthor];
+                        }
+                        if (relation === 'tags') {
+                            return [relatedTag];
+                        }
+                        return [];
+                    }
+                };
+            }
+        };
+
+        const pingStub = sinon.stub();
+        const resetSlack = slack.__set__('ping', pingStub);
+        const listener = slack.__get__('slackListener');
+
+        listener(testModel);
+
+        sinon.assert.calledOnce(pingStub);
+        const pingArg = pingStub.firstCall.args[0];
+        // tags from related() must take precedence over the toJSON() snapshot
+        assert.deepEqual(pingArg.tags, [relatedTag]);
+        assert.notDeepEqual(pingArg.tags, [embeddedTag]);
+
+        resetSlack();
+    });
+
+    it('listener() passes empty tags array when model has no related tags', function () {
+        const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+        const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+
+        const testModel = {
+            toJSON: function () {
+                return testPost;
+            },
+            related: function (relation) {
+                return {
+                    toJSON: function () {
+                        if (relation === 'authors') {
+                            return [testAuthor];
+                        }
+                        return [];
+                    }
+                };
+            }
+        };
+
+        const pingStub = sinon.stub();
+        const resetSlack = slack.__set__('ping', pingStub);
+        const listener = slack.__get__('slackListener');
+
+        listener(testModel);
+
+        sinon.assert.calledOnce(pingStub);
+        const pingArg = pingStub.firstCall.args[0];
+        assert.deepEqual(pingArg.tags, []);
+
+        resetSlack();
+    });
+
+    it('listener() calls model.related() for both authors and tags relations', function () {
+        const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+        const relatedSpy = sinon.spy(function () {
+            return {toJSON: () => []};
+        });
+
+        const testModel = {
+            toJSON: function () {
+                return testPost;
+            },
+            related: relatedSpy
+        };
+
+        const pingStub = sinon.stub();
+        const resetSlack = slack.__set__('ping', pingStub);
+        const listener = slack.__get__('slackListener');
+
+        listener(testModel);
+
+        const calledRelations = relatedSpy.args.map(args => args[0]);
+        assert.ok(calledRelations.includes('authors'), 'should request authors relation');
+        assert.ok(calledRelations.includes('tags'), 'should request tags relation');
+
+        resetSlack();
+    });
+
+    it('testPing() calls ping() with default message', function () {
+        const pingStub = sinon.stub();
+        const resetSlack = slack.__set__('ping', pingStub);
+        const testPing = slack.__get__('slackTestPing');
+
+        testPing();
+
+        sinon.assert.calledOnce(pingStub);
+        sinon.assert.calledWith(pingStub, sinon.match.has('message'));
+
+        // Reset slack ping method
+        resetSlack();
     });
 
     describe('ping()', function () {
         let settingsCacheStub;
+        let slackReset;
+        let makeRequestStub;
         let urlServiceGetUrlForResourceStub;
-        let listeners;
+        const ping = slack.__get__('ping');
 
         beforeEach(function () {
             urlServiceGetUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
 
             settingsCacheStub = sinon.stub(settingsCache, 'get');
 
+            makeRequestStub = sinon.stub();
+            slackReset = slack.__set__('request', makeRequestStub);
+            makeRequestStub.resolves();
+
             sinon.stub(imageLib.blogIcon, 'getIconUrl').returns('http://myblog.com/favicon.ico');
 
             configUtils.set('url', 'http://myblog.com');
-            listeners = getListeners();
         });
 
-        it('makes a request for a post if url is provided', async function () {
+        afterEach(function () {
+            slackReset();
+        });
+
+        it('makes a request for a post if url is provided', function () {
+            let requestUrl;
+            let requestData;
+
             const post = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'webhook-test',
                 html: `<p>Hello World!</p><p>This is a test post.</p><!--members-only--><p>This is members only content.</p>`
             });
-            const {requests, scope} = mockSlackWebhook();
             urlServiceGetUrlForResourceStub
                 .withArgs(sinon.match({id: post.id, type: 'posts'}), {absolute: true})
                 .returns('http://myblog.com/' + post.slug + '/');
@@ -167,17 +298,17 @@ describe('Slack', function () {
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
-            listeners.slackListener(createPostModel(post));
-
-            await waitFor(() => scope.isDone());
+            ping(post);
 
             // assertions
-            assert.equal(scope.isDone(), true);
+            sinon.assert.calledOnce(makeRequestStub);
             sinon.assert.calledOnce(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
 
-            const requestData = requests[0];
+            requestUrl = makeRequestStub.firstCall.args[0];
+            requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
+            assert.equal(requestUrl, slackURL);
             assert.equal(requestData.attachments[0].title, post.title);
             assert.equal(requestData.attachments[0].title_link, 'http://myblog.com/webhook-test/');
             assert.equal(requestData.attachments[0].fields[0].value, 'Hello World!This is a test post.');
@@ -188,69 +319,73 @@ describe('Slack', function () {
             assert.equal(requestData.unfurl_links, true);
         });
 
-        it('makes a request for a test message if url is provided', async function () {
-            const {requests, scope} = mockSlackWebhook();
+        it('makes a request for a message if url is provided', function () {
+            let requestUrl;
+            let requestData;
+
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
-            listeners.slackTestPing();
-
-            await waitFor(() => scope.isDone());
+            ping({message: 'Hi!'});
 
             // assertions
-            assert.equal(scope.isDone(), true);
+            sinon.assert.calledOnce(makeRequestStub);
             sinon.assert.notCalled(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
 
-            const requestData = requests[0];
+            requestUrl = makeRequestStub.firstCall.args[0];
+            requestData = JSON.parse(makeRequestStub.firstCall.args[1].body);
 
-            assert.equal(requestData.text, 'Heya! This is a test notification from your Ghost blog :smile:. Seems to work fine!');
+            assert.equal(requestUrl, slackURL);
+            assert.equal(requestData.text, 'Hi!');
             assert.equal(requestData.icon_url, 'http://myblog.com/favicon.ico');
             assert.equal(requestData.username, 'Ghost');
             assert.equal(requestData.unfurl_links, true);
         });
 
         it('makes a request and errors', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
-            const requestScope = nock('https://hooks.slack.com')
-                .post(slackURLPath)
-                .replyWithError('Slack unavailable');
+            loggingStub = sinon.stub(logging, 'error');
+            makeRequestStub.rejects();
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
-            listeners.slackTestPing();
+            ping({});
 
+            const wait = ms => new Promise((resolve) => {
+                setTimeout(resolve, ms);
+            });
             // Bound the poll so a regression fails with a clear assertion
             // below rather than stalling until the suite-wide test timeout.
-            await waitFor(() => loggingStub.calledOnce);
-            assert.equal(requestScope.isDone(), true);
+            const deadline = Date.now() + 1000;
+            while (!loggingStub.calledOnce && Date.now() < deadline) {
+                await wait(50);
+            }
+            sinon.assert.calledOnce(makeRequestStub);
             sinon.assert.calledOnce(loggingStub);
         });
 
         it('does not make a request if post is a page', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({type: 'page'});
-            const {scope} = mockSlackWebhook();
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
-            listeners.slackListener(createPostModel(post));
+            ping(post);
 
             // assertions
-            assert.equal(scope.isDone(), false);
+            sinon.assert.notCalled(makeRequestStub);
             sinon.assert.calledOnce(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });
 
         it('does not send webhook for \'welcome\' post', function () {
             const post = testUtils.DataGenerator.forKnex.createPost({slug: 'welcome'});
-            const {scope} = mockSlackWebhook();
             settingsCacheStub.withArgs('slack_url').returns(slackURL);
 
             // execute code
-            listeners.slackListener(createPostModel(post));
+            ping(post);
 
             // assertions
-            assert.equal(scope.isDone(), false);
+            sinon.assert.notCalled(makeRequestStub);
             sinon.assert.calledOnce(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });
@@ -260,9 +395,10 @@ describe('Slack', function () {
             settingsCacheStub.withArgs('slack_url').returns();
 
             // execute code
-            listeners.slackListener(createPostModel(post));
+            ping(post);
 
             // assertions
+            sinon.assert.notCalled(makeRequestStub);
             sinon.assert.called(urlServiceGetUrlForResourceStub);
             sinon.assert.calledWith(settingsCacheStub, 'slack_url');
         });
