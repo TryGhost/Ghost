@@ -41,7 +41,7 @@
     "sinon": "22.0.0",
     "tsx": "4.22.4",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.61.1"
+    "typescript-eslint": "8.62.0"
   },
   "dependencies": {
     "@tryghost/kg-parser-plugins": "4.3.3",
