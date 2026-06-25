@@ -221,7 +221,7 @@
     "nodemailer": "8.0.11",
     "on-headers": "1.1.0",
     "otplib": "12.0.1",
-    "papaparse": "5.5.3",
+    "papaparse": "5.5.4",
     "path-match": "1.2.4",
     "probability-distributions": "0.9.1",
     "probe-image-size": "7.3.0",
