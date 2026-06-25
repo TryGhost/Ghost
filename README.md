@@ -55,7 +55,7 @@ Common commands:
 
 ### Publish
 
-`pnpm ship` runs the test suite, prompts for a version bump, creates the version commit and tag, publishes the package, and pushes tags. To skip the prompt, pass the release type or exact version, for example `pnpm ship -- patch` or `pnpm ship -- 2.0.1`. It only publishes from a clean working tree. The `prepare` script builds `dist/` for npm publishes, package tarballs, and consumers installing from a git ref.
+`pnpm ship <patch|minor|major|version>` runs the test suite, then delegates to `@tryghost/pro-ship` to create the release commit and tag, push with `--follow-tags`, and publish the package. For example, use `pnpm ship patch` or `pnpm ship 2.0.1`. It only publishes from a clean working tree. The `prepare` script builds `dist/` for npm publishes, package tarballs, and consumers installing from a git ref.
 
 # Copyright & License
 

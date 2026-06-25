@@ -8,7 +8,7 @@ This repo is the TypeScript 5 `ghost-storage-base` npm package for Ghost storage
 - `pnpm test` — run the Vitest suite with coverage (this is the only test command; `pnpm test:unit` is the same thing). Vitest runs against the TS source directly; you do not need to `pnpm build` first.
 - `pnpm lint` — run oxlint.
 - Run a single test: `pnpm vitest run -t "<test name substring>"` (e.g. `pnpm vitest run -t "generateUnique"`).
-- `pnpm ship` — runs tests, then `pnpm publish` and `git push --follow-tags`. The build runs automatically via the `prepare` script (see below). Only succeeds with a clean working tree. Do not invoke unless the user explicitly asks to publish.
+- `pnpm ship <patch|minor|major|version>` — runs tests, then delegates to `@tryghost/pro-ship` (`pro-ship --publish`) to bump the version, commit, tag, push, and publish. A release type or explicit version is required (for example `pnpm ship patch`). The build runs automatically via the `prepare` script (see below). Only succeeds with a clean working tree. Do not invoke unless the user explicitly asks to publish.
 
 ### Build lifecycle
 

@@ -12,6 +12,9 @@ importers:
         specifier: 2.30.1
         version: 2.30.1
     devDependencies:
+      '@tryghost/pro-ship':
+        specifier: 1.1.2
+        version: 1.1.2
       '@types/express':
         specifier: 5.0.6
         version: 5.0.6
@@ -308,6 +311,14 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
+  '@tryghost/pro-ship@1.1.2':
+    resolution: {integrity: sha512-o20xQ/kFbwvq9NylXN+/G3kxNAKNicFPOysAL+MspjStFftThGBj7miCgedWscZoQscDsb/6uKPFgRUyHti7Mw==}
+    engines: {node: '>=20.20.0'}
+    hasBin: true
+
+  '@tryghost/root-utils@2.3.1':
+    resolution: {integrity: sha512-1g0HskTTDJzn3CzcEWhd4aKtcmPm3IztD7cyfQQiG4QX+6gfpPOkYk7Y5gDOwTKAYtfor0nc8npSY90vvIj93A==}
+
   '@tybys/wasm-util@0.10.2':
     resolution: {integrity: sha512-RoBvJ2X0wuKlWFIjrwffGw1IqZHKQqzIchKaadZZfnNpsAYp2mM0h36JtPCjNDAHGgYez/15uMBpfGwchhiMgg==}
 
@@ -395,6 +406,9 @@ packages:
   ast-v8-to-istanbul@1.0.4:
     resolution: {integrity: sha512-0bC0/4bTSrnwdhU3IsZDwEdojvuPrSg59OYZfKsLRtJZ0u8VBx9DebfqqG8bRdCC0I7vjgxmPi41P0lpkhJHtA==}
 
+  caller@1.1.0:
+    resolution: {integrity: sha512-n+21IZC3j06YpCWaxmUy5AnVqhmCIM2bQtqQyy00HJlmStRt6kwDX5F9Z97pqwAB+G/tgSz6q/kUBbNyQzIubw==}
+
   chai@6.2.2:
     resolution: {integrity: sha512-NUPRluOfOiTKBKvWPtSD4PhFvWCqOi0BGStNWs57X9js7XGTprSmFoz5F0tWhR4WPjNeR9jXqdC7/UpSJTnlRg==}
     engines: {node: '>=18'}
@@ -424,6 +438,9 @@ packages:
     peerDependenciesMeta:
       picomatch:
         optional: true
+
+  find-root@1.1.0:
+    resolution: {integrity: sha512-NKfW6bec6GfKc0SGx1e07QZY9PE99u0Bft/0rzSD5k3sO/vwkVUpDUKVm5Gpp5Ue3YfShPFTX2070tDs5kB9Ng==}
 
   fsevents@2.3.3:
     resolution: {integrity: sha512-5xoDfX+fL7faATnagmWPpbFtwh/R77WmMMqqHGS65C3vvB0YHrgF+B1YmZ3441tMj5n63k0212XNoJwzlhffQw==}
@@ -878,6 +895,16 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
+  '@tryghost/pro-ship@1.1.2':
+    dependencies:
+      '@tryghost/root-utils': 2.3.1
+      semver: 7.8.5
+
+  '@tryghost/root-utils@2.3.1':
+    dependencies:
+      caller: 1.1.0
+      find-root: 1.1.0
+
   '@tybys/wasm-util@0.10.2':
     dependencies:
       tslib: 2.8.1
@@ -996,6 +1023,8 @@ snapshots:
       estree-walker: 3.0.3
       js-tokens: 10.0.0
 
+  caller@1.1.0: {}
+
   chai@6.2.2: {}
 
   convert-source-map@2.0.0: {}
@@ -1013,6 +1042,8 @@ snapshots:
   fdir@6.5.0(picomatch@4.0.4):
     optionalDependencies:
       picomatch: 4.0.4
+
+  find-root@1.1.0: {}
 
   fsevents@2.3.3:
     optional: true
