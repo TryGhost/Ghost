@@ -74,19 +74,23 @@
     --tab-active: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
     --button-hover: var(--color-gray-100);
     --interactive-hover: var(--button-hover);
-    --members-sticky-hover-bg: var(--interactive-hover);
+    --control-border: var(--color-gray-200);
+    --table-row-hover: var(--color-gray-50);
+    --members-sticky-hover-bg: var(--table-row-hover);
     --mobile-navbar-height: 64px;
 }
 
 .dark {
     /* One-off colors (not in the standard color scale) */
-    --color-sidebar-bg: oklch(0.23 0.006 260); /* #1B1D20 */
+    --color-sidebar-bg: oklch(0.25 0.006 260);
 
     --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
     --tab-active: color-mix(in oklab, var(--color-gray-900) 60%, transparent);
     --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
     --interactive-hover: var(--button-hover);
-    --members-sticky-hover-bg: color-mix(in oklab, var(--color-gray-900) 30%, var(--background) 70%);
+    --control-border: var(--color-gray-900);
+    --table-row-hover: var(--color-sidebar-bg);
+    --members-sticky-hover-bg: var(--table-row-hover);
 
     --background: var(--color-black);
     --foreground: var(--color-gray-200);
