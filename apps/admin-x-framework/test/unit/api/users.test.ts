@@ -1,9 +1,9 @@
-import {User} from '../../../src/api/users';
+import type {UserRoleType} from '../../../src/api/roles';
 import {canManageAutomations} from '../../../src/api/users';
 
-const userWithRole = (roleName: string): User => ({
+const userWithRole = (roleName: UserRoleType) => ({
     roles: [{name: roleName}]
-} as unknown as User);
+});
 
 describe('users api helpers', () => {
     describe('canManageAutomations', () => {
