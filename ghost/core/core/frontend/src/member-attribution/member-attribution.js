@@ -3,6 +3,7 @@
 const urlAttribution = require('../utils/url-attribution');
 const parseReferrerData = urlAttribution.parseReferrerData;
 const getReferrer = urlAttribution.getReferrer;
+const getGiftReferrer = urlAttribution.getGiftReferrer;
 
 // Location where we want to store the history in sessionStorage
 const STORAGE_KEY = 'ghost-history';
@@ -99,7 +100,16 @@ const LIMIT = 15;
             utmTerm: referrerData.utmTerm,
             utmContent: referrerData.utmContent
         };
-        
+
+        // Tag gift-link visits so gift-derived signups are attributed to the gift
+        // rather than the channel the link was shared through. The real referrer
+        // url is kept; only the source/medium are overridden.
+        const giftReferrer = getGiftReferrer(window.location.href, referrerData);
+        if (giftReferrer) {
+            attributionData.referrerSource = giftReferrer.source;
+            attributionData.referrerMedium = giftReferrer.medium;
+        }
+
         // Use the getReferrer helper to handle same-domain referrer filtering
         // This will return null if the referrer is from the same domain
         let referrerUrl;

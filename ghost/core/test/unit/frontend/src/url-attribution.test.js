@@ -6,7 +6,8 @@ const {JSDOM} = require('jsdom');
 // Use path relative to test file
 const {
     parseReferrerData,
-    getReferrer
+    getReferrer,
+    getGiftReferrer
 } = require('../../../../core/frontend/src/utils/url-attribution');
 
 describe('URL Attribution Utils', function () {
@@ -157,9 +158,40 @@ describe('URL Attribution Utils', function () {
             const result = getReferrer('https://example.com/?ref=newsletter');
             assert.equal(result, 'newsletter');
         });
-        
+
         it('should return null for same-domain referrers', function () {
             const result = getReferrer('https://example.com/?ref=https://example.com/page');
+            assert.equal(result, null);
+        });
+    });
+
+    describe('getGiftReferrer', function () {
+        it('returns the Gift source/medium for a gift link', function () {
+            const url = 'https://example.com/my-post/?gift=token123';
+            const result = getGiftReferrer(url, parseReferrerData(url));
+            assert.deepEqual(result, {source: 'Gift', medium: 'gift'});
+        });
+
+        it('returns null when there is no gift param', function () {
+            const url = 'https://example.com/my-post/';
+            const result = getGiftReferrer(url, parseReferrerData(url));
+            assert.equal(result, null);
+        });
+
+        it('defers to an explicit ref/source/utm on the gift link', function () {
+            const url = 'https://example.com/my-post/?gift=token123&ref=newsletter';
+            const result = getGiftReferrer(url, parseReferrerData(url));
+            assert.equal(result, null);
+        });
+
+        it('defers to an explicit utm_source on the gift link', function () {
+            const url = 'https://example.com/my-post/?gift=token123&utm_source=twitter';
+            const result = getGiftReferrer(url, parseReferrerData(url));
+            assert.equal(result, null);
+        });
+
+        it('returns null for a malformed URL', function () {
+            const result = getGiftReferrer('not a url', {source: null});
             assert.equal(result, null);
         });
     });

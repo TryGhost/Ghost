@@ -95,11 +95,41 @@ function selectPrimaryReferrer(referrerData) {
 
 /**
  * One-step function to get the final referrer from a URL
- * 
+ *
  * @param {string} [url] - URL to parse (defaults to current URL)
  * @returns {string|null} Final referrer value
  */
 export function getReferrer(url) {
     const referrerData = parseReferrerData(url);
     return selectPrimaryReferrer(referrerData);
+}
+
+/**
+ * Source/medium to attribute a gift-link visit (`?gift=token`) to, so that
+ * gift-derived signups appear in member attribution instead of being credited
+ * to whatever channel the link happened to be shared through (usually Direct).
+ *
+ * Returns null when the URL isn't a gift link, or when it already carries an
+ * explicit ref/source/utm_source the site owner set — that wins over the gift.
+ * Note: an invalid gift token is stripped server-side via a 301 before the page
+ * renders, so a `?gift` param present at render time is always a valid gift.
+ *
+ * @param {string} url - The URL to inspect (the current page URL)
+ * @param {AttributionData} referrerData - Already-parsed data for the same URL
+ * @returns {{source: string, medium: string}|null}
+ */
+export function getGiftReferrer(url, referrerData) {
+    if (referrerData && referrerData.source) {
+        return null;
+    }
+
+    try {
+        if (new URL(url).searchParams.has('gift')) {
+            return {source: 'Gift', medium: 'gift'};
+        }
+    } catch (e) {
+        // Malformed URL - not a gift link
+    }
+
+    return null;
 }
