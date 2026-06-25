@@ -6,6 +6,7 @@ import {getSettingValues, useBrowseSettings} from '@tryghost/admin-x-framework/a
 import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
 import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useEmailLinkSuggestions} from './use-link-suggestions';
+import {useFocusContext} from '@tryghost/shade/app';
 
 export interface EmailEditorProps {
     value?: string;
@@ -86,6 +87,7 @@ const EmailEditor: React.FC<EmailEditorProps> = ({
     const editorAPIRef = useRef<KoenigAPI | null>(null);
     // Capture the initial value once — the editor owns its own state after mount
     const initialEditorState = useRef(value);
+    const {darkMode} = useFocusContext();
     const {unsplashConfig} = useFramework();
     const pinturaConfig = usePinturaConfig();
     const {data: settingsData} = useBrowseSettings();
@@ -144,7 +146,7 @@ const EmailEditor: React.FC<EmailEditorProps> = ({
                         <EmailEditorComponent
                             cardConfig={cardConfig}
                             className="koenig-lexical koenig-lexical-editor-input"
-                            darkMode={false}
+                            darkMode={darkMode}
                             fileUploader={fileUploader}
                             initialEditorState={initialEditorState.current}
                             placeholderText={placeholder}
