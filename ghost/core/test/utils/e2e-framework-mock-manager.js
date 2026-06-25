@@ -37,6 +37,12 @@ let allowedNetworkDomains = [];
 const originalLabsIsSet = labs.isSet;
 const stripeMocker = new StripeMocker();
 
+// The image-size cache holds a bound copy of getImageSizeFromUrl, captured once
+// here so disableNetwork can swap in a no-op (external image lookups are
+// nock-blocked in tests, so the real fetch only produces "Unknown Request
+// error." log noise) and allowImageSize can put the real method back.
+let realCachedImageSizeFromUrl = null;
+
 /**
  * Stripe Mocks
  */
@@ -48,6 +54,8 @@ const disableStripe = async () => {
     const stripeService = require('../../core/server/services/stripe');
     await stripeService.disconnect();
 };
+
+const imageSizeNoop = () => Promise.resolve();
 
 const disableNetwork = () => {
     nock.disableNetConnect();
@@ -80,6 +88,32 @@ const disableNetwork = () => {
         }
         return false;
     });
+
+    // External image dimension lookups are nock-blocked in tests, so the real
+    // fetch always fails and logs "Unknown Request error." on every render.
+    // Replace the cache's bound lookup with a no-op that resolves undefined
+    // (same outcome as the blocked fetch — dimensions omitted — but no log).
+    // The image lib is required lazily because it's only loaded once Ghost has
+    // booted, after which disableNetwork runs in every afterEach.
+    const imageLib = require('../../core/server/lib/image');
+    const cachedImageSize = imageLib.cachedImageSizeFromUrl;
+    // Capture the real method once, guarded so re-entry doesn't capture the no-op.
+    if (!realCachedImageSizeFromUrl && cachedImageSize.getImageSizeFromUrl !== imageSizeNoop) {
+        realCachedImageSizeFromUrl = cachedImageSize.getImageSizeFromUrl;
+    }
+    // Use a plain function (not a sinon stub) so it survives per-test sinon.restore().
+    cachedImageSize.getImageSizeFromUrl = imageSizeNoop;
+};
+
+/**
+ * Restore the real image-size cache lookup so tests that exercise the lookup
+ * mechanism itself (and stub its internals) run against the real chain.
+ */
+const allowImageSize = () => {
+    if (realCachedImageSizeFromUrl) {
+        const imageLib = require('../../core/server/lib/image');
+        imageLib.cachedImageSizeFromUrl.getImageSizeFromUrl = realCachedImageSizeFromUrl;
+    }
 };
 
 const allowStripe = () => {
@@ -405,6 +439,7 @@ module.exports = {
     mockLimitService,
     restoreLimitService,
     disableNetwork,
+    allowImageSize,
     restore,
     stripeMocker,
     assert: {
