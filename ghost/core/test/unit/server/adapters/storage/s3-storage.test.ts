@@ -485,12 +485,42 @@ describe('S3Storage', function () {
         }, /not a valid URL/);
     });
 
-    it('read() throws as it is not supported', async function () {
+    it('read() returns the object bytes for a relative path', async function () {
+        const {storage, sendStub} = createStorage();
+        const {GetObjectCommand: GetObjectCmd} = await import('@aws-sdk/client-s3');
+
+        sendStub.resolves({
+            Body: {
+                transformToByteArray: async () => new Uint8Array(Buffer.from('image-bytes'))
+            }
+        });
+
+        const result = await storage.read({path: '2024/06/image.jpg'});
+
+        assert.deepEqual(result, Buffer.from('image-bytes'));
+
+        const command = sendStub.firstCall.args[0] as InstanceType<typeof GetObjectCmd>;
+        assert.equal(command.input.Bucket, 'test-bucket');
+        assert.equal(command.input.Key, 'configurable/prefix/content/files/2024/06/image.jpg');
+    });
+
+    it('read() throws NotFoundError when the object is missing', async function () {
+        const {storage, sendStub} = createStorage();
+
+        sendStub.rejects(createNotFoundError());
+
+        await assert.rejects(
+            storage.read({path: '2024/06/missing.jpg'}),
+            /Could not read file: 2024\/06\/missing.jpg/
+        );
+    });
+
+    it('read() throws when no path is given', async function () {
         const {storage} = createStorage();
 
         await assert.rejects(
             storage.read(),
-            /read\(\) is not supported by S3Storage/
+            /requires a non-empty path/
         );
     });
 

@@ -2,25 +2,24 @@ import js from '@eslint/js';
 import globals from 'globals';
 import babelParser from '@babel/eslint-parser';
 import ghostPlugin from 'eslint-plugin-ghost';
-import emberPlugin from 'eslint-plugin-ember';
 import reactPlugin from 'eslint-plugin-react';
 
-import {localFilenamesPlugin} from '../../eslint.shared.mjs';
+import {
+    correctnessRules,
+    jsUnusedVarsRule,
+    localFilenamesPlugin,
+    mochaRulesOff,
+    strictLinterOptions
+} from '../../eslint.shared.mjs';
 
+// ghost/admin uses local-filenames/match-regex (workspace-scoped, blocks
+// below) instead of ghost/filenames/match-regex (from correctnessRules) — turn
+// that one off here. no-unused-private-class-members is workspace-specific
+// (ESLint 9 added it to recommended; codebase has intentional placeholders).
 const ghostBaseRules = {
-    curly: 'error',
-    camelcase: ['error', {properties: 'never'}],
-    'dot-notation': 'error',
-    eqeqeq: ['error', 'always'],
-    'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-    'no-eval': 'error',
-    'no-useless-call': 'error',
-    'no-console': 'error',
-    'no-shadow': 'error',
-    'array-callback-return': 'error',
-    'no-constructor-return': 'error',
-    'no-promise-executor-return': 'error',
-    'no-unused-vars': ['error', {caughtErrors: 'none'}],
+    ...correctnessRules,
+    ...jsUnusedVarsRule,
+    'ghost/filenames/match-regex': 'off',
     'no-unused-private-class-members': 'off'
 };
 
@@ -105,11 +104,7 @@ const emberRules = {
     'ghost/ember/require-valid-css-selector-in-test-helpers': 'error'
 };
 
-const mochaRulesOff = Object.fromEntries(
-    Object.keys(ghostPlugin.rules || {})
-        .filter(rule => rule.startsWith('mocha/'))
-        .map(rule => [`ghost/${rule}`, 'off'])
-);
+const mochaRulesOffForGhost = mochaRulesOff(ghostPlugin);
 
 export default [
     {
@@ -120,6 +115,10 @@ export default [
             'config/**',
             'node_modules/**'
         ]
+    },
+    {
+        files: ['**/*'],
+        ...strictLinterOptions
     },
     {
         files: ['**/*.js'],
@@ -151,7 +150,6 @@ export default [
         },
         plugins: {
             ghost: ghostPlugin,
-            ember: emberPlugin,
             react: reactPlugin,
             'local-filenames': localFilenamesPlugin
         },
@@ -189,7 +187,7 @@ export default [
             }
         },
         rules: {
-            ...mochaRulesOff,
+            ...mochaRulesOffForGhost,
             'ghost/ember/no-invalid-debug-function-arguments': 'off',
             'ghost/mocha/no-setup-in-describe': 'off'
         }

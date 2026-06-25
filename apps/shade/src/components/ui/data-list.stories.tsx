@@ -21,11 +21,11 @@ export const Default: Story = {
     args: {
         className: '',
         children: [
-            <DataListHeader>
+            <DataListHeader key='header'>
                 <DataListHead>Title</DataListHead>
                 <DataListHead>Visitors</DataListHead>
             </DataListHeader>,
-            <DataListBody className='group/datalist'>
+            <DataListBody key='body' className='group/datalist'>
                 <DataListRow>
                     <DataListBar />
                     <DataListItemContent>
@@ -96,7 +96,7 @@ export const Default: Story = {
 export const WithoutHeader: Story = {
     args: {
         children: [
-            <DataListBody className='group/datalist'>
+            <DataListBody key='body' className='group/datalist'>
                 <DataListRow>
                     <DataListBar style={{width: '100%'}} />
                     <DataListItemContent>

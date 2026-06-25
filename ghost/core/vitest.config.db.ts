@@ -106,7 +106,11 @@ export default defineConfig({
                         'test/e2e-server/**/*.test.{js,ts}',
                         'test/e2e-frontend/**/*.test.{js,ts}'
                     ],
-                    exclude: ['**/node_modules/**'],
+                    exclude: [
+                        '**/node_modules/**',
+                        // ignore isolated e2e server tests
+                        'test/e2e-server/**/*.isolated.test.{js,ts}'
+                    ],
                     // Matches the mocha `--timeout=15000` for the e2e suites.
                     testTimeout: 15000
                 }
@@ -163,6 +167,18 @@ export default defineConfig({
                     // the cross-file leakers that forced per-file isolation here are
                     // fixed at the source, dropping the dominant boot cost.
                     include: ['test/e2e-api/**/*.test.{js,ts}'],
+                    exclude: ['**/node_modules/**'],
+                    // Matches the mocha `--timeout=15000` for the e2e suites.
+                    testTimeout: 15000
+                }
+            },
+            {
+                ssr: sharedSsrConfig,
+                test: {
+                    ...sharedDbConfig,
+                    name: 'e2e-isolated',
+                    isolate: true,
+                    include: ['test/e2e-server/**/*.isolated.test.{js,ts}'],
                     exclude: ['**/node_modules/**'],
                     // Matches the mocha `--timeout=15000` for the e2e suites.
                     testTimeout: 15000

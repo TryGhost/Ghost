@@ -126,7 +126,6 @@ class Model implements ModelClass<string> {
         return Promise.resolve(this.items.length);
     }
 
-    // eslint-disable-next-line no-unused-vars
     query(f?: (q: Knex.QueryBuilder) => void): Knex.QueryBuilder {
         const builder = {
             limit: (limit: number) => {

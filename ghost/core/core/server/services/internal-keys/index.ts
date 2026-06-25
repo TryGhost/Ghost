@@ -35,10 +35,8 @@ export type InternalKeys = AutoFillingMap<InternalIntegrationSlug, Promise<Inter
 // method without polluting the file with `any`. The generic constrains
 // known internal slugs to their seeded type; arbitrary slugs accept any
 // type.
-// eslint-disable-next-line @typescript-eslint/no-require-imports
 const models = require('../../models') as {
     Integration: {
-        // eslint-disable-next-line no-unused-vars
         getApiKeyBySlug<S extends string>(slug: S, type: S extends InternalIntegrationSlug ? typeof SLUG_KEY_TYPE[S] : ApiKeyType): Promise<InternalApiKey>;
     };
 };

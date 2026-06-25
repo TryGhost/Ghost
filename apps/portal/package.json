@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/portal",
   "type": "module",
-  "version": "2.69.9",
+  "version": "2.69.11",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -74,7 +74,8 @@
   },
   "nx": {
     "tags": [
-      "i18n"
+      "i18n",
+      "public-app"
     ]
   }
 }

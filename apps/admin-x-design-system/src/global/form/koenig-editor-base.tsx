@@ -132,7 +132,6 @@ export const KoenigWrapper: React.FC<KoenigWrapperProps> = ({
         setFocusState(true);
     };
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     const koenig = useMemo(() => new Proxy({} as KoenigInstance, {
         get: (_target, prop) => {
             return editor.read()[prop];

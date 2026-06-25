@@ -1,19 +1,46 @@
 import crypto from 'crypto';
 import errors from '@tryghost/errors';
+import logging from '@tryghost/logging';
 import {z} from 'zod';
 import type {Knex} from 'knex';
-import {GiftLinkRow, GiftLinkToken, giftLinkCodec, type GiftLink, type Post} from './model';
+import {GiftLinkToken, type GiftLink, type Post} from './models';
 import * as queries from './queries';
 
 export function generateGiftLinkToken(): GiftLinkToken {
     return GiftLinkToken.parse(crypto.randomBytes(24).toString('base64url'));
 }
 
+export interface Actor {
+    id: string;
+    type: 'user' | 'integration';
+}
+
+interface ActionRecorder {
+    add(data: Record<string, unknown>, options: {autoRefresh: boolean}): Promise<unknown>;
+}
+
+export interface RequestContext {
+    actor: Actor | null;
+}
+
+// The history UI only surfaces a verb-specific label (action_name) for 'edited' events; 'added' and
+// 'deleted' render as the bare event. So 'reset' maps to 'edited' to read as "reset", while
+// 'add'/'remove' read as plain "added"/"deleted".
+const COMMANDS = {
+    add: 'added',
+    reset: 'edited',
+    remove: 'deleted'
+} as const satisfies Record<string, 'added' | 'edited' | 'deleted'>;
+
+type GiftLinkVerb = keyof typeof COMMANDS;
+
 export class GiftLinksService {
     private knex: Knex;
+    private Action: ActionRecorder;
 
-    constructor({knex}: {knex: Knex}) {
+    constructor({knex, Action}: {knex: Knex; Action: ActionRecorder}) {
         this.knex = knex;
+        this.Action = Action;
     }
 
     async getPost(postId: string): Promise<Post> {
@@ -21,77 +48,80 @@ export class GiftLinksService {
     }
 
     async getPostByToken(token: string): Promise<Post | null> {
-        const row = await this.run(queries.liveLinkForToken(token));
-        return row ? {id: row.post_id, giftLinks: [z.decode(giftLinkCodec, row)]} : null;
+        const row = await queries.liveLinkForToken(token)(this.knex);
+        return row ? {id: row.post_id, giftLinks: [z.decode(queries.giftLinkCodec, row)]} : null;
     }
 
-    async issue(postId: string): Promise<Post> {
+    async isValidTokenForPost(token: string, postId: string): Promise<boolean> {
+        return (await this.getPostByToken(token))?.id === postId;
+    }
+
+    async ensure(context: RequestContext, postId: string): Promise<Post> {
         const post = await this.requirePost(postId);
-        return post.giftLinks.length ? post : this.mint(postId);
+        if (post.giftLinks.length) {
+            return post;
+        }
+        const minted = await this.mint(postId);
+        await this.recordAction(context, 'add', postId);
+        return minted;
     }
 
-    async reissue(postId: string): Promise<Post> {
-        const post = await this.requirePost(postId);
-        return this.mint(postId, post.giftLinks[0]?.token);
+    async create(context: RequestContext, postId: string): Promise<Post> {
+        await this.requirePost(postId);
+        const minted = await this.mint(postId);
+        await this.recordAction(context, 'reset', postId);
+        return minted;
     }
 
-    // Stamp revoked_at on the live links, then drop their associations. The link records stay
-    // as history; liveness is the association, so revoked_at only marks deliberate revocation.
-    async revokeAll(): Promise<number> {
-        const now = new Date();
-        let revoked = 0;
-        await this.knex.transaction(async (trx) => {
-            await trx('gift_links')
-                .whereIn('token', trx('post_gift_links').select('gift_link_token'))
-                .update({revoked_at: now, updated_at: now});
-            revoked = await trx('post_gift_links').del();
-        });
-        return revoked;
+    // Remove every live association; the gift_links rows stay as history.
+    async removeAll(context: RequestContext): Promise<number> {
+        const removed = await this.knex('post_gift_links').del();
+        if (removed > 0) {
+            await this.recordAction(context, 'remove', null);
+        }
+        return removed;
     }
 
-    // Keyed by token, not liveness: a read against a since-reissued token still counts for it.
-    async recordRedemption(token: string): Promise<number> {
-        const now = new Date();
-        return this.knex('gift_links')
-            .where({token})
-            .update({last_redeemed_at: now, updated_at: now})
-            .increment('redeemed_count', 1);
-    }
-
-    // Binds an executor-agnostic read statement to this service's connection.
-    private run<T>(statement: (knex: Knex) => T): T {
-        return statement(this.knex);
-    }
-
-    // A missing post is a 404, not a post with no live links: no rows means no post, and the
-    // remaining rows carrying a token are the live links.
     private async requirePost(postId: string): Promise<Post> {
-        const rows = await this.run(queries.liveLinksForPost(postId));
+        const rows = await queries.liveLinksForPost(postId)(this.knex);
         if (rows.length === 0) {
             throw new errors.NotFoundError({message: `Post ${postId} does not exist.`});
         }
         const giftLinks = rows
-            .filter((row): row is z.input<typeof GiftLinkRow> => row.token !== null)
-            .map(row => z.decode(giftLinkCodec, row));
+            .filter((row): row is z.input<typeof queries.GiftLinkRow> => row.token !== null)
+            .map(row => z.decode(queries.giftLinkCodec, row));
         return {id: postId, giftLinks};
     }
 
-    // Issue and reissue are one upsert: a new store row, with the live association repointed to
-    // it. On reissue the replaced link is stamped revoked_at as history. Concurrent issues are
-    // last-writer-wins, not an error.
-    private async mint(postId: string, replacing?: GiftLinkToken): Promise<Post> {
+    private async mint(postId: string): Promise<Post> {
         const now = new Date();
-        const link: GiftLink = {token: generateGiftLinkToken(), redeemedCount: 0, lastRedeemedAt: null, createdAt: now};
+        const link: GiftLink = {token: generateGiftLinkToken(), createdAt: now};
         await this.knex.transaction(async (trx) => {
-            if (replacing) {
-                await trx('gift_links').where({token: replacing}).update({revoked_at: now, updated_at: now});
-            }
-            await trx('gift_links').insert({...z.encode(giftLinkCodec, link), post_id: postId});
+            await trx('gift_links').insert({...z.encode(queries.giftLinkCodec, link), post_id: postId});
             await trx('post_gift_links')
                 .insert({post_id: postId, gift_link_token: link.token, created_at: now})
                 .onConflict('post_id')
                 .merge({gift_link_token: link.token, updated_at: now});
         });
         return {id: postId, giftLinks: [link]};
+    }
+
+    private async recordAction(context: RequestContext, verb: GiftLinkVerb, subject: string | null): Promise<void> {
+        if (!context.actor) {
+            return;
+        }
+        const event = COMMANDS[verb];
+        try {
+            await this.Action.add({
+                event,
+                resource_type: 'gift_link',
+                resource_id: subject,
+                actor_type: context.actor.type,
+                actor_id: context.actor.id,
+                ...(event === 'edited' ? {context: {action_name: verb}} : {})
+            }, {autoRefresh: false});
+        } catch (err) {
+            logging.error(err);
+        }
     }
 }
