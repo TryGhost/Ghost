@@ -141,6 +141,14 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return [...this.requiredRelations];
     }
 
+    // The record columns the base filter for a type reads (e.g. ['status',
+    // 'type'] for posts, ['visibility'] for tags). Callers serializing a
+    // resource's URL must load these or the resource is rejected as thin.
+    getRequiredFields(routerType: string): string[] {
+        const base = this.baseFilters.get(routerType);
+        return base ? [...base.fields] : [];
+    }
+
     hasFinished(): boolean {
         return true;
     }
