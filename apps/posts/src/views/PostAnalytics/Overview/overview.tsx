@@ -229,7 +229,7 @@ const Overview: React.FC = () => {
                                             Visitors
                                         </span>
                                         <span className='text-[2.2rem] leading-none font-semibold'>
-                                            {giftLinkUsage ? formatNumber(giftLinkUsage.visits) : '—'}
+                                            {formatNumber(giftLinkUsage?.visits || 0)}
                                         </span>
                                     </CardContent>
                                 </Card>

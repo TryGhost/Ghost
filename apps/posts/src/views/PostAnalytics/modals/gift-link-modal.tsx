@@ -85,7 +85,8 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
 
     const giftLinkUrl = buildGiftLinkUrl(post?.url, token);
     const memberType = post?.visibility === 'members' ? 'member' : 'paid member';
-    const description = `Anyone you share this link with will be able to access this post without becoming a ${memberType}.`;
+    const resourceLabel = resource === 'pages' ? 'page' : 'post';
+    const description = `Anyone you share this link with will be able to access this ${resourceLabel} without becoming a ${memberType}.`;
 
     const handleConfirmReset = async () => {
         if (resetting) {
@@ -145,7 +146,7 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
 
                         <DialogFooter className='sm:items-center sm:justify-between'>
                             <Button
-                                className='border-destructive/20 text-destructive hover:border-destructive hover:bg-transparent hover:text-destructive'
+                                className='border-destructive/20 text-destructive hover:border-destructive hover:bg-transparent hover:text-destructive dark:border-state-danger/50 dark:text-state-danger dark:hover:border-state-danger dark:hover:bg-transparent dark:hover:text-state-danger'
                                 data-testid='reset-gift-link'
                                 disabled={!giftLinkUrl}
                                 variant='outline'
@@ -165,7 +166,7 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
                         <DialogHeader>
                             <DialogTitle>Reset gift link</DialogTitle>
                             <DialogDescription>
-                                Are you sure you want to reset this link? Anyone with the current link will lose access to this post.
+                                Are you sure you want to reset this link? Anyone with the current link will lose access to this {resourceLabel}.
                             </DialogDescription>
                         </DialogHeader>
                         <DialogFooter>
