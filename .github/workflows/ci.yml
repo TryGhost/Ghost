@@ -498,7 +498,7 @@ jobs:
         include:
           - node: ${{ needs.job_setup.outputs.node_version }}
             env:
-              DB: sqlite3
+              DB: better-sqlite3
               NODE_ENV: testing
     env:
       DB: ${{ matrix.env.DB }}
@@ -521,7 +521,7 @@ jobs:
         # doesn't need better-sqlite3, so it skips --force and gets a fast cache
         # restore (matches the legacy-tests job below).
         run: |
-          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+          if [ "${{ matrix.env.DB }}" = "better-sqlite3" ]; then
             pnpm install --frozen-lockfile --force
           else
             pnpm install --frozen-lockfile
@@ -547,7 +547,7 @@ jobs:
 
       - name: E2E tests
         run: |
-          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+          if [ "${{ matrix.env.DB }}" = "better-sqlite3" ]; then
             pnpm nx run ghost:test:ci:e2e
           else
             pnpm nx run ghost:test:e2e
@@ -574,7 +574,7 @@ jobs:
 
       - name: Integration tests
         run: |
-          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+          if [ "${{ matrix.env.DB }}" = "better-sqlite3" ]; then
             pnpm nx run ghost:test:ci:integration
           else
             pnpm nx run ghost:test:integration
@@ -631,7 +631,7 @@ jobs:
               NODE_ENV: testing-mysql
           - node: ${{ needs.job_setup.outputs.node_version }}
             env:
-              DB: sqlite3
+              DB: better-sqlite3
               NODE_ENV: testing
     env:
       DB: ${{ matrix.env.DB }}
@@ -654,14 +654,14 @@ jobs:
         # installing/linking it when restoring from a cached store. --force
         # ensures all optional deps are installed regardless.
         run: |
-          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+          if [ "${{ matrix.env.DB }}" = "better-sqlite3" ]; then
             pnpm install --frozen-lockfile --force
           else
             pnpm install --frozen-lockfile
           fi
 
       - name: Set env vars (SQLite)
-        if: contains(matrix.env.DB, 'sqlite')
+        if: contains(matrix.env.DB, 'better-sqlite')
         run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
 
       - name: Set env vars (MySQL)
