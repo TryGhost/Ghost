@@ -120,13 +120,22 @@ describe('Public-config Service', function () {
         it('should return stats when tinybird config is set with the stats key', function () {
             configUtils.set('tinybird', {
                 stats: {
-                    endpoint: 'xxx'
+                    endpoint: 'xxx',
+                    endpointBrowser: 'https://browser.example.com',
+                    version: 'v2',
+                    datasource: 'analytics_events'
                 }
             });
 
             let configProperties = getConfigProperties();
 
-            assert.deepEqual(configProperties.stats, {endpoint: 'xxx', id: '931ade9e-a4f1-4217-8625-34bd34250c16'});
+            assert.deepEqual(configProperties.stats, {
+                endpoint: 'xxx',
+                endpointBrowser: 'https://browser.example.com',
+                version: 'v2',
+                datasource: 'analytics_events',
+                id: '931ade9e-a4f1-4217-8625-34bd34250c16'
+            });
         });
 
         it('should return stats id when tinybird config is set with the id key', function () {
@@ -139,6 +148,50 @@ describe('Public-config Service', function () {
             let configProperties = getConfigProperties();
 
             assert.deepEqual(configProperties.stats.id, '1234567890');
+        });
+
+        it('should not return stats token when tinybird config is set with a token', function () {
+            configUtils.set('tinybird', {
+                stats: {
+                    endpoint: 'xxx',
+                    token: 'secret-token'
+                }
+            });
+
+            let configProperties = getConfigProperties();
+
+            assert.deepEqual(configProperties.stats, {
+                endpoint: 'xxx',
+                id: '931ade9e-a4f1-4217-8625-34bd34250c16'
+            });
+            assert.equal(configProperties.stats.token, undefined);
+        });
+
+        it('should return public local stats config without the local stats token', function () {
+            configUtils.set('tinybird', {
+                stats: {
+                    endpoint: 'xxx',
+                    local: {
+                        enabled: true,
+                        endpoint: 'http://localhost:7181',
+                        datasource: 'analytics_events_local',
+                        token: 'local-secret-token'
+                    }
+                }
+            });
+
+            let configProperties = getConfigProperties();
+
+            assert.deepEqual(configProperties.stats, {
+                endpoint: 'xxx',
+                id: '931ade9e-a4f1-4217-8625-34bd34250c16',
+                local: {
+                    enabled: true,
+                    endpoint: 'http://localhost:7181',
+                    datasource: 'analytics_events_local'
+                }
+            });
+            assert.equal(configProperties.stats.local.token, undefined);
         });
 
         it('should NOT return stats when tinybird config is set without the stats key', function () {
