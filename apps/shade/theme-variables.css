@@ -78,7 +78,6 @@
 .dark {
     /* One-off colors (not in the standard color scale) */
     --color-sidebar-bg: oklch(0.23 0.006 260); /* #1B1D20 */
-    --color-sidebar-border: oklch(0.29 0.006 260); /* #25272A */
 
     --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
     --tab-active: color-mix(in oklab, var(--color-gray-900) 60%, transparent);
@@ -91,7 +90,7 @@
     --accent-foreground: var(--color-gray-100);
     --popover: var(--color-black);
     --popover-foreground: var(--color-gray-400);
-    --border: var(--color-gray-950);
+    --border: color-mix(in oklab, var(--color-gray-900) 50%, transparent);
     --input: var(--color-gray-900);
     --card: var(--color-black);
     --card-foreground: var(--color-gray-100);
@@ -139,6 +138,6 @@
     --sidebar-primary-foreground: var(--color-white);
     --sidebar-accent: var(--tab-active);
     --sidebar-accent-foreground: var(--color-gray-100);
-    --sidebar-border: var(--color-sidebar-border);
+    --sidebar-border: var(--border);
     --sidebar-ring: var(--color-gray-700);
 }
