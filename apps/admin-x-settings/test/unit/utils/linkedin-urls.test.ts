@@ -43,6 +43,16 @@ describe('LinkedIn URLs', () => {
             assert.equal(validateLinkedInUrl('linkedin.com/pub/john-smith-abc123'), 'https://www.linkedin.com/pub/john-smith-abc123');
             assert.equal(validateLinkedInUrl('linkedin.com/pub/johnsmith/12/34/567'), 'https://www.linkedin.com/pub/johnsmith/12/34/567');
         });
+
+        it('should accept underscores in company and school URLs', () => {
+            assert.equal(validateLinkedInUrl('https://www.linkedin.com/company/eyeshot_2'), 'https://www.linkedin.com/company/eyeshot_2');
+            assert.equal(validateLinkedInUrl('linkedin.com/company/some_company'), 'https://www.linkedin.com/company/some_company');
+            assert.equal(validateLinkedInUrl('linkedin.com/school/some_school'), 'https://www.linkedin.com/school/some_school');
+        });
+
+        it('should reject underscores in personal /in/ URLs', () => {
+            assert.throws(() => validateLinkedInUrl('linkedin.com/in/john_smith'), /Your Username is not a valid LinkedIn Username/);
+        });
     });
 
     describe('Handle to URL conversion', () => {

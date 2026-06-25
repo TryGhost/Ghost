@@ -9,8 +9,10 @@ const PATH_TYPES = ['in', 'pub', 'company', 'school'] as const;
 type PathType = typeof PATH_TYPES[number];
 
 // validation info: https://www.linkedin.com/help/linkedin/answer/a542685/manage-your-public-profile-url?lang=en
-// Alphanumeric, hyphen, 3–100 characters
+// Personal profiles (/in/): alphanumeric and hyphen, 3–100 characters
 const USERNAME_REGEX = /^[a-zA-Z0-9-]{3,100}$/;
+// Company and school pages allow underscores in addition to alphanumeric and hyphen
+const COMPANY_USERNAME_REGEX = /^[a-zA-Z0-9_-]{3,100}$/;
 // For /pub/ profiles: username optionally followed by slash-separated segments (i.e. 12/34/567)
 const PUB_USERNAME_REGEX = /^[a-zA-Z0-9-]{3,100}(?:\/[a-zA-Z0-9-]*)*$/;
 
@@ -67,8 +69,13 @@ const extractInputParts = (input: string) => {
 };
 
 const isValidUsername = (pathType: PathType, username: string) => {
-    const pattern = pathType === 'pub' ? PUB_USERNAME_REGEX : USERNAME_REGEX;
-    return pattern.test(username);
+    if (pathType === 'pub') {
+        return PUB_USERNAME_REGEX.test(username);
+    }
+    if (pathType === 'company' || pathType === 'school') {
+        return COMPANY_USERNAME_REGEX.test(username);
+    }
+    return USERNAME_REGEX.test(username);
 };
 
 const buildUrl = ({regional, pathType, username}: {regional?: string; pathType: PathType; username: string}) => {
