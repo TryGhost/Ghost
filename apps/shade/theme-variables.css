@@ -76,6 +76,7 @@
 .dark {
     /* One-off colors (not in the standard color scale) */
     --color-sidebar-bg: oklch(0.23 0.006 260); /* #1B1D20 */
+    --color-sidebar-border: oklch(0.29 0.006 260); /* #25272A */
 
     --background: var(--color-black);
     --foreground: var(--color-gray-200);
@@ -128,11 +129,11 @@
     --chart-5: hsl(201 87% 94%);
     --chart-gray: hsl(210 13% 55%);
     --sidebar-background: var(--color-sidebar-bg);
-    --sidebar-foreground: var(--color-gray-100);
+    --sidebar-foreground: var(--color-gray-500);
     --sidebar-primary: var(--color-gray-900);
     --sidebar-primary-foreground: var(--color-white);
-    --sidebar-accent: var(--color-gray-900);
+    --sidebar-accent: color-mix(in oklab, var(--color-gray-900) 60%, transparent);
     --sidebar-accent-foreground: var(--color-gray-100);
-    --sidebar-border: var(--color-gray-900);
+    --sidebar-border: var(--color-sidebar-border);
     --sidebar-ring: var(--color-gray-700);
 }
