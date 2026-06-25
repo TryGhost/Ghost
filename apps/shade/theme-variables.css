@@ -90,7 +90,7 @@
     --muted-foreground: var(--color-gray-600);
     --accent: var(--color-gray-900);
     --accent-foreground: var(--color-gray-100);
-    --popover: var(--color-black);
+    --popover: var(--color-sidebar-bg);
     --popover-foreground: var(--color-gray-400);
     --border: color-mix(in oklab, var(--color-gray-900) 50%, transparent);
     --input: var(--color-gray-900);
@@ -106,7 +106,7 @@
     --surface-page: var(--color-black);
     --surface-panel: var(--color-black);
     --surface-panel-foreground: var(--color-gray-100);
-    --surface-elevated: var(--color-gray-950);
+    --surface-elevated: var(--color-sidebar-bg);
     --surface-elevated-foreground: var(--color-gray-100);
     --surface-overlay: var(--color-black);
     --surface-overlay-foreground: var(--color-gray-400);
