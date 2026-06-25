@@ -74,6 +74,9 @@
 }
 
 .dark {
+    /* One-off colors (not in the standard color scale) */
+    --color-sidebar-bg: oklch(0.23 0.006 260); /* #1B1D20 */
+
     --background: var(--color-black);
     --foreground: var(--color-gray-200);
     --muted: var(--color-gray-900);
@@ -124,7 +127,7 @@
     --chart-4: hsl(201 82% 90%);
     --chart-5: hsl(201 87% 94%);
     --chart-gray: hsl(210 13% 55%);
-    --sidebar-background: var(--color-gray-950);
+    --sidebar-background: var(--color-sidebar-bg);
     --sidebar-foreground: var(--color-gray-100);
     --sidebar-primary: var(--color-gray-900);
     --sidebar-primary-foreground: var(--color-white);
