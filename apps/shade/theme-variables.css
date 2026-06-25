@@ -107,7 +107,7 @@
     --color-grey-950: oklch(25.95% 0.0031 258.4);
 
     /* One-off colors (not in the standard color scale) */
-    --color-sidebar-bg: oklch(0.23 0.009 260);
+    --color-sidebar-bg: oklch(0.204 0.007 258); /* #15171A */
 
     --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
     --tab-active: color-mix(in oklab, oklch(36.77% 0.012 248.2) 60%, transparent);
@@ -117,7 +117,7 @@
     --table-row-hover: var(--color-sidebar-bg);
     --members-sticky-hover-bg: var(--table-row-hover);
 
-    --background: var(--color-black);
+    --background: oklch(0.178 0.006 271); /* #101114 */
     --foreground: var(--color-gray-200);
     --muted: var(--color-gray-900);
     --muted-foreground: var(--color-gray-600);
@@ -127,7 +127,7 @@
     --popover-foreground: var(--color-gray-400);
     --border: color-mix(in oklab, var(--color-gray-900) 50%, transparent);
     --input: var(--color-gray-900);
-    --card: var(--color-black);
+    --card: var(--background);
     --card-foreground: var(--color-gray-100);
     --primary: var(--color-gray-100);
     --primary-foreground: var(--color-black);
