@@ -2,8 +2,10 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const _ = require('lodash');
 const nock = require('nock');
+const rewire = require('rewire');
+const errors = require('@tryghost/errors');
 const testUtils = require('../../../utils');
-const indexnow = require('../../../../core/server/services/indexnow');
+const indexnow = rewire('../../../../core/server/services/indexnow');
 const events = require('../../../../core/server/lib/common/events');
 const settingsCache = require('../../../../core/shared/settings-cache');
 const config = require('../../../../core/shared/config');
@@ -46,24 +48,29 @@ describe('IndexNow', function () {
     });
 
     describe('listener()', function () {
-        let listener;
-        let urlStub;
-
-        beforeEach(function () {
-            urlStub = sinon.stub(urlService.facade, 'getUrlForResource').returns('https://example.com/my-post/');
-            settingsCacheStub.withArgs('indexnow_api_key').returns(null);
-            loggingStub = sinon.stub(logging, 'warn');
-
-            indexnow.listen();
-            listener = eventStub.firstCall.args[1];
-        });
-
-        it('calls ping() with toJSONified model when content changed', function () {
+        it('calls ping() with toJSONified model including tags and authors when content changed', function () {
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+            const testTag = _.clone(testUtils.DataGenerator.Content.tags[0]);
 
             const testModel = {
                 toJSON: function () {
                     return testPost;
+                },
+                related: function (relation) {
+                    return {
+                        toJSON: function () {
+                            if (relation === 'authors') {
+                                return [testAuthor];
+                            }
+
+                            if (relation === 'tags') {
+                                return [testTag];
+                            }
+
+                            return [];
+                        }
+                    };
                 },
                 get: function (key) {
                     if (key === 'status') {
@@ -83,10 +90,22 @@ describe('IndexNow', function () {
                 }
             };
 
+            const pingStub = sinon.stub().resolves();
+            const resetIndexNow = indexnow.__set__('ping', pingStub);
+            const listener = indexnow.__get__('indexnowListener');
+
             listener(testModel);
 
-            sinon.assert.calledOnce(urlStub);
-            sinon.assert.calledWith(urlStub, sinon.match({...testPost, type: 'posts'}), {absolute: true});
+            sinon.assert.calledOnce(pingStub);
+            // tags and authors must be attached so the lazy URL service can
+            // evaluate collection filters (e.g. `tag:foo`) when building the URL
+            sinon.assert.calledWith(pingStub, {
+                ...testPost,
+                authors: [testAuthor],
+                tags: [testTag]
+            });
+
+            resetIndexNow();
         });
 
         it('does not call ping() when importing', function () {
@@ -104,9 +123,15 @@ describe('IndexNow', function () {
                 }
             };
 
+            const pingStub = sinon.stub();
+            const resetIndexNow = indexnow.__set__('ping', pingStub);
+            const listener = indexnow.__get__('indexnowListener');
+
             listener(testModel, {importing: true});
 
-            sinon.assert.notCalled(urlStub);
+            sinon.assert.notCalled(pingStub);
+
+            resetIndexNow();
         });
 
         it('does not call ping() when no SEO-relevant fields have changed', function () {
@@ -144,9 +169,15 @@ describe('IndexNow', function () {
                 }
             };
 
+            const pingStub = sinon.stub();
+            const resetIndexNow = indexnow.__set__('ping', pingStub);
+            const listener = indexnow.__get__('indexnowListener');
+
             listener(testModel);
 
-            sinon.assert.notCalled(urlStub);
+            sinon.assert.notCalled(pingStub);
+
+            resetIndexNow();
         });
 
         it('calls ping() when title changes', function () {
@@ -155,6 +186,9 @@ describe('IndexNow', function () {
             const testModel = {
                 toJSON: function () {
                     return testPost;
+                },
+                related: function () {
+                    return {toJSON: () => []};
                 },
                 get: function (key) {
                     if (key === 'title') {
@@ -170,9 +204,15 @@ describe('IndexNow', function () {
                 }
             };
 
+            const pingStub = sinon.stub().resolves();
+            const resetIndexNow = indexnow.__set__('ping', pingStub);
+            const listener = indexnow.__get__('indexnowListener');
+
             listener(testModel);
 
-            sinon.assert.calledOnce(urlStub);
+            sinon.assert.calledOnce(pingStub);
+
+            resetIndexNow();
         });
 
         it('calls ping() when slug changes', function () {
@@ -181,6 +221,9 @@ describe('IndexNow', function () {
             const testModel = {
                 toJSON: function () {
                     return testPost;
+                },
+                related: function () {
+                    return {toJSON: () => []};
                 },
                 get: function (key) {
                     if (key === 'slug') {
@@ -196,9 +239,15 @@ describe('IndexNow', function () {
                 }
             };
 
+            const pingStub = sinon.stub().resolves();
+            const resetIndexNow = indexnow.__set__('ping', pingStub);
+            const listener = indexnow.__get__('indexnowListener');
+
             listener(testModel);
 
-            sinon.assert.calledOnce(urlStub);
+            sinon.assert.calledOnce(pingStub);
+
+            resetIndexNow();
         });
 
         it('calls ping() when meta_description changes', function () {
@@ -207,6 +256,9 @@ describe('IndexNow', function () {
             const testModel = {
                 toJSON: function () {
                     return testPost;
+                },
+                related: function () {
+                    return {toJSON: () => []};
                 },
                 get: function (key) {
                     if (key === 'meta_description') {
@@ -222,13 +274,212 @@ describe('IndexNow', function () {
                 }
             };
 
+            const pingStub = sinon.stub().resolves();
+            const resetIndexNow = indexnow.__set__('ping', pingStub);
+            const listener = indexnow.__get__('indexnowListener');
+
             listener(testModel);
 
-            sinon.assert.calledOnce(urlStub);
+            sinon.assert.calledOnce(pingStub);
+
+            resetIndexNow();
+        });
+
+        it('passes all tags when model has multiple related tags', function () {
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            const testTag1 = _.clone(testUtils.DataGenerator.Content.tags[0]);
+            const testTag2 = _.clone(testUtils.DataGenerator.Content.tags[1]);
+            const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+
+            const testModel = {
+                toJSON: function () {
+                    return testPost;
+                },
+                related: function (relation) {
+                    return {
+                        toJSON: function () {
+                            if (relation === 'authors') {
+                                return [testAuthor];
+                            }
+                            if (relation === 'tags') {
+                                return [testTag1, testTag2];
+                            }
+                            return [];
+                        }
+                    };
+                },
+                get: function (key) {
+                    if (key === 'html') {
+                        return '<p>updated content</p>';
+                    }
+                    return 'same-value';
+                },
+                previous: function (key) {
+                    if (key === 'html') {
+                        return '<p>old content</p>';
+                    }
+                    return 'same-value';
+                }
+            };
+
+            const pingStub = sinon.stub().resolves();
+            const resetIndexNow = indexnow.__set__('ping', pingStub);
+            const listener = indexnow.__get__('indexnowListener');
+
+            listener(testModel);
+
+            sinon.assert.calledOnce(pingStub);
+            const pingArg = pingStub.firstCall.args[0];
+            assert.deepEqual(pingArg.tags, [testTag1, testTag2]);
+
+            resetIndexNow();
+        });
+
+        it('tags from model.related() override any tags embedded in toJSON result', function () {
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            // Embed a different tag directly on the post JSON to simulate a
+            // stale/embedded snapshot - related() must win.
+            const embeddedTag = {id: 'embedded-tag-id', name: 'Embedded Tag', slug: 'embedded-tag'};
+            testPost.tags = [embeddedTag];
+
+            const relatedTag = _.clone(testUtils.DataGenerator.Content.tags[2]);
+            const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+
+            const testModel = {
+                toJSON: function () {
+                    return testPost;
+                },
+                related: function (relation) {
+                    return {
+                        toJSON: function () {
+                            if (relation === 'authors') {
+                                return [testAuthor];
+                            }
+                            if (relation === 'tags') {
+                                return [relatedTag];
+                            }
+                            return [];
+                        }
+                    };
+                },
+                get: function (key) {
+                    if (key === 'title') {
+                        return 'New Title';
+                    }
+                    return 'same-value';
+                },
+                previous: function (key) {
+                    if (key === 'title') {
+                        return 'Old Title';
+                    }
+                    return 'same-value';
+                }
+            };
+
+            const pingStub = sinon.stub().resolves();
+            const resetIndexNow = indexnow.__set__('ping', pingStub);
+            const listener = indexnow.__get__('indexnowListener');
+
+            listener(testModel);
+
+            sinon.assert.calledOnce(pingStub);
+            const pingArg = pingStub.firstCall.args[0];
+            // The related() tags must overwrite the embedded tags from toJSON()
+            assert.deepEqual(pingArg.tags, [relatedTag]);
+            assert.notDeepEqual(pingArg.tags, [embeddedTag]);
+
+            resetIndexNow();
+        });
+
+        it('passes empty tags array when model has no related tags', function () {
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+            const testAuthor = _.clone(testUtils.DataGenerator.Content.users[0]);
+
+            const testModel = {
+                toJSON: function () {
+                    return testPost;
+                },
+                related: function (relation) {
+                    return {
+                        toJSON: function () {
+                            if (relation === 'authors') {
+                                return [testAuthor];
+                            }
+                            // tags relation returns empty
+                            return [];
+                        }
+                    };
+                },
+                get: function (key) {
+                    if (key === 'slug') {
+                        return 'updated-slug';
+                    }
+                    return 'same-value';
+                },
+                previous: function (key) {
+                    if (key === 'slug') {
+                        return 'old-slug';
+                    }
+                    return 'same-value';
+                }
+            };
+
+            const pingStub = sinon.stub().resolves();
+            const resetIndexNow = indexnow.__set__('ping', pingStub);
+            const listener = indexnow.__get__('indexnowListener');
+
+            listener(testModel);
+
+            sinon.assert.calledOnce(pingStub);
+            const pingArg = pingStub.firstCall.args[0];
+            assert.deepEqual(pingArg.tags, []);
+
+            resetIndexNow();
+        });
+
+        it('calls model.related() for both authors and tags relations', function () {
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            const relatedSpy = sinon.spy(function (relation) {
+                void relation;
+                return {toJSON: () => []};
+            });
+
+            const testModel = {
+                toJSON: function () {
+                    return testPost;
+                },
+                related: relatedSpy,
+                get: function (key) {
+                    if (key === 'html') {
+                        return '<p>new</p>';
+                    }
+                    return 'same-value';
+                },
+                previous: function (key) {
+                    if (key === 'html') {
+                        return '<p>old</p>';
+                    }
+                    return 'same-value';
+                }
+            };
+
+            const pingStub = sinon.stub().resolves();
+            const resetIndexNow = indexnow.__set__('ping', pingStub);
+            const listener = indexnow.__get__('indexnowListener');
+
+            listener(testModel);
+
+            const calledRelations = relatedSpy.args.map(args => args[0]);
+            assert.ok(calledRelations.includes('authors'), 'should request authors relation');
+            assert.ok(calledRelations.includes('tags'), 'should request tags relation');
+
+            resetIndexNow();
         });
     });
 
     describe('ping()', function () {
+        const ping = indexnow.__get__('ping');
         let urlStub;
 
         beforeEach(function () {
@@ -242,7 +493,7 @@ describe('IndexNow', function () {
                 .reply(200);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             sinon.assert.calledOnce(loggingStub);
             assert.equal(loggingStub.args[0][0].event.name, 'indexnow.pinged');
@@ -257,7 +508,7 @@ describe('IndexNow', function () {
                 .reply(200);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             assert.equal(pingRequest.isDone(), false);
             sinon.assert.calledOnce(loggingStub);
@@ -276,7 +527,7 @@ describe('IndexNow', function () {
 
             testPost.slug = 'welcome';
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             assert.equal(pingRequest.isDone(), false);
         });
@@ -287,7 +538,7 @@ describe('IndexNow', function () {
                 .reply(200);
             const testPage = _.clone(testUtils.DataGenerator.Content.posts[5]);
 
-            await indexnow.ping(testPage);
+            await ping(testPage);
 
             assert.equal(pingRequest.isDone(), false);
         });
@@ -300,7 +551,7 @@ describe('IndexNow', function () {
                 .reply(200);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             assert.equal(pingRequest.isDone(), false);
         });
@@ -313,7 +564,7 @@ describe('IndexNow', function () {
                 .reply(200);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             assert.equal(pingRequest.isDone(), false);
         });
@@ -326,7 +577,7 @@ describe('IndexNow', function () {
                 .reply(200);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             assert.equal(pingRequest.isDone(), false);
         });
@@ -340,7 +591,7 @@ describe('IndexNow', function () {
                 .reply(200);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             // Should NOT have made the ping request
             assert.equal(pingRequest.isDone(), false);
@@ -357,7 +608,7 @@ describe('IndexNow', function () {
                 .reply(202);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
@@ -372,7 +623,7 @@ describe('IndexNow', function () {
                 .reply(400);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
@@ -387,7 +638,7 @@ describe('IndexNow', function () {
                 .reply(422);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
@@ -402,7 +653,7 @@ describe('IndexNow', function () {
                 .reply(429);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
@@ -419,7 +670,7 @@ describe('IndexNow', function () {
                 .reply(204);
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
 
-            await indexnow.ping(testPost);
+            await ping(testPost);
 
             assert.equal(pingRequest.isDone(), true);
             sinon.assert.calledOnce(loggingStub);
@@ -429,17 +680,33 @@ describe('IndexNow', function () {
     });
 
     describe('ping() error classification (got HTTPError shape)', function () {
+        const ping = indexnow.__get__('ping');
+        let resetIndexNow;
+
         beforeEach(function () {
             sinon.stub(urlService.facade, 'getUrlForResource').returns('https://example.com/my-post/');
             loggingStub = sinon.stub(logging, 'warn');
         });
 
+        afterEach(function () {
+            if (resetIndexNow) {
+                resetIndexNow();
+                resetIndexNow = null;
+            }
+        });
+
+        function makeHttpError(statusCode) {
+            const err = new Error(`Response code ${statusCode}`);
+            err.name = 'HTTPError';
+            err.code = 'ERR_NON_2XX_3XX_RESPONSE';
+            err.response = {statusCode};
+            return err;
+        }
+
         async function pingWithHttpError(statusCode) {
-            nock('https://api.indexnow.org')
-                .get(/\/indexnow/)
-                .reply(statusCode);
+            resetIndexNow = indexnow.__set__('request', sinon.stub().rejects(makeHttpError(statusCode)));
             const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
-            await indexnow.ping(testPost);
+            await ping(testPost);
         }
 
         it('classifies a 429 (status on err.response.statusCode) as rate_limited', async function () {
@@ -473,6 +740,18 @@ describe('IndexNow', function () {
             assert.equal(loggingStub.args[0][0].event.name, 'indexnow.ping_failed');
             assert.equal(loggingStub.args[0][0].http.response.status_code, 503);
         });
+
+        it('still classifies a GhostError carrying err.statusCode (manual throw) correctly', async function () {
+            const err = new errors.TooManyRequestsError({message: 'manual', statusCode: 429});
+            resetIndexNow = indexnow.__set__('request', sinon.stub().rejects(err));
+            const testPost = _.clone(testUtils.DataGenerator.Content.posts[2]);
+
+            await ping(testPost);
+
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(loggingStub.args[0][0].event.name, 'indexnow.rate_limited');
+            assert.equal(loggingStub.args[0][0].http.response.status_code, 429);
+        });
     });
 
     describe('getApiKey()', function () {
@@ -499,9 +778,11 @@ describe('IndexNow', function () {
     // for a resource-based facade method) could regress without anyone
     // noticing.
     describe('ping() URL output', function () {
+        const ping = indexnow.__get__('ping');
         const POST_URL = 'https://my-blog.example/some-post/';
         let getUrlForResourceStub;
-        let pingRequest;
+        let requestStub;
+        let resetIndexNow;
 
         beforeEach(function () {
             // Bind the stub to the exact resource shape production passes
@@ -512,23 +793,25 @@ describe('IndexNow', function () {
                 .withArgs(sinon.match({id: 'abc', type: 'posts'}), {absolute: true})
                 .returns(POST_URL);
 
-            pingRequest = nock('https://api.indexnow.org')
-                .get('/indexnow')
-                .query((query) => {
-                    return query.url === POST_URL;
-                })
-                .reply(200);
+            requestStub = sinon.stub().resolves({statusCode: 200});
+            resetIndexNow = indexnow.__set__('request', requestStub);
 
             settingsCacheStub.withArgs('indexnow_api_key').returns('a1b2c3d4e5f6a1b2c3d4e5f6a1b2c3d4');
+        });
+
+        afterEach(function () {
+            resetIndexNow();
         });
 
         it('passes the post URL into the IndexNow request', async function () {
             const post = {id: 'abc', slug: 'some-post', type: 'post'};
 
-            await indexnow.ping(post);
+            await ping(post);
 
             sinon.assert.calledOnce(getUrlForResourceStub);
-            assert.equal(pingRequest.isDone(), true);
+            sinon.assert.calledOnce(requestStub);
+            const indexNowUrl = new URL(requestStub.firstCall.args[0]);
+            assert.equal(indexNowUrl.searchParams.get('url'), POST_URL);
         });
     });
 });
