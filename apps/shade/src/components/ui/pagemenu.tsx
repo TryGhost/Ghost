@@ -210,6 +210,7 @@ const PageMenuItem = React.forwardRef<HTMLButtonElement, PageMenuItemProps>(
                 className={cn(
                     'relative px-3 gap-1.5 text-control font-medium text-text-secondary hover:text-foreground focus-visible:ring-0',
                     'data-[state=active]:bg-muted-foreground/10 data-[state=active]:text-foreground',
+                    'dark:hover:bg-gray-900/30 dark:data-[state=active]:bg-gray-900/60 dark:data-[state=active]:hover:bg-gray-900/60',
                     className
                 )}
                 data-state={isActive ? 'active' : undefined}
