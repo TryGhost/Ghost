@@ -36,7 +36,10 @@ export class SidebarPage extends AdminPage {
     public readonly sidebar: Locator;
     public readonly postsToggle: Locator;
     public readonly userDropdownTrigger: Locator;
-    public readonly nightShiftToggle: Locator;
+    public readonly appearanceMenuItem: Locator;
+    public readonly themeLightOption: Locator;
+    public readonly themeSystemOption: Locator;
+    public readonly themeDarkOption: Locator;
     public readonly whatsNewButton: Locator;
     public readonly userProfileLink: Locator;
     public readonly signOutLink: Locator;
@@ -51,7 +54,10 @@ export class SidebarPage extends AdminPage {
         this.sidebar = page.getByRole('navigation');
         this.postsToggle = this.sidebar.getByRole('button', {name: /toggle post views/i});
         this.userDropdownTrigger = page.locator('[data-test-nav="arrow-down"]');
-        this.nightShiftToggle = page.getByRole('menuitem', {name: /dark mode/i}).getByRole('switch');
+        this.appearanceMenuItem = page.getByRole('menuitem', {name: /appearance/i});
+        this.themeLightOption = page.getByRole('menuitem', {name: /light appearance/i});
+        this.themeSystemOption = page.getByRole('menuitem', {name: /system appearance/i});
+        this.themeDarkOption = page.getByRole('menuitem', {name: /dark appearance/i});
         this.whatsNewButton = page.getByRole('menuitem', {name: /what's new/i});
         this.userProfileLink = page.getByRole('menuitem', {name: /your profile/i});
         this.signOutLink = page.getByRole('menuitem', {name: /sign out/i});
@@ -89,15 +95,10 @@ export class SidebarPage extends AdminPage {
         }
     }
 
-    async isNightShiftEnabled(): Promise<boolean> {
-        const isChecked = await this.nightShiftToggle.getAttribute('aria-checked');
-        return isChecked === 'true';
-    }
-
-    async waitForNightShiftEnabled(enabled: boolean): Promise<void> {
+    async waitForDarkMode(enabled: boolean): Promise<void> {
         const locator = enabled
-            ? this.page.locator('[aria-checked="true"]')
-            : this.page.locator('[aria-checked="false"]');
+            ? this.page.locator('html.dark')
+            : this.page.locator('html:not(.dark)');
         await locator.waitFor();
     }
 }

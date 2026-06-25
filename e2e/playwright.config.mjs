@@ -30,7 +30,11 @@ const config = {
         // Base URL will be set dynamically per test via fixture
         baseURL: process.env.GHOST_BASE_URL || 'http://localhost:2368',
         trace: 'retain-on-failure',
-        browserName: 'chromium'
+        browserName: 'chromium',
+        // New users default to the "system" appearance preference, which follows the
+        // OS colour scheme. Pin it to light so admin theme state stays deterministic
+        // across the suite; theme-specific tests opt into other schemes explicitly.
+        colorScheme: 'light'
     },
     testDir: './',
     testMatch: ['tests/**/*.test.{js,ts}'],
