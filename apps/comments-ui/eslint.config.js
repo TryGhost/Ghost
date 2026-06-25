@@ -1,91 +1,30 @@
-import js from '@eslint/js';
-import globals from 'globals';
-import ghostPlugin from 'eslint-plugin-ghost';
-import reactPlugin from 'eslint-plugin-react';
-import i18nextPlugin from 'eslint-plugin-i18next';
-import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
-import tseslint from 'typescript-eslint';
+import {reactAppConfig} from '../../eslint.shared.mjs';
 
-const tailwindConfig = `${import.meta.dirname}/tailwind.config.js`;
-
-const ghostRules = {
-    curly: 'error',
-    camelcase: ['error', {properties: 'never'}],
-    'dot-notation': 'error',
-    eqeqeq: ['error', 'always'],
-    'no-plusplus': ['error', {allowForLoopAfterthoughts: true}],
-    'no-eval': 'error',
-    'no-useless-call': 'error',
-    'no-console': 'error',
-    'no-shadow': 'error',
-    'array-callback-return': 'error',
-    'no-constructor-return': 'error',
-    'no-promise-executor-return': 'error',
-    'no-unused-vars': 'off',
-    '@typescript-eslint/no-unused-vars': ['error', {
-        args: 'after-used',
-        argsIgnorePattern: '^_',
-        caughtErrors: 'none'
-    }],
-    'ghost/filenames/match-regex': ['error', '^[a-z0-9.-]+$', false],
-    'ghost/sort-imports-es6-autofix/sort-imports-es6': ['error', {
-        memberSyntaxSortOrder: ['none', 'all', 'single', 'multiple']
-    }]
-};
-
-const reactFlat = reactPlugin.configs.flat.recommended;
-const i18nextFlat = i18nextPlugin.configs['flat/recommended'];
-
-export default tseslint.config(
-    {
-        ignores: ['umd/**/*', 'dist/**/*']
-    },
-    {
-        files: ['src/**/*.{js,jsx,ts,tsx}'],
-        extends: [...tseslint.configs.recommended],
-        languageOptions: {
-            ...reactFlat.languageOptions,
-            ecmaVersion: 2022,
-            sourceType: 'module',
-            globals: {
-                ...globals.browser,
-                ...globals.node
-            }
-        },
-        plugins: {
-            ...reactFlat.plugins,
-            ...i18nextFlat.plugins,
-            ghost: ghostPlugin,
-            tailwindcss: tailwindcssPlugin
-        },
-        settings: {
-            react: {version: 'detect'}
-        },
-        rules: {
-            ...js.configs.recommended.rules,
-            ...reactFlat.rules,
-            ...i18nextFlat.rules,
-            ...ghostRules,
-            '@typescript-eslint/no-inferrable-types': 'off',
-            '@typescript-eslint/no-explicit-any': 'warn',
-            'react/react-in-jsx-scope': 'off',
-            'react/prop-types': 'off',
-            'react/jsx-sort-props': ['error', {
-                reservedFirst: true,
-                callbacksLast: true,
-                shorthandLast: true,
-                locale: 'en'
-            }],
-            'react/button-has-type': 'error',
-            'react/no-array-index-key': 'error',
-            'tailwindcss/classnames-order': ['error', {config: tailwindConfig}],
-            'tailwindcss/enforces-negative-arbitrary-values': ['warn', {config: tailwindConfig}],
-            'tailwindcss/enforces-shorthand': ['warn', {config: tailwindConfig}],
-            'tailwindcss/migration-from-tailwind-2': ['warn', {config: tailwindConfig}],
-            'tailwindcss/no-arbitrary-value': 'off',
-            'tailwindcss/no-custom-classname': 'off',
-            'tailwindcss/no-contradicting-classname': ['error', {config: tailwindConfig}],
-            'no-undef': 'off'
-        }
+export default await reactAppConfig({
+    // UMD bundle (no Vite HMR runtime), so the react-refresh rule is meaningless.
+    reactRefresh: false,
+    // LEGACY: Tailwind v3. Migration to v4 is a multi-day class/theme rewrite +
+    // CDN regression testing. Tracked separately; this override stays until
+    // the migration lands.
+    legacyTailwindV3ConfigPath: `${import.meta.dirname}/tailwind.config.js`,
+    i18next: true,
+    sortImports: true,
+    ignores: ['umd/**/*', 'dist/**/*'],
+    // Matches main's behavior: package.json lints `src` only — test/ is not
+    // linted in CI. Keep test/ out of srcGlobs so test-only relaxations
+    // (Playwright fixture destructure pattern, `let` in HSL helper) don't
+    // bleed into src.
+    testGlobs: false,
+    extraSrcRules: {
+        // TODO: 41 legacy `any` violations. Remove this override after typing
+        // them properly (mostly external API response shapes — needs careful
+        // typing, not a 1-line fix per).
+        '@typescript-eslint/no-explicit-any': 'off',
+        // TODO: 22 legacy `exhaustive-deps` violations from newly-loading the
+        // react-hooks plugin in this workspace (it was previously silent because
+        // the plugin wasn't registered). Each fix is a per-call-site judgment
+        // (add dep / wrap in useCallback / suppress with reason). Remove this
+        // override after the cleanup PR.
+        'react-hooks/exhaustive-deps': 'off'
     }
-);
+});

@@ -1,4 +1,3 @@
-import './app.css';
 import AppContext from './app-context';
 import PopupModal from './components/popup-modal';
 import React from 'react';

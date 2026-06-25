@@ -11,6 +11,12 @@ const {resolve} = require('../../../../../core/server/services/remote-flags/reso
 const {RemoteFlagsService} = require('../../../../../core/server/services/remote-flags/remote-flags-service');
 const remoteFlags = require('../../../../../core/server/services/remote-flags');
 
+// The labs allowlists (`WRITABLE_KEYS_ALLOWLIST`, `GA_KEYS`) drain to empty
+// once every flag in them graduates. Tests that pick the first allowlist
+// entry must skip when that happens, or they reference undefined.
+const itIfHasWritableFlag = it.skipIf(labs.WRITABLE_KEYS_ALLOWLIST.length === 0);
+const itIfHasGaFlag = it.skipIf(labs.GA_KEYS.length === 0);
+
 const URL_STRING = 'https://assets.example.com/platform/flags.json';
 const SITE_UUID = '550e8400-e29b-41d4-a716-446655440000';
 
@@ -162,11 +168,7 @@ describe('remote-flags integration: kill-switch through the real labs flag set',
         flagOverrides.clear();
     });
 
-    it('honors a remote kill of a real GA flag end-to-end', function () {
-        if (labs.GA_KEYS.length === 0) {
-            this.skip();
-            return;
-        }
+    itIfHasGaFlag('honors a remote kill of a real GA flag end-to-end', function () {
         const gaKey = labs.GA_KEYS[0];
 
         assert.equal(labs.isSet(gaKey), true);
@@ -178,11 +180,7 @@ describe('remote-flags integration: kill-switch through the real labs flag set',
         assert.equal(labs.isSet(gaKey), false, 'remote kill must flip a GA flag off end-to-end');
     });
 
-    it('honors a remote enable of a real private/beta flag end-to-end', function () {
-        if (labs.WRITABLE_KEYS_ALLOWLIST.length === 0) {
-            this.skip();
-            return;
-        }
+    itIfHasWritableFlag('honors a remote enable of a real private/beta flag end-to-end', function () {
         const flag = labs.WRITABLE_KEYS_ALLOWLIST[0];
 
         assert.equal(labs.isSet(flag), false);

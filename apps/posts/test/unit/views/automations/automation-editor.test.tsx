@@ -4,6 +4,8 @@ import {AutomationDetail, MAX_AUTOMATION_ACTIONS} from '@tryghost/admin-x-framew
 import {RouterProvider, createMemoryRouter} from 'react-router';
 import {act, fireEvent, render, screen, waitFor, within} from '@testing-library/react';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
+import {createRoot} from 'react-dom/client';
+import {flushSync} from 'react-dom';
 
 const {mockToastError} = vi.hoisted(() => ({
     mockToastError: vi.fn()
@@ -301,6 +303,35 @@ describe('AutomationEditor', () => {
 
         expect(screen.getByRole('alert')).toHaveTextContent('Couldn\'t load automation');
         expect(screen.queryByTestId('automation-canvas')).not.toBeInTheDocument();
+    });
+
+    it('does not flash the load error on the first render after automation data loads', () => {
+        mockUseReadAutomation.mockReturnValue({
+            data: {automations: [automationDetail]},
+            isLoading: false,
+            isError: false
+        });
+
+        const container = document.createElement('div');
+        document.body.appendChild(container);
+        const router = createMemoryRouter([{
+            path: '/automations/:id',
+            element: <AutomationEditor />
+        }], {
+            initialEntries: ['/automations/automation-id-1']
+        });
+        const root = createRoot(container);
+
+        flushSync(() => {
+            root.render(<RouterProvider router={router} />);
+        });
+
+        try {
+            expect(within(container).queryByRole('alert')).not.toBeInTheDocument();
+        } finally {
+            root.unmount();
+            container.remove();
+        }
     });
 
     it('renders the trigger, wait, send-email, and tail nodes following the action chain', () => {

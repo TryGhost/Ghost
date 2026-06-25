@@ -44,7 +44,7 @@
     "dev:status": "node scripts/dev-supervisor.js status",
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
-    "setup": "pnpm install && git submodule update --init --recursive && pnpm build",
+    "setup": "pnpm install && git submodule update --init --recursive",
     "reset:db": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && pnpm knex-migrator reset && pnpm knex-migrator init'",
     "reset:db:volume": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down && docker volume rm ghost-dev_mysql-data",
     "reset:data": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123'",
@@ -78,12 +78,18 @@
     "test:release": "node --test 'scripts/test/*.js'"
   },
   "devDependencies": {
+    "@eslint/js": "catalog:",
     "@playwright/test": "catalog:",
     "@secretlint/secretlint-rule-pattern": "13.0.2",
     "@secretlint/secretlint-rule-preset-recommend": "13.0.2",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
+    "eslint-plugin-i18next": "6.1.4",
     "eslint-plugin-react": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
+    "eslint-plugin-react-refresh": "catalog:",
+    "eslint-plugin-storybook": "10.4.4",
+    "eslint-plugin-tailwindcss": "catalog:",
     "globals": "catalog:",
     "husky": "9.1.7",
     "jsonc-parser": "catalog:",
@@ -94,6 +100,7 @@
     "secretlint": "13.0.2",
     "semver": "7.8.4",
     "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   },
   "nx": {
@@ -128,6 +135,12 @@
         },
         "dependsOn": [
           "docker:up",
+          {
+            "target": "build:assets",
+            "projects": [
+              "ghost"
+            ]
+          },
           {
             "target": "dev",
             "projects": [

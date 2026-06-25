@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/activitypub",
   "type": "module",
-  "version": "3.1.49",
+  "version": "3.1.52",
   "license": "MIT",
   "repository": {
     "type": "git",
@@ -84,7 +84,10 @@
           "test:acceptance"
         ]
       }
-    }
+    },
+    "tags": [
+      "public-app"
+    ]
   },
   "dependencies": {
     "@hookform/resolvers": "5.4.0",

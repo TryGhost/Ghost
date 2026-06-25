@@ -171,6 +171,10 @@ module.exports = {
     },
     contentGating: require('./content-gating'),
 
+    // Create an "all active paid tiers" member shim for rendering gated content
+    // without a logged-in member (post previews, gift-links reader path).
+    createPaidMemberShim: require('./create-paid-member-shim').createPaidMemberShim,
+
     config: membersConfig,
 
     get api() {

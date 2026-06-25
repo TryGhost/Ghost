@@ -12,6 +12,10 @@
                 <h1 class="post-full-title">{{title}}</h1>
             </header>
 
+            {{!-- Reflects @member so tests can assert the visitor's real member
+            state (a gift read stays anonymous even when the content is unlocked). --}}
+            <p class="gh-test-member-state">{{#if @member}}member{{else}}anonymous{{/if}}</p>
+
             <section class="post-full-content">
                 <div class="post-content">
                     {{content}}

@@ -49,7 +49,7 @@ pnpm run setup                 # First-time setup (installs deps + submodules + 
 pnpm dev                       # Start development (Docker backend + host frontend dev servers)
 ```
 
-> **Fresh worktree / first run — run `pnpm setup` before running tests or booting Ghost.** It installs deps, syncs submodules, and **builds the workspace packages** (Nx-cached, so it's fast). DB-backed tests and a real Ghost boot will not start until built deps like `@tryghost/parse-email-address` exist. If an incremental install over a branch switch leaves the dependency hoist tree incomplete (symptom: `Cannot find module '@tryghost/...'` at boot), do a clean reinstall with `pnpm fix`.
+> **Fresh worktree / first run — run `pnpm setup` before anything else.** It installs deps and syncs submodules. `pnpm fix` does a clean reinstall if anything misbehaves after a branch switch.
 
 ### Building
 ```bash
@@ -253,6 +253,25 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 
 ### Commit Messages
 When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
+
+### ESLint Config
+Source of truth: [eslint.shared.mjs](eslint.shared.mjs) at the repo root. Two factories cover most workspaces — `reactAppConfig` (every `apps/*` workspace) and `nodeLibConfig` (Node libs in `ghost/`). Each factory has full JSDoc with `@example`s; hover the call site in your editor.
+
+Minimal example for a new admin React app (`apps/new-feature/eslint.config.js`):
+
+```js
+import {reactAppConfig} from '../../eslint.shared.mjs';
+export default await reactAppConfig({
+    tailwindCssPath: `${import.meta.dirname}/../admin/src/index.css`,
+    shadeRestricted: true
+});
+```
+
+Conventions:
+- **Rules are `'error'` or `'off'` — never `'warn'`.** Warnings get ignored and pollute output. Applies to every workspace covered by the factories above + the standalones; `e2e/` has its own setup (see [e2e/CLAUDE.md](e2e/CLAUDE.md)) and currently still uses warn-level Playwright rules — a separate cleanup.
+- **Params prefixed `legacy*`** (`legacyTailwindV3ConfigPath`, `legacyJsTsSplit`) are escape hatches for migrations that haven't shipped yet. Intentional and visible — PRs to remove them are scoped.
+- **Standalone configs** (`ghost/core`, `ghost/admin`, `apps/admin`, `apps/admin-toolbar`) exist because their rule sets genuinely don't fit a factory — read the file directly. They import shared atoms (`correctnessRules`, `nodeLibRules`, `localFilenamesPlugin`, `strictLinterOptions`) where applicable.
+- **Plugin deps**: workspaces that use Tailwind must list `tailwindcss` as a (dev)Dependency themselves; other eslint plugins are root devDeps because the factory imports them dynamically.
 
 ### When Working on Admin UI
 - **New features:** Build in React (`apps/admin-x-*` or `apps/posts`)

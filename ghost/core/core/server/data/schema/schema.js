@@ -121,13 +121,10 @@ module.exports = {
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
         email_only: {type: 'boolean', nullable: false, defaultTo: false}
     },
-    // Every gift link issued for a post; reissued tokens remain as history. Liveness lives in post_gift_links.
+    // Every gift link added to a post; replaced tokens remain as history. Liveness lives in post_gift_links.
     gift_links: {
         token: {type: 'string', maxlength: 32, nullable: false, primary: true},
         post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
-        redeemed_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
-        last_redeemed_at: {type: 'dateTime', nullable: true},
-        revoked_at: {type: 'dateTime', nullable: true},
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: true}
     },

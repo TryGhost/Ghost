@@ -1,38 +1,22 @@
 import {z} from 'zod';
 import type {Knex} from 'knex';
-import {GIFT_LINK_COLUMNS, GiftLinkRow} from './model';
+import {camelKeys, snakeKeys} from './case-keys';
+import {DbGiftLink} from './database';
+import {GiftLink} from './models';
 
-interface GiftLinkTableRow {
-    token: string;
-    post_id: string;
-    redeemed_count: number;
-    last_redeemed_at: Date | null;
-    revoked_at: Date | null;
-    created_at: Date;
-    updated_at: Date | null;
-}
-interface PostGiftLinkTableRow {
-    post_id: string;
-    gift_link_token: string;
-    created_at: Date;
-    updated_at: Date | null;
-}
-declare module 'knex/types/tables' {
-    interface Tables {
-        gift_links: Knex.CompositeTableType<
-            GiftLinkTableRow,
-            z.input<typeof GiftLinkRow> & {post_id: string},
-            Partial<GiftLinkTableRow>
-        >;
-        post_gift_links: Knex.CompositeTableType<
-            PostGiftLinkTableRow,
-            Pick<PostGiftLinkTableRow, 'post_id' | 'gift_link_token' | 'created_at'>,
-            Partial<PostGiftLinkTableRow>
-        >;
-    }
-}
+// The columns the read path selects and the codec decodes into a GiftLink.
+export const GiftLinkRow = DbGiftLink.pick({
+    token: true,
+    created_at: true
+});
 
-const giftLinkColumns = GIFT_LINK_COLUMNS.map(column => `gift_links.${column}`);
+// Maps a selected row to/from the domain GiftLink (snake_case to camelCase, token branding).
+export const giftLinkCodec = z.codec(GiftLinkRow, GiftLink, {
+    decode: row => camelKeys(row),
+    encode: link => snakeKeys(link)
+});
+
+const giftLinkColumns = Object.keys(GiftLinkRow.shape).map(column => `gift_links.${column}`);
 
 // Executor-agnostic statements for the read shapes (joins, filters, columns): each is
 // parameterised by domain args and takes the connection at execution, so the service binds
@@ -42,6 +26,8 @@ const giftLinkColumns = GIFT_LINK_COLUMNS.map(column => `gift_links.${column}`);
 // post exists with no live link (hence the nullable columns).
 type LiveLinkRow = {[K in keyof z.input<typeof GiftLinkRow>]: z.input<typeof GiftLinkRow>[K] | null};
 
+// LEFT JOINs from posts: a missing post yields zero rows, while a post with no live link yields one
+// row with null link columns. So zero rows means "no such post".
 export function liveLinksForPost(postId: string) {
     return (knex: Knex) => knex('posts')
         .where('posts.id', postId)

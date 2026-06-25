@@ -13,7 +13,7 @@ type Feature = {
 
 const features: Feature[] = [{
     title: 'Automations',
-    description: 'Enable automations management interface.',
+    description: 'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',
     flag: 'automations'
 }, {
     title: 'Stripe Automatic Tax (private beta)',

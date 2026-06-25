@@ -5,6 +5,13 @@
   "repository": "https://github.com/TryGhost/Ghost/tree/main/ghost/parse-email-address",
   "author": "Ghost Foundation",
   "license": "MIT",
+  "exports": {
+    ".": {
+      "source": "./src/index.ts",
+      "types": "./build/index.d.ts",
+      "default": "./build/index.js"
+    }
+  },
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
