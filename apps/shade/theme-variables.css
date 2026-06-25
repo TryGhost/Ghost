@@ -110,10 +110,10 @@
     --color-sidebar-bg: oklch(0.23 0.009 260);
 
     --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
-    --tab-active: color-mix(in oklab, var(--color-gray-900) 60%, transparent);
+    --tab-active: color-mix(in oklab, oklch(36.77% 0.012 248.2) 60%, transparent);
     --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
     --interactive-hover: var(--button-hover);
-    --control-border: var(--color-gray-900);
+    --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
     --table-row-hover: var(--color-sidebar-bg);
     --members-sticky-hover-bg: var(--table-row-hover);
 
