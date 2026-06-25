@@ -206,6 +206,7 @@
     --color-sidebar-ring: var(--sidebar-ring);
     --color-tab-hover: var(--tab-hover);
     --color-tab-active: var(--tab-active);
+    --color-button-hover: var(--button-hover);
 
     /* Typography */
     /* ---------------------------------------------------------------------- */

@@ -20,7 +20,7 @@ const SelectTrigger = React.forwardRef<
         ref={ref}
         className={cn(
             inputSurface('self'),
-            'flex h-(--control-height) w-full items-center justify-between whitespace-nowrap px-3 py-2 text-control hover:bg-accent data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1',
+            'flex h-(--control-height) w-full items-center justify-between whitespace-nowrap px-3 py-2 text-control hover:bg-button-hover dark:hover:bg-button-hover data-[placeholder]:text-muted-foreground [&>span]:line-clamp-1',
             className
         )}
         {...props}
