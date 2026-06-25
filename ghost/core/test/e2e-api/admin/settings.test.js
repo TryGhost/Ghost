@@ -320,7 +320,7 @@ describe('Settings API', function () {
         });
 
         it('fails to edit setting with unsupported announcement_visibility value', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             const settingsToChange = [
                 {
                     key: 'announcement_visibility',
@@ -349,7 +349,7 @@ describe('Settings API', function () {
         });
 
         it('fails to edit setting with unsupported announcement_background value', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             const settingsToChange = [
                 {
                     key: 'announcement_background',
@@ -483,7 +483,7 @@ describe('Settings API', function () {
         });
 
         it('cannot update invalid keys via token', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             const token = await (new SingleUseTokenProvider({
                 SingleUseTokenModel: models.SingleUseToken,
                 validityPeriod: 24 * 60 * 60 * 1000,

@@ -71,6 +71,7 @@
     },
     "logging": {
         "level": "info",
+        "logClientErrorsAsError": true,
         "useLocalTime": false,
         "rotation": {
             "enabled": false,
