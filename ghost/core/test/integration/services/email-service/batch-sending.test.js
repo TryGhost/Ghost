@@ -490,21 +490,19 @@ describe('Batch sending tests', function () {
         let memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
         assert.equal(memberIds.length, _.uniq(memberIds).length);
 
-        // On retry, the 3 already-submitted batches hit the "not pending or
-        // failed" guard and log an expected error; only the previously-failed
-        // batch is re-sent. Stub the logger to assert that guard instead of
-        // spamming stdout. Scoped to the retry so the genuine failure error
-        // logged by the initial send above stays visible.
-        const errorLog = sinon.stub(logging, 'error');
+        // On retry, the 3 already-submitted batches hit the "already submitted
+        // on a prior run" branch in #sendBatch and log info; only the
+        // previously-failed batch is re-sent. Stub logging.info just for the
+        // retry so the genuine failure error logged by the initial send above
+        // stays visible, then assert at least one of those skip logs fired.
+        const infoLog = sinon.stub(logging, 'info');
 
         await retryEmail(agent, emailModel.id);
         await jobManager.allSettled();
 
-        sinon.assert.called(errorLog);
-        for (const call of errorLog.getCalls()) {
-            assert.match(call.args[0], /Tried sending email batch that is not pending or failed/);
-        }
-        errorLog.restore();
+        const skipLogs = infoLog.getCalls().filter(call => /already submitted on a prior run; skipping/.test(call.args[0]));
+        infoLog.restore();
+        assert.ok(skipLogs.length > 0, 'expected at least one "already submitted on a prior run; skipping" info log');
 
         await emailModel.refresh();
         batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
