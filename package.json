@@ -136,6 +136,12 @@
         "dependsOn": [
           "docker:up",
           {
+            "target": "build:assets",
+            "projects": [
+              "ghost"
+            ]
+          },
+          {
             "target": "dev",
             "projects": [
               "@tryghost/admin",
