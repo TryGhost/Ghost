@@ -28,7 +28,7 @@ const messages = {
 // are flipped to `failed` on first boot so they surface in admin UI for operator review
 // rather than being silently resumed (and sending stale newsletters to current members).
 // Override via `bulkEmail:resumeMaxAgeMs` in config.
-const DEFAULT_RESUME_MAX_AGE_MS = 7 * 24 * 60 * 60 * 1000;
+const DEFAULT_RESUME_MAX_AGE_MS = 24 * 60 * 60 * 1000;
 
 class EmailService {
     #batchSendingService;
