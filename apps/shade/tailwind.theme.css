@@ -167,6 +167,7 @@
     --color-surface-page: var(--surface-page);
     --color-surface-panel: var(--surface-panel);
     --color-surface-elevated: var(--surface-elevated);
+    --color-surface-elevated-2: var(--surface-elevated-2);
     --color-text-primary: var(--text-primary);
     --color-text-secondary: var(--text-secondary);
     --color-text-tertiary: var(--text-tertiary);

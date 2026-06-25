@@ -24,6 +24,7 @@
     --surface-panel-foreground: var(--color-black);
     --surface-elevated: var(--color-white);
     --surface-elevated-foreground: var(--color-black);
+    --surface-elevated-2: var(--color-gray-100);
     --surface-overlay: var(--color-white);
     --surface-overlay-foreground: var(--color-black);
     --surface-inverse: var(--color-black);
@@ -82,7 +83,7 @@
 
 .dark {
     /* One-off colors (not in the standard color scale) */
-    --color-sidebar-bg: oklch(0.25 0.006 260);
+    --color-sidebar-bg: oklch(0.23 0.006 260);
 
     --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
     --tab-active: color-mix(in oklab, var(--color-gray-900) 60%, transparent);
@@ -116,6 +117,7 @@
     --surface-panel-foreground: var(--color-gray-100);
     --surface-elevated: var(--color-sidebar-bg);
     --surface-elevated-foreground: var(--color-gray-100);
+    --surface-elevated-2: oklch(0.27 0.006 260);
     --surface-overlay: var(--color-black);
     --surface-overlay-foreground: var(--color-gray-400);
     --surface-inverse: var(--color-white);
