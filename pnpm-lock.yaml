@@ -193,8 +193,8 @@ catalogs:
       specifier: 5.2.0
       version: 5.2.0
     eslint-plugin-react-refresh:
-      specifier: 0.5.2
-      version: 0.5.2
+      specifier: 0.5.3
+      version: 0.5.3
     eslint-plugin-tailwindcss:
       specifier: 4.0.0-beta.0
       version: 4.0.0-beta.0
@@ -398,7 +398,7 @@ importers:
         version: 5.2.0(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.2(eslint@9.39.4(jiti@2.7.0))
+        version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-storybook:
         specifier: 10.4.4
         version: 10.4.4(eslint@9.39.4(jiti@2.7.0))(storybook@10.4.4(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
@@ -531,7 +531,7 @@ importers:
         version: 5.2.0(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.2(eslint@9.39.4(jiti@2.7.0))
+        version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
@@ -634,7 +634,7 @@ importers:
         version: 5.2.0(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.2(eslint@9.39.4(jiti@2.7.0))
+        version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
@@ -834,7 +834,7 @@ importers:
         version: 5.2.0(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.2(eslint@9.39.4(jiti@2.7.0))
+        version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
@@ -970,7 +970,7 @@ importers:
         version: 5.2.0(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.2(eslint@9.39.4(jiti@2.7.0))
+        version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
@@ -1160,7 +1160,7 @@ importers:
         version: 5.2.0(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.2(eslint@9.39.4(jiti@2.7.0))
+        version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
@@ -1560,7 +1560,7 @@ importers:
         version: 5.2.0(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.2(eslint@9.39.4(jiti@2.7.0))
+        version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
@@ -1765,7 +1765,7 @@ importers:
         version: 5.2.0(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.2(eslint@9.39.4(jiti@2.7.0))
+        version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-storybook:
         specifier: 10.4.4
         version: 10.4.4(eslint@9.39.4(jiti@2.7.0))(storybook@10.4.4(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.3)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
@@ -2068,7 +2068,7 @@ importers:
         version: 5.2.0(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.2(eslint@9.39.4(jiti@2.7.0))
+        version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
@@ -14012,8 +14012,8 @@ packages:
     peerDependencies:
       eslint: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0 || ^7.0.0 || ^8.0.0-0 || ^9.0.0
 
-  eslint-plugin-react-refresh@0.5.2:
-    resolution: {integrity: sha512-hmgTH57GfzoTFjVN0yBwTggnsVUF2tcqi7RJZHqi9lIezSs4eFyAMktA68YD4r5kNw1mxyY4dmkyoFDb3FIqrA==}
+  eslint-plugin-react-refresh@0.5.3:
+    resolution: {integrity: sha512-5EMmLCV98Pi4o/f/3DP/v/tNqLHMIc9I8LKClNDWhZ9JTho89/kQcitCXQBMG7sAfVRK0Ie3T2EDOzp1YXYiVA==}
     peerDependencies:
       eslint: ^9 || ^10
 
@@ -36507,7 +36507,7 @@ snapshots:
     dependencies:
       eslint: 9.39.4(jiti@2.7.0)
 
-  eslint-plugin-react-refresh@0.5.2(eslint@9.39.4(jiti@2.7.0)):
+  eslint-plugin-react-refresh@0.5.3(eslint@9.39.4(jiti@2.7.0)):
     dependencies:
       eslint: 9.39.4(jiti@2.7.0)
 
