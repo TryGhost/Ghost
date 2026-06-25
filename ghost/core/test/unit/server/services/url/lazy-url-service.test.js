@@ -650,4 +650,20 @@ describe('LazyUrlService', function () {
             assert.deepEqual(service.getRequiredRelations(), []);
         });
     });
+
+    describe('getRequiredFields', function () {
+        it('returns the base-filter columns per resource type', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+
+            assert.deepEqual(service.getRequiredFields('tags'), ['visibility']);
+            assert.deepEqual(service.getRequiredFields('posts').sort(), ['status', 'type']);
+            assert.deepEqual(service.getRequiredFields('pages').sort(), ['status', 'type']);
+        });
+
+        it('returns [] for a type with no base filter (incl. authors — visibility is vestigial)', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            assert.deepEqual(service.getRequiredFields('authors'), []);
+            assert.deepEqual(service.getRequiredFields('unknown'), []);
+        });
+    });
 });
