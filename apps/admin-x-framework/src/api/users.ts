@@ -204,3 +204,11 @@ export function canManageTags(user: User) {
 export function hasAdminAccess(user: User) {
     return isOwnerUser(user) || isAdminUser(user);
 }
+
+export function canManageAutomations(user: User) {
+    // Only Owner and Admin can edit automations. This matches the API permission rows,
+    // which grant automation browse/read/edit to Administrator + Admin Integration
+    // (the Owner role inherits all permissions). Super Editors can manage members but
+    // cannot edit automations, so we must not gate on canManageMembers here.
+    return isOwnerUser(user) || isAdminUser(user);
+}
