@@ -73,6 +73,8 @@
     --tab-hover: var(--color-gray-100);
     --tab-active: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
     --button-hover: var(--color-gray-100);
+    --interactive-hover: var(--button-hover);
+    --members-sticky-hover-bg: var(--interactive-hover);
     --mobile-navbar-height: 64px;
 }
 
@@ -83,6 +85,8 @@
     --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
     --tab-active: color-mix(in oklab, var(--color-gray-900) 60%, transparent);
     --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+    --interactive-hover: var(--button-hover);
+    --members-sticky-hover-bg: color-mix(in oklab, var(--color-gray-900) 30%, var(--background) 70%);
 
     --background: var(--color-black);
     --foreground: var(--color-gray-200);

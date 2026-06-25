@@ -207,6 +207,7 @@
     --color-tab-hover: var(--tab-hover);
     --color-tab-active: var(--tab-active);
     --color-button-hover: var(--button-hover);
+    --color-interactive-hover: var(--interactive-hover);
 
     /* Typography */
     /* ---------------------------------------------------------------------- */
