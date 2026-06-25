@@ -2,7 +2,7 @@
 // Usage: `{{ghost_foot}}`
 //
 // Outputs scripts and other assets at the bottom of a Ghost theme
-const {settingsCache} = require('../services/proxy');
+const {blogIcon, settingsCache, urlUtils} = require('../services/proxy');
 const {SafeString} = require('../services/handlebars');
 const buildGiftToast = require('./utils/gift-toast');
 const _ = require('lodash');
@@ -31,8 +31,15 @@ module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
     // only on the verified render path (valid token, matching slug), so the
     // toast appears exactly on gift renders and never on canonical post URLs.
     if (options.data && options.data.gift) {
+        const logo = settingsCache.get('logo');
+        const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
+
         foot.push(buildGiftToast({
-            accentColor: settingsCache.get('accent_color') || '#15171a'
+            accentColor: settingsCache.get('accent_color') || '#15171a',
+            logoUrl: logo ? urlUtils.urlFor('image', {image: logo}, true) : null,
+            iconUrl: blogIcon.getIconUrl({absolute: true, fallbackToDefault: false}),
+            orbUrl: `${siteUrl}/gift/assets/gift-card-orb.png`,
+            noiseUrl: `${siteUrl}/gift/assets/gift-card-noise.png`
         }));
     }
 

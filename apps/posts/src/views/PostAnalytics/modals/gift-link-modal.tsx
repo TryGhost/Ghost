@@ -154,9 +154,10 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, post})
 
                         <DialogFooter className='sm:items-center sm:justify-between'>
                             <Button
+                                className='border-destructive/20 text-destructive hover:border-destructive hover:bg-transparent hover:text-destructive'
                                 data-testid='reset-gift-link'
                                 disabled={!giftLinkUrl}
-                                variant='destructive'
+                                variant='outline'
                                 onClick={() => setResetState('confirm')}
                             >
                                 Reset

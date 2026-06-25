@@ -279,6 +279,11 @@ input:focus,
     border-color: var(--lightgrey-l2);
 }
 
+.gh-gift-link-modal {
+    --gh-gift-link-danger: oklch(32.24% 0.1264 24.0);
+    --gh-gift-link-focus-ring: oklch(36.77% 0.0153 248.2);
+}
+
 .gh-btn-link {
     border: none !important;
 }

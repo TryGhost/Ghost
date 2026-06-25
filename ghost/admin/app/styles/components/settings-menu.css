@@ -219,6 +219,9 @@
    (right), then description, URL box, and footer below. */
 
 .gh-gift-link-modal {
+    --gh-gift-link-danger: oklch(61.27% 0.2462 26.4);
+    --gh-gift-link-focus-ring: oklch(70.33% 0.0223 248.1);
+
     padding: 32px;
     border-radius: 8px;
 }
@@ -338,6 +341,25 @@
 
 .gh-gift-link-modal-footer .gh-btn {
     box-shadow: none;
+}
+
+.gh-gift-link-modal .gh-gift-link-modal-reset,
+.gh-gift-link-modal .gh-gift-link-modal-reset:hover {
+    color: var(--gh-gift-link-danger);
+    background: transparent;
+}
+
+.gh-gift-link-modal .gh-gift-link-modal-reset {
+    border-color: color-mix(in oklch, var(--gh-gift-link-danger) 20%, transparent);
+}
+
+.gh-gift-link-modal .gh-gift-link-modal-reset:hover {
+    border-color: var(--gh-gift-link-danger);
+}
+
+.gh-gift-link-modal .gh-gift-link-modal-reset:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 1px var(--gh-gift-link-focus-ring);
 }
 
 @media (max-width: 1024px) {
