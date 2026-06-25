@@ -11,13 +11,13 @@ const emptySettings = (): RouteSettings => ({routes: [], collections: [], taxono
 
 const sampleSettings = (): RouteSettings => ({
     routes: [
-        {type: 'template', path: '/about/', template: 'about'}
+        {type: 'template', path: '/about/', template: ['about']}
     ],
     collections: [
         {
             path: '/',
             permalink: '/{slug}/',
-            template: 'index',
+            template: ['index'],
             data: {featured: {resource: 'posts', type: 'browse', filter: 'featured:true'}}
         }
     ],
@@ -39,7 +39,7 @@ export function runStoreContract({createStore}: ContractOptions): void {
                 await store.replace(sampleSettings());
 
                 const firstRead = await store.get();
-                firstRead.routes.push({type: 'template', path: '/x/', template: 'x'});
+                firstRead.routes.push({type: 'template', path: '/x/', template: ['x']});
                 firstRead.collections[0].permalink = '/mutated/';
 
                 assert.deepEqual(await store.get(), sampleSettings());
@@ -59,13 +59,13 @@ export function runStoreContract({createStore}: ContractOptions): void {
                 await store.replace(sampleSettings());
                 await store.replace({
                     routes: [],
-                    collections: [{path: '/blog/', permalink: '/blog/{slug}/', template: 'index'}],
+                    collections: [{path: '/blog/', permalink: '/blog/{slug}/', template: ['index']}],
                     taxonomies: {}
                 });
 
                 assert.deepEqual(await store.get(), {
                     routes: [],
-                    collections: [{path: '/blog/', permalink: '/blog/{slug}/', template: 'index'}],
+                    collections: [{path: '/blog/', permalink: '/blog/{slug}/', template: ['index']}],
                     taxonomies: {}
                 });
             });
@@ -81,7 +81,7 @@ export function runStoreContract({createStore}: ContractOptions): void {
                 const settings = sampleSettings();
 
                 await store.replace(settings);
-                settings.routes.push({type: 'template', path: '/x/', template: 'x'});
+                settings.routes.push({type: 'template', path: '/x/', template: ['x']});
                 settings.taxonomies.tag = '/mutated/';
 
                 assert.deepEqual(await store.get(), sampleSettings());

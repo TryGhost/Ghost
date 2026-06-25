@@ -1,7 +1,7 @@
 export type DataShortFormResource = 'tag' | 'page' | 'post' | 'author';
 export type DataLongFormResource = 'tags' | 'posts' | 'pages' | 'authors';
 
-export type DataShortForm = string;
+export type DataShortForm = `${DataShortFormResource}.${string}`;
 
 export interface DataReadEntry {
     type: 'read';
@@ -32,7 +32,7 @@ export type RouteData = DataShortForm | Record<string, DataEntry>;
 
 interface RouteBase {
     path: string;
-    template?: string | string[];
+    template?: string[];
     data?: RouteData;
 }
 
@@ -54,7 +54,7 @@ export type Route = ChannelRoute | TemplateRoute;
 export interface CollectionConfig {
     path: string;
     permalink: string;
-    template?: string | string[];
+    template?: string[];
     filter?: string;
     order?: string;
     limit?: number | 'all';
