@@ -88,7 +88,7 @@
     "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
-    "eslint-plugin-storybook": "10.4.4",
+    "eslint-plugin-storybook": "10.4.6",
     "eslint-plugin-tailwindcss": "catalog:",
     "globals": "catalog:",
     "husky": "9.1.7",
