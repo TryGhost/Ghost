@@ -1,4 +1,4 @@
-import {render} from '../../../../utils/test-utils';
+import {fireEvent, render} from '../../../../utils/test-utils';
 import PaidAccountActions from '../../../../../src/components/pages/AccountHomePage/components/paid-account-actions';
 import {getDiscountData, getMemberData, getNextPaymentData, getSubscriptionData, getSiteData, getProductsData, getProductData} from '../../../../../src/utils/fixtures-generator';
 
@@ -751,6 +751,55 @@ describe('PaidAccountActions', () => {
             const {container} = setup({site, member});
 
             expect(container.querySelector('[data-test-button="manage-billing"]')).not.toBeInTheDocument();
+        });
+
+        test('billing section row is keyboard-activatable and opens manage billing', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const subscription = getSubscriptionData({
+                status: 'active',
+                amount: 500,
+                currency: 'USD',
+                interval: 'month'
+            });
+            const member = getMemberData({paid: true, subscriptions: [subscription]});
+
+            const {container, mockDoActionFn} = setup({site, member});
+
+            const billingRow = container.querySelector('[data-test-button="manage-billing"]').closest('section');
+            expect(billingRow).toHaveAttribute('role', 'button');
+            expect(billingRow).toHaveAttribute('tabindex', '0');
+
+            fireEvent.keyDown(billingRow, {key: 'Enter'});
+            expect(mockDoActionFn).toHaveBeenCalledWith('manageBilling', expect.objectContaining({subscriptionId: subscription.id}));
+
+            mockDoActionFn.mockClear();
+            fireEvent.keyDown(billingRow, {key: ' '});
+            expect(mockDoActionFn).toHaveBeenCalledWith('manageBilling', expect.objectContaining({subscriptionId: subscription.id}));
+        });
+
+        test('clicking the manage billing button does not double-fire the row', () => {
+            const products = getProductsData({numOfProducts: 1});
+            const site = getSiteData({products, portalProducts: products.map(p => p.id)});
+            const member = getMemberData({
+                paid: true,
+                subscriptions: [
+                    getSubscriptionData({
+                        status: 'active',
+                        amount: 500,
+                        currency: 'USD',
+                        interval: 'month'
+                    })
+                ]
+            });
+
+            const {container, mockDoActionFn} = setup({site, member});
+
+            const billingBtn = container.querySelector('[data-test-button="manage-billing"]');
+            fireEvent.click(billingBtn);
+
+            const billingCalls = mockDoActionFn.mock.calls.filter(call => call[0] === 'manageBilling');
+            expect(billingCalls).toHaveLength(1);
         });
     });
 

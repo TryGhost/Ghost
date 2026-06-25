@@ -12,7 +12,7 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     });
     if (newsletter.paid) {
         return (
-            <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper" style={{cursor: 'default'}}>
+            <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
                 <div className='gh-portal-list-detail gh-portal-list-big'>
                     <h3>{newsletter.name}</h3>
                     <p>{newsletter.description}</p>
@@ -39,13 +39,25 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     };
 
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper" onClick={handleToggle}>
+        <section
+            className='gh-portal-list-toggle-wrapper gh-portal-list-clickable'
+            data-testid="toggle-wrapper"
+            role="button"
+            tabIndex={0}
+            onClick={handleToggle}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleToggle();
+                }
+            }}
+        >
             <div className='gh-portal-list-detail gh-portal-list-big'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter.description}</p>
             </div>
-            <div>
-                <Switch id={newsletter.id} onToggle={handleToggle} checked={isChecked} />
+            <div onClick={(e) => e.stopPropagation()}>
+                <Switch id={newsletter.id} label={newsletter.name} onToggle={handleToggle} checked={isChecked} />
             </div>
         </section>
     );

@@ -693,7 +693,16 @@ html[dir="rtl"] .gh-portal-logout-container {
     margin: 0 -20px 20px;
     padding: 0 20px 20px;
     border-bottom: 1px solid var(--grey12);
+}
+
+.gh-portal-list-clickable {
     cursor: pointer;
+}
+
+.gh-portal-list-clickable:focus-visible {
+    outline: 2px solid var(--brandcolor);
+    outline-offset: 2px;
+    border-radius: 4px;
 }
 
 .gh-portal-list section:last-of-type {

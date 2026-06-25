@@ -129,4 +129,89 @@ describe('NewsletterSelectionPage', () => {
             newsletters: []
         }));
     });
+
+    test('toggles newsletter when clicking the section surface (not the switch)', async () => {
+        const {getAllByTestId, continueBtn, mockDoActionFn} = setup();
+
+        const sections = getAllByTestId('toggle-wrapper');
+        fireEvent.click(sections[2]);
+        fireEvent.click(continueBtn);
+
+        expect(mockDoActionFn).toHaveBeenCalledWith('signup', expect.objectContaining({
+            newsletters: expect.arrayContaining([
+                {name: 'Free Newsletter', id: '1'},
+                {name: 'Another Free Newsletter', id: '3'}
+            ])
+        }));
+    });
+
+    test('toggles newsletter when pressing Enter on the focused section', async () => {
+        const {getAllByTestId, continueBtn, mockDoActionFn} = setup();
+
+        const sections = getAllByTestId('toggle-wrapper');
+        fireEvent.keyDown(sections[2], {key: 'Enter'});
+        fireEvent.click(continueBtn);
+
+        expect(mockDoActionFn).toHaveBeenCalledWith('signup', expect.objectContaining({
+            newsletters: expect.arrayContaining([
+                {name: 'Free Newsletter', id: '1'},
+                {name: 'Another Free Newsletter', id: '3'}
+            ])
+        }));
+    });
+
+    test('toggles newsletter when pressing Space on the focused section', async () => {
+        const {getAllByTestId, continueBtn, mockDoActionFn} = setup();
+
+        const sections = getAllByTestId('toggle-wrapper');
+        fireEvent.keyDown(sections[2], {key: ' '});
+        fireEvent.click(continueBtn);
+
+        expect(mockDoActionFn).toHaveBeenCalledWith('signup', expect.objectContaining({
+            newsletters: expect.arrayContaining([
+                {name: 'Free Newsletter', id: '1'},
+                {name: 'Another Free Newsletter', id: '3'}
+            ])
+        }));
+    });
+
+    test('ignores non-activation keys on the section', async () => {
+        const {getAllByTestId, continueBtn, mockDoActionFn} = setup();
+
+        const sections = getAllByTestId('toggle-wrapper');
+        fireEvent.keyDown(sections[2], {key: 'a'});
+        fireEvent.keyDown(sections[2], {key: 'Tab'});
+        fireEvent.click(continueBtn);
+
+        // "Another Free Newsletter" should still NOT be subscribed
+        expect(mockDoActionFn).toHaveBeenCalledWith('signup', expect.objectContaining({
+            newsletters: [{name: 'Free Newsletter', id: '1'}]
+        }));
+    });
+
+    test('clicking the inner switch does not double-fire the section toggle', async () => {
+        const {getAllByTestId, continueBtn, mockDoActionFn} = setup();
+
+        const switches = getAllByTestId('switch-input');
+        fireEvent.click(switches[1]);
+        fireEvent.click(continueBtn);
+
+        expect(mockDoActionFn).toHaveBeenCalledWith('signup', expect.objectContaining({
+            newsletters: expect.arrayContaining([
+                {name: 'Free Newsletter', id: '1'},
+                {name: 'Another Free Newsletter', id: '3'}
+            ])
+        }));
+    });
+
+    test('section rows expose role="button" and tabIndex for keyboard reachability', () => {
+        const {getAllByTestId} = setup();
+
+        const sections = getAllByTestId('toggle-wrapper');
+        const interactiveSections = sections.filter(s => s.getAttribute('role') === 'button');
+        expect(interactiveSections).toHaveLength(2);
+        interactiveSections.forEach((section) => {
+            expect(section).toHaveAttribute('tabindex', '0');
+        });
+    });
 });

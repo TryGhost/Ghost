@@ -39,20 +39,32 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
     };
 
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="newsletter-toggle" onClick={handleToggle}>
+        <section
+            className='gh-portal-list-toggle-wrapper gh-portal-list-clickable'
+            data-testid="newsletter-toggle"
+            role="button"
+            tabIndex={0}
+            onClick={handleToggle}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleToggle();
+                }
+            }}
+        >
             <div className='gh-portal-list-detail'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter?.description}</p>
             </div>
-            <div style={{display: 'flex', alignItems: 'center'}}>
-                <Switch id={newsletter.id} onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" />
+            <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>
+                <Switch id={newsletter.id} label={newsletter.name} onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" />
             </div>
         </section>
     );
 }
 
 function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableCommentNotifications}) {
-    const {doAction} = useContext(AppContext); // Removed 't' from here
+    const {doAction} = useContext(AppContext);
     const isChecked = !!enableCommentNotifications;
     const [isUpdating, setIsUpdating] = useState(false);
 
@@ -61,35 +73,45 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
     }
 
     const handleToggle = async (e, checked) => {
+        await updateCommentNotifications(checked);
+        doAction('showPopupNotification', {
+            action: 'updated:success',
+            message: t('Comment preferences updated.')
+        });
+    };
+
+    const handleSectionClick = async () => {
         if (isUpdating) {
             return;
         }
         setIsUpdating(true);
         try {
-            await updateCommentNotifications(checked);
-            doAction('showPopupNotification', {
-                action: 'updated:success',
-                message: t('Comment preferences updated.')
-            });
+            await handleToggle(null, !isChecked);
         } finally {
             setIsUpdating(false);
         }
     };
 
-    const handleSectionClick = () => {
-        if (!isUpdating) {
-            handleToggle(null, !isChecked);
-        }
-    };
-
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="comment-toggle" onClick={handleSectionClick}>
+        <section
+            className='gh-portal-list-toggle-wrapper gh-portal-list-clickable'
+            data-testid="comment-toggle"
+            role="button"
+            tabIndex={0}
+            onClick={handleSectionClick}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleSectionClick();
+                }
+            }}
+        >
             <div className='gh-portal-list-detail'>
                 <h3>{t('Comments')}</h3>
                 <p>{t('Get notified when someone replies to your comment')}</p>
             </div>
-            <div style={{display: 'flex', alignItems: 'center'}}>
-                <Switch id="comments" onToggle={handleToggle} checked={isChecked} disabled={isUpdating} dataTestId="switch-input" />
+            <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>
+                <Switch id="comments" label={t('Comments')} onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" />
             </div>
         </section>
     );
@@ -104,32 +126,45 @@ function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChang
     }
 
     const handleToggle = async (e, checked) => {
+        await updateUpdatesAndAnnouncements(checked);
+        doAction('showPopupNotification', {
+            action: 'updated:success',
+            message: t('Email preferences updated.')
+        });
+    };
+
+    const handleSectionClick = async () => {
+        if (isUpdating) {
+            return;
+        }
         setIsUpdating(true);
         try {
-            await updateUpdatesAndAnnouncements(checked);
-            doAction('showPopupNotification', {
-                action: 'updated:success',
-                message: t('Email preferences updated.')
-            });
+            await handleToggle(null, !enableUpdatesAndAnnouncements);
         } finally {
             setIsUpdating(false);
         }
     };
 
-    const handleSectionClick = () => {
-        if (!isUpdating) {
-            handleToggle(null, !enableUpdatesAndAnnouncements);
-        }
-    };
-
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="updates-and-announcements-toggle" onClick={handleSectionClick}>
+        <section
+            className='gh-portal-list-toggle-wrapper gh-portal-list-clickable'
+            data-testid="updates-and-announcements-toggle"
+            role="button"
+            tabIndex={0}
+            onClick={handleSectionClick}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleSectionClick();
+                }
+            }}
+        >
             <div className='gh-portal-list-detail'>
                 <h3>{t('Updates & announcements')}</h3>
                 <p>{t('Occasional updates from {siteTitle}', {siteTitle: site?.title})}</p>
             </div>
-            <div style={{display: 'flex', alignItems: 'center'}}>
-                <Switch id="updates-and-announcements" onToggle={handleToggle} checked={enableUpdatesAndAnnouncements} disabled={isUpdating} dataTestId="switch-input" />
+            <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>
+                <Switch id="updates-and-announcements" label={t('Updates & announcements')} onToggle={handleToggle} checked={enableUpdatesAndAnnouncements} dataTestId="switch-input" />
             </div>
         </section>
     );

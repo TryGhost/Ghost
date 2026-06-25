@@ -10,15 +10,25 @@ function EmailNewsletterAction() {
 
     const subscribed = !!newsletters?.length;
     let label = subscribed ? t('Subscribed') : t('Unsubscribed');
-    const onToggleSubscription = (e) => {
-        e.preventDefault();
+    const onToggleSubscription = () => {
         const siteNewsletters = getSiteNewsletters({site});
         const subscribedNewsletters = !member?.newsletters?.length ? siteNewsletters : [];
         doAction('updateNewsletterPreference', {newsletters: subscribedNewsletters});
     };
 
     return (
-        <section onClick={onToggleSubscription}>
+        <section
+            className='gh-portal-list-clickable'
+            role="button"
+            tabIndex={0}
+            onClick={onToggleSubscription}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    onToggleSubscription();
+                }
+            }}
+        >
             <div className='gh-portal-list-detail email-newsletter'>
                 <h3>{t('Email newsletter')}</h3>
                 <p>{label} {hasMemberGotEmailSuppression({member}) && subscribed && <button
@@ -31,10 +41,11 @@ function EmailNewsletterAction() {
                     {t('Not receiving emails?')}
                 </button>}</p>
             </div>
-            <div>
+            <div onClick={(e) => e.stopPropagation()}>
                 <Switch
                     dataTestId="default-newsletter-toggle"
                     id="default-newsletter-toggle"
+                    label={t('Email newsletter')}
                     onToggle={(e) => {
                         onToggleSubscription(e, subscribed);
                     }} checked={subscribed}

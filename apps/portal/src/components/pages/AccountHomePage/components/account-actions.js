@@ -43,7 +43,18 @@ const AccountActions = () => {
     return (
         <div>
             <div className='gh-portal-list'>
-                <section onClick={openEditProfile}>
+                <section
+                    className='gh-portal-list-clickable'
+                    role="button"
+                    tabIndex={0}
+                    onClick={openEditProfile}
+                    onKeyDown={(e) => {
+                        if (e.key === 'Enter' || e.key === ' ') {
+                            e.preventDefault();
+                            openEditProfile();
+                        }
+                    }}
+                >
                     <div className='gh-portal-list-detail'>
                         <h3>{(name ? name : t('Account'))}</h3>
                         <p>{email}</p>

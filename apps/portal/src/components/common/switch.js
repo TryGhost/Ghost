@@ -92,8 +92,17 @@ function Switch({id, label = '', onToggle, checked = false, disabled = false, da
         }
     }, [isChecked, id]);
 
+    const handleChange = (event) => {
+        if (disabled) {
+            return;
+        }
+
+        setIsChecked(event.target.checked);
+        onToggle(event, event.target.checked);
+    };
+
     return (
-        <div className="gh-portal-for-switch" data-test-switch={dataTestId} onClick={(e) => e.stopPropagation()}>
+        <div className="gh-portal-for-switch" data-test-switch={dataTestId}>
             <label className="switch" htmlFor={id}>
                 <input
                     ref={inputRef}
@@ -101,16 +110,10 @@ function Switch({id, label = '', onToggle, checked = false, disabled = false, da
                     checked={isChecked}
                     disabled={disabled}
                     id={id}
-                    onChange={() => {}}
+                    onChange={handleChange}
                     aria-label={label}
                 />
-                <span className="input-toggle-component" onClick={(e) => {
-                    if (disabled) {
-                        return;
-                    }
-                    setIsChecked(!isChecked);
-                    onToggle(e, !isChecked);
-                }} data-testid={dataTestId}></span>
+                <span className="input-toggle-component" data-testid={dataTestId}></span>
             </label>
         </div>
     );

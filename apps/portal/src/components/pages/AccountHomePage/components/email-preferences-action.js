@@ -39,7 +39,18 @@ function EmailPreferencesAction() {
     };
 
     return (
-        <section onClick={handleClick}>
+        <section
+            className="gh-portal-list-clickable"
+            role="button"
+            tabIndex={0}
+            onClick={handleClick}
+            onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleClick();
+                }
+            }}
+        >
             <div className="gh-portal-list-detail">
                 <h3>{t('Emails')}</h3>
                 {renderEmailNotice()}

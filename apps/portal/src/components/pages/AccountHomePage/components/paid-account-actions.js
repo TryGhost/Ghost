@@ -162,7 +162,18 @@ const PaidAccountActions = () => {
         ) : t('Update');
 
         return (
-            <section onClick={onManageBilling}>
+            <section
+                className='gh-portal-list-clickable'
+                role="button"
+                tabIndex={0}
+                onClick={onManageBilling}
+                onKeyDown={(e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        e.preventDefault();
+                        onManageBilling();
+                    }
+                }}
+            >
                 <div className='gh-portal-list-detail'>
                     <h3>{t('Billing info & receipts')}</h3>
                     <CardLabel defaultCardLast4={defaultCardLast4} />
@@ -202,7 +213,7 @@ const PaidAccountActions = () => {
         // }
         return (
             <>
-                <section onClick={openUpdatePlan}>
+                <section>
                     <div className='gh-portal-list-detail'>
                         <h3>
                             {planLabel}

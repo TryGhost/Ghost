@@ -165,4 +165,66 @@ describe('Account Email Page', () => {
         const unsubscribeBtns = getEmailPreferenceToggles({queryAllByTestId});
         expect(unsubscribeBtns).toHaveLength(3);
     });
+
+    test('newsletter row is keyboard-activatable and toggles the subscription', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData
+        });
+        const {mockDoActionFn, getAllByTestId} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
+
+        const newsletterRows = getAllByTestId('newsletter-toggle');
+        expect(newsletterRows[0]).toHaveAttribute('role', 'button');
+        expect(newsletterRows[0]).toHaveAttribute('tabindex', '0');
+
+        fireEvent.keyDown(newsletterRows[0], {key: 'Enter'});
+        expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {newsletters: [{id: newsletterData[1].id}]});
+
+        mockDoActionFn.mockClear();
+        fireEvent.keyDown(newsletterRows[0], {key: ' '});
+        expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {newsletters: [{id: newsletterData[1].id}, {id: newsletterData[0].id}]});
+
+        mockDoActionFn.mockClear();
+        fireEvent.keyDown(newsletterRows[0], {key: 'Escape'});
+        expect(mockDoActionFn).not.toHaveBeenCalled();
+    });
+
+    test('clicking the section surface (not the switch) toggles the newsletter', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData
+        });
+        const {mockDoActionFn, getAllByTestId} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
+
+        const newsletterRows = getAllByTestId('newsletter-toggle');
+        fireEvent.click(newsletterRows[0]);
+        expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {newsletters: [{id: newsletterData[1].id}]});
+    });
+
+    test('clicking the inner switch does not double-fire the section toggle', async () => {
+        const newsletterData = getNewslettersData({numOfNewsletters: 2});
+        const siteData = getSiteData({
+            newsletters: newsletterData
+        });
+        const {mockDoActionFn, getAllByTestId} = setup({site: siteData, member: getMemberData({newsletters: newsletterData})});
+
+        const switches = getAllByTestId('switch-input');
+        fireEvent.click(switches[0]);
+
+        const updateCalls = mockDoActionFn.mock.calls.filter(call => call[0] === 'updateNewsletterPreference');
+        expect(updateCalls).toHaveLength(1);
+        expect(updateCalls[0][1]).toEqual({newsletters: [{id: newsletterData[1].id}]});
+    });
+
+    test('comments row is keyboard-activatable', async () => {
+        const siteData = getSiteData();
+        const {mockDoActionFn, getByTestId} = setup({site: siteData, member: getMemberData()});
+
+        const commentsRow = getByTestId('comment-toggle');
+        expect(commentsRow).toHaveAttribute('role', 'button');
+        expect(commentsRow).toHaveAttribute('tabindex', '0');
+
+        fireEvent.keyDown(commentsRow, {key: 'Enter'});
+        expect(mockDoActionFn).toHaveBeenCalledWith('updateNewsletterPreference', {enableCommentNotifications: true});
+    });
 });
