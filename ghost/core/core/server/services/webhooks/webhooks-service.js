@@ -32,8 +32,15 @@ class WebhooksService {
             const newWebhook = await this.WebhookModel.add(data.webhooks[0], options);
             return newWebhook;
         } catch (error) {
+            // A non-existent integration_id violates the webhooks→integrations FK.
+            // MySQL reports errno 1452. SQLite reports it differently per driver:
+            // node-sqlite3 messages were prefixed 'SQLITE_CONSTRAINT: ...', while
+            // better-sqlite3 messages are bare ('FOREIGN KEY constraint failed') and
+            // its extended 'SQLITE_CONSTRAINT_FOREIGNKEY' code is normalized down to
+            // the primary 'SQLITE_CONSTRAINT' by overrides.js before reaching here —
+            // so match the message rather than the (driver-specific) extended code.
             if (error.errno === 1452
-                || (error.code === 'SQLITE_CONSTRAINT' && /SQLITE_CONSTRAINT: FOREIGN KEY constraint failed/.test(error.message))
+                || (error.code === 'SQLITE_CONSTRAINT' && /FOREIGN KEY constraint failed/.test(error.message))
                 || (error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY')) {
                 throw new ValidationError({
                     message: tpl(messages.nonExistingIntegrationIdProvided.message, {

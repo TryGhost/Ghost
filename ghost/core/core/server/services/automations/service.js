@@ -46,7 +46,15 @@ class AutomationsService {
         const enqueuePollAt = async (date) => {
             const isRequestedDateInTheFuture = new Date() < date;
             if (!isRequestedDateInTheFuture) {
-                this.#enqueuePollNow();
+                // Re-dispatch on the next macrotask rather than synchronously, so a
+                // self-rescheduling poll chain yields the event loop between
+                // iterations. The synchronous better-sqlite3 driver resolves its
+                // awaited queries on the microtask queue, so an immediate in-process
+                // re-dispatch starves timers and I/O — the chain spins on microtasks
+                // and never lets the process settle. (The async sqlite3 driver hid
+                // this: its queries resolved via libuv I/O macrotasks, which gave the
+                // rest of the loop a turn each iteration.) setImmediate restores that.
+                setImmediate(() => this.#enqueuePollNow());
                 return;
             }
 
