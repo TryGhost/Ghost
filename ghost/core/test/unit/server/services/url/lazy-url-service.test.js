@@ -132,6 +132,34 @@ describe('LazyUrlService', function () {
             );
         });
 
+        it('throws when a router filter references a scalar field the resource lacks (e.g. featured)', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            // featured:true needs the featured column; without it the filter would
+            // see undefined and silently route to the wrong permalink.
+            service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+
+            assert.throws(
+                () => service.getUrlForResource({type: 'posts', id: 'p', slug: 'hot', status: 'published'}),
+                /Thin resource passed to LazyUrlService/
+            );
+        });
+
+        it('routes via the filtered router when its scalar field is present', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+
+            assert.equal(
+                service.getUrlForResource({type: 'posts', id: 'p', slug: 'hot', status: 'published', featured: true}),
+                '/featured/hot/'
+            );
+            assert.equal(
+                service.getUrlForResource({type: 'posts', id: 'p', slug: 'meh', status: 'published', featured: false}),
+                '/meh/'
+            );
+        });
+
         it('expands shorthand tag/author filters via the EXPANSIONS table', function () {
             const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
             service.onRouterAddedType('podcast', 'tag:podcast', 'posts', '/podcast/:slug/');
@@ -684,6 +712,32 @@ describe('LazyUrlService', function () {
 
             assert.deepEqual(service.getRequiredFields('posts').sort(), ['published_at', 'slug', 'status', 'type']);
             assert.deepEqual(service.getRequiredFields('pages').sort(), ['id', 'status', 'type']);
+        });
+
+        it('includes scalar columns referenced by a router filter, but not relation or discriminator fields', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('featured', 'featured:true', 'posts', '/featured/:slug/');
+            service.onRouterAddedType('default', null, 'posts', '/:slug/');
+
+            // featured (scalar) is required; page/type (discriminator) and tag/
+            // author relations are not — those go through getRequiredRelations.
+            assert.deepEqual(service.getRequiredFields('posts').sort(), ['featured', 'slug', 'status', 'type']);
+        });
+
+        it('does not treat relation or page/type filter clauses as scalar columns', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            service.onRouterAddedType('news', 'tag:news+page:false', 'posts', '/:slug/');
+
+            assert.deepEqual(service.getRequiredFields('posts').sort(), ['slug', 'status', 'type']);
+        });
+
+        it('does not capture colon-bearing filter values (timestamps, URLs) as fields', function () {
+            const service = new LazyUrlService({urlUtils, findResource: noopFindResource});
+            // The timestamp value contains `00:00:00`; only `published_at` (at an
+            // expression boundary) is a field, not `00`.
+            service.onRouterAddedType('recent', "published_at:>'2020-01-01T00:00:00Z'", 'posts', '/:slug/');
+
+            assert.deepEqual(service.getRequiredFields('posts').sort(), ['published_at', 'slug', 'status', 'type']);
         });
     });
 });
