@@ -8,26 +8,6 @@ export const TWITTER_EMBED_SELECTOR = 'blockquote.twitter-tweet';
 export const TWITTER_EMBED_MIN_HEIGHT = 120;
 const TWITTER_EMBED_INITIAL_HEIGHT = 720;
 export const TWITTER_EMBED_MAX_HEIGHT = 2000;
-export const TWITTER_EMBED_STYLE_MESSAGE = 'ghost-twitter-embed-style';
-
-export interface TwitterEmbedSandboxOptions {
-    fontSize?: string;
-    fontStyle?: 'sans' | 'serif';
-    darkMode?: boolean;
-    sepia?: boolean;
-}
-
-export interface TwitterEmbedStyleMessage {
-    type: typeof TWITTER_EMBED_STYLE_MESSAGE;
-    style: TwitterEmbedSandboxOptions;
-}
-
-export interface TwitterEmbedStyleOptions {
-    backgroundColor: string;
-    darkMode: boolean;
-    fontSize: string;
-    fontStyle: string;
-}
 
 export interface TwitterEmbeddedArticle {
     hasTwitterEmbeds: boolean;
@@ -43,18 +23,6 @@ const isObjectRecord = (value: unknown): value is Record<string, unknown> => {
     return Boolean(value) && typeof value === 'object';
 };
 
-export const getTwitterEmbedStyleMessage = (options: TwitterEmbedSandboxOptions = {}): TwitterEmbedStyleMessage => ({
-    type: TWITTER_EMBED_STYLE_MESSAGE,
-    style: options
-});
-
-export const getTwitterEmbedOptions = (style: TwitterEmbedStyleOptions): TwitterEmbedSandboxOptions => ({
-    fontSize: style.fontSize,
-    fontStyle: style.fontStyle === 'serif' ? 'serif' : 'sans',
-    darkMode: style.darkMode,
-    sepia: style.backgroundColor === 'SEPIA'
-});
-
 const getTweetIdFromUrl = (href: string) => {
     try {
         const url = new URL(href, window.location.href);
@@ -69,13 +37,8 @@ const getTweetIdFromUrl = (href: string) => {
     }
 };
 
-const getTweetIdFromBlockquote = (blockquoteHtml: string) => {
-    const div = document.createElement('div');
-    div.innerHTML = blockquoteHtml;
-
-    const links = Array.from(div.querySelectorAll('a[href]'));
-
-    for (const link of links) {
+const getTweetIdFromElement = (element: Element) => {
+    for (const link of Array.from(element.querySelectorAll('a[href]'))) {
         const tweetId = getTweetIdFromUrl(link.getAttribute('href') || '');
 
         if (tweetId) {
@@ -86,12 +49,12 @@ const getTweetIdFromBlockquote = (blockquoteHtml: string) => {
     return null;
 };
 
-const getDirectTwitterEmbedUrl = (tweetId: string, options: TwitterEmbedSandboxOptions = {}) => {
+const getDirectTwitterEmbedUrl = (tweetId: string, darkMode: boolean) => {
     const url = new URL(TWITTER_DIRECT_EMBED_URL);
 
     url.searchParams.set('dnt', 'true');
     url.searchParams.set('id', tweetId);
-    url.searchParams.set('theme', options.darkMode ? 'dark' : 'light');
+    url.searchParams.set('theme', darkMode ? 'dark' : 'light');
 
     return url.toString();
 };
@@ -148,14 +111,12 @@ const isDirectTwitterEmbedFrame = (frame: HTMLIFrameElement) => {
     }
 };
 
+const getDirectTwitterEmbedFrames = (doc: Document) => {
+    return Array.from(doc.querySelectorAll<HTMLIFrameElement>('iframe[data-gh-twitter-direct-embed]')).filter(isDirectTwitterEmbedFrame);
+};
+
 const getDirectTwitterEmbedFrameFromMessage = (doc: Document, event: MessageEvent, tweetId: string | null) => {
-    const frames = Array.from(doc.querySelectorAll<HTMLIFrameElement>('iframe[data-gh-twitter-direct-embed]'));
-
-    for (const frame of frames) {
-        if (!isDirectTwitterEmbedFrame(frame)) {
-            continue;
-        }
-
+    for (const frame of getDirectTwitterEmbedFrames(doc)) {
         if (frame.contentWindow === event.source) {
             return frame;
         }
@@ -173,6 +134,10 @@ const setDirectTwitterEmbedHeight = (frame: HTMLIFrameElement, height: number) =
     frame.style.height = `${boundedHeight}px`;
 };
 
+// Twitter posts `twttr.private.resize` messages so the embed can size itself. Depending on the
+// browser these arrive at either the article iframe window or the outer reader window, so the
+// reader listens on both and routes the message here. The article iframe is a same-origin srcdoc,
+// so we can size the embedded frame inside it directly.
 export const resizeTwitterEmbedFromMessage = (articleIframe: HTMLIFrameElement | null, event: MessageEvent) => {
     const resizeMessage = getTwitterEmbedResizeMessage(event.data);
     const articleDocument = articleIframe?.contentDocument;
@@ -193,19 +158,35 @@ export const resizeTwitterEmbedFromMessage = (articleIframe: HTMLIFrameElement |
     return true;
 };
 
-export const hasTwitterEmbed = (content: string) => {
-    if (!content.includes('twitter-tweet')) {
-        return false;
+// The reader theme (light/dark) is the only customizer setting Twitter's embed honours. When it
+// changes we reload each embed with the matching `theme` param — direct DOM access works because
+// the article iframe is a same-origin srcdoc.
+export const applyTwitterEmbedTheme = (articleIframe: HTMLIFrameElement | null, darkMode: boolean) => {
+    const articleDocument = articleIframe?.contentDocument;
+
+    if (!articleDocument) {
+        return;
     }
 
-    const div = document.createElement('div');
-    div.innerHTML = content;
+    const theme = darkMode ? 'dark' : 'light';
+    let changed = false;
 
-    return div.querySelector(TWITTER_EMBED_SELECTOR) !== null;
-};
+    for (const frame of getDirectTwitterEmbedFrames(articleDocument)) {
+        const url = new URL(frame.getAttribute('src') || '', window.location.href);
 
-export const postTwitterEmbedStyleMessage = (iframe: HTMLIFrameElement | null, options: TwitterEmbedSandboxOptions = {}) => {
-    iframe?.contentWindow?.postMessage(getTwitterEmbedStyleMessage(options), '*');
+        if (url.searchParams.get('theme') === theme) {
+            continue;
+        }
+
+        url.searchParams.set('theme', theme);
+        frame.style.height = `${TWITTER_EMBED_INITIAL_HEIGHT}px`;
+        frame.setAttribute('src', url.toString());
+        changed = true;
+    }
+
+    if (changed) {
+        articleIframe.contentWindow?.postMessage({type: 'triggerResize'}, '*');
+    }
 };
 
 export const isTwitterWidgetScript = (script: HTMLScriptElement) => {
@@ -224,148 +205,12 @@ export const isTwitterWidgetScript = (script: HTMLScriptElement) => {
     }
 };
 
-export const getTwitterEmbedBridgeScript = () => `
-                const twitterEmbedStyleMessageType = '${TWITTER_EMBED_STYLE_MESSAGE}';
-                const twitterDirectEmbedOrigin = '${TWITTER_DIRECT_EMBED_ORIGIN}';
-                const twitterDirectEmbedPath = '${TWITTER_DIRECT_EMBED_PATH}';
-
-                function parseTwitterEmbedMessageData(data) {
-                    if (typeof data === 'string') {
-                        try {
-                            return JSON.parse(data);
-                        } catch {
-                            return null;
-                        }
-                    }
-
-                    if (data && typeof data === 'object') {
-                        return data;
-                    }
-
-                    return null;
-                }
-
-                function getDirectTwitterEmbedTheme(style) {
-                    return style && style.darkMode ? 'dark' : 'light';
-                }
-
-                function isDirectTwitterEmbedFrame(frame) {
-                    try {
-                        const url = new URL(frame.getAttribute('src') || '', window.location.href);
-                        return url.origin === twitterDirectEmbedOrigin && url.pathname === twitterDirectEmbedPath;
-                    } catch {
-                        return false;
-                    }
-                }
-
-                function getDirectTwitterEmbedFrameFromMessage(event, tweetId) {
-                    const frames = document.querySelectorAll('iframe[data-gh-twitter-direct-embed]');
-
-                    for (const frame of frames) {
-                        if (!isDirectTwitterEmbedFrame(frame)) {
-                            continue;
-                        }
-
-                        if (frame.contentWindow === event.source) {
-                            return frame;
-                        }
-
-                        if (event.origin === twitterDirectEmbedOrigin && tweetId && frame.getAttribute('data-tweet-id') === String(tweetId)) {
-                            return frame;
-                        }
-                    }
-
-                    return null;
-                }
-
-                function updateTwitterEmbedStyle(data) {
-                    const theme = getDirectTwitterEmbedTheme(data.style);
-                    const frames = document.querySelectorAll('iframe[data-gh-twitter-direct-embed]');
-
-                    for (const frame of frames) {
-                        try {
-                            const url = new URL(frame.getAttribute('src') || '', window.location.href);
-
-                            if (url.origin !== twitterDirectEmbedOrigin || url.pathname !== twitterDirectEmbedPath) {
-                                continue;
-                            }
-
-                            if (url.searchParams.get('theme') === theme) {
-                                continue;
-                            }
-
-                            url.searchParams.set('theme', theme);
-                            frame.style.height = '${TWITTER_EMBED_INITIAL_HEIGHT}px';
-                            frame.setAttribute('src', url.toString());
-                        } catch {
-                            continue;
-                        }
-                    }
-
-                    if (typeof resizeIframe === 'function') {
-                        resizeIframe();
-                    }
-                }
-
-                function resizeDirectTwitterEmbed(event) {
-                    const data = parseTwitterEmbedMessageData(event.data);
-                    const embedMessage = data && data.twttr && data.twttr.embed;
-
-                    if (!embedMessage || embedMessage.method !== 'twttr.private.resize') {
-                        return false;
-                    }
-
-                    const params = embedMessage.params && embedMessage.params[0] || {};
-                    const tweetId = params.data && params.data.tweet_id;
-                    const height = Number(params.height);
-
-                    if (!Number.isFinite(height)) {
-                        return true;
-                    }
-
-                    const frame = getDirectTwitterEmbedFrameFromMessage(event, tweetId);
-
-                    if (frame) {
-                        const boundedHeight = Math.min(Math.max(height, ${TWITTER_EMBED_MIN_HEIGHT}), ${TWITTER_EMBED_MAX_HEIGHT});
-                        frame.style.height = boundedHeight + 'px';
-                    }
-
-                    if (typeof resizeIframe === 'function') {
-                        resizeIframe();
-                    }
-                    return true;
-                }
-
-                window.addEventListener('message', (event) => {
-                    const data = event.data || {};
-
-                    if (data.type === twitterEmbedStyleMessageType) {
-                        updateTwitterEmbedStyle(data);
-                        return;
-                    }
-
-                    if (resizeDirectTwitterEmbed(event)) {
-                        return;
-                    }
-                });
-`;
-
-export const renderTwitterEmbedInSandbox = (blockquoteHtml: string, options: TwitterEmbedSandboxOptions = {}) => {
-    const tweetId = getTweetIdFromBlockquote(blockquoteHtml);
-
-    if (!tweetId) {
-        return null;
-    }
-
-    return buildDirectTwitterEmbedIframe(tweetId, options);
-};
-
-const buildDirectTwitterEmbedIframe = (tweetId: string, options: TwitterEmbedSandboxOptions = {}) => {
+const buildDirectTwitterEmbedIframe = (tweetId: string, darkMode: boolean) => {
     const iframe = document.createElement('iframe');
 
     iframe.className = 'gh-twitter-embed';
     iframe.title = 'Embedded Twitter post';
-    iframe.src = getDirectTwitterEmbedUrl(tweetId, options);
+    iframe.src = getDirectTwitterEmbedUrl(tweetId, darkMode);
     iframe.loading = 'lazy';
     iframe.setAttribute('data-gh-twitter-direct-embed', '');
     iframe.setAttribute('data-tweet-id', tweetId);
@@ -382,20 +227,24 @@ const buildDirectTwitterEmbedIframe = (tweetId: string, options: TwitterEmbedSan
     return iframe;
 };
 
-export const renderTwitterEmbedsInArticle = (content: string, getOptions: () => TwitterEmbedSandboxOptions): TwitterEmbeddedArticle => {
+// ActivityPub serves sanitized remote HTML with Twitter widget scripts stripped, so the original
+// `blockquote.twitter-tweet` markup never hydrates into a tweet. We replace each blockquote that
+// has a resolvable tweet ID with a sandboxed direct embed iframe and drop the now-useless widget
+// loader script. Blockquotes without a tweet ID are left untouched as a sanitized fallback.
+export const renderTwitterEmbedsInArticle = (content: string, darkMode: boolean): TwitterEmbeddedArticle => {
+    if (!content.includes('twitter-tweet')) {
+        return {hasTwitterEmbeds: false, html: content};
+    }
+
     const div = document.createElement('div');
     div.innerHTML = content;
 
     const twitterEmbeds = Array.from(div.querySelectorAll(TWITTER_EMBED_SELECTOR));
 
     if (twitterEmbeds.length === 0) {
-        return {
-            hasTwitterEmbeds: false,
-            html: content
-        };
+        return {hasTwitterEmbeds: false, html: content};
     }
 
-    let options: TwitterEmbedSandboxOptions | null = null;
     let hasRenderedTwitterEmbeds = false;
 
     div.querySelectorAll('script').forEach((script) => {
@@ -405,14 +254,13 @@ export const renderTwitterEmbedsInArticle = (content: string, getOptions: () => 
     });
 
     for (const twitterEmbed of twitterEmbeds) {
-        const tweetId = getTweetIdFromBlockquote(twitterEmbed.outerHTML);
+        const tweetId = getTweetIdFromElement(twitterEmbed);
 
         if (!tweetId) {
             continue;
         }
 
-        options = options || getOptions();
-        twitterEmbed.replaceWith(buildDirectTwitterEmbedIframe(tweetId, options));
+        twitterEmbed.replaceWith(buildDirectTwitterEmbedIframe(tweetId, darkMode));
         hasRenderedTwitterEmbeds = true;
     }
 

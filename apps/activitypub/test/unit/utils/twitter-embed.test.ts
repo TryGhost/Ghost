@@ -2,7 +2,7 @@
  * @vitest-environment jsdom
  */
 
-import {TWITTER_EMBED_MAX_HEIGHT, TWITTER_EMBED_MIN_HEIGHT, TWITTER_EMBED_STYLE_MESSAGE, getTwitterEmbedBridgeScript, getTwitterEmbedOptions, getTwitterEmbedStyleMessage, hasTwitterEmbed, isTwitterWidgetScript, renderTwitterEmbedInSandbox, renderTwitterEmbedsInArticle, resizeTwitterEmbedFromMessage} from '../../../src/utils/twitter-embed';
+import {applyTwitterEmbedTheme, isTwitterWidgetScript, renderTwitterEmbedsInArticle, resizeTwitterEmbedFromMessage} from '../../../src/utils/twitter-embed';
 
 function renderHtml(html: string) {
     const div = document.createElement('div');
@@ -10,7 +10,7 @@ function renderHtml(html: string) {
     return div;
 }
 
-function renderArticleIframeWithTwitterEmbed(tweetId = '1234567890') {
+function renderArticleIframeWithTwitterEmbed(tweetId = '1234567890', theme = 'light') {
     const articleIframe = document.createElement('iframe');
     document.body.appendChild(articleIframe);
 
@@ -23,7 +23,7 @@ function renderArticleIframeWithTwitterEmbed(tweetId = '1234567890') {
         <iframe
             data-gh-twitter-direct-embed
             data-tweet-id="${tweetId}"
-            src="https://platform.twitter.com/embed/Tweet.html?dnt=true&id=${tweetId}&theme=light">
+            src="https://platform.twitter.com/embed/Tweet.html?dnt=true&id=${tweetId}&theme=${theme}">
         </iframe>
     `;
 
@@ -39,32 +39,23 @@ function renderArticleIframeWithTwitterEmbed(tweetId = '1234567890') {
 }
 
 describe('Twitter embed utilities', function () {
-    describe('hasTwitterEmbed', function () {
-        it('detects real Twitter blockquote embeds only', function () {
-            expect(hasTwitterEmbed('<p>No embed here.</p>')).toBe(false);
-            expect(hasTwitterEmbed('<p>This text mentions twitter-tweet but is not an embed.</p>')).toBe(false);
-            expect(hasTwitterEmbed('<blockquote class="twitter-tweet"><a href="https://twitter.com/ghost/status/1">March 20, 2025</a></blockquote>')).toBe(true);
-        });
-    });
-
     describe('renderTwitterEmbedsInArticle', function () {
-        it('returns content unchanged and does not build options without a Twitter embed', function () {
-            const html = '<p>No embed here.</p><script src="https://example.com/rich-card.js"></script>';
-            let optionsCalls = 0;
-
-            expect(renderTwitterEmbedsInArticle(html, () => {
-                optionsCalls += 1;
-                return {};
-            })).toEqual({
+        it('returns content unchanged when there is no Twitter embed', function () {
+            const noEmbed = '<p>No embed here.</p><script src="https://example.com/rich-card.js"></script>';
+            expect(renderTwitterEmbedsInArticle(noEmbed, false)).toEqual({
                 hasTwitterEmbeds: false,
-                html
+                html: noEmbed
             });
-            expect(optionsCalls).toBe(0);
+
+            // The cheap string guard should not misfire on incidental "twitter-tweet" text.
+            const mention = '<p>This text mentions twitter-tweet but is not an embed.</p>';
+            expect(renderTwitterEmbedsInArticle(mention, false)).toEqual({
+                hasTwitterEmbeds: false,
+                html: mention
+            });
         });
 
         it('replaces Twitter blockquotes and only removes Twitter widget scripts', function () {
-            let optionsCalls = 0;
-
             const result = renderTwitterEmbedsInArticle(`
                 <p>Before the Twitter embed.</p>
                 <blockquote class="twitter-tweet">
@@ -74,19 +65,11 @@ describe('Twitter embed utilities', function () {
                 <script async src="https://platform.x.com/widgets.js" charset="utf-8"></script>
                 <script src="https://example.com/rich-card.js"></script>
                 <p>After the Twitter embed.</p>
-            `, () => {
-                optionsCalls += 1;
-                return {
-                    fontSize: '2rem',
-                    fontStyle: 'serif',
-                    sepia: true
-                };
-            });
+            `, false);
             const div = renderHtml(result.html);
             const iframe = div.querySelector('iframe[data-gh-twitter-direct-embed]');
 
             expect(result.hasTwitterEmbeds).toBe(true);
-            expect(optionsCalls).toBe(1);
             expect(iframe).not.toBeNull();
             expect(iframe?.getAttribute('src')).toContain('https://platform.twitter.com/embed/Tweet.html');
             expect(iframe?.getAttribute('src')).toContain('id=1');
@@ -98,9 +81,29 @@ describe('Twitter embed utilities', function () {
             expect(div.textContent).toContain('After the Twitter embed.');
         });
 
-        it('leaves unparseable Twitter blockquotes as sanitized fallback HTML', function () {
-            let optionsCalls = 0;
+        it('builds a sandboxed direct embed iframe with the reader theme', function () {
+            const result = renderTwitterEmbedsInArticle(`
+                <blockquote class="twitter-tweet">
+                    <p lang="en" dir="ltr">Ghost ActivityPub renders this embedded post without trusting remote ActivityPub scripts.</p>
+                    <a href="https://twitter.com/ghost_security/status/1234567890123456789">March 20, 2025</a>
+                </blockquote>
+            `, true);
+            const iframe = renderHtml(result.html).querySelector('iframe[data-gh-twitter-direct-embed]');
 
+            expect(iframe).not.toBeNull();
+            expect(iframe?.getAttribute('src')).toBe('https://platform.twitter.com/embed/Tweet.html?dnt=true&id=1234567890123456789&theme=dark');
+            expect(iframe?.getAttribute('srcdoc')).toBeNull();
+            expect(iframe?.getAttribute('data-tweet-id')).toBe('1234567890123456789');
+            expect(iframe?.getAttribute('sandbox')).toContain('allow-scripts');
+            expect(iframe?.getAttribute('sandbox')).toContain('allow-same-origin');
+            expect(iframe?.getAttribute('sandbox')).toContain('allow-popups');
+            expect(iframe?.getAttribute('scrolling')).toBe('auto');
+            expect((iframe as HTMLIFrameElement | null)?.style.maxWidth).toBe('550px');
+            expect((iframe as HTMLIFrameElement | null)?.style.height).toBe('720px');
+            expect((iframe as HTMLIFrameElement | null)?.style.overflow).toBe('auto');
+        });
+
+        it('leaves unparseable Twitter blockquotes as sanitized fallback HTML', function () {
             const result = renderTwitterEmbedsInArticle(`
                 <p>Before the Twitter embed.</p>
                 <blockquote class="twitter-tweet">
@@ -108,63 +111,14 @@ describe('Twitter embed utilities', function () {
                 </blockquote>
                 <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
                 <p>After the Twitter embed.</p>
-            `, () => {
-                optionsCalls += 1;
-                return {};
-            });
+            `, false);
             const div = renderHtml(result.html);
 
             expect(result.hasTwitterEmbeds).toBe(false);
-            expect(optionsCalls).toBe(0);
             expect(div.querySelector('iframe')).toBeNull();
             expect(div.querySelector('blockquote.twitter-tweet')).not.toBeNull();
             expect(div.querySelector('script[src="https://platform.twitter.com/widgets.js"]')).toBeNull();
             expect(div.textContent).toContain('No status link here.');
-        });
-    });
-
-    describe('renderTwitterEmbedInSandbox', function () {
-        it('uses the direct Twitter embed iframe when the tweet id is available', function () {
-            const iframe = renderTwitterEmbedInSandbox(`
-                <blockquote class="twitter-tweet">
-                    <p lang="en" dir="ltr">Ghost ActivityPub renders this embedded post without trusting remote ActivityPub scripts.</p>
-                    <a href="https://twitter.com/ghost_security/status/1234567890123456789">March 20, 2025</a>
-                </blockquote>
-            `, {
-                fontSize: '2rem',
-                fontStyle: 'serif',
-                darkMode: true,
-                sepia: true
-            });
-
-            expect(iframe).not.toBeNull();
-            expect(iframe?.getAttribute('src')).toBe('https://platform.twitter.com/embed/Tweet.html?dnt=true&id=1234567890123456789&theme=dark');
-            expect(iframe?.getAttribute('srcdoc')).toBeNull();
-            expect(iframe?.getAttribute('data-gh-twitter-direct-embed')).toBe('');
-            expect(iframe?.getAttribute('data-tweet-id')).toBe('1234567890123456789');
-            expect(iframe?.getAttribute('sandbox')).toContain('allow-scripts');
-            expect(iframe?.getAttribute('sandbox')).toContain('allow-same-origin');
-            expect(iframe?.getAttribute('sandbox')).toContain('allow-popups');
-            expect(iframe?.getAttribute('scrolling')).toBe('auto');
-            expect(iframe?.style.maxWidth).toBe('550px');
-            expect(iframe?.style.height).toBe('720px');
-            expect(iframe?.style.margin).toBe('0px auto');
-            expect(iframe?.style.overflow).toBe('auto');
-        });
-
-        it('does not synthesize a fallback iframe when the tweet id is missing', function () {
-            const iframe = renderTwitterEmbedInSandbox(`
-                <blockquote class="twitter-tweet" data-tweet-media-url="https://pbs.twimg.com/media/GjDWPB1b0AAMaCe.jpg" data-tweet-media-alt="Ghost spam filter settings screenshot">
-                    <p lang="en" dir="ltr">Ghost ActivityPub renders this embedded post without trusting remote ActivityPub scripts.</p>
-                    <p><a href="https://t.co/XL8WObMWF4">pic.twitter.com/XL8WObMWF4</a></p>
-                </blockquote>
-            `, {
-                fontSize: '2rem',
-                fontStyle: 'serif',
-                sepia: true
-            });
-
-            expect(iframe).toBeNull();
         });
     });
 
@@ -188,97 +142,81 @@ describe('Twitter embed utilities', function () {
         });
     });
 
-    it('builds the style message used to update direct embed theme', function () {
-        const options = getTwitterEmbedOptions({
-            backgroundColor: 'SEPIA',
-            darkMode: true,
-            fontSize: '2rem',
-            fontStyle: 'serif'
+    describe('applyTwitterEmbedTheme', function () {
+        it('reloads the embed with the matching theme and resets its height', function () {
+            const {articleIframe, twitterIframe} = renderArticleIframeWithTwitterEmbed('1234567890', 'light');
+            twitterIframe.style.height = '480px';
+
+            applyTwitterEmbedTheme(articleIframe, true);
+
+            expect(twitterIframe.getAttribute('src')).toContain('theme=dark');
+            expect(twitterIframe.style.height).toBe('720px');
+
+            articleIframe.remove();
         });
 
-        expect(options).toEqual({
-            darkMode: true,
-            fontSize: '2rem',
-            fontStyle: 'serif',
-            sepia: true
-        });
-        expect(getTwitterEmbedStyleMessage({
-            darkMode: true,
-            fontSize: '2rem',
-            fontStyle: 'serif',
-            sepia: true
-        })).toEqual({
-            type: TWITTER_EMBED_STYLE_MESSAGE,
-            style: {
-                darkMode: true,
-                fontSize: '2rem',
-                fontStyle: 'serif',
-                sepia: true
-            }
+        it('does not reload the embed when the theme already matches', function () {
+            const {articleIframe, twitterIframe} = renderArticleIframeWithTwitterEmbed('1234567890', 'light');
+            const originalSrc = twitterIframe.getAttribute('src');
+
+            applyTwitterEmbedTheme(articleIframe, false);
+
+            expect(twitterIframe.getAttribute('src')).toBe(originalSrc);
+
+            articleIframe.remove();
         });
     });
 
-    it('builds the parent iframe bridge script for direct embed resize and theme messages', function () {
-        const script = getTwitterEmbedBridgeScript();
+    describe('resizeTwitterEmbedFromMessage', function () {
+        it('resizes a direct embed from the message source frame', function () {
+            const {articleIframe, twitterIframe} = renderArticleIframeWithTwitterEmbed();
 
-        expect(script).toContain(TWITTER_EMBED_STYLE_MESSAGE);
-        expect(script).toContain(`Math.max(height, ${TWITTER_EMBED_MIN_HEIGHT})`);
-        expect(script).toContain(TWITTER_EMBED_MAX_HEIGHT.toString());
-        expect(script).toContain('iframe[data-gh-twitter-direct-embed]');
-        expect(script).toContain('twttr.private.resize');
-        expect(script).toContain('frame.contentWindow === event.source');
-        expect(script).toContain("String(tweetId)");
-        expect(script).toContain("url.searchParams.set('theme', theme)");
-    });
-
-    it('resizes a direct embed from the message source frame', function () {
-        const {articleIframe, twitterIframe} = renderArticleIframeWithTwitterEmbed();
-
-        const event = new MessageEvent('message', {
-            data: {
-                twttr: {
-                    embed: {
-                        method: 'twttr.private.resize',
-                        params: [{
-                            height: 689
-                        }]
+            const event = new MessageEvent('message', {
+                data: {
+                    twttr: {
+                        embed: {
+                            method: 'twttr.private.resize',
+                            params: [{
+                                height: 689
+                            }]
+                        }
                     }
-                }
-            },
-            origin: 'null',
-            source: twitterIframe.contentWindow
+                },
+                origin: 'null',
+                source: twitterIframe.contentWindow
+            });
+
+            expect(resizeTwitterEmbedFromMessage(articleIframe, event)).toBe(true);
+            expect(twitterIframe.style.height).toBe('689px');
+
+            articleIframe.remove();
         });
 
-        expect(resizeTwitterEmbedFromMessage(articleIframe, event)).toBe(true);
-        expect(twitterIframe.style.height).toBe('689px');
+        it('resizes a direct embed when Twitter sends a numeric tweet id', function () {
+            const {articleIframe, twitterIframe} = renderArticleIframeWithTwitterEmbed('1234567890');
 
-        articleIframe.remove();
-    });
-
-    it('resizes a direct embed when Twitter sends a numeric tweet id', function () {
-        const {articleIframe, twitterIframe} = renderArticleIframeWithTwitterEmbed('1234567890');
-
-        const event = new MessageEvent('message', {
-            data: {
-                twttr: {
-                    embed: {
-                        method: 'twttr.private.resize',
-                        params: [{
-                            data: {
-                                tweet_id: 1234567890
-                            },
-                            height: 720
-                        }]
+            const event = new MessageEvent('message', {
+                data: {
+                    twttr: {
+                        embed: {
+                            method: 'twttr.private.resize',
+                            params: [{
+                                data: {
+                                    tweet_id: 1234567890
+                                },
+                                height: 720
+                            }]
+                        }
                     }
-                }
-            },
-            origin: 'https://platform.twitter.com',
-            source: null
+                },
+                origin: 'https://platform.twitter.com',
+                source: null
+            });
+
+            expect(resizeTwitterEmbedFromMessage(articleIframe, event)).toBe(true);
+            expect(twitterIframe.style.height).toBe('720px');
+
+            articleIframe.remove();
         });
-
-        expect(resizeTwitterEmbedFromMessage(articleIframe, event)).toBe(true);
-        expect(twitterIframe.style.height).toBe('720px');
-
-        articleIframe.remove();
     });
 });

@@ -70,40 +70,20 @@ const ArticleBody: React.FC<{
 
     const cssContent = articleBodyStyles();
     const shouldEnforceVideoCardInlinePlayback = typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(hover: none) and (pointer: coarse)').matches;
-    const readerStyleRef = useRef<twitterEmbed.TwitterEmbedStyleOptions>({
-        backgroundColor,
-        darkMode,
-        fontSize,
-        fontStyle
-    });
-    readerStyleRef.current.backgroundColor = backgroundColor;
-    readerStyleRef.current.darkMode = darkMode;
-    readerStyleRef.current.fontSize = fontSize;
-    readerStyleRef.current.fontStyle = fontStyle;
-    const initialTwitterEmbedOptionsRef = useRef<twitterEmbed.TwitterEmbedSandboxOptions | null>(null);
+    // Keep the latest dark-mode value in a ref so the stable theme-sync callback below can read the
+    // current value without re-subscribing the iframe listeners on every theme change.
+    const darkModeRef = useRef(darkMode);
+    darkModeRef.current = darkMode;
 
     const articleHtml = useMemo<twitterEmbed.TwitterEmbeddedArticle>(() => {
         const transformedHtml = shouldEnforceVideoCardInlinePlayback ? enforceVideoCardInlinePlayback(html) : html;
         const formattedHtml = openLinksInNewTab(transformedHtml);
 
-        if (!twitterEmbed.hasTwitterEmbed(formattedHtml)) {
-            return {
-                hasTwitterEmbeds: false,
-                html: formattedHtml
-            };
-        }
-
-        return twitterEmbed.renderTwitterEmbedsInArticle(formattedHtml, () => {
-            if (!initialTwitterEmbedOptionsRef.current) {
-                initialTwitterEmbedOptionsRef.current = twitterEmbed.getTwitterEmbedOptions(readerStyleRef.current);
-            }
-
-            return initialTwitterEmbedOptionsRef.current;
-        });
+        return twitterEmbed.renderTwitterEmbedsInArticle(formattedHtml, darkModeRef.current);
     }, [html, shouldEnforceVideoCardInlinePlayback]);
 
-    const sendTwitterEmbedStyleMessage = useCallback(() => {
-        twitterEmbed.postTwitterEmbedStyleMessage(iframeRef.current, twitterEmbed.getTwitterEmbedOptions(readerStyleRef.current));
+    const syncTwitterEmbedTheme = useCallback(() => {
+        twitterEmbed.applyTwitterEmbedTheme(iframeRef.current, darkModeRef.current);
     }, []);
 
     const htmlContent = `
@@ -180,8 +160,6 @@ const ArticleBody: React.FC<{
                         });
                     })).then(resizeIframe);
                 }
-
-                ${articleHtml.hasTwitterEmbeds ? twitterEmbed.getTwitterEmbedBridgeScript() : ''}
 
                 // Handle external resize triggers
                 window.addEventListener('message', (event) => {
@@ -310,10 +288,13 @@ const ArticleBody: React.FC<{
             const iframeWindow = iframe.contentWindow;
             if (iframeWindow) {
                 iframeWindow.addEventListener('keydown', handleIframeKeyDown);
-            }
 
-            if (articleHtml.hasTwitterEmbeds) {
-                sendTwitterEmbedStyleMessage();
+                if (articleHtml.hasTwitterEmbeds) {
+                    // Twitter posts resize messages to its parent (the article iframe window), so
+                    // also listen there — handleMessage routes them to resizeTwitterEmbedFromMessage.
+                    iframeWindow.addEventListener('message', handleMessage);
+                    syncTwitterEmbedTheme();
+                }
             }
         };
 
@@ -326,9 +307,10 @@ const ArticleBody: React.FC<{
             const iframeWindow = iframe.contentWindow;
             if (iframeWindow) {
                 iframeWindow.removeEventListener('keydown', handleIframeKeyDown);
+                iframeWindow.removeEventListener('message', handleMessage);
             }
         };
-    }, [articleHtml.hasTwitterEmbeds, htmlContent, sendTwitterEmbedStyleMessage]);
+    }, [articleHtml.hasTwitterEmbeds, htmlContent, syncTwitterEmbedTheme]);
 
     // Separate effect for style updates
     useEffect(() => {
@@ -354,7 +336,7 @@ const ArticleBody: React.FC<{
             root.classList.remove('has-sepia-bg');
         }
         if (articleHtml.hasTwitterEmbeds) {
-            sendTwitterEmbedStyleMessage();
+            syncTwitterEmbedTheme();
         }
 
         const iframeWindow = iframe.contentWindow as IframeWindow;
@@ -364,7 +346,7 @@ const ArticleBody: React.FC<{
             const resizeEvent = new Event('resize');
             iframeDocument.dispatchEvent(resizeEvent);
         }
-    }, [fontSize, fontStyle, backgroundColor, darkMode, articleHtml.hasTwitterEmbeds, sendTwitterEmbedStyleMessage]);
+    }, [fontSize, fontStyle, backgroundColor, darkMode, articleHtml.hasTwitterEmbeds, syncTwitterEmbedTheme]);
 
     useEffect(() => {
         const iframe = iframeRef.current;

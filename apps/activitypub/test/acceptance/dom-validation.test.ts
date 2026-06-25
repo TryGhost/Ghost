@@ -386,10 +386,6 @@ test.describe('DOM validation for rendered AP content', async () => {
         // The embed iframe must survive content processing — a previous regression ran
         // the whole article through DOMPurify, which stripped all <iframe> embeds.
         await expect(articleFrame.locator('.gh-content iframe[src*="youtube.com"]')).toHaveCount(1);
-        const twitterBridgeScriptCount = await articleFrame.locator('script:not([src])').evaluateAll(
-            scripts => scripts.filter(s => s.textContent?.includes('ghost-twitter-embed-style')).length
-        );
-        expect(twitterBridgeScriptCount).toBe(0);
         await expect(articleFrame.getByText('Before the embed.')).toBeVisible();
         await expect(articleFrame.getByText('After the embed.')).toBeVisible();
     });
