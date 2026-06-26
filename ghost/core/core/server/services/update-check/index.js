@@ -5,7 +5,6 @@ const api = require('../../api').endpoints;
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const jobsService = require('../jobs');
-const databaseInfo = require('../../data/db/info');
 
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
@@ -49,9 +48,6 @@ module.exports = async ({
                 read: api.settings.read,
                 edit: api.settings.edit
             },
-            posts: {
-                browse: api.posts.browse
-            },
             users: {
                 browse: api.users.browse
             },
@@ -60,11 +56,7 @@ module.exports = async ({
             }
         },
         config: {
-            mail: config.get('mail'),
-            env: config.get('env'),
-            databaseType: databaseInfo.getEngine(),
             checkEndpoint: updateCheckUrl,
-            isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
             notificationGroups: config.get('notificationGroups'),
             siteUrl: urlUtils.urlFor('home', true),
             forceUpdate,

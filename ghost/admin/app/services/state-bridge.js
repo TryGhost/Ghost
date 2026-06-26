@@ -186,6 +186,16 @@ export default class StateBridgeService extends Service.extend(Evented) {
         }
     }
 
+    @action
+    preloadAdminThemeStylesheet() {
+        return this.feature._loadAdminThemeStylesheet();
+    }
+
+    @action
+    applyAdminThemePreference(mode) {
+        return this.feature._setAdminTheme(mode);
+    }
+
     /* Ember -> React -------------------------------------------------------
 
     When Ember Data store records are updated, created, or deleted via the

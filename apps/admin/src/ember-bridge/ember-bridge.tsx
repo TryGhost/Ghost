@@ -18,6 +18,8 @@ export interface StateBridge {
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
+    preloadAdminThemeStylesheet?: () => Promise<void>;
+    applyAdminThemePreference?: (mode: 'light' | 'dark' | 'system') => Promise<void> | void;
     on<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
     off<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
     sidebarVisible: boolean;
