@@ -22,9 +22,6 @@
     "paths": {
         "contentPath": "content/"
     },
-    "privacy": {
-        "useUpdateCheck": true
-    },
     "useMinFiles": false,
     "caching": {
         "theme": {
