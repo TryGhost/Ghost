@@ -460,7 +460,7 @@ input,
 }
 
 .ember-power-select-multiple-option {
-    background: var(--white);
+    background: var(--lightgrey);
     color: var(--black);
 }
 
