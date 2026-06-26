@@ -34,6 +34,7 @@ Object {
       "lexicalIndicators": true,
       "llmsTxt": true,
       "members": true,
+      "navigationIcons": true,
       "pictureImageFormats": true,
       "smarterCounts": true,
       "stripeAutomaticTax": true,

@@ -79,6 +79,10 @@ const features: Feature[] = [{
     title: 'Gift links',
     description: 'Tokenized links that let anyone read a single gated post or page in full, no account required',
     flag: 'giftLinks'
+}, {
+    title: 'Navigation icons & visibility',
+    description: 'Add icons and member-visibility controls to navigation menu items. Requires theme support to render icons.',
+    flag: 'navigationIcons'
 }];
 
 const AlphaFeatures: React.FC = () => {

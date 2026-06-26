@@ -225,6 +225,139 @@ describe('Settings API', function () {
                 .expect(422);
         });
 
+        it('Can edit navigation items with icon and visibility', async function () {
+            await checkCanEdit('navigation', JSON.stringify([{
+                label: 'Members',
+                url: '/members/',
+                icon: `${config.get('url')}/content/images/nav-members.svg`,
+                visibility: 'members'
+            }, {
+                label: 'Free',
+                url: '/free/',
+                visibility: 'public_free'
+            }, {
+                label: 'Hidden',
+                url: '/hidden/',
+                visibility: 'none'
+            }]), [{
+                label: 'Members',
+                url: '/members/',
+                icon: `${config.get('url')}/content/images/nav-members.svg`,
+                visibility: 'members'
+            }, {
+                label: 'Free',
+                url: '/free/',
+                visibility: 'public_free'
+            }, {
+                label: 'Hidden',
+                url: '/hidden/',
+                visibility: 'none'
+            }]);
+
+            const navigationSetting = await db.knex('settings')
+                .select('value')
+                .where('key', 'navigation')
+                .first();
+
+            assert.equal(navigationSetting.value, '[{"label":"Members","url":"/members/","icon":"__GHOST_URL__/content/images/nav-members.svg","visibility":"members"},{"label":"Free","url":"/free/","visibility":"public_free"},{"label":"Hidden","url":"/hidden/","visibility":"none"}]');
+        });
+
+        it('Can edit icon-only navigation items', async function () {
+            await checkCanEdit('navigation', JSON.stringify([{
+                label: '',
+                url: '/icon-only/',
+                icon: `${config.get('url')}/content/images/nav-icon-only.svg`
+            }]), [{
+                label: '',
+                url: '/icon-only/',
+                icon: `${config.get('url')}/content/images/nav-icon-only.svg`
+            }]);
+
+            const navigationSetting = await db.knex('settings')
+                .select('value')
+                .where('key', 'navigation')
+                .first();
+
+            assert.equal(navigationSetting.value, '[{"label":"","url":"/icon-only/","icon":"__GHOST_URL__/content/images/nav-icon-only.svg"}]');
+        });
+
+        it('Can edit icon-only navigation items without a label property', async function () {
+            await checkCanEdit('navigation', JSON.stringify([{
+                url: '/icon-only-without-label/',
+                icon: `${config.get('url')}/content/images/nav-icon-only.svg`
+            }]), [{
+                url: '/icon-only-without-label/',
+                icon: `${config.get('url')}/content/images/nav-icon-only.svg`
+            }]);
+
+            const navigationSetting = await db.knex('settings')
+                .select('value')
+                .where('key', 'navigation')
+                .first();
+
+            assert.equal(navigationSetting.value, '[{"url":"/icon-only-without-label/","icon":"__GHOST_URL__/content/images/nav-icon-only.svg"}]');
+        });
+
+        it('Cannot edit navigation items without a label or icon', async function () {
+            const settingsToChange = {
+                settings: [
+                    {key: 'navigation', value: JSON.stringify([{label: '', url: '/invalid/'}])}
+                ]
+            };
+
+            await request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingsToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422);
+        });
+
+        it('Cannot edit navigation items with invalid visibility', async function () {
+            const settingsToChange = {
+                settings: [
+                    {key: 'navigation', value: JSON.stringify([{label: 'Invalid', url: '/invalid/', visibility: 'invalid'}])}
+                ]
+            };
+
+            await request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingsToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422);
+        });
+
+        it('Cannot edit navigation items with invalid icon', async function () {
+            const settingsToChange = {
+                settings: [
+                    {key: 'navigation', value: JSON.stringify([{label: 'Invalid', url: '/invalid/', icon: 'mailto:test@example.com'}])}
+                ]
+            };
+
+            await request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingsToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422);
+        });
+
+        it('Cannot edit navigation items with non-http icon URL protocols', async function () {
+            const settingsToChange = {
+                settings: [
+                    {key: 'navigation', value: JSON.stringify([{label: 'Invalid', url: '/invalid/', icon: 'ftp://example.com/icon.svg'}])}
+                ]
+            };
+
+            await request.put(localUtils.API.getApiQuery('settings/'))
+                .set('Origin', config.get('url'))
+                .send(settingsToChange)
+                .expect('Content-Type', /json/)
+                .expect('Cache-Control', testUtils.cacheRules.private)
+                .expect(422);
+        });
+
         // If this test fails, it can be safely removed
         // but the front-end should be updated accordingly,
         // removing the workaround in place for this specific usecase

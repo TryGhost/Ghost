@@ -16,6 +16,21 @@ const messages = {
 
 const createFrame = hbs.handlebars.createFrame;
 
+function getNavigationIconName(icon) {
+    if (!icon) {
+        return '';
+    }
+
+    const filename = icon.split(/[?#]/)[0].split('/').filter(Boolean).pop() || '';
+    const name = filename.replace(/\.[^.]+$/, '');
+
+    try {
+        return decodeURIComponent(name);
+    } catch (e) {
+        return name;
+    }
+}
+
 module.exports = function navigation(options) {
     options = options || {};
     options.hash = options.hash || {};
@@ -29,6 +44,7 @@ module.exports = function navigation(options) {
 
     const navigationData = options.data.site[key];
     const currentUrl = options.data.root.relativeUrl;
+    const member = options.data.member || options.data.root.member;
     let output;
 
     if (!_.isObject(navigationData) || _.isFunction(navigationData)) {
@@ -38,7 +54,7 @@ module.exports = function navigation(options) {
     }
 
     if (navigationData.filter(function (e) {
-        return (_.isUndefined(e.label) || _.isUndefined(e.url));
+        return (_.isUndefined(e.url) || (_.isUndefined(e.label) && _.isUndefined(e.icon)));
     }).length > 0) {
         throw new errors.IncorrectUsageError({
             message: tpl(messages.valuesMustBeDefined)
@@ -47,13 +63,17 @@ module.exports = function navigation(options) {
 
     // check for non-null string values
     if (navigationData.filter(function (e) {
-        return ((!_.isNull(e.label) && !_.isString(e.label)) ||
+        return ((!_.isUndefined(e.label) && !_.isNull(e.label) && !_.isString(e.label)) ||
             (!_.isNull(e.url) && !_.isString(e.url)));
     }).length > 0) {
         throw new errors.IncorrectUsageError({
             message: tpl(messages.valuesMustBeString)
         });
     }
+
+    // Icon and visibility are coerced rather than thrown on (see map/_isVisible
+    // below): a bad icon is dropped and an unrecognised visibility falls back to
+    // public, so malformed data can never 500 a whole site's front end.
 
     // strips trailing slashes and compares urls
     function _isCurrentUrl(href, url) {
@@ -71,14 +91,61 @@ module.exports = function navigation(options) {
         return new SafeString('');
     }
 
-    output = navigationData.map(function (e) {
+    function _isVisible(item) {
+        const visibility = item.visibility || 'public';
+        const isMember = !!member;
+        const isFreeMember = isMember && member.status === 'free';
+        const isPaidMember = isMember && member.status !== 'free';
+
+        if (visibility === 'members') {
+            return isMember;
+        }
+
+        if (visibility === 'paid') {
+            return isPaidMember;
+        }
+
+        if (visibility === 'public_free') {
+            return !isMember || isFreeMember;
+        }
+
+        if (visibility === 'public_paid') {
+            return !isMember || isPaidMember;
+        }
+
+        if (visibility === 'public_only') {
+            return !isMember;
+        }
+
+        if (visibility === 'free_members') {
+            return isFreeMember;
+        }
+
+        if (visibility === 'none') {
+            return false;
+        }
+
+        return true;
+    }
+
+    output = navigationData.filter(_isVisible).map(function (e) {
         const out = {};
+        const icon = _.isString(e.icon) ? e.icon : null;
+        const iconName = getNavigationIconName(icon);
+        const hasLabel = _.isString(e.label) && e.label.trim().length > 0;
+
         out.current = _isCurrentUrl(e.url, currentUrl);
+        out.icon = icon || null;
+        out.iconAlt = hasLabel ? '' : iconName;
         out.label = e.label;
-        out.slug = slugify(e.label);
+        out.slug = slugify(hasLabel ? e.label : iconName);
         out.url = e.url;
         return out;
     });
+
+    if (output.length === 0) {
+        return new SafeString('');
+    }
 
     // CASE: The navigation helper should have access to the navigation items at the top level.
     this.navigation = output;
