@@ -360,7 +360,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                     <ImageUpload
                                         deleteButtonClassName='md:invisible absolute -right-1 -top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
                                         deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
-                                        editButtonClassName='md:invisible absolute right-10 -top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
+                                        editButtonClassName='md:invisible absolute right-8 -top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
                                         fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                                         fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
                                         id='avatar'
