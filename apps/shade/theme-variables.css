@@ -141,7 +141,7 @@
     --surface-panel-foreground: var(--color-gray-100);
     --surface-elevated: var(--color-sidebar-bg);
     --surface-elevated-foreground: var(--color-gray-100);
-    --surface-elevated-2: oklch(0.27 0.004 260);
+    --surface-elevated-2: oklch(0.235 0.004 260);
     --surface-overlay: var(--color-black);
     --surface-overlay-foreground: var(--color-gray-400);
     --surface-inverse: var(--color-white);
@@ -176,4 +176,26 @@
     --sidebar-accent-foreground: var(--color-gray-100);
     --sidebar-border: var(--border);
     --sidebar-ring: var(--color-gray-700);
+}
+
+/* Stronger shadows in dark mode — default Tailwind values use ~10% black alpha,
+   which is essentially invisible against a dark page. Direct utility overrides
+   so they win over Tailwind's compiled `box-shadow` regardless of token resolution. */
+.dark .shadow-xs {
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+}
+.dark .shadow-sm {
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+}
+.dark .shadow-md {
+    box-shadow: 0 6px 12px -2px rgb(0 0 0 / 0.45), 0 3px 6px -3px rgb(0 0 0 / 0.45);
+}
+.dark .shadow-lg {
+    box-shadow: 0 13px 22px -4px rgb(0 0 0 / 0.5), 0 6px 10px -5px rgb(0 0 0 / 0.5);
+}
+.dark .shadow-xl {
+    box-shadow: 0 22px 34px -6px rgb(0 0 0 / 0.55), 0 10px 16px -8px rgb(0 0 0 / 0.55);
+}
+.dark .shadow-2xl {
+    box-shadow: 0 30px 58px -12px rgb(0 0 0 / 0.65);
 }
