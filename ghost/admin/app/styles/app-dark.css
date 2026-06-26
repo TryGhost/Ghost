@@ -745,6 +745,11 @@ input:focus,
 }
 
 /* Post preview modal */
+.fullscreen-modal-total-overlay,
+.gh-publish-setting-form {
+    background: var(--dark-main-bg-color);
+}
+
 .gh-post-preview-modal,
 .gh-post-preview-header,
 .fullscreen-modal-total-overlay .gh-pe-mobile-container {
