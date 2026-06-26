@@ -144,7 +144,7 @@ input:focus,
 }
 
 .gh-main-white {
-    background: var(--white);
+    background: var(--dark-main-bg-color);
 }
 
 .settings-menu-header {
@@ -673,7 +673,7 @@ input:focus,
 
 .gh-editor-title,
 .gh-editor-excerpt {
-    background: var(--white);
+    background: var(--dark-main-bg-color);
 }
 
 .gh-editor-title::placeholder {
@@ -681,7 +681,7 @@ input:focus,
 }
 
 .gh-btn-editor {
-    background: var(--white);
+    background: var(--dark-main-bg-color);
 }
 
 .gh-btn-editor:hover,
@@ -691,7 +691,7 @@ input:focus,
 }
 
 .gh-editor-post-status {
-    background: var(--white);
+    background: var(--dark-main-bg-color);
 }
 
 .gh-editor-feature-image-add-button {
@@ -719,7 +719,7 @@ input:focus,
 }
 
 .gh-editor-wordcount-container {
-    background: var(--white);
+    background: var(--dark-main-bg-color);
 }
 
 /* Segment input */
