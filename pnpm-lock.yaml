@@ -295,6 +295,12 @@ catalogs:
     '@testing-library/react':
       specifier: 12.1.5
       version: 12.1.5
+    '@types/react':
+      specifier: 17.0.90
+      version: 17.0.90
+    '@types/react-dom':
+      specifier: 17.0.26
+      version: 17.0.26
     react:
       specifier: 17.0.2
       version: 17.0.2
@@ -1294,13 +1300,19 @@ importers:
         version: 6.9.1
       '@testing-library/react':
         specifier: catalog:react17
-        version: 12.1.5(@types/react@18.3.31)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
+        version: 12.1.5(@types/react@17.0.90)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)
       '@tryghost/i18n':
         specifier: workspace:*
         version: link:../../ghost/i18n
       '@tryghost/nql':
         specifier: 'catalog:'
         version: 0.13.1(supports-color@5.5.0)
+      '@types/react':
+        specifier: catalog:react17
+        version: 17.0.90
+      '@types/react-dom':
+        specifier: catalog:react17
+        version: 17.0.26(@types/react@17.0.90)
       '@vitejs/plugin-react':
         specifier: 'catalog:'
         version: 4.7.0(vite@7.3.2(@types/node@26.0.0)(jiti@1.21.7)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
@@ -9577,6 +9589,9 @@ packages:
   '@types/react-world-flags@1.6.0':
     resolution: {integrity: sha512-j/uVy2fnG8gX3Ckic4sccYm9XjieasUsJDMqBDtdPdcwe3aFfz+iBbds+wxOiTzfe5BErVGjdFu6NO1hCg/7lw==}
 
+  '@types/react@17.0.90':
+    resolution: {integrity: sha512-P9beVR/x06U9rCJzSxtENnOr4BrbJ6VrsrDTc+73TtHv9XHhryXKbjGRB+6oooB2r0G/pQkD/S4dHo/7jUfwFw==}
+
   '@types/react@18.3.31':
     resolution: {integrity: sha512-vfEqpXTvwT91yhmwdfouStN2hSKwTvyRs8qpLfADyrq/kxDw0hZM7Wk9Ug1FELj8hIby+S/+kQCSRFF32nv2Qw==}
 
@@ -9594,6 +9609,9 @@ packages:
 
   '@types/sanitize-html@2.16.1':
     resolution: {integrity: sha512-n9wjs8bCOTyN/ynwD8s/nTcTreIHB1vf31vhLMGqUPNHaweKC4/fAl4Dj+hUlCTKYgm4P3k83fmiFfzkZ6sgMA==}
+
+  '@types/scheduler@0.16.8':
+    resolution: {integrity: sha512-WZLiwShhwLRmeV6zH+GkbOFT6Z6VklCItrDioxUnv+u4Ll+8vKeFySoFyK/0ctcRpOmwAicELfmys1sDc/Rw+A==}
 
   '@types/send@0.17.6':
     resolution: {integrity: sha512-Uqt8rPBE8SY0RK8JB1EzVOIZ32uqy8HwdxCnoCOsYrvnswqmFZ/k+9Ikidlk/ImhsdvBsloHbAlewb2IEBV/Og==}
@@ -28571,6 +28589,16 @@ snapshots:
       '@types/react': 18.3.31
       react-dom: 18.3.1(react@18.3.1)
 
+  '@testing-library/react@12.1.5(@types/react@17.0.90)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
+    dependencies:
+      '@babel/runtime': 7.29.7
+      '@testing-library/dom': 8.20.1
+      '@types/react-dom': 17.0.26(@types/react@17.0.90)
+      react: 17.0.2
+      react-dom: 17.0.2(react@17.0.2)
+    transitivePeerDependencies:
+      - '@types/react'
+
   '@testing-library/react@12.1.5(@types/react@18.3.31)(react-dom@17.0.2(react@17.0.2))(react@17.0.2)':
     dependencies:
       '@babel/runtime': 7.29.7
@@ -29830,6 +29858,10 @@ snapshots:
 
   '@types/range-parser@1.2.7': {}
 
+  '@types/react-dom@17.0.26(@types/react@17.0.90)':
+    dependencies:
+      '@types/react': 17.0.90
+
   '@types/react-dom@17.0.26(@types/react@18.3.31)':
     dependencies:
       '@types/react': 18.3.31
@@ -29849,6 +29881,12 @@ snapshots:
   '@types/react-world-flags@1.6.0':
     dependencies:
       '@types/react': 18.3.31
+
+  '@types/react@17.0.90':
+    dependencies:
+      '@types/prop-types': 15.7.15
+      '@types/scheduler': 0.16.8
+      csstype: 3.2.3
 
   '@types/react@18.3.31':
     dependencies:
@@ -29871,6 +29909,8 @@ snapshots:
   '@types/sanitize-html@2.16.1':
     dependencies:
       htmlparser2: 10.1.0
+
+  '@types/scheduler@0.16.8': {}
 
   '@types/send@0.17.6':
     dependencies:
