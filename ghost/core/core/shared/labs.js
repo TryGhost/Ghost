@@ -28,7 +28,8 @@ const GA_FEATURES = [
     'commentsPinning',
     'featurebaseFeedback',
     'dangerZoneResetAuth',
-    'indexnow'
+    'indexnow',
+    'llmsTxt'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -55,7 +56,6 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'pictureImageFormats',
     'smarterCounts',
-    'llmsTxt',
     'getHelperDeduplication',
     'giftLinks'
 ];
