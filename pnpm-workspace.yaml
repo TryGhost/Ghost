@@ -131,7 +131,7 @@ catalogs:
   react17:
     react: 17.0.2
     react-dom: 17.0.2
-    '@types/react': 17.0.90
+    '@types/react': 17.0.93
     '@types/react-dom': 17.0.26
     '@testing-library/react': 12.1.5
   tailwind3:
