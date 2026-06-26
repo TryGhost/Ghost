@@ -53,8 +53,8 @@ catalog:
   '@tryghost/debug': 2.2.3
   '@tryghost/domain-events': 3.2.5
   '@tryghost/helpers': 1.1.106
-  '@tryghost/kg-clean-basic-html': 4.3.2
-  '@tryghost/kg-converters': 1.2.2
+  '@tryghost/kg-clean-basic-html': 4.3.3
+  '@tryghost/kg-converters': 1.2.3
   '@tryghost/koenig-lexical': 1.8.3
   '@tryghost/limit-service': 1.5.6
   '@tryghost/logging': 4.2.1
@@ -82,13 +82,13 @@ catalog:
   concurrently: 10.0.3
   cross-fetch: 4.1.0
   dequal: 2.0.3
-  dompurify: 3.4.9
+  dompurify: 3.4.11
   dotenv: 17.4.2
   eslint: 9.39.4
   eslint-plugin-ghost: 3.5.0
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 5.2.0
-  eslint-plugin-react-refresh: 0.5.2
+  eslint-plugin-react-refresh: 0.5.3
   eslint-plugin-tailwindcss: 4.0.0-beta.0
   fs-extra: 11.3.5
   glob: 13.0.6

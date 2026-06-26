@@ -47,6 +47,8 @@ export type OpenCommentForm = {
 
 export type AddComment = {
     post_id: string,
+    parent_id?: string,
+    in_reply_to_id?: string,
     status: string,
     html: string
 }
