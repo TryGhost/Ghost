@@ -798,30 +798,12 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     padding: .8rem 0;
 }
 
-.gh-editor-feature-image-alt-toggle {
+.gh-editor-feature-image-caption-container > button {
     position: absolute;
-    bottom: 0;
+    top: 50%;
     right: 0;
     z-index: 1;
-    margin: .8rem;
-    padding: 0 .4rem;
-    border: 1px solid var(--grey-600);
-    border-radius: 6px;
-    background: transparent;
-    color: var(--grey-600);
-    cursor: pointer;
-    font-family: var(--font-family);
-    font-size: 1.3rem;
-    font-weight: 400;
-    line-height: 2.8rem;
-    letter-spacing: .04rem;
-    transition: all .1s ease-in;
-}
-
-.gh-editor-feature-image-alt-toggle.active {
-    border-color: var(--green);
-    background: var(--green);
-    color: var(--white);
+    transform: translateY(-50%);
 }
 
 .gh-editor-feature-image-alttext,
