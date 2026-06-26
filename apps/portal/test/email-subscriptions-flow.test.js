@@ -54,7 +54,7 @@ const setup = async ({site, member = null, newsletters}, loggedOut = false) => {
     const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
     const accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
     const viewPlansButton = within(popupIframeDocument).queryByRole('button', {name: 'View plans'});
-    const manageSubscriptionsButton = within(popupIframeDocument).queryByRole('button', {name: 'Manage'});
+    const manageSubscriptionsButton = within(popupIframeDocument).queryByText('Manage')?.closest('section');
     return {
         ghostApi,
         popupIframeDocument,
@@ -132,7 +132,9 @@ describe('Newsletter Subscriptions', () => {
             {newsletters: expectedSubscriptions}
         );
 
-        const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
+        // The checkboxes are aria-hidden (the row is the accessible toggle button),
+        // so query them via DOM rather than getAllByRole('checkbox').
+        const checkboxes = popupIframeDocument.querySelectorAll('input[type="checkbox"]');
         const newsletter1Checkbox = checkboxes[0];
         const newsletter2Checkbox = checkboxes[1];
 
@@ -165,7 +167,7 @@ describe('Newsletter Subscriptions', () => {
 
         expect(ghostApi.member.update).toHaveBeenCalledWith({newsletters: [], enableCommentNotifications: false});
         // Verify the local state shows the newsletter as unsubscribed
-        const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
+        const checkboxes = popupIframeDocument.querySelectorAll('input[type="checkbox"]');
         const newsletter1Checkbox = checkboxes[0];
         const newsletter2Checkbox = checkboxes[1];
 
@@ -198,7 +200,7 @@ describe('Newsletter Subscriptions', () => {
 
             expect(within(popupIframeDocument).getByText(/will no longer receive/)).toBeInTheDocument();
             // Verify the local state shows the newsletter as unsubscribed
-            const checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
+            const checkboxes = popupIframeDocument.querySelectorAll('input[type="checkbox"]');
             const newsletter1Checkbox = checkboxes[0];
             const newsletter2Checkbox = checkboxes[1];
 
@@ -227,7 +229,7 @@ describe('Newsletter Subscriptions', () => {
                 }
             );
             // Verify the local state shows the newsletter as unsubscribed
-            let checkboxes = within(popupIframeDocument).getAllByRole('checkbox');
+            let checkboxes = popupIframeDocument.querySelectorAll('input[type="checkbox"]');
             let newsletter1Checkbox = checkboxes[0];
             let newsletter2Checkbox = checkboxes[1];
 
@@ -249,11 +251,11 @@ describe('Newsletter Subscriptions', () => {
             const newPopupIframeDocument = newPopupFrame.contentDocument;
 
             // Open the NewsletterManagement page
-            const manageSubscriptionsButton = within(newPopupIframeDocument).queryByRole('button', {name: 'Manage'});
+            const manageSubscriptionsButton = within(newPopupIframeDocument).queryByText('Manage')?.closest('section');
             await userEvent.click(manageSubscriptionsButton);
 
             // Verify that the unsubscribed newsletter is shown as unsubscribed in the new popup
-            checkboxes = within(newPopupIframeDocument).getAllByRole('checkbox');
+            checkboxes = newPopupIframeDocument.querySelectorAll('input[type="checkbox"]');
             newsletter1Checkbox = checkboxes[0];
             newsletter2Checkbox = checkboxes[1];
             expect(newsletter1Checkbox).not.toBeChecked();

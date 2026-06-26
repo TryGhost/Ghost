@@ -31,24 +31,40 @@ function EmailPreferencesAction() {
         return <p>{t('Update your preferences')}</p>;
     };
 
+    const handleClick = () => {
+        doAction('switchPage', {
+            page,
+            lastPage: 'accountHome'
+        });
+    };
+
     return (
-        <section>
+        <section
+            className="gh-portal-list-clickable"
+            role="button"
+            tabIndex={0}
+            onClick={handleClick}
+            onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleClick();
+                }
+            }}
+        >
             <div className="gh-portal-list-detail">
                 <h3>{t('Emails')}</h3>
                 {renderEmailNotice()}
             </div>
-            <button
-                className="gh-portal-btn gh-portal-btn-list"
-                onClick={() => {
-                    doAction('switchPage', {
-                        page,
-                        lastPage: 'accountHome'
-                    });
-                }}
+            <span
+                className="gh-portal-list-action"
                 data-test-button="manage-newsletters"
+                aria-hidden="true"
             >
                 {t('Manage')}
-            </button>
+            </span>
         </section>
     );
 }

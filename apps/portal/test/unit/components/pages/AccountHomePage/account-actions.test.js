@@ -1,4 +1,4 @@
-import {act, render, waitFor} from '../../../../utils/test-utils';
+import {act, fireEvent, render, waitFor} from '../../../../utils/test-utils';
 import AccountActions from '../../../../../src/components/pages/AccountHomePage/components/account-actions';
 import {getSiteData, getMemberData} from '../../../../../src/utils/fixtures-generator';
 
@@ -125,6 +125,58 @@ describe('AccountActions', () => {
                     expect.objectContaining({signal: expect.any(AbortSignal)})
                 );
             });
+        });
+    });
+
+    describe('Profile row keyboard activation', () => {
+        // Use the default site (transistor_portal_enabled is false) so these
+        // row-interaction tests don't render the Transistor fetch path and can
+        // stay synchronous without stubbing window.fetch.
+        const site = getSiteData();
+        const member = getMemberData({
+            name: 'Test User',
+            email: 'test@example.com',
+            paid: false,
+            subscriptions: []
+        });
+
+        test('profile section is keyboard-activatable and opens the edit profile page', () => {
+            const {getByText, mockDoActionFn} = render(<AccountActions />, {
+                overrideContext: {site, member}
+            });
+
+            const profileRow = getByText('Test User').closest('section');
+            expect(profileRow).toHaveAttribute('role', 'button');
+            expect(profileRow).toHaveAttribute('tabindex', '0');
+
+            fireEvent.keyDown(profileRow, {key: 'Enter'});
+            expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {
+                page: 'accountProfile',
+                lastPage: 'accountHome'
+            });
+
+            mockDoActionFn.mockClear();
+            fireEvent.keyDown(profileRow, {key: ' '});
+            expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {
+                page: 'accountProfile',
+                lastPage: 'accountHome'
+            });
+
+            mockDoActionFn.mockClear();
+            fireEvent.keyDown(profileRow, {key: 'a'});
+            expect(mockDoActionFn).not.toHaveBeenCalled();
+        });
+
+        test('clicking the Edit button does not double-trigger the section', () => {
+            const {container, mockDoActionFn} = render(<AccountActions />, {
+                overrideContext: {site, member}
+            });
+
+            const editBtn = container.querySelector('[data-test-button="edit-profile"]');
+            fireEvent.click(editBtn);
+
+            const switchPageCalls = mockDoActionFn.mock.calls.filter(call => call[0] === 'switchPage');
+            expect(switchPageCalls).toHaveLength(1);
         });
     });
 });
