@@ -68,6 +68,8 @@
     "@testing-library/react": "catalog:react17",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/nql": "catalog:",
+    "@types/react": "catalog:",
+    "@types/react-dom": "catalog:",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "autoprefixer": "10.5.0",
