@@ -800,29 +800,22 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 
 .gh-editor-feature-image-alt-toggle {
     position: absolute;
-    top: 50%;
+    bottom: 0;
     right: 0;
     z-index: 1;
-    min-width: 32px;
-    height: 28px;
-    margin: 0;
+    margin: .8rem;
     padding: 0 .4rem;
-    border: 1px solid var(--midgrey);
+    border: 1px solid var(--grey-600);
     border-radius: 6px;
     background: transparent;
-    color: var(--midgrey);
+    color: var(--grey-600);
+    cursor: pointer;
     font-family: var(--font-family);
     font-size: 1.3rem;
     font-weight: 400;
-    line-height: 26px;
+    line-height: 2.8rem;
     letter-spacing: .04rem;
-    transform: translateY(-50%);
     transition: all .1s ease-in;
-}
-
-.gh-editor-feature-image-alt-toggle:hover {
-    border-color: var(--darkgrey);
-    color: var(--darkgrey);
 }
 
 .gh-editor-feature-image-alt-toggle.active {
