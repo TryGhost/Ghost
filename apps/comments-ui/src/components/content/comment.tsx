@@ -133,8 +133,11 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             const inReplyToDetails: Partial<OpenCommentForm> = {};
 
             if (parent) {
+                if (comment.html === null) {
+                    return;
+                }
                 inReplyToDetails.in_reply_to_id = comment.id;
-                inReplyToDetails.in_reply_to_snippet = getCommentInReplyToSnippet(comment);
+                inReplyToDetails.in_reply_to_snippet = getCommentInReplyToSnippet({html: comment.html});
             }
 
             const newForm: OpenCommentForm = {
@@ -166,7 +169,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             layoutVariant={layoutVariant}
             memberUuid={comment.member?.uuid}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
-            replyForm={displayReplyForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
+            replyForm={displayReplyForm && openForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
             useThreading={useThreading}
         >
             <div id={comment.id}>
@@ -178,7 +181,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
                 ) : (
                     <>
                         <CommentHeader className={hiddenClass} comment={comment} useThreading={useThreading} />
-                        <CommentBody className={hiddenClass} html={comment.html} isHighlighted={isHighlighted} />
+                        {comment.html && <CommentBody className={hiddenClass} html={comment.html} isHighlighted={isHighlighted} />}
                         <CommentMenu
                             comment={comment}
                             highlightReplyButton={highlightReplyButton}
@@ -230,7 +233,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
             isPinned={comment.pinned}
             layoutVariant={layoutVariant}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
-            replyForm={displayReplyForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
+            replyForm={displayReplyForm && openForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
             useThreading={useThreading}
         >
             <div className="mt-[-3px] flex items-start" id={comment.id}>
