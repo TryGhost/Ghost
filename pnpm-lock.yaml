@@ -75,6 +75,9 @@ catalogs:
     '@tryghost/api-framework':
       specifier: 3.2.4
       version: 3.2.4
+    '@tryghost/brute-knex':
+      specifier: 3.1.0
+      version: 3.1.0
     '@tryghost/color-utils':
       specifier: 0.2.19
       version: 0.2.19
@@ -2589,6 +2592,9 @@ importers:
       '@tryghost/bookshelf-plugins':
         specifier: 2.2.4
         version: 2.2.4
+      '@tryghost/brute-knex':
+        specifier: 'catalog:'
+        version: 3.1.0(express@4.22.2)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
       '@tryghost/color-utils':
         specifier: 'catalog:'
         version: 0.2.19
@@ -2742,9 +2748,6 @@ importers:
       bookshelf-relations:
         specifier: 2.8.0
         version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)))
-      brute-knex:
-        specifier: 4.0.1
-        version: 4.0.1(express@4.22.2)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)(supports-color@5.5.0)
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -8989,6 +8992,10 @@ packages:
   '@tryghost/bookshelf-transaction-events@2.2.3':
     resolution: {integrity: sha512-JPqrqka6Tje12TK9dHV/ethm4qfGwRzbPLjkBG79XRpB6QKDwB5NGAXY98bYKJz+w6fu8BKcn84o8r+t3MwRZg==}
 
+  '@tryghost/brute-knex@3.1.0':
+    resolution: {integrity: sha512-IFgJBdtL43rvvDdDKAPiQWGiura59wKw92xn4LgyCSTHGzODHMy8lgSTI6yJWv7I5uDTNYyjix26BxcnWjmKDA==}
+    engines: {node: '>=20.20.0'}
+
   '@tryghost/bunyan-rotating-filestream@0.0.7':
     resolution: {integrity: sha512-dswM+dxG8J7WpVoSjzAdoWXqqB5Dg0C2T7Zh6eoUvl5hkA8yWWJi/fS4jNXlHF700lWQ0g8/t+leJ7SGSWd+aw==}
 
@@ -11314,10 +11321,6 @@ packages:
     engines: {node: ^6 || ^7 || ^8 || ^9 || ^10 || ^11 || ^12 || >=13.7}
     hasBin: true
 
-  brute-knex@4.0.1:
-    resolution: {integrity: sha512-rV2tY8amv+2ERYNNC7voCl1A4Mh+s2IvyyDo3DAMKhaR4ME8r+4t9MH0Fgqjpe1ievESYX9Pes7gf05LBBUCRA==}
-    deprecated: Package no longer supported. Contact Support at https://www.npmjs.com/support for more info.
-
   bser@2.1.1:
     resolution: {integrity: sha512-gQxTNE/GAfIIrmHLUE3oJyp5FO6HRBfhjnw4/wMmA63ZGDJnWBmgY/lyQBpnDUkGmAhbSe39tx2d/iTOAfglwQ==}
 
@@ -11848,9 +11851,6 @@ packages:
   color@5.0.3:
     resolution: {integrity: sha512-ezmVcLR3xAVp8kYOm4GS45ZLLgIE6SPAFoduLr6hTDajwb3KZ2F46gulK3XpcwRFb5KKGCSezCBAY4Dw4HsyXA==}
     engines: {node: '>=18'}
-
-  colorette@1.1.0:
-    resolution: {integrity: sha512-6S062WDQUXi6hOfkO/sBPVwE5ASXY4G2+b4atvhJfSsuUUhIaUKlkjLe9692Ipyt5/a+IPF5aVTu3V5gvXq5cg==}
 
   colorette@1.2.1:
     resolution: {integrity: sha512-puCDz0CzydiSYOrnXpz/PKd69zRrribezjtE9yd4zvytoRc8+RY/KJPvtPFKZS3E3wP6neGyMe0vOTlHO5L3Pw==}
@@ -16364,28 +16364,6 @@ packages:
     engines: {node: ^14.18.0 || ^16.13.0 || ^18.12.1 || ^20.11.1 || ^22.13.1}
     hasBin: true
 
-  knex@0.20.15:
-    resolution: {integrity: sha512-WHmvgfQfxA5v8pyb9zbskxCS1L1WmYgUbwBhHojlkmdouUOazvroUWlCr6KIKMQ8anXZh1NXOOtIUMnxENZG5Q==}
-    engines: {node: '>=8'}
-    hasBin: true
-    peerDependencies:
-      mssql: ^6.1.0
-      mysql: ^2.18.1
-      mysql2: ^2.1.0
-      pg: ^7.18.2
-      sqlite3: ^4.1.1
-    peerDependenciesMeta:
-      mssql:
-        optional: true
-      mysql:
-        optional: true
-      mysql2:
-        optional: true
-      pg:
-        optional: true
-      sqlite3:
-        optional: true
-
   knex@0.21.21:
     resolution: {integrity: sha512-cjw5qO1EzVKjbywcVa61IQJMLt7PfYBRI/2NwCA/B9beXgbw652wDNLz+JM+UKKNsfwprq0ugYqBYc9q4JN36A==}
     engines: {node: '>=10'}
@@ -16410,6 +16388,34 @@ packages:
 
   knex@2.4.2:
     resolution: {integrity: sha512-tMI1M7a+xwHhPxjbl/H9K1kHX+VncEYcvCx5K00M16bWvpYPKAZd6QrCu68PtHAdIZNQPWZn0GVhqVBEthGWCg==}
+    engines: {node: '>=12'}
+    hasBin: true
+    peerDependencies:
+      better-sqlite3: '*'
+      mysql: '*'
+      mysql2: '*'
+      pg: '*'
+      pg-native: '*'
+      sqlite3: '*'
+      tedious: '*'
+    peerDependenciesMeta:
+      better-sqlite3:
+        optional: true
+      mysql:
+        optional: true
+      mysql2:
+        optional: true
+      pg:
+        optional: true
+      pg-native:
+        optional: true
+      sqlite3:
+        optional: true
+      tedious:
+        optional: true
+
+  knex@2.5.1:
+    resolution: {integrity: sha512-z78DgGKUr4SE/6cm7ku+jHvFT0X97aERh/f0MUKAKgFnwCYBEW4TFBqtHWFYiJFid7fMrtpZ/gxJthvz5mEByA==}
     engines: {node: '>=12'}
     hasBin: true
     peerDependencies:
@@ -18511,14 +18517,14 @@ packages:
   performance-now@2.1.0:
     resolution: {integrity: sha512-7EAHlyLHI56VEIdK57uwHdHKIaAGbnXPiw0yWbarQZOKaKpvUIgW0jWRVLiatnM+XXlSwsanIBH/hzGMJulMow==}
 
-  pg-connection-string@2.1.0:
-    resolution: {integrity: sha512-bhlV7Eq09JrRIvo1eKngpwuqKtJnNhZdpdOlvrPrA4dxqXPjxSrbNrfnIDmTpwMyRszrcV4kU5ZA4mMsQUrjdg==}
-
   pg-connection-string@2.4.0:
     resolution: {integrity: sha512-3iBXuv7XKvxeMrIgym7njT+HlZkwZqqGX4Bu9cci8xHZNT+Um1gWKqCsAzcC0d95rcKMU5WBg6YRUcHyV0HZKQ==}
 
   pg-connection-string@2.5.0:
     resolution: {integrity: sha512-r5o/V/ORTA6TmUnyWZR9nCj1klXCO2CEKNRlVuJptZe85QuhFayC7WeMic7ndayT5IRIR0S0xFxFi2ousartlQ==}
+
+  pg-connection-string@2.6.1:
+    resolution: {integrity: sha512-w6ZzNu6oMmIzEAYVw+RLK0+nqHPt8K3ZnknKi+g48Ak2pr3dtljJW3o+D/n2zzCG07Zoe9VOX3aiKpj+BN0pjg==}
 
   pg-connection-string@2.6.2:
     resolution: {integrity: sha512-ch6OwaeaPYcova4kKZ15sbJ2hKb/VP48ZD2gE7i1J+L4MspCtBMAx8nMgz7bksc7IojCIIWuEhHibSMFH8m8oA==}
@@ -21018,10 +21024,6 @@ packages:
     resolution: {integrity: sha512-56adEpPMouktRlBLXiaYFFzZ/3+JXa8P9n7WbR+ibIjtviN55mEaOkiysCnPnWm+7kkui1Dn8J9l+g6zV8731w==}
     engines: {node: '>=18'}
 
-  tarn@2.0.0:
-    resolution: {integrity: sha512-7rNMCZd3s9bhQh47ksAQd92ADFcJUjjbyOvyFjNLwTPpGieFHMC84S+LOzw0fx1uh6hnDz/19r8CPMnIjJlMMA==}
-    engines: {node: '>=8.0.0'}
-
   tarn@3.0.2:
     resolution: {integrity: sha512-51LAVKUSZSVfI05vjPESNc5vwqqZpbXCsU+/+wxlOrUjk2SnFTt97v9ZgQrD4YmxYW1Px6w2KjaDitCfkvgxMQ==}
     engines: {node: '>=8.0.0'}
@@ -21776,11 +21778,6 @@ packages:
 
   uuid@3.4.0:
     resolution: {integrity: sha512-HjSDRw6gZE5JMggctHBcjVak08+KEVhSIiDzFnT9S9aegmp85S/bReBVTb4QTFaRNptJ9kuYaNhnbNEOkbKb/A==}
-    deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
-    hasBin: true
-
-  uuid@7.0.3:
-    resolution: {integrity: sha512-DPSke0pXhTZgoF/d+WSt2QaKMCFSfx7QegxEWT+JOuHF5aWrKEn0G+ztjuJg/gG8/ItK+rbPCD/yNv8yyih6Cg==}
     deprecated: uuid@10 and below is no longer supported.  For ESM codebases, update to uuid@latest.  For CommonJS codebases, use uuid@11 (but be aware this version will likely be deprecated in 2028).
     hasBin: true
 
@@ -28850,6 +28847,21 @@ snapshots:
 
   '@tryghost/bookshelf-transaction-events@2.2.3': {}
 
+  '@tryghost/brute-knex@3.1.0(express@4.22.2)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)':
+    dependencies:
+      express-brute: 1.0.1(express@4.22.2)
+      knex: 2.5.1(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
+    transitivePeerDependencies:
+      - better-sqlite3
+      - express
+      - mysql
+      - mysql2
+      - pg
+      - pg-native
+      - sqlite3
+      - supports-color
+      - tedious
+
   '@tryghost/bunyan-rotating-filestream@0.0.7':
     dependencies:
       long-timeout: 0.1.1
@@ -32825,19 +32837,6 @@ snapshots:
       node-releases: 2.0.48
       update-browserslist-db: 1.2.3(browserslist@4.28.4)
 
-  brute-knex@4.0.1(express@4.22.2)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)(supports-color@5.5.0):
-    dependencies:
-      express-brute: 1.0.1(express@4.22.2)
-      knex: 0.20.15(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)(supports-color@5.5.0)
-    transitivePeerDependencies:
-      - express
-      - mssql
-      - mysql
-      - mysql2
-      - pg
-      - sqlite3
-      - supports-color
-
   bser@2.1.1:
     dependencies:
       node-int64: 0.4.0
@@ -33463,8 +33462,6 @@ snapshots:
     dependencies:
       color-convert: 3.1.3
       color-string: 2.1.4
-
-  colorette@1.1.0: {}
 
   colorette@1.2.1: {}
 
@@ -40093,29 +40090,6 @@ snapshots:
       - supports-color
       - tedious
 
-  knex@0.20.15(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)(supports-color@5.5.0):
-    dependencies:
-      colorette: 1.1.0
-      commander: 4.1.1
-      debug: 4.4.3(supports-color@5.5.0)
-      esm: 3.2.25
-      getopts: 2.2.5
-      inherits: 2.0.4
-      interpret: 2.2.0
-      liftoff: 3.1.0
-      lodash: 4.18.1
-      mkdirp: 0.5.6
-      pg-connection-string: 2.1.0
-      tarn: 2.0.0
-      tildify: 2.0.0
-      uuid: 7.0.3
-      v8flags: 3.2.0
-    optionalDependencies:
-      mysql2: 3.22.5(@types/node@22.19.21)
-      sqlite3: 5.1.7
-    transitivePeerDependencies:
-      - supports-color
-
   knex@0.21.21(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7):
     dependencies:
       colorette: 1.2.1
@@ -40170,6 +40144,28 @@ snapshots:
       interpret: 2.2.0
       lodash: 4.18.1
       pg-connection-string: 2.5.0
+      rechoir: 0.8.0
+      resolve-from: 5.0.0
+      tarn: 3.0.2
+      tildify: 2.0.0
+    optionalDependencies:
+      mysql2: 3.22.5(@types/node@22.19.21)
+      sqlite3: 5.1.7
+    transitivePeerDependencies:
+      - supports-color
+
+  knex@2.5.1(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7):
+    dependencies:
+      colorette: 2.0.19
+      commander: 10.0.1
+      debug: 4.3.4
+      escalade: 3.2.0
+      esm: 3.2.25
+      get-package-type: 0.1.0
+      getopts: 2.3.0
+      interpret: 2.2.0
+      lodash: 4.18.1
+      pg-connection-string: 2.6.1
       rechoir: 0.8.0
       resolve-from: 5.0.0
       tarn: 3.0.2
@@ -42741,11 +42737,11 @@ snapshots:
 
   performance-now@2.1.0: {}
 
-  pg-connection-string@2.1.0: {}
-
   pg-connection-string@2.4.0: {}
 
   pg-connection-string@2.5.0: {}
+
+  pg-connection-string@2.6.1: {}
 
   pg-connection-string@2.6.2: {}
 
@@ -45846,8 +45842,6 @@ snapshots:
       minizlib: 3.1.0
       yallist: 5.0.0
 
-  tarn@2.0.0: {}
-
   tarn@3.0.2: {}
 
   tdigest@0.1.2:
@@ -46674,8 +46668,6 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@3.4.0: {}
-
-  uuid@7.0.3: {}
 
   uuid@8.3.2: {}
 
