@@ -29,7 +29,7 @@ const GenericPopup: React.FC<Props> = ({show, children, title, callback}) => {
         window.addEventListener('keydown', listener, {passive: true});
 
         return () => {
-            window.removeEventListener('keydown', listener, {passive: true} as any);
+            window.removeEventListener('keydown', listener);
         };
     });
 
