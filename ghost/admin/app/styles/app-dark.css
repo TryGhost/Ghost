@@ -1122,7 +1122,7 @@ kbd {
 /* Post rows */
 
 .gh-posts-list-item-group:before {
-    background-color: oklch(0.23 0.009 260);
+    background-color: oklch(0.204 0.007 258); /* #15171A */
 }
 
 .gh-posts-list-item .gh-content-entry-meta,
