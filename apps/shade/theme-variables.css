@@ -129,7 +129,7 @@
     --input: var(--color-gray-900);
     --card: var(--background);
     --card-foreground: var(--color-gray-100);
-    --primary: var(--color-gray-100);
+    --primary: var(--color-gray-200);
     --primary-foreground: var(--color-black);
     --secondary: var(--color-gray-900);
     --secondary-foreground: var(--color-gray-100);
