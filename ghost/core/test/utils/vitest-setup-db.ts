@@ -1,11 +1,10 @@
 // Vitest setup for the DB-backed suites (integration / e2e / legacy).
 //
 // These suites boot a real Ghost server against a provisioned database — unlike
-// the unit suite (./vitest-setup.ts), which never touches a DB. This file is the
-// vitest equivalent of ./overrides.js (the mocha `--require`): it derives a
-// per-session database + port BEFORE Ghost's config loads, loads Ghost's
-// runtime overrides, and bridges @tryghost/express-test's mochaHooks contract
-// onto vitest's globals.
+// the unit suite (./vitest-setup.ts), which never touches a DB. This file
+// derives a per-session database + port BEFORE Ghost's config loads, loads
+// Ghost's runtime overrides, and bridges @tryghost/express-test's mochaHooks
+// contract onto vitest's globals.
 //
 // Execution model: one Ghost server == one process (Ghost's db/knex,
 // @tryghost/domain-events, the jobs manager, nconf, settings cache, and the url
@@ -16,10 +15,6 @@
 // below is still done per worker so multiple concurrent runs (or a future
 // forks-based parallel model, where each fork is its own process with its own
 // DB) never collide.
-
-// vitest setup files are *meant* to register top-level hooks; the ghost/mocha
-// lint plugin (aimed at mocha test files) flags them. Disable for this file.
-/* eslint-disable ghost/mocha/no-top-level-hooks, ghost/mocha/no-sibling-hooks, ghost/mocha/handle-done-callback */
 
 import {beforeAll, beforeEach, afterEach, afterAll} from 'vitest';
 
@@ -43,20 +38,51 @@ process.env.WEBHOOK_SECRET = process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_
 // instance.
 //
 // Each worker is its own process, so it gets its own database — that's what lets
-// the DB suites run fork-parallel (PLA-156). The per-process sessionId is
-// appended even to a CI-pinned *base*: the sqlite leg exports a single
+// the DB suites run fork-parallel. The per-fork sessionId is appended
+// even to a CI-pinned *base*: the sqlite leg exports a single
 // database__connection__filename=/dev/shm/ghost-test.db for the whole job, so
 // without a unique suffix every fork would hammer the same file. (The mysql leg
 // pins only host/port, so the database name is generated outright here.)
-const sessionId = crypto.randomBytes(4).toString('hex');
+//
+// sqlite names are keyed on VITEST_POOL_ID (1..poolSize, like the port below) so
+// a run reuses ~poolSize stable files instead of leaving a fresh random DB in
+// /tmp every run — that bounded reuse is what stops local /tmp accumulation.
+// A reused file still holds the prior fork's data, though, and Ghost reads it at
+// boot (settings cache, url service) before the suite resets — which corrupts
+// whichever file lands on the slot (null Owner, stale URLs, bad export). So the
+// file is deleted just below, before Ghost loads, so a reused slot boots from
+// nothing exactly as a fresh name would. mysql keeps a random per-fork name: it
+// has no /tmp to bound (CI databases die with the job) and a random name sidesteps
+// the same stale-reuse hazard without a pre-boot DROP.
+const poolSlot = parseInt(process.env.VITEST_POOL_ID || '', 10);
+const sqliteId = Number.isInteger(poolSlot)
+    ? `pool_${poolSlot}`
+    : crypto.randomBytes(4).toString('hex');
 const sqliteBase = process.env.database__connection__filename;
 process.env.database__connection__filename = sqliteBase
-    ? `${sqliteBase.replace(/\.db$/i, '')}-${sessionId}.db`
-    : `/tmp/ghost-test-${sessionId}.db`;
+    ? `${sqliteBase.replace(/\.db$/i, '')}-${sqliteId}.db`
+    : `/tmp/ghost-test-${sqliteId}.db`;
+const mysqlId = crypto.randomBytes(4).toString('hex');
 const mysqlBase = process.env.database__connection__database;
 process.env.database__connection__database = mysqlBase
-    ? `${mysqlBase}_${sessionId}`
-    : `ghost_testing_${sessionId}`;
+    ? `${mysqlBase}_${mysqlId}`
+    : `ghost_testing_${mysqlId}`;
+
+// Delete this slot's leftover sqlite file (+ sidecars) before Ghost loads, so a
+// reused pool name boots from a clean slate — see the note above. SQLITE LEG ONLY:
+// on the mysql leg (NODE_ENV testing-mysql) this derived filename is never ours —
+// it belongs to a concurrent sqlite run on the same machine, and deleting it out
+// from under that run destroys its database mid-write (SQLITE_READONLY). force:true
+// makes the sqlite delete a no-op on a slot's first use.
+if (!process.env.NODE_ENV.includes('mysql')) {
+    for (const suffix of ['', '-journal', '-wal', '-shm', '-orig']) {
+        try {
+            require('fs').rmSync(process.env.database__connection__filename + suffix, {force: true});
+        } catch (e) {
+            // best effort — a fresh boot recreates it
+        }
+    }
+}
 
 // Flush this worker's V8 coverage after every file. The external c8 collector
 // reads NODE_V8_COVERAGE, which Node writes only on a clean process exit — but
@@ -66,7 +92,7 @@ process.env.database__connection__database = mysqlBase
 // lost (a SIGTERM handler is unreliable: recycled forks don't all get one).
 // Running v8.takeCoverage() in this per-file afterAll writes each file's coverage
 // to disk before its fork is torn down, so c8 captures every file. No-op off
-// coverage runs. (PLA-156)
+// coverage runs.
 if (process.env.NODE_V8_COVERAGE) {
     afterAll(() => {
         try {
@@ -77,15 +103,31 @@ if (process.env.NODE_V8_COVERAGE) {
     });
 }
 
-// NOTE: each fork leaves its per-process DB behind (sqlite file / mysql db).
-// vitest force-terminates forks (which is also why the forks-teardown deadlock
-// doesn't bite), so a process 'exit' handler can't reclaim them. On CI both are
-// ephemeral (the runner's /dev/shm and the mysql container die with the job);
-// locally they accumulate under /tmp. Proper reclamation (a globalSetup teardown
-// that sweeps the run's DBs) is tracked in PLA-156.
+// NOTE: each fork still leaves a DB behind — vitest force-terminates forks (which
+// is also why the forks-teardown deadlock doesn't bite), so a process 'exit'
+// handler can't reclaim them. sqlite stays bounded: the next fork on a slot
+// deletes the file at boot (see the derivation above) and recreates it, so a run
+// reuses at most ~poolSize files in /tmp instead of leaving a fresh random one
+// behind every run. mysql names are random per fork but ephemeral on CI (the
+// container dies with the job); locally the mysql suite is rarely run.
 
 const canonicalTestPort = 2369;
-process.env.server__port = process.env.server__port || String(2370 + Math.floor(Math.random() * 7630));
+// The per-fork port must be unique among forks running concurrently. Each test
+// file boots a real HTTP server on this port (e2e-api tests hit it via
+// supertest.agent(config.get('url'))); if two concurrent forks land on the same
+// port, one Ghost ends up serving the other's requests — or boots unready — and
+// every request 404s with an HTML body (e.g. the whole invites suite failing
+// intermittently). vitest gives each concurrent fork a distinct VITEST_POOL_ID
+// (1..poolSize); a recycled slot's port is reused only after its previous fork
+// has exited and freed it, so base+poolId never collides among live forks. The
+// old `Math.random()` port in a 7630-wide range collided often enough across ~90
+// parallel boots to flake. (The DB name already uses a 2^32 sessionId, which is
+// collision-resistant; only the port was under-spread.)
+const poolId = parseInt(process.env.VITEST_POOL_ID || '', 10);
+const derivedPort = Number.isInteger(poolId)
+    ? 2370 + poolId
+    : 2370 + Math.floor(Math.random() * 7630);
+process.env.server__port = process.env.server__port || String(derivedPort);
 process.env.url = process.env.url || `http://127.0.0.1:${process.env.server__port}`;
 const sessionPort = parseInt(process.env.server__port, 10);
 
@@ -99,7 +141,6 @@ const {snapshotManager, mochaHooks} = snapshotExports;
 // Normalize URLs before snapshot comparison. When a random port is in use,
 // response URLs contain the session port but committed snapshots use the
 // canonical port (2369). Keeps snapshot comparisons stable across sessions.
-// Mirrors ./overrides.js.
 if (sessionPort !== canonicalTestPort && snapshotManager) {
     const originalMatch = snapshotManager.match.bind(snapshotManager);
     const portRegex = new RegExp(`127\\.0\\.0\\.1:${sessionPort}`, 'g');
@@ -139,7 +180,6 @@ if (sessionPort !== canonicalTestPort && snapshotManager) {
 const mockManager = require('./e2e-framework-mock-manager');
 
 // Bridge @tryghost/express-test's mochaHooks contract onto vitest's globals.
-// Order matches ./overrides.js for parity.
 //
 // NOTE: vitest runs setup-file hooks per *file*, not once per run like mocha's
 // root hooks. That's fine for these (disableNetwork is idempotent; the snapshot

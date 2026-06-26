@@ -3,7 +3,7 @@ const deferred = require('../../../../../utils/deferred');
 const {assertExists} = require('../../../../../utils/assertions');
 const errors = require('@tryghost/errors');
 const {authenticateContentApiKey} = require('../../../../../../core/server/services/auth/api-key/content');
-const models = require('../../../../../../core/server/models');
+const {ApiKey} = require('../../../../../../core/server/models/api-key');
 const sinon = require('sinon');
 
 describe('Content API Key Auth', function () {
@@ -20,7 +20,7 @@ describe('Content API Key Auth', function () {
             }
         };
 
-        apiKeyStub = sinon.stub(models.ApiKey, 'findOne');
+        apiKeyStub = sinon.stub(ApiKey, 'findOne');
         apiKeyStub.returns(Promise.resolve());
         apiKeyStub.withArgs({secret: fakeApiKey.secret}).returns(Promise.resolve(fakeApiKey));
     });

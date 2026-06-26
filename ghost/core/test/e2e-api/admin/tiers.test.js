@@ -11,7 +11,7 @@ const {anyContentVersion, anyEtag} = matchers;
 describe('Tiers API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('members');
         await agent.loginAsOwner();

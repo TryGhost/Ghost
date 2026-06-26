@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 
+import './index.css';
 import App from './app';
 
 const ROOT_DIV_ID = 'sodo-search-root';
@@ -18,6 +19,7 @@ function getSiteData() {
     const scriptTag = document.querySelector('script[data-sodo-search]');
     if (scriptTag) {
         const adminUrl = scriptTag.dataset.sodoSearch;
+        // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
         const apiKey = scriptTag.dataset.key;
         const stylesUrl = scriptTag.dataset.styles;
         const locale = scriptTag.dataset.locale || 'en';

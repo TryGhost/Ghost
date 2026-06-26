@@ -28,7 +28,8 @@ const GA_FEATURES = [
     'commentsPinning',
     'featurebaseFeedback',
     'dangerZoneResetAuth',
-    'indexnow'
+    'indexnow',
+    'llmsTxt'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -42,8 +43,10 @@ const PUBLIC_BETA_FEATURES = [
 // Which is only visible if the developer experiments flag is enabled
 const PRIVATE_FEATURES = [
     'automations',
+    'automationAnalytics',
     'stripeAutomaticTax',
     'importMemberTier',
+    'csvContentImporter',
     'urlCache',
     'lexicalIndicators',
     'adminUIRefresh',
@@ -53,7 +56,6 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'pictureImageFormats',
     'smarterCounts',
-    'llmsTxt',
     'getHelperDeduplication',
     'giftLinks'
 ];
@@ -131,7 +133,6 @@ module.exports.enabledHelper = function enabledHelper(options, callback) {
     });
     errDetails.help = tpl(options.errorHelp || messages.errorHelp, {url: options.helpUrl});
 
-    // eslint-disable-next-line no-restricted-syntax
     logging.error(new errors.DisabledFeatureError({
         message: errDetails.message,
         context: errDetails.context,

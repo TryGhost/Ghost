@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const domainEvents = require('@tryghost/domain-events');
 const ObjectId = require('bson-objectid').default;
 const models = require('../../../core/server/models');
+const mailService = require('../../../core/server/services/mail');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../core/server/services/member-welcome-emails/constants');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');
@@ -79,7 +80,7 @@ describe('Automations API', function () {
     let schedulerKey;
     let schedulerToken;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'integrations', 'api_keys');
         await agent.loginAsOwner();
@@ -190,11 +191,11 @@ describe('Automations API', function () {
                 .orderBy('slug');
 
             assert.deepEqual(automations.map(({name, slug, status}) => ({name, slug, status})), [{
-                name: 'Welcome Email (Free)',
+                name: 'Free member welcome flow',
                 slug: MEMBER_WELCOME_EMAIL_SLUGS.free,
                 status: 'inactive'
             }, {
-                name: 'Welcome Email (Paid)',
+                name: 'Paid member welcome flow',
                 slug: MEMBER_WELCOME_EMAIL_SLUGS.paid,
                 status: 'inactive'
             }].sort((left, right) => left.slug.localeCompare(right.slug)));
@@ -255,6 +256,118 @@ describe('Automations API', function () {
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
+                });
+        });
+    });
+
+    describe('email preview', function () {
+        it('renders draft content without welcome email content rows', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            await models.Base.knex('welcome_email_automated_emails').del();
+
+            await agent
+                .post(`automations/${automationId}/email_preview/`)
+                .body({
+                    subject: 'Automation Subject',
+                    lexical: NON_EMPTY_EMAIL_LEXICAL
+                })
+                .expectStatus(200)
+                .expect(cacheInvalidateHeaderNotSet())
+                .expect(({body}) => {
+                    assert.equal(body.automation_email_previews.length, 1);
+                    assert.equal(body.automation_email_previews[0].subject, 'Automation Subject');
+                    assert.match(body.automation_email_previews[0].html, /Lorem ipsum/);
+                    assert.match(body.automation_email_previews[0].plaintext, /Lorem ipsum/);
+                })
+                .matchHeaderSnapshot({
+                    'content-version': anyContentVersion,
+                    etag: anyEtag
+                });
+
+            const welcomeEmailRow = await models.Base.knex('welcome_email_automated_emails')
+                .where('welcome_email_automation_id', automationId)
+                .first('id');
+            assert.equal(welcomeEmailRow, undefined);
+        });
+
+        it('cannot render preview for a missing automation', async function () {
+            await agent
+                .post('automations/abcd1234abcd1234abcd1234/email_preview/')
+                .body({
+                    subject: 'Automation Subject',
+                    lexical: NON_EMPTY_EMAIL_LEXICAL
+                })
+                .expectStatus(404)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
+                    assert.equal(typeof body.errors[0].id, 'string');
+                });
+        });
+
+        it('cannot render preview without content', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            await agent
+                .post(`automations/${browseBody.automations[0].id}/email_preview/`)
+                .body({
+                    subject: 'Automation Subject'
+                })
+                .expectStatus(422)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
+                    assert.equal(body.errors[0].property, 'lexical');
+                });
+        });
+    });
+
+    describe('email test', function () {
+        it('sends a test email without welcome email content rows', async function () {
+            sinon.stub(mailService.GhostMailer.prototype, 'send').resolves('Mail sent');
+
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            const automationId = browseBody.automations[0].id;
+
+            await models.Base.knex('welcome_email_automated_emails').del();
+
+            await agent
+                .post(`automations/${automationId}/email_test/`)
+                .body({
+                    email: 'test@ghost.org',
+                    subject: 'Automation Subject',
+                    lexical: NON_EMPTY_EMAIL_LEXICAL
+                })
+                .expectStatus(204)
+                .expectEmptyBody()
+                .expect(cacheInvalidateHeaderNotSet());
+
+            sinon.assert.calledOnce(mailService.GhostMailer.prototype.send);
+        });
+
+        it('cannot send a test email to an invalid email address', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+
+            await agent
+                .post(`automations/${browseBody.automations[0].id}/email_test/`)
+                .body({
+                    email: 'not-an-email',
+                    subject: 'Automation Subject',
+                    lexical: NON_EMPTY_EMAIL_LEXICAL
+                })
+                .expectStatus(422)
+                .expect(({body}) => {
+                    assert.equal(body.errors.length, 1);
                 });
         });
     });

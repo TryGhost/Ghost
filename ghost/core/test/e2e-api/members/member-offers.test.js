@@ -29,7 +29,7 @@ async function getMemberSubscription(email) {
 }
 
 describe('Members API - Member Offers', function () {
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsForMembers();
 
         membersAgent = agents.membersAgent;

@@ -8,6 +8,7 @@ const messages = {
 };
 
 const MAX_SENDING_CONCURRENCY = 2;
+const SHUTDOWN_CODE = 'BULK_EMAIL_SHUTDOWN_IN_PROGRESS';
 
 /**
  * @typedef {import('./sending-service')} SendingService
@@ -32,6 +33,9 @@ class BatchSendingService {
     #db;
     #sentry;
     #debugStorageFilePath;
+    #getRequiredUrlRelations;
+    #shuttingDown = false;
+    #inFlight = new Set();
 
     // Retry database queries happening before sending the email
     #BEFORE_RETRY_CONFIG = {maxRetries: 10, maxTime: 10 * 60 * 1000, sleep: 2000};
@@ -51,6 +55,7 @@ class BatchSendingService {
      * @param {Email} dependencies.models.Email
      * @param {object} dependencies.models.Member
      * @param {object} dependencies.db
+     * @param {() => string[]} [dependencies.getRequiredUrlRelations] Post relations the live routes need loaded to generate URLs (lazy routing); defaults to none
      * @param {object} [dependencies.sentry]
      * @param {object} [dependencies.BEFORE_RETRY_CONFIG]
      * @param {object} [dependencies.AFTER_RETRY_CONFIG]
@@ -66,6 +71,7 @@ class BatchSendingService {
         models,
         db,
         sentry,
+        getRequiredUrlRelations = () => [],
         BEFORE_RETRY_CONFIG,
         AFTER_RETRY_CONFIG,
         MAILGUN_API_RETRY_CONFIG,
@@ -80,6 +86,7 @@ class BatchSendingService {
         this.#db = db;
         this.#sentry = sentry;
         this.#debugStorageFilePath = debugStorageFilePath;
+        this.#getRequiredUrlRelations = getRequiredUrlRelations;
 
         if (BEFORE_RETRY_CONFIG) {
             this.#BEFORE_RETRY_CONFIG = BEFORE_RETRY_CONFIG;
@@ -110,6 +117,19 @@ class BatchSendingService {
             return {...this.#BEFORE_RETRY_CONFIG, stopAfterDate: email._retryCutOffTime};
         }
         return this.#BEFORE_RETRY_CONFIG;
+    }
+
+    /**
+     * Stops the batch workers and waits for any in-flight sends to finish.
+     * Called by the cleanup pipeline when the container is shutting down. Idempotent.
+     */
+    async onShutdown() {
+        this.#shuttingDown = true;
+        if (this.#inFlight.size > 0) {
+            logging.warn(`Email send shutdown: awaiting ${this.#inFlight.size} in-flight sendBatches call(s) to settle`);
+        }
+        await Promise.allSettled([...this.#inFlight]);
+        logging.warn(`Email send shutdown: drain complete`);
     }
 
     /**
@@ -167,6 +187,10 @@ class BatchSendingService {
                 }, {patch: true, autoRefresh: false});
             }, {...this.#AFTER_RETRY_CONFIG, description: `email ${emailId} -> submitted`});
         } catch (e) {
+            if (e && e.code === SHUTDOWN_CODE) {
+                logging.info(`Email ${email.id} send stopped because the container is shutting down — leaving status=submitting so it can resume on next boot`);
+                return;
+            }
             const ghostError = new errors.EmailError({
                 err: e,
                 code: 'BULK_EMAIL_SEND_FAILED',
@@ -202,8 +226,10 @@ class BatchSendingService {
             return await email.getLazyRelation('newsletter', {require: true});
         }, {...this.#getBeforeRetryConfig(email), description: `getLazyRelation newsletter for email ${email.id}`});
 
+        // 'tiers' is required by the email tier-gating logic (renderer/segmenter), not for URL generation
+        const postRelations = [...new Set(['posts_meta', 'authors', 'tiers', ...this.#getRequiredUrlRelations()])];
         const post = await this.retryDb(async () => {
-            return await email.getLazyRelation('post', {require: true, withRelated: ['posts_meta', 'authors', 'tags']});
+            return await email.getLazyRelation('post', {require: true, withRelated: postRelations});
         }, {...this.#getBeforeRetryConfig(email), description: `getLazyRelation post for email ${email.id}`});
 
         let batches = await this.retryDb(async () => {
@@ -426,6 +452,20 @@ class BatchSendingService {
     }
 
     async sendBatches({email, batches, post, newsletter}) {
+        // Track the in-flight call so onShutdown can await it. The cleanup task
+        // must wait for the Mailgun POST + EmailBatch DB write to settle before
+        // ghost-server schedules process.exit, otherwise mid-flight requests get
+        // killed and EmailBatch rows never record what Mailgun actually accepted.
+        const work = this.#sendBatchesInner({email, batches, post, newsletter});
+        this.#inFlight.add(work);
+        try {
+            return await work;
+        } finally {
+            this.#inFlight.delete(work);
+        }
+    }
+
+    async #sendBatchesInner({email, batches, post, newsletter}) {
         logging.info(`Sending ${batches.length} batches for email ${email.id}`);
         const deadline = this.getDeliveryDeadline(email);
 
@@ -436,21 +476,28 @@ class BatchSendingService {
         /** @type {Map<string, import('./email-renderer').EmailBody>} */
         const emailBodyCache = new Map();
 
-        // Calculate deliverytimes for the batches
+        // Spread batches across the target window if one is configured. `deliveryTimes`
+        // handles the past-deadline case internally (resume of an interrupted send or a
+        // delayed job): if the original `created_at + targetDeliveryWindow` deadline has
+        // passed, the function respreads remaining batches over a fresh window starting
+        // now instead of returning undefined for every batch (which would dump every
+        // remaining batch into Mailgun in the same second and break the rate-spread).
+        const targetDeliveryWindow = this.#sendingService.getTargetDeliveryWindow();
+        const shouldApplyDeliveryTimes = targetDeliveryWindow !== undefined && targetDeliveryWindow > 0;
         const deliveryTimes = this.calculateDeliveryTimes(email, batches.length);
 
         // Loop batches and send them via the EmailProvider
         let succeededCount = 0;
         const queue = batches.slice();
 
-        // Bind this
-        let runNext;
-        runNext = async () => {
-            const batch = queue.shift();
-            if (batch) {
+        const runWorker = async () => {
+            while (!this.#shuttingDown) {
+                const batch = queue.shift();
+                if (!batch) {
+                    return;
+                }
                 const batchData = {email, batch, post, newsletter, emailBodyCache, deliveryTime: undefined};
-                // Only set a delivery time if we have a deadline and it hasn't past yet
-                if (deadline && deadline.getTime() > Date.now()) {
+                if (shouldApplyDeliveryTimes) {
                     const deliveryTime = deliveryTimes.shift();
                     if (deliveryTime && deliveryTime >= Date.now()) {
                         batchData.deliveryTime = deliveryTime;
@@ -459,12 +506,20 @@ class BatchSendingService {
                 if (await this.sendBatch(batchData)) {
                     succeededCount += 1;
                 }
-                await runNext();
             }
         };
 
         // Run maximum MAX_SENDING_CONCURRENCY at the same time
-        await Promise.all(new Array(MAX_SENDING_CONCURRENCY).fill(0).map(() => runNext()));
+        await Promise.all(new Array(MAX_SENDING_CONCURRENCY).fill(0).map(() => runWorker()));
+
+        logging.info(`Email ${email.id} send done: ${succeededCount}/${batches.length} batches succeeded, ${queue.length} unstarted`);
+
+        if (this.#shuttingDown && queue.length > 0) {
+            throw new errors.InternalServerError({
+                code: SHUTDOWN_CODE,
+                message: 'Email send stopped because the container is shutting down'
+            });
+        }
 
         if (succeededCount < batches.length) {
             if (succeededCount > 0) {
@@ -495,8 +550,24 @@ class BatchSendingService {
             {...this.#getBeforeRetryConfig(email), description: `updateStatusLock batch ${originalBatch.id} -> submitting`}
         );
         if (!batch) {
-            logging.error(`Tried sending email batch that is not pending or failed ${originalBatch.id}`);
-            return true;
+            // updateStatusLock returned undefined: the batch's current status is neither
+            // `pending` nor `failed`, so the lock didn't engage. Two distinct cases, and
+            // they need different handling — collapsing them is the bug this branch fixes.
+            const currentStatus = originalBatch.get('status');
+            if (currentStatus === 'submitted') {
+                // Mailgun accepted this batch on a prior run. Nothing to do; return true so
+                // the parent email's success counter stays accurate. Expected path during
+                // resume of an interrupted send where some batches finished before the crash.
+                logging.info(`Email batch ${originalBatch.id} already submitted on a prior run; skipping`);
+                return true;
+            }
+            // Otherwise currentStatus is `submitting`: orphan from a worker that crashed
+            // mid-batch. We have no record of Mailgun accepting it, and re-sending risks
+            // duplicates. Return false so the parent email is promoted to `failed` and an
+            // operator can reconcile against the Mailgun dashboard before retrying.
+            // Runbook: docs/newsletter-send-plan-v9.md.
+            logging.error(`Email batch ${originalBatch.id} is stuck in status=${currentStatus} (orphan from a crashed worker); not re-sending — marking parent email as failed for operator review`);
+            return false;
         }
 
         let succeeded = false;
@@ -754,23 +825,31 @@ class BatchSendingService {
      * @param {number} numBatches - the number of batches to be sent
      */
     calculateDeliveryTimes(email, numBatches) {
-        const deadline = this.getDeliveryDeadline(email);
-        const now = new Date();
-        // If there is no deadline (target delivery window is not set) or the deadline is in the past, delivery immediately
-        if (!deadline || now >= deadline) {
+        let deadline = this.getDeliveryDeadline(email);
+        if (!deadline) {
             return new Array(numBatches).fill(undefined);
-        } else {
-            const timeToDeadline = deadline.getTime() - now.getTime();
-            const batchDelay = timeToDeadline / numBatches;
-            const deliveryTimes = [];
-            for (let i = 0; i < numBatches; i++) {
-                const delay = batchDelay * i;
-                const deliveryTime = new Date(now.getTime() + delay);
-                deliveryTimes.push(deliveryTime);
-            }
-            return deliveryTimes;
         }
+        const now = new Date();
+        // If the original `created_at + targetDeliveryWindow` deadline has passed (resume
+        // of an interrupted send, or a job that was delayed for any reason), respread
+        // batches over a fresh window of the same size starting now. Otherwise a
+        // 50%-resumed 10-minute send would dump every remaining batch into Mailgun in
+        // the same second and defeat the rate-spread.
+        if (now >= deadline) {
+            const targetDeliveryWindow = this.#sendingService.getTargetDeliveryWindow();
+            deadline = new Date(now.getTime() + targetDeliveryWindow);
+        }
+        const timeToDeadline = deadline.getTime() - now.getTime();
+        const batchDelay = timeToDeadline / numBatches;
+        const deliveryTimes = [];
+        for (let i = 0; i < numBatches; i++) {
+            const delay = batchDelay * i;
+            const deliveryTime = new Date(now.getTime() + delay);
+            deliveryTimes.push(deliveryTime);
+        }
+        return deliveryTimes;
     }
 }
 
 module.exports = BatchSendingService;
+module.exports.SHUTDOWN_CODE = SHUTDOWN_CODE;

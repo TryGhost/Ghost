@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/admin-toolbar",
-  "version": "0.1.1",
+  "type": "module",
+  "version": "0.1.6",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -18,59 +19,28 @@
   },
   "scripts": {
     "build": "pnpm exec vite build",
-    "build:watch": "pnpm exec vite build --watch",
+    "build:watch": "pnpm exec vite build --watch --mode development",
     "dev": "concurrently --kill-others --names preview,build \"pnpm exec vite preview -l silent\" \"pnpm build:watch\"",
-    "lint": "pnpm exec eslint src --ext .js --cache",
+    "lint": "pnpm exec eslint src test --cache",
     "test": "pnpm test:unit",
-    "test:unit": "pnpm run build && pnpm exec mocha --exit --trace-warnings --timeout=60000 \"test/**/*.test.js\"",
+    "test:unit": "pnpm run build && pnpm exec vitest run",
     "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
   },
   "devDependencies": {
+    "@eslint/js": "catalog:",
     "concurrently": "catalog:",
     "eslint": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
+    "globals": "catalog:",
     "jsdom": "catalog:",
-    "mocha": "catalog:",
-    "vite": "catalog:"
+    "vite": "catalog:",
+    "vitest": "catalog:"
   },
-  "eslintConfig": {
-    "ignorePatterns": [
-      "umd/**/*.js"
-    ],
-    "env": {
-      "browser": true
-    },
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2022
-    },
-    "extends": [
-      "plugin:ghost/browser"
-    ],
-    "plugins": [
-      "ghost"
-    ],
-    "overrides": [
-      {
-        "files": [
-          "test/**/*.js"
-        ],
-        "env": {
-          "mocha": true,
-          "node": true
-        },
-        "parserOptions": {
-          "sourceType": "script"
-        }
-      }
-    ],
-    "rules": {
-      "ghost/filenames/match-regex": [
-        "error",
-        "^[a-z0-9.-]+$",
-        false
-      ]
-    }
+  "nx": {
+    "tags": [
+      "public-app"
+    ]
   }
 }

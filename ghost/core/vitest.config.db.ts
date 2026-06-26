@@ -18,11 +18,10 @@ import {defineConfig} from 'vitest/config';
 //    (The forks-teardown deadlock the unit config avoids does not reproduce here
 //    on vitest 4 — the heavy DB forks exit cleanly.)
 //  - test/utils/vitest-setup-db.ts provisions the per-process DB + port and
-//    bridges @tryghost/express-test's snapshot/mocha hooks onto vitest.
+//    bridges @tryghost/express-test's snapshot hooks onto vitest.
 //
-// Suites move onto vitest one at a time. As each ports, add (or widen) a project
-// below and drop that directory from the mocha run in package.json (`test:base`
-// globs the rest).
+// Every DB-backed suite (integration / e2e / e2e-api / legacy) now runs here;
+// each is a project below, keyed by its include globs.
 
 // Ghost's snapshot tests use @tryghost/jest-snapshot, which manages its own
 // __snapshots__/*.snap files. Point vitest's *native* snapshot system at a
@@ -33,6 +32,15 @@ const resolveSnapshotPath = (testPath: string, snapExtension: string) => path.jo
     '__vitest_snapshots__',
     path.basename(testPath) + snapExtension
 );
+
+// Vitest projects re-create their own Vite config — settings on the parent
+// `defineConfig` aren't inherited. The DB-backed runners use Vite's SSR
+// pipeline, so workspace TS deps with a `source` exports condition (e.g.
+// @tryghost/parse-email-address) need this on every project. Matches the
+// runtime backend's `--conditions=source` (ghost/core/nodemon.json).
+const sharedSsrConfig = {
+    resolve: {conditions: ['source', 'node']}
+};
 
 // Shared by every DB-backed project — the execution model is identical for all
 // of them; only the include globs and per-suite timeouts differ.
@@ -46,6 +54,7 @@ const sharedDbConfig = {
     // threads share process.env, so the per-process DB derivation would collide.
     pool: 'forks' as const,
     isolate: false,
+    sequence: {shuffle: {files: !!process.env.CI}},
     setupFiles: ['./test/utils/vitest-setup-db.ts'],
     resolveSnapshotPath,
     // Keep the testing env (CI sets `testing-mysql` on the MySQL leg; default to
@@ -55,7 +64,15 @@ const sharedDbConfig = {
     // process, where CI sets the leg's NODE_ENV.
     env: {
         NODE_ENV: process.env.NODE_ENV?.startsWith('testing') ? process.env.NODE_ENV : 'testing',
-        WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET'
+        WEBHOOK_SECRET: process.env.WEBHOOK_SECRET || 'TEST_STRIPE_WEBHOOK_SECRET',
+        // Bree runs jobs in worker_threads that inherit this NODE_OPTIONS; tsx lets
+        // them require() Ghost's .ts sources (job files pull in e.g.
+        // labs-flag-overrides.ts). The old mocha lane got tsx from `--node-option
+        // import=tsx`; vitest only registers tsx in-process (not in the fork
+        // execArgv worker_threads inherit) and ignores poolOptions.forks.execArgv
+        // here, so route it through the env. Applied on test.env (after fork
+        // startup) so only the spawned workers pick it up, not the fork.
+        NODE_OPTIONS: (process.env.NODE_OPTIONS ? process.env.NODE_OPTIONS + ' ' : '') + '--import tsx --conditions=source'
     },
     hookTimeout: 60000
 };
@@ -63,6 +80,15 @@ const sharedDbConfig = {
 export default defineConfig({
     test: {
         resolveSnapshotPath,
+        // Build ONE migrated+seeded "template" database for the whole run, before
+        // any worker fork spawns; each fork then restores its per-process DB from
+        // that template (a cheap bulk copy) on first provision instead of running
+        // a full migrate+seed per file. This is the lever for the MySQL
+        // acceptance-test runtime regression — per-file migrate+seed is
+        // its dominant cost. Defined at the root (not per-project) so a single
+        // template is shared across every project in the invocation. See
+        // test/utils/vitest-global-db-setup.ts and test/utils/db-template.js.
+        globalSetup: ['./test/utils/vitest-global-db-setup.ts'],
         // Local runs use the compact `dot` reporter. CI uses `default` plus
         // `github-actions` for inline annotations (mirrors vitest.config.ts).
         reporters: process.env.GITHUB_ACTIONS
@@ -70,6 +96,7 @@ export default defineConfig({
             : ['dot'],
         projects: [
             {
+                ssr: sharedSsrConfig,
                 test: {
                     ...sharedDbConfig,
                     name: 'e2e',
@@ -79,12 +106,17 @@ export default defineConfig({
                         'test/e2e-server/**/*.test.{js,ts}',
                         'test/e2e-frontend/**/*.test.{js,ts}'
                     ],
-                    exclude: ['**/node_modules/**'],
+                    exclude: [
+                        '**/node_modules/**',
+                        // ignore isolated e2e server tests
+                        'test/e2e-server/**/*.isolated.test.{js,ts}'
+                    ],
                     // Matches the mocha `--timeout=15000` for the e2e suites.
                     testTimeout: 15000
                 }
             },
             {
+                ssr: sharedSsrConfig,
                 test: {
                     ...sharedDbConfig,
                     name: 'integration',
@@ -99,27 +131,19 @@ export default defineConfig({
                     // way); sqlite per-file init is cheap so the cost here is small.
                     isolate: true,
                     include: ['test/integration/**/*.test.{js,ts}'],
-                    // These stay on mocha (kept green via the test:integration:mocha
-                    // sidecar) pending vitest fixes:
-                    //  - update-check: bree worker_thread can't resolve .ts (PLA-157)
-                    //  - domain-warming: batch-send job hangs under vitest (PLA-158)
-                    //  - welcome-email-automation-poll / clean-tokens / last-seen-at-updater:
-                    //    sinon fake timers break the mysql2 driver's internal pool/query
-                    //    timers, so DB I/O hangs under vitest on MySQL (pass on sqlite,
-                    //    which has no network/pool timers) (PLA-160).
-                    exclude: [
-                        '**/node_modules/**',
-                        '**/jobs/update-check.test.js',
-                        '**/email-service/domain-warming.test.js',
-                        '**/automations/welcome-email-automation-poll.test.js',
-                        '**/members/clean-tokens.test.js',
-                        '**/last-seen-at-updater.test.js'
-                    ],
+                    exclude: ['**/node_modules/**'],
+                    // Probes the optional Docker services (Redis, MinIO) once in
+                    // the main process and exports GHOST_TEST_{REDIS,MINIO}_AVAILABLE
+                    // so the adapter suites skip when their service is down and run
+                    // when it's up. Integration-only — no adapter tests live in the
+                    // other DB suites.
+                    globalSetup: ['./test/utils/vitest-globalsetup-services.ts'],
                     // Matches the mocha `--timeout=10000` for the integration suite.
                     testTimeout: 10000
                 }
             },
             {
+                ssr: sharedSsrConfig,
                 test: {
                     ...sharedDbConfig,
                     name: 'legacy',
@@ -132,6 +156,32 @@ export default defineConfig({
                     exclude: ['**/node_modules/**'],
                     // Matches the mocha `--timeout=60000` (boot-heavy model/api/site tests).
                     testTimeout: 60000
+                }
+            },
+            {
+                ssr: sharedSsrConfig,
+                test: {
+                    ...sharedDbConfig,
+                    name: 'e2e-api',
+                    // Shares the default isolate:false (one shared boot per fork):
+                    // the cross-file leakers that forced per-file isolation here are
+                    // fixed at the source, dropping the dominant boot cost.
+                    include: ['test/e2e-api/**/*.test.{js,ts}'],
+                    exclude: ['**/node_modules/**'],
+                    // Matches the mocha `--timeout=15000` for the e2e suites.
+                    testTimeout: 15000
+                }
+            },
+            {
+                ssr: sharedSsrConfig,
+                test: {
+                    ...sharedDbConfig,
+                    name: 'e2e-isolated',
+                    isolate: true,
+                    include: ['test/e2e-server/**/*.isolated.test.{js,ts}'],
+                    exclude: ['**/node_modules/**'],
+                    // Matches the mocha `--timeout=15000` for the e2e suites.
+                    testTimeout: 15000
                 }
             }
         ]

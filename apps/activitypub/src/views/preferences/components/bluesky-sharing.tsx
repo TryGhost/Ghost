@@ -60,7 +60,6 @@ const BlueskySharing: React.FC = () => {
                 setHandleConfirmed(true);
             }
         });
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []); // Empty deps - mutations are stable in practice
 
     useEffect(() => {
@@ -107,7 +106,6 @@ const BlueskySharing: React.FC = () => {
         }, CONFIRMATION_INTERVAL);
 
         return () => clearInterval(confirmHandleInterval);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [account?.blueskyEnabled, account?.blueskyHandleConfirmed, confirmHandle]); // disableBlueskyMutation is stable
 
     if (isLoadingAccount) {

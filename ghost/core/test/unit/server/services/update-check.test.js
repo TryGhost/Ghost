@@ -3,13 +3,11 @@ const nock = require('nock');
 const moment = require('moment');
 const crypto = require('crypto');
 const assert = require('node:assert/strict');
-const util = require('util');
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');
 const UpdateCheckService = require('../../../../core/server/services/update-check/update-check-service');
 
 describe('Update Check', function () {
-    const internal = {context: {internal: true}};
     let settingsStub;
     let requestStub;
 
@@ -17,20 +15,6 @@ describe('Update Check', function () {
         settingsStub = sinon.stub().resolves({
             settings: []
         });
-        settingsStub.withArgs(Object.assign({key: 'db_hash'}, internal)).resolves({
-            settings: [{
-                value: 'dummy_db_hash'
-            }]
-        });
-        settingsStub.withArgs(Object.assign({key: 'active_theme'}, internal)).resolves({
-            settings: [{
-                value: 'casperito'
-            }]
-        });
-
-        sinon.stub(util, 'promisify').returns(async () => ({
-            stdout: '10.8.2'
-        }));
 
         sinon.stub(logging, 'error');
         sinon.stub(logging, 'warn');
@@ -63,15 +47,11 @@ describe('Update Check', function () {
                     },
                     users: {
                         browse: sinon.stub().resolves()
-                    },
-                    posts: {
-                        browse: sinon.stub().resolves()
                     }
                 },
                 config: {
                     checkEndpoint: 'https://updates.ghost.org',
                     siteUrl: 'https://localhost:2368/test',
-                    isPrivacyDisabled: true,
                     ghostVersion: '0.8.0'
                 },
                 request: request
@@ -129,15 +109,11 @@ describe('Update Check', function () {
                     },
                     users: {
                         browse: sinon.stub().resolves()
-                    },
-                    posts: {
-                        browse: sinon.stub().resolves()
                     }
                 },
                 config: {
                     checkEndpoint: 'https://updates.ghost.org',
                     siteUrl: 'https://example.com',
-                    isPrivacyDisabled: true,
                     ghostVersion: '5.3.4'
                 },
                 request: request
@@ -149,12 +125,14 @@ describe('Update Check', function () {
         });
     });
 
-    describe('Data sent with the POST request', function () {
-        it('should report the correct data', async function () {
-            let capturedData;
+    describe('Data sent with the request', function () {
+        it('sends a GET with only the ghost_version and no site data', async function () {
+            let capturedQuery;
+            const postsBrowseStub = sinon.stub().resolves();
             const scope = nock('https://updates.ghost.org')
-                .post('/', (body) => {
-                    capturedData = body;
+                .get('/')
+                .query((query) => {
+                    capturedQuery = query;
                     return true;
                 })
                 .reply(200, JSON.stringify({
@@ -171,139 +149,36 @@ describe('Update Check', function () {
                         edit: settingsStub
                     },
                     users: {
-                        browse: sinon.stub().resolves({
-                            users: [{
-                                created_at: '1995-12-24T23:15:00Z',
-                                roles: [{
-                                    name: 'Owner'
-                                }]
-                            }, {}]
-                        })
+                        browse: sinon.stub().resolves()
                     },
                     posts: {
-                        browse: sinon.stub().resolves({
-                            meta: {
-                                pagination: {
-                                    total: 13
-                                }
-                            }
-                        })
+                        browse: postsBrowseStub
                     }
                 },
                 config: {
                     checkEndpoint: 'https://updates.ghost.org',
                     siteUrl: 'https://localhost:2368/test',
-                    isPrivacyDisabled: false,
-                    env: process.env.NODE_ENV,
-                    databaseType: 'mysql',
                     ghostVersion: '4.0.0'
                 },
-                request: request,
-                ghostMailer: {
-                    send: sinon.stub().resolves()
-                }
+                request: request
             });
 
             await updateCheckService.check();
 
+            // A GET request was made (the GET interceptor matched)
             assert.equal(scope.isDone(), true);
 
-            assert.equal(capturedData.ghost_version, '4.0.0');
-            assert.equal(capturedData.node_version, process.versions.node);
-            assert.equal(capturedData.env, process.env.NODE_ENV);
-            assert.match(capturedData.database_type, /sqlite3|mysql/);
-            assert.equal(typeof capturedData.blog_id, 'string');
-            assert(capturedData.blog_id);
-            assert.equal(capturedData.theme, 'casperito');
-            assert.equal(capturedData.blog_created_at, 819846900);
-            assert.equal(capturedData.user_count, 2);
-            assert.equal(capturedData.post_count, 13);
-            assert.equal(capturedData.npm_version, '10.8.2');
-        });
+            // Only the Ghost version is sent - no site data is collected
+            assert.deepEqual({...capturedQuery}, {ghost_version: '4.0.0'});
 
-        it('still sends the request when a telemetry query fails', async function () {
-            // This reproduces the staging condition where posts.browse fails
-            // with a model-layer SQL error (errno 1054). The update check
-            // should keep going: collect what it can, log what it couldn't,
-            // and send the request anyway so the notification flow still runs.
-            let capturedData;
-            const scope = nock('https://updates.ghost.org')
-                .post('/', (body) => {
-                    capturedData = body;
-                    return true;
-                })
-                .reply(200, JSON.stringify({notifications: []}), {
-                    'Content-Type': 'application/json'
-                });
-
-            const postsBrowseError = Object.assign(
-                new Error('Could not understand request.'),
-                {errno: 1054}
-            );
-
-            const updateCheckService = new UpdateCheckService({
-                api: {
-                    settings: {
-                        read: settingsStub,
-                        edit: settingsStub
-                    },
-                    users: {
-                        browse: sinon.stub().resolves({
-                            users: [{
-                                created_at: '1995-12-24T23:15:00Z',
-                                roles: [{name: 'Owner'}]
-                            }]
-                        })
-                    },
-                    posts: {
-                        browse: sinon.stub().rejects(postsBrowseError)
-                    }
-                },
-                config: {
-                    checkEndpoint: 'https://updates.ghost.org',
-                    siteUrl: 'https://localhost:2368/test',
-                    isPrivacyDisabled: false,
-                    env: process.env.NODE_ENV,
-                    databaseType: 'mysql',
-                    ghostVersion: '4.0.0'
-                },
-                request: request,
-                ghostMailer: {send: sinon.stub().resolves()}
-            });
-
-            await updateCheckService.check();
-
-            // The check sent its request despite posts.browse failing
-            assert.equal(scope.isDone(), true);
-
-            // Telemetry that didn't depend on posts.browse is intact
-            assert.equal(capturedData.ghost_version, '4.0.0');
-            assert.equal(capturedData.user_count, 1);
-            assert.equal(capturedData.blog_created_at, 819846900);
-
-            // post_count gracefully degrades to 0
-            assert.equal(capturedData.post_count, 0);
-
-            // The underlying error is still surfaced — with the source so we
-            // know which telemetry call failed
-            sinon.assert.calledWith(logging.error, sinon.match({
-                event: {name: 'update-check.telemetry.error'},
-                source: 'posts',
-                err: sinon.match({errno: 1054})
-            }));
-
-            // The partial-summary log surfaces which sources failed in one place
-            sinon.assert.calledWith(logging.warn, sinon.match({
-                event: {name: 'update-check.telemetry.partial'},
-                failures: ['posts'],
-                attemptedCount: 5,
-                failedCount: 1
-            }));
+            // No stats are gathered, so the posts API is never called
+            sinon.assert.notCalled(postsBrowseStub);
         });
 
         it('emits structured logs around the request lifecycle', async function () {
             nock('https://updates.ghost.org')
-                .post('/')
+                .get('/')
+                .query(true)
                 .reply(200, JSON.stringify({
                     notifications: [],
                     next_check: moment().add(1, 'day').unix()
@@ -316,20 +191,15 @@ describe('Update Check', function () {
             const updateCheckService = new UpdateCheckService({
                 api: {
                     settings: {read: settingsStub, edit: settingsStub},
-                    users: {browse: sinon.stub().resolves({users: []})},
-                    posts: {browse: sinon.stub().resolves({meta: {pagination: {total: 0}}})}
+                    users: {browse: sinon.stub().resolves({users: []})}
                 },
                 config: {
                     checkEndpoint: 'https://updates.ghost.org',
                     siteUrl: 'https://localhost:2368/test',
-                    isPrivacyDisabled: false,
-                    env: 'testing',
-                    databaseType: 'mysql',
                     ghostVersion: '4.0.0',
                     forceUpdate: true
                 },
-                request: request,
-                ghostMailer: {send: sinon.stub().resolves()}
+                request: request
             });
 
             await updateCheckService.check();
@@ -341,8 +211,7 @@ describe('Update Check', function () {
             }));
             sinon.assert.calledWith(logging.info, sinon.match({
                 event: {name: 'update-check.request.start'},
-                endpoint: 'https://updates.ghost.org',
-                method: 'POST'
+                endpoint: 'https://updates.ghost.org'
             }));
             sinon.assert.calledWith(logging.info, sinon.match({
                 event: {name: 'update-check.request.complete'},
@@ -399,9 +268,6 @@ describe('Update Check', function () {
                     users: {
                         browse: usersBrowseStub
                     },
-                    posts: {
-                        browse: sinon.stub().resolves()
-                    },
                     notifications: {
                         add: notificationsAPIAddStub
                     }
@@ -409,7 +275,6 @@ describe('Update Check', function () {
                 config: {
                     checkEndpoint: 'https://updates.ghost.org',
                     siteUrl: 'https://localhost:2368/test',
-                    isPrivacyDisabled: true,
                     ghostVersion: '0.8.0'
                 },
                 request: request
@@ -427,10 +292,9 @@ describe('Update Check', function () {
             assert.equal(targetNotification.type, 'info');
             assert.equal(targetNotification.message, notification.messages[0].content);
 
-            // users.browse is called once here, for stats reporting: this
-            // notification is non-alert, so the admin-lookup query in the
-            // alert branch never runs.
-            sinon.assert.calledOnce(usersBrowseStub);
+            // No site data is collected, so a non-alert notification never
+            // triggers a users.browse - that only happens in the alert branch.
+            sinon.assert.notCalled(usersBrowseStub);
         });
 
         it('preserves custom flag value from update check response', async function () {
@@ -513,9 +377,6 @@ describe('Update Check', function () {
                     users: {
                         browse: usersBrowseStub
                     },
-                    posts: {
-                        browse: sinon.stub().resolves()
-                    },
                     notifications: {
                         add: notificationsAPIAddStub
                     }
@@ -523,7 +384,6 @@ describe('Update Check', function () {
                 config: {
                     checkEndpoint: 'https://updates.ghost.org',
                     siteUrl: 'http://127.0.0.1:2369',
-                    isPrivacyDisabled: true,
                     ghostVersion: '0.8.0'
                 },
                 request: request,
@@ -531,6 +391,10 @@ describe('Update Check', function () {
             });
 
             await updateCheckService.check();
+
+            // users.browse is called once, in the alert branch, to look up
+            // the admin recipients for the critical alert email.
+            sinon.assert.calledOnce(usersBrowseStub);
 
             sinon.assert.calledOnce(emailSendStub);
             assert.deepEqual(emailSendStub.args[0][0].to, ['jbloggs@example.com']);
@@ -570,9 +434,6 @@ describe('Update Check', function () {
                             }]
                         })
                     },
-                    posts: {
-                        browse: sinon.stub().resolves()
-                    },
                     notifications: {
                         add: notificationsAPIAddStub
                     }
@@ -580,7 +441,6 @@ describe('Update Check', function () {
                 config: {
                     checkEndpoint: 'https://updates.ghost.org',
                     siteUrl: 'https://localhost:2368/test',
-                    isPrivacyDisabled: true,
                     ghostVersion: '0.8.0'
                 },
                 request: request
@@ -638,7 +498,6 @@ describe('Update Check', function () {
                 config: {
                     checkEndpoint: 'https://updates.ghost.org',
                     siteUrl: 'https://localhost:2368/test',
-                    isPrivacyDisabled: false,
                     ghostVersion: '6.44.0'
                 },
                 request: request,
@@ -648,7 +507,8 @@ describe('Update Check', function () {
 
         it('handles a bare-object response with messages at the top level', async function () {
             nock('https://updates.ghost.org')
-                .post('/')
+                .get('/')
+                .query(true)
                 .reply(200, JSON.stringify(releaseNotification), {'Content-Type': 'application/json'});
 
             const addStub = sinon.stub().resolves();
@@ -662,7 +522,8 @@ describe('Update Check', function () {
 
         it('handles a wrapped {notifications:[...]} response', async function () {
             nock('https://updates.ghost.org')
-                .post('/')
+                .get('/')
+                .query(true)
                 .reply(200, JSON.stringify({
                     notifications: [releaseNotification, customNotification],
                     next_check: 1781018713
@@ -676,7 +537,8 @@ describe('Update Check', function () {
 
         it('handles a bare-array response', async function () {
             nock('https://updates.ghost.org')
-                .post('/')
+                .get('/')
+                .query(true)
                 .reply(200, JSON.stringify([releaseNotification, customNotification]), {'Content-Type': 'application/json'});
 
             const addStub = sinon.stub().resolves();

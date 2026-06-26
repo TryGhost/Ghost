@@ -165,7 +165,7 @@ describe('Comments Service: CommentsService', function () {
                 get: sinon.stub().withArgs('comments_enabled').returns(commentsEnabled)
             },
             settingsHelpers: {},
-            urlService: {},
+            urlService: {facade: {getRequiredRelations: sinon.stub().returns([])}},
             urlUtils: {},
             contentGating: {
                 BLOCK_ACCESS: 'block',

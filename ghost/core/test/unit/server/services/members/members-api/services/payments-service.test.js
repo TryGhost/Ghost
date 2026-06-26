@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const knex = require('knex').default;
+const DomainEvents = require('@tryghost/domain-events');
 
 const Tier = require('../../../../../../../core/server/services/tiers/tier');
 
@@ -65,6 +66,14 @@ describe('PaymentsService', function () {
 
     afterAll(async function () {
         await db.destroy();
+    });
+
+    afterEach(function () {
+        // PaymentsService's constructor subscribes to DomainEvents on every build.
+        // These tests construct the service many times over a shared static
+        // EventEmitter, so clear listeners between tests to avoid a leak warning
+        // and to stop this file's listeners leaking into other files (isolate:false).
+        DomainEvents.ee.removeAllListeners();
     });
 
     describe('getPaymentLink', function () {

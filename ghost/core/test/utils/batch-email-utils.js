@@ -167,6 +167,12 @@ async function matchEmailSnapshot() {
             replacement: 'date'
         },
         {
+            // Footer year is rendered live (new Date().getFullYear()); normalise
+            // it so snapshots don't rot at every year boundary.
+            match: new RegExp(`©\\s*${new Date().getFullYear()}`, 'g'),
+            replacement: '© YYYY'
+        },
+        {
             match: defaultNewsletter.get('uuid'),
             replacement: 'requested-newsletter-uuid'
         },

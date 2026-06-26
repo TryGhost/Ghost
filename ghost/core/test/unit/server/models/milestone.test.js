@@ -1,4 +1,4 @@
-const models = require('../../../../core/server/models');
+const {Milestone} = require('../../../../core/server/models/milestone');
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 
@@ -6,7 +6,7 @@ describe('Unit: models/milestone', function () {
     describe('validation', function () {
         describe('blank', function () {
             it('throws validation error for mandatory fields', function () {
-                return models.Milestone.add({})
+                return Milestone.add({})
                     .then(function () {
                         throw new Error('expected ValidationError');
                     })

@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 import type {Request, Response, NextFunction} from 'express';
 
 export interface DynamicRedirectManagerOptions {

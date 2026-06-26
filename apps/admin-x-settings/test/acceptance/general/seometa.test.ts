@@ -1,6 +1,8 @@
 import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures, updatedSettingsResponse} from '@tryghost/admin-x-framework/test/acceptance';
 
+const __dirname = import.meta.dirname;
+
 const configWithLlmsTxt = {
     ...responseFixtures.config,
     config: {

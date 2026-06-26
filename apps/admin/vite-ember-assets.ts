@@ -13,7 +13,7 @@ function isAbsoluteUrl(url: string): boolean {
 }
 
 function prefixUrl(url: string, base: string): string {
-    if (isAbsoluteUrl(url)) return url;
+    if (isAbsoluteUrl(url)) {return url;}
     const normalizedBase = base.endsWith('/') ? base.slice(0, -1) : base;
     return `${normalizedBase}/${url}`;
 }
@@ -82,6 +82,7 @@ export function emberAssetsPlugin() {
                     // Generate the virtual module content
                     return [...styles, ...scripts, ...metaTags];
                 } catch (error) {
+                    // eslint-disable-next-line no-console
                     console.warn('Failed to read Ghost admin index.html:', error);
                     return;
                 }

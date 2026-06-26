@@ -95,7 +95,7 @@ const NewslettersList: React.FC<NewslettersListProps> = ({newsletters, isLoading
     } else if (newsletters.length) {
         return <Table>
             {newsletters.map(newsletter => (
-                <NewsletterItemContainer id={newsletter.id}>
+                <NewsletterItemContainer key={newsletter.id} id={newsletter.id}>
                     <NewsletterItem newsletter={newsletter} />
                 </NewsletterItemContainer>
             ))}

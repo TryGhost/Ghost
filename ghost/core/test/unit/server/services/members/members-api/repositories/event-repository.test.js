@@ -347,7 +347,7 @@ describe('EventRepository', function () {
                             return [{
                                 id: ids[0],
                                 slug: 'member-welcome-email-free',
-                                name: 'Welcome Email (Free)',
+                                name: 'Free member welcome flow',
                                 subject: 'Welcome to the free tier'
                             }];
                         }
@@ -448,7 +448,7 @@ describe('EventRepository', function () {
                         id: 'ae123',
                         source: 'automated_email',
                         slug: 'member-welcome-email-free',
-                        name: 'Welcome Email (Free)',
+                        name: 'Free member welcome flow',
                         subject: 'Welcome to the free tier'
                     }
                 }

@@ -77,7 +77,7 @@ export const blueskyHandleToUrl = (handle: string) => {
         throw new Error(ERRORS.INVALID_USERNAME);
     }
 
-    let username = formatUsername(handle);
+    const username = formatUsername(handle);
 
     // Validate username
     if (!isValidBlueskyUsername(username)) {

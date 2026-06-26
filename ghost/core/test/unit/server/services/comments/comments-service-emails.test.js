@@ -136,7 +136,11 @@ describe('Comments Service: CommentsServiceEmails', function () {
                 logging: {warn: sinon.stub()},
                 models: {Post, Member, User, Comment},
                 mailer: {send: mailerSendStub},
-                settingsCache: {get: sinon.stub().returns('Test Site')},
+                settingsCache: {get: (() => {
+                    const stub = sinon.stub().returns('Test Site');
+                    stub.withArgs('timezone').returns('Etc/UTC');
+                    return stub;
+                })()},
                 settingsHelpers: {getMembersSupportAddress: () => 'support@example.com'},
                 urlService,
                 urlUtils: {

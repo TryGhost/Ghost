@@ -1,7 +1,8 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const models = require('../../../../../core/server/models');
+const {Post} = require('../../../../../core/server/models/post');
+const {Member} = require('../../../../../core/server/models/member');
 
 const serialize = require('../../../../../core/server/services/webhooks/serialize');
 
@@ -60,7 +61,7 @@ describe('WebhookService - Serialize', function () {
 
     it('can serialize a new post', async function () {
         const post = fixtureManager.get('posts', 1);
-        const postModel = new models.Post(post);
+        const postModel = new Post(post);
 
         const result = await serialize('post.added', postModel);
 
@@ -72,7 +73,7 @@ describe('WebhookService - Serialize', function () {
 
     it('can serialize an edited post', async function () {
         const post = fixtureManager.get('posts', 1);
-        const postModel = new models.Post(post);
+        const postModel = new Post(post);
 
         // We use both _previousAttributes and _changed in the webhook serializer
         postModel._previousAttributes.title = post.title;
@@ -90,7 +91,7 @@ describe('WebhookService - Serialize', function () {
     it('can serialize reconstructed member.edited model event state', async function () {
         const previousUpdatedAt = new Date('2026-04-28T15:55:45.000Z');
         const currentUpdatedAt = new Date('2026-05-29T00:00:00.000Z');
-        const memberModel = new models.Member({
+        const memberModel = new Member({
             id: 'member-id',
             uuid: 'member-uuid',
             email: 'member@example.com',
