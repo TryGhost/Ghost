@@ -365,7 +365,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                                         fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
                                         id='avatar'
                                         imageClassName='w-full h-full object-cover rounded-full shrink-0'
-                                        imageContainerClassName='relative group bg-cover bg-center -ml-1 h-16 w-16 md:h-18 md:w-18 shrink-0'
+                                        imageContainerClassName='relative group bg-cover bg-center -ml-1 h-[80px] w-[80px] shrink-0'
                                         imageURL={formState.profile_image ?? undefined}
                                         pintura={
                                             {
