@@ -7,7 +7,7 @@
     },
     "admin": {
         "redirects": true,
-        "sessionMaxAge": 15552000000
+        "sessionMaxAgeMs": 15552000000
     },
     "externalRequest": {
         "keepAlive": true,
