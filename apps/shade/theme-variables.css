@@ -24,7 +24,7 @@
     --surface-panel-foreground: var(--color-black);
     --surface-elevated: var(--color-white);
     --surface-elevated-foreground: var(--color-black);
-    --surface-elevated-2: var(--color-gray-100);
+    --surface-elevated-2: var(--color-white);
     --surface-overlay: var(--color-white);
     --surface-overlay-foreground: var(--color-black);
     --surface-inverse: var(--color-black);
