@@ -588,7 +588,7 @@ class OEmbedService {
 
             // fallback to bookmark when we can't get oembed
             if (!data && !type) {
-                data = await this.fetchBookmarkData(url, body, type);
+                data = await this.fetchBookmarkData(url, body, 'bookmark');
             }
 
             // couldn't get anything, throw a validation error
