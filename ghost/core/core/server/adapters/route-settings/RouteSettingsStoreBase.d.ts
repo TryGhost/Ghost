@@ -1,7 +1,5 @@
-/* eslint-disable ghost/filenames/match-regex, ghost/filenames/match-exported-class --
- * PascalCase mirrors the runtime `RouteSettingsStoreBase.js` so the TS adapter
- * can default-import via the matching declaration file.
- */
+// PascalCase mirrors the runtime `RouteSettingsStoreBase.js` so the TS adapter
+// can default-import via the matching declaration file.
 import type {RouteSettings} from '../../services/route-settings/route-settings-parser';
 
 /**
