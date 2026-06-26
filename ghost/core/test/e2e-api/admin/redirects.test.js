@@ -9,7 +9,7 @@ const {parseYaml} = require('../../../core/server/services/custom-redirects/redi
 describe('Redirects API', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost({
             redirectsFile: true
         });

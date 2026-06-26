@@ -26,7 +26,7 @@ describe('Dynamic Routing', function () {
         assertExists(headers.date);
     }
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost({
             copyThemes: true,
             copySettings: true,
@@ -37,7 +37,7 @@ describe('Dynamic Routing', function () {
         request = supertest.agent(config.get('url'));
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
@@ -66,7 +66,7 @@ describe('Dynamic Routing', function () {
     });
 
     describe('Collection Entry', function () {
-        before(function () {
+        beforeAll(function () {
             return testUtils.initData().then(function () {
                 return testUtils.fixtures.overrideOwnerUser();
             }).then(function () {
@@ -94,13 +94,13 @@ describe('Dynamic Routing', function () {
     });
 
     describe('Tag', function () {
-        before(async function () {
+        beforeAll(async function () {
             await testUtils.teardownDb();
             await testUtils.initData();
             await testUtils.fixtures.overrideOwnerUser('ghost-owner');
         });
 
-        after(testUtils.teardownDb);
+        afterAll(testUtils.teardownDb);
 
         it('should return HTML for valid route', async function () {
             const res = await request.get('/tag/getting-started/')
@@ -186,7 +186,7 @@ describe('Dynamic Routing', function () {
         });
 
         describe('Edit with admin redirects disabled', function () {
-            before(function () {
+            beforeAll(function () {
                 configUtils.set('admin:redirects', false);
 
                 return testUtils.startGhost()
@@ -196,7 +196,7 @@ describe('Dynamic Routing', function () {
                     });
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
 
                 await testUtils.startGhost();
@@ -238,7 +238,7 @@ describe('Dynamic Routing', function () {
 
         const ownerSlug = 'ghost-owner';
 
-        before(async function () {
+        beforeAll(async function () {
             await testUtils.teardownDb();
             // we initialise data, but not a user. No user should be required for navigating the frontend
             await testUtils.initData();
@@ -277,7 +277,7 @@ describe('Dynamic Routing', function () {
             }
         });
 
-        after(testUtils.teardownDb);
+        afterAll(testUtils.teardownDb);
 
         it('should 404 for /author/ route', async function () {
             const res = await request.get('/author/')
@@ -384,7 +384,7 @@ describe('Dynamic Routing', function () {
         });
 
         describe('Edit with admin redirects disabled', function () {
-            before(function () {
+            beforeAll(function () {
                 configUtils.set('admin:redirects', false);
 
                 return testUtils.startGhost()
@@ -394,7 +394,7 @@ describe('Dynamic Routing', function () {
                     });
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
 
                 await testUtils.startGhost();
@@ -420,7 +420,7 @@ describe('Dynamic Routing', function () {
 
         describe('Paged', function () {
             // Add enough posts to trigger pages
-            before(async function () {
+            beforeAll(async function () {
                 await testUtils.teardownDb();
                 // we initialize data, but not a user. No user should be required for navigating the frontend
                 await testUtils.initData();
@@ -429,7 +429,7 @@ describe('Dynamic Routing', function () {
                 await testUtils.fixtures.overrideOwnerUser('ghost-owner');
             });
 
-            after(testUtils.teardownDb);
+            afterAll(testUtils.teardownDb);
 
             it('should redirect without slash', async function () {
                 const res = await request.get('/author/ghost-owner/page/2')

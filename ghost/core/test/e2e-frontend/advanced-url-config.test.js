@@ -18,7 +18,7 @@ let request;
 
 describe('Advanced URL Configurations', function () {
     describe('Subdirectory config', function () {
-        before(async function () {
+        beforeAll(async function () {
             configUtils.set('url', 'http://localhost/blog/');
             urlUtils.stubUrlUtilsFromConfig();
             mockManager.mockMail();
@@ -28,7 +28,7 @@ describe('Advanced URL Configurations', function () {
             request = supertest.agent(configUtils.getServerUrl());
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
             await urlUtils.restore();
             mockManager.restore();
@@ -85,7 +85,7 @@ describe('Advanced URL Configurations', function () {
         });
 
         describe('Preview routes', function () {
-            before(async function () {
+            beforeAll(async function () {
                 // NOTE: ideally we'd only insert the single draft post we want to test here
                 // but we don't have a way to do that just now and are already planning to
                 // replace the fixture system
@@ -101,7 +101,7 @@ describe('Advanced URL Configurations', function () {
     });
 
     describe('Subdirectory config: /ghost/ redirects with separate admin', function () {
-        before(async function () {
+        beforeAll(async function () {
             configUtils.set('url', 'http://localhost/blog/');
             configUtils.set('admin:redirects', true);
             configUtils.set('admin:url', 'http://admin.localhost/');
@@ -110,7 +110,7 @@ describe('Advanced URL Configurations', function () {
             request = supertest.agent(configUtils.getServerUrl());
         });
 
-        after(async function () {
+        afterAll(async function () {
             await urlUtils.restore();
             await configUtils.restore();
             await testUtils.startGhost();

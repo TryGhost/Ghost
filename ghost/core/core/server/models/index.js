@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 
 /**
  * Dependencies
@@ -25,7 +24,6 @@ const {EmailRecipient, EmailRecipients} = require('./email-recipient');
 const {EmailSpamComplaintEvent} = require('./email-spam-complaint-event');
 const {Email, Emails} = require('./email');
 const {Gift} = require('./gift');
-const {GiftLink} = require('./gift-link');
 const {Integration, Integrations} = require('./integration');
 const {Invite, Invites} = require('./invite');
 const {Job} = require('./job');
@@ -50,7 +48,6 @@ const {MobiledocRevision} = require('./mobiledoc-revision');
 const {Newsletter} = require('./newsletter');
 const {OfferRedemption} = require('./offer-redemption');
 const {Offer} = require('./offer');
-const {Outbox} = require('./outbox');
 const {Permission, Permissions} = require('./permission');
 const {PostRevision} = require('./post-revision');
 const {Post, Posts} = require('./post');
@@ -112,7 +109,6 @@ exports.EmailSpamComplaintEvent = EmailSpamComplaintEvent;
 exports.Email = Email;
 exports.Emails = Emails;
 exports.Gift = Gift;
-exports.GiftLink = GiftLink;
 exports.Integration = Integration;
 exports.Integrations = Integrations;
 exports.Invite = Invite;
@@ -149,7 +145,6 @@ exports.MobiledocRevision = MobiledocRevision;
 exports.Newsletter = Newsletter;
 exports.OfferRedemption = OfferRedemption;
 exports.Offer = Offer;
-exports.Outbox = Outbox;
 exports.Permission = Permission;
 exports.Permissions = Permissions;
 exports.PostRevision = PostRevision;

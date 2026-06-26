@@ -1,6 +1,6 @@
 const {assertExists} = require('../../../utils/assertions');
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
+const {StripeCustomerSubscription} = require('../../../../core/server/models/stripe-customer-subscription');
 
 describe('Unit: models/stripe-customer-subscription', function () {
     afterEach(function () {
@@ -12,7 +12,7 @@ describe('Unit: models/stripe-customer-subscription', function () {
 
         beforeEach(function () {
             serialize = function (model, options) {
-                return new models.StripeCustomerSubscription(model).serialize(options);
+                return new StripeCustomerSubscription(model).serialize(options);
             };
         });
 

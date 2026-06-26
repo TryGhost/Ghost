@@ -242,7 +242,6 @@ export function MultiSelectCombobox<T = unknown>({
         onChange(values.filter(v => v !== option.value));
     }, [onChange, values]);
 
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const handleDeselectSingle = (_option: FilterOption<T>) => {
         onChange([]);
         onClose?.();

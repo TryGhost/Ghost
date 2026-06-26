@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const models = require('../../../../../core/server/models');
+const Base = require('../../../../../core/server/models/base');
 const assert = require('node:assert/strict');
 
 describe('Models: getLazyRelation', function () {
@@ -8,18 +8,18 @@ describe('Models: getLazyRelation', function () {
     });
 
     it('can fetch collections', async function () {
-        var OtherModel = models.Base.Model.extend({
+        var OtherModel = Base.Model.extend({
             tableName: 'other_models'
         });
 
-        const TestModel = models.Base.Model.extend({
+        const TestModel = Base.Model.extend({
             tableName: 'test_models',
             tiers() {
                 return this.belongsToMany(OtherModel, 'test_others', 'test_id', 'other_id');
             }
         });
         let rel = null;
-        const fetchStub = sinon.stub(models.Base.Collection.prototype, 'fetch').callsFake(function () {
+        const fetchStub = sinon.stub(Base.Collection.prototype, 'fetch').callsFake(function () {
             if (rel !== null) {
                 throw new Error('Called twice');
             }
@@ -42,11 +42,11 @@ describe('Models: getLazyRelation', function () {
     });
 
     it('can fetch models', async function () {
-        var OtherModel = models.Base.Model.extend({
+        var OtherModel = Base.Model.extend({
             tableName: 'other_models'
         });
 
-        const TestModel = models.Base.Model.extend({
+        const TestModel = Base.Model.extend({
             tableName: 'test_models',
             other() {
                 return this.belongsTo(OtherModel, 'other_id', 'id');
@@ -77,11 +77,11 @@ describe('Models: getLazyRelation', function () {
     });
 
     it('can handle fetch of model without id for optional relations', async function () {
-        var OtherModel = models.Base.Model.extend({
+        var OtherModel = Base.Model.extend({
             tableName: 'other_models'
         });
 
-        const TestModel = models.Base.Model.extend({
+        const TestModel = Base.Model.extend({
             tableName: 'test_models',
             other() {
                 return this.belongsTo(OtherModel, 'other_id', 'id');
@@ -101,11 +101,11 @@ describe('Models: getLazyRelation', function () {
     });
 
     it('throws for model without id for optional relations with require', async function () {
-        var OtherModel = models.Base.Model.extend({
+        var OtherModel = Base.Model.extend({
             tableName: 'other_models'
         });
 
-        const TestModel = models.Base.Model.extend({
+        const TestModel = Base.Model.extend({
             tableName: 'test_models',
             other() {
                 return this.belongsTo(OtherModel, 'other_id', 'id');
@@ -125,7 +125,7 @@ describe('Models: getLazyRelation', function () {
     });
 
     it('returns undefined for nonexistent relations', async function () {
-        const TestModel = models.Base.Model.extend({
+        const TestModel = Base.Model.extend({
             tableName: 'test_models'
         });
         const modelA = TestModel.forge({id: '1'});
@@ -133,7 +133,7 @@ describe('Models: getLazyRelation', function () {
     });
 
     it('throws for nonexistent relations with require', async function () {
-        const TestModel = models.Base.Model.extend({
+        const TestModel = Base.Model.extend({
             tableName: 'test_models'
         });
         const modelA = TestModel.forge({id: '1'});

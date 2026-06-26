@@ -222,7 +222,14 @@ function indexnowListener(model, options) {
         return;
     }
 
-    ping(model.toJSON()).catch(() => {
+    ping({
+        ...model.toJSON(),
+        // tags and authors are needed so the lazy URL service can evaluate
+        // collection filters (e.g. `tag:foo`) when resolving the post URL;
+        // without them a tag/author-filtered post resolves to /404/
+        authors: model.related('authors').toJSON(),
+        tags: model.related('tags').toJSON()
+    }).catch(() => {
         // Errors are already logged inside ping()
         // This catch is just to prevent unhandled rejection warnings
     });
@@ -245,5 +252,6 @@ function listen() {
 
 module.exports = {
     listen: listen,
+    ping: ping,
     getApiKey: getApiKey
 };

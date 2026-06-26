@@ -6,7 +6,7 @@ const configUtils = require('../../utils/config-utils');
 describe('Featurebase API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
     });
@@ -19,19 +19,19 @@ describe('Featurebase API', function () {
     });
 
     describe('As Owner', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsOwner();
         });
 
         describe('With Featurebase configuration', function () {
-            before(async function () {
+            beforeAll(async function () {
                 configUtils.set('featurebase', {
                     enabled: true,
                     jwtSecret: 'test-jwt-secret-key'
                 });
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
             });
 
@@ -64,14 +64,14 @@ describe('Featurebase API', function () {
         });
 
         describe('With Featurebase disabled', function () {
-            before(async function () {
+            beforeAll(async function () {
                 configUtils.set('featurebase', {
                     enabled: false,
                     jwtSecret: 'test-jwt-secret-key'
                 });
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
             });
 
@@ -83,13 +83,13 @@ describe('Featurebase API', function () {
         });
 
         describe('With Featurebase enabled but no secret', function () {
-            before(async function () {
+            beforeAll(async function () {
                 configUtils.set('featurebase', {
                     enabled: true
                 });
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
             });
 
@@ -102,7 +102,7 @@ describe('Featurebase API', function () {
     });
 
     describe('As Admin', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsAdmin();
             configUtils.set('featurebase', {
                 enabled: true,
@@ -110,7 +110,7 @@ describe('Featurebase API', function () {
             });
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
@@ -122,7 +122,7 @@ describe('Featurebase API', function () {
     });
 
     describe('As Editor', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsEditor();
             configUtils.set('featurebase', {
                 enabled: true,
@@ -130,7 +130,7 @@ describe('Featurebase API', function () {
             });
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
@@ -142,7 +142,7 @@ describe('Featurebase API', function () {
     });
 
     describe('As Author', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsAuthor();
             configUtils.set('featurebase', {
                 enabled: true,
@@ -150,7 +150,7 @@ describe('Featurebase API', function () {
             });
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
@@ -162,7 +162,7 @@ describe('Featurebase API', function () {
     });
 
     describe('As Contributor', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsContributor();
             configUtils.set('featurebase', {
                 enabled: true,
@@ -170,7 +170,7 @@ describe('Featurebase API', function () {
             });
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 

@@ -2,8 +2,9 @@ const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
 // Note: use the Post model to test the fixDatesWhenFetch method, as we need the model
-// to have a schema with dateTime fields
+// to have a schema with dateTime fields and non-nullable boolean fields
 const {Post: PostModel} = require('../../../../../core/server/models/post');
+const {Member: MemberModel} = require('../../../../../core/server/models/member');
 
 describe('Data Manipulation', function () {
     afterEach(function () {
@@ -65,6 +66,44 @@ describe('Data Manipulation', function () {
             const fixedAttrs = PostModel.prototype.fixDatesWhenFetch(attrs);
             assert.ok(typeof fixedAttrs.launched_into_space_at === 'string', 'launched_into_space_at should be a string');
             assert.equal(fixedAttrs.launched_into_space_at, '2025-02-20T10:16:01.123Z');
+        });
+    });
+
+    describe('fixBools', function () {
+        it('coerces non-nullable boolean fields to real booleans', function () {
+            const fixedAttrs = PostModel.prototype.fixBools({
+                featured: 0,
+                show_title_and_feature_image: 1
+            });
+
+            assert.equal(fixedAttrs.featured, false);
+            assert.equal(fixedAttrs.show_title_and_feature_image, true);
+        });
+
+        it('preserves null values for nullable boolean fields', function () {
+            const fixedAttrs = MemberModel.prototype.fixBools({
+                enable_comment_notifications: 1,
+                enable_updates_and_announcements: null,
+                email_disabled: 0
+            });
+
+            assert.equal(fixedAttrs.enable_comment_notifications, true);
+            assert.equal(fixedAttrs.enable_updates_and_announcements, null);
+            assert.equal(fixedAttrs.email_disabled, false);
+        });
+
+        it('coerces non-null values for nullable boolean fields', function () {
+            let fixedAttrs = MemberModel.prototype.fixBools({
+                enable_updates_and_announcements: 0
+            });
+
+            assert.equal(fixedAttrs.enable_updates_and_announcements, false);
+
+            fixedAttrs = MemberModel.prototype.fixBools({
+                enable_updates_and_announcements: 1
+            });
+
+            assert.equal(fixedAttrs.enable_updates_and_announcements, true);
         });
     });
 });

@@ -3,9 +3,16 @@
   "version": "0.0.0-private",
   "description": "The professional publishing platform",
   "private": true,
-  "packageManager": "pnpm@11.4.0+sha512.f0febc7e37552ab485494a914241b338e0b3580b93d54ce31f00933015880863129038a1b4ae4e414a0ee63ac35bf21197e990172c4a68256450b5636310968f",
+  "packageManager": "pnpm@11.8.0+sha512.c1f5e7c4cb241c8f174b743851d82f42b802324afc8b0f116b96adb15aa06664948dde36960a3ba1079ba5b4b29dd0140135b94b5b5f5263592249d68e555f26",
   "engines": {
-    "node": "^22.13.1"
+    "node": "^22.18.0"
+  },
+  "devEngines": {
+    "runtime": {
+      "name": "node",
+      "version": "22.18.0",
+      "onFail": "download"
+    }
   },
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -38,6 +45,8 @@
     "fix": "pnpm store prune && rimraf -g '**/node_modules' && pnpm install && pnpm nx reset",
     "knex-migrator": "pnpm --filter ghost run knex-migrator",
     "setup": "pnpm install && git submodule update --init --recursive",
+    "reset:db": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && pnpm knex-migrator reset && pnpm knex-migrator init'",
+    "reset:db:volume": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down && docker volume rm ghost-dev_mysql-data",
     "reset:data": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:1000,posts:100 --seed 123'",
     "reset:data:empty": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123'",
     "reset:data:xxl": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123'",
@@ -69,21 +78,29 @@
     "test:release": "node --test 'scripts/test/*.js'"
   },
   "devDependencies": {
+    "@eslint/js": "catalog:",
     "@playwright/test": "catalog:",
     "@secretlint/secretlint-rule-pattern": "13.0.2",
     "@secretlint/secretlint-rule-preset-recommend": "13.0.2",
     "eslint": "catalog:",
-    "eslint-plugin-ghost": "3.5.0",
-    "eslint-plugin-react": "7.37.5",
+    "eslint-plugin-ghost": "catalog:",
+    "eslint-plugin-i18next": "6.1.4",
+    "eslint-plugin-react": "catalog:",
+    "eslint-plugin-react-hooks": "catalog:",
+    "eslint-plugin-react-refresh": "catalog:",
+    "eslint-plugin-storybook": "10.4.4",
+    "eslint-plugin-tailwindcss": "catalog:",
+    "globals": "catalog:",
     "husky": "9.1.7",
     "jsonc-parser": "catalog:",
     "knip": "6.16.1",
-    "lint-staged": "17.0.7",
+    "lint-staged": "17.0.8",
     "nx": "22.7.5",
     "rimraf": "6.1.3",
     "secretlint": "13.0.2",
-    "semver": "7.8.4",
+    "semver": "7.8.5",
     "typescript": "catalog:",
+    "typescript-eslint": "catalog:",
     "vitest": "catalog:"
   },
   "nx": {
@@ -118,6 +135,12 @@
         },
         "dependsOn": [
           "docker:up",
+          {
+            "target": "build:assets",
+            "projects": [
+              "ghost"
+            ]
+          },
           {
             "target": "dev",
             "projects": [

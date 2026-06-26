@@ -27,7 +27,6 @@ const SignupOptions: React.FC<{
 
     const handleError = useCallback((key: string, error: string | undefined) => {
         setError(key, error);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     useEffect(() => {
@@ -66,7 +65,7 @@ const SignupOptions: React.FC<{
     const isFreeSignupAllowed = membersSignupAccess === 'all';
     const isStripeEnabled = checkStripeEnabled(localSettings, config!);
 
-    let tiersCheckboxes: CheckboxProps[] = [];
+    const tiersCheckboxes: CheckboxProps[] = [];
 
     if (localTiers) {
         localTiers.forEach((tier) => {

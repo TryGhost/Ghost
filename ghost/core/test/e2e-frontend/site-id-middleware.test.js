@@ -7,7 +7,7 @@ describe('Site id middleware execution', function () {
     let request;
 
     describe('Using site-id middleware', function () {
-        before(async function () {
+        beforeAll(async function () {
             configUtils.set('hostSettings:siteId', '123123');
 
             // Ensure we do a forced start so that spy is in place when the server starts
@@ -16,7 +16,7 @@ describe('Site id middleware execution', function () {
             request = supertest.agent(configUtils.config.get('url'));
         });
 
-        after(async function () {
+        afterAll(async function () {
             sinon.restore();
 
             configUtils.restore();
@@ -78,7 +78,7 @@ describe('Site id middleware execution', function () {
     });
 
     describe('Not using site-id middleware', function () {
-        before(async function () {
+        beforeAll(async function () {
             configUtils.set('hostSettings:siteId', undefined);
 
             // Ensure we do a forced start so that spy is in place when the server starts
@@ -87,7 +87,7 @@ describe('Site id middleware execution', function () {
             request = supertest.agent(configUtils.config.get('url'));
         });
 
-        after(async function () {
+        afterAll(async function () {
             sinon.restore();
 
             configUtils.restore();

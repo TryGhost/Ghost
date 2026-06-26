@@ -65,7 +65,6 @@ const userValidator = BaseValidator.extend(PasswordValidatorMixin, {
 
     website(model) {
         let website = model.website;
-        // eslint-disable-next-line camelcase
         let isInvalidWebsite = !validator.isURL(website || '', {require_protocol: false})
                           || !validator.isLength(website || '', {max: 2000});
 

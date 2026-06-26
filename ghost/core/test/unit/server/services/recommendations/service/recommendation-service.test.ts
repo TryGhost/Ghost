@@ -136,7 +136,6 @@ describe('RecommendationService', function () {
                 clock.tick(1000 * 60 * 60 * 24);
                 clock.restore();
                 // This assert doesn't work without a timeout because the timeout in boot is async
-                // eslint-disable-next-line no-promise-executor-return
                 await new Promise((resolve) => {
                     setTimeout(() => resolve(true), 50);
                 });

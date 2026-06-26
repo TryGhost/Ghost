@@ -44,7 +44,6 @@ const SupportPage = () => {
         }
 
     // Do it once
-    // eslint-disable-next-line
     }, []);
 
     if (isLoading) {

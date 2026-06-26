@@ -65,9 +65,9 @@
         "test": "pnpm test:types && vitest run --coverage",
         "test:unit": "pnpm test:types && vitest run",
         "test:types": "tsc --noEmit",
-        "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ scripts/ --cache",
+        "lint:code": "eslint src/ scripts/ --cache",
         "lint": "pnpm lint:code && pnpm lint:test",
-        "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
+        "lint:test": "eslint test/ --cache",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build",
         "adoption:extract": "tsx scripts/extract-adoption.ts"
@@ -93,14 +93,19 @@
         "@typescript-eslint/parser": "catalog:",
         "@vitejs/plugin-react": "catalog:",
         "@vitest/coverage-v8": "catalog:",
+        "@eslint/js": "catalog:",
         "c8": "catalog:",
         "eslint": "catalog:",
+        "eslint-plugin-ghost": "catalog:",
+        "eslint-plugin-react": "catalog:",
         "eslint-plugin-react-hooks": "catalog:",
         "eslint-plugin-react-refresh": "catalog:",
         "eslint-plugin-storybook": "10.4.4",
         "eslint-plugin-tailwindcss": "catalog:",
         "glob": "catalog:",
+        "globals": "catalog:",
         "jsdom": "catalog:",
+        "typescript-eslint": "catalog:",
         "postcss": "catalog:",
         "remark-gfm": "4.0.1",
         "storybook": "catalog:",
@@ -148,7 +153,7 @@
         "react-day-picker": "9.14.0",
         "react-dom": "catalog:",
         "react-dropzone": "14.4.1",
-        "react-hook-form": "7.78.0",
+        "react-hook-form": "7.79.0",
         "react-world-flags": "1.6.0",
         "recharts": "2.15.4",
         "sonner": "catalog:",
@@ -162,6 +167,11 @@
     },
     "nx": {
         "targets": {
+            "dev": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
             "build": {
                 "dependsOn": [
                     "^build"

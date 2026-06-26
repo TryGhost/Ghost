@@ -1,28 +1,15 @@
 import assert from 'node:assert/strict';
+import errors from '@tryghost/errors';
 import ObjectId from 'bson-objectid';
 import createKnex, {type Knex} from 'knex';
 import moment from 'moment';
+import {NON_EMPTY_EMAIL_LEXICAL} from '../../../../utils/automations-fixtures';
 import {createDatabaseAutomationsRepository} from '../../../../../core/server/services/automations/database-automations-repository';
 import type {AutomationAction, AutomationsRepository, AutomationStepToRun} from '../../../../../core/server/services/automations/automations-repository';
 
 const HOUR_MS = 60 * 60 * 1000;
+const FAKE_WAIT_HOURS_MULTIPLIER = 2500;
 const DATABASE_DATE_FORMAT = 'YYYY-MM-DD HH:mm:ss';
-const NON_EMPTY_EMAIL_LEXICAL = JSON.stringify({
-    root: {
-        children: [{
-            type: 'paragraph',
-            children: [{
-                type: 'text',
-                text: 'Lorem ipsum.'
-            }]
-        }],
-        direction: null,
-        format: '',
-        indent: 0,
-        type: 'root',
-        version: 1
-    }
-});
 
 const toDatabaseDate = (date: Date | string): string => moment(date).format(DATABASE_DATE_FORMAT);
 const toRepositoryDateISOString = (date: Date | string): string => new Date(toDatabaseDate(date)).toISOString();
@@ -57,7 +44,7 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('id').primary();
         table.text('created_at').notNullable();
         table.text('updated_at').notNullable();
-        table.text('slug').notNullable();
+        table.text('slug').notNullable().unique();
         table.text('name').notNullable();
         table.text('status').notNullable();
     });
@@ -74,6 +61,18 @@ const createDatabase = async (): Promise<Knex> => {
     await database.schema.createTable('email_design_settings', (table) => {
         table.text('id').primary();
         table.text('slug').notNullable().unique();
+        table.text('created_at').notNullable();
+        table.text('updated_at');
+    });
+
+    await database.schema.createTable('welcome_email_automated_emails', (table) => {
+        table.text('id').primary();
+        table.text('welcome_email_automation_id').notNullable().references('id').inTable('automations');
+        table.text('next_welcome_email_automated_email_id');
+        table.integer('delay_days').notNullable();
+        table.text('subject').notNullable();
+        table.text('lexical');
+        table.text('email_design_setting_id').notNullable().references('id').inTable('email_design_settings');
         table.text('created_at').notNullable();
         table.text('updated_at');
     });
@@ -138,14 +137,14 @@ const createDatabase = async (): Promise<Knex> => {
         created_at: now(),
         updated_at: now(),
         slug: 'member-welcome-email-free',
-        name: 'Welcome Email (Free)',
+        name: 'Free member welcome flow',
         status: 'active'
     }, {
         id: paidAutomationId,
         created_at: now(),
         updated_at: now(),
         slug: 'member-welcome-email-paid',
-        name: 'Welcome Email (Paid)',
+        name: 'Paid member welcome flow',
         status: 'active'
     }]);
 
@@ -509,11 +508,153 @@ describe('automations repository', function () {
 
     beforeEach(async function () {
         knex = await createDatabase();
-        repo = createDatabaseAutomationsRepository(knex);
+        repo = createDatabaseAutomationsRepository({
+            knex,
+            fakeWaitHoursMultiplier: null
+        });
     });
 
     afterEach(async function () {
         await knex?.destroy();
+    });
+
+    describe('browse', function () {
+        const deleteActionsForAutomationIds = async (automationIds: string[]) => {
+            const actionIds = await knex('automation_actions')
+                .whereIn('automation_id', automationIds)
+                .pluck('id');
+            await knex('automation_action_edges')
+                .whereIn('source_action_id', actionIds)
+                .orWhereIn('target_action_id', actionIds)
+                .del();
+            await knex('automation_action_revisions')
+                .whereIn('action_id', actionIds)
+                .del();
+            await knex('automation_actions')
+                .whereIn('id', actionIds)
+                .del();
+        };
+
+        const getWelcomeEmailDesignSettingId = async () => {
+            const row = await knex('email_design_settings')
+                .select('id')
+                .where('slug', 'test-automation-email-design')
+                .first();
+            assert(row);
+            return row.id;
+        };
+
+        const createWelcomeEmailsForAutomations = async (automations: Array<{id: string; slug: string}>) => {
+            const emailDesignSettingId = await getWelcomeEmailDesignSettingId();
+            await knex('welcome_email_automated_emails').insert(automations.map(automation => ({
+                id: ObjectId().toHexString(),
+                welcome_email_automation_id: automation.id,
+                next_welcome_email_automated_email_id: null,
+                delay_days: 0,
+                subject: `${automation.slug} subject`,
+                lexical: NON_EMPTY_EMAIL_LEXICAL,
+                email_design_setting_id: emailDesignSettingId,
+                created_at: toDatabaseDate(new Date()),
+                updated_at: toDatabaseDate(new Date())
+            })));
+            return emailDesignSettingId;
+        };
+
+        const assertWelcomeEmailActionsWereCreated = async (automations: Array<{id: string; slug: string}>, emailDesignSettingId: string) => {
+            for (const automation of automations) {
+                const result = await repo.getById(automation.id);
+                assert(result);
+                assert.deepEqual(result.edges, []);
+                assert.equal(result.actions.length, 1);
+                const action = result.actions[0];
+                assert.equal(action.type, 'send_email');
+                if (action.type !== 'send_email') {
+                    assert.fail('Expected a send_email action');
+                }
+                assert.equal(action.data.email_subject, `${automation.slug} subject`);
+                assert.equal(action.data.email_lexical, NON_EMPTY_EMAIL_LEXICAL);
+                assert.equal(action.data.email_design_setting_id, emailDesignSettingId);
+            }
+        };
+
+        it('returns a list of automations, ordered by name', async function () {
+            await knex('automations').insert({
+                id: ObjectId().toHexString(),
+                created_at: toDatabaseDate(new Date()),
+                updated_at: toDatabaseDate(new Date()),
+                slug: 'alpha-flow',
+                name: 'Alpha flow',
+                status: 'inactive'
+            });
+
+            const result = await repo.browse();
+
+            const names = result.data.map(automation => automation.name);
+
+            assert.deepEqual(names, [
+                'Alpha flow',
+                'Free member welcome flow',
+                'Paid member welcome flow'
+            ]);
+        });
+
+        it('creates missing default free and paid automations', async function () {
+            const automationIds = await knex('automations')
+                .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
+                .pluck('id');
+
+            await deleteActionsForAutomationIds(automationIds);
+            await knex('automations')
+                .whereIn('id', automationIds)
+                .del();
+
+            await repo.browse();
+
+            const automations = await knex('automations')
+                .select('id', 'name', 'slug', 'status')
+                .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid'])
+                .orderBy('slug');
+
+            assert.deepEqual(automations.map(({name, slug, status}) => ({name, slug, status})), [{
+                name: 'Free member welcome flow',
+                slug: 'member-welcome-email-free',
+                status: 'inactive'
+            }, {
+                name: 'Paid member welcome flow',
+                slug: 'member-welcome-email-paid',
+                status: 'inactive'
+            }]);
+
+            const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
+
+            await repo.browse();
+
+            await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
+        });
+
+        it('creates copied send_email actions for default automations without actions', async function () {
+            const automations = await knex('automations')
+                .select('id', 'slug')
+                .whereIn('slug', ['member-welcome-email-free', 'member-welcome-email-paid']);
+            const automationIds = automations.map(automation => automation.id);
+
+            await deleteActionsForAutomationIds(automationIds);
+            const emailDesignSettingId = await createWelcomeEmailsForAutomations(automations);
+
+            await repo.browse();
+
+            await assertWelcomeEmailActionsWereCreated(automations, emailDesignSettingId);
+
+            await repo.browse();
+
+            const totalActions = await knex('automation_actions')
+                .whereIn('automation_id', automationIds)
+                .whereNull('deleted_at')
+                .count({count: 'id'})
+                .first();
+
+            assert.equal(Number(totalActions?.count), 2);
+        });
     });
 
     describe('trigger', function () {
@@ -545,6 +686,30 @@ describe('automations repository', function () {
             assert.equal(step.status, 'pending');
             assert.equal(step.locked_by, null);
             assert.equal(step.locked_at, null);
+        });
+
+        it('uses the fake wait hours multiplier for triggered wait actions when configured', async function () {
+            repo = createDatabaseAutomationsRepository({
+                knex,
+                fakeWaitHoursMultiplier: FAKE_WAIT_HOURS_MULTIPLIER
+            });
+
+            const beforeTrigger = Date.now();
+            await repo.trigger({
+                memberEmail: 'fake-wait@example.com',
+                memberId: 'member_123',
+                memberStatus: 'free'
+            });
+            const afterTrigger = Date.now();
+
+            const run = await getRunByMemberEmail('fake-wait@example.com');
+            assert(run);
+
+            const step = await getStepByRunId(run.id);
+            assert(step);
+            const readyAtMs = moment(step.ready_at, DATABASE_DATE_FORMAT).valueOf();
+            assert(readyAtMs >= beforeTrigger + (48 * FAKE_WAIT_HOURS_MULTIPLIER) - 999);
+            assert(readyAtMs <= afterTrigger + (48 * FAKE_WAIT_HOURS_MULTIPLIER));
         });
 
         it('can trigger an automation for a paid member', async function () {
@@ -648,6 +813,107 @@ describe('automations repository', function () {
     });
 
     describe('edit', function () {
+        const assertValidationError = async (fn: () => Promise<unknown>, property: string, message: RegExp) => {
+            await assert.rejects(fn, (error: unknown) => {
+                assert(error instanceof errors.ValidationError);
+                assert.equal(error.property, property);
+                assert.match(error.message, message);
+                return true;
+            });
+        };
+
+        it('cancels pending unlocked steps when disabling an automation', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 0);
+            const run = await insertRun(automation.id);
+            const step = await insertStep(run.id, action.revision_id);
+
+            const beforeEdit = Date.now();
+            await repo.edit(automation.id, {
+                ...automation,
+                status: 'inactive'
+            });
+            const afterEdit = Date.now();
+
+            const cancelled = await getStepById(step.id);
+            assert.equal(cancelled.status, 'automation disabled');
+            assert.equal(cancelled.locked_by, null);
+            assert.equal(cancelled.locked_at, null);
+            assert.equal(cancelled.started_at, null);
+            const cancelledFinishedAt = cancelled.finished_at;
+            assert(typeof cancelledFinishedAt === 'string');
+            assert(cancelledFinishedAt >= toDatabaseDate(new Date(beforeEdit - 1000)));
+            assert(cancelledFinishedAt <= toDatabaseDate(new Date(afterEdit)));
+        });
+
+        it('cancels pending steps with expired locks when disabling an automation', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 0);
+            const run = await insertRun(automation.id);
+            const step = await insertStep(run.id, action.revision_id, {
+                locked_by: 'expired-lock',
+                locked_at: new Date(Date.now() - (31 * 60 * 1000)).toISOString(),
+                started_at: new Date(Date.now() - (31 * 60 * 1000)).toISOString()
+            });
+
+            await repo.edit(automation.id, {
+                ...automation,
+                status: 'inactive'
+            });
+
+            const cancelled = await getStepById(step.id);
+            assert.equal(cancelled.status, 'automation disabled');
+            assert.equal(cancelled.locked_by, null);
+            assert.equal(cancelled.locked_at, null);
+            assert.equal(typeof cancelled.finished_at, 'string');
+        });
+
+        it('does not cancel pending steps with fresh locks when disabling an automation', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 0);
+            const run = await insertRun(automation.id);
+            const lockedAt = toDatabaseDate(new Date(Date.now() - (29 * 60 * 1000)));
+            const step = await insertStep(run.id, action.revision_id, {
+                locked_by: 'fresh-lock',
+                locked_at: lockedAt,
+                started_at: lockedAt
+            });
+
+            await repo.edit(automation.id, {
+                ...automation,
+                status: 'inactive'
+            });
+
+            const unchanged = await getStepById(step.id);
+            assert.equal(unchanged.status, 'pending');
+            assert.equal(unchanged.locked_by, 'fresh-lock');
+            assert.equal(unchanged.locked_at, lockedAt);
+            assert.equal(unchanged.finished_at, null);
+        });
+
+        it('does not cancel pending steps for other automations when disabling an automation', async function () {
+            const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+            const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+            const freeAction = await getActionByIndex(freeAutomation.id, 0);
+            const paidAction = await getActionByIndex(paidAutomation.id, 0);
+            const freeRun = await insertRun(freeAutomation.id);
+            const paidRun = await insertRun(paidAutomation.id);
+            const freeStep = await insertStep(freeRun.id, freeAction.revision_id);
+            const paidStep = await insertStep(paidRun.id, paidAction.revision_id);
+
+            await repo.edit(freeAutomation.id, {
+                ...freeAutomation,
+                status: 'inactive'
+            });
+
+            const cancelledFreeStep = await getStepById(freeStep.id);
+            assert.equal(cancelledFreeStep.status, 'automation disabled');
+
+            const unchangedPaidStep = await getStepById(paidStep.id);
+            assert.equal(unchangedPaidStep.status, 'pending');
+            assert.equal(unchangedPaidStep.finished_at, null);
+        });
+
         it('only inserts action revisions when action data changes', async function () {
             const initialAutomation = await getAutomationBySlug('member-welcome-email-free');
             const initialRevisionCount = await getRevisionCount();
@@ -741,6 +1007,62 @@ describe('automations repository', function () {
 
             assert.equal(revision.email_design_setting_id, defaultDesignSetting.id);
         });
+
+        it('rejects changing an action that is part of another automation', async function () {
+            const freeAutomation = await getAutomationBySlug('member-welcome-email-free');
+            const paidAutomation = await getAutomationBySlug('member-welcome-email-paid');
+            const paidAction = paidAutomation.actions[0];
+
+            await assertValidationError(async () => repo.edit(freeAutomation.id, {
+                status: 'inactive',
+                actions: [paidAction],
+                edges: []
+            }), 'actions.id', /already exists/);
+        });
+
+        it('rejects changing a soft-deleted action', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const now = toDatabaseDate(new Date());
+            const softDeletedActionId = ObjectId().toString();
+            await knex('automation_actions').insert({
+                id: softDeletedActionId,
+                created_at: now,
+                updated_at: now,
+                deleted_at: now,
+                automation_id: automation.id,
+                type: 'wait'
+            });
+
+            await assertValidationError(async () => repo.edit(automation.id, {
+                status: 'inactive',
+                actions: [{
+                    id: softDeletedActionId,
+                    type: 'wait',
+                    data: {
+                        wait_hours: 24
+                    }
+                }],
+                edges: []
+            }), 'actions.id', /already exists/);
+        });
+
+        it('rejects changing the type of an action', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const waitAction = automation.actions.find(action => action.type === 'wait');
+            const emailAction = automation.actions.find(action => action.type === 'send_email');
+            assert(waitAction, 'test setup expects wait action');
+            assert.equal(emailAction?.type, 'send_email', 'test setup expects email action');
+
+            await assertValidationError(async () => repo.edit(automation.id, {
+                status: 'inactive',
+                actions: [{
+                    id: waitAction.id,
+                    type: 'send_email',
+                    data: emailAction.data
+                }],
+                edges: []
+            }), 'actions.type', /different type/);
+        });
     });
 
     describe('fetchAndLockSteps', function () {
@@ -811,7 +1133,10 @@ describe('automations repository', function () {
                 }
             }) as Knex;
 
-            repo = createDatabaseAutomationsRepository(mockKnex);
+            repo = createDatabaseAutomationsRepository({
+                knex: mockKnex,
+                fakeWaitHoursMultiplier: null
+            });
         };
 
         const assertContendedStepWasLocked = async (stepId: string) => {
@@ -1086,6 +1411,29 @@ describe('automations repository', function () {
             assert(nextReadyAt.getTime() <= afterFinish + (72 * HOUR_MS));
         });
 
+        it('uses the fake wait hours multiplier when configured', async function () {
+            repo = createDatabaseAutomationsRepository({
+                knex,
+                fakeWaitHoursMultiplier: FAKE_WAIT_HOURS_MULTIPLIER
+            });
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const sendEmailAction = await getActionByIndex(automation.id, 1);
+            assert.equal(sendEmailAction.action_type, 'send_email');
+            const run = await insertRun(automation.id);
+            const stepRow = await insertStep(run.id, sendEmailAction.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+
+            const beforeFinish = Date.now();
+            const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+            const afterFinish = Date.now();
+
+            assert(nextReadyAt);
+            assert(nextReadyAt.getTime() >= beforeFinish + (72 * FAKE_WAIT_HOURS_MULTIPLIER));
+            assert(nextReadyAt.getTime() <= afterFinish + (72 * FAKE_WAIT_HOURS_MULTIPLIER));
+        });
+
         it('does not enqueue a duplicate next step when called again with the same locked step', async function () {
             const automation = await getAutomationBySlug('member-welcome-email-free');
             const action = await getActionByIndex(automation.id, 0);
@@ -1108,6 +1456,35 @@ describe('automations repository', function () {
             assert.equal(finished.status, 'finished');
             assert.equal(finished.locked_by, null);
             assert.equal(finished.locked_at, null);
+        });
+
+        it('does not enqueue the next step when the automation was disabled after the step was locked', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 0);
+            const run = await insertRun(automation.id);
+            const stepRow = await insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+
+            await knex('automations')
+                .update({
+                    status: 'inactive',
+                    updated_at: toDatabaseDate(new Date())
+                })
+                .where('id', automation.id);
+
+            const nextReadyAt = await repo.finishStepAndEnqueueNext(step);
+
+            assert.equal(nextReadyAt, null);
+
+            const finished = await getStepById(stepRow.id);
+            assert.equal(finished.status, 'finished');
+            assert.equal(finished.locked_by, null);
+            assert.equal(finished.locked_at, null);
+
+            const allSteps = await getStepsByRunId(run.id);
+            assert.equal(allSteps.length, 1);
         });
 
         it('does not finish or enqueue if the step lock has been taken by another runner', async function () {
@@ -1354,6 +1731,36 @@ describe('automations repository', function () {
 
             const unchanged = await getStepById(step.id);
             assert.deepEqual(unchanged, beforeRetry);
+        });
+
+        it('marks the step disabled instead of retrying when the automation was disabled after the step was locked', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 0);
+            const run = await insertRun(automation.id);
+            const stepRow = await insertStep(run.id, action.revision_id, {
+                ready_at: new Date(Date.now() - 1000).toISOString()
+            });
+            const step = await getLockedStep(stepRow.id);
+            const lockedStep = await getStepById(step.id);
+
+            await knex('automations')
+                .update({
+                    status: 'inactive',
+                    updated_at: toDatabaseDate(new Date())
+                })
+                .where('id', automation.id);
+
+            const didRetry = await repo.retryStep(step, new Date(Date.now() + 1000));
+
+            assert.equal(didRetry, false);
+
+            const disabled = await getStepById(step.id);
+            assert.equal(disabled.status, 'automation disabled');
+            assert.equal(disabled.locked_by, null);
+            assert.equal(disabled.locked_at, null);
+            assert.equal(disabled.started_at, lockedStep.started_at);
+            assert.equal(disabled.ready_at, stepRow.ready_at);
+            assert.equal(typeof disabled.finished_at, 'string');
         });
     });
 });

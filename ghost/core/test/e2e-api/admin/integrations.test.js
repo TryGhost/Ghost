@@ -11,7 +11,7 @@ const {anyEtag, anyErrorId, anyContentVersion} = matchers;
 describe('Integrations API', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'integrations');
@@ -368,7 +368,7 @@ describe('Integrations API', function () {
     describe('As Administrator', function () {
         let agent;
 
-        before(async function () {
+        beforeAll(async function () {
             agent = await agentProvider.getAdminAPIAgent();
             await fixtureManager.init('users', 'integrations');
             await agent.loginAsContributor();

@@ -1,11 +1,8 @@
 const sinon = require('sinon');
-const rewire = require('rewire');
 const configUtils = require('../../../../../utils/config-utils');
-const urlRedirects = rewire('../../../../../../core/server/web/shared/middleware/url-redirects');
+const urlRedirects = require('../../../../../../core/server/web/shared/middleware/url-redirects');
 const {frontendSSLRedirect, adminSSLAndHostRedirect} = urlRedirects;
-const getAdminRedirectUrl = urlRedirects.__get__('_private.getAdminRedirectUrl');
-const getFrontendRedirectUrl = urlRedirects.__get__('_private.getFrontendRedirectUrl');
-const redirect = urlRedirects.__get__('_private.redirect');
+const {getAdminRedirectUrl, getFrontendRedirectUrl, redirect} = urlRedirects;
 
 describe('UNIT: url redirects', function () {
     let res;
@@ -33,12 +30,12 @@ describe('UNIT: url redirects', function () {
         host = null;
     });
 
-    describe('calls to _private.redirect()', function () {
+    describe('calls to exported redirect()', function () {
         let redirectSpy;
 
         beforeEach(function () {
             redirectSpy = sinon.spy();
-            urlRedirects.__set__('_private.redirect', redirectSpy);
+            sinon.stub(urlRedirects, 'redirect').callsFake(redirectSpy);
         });
 
         it('frontendSSLRedirect passes getSiteRedirectUrl', function () {

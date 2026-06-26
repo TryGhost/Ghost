@@ -805,8 +805,8 @@
                     "object_type": "gift_link"
                 },
                 {
-                    "name": "Reset all gift links",
-                    "action_type": "resetAll",
+                    "name": "Remove all gift links",
+                    "action_type": "removeAll",
                     "object_type": "gift_link"
                 }
             ]
@@ -1028,7 +1028,8 @@
                     "collection": "all",
                     "recommendation": "all",
                     "automation": ["browse", "read", "edit"],
-                    "member_signin_url": "read"
+                    "member_signin_url": "read",
+                    "gift_link": "manage"
                 },
                 "Super Editor": {
                     "notification": "all",

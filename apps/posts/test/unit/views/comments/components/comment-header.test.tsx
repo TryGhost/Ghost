@@ -1,11 +1,16 @@
 import {CommentHeader} from '../../../../../src/views/comments/components/comment-header';
+import {TooltipProvider} from '@tryghost/shade/components';
 import {fireEvent, render, screen} from '@testing-library/react';
+
+// CommentHeader renders tooltips that expect a TooltipProvider ancestor,
+// which is supplied once at the comments-list level in the app.
+const renderWithProvider = (ui: React.ReactElement) => render(<TooltipProvider>{ui}</TooltipProvider>);
 
 describe('CommentHeader', () => {
     it('renders pinned badge as an unpin button', () => {
         const onUnpinClick = vi.fn();
 
-        render(
+        renderWithProvider(
             <CommentHeader
                 createdAt="2026-05-01T18:00:00.000Z"
                 isPinned={true}
@@ -25,7 +30,7 @@ describe('CommentHeader', () => {
     });
 
     it('renders pinned badge as static text when no unpin action is available', () => {
-        render(
+        renderWithProvider(
             <CommentHeader
                 createdAt="2026-05-01T18:00:00.000Z"
                 isPinned={true}

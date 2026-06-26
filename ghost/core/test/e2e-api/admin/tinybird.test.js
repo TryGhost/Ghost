@@ -5,7 +5,7 @@ const configUtils = require('../../utils/config-utils');
 describe('Tinybird API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
     });
@@ -18,19 +18,19 @@ describe('Tinybird API', function () {
     });
 
     describe('As Owner', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsOwner();
         });
 
         describe('With Tinybird configuration', function () {
-            before(async function () {
+            beforeAll(async function () {
                 configUtils.set('tinybird', {
                     workspaceId: 'test-workspace-id',
                     adminToken: 'test-admin-token'
                 });
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
             });
 
@@ -69,7 +69,7 @@ describe('Tinybird API', function () {
         });
 
         describe('With stats token only (no JWT)', function () {
-            before(async function () {
+            beforeAll(async function () {
                 configUtils.set('tinybird', {
                     stats: {
                         token: 'static-stats-token'
@@ -77,7 +77,7 @@ describe('Tinybird API', function () {
                 });
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
             });
 
@@ -93,7 +93,7 @@ describe('Tinybird API', function () {
         });
 
         describe('With local stats token only (no JWT)', function () {
-            before(async function () {
+            beforeAll(async function () {
                 configUtils.set('tinybird', {
                     stats: {
                         local: {
@@ -104,7 +104,7 @@ describe('Tinybird API', function () {
                 });
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
             });
 
@@ -121,7 +121,7 @@ describe('Tinybird API', function () {
     });
 
     describe('As Admin', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsAdmin();
             configUtils.set('tinybird', {
                 workspaceId: 'test-workspace-id',
@@ -129,7 +129,7 @@ describe('Tinybird API', function () {
             });
         });
 
-        after(async function () {
+        afterAll(async function () {
             await configUtils.restore();
         });
 
@@ -141,7 +141,7 @@ describe('Tinybird API', function () {
     });
 
     describe('As Editor', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsEditor();
         });
 
