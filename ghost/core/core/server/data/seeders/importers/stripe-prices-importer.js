@@ -55,13 +55,13 @@ class StripePricesImporter extends TableImporter {
 
         return Object.assign({}, {
             id: this.fastFakeObjectId(),
-            stripe_price_id: faker.datatype.hexadecimal({
+            stripe_price_id: faker.string.hexadecimal({
                 length: 64,
                 prefix: ''
             }),
             stripe_product_id: this.model.stripe_product_id,
             active: true,
-            created_at: faker.date.between(blogStartDate, sixWeeksLater)
+            created_at: faker.date.between({from: blogStartDate, to: sixWeeksLater})
         }, billingCycle);
     }
 }

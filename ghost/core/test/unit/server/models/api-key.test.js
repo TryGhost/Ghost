@@ -1,11 +1,11 @@
 const assert = require('node:assert/strict');
-const models = require('../../../../core/server/models');
+const {ApiKey} = require('../../../../core/server/models/api-key');
 const sinon = require('sinon');
 
 describe('Unit: models/api_key', function () {
     describe('fn: refreshSecret', function () {
         it('returns a call to edit passing a new admin secret', function () {
-            const editStub = sinon.stub(models.ApiKey, 'edit').resolves();
+            const editStub = sinon.stub(ApiKey, 'edit').resolves();
 
             const fakeData = {
                 id: 'TREVOR',
@@ -13,7 +13,7 @@ describe('Unit: models/api_key', function () {
             };
             const fakeOptions = {};
 
-            const result = models.ApiKey.refreshSecret(fakeData, fakeOptions);
+            const result = ApiKey.refreshSecret(fakeData, fakeOptions);
 
             assert.equal(result, editStub.returnValues[0]);
             assert.equal(editStub.args[0][0].id, 'TREVOR');
@@ -24,7 +24,7 @@ describe('Unit: models/api_key', function () {
         });
 
         it('returns a call to edit passing a new content secret', function () {
-            const editStub = sinon.stub(models.ApiKey, 'edit').resolves();
+            const editStub = sinon.stub(ApiKey, 'edit').resolves();
 
             const fakeData = {
                 id: 'TREVOR',
@@ -32,7 +32,7 @@ describe('Unit: models/api_key', function () {
             };
             const fakeOptions = {};
 
-            const result = models.ApiKey.refreshSecret(fakeData, fakeOptions);
+            const result = ApiKey.refreshSecret(fakeData, fakeOptions);
 
             assert.equal(result, editStub.returnValues[0]);
             assert.equal(editStub.args[0][0].id, 'TREVOR');

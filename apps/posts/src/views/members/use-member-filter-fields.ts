@@ -3,9 +3,11 @@ import {DATE_OPERATOR_LABELS} from '../filters/filter-date';
 import {FilterFieldConfig, FilterFieldGroup, FilterOption, ValueSource} from '@tryghost/shade/patterns';
 import {LabelFilterRenderer} from '@src/components/label-picker';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD} from './multiple-active-subscriptions';
+import {RELATIVE_DATE_OPERATOR_LABELS, createRelativeDateRenderer, fieldHasRelativeOperator} from '../filters/filter-relative-date';
 import {createOperatorOptions} from '../filters/filter-operator-options';
+import {getMemberFields} from './member-fields';
 import {getTodayInTimezone} from '../filters/filter-normalization';
-import {memberFields} from './member-fields';
 import type {Offer} from '@tryghost/admin-x-framework/api/offers';
 
 interface UseMemberFilterFieldsOptions {
@@ -19,11 +21,11 @@ interface UseMemberFilterFieldsOptions {
     postValueSource?: ValueSource<string>;
     emailValueSource?: ValueSource<string>;
     offers?: Offer[];
+    multipleActiveSubscriptionsCount?: number;
     membersTrackSources?: boolean;
     emailTrackOpens?: boolean;
     emailTrackClicks?: boolean;
     siteTimezone?: string;
-    giftSubscriptionsEnabled?: boolean;
 }
 
 type OfferOption = FilterOption<string>;
@@ -34,6 +36,7 @@ const MEMBER_OPERATOR_LABELS: Record<string, string> = {
     'is-not-any': 'is none of',
     'does-not-contain': 'does not contain',
     ...DATE_OPERATOR_LABELS,
+    ...RELATIVE_DATE_OPERATOR_LABELS,
     1: 'More like this',
     0: 'Less like this'
 };
@@ -85,6 +88,8 @@ function getFieldIcon(key: string) {
         return React.createElement(LucideIcon.MessageSquare, {className: 'size-4'});
     case 'offer_redemptions':
         return React.createElement(LucideIcon.Ticket, {className: 'size-4'});
+    case MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD:
+        return React.createElement(LucideIcon.Layers, {className: 'size-4'});
     default:
         if (key.startsWith('newsletters.')) {
             return React.createElement(LucideIcon.Newspaper, {className: 'size-4'});
@@ -92,29 +97,6 @@ function getFieldIcon(key: string) {
 
         return undefined;
     }
-}
-
-function createFieldConfig(
-    key: string,
-    overrides: Partial<FilterFieldConfig> = {},
-    operatorLabels: Record<string, string> = MEMBER_OPERATOR_LABELS
-): FilterFieldConfig {
-    const field = key.startsWith('newsletters.')
-        ? memberFields['newsletters.:slug']
-        : memberFields[key as keyof typeof memberFields];
-
-    return {
-        key,
-        ...field.ui,
-        icon: getFieldIcon(key),
-        operators: createOperatorOptions(field.operators, {labels: operatorLabels}),
-        ...('options' in field && field.options ? {options: field.options} : {}),
-        ...overrides
-    };
-}
-
-function createDateFieldConfig(key: string, defaultValue: string) {
-    return createFieldConfig(key, {defaultValue});
 }
 
 function createSearchableFieldOverrides(
@@ -272,13 +254,48 @@ export function useMemberFilterFields({
     postValueSource,
     emailValueSource,
     offers = [],
+    multipleActiveSubscriptionsCount = 0,
     membersTrackSources = false,
     emailTrackOpens = false,
     emailTrackClicks = false,
-    siteTimezone = 'UTC',
-    giftSubscriptionsEnabled = false
+    siteTimezone = 'UTC'
 }: UseMemberFilterFieldsOptions): FilterFieldGroup[] {
     return useMemo(() => {
+        const fields = getMemberFields();
+        type MemberFieldKey = keyof typeof fields;
+
+        function createFieldConfig(
+            key: string,
+            overrides: Partial<FilterFieldConfig> = {},
+            operatorLabels: Record<string, string> = MEMBER_OPERATOR_LABELS
+        ): FilterFieldConfig {
+            const field = key.startsWith('newsletters.')
+                ? fields['newsletters.:slug']
+                : fields[key as MemberFieldKey];
+
+            return {
+                key,
+                ...field.ui,
+                icon: getFieldIcon(key),
+                operators: createOperatorOptions(field.operators, {labels: operatorLabels}),
+                ...('options' in field && field.options ? {options: field.options} : {}),
+                ...overrides
+            };
+        }
+
+        function createDateFieldConfig(
+            key: string,
+            today: string,
+            overrides: Partial<FilterFieldConfig> = {}
+        ): FilterFieldConfig {
+            const field = fields[key as MemberFieldKey];
+            const config = createFieldConfig(key, {defaultValue: today, ...overrides});
+
+            return fieldHasRelativeOperator(field)
+                ? {...config, customRenderer: createRelativeDateRenderer(today)}
+                : config;
+        }
+
         const groups: FilterFieldGroup[] = [];
         const activeNewsletters = newsletters.filter(newsletter => newsletter.status !== 'archived');
         const activeNewsletterSlugs = new Set(activeNewsletters.map(newsletter => newsletter.slug));
@@ -365,10 +382,15 @@ export function useMemberFilterFields({
                 subscriptionFields.push(createFieldConfig('tier_id', createSearchableFieldOverrides([], tierValueSource)));
             }
 
+            subscriptionFields.push(createFieldConfig('status', {
+                options: [...fields.status.options, {value: 'gift', label: 'Gift subscription'}]
+            }));
+
+            if (multipleActiveSubscriptionsCount > 0) {
+                subscriptionFields.push(createFieldConfig(MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD));
+            }
+
             subscriptionFields.push(
-                createFieldConfig('status', giftSubscriptionsEnabled ? {
-                    options: [...memberFields.status.options, {value: 'gift', label: 'Gift subscription'}]
-                } : {}),
                 createFieldConfig('subscriptions.plan_interval'),
                 createFieldConfig('subscriptions.status'),
                 createDateFieldConfig('subscriptions.start_date', today),
@@ -435,10 +457,10 @@ export function useMemberFilterFields({
         emailValueSource,
         emailTrackClicks,
         emailTrackOpens,
-        giftSubscriptionsEnabled,
         hasMultipleTiers,
         labelValueSource,
         membersTrackSources,
+        multipleActiveSubscriptionsCount,
         newsletters,
         offers,
         hydratedNewsletterSlugs,

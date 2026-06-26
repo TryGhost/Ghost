@@ -101,6 +101,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
     const {fetchAutocompleteLinks, searchLinks} = useWelcomeEmailLinkSuggestions();
     const fetchEmbed = useKoenigFetchEmbed();
     const tenorConfig = config.tenor?.googleApiKey ? config.tenor : null;
+    const klipyConfig = config.klipy?.apiKey ? config.klipy : null;
     const {fetchKoenigLexical, darkMode} = useDesignSystem();
     const editorResource = useMemo(() => loadKoenig(fetchKoenigLexical), [fetchKoenigLexical]);
     const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
@@ -109,6 +110,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
         unsplash: unsplashConfig,
         pinturaConfig,
         tenor: tenorConfig,
+        klipy: klipyConfig,
         fetchEmbed,
         fetchAutocompleteLinks,
         searchLinks,
@@ -116,7 +118,7 @@ const MemberEmailsEditor: React.FC<MemberEmailsEditorProps> = ({
             transistor: transistorEnabled
         },
         visibilitySettings: 'none'
-    }), [unsplashConfig, pinturaConfig, tenorConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks, transistorEnabled]);
+    }), [unsplashConfig, pinturaConfig, tenorConfig, klipyConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks, transistorEnabled]);
 
     const registerEditorAPI = useCallback((API: KoenigInstance | null) => {
         editorAPIRef.current = API;

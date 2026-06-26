@@ -50,7 +50,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             sinon.assert.calledOnce(routerCreatedSpy);
             sinon.assert.calledWith(routerCreatedSpy, collectionRouter);
 
-            sinon.assert.calledThrice(mountRouteSpy);
+            sinon.assert.callCount(mountRouteSpy, 4);
             sinon.assert.calledTwice(express.Router.param);
 
             // parent route
@@ -64,6 +64,9 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             // permalinks
             assert.equal(mountRouteSpy.args[2][0], '/:slug/:options(edit)?/');
             assert.equal(mountRouteSpy.args[2][1], controllers.entry);
+
+            // markdown variant
+            assert.equal(mountRouteSpy.args[3][0], '/:slug.md');
 
             sinon.assert.calledOnce(mountRouterSpy);
             assert.equal(mountRouterSpy.args[0][0], '/');
@@ -97,7 +100,7 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             sinon.assert.calledOnce(routerCreatedSpy);
             sinon.assert.calledWith(routerCreatedSpy, collectionRouter);
 
-            sinon.assert.calledThrice(mountRouteSpy);
+            sinon.assert.callCount(mountRouteSpy, 4);
 
             // parent route
             assert.equal(mountRouteSpy.args[0][0], '/blog/');
@@ -110,6 +113,9 @@ describe('UNIT - services/routing/CollectionRouter', function () {
             // permalinks
             assert.equal(mountRouteSpy.args[2][0], '/blog/:year/:slug/:options(edit)?/');
             assert.equal(mountRouteSpy.args[2][1], controllers.entry);
+
+            // markdown variant
+            assert.equal(mountRouteSpy.args[3][0], '/blog/:year/:slug.md');
 
             sinon.assert.calledOnce(mountRouterSpy);
             assert.equal(mountRouterSpy.args[0][0], '/blog/');

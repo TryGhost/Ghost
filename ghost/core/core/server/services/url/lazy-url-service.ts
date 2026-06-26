@@ -1,121 +1,108 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
-const nql = require('@tryghost/nql');
 const debug = require('@tryghost/debug')('services:url:lazy');
-const logging = require('@tryghost/logging');
 const errors = require('@tryghost/errors');
 const localUtils = require('../../../shared/url-utils');
-/* eslint-enable @typescript-eslint/no-require-imports */
+const {matchPermalink, toLookupParams} = require('./permalink-matcher');
+const {buildFilter, filterMatches, routerTypeOf} = require('./router-filter');
 
 import type {Resource, UrlOptions, LazyUrlServiceBackend} from './url-service-facade';
+import type {CompiledFilter} from './router-filter';
+import type {PermalinkParams} from './permalink-matcher';
 
-// The same expansions used by UrlGenerator so users can write `tag:foo`,
-// `author:jane`, etc. and have them rewritten to the underlying field paths.
-const EXPANSIONS = [
-    {key: 'author', replacement: 'authors.slug'},
-    {key: 'tags', replacement: 'tags.slug'},
-    {key: 'tag', replacement: 'tags.slug'},
-    {key: 'authors', replacement: 'authors.slug'},
-    {key: 'primary_tag', replacement: 'primary_tag.slug'},
-    {key: 'primary_author', replacement: 'primary_author.slug'}
-];
+export type ResourceLookupParams = {id: string} | {slug: string};
 
-// Same `page:true/false` legacy transformer the UrlGenerator uses, so old
-// routes.yaml configs continue to work.
-const PAGE_TRANSFORMER = nql.utils.mapKeyValues({
-    key: {from: 'page', to: 'type'},
-    values: [
-        {from: false, to: 'post'},
-        {from: true, to: 'page'}
-    ]
-});
-
-// Map a resource's `type` field (whatever the caller passed) onto the plural
-// router resource type. We accept the singular DB column values ('post',
-// 'page') as well as the plural router keys, because the migrated callers
-// are inconsistent: API responses spread `attrs` (singular), but some
-// helpers explicitly tag with the plural router key.
-const TYPE_TO_ROUTER_TYPE: Record<string, string> = {
-    post: 'posts',
-    posts: 'posts',
-    page: 'pages',
-    pages: 'pages',
-    tag: 'tags',
-    tags: 'tags',
-    author: 'authors',
-    authors: 'authors'
-};
-
-interface NqlInstance {
-    queryJSON(record: Record<string, unknown>): unknown;
-}
+export type FindResource = (
+    routerType: string,
+    params: ResourceLookupParams
+) => Promise<Record<string, unknown> | null>;
 
 interface RouterConfig {
     identifier: string;
     filter: string | null;
     resourceType: string;
     permalink: string;
-    nql: NqlInstance | null;
+    compiledFilter: CompiledFilter | null;
 }
-
-/**
- * Async function that resolves a slug (or other params) to a database
- * record. Injected so the URL service stays pure for forward lookups —
- * only `resolveUrl` actually hits the DB, and only via this hook.
- */
-export type FindResource = (
-    routerType: string,
-    params: Record<string, string>
-) => Promise<Record<string, unknown> | null>;
 
 interface LazyUrlServiceDeps {
     urlUtils?: typeof localUtils;
-    findResource?: FindResource | null;
+    findResource: FindResource;
 }
 
+const ROUTER_TYPE_TO_DB_TYPE: Record<string, string> = {posts: 'post', pages: 'page'};
+
 /**
- * On-demand URL service. Computes URLs and ownership per-call from the
- * registered router configs instead of holding a precomputed map of every
- * resource. Pure for forward lookups; resolveUrl() takes an optional DB
- * lookup function so reverse lookups stay testable.
+ * On-demand replacement for the eager UrlService: computes URLs and ownership
+ * per call from the registered router configs instead of precomputing a full
+ * map at boot. Forward lookups are pure; resolveUrl is the only DB-touching
+ * path, and only through the injected findResource hook.
  */
 export class LazyUrlService implements LazyUrlServiceBackend {
     private urlUtils: typeof localUtils;
-    private findResource: FindResource | null;
+    private findResource: FindResource;
+    // Router configs in registration order, which is also their priority.
     private routerConfigs: RouterConfig[];
+    private requiredRelations: string[] | null;
 
-    constructor({urlUtils = localUtils, findResource = null}: LazyUrlServiceDeps = {}) {
+    constructor({urlUtils = localUtils, findResource}: LazyUrlServiceDeps) {
+        if (typeof findResource !== 'function') {
+            throw new errors.IncorrectUsageError({
+                message: 'LazyUrlService requires a findResource function'
+            });
+        }
         this.urlUtils = urlUtils;
         this.findResource = findResource;
-        // Router configs in priority order. Position is the registration order.
         this.routerConfigs = [];
+        this.requiredRelations = null;
     }
 
-    onRouterAddedType(
-        identifier: string,
-        filter: string | null,
-        resourceType: string,
-        permalink: string
-    ): void {
+    onRouterAddedType(identifier: string, filter: string | null, resourceType: string, permalink: string): void {
         debug('onRouterAddedType', identifier, resourceType, permalink, filter);
-        const config: RouterConfig = {identifier, filter, resourceType, permalink, nql: null};
-        if (filter) {
-            config.nql = nql(filter, {expansions: EXPANSIONS, transformer: PAGE_TRANSFORMER});
-        }
-        this.routerConfigs.push(config);
+        this.routerConfigs.push({
+            identifier,
+            filter,
+            resourceType,
+            permalink,
+            compiledFilter: buildFilter(filter)
+        });
+        this.requiredRelations = null;
     }
 
     onRouterUpdated(): void {
-        // No state to regenerate. The next URL request reads the (possibly new)
-        // router config; in-flight requests that already snapshotted the old
-        // config keep using it, which matches the documented atomic-reload
-        // behaviour.
+        // Defensive: a router update could change a filter the cache derived
+        // from, so drop it and recompute lazily on next read.
+        this.requiredRelations = null;
     }
 
-    /**
-     * Drop all registered routers. Called when routes.yaml is reloaded.
-     */
     reset(): void {
         this.routerConfigs = [];
+        this.requiredRelations = null;
+    }
+
+    getRequiredRelations(): string[] {
+        if (this.requiredRelations !== null) {
+            return [...this.requiredRelations];
+        }
+        const required = new Set<string>();
+        for (const config of this.routerConfigs) {
+            if (config.filter) {
+                if (/\btags?\b/.test(config.filter) || /\bprimary_tag\b/.test(config.filter)) {
+                    required.add('tags');
+                }
+                if (/\bauthors?\b/.test(config.filter) || /\bprimary_author\b/.test(config.filter)) {
+                    required.add('authors');
+                }
+            }
+            if (config.permalink) {
+                if (/\bprimary_tag\b/.test(config.permalink)) {
+                    required.add('tags');
+                }
+                if (/\bprimary_author\b/.test(config.permalink)) {
+                    required.add('authors');
+                }
+            }
+        }
+        this.requiredRelations = [...required];
+        return [...this.requiredRelations];
     }
 
     hasFinished(): boolean {
@@ -123,112 +110,72 @@ export class LazyUrlService implements LazyUrlServiceBackend {
     }
 
     getUrlForResource(resource: Resource, options: UrlOptions = {}): string {
-        const routerType = this._routerTypeOf(resource);
+        const routerType = routerTypeOf(resource);
         if (!routerType) {
-            return this._formatPath('/404/', options);
+            return this._formatNotFound(options);
         }
-        const candidates = this.routerConfigs.filter(c => c.resourceType === routerType);
-        for (const config of candidates) {
-            // Warn loudly when a caller passes a resource that's missing
-            // the relations a tag- or author-filtered router needs. The
-            // URL silently falls through to /404/ on those routes; the
-            // log lets operators alert on any caller that hasn't been
-            // inflated with withRelated: ['tags', 'authors'].
-            this._warnIfThin(config, resource, routerType);
-            // NQL filters are evaluated against the original resource (with
-            // its singular DB `type` field intact) because the page:true/false
-            // transformer rewrites to type:'post'/'page'.
-            if (this._matchesFilter(config, resource)) {
+
+        const record = this._recordForFilter(resource);
+        for (const config of this.routerConfigs) {
+            if (config.resourceType !== routerType) {
+                continue;
+            }
+            this._assertNotThin(config, resource, routerType);
+            if (filterMatches(config.compiledFilter, record)) {
                 const path = this.urlUtils.replacePermalink(config.permalink, resource);
                 return this._formatPath(path, options);
             }
         }
-        return this._formatPath('/404/', options);
-    }
-
-    /**
-     * Warn when a caller passes a thin resource (missing tags/authors)
-     * against a router whose filter references those relations. The
-     * filter eval will fail silently and the URL will resolve to /404/.
-     * Detection is conservative: only fires when the router filter
-     * actually references the relation, so a tag-less router (`filter:
-     * featured:true`) doesn't log for a tag-less resource.
-     */
-    private _warnIfThin(config: RouterConfig, resource: Resource, routerType: string): void {
-        if (!config.filter) {
-            return;
-        }
-        const needsTags = /\btags?\b|\bprimary_tag\b/.test(config.filter);
-        const needsAuthors = /\bauthors?\b|\bprimary_author\b/.test(config.filter);
-        const r = resource as Record<string, unknown>;
-        const missingTags = needsTags && !Array.isArray(r.tags);
-        const missingAuthors = needsAuthors && !Array.isArray(r.authors);
-        if (!missingTags && !missingAuthors) {
-            return;
-        }
-        const missing = [missingTags && 'tags', missingAuthors && 'authors']
-            .filter(Boolean) as string[];
-        logging.error(new errors.InternalServerError({
-            message: 'Thin resource passed to LazyUrlService.getUrlForResource',
-            code: 'LAZY_URL_THIN_RESOURCE',
-            errorDetails: {
-                resourceType: routerType,
-                resourceId: resource.id,
-                routerIdentifier: config.identifier,
-                filter: config.filter,
-                missing
-            }
-        }));
+        return this._formatNotFound(options);
     }
 
     ownsResource(routerIdentifier: string, resource: Resource | null): boolean {
-        const config = this.routerConfigs.find(c => c.identifier === routerIdentifier);
-        if (!config || !resource) {
+        if (!resource) {
             return false;
         }
-        const routerType = this._routerTypeOf(resource);
-        if (config.resourceType !== routerType) {
+        const routerType = routerTypeOf(resource);
+        if (!routerType) {
             return false;
         }
-        return this._matchesFilter(config, resource);
+        // Ownership is exclusive: only the first matching router of the type
+        // owns the resource, matching eager's reservation.
+        const record = this._recordForFilter(resource);
+        const owner = this.routerConfigs.find(
+            c => c.resourceType === routerType && filterMatches(c.compiledFilter, record)
+        );
+        return !!owner && owner.identifier === routerIdentifier;
     }
 
-    /**
-     * Translate the resource's `type` field into the plural router resource
-     * type (`'posts'` / `'pages'` / `'tags'` / `'authors'`). Returns `null`
-     * when the type is missing or unrecognised.
-     */
-    private _routerTypeOf(resource: Resource | null | undefined): string | null {
-        if (!resource || !resource.type) {
-            return null;
-        }
-        return TYPE_TO_ROUTER_TYPE[resource.type] || null;
-    }
-
-    /**
-     * Resolve a URL path to a resource record. Iterates router configs in
-     * priority order, pattern-matching the path against each permalink
-     * template, querying the database for a matching resource, and verifying
-     * any NQL filter still matches for posts.
-     */
     async resolveUrl(urlPath: string): Promise<Resource | null> {
-        if (!this.findResource) {
-            return null;
-        }
+        // Memoize per call so routers sharing a resourceType+permalink shape (or
+        // fallthrough across filters) don't repeat the same DB lookup.
+        const lookupCache = new Map<string, Record<string, unknown> | null>();
         for (const config of this.routerConfigs) {
-            const params = this._matchPermalink(config.permalink, urlPath);
+            const params = matchPermalink(config.permalink, urlPath);
             if (!params) {
                 continue;
             }
-            const resource = await this.findResource(config.resourceType, params);
+            // matchPermalink only matches permalinks that capture a queryable
+            // column, so this always yields a usable lookup.
+            const lookupParams = toLookupParams(params);
+            const cacheKey = `${config.resourceType}:${JSON.stringify(lookupParams)}`;
+            let resource: Record<string, unknown> | null;
+            if (lookupCache.has(cacheKey)) {
+                resource = lookupCache.get(cacheKey) ?? null;
+            } else {
+                resource = await this.findResource(config.resourceType, lookupParams);
+                lookupCache.set(cacheKey, resource);
+            }
             if (!resource) {
                 continue;
             }
-            // For posts/pages with NQL filters, confirm the DB record still
-            // satisfies the filter. The match runs against the raw record
-            // (with its singular `type` column) because the page:true/false
-            // transformer rewrites to type:'post'/'page'.
-            if (config.nql && !this._matchesFilter(config, resource)) {
+            // Normalize the same way the forward paths do so page: filters are
+            // evaluated against an identical shape regardless of findResource.
+            const record = this._recordForFilter(resource as Resource);
+            if (!filterMatches(config.compiledFilter, record)) {
+                continue;
+            }
+            if (!this._matchesCanonicalUrl(config, params, resource)) {
                 continue;
             }
             return Object.assign({}, resource, {type: config.resourceType}) as Resource;
@@ -236,17 +183,28 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return null;
     }
 
-    private _matchesFilter(config: RouterConfig, resource: Record<string, unknown>): boolean {
-        if (!config.nql) {
-            return true;
-        }
-        try {
-            return !!config.nql.queryJSON(resource);
-        } catch (err) {
-            const message = err instanceof Error ? err.message : String(err);
-            debug('NQL match failed', config.filter, message);
+    // Eager only resolves a URL that equals a resource's generated (canonical)
+    // URL, so we regenerate the record's URL for this permalink and confirm the
+    // captured params match it. Without this, derived/relation segments the
+    // query can't filter on (year/month, primary_tag) would resolve any slug,
+    // 200-ing a URL the eager service 404s.
+    private _matchesCanonicalUrl(config: RouterConfig, params: PermalinkParams, resource: Record<string, unknown>): boolean {
+        const canonicalPath = this.urlUtils.replacePermalink(config.permalink, resource);
+        const canonicalParams = matchPermalink(config.permalink, canonicalPath);
+        if (!canonicalParams) {
             return false;
         }
+        const captured = params as Record<string, string>;
+        const canonical = canonicalParams as Record<string, string>;
+        return Object.keys(captured).every(key => canonical[key] === captured[key]);
+    }
+
+    // Normalizes the plural router type to the singular DB value for filter
+    // evaluation only, so page: filters match as in the eager generator.
+    private _recordForFilter(resource: Resource): Record<string, unknown> {
+        const record = resource as Record<string, unknown>;
+        const dbType = ROUTER_TYPE_TO_DB_TYPE[record.type as string];
+        return dbType ? {...record, type: dbType} : record;
     }
 
     private _formatPath(path: string, options: UrlOptions): string {
@@ -259,50 +217,56 @@ export class LazyUrlService implements LazyUrlServiceBackend {
         return path;
     }
 
-    /**
-     * Match a Ghost permalink template (e.g. `/:slug/`,
-     * `/:year/:month/:slug/`) against a URL path and extract the named
-     * fields. Ghost's RouteSettings validator rewrites `{field}` placeholders
-     * into `:field` form before they reach the URL service, so this parser
-     * works on the `:field` syntax.
-     *
-     * Implementation: walk the permalink and path one segment at a time.
-     * Each segment must be either a literal match or a single placeholder.
-     * Mixing literals and placeholders inside a segment is unsupported and
-     * not a documented Ghost feature; rejecting it here also keeps us out of
-     * regex-backtracking territory entirely.
-     */
-    private _matchPermalink(permalink: string, urlPath: string): Record<string, string> | null {
-        if (typeof permalink !== 'string' || typeof urlPath !== 'string') {
-            return null;
+    // Mirrors the eager miss path: the /404/ fallback carries no subdirectory.
+    private _formatNotFound(options: UrlOptions): string {
+        if (options.absolute) {
+            return this.urlUtils.createUrl('/404/', options.absolute);
         }
-        const permalinkSegments = permalink.split('/');
-        const pathSegments = urlPath.split('/');
-        if (permalinkSegments.length !== pathSegments.length) {
-            return null;
+        if (options.withSubdirectory) {
+            return this.urlUtils.createUrl('/404/', false);
         }
-        const params: Record<string, string> = {};
-        for (let i = 0; i < permalinkSegments.length; i += 1) {
-            const templateSegment = permalinkSegments[i];
-            const pathSegment = pathSegments[i];
-            if (templateSegment.startsWith(':')) {
-                const fieldName = templateSegment.slice(1);
-                if (!/^\w+$/.test(fieldName) || pathSegment.length === 0) {
-                    return null;
-                }
-                try {
-                    params[fieldName] = decodeURIComponent(pathSegment);
-                } catch {
-                    // Malformed %-escapes (e.g. "/foo%ZZ/") throw URIError;
-                    // treat as a non-match rather than crash the request.
-                    return null;
-                }
-            } else if (templateSegment !== pathSegment) {
-                return null;
+        return '/404/';
+    }
+
+    // A filtered router that references a relation the resource doesn't carry
+    // can't be evaluated: lazy would 404 here while eager (full data in memory)
+    // returns a URL. Callers must hand the service fully-inflated resources, so
+    // a thin one is a programmer error we refuse loudly rather than mask as a
+    // silent /404/.
+    private _assertNotThin(config: RouterConfig, resource: Resource, routerType: string): void {
+        if (!config.filter) {
+            return;
+        }
+        const r = resource as Record<string, unknown>;
+        const missing: string[] = [];
+        if (/\btags?\b/.test(config.filter) && !Array.isArray(r.tags)) {
+            missing.push('tags');
+        }
+        if (/\bauthors?\b/.test(config.filter) && !Array.isArray(r.authors)) {
+            missing.push('authors');
+        }
+        if (/\bprimary_tag\b/.test(config.filter) && r.primary_tag === undefined) {
+            missing.push('primary_tag');
+        }
+        if (/\bprimary_author\b/.test(config.filter) && r.primary_author === undefined) {
+            missing.push('primary_author');
+        }
+        if (missing.length === 0) {
+            return;
+        }
+        throw new errors.InternalServerError({
+            message: 'Thin resource passed to LazyUrlService.getUrlForResource',
+            code: 'LAZY_URL_THIN_RESOURCE',
+            errorDetails: {
+                resourceType: routerType,
+                resourceId: resource.id,
+                routerIdentifier: config.identifier,
+                filter: config.filter,
+                missing
             }
-        }
-        return params;
+        });
     }
 }
 
 module.exports = LazyUrlService;
+module.exports.LazyUrlService = LazyUrlService;

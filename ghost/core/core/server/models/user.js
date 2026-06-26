@@ -13,6 +13,7 @@ const urlUtils = require('../../shared/url-utils');
 const {setIsRoles} = require('./role-utils');
 const activeStates = ['active', 'warn-1', 'warn-2', 'warn-3', 'warn-4'];
 const ASSIGNABLE_ROLES = ['Administrator', 'Super Editor', 'Editor', 'Author', 'Contributor'];
+const DEFAULT_ACCESSIBILITY_PREFERENCES = JSON.stringify({nightShift: 'system'});
 
 const messages = {
     valueCannotBeBlank: 'Value in [{tableName}.{columnKey}] cannot be blank.',
@@ -109,6 +110,18 @@ User = ghostBookshelf.Model.extend({
         return attrs;
     },
 
+    filterRelations: function filterRelations() {
+        return {
+            roles: {
+                tableName: 'roles',
+                type: 'manyToMany',
+                joinTable: 'roles_users',
+                joinFrom: 'user_id',
+                joinTo: 'role_id'
+            }
+        };
+    },
+
     emitChange: function emitChange(event, options) {
         const eventToTrigger = 'user' + '.' + event;
         ghostBookshelf.Model.prototype.emitChange.bind(this)(this, eventToTrigger, options);
@@ -129,17 +142,19 @@ User = ghostBookshelf.Model.extend({
     },
 
     onDestroyed: function onDestroyed(model, options) {
-        ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onDestroyed.apply(this, arguments);
 
         if (activeStates.includes(model.previous('status'))) {
             model.emitChange('deactivated', options);
         }
 
         model.emitChange('deleted', options);
+
+        return result;
     },
 
     onCreated: function onCreated(model, options) {
-        ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onCreated.apply(this, arguments);
 
         model.emitChange('added', options);
 
@@ -147,10 +162,12 @@ User = ghostBookshelf.Model.extend({
         if (!model.get('status') || activeStates.includes(model.get('status'))) {
             model.emitChange('activated', options);
         }
+
+        return result;
     },
 
     onUpdated: function onUpdated(model, options) {
-        ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
+        const result = ghostBookshelf.Model.prototype.onUpdated.apply(this, arguments);
 
         model.statusChanging = model.get('status') !== model.previous('status');
         model.isActive = activeStates.includes(model.get('status'));
@@ -164,6 +181,8 @@ User = ghostBookshelf.Model.extend({
         }
 
         model.emitChange('edited', options);
+
+        return result;
     },
 
     isActive: function isActive() {
@@ -683,6 +702,10 @@ User = ghostBookshelf.Model.extend({
         roles = data.roles;
         delete data.roles;
 
+        if (!options.importing && typeof userData.accessibility === 'undefined') {
+            userData.accessibility = DEFAULT_ACCESSIBILITY_PREFERENCES;
+        }
+
         return ghostBookshelf.Model.add.call(self, userData, options)
             .then(function then(addedUser) {
                 // Assign the userData to our created user so we can pass it back
@@ -761,6 +784,10 @@ User = ghostBookshelf.Model.extend({
         }
 
         userData.slug = null;
+        if (typeof userData.accessibility === 'undefined') {
+            userData.accessibility = DEFAULT_ACCESSIBILITY_PREFERENCES;
+        }
+
         return self.edit(userData, options);
     },
 

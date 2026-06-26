@@ -3,7 +3,7 @@ const {agentProvider, fixtureManager, matchers} = require('../../utils/e2e-frame
 describe('Tiers Content API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getContentAPIAgent();
         await fixtureManager.init('members', 'api_keys', 'tiers:archived', 'tiers:hidden');
         await agent.authenticate();

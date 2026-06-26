@@ -1,10 +1,25 @@
 import {dispatchSimpleNodes, getFieldKeysByType, hasFieldKey, parseFilterToAst, serializePredicates, stampPredicates} from '../filters/filter-query-core';
 import {memberFields} from './member-fields';
+import {resolveField} from '../filters/resolve-field';
 import type {AstNode} from '../filters/filter-ast';
 import type {FilterPredicate, ParsedPredicate} from '../filters/filter-types';
+import type {MemberFields} from './member-fields';
 
 type CompoundMatcher = (node: AstNode) => ParsedPredicate | null;
 const TIMEZONE_SENSITIVE_MEMBER_FIELDS = getFieldKeysByType(memberFields, 'date');
+
+/**
+ * Is this predicate's operator one the field currently advertises?
+ *
+ * This returns `false` for predicates the user can't reach in the UI because
+ * the field never declares the operator. Hooks call this to drop unreachable
+ * predicates before serializing or after parsing. The parser/serializer
+ * themselves stay pure.
+ */
+export function isPredicateEnabled(predicate: ParsedPredicate, fields: MemberFields): boolean {
+    const resolved = resolveField(fields, predicate.field, 'UTC');
+    return resolved?.definition.operators.includes(predicate.operator) ?? false;
+}
 
 function getCompoundChildren(node: AstNode): {operator: '$and' | '$or'; children: AstNode[]} | null {
     if (Array.isArray(node.$and)) {
@@ -192,6 +207,10 @@ function parseMemberNode(node: AstNode, timezone: string): ParsedPredicate[] {
     return dispatchSimpleNodes([node], memberFields, timezone);
 }
 
+/**
+ * Parses NQL into predicates. Pure: callers are responsible for filtering the
+ * output via `isPredicateEnabled` against the field map they want to enforce.
+ */
 export function parseMemberFilter(filter: string | undefined, timezone: string): FilterPredicate[] {
     const ast = parseFilterToAst(filter ?? '');
 
@@ -212,6 +231,11 @@ export function hasTimezoneSensitiveMemberFilter(filter: string | undefined): bo
     return hasFieldKey(ast, TIMEZONE_SENSITIVE_MEMBER_FIELDS);
 }
 
+/**
+ * Serializes predicates back to NQL. Pure: callers should pre-filter via
+ * `isPredicateEnabled` if they need to drop predicates the field map doesn't
+ * advertise.
+ */
 export function serializeMemberFilters(predicates: FilterPredicate[], timezone: string): string | undefined {
     return serializePredicates(predicates, memberFields, timezone);
 }

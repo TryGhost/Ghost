@@ -14,9 +14,6 @@ describe('GiftController', function () {
             read: sinon.SinonStub;
         };
     };
-    let labsService: {
-        isSet: sinon.SinonStub;
-    };
 
     function buildGift(overrides: Partial<ConstructorParameters<typeof Gift>[0]> = {}) {
         return new Gift({
@@ -66,9 +63,6 @@ describe('GiftController', function () {
                 })
             }
         };
-        labsService = {
-            isSet: sinon.stub().returns(true)
-        };
     });
 
     afterEach(function () {
@@ -78,8 +72,7 @@ describe('GiftController', function () {
     function createController() {
         return new GiftController({
             service: service as any,
-            tiersService,
-            labsService
+            tiersService
         });
     }
 
@@ -212,24 +205,6 @@ describe('GiftController', function () {
             assert.deepEqual(result.tier.benefits, []);
         });
 
-        it('throws BadRequestError when labs flag is disabled', async function () {
-            labsService.isSet.returns(false);
-
-            const controller = createController();
-
-            await assert.rejects(
-                () => controller.getRedeemable({data: {token: 'gift-token'}}),
-                (err: any) => {
-                    assert.equal(err.errorType, 'BadRequestError');
-                    assert.equal(err.message, 'Gift subscriptions are not enabled on this site.');
-                    return true;
-                }
-            );
-
-            sinon.assert.calledOnceWithExactly(labsService.isSet, 'giftSubscriptions');
-            sinon.assert.notCalled(service.getRedeemable);
-        });
-
         it('passes through service errors unchanged', async function () {
             const serviceError = new errors.BadRequestError({
                 message: 'This gift has expired.'
@@ -321,34 +296,6 @@ describe('GiftController', function () {
                 }
             );
 
-            sinon.assert.notCalled(service.redeem);
-        });
-
-        it('throws BadRequestError when labs flag is disabled', async function () {
-            labsService.isSet.returns(false);
-
-            const controller = createController();
-
-            await assert.rejects(
-                () => controller.redeem({
-                    data: {token: 'gift-token'},
-                    options: {
-                        context: {
-                            member: {
-                                id: 'member_1',
-                                status: 'free'
-                            }
-                        }
-                    }
-                }),
-                (err: any) => {
-                    assert.equal(err.errorType, 'BadRequestError');
-                    assert.equal(err.message, 'Gift subscriptions are not enabled on this site.');
-                    return true;
-                }
-            );
-
-            sinon.assert.calledOnceWithExactly(labsService.isSet, 'giftSubscriptions');
             sinon.assert.notCalled(service.redeem);
         });
 

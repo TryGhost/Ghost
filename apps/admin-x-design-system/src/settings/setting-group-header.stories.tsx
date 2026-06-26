@@ -48,7 +48,7 @@ export const CustomHeader: Story = {
                 <div className='flex flex-col'>
                     <Heading level={5}>Users</Heading>
                     <span className='mt-4 text-sm'>Cristofer Vaccaro — <strong>Owner</strong></span>
-                    <span className='text-xs text-grey-500'>cristofer@example.com</span>
+                    <span className='text-sm text-grey-500'>cristofer@example.com</span>
                 </div>
                 <ButtonGroup
                     buttons={[{label: 'Invite users', color: 'green'}]}

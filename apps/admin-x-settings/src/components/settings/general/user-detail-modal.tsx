@@ -272,7 +272,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
     };
 
     const showMenu = hasAdminAccess(currentUser) || (isEditorUser(currentUser) && isAuthorOrContributor(user));
-    let menuItems: MenuItem[] = [];
+    const menuItems: MenuItem[] = [];
 
     if (isOwnerUser(currentUser) && isAdminUser(formState) && formState.status !== 'inactive') {
         menuItems.push({
@@ -295,7 +295,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         (hasAdminAccess(currentUser) && !isOwnerUser(user)) ||
         (isEditorUser(currentUser) && isAuthorOrContributor(user))
     )) {
-        let suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
+        const suspendUserLabel = formState.status === 'inactive' ? 'Un-suspend user' : 'Suspend user';
 
         menuItems.push({
             id: 'suspend-user',
@@ -313,9 +313,9 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         });
     }
 
-    const noCoverButtonClasses = 'rounded text-sm flex flex-nowrap items-center justify-center px-3 h-8 transition-all cursor-pointer font-medium border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white';
+    const noCoverButtonClasses = 'rounded flex flex-nowrap items-center justify-center px-3 h-8 transition-all cursor-pointer font-medium border border-grey-300 bg-transparent text-black dark:border-grey-800 dark:text-white';
 
-    const coverButtonClasses = 'flex flex-nowrap items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 bg-[rgba(0,0,0,0.75)] rounded text-sm text-white transition-all cursor-pointer font-medium nowrap';
+    const coverButtonClasses = 'flex flex-nowrap items-center justify-center px-3 h-8 opacity-80 hover:opacity-100 bg-[rgba(0,0,0,0.75)] rounded     text-white transition-all cursor-pointer font-medium nowrap';
 
     const suspendedText = formState.status === 'inactive' ? ' (Suspended)' : '';
 
@@ -337,6 +337,7 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
             buttonsDisabled={okProps.disabled}
             cancelLabel='Close'
             dirty={saveState === 'unsaved'}
+            hideXOnMobile={true}
             okColor={okProps.color}
             okLabel={okProps.label || 'Save'}
             size={canAccessSettings(currentUser) ? 'md' : 'bleed'}
@@ -357,14 +358,14 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
                             <div className='flex flex-nowrap items-start justify-between gap-3'>
                                 <div>
                                     <ImageUpload
-                                        deleteButtonClassName='md:invisible absolute pr-3 -right-2 -top-2 flex h-8 w-10 cursor-pointer items-center justify-end rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
+                                        deleteButtonClassName='md:invisible absolute -right-1 -top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
                                         deleteButtonContent={<Icon colorClass='text-white' name='trash' size='sm' />}
-                                        editButtonClassName='md:invisible absolute right-[22px] -top-2 flex h-8 w-8 cursor-pointer items-center justify-center text-white group-hover:visible! z-20'
+                                        editButtonClassName='md:invisible absolute -left-1 -top-2 flex size-8 cursor-pointer items-center justify-center rounded-full bg-[rgba(0,0,0,0.75)] text-white group-hover:visible!'
                                         fileUploadClassName='rounded-full bg-black flex items-center justify-center opacity-80 transition hover:opacity-100 -ml-2 cursor-pointer h-[80px] w-[80px]'
                                         fileUploadProps={{dragIndicatorClassName: 'rounded-full'}}
                                         id='avatar'
                                         imageClassName='w-full h-full object-cover rounded-full shrink-0'
-                                        imageContainerClassName='relative group bg-cover bg-center -ml-1 h-16 w-16 md:h-18 md:w-18 shrink-0'
+                                        imageContainerClassName='relative group bg-cover bg-center -ml-1 h-[80px] w-[80px] shrink-0'
                                         imageURL={formState.profile_image ?? undefined}
                                         pintura={
                                             {

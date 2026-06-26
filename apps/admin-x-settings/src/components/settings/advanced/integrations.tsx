@@ -76,7 +76,7 @@ const IntegrationItem: React.FC<IntegrationItemProps> = ({
         detail={detail}
         hideActions={!disabled}
         testId={testId}
-        title={active ? <span className='inline-flex items-center gap-1'>{title} <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-1.5 py-0.5 text-2xs font-semibold tracking-wide text-green uppercase'>Active</span></span> : title}
+        title={active ? <span className='inline-flex items-center gap-1'>{title} <span className='inline-flex items-center rounded-full bg-[rgba(48,207,67,0.15)] px-1.5 py-px text-xs font-semibold tracking-wide text-green uppercase'>Active</span></span> : title}
         onClick={handleClick}
     />;
 };
@@ -196,6 +196,7 @@ const CustomIntegrations: React.FC<{integrations: Integration[]}> = ({integratio
             <List borderTop={false}>
                 {integrations.map(integration => (
                     <IntegrationItem
+                        key={integration.id}
                         action={() => updateRoute({route: `integrations/${integration.id}`})}
                         detail={<div className="line-clamp-2 break-words">
                             <span title={`${integration.name}: ${integration.description || 'No description'}`}>{integration.description || 'No description'}</span>
@@ -261,7 +262,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const buttons = (
         <Button
-            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 text-sm font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black'
+            className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black'
             color='clear'
             label='Add custom integration'
             link
@@ -283,7 +284,7 @@ const Integrations: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     <div className=' z-10 mt-6 flex items-start justify-between'>
                         <SettingGroupHeader description='Make Ghost work with apps and tools.' title='Integrations' />
                         {
-                            <Button className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 text-sm font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' color='clear' label='Add custom integration' link onClick={() => {
+                            <Button className='mt-[-5px] inline-flex h-7 cursor-pointer items-center justify-center rounded px-3 font-semibold whitespace-nowrap text-grey-900 transition hover:bg-grey-200 dark:text-white dark:hover:bg-grey-900 [&:hover]:text-black' color='clear' label='Add custom integration' link onClick={() => {
                                 updateRoute('integrations/new');
                                 setSelectedTab('custom');
                             }} />

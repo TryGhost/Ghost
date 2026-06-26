@@ -26,9 +26,6 @@ export type AutomationSendEmailAction = {
     data: {
         email_subject: string;
         email_lexical: string;
-        email_sender_name: string | null;
-        email_sender_email: string | null;
-        email_sender_reply_to: string | null;
         email_design_setting_id: string;
     };
 }
@@ -63,6 +60,16 @@ export interface AutomationDetailResponseType {
     automations: AutomationDetail[];
 }
 
+export type AutomationEmailPreview = {
+    html: string;
+    plaintext: string;
+    subject: string;
+}
+
+export interface AutomationEmailPreviewResponseType {
+    automation_email_previews: AutomationEmailPreview[];
+}
+
 const dataType = 'AutomationsResponseType';
 
 export const useBrowseAutomations = createQuery<AutomationsResponseType>({
@@ -90,7 +97,20 @@ export const useEditAutomation = createMutation<AutomationDetailResponseType, Ed
     }
 });
 
+export const usePreviewAutomationEmail = createMutation<AutomationEmailPreviewResponseType, {id: string; subject: string; lexical: string}>({
+    method: 'POST',
+    path: ({id}) => `/automations/${id}/email_preview`,
+    body: ({subject, lexical}) => ({subject, lexical})
+});
+
+export const useSendTestAutomationEmail = createMutation<unknown, {id: string; email: string; subject: string; lexical: string}>({
+    method: 'POST',
+    path: ({id}) => `/automations/${id}/email_test`,
+    body: ({email, subject, lexical}) => ({email, subject, lexical})
+});
+
 const generateActionId = (): string => ObjectId().toHexString();
+const DEFAULT_EMAIL_DESIGN_SETTING_SLUG = 'default-automated-email';
 
 const EMPTY_EMAIL_LEXICAL = JSON.stringify({
     root: {
@@ -113,13 +133,9 @@ const buildSendEmailAction = (): AutomationSendEmailAction => ({
     id: generateActionId(),
     type: 'send_email',
     data: {
-        email_subject: 'Untitled email',
+        email_subject: '',
         email_lexical: EMPTY_EMAIL_LEXICAL,
-        email_sender_name: null,
-        email_sender_email: null,
-        email_sender_reply_to: null,
-        // TODO NY-1252: replace this placeholder when email design settings are available.
-        email_design_setting_id: 'placeholder'
+        email_design_setting_id: DEFAULT_EMAIL_DESIGN_SETTING_SLUG
     }
 });
 

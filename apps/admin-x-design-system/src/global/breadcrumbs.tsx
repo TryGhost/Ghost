@@ -32,7 +32,7 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     let i = 0;
 
     containerClassName = clsx(
-        'flex items-center gap-2 text-sm',
+        'flex items-center gap-2',
         containerClassName
     );
 
@@ -42,7 +42,6 @@ const Breadcrumbs: React.FC<BreadcrumbsProps> = ({
     );
 
     itemClassName = clsx(
-        'text-sm',
         itemClassName
     );
 

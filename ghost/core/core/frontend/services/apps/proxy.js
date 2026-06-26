@@ -7,8 +7,7 @@ module.exports.getInstance = function getInstance() {
     return {
         helperService: {
             registerAlias: helperService.registerAlias.bind(helperService),
-            registerHelper: helperService.registerHelper.bind(helperService),
-            registerDir: helperService.registerDir.bind(helperService)
+            registerHelper: helperService.registerHelper.bind(helperService)
         },
         // Expose the route service...
         routeService: {

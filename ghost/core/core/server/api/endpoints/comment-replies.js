@@ -53,8 +53,7 @@ const controller = {
         },
         permissions: true,
         query(frame) {
-            frame.options.isAdmin = true;
-            return commentsService.controller.read(frame);
+            return commentsService.controller.adminRead(frame);
         }
     }
 };

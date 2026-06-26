@@ -1,5 +1,5 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
-const {anyGhostAgent, anyObjectId, anyISODateTime, anyString, anyContentVersion, anyNumber, anyLocalURL} = matchers;
+const {agentProvider, mockManager, fixtureManager, dbUtils, matchers} = require('../utils/e2e-framework');
+const {anyGhostAgent, anyObjectId, anyISODateTime, anyString, anyContentVersion, anyContentLength, anyLocalURL} = matchers;
 
 const tagSnapshot = {
     created_at: anyISODateTime,
@@ -12,13 +12,14 @@ describe('tag.* events', function () {
     let adminAPIAgent;
     let webhookMockReceiver;
 
-    before(async function () {
+    beforeAll(async function () {
         adminAPIAgent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('integrations');
         await adminAPIAgent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
 
@@ -50,7 +51,7 @@ describe('tag.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -90,7 +91,7 @@ describe('tag.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -138,7 +139,7 @@ describe('tag.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({

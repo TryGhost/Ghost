@@ -87,7 +87,7 @@ function TagsList({
                             <TableRow
                                 key={key}
                                 {...props}
-                                className="grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 hover:bg-muted/50 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0 [&.group:hover_td]:bg-transparent"
+                                className="group grid w-full grid-cols-[1fr_5rem] items-center gap-x-4 p-2 hover:bg-muted/50 md:grid-cols-[1fr_auto_5rem] lg:table-row lg:p-0 [&.group:hover_td]:bg-transparent"
                                 data-testid="tag-list-row"
                             >
                                 <TableCell className="static col-start-1 col-end-1 row-start-1 row-end-1 flex min-w-0 flex-col p-0 md:relative lg:table-cell lg:w-1/2 lg:p-4 xl:w-3/5">
@@ -95,7 +95,7 @@ function TagsList({
                                         className="before:absolute before:top-0 before:left-0 before:z-10 before:h-full before:w-[100vw]"
                                         href={`#/tags/${item.slug}`}
                                     >
-                                        <span className="block truncate pb-1 text-lg font-medium">
+                                        <span className="block truncate text-base text-md font-semibold">
                                             {item.name}
                                         </span>
                                     </a>
@@ -125,7 +125,7 @@ function TagsList({
                                 <TableCell className="col-start-2 col-end-2 row-start-1 row-end-3 p-0 md:col-start-3 md:col-end-3 lg:table-cell lg:p-4">
                                     <Button
                                         aria-hidden="true"
-                                        className="w-12"
+                                        className="opacity-0 transition-all group-hover:opacity-100"
                                         size="icon"
                                         tabIndex={-1}
                                         variant="outline"

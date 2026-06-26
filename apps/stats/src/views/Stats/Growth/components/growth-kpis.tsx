@@ -57,13 +57,12 @@ type PaidMembersChartDataItem = GhAreaChartDataItem & {
 };
 
 // Custom tooltip for paid members chart
-const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown, showGift}: {
+const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown}: {
     active?: boolean;
     payload?: Array<{value: number; payload: PaidMembersChartDataItem}>;
     range?: number;
     color?: string;
     showBreakdown?: boolean;
-    showGift?: boolean;
 }) => {
     if (!active || !payload?.length) {
         return null;
@@ -71,7 +70,7 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
 
     const data = payload[0].payload;
     const {date, formattedValue, label, comped, gift} = data;
-    const paidSubscriptions = data.value - (comped || 0) - (showGift ? (gift || 0) : 0);
+    const paidSubscriptions = data.value - (comped || 0) - (gift || 0);
 
     return (
         <div className="min-w-[200px] rounded-lg border bg-background px-3 py-2 shadow-lg">
@@ -85,14 +84,12 @@ const PaidMembersTooltipContent = ({active, payload, range, color, showBreakdown
                                 <div className="font-mono text-xs">{formatNumber(paidSubscriptions)}</div>
                             </div>
                         </div>
-                        {showGift && (
-                            <div className='flex items-center gap-2'>
-                                <div className='flex grow items-center justify-between gap-5'>
-                                    <div className="text-sm text-muted-foreground">Gift subscriptions</div>
-                                    <div className="font-mono text-xs">{(gift !== undefined && gift > 0) ? (formatNumber(gift)) : '0'}</div>
-                                </div>
+                        <div className='flex items-center gap-2'>
+                            <div className='flex grow items-center justify-between gap-5'>
+                                <div className="text-sm text-muted-foreground">Gift subscriptions</div>
+                                <div className="font-mono text-xs">{(gift !== undefined && gift > 0) ? (formatNumber(gift)) : '0'}</div>
                             </div>
-                        )}
+                        </div>
                         <div className='flex items-center gap-2'>
                             <div className='flex grow items-center justify-between gap-5'>
                                 <div className="text-sm text-muted-foreground">Complimentary</div>
@@ -124,9 +121,8 @@ const GrowthKPIs: React.FC<{
 }> = ({chartData: allChartData, totals, initialTab, currencySymbol, isLoading, onTabChange}) => {
     const validatedInitialTab = isValidTab(initialTab) ? initialTab : 'total-members';
     const [currentTab, setCurrentTab] = useState<KpiTab>(validatedInitialTab);
-    const {range, data: config} = useGlobalData();
+    const {range} = useGlobalData();
     const {appSettings} = useAppContext();
-    const giftSubscriptionsEnabled = config?.labs?.giftSubscriptions === true;
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
 
@@ -372,7 +368,7 @@ const GrowthKPIs: React.FC<{
                         formatNumber}
                     id={currentTab}
                     range={range}
-                    tooltipContent={currentTab === 'paid-members' ? <PaidMembersTooltipContent color={tabConfig['paid-members'].color} range={range} showBreakdown={true} showGift={giftSubscriptionsEnabled} /> : undefined}
+                    tooltipContent={currentTab === 'paid-members' ? <PaidMembersTooltipContent color={tabConfig['paid-members'].color} range={range} showBreakdown={true} /> : undefined}
                 />
             </div>
         </Tabs>

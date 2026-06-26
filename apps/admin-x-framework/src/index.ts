@@ -21,6 +21,7 @@ export {useKoenigFileUpload, koenigFileUploadTypes} from './hooks/use-koenig-fil
 export {useKoenigFetchEmbed} from './hooks/use-koenig-fetch-embed';
 export type {KoenigFileUploadType} from './hooks/use-koenig-file-upload';
 export {useKoenigLinkSuggestions} from './hooks/use-koenig-link-suggestions';
+export {useFeaturebase} from './hooks/use-featurebase';
 
 // Currency utilities
 export {getSymbol} from './utils/currency';
@@ -41,6 +42,10 @@ export type {BaseSourceData, ProcessedSourceData, ExtendSourcesOptions} from './
 // Routing
 export type {RouteObject} from 'react-router';
 export type {RouterProviderProps, NavigateOptions} from './providers/router-provider';
+export type AdminRouteHandle = {
+    allowInForceUpgrade?: boolean;
+    hideAdminSidebar?: boolean;
+};
 export {RouterProvider, useNavigate, useBaseRoute, useRouteHasParams, resetScrollPosition, ScrollRestoration, Navigate} from './providers/router-provider';
 export {useNavigationStack} from './providers/navigation-stack-provider';
 export {Link, NavLink, Outlet, useLocation, useParams, useSearchParams, redirect, matchRoutes, matchPath, useMatch, useMatches} from 'react-router';

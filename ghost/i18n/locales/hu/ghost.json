@@ -61,6 +61,7 @@
     "Someone just replied to your comment": "Valaki válaszolt a hozzászólásodra",
     "Someone just replied to your comment on {postTitle}.": "Valaki válaszolt a hozzászólásodra ennél a bejegyzésnél: {postTitle}",
     "Subscription details": "Előfizetés részletei",
+    "Support {siteTitle}": "",
     "Tap the link below to complete the signup process for {siteTitle}, and be automatically signed in:": "Kattints az alábbi linkre a regisztráció befejezéséhez és az automatikus belépéshez {siteTitle} oldalon:",
     "Thank you for signing up to {siteTitle}!": "{siteTitle} — Köszönjük a regisztrációt!",
     "Thank you for subscribing to {siteTitle}!": "{siteTitle} — Köszönjük a feliratkozást!",

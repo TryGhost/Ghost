@@ -40,7 +40,7 @@ export const generateCode = ({
     const siteUrl = config.blogUrl;
     const scriptUrl = config.signupForm.url.replace('{version}', config.signupForm.version);
 
-    let options: OptionsType = {
+    const options: OptionsType = {
         site: siteUrl,
         locale: settings.locale,
         'button-color': settings.accentColor,
@@ -55,7 +55,7 @@ export const generateCode = ({
 
     if (layout === 'all-in-one') {
         if (settings.icon && settings.icon !== '') {
-            options.icon = settings.icon.replace(/\/content\/images\//, '/content/images/size/w192h192/');
+            options.icon = settings.icon.replace(/\/content\/images\/(?:size\/[^/]+\/)*/, '/content/images/size/w192h192/');
         }
         options.title = settings.title;
         options.description = settings.description;

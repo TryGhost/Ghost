@@ -270,16 +270,8 @@ export function hasRecommendations({site}) {
     return site?.recommendations_enabled === true;
 }
 
-export function hasGiftSubscriptions({site}) {
-    return site?.labs?.giftSubscriptions === true;
-}
-
-export function isStripeConfigured({site}) {
-    return site?.is_stripe_configured === true;
-}
-
-export function canPurchaseGift({site}) {
-    return hasGiftSubscriptions({site}) && isStripeConfigured({site});
+export function arePaidMembersEnabled({site}) {
+    return site?.paid_members_enabled === true;
 }
 
 export function isSigninAllowed({site}) {
@@ -288,7 +280,7 @@ export function isSigninAllowed({site}) {
 
 export function isSignupAllowed({site}) {
     const hasSignupAccess = site?.members_signup_access === 'all' || site?.members_signup_access === 'paid';
-    const hasSignupConfigured = site?.is_stripe_configured || hasOnlyFreePlan({site});
+    const hasSignupConfigured = site?.paid_members_enabled || hasOnlyFreePlan({site});
 
     return hasSignupAccess && hasSignupConfigured;
 }
@@ -309,11 +301,6 @@ export function hasMultipleProducts({site}) {
 export function getRefDomain() {
     const referrerSource = window.location.hostname.replace(/^www\./, '');
     return referrerSource;
-}
-
-export function hasMultipleProductsFeature({site}) {
-    const {portal_products: portalProducts} = site || {};
-    return !!portalProducts;
 }
 
 export function hasCommentsEnabled({site}) {
@@ -337,8 +324,6 @@ export function transformApiSiteData({site}) {
                 yearlyPrice: product.yearly_price
             };
         });
-
-        site.is_stripe_configured = !!site.paid_members_enabled;
 
         // Map tier visibility to old settings
         if (site.products?.[0]?.visibility) {
@@ -372,7 +357,7 @@ export function getAvailableProducts({site}) {
     }
 
     return products.filter(product => !!product).filter((product) => {
-        if (site.is_stripe_configured) {
+        if (site.paid_members_enabled) {
             return true;
         }
         return product.type !== 'paid';
@@ -428,18 +413,6 @@ export function getAllProductsForSite({site}) {
             currency_symbol: getCurrencySymbol(product.yearlyPrice.currency)
         };
         return product;
-    });
-}
-
-export function hasBenefits({prices, site}) {
-    if (!hasMultipleProductsFeature({site})) {
-        return false;
-    }
-    if (!prices?.length) {
-        return false;
-    }
-    return prices.some((price) => {
-        return price?.benefits?.length;
     });
 }
 
@@ -615,7 +588,7 @@ export function getAvailablePrices({site, products = null}) {
         portal_plans: portalPlans = []
     } = site || {};
 
-    if (!isStripeConfigured({site})) {
+    if (!arePaidMembersEnabled({site})) {
         return [];
     }
 

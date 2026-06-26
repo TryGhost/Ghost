@@ -68,6 +68,11 @@ GHOST_E2E_MODE=build pnpm --filter @tryghost/e2e infra:up
 GHOST_E2E_MODE=build GHOST_E2E_IMAGE=ghost-e2e:local pnpm --filter @tryghost/e2e test
 ```
 
+Build-mode E2E infra uses tmpfs-backed MySQL storage by default so database
+snapshot restore cycles stay fast and isolated from local development data.
+Set `GHOST_E2E_MYSQL_TMPFS=false` to use the normal Docker volume instead, or
+`GHOST_E2E_MYSQL_TMPFS_SIZE=4g` to adjust the tmpfs size.
+
 For a CI-like local preflight (pulls Playwright + gateway images and starts infra), run:
 
 ```bash

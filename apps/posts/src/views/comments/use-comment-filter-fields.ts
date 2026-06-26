@@ -2,6 +2,7 @@ import React, {useMemo} from 'react';
 import {DATE_OPERATOR_LABELS} from '../filters/filter-date';
 import {FilterFieldConfig, ValueSource} from '@tryghost/shade/patterns';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {RELATIVE_DATE_OPERATOR_LABELS, createRelativeDateRenderer, fieldHasRelativeOperator} from '../filters/filter-relative-date';
 import {commentFields} from './comment-fields';
 import {createOperatorOptions} from '../filters/filter-operator-options';
 import {getTodayInTimezone} from '../filters/filter-normalization';
@@ -13,6 +14,11 @@ interface UseCommentFilterFieldsOptions {
 }
 
 const COMMENT_FIELD_ORDER = ['author', 'post', 'body', 'status', 'reported', 'created_at'] as const;
+
+const COMMENT_OPERATOR_LABELS = {
+    ...DATE_OPERATOR_LABELS,
+    ...RELATIVE_DATE_OPERATOR_LABELS
+};
 
 function getFieldIcon(key: string) {
     switch (key) {
@@ -43,14 +49,20 @@ export function useCommentFilterFields({
 
         return COMMENT_FIELD_ORDER.map((key) => {
             const field = commentFields[key];
+            const dateConfig = key === 'created_at'
+                ? {
+                    defaultValue: today,
+                    ...(fieldHasRelativeOperator(field) ? {customRenderer: createRelativeDateRenderer(today)} : {})
+                }
+                : {};
 
             return {
                 key,
                 ...field.ui,
                 icon: getFieldIcon(key),
-                operators: createOperatorOptions(field.operators, {labels: DATE_OPERATOR_LABELS}),
+                operators: createOperatorOptions(field.operators, {labels: COMMENT_OPERATOR_LABELS}),
                 ...('options' in field && field.options ? {options: field.options} : {}),
-                ...(key === 'created_at' ? {defaultValue: today} : {}),
+                ...dateConfig,
                 ...(key === 'author' ? {valueSource: memberValueSource} : {}),
                 ...(key === 'post' ? {valueSource: postValueSource} : {})
             };

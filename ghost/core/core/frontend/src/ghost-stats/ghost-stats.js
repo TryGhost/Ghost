@@ -42,11 +42,11 @@ export class GhostStats {
         config.host = currentScript.getAttribute('data-host');
         config.token = currentScript.getAttribute('data-token') || null;
         config.domain = currentScript.getAttribute('data-domain');
-        
+
         // Get optional parameters
         config.datasource = currentScript.getAttribute('data-datasource') || config.datasource;
         config.stringifyPayload = currentScript.getAttribute('data-stringify-payload') !== 'false';
-        
+
         // Get global attributes
         for (const attr of currentScript.attributes) {
             if (attr.name.startsWith('tb_')) {
@@ -115,11 +115,11 @@ export class GhostStats {
             });
 
             this.browser.clearTimeout(timeoutId);
-            
+
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
-            
+
             return response;
         } catch (error) {
             // Silently fail for tracking errors
@@ -141,9 +141,9 @@ export class GhostStats {
             // Get locale, falling back gracefully
             const navigator = this.browser.getNavigator();
             const locale = navigator?.languages?.[0] || navigator?.language || 'en';
-            return { 
+            return {
                 country: countryData ? countryData.id : null,  // Returns country code
-                locale 
+                locale
             };
         } catch (error) {
             return { country: null, locale: 'en' };
@@ -234,7 +234,7 @@ export class GhostStats {
 
         // Expose global API
         if (this.browser.window) {
-            this.browser.window.Tinybird = { 
+            this.browser.window.Tinybird = {
                 trackEvent: (name, payload) => this.trackEvent(name, payload),
                 _trackPageHit: () => this.trackPageHit()
             };
@@ -259,4 +259,4 @@ export const setupEventListeners = ghostStats.setupEventListeners.bind(ghostStat
 export const init = ghostStats.init.bind(ghostStats);
 
 // Also export the instance for testing
-export const ghostStatsInstance = ghostStats; 
+export const ghostStatsInstance = ghostStats;

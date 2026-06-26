@@ -28,9 +28,9 @@
     display: block;
     overflow: hidden;
     padding: 0 14px;
-    height: 34px;
+    height: 32px;
     font-size: 1.3rem;
-    line-height: 34px;
+    line-height: 32px;
     text-align: center;
     border-radius: var(--border-radius);
     white-space: nowrap;
@@ -116,6 +116,7 @@ fieldset[disabled] .gh-btn {
     color: #fff;
     fill: #fff;
     background: var(--green);
+    border-color: transparent;
 }
 
 .gh-btn-green:hover {

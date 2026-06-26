@@ -136,7 +136,11 @@ describe('Comments Service: CommentsServiceEmails', function () {
                 logging: {warn: sinon.stub()},
                 models: {Post, Member, User, Comment},
                 mailer: {send: mailerSendStub},
-                settingsCache: {get: sinon.stub().returns('Test Site')},
+                settingsCache: {get: (() => {
+                    const stub = sinon.stub().returns('Test Site');
+                    stub.withArgs('timezone').returns('Etc/UTC');
+                    return stub;
+                })()},
                 settingsHelpers: {getMembersSupportAddress: () => 'support@example.com'},
                 urlService,
                 urlUtils: {
@@ -178,6 +182,16 @@ describe('Comments Service: CommentsServiceEmails', function () {
             sinon.assert.calledOnce(renderStub);
             const [, templateData] = renderStub.firstCall.args;
             assert.equal(templateData.postUrl, POST_URL_FOR_COMMENT);
+        });
+
+        it('notifyPostAuthors: skips an author whose email matches the commenting member', async function () {
+            const {instance, comment, renderStub} = buildHarness({
+                authors: [makeAuthor({email: 'reader@example.com', slug: 'author'})]
+            });
+
+            await instance.notifyPostAuthors(comment);
+
+            sinon.assert.notCalled(renderStub);
         });
 
         // notifyParentCommentAuthor is intentionally not exercised here: the

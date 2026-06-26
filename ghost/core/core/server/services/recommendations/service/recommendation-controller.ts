@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import errors from '@tryghost/errors';
 import {AddRecommendation, Recommendation, RecommendationPlain} from './recommendation';
 import {RecommendationService} from './recommendation-service';

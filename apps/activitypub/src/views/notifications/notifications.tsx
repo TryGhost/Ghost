@@ -1,7 +1,7 @@
 import React, {useEffect, useRef} from 'react';
 import {ActorProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
-import {LucideIcon} from '@tryghost/shade/utils';
+import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 
 import APAvatar from '@components/global/ap-avatar';
 import AppError from '@components/layout/error';
@@ -17,7 +17,7 @@ import {Notification, isApiError} from '@src/api/activitypub';
 import {handleProfileClick} from '@utils/handle-profile-click';
 import {renderFeedAttachment} from '@components/feed/feed-item';
 import {renderTimestamp} from '@src/utils/render-timestamp';
-import {stripHtml} from '@src/utils/content-formatters';
+import {sanitizeHtml, stripHtml} from '@src/utils/content-formatters';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 import {useNotificationsForUser} from '@hooks/use-activity-pub-queries';
 
@@ -113,6 +113,7 @@ function groupNotifications(notifications: Notification[]): NotificationGroup[] 
 const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> = ({group}) => {
     const [firstActor, ...otherActors] = group.actors;
     const hasOthers = otherActors.length > 0;
+    const otherActorsCount = otherActors.length;
 
     const actorClass = 'cursor-pointer font-semibold hover:underline text-black dark:text-white';
 
@@ -125,13 +126,15 @@ const NotificationGroupDescription: React.FC<NotificationGroupDescriptionProps> 
                     className={actorClass}
                     onClick={(e) => {
                         e?.stopPropagation();
-                        handleProfileClick(firstActor.handle, navigate);
+                        if (firstActor.handle) {
+                            handleProfileClick(firstActor.handle, navigate);
+                        }
                     }}
                 >
                     {firstActor.name}
                 </span>
             </ProfilePreviewHoverCard>
-            {hasOthers && ` and ${otherActors.length} ${otherActors.length > 1 ? 'others' : 'other'}`}
+            {hasOthers && ` and ${formatNumber(otherActorsCount)} ${otherActorsCount > 1 ? 'others' : 'other'}`}
         </>
     );
 
@@ -192,7 +195,7 @@ const ProfileLinkedContent: React.FC<{
 
     return (
         <div
-            dangerouslySetInnerHTML={{__html: stripHtml(content || '', stripTags)}}
+            dangerouslySetInnerHTML={{__html: sanitizeHtml(stripHtml(content || '', stripTags))}}
             ref={contentRef}
             className={className}
         />
@@ -271,7 +274,7 @@ const Notifications: React.FC = () => {
         case 'follow':
             if (group.actors.length > 1) {
                 toggleOpen(group.id || `${group.type}_${index}`);
-            } else {
+            } else if (group.actors[0]?.handle) {
                 handleProfileClick(group.actors[0].handle, navigate);
             }
             break;
@@ -332,7 +335,7 @@ const Notifications: React.FC = () => {
                                             }
                                             {group.actors.length > 1 && <NotificationItem.Avatars>
                                                 <div className='flex w-full flex-col'>
-                                                    <div className='relative flex items-center pl-2'>
+                                                    <div className='relative flex w-fit items-center pl-2'>
                                                         {!openStates[group.id || `${group.type}_${index}`] && group.actors.slice(0, maxAvatars).map((actor: ActorProperties) => (
                                                             <APAvatar
                                                                 key={actor.id}
@@ -349,7 +352,7 @@ const Notifications: React.FC = () => {
                                                         ))}
                                                         {group.actors.length > maxAvatars && (!openStates[group.id || `${group.type}_${index}`]) && (
                                                             <div className='absolute right-[28px] z-10 flex size-9 items-center justify-center rounded-full bg-black/50 text-base font-semibold tracking-tightest text-white'>
-                                                                {`+${group.actors.length - maxAvatars}`}
+                                                                {`+${formatNumber(group.actors.length - maxAvatars)}`}
                                                             </div>
                                                         )}
 
@@ -372,7 +375,9 @@ const Notifications: React.FC = () => {
                                                                         className='group/item break-anywhere flex items-center justify-between gap-4'
                                                                         onClick={(e) => {
                                                                             e?.stopPropagation();
-                                                                            handleProfileClick(actor.handle, navigate);
+                                                                            if (actor.handle) {
+                                                                                handleProfileClick(actor.handle, navigate);
+                                                                            }
                                                                         }}
                                                                     >
                                                                         <div className='flex min-w-0 items-center'>
@@ -386,7 +391,7 @@ const Notifications: React.FC = () => {
                                                                             <span className='ml-2 line-clamp-1 text-base font-semibold group-hover/item:underline dark:text-white'>{actor.name}</span>
                                                                             <span className='ml-1 line-clamp-1 text-base text-gray-700 dark:text-gray-600'>{actor.handle}</span>
                                                                         </div>
-                                                                        {group.type === 'follow' && !actor.followedByMe && (
+                                                                        {group.type === 'follow' && !actor.followedByMe && actor.handle && (
                                                                             <FollowButton
                                                                                 following={false}
                                                                                 handle={actor.handle}
@@ -418,7 +423,7 @@ const Notifications: React.FC = () => {
                                                                 }
                                                             </div>
                                                             {/* Follow button for singular follow, reply, and mention */}
-                                                            {group.actors.length === 1 && (group.type === 'follow' || group.type === 'reply' || group.type === 'mention') && !group.actors[0].followedByMe && (
+                                                            {group.actors.length === 1 && (group.type === 'follow' || group.type === 'reply' || group.type === 'mention') && !group.actors[0].followedByMe && group.actors[0].handle && (
                                                                 <FollowButton
                                                                     following={false}
                                                                     handle={group.actors[0].handle}
@@ -436,7 +441,7 @@ const Notifications: React.FC = () => {
                                                     (group.type !== 'reply' && group.type !== 'mention' ?
                                                         <div className='ap-note-content mt-0.5 line-clamp-1 text-sm text-pretty text-gray-700 dark:text-gray-600'>
                                                             {group.post?.type === 'article' && group.post?.title && <>{group.post.title} &mdash; </>}
-                                                            <span dangerouslySetInnerHTML={{__html: stripHtml(group.post?.content || '')}} />
+                                                            <span dangerouslySetInnerHTML={{__html: sanitizeHtml(stripHtml(group.post?.content || ''))}} />
                                                         </div> :
                                                         <>
                                                             <div className='mt-2.5 rounded-md bg-gray-100 px-5 py-[14px] group-hover:bg-gray-200 dark:bg-gray-950/30 group-hover:dark:bg-black/40'>

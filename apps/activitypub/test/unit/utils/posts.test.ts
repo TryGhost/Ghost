@@ -74,6 +74,7 @@ describe('mapPostToActivity', function () {
         expect(actor.id).toBe('https://example.com/users/123');
         expect(actor.icon.url).toBe('https://example.com/users/123/avatar.jpg');
         expect(actor.name).toBe('Test User');
+        expect(actor.handle).toBe('@testuser@example.com');
         expect(actor.preferredUsername).toBe('testuser');
 
         // When the post has been reposted, the actor should be the reposter
@@ -92,7 +93,23 @@ describe('mapPostToActivity', function () {
         expect(actor.id).toBe('https://example.com/users/456');
         expect(actor.icon.url).toBe('https://example.com/users/456/avatar.jpg');
         expect(actor.name).toBe('Test User 2');
+        expect(actor.handle).toBe('@testuser2@example.com');
         expect(actor.preferredUsername).toBe('testuser2');
+    });
+
+    test('it preserves the API-provided author handle', function () {
+        const actor = mapPostToActivity({
+            ...post,
+            author: {
+                ...post.author,
+                handle: '@testuser@social.example',
+                url: 'https://example.com/users/123'
+            }
+        }).actor;
+
+        expect(actor.id).toBe('https://example.com/users/123');
+        expect(actor.handle).toBe('@testuser@social.example');
+        expect(actor.preferredUsername).toBe('testuser');
     });
 
     test('it sets the correct object type', function () {
@@ -124,13 +141,54 @@ describe('mapPostToActivity', function () {
         expect(object.summary).toBe('Test Summary');
         expect(object.url).toBe('https://example.com/posts/123');
         expect(object.attributedTo.id).toBe('https://example.com/users/123');
+        expect(object.attributedTo.handle).toBe('@testuser@example.com');
         expect(object.published).toBe('2024-01-01T00:00:00Z');
         expect(object.preview.content).toBe('Test Excerpt');
         expect(object.id).toBe('123');
         expect(object.replyCount).toBe(3);
+        expect(object.likeCount).toBe(2);
         expect(object.liked).toBe(true);
         expect(object.reposted).toBe(false);
         expect(object.repostCount).toBe(5);
+        expect(object.authored).toBe(true);
+    });
+
+    test('it preserves object metadata', function () {
+        const object = mapPostToActivity({
+            ...post,
+            metadata: {
+                ghostAuthors: [{
+                    name: 'Ghost Author',
+                    profile_image: 'https://example.com/authors/ghost-author.jpg'
+                }]
+            }
+        }).object;
+
+        expect(object.metadata).toEqual({
+            ghostAuthors: [{
+                name: 'Ghost Author',
+                profile_image: 'https://example.com/authors/ghost-author.jpg'
+            }]
+        });
+    });
+
+    test('it maps object engagement properties', function () {
+        const object = mapPostToActivity({
+            ...post,
+            replyCount: 0,
+            likeCount: 0,
+            likedByMe: false,
+            repostedByMe: true,
+            repostCount: 0,
+            authoredByMe: false
+        }).object;
+
+        expect(object.replyCount).toBe(0);
+        expect(object.likeCount).toBe(0);
+        expect(object.liked).toBe(false);
+        expect(object.reposted).toBe(true);
+        expect(object.repostCount).toBe(0);
+        expect(object.authored).toBe(false);
     });
 
     test('it sets the correct attachments', function () {
@@ -162,6 +220,7 @@ describe('mapPostToActivity', function () {
         });
 
         expect(activity.actor.followedByMe).toBe(true);
+        expect(activity.actor.handle).toBe('@testuser@example.com');
 
         // Test for reposts
         const repostActivity = mapPostToActivity({

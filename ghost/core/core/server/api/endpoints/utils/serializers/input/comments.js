@@ -1,3 +1,5 @@
+const urlService = require('../../../../../services/url');
+
 module.exports = {
     all(_apiConfig, frame) {
         if (!frame.options.withRelated || frame.options.withRelated.length === 0) {
@@ -21,16 +23,12 @@ module.exports = {
             return relation;
         });
 
-        // If the caller asked for `post`, also load post.tags / post.authors
-        // — the comments output mapper calls url.forPost on the embedded
-        // post, which needs the relations to resolve tag/author-filtered
-        // routes under lazyRouting.
         if (frame.options.withRelated.includes('post')) {
-            if (!frame.options.withRelated.includes('post.tags')) {
-                frame.options.withRelated.push('post.tags');
-            }
-            if (!frame.options.withRelated.includes('post.authors')) {
-                frame.options.withRelated.push('post.authors');
+            for (const relation of urlService.facade.getRequiredRelations()) {
+                const prefixed = `post.${relation}`;
+                if (!frame.options.withRelated.includes(prefixed)) {
+                    frame.options.withRelated.push(prefixed);
+                }
             }
         }
     },

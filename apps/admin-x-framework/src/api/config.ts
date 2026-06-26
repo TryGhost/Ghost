@@ -32,6 +32,10 @@ export type Config = {
         googleApiKey?: string | null;
         contentFilter?: string;
     };
+    klipy?: {
+        apiKey?: string | null;
+        contentFilter?: string;
+    };
     hostSettings?: {
         siteId?: string;
         forceUpgrade?: boolean;

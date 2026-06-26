@@ -160,9 +160,8 @@ class OEmbedService {
         const baseName = ext ? path.basename(fileName, ext) : fileName;
         const name = store.getSanitizedFileName(baseName);
 
-        const hash = crypto.createHash('sha256').update(imageBuffer).digest('hex');
-        const hashedFileName = `${name}-${hash}${ext}`;
-        const targetPath = path.join(imageType, hashedFileName);
+        const uniqueFileName = `${name}-${crypto.randomUUID()}${ext}`;
+        const targetPath = path.join(imageType, uniqueFileName);
 
         return store.saveRaw(imageBuffer, targetPath);
     }
@@ -181,7 +180,7 @@ class OEmbedService {
                     'user-agent': USER_AGENT
                 },
                 timeout: {
-                    request: 2000
+                    request: 5000
                 },
                 followRedirect: true,
                 ...options
@@ -288,13 +287,28 @@ class OEmbedService {
         }
 
         const pickFn = (sizes, pickDefault) => {
-            // Prioritize apple touch icon with sizes > 180
-            const appleTouchIcon = sizes.find(item => item.rel?.includes('apple') && item.sizes && item.size.width >= 180);
+            const appleTouchIcon = sizes.find(item => item.rel?.includes('apple') && item.sizes && item.size?.width >= 180);
+            // Bookmark cards render the icon inline in the post body, where the
+            // site's standard (often transparent) favicon matches surrounding
+            // chrome better than an Apple Touch icon's solid-background square.
+            // Other call sites (Recommendations Avatar via type='mention', plus
+            // the generic oembed fallback) scale the icon up into a larger
+            // tile, where Apple Touch is the better fit.
+            if (type === 'bookmark') {
+                // metascraper-logo-favicon gathers anything matching link[rel*="icon"], which
+                // includes apple-touch-icon, mask-icon (Safari pinned-tab silhouette), and
+                // fluid-icon (Fluid SSB) — none of those are the site's standard brand
+                // favicon, so skip them when picking what to show in a bookmark card.
+                const standardIcons = sizes.filter(item => !/apple|mask-icon|fluid-icon/.test(item.rel ?? ''));
+                const svgIcon = standardIcons.find(item => item.href?.endsWith('svg'));
+                return svgIcon || pickDefault(standardIcons) || appleTouchIcon;
+            }
             const svgIcon = sizes.find(item => item.href?.endsWith('svg'));
             return appleTouchIcon || svgIcon || pickDefault(sizes);
         };
 
         const metascraper = require('metascraper')([
+            require('metascraper-amazon')(),
             require('metascraper-url')(),
             require('metascraper-title')(),
             require('metascraper-description')(),
@@ -465,6 +479,8 @@ class OEmbedService {
      * @returns {Promise<Object>}
      */
     async fetchOembedDataFromUrl(url, type, options = {}) {
+        const {shouldRethrowFetchError, ...fetchOptions} = options;
+
         try {
             const urlObject = new URL(url);
 
@@ -503,7 +519,7 @@ class OEmbedService {
             }
 
             // Not in the list, we need to fetch the content
-            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url, options);
+            const {url: pageUrl, body, contentType} = await this.fetchPageHtml(url, fetchOptions);
 
             // fetch only bookmark when explicitly requested
             if (type === 'bookmark') {
@@ -559,6 +575,10 @@ class OEmbedService {
 
             return data;
         } catch (err) {
+            if (shouldRethrowFetchError?.(err)) {
+                throw err;
+            }
+
             // allow specific validation errors through for better error messages
             if (errors.utils.isGhostError(err) && err.errorType === 'ValidationError') {
                 throw err;

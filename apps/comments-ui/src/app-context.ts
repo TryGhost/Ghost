@@ -47,16 +47,14 @@ export type OpenCommentForm = {
 
 export type AddComment = {
     post_id: string,
+    parent_id?: string,
+    in_reply_to_id?: string,
     status: string,
     html: string
 }
 
 export type LabsContextType = {
     [key: string]: boolean | undefined
-}
-
-export type CapabilitiesContextType = {
-    dislikes?: boolean
 }
 
 export type CommentsOptions = {
@@ -90,7 +88,6 @@ export type EditableAppContext = {
     openCommentForms: OpenCommentForm[],
     popup: Page | null,
     labs: LabsContextType,
-    capabilities: CapabilitiesContextType,
     order: string,
     adminApi: AdminApi | null,
     commentsIsLoading?: boolean,
@@ -98,7 +95,6 @@ export type EditableAppContext = {
     commentIdToScrollTo: string | null,
     commentIdFromHash: string | null,
     showMissingCommentNotice: boolean,
-    pageUrl: string,
     supportEmail: string | null,
     isMember: boolean,
     isAdmin: boolean,

@@ -27,7 +27,7 @@ class MembersLabelsImporter extends TableImporter {
         return {
             id: this.fastFakeObjectId(),
             member_id: this.model.id,
-            label_id: this.labels[faker.datatype.number({
+            label_id: this.labels[faker.number.int({
                 min: 0,
                 max: this.labels.length - 1
             })].id,

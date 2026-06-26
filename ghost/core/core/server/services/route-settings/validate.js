@@ -429,7 +429,8 @@ module.exports = function validate(object) {
     }
 
     // TODO: extract this config outta here! the config should be passed into this module
-    RESOURCE_CONFIG = require('../../../frontend/services/routing/config');
+    const {QUERY, TAXONOMIES} = require('../../../frontend/services/routing/config');
+    RESOURCE_CONFIG = {QUERY, TAXONOMIES};
 
     object.routes = _private.validateRoutes(object.routes);
     object.collections = _private.validateCollections(object.collections);

@@ -22,6 +22,10 @@ const MONITORED_APPS = {
     signupForm: {
         packageName: '@tryghost/signup-form',
         path: 'apps/signup-form'
+    },
+    adminToolbar: {
+        packageName: '@tryghost/admin-toolbar',
+        path: 'apps/admin-toolbar'
     }
 };
 
@@ -158,6 +162,11 @@ function compareSemver(a, b) {
     return 0;
 }
 
+function getMajorMinorVersion(version) {
+    const parsedVersion = parseSemver(version);
+    return `${parsedVersion.major}.${parsedVersion.minor}`;
+}
+
 function getChangedFiles(baseSha, compareSha) {
     let mergeBaseSha;
 
@@ -203,6 +212,38 @@ function getPrVersion(app) {
     );
 }
 
+function readVersionFromDefaults(defaultsContent, app, sourceLabel) {
+    let parsedDefaults;
+
+    try {
+        parsedDefaults = JSON.parse(defaultsContent);
+    } catch (error) {
+        throw new Error(`Unable to parse ${sourceLabel}: ${error.message}`);
+    }
+
+    const appDefaults = parsedDefaults[app.key];
+
+    if (!appDefaults || typeof appDefaults.version !== 'string') {
+        throw new Error(`${sourceLabel} does not contain a valid "${app.key}.version" field`);
+    }
+
+    return appDefaults.version;
+}
+
+function getPrDefaultsVersion(app) {
+    const defaultsPath = path.resolve(__dirname, '../../ghost/core/core/shared/config/defaults.json');
+
+    if (!fs.existsSync(defaultsPath)) {
+        throw new Error('ghost/core/core/shared/config/defaults.json does not exist in this PR');
+    }
+
+    return readVersionFromDefaults(
+        fs.readFileSync(defaultsPath, 'utf8'),
+        app,
+        'ghost/core/core/shared/config/defaults.json from PR'
+    );
+}
+
 function getMainVersion(app) {
     return readVersionFromPackageJson(
         runGit(['show', `origin/main:${app.path}/package.json`]),
@@ -235,13 +276,17 @@ function main() {
     const failedApps = [];
 
     for (const app of changedApps) {
-        if (isDependencyOnlyChange(app, changedFiles)) {
-            console.log(`${app.key} only has dependency changes in package.json; skipping version bump check.`);
-            continue;
-        }
-
         const prVersion = getPrVersion(app);
         const mainVersion = getMainVersion(app);
+
+        if (isDependencyOnlyChange(app, changedFiles)) {
+            if (prVersion === mainVersion) {
+                console.log(`${app.key} only has dependency changes in package.json; skipping version bump check.`);
+                continue;
+            }
+
+            console.log(`${app.key} package.json changed the package version; continuing version bump checks.`);
+        }
 
         if (compareSemver(prVersion, mainVersion) <= 0) {
             failedApps.push(
@@ -250,7 +295,19 @@ function main() {
             continue;
         }
 
-        console.log(`${app.key} version bump check passed (${prVersion} > ${mainVersion})`);
+        console.log(`${app.key} package version bump check passed (${prVersion} > ${mainVersion})`);
+
+        const prMajorMinorVersion = getMajorMinorVersion(prVersion);
+        const prDefaultsVersion = getPrDefaultsVersion(app);
+
+        if (prDefaultsVersion !== prMajorMinorVersion) {
+            failedApps.push(
+                `${app.key} (${app.packageName}) was bumped from ${mainVersion} to ${prVersion}, but defaults.json still has ${app.key}.version set to ${prDefaultsVersion}. Please update ghost/core/core/shared/config/defaults.json to ${prMajorMinorVersion}.`
+            );
+            continue;
+        }
+
+        console.log(`${app.key} defaults.json version check passed (${app.key}.version = ${prDefaultsVersion})`);
     }
 
     if (failedApps.length) {

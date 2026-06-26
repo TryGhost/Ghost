@@ -100,7 +100,7 @@ const LongFormContent: React.FC = () => {
             avatar: goneAvatar,
             publisher: 'Gone with the Wynns',
             title: 'How far can our electric boat go?',
-            excerpt: `Does an electric tender actually have the stamina needed to work for cruising life?  Until now, we honestly didn't know how long or far we could go with our electric jet propulsion. I guess we just haven't been...`,
+            excerpt: `Does an electric tender actually have the stamina needed to work for cruising life?  Until now, we honestly didn't know how long or far we could go with our electric jet propulsion. I guess we just haven't been...`,
             cover: goneCover
         },
         {
@@ -178,7 +178,7 @@ const ShortFormContent: React.FC = () => {
         {
             avatar: caseyAvatar,
             publisher: 'Casey Newton',
-            handle: `@caseynewton@mastodon.social — 2h`,
+            handle: `@caseynewton@mastodon.social — 2h`,
             post: (
                 <div>
                     This sucks. I met my wife on the basic HTML version of Gmail. <span className='text-purple'>techmeme.com/23092...</span>
@@ -192,7 +192,7 @@ const ShortFormContent: React.FC = () => {
         {
             avatar: evanAvatar,
             publisher: 'Evan Prodromou',
-            handle: '@evan@cosocial.ca — 2h',
+            handle: '@evan@cosocial.ca — 2h',
             post: (
                 <div>
                     At #FediverseHouse, after <span className='text-purple'>@pluralistic</span>&apos;s talk, I came up and thanked him for speaking. We&apos;ve never met before in person, so I asked if we could do a selfie.
@@ -276,7 +276,7 @@ const Reader: React.FC = () => {
                         }}></div>
                     <div className='mt-0.5 flex flex-col gap-0.5'>
                         <div className='leading-tighter font-semibold'>404 Media</div>
-                        <div className='leading-tighter text-gray-700 dark:text-gray-600'>@index@404media.co — Yesterday</div>
+                        <div className='leading-tighter text-gray-700 dark:text-gray-600'>@index@404media.co — Yesterday</div>
                     </div>
                 </div>
                 <div className='absolute right-0 flex items-center gap-4 text-gray-500'>
@@ -371,7 +371,7 @@ const Step3: React.FC = () => {
                         Integrated reader
                     </TabButton>
                 </div>
-                <div className='pointer-events-none relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden px-14'>
+                <div className='pointer-events-none relative -mx-14 mt-5 w-[calc(100%+112px)] overflow-y-hidden mask-b-from-80% px-14'>
                     <div className='mx-auto h-[694px] w-full max-w-6xl overflow-hidden rounded-md bg-white shadow-xl dark:bg-[#101114]'>
                         <div className='flex h-5 w-full items-center gap-1.5 bg-gray-100 pl-2 dark:bg-gray-950'>
                             <div className='size-2 rounded-full bg-gray-300'></div>
@@ -384,7 +384,6 @@ const Step3: React.FC = () => {
                             {activeTab === 3 && <Reader />}
                         </div>
                     </div>
-                    <div className='absolute inset-x-0 bottom-0 h-18 bg-gradient-to-t from-white via-[rgba(255,255,255,0.71)] to-[rgba(255,255,255,0)] dark:from-black dark:via-[rgba(0,0,0,0.71)] dark:to-[rgba(0,0,0,0)]'></div>
                 </div>
             </div>
         </div>

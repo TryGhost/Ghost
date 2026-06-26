@@ -81,6 +81,19 @@ describe('Integration: Service: labels-manager', function () {
         });
     });
 
+    it('escapes every single quote in search filters, not just the first', async function () {
+        const store = this.owner.lookup('service:store');
+        const labelsManager = this.owner.lookup('service:labels-manager');
+
+        const results = buildCollection([], {page: 1, pages: 1});
+        const queryStub = sinon.stub(store, 'query').resolves(results);
+
+        await labelsManager.searchLabelsTask.perform('a\'b\'c');
+
+        expect(queryStub.calledOnce).to.be.true;
+        expect(queryStub.firstCall.args[1].filter).to.equal('name:~\'a\\\'b\\\'c\'');
+    });
+
     it('registers search results so they are findable by slug', async function () {
         const store = this.owner.lookup('service:store');
         const labelsManager = this.owner.lookup('service:labels-manager');

@@ -11,25 +11,28 @@ const messages = {
 class EmailController {
     service;
     models;
+    getRequiredUrlRelations;
 
     /**
      *
      * @param {EmailService} service
-     * @param {{models: {Post: any, Newsletter: any, Email: any}}} dependencies
+     * @param {{models: {Post: any, Newsletter: any, Email: any}, getRequiredUrlRelations?: () => string[]}} dependencies
      */
-    constructor(service, {models}) {
+    constructor(service, {models, getRequiredUrlRelations = () => []}) {
         this.service = service;
         this.models = models;
+        this.getRequiredUrlRelations = getRequiredUrlRelations;
     }
 
     async _getFrameData(frame) {
         // Bit absurd situation in email-previews endpoints that one endpoint is using options and other one is using data.
         // So we need to handle both cases.
         let post;
+        const withRelated = [...new Set(['posts_meta', 'authors', ...this.getRequiredUrlRelations()])];
         if (frame.options.id) {
-            post = await this.models.Post.findOne({...frame.options, status: 'all'}, {withRelated: ['posts_meta', 'authors', 'tags']});
+            post = await this.models.Post.findOne({...frame.options, status: 'all'}, {withRelated});
         } else {
-            post = await this.models.Post.findOne({...frame.data, status: 'all'}, {...frame.options, withRelated: ['posts_meta', 'authors', 'tags']});
+            post = await this.models.Post.findOne({...frame.data, status: 'all'}, {...frame.options, withRelated});
         }
 
         if (!post) {

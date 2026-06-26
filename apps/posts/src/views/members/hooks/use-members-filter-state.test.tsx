@@ -57,6 +57,86 @@ describe('useMembersFilterState', () => {
         expect(result.current.hasFilterOrSearch).toBe(false);
     });
 
+    it('parses the multiple active Stripe customers filter into a predicate', async () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState('UTC');
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {
+            wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3E1')
+        });
+
+        await waitFor(() => {
+            expect(result.current.nql).toBe('count.active_stripe_customers:>1');
+        });
+
+        expect(result.current.filters).toEqual([
+            {
+                id: 'count.active_stripe_customers:1',
+                field: 'count.active_stripe_customers',
+                operator: 'is',
+                values: ['true']
+            }
+        ]);
+        expect(result.current.query).toBe('filter=count.active_stripe_customers%3A%3E1');
+        expect(result.current.hasFilterOrSearch).toBe(true);
+    });
+
+    it('parses the inverted multiple active Stripe customers filter into a predicate', async () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState('UTC');
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {
+            wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3C2')
+        });
+
+        await waitFor(() => {
+            expect(result.current.nql).toBe('count.active_stripe_customers:<2');
+        });
+
+        expect(result.current.filters).toEqual([
+            {
+                id: 'count.active_stripe_customers:1',
+                field: 'count.active_stripe_customers',
+                operator: 'is',
+                values: ['false']
+            }
+        ]);
+        expect(result.current.query).toBe('filter=count.active_stripe_customers%3A%3C2');
+        expect(result.current.hasFilterOrSearch).toBe(true);
+    });
+
+    it('drops unsupported multiple active Stripe customers filter values', async () => {
+        const {result} = renderHook(() => {
+            const state = useMembersFilterState('UTC');
+            const [searchParams] = useSearchParams();
+
+            return {
+                ...state,
+                query: searchParams.toString()
+            };
+        }, {
+            wrapper: createWrapper('/?filter=count.active_stripe_customers%3A%3E2')
+        });
+
+        await waitFor(() => {
+            expect(result.current.query).toBe('');
+        });
+
+        expect(result.current.filters).toEqual([]);
+        expect(result.current.nql).toBeUndefined();
+        expect(result.current.hasFilterOrSearch).toBe(false);
+    });
+
     it('retains supported filters and rewrites mixed URLs canonically', async () => {
         const {result} = renderHook(() => {
             const state = useMembersFilterState('UTC');

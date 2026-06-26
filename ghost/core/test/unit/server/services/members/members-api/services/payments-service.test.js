@@ -1,8 +1,15 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const knex = require('knex').default;
+const DomainEvents = require('@tryghost/domain-events');
 
 const Tier = require('../../../../../../../core/server/services/tiers/tier');
+
+// Initialise i18n before requiring the service so its destructured `t` import
+// resolves to the live i18next instance. The init helper falls back to 'en'
+// when the locale setting isn't set.
+const i18n = require('../../../../../../../core/server/services/i18n');
+i18n.init();
 
 const PaymentsService = require('../../../../../../../core/server/services/members/members-api/services/payments-service');
 
@@ -59,6 +66,14 @@ describe('PaymentsService', function () {
 
     afterAll(async function () {
         await db.destroy();
+    });
+
+    afterEach(function () {
+        // PaymentsService's constructor subscribes to DomainEvents on every build.
+        // These tests construct the service many times over a shared static
+        // EventEmitter, so clear listeners between tests to avoid a leak warning
+        // and to stop this file's listeners leaking into other files (isolate:false).
+        DomainEvents.ee.removeAllListeners();
     });
 
     describe('getPaymentLink', function () {
@@ -449,6 +464,43 @@ describe('PaymentsService', function () {
 
             assert.equal(getStripeArgs().customer, mockCustomer);
             assert.equal(getStripeArgs().customerEmail, null);
+        });
+    });
+
+    describe('getDonationPriceNickname', function () {
+        function createService(title) {
+            return new PaymentsService({
+                settingsCache: {
+                    get(key) {
+                        return key === 'title' ? title : undefined;
+                    }
+                }
+            });
+        }
+
+        afterEach(function () {
+            i18n.changeLanguage('en');
+        });
+
+        it('builds the nickname from the site title', function () {
+            const service = createService('My Site');
+            assert.equal(service.getDonationPriceNickname(), 'Support My Site');
+        });
+
+        it('localizes the prefix while keeping the site title interpolated', async function () {
+            await i18n.changeLanguage('fr');
+            const service = createService('Mon Site');
+            assert.equal(service.getDonationPriceNickname(), 'Soutenir Mon Site');
+        });
+
+        it('does not HTML-escape the site title', function () {
+            const service = createService('Tom & Jerry');
+            assert.equal(service.getDonationPriceNickname(), 'Support Tom & Jerry');
+        });
+
+        it('truncates the nickname to 250 characters', function () {
+            const service = createService('a'.repeat(300));
+            assert.equal(service.getDonationPriceNickname().length, 250);
         });
     });
 });

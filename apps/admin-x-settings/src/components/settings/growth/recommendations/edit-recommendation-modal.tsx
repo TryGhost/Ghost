@@ -34,7 +34,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
         }
     });
 
-    let leftButtonProps = {
+    const leftButtonProps = {
         label: 'Delete',
         link: true,
         color: 'red' as const,
@@ -93,7 +93,7 @@ const EditRecommendationModal: React.FC<RoutingModalProps & EditRecommendationMo
             }
         }}
     >
-        <RecommendationDescriptionForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={true} updateForm={updateForm as any}/>
+        <RecommendationDescriptionForm clearError={clearError} errors={errors} formState={formState} setErrors={setErrors} showURL={true} updateForm={updateForm}/>
     </Modal>;
 };
 

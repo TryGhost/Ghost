@@ -1,4 +1,4 @@
-import {Badge, Button, Tooltip, TooltipContent, TooltipProvider, TooltipTrigger, badgeVariants} from '@tryghost/shade/components';
+import {Badge, Button, Tooltip, TooltipContent, TooltipTrigger, badgeVariants} from '@tryghost/shade/components';
 import {LucideIcon, cn, formatTimestamp} from '@tryghost/shade/utils';
 import type {MouseEvent} from 'react';
 
@@ -54,13 +54,13 @@ export function CommentHeader({
     return (
         <div className={cn('flex items-center gap-2', className)}>
             <div className={cn(
-                'flex min-w-0 items-center gap-x-1 text-sm',
+                'flex min-w-0 items-center gap-x-1',
                 isHidden && 'opacity-50'
             )}>
                 <div className='whitespace-nowrap'>
                     {memberId && onAuthorClick ? (
                         <Button
-                            className="flex h-auto items-center gap-1.5 truncate p-0 font-semibold text-primary hover:opacity-70"
+                            className="flex h-auto items-center gap-1.5 truncate p-0 text-md font-semibold text-primary hover:opacity-70"
                             variant='link'
                             onClick={onAuthorClick}
                         >
@@ -73,34 +73,30 @@ export function CommentHeader({
                     )}
                 </div>
                 {canComment === false && (
-                    <TooltipProvider>
-                        <Tooltip>
-                            <TooltipTrigger asChild>
-                                <span data-testid="commenting-disabled-indicator">
-                                    <LucideIcon.MessageCircleOff
-                                        className="size-3.5 text-muted-foreground"
-                                    />
-                                </span>
-                            </TooltipTrigger>
-                            <TooltipContent>Comments disabled</TooltipContent>
-                        </Tooltip>
-                    </TooltipProvider>
+                    <Tooltip>
+                        <TooltipTrigger asChild>
+                            <span data-testid="commenting-disabled-indicator">
+                                <LucideIcon.MessageCircleOff
+                                    className="size-3.5 text-muted-foreground"
+                                />
+                            </span>
+                        </TooltipTrigger>
+                        <TooltipContent>Comments disabled</TooltipContent>
+                    </Tooltip>
                 )}
                 <LucideIcon.Dot className='shrink-0 text-muted-foreground/50' size={16} />
                 <div className='shrink-0 whitespace-nowrap'>
                     {createdAt && (
-                        <TooltipProvider>
-                            <Tooltip>
-                                <TooltipTrigger asChild>
-                                    <span className="cursor-default text-sm text-muted-foreground">
-                                        {formatTimestamp(createdAt)}
-                                    </span>
-                                </TooltipTrigger>
-                                <TooltipContent>
-                                    {formatDate(createdAt)}
-                                </TooltipContent>
-                            </Tooltip>
-                        </TooltipProvider>
+                        <Tooltip>
+                            <TooltipTrigger asChild>
+                                <span className="cursor-default text-sm text-muted-foreground">
+                                    {formatTimestamp(createdAt)}
+                                </span>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                                {formatDate(createdAt)}
+                            </TooltipContent>
+                        </Tooltip>
                     )}
                 </div>
                 {postTitle && (

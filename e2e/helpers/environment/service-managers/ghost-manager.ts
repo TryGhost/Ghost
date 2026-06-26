@@ -8,10 +8,12 @@ import {
     CADDYFILE_PATHS,
     DEV_ENVIRONMENT,
     DEV_SHARED_CONFIG_VOLUME,
+    EGRESS_MONITOR_ENABLED,
     REPO_ROOT,
     TEST_ENVIRONMENT,
     TINYBIRD
 } from '@/helpers/environment/constants';
+import {EgressMonitor} from '@/helpers/environment/service-managers/egress-monitor';
 import {isTinybirdAvailable} from '@/helpers/environment/service-availability';
 import {readFile} from 'fs/promises';
 import type {Container, ContainerCreateOptions} from 'dockerode';
@@ -21,6 +23,8 @@ import type {GhostConfig} from '@/helpers/playwright/fixture';
 const debug = baseDebug('e2e:GhostManager');
 
 type GhostEnvOverrides = GhostConfig | Record<string, string>;
+const READINESS_POLL_INTERVAL_MS = 250;
+
 interface TinybirdConfigFile {
     workspaceId?: string;
     adminToken?: string;
@@ -48,10 +52,12 @@ export interface GhostManagerConfig {
  * Creates worker-scoped containers that persist across tests.
  */
 export class GhostManager {
+    private static verifiedBuildImageKey: string | null = null;
     private readonly docker: Docker;
     private readonly config: GhostManagerConfig;
     private ghostContainer: Container | null = null;
     private gatewayContainer: Container | null = null;
+    private egressMonitor: EgressMonitor | null = null;
 
     constructor(config: GhostManagerConfig) {
         this.docker = new Docker();
@@ -60,6 +66,15 @@ export class GhostManager {
 
     get ghostContainerId(): string | null {
         return this.ghostContainer?.id ?? null;
+    }
+
+    /** Egress monitor for this worker, or null when disabled / failed to start. */
+    getEgressMonitor(): EgressMonitor | null {
+        return this.egressMonitor?.isActive ? this.egressMonitor : null;
+    }
+
+    private ghostImage(): string {
+        return this.config.mode === 'build' ? BUILD_IMAGE : TEST_ENVIRONMENT.ghost.image;
     }
 
     getGatewayPort(): number {
@@ -82,6 +97,10 @@ export class GhostManager {
         const ghostName = `ghost-e2e-worker-${this.config.workerIndex}`;
         const gatewayName = `ghost-e2e-gateway-${this.config.workerIndex}`;
 
+        // Start the egress monitor first so Ghost can use it as its DNS server.
+        // Fail-open: if it doesn't come up, Ghost keeps Docker's default resolver.
+        await this.startEgressMonitor();
+
         // Try to reuse existing containers (handles process restarts after test failures)
         this.gatewayContainer = await this.getOrCreateContainer(gatewayName, () => this.createGatewayContainer(gatewayName, ghostName));
         this.ghostContainer = await this.getOrCreateContainer(ghostName, () => this.createGhostContainer(ghostName, database));
@@ -94,6 +113,12 @@ export class GhostManager {
      * Fails early with a helpful error message if the image is not available.
      */
     async verifyBuildImageExists(): Promise<void> {
+        const buildImageKey = `${BUILD_IMAGE}\n${BUILD_GATEWAY_IMAGE}`;
+        if (GhostManager.verifiedBuildImageKey === buildImageKey) {
+            debug(`Build images already verified: ${BUILD_IMAGE}, ${BUILD_GATEWAY_IMAGE}`);
+            return;
+        }
+
         try {
             const image = this.docker.getImage(BUILD_IMAGE);
             await image.inspect();
@@ -123,6 +148,8 @@ export class GhostManager {
                 `  2. Use a different gateway image: GHOST_E2E_MODE=build GHOST_E2E_GATEWAY_IMAGE=<image> pnpm --filter @tryghost/e2e test`
             );
         }
+
+        GhostManager.verifiedBuildImageKey = buildImageKey;
     }
 
     /**
@@ -171,8 +198,27 @@ export class GhostManager {
             await this.removeContainer(this.ghostContainer);
             this.ghostContainer = null;
         }
+        if (this.egressMonitor) {
+            await this.egressMonitor.stop();
+            this.egressMonitor = null;
+        }
 
         debug(`Worker ${this.config.workerIndex} containers removed`);
+    }
+
+    /**
+     * Bring up the egress-monitoring DNS sidecar for this worker (idempotent).
+     * Never throws — monitoring is best-effort and must not break the suite.
+     */
+    private async startEgressMonitor(): Promise<void> {
+        if (!EGRESS_MONITOR_ENABLED || this.egressMonitor) {
+            return;
+        }
+        const monitor = new EgressMonitor(this.docker, {
+            workerIndex: this.config.workerIndex
+        });
+        await monitor.start();
+        this.egressMonitor = monitor;
     }
 
     async restartWithDatabase(databaseName: string, extraConfig?: GhostEnvOverrides): Promise<void> {
@@ -194,14 +240,13 @@ export class GhostManager {
     }
 
     /**
-     * Wait for Ghost container to become healthy.
-     * Uses Docker's built-in health check mechanism.
+     * Wait for Ghost to become reachable through the same gateway path used by tests.
      */
     async waitForReady(timeoutMs: number = 120000): Promise<void> {
         if (!this.ghostContainer) {
             throw new Error('Ghost container not initialized');
         }
-        await this.waitForHealthy(this.ghostContainer, timeoutMs);
+        await this.waitForHostReadiness(this.ghostContainer, timeoutMs);
     }
 
     private async buildEnvWithSchedulerUrl(
@@ -213,6 +258,10 @@ export class GhostManager {
             `database__connection__database=${database}`,
             `url=http://localhost:${this.getGatewayPort()}`
         ];
+
+        if (this.config.mode === 'dev') {
+            env.push('pnpm_config_verify_deps_before_run=false');
+        }
 
         // Add Tinybird config if available
         // Static endpoints are set here; tokens are loaded from a host-generated
@@ -280,10 +329,15 @@ export class GhostManager {
         // Determine image based on mode
         // - build: Build image (local or registry, controlled by GHOST_E2E_IMAGE)
         // - dev: Dev image from compose.dev.yaml
-        const image = mode === 'build' ? BUILD_IMAGE : TEST_ENVIRONMENT.ghost.image;
+        const image = this.ghostImage();
 
         // Build volume mounts based on mode
         const binds = this.getGhostBinds();
+
+        // Route Ghost's resolver through the egress monitor when it's running.
+        // It becomes the upstream of Docker's embedded DNS, so internal service
+        // names still resolve while external lookups are recorded.
+        const dnsServerIp = this.egressMonitor?.dnsServerIp ?? null;
 
         const config: ContainerCreateOptions = {
             name,
@@ -300,7 +354,8 @@ export class GhostManager {
             },
             HostConfig: {
                 Binds: binds,
-                ExtraHosts: ['host.docker.internal:host-gateway']
+                ExtraHosts: ['host.docker.internal:host-gateway'],
+                ...(dnsServerIp ? {Dns: [dnsServerIp]} : {})
             },
             NetworkingConfig: {
                 EndpointsConfig: {
@@ -318,7 +373,7 @@ export class GhostManager {
 
     /**
      * Get volume binds for Ghost container based on mode.
-     * - dev: Mount ghost directory for source code (hot reload)
+     * - dev: Mount backend workspace packages for source code (hot reload)
      * - build: No source mounts, fully self-contained image
      */
     private getGhostBinds(): string[] {
@@ -328,7 +383,11 @@ export class GhostManager {
         ];
 
         if (this.config.mode === 'dev') {
-            binds.push(`${REPO_ROOT}/ghost:/home/ghost/ghost`);
+            binds.push(
+                `${REPO_ROOT}/ghost/core:/home/ghost/ghost/core`,
+                `${REPO_ROOT}/ghost/i18n:/home/ghost/ghost/i18n`,
+                `${REPO_ROOT}/ghost/parse-email-address:/home/ghost/ghost/parse-email-address`
+            );
         }
 
         return binds;
@@ -414,10 +473,7 @@ export class GhostManager {
         }
     }
 
-    /**
-     * Wait for a container to become healthy according to Docker's health check.
-     */
-    private async waitForHealthy(container: Container, timeoutMs: number): Promise<void> {
+    private async waitForHostReadiness(container: Container, timeoutMs: number): Promise<void> {
         const startTime = Date.now();
 
         while (Date.now() - startTime < timeoutMs) {
@@ -425,8 +481,8 @@ export class GhostManager {
             const health = info.State.Health;
             const status = health?.Status;
 
-            if (status === 'healthy') {
-                debug('Container is healthy');
+            if (info.State.Running && await this.probeHostReadiness()) {
+                debug('Host readiness probe passed');
                 return;
             }
 
@@ -444,13 +500,34 @@ export class GhostManager {
 
             // Still starting - wait and check again
             await new Promise((r) => {
-                setTimeout(r, 1000);
+                setTimeout(r, READINESS_POLL_INTERVAL_MS);
             });
         }
 
         // Timeout
         const logs = await container.logs({stdout: true, stderr: true, tail: 100});
         logging.error(`Timeout waiting for container. Last logs:\n${logs.toString()}`);
-        throw new Error('Timeout waiting for Ghost to become healthy');
+        throw new Error('Timeout waiting for Ghost to become ready');
+    }
+
+    private async probeHostReadiness(): Promise<boolean> {
+        const controller = new AbortController();
+        const timeout = setTimeout(() => controller.abort(), 500);
+
+        try {
+            const response = await fetch(`http://localhost:${this.getGatewayPort()}/ghost/api/admin/authentication/setup`, {
+                method: 'GET',
+                headers: {Accept: 'application/json'},
+                signal: controller.signal
+            });
+            const body = await response.json().catch(() => null) as {setup?: Array<{status?: unknown}>} | null;
+
+            return response.ok && Array.isArray(body?.setup) && typeof body.setup[0]?.status === 'boolean';
+        } catch (error) {
+            debug('Host readiness probe failed:', error);
+            return false;
+        } finally {
+            clearTimeout(timeout);
+        }
     }
 }

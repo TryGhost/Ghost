@@ -36,6 +36,13 @@ function SchedulingDefault(options) {
 
     this.deletedJobs = {};
     this.isRunning = false;
+
+    // The HTTP client is held as an instance property so unit tests can
+    // swap it for a deterministic stub. Doing the dependency injection in
+    // the constructor (rather than `require`ing inside _pingUrl) avoids
+    // pulling `@tryghost/request`'s cacheable-lookup singleton — racy
+    // under nock + shared workers — into the unit-test path.
+    this.request = request;
 }
 
 util.inherits(SchedulingDefault, SchedulingBase);
@@ -292,7 +299,7 @@ SchedulingDefault.prototype._pingUrl = function (object) {
         }
     }
 
-    return request(url, options).catch((err) => {
+    return this.request(url, options).catch((err) => {
         const {statusCode} = err;
 
         // CASE: post/page was deleted already

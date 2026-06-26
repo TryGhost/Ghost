@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://jestjs.io/docs/snapshot-testing
 
-exports[`Automations API browse returns automations sourced from the temporary fake database 1: [body] 1`] = `
+exports[`Automations API browse returns automations sourced from the database 1: [body] 1`] = `
 Object {
   "automations": Array [
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Welcome Email (Free)",
+      "name": "Free member welcome flow",
       "slug": "member-welcome-email-free",
       "status": "active",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -14,7 +14,7 @@ Object {
     Object {
       "created_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Welcome Email (Paid)",
+      "name": "Paid member welcome flow",
       "slug": "member-welcome-email-paid",
       "status": "active",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -33,11 +33,24 @@ Object {
 }
 `;
 
-exports[`Automations API browse returns automations sourced from the temporary fake database 2: [headers] 1`] = `
+exports[`Automations API browse returns automations sourced from the database 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "502",
+  "content-length": "510",
+  "content-type": "application/json; charset=utf-8",
+  "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
+  "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
+  "vary": "Accept-Version, Origin, Accept-Encoding",
+  "x-powered-by": "Express",
+}
+`;
+
+exports[`Automations API email preview renders draft content without welcome email content rows 1: [headers] 1`] = `
+Object {
+  "access-control-allow-origin": "http://127.0.0.1:2369",
+  "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
+  "content-length": "22649",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,
@@ -119,7 +132,7 @@ Object {
 }
 `;
 
-exports[`Automations API read returns the automation, ordered actions, and edges sourced from the temporary fake database 1: [body] 1`] = `
+exports[`Automations API read returns the automation, ordered actions, and edges sourced from the database 1: [body] 1`] = `
 Object {
   "automations": Array [
     Object {
@@ -134,10 +147,7 @@ Object {
         Object {
           "data": Object {
             "email_design_setting_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "email_lexical": "{\\"root\\":{\\"children\\":[{\\"type\\":\\"paragraph\\",\\"children\\":[{\\"type\\":\\"text\\",\\"text\\":\\"Lorem ipsum.\\"}]}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
-            "email_sender_email": null,
-            "email_sender_name": null,
-            "email_sender_reply_to": null,
+            "email_lexical": "{\\"root\\":{\\"children\\":[{\\"children\\":[{\\"detail\\":0,\\"format\\":0,\\"mode\\":\\"normal\\",\\"style\\":\\"\\",\\"text\\":\\"Lorem ipsum.\\",\\"type\\":\\"text\\",\\"version\\":1}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
             "email_subject": "Welcome!",
           },
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -153,10 +163,7 @@ Object {
         Object {
           "data": Object {
             "email_design_setting_id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-            "email_lexical": "{\\"root\\":{\\"children\\":[{\\"type\\":\\"paragraph\\",\\"children\\":[{\\"type\\":\\"text\\",\\"text\\":\\"Lorem ipsum.\\"}]}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
-            "email_sender_email": null,
-            "email_sender_name": null,
-            "email_sender_reply_to": null,
+            "email_lexical": "{\\"root\\":{\\"children\\":[{\\"children\\":[{\\"detail\\":0,\\"format\\":0,\\"mode\\":\\"normal\\",\\"style\\":\\"\\",\\"text\\":\\"Lorem ipsum.\\",\\"type\\":\\"text\\",\\"version\\":1}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"paragraph\\",\\"version\\":1}],\\"direction\\":null,\\"format\\":\\"\\",\\"indent\\":0,\\"type\\":\\"root\\",\\"version\\":1}}",
             "email_subject": "Follow up",
           },
           "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
@@ -179,7 +186,7 @@ Object {
         },
       ],
       "id": StringMatching /\\[a-f0-9\\]\\{24\\}/,
-      "name": "Welcome Email (Free)",
+      "name": "Free member welcome flow",
       "slug": "member-welcome-email-free",
       "status": "active",
       "updated_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
@@ -188,11 +195,11 @@ Object {
 }
 `;
 
-exports[`Automations API read returns the automation, ordered actions, and edges sourced from the temporary fake database 2: [headers] 1`] = `
+exports[`Automations API read returns the automation, ordered actions, and edges sourced from the database 2: [headers] 1`] = `
 Object {
   "access-control-allow-origin": "http://127.0.0.1:2369",
   "cache-control": "no-cache, private, no-store, must-revalidate, max-stale=0, post-check=0, pre-check=0",
-  "content-length": "1535",
+  "content-length": "1653",
   "content-type": "application/json; charset=utf-8",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "etag": StringMatching /\\(\\?:W\\\\/\\)\\?"\\(\\?:\\[ !#-\\\\x7E\\\\x80-\\\\xFF\\]\\*\\|\\\\r\\\\n\\[\\\\t \\]\\|\\\\\\\\\\.\\)\\*"/,

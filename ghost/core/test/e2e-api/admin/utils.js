@@ -40,6 +40,7 @@ const expectedProperties = {
         'stripeDirect',
         'emailAnalytics',
         'tenor',
+        'klipy',
         'mailgunIsConfigured',
         'signupForm'
     ],

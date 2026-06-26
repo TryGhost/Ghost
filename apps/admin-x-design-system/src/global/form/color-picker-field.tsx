@@ -108,7 +108,7 @@ const ColorPickerField: React.FC<ColorPickerFieldProps> = ({testId, title, direc
                 </div>
                 <div className={clsx('flex-1', direction === 'rtl' ? 'pr-2' : 'pl-2', hint ? 'mt-[-2px]' : 'mt-[1px]')} onClick={() => !alwaysOpen && setExpanded(!isExpanded)}>
                     {title}
-                    {hint && <div className={`text-xs ${error ? 'text-red' : 'text-grey-700'}`}>{hint}</div>}
+                    {hint && <div className={`text-sm ${error ? 'text-red' : 'text-grey-700'}`}>{hint}</div>}
                 </div>
             </div>
         );

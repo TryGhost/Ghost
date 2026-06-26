@@ -5,6 +5,8 @@ import {expectExternalNavigate, globalDataRequests, limitRequests, mockApi, resp
 import {readFileSync} from 'fs';
 import type {Page} from '@playwright/test';
 
+const __dirname = import.meta.dirname;
+
 const themeEditorZip = readFileSync(path.join(__dirname, '../../utils/responses/theme.zip'));
 
 const customThemesLimitConfig = (allowlist: string[], error: string) => ({
@@ -120,7 +122,7 @@ test.describe('Theme settings', async () => {
         await expect(modal.getByRole('button', {name: 'Activate Casper'})).toBeVisible();
 
         await modal.getByRole('button', {name: 'Activate Casper'}).click();
-        await expect(page.getByTestId('confirmation-modal')).toHaveText(/activate/);
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/activate/i);
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Activate'}).click();
         await expect(page.getByTestId('toast-success')).toHaveText(/casper is now your active theme/);
 
@@ -399,6 +401,7 @@ test.describe('Theme settings', async () => {
         await page.keyboard.insertText('{"name":"edition","version":"1.0.0"}\n');
 
         await expect(editorModal).toContainText(/1 file modified/);
+        await expect(editorModal.getByRole('button', {name: /1 file modified/})).toHaveCount(0);
     });
 
     test('Saves built-in themes as a new theme name', async ({page}) => {
@@ -799,6 +802,25 @@ test.describe('Theme settings', async () => {
         await page.waitForSelector('[data-testid="limit-modal"]', {timeout: 10000});
 
         await expect(page.getByTestId('limit-modal')).toHaveText(/Upgrade to use custom themes/);
+        await expect(page.getByTestId('theme-code-editor-modal')).not.toBeVisible();
+    });
+
+    test('Prevents direct access to theme editor route even for an allowlisted theme', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            ...limitRequests,
+            browseThemes: {method: 'GET', path: '/themes/', response: responseFixtures.themes},
+            browseConfig: customThemesLimitConfig(
+                ['casper', 'source', 'edition'],
+                'Your plan does not include any custom themes. Please upgrade your plan to upload themes.'
+            )
+        }});
+
+        await page.goto('/#/settings/theme/edit/edition');
+
+        await page.waitForSelector('[data-testid="limit-modal"]', {timeout: 10000});
+
+        await expect(page.getByTestId('limit-modal')).toContainText(/Your plan does not include any custom themes/);
         await expect(page.getByTestId('theme-code-editor-modal')).not.toBeVisible();
     });
 

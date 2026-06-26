@@ -32,7 +32,7 @@ class CommentsImporter extends TableImporter {
             shape: 'ease-out',
             trend: 'negative',
             // Use commentsPerPost as a baseline with some variance (+/- 20%)
-            total: Math.round(this.commentsPerPost * faker.datatype.float({min: 0.8, max: 1.2})),
+            total: Math.round(this.commentsPerPost * faker.number.float({min: 0.8, max: 1.2})),
             startTime: publishedAt,
             endTime: new Date()
         }).sort((a, b) => a.getTime() - b.getTime()); // Sort chronologically so replies always come after their targets
@@ -68,11 +68,11 @@ class CommentsImporter extends TableImporter {
                 let replyTarget;
                 if (preferReplyToReply) {
                     // Pick from existing replies to create a reply-to-reply
-                    const replyToIndex = faker.datatype.number(existingReplies.length - 1);
+                    const replyToIndex = faker.number.int(existingReplies.length - 1);
                     replyTarget = existingReplies[replyToIndex];
                 } else {
                     // Pick any random eligible comment
-                    const replyToIndex = faker.datatype.number(eligibleComments.length - 1);
+                    const replyToIndex = faker.number.int(eligibleComments.length - 1);
                     replyTarget = eligibleComments[replyToIndex];
                 }
                 const [replyToId, replyToParentId] = replyTarget;
@@ -93,7 +93,7 @@ class CommentsImporter extends TableImporter {
         const event = {
             id: this.fastFakeObjectId(),
             post_id: this.model.id,
-            member_id: this.possibleMembers[faker.datatype.number(this.possibleMembers.length - 1)].id,
+            member_id: this.possibleMembers[faker.number.int(this.possibleMembers.length - 1)].id,
             parent_id: parentId,
             in_reply_to_id: inReplyToId,
             status: 'published',

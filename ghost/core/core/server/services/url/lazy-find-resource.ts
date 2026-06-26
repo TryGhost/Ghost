@@ -1,4 +1,7 @@
-import type {FindResource} from './lazy-url-service';
+const _ = require('lodash');
+const resourcesConfig = require('./config');
+
+import type {ResourceLookupParams, FindResource} from './lazy-url-service';
 
 interface BookshelfModel {
     findOne(query: Record<string, unknown>, options?: Record<string, unknown>): Promise<{toJSON(): Record<string, unknown>} | null>;
@@ -10,53 +13,89 @@ interface Models {
     Author: BookshelfModel;
 }
 
+const POST_SCOPE = {type: 'post', status: 'published'};
+const PAGE_SCOPE = {type: 'page', status: 'published'};
+const POST_RELATIONS = ['tags', 'authors'];
+const RELATION_KEYS = ['tags', 'authors', 'primary_tag', 'primary_author'];
+
+// Drop the same fields the eager resourceConfig excludes so the resolved record
+// has the same shape the eager service exposes (no post body, no extra
+// author/tag fields). posts_meta is an auto-loaded relation eager never keeps.
+function excludeFor(type: string): string[] {
+    const cfg = resourcesConfig.find((c: {type: string}) => c.type === type);
+    const exclude = (cfg && cfg.modelOptions.exclude) || [];
+    return [...exclude, 'posts_meta'];
+}
+
+// Eager trims relations to {id, slug} via withRelatedFields; match that.
+function trimRelation(value: unknown): unknown {
+    if (Array.isArray(value)) {
+        return value.map(item => _.pick(item, ['id', 'slug']));
+    }
+    if (value && typeof value === 'object') {
+        return _.pick(value, ['id', 'slug']);
+    }
+    return value;
+}
+
+function pruneToEagerShape(record: Record<string, unknown>, type: string): Record<string, unknown> {
+    const pruned = _.omit(record, excludeFor(type));
+
+    if (type === 'pages') {
+        // Eager always exposes primary_tag/primary_author as null on pages (they
+        // are virtual Post fields) but never carries the tags/authors arrays.
+        pruned.primary_tag = null;
+        pruned.primary_author = null;
+        return pruned;
+    }
+
+    for (const key of RELATION_KEYS) {
+        if (pruned[key] !== undefined) {
+            pruned[key] = trimRelation(pruned[key]);
+        }
+    }
+    return pruned;
+}
+
 /**
- * Builds the on-demand DB lookup hook used by LazyUrlService.resolveUrl.
- *
- * The eager UrlService only registers URLs for resources matching the
- * resourceConfig filter (status:published, public visibility). Mirror that
- * here so reverse lookups can't return drafts / private resources even though
- * we now hit the DB on demand. We also disambiguate posts vs pages — both
- * share `models.Post` and a permalink template like `/:slug/` could otherwise
- * return either record.
- *
- * For tags and authors we use the public-facing scoped models (TagPublic,
- * Author) which carry the shouldHavePosts gate, so reverse lookups can't
- * return tags/users with no published posts (and in particular can't expose
- * staff User accounts via a guessed slug).
+ * Builds the per-request DB lookup hook injected into LazyUrlService.resolveUrl.
+ * Visibility rules mirror the eager service so a guessed slug can't surface
+ * anything the eager path hid; unknown types resolve to null.
  */
 export function createFindResource(models: Models): FindResource {
-    const loadOne = async (Model: BookshelfModel, query: Record<string, unknown>, options: Record<string, unknown> = {}) => {
-        const result = await Model.findOne(query, {require: false, ...options});
-        return result ? result.toJSON() : null;
+    const loadOne = async (
+        Model: BookshelfModel,
+        query: Record<string, unknown>,
+        type: string,
+        options: Record<string, unknown> = {}
+    ): Promise<Record<string, unknown> | null> => {
+        const result = await Model.findOne(query, {...options, require: false});
+        if (!result) {
+            return null;
+        }
+        const record = result.toJSON();
+        // Post.toJSON computes primary_tag but not primary_author.
+        if (Array.isArray(record.authors)) {
+            record.primary_author = record.authors[0] ?? null;
+        }
+        return pruneToEagerShape(record, type);
     };
 
-    // Posts and pages need their tags/authors relations loaded so NQL
-    // filters like `tag:news` / `author:jane` can be evaluated against the
-    // returned record (LazyUrlService re-checks the route's filter after
-    // the DB lookup). Without these, every tag- or author-filtered route
-    // would silently 404.
-    const POSTLIKE_RELATIONS = ['tags', 'authors'];
-
-    const loadPostlike = (Model: BookshelfModel, query: Record<string, unknown>, dbType: string) => {
-        return loadOne(Model, {...query, type: dbType, status: 'published'}, {withRelated: POSTLIKE_RELATIONS});
-    };
-
-    return (type: string, query: Record<string, string>) => {
-        if (type === 'posts') {
-            return loadPostlike(models.Post, query, 'post');
+    return (type: string, params: ResourceLookupParams): Promise<Record<string, unknown> | null> => {
+        switch (type) {
+        case 'posts':
+            return loadOne(models.Post, {...params, ...POST_SCOPE}, type, {withRelated: POST_RELATIONS});
+        case 'pages':
+            return loadOne(models.Post, {...params, ...PAGE_SCOPE}, type);
+        case 'tags':
+            return loadOne(models.TagPublic, {...params, visibility: 'public'}, type);
+        case 'authors':
+            return loadOne(models.Author, {...params, visibility: 'public'}, type);
+        default:
+            return Promise.resolve(null);
         }
-        if (type === 'pages') {
-            return loadPostlike(models.Post, query, 'page');
-        }
-        if (type === 'tags') {
-            return loadOne(models.TagPublic, {...query, visibility: 'public'});
-        }
-        if (type === 'authors') {
-            return loadOne(models.Author, {...query, visibility: 'public'});
-        }
-        return Promise.resolve(null);
     };
 }
 
 module.exports = {createFindResource};
+module.exports.createFindResource = createFindResource;

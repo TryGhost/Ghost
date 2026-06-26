@@ -3,7 +3,8 @@
 exports[`post.* events post.added event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -12,11 +13,12 @@ Object {
 
 exports[`post.* events post.added event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.added",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -79,7 +81,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -176,7 +178,8 @@ Object {
 exports[`post.* events post.deleted event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -185,12 +188,13 @@ Object {
 
 exports[`post.* events post.deleted event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.deleted",
   "post": Object {
     "current": Object {},
     "previous": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -263,7 +267,8 @@ Object {
 exports[`post.* events post.edited event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -272,11 +277,12 @@ Object {
 
 exports[`post.* events post.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.edited",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -353,7 +359,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -500,7 +506,8 @@ Object {
 exports[`post.* events post.published event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -509,11 +516,12 @@ Object {
 
 exports[`post.* events post.published event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.published",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -611,7 +619,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -760,7 +768,8 @@ Header Level 3
 exports[`post.* events post.published.edited event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -769,11 +778,12 @@ Object {
 
 exports[`post.* events post.published.edited event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.published.edited",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -850,7 +860,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -997,7 +1007,8 @@ Object {
 exports[`post.* events post.rescheduled event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1006,11 +1017,12 @@ Object {
 
 exports[`post.* events post.rescheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.rescheduled",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1087,7 +1099,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1234,7 +1246,8 @@ Object {
 exports[`post.* events post.scheduled event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1243,11 +1256,12 @@ Object {
 
 exports[`post.* events post.scheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.scheduled",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1324,7 +1338,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1472,7 +1486,8 @@ Object {
 exports[`post.* events post.tag.attached event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1481,11 +1496,12 @@ Object {
 
 exports[`post.* events post.tag.attached event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.tag.attached",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1583,7 +1599,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -1776,7 +1792,8 @@ Header Level 3
 exports[`post.* events post.tag.detached event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -1785,11 +1802,12 @@ Object {
 
 exports[`post.* events post.tag.detached event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.tag.detached",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -1887,7 +1905,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -2020,7 +2038,8 @@ Header Level 3
 exports[`post.* events post.unpublished event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -2029,11 +2048,12 @@ Object {
 
 exports[`post.* events post.unpublished event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.unpublished",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -2131,7 +2151,7 @@ Header Level 3
 #header h1 a{display: block;width: 300px;height: 80px;}",
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,
@@ -2180,7 +2200,7 @@ Header Level 3
       "primary_tag": null,
       "published_at": StringMatching /\\\\d\\{4\\}-\\\\d\\{2\\}-\\\\d\\{2\\}T\\\\d\\{2\\}:\\\\d\\{2\\}:\\\\d\\{2\\}\\\\\\.000Z/,
       "reading_time": 1,
-      "slug": "webhookz-2",
+      "slug": "webhookz-unpublished",
       "status": "draft",
       "tags": Array [],
       "tiers": Array [
@@ -2221,7 +2241,7 @@ Header Level 3
           "yearly_price_id": null,
         },
       ],
-      "title": "webhookz",
+      "title": "webhookz unpublished",
       "twitter_description": null,
       "twitter_image": null,
       "twitter_title": null,
@@ -2279,7 +2299,8 @@ Header Level 3
 exports[`post.* events post.unscheduled event is triggered 1: [headers] 1`] = `
 Object {
   "accept-encoding": "gzip, deflate, br, zstd",
-  "content-length": Any<Number>,
+  "connection": "close",
+  "content-length": StringMatching /\\\\d\\+/,
   "content-type": "application/json",
   "content-version": StringMatching /v\\\\d\\+\\\\\\.\\\\d\\+/,
   "user-agent": StringMatching /Ghost\\\\/\\\\d\\+\\\\\\.\\\\d\\+\\(\\?:-\\(\\[0-9A-Za-z-\\]\\+\\(\\?:\\\\\\.\\[0-9A-Za-z-\\]\\+\\)\\*\\)\\)\\?\\\\s\\\\\\(https:\\\\/\\\\/github\\.com\\\\/TryGhost\\\\/Ghost\\\\\\)/,
@@ -2288,11 +2309,12 @@ Object {
 
 exports[`post.* events post.unscheduled event is triggered 2: [body] 1`] = `
 Object {
+  "event": "post.unscheduled",
   "post": Object {
     "current": Object {
       "authors": Array [
         Object {
-          "accessibility": null,
+          "accessibility": "{\\"nightShift\\":\\"system\\"}",
           "bio": "bio",
           "bluesky": null,
           "comment_notifications": true,
@@ -2369,7 +2391,7 @@ Object {
       "og_title": null,
       "post_revisions": Any<Array>,
       "primary_author": Object {
-        "accessibility": null,
+        "accessibility": "{\\"nightShift\\":\\"system\\"}",
         "bio": "bio",
         "bluesky": null,
         "comment_notifications": true,

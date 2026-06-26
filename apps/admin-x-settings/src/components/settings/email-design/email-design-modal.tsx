@@ -1,4 +1,3 @@
-// NOTE: this has been copy-pasted into apps/posts/src/views/Automations/components/email-design/email-design-modal.tsx because we need to support the email design modal in both the settings app and the posts app until Automations GAs
 import DirtyConfirmModal from './dirty-confirm-modal';
 import NiceModal from '@ebay/nice-modal-react';
 import React, {useEffect, useRef} from 'react';
@@ -81,6 +80,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
             }}
         >
             <DialogContent
+                aria-describedby={undefined}
                 className={cn(
                     'top-[50%] left-[50%] h-[calc(100vh-8vmin)] w-[calc(100vw-8vmin)] max-w-none translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden p-0'
                 )}

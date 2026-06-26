@@ -52,9 +52,7 @@ export function AddLabelModal({
                 </DialogHeader>
 
                 <LabelPicker
-                    canCreateFromSearch={picker.canCreateFromSearch}
                     isCreating={picker.isCreating}
-                    isDuplicateName={picker.isDuplicateName}
                     labels={picker.labels}
                     optionSource={picker.optionSource}
                     resolvedSelectedLabels={picker.resolvedSelectedLabels}

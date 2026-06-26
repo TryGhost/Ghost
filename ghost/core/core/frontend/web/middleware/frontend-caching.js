@@ -2,6 +2,7 @@
  * @file Middleware to set the appropriate cache headers on the frontend
  */
 const config = require('../../../shared/config');
+const labs = require('../../../shared/labs');
 const shared = require('../../../server/web/shared');
 const {api} = require('../../services/proxy');
 const preview = require('../../services/theme-engine/preview');
@@ -48,6 +49,14 @@ const getMiddleware = async (getFreeTier = async () => {
             return shared.middleware.cacheControl('noCache')(req, res, next);
         }
 
+        if (res.locals?.staffFrontendToolsEnabled) {
+            return shared.middleware.cacheControl('private')(req, res, next);
+        }
+
+        if (res.locals?.staffFrontendToolsCookieUpdated) {
+            return next();
+        }
+
         // Caching member's content is an experimental feature, enabled via config
         const shouldCacheMembersContent = config.get('cacheMembersContent:enabled');
         // CASE: Never cache if the blog is set to private
@@ -58,6 +67,14 @@ const getMiddleware = async (getFreeTier = async () => {
 
         // CASE: Never cache preview routes
         if (req.path?.startsWith('/p/')) {
+            return shared.middleware.cacheControl('noCache')(req, res, next);
+        }
+
+        // CASE: never cache gift-link reads. A ?gift render holds unlocked gated
+        // content with no member cookie, so the edge would otherwise serve it to
+        // everyone. Keyed on the param's presence so an empty `?gift=` still
+        // bypasses.
+        if (req.query?.gift !== undefined && labs.isSet('giftLinks')) {
             return shared.middleware.cacheControl('noCache')(req, res, next);
         }
 

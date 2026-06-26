@@ -10,7 +10,7 @@ export type EmailPreview = {
 };
 
 export type EmailPreviewResponse = {
-    automated_emails?: EmailPreview[];
+    automation_email_previews?: EmailPreview[];
 };
 
 export type EmailPreviewState =
@@ -55,9 +55,9 @@ const getPreviewErrorMessage = (error: unknown) => {
     return fallbackMessage;
 };
 
-export const useEmailPreview = ({automatedEmailId, previewWelcomeEmail, setErrors}: {
-    automatedEmailId: string;
-    previewWelcomeEmail: (payload: EmailDraft & {id: string}) => Promise<EmailPreviewResponse>;
+export const useEmailPreview = ({automationId, previewAutomationEmail, setErrors}: {
+    automationId: string;
+    previewAutomationEmail: (payload: EmailDraft & {id: string}) => Promise<EmailPreviewResponse>;
     setErrors: (errors: Record<string, string>) => void;
 }) => {
     const [previewState, setPreviewState] = useState<EmailPreviewState>({status: 'idle'});
@@ -66,6 +66,7 @@ export const useEmailPreview = ({automatedEmailId, previewWelcomeEmail, setError
     const exitPreview = () => {
         previewRequestIdRef.current += 1;
         setPreviewState({status: 'idle'});
+        setErrors({});
     };
 
     const enterPreview = async (draft: EmailDraft) => {
@@ -73,23 +74,22 @@ export const useEmailPreview = ({automatedEmailId, previewWelcomeEmail, setError
         previewRequestIdRef.current = requestId;
 
         const validationErrors = getEmailValidationErrors(draft);
-        setErrors(validationErrors);
-
-        const hasValidationErrors = Boolean(validationErrors.subject || validationErrors.lexical);
-        if (hasValidationErrors) {
+        if (validationErrors.lexical) {
+            setErrors({lexical: validationErrors.lexical});
             setPreviewState({
                 status: 'invalid',
-                message: validationErrors.subject || validationErrors.lexical
+                message: validationErrors.lexical
             });
             return;
         }
 
+        setErrors({});
         setPreviewState({status: 'loading'});
 
         try {
             // Only the latest preview request is allowed to update preview state.
-            const response = await previewWelcomeEmail({
-                id: automatedEmailId,
+            const response = await previewAutomationEmail({
+                id: automationId,
                 subject: draft.subject,
                 lexical: draft.lexical
             });
@@ -98,7 +98,7 @@ export const useEmailPreview = ({automatedEmailId, previewWelcomeEmail, setError
                 return;
             }
 
-            const preview = response.automated_emails?.[0];
+            const preview = response.automation_email_previews?.[0];
 
             if (!preview?.html || !preview?.plaintext || !preview?.subject) {
                 throw new Error('Preview response was incomplete');

@@ -48,6 +48,13 @@ class StaticPagesRouter extends ParentRouter {
         // REGISTER: permalink for static pages
         this.mountRoute(this.permalinks.getValue({withUrlOptions: true}), controllers.entry);
 
+        // REGISTER: .md variant for llms.txt markdown export
+        this.mountRoute('/:slug.md', (req, res, next) => {
+            res.routerOptions.permalinks = '/:slug.md';
+            res.routerOptions.isMarkdownRequest = true;
+            return controllers.entry(req, res, next);
+        });
+
         this.routerCreated(this);
     }
 

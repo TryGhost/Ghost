@@ -1,4 +1,3 @@
-/* eslint-disable max-lines */
 
 const _ = require('lodash');
 
@@ -6,11 +5,11 @@ const api = require('../../api').endpoints;
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const jobsService = require('../jobs');
-const databaseInfo = require('../../data/db/info');
 
 const request = require('@tryghost/request');
 const ghostVersion = require('@tryghost/version');
 const UpdateCheckService = require('./update-check-service');
+const {NotificationEmailService} = require('../notifications/notification-email');
 
 /**
  * Initializes and triggers update check
@@ -34,17 +33,20 @@ module.exports = async ({
         }
     }
 
-    const {GhostMailer} = require('../mail');
-    const ghostMailer = new GhostMailer();
+    const mailService = require('../mail');
+    const ghostMailer = new mailService.GhostMailer();
+
+    const notificationEmailService = new NotificationEmailService({
+        mailer: ghostMailer,
+        generateEmailContent: mailService.utils.generateContent,
+        getSiteUrl: () => urlUtils.urlFor('home', true)
+    });
 
     const updateChecker = new UpdateCheckService({
         api: {
             settings: {
                 read: api.settings.read,
                 edit: api.settings.edit
-            },
-            posts: {
-                browse: api.posts.browse
             },
             users: {
                 browse: api.users.browse
@@ -54,11 +56,7 @@ module.exports = async ({
             }
         },
         config: {
-            mail: config.get('mail'),
-            env: config.get('env'),
-            databaseType: databaseInfo.getEngine(),
             checkEndpoint: updateCheckUrl,
-            isPrivacyDisabled: config.isPrivacyDisabled('useUpdateCheck'),
             notificationGroups: config.get('notificationGroups'),
             siteUrl: urlUtils.urlFor('home', true),
             forceUpdate,
@@ -66,7 +64,7 @@ module.exports = async ({
             rethrowErrors
         },
         request,
-        sendEmail: ghostMailer.send.bind(ghostMailer)
+        notificationEmailService
     });
 
     await updateChecker.check();
@@ -82,5 +80,12 @@ module.exports.scheduleRecurringJobs = () => {
         at: `${s} ${m} ${h} * * *`, // Every day
         job: require('path').resolve(__dirname, 'run-update-check.js'),
         name: 'update-check'
+    });
+};
+
+module.exports.scheduleBootJob = () => {
+    jobsService.addJob({
+        job: require('path').resolve(__dirname, 'run-update-check.js'),
+        name: 'update-check-boot'
     });
 };

@@ -59,7 +59,7 @@ const SingleValue: React.FC<SingleValueProps<FontSelectOption, false>> = ({child
                 <div className='flex size-12 items-center justify-center rounded-md bg-white text-2xl font-bold dark:bg-black'>Aa</div>
                 <div className='flex flex-col'>
                     <span className='text-md'>{children}</span>
-                    <span className='font-sans text-xs font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
+                    <span className='font-sans text-sm font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
                 </div>
             </div>
         </div>
@@ -73,7 +73,7 @@ const Option: React.FC<OptionProps<FontSelectOption, false>> = ({children, ...op
                 <div className='flex size-12 items-center justify-center rounded-md bg-grey-100 text-2xl font-bold group-hover:bg-grey-200 dark:bg-grey-900 dark:group-hover:bg-grey-800'>Aa</div>
                 <div className='flex flex-col'>
                     <span className='text-md'>{children}</span>
-                    <span className='font-sans text-xs font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
+                    <span className='font-sans text-sm font-normal text-grey-700 dark:text-grey-600'>{optionProps.data.creator}</span>
                 </div>
             </div>
             {optionProps.isSelected && <span><Icon name='check' size={14} /></span>}
@@ -160,13 +160,13 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
 
     // Populate the heading and body font options
     const customHeadingFonts: HeadingFontOption[] = CUSTOM_FONTS.heading.map((x) => {
-        let className = fontClassName(x.name, true);
+        const className = fontClassName(x.name, true);
         return {label: x.name, value: x.name, creator: x.creator, className};
     });
     customHeadingFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, creator: themeNameVersion, className: 'font-sans font-normal'});
 
     const customBodyFonts: BodyFontOption[] = CUSTOM_FONTS.body.map((x) => {
-        let className = fontClassName(x.name, false);
+        const className = fontClassName(x.name, false);
         return {label: x.name, value: x.name, creator: x.creator, className};
     });
     customBodyFonts.unshift({label: DEFAULT_FONT, value: DEFAULT_FONT, creator: themeNameVersion, className: 'font-sans font-normal'});
@@ -286,7 +286,7 @@ const GlobalSettings: React.FC<{ values: GlobalSettingValues, updateSetting: (ke
                         unsplashEnabled={unsplashEnabled}
                         width='160px'
                         onDelete={() => updateSetting('cover_image', null)}
-                        onUpload={async (file: any) => {
+                        onUpload={async (file: File) => {
                             try {
                                 updateSetting('cover_image', getImageUrl(await uploadImage({file})));
                             } catch (e) {

@@ -1,6 +1,6 @@
 const moment = require('moment-timezone');
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
-const {anyGhostAgent, anyArray, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyNumber, anyLocalURL, anyString} = matchers;
+const {agentProvider, mockManager, fixtureManager, dbUtils, matchers} = require('../utils/e2e-framework');
+const {anyGhostAgent, anyArray, anyObjectId, anyISODateTime, anyUuid, anyContentVersion, anyContentLength, anyLocalURL, anyString} = matchers;
 
 const tierSnapshot = {
     id: anyObjectId,
@@ -113,13 +113,14 @@ describe('post.* events', function () {
     let adminAPIAgent;
     let webhookMockReceiver;
 
-    before(async function () {
+    beforeAll(async function () {
         adminAPIAgent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('integrations');
         await adminAPIAgent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
 
@@ -162,7 +163,7 @@ describe('post.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -191,7 +192,7 @@ describe('post.* events', function () {
             .body({
                 posts: [
                     {
-                        title: 'webhookz',
+                        title: 'webhookz unpublished',
                         status: 'published',
                         mobiledoc: fixtureManager.get('posts', 1).mobiledoc
                     }
@@ -215,7 +216,7 @@ describe('post.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -254,7 +255,7 @@ describe('post.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -299,7 +300,7 @@ describe('post.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -345,7 +346,7 @@ describe('post.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -398,7 +399,7 @@ describe('post.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -451,7 +452,7 @@ describe('post.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -513,7 +514,7 @@ describe('post.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -565,7 +566,7 @@ describe('post.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -614,7 +615,7 @@ describe('post.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({
@@ -668,7 +669,7 @@ describe('post.* events', function () {
         webhookMockReceiver
             .matchHeaderSnapshot({
                 'content-version': anyContentVersion,
-                'content-length': anyNumber,
+                'content-length': anyContentLength,
                 'user-agent': anyGhostAgent
             })
             .matchBodySnapshot({

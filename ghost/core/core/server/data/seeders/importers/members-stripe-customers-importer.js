@@ -18,7 +18,6 @@ class MembersStripeCustomersImporter extends TableImporter {
         let offset = 0;
         let limit = 100000;
 
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             const members = await this.transaction.select('id', 'name', 'email', 'created_at', 'status').from('members').limit(limit).offset(offset);
 
@@ -37,7 +36,7 @@ class MembersStripeCustomersImporter extends TableImporter {
             // The number should increase the older the member is
 
             const daysSinceMemberCreated = Math.floor((new Date() - dateToDatabaseString.parse(this.model.created_at)) / (1000 * 60 * 60 * 24));
-            const shouldHaveStripeCustomer = faker.datatype.number({min: 0, max: 100}) < Math.max(Math.min(daysSinceMemberCreated / 60, 15), 2);
+            const shouldHaveStripeCustomer = faker.number.int({min: 0, max: 100}) < Math.max(Math.min(daysSinceMemberCreated / 60, 15), 2);
 
             if (!shouldHaveStripeCustomer) {
                 return;
@@ -47,7 +46,8 @@ class MembersStripeCustomersImporter extends TableImporter {
         return {
             id: this.fastFakeObjectId(),
             member_id: this.model.id,
-            customer_id: `cus_${faker.random.alphaNumeric(14, {
+            customer_id: `cus_${faker.string.alphanumeric({
+                length: 14,
                 casing: 'mixed'
             })}`,
             name: this.model.name,

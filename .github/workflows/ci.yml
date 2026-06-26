@@ -29,6 +29,11 @@ concurrency:
   group: ${{ startsWith(github.ref, 'refs/tags/') && format('release-{0}', github.ref) || github.head_ref || github.ref }}
   cancel-in-progress: ${{ !startsWith(github.ref, 'refs/tags/') }}
 
+# Default least-privilege token for all jobs; jobs that need more declare
+# their own permissions block, which overrides this default.
+permissions:
+  contents: read
+
 jobs:
   job_setup:
     name: Setup
@@ -50,7 +55,7 @@ jobs:
       pull-requests: read
     steps:
       - name: Checkout current commit
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ env.HEAD_COMMIT }}
           fetch-depth: 0
@@ -106,6 +111,7 @@ jobs:
                 - '!.github/renovate-bot.cjs'
                 - '!.github/workflows/renovate.yml'
               - '.npmrc'
+              - 'nx.json'
               - 'package.json'
               - 'pnpm-lock.yaml'
               - 'pnpm-workspace.yaml'
@@ -161,7 +167,7 @@ jobs:
         run: |
           echo 'matrix=["22.18.0"]' >> $GITHUB_OUTPUT
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - name: Set up Node
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
@@ -172,6 +178,9 @@ jobs:
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile --ignore-scripts
+
+      - name: Start Nx Cloud CI run
+        run: pnpm nx start-ci-run
 
       - name: Determine Affected Projects
         id: affected
@@ -241,7 +250,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR head commit
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -262,7 +271,7 @@ jobs:
     if: github.event_name == 'pull_request'
     steps:
       - name: Checkout PR head commit
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           fetch-depth: 0
@@ -282,10 +291,10 @@ jobs:
     if: needs.job_setup.outputs.is_tag == 'true' || needs.job_setup.outputs.affected_projects_str != ''
     name: Lint
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 1000
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
@@ -307,7 +316,7 @@ jobs:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@a16f74679802174224860c99113fd03386d468eb # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -322,8 +331,8 @@ jobs:
       needs.job_setup.outputs.is_tag == 'true'
       || needs.job_setup.outputs.changed_i18n_apps == 'true'
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -348,8 +357,8 @@ jobs:
       CI: true
       COVERAGE: true
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -371,7 +380,7 @@ jobs:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@a16f74679802174224860c99113fd03386d468eb # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -387,10 +396,10 @@ jobs:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
     name: Unit tests (Node ${{ matrix.node }})
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 1000
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
@@ -443,7 +452,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@a16f74679802174224860c99113fd03386d468eb # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -462,21 +471,24 @@ jobs:
           MYSQL_ROOT_PASSWORD: root
         ports:
           - 3306
+        # Poll the healthcheck every 2s instead of 10s — same max wait window
+        # (120s = 60 × 2s), but ready-state is discovered ~8s earlier on a
+        # typical boot. Same change on the redis service below.
         options: >-
           --tmpfs /var/lib/mysql
           --health-cmd "mysqladmin ping -h 127.0.0.1 -uroot -proot"
-          --health-interval=10s
+          --health-interval=2s
           --health-timeout=5s
-          --health-retries=12
+          --health-retries=60
       redis:
         image: redis:7.0@sha256:352c1fdadc91926edda08f45aeb3f27f37194c2f14101229c0523a11195c96e3
         ports:
           - 6379:6379
         options: >-
           --health-cmd "redis-cli ping"
-          --health-interval=10s
+          --health-interval=2s
           --health-timeout=5s
-          --health-retries=12
+          --health-retries=60
     strategy:
       matrix:
         node: ${{ fromJSON(needs.job_setup.outputs.node_test_matrix) }}
@@ -493,8 +505,8 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
@@ -505,7 +517,9 @@ jobs:
       - name: Install dependencies
         # sqlite3 is an optionalDependency. Without --force, pnpm may skip
         # installing/linking it when restoring from a cached store. --force
-        # ensures all optional deps are installed regardless.
+        # ensures all optional deps are installed regardless. The mysql leg
+        # doesn't need sqlite3, so it skips --force and gets a fast cache
+        # restore (matches the legacy-tests job below).
         run: |
           if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
             pnpm install --frozen-lockfile --force
@@ -520,17 +534,24 @@ jobs:
 
       - name: Set env vars (SQLite)
         if: contains(matrix.env.DB, 'sqlite')
-        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> $GITHUB_ENV
+        run: echo "database__connection__filename=/dev/shm/ghost-test.db" >> "$GITHUB_ENV"
 
       - name: Set env vars (MySQL)
         if: contains(matrix.env.DB, 'mysql')
         run: |
-          echo "database__connection__host=127.0.0.1" >> $GITHUB_ENV
-          echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}" >> $GITHUB_ENV
-          echo "database__connection__password=root" >> $GITHUB_ENV
+          {
+            echo "database__connection__host=127.0.0.1"
+            echo "database__connection__port=${{ job.services.mysql.ports['3306'] }}"
+            echo "database__connection__password=root"
+          } >> "$GITHUB_ENV"
 
       - name: E2E tests
-        run: pnpm nx run ghost:test:ci:e2e
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm nx run ghost:test:ci:e2e
+          else
+            pnpm nx run ghost:test:e2e
+          fi
 
       - name: Start MinIO for integration tests
         run: |
@@ -552,7 +573,12 @@ jobs:
           exit 1
 
       - name: Integration tests
-        run: pnpm nx run ghost:test:ci:integration
+        run: |
+          if [ "${{ matrix.env.DB }}" = "sqlite3" ]; then
+            pnpm nx run ghost:test:ci:integration
+          else
+            pnpm nx run ghost:test:integration
+          fi
 
       - name: Check for unexpected file changes
         run: |
@@ -564,14 +590,14 @@ jobs:
           fi
 
       - uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'mysql')
+        if: matrix.node == env.NODE_VERSION && contains(matrix.env.DB, 'sqlite')
         with:
           name: e2e-coverage
           path: |
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@a16f74679802174224860c99113fd03386d468eb # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -612,10 +638,10 @@ jobs:
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
     name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           submodules: true
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
@@ -646,7 +672,7 @@ jobs:
           echo "database__connection__password=root" >> $GITHUB_ENV
 
       - name: Legacy tests
-        run: pnpm nx run ghost:test:ci:legacy
+        run: pnpm nx run ghost:test:legacy
 
       - name: Check for unexpected file changes
         run: |
@@ -657,7 +683,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@a16f74679802174224860c99113fd03386d468eb # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -676,8 +702,8 @@ jobs:
     env:
       CI: true
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
@@ -710,7 +736,7 @@ jobs:
           path: apps/${{ steps.app_name.outputs.name }}/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@a16f74679802174224860c99113fd03386d468eb # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -727,11 +753,11 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:2f8317aceba18ce20dc4105b0b712b2701bb477a4d9a25477e2aa72bdf9d1423
+        image: tinybirdco/tinybird-local:latest@sha256:cd45193d3a7eee6be3c9b3b594b305dcc1caf06d50918a12ff6d4aea1e3ad22e
         ports:
           - 7181:7181
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
       - name: Install Tinybird CLI
         run: curl -fsSL https://tinybird.co/install.sh | sh
       - name: Build project
@@ -809,7 +835,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@a16f74679802174224860c99113fd03386d468eb # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -827,11 +853,11 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           submodules: true
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
           FORCE_COLOR: 0
@@ -880,11 +906,11 @@ jobs:
       - name: Determine push strategy
         id: strategy
         run: |
-          # Same-org repos (e.g. TryGhost/Ghost, TryGhost/Ghost-Security) push to GHCR.
-          # External forks and cross-repo PRs use artifact-based image transfer instead.
+          # Only the canonical repo publishes to GHCR by default.
+          # Direct clones, external forks, and cross-repo PRs use artifact-based image transfer instead.
           USE_ARTIFACT="false"
-          if [ "${{ github.repository_owner }}" != "TryGhost" ]; then
-            # External fork — no GHCR push
+          if [ "${{ github.repository }}" != "TryGhost/Ghost" ]; then
+            # Non-canonical repo - no GHCR push
             USE_ARTIFACT="true"
           elif [ "${{ github.event_name }}" = "pull_request" ] && \
                [ "${{ github.event.pull_request.head.repo.full_name }}" != "${{ github.repository }}" ]; then
@@ -905,9 +931,9 @@ jobs:
             IMAGE_FULL_NAME="ghcr.io/${OWNER}/${REPO_NAME}"
           fi
 
-          # Force push on tag pushes (release images must always be published)
+          # Force push on canonical tag pushes (release images must always be published)
           IS_TAG="${{ startsWith(github.ref, 'refs/tags/v') }}"
-          if [ "$IS_TAG" = "true" ]; then
+          if [ "$IS_TAG" = "true" ] && [ "${{ github.repository }}" = "TryGhost/Ghost" ]; then
             USE_ARTIFACT="false"
           fi
 
@@ -1093,9 +1119,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
 
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
@@ -1117,7 +1143,8 @@ jobs:
             apps/comments-ui/umd \
             apps/sodo-search/umd \
             apps/signup-form/umd \
-            apps/announcement-bar/umd
+            apps/announcement-bar/umd \
+            apps/admin-toolbar/umd
           ls -lh e2e-public-apps.tar.gz
 
       - name: Upload public app artifacts
@@ -1139,7 +1166,7 @@ jobs:
       packages: write
     steps:
       - name: Checkout repository
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Download public app artifacts
         uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
@@ -1311,7 +1338,7 @@ jobs:
             shardTotal: 2
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Setup Docker Registry Mirrors
         uses: ./.github/actions/setup-docker-registry-mirrors
@@ -1340,7 +1367,7 @@ jobs:
           image-tags: ${{ needs.job_build_e2e_image.outputs.image-tags }}
           artifact-name: docker-image-e2e
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -1392,7 +1419,7 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@128d496a57fb11e44e97d690f0d5381c58e52489 # main
+      - uses: tryghost/actions/actions/slack-build@a16f74679802174224860c99113fd03386d468eb # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1404,13 +1431,17 @@ jobs:
     if: always() && needs.job_e2e_tests.result == 'failure'
     needs: [job_e2e_tests, job_setup]
     runs-on: ubuntu-latest
+    # Posts a comment on the PR via `gh pr comment` when E2E tests fail.
+    permissions:
+      contents: read
+      pull-requests: write
     strategy:
       fail-fast: false
     steps:
       - name: Checkout
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
           node-version: ${{ env.NODE_VERSION }}
@@ -1492,7 +1523,7 @@ jobs:
     ]
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
       - name: Restore Admin coverage
         if: contains(needs.job_admin-tests.result, 'success')
@@ -1506,9 +1537,12 @@ jobs:
           rsync -av --remove-source-files admin/* ghost/admin
 
       - name: Upload Admin test coverage
-        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
+        if: contains(needs.job_admin-tests.result, 'success')
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
         with:
           flags: admin-tests
+          files: ghost/admin/coverage/cobertura-coverage.xml
+          disable_search: true
 
       - name: Restore E2E coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
@@ -1523,9 +1557,11 @@ jobs:
 
       - name: Upload E2E test coverage
         if: contains(needs.job_acceptance-tests.result, 'success')
-        uses: codecov/codecov-action@75cd11691c0faa626561e295848008c8a7dddffe # v5
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v6
         with:
           flags: e2e-tests
+          files: ghost/core/coverage-e2e/cobertura-coverage.xml,ghost/core/coverage-integration/cobertura-coverage.xml
+          disable_search: true
 
   job_required_tests:
     name: All required tests passed or skipped
@@ -1547,8 +1583,8 @@ jobs:
         job_build_e2e_public_apps,
         job_build_e2e_image,
         job_e2e_tests,
-        build_packages,
-        publish_packages
+        build_public_apps,
+        publish_public_apps
       ]
     if: always()
     runs-on: ubuntu-latest
@@ -1565,37 +1601,22 @@ jobs:
   # Runs on PRs and pushes. Intentionally has no `id-token: write` — PR-controlled
   # code (nx build) must never execute in a job that can mint an npm OIDC token.
   # The privileged publish flow lives in publish_packages below, gated to main pushes.
-  build_packages:
+  build_public_apps:
     needs: [
       job_setup,
       job_lint,
       job_unit-tests
     ]
-    name: Build ${{ matrix.package_name }}
+    name: Build Public Apps
     runs-on: ubuntu-latest
     if: always() && github.repository == 'TryGhost/Ghost' && needs.job_setup.result == 'success' && needs.job_lint.result == 'success' && needs.job_unit-tests.result == 'success' && needs.job_setup.outputs.run_e2e == 'true'
     permissions:
       contents: read
-    strategy:
-      matrix:
-        include:
-          - package_name: '@tryghost/activitypub'
-            package_path: 'apps/activitypub'
-          - package_name: '@tryghost/portal'
-            package_path: 'apps/portal'
-          - package_name: '@tryghost/sodo-search'
-            package_path: 'apps/sodo-search'
-          - package_name: '@tryghost/comments-ui'
-            package_path: 'apps/comments-ui'
-          - package_name: '@tryghost/signup-form'
-            package_path: 'apps/signup-form'
-          - package_name: '@tryghost/announcement-bar'
-            package_path: 'apps/announcement-bar'
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
@@ -1606,17 +1627,17 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: Build the package
-        run: pnpm nx build ${{ matrix.package_name }}
+        run: pnpm nx run-many --target=build --projects='tag:public-app'
 
   # Publishes @tryghost/* public apps to npm via OIDC trusted publishing.
   # Runs only on push-to-main — never on pull_request — so the `id-token: write`
   # permission is never exposed to PR-controlled code (ref: ONC-1677).
-  publish_packages:
+  publish_public_apps:
     needs: [
       job_setup,
       job_lint,
       job_unit-tests,
-      build_packages
+      build_public_apps
     ]
     name: Publish ${{ matrix.package_name }}
     runs-on: ubuntu-latest
@@ -1627,15 +1648,12 @@ jobs:
       && needs.job_setup.result == 'success'
       && needs.job_lint.result == 'success'
       && needs.job_unit-tests.result == 'success'
-      && needs.build_packages.result == 'success'
+      && needs.build_public_apps.result == 'success'
     permissions:
       id-token: write
     strategy:
       matrix:
         include:
-          - package_name: '@tryghost/activitypub'
-            package_path: 'apps/activitypub'
-            cdn_paths: 'https://cdn.jsdelivr.net/ghost/activitypub@CURRENT_MAJOR/dist/activitypub.js'
           - package_name: '@tryghost/portal'
             package_path: 'apps/portal'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/portal@~CURRENT_MINOR/umd/portal.min.js'
@@ -1653,11 +1671,14 @@ jobs:
           - package_name: '@tryghost/announcement-bar'
             package_path: 'apps/announcement-bar'
             cdn_paths: 'https://cdn.jsdelivr.net/ghost/announcement-bar@~CURRENT_MINOR/umd/announcement-bar.min.js'
+          - package_name: '@tryghost/admin-toolbar'
+            package_path: 'apps/admin-toolbar'
+            cdn_paths: 'https://cdn.jsdelivr.net/ghost/admin-toolbar@~CURRENT_MINOR/umd/admin-toolbar.min.js'
     steps:
       - name: Checkout code
-        uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
 
-      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - name: Set up Node.js
         uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         with:
@@ -1724,12 +1745,6 @@ jobs:
         if: steps.version_check.outputs.version_changed == 'true'
         run: echo "${{ steps.cdn_paths.outputs.cdn_paths }}"
 
-      - name: Wait before purging jsDelivr cache
-        if: steps.version_check.outputs.version_changed == 'true' && matrix.package_name == '@tryghost/activitypub'
-        run: |
-          echo "Purging jsDelivr cache immediately after publishing a new version on NPM is unreliable. Waiting 1 minute before purging cache..."
-          sleep 60
-
       - name: Purge jsDelivr cache
         if: steps.version_check.outputs.version_changed == 'true'
         uses: gacts/purge-jsdelivr-cache@8d92aea944f1a3e8ad70505379e1a8ac72d56b73 # v1
@@ -1745,7 +1760,7 @@ jobs:
     ]
     if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird_datafiles == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Trigger and watch traffic analytics infra Tinybird workflow
         if: github.repository == 'TryGhost/Ghost'
         env:
@@ -1866,7 +1881,7 @@ jobs:
     env:
       GH_TOKEN: ${{ secrets.CANARY_DOCKER_BUILD }}
     steps:
-      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
         with:
           fetch-depth: 0
 

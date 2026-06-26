@@ -12,6 +12,7 @@ import {
 import {EditRow} from './edit-row';
 import {Label} from '@tryghost/admin-x-framework/api/labels';
 import {LucideIcon} from '@tryghost/shade/utils';
+import {canCreateLabel} from './can-create-label';
 import {useLabelPicker} from '@src/hooks/use-label-picker';
 import type {CustomRendererProps, ValueSource} from '@tryghost/shade/patterns';
 
@@ -58,7 +59,6 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
             return (
                 <EditRow
                     key={labelId}
-                    isDuplicateName={picker.isDuplicateName}
                     label={label}
                     onCancel={() => setEditingLabelId(null)}
                     onDelete={async (id) => {
@@ -102,7 +102,7 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
     }, [editingLabelId, picker]);
 
     const renderFooter = useCallback(({searchInput, clearSearch}: FooterRenderProps) => {
-        const showCreate = searchInput.trim() && picker.canCreateFromSearch(searchInput);
+        const showCreate = canCreateLabel(picker.labels, searchInput);
         if (!showCreate) {
             return null;
         }
@@ -113,11 +113,14 @@ const LabelFilterRenderer: React.FC<CustomRendererProps<string>> = ({field, valu
                     disabled={picker.isCreating}
                     variant="ghost"
                     onClick={async () => {
-                        const newLabel = await picker.createLabel(searchInput.trim());
-                        if (newLabel) {
-                            picker.toggleLabel(newLabel.slug);
+                        try {
+                            const newLabel = await picker.createLabel(searchInput.trim());
+                            if (newLabel) {
+                                clearSearch();
+                            }
+                        } catch {
+                            // Already reported via toast - keep the typed name for retry
                         }
-                        clearSearch();
                     }}
                 >
                     <LucideIcon.Plus className="size-4" />

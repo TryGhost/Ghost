@@ -30,7 +30,6 @@ export default function mockInvites(server) {
         attrs.createdAt = moment.utc().format();
         attrs.updatedAt = moment.utc().format();
         attrs.status = 'sent';
-        /* eslint-enable camelcase */
 
         return invites.create(attrs);
     });

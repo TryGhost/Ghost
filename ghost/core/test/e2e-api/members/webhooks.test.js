@@ -9,7 +9,7 @@ const models = require('../../../core/server/models');
 const urlService = require('../../../core/server/services/url');
 const urlUtils = require('../../../core/shared/url-utils');
 const DomainEvents = require('@tryghost/domain-events');
-const {anyContentVersion, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString, anyArray, anyObject} = matchers;
+const {anyContentVersion, anyContentLength, anyEtag, anyObjectId, anyUuid, anyISODateTime, anyString, anyArray, anyObject, nullable} = matchers;
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const sinon = require('sinon');
 
@@ -194,7 +194,7 @@ describe('Members API', function () {
     });
 
     describe('/webhooks/stripe/', function () {
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
@@ -241,7 +241,7 @@ describe('Members API', function () {
     });
 
     describe('Handling the end of subscriptions', function () {
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
@@ -767,7 +767,7 @@ describe('Members API', function () {
         // The subscription that we got from Stripe was created 2 seconds earlier (used for testing events)
         const beforeNow = Math.floor((Date.now() - 2000) / 1000) * 1000;
 
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
@@ -1494,7 +1494,7 @@ describe('Members API', function () {
     });
 
     describe('customer.subscription.created - complimentary removal', function () {
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
@@ -1786,7 +1786,7 @@ describe('Members API', function () {
         let offer;
         let couponId = 'testCoupon123';
 
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
@@ -2542,7 +2542,7 @@ describe('Members API', function () {
 
     // Test if the session metadata is processed correctly
     describe('Member attribution', function () {
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
@@ -2569,6 +2569,7 @@ describe('Members API', function () {
             created_at: anyISODateTime,
             updated_at: anyISODateTime,
             subscriptions: anyArray,
+            current_subscription: nullable(anyObject),
             labels: anyArray,
             tiers: anyArray,
             attribution: anyObject,
@@ -2584,6 +2585,7 @@ describe('Members API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 })
                 .matchBodySnapshot({
@@ -2741,6 +2743,7 @@ describe('Members API', function () {
                 })
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 })
                 .expect(({body: body3}) => {
@@ -3190,6 +3193,7 @@ describe('Members API', function () {
                 .expectStatus(200)
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
+                    'content-length': anyContentLength,
                     etag: anyEtag
                 })
                 .expect(({body}) => {

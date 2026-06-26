@@ -3,6 +3,7 @@ const assert = require('node:assert/strict');
 const crypto = require('node:crypto');
 const ObjectId = require('bson-objectid').default;
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../../utils/clock-utils');
 const testUtils = require('../../../utils');
 
 const {welcomeEmailAutomationPoll} = require('../../../../core/server/services/automations/welcome-email-automation-poll');
@@ -16,15 +17,14 @@ const MAX_RUNS_PER_BATCH = 100;
 describe('automations poll', function () {
     let options;
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.setup('default')();
     });
 
     beforeEach(async function () {
         await cleanupTables();
 
-        // TODO: shouldAdvanceTime is a fake-timer + async-await workaround; see docs/dep-consolidation.md
-        sinon.useFakeTimers({now: new Date('2026-04-12T12:00:00.000Z'), shouldAdvanceTime: true});
+        mockSystemTime(new Date('2026-04-12T12:00:00.000Z'));
 
         options = {
             memberWelcomeEmailService: {
@@ -178,8 +178,7 @@ describe('automations poll', function () {
         });
         const member = await createMember();
 
-        // Not ready yet. Floor to seconds because MySQL DATETIME has no ms precision,
-        // and capture the value so the assertion is stable under shouldAdvanceTime.
+        // Not ready yet. Floor to seconds because MySQL DATETIME has no ms precision.
         const futureReadyAt = new Date(Date.now() + 60 * 1000);
         futureReadyAt.setMilliseconds(0);
         await createRun({
@@ -315,9 +314,9 @@ describe('automations poll', function () {
         const sendError = new Error('send failed');
         options.memberWelcomeEmailService.api.send.rejects(sendError);
 
-        // poll() computes retryAt = Date.now() + RETRY_DELAY_MS internally; under
-        // shouldAdvanceTime the wall clock moves through awaits, so we compare
-        // against a bracket rather than a fresh `Date.now()` post-poll.
+        // poll() computes retryAt = Date.now() + RETRY_DELAY_MS internally; the clock
+        // is frozen, so compare against pollStart + RETRY_DELAY_MS (a small bracket
+        // absorbs MySQL's whole-second flooring of the persisted ready_at).
         const pollStart = Date.now();
         await welcomeEmailAutomationPoll(options);
 

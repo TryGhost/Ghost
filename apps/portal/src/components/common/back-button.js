@@ -50,7 +50,7 @@ export const BackButtonStyles = `
     }
 `;
 
-function ActionButton({label = null, hidden = false, onClick}) {
+function ActionButton({brandColor, label = null, hidden = false, onClick}) {
     if (hidden) {
         return null;
     }
@@ -60,7 +60,7 @@ function ActionButton({label = null, hidden = false, onClick}) {
     }
 
     return (
-        <button className='gh-portal-btn gh-portal-btn-back' onClick={e => onClick(e)}>
+        <button className='gh-portal-btn gh-portal-btn-back' style={brandColor ? {color: brandColor} : undefined} onClick={e => onClick(e)}>
             <LeftArrowIcon /> {label}
         </button>
     );

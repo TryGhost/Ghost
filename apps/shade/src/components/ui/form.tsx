@@ -134,7 +134,7 @@ const FormDescription = React.forwardRef<
     return (
         <p
             ref={ref}
-            className={cn('text-xs text-text-secondary', className)}
+            className={cn('text-sm text-text-secondary', className)}
             id={formDescriptionId}
             {...props}
         />

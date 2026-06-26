@@ -104,6 +104,24 @@ describe('oembed-service', function () {
         });
     });
 
+    describe('fetchPage', function () {
+        it('requests pages with a 5 second timeout', async function () {
+            const externalRequest = sinon.stub().resolves({});
+
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest
+            });
+
+            await service.fetchPage('https://www.example.com', {});
+
+            const options = externalRequest.firstCall.args[1];
+            assert.equal(options.timeout.request, 5000);
+        });
+    });
+
     describe('fetchOembedData', function () {
         const pageHtml = `<html><head><link type="application/json+oembed" href="https://www.example.com/oembed"></head></html>`;
 
@@ -180,6 +198,24 @@ describe('oembed-service', function () {
             assert.equal(response.type, 'bookmark');
             assert.equal(response.url, 'https://www.example.com');
             assert.equal(response.metadata.title, 'Example');
+        });
+
+        it('extracts Amazon product metadata via the metascraper-amazon ruleset', async function () {
+            nock('https://www.amazon.com')
+                .get('/dp/B08N5WRWNW')
+                .query(true)
+                .reply(200, `<html><head><title>Amazon.com</title></head><body>
+                    <span id="productTitle">Example Product Title</span>
+                    <img class="a-dynamic-image" src="https://m.media-amazon.com/images/I/example.jpg" data-old-hires="https://m.media-amazon.com/images/I/example-hires.jpg">
+                </body></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.amazon.com/dp/B08N5WRWNW', 'bookmark');
+
+            assert.equal(response.version, '1.0');
+            assert.equal(response.type, 'bookmark');
+            assert.equal(response.metadata.title, 'Example Product Title');
+            assert.equal(response.metadata.publisher, 'Amazon');
+            assert.equal(response.metadata.thumbnail, 'https://m.media-amazon.com/images/I/example-hires.jpg');
         });
 
         it('should return a bookmark response when the oembed endpoint returns a link type', async function () {
@@ -259,15 +295,95 @@ describe('oembed-service', function () {
 
             await oembedService.fetchOembedDataFromUrl('https://youtube.com/live/1234?param=existing');
         });
+
+        it('keeps unknown provider fallback by default when the page fetch fails', async function () {
+            const fetchError = new Error('Service Unavailable');
+            fetchError.response = {
+                statusCode: 503
+            };
+
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest() {
+                    throw fetchError;
+                }
+            });
+
+            await assert.rejects(
+                () => service.fetchOembedDataFromUrl('https://www.example.com', 'mention'),
+                {
+                    name: 'ValidationError',
+                    message: 'No provider found for supplied URL.'
+                }
+            );
+        });
+
+        it('does not pass the rethrow callback to the external request', async function () {
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest(url, options) {
+                    assert.equal(url, 'https://www.example.com');
+                    assert.equal(options.shouldRethrowFetchError, undefined);
+
+                    return {
+                        headers: {
+                            'content-type': 'text/html'
+                        },
+                        body: Buffer.from('<html><head><title>Example</title></head></html>'),
+                        url
+                    };
+                }
+            });
+
+            const response = await service.fetchOembedDataFromUrl('https://www.example.com', 'bookmark', {
+                shouldRethrowFetchError() {
+                    return true;
+                }
+            });
+
+            assert.equal(response.metadata.title, 'Example');
+        });
+
+        it('allows callers to rethrow selected page fetch errors', async function () {
+            const fetchError = new Error('Service Unavailable');
+            fetchError.response = {
+                statusCode: 503
+            };
+
+            const service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest() {
+                    throw fetchError;
+                }
+            });
+
+            await assert.rejects(
+                () => service.fetchOembedDataFromUrl('https://www.example.com', 'mention', {
+                    shouldRethrowFetchError(err) {
+                        return err.response?.statusCode === 503;
+                    }
+                }),
+                (err) => {
+                    assert.equal(err, fetchError);
+                    assert.equal(err.response.statusCode, 503);
+                    return true;
+                }
+            );
+        });
     });
 
     describe('processImageFromUrl', function () {
-        const crypto = require('crypto');
-        const hashFor = buffer => crypto.createHash('sha256').update(buffer).digest('hex');
+        const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
 
-        it('stores downloaded bookmark assets via image storage and returns stored URL', async function () {
+        it('stores downloaded bookmark assets via image storage and returns the adapter URL', async function () {
             const imageBytes = Buffer.from('img-bytes');
-            const saveRaw = sinon.stub().resolves('https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample.png');
+            const saveRaw = sinon.stub().resolves('https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample-x.png');
             const getSanitizedFileName = sinon.stub().returns('sample');
 
             const service = new OembedService({
@@ -293,15 +409,18 @@ describe('oembed-service', function () {
 
             const storedUrl = await service.processImageFromUrl('https://example.com/sample.png?token=abc', 'thumbnail');
 
-            assert.equal(storedUrl, 'https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample.png');
+            // the adapter's own return value is passed straight through
+            assert.equal(storedUrl, 'https://storage.ghost.is/c/6f/a3/site/content/images/thumbnail/sample-x.png');
             sinon.assert.calledOnce(getSanitizedFileName);
             sinon.assert.calledOnce(saveRaw);
-            assert.equal(saveRaw.firstCall.args[1], `thumbnail/sample-${hashFor(imageBytes)}.png`);
+            assert.match(saveRaw.firstCall.args[1], new RegExp(`^thumbnail/sample-${UUID_RE.source}\\.png$`));
         });
 
-        it('writes the same path for identical bytes (idempotent across re-bookmarks)', async function () {
+        it('writes a fresh key on every call, even for identical bytes (ONC-1788)', async function () {
+            // A content hash would collide here and force an overwrite, which the
+            // production bucket rejects. A unique key avoids the overwrite entirely.
             const imageBytes = Buffer.from('ico-bytes');
-            const saveRaw = sinon.stub().resolves('/content/images/icon/favicon.ico');
+            const saveRaw = sinon.stub().resolves('/stored');
             const getSanitizedFileName = sinon.stub().returns('favicon');
 
             const service = new OembedService({
@@ -328,18 +447,18 @@ describe('oembed-service', function () {
             await service.processImageFromUrl('https://a.example.com/favicon.ico', 'icon');
             await service.processImageFromUrl('https://b.example.com/favicon.ico', 'icon');
 
-            const expectedPath = `icon/favicon-${hashFor(imageBytes)}.ico`;
-            assert.equal(saveRaw.firstCall.args[1], expectedPath);
-            assert.equal(saveRaw.secondCall.args[1], expectedPath);
+            assert.match(saveRaw.firstCall.args[1], new RegExp(`^icon/favicon-${UUID_RE.source}\\.ico$`));
+            assert.match(saveRaw.secondCall.args[1], new RegExp(`^icon/favicon-${UUID_RE.source}\\.ico$`));
+            assert.notEqual(saveRaw.firstCall.args[1], saveRaw.secondCall.args[1]);
         });
 
-        it('writes different paths for different bytes (CAS discriminates)', async function () {
-            const aBytes = Buffer.from('icon-a');
-            const bBytes = Buffer.from('icon-b');
+        it('only ever creates - never probes exists or attempts a second write', async function () {
+            // The no-overwrite property: unique keys mean we always create and
+            // never need to check-for or replace an existing object.
             const saveRaw = sinon.stub().resolves('/stored');
+            const exists = sinon.stub().resolves(true);
             const getSanitizedFileName = sinon.stub().returns('favicon');
 
-            const buffers = [aBytes, bBytes];
             const service = new OembedService({
                 config: {
                     getContentPath() {
@@ -350,26 +469,25 @@ describe('oembed-service', function () {
                     getStorage() {
                         return {
                             getSanitizedFileName,
-                            saveRaw
+                            saveRaw,
+                            exists
                         };
                     }
                 },
                 externalRequest() {
                     return {
-                        buffer: async () => buffers.shift()
+                        buffer: async () => Buffer.from('bytes')
                     };
                 }
             });
 
-            await service.processImageFromUrl('https://a.example.com/favicon.png', 'icon');
-            await service.processImageFromUrl('https://b.example.com/favicon.png', 'icon');
+            await service.processImageFromUrl('https://example.com/favicon.png', 'icon');
 
-            assert.equal(saveRaw.firstCall.args[1], `icon/favicon-${hashFor(aBytes)}.png`);
-            assert.equal(saveRaw.secondCall.args[1], `icon/favicon-${hashFor(bBytes)}.png`);
-            assert.notEqual(saveRaw.firstCall.args[1], saveRaw.secondCall.args[1]);
+            sinon.assert.calledOnce(saveRaw);
+            sinon.assert.notCalled(exists);
         });
 
-        it('does not call generateUnique (no per-write S3 HEAD walk)', async function () {
+        it('does not call generateUnique (no per-write storage walk)', async function () {
             const generateUnique = sinon.stub().resolves('/should/not/be/called.png');
             const saveRaw = sinon.stub().resolves('/stored');
             const getSanitizedFileName = sinon.stub().returns('favicon');
@@ -508,6 +626,84 @@ describe('oembed-service', function () {
                 call => call.args[0].url.pathname === '/favicon.ico'
             );
             assert.ok(faviconCall, 'beforeRequest hook should have been called for the favicon fetch');
+        });
+    });
+
+    describe('fetchBookmarkData favicon selection', function () {
+        // Icons declared as <link> tags are resolved by metascraper-logo-favicon
+        // directly from the HTML, so these assertions exercise pickFn without
+        // hitting the network favicon probe. The picked icon is normally
+        // post-processed (downloaded for bookmarks, HEAD-checked for mentions),
+        // so we stub both to surface pickFn's raw selection.
+        let service;
+
+        beforeEach(function () {
+            const externalRequest = sinon.stub().resolves({});
+            externalRequest.head = sinon.stub().resolves({});
+            externalRequest.defaults = {options: {}};
+
+            service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest
+            });
+            sinon.stub(service, 'processImageFromUrl').callsFake(async url => url);
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        const buildHtml = links => `<html><head><title>Test Page</title>${links}</head><body></body></html>`;
+
+        const getIcon = (links, type) => service
+            .fetchBookmarkData('https://example.com/page', buildHtml(links), type)
+            .then(result => result.metadata.icon);
+
+        it('bookmark cards prefer the standard favicon over an apple-touch-icon', async function () {
+            const icon = await getIcon(`
+                <link rel="apple-touch-icon" sizes="180x180" href="https://example.com/apple.png">
+                <link rel="icon" href="https://example.com/favicon.png">
+            `, 'bookmark');
+
+            assert.equal(icon, 'https://example.com/favicon.png');
+        });
+
+        it('bookmark cards prefer an SVG favicon over other standard icons', async function () {
+            const icon = await getIcon(`
+                <link rel="icon" href="https://example.com/favicon.png">
+                <link rel="icon" href="https://example.com/icon.svg">
+            `, 'bookmark');
+
+            assert.equal(icon, 'https://example.com/icon.svg');
+        });
+
+        it('bookmark cards skip mask-icon/fluid-icon silhouettes', async function () {
+            const icon = await getIcon(`
+                <link rel="mask-icon" href="https://example.com/mask.svg" color="#000000">
+                <link rel="fluid-icon" href="https://example.com/fluid.png">
+                <link rel="icon" href="https://example.com/favicon.png">
+            `, 'bookmark');
+
+            assert.equal(icon, 'https://example.com/favicon.png');
+        });
+
+        it('bookmark cards fall back to an apple-touch-icon when no standard favicon exists', async function () {
+            const icon = await getIcon(`
+                <link rel="apple-touch-icon" sizes="180x180" href="https://example.com/apple.png">
+            `, 'bookmark');
+
+            assert.equal(icon, 'https://example.com/apple.png');
+        });
+
+        it('mentions keep the apple-touch-icon priority for the scaled-up avatar', async function () {
+            const icon = await getIcon(`
+                <link rel="apple-touch-icon" sizes="180x180" href="https://example.com/apple.png">
+                <link rel="icon" href="https://example.com/favicon.png">
+            `, 'mention');
+
+            assert.equal(icon, 'https://example.com/apple.png');
         });
     });
 });

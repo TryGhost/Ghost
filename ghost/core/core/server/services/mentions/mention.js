@@ -29,6 +29,22 @@ module.exports = class Mention {
         this.#deleted = true;
     }
 
+    /** @type {number} */
+    #revalidationFailureCount = 0;
+
+    get revalidationFailureCount() {
+        return this.#revalidationFailureCount;
+    }
+
+    recordRevalidationFailure() {
+        this.#revalidationFailureCount += 1;
+        return this.#revalidationFailureCount;
+    }
+
+    clearRevalidationFailures() {
+        this.#revalidationFailureCount = 0;
+    }
+
     #undelete() {
         // When an earlier mention is deleted, but then it gets verified again, we need to undelete it
         if (this.#deleted) {
@@ -229,6 +245,7 @@ module.exports = class Mention {
         this.#resourceType = data.resourceType;
         this.#verified = data.verified;
         this.#deleted = data.deleted || false;
+        this.#revalidationFailureCount = data.revalidationFailureCount || 0;
     }
 
     /**
@@ -315,7 +332,8 @@ module.exports = class Mention {
             resourceId,
             resourceType,
             verified,
-            deleted: isNew ? false : !!data.deleted
+            deleted: isNew ? false : !!data.deleted,
+            revalidationFailureCount: isNew ? 0 : (data.revalidationFailureCount || 0)
         });
 
         mention.setSourceMetadata(data);

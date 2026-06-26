@@ -45,36 +45,22 @@ type TiersService = {
     };
 };
 
-type LabsService = {
-    isSet(name: string): boolean;
-};
-
 export class GiftController {
     private readonly service: GiftService;
     private readonly tiersService: TiersService;
-    private readonly labsService: LabsService;
 
     constructor({
         service,
-        tiersService,
-        labsService
+        tiersService
     }: {
         service: GiftService;
         tiersService: TiersService;
-        labsService: LabsService;
     }) {
         this.service = service;
         this.tiersService = tiersService;
-        this.labsService = labsService;
     }
 
     async getRedeemable(frame: Frame) {
-        if (!this.labsService.isSet('giftSubscriptions')) {
-            throw new errors.BadRequestError({
-                message: 'Gift subscriptions are not enabled on this site.'
-            });
-        }
-
         const token = frame.data.token;
         const memberStatus = frame.options?.context?.member?.status ?? null;
 
@@ -84,12 +70,6 @@ export class GiftController {
     }
 
     async redeem(frame: Frame) {
-        if (!this.labsService.isSet('giftSubscriptions')) {
-            throw new errors.BadRequestError({
-                message: 'Gift subscriptions are not enabled on this site.'
-            });
-        }
-
         const token = frame.data.token;
         const member = frame.options?.context?.member;
 

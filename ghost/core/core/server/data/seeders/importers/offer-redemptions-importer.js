@@ -94,7 +94,7 @@ class OfferRedemptionsImporter extends TableImporter {
             subscriptionState.redemptionEndAt.valueOf()
         ));
         const latest = subscriptionState.redemptionEndAt > earliest ? subscriptionState.redemptionEndAt : earliest;
-        const createdAt = latest.valueOf() === earliest.valueOf() ? earliest : faker.date.between(earliest, latest);
+        const createdAt = latest.valueOf() === earliest.valueOf() ? earliest : faker.date.between({from: earliest, to: latest});
 
         subscriptionState.lastRedeemedAt = createdAt;
 
@@ -102,12 +102,12 @@ class OfferRedemptionsImporter extends TableImporter {
     }
 
     generate() {
-        const subscriptionIndex = faker.datatype.number({
+        const subscriptionIndex = faker.number.int({
             min: 0,
             max: this.subscriptionPool.length - 1
         });
         const subscriptionState = this.subscriptionPool[subscriptionIndex];
-        const offerIndex = faker.datatype.number({
+        const offerIndex = faker.number.int({
             min: 0,
             max: subscriptionState.availableOffers.length - 1
         });

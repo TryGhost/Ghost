@@ -18,15 +18,14 @@ const Tooltip: React.FC<TooltipProps> = ({content, size = 'sm', children, contai
     );
 
     tooltipClassName = clsx(
-        'z-[9999] rounded-sm bg-black px-2 py-0.5 leading-normal text-white will-change-[transform,opacity] select-none',
-        size === 'sm' && 'text-xs',
-        size === 'md' && 'text-sm'
+        'z-[9999] rounded-sm bg-black px-2 py-0.5 !text-base leading-normal text-white will-change-[transform,opacity] select-none',
+        size === 'sm' && 'text-sm'
     );
 
     return (
         <TooltipPrimitive.Provider delayDuration={0}>
             <TooltipPrimitive.Root>
-                <TooltipPrimitive.Trigger className={containerClassName} onClick={event => event.preventDefault()}>
+                <TooltipPrimitive.Trigger className={containerClassName} asChild onClick={event => event.preventDefault()}>
                     {children}
                 </TooltipPrimitive.Trigger>
                 <TooltipPrimitive.Content align={origin} className={tooltipClassName} sideOffset={4} onPointerDownOutside={event => event.preventDefault()}>

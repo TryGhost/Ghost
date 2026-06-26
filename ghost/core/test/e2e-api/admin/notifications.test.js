@@ -9,7 +9,7 @@ const matchNotification = {
 describe('Notifications API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users');
         await agent.loginAsOwner();
@@ -88,7 +88,7 @@ describe('Notifications API', function () {
     });
 
     describe('As Editor', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsEditor();
         });
 
@@ -133,7 +133,7 @@ describe('Notifications API', function () {
     });
 
     describe('As Author', function () {
-        before(async function () {
+        beforeAll(async function () {
             await agent.loginAsAuthor();
         });
 
@@ -162,7 +162,7 @@ describe('Notifications API', function () {
     describe('Can view by multiple users', function () {
         let notification;
 
-        before(async function () {
+        beforeAll(async function () {
             // First editor creates a notification
             await agent.loginAsEditor();
 

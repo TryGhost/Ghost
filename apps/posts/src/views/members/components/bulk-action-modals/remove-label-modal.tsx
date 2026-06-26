@@ -85,7 +85,6 @@ export function RemoveLabelModal({
                 </DialogHeader>
 
                 <LabelPicker
-                    isDuplicateName={picker.isDuplicateName}
                     labels={picker.labels.filter(label => memberLabelSlugs.has(label.slug))}
                     optionSource={{
                         ...availableOptionSource,

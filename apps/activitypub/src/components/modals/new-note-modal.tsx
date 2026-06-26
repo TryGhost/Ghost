@@ -1,7 +1,7 @@
 import * as FormPrimitive from '@radix-ui/react-form';
 import APAvatar from '@components/global/ap-avatar';
 import FeedItem from '@components/feed/feed-item';
-import getUsername from '@utils/get-username';
+import getHandle from '@utils/get-handle';
 import {ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger, Input, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {ChangeEvent, useCallback, useEffect, useRef, useState} from 'react';
@@ -273,7 +273,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
     if (replyTo) {
         const attributedTo = replyTo.object.attributedTo || {};
         if (typeof attributedTo === 'object' && 'preferredUsername' in attributedTo && 'id' in attributedTo) {
-            placeholder = `Reply to ${getUsername(attributedTo as ActorProperties)}...`;
+            placeholder = `Reply to ${getHandle(attributedTo as ActorProperties)}...`;
         }
     }
 

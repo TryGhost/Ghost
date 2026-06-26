@@ -24,8 +24,8 @@ const PUB_USERNAME_REGEX = /^[a-zA-Z0-9-]{3,100}(?:\/[a-zA-Z0-9-]*)*$/;
 */
 const LINKEDIN_URL_REGEX = /^(?:https?:\/\/)?(?:www\.)?(?:([a-z]{2})\.)?linkedin\.com\/(in|pub|company|school)\/([^?#]+)/i;
 
-// trims whitespace and removes leading @ if it exists
-const formatUsername = (value: string) => value.trim().replace(/^@/, '');
+// trims whitespace, removes a leading @, and removes a trailing slash if present
+const formatUsername = (value: string) => value.trim().replace(/^@/, '').replace(/\/$/, '');
 
 const extractInputParts = (input: string) => {
     // Detect full URL patterns first

@@ -40,6 +40,7 @@ class SettingsHelpers {
             throw new errors.IncorrectUsageError({message: tpl(messages.incorrectKeyType)});
         }
 
+        // secretlint-disable-next-line @secretlint/secretlint-rule-pattern
         const secretKey = this.settingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}secret_key`);
         const publicKey = this.settingsCache.get(`stripe_${type === 'connect' ? 'connect_' : ''}publishable_key`);
 
@@ -193,6 +194,9 @@ class SettingsHelpers {
         }
         if (options.comments) {
             unsubscribeUrl.searchParams.set('comments', '1');
+        }
+        if (options.updatesAndAnnouncements) {
+            unsubscribeUrl.searchParams.set('updatesandannouncements', '1');
         }
 
         return unsubscribeUrl.href;

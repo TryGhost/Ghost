@@ -4,12 +4,13 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import TestEmailDropdown from './test-email-dropdown';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, Dialog, DialogContent, DialogTitle, Input, Tabs, TabsList, TabsTrigger} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
-import {WELCOME_EMAIL_SLUGS} from './sender-details';
 import {getEmailValidationErrors} from './validation';
-import {useBrowseAutomatedEmails, usePreviewWelcomeEmail} from '@tryghost/admin-x-framework/api/automated-emails';
+import {useBrowseAutomatedEmails} from '@tryghost/admin-x-framework/api/automated-emails';
 import {useEmailPreview} from './use-email-preview';
 import {useEmailSenderDetails} from './use-sender-details';
 import {useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
+import {usePreviewAutomationEmail} from '@tryghost/admin-x-framework/api/automations';
+import type {EmailModalMode} from '../types';
 
 interface EmailPreviewModalContentProps {
     title: string;
@@ -29,7 +30,7 @@ const EmailPreviewModalContent = React.forwardRef<
         className={cn(
             'flex h-full w-full flex-col gap-0 overflow-hidden p-0',
             isEditMode ? 'bg-white' : 'bg-gray-100',
-            'dark:bg-gray-975',
+            'dark:bg-[#151719]',
             className
         )}
     >
@@ -58,7 +59,7 @@ interface EmailPreviewEmailHeaderProps {
 
 const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({children, className}) => (
     <div className={cn(
-        'relative z-20 isolate mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975',
+        'relative z-20 isolate mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-[#2E3338]',
         className
     )}>
         {children}
@@ -80,37 +81,49 @@ const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className}
 );
 
 export interface EmailContentModalProps {
-    initialSubject: string;
+    automationId: string;
     initialLexical: string;
+    initialMode?: EmailModalMode;
+    initialSubject: string;
+    isDiscardNavigationBlocked?: boolean;
     onClose: () => void;
+    onDirtyChange?: (isDirty: boolean) => void;
+    onDiscardBlockedNavigation?: () => void;
+    onKeepEditingAfterBlockedNavigation?: () => void;
     onSave: (data: {subject: string; lexical: string}) => void;
 }
 
-type PreviewMode = 'edit' | 'preview';
-
-const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, initialLexical, onClose, onSave}) => {
-    const {mutateAsync: previewWelcomeEmail} = usePreviewWelcomeEmail();
+const EmailContentModal: React.FC<EmailContentModalProps> = ({
+    automationId,
+    initialMode = 'edit',
+    initialSubject,
+    initialLexical,
+    isDiscardNavigationBlocked = false,
+    onClose,
+    onDirtyChange,
+    onDiscardBlockedNavigation,
+    onKeepEditingAfterBlockedNavigation,
+    onSave
+}) => {
+    const {mutateAsync: previewAutomationEmail} = usePreviewAutomationEmail();
     const {data: automatedEmailsData} = useBrowseAutomatedEmails();
     const [showTestDropdown, setShowTestDropdown] = useState(false);
-    const [mode, setMode] = useState<PreviewMode>('edit');
+    const [mode, setMode] = useState<EmailModalMode>(initialMode);
     const [previewSubjectOverride, setPreviewSubjectOverride] = useState<string | null>(null);
     const [confirmDiscardOpen, setConfirmDiscardOpen] = useState(false);
+    const hasEnteredInitialPreview = useRef(false);
     const dropdownRef = useRef<HTMLDivElement>(null);
     const normalizedLexical = useRef<string>(initialLexical || '');
     const hasEditorBeenFocused = useRef(false);
+    const allowDirtyCloseRef = useRef(false);
     const handleError = useHandleError();
     const automatedEmails = automatedEmailsData?.automated_emails || [];
     const {resolvedSenderName, resolvedSenderEmail, resolvedReplyToEmail, hasDistinctReplyTo} = useEmailSenderDetails(automatedEmails);
 
-    // Preview & test reuse the legacy welcome-email endpoints, which are keyed by
-    // an automated-email id. Borrow the free welcome email's id (falling back to
-    // the first record) so unsaved automation content can be rendered/sent.
-    const previewAutomatedEmailId = (
-        automatedEmails.find(email => email.slug === WELCOME_EMAIL_SLUGS.free)
-        || automatedEmails[0]
-    )?.id || '';
-
-    const {formState, saveState, updateForm, setFormState, setErrors, handleSave, okProps, errors, validate} = useForm({
+    // Saving commits whatever the user has — including an empty subject or body — to the
+    // automation draft. Completeness is only enforced when publishing the automation or
+    // sending a test email (see validateForTest below), not when saving a draft.
+    const {formState, saveState, updateForm, setFormState, setErrors, handleSave, okProps, errors, clearError} = useForm({
         initialState: {
             subject: initialSubject || '',
             lexical: initialLexical || ''
@@ -119,17 +132,37 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
         onSave: async (state) => {
             onSave({subject: state.subject, lexical: state.lexical});
         },
-        onSaveError: handleError,
-        onValidate: getEmailValidationErrors
+        onSaveError: handleError
     });
+
+    const validateForTest = useCallback((): boolean => {
+        const newErrors = getEmailValidationErrors(formState);
+        setErrors(newErrors);
+        return Object.values(newErrors).every(error => !error);
+    }, [formState, setErrors]);
     const saveButtonLabel = okProps.label || 'Save';
     const {previewFrameState, enterPreview, exitPreview} = useEmailPreview({
-        automatedEmailId: previewAutomatedEmailId,
-        previewWelcomeEmail,
+        automationId,
+        previewAutomationEmail,
         setErrors
     });
 
+    useEffect(() => {
+        if (initialMode !== 'preview' || hasEnteredInitialPreview.current) {
+            return;
+        }
+        hasEnteredInitialPreview.current = true;
+        enterPreview(formState);
+    }, [enterPreview, formState, initialMode]);
+
     const isDirty = saveState === 'unsaved';
+
+    useEffect(() => {
+        onDirtyChange?.(isDirty && !allowDirtyCloseRef.current);
+        return () => {
+            onDirtyChange?.(false);
+        };
+    }, [isDirty, onDirtyChange]);
 
     // Single close funnel: Esc, overlay click, and the Close button all route here.
     const attemptClose = useCallback(() => {
@@ -140,13 +173,10 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
         }
     }, [isDirty, onClose]);
 
-    // Commit to the automation draft, then close the modal.
-    const handleSaveAndClose = useCallback(async () => {
-        const result = await handleSave({fakeWhenUnchanged: true});
-        if (result) {
-            onClose();
-        }
-    }, [handleSave, onClose]);
+    // Commit to the automation draft. The Close button is the only way out of the modal.
+    const handleSaveClick = useCallback(async () => {
+        await handleSave({fakeWhenUnchanged: true});
+    }, [handleSave]);
 
     // Close dropdown when clicking outside
     useEffect(() => {
@@ -165,16 +195,16 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
         };
     }, [showTestDropdown]);
 
-    const handleSaveAndCloseRef = useRef(handleSaveAndClose);
+    const handleSaveClickRef = useRef(handleSaveClick);
     useEffect(() => {
-        handleSaveAndCloseRef.current = handleSaveAndClose;
-    }, [handleSaveAndClose]);
+        handleSaveClickRef.current = handleSaveClick;
+    }, [handleSaveClick]);
 
     useEffect(() => {
         const handleCMDS = (e: KeyboardEvent) => {
             if ((e.metaKey || e.ctrlKey) && e.key === 's') {
                 e.preventDefault();
-                handleSaveAndCloseRef.current();
+                handleSaveClickRef.current();
             }
         };
         window.addEventListener('keydown', handleCMDS);
@@ -183,7 +213,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
         };
     }, []);
 
-    const handleModeChange = useCallback((nextMode: PreviewMode) => {
+    const handleModeChange = useCallback((nextMode: EmailModalMode) => {
         setMode(nextMode);
 
         if (nextMode === 'preview') {
@@ -241,10 +271,10 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
                                 data-testid='email-mode-toggle'
                                 value={mode}
                                 variant='segmented-sm'
-                                onValueChange={value => value && handleModeChange(value as PreviewMode)}
+                                onValueChange={value => value && handleModeChange(value as EmailModalMode)}
                             >
-                                <TabsList className='grid w-[240px] grid-cols-2 bg-gray-100 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]'>
-                                    <TabsTrigger className='w-full justify-center data-[state=active]:bg-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black' data-testid='email-mode-edit' value='edit'>Email content</TabsTrigger>
+                                <TabsList className='grid w-[240px] grid-cols-2 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'>
+                                    <TabsTrigger className='w-full justify-center' data-testid='email-mode-edit' value='edit'>Email content</TabsTrigger>
                                     <TabsTrigger className='w-full justify-center' data-testid='email-mode-preview' value='preview'>Preview</TabsTrigger>
                                 </TabsList>
                             </Tabs>
@@ -254,7 +284,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
                                 <Button variant="outline" onClick={attemptClose}>Close</Button>
                                 <Button
                                     disabled={okProps.disabled}
-                                    onClick={handleSaveAndClose}
+                                    onClick={handleSaveClick}
                                 >
                                     {saveButtonLabel}
                                 </Button>
@@ -281,7 +311,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
                                                     Test
                                                 </Button>
                                                 {showTestDropdown && (
-                                                    <TestEmailDropdown automatedEmailId={previewAutomatedEmailId} lexical={formState.lexical} subject={formState.subject} validateForm={validate} onClose={() => setShowTestDropdown(false)} />
+                                                    <TestEmailDropdown automationId={automationId} lexical={formState.lexical} subject={formState.subject} validateForm={validateForTest} onClose={() => setShowTestDropdown(false)} />
                                                 )}
                                             </div>
                                         </div>
@@ -304,6 +334,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
                                                         const nextSubject = e.target.value;
                                                         setPreviewSubjectOverride(nextSubject);
                                                         updateForm(state => ({...state, subject: nextSubject}));
+                                                        clearError('subject');
                                                     }}
                                                 />
                                                 {errors.subject && <span className='mt-2 block text-xs text-destructive'>{errors.subject}</span>}
@@ -313,7 +344,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
                                 </EmailPreviewEmailHeader>
                             )}
                             <EmailPreviewBody className={cn(
-                                mode === 'preview' && 'shadow-sm bg-white dark:bg-grey-975',
+                                mode === 'preview' && 'shadow-sm bg-white dark:bg-[#151719]',
                                 mode === 'edit' && 'px-6',
                                 mode === 'edit' && 'rounded-lg',
                                 mode === 'edit' && errors.lexical && 'border border-red-500'
@@ -330,7 +361,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
                                 >
                                     <EmailEditor
                                         className='automation-email-editor'
-                                        placeholder='Write your email content...'
+                                        placeholder='Begin writing your email...'
                                         value={formState.lexical}
                                         onChange={handleEditorChange}
                                     />
@@ -344,7 +375,20 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
                     </EmailPreviewModalContent>
                 </DialogContent>
             </Dialog>
-            <AlertDialog open={confirmDiscardOpen} onOpenChange={setConfirmDiscardOpen}>
+            <AlertDialog
+                open={confirmDiscardOpen || isDiscardNavigationBlocked}
+                onOpenChange={(open) => {
+                    if (open) {
+                        setConfirmDiscardOpen(true);
+                        return;
+                    }
+
+                    setConfirmDiscardOpen(false);
+                    if (isDiscardNavigationBlocked) {
+                        onKeepEditingAfterBlockedNavigation?.();
+                    }
+                }}
+            >
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>Discard changes?</AlertDialogTitle>
@@ -356,6 +400,13 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({initialSubject, in
                             variant='destructive'
                             onClick={() => {
                                 setConfirmDiscardOpen(false);
+                                if (isDiscardNavigationBlocked) {
+                                    onDiscardBlockedNavigation?.();
+                                    return;
+                                }
+
+                                allowDirtyCloseRef.current = true;
+                                onDirtyChange?.(false);
                                 onClose();
                             }}
                         >

@@ -38,8 +38,8 @@ if (parentPort) {
     const settings = require('../settings/settings-service');
     await settings.init();
 
-    const tiers = require('../tiers');
-    await tiers.init();
+    const emailAddress = require('../email-address');
+    emailAddress.init();
     // Finished INIT
 
     await updateCheck({

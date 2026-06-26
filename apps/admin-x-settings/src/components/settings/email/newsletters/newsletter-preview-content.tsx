@@ -148,12 +148,12 @@ const NewsletterPreviewContent: React.FC<{
             <div className="absolute inset-0 m-5 flex items-center justify-center">
                 <div className="mx-auto my-0 flex max-h-full w-full max-w-[700px] flex-col overflow-hidden rounded-[4px] text-black shadow-sm">
                     {/* Email header */}
-                    <div className="flex-column flex min-h-[77px] justify-center rounded-t-sm border-b border-grey-200 bg-white px-6 text-sm text-grey-700">
+                    <div className="flex-column flex min-h-[77px] justify-center gap-1 rounded-t-sm border-b border-grey-200 bg-white px-6 text-grey-700">
                         {emailHeader}
                     </div>
 
                     {/* Email content */}
-                    <div className="overflow-y-auto text-sm" style={{backgroundColor}}>
+                    <div className="overflow-y-auto" style={{backgroundColor}}>
                         <div className="px-[7rem]" style={{backgroundColor: headerBackgroundColor}}>
                             {headerImage && (
                                 <div>
