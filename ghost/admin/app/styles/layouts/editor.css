@@ -798,12 +798,37 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     padding: .8rem 0;
 }
 
-.gh-editor-feature-image-caption-container > button {
+.gh-editor-feature-image-alt-toggle {
     position: absolute;
     top: 50%;
     right: 0;
     z-index: 1;
+    min-width: 32px;
+    height: 28px;
+    margin: 0;
+    padding: 0 .4rem;
+    border: 1px solid var(--midgrey);
+    border-radius: 6px;
+    background: transparent;
+    color: var(--midgrey);
+    font-family: var(--font-family);
+    font-size: 1.3rem;
+    font-weight: 400;
+    line-height: 26px;
+    letter-spacing: .04rem;
     transform: translateY(-50%);
+    transition: all .1s ease-in;
+}
+
+.gh-editor-feature-image-alt-toggle:hover {
+    border-color: var(--darkgrey);
+    color: var(--darkgrey);
+}
+
+.gh-editor-feature-image-alt-toggle.active {
+    border-color: var(--green);
+    background: var(--green);
+    color: var(--white);
 }
 
 .gh-editor-feature-image-alttext,
@@ -825,7 +850,8 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 }
 
 .gh-editor-feature-image-alttext {
-    padding: 0 3.6rem 0 0;
+    padding: 0 3.6rem;
+    text-align: center;
 }
 
 .gh-editor-feature-image-caption {
