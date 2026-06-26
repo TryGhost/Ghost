@@ -242,8 +242,8 @@ export default function NewsletterManagement({
     const FinalNotification = notification || EmptyNotification;
     return (
         <div className='gh-portal-content with-footer'>
-            <CloseButton />
             <AccountHeader />
+            <CloseButton brandColor={brandColor} />
             <FinalNotification />
             <div className='gh-portal-section flex'>
                 <div className='gh-portal-list'>
@@ -275,7 +275,7 @@ export default function NewsletterManagement({
                     />
                 </div>
             </div>
-            <div className='gh-portal-btn-product gh-portal-btn-unsubscribe' style={{marginTop: '-48px', marginBottom: 0}}>
+            <div className='gh-portal-btn-unsubscribe'>
                 <ActionButton
                     isRunning={false}
                     onClick={() => {
@@ -286,7 +286,7 @@ export default function NewsletterManagement({
                     isPrimary={false}
                     label={t('Unsubscribe from all emails')}
                     isDestructive={true}
-                    style={{width: '100%', zIndex: 900}}
+                    style={{width: '100%'}}
                     dataTestId="unsubscribe-from-all-emails"
                 />
             </div>

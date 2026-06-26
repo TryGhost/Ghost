@@ -10,7 +10,8 @@ export default class CloseButton extends React.Component {
     };
 
     render() {
-        const {onClick} = this.props;
+        const {brandColor, onClick} = this.props;
+        const closeIconColor = brandColor || this.context.brandColor;
 
         return (
             <button
@@ -21,7 +22,7 @@ export default class CloseButton extends React.Component {
                 data-test-button='close-popup'
                 onClick={onClick || this.closePopup}
             >
-                <CloseIcon className='gh-portal-closeicon' aria-hidden='true' />
+                <CloseIcon className='gh-portal-closeicon' style={closeIconColor ? {color: closeIconColor} : undefined} aria-hidden='true' />
             </button>
         );
     }

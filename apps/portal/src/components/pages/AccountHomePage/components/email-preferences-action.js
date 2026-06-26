@@ -58,16 +58,13 @@ function EmailPreferencesAction() {
                 <h3>{t('Emails')}</h3>
                 {renderEmailNotice()}
             </div>
-            <button
-                className="gh-portal-btn gh-portal-btn-list"
-                onClick={(e) => {
-                    e.stopPropagation();
-                    handleClick();
-                }}
+            <span
+                className="gh-portal-list-action"
                 data-test-button="manage-newsletters"
+                aria-hidden="true"
             >
                 {t('Manage')}
-            </button>
+            </span>
         </section>
     );
 }

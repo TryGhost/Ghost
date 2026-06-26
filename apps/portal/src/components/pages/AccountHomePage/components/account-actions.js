@@ -62,16 +62,13 @@ const AccountActions = () => {
                         <h3>{(name ? name : t('Account'))}</h3>
                         <p>{email}</p>
                     </div>
-                    <button
+                    <span
                         data-test-button='edit-profile'
-                        className='gh-portal-btn gh-portal-btn-list'
-                        onClick={(e) => {
-                            e.stopPropagation();
-                            openEditProfile(e);
-                        }}
+                        className='gh-portal-list-action'
+                        aria-hidden="true"
                     >
                         {t('Edit')}
-                    </button>
+                    </span>
                 </section>
 
                 <PaidAccountActions />

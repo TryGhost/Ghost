@@ -181,16 +181,13 @@ const PaidAccountActions = () => {
                     <h3>{t('Billing info & receipts')}</h3>
                     <CardLabel defaultCardLast4={defaultCardLast4} />
                 </div>
-                <button
-                    className='gh-portal-btn gh-portal-btn-list'
-                    onClick={(e) => {
-                        e.stopPropagation();
-                        onManageBilling(e);
-                    }}
+                <span
+                    className='gh-portal-list-action'
                     data-test-button='manage-billing'
+                    aria-hidden="true"
                 >
                     {label}
-                </button>
+                </span>
             </section>
         );
     };

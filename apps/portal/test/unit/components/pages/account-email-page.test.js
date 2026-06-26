@@ -45,6 +45,32 @@ describe('Account Email Page', () => {
         expect(unsubscribeAllBtn).toBeInTheDocument();
     });
 
+    test('orders Back before Close in keyboard navigation', () => {
+        const siteData = getSiteData();
+        const {getByRole} = setup({
+            site: siteData,
+            member: getMemberData(),
+            lastPage: 'accountHome'
+        });
+
+        const backBtn = getByRole('button', {name: 'Back'});
+        const closeBtn = getByRole('button', {name: 'Close popup'});
+
+        expect(backBtn.compareDocumentPosition(closeBtn) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    });
+
+    test('uses the site accent color for the Close button', () => {
+        const siteData = getSiteData();
+        const {getByTestId} = setup({
+            site: siteData,
+            brandColor: '#ff0099',
+            member: getMemberData()
+        });
+
+        const closeIcon = getByTestId('close-popup').querySelector('.gh-portal-closeicon');
+        expect(closeIcon).toHaveStyle({color: '#ff0099'});
+    });
+
     test('can unsubscribe from all emails', async () => {
         const newsletterData = getNewslettersData({numOfNewsletters: 2});
         const siteData = getSiteData({

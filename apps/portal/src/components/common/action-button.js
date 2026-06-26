@@ -39,6 +39,18 @@ export const ActionButtonStyles = `
         border: none;
         box-shadow: none;
     }
+
+    button:focus-visible,
+    a:focus-visible,
+    .gh-portal-btn:focus-visible,
+    .gh-portal-btn-text:focus-visible {
+        outline: 2px solid var(--brandcolor);
+        outline-offset: 2px;
+        border-radius: 4px;
+        box-shadow: none;
+        transition: none;
+    }
+
     html[dir="rtl"] .gh-portal-btn-text span.right-arrow {
         transform: scale(-1, 1);
         display: inline-flex;

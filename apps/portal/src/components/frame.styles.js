@@ -186,6 +186,22 @@ const FrameStyles = `
     opacity: 0.75;
 }
 
+.gh-portal-list-action {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 38px;
+    margin: 0 -4px;
+    padding: 0 4px;
+    color: var(--brandcolor);
+    font-size: 1.5rem;
+    font-weight: 500;
+    line-height: 1em;
+    letter-spacing: 0.2px;
+    white-space: nowrap;
+    user-select: none;
+}
+
 .gh-portal-btn-logout {
     position: absolute;
     top: 22px;
@@ -528,6 +544,13 @@ html[dir="rtl"] .gh-portal-powered a {
     right: 24px;
     z-index: 10000;
 }
+
+.gh-portal-closeicon-container:focus-visible {
+    outline: 2px solid var(--brandcolor);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
 html[dir="rtl"] .gh-portal-closeicon-container {
     right: unset;
     left: 24px;
@@ -651,9 +674,10 @@ html[dir="rtl"] .gh-portal-logout-container {
 
 .gh-portal-list {
     background: var(--white);
-    padding: 20px;
+    padding: 0;
     border-radius: 8px;
     border: 1px solid var(--grey12);
+    overflow: hidden;
 }
 
 .gh-portal-newsletter-selection {
@@ -690,9 +714,19 @@ html[dir="rtl"] .gh-portal-logout-container {
 .gh-portal-list section {
     display: flex;
     align-items: center;
-    margin: 0 -20px 20px;
-    padding: 0 20px 20px;
+    margin: 0;
+    padding: 20px;
     border-bottom: 1px solid var(--grey12);
+}
+
+.gh-portal-list section:first-of-type {
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+}
+
+.gh-portal-list section:last-of-type {
+    border-bottom-left-radius: 8px;
+    border-bottom-right-radius: 8px;
 }
 
 .gh-portal-list-clickable {
@@ -700,15 +734,20 @@ html[dir="rtl"] .gh-portal-logout-container {
 }
 
 .gh-portal-list-clickable:focus-visible {
-    outline: 2px solid var(--brandcolor);
-    outline-offset: 2px;
-    border-radius: 4px;
+    outline: none;
+    box-shadow: inset 0 0 0 2px var(--brandcolor);
 }
 
 .gh-portal-list section:last-of-type {
-    margin-bottom: 0;
-    padding-bottom: 0;
     border: none;
+}
+
+.gh-portal-btn-unsubscribe {
+    margin-top: 40px;
+}
+
+.gh-portal-btn-unsubscribe .gh-portal-btn {
+    width: 100%;
 }
 
 .gh-portal-list-detail {

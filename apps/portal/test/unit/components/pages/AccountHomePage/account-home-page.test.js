@@ -42,8 +42,8 @@ describe('Account Home Page', () => {
         expect(utils.queryByText('Update your preferences')).toBeInTheDocument();
         expect(utils.queryByText('You\'re currently not receiving emails')).not.toBeInTheDocument();
 
-        const manageBtn = utils.queryByRole('button', {name: 'Manage'});
-        expect(manageBtn).toBeInTheDocument();
+        const manageBtn = utils.queryByText('Manage')?.closest('section');
+        expect(manageBtn).toHaveAttribute('role', 'button');
 
         fireEvent.click(manageBtn);
         expect(mockDoActionFn).toHaveBeenCalledWith('switchPage', {lastPage: 'accountHome', page: 'accountEmail'});

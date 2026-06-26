@@ -54,7 +54,7 @@ const setup = async ({site, member = null, newsletters}, loggedOut = false) => {
     const fullAccessTitle = within(popupIframeDocument).queryByText('Full access');
     const accountHomeTitle = within(popupIframeDocument).queryByText('Your account');
     const viewPlansButton = within(popupIframeDocument).queryByRole('button', {name: 'View plans'});
-    const manageSubscriptionsButton = within(popupIframeDocument).queryByRole('button', {name: 'Manage'});
+    const manageSubscriptionsButton = within(popupIframeDocument).queryByText('Manage')?.closest('section');
     return {
         ghostApi,
         popupIframeDocument,
@@ -251,7 +251,7 @@ describe('Newsletter Subscriptions', () => {
             const newPopupIframeDocument = newPopupFrame.contentDocument;
 
             // Open the NewsletterManagement page
-            const manageSubscriptionsButton = within(newPopupIframeDocument).queryByRole('button', {name: 'Manage'});
+            const manageSubscriptionsButton = within(newPopupIframeDocument).queryByText('Manage')?.closest('section');
             await userEvent.click(manageSubscriptionsButton);
 
             // Verify that the unsubscribed newsletter is shown as unsubscribed in the new popup
