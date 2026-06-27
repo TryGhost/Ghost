@@ -20,6 +20,11 @@ ghostBookshelf.plugin(plugins.customQuery);
 // Load the Ghost filter plugin, which handles applying a 'filter' to findPage requests
 ghostBookshelf.plugin(plugins.filter);
 
+// Normalize absolute date values in filters to the database date format, so date
+// comparisons behave consistently across SQLite and MySQL. Must come after the
+// filter plugin, which it wraps.
+ghostBookshelf.plugin(require('./plugins/date-filter'));
+
 // Load the Ghost filter plugin, which handles applying a 'order' to findPage requests
 ghostBookshelf.plugin(plugins.order);
 
