@@ -41,7 +41,7 @@ const controller = {
     },
 
     poll: {
-        statusCode: 204,
+        statusCode: 200,
         headers: {
             cacheInvalidate: false
         },
@@ -51,6 +51,11 @@ const controller = {
         },
         query() {
             automationsApi.requestPoll();
+
+            // The Ghost(Pro) Scheduler invokes this endpoint as a timed callback and
+            // requires the response to be a valid JSON object. An empty body (e.g. a
+            // 204) is treated as a failed job and retried, so we return a small object.
+            return {polled: true};
         }
     }
 };

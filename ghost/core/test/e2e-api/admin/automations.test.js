@@ -1259,15 +1259,21 @@ describe('Automations API', function () {
         });
 
         it('triggers a poll with a valid scheduler integration token', async function () {
-            await agent
+            // The Ghost(Pro) Scheduler treats an empty body as a failed job and retries it,
+            // so the poll callback must return HTTP 200 with a parseable JSON object body.
+            const {body} = await agent
                 .put(`automations/poll/?token=${schedulerToken}`)
-                .expectStatus(204)
-                .expectEmptyBody()
+                .expectStatus(200)
                 .expect(cacheInvalidateHeaderNotSet())
                 .matchHeaderSnapshot({
                     'content-version': anyContentVersion,
                     etag: anyEtag
-                });
+                })
+                .matchBodySnapshot();
+
+            assert.equal(typeof body, 'object');
+            assert.notEqual(body, null);
+            assert.ok(Object.keys(body).length > 0, 'poll response body should be a non-empty JSON object');
 
             sinon.assert.calledOnceWithExactly(dispatchStub, sinon.match.instanceOf(StartAutomationsPollEvent));
         });

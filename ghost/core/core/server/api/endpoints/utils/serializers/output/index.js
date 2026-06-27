@@ -12,6 +12,10 @@ module.exports = {
         return require('./default');
     },
 
+    get automations() {
+        return require('./automations');
+    },
+
     get comments() {
         return require('./comments');
     },

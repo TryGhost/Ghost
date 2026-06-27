@@ -22,7 +22,12 @@ describe('Automations controller', function () {
             const result = automationsController.poll.query({});
 
             sinon.assert.calledOnceWithExactly(dispatchStub, sinon.match.instanceOf(StartAutomationsPollEvent));
-            assert.equal(result, undefined);
+
+            // The Ghost(Pro) Scheduler requires a 200 with a JSON object body; an empty
+            // response is treated as a failed job and retried.
+            assert.equal(automationsController.poll.statusCode, 200);
+            assert.equal(typeof result, 'object');
+            assert.notEqual(result, null);
         });
     });
 });
