@@ -414,6 +414,9 @@ export const ProductsSectionStyles = () => {
         .gh-portal-product-card.only-free {
             margin: 0 0 16px;
             min-height: unset;
+            padding: 0;
+            border: none;
+            background: transparent;
         }
 
         .gh-portal-product-card.only-free .gh-portal-product-card-header {
@@ -691,7 +694,7 @@ function FreeProductCard({products, handleChooseSignup, error}) {
 
     return (
         <>
-            <div className={cardClass} onClick={(e) => {
+            <div className={cardClass} onClick={hasOnlyFree ? undefined : (e) => {
                 e.stopPropagation();
                 setSelectedProduct('free');
             }} data-test-tier="free">
