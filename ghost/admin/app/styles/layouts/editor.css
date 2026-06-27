@@ -821,6 +821,10 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 .gh-editor-feature-image-caption-container > button {
     grid-column: 2;
     grid-row: 1;
+    height: auto;
+    padding: 0 .4rem;
+    border-radius: 6px;
+    line-height: 2.8rem;
     justify-self: end;
     z-index: 1;
 }
