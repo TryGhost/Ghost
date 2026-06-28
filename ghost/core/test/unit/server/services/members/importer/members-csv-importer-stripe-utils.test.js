@@ -363,6 +363,148 @@ describe('MembersCSVImporterStripeUtils', function () {
             ), true);
         });
 
+        it('archives the newly-created price if updating the subscription fails (#22115)', async function () {
+            const stripeAPIServiceStub = getStripeApiServiceStub();
+            const NEW_STRIPE_PRICE_ID = 'new_stripe_price_id';
+            const updateError = new Error('Stripe rejected the subscription update');
+
+            stripeAPIServiceStub.createPrice.resolves({id: NEW_STRIPE_PRICE_ID});
+            stripeAPIServiceStub.updateSubscriptionItemPrice.rejects(updateError);
+
+            const productRepositoryStub = getProductRepositoryStub({resolveGhostProductPrice: false});
+            const membersCSVImporterStripeUtils = new MembersCSVImporterStripeUtils({
+                stripeAPIService: stripeAPIServiceStub,
+                productRepository: productRepositoryStub
+            });
+
+            let thrown;
+            try {
+                await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
+                    customer_id: CUSTOMER_ID,
+                    product_id: PRODUCT_ID
+                }, OPTIONS);
+            } catch (err) {
+                thrown = err;
+            }
+
+            // The original error surfaces...
+            assert.equal(thrown, updateError);
+
+            // ...and the price we just created is archived so it can't be orphaned/accumulate
+            sinon.assert.calledOnce(stripeAPIServiceStub.updatePrice);
+            assert.equal(stripeAPIServiceStub.updatePrice.calledWithExactly(NEW_STRIPE_PRICE_ID, {active: false}), true);
+        });
+
+        it('surfaces the original update error even if archiving the orphaned price also fails (#22115)', async function () {
+            const stripeAPIServiceStub = getStripeApiServiceStub();
+            const NEW_STRIPE_PRICE_ID = 'new_stripe_price_id';
+            const updateError = new Error('Stripe rejected the subscription update');
+
+            stripeAPIServiceStub.createPrice.resolves({id: NEW_STRIPE_PRICE_ID});
+            stripeAPIServiceStub.updateSubscriptionItemPrice.rejects(updateError);
+            stripeAPIServiceStub.updatePrice.rejects(new Error('archiving failed too'));
+
+            const productRepositoryStub = getProductRepositoryStub({resolveGhostProductPrice: false});
+            const membersCSVImporterStripeUtils = new MembersCSVImporterStripeUtils({
+                stripeAPIService: stripeAPIServiceStub,
+                productRepository: productRepositoryStub
+            });
+
+            let thrown;
+            try {
+                await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
+                    customer_id: CUSTOMER_ID,
+                    product_id: PRODUCT_ID
+                }, OPTIONS);
+            } catch (err) {
+                thrown = err;
+            }
+
+            // The original update error must surface, not the archive failure
+            assert.equal(thrown, updateError);
+        });
+
+        it('does not archive anything when updating to an existing matching price fails — nothing was created (#22115)', async function () {
+            const stripeAPIServiceStub = getStripeApiServiceStub();
+            const updateError = new Error('Stripe rejected the subscription update');
+            stripeAPIServiceStub.updateSubscriptionItemPrice.rejects(updateError);
+
+            // A matching Ghost price already exists, but with a different Stripe price id, so the
+            // subscription genuinely needs updating (and can therefore fail) — yet no new price is
+            // created on this path, so there must be nothing to archive.
+            const productRepositoryStub = getProductRepositoryStub({
+                resolveGhostProductPrice: true,
+                ghostProductStripePriceId: 'existing_stripe_price_id'
+            });
+            const membersCSVImporterStripeUtils = new MembersCSVImporterStripeUtils({
+                stripeAPIService: stripeAPIServiceStub,
+                productRepository: productRepositoryStub
+            });
+
+            let thrown;
+            try {
+                await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
+                    customer_id: CUSTOMER_ID,
+                    product_id: PRODUCT_ID
+                }, OPTIONS);
+            } catch (err) {
+                thrown = err;
+            }
+
+            assert.equal(thrown, updateError);
+            sinon.assert.notCalled(stripeAPIServiceStub.createPrice);
+            sinon.assert.notCalled(stripeAPIServiceStub.updatePrice);
+        });
+
+        it('does not update the subscription or archive when creating the new price itself fails (#22115)', async function () {
+            const stripeAPIServiceStub = getStripeApiServiceStub();
+            const createError = new Error('Stripe rejected createPrice');
+            stripeAPIServiceStub.createPrice.rejects(createError);
+
+            const productRepositoryStub = getProductRepositoryStub({resolveGhostProductPrice: false});
+            const membersCSVImporterStripeUtils = new MembersCSVImporterStripeUtils({
+                stripeAPIService: stripeAPIServiceStub,
+                productRepository: productRepositoryStub
+            });
+
+            let thrown;
+            try {
+                await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
+                    customer_id: CUSTOMER_ID,
+                    product_id: PRODUCT_ID
+                }, OPTIONS);
+            } catch (err) {
+                thrown = err;
+            }
+
+            assert.equal(thrown, createError);
+            sinon.assert.notCalled(stripeAPIServiceStub.updateSubscriptionItemPrice);
+            sinon.assert.notCalled(stripeAPIServiceStub.updatePrice);
+        });
+
+        it('does not archive the new price when the subscription update succeeds (#22115)', async function () {
+            const stripeAPIServiceStub = getStripeApiServiceStub();
+            const NEW_STRIPE_PRICE_ID = 'new_stripe_price_id';
+            stripeAPIServiceStub.createPrice.resolves({id: NEW_STRIPE_PRICE_ID});
+            // updateSubscriptionItemPrice resolves by default (the happy path)
+
+            const productRepositoryStub = getProductRepositoryStub({resolveGhostProductPrice: false});
+            const membersCSVImporterStripeUtils = new MembersCSVImporterStripeUtils({
+                stripeAPIService: stripeAPIServiceStub,
+                productRepository: productRepositoryStub
+            });
+
+            const result = await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
+                customer_id: CUSTOMER_ID,
+                product_id: PRODUCT_ID
+            }, OPTIONS);
+
+            assert.equal(result.isNewStripePrice, true);
+            assert.equal(result.stripePriceId, NEW_STRIPE_PRICE_ID);
+            // The cleanup must only run on failure — a successful update keeps the price
+            sinon.assert.notCalled(stripeAPIServiceStub.updatePrice);
+        });
+
         it('creates a new product in Stripe if one does not already existing for the Ghost product', async function () {
             const stripeAPIServiceStub = getStripeApiServiceStub();
             const productRepositoryStub = getProductRepositoryStub({

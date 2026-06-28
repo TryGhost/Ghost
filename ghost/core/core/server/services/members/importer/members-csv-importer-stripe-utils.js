@@ -1,4 +1,5 @@
 const {DataImportError} = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 
 const messages = {
@@ -150,12 +151,25 @@ module.exports = class MembersCSVImporterStripeUtils {
                 interval: stripeSubscriptionItemPriceInterval
             });
 
-            await this._stripeAPIService.updateSubscriptionItemPrice(
-                stripeSubscription.id,
-                stripeSubscriptionItem.id,
-                newStripePrice.id,
-                {prorationBehavior: 'none'}
-            );
+            try {
+                await this._stripeAPIService.updateSubscriptionItemPrice(
+                    stripeSubscription.id,
+                    stripeSubscriptionItem.id,
+                    newStripePrice.id,
+                    {prorationBehavior: 'none'}
+                );
+            } catch (err) {
+                // The subscription update failed after we created a new price, which would
+                // otherwise leave the price orphaned on the Stripe product (these accumulate
+                // across imports). Archive it, then surface the original error regardless of
+                // whether archiving succeeds. Ref: https://github.com/TryGhost/Ghost/issues/22115
+                try {
+                    await this.archivePrice(newStripePrice.id);
+                } catch (archiveErr) {
+                    logging.warn(`Failed to archive orphaned Stripe price ${newStripePrice.id} after a failed subscription update: ${archiveErr.message}`);
+                }
+                throw err;
+            }
 
             stripePriceId = newStripePrice.id;
             isNewStripePrice = true;
