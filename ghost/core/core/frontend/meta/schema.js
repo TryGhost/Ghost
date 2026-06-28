@@ -126,7 +126,7 @@ function getPostSchema(metaData, data) {
         dateModified: metaData.modifiedDate,
         image: schemaImageObject(metaData.coverImage),
         keywords: metaData.keywords && metaData.keywords.length > 0 ?
-            metaData.keywords.join(', ') : null,
+            escapeExpression(metaData.keywords.join(', ')) : null,
         description: description,
         mainEntityOfPage: metaData.url
     };
@@ -140,7 +140,7 @@ function getHomeSchema(metaData) {
         '@type': 'WebSite',
         publisher: schemaPublisherObject(metaData),
         url: metaData.url,
-        name: metaData.site.title,
+        name: escapeExpression(metaData.site.title),
         image: schemaImageObject(metaData.coverImage),
         mainEntityOfPage: metaData.url,
         description: metaData.metaDescription ?
@@ -157,7 +157,7 @@ function getTagSchema(metaData, data) {
         publisher: schemaPublisherObject(metaData),
         url: metaData.url,
         image: schemaImageObject(metaData.coverImage),
-        name: data.tag.name,
+        name: escapeExpression(data.tag.name),
         mainEntityOfPage: metaData.url,
         description: metaData.metaDescription ?
             escapeExpression(metaData.metaDescription) :

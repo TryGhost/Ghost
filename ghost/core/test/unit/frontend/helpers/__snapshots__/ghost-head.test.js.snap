@@ -4951,7 +4951,7 @@ Object {
         \\"@type\\": \\"ImageObject\\",
         \\"url\\": \\"http://localhost:65530/content/images/test-image.png\\"
     },
-    \\"keywords\\": \\"Tom & Jerry\\",
+    \\"keywords\\": \\"Tom &amp; Jerry\\",
     \\"description\\": \\"site description\\",
     \\"mainEntityOfPage\\": \\"http://localhost:65530/post/\\"
 }

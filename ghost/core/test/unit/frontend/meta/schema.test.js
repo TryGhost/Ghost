@@ -426,6 +426,28 @@ describe('getSchema', function () {
         });
     });
 
+    it('should HTML-escape the site title in home schema (no script breakout)', function () {
+        const metadata = {
+            site: {
+                title: 'foo</script><script>alert(document.domain)</script>'
+            },
+            url: 'http://mysite.com/',
+            coverImage: null,
+            metaDescription: null
+        };
+
+        const data = {
+            context: ['home']
+        };
+
+        const schema = getSchema(metadata, data);
+
+        // site.title flows into the home WebSite JSON-LD `name` and must be escaped
+        // so it cannot close the inline <script type="application/ld+json"> element.
+        assert.equal(schema.name, 'foo&lt;/script&gt;&lt;script&gt;alert(document.domain)&lt;/script&gt;');
+        assert.ok(!schema.name.includes('</script>'), 'site title should not contain a literal </script>');
+    });
+
     it('should return tag schema if context starts with tag', function () {
         const metadata = {
             site: {
@@ -471,6 +493,56 @@ describe('getSchema', function () {
             },
             url: 'http://mysite.com/post/my-post-slug/'
         });
+    });
+
+    it('should HTML-escape the tag name in tag schema (no script breakout)', function () {
+        const metadata = {
+            site: {
+                title: 'Site Title'
+            },
+            url: 'http://mysite.com/tag/evil/',
+            coverImage: null,
+            metaDescription: null
+        };
+
+        const data = {
+            context: ['tag'],
+            tag: {
+                name: 'foo</script><script>alert(document.domain)</script>'
+            }
+        };
+
+        const schema = getSchema(metadata, data);
+
+        // The raw tag name must never appear unescaped — otherwise it can close
+        // the inline <script type="application/ld+json"> element and inject markup.
+        assert.equal(schema.name, 'foo&lt;/script&gt;&lt;script&gt;alert(document.domain)&lt;/script&gt;');
+        assert.ok(!schema.name.includes('</script>'), 'tag name should not contain a literal </script>');
+    });
+
+    it('should HTML-escape post keywords/tag names in post schema (no script breakout)', function () {
+        const metadata = {
+            site: {title: 'Site Title'},
+            authorUrl: 'http://mysite.com/author/me/',
+            metaTitle: 'Post Title',
+            url: 'http://mysite.com/post/my-post-slug/',
+            keywords: ['safe', 'foo</script><script>alert(document.domain)</script>'],
+            excerpt: null
+        };
+
+        const data = {
+            context: ['post'],
+            post: {
+                primary_author: {name: 'Post Author'}
+            }
+        };
+
+        const schema = getSchema(metadata, data);
+
+        // Tag names flow into the post JSON-LD `keywords` field via metaData.keywords
+        // (raw item.name) and must be escaped so they cannot close the inline script.
+        assert.ok(!schema.keywords.includes('</script>'), 'keywords should not contain a literal </script>');
+        assert.equal(schema.keywords, 'safe, foo&lt;/script&gt;&lt;script&gt;alert(document.domain)&lt;/script&gt;');
     });
 
     it('should return author schema if context starts with author', function () {
