@@ -267,6 +267,109 @@ describe('MemberBreadService', function () {
 
             assert.equal(getSuppressionDataStub.called, false);
         });
+
+        // Stripe-connected comp handling. A member can be comped without a Stripe
+        // subscription, and `comped: true` is re-sent on every edit, so the edit path must
+        // only act on an actual transition. Ref: https://github.com/TryGhost/Ghost/issues/25735
+        function createStripeEditService({currentStatus = 'free', hasActiveCompSub = false, configured = true} = {}) {
+            const setComplimentarySubscription = sinon.stub().resolves();
+            const removeComplimentarySubscription = sinon.stub().resolves();
+            const get = sinon.stub().resolves({get: sinon.stub().returns(currentStatus)});
+
+            // model returned by update() — its stripeSubscriptions relation reflects whether
+            // the member currently has an active complimentary Stripe subscription.
+            const compSub = {get: key => ({plan_nickname: 'Complimentary', status: 'active'})[key]};
+            const subscriptions = hasActiveCompSub ? [compSub] : [];
+            const mockMemberModel = {
+                id: 'member_123',
+                get: sinon.stub().returns(false),
+                related: sinon.stub().returns({
+                    find: predicate => subscriptions.find(predicate),
+                    toJSON: () => [],
+                    models: subscriptions
+                }),
+                toJSON: sinon.stub().returns({id: 'member_123', email: 'test@example.com'})
+            };
+
+            const service = new MemberBreadService({
+                memberRepository: {
+                    update: sinon.stub().resolves(mockMemberModel),
+                    get,
+                    setComplimentarySubscription,
+                    removeComplimentarySubscription
+                },
+                stripeService: {configured},
+                memberAttributionService: {getAttributionFromContext: sinon.stub().resolves(null)},
+                emailService: {},
+                labsService: {isSet: sinon.stub().returns(false)},
+                newslettersService: {browse: sinon.stub().resolves([])},
+                settingsCache: {get: sinon.stub()},
+                emailSuppressionList: {getSuppressionData: sinon.stub().resolves({suppressed: false, info: null})},
+                settingsHelpers: {createUnsubscribeUrl: sinon.stub().returns('http://example.com/unsubscribe')}
+            });
+
+            sinon.stub(service, 'read').resolves({id: 'member_123'});
+
+            return {service, setComplimentarySubscription, removeComplimentarySubscription, get};
+        }
+
+        // Case 2 — the bug: an already-comped member (no Stripe sub) round-trips comped:true.
+        it('does not create a complimentary subscription when editing an already-comped member (#25735)', async function () {
+            const {service, setComplimentarySubscription} = createStripeEditService({currentStatus: 'comped'});
+
+            await service.edit({comped: true, labels: [{name: 'VIP'}]}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
+        });
+
+        // Case 1 — no regression: genuinely comping a previously-free member.
+        it('creates a complimentary subscription when comping a member that was not previously comped (#25735)', async function () {
+            const {service, setComplimentarySubscription} = createStripeEditService({currentStatus: 'free'});
+
+            await service.edit({comped: true}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.calledOnce, true);
+        });
+
+        // Case 3 — idempotent: already comped via Stripe, comped:true round-tripped.
+        it('does not create a duplicate when an already-comped member has an active complimentary subscription (#25735)', async function () {
+            const {service, setComplimentarySubscription} = createStripeEditService({currentStatus: 'comped', hasActiveCompSub: true});
+
+            await service.edit({comped: true, labels: [{name: 'VIP'}]}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
+        });
+
+        // Case 5 — uncomp still works (remove branch unaffected by the fix).
+        it('removes the complimentary subscription when uncomping a member (#25735)', async function () {
+            const {service, removeComplimentarySubscription, setComplimentarySubscription} = createStripeEditService({currentStatus: 'comped', hasActiveCompSub: true});
+
+            await service.edit({comped: false}, {id: 'member_123'});
+
+            assert.equal(removeComplimentarySubscription.calledOnce, true);
+            assert.equal(setComplimentarySubscription.called, false);
+        });
+
+        // Case 6 — ordinary edit (no comped field): no comp work and no extra prior-status read.
+        it('does not touch subscriptions or read prior status on an edit without comped (#25735)', async function () {
+            const {service, setComplimentarySubscription, removeComplimentarySubscription, get} = createStripeEditService({currentStatus: 'comped'});
+
+            await service.edit({name: 'New Name'}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
+            assert.equal(removeComplimentarySubscription.called, false);
+            assert.equal(get.called, false);
+        });
+
+        // Case 7 — Stripe not connected: comp branch never runs.
+        it('does not create a complimentary subscription when Stripe is not connected (#25735)', async function () {
+            const {service, setComplimentarySubscription, get} = createStripeEditService({currentStatus: 'free', configured: false});
+
+            await service.edit({comped: true}, {id: 'member_123'});
+
+            assert.equal(setComplimentarySubscription.called, false);
+            assert.equal(get.called, false);
+        });
     });
 
     describe('read', function () {

@@ -478,6 +478,19 @@ module.exports = class MemberBREADService {
     async edit(data, options) {
         delete data.last_seen_at;
 
+        // A member can be comped without a Stripe subscription (e.g. comped via the API or an
+        // import, where the subscription id is blank). In that case `comped: true` is still
+        // returned and re-sent on every subsequent edit, so we capture whether the member is
+        // *already* comped before updating. Otherwise an unrelated change (e.g. adding a label)
+        // that carries `comped: true` would wrongly create a new complimentary Stripe
+        // subscription. We only want to create/remove one on an actual transition.
+        // Ref: https://github.com/TryGhost/Ghost/issues/25735
+        let wasComped = false;
+        if (this.stripeService.configured && typeof data.comped === 'boolean' && options.id) {
+            const existingMember = await this.memberRepository.get({id: options.id}, {transacting: options.transacting});
+            wasComped = existingMember?.get('status') === 'comped';
+        }
+
         let model;
 
         try {
@@ -504,7 +517,7 @@ module.exports = class MemberBREADService {
             const hasCompedSubscription = !!model.related('stripeSubscriptions').find(sub => sub.get('plan_nickname') === 'Complimentary' && sub.get('status') === 'active');
 
             if (typeof data.comped === 'boolean') {
-                if (data.comped && !hasCompedSubscription) {
+                if (data.comped && !hasCompedSubscription && !wasComped) {
                     await this.memberRepository.setComplimentarySubscription(model, {
                         context: options.context,
                         transacting: options.transacting
