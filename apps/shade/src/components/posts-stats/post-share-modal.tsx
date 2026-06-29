@@ -110,33 +110,31 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
                         </div>
                     </div>
                 </ShareModal.Preview>
-                <div className="flex flex-col gap-5">
-                    <ShareModal.Footer>
-                        {emailOnly ? (
-                            <Button className="cursor-pointer" type="button" onClick={onClose}>
-                                Close
-                            </Button>
-                        ) : (
-                            <>
-                                <ShareModal.SocialLinks links={socialLinks} />
-                                <ShareModal.CopyButton
-                                    className="ml-0! grow cursor-pointer"
-                                    copyURL={postURL}
-                                    icon="link"
-                                />
-                            </>
-                        )}
-                    </ShareModal.Footer>
-                    {canShareAsGift && !emailOnly && (
-                        <p className="text-center text-sm text-muted-foreground">
-                            Want to share full access to this {giftAccessLabel} post?{' '}
-                            <Button className="h-auto p-0 align-baseline text-sm" type="button" variant="link" onClick={onShareAsGift}>
-                                Share as a gift
-                            </Button>
-                            .
-                        </p>
+                <ShareModal.Footer>
+                    {emailOnly ? (
+                        <Button className="cursor-pointer" type="button" onClick={onClose}>
+                            Close
+                        </Button>
+                    ) : (
+                        <>
+                            <ShareModal.SocialLinks links={socialLinks} />
+                            <ShareModal.CopyButton
+                                className="ml-0! grow cursor-pointer"
+                                copyURL={postURL}
+                                icon="link"
+                            />
+                        </>
                     )}
-                </div>
+                </ShareModal.Footer>
+                {canShareAsGift && !emailOnly && (
+                    <p className="text-center text-sm text-muted-foreground">
+                        Want to share full access to this {giftAccessLabel} post?{' '}
+                        <Button className="h-auto p-0 align-baseline text-sm" type="button" variant="link" onClick={onShareAsGift}>
+                            Share as a gift
+                        </Button>
+                        .
+                    </p>
+                )}
             </ShareModal.Content>
         </ShareModal.Root>
     );
