@@ -18,15 +18,6 @@ export default defineConfig((config) => {
             'process.env.NODE_ENV': JSON.stringify(config.mode),
             REACT_APP_VERSION: JSON.stringify(process.env.npm_package_version)
         },
-        preview: {
-            host: '0.0.0.0',
-            allowedHosts: true, // allows domain-name proxies to the preview server
-            port: 4175,
-            cors: true
-        },
-        server: {
-            port: 5368
-        },
         plugins: [
             cssInjectedByJsPlugin(),
             reactPlugin(),

@@ -16,11 +16,6 @@ export default defineConfig((config) => {
         define: {
             'process.env.NODE_ENV': JSON.stringify(config.mode)
         },
-        preview: {
-            host: '0.0.0.0',
-            allowedHosts: true, // allows domain-name proxies to the preview server
-            port: 4177
-        },
         plugins: [
             reactPlugin(),
             svgrPlugin()
