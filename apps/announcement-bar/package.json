@@ -19,9 +19,8 @@
     "react-dom": "catalog:react17"
   },
   "scripts": {
-    "dev": "pnpm build:watch",
+    "dev": "vite build --watch --mode development",
     "build": "vite build",
-    "build:watch": "vite build --watch --mode development",
     "test": "vitest run",
     "test:ci": "pnpm test --coverage",
     "test:unit": "pnpm test:ci",

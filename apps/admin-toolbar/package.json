@@ -19,8 +19,7 @@
   },
   "scripts": {
     "build": "pnpm exec vite build",
-    "build:watch": "pnpm exec vite build --watch --mode development",
-    "dev": "pnpm build:watch",
+    "dev": "pnpm exec vite build --watch --mode development",
     "lint": "pnpm exec eslint src test --cache",
     "test": "pnpm test:unit",
     "test:unit": "pnpm run build && pnpm exec vitest run",

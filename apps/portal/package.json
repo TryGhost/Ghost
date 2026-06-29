@@ -15,10 +15,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "pnpm build:watch",
+    "dev": "vite build --watch --mode development",
     "build": "vite build",
-    "build:watch": "vite build --watch --mode development",
-    "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ci": "pnpm test --coverage",
