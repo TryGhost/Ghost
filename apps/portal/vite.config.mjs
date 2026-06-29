@@ -1,6 +1,5 @@
 /* eslint-env node */
 import {resolve} from 'path';
-import fs from 'fs/promises';
 
 import {defineConfig} from 'vitest/config';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
@@ -19,40 +18,11 @@ export default defineConfig((config) => {
             'process.env.NODE_ENV': JSON.stringify(config.mode),
             REACT_APP_VERSION: JSON.stringify(process.env.npm_package_version)
         },
-        preview: {
-            host: '0.0.0.0',
-            allowedHosts: true, // allows domain-name proxies to the preview server
-            port: 4175,
-            cors: true
-        },
-        server: {
-            port: 5368
-        },
         plugins: [
             cssInjectedByJsPlugin(),
             reactPlugin(),
             svgrPlugin()
         ],
-        esbuild: {
-            loader: 'tsx',
-            include: [/src\/.*\.[jt]sx?$/, /__mocks__\/.*\.[jt]sx?$/, /test\/.*\.[jt]sx?$/],
-            exclude: []
-        },
-        optimizeDeps: {
-            esbuildOptions: {
-                plugins: [
-                    {
-                        name: 'load-js-files-as-jsx',
-                        setup(build) {
-                            build.onLoad({filter: /src\/.*\.js$/}, async args => ({
-                                loader: 'jsx',
-                                contents: await fs.readFile(args.path, 'utf8')
-                            }));
-                        }
-                    }
-                ]
-            }
-        },
         resolve: {
             dedupe: ['@tryghost/debug']
         },
@@ -64,7 +34,7 @@ export default defineConfig((config) => {
             sourcemap: true,
             cssCodeSplit: false,
             lib: {
-                entry: resolve(__dirname, 'src/index.js'),
+                entry: resolve(__dirname, 'src/index.jsx'),
                 formats: ['umd'],
                 name: pkg.name,
                 fileName: format => `${outputFileName}.min.js`
