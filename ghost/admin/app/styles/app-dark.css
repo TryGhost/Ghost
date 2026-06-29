@@ -1015,11 +1015,11 @@ input,
 }
 
 .gh-list-scrolling thead th:first-child {
-    background: linear-gradient(90deg, rgba(21,23,26,1) 90%, rgba(21,23,26,0) 100%);
+    background: linear-gradient(90deg, rgba(16,17,20,1) 90%, rgba(16,17,20,0) 100%);
 }
 
 .gh-list-scrolling tbody .gh-list-data:first-child {
-    background: linear-gradient(90deg, rgba(21,23,26,1) 90%, rgba(21,23,26,0) 100%);
+    background: linear-gradient(90deg, rgba(16,17,20,1) 90%, rgba(16,17,20,0) 100%);
 }
 
 .kg-settings-headerstyle-btn-group .gh-btn {
@@ -1128,7 +1128,11 @@ kbd {
 /* Post rows */
 
 .gh-posts-list-item-group:before {
-    background-color: oklch(0.204 0.007 258); /* #15171A */
+    background-color: oklch(0.204 0.004 258);
+}
+
+.gh-members-activity .gh-list-scrolling tbody tr:hover > .gh-list-data {
+    background: oklch(0.204 0.004 258);
 }
 
 .gh-posts-list-item .gh-content-entry-meta,
