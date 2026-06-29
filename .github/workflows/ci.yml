@@ -1869,6 +1869,25 @@ jobs:
         run: npm publish ghost-*.tgz --access public
 
   # --------------------------------------------------------------------------- #
+  # Trigger docker-library-ghost auto-update — runs after the npm package is
+  # published so the Docker library picks up the new release.
+  # --------------------------------------------------------------------------- #
+  trigger_docker_library_update:
+    needs: [publish_ghost]
+    name: Trigger docker-library-ghost update
+    runs-on: ubuntu-latest
+    if: |
+      startsWith(github.ref, 'refs/tags/v')
+      && github.repository == 'TryGhost/Ghost'
+    steps:
+      - name: Dispatch to TryGhost/docker-library-ghost
+        uses: peter-evans/repository-dispatch@28959ce8df70de7be546dd1250a005dd32156697 # v4
+        with:
+          token: ${{ secrets.CANARY_DOCKER_BUILD }}
+          repository: TryGhost/docker-library-ghost
+          event-type: ghost-version-publish
+
+  # --------------------------------------------------------------------------- #
   # Create GitHub Release — runs after successful npm publish
   # --------------------------------------------------------------------------- #
   create_github_release:
