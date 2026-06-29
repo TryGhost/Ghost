@@ -9,12 +9,17 @@
         format transform "{common_log}"
     }
 
+    # Vite dev server fans out hundreds of per-module fetches on every admin
+    # page load — skip those (and the internal auth-frame) so the access log
+    # stays useful during development.
+    log_skip /__admin-dev__*
+    log_skip /ghost/auth-frame/*
+
     # Ember live reload (runs on separate port 4201)
     # This handles both the script injection and WebSocket connections
     handle /ember-cli-live-reload.js {
         reverse_proxy {env.ADMIN_LIVE_RELOAD_SERVER} {
             header_up Host {http.reverse_proxy.upstream.hostport}
-            header_up X-Forwarded-Host {host}
             # Enable WebSocket support for live reload
             header_up Connection {>Connection}
             header_up Upgrade {>Upgrade}
@@ -26,7 +31,6 @@
         reverse_proxy {env.GHOST_BACKEND} {
             header_up Host {host}
             header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
 
             # Always tell Ghost requests are HTTPS to prevent redirects
             header_up X-Forwarded-Proto https
@@ -40,9 +44,7 @@
         rewrite * {re.analytics_match.2}
         reverse_proxy {env.ANALYTICS_PROXY_TARGET} {
             header_up Host {host}
-            header_up X-Forwarded-Host {host}
             header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
         }
     }
 
@@ -52,7 +54,6 @@
         reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
             header_up Host {host}
             header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto https
         }
     }
@@ -62,7 +63,6 @@
         reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
             header_up Host {host}
             header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto https
         }
     }
@@ -72,7 +72,6 @@
         reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
             header_up Host {host}
             header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto https
         }
     }
@@ -91,7 +90,6 @@
             uri strip_prefix /koenig-lexical
             reverse_proxy {env.LEXICAL_DEV_SERVER} {
                 header_up Host {http.reverse_proxy.upstream.hostport}
-                header_up X-Forwarded-Host {host}
                 # Fail quickly if dev server is down
                 fail_duration 1s
                 unhealthy_request_count 1
@@ -121,7 +119,6 @@
             rewrite * /__admin-dev__/assets{path}
             reverse_proxy {env.ADMIN_DEV_SERVER} {
                 header_up Host {http.reverse_proxy.upstream.hostport}
-                header_up X-Forwarded-Host {host}
             }
         }
     }
@@ -131,7 +128,6 @@
         reverse_proxy {env.GHOST_BACKEND} {
             header_up Host {host}
             header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto https
         }
     }
@@ -141,7 +137,6 @@
         reverse_proxy {env.GHOST_BACKEND} {
             header_up Host {host}
             header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto https
         }
     }
@@ -151,7 +146,6 @@
     # /ghost/* paths Ghost serves in production. Handles HMR WebSocket upgrade.
     handle /__admin-dev__* {
         reverse_proxy {env.ADMIN_DEV_SERVER} {
-            header_up X-Forwarded-Host {host}
             header_up Connection {>Connection}
             header_up Upgrade {>Upgrade}
         }
@@ -163,9 +157,7 @@
     @admin_html path /ghost /ghost/
     handle @admin_html {
         rewrite * /__admin-dev__/
-        reverse_proxy {env.ADMIN_DEV_SERVER} {
-            header_up X-Forwarded-Host {host}
-        }
+        reverse_proxy {env.ADMIN_DEV_SERVER}
     }
 
     # Everything else under /ghost/* (deep links, redirects, etc.) goes to
@@ -174,7 +166,6 @@
         reverse_proxy {env.GHOST_BACKEND} {
             header_up Host {host}
             header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
             header_up X-Forwarded-Proto https
         }
     }
@@ -184,7 +175,6 @@
         reverse_proxy {env.GHOST_BACKEND} {
             header_up Host {host}
             header_up X-Real-IP {remote_host}
-            header_up X-Forwarded-For {remote_host}
 
             # Always tell Ghost requests are HTTPS to prevent redirects
             header_up X-Forwarded-Proto https
