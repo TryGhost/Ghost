@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/admin-toolbar",
   "type": "module",
-  "version": "0.1.7",
+  "version": "0.1.8",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -20,7 +20,7 @@
   "scripts": {
     "build": "pnpm exec vite build",
     "build:watch": "pnpm exec vite build --watch --mode development",
-    "dev": "mkdir -p umd && concurrently --kill-others --names preview,build \"pnpm exec vite preview -l silent\" \"pnpm build:watch\"",
+    "dev": "concurrently --kill-others --names preview,build \"pnpm exec vite preview -l silent\" \"pnpm build:watch\"",
     "lint": "pnpm exec eslint src test --cache",
     "test": "pnpm test:unit",
     "test:unit": "pnpm run build && pnpm exec vitest run",
