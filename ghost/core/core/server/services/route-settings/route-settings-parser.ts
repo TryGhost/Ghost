@@ -32,7 +32,7 @@ export type RouteData = DataShortForm | Record<string, DataEntry>;
 
 interface RouteBase {
     path: string;
-    template?: string[];
+    templates?: string[];
     data?: RouteData;
 }
 
@@ -54,7 +54,7 @@ export type Route = ChannelRoute | TemplateRoute;
 export interface CollectionConfig {
     path: string;
     permalink: string;
-    template?: string[];
+    templates?: string[];
     filter?: string;
     order?: string;
     limit?: number | 'all';
