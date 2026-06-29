@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/comments-ui",
   "type": "module",
-  "version": "1.5.21",
+  "version": "1.5.22",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
