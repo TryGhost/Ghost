@@ -14,6 +14,21 @@ const crypto = require('crypto');
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
 const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
 
+// metascraper-amazon's built-in URL test is a substring regex that misfires on
+// any host ending in a letter followed by `.co/` (e.g. `rangemedia.co`), causing
+// it to hardcode `publisher: 'Amazon'`. Gate the plugin on a real hostname check.
+const AMAZON_HOSTNAME_RE = /(?:^|\.)(?:amazon\.|amzn\.|a\.co$)/;
+
+const isAmazonUrl = (url) => {
+    let hostname;
+    try {
+        hostname = new URL(url).hostname.toLowerCase();
+    } catch (e) {
+        return false;
+    }
+    return AMAZON_HOSTNAME_RE.test(hostname);
+};
+
 const messages = {
     noUrlProvided: 'No url provided.',
     insufficientMetadata: 'URL contains insufficient metadata.',
@@ -307,8 +322,7 @@ class OEmbedService {
             return appleTouchIcon || svgIcon || pickDefault(sizes);
         };
 
-        const metascraper = require('metascraper')([
-            require('metascraper-amazon')(),
+        const scrapers = [
             require('metascraper-url')(),
             require('metascraper-title')(),
             require('metascraper-description')(),
@@ -320,7 +334,13 @@ class OEmbedService {
                 pickFn
             }),
             require('metascraper-logo')()
-        ]);
+        ];
+
+        if (isAmazonUrl(url)) {
+            scrapers.unshift(require('metascraper-amazon')());
+        }
+
+        const metascraper = require('metascraper')(scrapers);
 
         let scraperResponse;
 
