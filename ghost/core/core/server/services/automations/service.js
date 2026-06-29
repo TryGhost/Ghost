@@ -7,6 +7,7 @@ const StartAutomationsPollEvent = require('./events/start-automations-poll-event
 const {poll} = require('./poll');
 const {welcomeEmailAutomationPoll} = require('./welcome-email-automation-poll');
 const automationsApi = require('./automations-api');
+const {getSchedulerIdempotencyKey} = require('./get-scheduler-idempotency-key');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
 /** @import DomainEvents from '@tryghost/domain-events' */
 
@@ -18,6 +19,7 @@ const memberWelcomeEmailService = require('../member-welcome-emails/service');
  *     url: string;
  *     extra: {
  *         httpMethod: string;
+ *         idempotencyKey?: string;
  *     };
  * }) => void} schedule
  * @prop {(rescheduler: {rescheduleAll: () => unknown}) => void} register
@@ -55,7 +57,14 @@ class AutomationsService {
                 const signedAdminToken = getSignedAdminToken({publishedAt: date.toISOString(), apiUrl, key});
                 const url = new URL(urlUtils.urlJoin(apiUrl, 'automations', 'poll'));
                 url.searchParams.set('token', signedAdminToken);
-                schedulerAdapter.schedule({time: date.getTime(), url: url.toString(), extra: {httpMethod: 'PUT'}});
+                schedulerAdapter.schedule({
+                    time: date.getTime(),
+                    url: url.toString(),
+                    extra: {
+                        httpMethod: 'PUT',
+                        idempotencyKey: getSchedulerIdempotencyKey(date, url)
+                    }
+                });
             } catch (err) {
                 logging.error({event: {name: 'automations.enqueue-poll.error'}, err, at: date.toISOString()}, 'Failed to enqueue automations poll');
             }
