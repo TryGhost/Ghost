@@ -184,7 +184,8 @@ describe('automations service', function () {
                         new URL(value).searchParams.has('token')
                     )),
                     extra: {
-                        httpMethod: 'PUT'
+                        httpMethod: 'PUT',
+                        idempotencyKey: sinon.match.string
                     }
                 })
             );
