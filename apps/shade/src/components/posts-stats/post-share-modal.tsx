@@ -98,7 +98,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
                     <div className="p-6 pt-5">
                         <H3>{postTitle}</H3>
                         {postExcerpt && (
-                            <p>{postExcerpt}</p>
+                            <p className="line-clamp-2">{postExcerpt}</p>
                         )}
                         <div className="mt-2 flex items-start gap-2">
                             <div className="mt-0.5 size-4 bg-cover bg-center" style={{backgroundImage: `url(${faviconURL})`}}></div>
