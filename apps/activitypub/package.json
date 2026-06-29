@@ -84,10 +84,7 @@
           "test:acceptance"
         ]
       }
-    },
-    "tags": [
-      "public-app"
-    ]
+    }
   },
   "dependencies": {
     "@hookform/resolvers": "5.4.0",
