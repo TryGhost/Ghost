@@ -194,12 +194,12 @@ const Search: React.FC<SearchProps> = ({onOpenChange, query, setQuery}) => {
 
     return (
         <>
-            <div className='sticky -top-6 z-30 -mt-6 flex h-[72px] shrink-0 items-center gap-2 bg-white pt-3 pb-2 before:pointer-events-none before:absolute before:-inset-x-6 before:bottom-0 before:h-0 before:border-b before:border-b-gray-200 before:content-[""] dark:bg-(--color-popover) dark:before:border-b-gray-950'>
+            <div className='sticky -top-6 z-30 -mt-6 flex h-[72px] shrink-0 items-center gap-2 bg-white pt-3 pb-2 before:pointer-events-none before:absolute before:-inset-x-6 before:bottom-0 before:h-0 before:border-b before:border-b-gray-200 before:content-[""] dark:bg-surface-elevated-2 dark:before:border-b-gray-950'>
                 <LucideIcon.Search className='text-gray-600' size={18} strokeWidth={1.5} />
                 <Input
                     ref={queryInputRef}
                     autoComplete='off'
-                    className='flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 text-lg !shadow-none !outline-none focus-visible:!border-0 focus-visible:bg-transparent focus-visible:!shadow-none focus-visible:!outline-0 dark:bg-(--color-popover) dark:text-white dark:placeholder:text-gray-800'
+                    className='flex h-10 w-full items-center rounded-lg border-0 bg-transparent px-0 py-1.5 text-lg !shadow-none !outline-none focus-visible:!border-0 focus-visible:bg-transparent focus-visible:!shadow-none focus-visible:!ring-0 focus-visible:!outline-0 dark:bg-surface-elevated-2 dark:text-white dark:placeholder:text-gray-800'
                     placeholder='Search by name, handle, or URL...'
                     title="Search"
                     type='text'
