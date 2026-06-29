@@ -18,11 +18,12 @@ pnpm dev
 
 This starts all frontend apps (including Signup Form.)
 
-### Running the development version only
+### Running the standalone demo page
 
-Run `pnpm dev` (in package folder) to start the development server to test/develop the form standalone. 
-- This will generate a demo site on http://localhost:6173
-- This will build and watch the production build and host it on http://localhost:6174/signup-form.min.js (different port!)
+Run `pnpm dev:standalone` (in this package folder) to start the standalone development server with HMR for testing/developing the form in isolation.
+- This serves the demo page at http://localhost:6173
+
+`pnpm dev` on its own (in this package folder) only builds `umd/signup-form.min.js` and watches for changes — it does not bind a port. The UMD is served by Caddy at http://localhost:2368/ghost/assets/signup-form/signup-form.min.js when you run `pnpm dev` from the monorepo root.
 
 ### Using the UMD build during development
 
