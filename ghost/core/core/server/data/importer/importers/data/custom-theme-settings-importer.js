@@ -54,7 +54,12 @@ class CustomThemeSettingsImporter extends BaseImporter {
 
         await sequence(ops);
 
-        const theme = await models.Settings.findOne({key: 'active_theme'});
+        // Pass `options` so this lookup joins the import transaction. Without it the
+        // query asks the pool for a second connection, which deadlocks under
+        // better-sqlite3 (single-connection pool) since the transaction holds the
+        // only one. (The old fire-and-forget `.then()` sidestepped both this and the
+        // null deref by running after the transaction had already released.)
+        const theme = await models.Settings.findOne({key: 'active_theme'}, options);
         const currentTheme = theme && theme.get('value');
         if (currentTheme && this.dataToImport.some(themeSetting => themeSetting.theme === currentTheme)) {
             activate(currentTheme);
