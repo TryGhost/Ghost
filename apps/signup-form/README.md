@@ -29,7 +29,7 @@ Run `pnpm dev:standalone` (in this package folder) to start the standalone devel
 
 Vite by default only supports HRM with an ESM output. But when loading a script on a site as a ESM module (`<script type="module" src="...">`), you don't have access to `document.currentScript` inside the script, which is required to determine the location to inject the iframe. In development mode we use a workaround for this to make the ESM HMR work. But this workaround is not suitable for production.
 
-To test the real production behaviour without this hack, you can use http://localhost:6173/preview.html. This HTML page will use `http://localhost:6174/signup-form.min.js` directly. 
+To test the real production behaviour without this hack, you can use http://localhost:6173/preview.html (served by `pnpm dev:standalone`). The page loads the production UMD via `<script src="http://localhost:2368/ghost/assets/signup-form/signup-form.min.js">`, which is served by Caddy when `pnpm dev` is also running from the monorepo root. Both processes need to be up at the same time.
 
 ## Develop
 
