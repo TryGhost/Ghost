@@ -3,9 +3,20 @@ import {resolve} from 'path';
 
 import {defineConfig} from 'vite';
 
+// `vite preview` aborts when its outDir is missing — a UX nudge for the
+// "did you forget to build?" case. Our dev script runs preview alongside
+// `build:watch`, so the dir is missing on the first ~1s of a fresh clone.
+// Defining configurePreviewServer is Vite's documented opt-out from that
+// guard; the underlying sirv server already 404s for missing files.
+const tolerateMissingOutDir = () => ({
+    name: 'tolerate-missing-outdir',
+    configurePreviewServer() {}
+});
+
 export default defineConfig(({mode}) => ({
     logLevel: process.env.CI ? 'info' : 'warn',
     clearScreen: false,
+    plugins: [tolerateMissingOutDir()],
     define: {
         'process.env.NODE_ENV': JSON.stringify(process.env.NODE_ENV || mode)
     },
