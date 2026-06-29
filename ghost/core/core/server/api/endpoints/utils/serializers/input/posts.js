@@ -81,6 +81,7 @@ function forceUrlRelationsWhenLazy(frame) {
         if (relations.length) {
             frame.options.withRelated = _.union(frame.options.withRelated || [], relations);
         }
+        url.forceUrlColumnsWhenLazy(frame, 'posts');
     }
 }
 
