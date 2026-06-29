@@ -2754,7 +2754,7 @@ importers:
         version: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7))
       bookshelf-relations:
         specifier: 2.8.0
-        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))))
+        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)))
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -3073,7 +3073,7 @@ importers:
         version: 2.1.0
       '@types/bookshelf':
         specifier: 1.2.9
-        version: 1.2.9(mysql2@3.22.5(@types/node@22.19.21))
+        version: 1.2.9(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
       '@types/common-tags':
         specifier: 1.8.4
         version: 1.8.4
@@ -29539,12 +29539,12 @@ snapshots:
       '@types/connect': 3.4.38
       '@types/node': 26.0.0
 
-  '@types/bookshelf@1.2.9(mysql2@3.22.5(@types/node@22.19.21))':
+  '@types/bookshelf@1.2.9(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)':
     dependencies:
       '@types/bluebird': 3.5.42
       '@types/create-error': 0.3.33
       '@types/lodash': 4.17.24
-      knex: 0.21.21(mysql2@3.22.5(@types/node@22.19.21))
+      knex: 0.21.21(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
     transitivePeerDependencies:
       - mssql
       - mysql
@@ -40079,29 +40079,7 @@ snapshots:
       - supports-color
       - tedious
 
-  knex@0.20.15(mysql2@3.22.5(@types/node@22.19.21))(supports-color@5.5.0):
-    dependencies:
-      colorette: 1.1.0
-      commander: 4.1.1
-      debug: 4.4.3(supports-color@5.5.0)
-      esm: 3.2.25
-      getopts: 2.2.5
-      inherits: 2.0.4
-      interpret: 2.2.0
-      liftoff: 3.1.0
-      lodash: 4.18.1
-      mkdirp: 0.5.6
-      pg-connection-string: 2.1.0
-      tarn: 2.0.0
-      tildify: 2.0.0
-      uuid: 7.0.3
-      v8flags: 3.2.0
-    optionalDependencies:
-      mysql2: 3.22.5(@types/node@22.19.21)
-    transitivePeerDependencies:
-      - supports-color
-
-  knex@0.21.21(mysql2@3.22.5(@types/node@22.19.21)):
+  knex@0.21.21(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7):
     dependencies:
       colorette: 1.2.1
       commander: 6.2.1
@@ -40117,6 +40095,7 @@ snapshots:
       v8flags: 3.2.0
     optionalDependencies:
       mysql2: 3.22.5(@types/node@22.19.21)
+      sqlite3: 5.1.7
     transitivePeerDependencies:
       - supports-color
 
@@ -41677,13 +41656,6 @@ snapshots:
     optional: true
 
   natural-compare@1.4.0: {}
-
-  nconf@0.12.1:
-    dependencies:
-      async: 3.2.6
-      ini: 2.0.0
-      secure-keys: 1.0.0
-      yargs: 16.2.2
 
   nconf@0.13.0:
     dependencies:
