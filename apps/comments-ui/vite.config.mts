@@ -34,7 +34,7 @@ export default defineConfig((config) => {
             outDir: resolve(__dirname, 'umd'),
             emptyOutDir: true,
             minify: config.mode === 'production',
-            sourcemap: true,
+            sourcemap: false,
             cssCodeSplit: true,
             lib: {
                 entry: resolve(__dirname, 'src/index.tsx'),
