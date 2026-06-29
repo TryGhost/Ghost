@@ -16,17 +16,20 @@ const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
 
 // metascraper-amazon's built-in URL test is a substring regex that misfires on
 // any host ending in a letter followed by `.co/` (e.g. `rangemedia.co`), causing
-// it to hardcode `publisher: 'Amazon'`. Gate the plugin on a real hostname check.
-const AMAZON_HOSTNAME_RE = /(?:^|\.)(?:amazon\.|amzn\.|a\.co$)/;
+// it to hardcode `publisher: 'Amazon'`. Gate the plugin on the registrable
+// domain (PSL-aware via tldts) so subdomain spoofs like `amazon.evil.com` or
+// `amazon.com.evil.org` are rejected too.
+const {getDomain} = require('tldts');
 
 const isAmazonUrl = (url) => {
-    let hostname;
-    try {
-        hostname = new URL(url).hostname.toLowerCase();
-    } catch (e) {
+    const domain = getDomain(url);
+    if (!domain) {
         return false;
     }
-    return AMAZON_HOSTNAME_RE.test(hostname);
+    if (domain === 'a.co') {
+        return true;
+    }
+    return /^(?:amazon|amzn)\./.test(domain);
 };
 
 const messages = {

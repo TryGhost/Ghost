@@ -232,6 +232,20 @@ describe('oembed-service', function () {
             assert.equal(response.metadata.publisher, 'RANGE Media');
         });
 
+        it('does not apply Amazon rules to subdomain spoofs (amazon.evil.com)', async function () {
+            nock('https://amazon.evil.com')
+                .get('/x')
+                .query(true)
+                .reply(200, `<html><head>
+                    <title>Evil Page</title>
+                    <meta property="og:site_name" content="Evil Site">
+                </head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://amazon.evil.com/x', 'bookmark');
+
+            assert.equal(response.metadata.publisher, 'Evil Site');
+        });
+
         it('should return a bookmark response when the oembed endpoint returns a link type', async function () {
             nock('https://www.example.com')
                 .get('/')
