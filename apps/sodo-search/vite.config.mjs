@@ -27,7 +27,7 @@ export default defineConfig((config) => {
             reportCompressedSize: false,
             emptyOutDir: true,
             minify: config.mode === 'production',
-            sourcemap: true,
+            sourcemap: false,
             cssCodeSplit: false,
             lib: {
                 entry: resolve(__dirname, 'src/index.jsx'),

@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/announcement-bar",
   "type": "module",
-  "version": "1.1.26",
+  "version": "1.1.27",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
