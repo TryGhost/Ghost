@@ -1,6 +1,7 @@
 import type {AutomationStepToRun, AutomationsRepository} from './automations-repository';
 import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
+import ObjectId from 'bson-objectid';
 import {MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES, MEMBER_WELCOME_EMAIL_SLUGS} from '../member-welcome-emails/constants';
 import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
 // @ts-expect-error Models currently lack type definitions.
@@ -21,8 +22,17 @@ type MemberWelcomeEmailService = {
                 uuid: string;
             };
             memberStatus: 'free' | 'paid';
+            analytics?: {
+                automatedEmailRecipientId: string;
+                automationActionId: string;
+                automationActionRevisionId: string;
+            };
         }) => Promise<unknown>;
     };
+};
+
+type EmailAnalyticsJobs = {
+    scheduleRecurringJobs: (skipEmailCheck?: boolean) => Promise<unknown>;
 };
 
 type MemberModel = {
@@ -41,6 +51,7 @@ type PollOptions = {
         'markStepTerminal' |
         'retryStep'
     >;
+    emailAnalyticsJobs: EmailAnalyticsJobs;
     enqueueAnotherPollAt: (date: Readonly<Date>) => unknown;
     memberWelcomeEmailService: MemberWelcomeEmailService;
 };
@@ -68,6 +79,22 @@ const markMaxAttemptsExceeded = async (automationsApi: PollOptions['automationsA
             step_id: step.id
         }
     }, `[AUTOMATIONS] Step ${step.id} exceeded max attempts`);
+};
+
+const getProviderId = (response: unknown): string | null => {
+    if (!response || typeof response !== 'object') {
+        return null;
+    }
+
+    const mailResponse = response as {messageId?: unknown; id?: unknown};
+    if (typeof mailResponse.messageId === 'string') {
+        return mailResponse.messageId.replace(/^<|>$/g, '');
+    }
+    if (typeof mailResponse.id === 'string') {
+        return mailResponse.id.replace(/^<|>$/g, '');
+    }
+
+    return null;
 };
 
 const handleStepExecutionFailure = async ({
@@ -102,9 +129,10 @@ const handleStepExecutionFailure = async ({
 
 const processStep = async ({
     automationsApi,
+    emailAnalyticsJobs,
     memberWelcomeEmailService,
     step
-}: Readonly<Pick<PollOptions, 'automationsApi' | 'memberWelcomeEmailService'> & {
+}: Readonly<Pick<PollOptions, 'automationsApi' | 'emailAnalyticsJobs' | 'memberWelcomeEmailService'> & {
     step: AutomationStepToRun;
 }>): Promise<Date | null> => {
     if (step.automation_status !== 'active') {
@@ -176,36 +204,96 @@ const processStep = async ({
                 break;
             }
             memberWelcomeEmailService.init();
-            await memberWelcomeEmailService.api.sendAutomationEmail({
-                email: {
-                    designSettingId: step.email_design_setting_id,
-                    lexical: step.email_lexical,
-                    subject: step.email_subject
-                },
-                member: {
-                    email: member.get('email'),
-                    name: member.get('name'),
-                    uuid: member.get('uuid')
-                },
-                memberStatus
-            });
-            try {
-                await AutomatedEmailRecipient.add({
-                    member_id: step.member_id,
-                    member_uuid: member.get('uuid'),
-                    member_email: member.get('email'),
-                    member_name: member.get('name'),
-                    automation_action_revision_id: step.automation_action_revision_id
-                });
-            } catch (err) {
-                logging.error({
-                    err,
-                    system: {
-                        event: 'automations.poll.recipient_persistence_failed',
+            {
+                const automatedEmailRecipientId = ObjectId().toHexString();
+                let automatedEmailRecipient;
+
+                try {
+                    automatedEmailRecipient = await AutomatedEmailRecipient.add({
+                        id: automatedEmailRecipientId,
                         member_id: step.member_id,
-                        step_id: step.id
+                        member_uuid: member.get('uuid'),
+                        member_email: member.get('email'),
+                        member_name: member.get('name'),
+                        automation_action_id: step.action_id,
+                        automation_action_revision_id: step.automation_action_revision_id,
+                        automation_run_step_id: step.id
+                    });
+                } catch (err) {
+                    logging.error({
+                        err,
+                        system: {
+                            event: 'automations.poll.recipient_persistence_failed',
+                            member_id: step.member_id,
+                            step_id: step.id
+                        }
+                    }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
+                    throw err;
+                }
+
+                let response;
+                try {
+                    response = await memberWelcomeEmailService.api.sendAutomationEmail({
+                        email: {
+                            designSettingId: step.email_design_setting_id,
+                            lexical: step.email_lexical,
+                            subject: step.email_subject
+                        },
+                        member: {
+                            email: member.get('email'),
+                            name: member.get('name'),
+                            uuid: member.get('uuid')
+                        },
+                        memberStatus,
+                        analytics: {
+                            automatedEmailRecipientId,
+                            automationActionId: step.action_id,
+                            automationActionRevisionId: step.automation_action_revision_id
+                        }
+                    });
+                } catch (err) {
+                    try {
+                        await automatedEmailRecipient.save({
+                            failed_at: new Date()
+                        }, {patch: true, autoRefresh: false});
+                    } catch (saveErr) {
+                        logging.error({
+                            err: saveErr,
+                            system: {
+                                event: 'automations.poll.send_failure_persistence_failed',
+                                step_id: step.id
+                            }
+                        }, `[AUTOMATIONS] Failed to record send failure for step ${step.id}`);
                     }
-                }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
+                    throw err;
+                }
+
+                try {
+                    await automatedEmailRecipient.save({
+                        sent_at: new Date(),
+                        provider_id: getProviderId(response)
+                    }, {patch: true, autoRefresh: false});
+                } catch (err) {
+                    logging.error({
+                        err,
+                        system: {
+                            event: 'automations.poll.sent_persistence_failed',
+                            step_id: step.id
+                        }
+                    }, `[AUTOMATIONS] Failed to record sent email for step ${step.id}`);
+                }
+
+                try {
+                    await emailAnalyticsJobs.scheduleRecurringJobs(true);
+                } catch (err) {
+                    logging.error({
+                        err,
+                        system: {
+                            event: 'automations.poll.email_analytics_schedule_failed',
+                            step_id: step.id
+                        }
+                    }, `[AUTOMATIONS] Failed to schedule email analytics after step ${step.id}`);
+                }
             }
             break;
         default: {
@@ -240,6 +328,7 @@ const dateMin = (a: Date | null, b: Date | null): Date | null => {
 
 export const poll = async ({
     automationsApi,
+    emailAnalyticsJobs,
     enqueueAnotherPollAt,
     memberWelcomeEmailService
 }: Readonly<PollOptions>): Promise<void> => {
@@ -262,6 +351,7 @@ export const poll = async ({
         try {
             const stepNextPollAt = await processStep({
                 automationsApi,
+                emailAnalyticsJobs,
                 memberWelcomeEmailService,
                 step
             });

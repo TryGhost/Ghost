@@ -88,6 +88,51 @@ describe('Email Event Storage', function () {
         sinon.assert.calledOnce(eventHandler.recordEventStored);
     });
 
+    it('Handles automation email delivered events', async function () {
+        const db = createDb();
+        const eventHandler = new EmailEventStorage({db});
+        sinon.stub(eventHandler, 'recordEventStored').resolves();
+
+        await eventHandler.handleAutomationDelivered({
+            automatedEmailRecipientId: 'automated-email-recipient-id',
+            timestamp: new Date(0)
+        });
+
+        sinon.assert.calledOnce(db.update);
+        assert(!!db.update.firstCall.args[0].delivered_at);
+        sinon.assert.calledOnceWithExactly(eventHandler.recordEventStored, 'automation-delivered', undefined);
+    });
+
+    it('Handles automation email opened events', async function () {
+        const db = createDb();
+        const eventHandler = new EmailEventStorage({db});
+        sinon.stub(eventHandler, 'recordEventStored').resolves();
+
+        await eventHandler.handleAutomationOpened({
+            automatedEmailRecipientId: 'automated-email-recipient-id',
+            timestamp: new Date(0)
+        });
+
+        sinon.assert.calledOnce(db.update);
+        assert(!!db.update.firstCall.args[0].opened_at);
+        sinon.assert.calledOnceWithExactly(eventHandler.recordEventStored, 'automation-opened', undefined);
+    });
+
+    it('Handles automation email failed events', async function () {
+        const db = createDb();
+        const eventHandler = new EmailEventStorage({db});
+        sinon.stub(eventHandler, 'recordEventStored').resolves();
+
+        await eventHandler.handleAutomationFailed({
+            automatedEmailRecipientId: 'automated-email-recipient-id',
+            timestamp: new Date(0)
+        });
+
+        sinon.assert.calledOnce(db.update);
+        assert(!!db.update.firstCall.args[0].failed_at);
+        sinon.assert.calledOnceWithExactly(eventHandler.recordEventStored, 'automation-failed', undefined);
+    });
+
     it('Handles email permanent bounce events with update', async function () {
         const event = EmailBouncedEvent.create({
             email: 'example@example.com',

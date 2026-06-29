@@ -36,8 +36,13 @@ type MemberWelcomeEmailServiceStubs = PollOptions['memberWelcomeEmailService'] &
     };
 };
 
+type EmailAnalyticsJobsStubs = PollOptions['emailAnalyticsJobs'] & {
+    scheduleRecurringJobs: StubbedFunction<PollOptions['emailAnalyticsJobs']['scheduleRecurringJobs']>;
+};
+
 type PollOptionsStubs = PollOptions & {
     automationsApi: AutomationsApiStubs;
+    emailAnalyticsJobs: EmailAnalyticsJobsStubs;
     enqueueAnotherPollAt: StubbedFunction<PollOptions['enqueueAnotherPollAt']>;
     memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
 };
@@ -120,6 +125,8 @@ function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
 describe('automations poll', function () {
     let automationsApi: AutomationsApiStubs;
     let automatedEmailRecipientAdd: sinon.SinonStub<Parameters<AutomatedEmailRecipientAdd>, ReturnType<AutomatedEmailRecipientAdd>>;
+    let automatedEmailRecipientSave: sinon.SinonStub;
+    let emailAnalyticsJobs: EmailAnalyticsJobsStubs;
     let memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
     let options: PollOptionsStubs;
 
@@ -137,18 +144,28 @@ describe('automations poll', function () {
             init: fake<PollOptions['memberWelcomeEmailService']['init']>(),
             api: {
                 loadMemberWelcomeEmails: sinon.stub<[], Promise<void>>().resolves(),
-                sendAutomationEmail: fake<PollOptions['memberWelcomeEmailService']['api']['sendAutomationEmail']>().resolves()
+                sendAutomationEmail: fake<PollOptions['memberWelcomeEmailService']['api']['sendAutomationEmail']>().resolves({
+                    messageId: '<provider-id>'
+                })
             }
+        };
+
+        emailAnalyticsJobs = {
+            scheduleRecurringJobs: fake<PollOptions['emailAnalyticsJobs']['scheduleRecurringJobs']>().resolves(true)
         };
 
         options = {
             automationsApi,
+            emailAnalyticsJobs,
             enqueueAnotherPollAt: fake<PollOptions['enqueueAnotherPollAt']>(),
             memberWelcomeEmailService
         };
 
         sinon.stub(Member, 'findOne').resolves(buildMember());
-        automatedEmailRecipientAdd = sinon.stub(AutomatedEmailRecipient, 'add').resolves();
+        automatedEmailRecipientSave = sinon.stub().resolves();
+        automatedEmailRecipientAdd = sinon.stub(AutomatedEmailRecipient, 'add').resolves({
+            save: automatedEmailRecipientSave
+        });
     });
 
     afterEach(function () {
@@ -217,6 +234,7 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.notCalled(emailAnalyticsJobs.scheduleRecurringJobs);
         sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextStepReadyAt);
     });
@@ -228,6 +246,7 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.notCalled(emailAnalyticsJobs.scheduleRecurringJobs);
         sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'automation disabled');
     });
 
@@ -239,6 +258,7 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.notCalled(emailAnalyticsJobs.scheduleRecurringJobs);
         sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member unsubscribed');
     });
 
@@ -250,6 +270,7 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.notCalled(emailAnalyticsJobs.scheduleRecurringJobs);
         sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'member changed status');
     });
 
@@ -265,6 +286,7 @@ describe('automations poll', function () {
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
         sinon.assert.notCalled(automatedEmailRecipientAdd);
+        sinon.assert.notCalled(emailAnalyticsJobs.scheduleRecurringJobs);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
@@ -282,6 +304,7 @@ describe('automations poll', function () {
 
         sinon.assert.calledOnce(memberWelcomeEmailService.init);
         sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.calledOnceWithExactly(emailAnalyticsJobs.scheduleRecurringJobs, true);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
     });
 
@@ -300,6 +323,7 @@ describe('automations poll', function () {
         sinon.assert.notCalled(memberWelcomeEmailService.init);
         sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
         sinon.assert.notCalled(automatedEmailRecipientAdd);
+        sinon.assert.notCalled(emailAnalyticsJobs.scheduleRecurringJobs);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
@@ -317,6 +341,7 @@ describe('automations poll', function () {
         sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
             memberStatus: 'paid'
         }));
+        sinon.assert.calledOnceWithExactly(emailAnalyticsJobs.scheduleRecurringJobs, true);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
     });
 
@@ -337,6 +362,7 @@ describe('automations poll', function () {
             },
             memberStatus: 'free'
         }));
+        sinon.assert.calledOnceWithExactly(emailAnalyticsJobs.scheduleRecurringJobs, true);
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, nextReadyAt);
     });
 
@@ -348,31 +374,85 @@ describe('automations poll', function () {
 
         await poll(options);
 
-        sinon.assert.calledOnceWithExactly(automatedEmailRecipientAdd, {
+        sinon.assert.calledOnceWithExactly(automatedEmailRecipientAdd, sinon.match({
+            id: sinon.match.string,
             member_id: step.member_id,
             member_uuid: '00000000-0000-4000-8000-000000000001',
             member_email: 'member@example.com',
             member_name: 'Test Member',
-            automation_action_revision_id: 'revision-id'
+            automation_action_id: step.action_id,
+            automation_action_revision_id: 'revision-id',
+            automation_run_step_id: step.id
+        }));
+
+        const automatedEmailRecipientId = automatedEmailRecipientAdd.firstCall.args[0].id;
+        sinon.assert.calledOnceWithExactly(memberWelcomeEmailService.api.sendAutomationEmail, sinon.match({
+            analytics: {
+                automatedEmailRecipientId,
+                automationActionId: step.action_id,
+                automationActionRevisionId: 'revision-id'
+            }
+        }));
+        sinon.assert.calledOnceWithExactly(automatedEmailRecipientSave, sinon.match({
+            provider_id: 'provider-id',
+            sent_at: sinon.match.date
+        }), {
+            patch: true,
+            autoRefresh: false
         });
+        sinon.assert.calledOnceWithExactly(emailAnalyticsJobs.scheduleRecurringJobs, true);
         sinon.assert.callOrder(
-            memberWelcomeEmailService.api.sendAutomationEmail,
             automatedEmailRecipientAdd,
+            memberWelcomeEmailService.api.sendAutomationEmail,
+            automatedEmailRecipientSave,
+            emailAnalyticsJobs.scheduleRecurringJobs,
             automationsApi.finishStepAndEnqueueNext
         );
     });
 
-    it('does not retry the email send when recording the automated email recipient fails', async function () {
+    it('finishes the step when scheduling email analytics after sending fails', async function () {
         const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        emailAnalyticsJobs.scheduleRecurringJobs.rejects(new Error('schedule failed'));
+
+        await poll(options);
+
+        sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.calledOnceWithExactly(emailAnalyticsJobs.scheduleRecurringJobs, true);
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.retryStep);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+    });
+
+    it('finishes the step when recording sent email state fails after sending', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        automatedEmailRecipientSave.rejects(new Error('sent persistence failed'));
+
+        await poll(options);
+
+        sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.calledOnceWithExactly(emailAnalyticsJobs.scheduleRecurringJobs, true);
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
+        sinon.assert.notCalled(automationsApi.retryStep);
+        sinon.assert.notCalled(automationsApi.markStepTerminal);
+    });
+
+    it('retries without sending when recording the automated email recipient fails', async function () {
+        const step = buildEmailStep();
+        const pollStart = Date.now();
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
         automatedEmailRecipientAdd.rejects(new Error('recipient persistence failed'));
 
         await poll(options);
 
-        sinon.assert.calledOnce(memberWelcomeEmailService.api.sendAutomationEmail);
+        const retryAt = automationsApi.retryStep.firstCall.args[1];
+        assert.ok(Math.abs(retryAt.getTime() - (pollStart + RETRY_DELAY_MS)) < 2000);
         sinon.assert.calledOnce(automatedEmailRecipientAdd);
-        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, step);
-        sinon.assert.notCalled(automationsApi.retryStep);
+        sinon.assert.notCalled(memberWelcomeEmailService.api.sendAutomationEmail);
+        sinon.assert.notCalled(emailAnalyticsJobs.scheduleRecurringJobs);
+        sinon.assert.notCalled(automationsApi.finishStepAndEnqueueNext);
+        sinon.assert.calledOnceWithExactly(automationsApi.retryStep, step, retryAt);
         sinon.assert.notCalled(automationsApi.markStepTerminal);
     });
 
@@ -399,6 +479,13 @@ describe('automations poll', function () {
         const retryAt = automationsApi.retryStep.firstCall.args[1];
         assert.ok(Math.abs(retryAt.getTime() - (pollStart + RETRY_DELAY_MS)) < 2000);
         sinon.assert.calledOnceWithExactly(automationsApi.retryStep, step, retryAt);
+        sinon.assert.calledWithExactly(automatedEmailRecipientSave, sinon.match({
+            failed_at: sinon.match.date
+        }), {
+            patch: true,
+            autoRefresh: false
+        });
+        sinon.assert.notCalled(emailAnalyticsJobs.scheduleRecurringJobs);
         sinon.assert.calledOnceWithExactly(options.enqueueAnotherPollAt, retryAt);
     });
 
@@ -410,6 +497,7 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.notCalled(automationsApi.retryStep);
+        sinon.assert.notCalled(emailAnalyticsJobs.scheduleRecurringJobs);
         sinon.assert.calledOnceWithExactly(automationsApi.markStepTerminal, step, 'failed');
     });
 });

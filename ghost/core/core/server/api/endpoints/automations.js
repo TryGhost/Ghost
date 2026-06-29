@@ -27,6 +27,24 @@ const controller = {
         }
     },
 
+    analytics: {
+        headers: {
+            cacheInvalidate: false
+        },
+        options: [
+            'id'
+        ],
+        permissions: {
+            docName: 'automations',
+            method: 'read'
+        },
+        async query(frame) {
+            return {
+                data: await automationsApi.readAnalytics(frame.options.id)
+            };
+        }
+    },
+
     edit: {
         headers: {
             cacheInvalidate: false

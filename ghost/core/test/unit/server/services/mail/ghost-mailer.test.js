@@ -431,6 +431,29 @@ describe('Mail: Ghostmailer', function () {
             assert.equal(sentMessage.forceTextContent, undefined);
         });
 
+        it('should include custom Mailgun variables passed by the caller', async function () {
+            sandbox.stub(settingsCache, 'get').withArgs('email_track_opens').returns(false);
+
+            mailer = new mail.GhostMailer();
+            mailer.state.usingMailgun = true;
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content',
+                mailgunVariables: {
+                    'automated-email-recipient-id': 'recipient-id',
+                    'automation-action-id': 'action-id'
+                }
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert.equal(sentMessage['v:automated-email-recipient-id'], 'recipient-id');
+            assert.equal(sentMessage['v:automation-action-id'], 'action-id');
+            assert.equal(sentMessage.mailgunVariables, undefined);
+        });
+
         it('should truncate tags to Mailgun maximum and log warning', async function () {
             configUtils.set({
                 hostSettings: {siteId: '123123'}

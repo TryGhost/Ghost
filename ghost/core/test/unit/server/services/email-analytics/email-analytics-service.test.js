@@ -543,6 +543,15 @@ describe('EmailAnalyticsService', function () {
                                 memberId: 1
                             };
                         });
+                        eventProcessor.handleAutomationDelivered = sinon.stub().resolves({
+                            automatedEmailRecipientId: 'automated-email-recipient-id'
+                        });
+                        eventProcessor.handleAutomationOpened = sinon.stub().resolves({
+                            automatedEmailRecipientId: 'automated-email-recipient-id'
+                        });
+                        eventProcessor.handleAutomationFailed = sinon.stub().resolves({
+                            automatedEmailRecipientId: 'automated-email-recipient-id'
+                        });
                         eventProcessor.handlePermanentFailed = sinon.stub().callsFake(({emailId}) => {
                             return {
                                 emailId,
@@ -669,6 +678,126 @@ describe('EmailAnalyticsService', function () {
                         assert.deepEqual(fetchData, {
                             lastEventTimestamp: new Date(1)
                         });
+                    });
+
+                    it('handles automation delivered', async function () {
+                        const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
+                            eventProcessor
+                        });
+
+                        const result = new EventProcessingResult();
+                        const fetchData = {};
+
+                        await service.processEventBatch([{
+                            type: 'delivered',
+                            automatedEmailRecipientId: 'automated-email-recipient-id',
+                            timestamp: new Date(1)
+                        }], result, fetchData);
+
+                        sinon.assert.calledOnceWithExactly(eventProcessor.handleAutomationDelivered, 'automated-email-recipient-id', new Date(1));
+                        sinon.assert.notCalled(eventProcessor.handleDelivered);
+
+                        assert.deepEqual(result, new EventProcessingResult({
+                            delivered: 1
+                        }));
+                    });
+
+                    it('handles automation opened', async function () {
+                        const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
+                            eventProcessor
+                        });
+
+                        const result = new EventProcessingResult();
+                        const fetchData = {};
+
+                        await service.processEventBatch([{
+                            type: 'opened',
+                            automatedEmailRecipientId: 'automated-email-recipient-id',
+                            timestamp: new Date(1)
+                        }], result, fetchData);
+
+                        sinon.assert.calledOnceWithExactly(eventProcessor.handleAutomationOpened, 'automated-email-recipient-id', new Date(1));
+                        sinon.assert.notCalled(eventProcessor.handleOpened);
+
+                        assert.deepEqual(result, new EventProcessingResult({
+                            opened: 1
+                        }));
+                    });
+
+                    it('handles automation failed', async function () {
+                        const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
+                            eventProcessor
+                        });
+
+                        const result = new EventProcessingResult();
+                        const fetchData = {};
+
+                        await service.processEventBatch([{
+                            type: 'failed',
+                            severity: 'permanent',
+                            automatedEmailRecipientId: 'automated-email-recipient-id',
+                            timestamp: new Date(1)
+                        }], result, fetchData);
+
+                        sinon.assert.calledOnceWithExactly(eventProcessor.handleAutomationFailed, 'automated-email-recipient-id', new Date(1));
+                        sinon.assert.notCalled(eventProcessor.handlePermanentFailed);
+
+                        assert.deepEqual(result, new EventProcessingResult({
+                            permanentFailed: 1
+                        }));
+                    });
+
+                    it('handles temporary automation failed without counting as permanent', async function () {
+                        const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
+                            eventProcessor
+                        });
+
+                        const result = new EventProcessingResult();
+                        const fetchData = {};
+
+                        await service.processEventBatch([{
+                            type: 'failed',
+                            severity: 'temporary',
+                            automatedEmailRecipientId: 'automated-email-recipient-id',
+                            timestamp: new Date(1)
+                        }], result, fetchData);
+
+                        sinon.assert.calledOnceWithExactly(eventProcessor.handleAutomationFailed, 'automated-email-recipient-id', new Date(1));
+                        sinon.assert.notCalled(eventProcessor.handlePermanentFailed);
+
+                        assert.deepEqual(result, new EventProcessingResult({
+                            temporaryFailed: 1
+                        }));
+                    });
+
+                    it('lets automation unsubscribed events use the existing unsubscribe handler', async function () {
+                        const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
+                            eventProcessor
+                        });
+
+                        const result = new EventProcessingResult();
+                        const fetchData = {};
+
+                        await service.processEventBatch([{
+                            type: 'unsubscribed',
+                            automatedEmailRecipientId: 'automated-email-recipient-id',
+                            emailId: 1,
+                            recipientEmail: 'member@example.com',
+                            timestamp: new Date(1)
+                        }], result, fetchData);
+
+                        sinon.assert.calledOnce(eventProcessor.handleUnsubscribed);
+
+                        assert.deepEqual(result, new EventProcessingResult({
+                            unsubscribed: 1,
+                            emailIds: [1],
+                            memberIds: [1]
+                        }));
                     });
 
                     it('handles failed (permanent)', async function () {
@@ -825,6 +954,9 @@ describe('EmailAnalyticsService', function () {
                         eventProcessor.flushBatchedUpdates = sinon.stub().resolves();
                         eventProcessor.handleDelivered = sinon.stub().returns(null);
                         eventProcessor.handleOpened = sinon.stub().returns(null);
+                        eventProcessor.handleAutomationDelivered = sinon.stub().returns(null);
+                        eventProcessor.handleAutomationOpened = sinon.stub().returns(null);
+                        eventProcessor.handleAutomationFailed = sinon.stub().returns(null);
                         eventProcessor.handlePermanentFailed = sinon.stub().returns(null);
                         eventProcessor.handleTemporaryFailed = sinon.stub().returns(null);
                         eventProcessor.handleUnsubscribed = sinon.stub().returns(null);
@@ -843,6 +975,26 @@ describe('EmailAnalyticsService', function () {
                         await service.processEventBatch([{
                             type: 'delivered',
                             emailId: 1,
+                            timestamp: new Date(1)
+                        }], result, fetchData);
+
+                        assert.deepEqual(result, new EventProcessingResult({
+                            unprocessable: 1
+                        }));
+                    });
+
+                    it('automation delivered returns unprocessable', async function () {
+                        const service = new EmailAnalyticsService({
+                            config: createMockConfig(),
+                            eventProcessor
+                        });
+
+                        const result = new EventProcessingResult();
+                        const fetchData = {};
+
+                        await service.processEventBatch([{
+                            type: 'delivered',
+                            automatedEmailRecipientId: 'automated-email-recipient-id',
                             timestamp: new Date(1)
                         }], result, fetchData);
 

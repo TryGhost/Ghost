@@ -941,6 +941,39 @@ describe('MailgunClient', function () {
             });
         });
 
+        it('works for automation email recipient variables without newsletter email id', function () {
+            const event = {
+                id: 'pl271FzxTTmGRW8Uj3dUWw',
+                event: 'opened',
+                severity: undefined,
+                recipient: 'testRecipient',
+                timestamp: 1614275662,
+                message: {
+                    headers: {
+                        'message-id': 'testProviderId'
+                    }
+                },
+                'user-variables': {
+                    'automated-email-recipient-id': 'automatedEmailRecipientId'
+                }
+            };
+
+            const mailgunClient = new MailgunClient({config, settings});
+            const result = mailgunClient.normalizeEvent(event);
+
+            assert.deepEqual(result, {
+                type: 'opened',
+                severity: undefined,
+                recipientEmail: 'testRecipient',
+                emailId: undefined,
+                automatedEmailRecipientId: 'automatedEmailRecipientId',
+                providerId: 'testProviderId',
+                timestamp: new Date('2021-02-25T17:54:22.000Z'),
+                error: null,
+                id: 'pl271FzxTTmGRW8Uj3dUWw'
+            });
+        });
+
         it('works for errors', function () {
             const event = {
                 event: 'failed',

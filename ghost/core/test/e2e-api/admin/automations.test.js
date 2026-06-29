@@ -1207,6 +1207,159 @@ describe('Automations API', function () {
         });
     });
 
+    describe('analytics', function () {
+        it('returns lifetime email analytics for send email actions', async function () {
+            const {body: browseBody} = await agent
+                .get('automations')
+                .expectStatus(200);
+            const automationId = browseBody.automations[0].id;
+
+            const {body: readBody} = await agent
+                .get(`automations/${automationId}`)
+                .expectStatus(200);
+            const sendEmailActions = readBody.automations[0].actions.filter(action => action.type === 'send_email');
+            const [firstAction, secondAction] = sendEmailActions;
+
+            const firstRevision = await models.Base.knex('automation_action_revisions')
+                .where('action_id', firstAction.id)
+                .first();
+            const secondRevision = await models.Base.knex('automation_action_revisions')
+                .where('action_id', secondAction.id)
+                .first();
+
+            const now = new Date();
+            const memberIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+            const redirectIds = [ObjectId().toHexString(), ObjectId().toHexString()];
+            const recipientIds = [ObjectId().toHexString(), ObjectId().toHexString(), ObjectId().toHexString()];
+            const clickEventIds = [ObjectId().toHexString(), ObjectId().toHexString(), ObjectId().toHexString()];
+
+            try {
+                await models.Base.knex('members').insert([{
+                    id: memberIds[0],
+                    uuid: '00000000-0000-4000-8000-000000000101',
+                    transient_id: `transient-${memberIds[0]}`,
+                    email: 'automation-analytics-1@example.com',
+                    status: 'free',
+                    name: 'Analytics One',
+                    created_at: now
+                }, {
+                    id: memberIds[1],
+                    uuid: '00000000-0000-4000-8000-000000000102',
+                    transient_id: `transient-${memberIds[1]}`,
+                    email: 'automation-analytics-2@example.com',
+                    status: 'free',
+                    name: 'Analytics Two',
+                    created_at: now
+                }]);
+
+                await models.Base.knex('automated_email_recipients').insert([{
+                    id: recipientIds[0],
+                    automation_action_id: firstAction.id,
+                    automation_action_revision_id: firstRevision.id,
+                    member_id: memberIds[0],
+                    member_uuid: '00000000-0000-4000-8000-000000000101',
+                    member_email: 'automation-analytics-1@example.com',
+                    member_name: 'Analytics One',
+                    sent_at: now,
+                    opened_at: now,
+                    created_at: now
+                }, {
+                    id: recipientIds[1],
+                    automation_action_id: firstAction.id,
+                    automation_action_revision_id: firstRevision.id,
+                    member_id: memberIds[1],
+                    member_uuid: '00000000-0000-4000-8000-000000000102',
+                    member_email: 'automation-analytics-2@example.com',
+                    member_name: 'Analytics Two',
+                    sent_at: now,
+                    created_at: now
+                }, {
+                    id: recipientIds[2],
+                    automation_action_id: secondAction.id,
+                    automation_action_revision_id: secondRevision.id,
+                    member_id: memberIds[0],
+                    member_uuid: '00000000-0000-4000-8000-000000000101',
+                    member_email: 'automation-analytics-1@example.com',
+                    member_name: 'Analytics One',
+                    created_at: now
+                }]);
+
+                await models.Base.knex('redirects').insert([{
+                    id: redirectIds[0],
+                    from: '/r/automation-analytics-a/',
+                    to: 'https://example.com/a',
+                    automation_action_id: firstAction.id,
+                    created_at: now
+                }, {
+                    id: redirectIds[1],
+                    from: '/r/automation-analytics-b/',
+                    to: 'https://example.com/b',
+                    automation_action_id: firstAction.id,
+                    created_at: now
+                }]);
+
+                await models.Base.knex('members_click_events').insert([{
+                    id: clickEventIds[0],
+                    member_id: memberIds[0],
+                    redirect_id: redirectIds[0],
+                    created_at: now
+                }, {
+                    id: clickEventIds[1],
+                    member_id: memberIds[1],
+                    redirect_id: redirectIds[0],
+                    created_at: now
+                }, {
+                    id: clickEventIds[2],
+                    member_id: memberIds[0],
+                    redirect_id: redirectIds[1],
+                    created_at: now
+                }]);
+
+                const {body} = await agent
+                    .get(`automations/${automationId}/analytics`)
+                    .expectStatus(200)
+                    .expect(cacheInvalidateHeaderNotSet());
+
+                const firstActionStats = body.automations.find(stats => stats.action_id === firstAction.id);
+                const secondActionStats = body.automations.find(stats => stats.action_id === secondAction.id);
+
+                assert.deepEqual(firstActionStats, {
+                    action_id: firstAction.id,
+                    sent_count: 2,
+                    opened_count: 1,
+                    clicked_count: 2,
+                    top_links: [{
+                        url: 'https://example.com/a',
+                        clicked_count: 2
+                    }, {
+                        url: 'https://example.com/b',
+                        clicked_count: 1
+                    }]
+                });
+                assert.deepEqual(secondActionStats, {
+                    action_id: secondAction.id,
+                    sent_count: 0,
+                    opened_count: 0,
+                    clicked_count: 0,
+                    top_links: []
+                });
+            } finally {
+                await models.Base.knex('members_click_events')
+                    .whereIn('id', clickEventIds)
+                    .del();
+                await models.Base.knex('redirects')
+                    .whereIn('id', redirectIds)
+                    .del();
+                await models.Base.knex('automated_email_recipients')
+                    .whereIn('id', recipientIds)
+                    .del();
+                await models.Base.knex('members')
+                    .whereIn('id', memberIds)
+                    .del();
+            }
+        });
+    });
+
     describe('poll', function () {
         /** @type {sinon.SinonStub} */
         let dispatchStub;

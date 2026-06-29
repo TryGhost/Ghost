@@ -1044,8 +1044,16 @@ module.exports = {
         from: {type: 'string', maxlength: 191, nullable: false, index: true},
         to: {type: 'string', maxlength: 2000, nullable: false},
         post_id: {type: 'string', maxlength: 24, nullable: true, unique: false, references: 'posts.id', setNullDelete: true},
+        automation_action_id: {type: 'string', maxlength: 24, nullable: true},
+        automation_to_hash: {type: 'string', maxlength: 64, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['automation_action_id']
+        ],
+        '@@UNIQUE_CONSTRAINTS@@': [
+            ['automation_action_id', 'automation_to_hash']
+        ]
     },
     members_click_events: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -1291,12 +1299,25 @@ module.exports = {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
         automated_email_id: {type: 'string', maxlength: 24, nullable: true, references: 'welcome_email_automated_emails.id'},
         automation_action_revision_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_action_revisions.id'},
+        automation_action_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_actions.id', setNullDelete: true},
+        automation_run_step_id: {type: 'string', maxlength: 24, nullable: true, references: 'automation_run_steps.id', setNullDelete: true},
         member_id: {type: 'string', maxlength: 24, nullable: false, index: true},
         member_uuid: {type: 'string', maxlength: 36, nullable: false},
         member_email: {type: 'string', maxlength: 191, nullable: false},
         member_name: {type: 'string', maxlength: 191, nullable: true},
+        sent_at: {type: 'dateTime', nullable: true},
+        delivered_at: {type: 'dateTime', nullable: true},
+        opened_at: {type: 'dateTime', nullable: true},
+        failed_at: {type: 'dateTime', nullable: true},
+        provider_id: {type: 'string', maxlength: 255, nullable: true},
         created_at: {type: 'dateTime', nullable: false},
-        updated_at: {type: 'dateTime', nullable: true}
+        updated_at: {type: 'dateTime', nullable: true},
+        '@@INDEXES@@': [
+            ['automation_action_id', 'sent_at'],
+            ['automation_action_id', 'opened_at'],
+            ['automation_action_id', 'failed_at'],
+            ['provider_id']
+        ]
     },
     gifts: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},

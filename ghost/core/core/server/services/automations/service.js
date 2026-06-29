@@ -8,6 +8,7 @@ const {poll} = require('./poll');
 const {welcomeEmailAutomationPoll} = require('./welcome-email-automation-poll');
 const automationsApi = require('./automations-api');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
+const emailAnalyticsJobs = require('../email-analytics/jobs');
 /** @import DomainEvents from '@tryghost/domain-events' */
 
 /**
@@ -67,6 +68,7 @@ class AutomationsService {
         domainEvents.subscribe(StartAutomationsPollEvent, oneAtATime(async () => poll({
             automationsApi,
             memberWelcomeEmailService,
+            emailAnalyticsJobs,
             enqueueAnotherPollAt: enqueuePollAt
         })));
 

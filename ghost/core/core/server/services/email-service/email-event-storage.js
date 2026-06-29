@@ -85,6 +85,36 @@ class EmailEventStorage {
         }
     }
 
+    async handleAutomationDelivered(event) {
+        const rowCount = await this.#db.knex('automated_email_recipients')
+            .where('id', '=', event.automatedEmailRecipientId)
+            .whereNull('delivered_at')
+            .update({
+                delivered_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
+            });
+        this.recordEventStored('automation-delivered', rowCount);
+    }
+
+    async handleAutomationOpened(event) {
+        const rowCount = await this.#db.knex('automated_email_recipients')
+            .where('id', '=', event.automatedEmailRecipientId)
+            .whereNull('opened_at')
+            .update({
+                opened_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
+            });
+        this.recordEventStored('automation-opened', rowCount);
+    }
+
+    async handleAutomationFailed(event) {
+        const rowCount = await this.#db.knex('automated_email_recipients')
+            .where('id', '=', event.automatedEmailRecipientId)
+            .whereNull('failed_at')
+            .update({
+                failed_at: moment.utc(event.timestamp).format('YYYY-MM-DD HH:mm:ss')
+            });
+        this.recordEventStored('automation-failed', rowCount);
+    }
+
     async handlePermanentFailed(event) {
         const useBatchProcessing = config.get('emailAnalytics:batchProcessing');
 

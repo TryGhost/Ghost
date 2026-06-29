@@ -65,7 +65,8 @@ function createLinkRedirectRepository(deps = {}) {
         urlUtils: deps.urlUtils || {
             urlFor: sinon.stub().returns('https://example.com'),
             relativeToAbsolute: sinon.stub().returns(new URL('https://example.com')),
-            absoluteToRelative: sinon.stub().returns('/r/1234abcd')
+            absoluteToRelative: sinon.stub().returns('/r/1234abcd'),
+            absoluteToTransformReady: sinon.stub().returnsArg(0)
         },
         cacheAdapter: deps.cacheAdapter || null,
         EventRegistry: deps.EventRegistry || new EventEmitter()
@@ -193,6 +194,35 @@ describe('UNIT: LinkRedirectRepository class', function () {
         });
     });
 
+    describe('getByAutomationActionAndURL', function () {
+        it('looks up redirects by automation action and normalized destination hash', async function () {
+            const findOne = sinon.stub().returns(createRedirectModel());
+            const absoluteToTransformReady = sinon.stub().returns('https://google.com/');
+            linkRedirectRepository = createLinkRedirectRepository({
+                LinkRedirect: {
+                    findOne,
+                    findAll: sinon.stub(),
+                    getFilteredCollectionQuery: sinon.stub(),
+                    add: sinon.stub()
+                },
+                urlUtils: {
+                    urlFor: sinon.stub().returns('https://example.com'),
+                    relativeToAbsolute: sinon.stub().returns(new URL('https://example.com')),
+                    absoluteToRelative: sinon.stub().returns('/r/1234abcd'),
+                    absoluteToTransformReady
+                }
+            });
+
+            const result = await linkRedirectRepository.getByAutomationActionAndURL('action-id', new URL('https://google.com/'));
+
+            assert.equal(result.to.href, 'https://google.com/');
+            sinon.assert.calledOnceWithExactly(findOne, {
+                automation_action_id: 'action-id',
+                automation_to_hash: '9d116b1b0c1200ca75016e4c010bc94836366881b021a658ea7f8548b6543c1e'
+            }, {});
+        });
+    });
+
     describe('caching', function () {
         it('should add a new link redirect to the cache on save', async function () {
             const cacheAdapterStub = {
@@ -208,6 +238,38 @@ describe('UNIT: LinkRedirectRepository class', function () {
             });
             await linkRedirectRepository.save(linkRedirect);
             sinon.assert.calledOnce(cacheAdapterStub.set);
+        });
+
+        it('saves automation redirects with normalized destination and hash', async function () {
+            const add = sinon.stub().callsFake(data => createRedirectModel(data));
+            const absoluteToTransformReady = sinon.stub().returns('https://google.com/');
+            linkRedirectRepository = createLinkRedirectRepository({
+                LinkRedirect: {
+                    findOne: sinon.stub(),
+                    findAll: sinon.stub(),
+                    getFilteredCollectionQuery: sinon.stub(),
+                    add
+                },
+                urlUtils: {
+                    urlFor: sinon.stub().returns('https://example.com'),
+                    relativeToAbsolute: sinon.stub().returns(new URL('https://example.com')),
+                    absoluteToRelative: sinon.stub().returns('/r/1234abcd'),
+                    absoluteToTransformReady
+                }
+            });
+
+            const linkRedirect = new LinkRedirect({
+                from: new URL('https://example.com/r/1234abcd'),
+                to: new URL('https://google.com')
+            });
+            await linkRedirectRepository.save(linkRedirect, {automationActionId: 'action-id'});
+
+            sinon.assert.calledOnceWithExactly(add, {
+                from: '/r/1234abcd',
+                to: 'https://google.com/',
+                automation_action_id: 'action-id',
+                automation_to_hash: '9d116b1b0c1200ca75016e4c010bc94836366881b021a658ea7f8548b6543c1e'
+            }, {});
         });
 
         it('should clear cache on site.changed event', function () {

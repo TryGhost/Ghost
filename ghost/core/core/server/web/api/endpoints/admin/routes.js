@@ -199,6 +199,7 @@ module.exports = function apiRoutes() {
 
     // ## Automations
     router.get('/automations', mw.authAdminApi, http(api.automations.browse));
+    router.get('/automations/:id/analytics', mw.authAdminApi, http(api.automations.analytics));
     router.get('/automations/:id', mw.authAdminApi, http(api.automations.read));
     router.post('/automations/:id/email_preview', mw.authAdminApi, http(api.automationEmailPreviews.preview));
     router.post('/automations/:id/email_test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automationEmailPreviews.sendTestEmail));

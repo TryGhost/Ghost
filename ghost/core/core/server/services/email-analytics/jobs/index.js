@@ -6,6 +6,25 @@ const jobsService = require('../../jobs');
 
 let hasScheduled = false;
 
+const hasRecentEmailAnalyticsActivity = async () => {
+    const since = moment.utc().subtract(30, 'days').toDate();
+    const emailCount = await models.Email
+        .where('created_at', '>', since)
+        .where('status', '<>', 'failed')
+        .count();
+
+    if (Number(emailCount) > 0) {
+        return true;
+    }
+
+    const automationEmailCount = await models.Base.knex('automated_email_recipients')
+        .where('sent_at', '>', since)
+        .count({count: 'id'})
+        .first();
+
+    return Number(automationEmailCount?.count || 0) > 0;
+};
+
 module.exports = {
     async scheduleRecurringJobs(skipEmailCheck = false) {
         if (
@@ -16,13 +35,10 @@ module.exports = {
         ) {
             // Don't register email analytics job if we have no emails,
             // processor usage from many sites spinning up threads can be high.
-            // Mega service will re-run this scheduling task when an email is sent
-            const emailCount = skipEmailCheck ? 1 : (await models.Email
-                .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
-                .where('status', '<>', 'failed')
-                .count());
+            // Email sending services re-run this scheduling task when an email is sent.
+            const hasActivity = skipEmailCheck || await hasRecentEmailAnalyticsActivity();
 
-            if (emailCount > 0) {
+            if (hasActivity) {
                 // use a random seconds value to avoid spikes to external APIs on the minute
                 const s = Math.floor(Math.random() * 60); // 0-59
                 // run every 5 minutes, on 1,6,11..., 2,7,12..., 3,8,13..., etc

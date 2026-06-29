@@ -23,6 +23,9 @@ describe('Email Event Processor', function () {
         eventStorage = {
             handleDelivered: sinon.stub(),
             handleOpened: sinon.stub(),
+            handleAutomationDelivered: sinon.stub(),
+            handleAutomationOpened: sinon.stub(),
+            handleAutomationFailed: sinon.stub(),
             handlePermanentFailed: sinon.stub(),
             handleTemporaryFailed: sinon.stub(),
             handleComplained: sinon.stub(),
@@ -93,6 +96,21 @@ describe('Email Event Processor', function () {
         });
     });
 
+    describe('getAutomationRecipient', function () {
+        it('Uses automated_email_recipients to query recipient', async function () {
+            const recipient = await eventProcessor.getAutomationRecipient('automated-email-recipient-id');
+            assert.deepEqual(recipient, {
+                automatedEmailRecipientId: 'email-recipient-id'
+            });
+        });
+
+        it('Returns undefined if no automated email recipient is found', async function () {
+            sinon.stub(db, 'first').resolves(null);
+            const recipient = await eventProcessor.getAutomationRecipient('automated-email-recipient-id');
+            assert.equal(recipient, undefined);
+        });
+    });
+
     describe('handle events', function () {
         it('handleDelivered', async function () {
             const recipient = await eventProcessor.handleDelivered({emailId: 'email-id', email: 'example@example.com'}, new Date());
@@ -118,6 +136,39 @@ describe('Email Event Processor', function () {
             const event = eventStorage.handleOpened.firstCall.args[0];
             assert.equal(event.email, 'example@example.com');
             assert.equal(event.constructor.name, 'EmailOpenedEvent');
+        });
+
+        it('handleAutomationDelivered', async function () {
+            const recipient = await eventProcessor.handleAutomationDelivered('automated-email-recipient-id', new Date());
+            assert.deepEqual(recipient, {
+                automatedEmailRecipientId: 'email-recipient-id'
+            });
+            sinon.assert.calledOnceWithExactly(eventStorage.handleAutomationDelivered, {
+                automatedEmailRecipientId: 'email-recipient-id',
+                timestamp: sinon.match.date
+            });
+        });
+
+        it('handleAutomationOpened', async function () {
+            const recipient = await eventProcessor.handleAutomationOpened('automated-email-recipient-id', new Date());
+            assert.deepEqual(recipient, {
+                automatedEmailRecipientId: 'email-recipient-id'
+            });
+            sinon.assert.calledOnceWithExactly(eventStorage.handleAutomationOpened, {
+                automatedEmailRecipientId: 'email-recipient-id',
+                timestamp: sinon.match.date
+            });
+        });
+
+        it('handleAutomationFailed', async function () {
+            const recipient = await eventProcessor.handleAutomationFailed('automated-email-recipient-id', new Date());
+            assert.deepEqual(recipient, {
+                automatedEmailRecipientId: 'email-recipient-id'
+            });
+            sinon.assert.calledOnceWithExactly(eventStorage.handleAutomationFailed, {
+                automatedEmailRecipientId: 'email-recipient-id',
+                timestamp: sinon.match.date
+            });
         });
 
         it('handleTemporaryFailed', async function () {

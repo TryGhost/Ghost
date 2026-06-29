@@ -28,9 +28,17 @@ async function waitForEvent() {
  */
 
 /**
+ * @typedef AutomationEmailRecipientInformation
+ * @property {string} automatedEmailRecipientId
+ */
+
+/**
  * @typedef EmailEventStorage
  * @property {(event: EmailDeliveredEvent) => Promise<void>} handleDelivered
  * @property {(event: EmailOpenedEvent) => Promise<void>} handleOpened
+ * @property {(event: Object) => Promise<void>} handleAutomationDelivered
+ * @property {(event: Object) => Promise<void>} handleAutomationOpened
+ * @property {(event: Object) => Promise<void>} handleAutomationFailed
  * @property {(event: EmailBouncedEvent) => Promise<void>} handlePermanentFailed
  * @property {(event: EmailTemporaryBouncedEvent) => Promise<void>} handleTemporaryFailed
  * @property {(event: EmailUnsubscribedEvent) => Promise<void>} handleUnsubscribed
@@ -103,6 +111,57 @@ class EmailEventProcessor {
             this.#domainEvents.dispatch(event);
             await this.#eventStorage.handleOpened(event);
             this.recordEventProcessed('opened');
+        }
+        return recipient;
+    }
+
+    /**
+     * @param {string} automatedEmailRecipientId
+     * @param {Date} timestamp
+     * @returns {Promise<AutomationEmailRecipientInformation|undefined>}
+     */
+    async handleAutomationDelivered(automatedEmailRecipientId, timestamp) {
+        const recipient = await this.getAutomationRecipient(automatedEmailRecipientId);
+        if (recipient) {
+            await this.#eventStorage.handleAutomationDelivered({
+                automatedEmailRecipientId: recipient.automatedEmailRecipientId,
+                timestamp
+            });
+            this.recordEventProcessed('automation-delivered');
+        }
+        return recipient;
+    }
+
+    /**
+     * @param {string} automatedEmailRecipientId
+     * @param {Date} timestamp
+     * @returns {Promise<AutomationEmailRecipientInformation|undefined>}
+     */
+    async handleAutomationOpened(automatedEmailRecipientId, timestamp) {
+        const recipient = await this.getAutomationRecipient(automatedEmailRecipientId);
+        if (recipient) {
+            await this.#eventStorage.handleAutomationOpened({
+                automatedEmailRecipientId: recipient.automatedEmailRecipientId,
+                timestamp
+            });
+            this.recordEventProcessed('automation-opened');
+        }
+        return recipient;
+    }
+
+    /**
+     * @param {string} automatedEmailRecipientId
+     * @param {Date} timestamp
+     * @returns {Promise<AutomationEmailRecipientInformation|undefined>}
+     */
+    async handleAutomationFailed(automatedEmailRecipientId, timestamp) {
+        const recipient = await this.getAutomationRecipient(automatedEmailRecipientId);
+        if (recipient) {
+            await this.#eventStorage.handleAutomationFailed({
+                automatedEmailRecipientId: recipient.automatedEmailRecipientId,
+                timestamp
+            });
+            this.recordEventProcessed('automation-failed');
         }
         return recipient;
     }
@@ -239,6 +298,27 @@ class EmailEventProcessor {
                 emailRecipientId,
                 memberId,
                 emailId
+            };
+        }
+    }
+
+    /**
+     * @param {string} automatedEmailRecipientId
+     * @returns {Promise<AutomationEmailRecipientInformation|undefined>}
+     */
+    async getAutomationRecipient(automatedEmailRecipientId) {
+        if (!automatedEmailRecipientId) {
+            return;
+        }
+
+        const {id} = await this.#db.knex('automated_email_recipients')
+            .select('id')
+            .where('id', automatedEmailRecipientId)
+            .first() || {};
+
+        if (id) {
+            return {
+                automatedEmailRecipientId: id
             };
         }
     }

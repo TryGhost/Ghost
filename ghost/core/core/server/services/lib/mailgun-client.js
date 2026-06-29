@@ -304,13 +304,13 @@ module.exports = class MailgunClient {
     normalizeEvent(event) {
         const providerId = event?.message?.headers['message-id'];
 
-        if (!providerId && !(event['user-variables'] && event['user-variables']['email-id'])) {
+        if (!providerId && !(event['user-variables'] && (event['user-variables']['email-id'] || event['user-variables']['automated-email-recipient-id']))) {
             logging.error('Received invalid event from Mailgun');
             logging.error(event);
             return null;
         }
 
-        return {
+        const normalizedEvent = {
             id: event.id,
             type: event.event,
             severity: event.severity,
@@ -325,6 +325,12 @@ module.exports = class MailgunClient {
                 enhancedCode: event['delivery-status']['enhanced-code']?.toString()?.substring(0, 50) ?? null
             } : null
         };
+
+        if (event['user-variables'] && event['user-variables']['automated-email-recipient-id']) {
+            normalizedEvent.automatedEmailRecipientId = event['user-variables']['automated-email-recipient-id'];
+        }
+
+        return normalizedEvent;
     }
 
     #getConfig() {

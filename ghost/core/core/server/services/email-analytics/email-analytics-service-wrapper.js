@@ -14,6 +14,7 @@ class EmailAnalyticsServiceWrapper {
         const EmailEventStorage = require('../email-service/email-event-storage');
         const EmailEventProcessor = require('../email-service/email-event-processor');
         const MailgunProvider = require('./email-analytics-provider-mailgun');
+        const {AUTOMATION_EMAIL_ANALYTICS_TAG} = require('../member-welcome-emails/constants');
         const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
         const StartEmailAnalyticsJobEvent = require('./events/start-email-analytics-job-event');
         const domainEvents = require('@tryghost/domain-events');
@@ -52,7 +53,8 @@ class EmailAnalyticsServiceWrapper {
             settings,
             eventProcessor,
             providers: [
-                new MailgunProvider({config, settings, labs})
+                new MailgunProvider({config, settings, labs}),
+                new MailgunProvider({config, settings, labs, tags: [AUTOMATION_EMAIL_ANALYTICS_TAG]})
             ],
             queries,
             domainEvents,

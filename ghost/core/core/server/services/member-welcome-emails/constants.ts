@@ -13,6 +13,7 @@ const MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES = {
 } as const;
 
 const MEMBER_WELCOME_EMAIL_TAG = 'member-welcome-email';
+const AUTOMATION_EMAIL_ANALYTICS_TAG = 'automation-email';
 
 const MESSAGES = {
     NO_MEMBER_WELCOME_EMAIL: 'No member welcome email found',
@@ -25,6 +26,7 @@ const MESSAGES = {
 
 export {
     DEFAULT_EMAIL_DESIGN_SETTING_SLUG,
+    AUTOMATION_EMAIL_ANALYTICS_TAG,
     MEMBER_WELCOME_EMAIL_LOG_KEY,
     MEMBER_WELCOME_EMAIL_TAG,
     MEMBER_WELCOME_EMAIL_SLUGS,

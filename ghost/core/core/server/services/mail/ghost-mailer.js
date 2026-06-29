@@ -66,6 +66,7 @@ function createMessage(message) {
     const generateTextFromHTML = !message.forceTextContent;
     const cleanMessage = {...message};
     delete cleanMessage.tags;
+    delete cleanMessage.mailgunVariables;
     delete cleanMessage.forceTextContent;
 
     const addresses = getFromAddress(message.from, message.replyTo);
@@ -122,9 +123,10 @@ module.exports = class GhostMailer {
      * @param {string} [message.replyTo]
      * @param {string} [message.from] - sender email address
      * @param {string} [message.text] - text version of this message
-     * @param {string[]} [message.tags] - optional additional Mailgun tags
-     * @param {Record<string, string>} [message.headers] - optional additional email headers (merged with defaults)
-     * @param {boolean} [message.forceTextContent] - maps to generateTextFromHTML nodemailer option
+ * @param {string[]} [message.tags] - optional additional Mailgun tags
+ * @param {Record<string, string>} [message.mailgunVariables] - optional Mailgun user variables
+ * @param {Record<string, string>} [message.headers] - optional additional email headers (merged with defaults)
+ * @param {boolean} [message.forceTextContent] - maps to generateTextFromHTML nodemailer option
      * which is: "if set to true uses HTML to generate plain text body part from the HTML if the text is not defined"
      * (ref: https://github.com/nodemailer/nodemailer/tree/da2f1d278f91b4262e940c0b37638e7027184b1d#e-mail-message-fields)
      * @returns {Promise<any>}
@@ -149,6 +151,11 @@ module.exports = class GhostMailer {
             if (messageToSend.headers) {
                 for (const [key, value] of Object.entries(messageToSend.headers)) {
                     messageToSend[`h:${key}`] = value;
+                }
+            }
+            if (message.mailgunVariables) {
+                for (const [key, value] of Object.entries(message.mailgunVariables)) {
+                    messageToSend[`v:${key}`] = value;
                 }
             }
         }

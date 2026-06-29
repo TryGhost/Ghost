@@ -582,6 +582,34 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<EventProcessingResult>}
      */
     async processEvent(event, recipientCache) {
+        if (event.automatedEmailRecipientId) {
+            if (event.type === 'delivered') {
+                const recipient = await this.eventProcessor.handleAutomationDelivered(event.automatedEmailRecipientId, event.timestamp);
+
+                return new EventProcessingResult(recipient ? {delivered: 1} : {unprocessable: 1});
+            }
+
+            if (event.type === 'opened') {
+                const recipient = await this.eventProcessor.handleAutomationOpened(event.automatedEmailRecipientId, event.timestamp);
+
+                return new EventProcessingResult(recipient ? {opened: 1} : {unprocessable: 1});
+            }
+
+            if (event.type === 'failed') {
+                const recipient = await this.eventProcessor.handleAutomationFailed(event.automatedEmailRecipientId, event.timestamp);
+
+                if (!recipient) {
+                    return new EventProcessingResult({unprocessable: 1});
+                }
+
+                if (event.severity === 'permanent') {
+                    return new EventProcessingResult({permanentFailed: 1});
+                }
+
+                return new EventProcessingResult({temporaryFailed: 1});
+            }
+        }
+
         if (event.type === 'delivered') {
             const recipient = await this.eventProcessor.handleDelivered({emailId: event.emailId, providerId: event.providerId, email: event.recipientEmail}, event.timestamp, recipientCache);
 

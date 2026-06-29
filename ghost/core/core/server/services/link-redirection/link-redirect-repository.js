@@ -1,6 +1,7 @@
 const LinkRedirect = require('./link-redirect');
 const ObjectID = require('bson-objectid').default;
 const debug = require('@tryghost/debug')('LinkRedirectRepository');
+const crypto = require('crypto');
 
 module.exports = class LinkRedirectRepository {
     /** @type {Object} */
@@ -42,14 +43,20 @@ module.exports = class LinkRedirectRepository {
     /**
      * Save a new LinkRedirect to the DB
      * @param {InstanceType<LinkRedirect>} linkRedirect
+     * @param {{automationActionId?: string}} [options]
      * @returns {Promise<void>}
      */
-    async save(linkRedirect) {
+    async save(linkRedirect, options = {}) {
         debug('Saving link redirect', linkRedirect.from.pathname, '->', linkRedirect.to.href);
+        const to = this.#getToStorageValue(linkRedirect.to);
         const model = await this.#LinkRedirect.add({
             // Only store the pathname (no support for variable query strings)
             from: this.stripSubdirectoryFromPath(linkRedirect.from.pathname),
-            to: linkRedirect.to.href
+            to,
+            ...(options.automationActionId ? {
+                automation_action_id: options.automationActionId,
+                automation_to_hash: this.#getAutomationToHash(to)
+            } : {})
         }, {});
 
         linkRedirect.link_id = ObjectID.createFromHexString(model.id);
@@ -81,7 +88,7 @@ module.exports = class LinkRedirectRepository {
         return new LinkRedirect({
             id: model.id,
             from: new URL(this.#trimLeadingSlash(model.get('from')), this.#urlUtils.urlFor('home', true)),
-            to: new URL(model.get('to')),
+            to: new URL(model.get('to'), this.#urlUtils.urlFor('home', true)),
             edited
         });
     }
@@ -99,7 +106,7 @@ module.exports = class LinkRedirectRepository {
         return new LinkRedirect({
             id: serialized.link_id,
             from: new URL(this.#trimLeadingSlash(serialized.from), this.#urlUtils.urlFor('home', true)),
-            to: new URL(serialized.to),
+            to: new URL(serialized.to, this.#urlUtils.urlFor('home', true)),
             edited: serialized.edited
         });
     }
@@ -178,6 +185,40 @@ module.exports = class LinkRedirectRepository {
             }
             return linkRedirect;
         }
+    }
+
+    /**
+     * Get an automation LinkRedirect by action and destination URL.
+     * @param {string} automationActionId
+     * @param {URL} url
+     * @returns {Promise<InstanceType<LinkRedirect>|undefined>} LinkRedirect
+     */
+    async getByAutomationActionAndURL(automationActionId, url) {
+        const to = this.#getToStorageValue(url);
+        const linkRedirectModel = await this.#LinkRedirect.findOne({
+            automation_action_id: automationActionId,
+            automation_to_hash: this.#getAutomationToHash(to)
+        }, {});
+
+        if (linkRedirectModel) {
+            return this.fromModel(linkRedirectModel);
+        }
+    }
+
+    /**
+     * @param {URL} url
+     * @returns {string}
+     */
+    #getToStorageValue(url) {
+        return this.#urlUtils.absoluteToTransformReady(url.href);
+    }
+
+    /**
+     * @param {string} to
+     * @returns {string}
+     */
+    #getAutomationToHash(to) {
+        return crypto.createHash('sha256').update(to).digest('hex');
     }
 
     /**

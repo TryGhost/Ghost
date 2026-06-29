@@ -13,6 +13,7 @@ const {knex} = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
 const config = require('../../../shared/config');
+const urlUtils = require('../../../shared/url-utils');
 const lexicalLib = require('../../lib/lexical');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 
@@ -85,6 +86,103 @@ export async function read(automationId: string) {
     }
 
     return automation;
+}
+
+export async function readAnalytics(automationId: string) {
+    if (!labs.isSet('automations') || !labs.isSet('automationAnalytics')) {
+        throw new errors.NoPermissionError({
+            message: 'Automation analytics are not enabled.'
+        });
+    }
+
+    const automation = await repository.getById(automationId);
+
+    if (!automation) {
+        throw new errors.NotFoundError({
+            message: tpl(messages.automationNotFound)
+        });
+    }
+
+    const actions = await knex('automation_actions')
+        .select('id')
+        .where({
+            automation_id: automationId,
+            type: 'send_email'
+        })
+        .whereNull('deleted_at');
+
+    const actionIds = actions.map((action: {id: string}) => action.id);
+    if (actionIds.length === 0) {
+        return [];
+    }
+
+    const recipientStats = await knex('automated_email_recipients')
+        .select('automation_action_id')
+        .count({sent_count: 'sent_at'})
+        .sum({
+            opened_count: knex.raw('CASE WHEN opened_at IS NOT NULL THEN 1 ELSE 0 END')
+        })
+        .whereIn('automation_action_id', actionIds)
+        .groupBy('automation_action_id');
+
+    const clickStats = await knex('redirects')
+        .select('redirects.automation_action_id')
+        .countDistinct({clicked_count: 'members_click_events.member_id'})
+        .leftJoin('members_click_events', 'members_click_events.redirect_id', 'redirects.id')
+        .whereIn('redirects.automation_action_id', actionIds)
+        .groupBy('redirects.automation_action_id');
+
+    const topLinks = await knex('redirects')
+        .select(
+            'redirects.automation_action_id',
+            'redirects.to as url'
+        )
+        .countDistinct({clicked_count: 'members_click_events.member_id'})
+        .join('members_click_events', 'members_click_events.redirect_id', 'redirects.id')
+        .whereIn('redirects.automation_action_id', actionIds)
+        .groupBy('redirects.automation_action_id', 'redirects.to')
+        .orderBy('clicked_count', 'desc');
+
+    const statsByActionId: Map<string, {
+        action_id: string;
+        sent_count: number;
+        opened_count: number;
+        clicked_count: number;
+        top_links: Array<{url: string; clicked_count: number}>;
+    }> = new Map(actionIds.map((actionId: string) => [actionId, {
+        action_id: actionId,
+        sent_count: 0,
+        opened_count: 0,
+        clicked_count: 0,
+        top_links: []
+    }]));
+
+    for (const row of recipientStats) {
+        const stats = statsByActionId.get(row.automation_action_id);
+        if (stats) {
+            stats.sent_count = Number(row.sent_count || 0);
+            stats.opened_count = Number(row.opened_count || 0);
+        }
+    }
+
+    for (const row of clickStats) {
+        const stats = statsByActionId.get(row.automation_action_id);
+        if (stats) {
+            stats.clicked_count = Number(row.clicked_count || 0);
+        }
+    }
+
+    for (const row of topLinks) {
+        const stats = statsByActionId.get(row.automation_action_id);
+        if (stats) {
+            stats.top_links.push({
+                url: urlUtils.transformReadyToAbsolute(row.url),
+                clicked_count: Number(row.clicked_count || 0)
+            });
+        }
+    }
+
+    return Array.from(statsByActionId.values());
 }
 
 export async function edit(automationId: string, data: unknown) {
