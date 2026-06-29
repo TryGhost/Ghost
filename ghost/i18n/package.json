@@ -11,7 +11,6 @@
   },
   "types": "./build/i18n.d.ts",
   "scripts": {
-    "dev": "echo \"Implement me!\"",
     "test:base": "NODE_ENV=testing vitest run --coverage",
     "test": "pnpm test:base && pnpm translate",
     "lint:code": "eslint *.js lib/ --cache",
@@ -48,11 +47,6 @@
   "nx": {
     "tags": [
       "i18n"
-    ],
-    "targets": {
-      "dev": {
-        "continuous": false
-      }
-    }
+    ]
   }
 }
