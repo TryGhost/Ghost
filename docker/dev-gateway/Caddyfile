@@ -98,64 +98,20 @@
             }
         }
 
-        # Portal
-        @portal path /portal/*
-        handle @portal {
-            uri strip_prefix /portal
-            reverse_proxy {env.PORTAL_DEV_SERVER} {
-                header_up Host {http.reverse_proxy.upstream.hostport}
-                header_up X-Forwarded-Host {host}
-            }
-        }
-
-        # Comments UI
-        @comments path /comments-ui/*
-        handle @comments {
-            uri strip_prefix /comments-ui
-            reverse_proxy {env.COMMENTS_DEV_SERVER} {
-                header_up Host {http.reverse_proxy.upstream.hostport}
-                header_up X-Forwarded-Host {host}
-            }
-        }
-
-        # Signup Form
-        @signup path /signup-form/*
-        handle @signup {
-            uri strip_prefix /signup-form
-            reverse_proxy {env.SIGNUP_DEV_SERVER} {
-                header_up Host {http.reverse_proxy.upstream.hostport}
-                header_up X-Forwarded-Host {host}
-            }
-        }
-
-        # Sodo Search
-        @search path /sodo-search/*
-        handle @search {
-            uri strip_prefix /sodo-search
-            reverse_proxy {env.SEARCH_DEV_SERVER} {
-                header_up Host {http.reverse_proxy.upstream.hostport}
-                header_up X-Forwarded-Host {host}
-            }
-        }
-
-        # Announcement Bar
-        @announcement path /announcement-bar/*
-        handle @announcement {
-            uri strip_prefix /announcement-bar
-            reverse_proxy {env.ANNOUNCEMENT_DEV_SERVER} {
-                header_up Host {http.reverse_proxy.upstream.hostport}
-                header_up X-Forwarded-Host {host}
-            }
-        }
-
-        # Admin Toolbar
-        @admin-toolbar path /admin-toolbar/*
-        handle @admin-toolbar {
-            uri strip_prefix /admin-toolbar
-            reverse_proxy {env.ADMIN_TOOLBAR_DEV_SERVER} {
-                header_up Host {http.reverse_proxy.upstream.hostport}
-                header_up X-Forwarded-Host {host}
-            }
+        # Public app UMD bundles — served directly from each app's umd/
+        # build output. Vite's build:watch writes to disk on every source
+        # change, Caddy picks up the new file on next request. Replaces the
+        # per-app `vite preview` server (sirv) layer that used to sit in front.
+        #
+        # The named allowlist is load-bearing: a generic [a-z0-9-]+ pattern
+        # would swallow admin asset paths (e.g. /ghost/assets/built/foo.css)
+        # before they could fall through to the admin dev server below.
+        # Adding a new public app = add its name to the alternation.
+        @public_app path_regexp public_app ^/(portal|comments-ui|signup-form|sodo-search|announcement-bar|admin-toolbar)/(.*)$
+        handle @public_app {
+            rewrite * /{re.public_app.2}
+            root * /srv/apps/{re.public_app.1}/umd
+            file_server
         }
 
         # Everything else under /ghost/assets/* goes to admin dev server.
