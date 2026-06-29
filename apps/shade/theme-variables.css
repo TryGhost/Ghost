@@ -182,20 +182,20 @@
    which is essentially invisible against a dark page. Direct utility overrides
    so they win over Tailwind's compiled `box-shadow` regardless of token resolution. */
 .dark .shadow-xs {
-    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.35);
+    box-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.15);
 }
 .dark .shadow-sm {
-    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+    box-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.2), 0 1px 2px -1px rgb(0 0 0 / 0.2);
 }
 .dark .shadow-md {
-    box-shadow: 0 6px 12px -2px rgb(0 0 0 / 0.45), 0 3px 6px -3px rgb(0 0 0 / 0.45);
+    box-shadow: 0 6px 12px -2px rgb(0 0 0 / 0.25), 0 3px 6px -3px rgb(0 0 0 / 0.25);
 }
 .dark .shadow-lg {
-    box-shadow: 0 13px 22px -4px rgb(0 0 0 / 0.5), 0 6px 10px -5px rgb(0 0 0 / 0.5);
+    box-shadow: 0 13px 22px -4px rgb(0 0 0 / 0.3), 0 6px 10px -5px rgb(0 0 0 / 0.3);
 }
 .dark .shadow-xl {
-    box-shadow: 0 22px 34px -6px rgb(0 0 0 / 0.55), 0 10px 16px -8px rgb(0 0 0 / 0.55);
+    box-shadow: 0 22px 34px -6px rgb(0 0 0 / 0.35), 0 10px 16px -8px rgb(0 0 0 / 0.35);
 }
 .dark .shadow-2xl {
-    box-shadow: 0 30px 58px -12px rgb(0 0 0 / 0.65);
+    box-shadow: 0 30px 58px -12px rgb(0 0 0 / 0.4);
 }
