@@ -54,7 +54,7 @@ export default defineConfig((config) => {
             sourcemap: true,
             cssCodeSplit: true,
             lib: {
-                entry: resolve(__dirname, 'src/index.js'),
+                entry: resolve(__dirname, 'src/index.jsx'),
                 formats: ['umd'],
                 name: pkg.name,
                 fileName: format => `${outputFileName}.min.js`

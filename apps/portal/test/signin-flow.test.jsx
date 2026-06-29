@@ -1,4 +1,4 @@
-import App from '../src/app.js';
+import App from '../src/app';
 import {fireEvent, appRender, within, waitFor} from './utils/test-utils';
 import {site as FixtureSite} from './utils/test-fixtures';
 import setupGhostApi from '../src/utils/api.js';
