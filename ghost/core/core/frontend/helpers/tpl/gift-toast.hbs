@@ -11,15 +11,15 @@
     bottom: var(--gh-gift-toast-bottom);
     left: 50%;
     z-index: 99998;
-    display: grid;
-    grid-template-columns: 64px minmax(0, 1fr);
-    align-items: stretch;
+    display: flex;
+    align-items: center;
+    gap: 12px;
     width: max-content;
     min-height: 64px;
     max-width: min(560px, calc(100vw - 32px));
-    padding: 0;
+    padding: 12px 48px 12px 12px;
     overflow: hidden;
-    background: transparent;
+    background: #ffffff;
     color: var(--gh-gift-toast-ink);
     border: none;
     border-radius: 18px;
@@ -43,12 +43,13 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    width: 64px;
-    /* Stretches to the row height (set on the grid container) so the panel stays
-       flush when a longer locale wraps the title to a second line. */
-    min-height: 64px;
+    flex: none;
+    width: 40px;
+    min-width: 40px;
+    height: 40px;
+    min-height: 40px;
     overflow: hidden;
-    background: var(--gh-gift-toast-accent);
+    border-radius: 6px;
 }
 
 .gh-gift-toast-icon {
@@ -63,8 +64,11 @@
     display: none;
 }
 
-/* Mirrors the gift card aesthetic from apps/portal/src/components/pages/gift-page.js:
-   accent color base, Ghost orb at 0.2 opacity, noise grain at 0.1 opacity. */
+/* Fallback only — when no publication icon is set. Mirrors the gift card
+   aesthetic from apps/portal/src/components/pages/gift-page.js: accent color
+   base, Ghost orb at 0.2 opacity, noise grain at 0.1 opacity. When an icon
+   IS set the media has no background, so a transparent PNG simply shows the
+   toast's white surface rather than the accent colour. */
 .gh-gift-toast-pattern {
     display: none;
     position: absolute;
@@ -109,9 +113,6 @@
     display: flex;
     align-items: center;
     min-width: 0;
-    min-height: 64px;
-    padding: 10px 44px 10px 14px;
-    background: #ffffff;
 }
 
 .gh-gift-toast-title {
