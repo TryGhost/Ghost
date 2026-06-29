@@ -250,7 +250,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
 
     return (
         <>
-            <Dialog open onOpenChange={(next) => {
+            <Dialog modal={false} open onOpenChange={(next) => {
                 if (!next) {
                     attemptClose();
                 }
