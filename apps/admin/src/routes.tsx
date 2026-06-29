@@ -32,8 +32,6 @@ const EMBER_ROUTES: string[] = [
     "/signup/*",
     "/reset/*",
     "/pro/*",
-    // "/posts" and "/pages" are Ember-rendered but get the gift-link modal host
-    // layered on top — see giftLinkEmberRoutes below.
     "/posts/analytics/:postId/mentions",
     "/posts/analytics/:postId/debug",
     "/restore",
@@ -135,8 +133,6 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import("./settings/settings")),
                 handle: { allowInForceUpgrade: true } satisfies RouteHandle,
             },
-            // The posts and pages lists stay in Ember, but mount the React
-            // gift-link modal host alongside so their context menu can open it.
             {path: "/posts", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
             {path: "/pages", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
             // Ember-handled routes

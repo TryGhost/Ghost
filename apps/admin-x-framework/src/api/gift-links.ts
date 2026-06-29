@@ -38,8 +38,17 @@ const giftLinkPath = ({id, resource = 'posts'}: GiftLinkMutationPayload) => `/${
 // reads pages.
 export const useReadGiftLink = createQueryWithId<GiftLinksResponseType>({
     dataType,
-    path: id => `/posts/${id}/gift_links/`
+    path: id => giftLinkPath({id})
 });
+
+// A post/page has at most one active gift link, so narrow the read above to that
+// single link and surface its token directly — callers shouldn't have to reach
+// into the response array.
+export const useActiveGiftLink = (id: string, options?: Parameters<typeof useReadGiftLink>[1]) => {
+    const result = useReadGiftLink(id, options);
+    const giftLink = result.data?.gift_links?.[0];
+    return {...result, giftLink, token: giftLink?.token};
+};
 
 // PUT /:resource/:id/gift_links/ — idempotently ensure (create-or-get) the
 // active link, so opening the UI always has a URL to show.

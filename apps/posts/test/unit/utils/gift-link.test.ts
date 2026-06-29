@@ -1,4 +1,4 @@
-import {buildGiftLinkUrl} from '@src/utils/gift-link';
+import {buildGiftLinkUrl, giftAccessLabel} from '@src/utils/gift-link';
 import {describe, expect, it} from 'vitest';
 
 describe('buildGiftLinkUrl', () => {
@@ -21,5 +21,18 @@ describe('buildGiftLinkUrl', () => {
         expect(buildGiftLinkUrl('', 'tok')).toBe('');
         expect(buildGiftLinkUrl('https://example.com/p/', '')).toBe('');
         expect(buildGiftLinkUrl(undefined, undefined)).toBe('');
+    });
+});
+
+describe('giftAccessLabel', () => {
+    it('maps each gated visibility to its access label', () => {
+        expect(giftAccessLabel('members')).toBe('members-only');
+        expect(giftAccessLabel('paid')).toBe('paid-members-only');
+        expect(giftAccessLabel('tiers')).toBe('paid-members-only');
+    });
+
+    it('returns an empty string for unknown or missing visibility', () => {
+        expect(giftAccessLabel('public')).toBe('');
+        expect(giftAccessLabel(undefined)).toBe('');
     });
 });

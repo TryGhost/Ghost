@@ -12,29 +12,29 @@ const GiftLinkModal = lazy(() => import("@tryghost/posts/gift-link-modal"));
  *
  * Subscribes to the bridge on mount and owns the modal's open/close state:
  * each request opens the modal for the named post/page (reopening the same one
- * just re-fires the event), and closing flips `open` while keeping the target
+ * just re-fires the event), and closing flips `open` while keeping the entry
  * so the modal can animate out.
  */
 function GiftLinkModalHost() {
-    const [target, setTarget] = useState<OpenGiftLinkModalEvent | null>(null);
+    const [entry, setEntry] = useState<OpenGiftLinkModalEvent | null>(null);
     const [open, setOpen] = useState(false);
 
     useEffect(() => subscribeOpenGiftLinkModal((event) => {
-        setTarget(event);
+        setEntry(event);
         setOpen(true);
     }), []);
 
-    if (!target) {
+    if (!entry) {
         return null;
     }
 
     return (
         <Suspense fallback={null}>
             <GiftLinkModal
-                key={`${target.resource}:${target.id}`}
+                key={`${entry.resource}:${entry.id}`}
                 open={open}
-                postId={target.id}
-                resource={target.resource}
+                postId={entry.id}
+                resource={entry.resource}
                 onOpenChange={setOpen}
             />
         </Suspense>

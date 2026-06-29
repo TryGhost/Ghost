@@ -17,9 +17,9 @@ interface GiftLinkVisitsRow {
 // mechanism every other analytics surface uses), keyed on the link token.
 //
 // Usage tracking is best-effort and entirely optional: analytics may be turned
-// off (no statsConfig), the per-link pipe may not be deployed yet, or the query
-// may error. In every one of those cases `usage` is `undefined` and the caller
-// simply hides the count — the rest of the gift-link UI keeps working.
+// off (no statsConfig) or the query may error. In either case `usage` is
+// `undefined` and the caller simply hides the count — the rest of the gift-link
+// UI keeps working.
 export const useGiftLinkUsage = ({postUuid, token, enabled = true}: {
     postUuid?: string;
     token?: string;

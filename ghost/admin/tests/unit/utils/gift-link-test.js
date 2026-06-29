@@ -5,13 +5,14 @@ import {expect} from 'chai';
 describe('Unit | Utility | gift-link', function () {
     const flagOn = {giftLinks: true};
     const admin = {isAdmin: true, isEitherEditor: false, isAuthor: false};
+    const editor = {isAdmin: false, isEitherEditor: true, isAuthor: false};
     const author = {isAdmin: false, isEitherEditor: false, isAuthor: true};
     const contributor = {isAdmin: false, isEitherEditor: false, isAuthor: false};
     const gatedPublished = {isPublished: true, visibility: 'paid'};
 
     it('allows a managing user on a published, gated post', function () {
         expect(canCopyGiftLink({feature: flagOn, user: admin, post: gatedPublished})).to.be.true;
-        expect(canCopyGiftLink({feature: flagOn, user: author, post: gatedPublished})).to.be.true;
+        expect(canCopyGiftLink({feature: flagOn, user: editor, post: gatedPublished})).to.be.true;
         expect(canCopyGiftLink({feature: flagOn, user: admin, post: {isPublished: true, visibility: 'members'}})).to.be.true;
     });
 
@@ -21,6 +22,7 @@ describe('Unit | Utility | gift-link', function () {
 
     it('is false for users who cannot manage links', function () {
         expect(canCopyGiftLink({feature: flagOn, user: contributor, post: gatedPublished})).to.be.false;
+        expect(canCopyGiftLink({feature: flagOn, user: author, post: gatedPublished})).to.be.false;
     });
 
     it('is false for public, draft, or non-gated posts', function () {

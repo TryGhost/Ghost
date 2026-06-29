@@ -14,12 +14,12 @@ import {STATS_RANGES} from '@src/utils/constants';
 import {centsToDollars} from '../Growth/growth';
 import {formatQueryDate, getRangeDates, getRangeForStartDate, sanitizeChartData} from '@tryghost/shade/app';
 import {hasBeenEmailed, isPublishedOnly, useNavigate, useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {useActiveGiftLink} from '@tryghost/admin-x-framework/api/gift-links';
 import {useAppContext} from '@src/providers/posts-app-context';
 import {useCanManageGiftLink} from '@src/hooks/use-can-manage-gift-link';
 import {useEffect, useMemo, useState} from 'react';
 import {useGiftLinkUsage} from '@src/hooks/use-gift-link-usage';
 import {usePostReferrers} from '@hooks/use-post-referrers';
-import {useReadGiftLink} from '@tryghost/admin-x-framework/api/gift-links';
 
 const Overview: React.FC = () => {
     const navigate = useNavigate();
@@ -31,8 +31,7 @@ const Overview: React.FC = () => {
     // Gift link card: only for eligible posts. Read the active link (without
     // minting) to scope the usage count to the current token, matching the modal.
     const canManageGiftLink = useCanManageGiftLink(post);
-    const {data: giftLinkData} = useReadGiftLink(postId, {enabled: canManageGiftLink});
-    const giftToken = giftLinkData?.gift_links?.[0]?.token;
+    const {token: giftToken} = useActiveGiftLink(postId, {enabled: canManageGiftLink});
     const {usage: giftLinkUsage} = useGiftLinkUsage({postUuid: post?.uuid, token: giftToken, enabled: canManageGiftLink});
     const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
 

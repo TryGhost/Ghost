@@ -40,9 +40,7 @@ export const usePostDetails = ({postId, resource = 'posts', enabled = true}: {
         };
     }
 
-    // The Page type omits visibility/uuid, but the API returns them (shared
-    // posts table); read them through a widened view.
-    const page = pagesData?.pages?.[0] as undefined | {url: string; title: string; visibility?: string; uuid?: string};
+    const page = pagesData?.pages?.[0];
     return {
         post: page && {url: page.url, title: page.title, visibility: page.visibility, uuid: page.uuid},
         isLoading: isPageLoading

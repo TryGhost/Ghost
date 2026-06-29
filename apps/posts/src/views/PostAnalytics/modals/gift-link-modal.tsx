@@ -1,4 +1,4 @@
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {Badge, Button, Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle} from '@tryghost/shade/components';
 import {GiftLinkResource, useCreateGiftLink, useEnsureGiftLink} from '@tryghost/admin-x-framework/api/gift-links';
 import {ShareModal} from '@tryghost/shade/patterns';
@@ -70,13 +70,6 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
         };
     }, [open, postId, resource, ensureGiftLink, handleError]);
 
-    // Reset transient UI on close so the next open starts clean.
-    useEffect(() => {
-        if (!open) {
-            setResetState('idle');
-        }
-    }, [open]);
-
     useEffect(() => {
         if (resetState === 'confirm') {
             cancelResetRef.current?.focus();
@@ -88,7 +81,7 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
     const resourceLabel = resource === 'pages' ? 'page' : 'post';
     const description = `Anyone you share this link with will be able to access this ${resourceLabel} without becoming a ${memberType}.`;
 
-    const handleConfirmReset = async () => {
+    const handleConfirmReset = useCallback(async () => {
         if (resetting) {
             return;
         }
@@ -102,14 +95,14 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
         } finally {
             setResetting(false);
         }
-    };
+    }, [resetting, createGiftLink, postId, resource, handleError]);
 
-    const handleOpenChange = (isOpen: boolean) => {
+    const handleOpenChange = useCallback((isOpen: boolean) => {
         if (!isOpen) {
             setResetState('idle');
         }
         onOpenChange(isOpen);
-    };
+    }, [onOpenChange]);
 
     return (
         <Dialog open={open} onOpenChange={handleOpenChange}>

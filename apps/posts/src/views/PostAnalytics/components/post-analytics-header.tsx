@@ -6,6 +6,7 @@ import {LucideIcon, formatDisplayDate, formatDisplayTime, formatNumber} from '@t
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
 import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {giftAccessLabel} from '@src/utils/gift-link';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
 import {useCanManageGiftLink} from '@src/hooks/use-can-manage-gift-link';
@@ -140,7 +141,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                             description=''
                                             faviconURL={site?.icon || ''}
                                             featureImageURL={post?.feature_image}
-                                            giftAccessLabel={post?.visibility === 'members' ? 'members-only' : 'paid-members-only'}
+                                            giftAccessLabel={giftAccessLabel(post?.visibility)}
                                             open={isShareOpen}
                                             postExcerpt={post?.excerpt || ''}
                                             postTitle={post?.title}
