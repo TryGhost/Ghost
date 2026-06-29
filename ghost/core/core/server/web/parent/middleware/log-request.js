@@ -1,5 +1,7 @@
 const logging = require('@tryghost/logging');
 
+const HEALTHCHECK_USER_AGENT = 'GhostDockerHealthcheck/1.0';
+
 /**
  * @TODO: move this middleware to Framework monorepo?
  *
@@ -8,6 +10,10 @@ const logging = require('@tryghost/logging');
  * @param {import('express').NextFunction} next
  */
 module.exports = function logRequest(req, res, next) {
+    if (req.headers['user-agent'] === HEALTHCHECK_USER_AGENT) {
+        return next();
+    }
+
     const startTime = Date.now();
 
     function logResponse() {
