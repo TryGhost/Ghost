@@ -15,6 +15,7 @@
  */
 import {resolve} from 'path';
 import {defineConfig, mergeConfig} from 'vitest/config';
+import {createLogger} from 'vite';
 
 /**
  * @param {Object} opts
@@ -61,8 +62,29 @@ export function publicAppViteConfig(opts) {
             plugins.push(svgrPlugin());
         }
 
+        // Node built-ins (path, fs, fs/promises) are reachable in module graphs
+        // via @tryghost/i18n's server-side helpers, @tryghost/root-utils, and
+        // find-root. Vite externalizes them for the browser at bundle time —
+        // the runtime code paths that touch them are dead under SSR=false.
+        // The per-import "Module 'path'/'fs' has been externalized" warning is
+        // purely informational and re-emits on every boot/HMR rebuild, so we
+        // filter just those messages here. Adding `rollupOptions.external` was
+        // rejected because UMD output then asks for `path`/`fs` browser globals
+        // (`No name was provided for external module "path"` warnings) and
+        // injects a Node-polyfill notice.
+        const logLevel = process.env.CI ? 'info' : 'warn';
+        const customLogger = createLogger(logLevel);
+        const originalWarn = customLogger.warn;
+        customLogger.warn = (msg, warnOpts) => {
+            if (typeof msg === 'string' && /Module "(path|fs|fs\/promises)" has been externalized for browser compatibility/.test(msg)) {
+                return;
+            }
+            originalWarn(msg, warnOpts);
+        };
+
         const base = {
-            logLevel: process.env.CI ? 'info' : 'warn',
+            logLevel,
+            customLogger,
             clearScreen: false,
             plugins,
             define: {
