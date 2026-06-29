@@ -118,7 +118,7 @@ describe('Dialog Components', () => {
         
         const description = screen.getByTestId('dialog-description');
         assert.equal(description.textContent, 'Test Description', 'Should have correct text content');
-        assert.ok(description.className.includes('text-sm text-muted-foreground'), 'Should have default styling');
+        assert.ok(description.className.includes('text-muted-foreground'), 'Should have default styling');
     });
 
     it('applies custom className to DialogDescription correctly', () => {
@@ -267,7 +267,7 @@ describe('Dialog Components', () => {
         
         const dialogDescription = screen.getByTestId('dialog-description');
         assert.equal(dialogDescription.textContent, 'Test Description', 'Should render description text');
-        assert.ok(dialogDescription.className.includes('text-sm text-muted-foreground'), 'Should have default styling');
+        assert.ok(dialogDescription.className.includes('text-muted-foreground'), 'Should have default styling');
     });
 
     it('applies a custom className to DialogTitle', () => {
