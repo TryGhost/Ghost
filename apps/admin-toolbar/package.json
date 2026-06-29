@@ -18,11 +18,11 @@
     "preact": "catalog:"
   },
   "scripts": {
-    "build": "pnpm exec vite build",
-    "dev": "pnpm exec vite build --watch --mode development",
-    "lint": "pnpm exec eslint src test --cache",
+    "build": "vite build",
+    "dev": "vite build --watch --mode development",
+    "lint": "eslint src test --cache",
     "test": "pnpm test:unit",
-    "test:unit": "pnpm run build && pnpm exec vitest run",
+    "test:unit": "pnpm run build && vitest run",
     "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
