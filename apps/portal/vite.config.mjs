@@ -1,6 +1,5 @@
 /* eslint-env node */
 import {resolve} from 'path';
-import fs from 'fs/promises';
 
 import {defineConfig} from 'vitest/config';
 import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
@@ -33,26 +32,6 @@ export default defineConfig((config) => {
             reactPlugin(),
             svgrPlugin()
         ],
-        esbuild: {
-            loader: 'tsx',
-            include: [/src\/.*\.[jt]sx?$/, /__mocks__\/.*\.[jt]sx?$/, /test\/.*\.[jt]sx?$/],
-            exclude: []
-        },
-        optimizeDeps: {
-            esbuildOptions: {
-                plugins: [
-                    {
-                        name: 'load-js-files-as-jsx',
-                        setup(build) {
-                            build.onLoad({filter: /src\/.*\.js$/}, async args => ({
-                                loader: 'jsx',
-                                contents: await fs.readFile(args.path, 'utf8')
-                            }));
-                        }
-                    }
-                ]
-            }
-        },
         resolve: {
             dedupe: ['@tryghost/debug']
         },
