@@ -16,7 +16,7 @@
   },
   "scripts": {
     "dev": "vite build --watch --mode development",
-    "dev:standalone": "concurrently --kill-others --names standalone,build \"vite --port 6173\" \"vite build --watch --mode development\"",
+    "dev:standalone": "vite --port 6173",
     "preview": "concurrently --kill-others --names preview,build \"vite preview -l silent\" \"vite build --watch --mode development\"",
     "dev:test": "vite build && vite preview --port 6175",
     "build": "tsc && vite build",
