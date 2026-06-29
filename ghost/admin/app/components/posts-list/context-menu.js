@@ -8,6 +8,8 @@ import copyTextToClipboard from 'ghost-admin/utils/copy-text-to-clipboard';
 import nql from '@tryghost/nql';
 import {action} from '@ember/object';
 import {capitalizeFirstLetter} from 'ghost-admin/helpers/capitalize-first-letter';
+import {getPagePlacement, pagePathForSlug, setPagesNavigationPlacement} from 'ghost-admin/utils/site-navigation';
+import {inject} from 'ghost-admin/decorators/inject';
 import {inject as service} from '@ember/service';
 import {task, timeout} from 'ember-concurrency';
 
@@ -66,6 +68,9 @@ export default class PostsContextMenu extends Component {
     @service store;
     @service notifications;
     @service membersUtils;
+    @service settings;
+
+    @inject config;
 
     get menu() {
         return this.args.menu;
@@ -493,5 +498,99 @@ export default class PostsContextMenu extends Component {
 
     get canCopySelection() {
         return this.selectionList.availableModels.length === 1;
+    }
+
+    // site navigation --------------------------------------------------------
+
+    // a nav link points at the page's published URL, so only published pages can
+    // be placed in navigation - linking a draft/scheduled page would 404. Draft
+    // pages set their placement at publish time via the publish flow instead.
+    get canManageNavigation() {
+        return this.type === 'page'
+            && this.session.user.isAdmin
+            && this.selectionList.availableModels.every(model => model.status === 'published');
+    }
+
+    get selectedPagePlacements() {
+        return this.selectionList.availableModels
+            .map(model => getPagePlacement(this.settings, pagePathForSlug(model.slug, this.config.blogUrl), this.config.blogUrl));
+    }
+
+    get isSingleSelection() {
+        return this.selectionList.availableModels.length === 1;
+    }
+
+    // current placement when exactly one page is selected, otherwise null
+    get singleNavigationPlacement() {
+        return this.isSingleSelection ? this.selectedPagePlacements[0] : null;
+    }
+
+    // only offer a destination the selection isn't already entirely in
+    get canAddToPrimaryNavigation() {
+        return this.selectedPagePlacements.some(placement => placement !== 'primary');
+    }
+
+    get canAddToSecondaryNavigation() {
+        return this.selectedPagePlacements.some(placement => placement !== 'secondary');
+    }
+
+    get canRemoveFromNavigation() {
+        return this.selectedPagePlacements.some(placement => placement !== null);
+    }
+
+    // a single already-linked page is moved between menus rather than added
+    get primaryNavigationActionLabel() {
+        return this.singleNavigationPlacement === 'secondary' ? 'Move to primary navigation' : 'Add to primary navigation';
+    }
+
+    get secondaryNavigationActionLabel() {
+        return this.singleNavigationPlacement === 'primary' ? 'Move to secondary navigation' : 'Add to secondary navigation';
+    }
+
+    @action
+    addToPrimaryNavigation() {
+        this.menu.performTask({perform: () => this.updateNavigationPlacementTask.perform('primary')});
+    }
+
+    @action
+    addToSecondaryNavigation() {
+        this.menu.performTask({perform: () => this.updateNavigationPlacementTask.perform('secondary')});
+    }
+
+    @action
+    removeFromNavigation() {
+        this.menu.performTask({perform: () => this.updateNavigationPlacementTask.perform('none')});
+    }
+
+    @task
+    *updateNavigationPlacementTask(placement) {
+        const pages = this.selectionList.availableModels
+            .map(model => ({label: model.title, path: pagePathForSlug(model.slug, this.config.blogUrl)}));
+        const count = pages.length;
+        // a single already-linked page is moved rather than added
+        const isMove = count === 1 && this.singleNavigationPlacement && this.singleNavigationPlacement !== placement;
+
+        try {
+            yield setPagesNavigationPlacement(this.settings, {
+                pages,
+                placement: placement === 'none' ? null : placement,
+                blogUrl: this.config.blogUrl
+            });
+
+            let message;
+            if (placement === 'none') {
+                message = count > 1 ? `${count} pages removed from navigation` : 'Page removed from navigation';
+            } else if (isMove) {
+                message = `Page moved to ${placement} navigation`;
+            } else {
+                message = count > 1 ? `${count} pages added to ${placement} navigation` : `Page added to ${placement} navigation`;
+            }
+
+            this.notifications.showNotification(message, {type: 'success'});
+        } catch (error) {
+            this.notifications.showAPIError(error, {key: 'navigation.save'});
+        }
+
+        return true;
     }
 }

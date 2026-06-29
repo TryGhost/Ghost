@@ -1208,6 +1208,95 @@ describe('Acceptance: Posts / Pages', function () {
                 const filter = find('[data-test-tag-select]');
                 expect(filter.textContent.trim(), 'filter text').to.contain('B - Second');
             });
+
+            describe('site navigation', function () {
+                it('shows an in-menu indicator for linked pages only', async function () {
+                    // the default navigation fixture links /about
+                    const linkedPage = this.server.create('page', {authors: [admin], status: 'published', title: 'About', slug: 'about'});
+                    const unlinkedPage = this.server.create('page', {authors: [admin], status: 'published', title: 'Partners', slug: 'partners'});
+
+                    await visit('/pages');
+
+                    const linkedRow = find(`[data-test-post-id="${linkedPage.id}"]`);
+                    expect(linkedRow.querySelector('[data-test-nav-indicator="primary"]'), 'linked indicator').to.exist;
+
+                    const unlinkedRow = find(`[data-test-post-id="${unlinkedPage.id}"]`);
+                    expect(unlinkedRow.querySelector('[data-test-nav-indicator]'), 'unlinked indicator').to.not.exist;
+                });
+
+                it('does not show an indicator for a draft page even when linked', async function () {
+                    // the default nav fixture links /about; a draft page at that
+                    // slug isn't live, so it must not read as "in navigation"
+                    const draftLinked = this.server.create('page', {authors: [admin], status: 'draft', title: 'About', slug: 'about'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${draftLinked.id}"]`);
+                    expect(row.querySelector('[data-test-nav-indicator]'), 'draft indicator').to.not.exist;
+                });
+
+                it('can add a page to primary navigation from the context menu', async function () {
+                    const page = this.server.create('page', {authors: [admin], status: 'published', title: 'Partners', slug: 'partners'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    await triggerEvent(row, 'contextmenu');
+
+                    expect(find('[data-test-button="add-to-primary-navigation"]'), 'add to primary option').to.exist;
+                    await click('[data-test-button="add-to-primary-navigation"]');
+
+                    const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+                    expect(navigation).to.deep.include({label: 'Partners', url: '/partners/'});
+                });
+
+                it('offers contextual actions for an already-linked page', async function () {
+                    // default nav fixture links /about in primary
+                    const page = this.server.create('page', {authors: [admin], status: 'published', title: 'About', slug: 'about'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    await triggerEvent(row, 'contextmenu');
+
+                    // redundant "add to primary" is hidden; move + remove are offered
+                    expect(find('[data-test-button="add-to-primary-navigation"]'), 'add to primary option').to.not.exist;
+                    expect(find('[data-test-button="add-to-secondary-navigation"]'), 'move to secondary option').to.exist;
+                    expect(find('[data-test-button="add-to-secondary-navigation"]').textContent.trim(), 'move label')
+                        .to.contain('Move to secondary navigation');
+                    expect(find('[data-test-button="remove-from-navigation"]'), 'remove option').to.exist;
+                });
+
+                it('can remove a linked page from navigation via the context menu', async function () {
+                    const page = this.server.create('page', {authors: [admin], status: 'published', title: 'About', slug: 'about'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    await triggerEvent(row, 'contextmenu');
+
+                    expect(find('[data-test-button="remove-from-navigation"]'), 'remove option').to.exist;
+                    await click('[data-test-button="remove-from-navigation"]');
+
+                    const navigation = JSON.parse(this.server.db.settings.findBy({key: 'navigation'}).value);
+                    expect(navigation.map(item => item.label)).to.not.include('About');
+                });
+
+                it('does not offer navigation actions for a draft page', async function () {
+                    // a nav link points at the published URL, so an unpublished
+                    // page would 404 - those actions are hidden until it's live
+                    const page = this.server.create('page', {authors: [admin], status: 'draft', title: 'Partners', slug: 'partners'});
+
+                    await visit('/pages');
+
+                    const row = find(`[data-test-post-id="${page.id}"]`);
+                    await triggerEvent(row, 'contextmenu');
+
+                    expect(find('[data-test-button="add-to-primary-navigation"]'), 'add to primary option').to.not.exist;
+                    expect(find('[data-test-button="add-to-secondary-navigation"]'), 'add to secondary option').to.not.exist;
+                    expect(find('[data-test-button="remove-from-navigation"]'), 'remove option').to.not.exist;
+                });
+            });
         });
     });
 });

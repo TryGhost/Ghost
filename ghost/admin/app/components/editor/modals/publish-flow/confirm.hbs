@@ -20,7 +20,9 @@
     {{@publishOptions.post.displayName}}
 
     {{#if this.willPublish}}
-        will be published on your site{{#if this.willEmail}}, and delivered to{{else}}.{{/if}}
+        will be published on your site{{#if this.willEmail}}, and delivered to{{else if @publishOptions.desiredNavigationPlacement}}
+            and listed in your <strong>{{@publishOptions.desiredNavigationPlacement}} navigation</strong>.
+        {{else}}.{{/if}}
     {{/if}}
 
     {{#if this.willEmail}}
