@@ -18,7 +18,6 @@
     "dev": "tsc --watch --preserveWatchOutput --sourceMap",
     "build": "pnpm build:tsc",
     "build:tsc": "tsc",
-    "prepare": "pnpm build",
     "test:unit": "NODE_ENV=testing vitest run --coverage",
     "test": "pnpm test:types && pnpm test:unit",
     "test:types": "tsc --noEmit",
