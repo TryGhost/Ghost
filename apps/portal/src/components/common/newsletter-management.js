@@ -1,7 +1,7 @@
 import AppContext from '../../app-context';
 import CloseButton from './close-button';
 import BackButton from './back-button';
-import {useContext, useState, useRef} from 'react';
+import {useContext, useRef} from 'react';
 import Switch from './switch';
 import {getSiteNewsletters, hasMemberGotEmailSuppression} from '../../utils/helpers';
 import ActionButton from './action-button';
@@ -24,26 +24,44 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
         return d.id === newsletter?.id;
     });
 
+    const handleToggle = () => {
+        let updatedNewsletters = [];
+        if (isChecked) {
+            updatedNewsletters = subscribedNewsletters.filter((d) => {
+                return d.id !== newsletter.id;
+            });
+        } else {
+            updatedNewsletters = subscribedNewsletters.filter((d) => {
+                return d.id !== newsletter.id;
+            }).concat(newsletter);
+        }
+        setSubscribedNewsletters(updatedNewsletters);
+    };
+
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="newsletter-toggle">
+        <section
+            className='gh-portal-list-toggle-wrapper gh-portal-list-clickable'
+            data-testid="newsletter-toggle"
+            role="button"
+            tabIndex={0}
+            aria-pressed={isChecked}
+            onClick={handleToggle}
+            onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleToggle();
+                }
+            }}
+        >
             <div className='gh-portal-list-detail'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter?.description}</p>
             </div>
-            <div style={{display: 'flex', alignItems: 'center'}}>
-                <Switch id={newsletter.id} onToggle={(e, checked) => {
-                    let updatedNewsletters = [];
-                    if (!checked) {
-                        updatedNewsletters = subscribedNewsletters.filter((d) => {
-                            return d.id !== newsletter.id;
-                        });
-                    } else {
-                        updatedNewsletters = subscribedNewsletters.filter((d) => {
-                            return d.id !== newsletter.id;
-                        }).concat(newsletter);
-                    }
-                    setSubscribedNewsletters(updatedNewsletters);
-                }} checked={isChecked} dataTestId="switch-input" />
+            <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>
+                <Switch id={newsletter.id} label={newsletter.name} onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" presentational={true} />
             </div>
         </section>
     );
@@ -52,27 +70,56 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
 function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableCommentNotifications}) {
     const {doAction} = useContext(AppContext);
     const isChecked = !!enableCommentNotifications;
+    // Ref-based guard so rapid synchronous clicks see the in-flight state
+    // immediately — state updates wouldn't be visible until the next render.
+    const isUpdatingRef = useRef(false);
 
     if (!isCommentsEnabled) {
         return null;
     }
 
-    const handleToggle = async (e, checked) => {
-        await updateCommentNotifications(checked);
-        doAction('showPopupNotification', {
-            action: 'updated:success',
-            message: t('Comment preferences updated.')
-        });
+    // Guard inside handleToggle so both the row click path and the inner
+    // Switch's onToggle path are protected from concurrent updates.
+    const handleToggle = async () => {
+        if (isUpdatingRef.current) {
+            return;
+        }
+        isUpdatingRef.current = true;
+        try {
+            await updateCommentNotifications(!isChecked);
+            doAction('showPopupNotification', {
+                action: 'updated:success',
+                message: t('Comment preferences updated.')
+            });
+        } finally {
+            isUpdatingRef.current = false;
+        }
     };
 
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="comment-toggle">
+        <section
+            className='gh-portal-list-toggle-wrapper gh-portal-list-clickable'
+            data-testid="comment-toggle"
+            role="button"
+            tabIndex={0}
+            aria-pressed={isChecked}
+            onClick={handleToggle}
+            onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleToggle();
+                }
+            }}
+        >
             <div className='gh-portal-list-detail'>
                 <h3>{t('Comments')}</h3>
                 <p>{t('Get notified when someone replies to your comment')}</p>
             </div>
-            <div style={{display: 'flex', alignItems: 'center'}}>
-                <Switch id="comments" onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" />
+            <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>
+                <Switch id="comments" label={t('Comments')} onToggle={handleToggle} checked={isChecked} dataTestId="switch-input" presentational={true} />
             </div>
         </section>
     );
@@ -80,33 +127,56 @@ function CommentsSection({updateCommentNotifications, isCommentsEnabled, enableC
 
 function UpdatesAndAnnouncementsSection({updateUpdatesAndAnnouncements, canChangeUpdatesAndAnnouncements, enableUpdatesAndAnnouncements}) {
     const {doAction, site} = useContext(AppContext);
-    const [isUpdating, setIsUpdating] = useState(false);
+    // Ref-based guard so rapid synchronous clicks see the in-flight state
+    // immediately — state updates wouldn't be visible until the next render.
+    const isUpdatingRef = useRef(false);
 
     if (!canChangeUpdatesAndAnnouncements) {
         return null;
     }
 
-    const handleToggle = async (e, checked) => {
-        setIsUpdating(true);
+    // Guard inside handleToggle so both the row click path and the inner
+    // Switch's onToggle path are protected from concurrent updates.
+    const handleToggle = async () => {
+        if (isUpdatingRef.current) {
+            return;
+        }
+        isUpdatingRef.current = true;
         try {
-            await updateUpdatesAndAnnouncements(checked);
+            await updateUpdatesAndAnnouncements(!enableUpdatesAndAnnouncements);
             doAction('showPopupNotification', {
                 action: 'updated:success',
                 message: t('Email preferences updated.')
             });
         } finally {
-            setIsUpdating(false);
+            isUpdatingRef.current = false;
         }
     };
 
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="updates-and-announcements-toggle">
+        <section
+            className='gh-portal-list-toggle-wrapper gh-portal-list-clickable'
+            data-testid="updates-and-announcements-toggle"
+            role="button"
+            tabIndex={0}
+            aria-pressed={!!enableUpdatesAndAnnouncements}
+            onClick={handleToggle}
+            onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleToggle();
+                }
+            }}
+        >
             <div className='gh-portal-list-detail'>
                 <h3>{t('Updates & announcements')}</h3>
                 <p>{t('Occasional updates from {siteTitle}', {siteTitle: site?.title})}</p>
             </div>
-            <div style={{display: 'flex', alignItems: 'center'}}>
-                <Switch id="updates-and-announcements" onToggle={handleToggle} checked={enableUpdatesAndAnnouncements} disabled={isUpdating} dataTestId="switch-input" />
+            <div style={{display: 'flex', alignItems: 'center'}} onClick={(e) => e.stopPropagation()}>
+                <Switch id="updates-and-announcements" label={t('Updates & announcements')} onToggle={handleToggle} checked={enableUpdatesAndAnnouncements} dataTestId="switch-input" presentational={true} />
             </div>
         </section>
     );
@@ -172,8 +242,8 @@ export default function NewsletterManagement({
     const FinalNotification = notification || EmptyNotification;
     return (
         <div className='gh-portal-content with-footer'>
-            <CloseButton />
             <AccountHeader />
+            <CloseButton brandColor={brandColor} />
             <FinalNotification />
             <div className='gh-portal-section flex'>
                 <div className='gh-portal-list'>
@@ -205,7 +275,7 @@ export default function NewsletterManagement({
                     />
                 </div>
             </div>
-            <div className='gh-portal-btn-product gh-portal-btn-unsubscribe' style={{marginTop: '-48px', marginBottom: 0}}>
+            <div className='gh-portal-btn-unsubscribe'>
                 <ActionButton
                     isRunning={false}
                     onClick={() => {
@@ -216,7 +286,7 @@ export default function NewsletterManagement({
                     isPrimary={false}
                     label={t('Unsubscribe from all emails')}
                     isDestructive={true}
-                    style={{width: '100%', zIndex: 900}}
+                    style={{width: '100%'}}
                     dataTestId="unsubscribe-from-all-emails"
                 />
             </div>

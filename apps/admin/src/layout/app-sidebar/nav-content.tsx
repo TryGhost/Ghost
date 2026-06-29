@@ -5,7 +5,7 @@ import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useMemberCount } from "@tryghost/admin-x-framework/api/members";
 import {getSettingValue, useBrowseSettings} from "@tryghost/admin-x-framework/api/settings";
-import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
+import { canManageAutomations, canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
@@ -83,6 +83,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
+    const showAutomations = currentUser && canManageAutomations(currentUser);
     const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
     const showComments = !!showMembers && commentsEnabled !== 'off';
     const isDraftPostsRouteActive = routing.isRouteActive('posts', {type: 'draft'});
@@ -208,7 +209,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem>
                     )}
 
-                    {showMembers && automationsEnabled && (
+                    {showAutomations && automationsEnabled && (
                         <NavMenuItem>
                             <NavMenuItem.Link
                                 to="automations"

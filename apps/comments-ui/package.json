@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/comments-ui",
   "type": "module",
-  "version": "1.5.16",
+  "version": "1.5.19",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -68,6 +68,8 @@
     "@testing-library/react": "catalog:react17",
     "@tryghost/i18n": "workspace:*",
     "@tryghost/nql": "catalog:",
+    "@types/react": "catalog:react17",
+    "@types/react-dom": "catalog:react17",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
     "autoprefixer": "10.5.0",

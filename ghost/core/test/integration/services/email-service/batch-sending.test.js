@@ -187,16 +187,27 @@ describe('Batch sending tests', function () {
         // Prepare a post and email model
         const {emailModel} = await sendEmail(agent);
 
-        // Retry sending a couple of times
-        const promises = [];
-        for (let i = 0; i < 100; i++) {
-            promises.push(emailService.service.retryEmail(emailModel));
-        }
-        await Promise.all(promises);
+        // Flip the email back to `failed` so retryEmail is allowed to reschedule it
+        // (retryEmail now rejects non-failed emails). This reproduces the real-world
+        // contention we care about: a failed email getting retried many times at once.
+        await emailModel.save({status: 'failed'}, {patch: true, autoRefresh: false});
+
+        // Each retryEmail mutates its email model in-memory (status -> pending) before
+        // scheduling, so concurrent calls must use independent model instances — otherwise
+        // they'd race on the shared model's status and trip the "only failed" guard.
+        const emailModels = await Promise.all(
+            Array.from({length: 50}, () => models.Email.findOne({id: emailModel.id}))
+        );
+
+        // Retry sending a couple of times concurrently
+        await Promise.all(emailModels.map(model => emailService.service.retryEmail(model)));
 
         // Await sending job
         await jobManager.allSettled();
 
+        // Despite 50 concurrent retries each scheduling a job, the emailJob status lock
+        // (pending/failed -> submitting) ensures only one job actually sends. The already
+        // submitted batch from the initial send is short-circuited, not re-sent.
         await emailModel.refresh();
         assert.equal(emailModel.get('status'), 'submitted');
         assert.equal(emailModel.get('email_count'), 4);
@@ -607,13 +618,17 @@ describe('Batch sending tests', function () {
             const calls = stubbedSend.getCalls();
             const deadline = new Date(t0.getTime() + targetDeliveryWindow);
 
-            // Check that the emails were sent with the deliverytime
-            for (const call of calls) {
-                const options = call.args[1];
-                const deliveryTimeString = options['o:deliverytime'];
-                const deliveryTimeDate = new Date(Date.parse(deliveryTimeString));
-                assert.equal(typeof deliveryTimeString, 'string');
-                assert.ok(deliveryTimeDate.getTime() <= deadline.getTime());
+            // The first/immediate batch's delivery time is "now" at calculation time,
+            // which the sender drops once the clock ticks past it (it never schedules a
+            // delivery in the past), so that batch legitimately sends with no
+            // deliverytime. Workers also run concurrently, so the batch order isn't
+            // guaranteed. Assert the windowed batches each carry a valid deliverytime
+            // within the deadline, rather than requiring one on every batch.
+            const deliveryTimes = calls.map(call => call.args[1]['o:deliverytime']);
+            const scheduled = deliveryTimes.filter(time => typeof time === 'string');
+            assert.ok(scheduled.length >= 3, `expected at least 3 scheduled delivery times, got ${scheduled.length}`);
+            for (const deliveryTimeString of scheduled) {
+                assert.ok(Date.parse(deliveryTimeString) <= deadline.getTime());
             }
             configUtils.restore();
         });

@@ -19,6 +19,8 @@ module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
 
+        url.forceUrlColumnsWhenLazy(frame, 'tags');
+
         if (utils.isContentAPI(frame)) {
             setDefaultOrder(frame);
         }

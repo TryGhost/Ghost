@@ -287,8 +287,22 @@ class OEmbedService {
         }
 
         const pickFn = (sizes, pickDefault) => {
-            // Prioritize apple touch icon with sizes > 180
-            const appleTouchIcon = sizes.find(item => item.rel?.includes('apple') && item.sizes && item.size.width >= 180);
+            const appleTouchIcon = sizes.find(item => item.rel?.includes('apple') && item.sizes && item.size?.width >= 180);
+            // Bookmark cards render the icon inline in the post body, where the
+            // site's standard (often transparent) favicon matches surrounding
+            // chrome better than an Apple Touch icon's solid-background square.
+            // Other call sites (Recommendations Avatar via type='mention', plus
+            // the generic oembed fallback) scale the icon up into a larger
+            // tile, where Apple Touch is the better fit.
+            if (type === 'bookmark') {
+                // metascraper-logo-favicon gathers anything matching link[rel*="icon"], which
+                // includes apple-touch-icon, mask-icon (Safari pinned-tab silhouette), and
+                // fluid-icon (Fluid SSB) — none of those are the site's standard brand
+                // favicon, so skip them when picking what to show in a bookmark card.
+                const standardIcons = sizes.filter(item => !/apple|mask-icon|fluid-icon/.test(item.rel ?? ''));
+                const svgIcon = standardIcons.find(item => item.href?.endsWith('svg'));
+                return svgIcon || pickDefault(standardIcons) || appleTouchIcon;
+            }
             const svgIcon = sizes.find(item => item.href?.endsWith('svg'));
             return appleTouchIcon || svgIcon || pickDefault(sizes);
         };

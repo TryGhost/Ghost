@@ -23,26 +23,45 @@ function NewsletterPrefSection({newsletter, subscribedNewsletters, setSubscribed
             </section>
         );
     }
+
+    const handleToggle = () => {
+        let updatedNewsletters = [];
+        if (isChecked) {
+            updatedNewsletters = subscribedNewsletters.filter((d) => {
+                return d.id !== newsletter.id;
+            });
+        } else {
+            updatedNewsletters = subscribedNewsletters.filter((d) => {
+                return d.id !== newsletter.id;
+            }).concat(newsletter);
+        }
+        setSubscribedNewsletters(updatedNewsletters);
+    };
+
     return (
-        <section className='gh-portal-list-toggle-wrapper' data-testid="toggle-wrapper">
+        <section
+            className='gh-portal-list-toggle-wrapper gh-portal-list-clickable'
+            data-testid="toggle-wrapper"
+            role="button"
+            tabIndex={0}
+            aria-pressed={isChecked}
+            onClick={handleToggle}
+            onKeyDown={(e) => {
+                if (e.target !== e.currentTarget) {
+                    return;
+                }
+                if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    handleToggle();
+                }
+            }}
+        >
             <div className='gh-portal-list-detail gh-portal-list-big'>
                 <h3>{newsletter.name}</h3>
                 <p>{newsletter.description}</p>
             </div>
-            <div>
-                <Switch id={newsletter.id} onToggle={(e, checked) => {
-                    let updatedNewsletters = [];
-                    if (!checked) {
-                        updatedNewsletters = subscribedNewsletters.filter((d) => {
-                            return d.id !== newsletter.id;
-                        });
-                    } else {
-                        updatedNewsletters = subscribedNewsletters.filter((d) => {
-                            return d.id !== newsletter.id;
-                        }).concat(newsletter);
-                    }
-                    setSubscribedNewsletters(updatedNewsletters);
-                }} checked={isChecked} />
+            <div onClick={(e) => e.stopPropagation()}>
+                <Switch id={newsletter.id} label={newsletter.name} onToggle={handleToggle} checked={isChecked} presentational={true} />
             </div>
         </section>
     );

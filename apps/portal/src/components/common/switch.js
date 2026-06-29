@@ -78,13 +78,13 @@ export const SwitchStyles = `
     }
 `;
 
-function Switch({id, label = '', onToggle, checked = false, disabled = false, dataTestId = 'switch-input'}) {
+function Switch({id, label = '', onToggle, checked = false, disabled = false, dataTestId = 'switch-input', presentational = false}) {
     const [isChecked, setIsChecked] = useState(checked);
 
     useEffect(() => {
         setIsChecked(checked);
     }, [checked]);
-    
+
     const inputRef = useRef(null);
     useEffect(() => {
         if (inputRef.current && inputRef.current.checked !== isChecked) {
@@ -92,8 +92,27 @@ function Switch({id, label = '', onToggle, checked = false, disabled = false, da
         }
     }, [isChecked, id]);
 
+    const handleChange = (event) => {
+        if (disabled) {
+            return;
+        }
+
+        setIsChecked(event.target.checked);
+        onToggle(event, event.target.checked);
+    };
+
+    // When `presentational` is true, the surrounding row is the accessible
+    // control (it carries role="button" + aria-pressed). The whole switch is
+    // hidden from the accessibility tree and the checkbox is removed from the
+    // focus order so keyboard/SR users get a single stop with the correct
+    // toggle state.
+    const wrapperProps = presentational ? {'aria-hidden': true} : {};
+    const inputProps = presentational
+        ? {tabIndex: -1}
+        : {'aria-label': label};
+
     return (
-        <div className="gh-portal-for-switch" data-test-switch={dataTestId}>
+        <div className="gh-portal-for-switch" data-test-switch={dataTestId} {...wrapperProps}>
             <label className="switch" htmlFor={id}>
                 <input
                     ref={inputRef}
@@ -101,16 +120,10 @@ function Switch({id, label = '', onToggle, checked = false, disabled = false, da
                     checked={isChecked}
                     disabled={disabled}
                     id={id}
-                    onChange={() => {}}
-                    aria-label={label}
+                    onChange={handleChange}
+                    {...inputProps}
                 />
-                <span className="input-toggle-component" onClick={(e) => {
-                    if (disabled) {
-                        return;
-                    }
-                    setIsChecked(!isChecked);
-                    onToggle(e, !isChecked);
-                }} data-testid={dataTestId}></span>
+                <span className="input-toggle-component" data-testid={dataTestId}></span>
             </label>
         </div>
     );
