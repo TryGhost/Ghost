@@ -844,11 +844,18 @@ jobs:
 
   job_build_artifacts:
     name: Build & Publish Artifacts
+    # NOT gated on job_build_e2e_public_apps: this job's first ~8 min (deps,
+    # build:production, core/full images) don't need the UMD bundles — only the
+    # late "Build & push E2E image" step does. The public-apps job starts after
+    # job_setup (~1.8m) and finishes ~3.2m, long before we reach that step, so we
+    # download its artifact there without a needs edge. Adding the edge here would
+    # delay this job's START until ~3.2m and cancel most of the Option A saving.
     needs: [job_setup]
     # Root of the build + browser-E2E lane (see run_e2e in job_setup).
     if: needs.job_setup.outputs.run_e2e == 'true'
     runs-on: ubuntu-latest
     permissions:
+      actions: read
       contents: read
       packages: write
     steps:
@@ -1039,6 +1046,10 @@ jobs:
           cache-from: type=registry,ref=${{ steps.strategy.outputs.image-full-name }}:cache-main
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-full-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
+      # The production image artifact is saved before the e2e steps below:
+      # Ghost-Moya CD discovers `docker-image-production` by name in this run
+      # (cd.yml / cd-server.yml on the artifact path), so an e2e-lane failure
+      # must not prevent its upload.
       - name: Save full image as artifact
         if: steps.strategy.outputs.use-artifact == 'true'
         run: |
@@ -1105,11 +1116,167 @@ jobs:
 
           } >> $GITHUB_STEP_SUMMARY
 
+      # ---- Build the ghost-e2e image here, while the production "full" image is
+      # still warm in this job's BuildKit cache. The e2e image is FROM the full
+      # image + a COPY of the public-app UMD bundles + 6 ENV vars. Building it in
+      # this same job (same buildx builder) means the base resolves from the local
+      # BuildKit cache instead of a 54s re-pull on a separate fresh runner.
+      # ghost-e2e stays a SEPARATE tag, so the deployed production image stays clean.
+      #
+      # On tag runs every e2e step below is continue-on-error: this job gates the
+      # release lane (publish_ghost ← job_ghost-cli), so an e2e-lane failure must
+      # not strand a half-published release (GHCR images pushed, npm not) — and
+      # release.js --skip-checks can bypass a red e2e lane pre-tag but has no
+      # override inside this run. The e2e tests on the tag run still fail visibly
+      # if the image is missing or broken.
+      - name: Resolve full image tag for E2E base
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        env:
+          FULL_IMAGE_TAGS: ${{ steps.meta-full.outputs.tags }}
+        run: |
+          # Use the first full-image tag as the FROM base for the e2e build.
+          GHOST_IMAGE_TAG="${FULL_IMAGE_TAGS%%$'\n'*}"
+          echo "GHOST_IMAGE_TAG=${GHOST_IMAGE_TAG}" >> "$GITHUB_ENV"
+
+      - name: Wait for public app artifacts (e2e)
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          TIMEOUT=600
+          INTERVAL=10
+          START=$(date +%s)
+
+          while true; do
+            COUNT=$(gh api "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts?per_page=100" \
+              --jq '[.artifacts[] | select(.name == "e2e-public-apps" and .expired == false)] | length' 2>/dev/null || echo "0")
+
+            if [ "$COUNT" -gt 0 ]; then
+              echo "e2e-public-apps artifact is ready"
+              break
+            fi
+
+            # The artifact is never coming if the producing job already finished
+            # without success — fail now instead of waiting out the timeout.
+            # --paginate: the run can exceed 100 jobs (e2e shards + package matrices).
+            # A queued/in-progress job has a null conclusion → empty → keep waiting.
+            CONCLUSION=$(gh api --paginate "repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/jobs?per_page=100" \
+              --jq '.jobs[] | select(.name == "Build E2E Public App Assets") | .conclusion // ""' 2>/dev/null | tail -n1 || echo "")
+            if [ -n "$CONCLUSION" ] && [ "$CONCLUSION" != "success" ]; then
+              echo "::error::Build E2E Public App Assets concluded '${CONCLUSION}' — the e2e-public-apps artifact will not be produced"
+              exit 1
+            fi
+
+            ELAPSED=$(( $(date +%s) - START ))
+            if [ "$ELAPSED" -ge "$TIMEOUT" ]; then
+              echo "::error::Timed out waiting for e2e-public-apps artifact (${TIMEOUT}s)"
+              exit 1
+            fi
+
+            echo "Waiting for e2e-public-apps artifact... (${ELAPSED}s elapsed)"
+            sleep "$INTERVAL"
+          done
+
+      # Extract into a clean staging dir and build from there: the tarball holds
+      # exactly the apps/*/umd paths the Dockerfile COPYs, while the workspace at
+      # this point is dirty (node_modules, dist/ outputs from build:production)
+      # and the root-anchored .dockerignore patterns don't cover the nested
+      # copies — using `.` as context would ship hundreds of MB into the builder
+      # and let stray build:production files under apps/*/umd leak into the image.
+      - name: Download public app artifacts (e2e)
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
+        with:
+          name: e2e-public-apps
+          path: ${{ runner.temp }}/e2e-context
+
+      - name: Extract public app artifacts (e2e)
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        run: |
+          tar -xzf "${RUNNER_TEMP}/e2e-context/e2e-public-apps.tar.gz" -C "${RUNNER_TEMP}/e2e-context"
+          rm "${RUNNER_TEMP}/e2e-context/e2e-public-apps.tar.gz"
+
+      # On the artifact (fork/cross-repo) path the full image is only loaded into
+      # the local docker daemon (never pushed), so the default docker-container
+      # buildx driver — which resolves FROM via a registry — cannot see it. Spin up
+      # a second buildx builder on the host `docker` driver, which shares the
+      # daemon's image store, and use it only for the e2e build on this path. The
+      # production builds keep using the default builder so their registry cache
+      # import/export keeps working.
+      - name: Set up Docker Buildx (e2e host driver)
+        if: steps.strategy.outputs.use-artifact == 'true'
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
+        id: buildx-e2e-host
+        with:
+          driver: docker
+
+      - name: Docker meta (e2e)
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        id: meta-e2e
+        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
+        with:
+          images: ${{ steps.strategy.outputs.image-e2e-name }}
+          tags: |
+            type=ref,event=branch
+            type=ref,event=pr
+            type=sha
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=Ghost E2E
+            org.opencontainers.image.description=Ghost production build with public E2E app bundles
+            org.opencontainers.image.vendor=TryGhost
+
+      - name: Build & push E2E image
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+        env:
+          BUILDKIT_PROGRESS: plain
+        with:
+          # Artifact path: use the host `docker`-driver builder so FROM resolves the
+          # locally loaded full image. Registry path: empty → default (docker-container)
+          # builder, where the just-built full image's layers are warm in BuildKit cache.
+          builder: ${{ steps.strategy.outputs.use-artifact == 'true' && steps.buildx-e2e-host.outputs.name || '' }}
+          context: ${{ runner.temp }}/e2e-context
+          file: e2e/Dockerfile.e2e
+          # GHOST_IMAGE is the full image tag we just built. On the registry path
+          # it was pushed moments ago by the same buildx builder, so its layers are
+          # already in this builder's BuildKit cache — FROM resolves from cache, not
+          # a full re-download. On the artifact path the full image was load:true'd
+          # into the local daemon, so it resolves there.
+          build-args: |
+            GHOST_IMAGE=${{ env.GHOST_IMAGE_TAG }}
+          push: ${{ steps.strategy.outputs.should-push }}
+          load: ${{ steps.strategy.outputs.use-artifact == 'true' }}
+          tags: ${{ steps.meta-e2e.outputs.tags }}
+          labels: ${{ steps.meta-e2e.outputs.labels }}
+          cache-from: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-main', steps.strategy.outputs.image-e2e-name) || '' }}
+          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-e2e-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
+
+      - name: Save E2E image as artifact
+        if: steps.strategy.outputs.use-artifact == 'true'
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        run: |
+          IMAGE_TAG=$(echo "${{ steps.meta-e2e.outputs.tags }}" | head -n1)
+          echo "Saving image: $IMAGE_TAG"
+          docker save "$IMAGE_TAG" | gzip > docker-image-e2e.tar.gz
+          echo "Image saved as docker-image-e2e.tar.gz"
+          ls -lh docker-image-e2e.tar.gz
+
+      - name: Upload E2E image artifact
+        if: steps.strategy.outputs.use-artifact == 'true'
+        continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
+        with:
+          name: docker-image-e2e
+          path: docker-image-e2e.tar.gz
+          retention-days: 1
+
     outputs:
-      image-tags: ${{ steps.meta-full.outputs.tags }}
       use-artifact: ${{ steps.strategy.outputs.use-artifact }}
       admin-artifact-id: ${{ steps.upload-admin.outputs.artifact-id }}
       image-e2e-name: ${{ steps.strategy.outputs.image-e2e-name }}
+      image-e2e-tags: ${{ steps.meta-e2e.outputs.tags }}
 
   job_build_e2e_public_apps:
     name: Build E2E Public App Assets
@@ -1154,124 +1321,13 @@ jobs:
           path: e2e-public-apps.tar.gz
           retention-days: 1
 
-  job_build_e2e_image:
-    name: Build E2E Docker Image
-    needs: [job_setup, job_build_e2e_public_apps, job_build_artifacts]
-    # Inherits the run_e2e gate transitively — runs only when both upstream
-    # builds ran and succeeded (they are skipped when run_e2e is false).
-    if: needs.job_build_artifacts.result == 'success' && needs.job_build_e2e_public_apps.result == 'success'
-    runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      packages: write
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-
-      - name: Download public app artifacts
-        uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8
-        with:
-          name: e2e-public-apps
-
-      - name: Extract public app artifacts
-        run: tar -xzf e2e-public-apps.tar.gz
-
-      - name: Setup Docker Registry Mirrors
-        uses: ./.github/actions/setup-docker-registry-mirrors
-
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
-        with:
-          # Fork/cross-repo PRs use artifact transfer (no GHCR push). The default
-          # docker-container driver runs in an isolated BuildKit container that
-          # cannot see locally loaded images, so we fall back to the docker driver
-          # which shares the host daemon's image store.
-          driver: ${{ needs.job_build_artifacts.outputs.use-artifact == 'true' && 'docker' || '' }}
-
-      - name: Load base Ghost image
-        uses: ./.github/actions/load-docker-image
-        id: load-base
-        with:
-          use-artifact: ${{ needs.job_build_artifacts.outputs.use-artifact }}
-          image-tags: ${{ needs.job_build_artifacts.outputs.image-tags }}
-          artifact-name: docker-image-production
-
-      - name: Determine E2E image distribution strategy
-        id: strategy
-        run: |
-          USE_ARTIFACT="${{ needs.job_build_artifacts.outputs.use-artifact }}"
-          SHOULD_PUSH="true"
-          if [ "$USE_ARTIFACT" = "true" ]; then
-            SHOULD_PUSH="false"
-          fi
-
-          echo "use-artifact=$USE_ARTIFACT" >> $GITHUB_OUTPUT
-          echo "should-push=$SHOULD_PUSH" >> $GITHUB_OUTPUT
-
-      - name: Log in to GitHub Container Registry
-        if: steps.strategy.outputs.should-push == 'true'
-        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-
-      - name: Docker meta (e2e)
-        id: meta-e2e
-        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
-        with:
-          images: ${{ needs.job_build_artifacts.outputs.image-e2e-name }}
-          tags: |
-            type=ref,event=branch
-            type=ref,event=pr
-            type=sha
-            type=raw,value=latest,enable={{is_default_branch}}
-          labels: |
-            org.opencontainers.image.title=Ghost E2E
-            org.opencontainers.image.description=Ghost production build with public E2E app bundles
-            org.opencontainers.image.vendor=TryGhost
-
-      - name: Build & push E2E image
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
-        with:
-          context: .
-          file: e2e/Dockerfile.e2e
-          build-args: |
-            GHOST_IMAGE=${{ steps.load-base.outputs.image-tag }}
-          push: ${{ steps.strategy.outputs.should-push }}
-          load: ${{ steps.strategy.outputs.use-artifact == 'true' }}
-          tags: ${{ steps.meta-e2e.outputs.tags }}
-          labels: ${{ steps.meta-e2e.outputs.labels }}
-          cache-from: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-main', needs.job_build_artifacts.outputs.image-e2e-name) || '' }}
-          cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', needs.job_build_artifacts.outputs.image-e2e-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
-
-      - name: Save E2E image as artifact
-        if: steps.strategy.outputs.use-artifact == 'true'
-        run: |
-          IMAGE_TAG=$(echo "${{ steps.meta-e2e.outputs.tags }}" | head -n1)
-          echo "Saving image: $IMAGE_TAG"
-          docker save "$IMAGE_TAG" | gzip > docker-image-e2e.tar.gz
-          echo "Image saved as docker-image-e2e.tar.gz"
-          ls -lh docker-image-e2e.tar.gz
-
-      - name: Upload E2E image artifact
-        if: steps.strategy.outputs.use-artifact == 'true'
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7
-        with:
-          name: docker-image-e2e
-          path: docker-image-e2e.tar.gz
-          retention-days: 1
-
-    outputs:
-      image-tags: ${{ steps.meta-e2e.outputs.tags }}
-      use-artifact: ${{ steps.strategy.outputs.use-artifact }}
-
   job_e2e_tests:
     name: E2E Tests (${{ matrix.projectName }} ${{ matrix.shardIndex }}/${{ matrix.shardTotal }})
     runs-on: ubuntu-latest
-    needs: [job_build_e2e_image, job_setup]
-    # Inherits the run_e2e gate transitively via job_build_e2e_image.
-    if: needs.job_build_e2e_image.result == 'success'
+    needs: [job_build_artifacts, job_setup]
+    # Inherits the run_e2e gate transitively via job_build_artifacts (which now
+    # also builds the ghost-e2e image).
+    if: needs.job_build_artifacts.result == 'success'
     strategy:
       fail-fast: true
       matrix:
@@ -1363,8 +1419,8 @@ jobs:
         uses: ./.github/actions/load-docker-image
         id: load
         with:
-          use-artifact: ${{ needs.job_build_e2e_image.outputs.use-artifact }}
-          image-tags: ${{ needs.job_build_e2e_image.outputs.image-tags }}
+          use-artifact: ${{ needs.job_build_artifacts.outputs.use-artifact }}
+          image-tags: ${{ needs.job_build_artifacts.outputs.image-e2e-tags }}
           artifact-name: docker-image-e2e
 
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
@@ -1581,7 +1637,6 @@ jobs:
         job_apps_acceptance-tests,
         job_tinybird-tests,
         job_build_e2e_public_apps,
-        job_build_e2e_image,
         job_e2e_tests,
         build_public_apps,
         publish_public_apps
