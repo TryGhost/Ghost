@@ -1,6 +1,4 @@
 /* eslint-env node */
-import cssInjectedByJsPlugin from 'vite-plugin-css-injected-by-js';
-
 import pkg from './package.json';
 import {publicAppViteConfig} from '../_shared/vite-public-app.mjs';
 
@@ -11,7 +9,6 @@ export default publicAppViteConfig({
     i18nNamespace: 'portal',
     cssCodeSplit: false,
     overrides: {
-        plugins: [cssInjectedByJsPlugin()],
         define: {
             REACT_APP_VERSION: JSON.stringify(process.env.npm_package_version)
         },
