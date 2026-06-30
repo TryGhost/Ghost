@@ -39,4 +39,35 @@ Toggle light/dark from the Storybook toolbar to see semantic tokens flip.
 - Inside stylesheets, use `var(--token)` directly. Don't wrap variables in color functions.
 - Don't write `dark:` variants for colour. The tokens do that. (Exceptions: assets like logos and illustrations.)
 
+## Surface elevation
+
+Surfaces are ordered by how high they sit. Pick by what's behind the element, not by component type.
+
+1. **`--background`** — the page canvas. Default for body, app shell, editor.
+2. **`--surface-elevated`** — one step above page. Use for sidebars, cards, top bars, sticky headers, the elevated edges of stats panels.
+3. **`--surface-elevated-2`** — one step above elevated. Reserved for floating menus that open ON TOP of an elevated surface — `DropdownMenu`, `Select`, `Popover`, and the sidebar user menu. The job is to make the popover read as floating above its trigger.
+
+In light mode all three flatten to near-white, so borders and shadows carry the visual elevation. In dark mode they're three distinct colours so layered surfaces stay legible without relying on borders alone.
+
+## Interactive surfaces
+
+Hover, active, and selected states are their own tokens — don't reach for raw greys or apply `/30` opacity modifiers ad-hoc.
+
+| Token | Use for |
+| --- | --- |
+| `--interactive-hover` | Generic hover: dropdown items, menu items, list rows, filter options. The catch-all. |
+| `--button-hover` | Outline / dropdown `Button` hover. Currently aliased to `--interactive-hover`; kept separate so the button surface can diverge later. |
+| `--tab-hover` / `--tab-active` | `Tabs` (button, button-sm, pill, kpis), `PageMenu`, sidebar menu items, active `Toggle` (dark). |
+| `--table-row-hover` | Shade `Table` row hover. Also used by visually-table-like lists (analytics top posts, comments list, members sticky cell). |
+
+In dark mode `--interactive-hover`, `--button-hover`, and `--tab-hover` are translucent (`gray-900/30`) so they composite over whatever surface sits behind them. `--table-row-hover` is opaque (it matches `--surface-elevated`) — use it where you need an opaque fill, like sticky table cells where content scrolls underneath.
+
+## Form control borders
+
+Inputs, textareas, outline `Button`s, dropdown triggers, and the `inputSurface` recipe use `--control-border`, not `--border-default`. In dark mode it lifts a step above the page border so form controls keep enough contrast against the page surface. Borders inside cards or popovers can keep using `--border-default`.
+
+## Dropdown surface contract
+
+`DropdownMenu`, `Select`, and `Popover` (the three Radix-backed floating menus that Filters uses) share one visual recipe: `bg-surface-elevated-2` + `border border-border/60 dark:border-border/30` + `shadow-md`. Treat them as one component for any surface decision — change all three together.
+
 </div>

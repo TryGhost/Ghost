@@ -37,7 +37,7 @@ export const HelpCard: React.FC<HelpCardProps> = ({
 }) => {
     return (
         <a className={cn(
-            'block rounded-xl border bg-card p-6 transition-all hover:shadow-xs hover:bg-accent/50 group/card',
+            'block rounded-xl border bg-card p-6 transition-all hover:shadow-xs hover:bg-table-row-hover group/card',
             className
         )} href={url} rel='noreferrer' target='_blank'>
             <div className='flex items-center gap-6'>
