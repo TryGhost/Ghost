@@ -2,32 +2,10 @@ const fs = require('fs');
 const path = require('path');
 const execFileSync = require('child_process').execFileSync;
 
-const MONITORED_APPS = {
-    portal: {
-        packageName: '@tryghost/portal',
-        path: 'apps/portal'
-    },
-    sodoSearch: {
-        packageName: '@tryghost/sodo-search',
-        path: 'apps/sodo-search'
-    },
-    comments: {
-        packageName: '@tryghost/comments-ui',
-        path: 'apps/comments-ui'
-    },
-    announcementBar: {
-        packageName: '@tryghost/announcement-bar',
-        path: 'apps/announcement-bar'
-    },
-    signupForm: {
-        packageName: '@tryghost/signup-form',
-        path: 'apps/signup-form'
-    },
-    adminToolbar: {
-        packageName: '@tryghost/admin-toolbar',
-        path: 'apps/admin-toolbar'
-    }
-};
+// Keyed by defaults.json config key, derived from the shared public-apps list.
+const MONITORED_APPS = Object.fromEntries(
+    require('./public-apps.json').map(app => [app.configKey, {packageName: app.packageName, path: app.path}])
+);
 
 const MONITORED_APP_ENTRIES = Object.entries(MONITORED_APPS);
 const MONITORED_APP_PATHS = MONITORED_APP_ENTRIES.map(([, app]) => app.path);
@@ -82,86 +60,6 @@ function parseSemver(version) {
     };
 }
 
-function comparePrereleaseIdentifier(a, b) {
-    const isANumber = typeof a === 'number';
-    const isBNumber = typeof b === 'number';
-
-    if (isANumber && isBNumber) {
-        if (a === b) {
-            return 0;
-        }
-
-        return a > b ? 1 : -1;
-    }
-
-    if (isANumber) {
-        return -1;
-    }
-
-    if (isBNumber) {
-        return 1;
-    }
-
-    if (a === b) {
-        return 0;
-    }
-
-    return a > b ? 1 : -1;
-}
-
-function compareSemver(a, b) {
-    const aVersion = parseSemver(a);
-    const bVersion = parseSemver(b);
-
-    if (aVersion.major !== bVersion.major) {
-        return aVersion.major > bVersion.major ? 1 : -1;
-    }
-
-    if (aVersion.minor !== bVersion.minor) {
-        return aVersion.minor > bVersion.minor ? 1 : -1;
-    }
-
-    if (aVersion.patch !== bVersion.patch) {
-        return aVersion.patch > bVersion.patch ? 1 : -1;
-    }
-
-    const aPrerelease = aVersion.prerelease;
-    const bPrerelease = bVersion.prerelease;
-
-    if (!aPrerelease.length && !bPrerelease.length) {
-        return 0;
-    }
-
-    if (!aPrerelease.length) {
-        return 1;
-    }
-
-    if (!bPrerelease.length) {
-        return -1;
-    }
-
-    const maxLength = Math.max(aPrerelease.length, bPrerelease.length);
-    for (let i = 0; i < maxLength; i += 1) {
-        const aIdentifier = aPrerelease[i];
-        const bIdentifier = bPrerelease[i];
-
-        if (aIdentifier === undefined) {
-            return -1;
-        }
-
-        if (bIdentifier === undefined) {
-            return 1;
-        }
-
-        const identifierComparison = comparePrereleaseIdentifier(aIdentifier, bIdentifier);
-        if (identifierComparison !== 0) {
-            return identifierComparison;
-        }
-    }
-
-    return 0;
-}
-
 function getMajorMinorVersion(version) {
     const parsedVersion = parseSemver(version);
     return `${parsedVersion.major}.${parsedVersion.minor}`;
@@ -192,11 +90,6 @@ function getChangedApps(changedFiles) {
     return MONITORED_APP_ENTRIES
         .filter(([, app]) => getChangedAppFiles(app, changedFiles).length > 0)
         .map(([key, app]) => ({key, ...app}));
-}
-
-function isDependencyOnlyChange(app, changedFiles) {
-    const filesInApp = getChangedAppFiles(app, changedFiles);
-    return filesInApp.length > 0 && filesInApp.every(file => file === `${app.path}/package.json`);
 }
 
 function getPrVersion(app) {
@@ -244,13 +137,6 @@ function getPrDefaultsVersion(app) {
     );
 }
 
-function getMainVersion(app) {
-    return readVersionFromPackageJson(
-        runGit(['show', `origin/main:${app.path}/package.json`]),
-        `${app.path}/package.json from main`
-    );
-}
-
 function main() {
     const baseSha = process.env.PR_BASE_SHA;
     const compareSha = process.env.PR_COMPARE_SHA || process.env.GITHUB_SHA;
@@ -267,59 +153,60 @@ function main() {
     const changedApps = getChangedApps(changedFiles);
 
     if (changedApps.length === 0) {
-        console.log(`No app changes detected. Skipping version bump check.`);
+        console.log(`No app changes detected. Skipping app version consistency check.`);
         return;
     }
 
-    console.log(`Checking version bump for apps: ${changedApps.map(app => app.key).join(', ')}`);
+    console.log(`Checking app version consistency for: ${changedApps.map(app => app.key).join(', ')}`);
 
     const failedApps = [];
 
     for (const app of changedApps) {
-        const prVersion = getPrVersion(app);
-        const mainVersion = getMainVersion(app);
+        const error = checkAppConsistency(app, getPrVersion(app), getPrDefaultsVersion(app));
 
-        if (isDependencyOnlyChange(app, changedFiles)) {
-            if (prVersion === mainVersion) {
-                console.log(`${app.key} only has dependency changes in package.json; skipping version bump check.`);
-                continue;
-            }
-
-            console.log(`${app.key} package.json changed the package version; continuing version bump checks.`);
-        }
-
-        if (compareSemver(prVersion, mainVersion) <= 0) {
-            failedApps.push(
-                `${app.key} (${app.packageName}) was changed but version was not bumped above main (${prVersion} <= ${mainVersion}). Please run "pnpm ship" in ${app.path} to bump the package version.`
-            );
+        if (error) {
+            failedApps.push(error);
             continue;
         }
 
-        console.log(`${app.key} package version bump check passed (${prVersion} > ${mainVersion})`);
-
-        const prMajorMinorVersion = getMajorMinorVersion(prVersion);
-        const prDefaultsVersion = getPrDefaultsVersion(app);
-
-        if (prDefaultsVersion !== prMajorMinorVersion) {
-            failedApps.push(
-                `${app.key} (${app.packageName}) was bumped from ${mainVersion} to ${prVersion}, but defaults.json still has ${app.key}.version set to ${prDefaultsVersion}. Please update ghost/core/core/shared/config/defaults.json to ${prMajorMinorVersion}.`
-            );
-            continue;
-        }
-
-        console.log(`${app.key} defaults.json version check passed (${app.key}.version = ${prDefaultsVersion})`);
+        console.log(`${app.key} version consistency check passed (package.json ${getMajorMinorVersion(getPrVersion(app))} = defaults.json ${getPrDefaultsVersion(app)})`);
     }
 
     if (failedApps.length) {
-        throw new Error(`Version bump checks failed:\n- ${failedApps.join('\n- ')}`);
+        throw new Error(`App version consistency checks failed:\n- ${failedApps.join('\n- ')}`);
     }
 
-    console.log('All monitored app version bump checks passed.');
+    console.log('All monitored app version consistency checks passed.');
 }
 
-try {
-    main();
-} catch (error) {
-    console.error(error.message);
-    process.exit(1);
+/**
+ * Patch releases are published automatically on merge to main, with npm as the
+ * source of truth for the patch number — so PRs no longer need to bump the
+ * version at all. The only invariant we still enforce is that package.json's
+ * major.minor matches defaults.json, because Ghost core serves each app from
+ * `<pkg>@~<major.minor>` on jsDelivr. A deliberate minor/major release (via
+ * "pnpm ship") must move both in lockstep, or live sites would point at a
+ * version line that never gets published.
+ *
+ * @returns {string|null} an error message when inconsistent, otherwise null
+ */
+function checkAppConsistency(app, prVersion, prDefaultsVersion) {
+    const prMajorMinorVersion = getMajorMinorVersion(prVersion);
+
+    if (prDefaultsVersion !== prMajorMinorVersion) {
+        return `${app.key} (${app.packageName}): package.json is on ${prMajorMinorVersion} but defaults.json has ${app.key}.version set to ${prDefaultsVersion}. These must match — for a minor/major release run "pnpm ship" in ${app.path} (it updates both), otherwise align ghost/core/core/shared/config/defaults.json to ${prMajorMinorVersion}.`;
+    }
+
+    return null;
 }
+
+if (require.main === module) {
+    try {
+        main();
+    } catch (error) {
+        console.error(error.message);
+        process.exit(1);
+    }
+}
+
+module.exports = {checkAppConsistency, getMajorMinorVersion};

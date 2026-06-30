@@ -5,15 +5,11 @@ const readline = require('readline/promises');
 
 const semver = require('semver');
 
-// Maps a package name to the config key in defaults.json
-const CONFIG_KEYS = {
-    '@tryghost/portal': 'portal',
-    '@tryghost/sodo-search': 'sodoSearch',
-    '@tryghost/comments-ui': 'comments',
-    '@tryghost/announcement-bar': 'announcementBar',
-    '@tryghost/signup-form': 'signupForm',
-    '@tryghost/admin-toolbar': 'adminToolbar'
-};
+// Maps a package name to the config key in defaults.json, derived from the
+// shared public-apps list.
+const CONFIG_KEYS = Object.fromEntries(
+    require('./public-apps.json').map(app => [app.packageName, app.configKey])
+);
 
 const CURRENT_DIR = process.cwd();
 
@@ -73,11 +69,17 @@ async function ensureCleanGit() {
 
 async function getNewVersion() {
     const rl = readline.createInterface({input: process.stdin, output: process.stdout});
-    const bumpTypeInput = await rl.question('Is this a patch, minor or major (patch)? ');
+    // Patch releases are published automatically on every merge to main (CI
+    // computes the next patch from npm), so this script only drives intentional
+    // minor/major releases — the ones that also move the major.minor pinned in
+    // defaults.json.
+    console.log('Patch releases are published automatically on merge to main.');
+    console.log('Use this only for an intentional minor or major release.\n');
+    const bumpTypeInput = await rl.question('Is this a minor or major release (minor)? ');
     rl.close();
-    const bumpType = bumpTypeInput.trim().toLowerCase() || 'patch';
-    if (!['patch', 'minor', 'major'].includes(bumpType)) {
-        console.error(`Unknown bump type ${bumpTypeInput} - expected one of "patch", "minor, "major"`)
+    const bumpType = bumpTypeInput.trim().toLowerCase() || 'minor';
+    if (!['minor', 'major'].includes(bumpType)) {
+        console.error(`Unknown bump type ${bumpTypeInput} - expected "minor" or "major" (patch releases are automated)`)
         process.exit(1);
     }
     return semver.inc(APP_VERSION, bumpType);
