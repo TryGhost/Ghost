@@ -148,15 +148,15 @@ const TopContent: React.FC<TopContentProps> = ({range, totalVisitors, audience, 
     const topContent = transformedData?.slice(0, 6) || [];
 
     return (
-        <Card className='group/datalist' data-testid='top-content-card'>
-            <div className='flex items-center justify-between gap-6 px-6 pt-6 pb-5'>
-                <CardHeader className='p-0'>
+        <Card className='group/datalist w-full max-w-full min-w-0' data-testid='top-content-card'>
+            <div className='flex min-w-0 items-center justify-between gap-6 px-6 pt-6 pb-5'>
+                <CardHeader className='min-w-0 p-0'>
                     <CardTitle>{getContentTitle(selectedContentType)}</CardTitle>
                     <CardDescription>{getContentDescription(selectedContentType, range, getPeriodText)}</CardDescription>
                 </CardHeader>
             </div>
-            <CardContent className='overflow-hidden'>
-                <div className='mb-2 flex items-center justify-between'>
+            <CardContent className='min-w-0 overflow-hidden'>
+                <div className='mb-2 flex min-w-0 items-center justify-between'>
                     <Tabs defaultValue={selectedContentType} variant='button-sm' onValueChange={(value: string) => {
                         setSelectedContentType(value as ContentType);
                     }}>

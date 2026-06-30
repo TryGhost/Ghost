@@ -4,7 +4,7 @@ const MainLayout: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children, .
     return (
         <div className='size-full'>
             <div className='relative size-full' {...props}>
-                <div className='mx-auto flex size-full max-w-page flex-col'>
+                <div className='mx-auto flex size-full max-w-page min-w-0 flex-col'>
                     {children}
                 </div>
             </div>

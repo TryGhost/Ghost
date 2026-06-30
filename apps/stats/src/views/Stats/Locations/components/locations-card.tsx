@@ -173,14 +173,14 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, on
     };
 
     return (
-        <Card className='p-0'>
+        <Card className='w-full max-w-full min-w-0 p-0'>
             <CardHeader className='border-b'>
                 <CardTitle>Top Locations</CardTitle>
                 <CardDescription>A geographic breakdown of your readers {getPeriodText(range)}</CardDescription>
             </CardHeader>
-            <CardContent className='p-0'>
-                <div className='flex flex-col lg:grid lg:grid-cols-2 lg:items-stretch'>
-                    <div className='svg-map-container relative mx-auto w-full max-w-[740px] px-8 py-12 [&_.svg-map]:stroke-background'>
+            <CardContent className='min-w-0 p-0'>
+                <div className='flex min-w-0 flex-col lg:grid lg:grid-cols-2 lg:items-stretch'>
+                    <div className='svg-map-container relative mx-auto w-full max-w-[740px] min-w-0 px-8 py-12 [&_.svg-map]:stroke-background'>
                         <SVGMap
                             locationClassName={getLocationClassName}
                             map={World}
@@ -208,7 +208,7 @@ const LocationsCard: React.FC<LocationsCardProps> = ({data, isLoading, range, on
                             </div>
                         )}
                     </div>
-                    <div className='group/datalist flex flex-col justify-between overflow-hidden px-6' data-testid='visitors-card'>
+                    <div className='group/datalist flex min-w-0 flex-col justify-between overflow-hidden px-6' data-testid='visitors-card'>
                         <DataList className='mb-6 grow lg:ml-4'>
                             <DataListHeader className='px-0 pt-8'>
                                 <DataListHead>Country</DataListHead>

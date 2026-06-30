@@ -319,10 +319,10 @@ const NewsletterKPIs: React.FC<{
                     }
                 </DropdownMenuContent>
             </DropdownMenu>
-            <div className='my-4 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
+            <div className='my-4 min-w-0 [&_.recharts-cartesian-axis-tick-value]:fill-gray-500'>
                 {(currentTab === 'total-subscribers') &&
                     <GhAreaChart
-                        className='-mb-3 h-[16vw] max-h-[320px] min-h-[180px] w-full'
+                        className='-mb-3 h-[16vw] max-h-[320px] min-h-[180px] w-full min-w-0'
                         color={tabConfig['total-subscribers'].color}
                         data={subscribersData}
                         id="mrr"
@@ -339,7 +339,7 @@ const NewsletterKPIs: React.FC<{
                             :
                             avgsData && avgsData.length > 0 ?
                                 <>
-                                    <ChartContainer className='aspect-auto h-[200px] w-full md:h-[220px] xl:h-[320px]' config={barChartConfig}>
+                                    <ChartContainer className='aspect-auto h-[200px] w-full min-w-0 md:h-[220px] xl:h-[320px]' config={barChartConfig}>
                                         <Recharts.BarChart
                                             className={isHoveringClickable ? 'cursor-pointer!' : ''}
                                             data={avgsData}

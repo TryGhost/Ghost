@@ -40,9 +40,9 @@ export const HelpCard: React.FC<HelpCardProps> = ({
             'block rounded-xl border bg-card p-6 transition-all hover:shadow-xs hover:bg-accent/50 group/card',
             className
         )} href={url} rel='noreferrer' target='_blank'>
-            <div className='flex items-center gap-6'>
+            <div className='flex min-w-0 items-center gap-6'>
                 {children}
-                <div className='flex flex-col gap-0.5 leading-tight'>
+                <div className='flex min-w-0 flex-col gap-0.5 leading-tight'>
                     <span className='text-base font-semibold'>{title}</span>
                     <span className='text-sm font-normal text-gray-700'>{description}</span>
                 </div>
@@ -224,13 +224,13 @@ const Overview: React.FC = () => {
                     isLoading={isTopPostsLoading}
                     topPostsData={topPostsData}
                 />
-                <div className='grid grid-cols-1 gap-6 lg:grid-cols-2'>
+                <div className='grid min-w-0 grid-cols-1 gap-6 lg:grid-cols-2'>
                     <H3 className='mt-4 -mb-4 lg:col-span-2'>Grow your audience</H3>
                     <HelpCard
                         description='Find out how to review the performance of your content and get the most out of post analytics in Ghost.'
                         title='Understanding analytics in Ghost'
                         url='https://ghost.org/help/native-analytics'>
-                        <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-tr from-[#14B8FF]/20 to-[#00BBA7]/20 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
+                        <div className='flex h-18 w-[100px] shrink-0 items-center justify-center rounded-md bg-gradient-to-tr from-[#14B8FF]/20 to-[#00BBA7]/20 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
                             <LucideIcon.ChartColumnIncreasing className='text-[#00BBA7]' size={20} strokeWidth={1.5} />
                         </div>
                     </HelpCard>
@@ -238,7 +238,7 @@ const Overview: React.FC = () => {
                         description='Use these content distribution tactics to get more people to discover your work and increase engagement.'
                         title='How to get your content seen online'
                         url='https://ghost.org/resources/content-distribution/'>
-                        <div className='flex h-18 w-[100px] min-w-[100px] items-center justify-center rounded-md bg-gradient-to-tl from-[#FDC700]/20 to-[#FF2056]/20 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
+                        <div className='flex h-18 w-[100px] shrink-0 items-center justify-center rounded-md bg-gradient-to-tl from-[#FDC700]/20 to-[#FF2056]/20 p-4 opacity-80 transition-all group-hover/card:opacity-100'>
                             <LucideIcon.Globe className='text-[#FE9A00]' size={20} strokeWidth={1.5} />
                         </div>
                     </HelpCard>

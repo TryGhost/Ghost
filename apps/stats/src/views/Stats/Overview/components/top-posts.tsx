@@ -1,7 +1,7 @@
 import FeatureImagePlaceholder from '../../components/feature-image-placeholder';
 import React from 'react';
 import {Card, CardContent, CardDescription, CardHeader, CardTitle, EmptyIndicator, SkeletonTable} from '@tryghost/shade/components';
-import {LucideIcon, abbreviateNumber, cn, formatDisplayDate, formatNumber} from '@tryghost/shade/utils';
+import {LucideIcon, abbreviateNumber, formatDisplayDate, formatNumber} from '@tryghost/shade/utils';
 import {TopPostViewsStats} from '@tryghost/admin-x-framework/api/stats';
 import {getPeriodText} from '@src/utils/chart-helpers';
 import {getPostDestination} from '@src/utils/url-helpers';
@@ -16,19 +16,15 @@ interface PostlistTooptipProps {
         label: string;
         metric: React.ReactNode;
     }>
-    className?: string;
 };
 
 const PostListTooltip:React.FC<PostlistTooptipProps> = ({
-    className,
     metrics,
     title
 }) => {
     return (
         <>
-            <div className={
-                cn('pointer-events-none absolute bottom-[calc(100%+2px)] left-1/2 z-50 min-w-[160px] -translate-x-1/2 rounded-md bg-background p-3 text-sm opacity-0 shadow-md transition-all group-hover/tooltip:bottom-[calc(100%+12px)] group-hover/tooltip:opacity-100', className)
-            }>
+            <div className='pointer-events-none absolute right-0 bottom-[calc(100%+2px)] left-auto z-50 min-w-[160px] translate-x-0 rounded-md bg-background p-3 text-sm opacity-0 shadow-md transition-all group-hover/tooltip:bottom-[calc(100%+12px)] group-hover/tooltip:opacity-100'>
                 <div className='mb-1.5 border-b pr-10 pb-1.5 font-medium whitespace-nowrap text-muted-foreground'>{title}</div>
                 <div className="flex flex-col gap-1.5">
                     {metrics?.map(metric => (
@@ -77,14 +73,14 @@ const TopPosts: React.FC<TopPostsProps> = ({
     const metricClass = 'flex items-center justify-end gap-1 rounded-md px-2 py-1 font-mono text-gray-800 hover:bg-muted-foreground/10 group-hover:text-foreground';
 
     return (
-        <Card className='group/card w-full lg:col-span-2' data-testid='top-posts-card'>
+        <Card className='group/card w-full max-w-full min-w-0 lg:col-span-2' data-testid='top-posts-card'>
             <CardHeader>
                 <CardTitle className='flex items-baseline justify-between leading-snug  font-medium text-muted-foreground'>
                     Top posts {getPeriodText(range)}
                 </CardTitle>
                 <CardDescription className='hidden'>Most viewed posts in this period</CardDescription>
             </CardHeader>
-            <CardContent>
+            <CardContent className='min-w-0'>
                 {isLoading ?
                     <SkeletonTable className='mt-6' />
                     :
@@ -92,8 +88,8 @@ const TopPosts: React.FC<TopPostsProps> = ({
                         {
                             topPostsData?.stats?.map((post: TopPostViewsStats) => {
                                 return (
-                                    <div key={post.post_id} className='group relative flex w-full items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:border-border! hover:cursor-pointer hover:border-transparent hover:before:block md:items-center dark:before:bg-accent/50 [&+div]:hover:border-transparent'>
-                                        <div className='z-10 flex min-w-[160px] grow items-start gap-4 md:items-center lg:min-w-[320px]' onClick={() => {
+                                    <div key={post.post_id} className='group relative flex w-full min-w-0 items-start justify-between gap-5 border-t border-border/50 py-4 before:absolute before:-inset-x-4 before:inset-y-0 before:z-0 before:hidden before:rounded-md before:bg-accent before:opacity-80 before:content-[""] first:border-border! hover:cursor-pointer hover:border-transparent hover:before:block md:items-center dark:before:bg-accent/50 [&+div]:hover:border-transparent'>
+                                        <div className='z-10 flex min-w-0 grow items-start gap-4 md:items-center lg:min-w-[320px]' onClick={() => {
                                             navigate(getPostDestination({
                                                 postId: post.post_id,
                                                 hasEmailData: post.sent_count !== null,
@@ -110,7 +106,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                 :
                                                 <FeatureImagePlaceholder className='hidden aspect-[16/10] w-[80px] shrink-0 group-hover:bg-muted-foreground/10 sm:visible! sm:flex! lg:w-[100px]' />
                                             }
-                                            <div className='flex flex-col gap-0.5'>
+                                            <div className='flex min-w-0 flex-col gap-0.5'>
                                                 <span className='line-clamp-2 text-md font-semibold'>{post.title}</span>
                                                 <span className='text text-muted-foreground'>
                                                     By {post.authors} &ndash; {formatDisplayDate(post.published_at, siteTimezone)}
@@ -120,7 +116,7 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                 </span>
                                             </div>
                                         </div>
-                                        <div className='z-10 flex flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3'>
+                                        <div className='z-10 flex shrink-0 flex-col items-end justify-center gap-0.5 text-sm md:flex-row md:items-center md:justify-end md:gap-3'>
                                             {showWebAnalytics &&
                                                 <div className='group/tooltip relative flex w-[66px] lg:w-[92px]' data-testid='statistics-visitors' onClick={(e) => {
                                                     e.stopPropagation();
@@ -148,7 +144,6 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     navigate(`/posts/analytics/${post.post_id}/newsletter`, {crossApp: true});
                                                 }}>
                                                     <PostListTooltip
-                                                        className={`${!membersTrackSources ? 'right-0 left-auto translate-x-0' : ''}`}
                                                         metrics={[
                                                             // Always show sent
                                                             {
@@ -209,7 +204,6 @@ const TopPosts: React.FC<TopPostsProps> = ({
                                                     navigate(`/posts/analytics/${post.post_id}/growth`, {crossApp: true});
                                                 }}>
                                                     <PostListTooltip
-                                                        className='right-0 left-auto translate-x-0'
                                                         metrics={[
                                                             {
                                                                 icon: <LucideIcon.User className='shrink-0 text-muted-foreground' size={16} strokeWidth={1.5} />,

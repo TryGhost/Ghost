@@ -50,7 +50,7 @@ const MetricValue = React.forwardRef<HTMLDivElement, MetricValueProps>(
                         {label}
                     </div>
                 )}
-                <div className='flex flex-col items-start gap-2 lg:flex-row xl:gap-3'>
+                <div className='flex flex-row flex-wrap items-center gap-2 xl:gap-3'>
                     <div
                         className={metricValueNumberVariants({size})}
                         data-slot='metric-value-number'

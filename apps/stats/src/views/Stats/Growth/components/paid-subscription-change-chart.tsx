@@ -344,15 +344,15 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
     };
 
     return (
-        <Card data-testid='paid-members-change-card'>
+        <Card className='w-full max-w-full min-w-0' data-testid='paid-members-change-card'>
             <CardHeader>
-                <div className="flex items-start justify-between gap-1.5">
-                    <div className='flex flex-col gap-1.5'>
+                <div className="flex min-w-0 flex-wrap items-start justify-between gap-1.5">
+                    <div className='flex min-w-0 flex-col gap-1.5'>
                         <CardTitle>Paid subscriptions</CardTitle>
                         <CardDescription>New and cancelled paid subscriptions {getPeriodText(range)}</CardDescription>
                     </div>
                     {availableResolutions.length > 1 && (
-                        <div>
+                        <div className='shrink-0'>
                             <Select value={selectedResolution} onValueChange={value => setSelectedResolution(value as ResolutionOption)}>
                                 <SelectTrigger className="w-[110px]">
                                     <SelectValue />
@@ -369,10 +369,10 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                     )}
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className='min-w-0'>
                 {hasData ? (
-                    <div>
-                        <ChartContainer className='aspect-auto h-[200px] w-full md:h-[220px] xl:h-[260px]' config={paidChangeChartConfig}>
+                    <div className='min-w-0'>
+                        <ChartContainer className='aspect-auto h-[200px] w-full min-w-0 md:h-[220px] xl:h-[260px]' config={paidChangeChartConfig}>
                             <Recharts.BarChart
                                 data={paidChangeChartData}
                                 stackOffset='sign'
@@ -498,7 +498,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                 />
                             </Recharts.BarChart>
                         </ChartContainer>
-                        <div className='mt-3 flex items-center justify-center gap-6 text-sm text-muted-foreground'>
+                        <div className='mt-3 flex flex-wrap items-center justify-center gap-x-6 gap-y-1 text-sm text-muted-foreground'>
                             <div className='flex items-center gap-2'>
                                 <span className='size-2 rounded-full opacity-50'
                                     style={{

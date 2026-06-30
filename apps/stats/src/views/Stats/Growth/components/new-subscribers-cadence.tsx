@@ -232,15 +232,15 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
     const hasData = chartData.length > 0 && totalSignups > 0;
 
     return (
-        <Card>
+        <Card className='w-full max-w-full min-w-0'>
             <CardHeader>
-                <div className="flex items-start justify-between gap-1.5">
-                    <div className='flex flex-col gap-1.5'>
+                <div className="flex min-w-0 flex-wrap items-start justify-between gap-1.5">
+                    <div className='flex min-w-0 flex-col gap-1.5'>
                         <CardTitle>Paid subscription breakdown</CardTitle>
                         <CardDescription>New paid subscriptions {getPeriodText(range)}</CardDescription>
                     </div>
                     {availableTiers.length > 1 && (
-                        <div>
+                        <div className='shrink-0'>
                             <Select value={breakdownType} onValueChange={value => setBreakdownType(value as BreakdownType)}>
                                 <SelectTrigger className="w-full">
                                     <SelectValue />
@@ -254,11 +254,11 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                     )}
                 </div>
             </CardHeader>
-            <CardContent>
+            <CardContent className='min-w-0'>
                 {hasData ? (
                     <>
                         <ChartContainer
-                            className="mx-auto aspect-square h-[250px] min-h-[250px] w-full"
+                            className="mx-auto aspect-square h-[250px] min-h-[250px] w-full min-w-0"
                             config={chartConfig}
                         >
                             <Recharts.PieChart>

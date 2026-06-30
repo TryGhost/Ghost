@@ -129,15 +129,15 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
     const description = `How readers found your ${range ? 'site' : 'post'} ${getPeriodText(range)}`;
 
     return (
-        <Card className='group/datalist' data-testid='top-sources-card'>
-            <div className='flex items-center justify-between gap-6 px-6 pt-6 pb-5'>
-                <CardHeader className='p-0'>
+        <Card className='group/datalist w-full max-w-full min-w-0' data-testid='top-sources-card'>
+            <div className='flex min-w-0 items-center justify-between gap-6 px-6 pt-6 pb-5'>
+                <CardHeader className='min-w-0 p-0'>
                     <CardTitle>{title}</CardTitle>
                     <CardDescription>{description}</CardDescription>
                 </CardHeader>
             </div>
-            <CardContent className='overflow-hidden'>
-                <div className='mb-2 flex h-6 items-center justify-between'>
+            <CardContent className='min-w-0 overflow-hidden'>
+                <div className='mb-2 flex h-6 min-w-0 items-center justify-between'>
                     <div className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Source</div>
                     <div className='text-xs font-medium tracking-wide text-muted-foreground uppercase'>Visitors</div>
                 </div>
