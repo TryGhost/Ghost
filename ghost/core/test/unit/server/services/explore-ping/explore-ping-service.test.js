@@ -41,7 +41,8 @@ describe('ExplorePingService', function () {
 
         loggingStub = {
             info: sinon.stub(),
-            warn: sinon.stub()
+            warn: sinon.stub(),
+            debug: sinon.stub()
         };
 
         ghostVersionStub = {
@@ -277,8 +278,9 @@ describe('ExplorePingService', function () {
             await explorePingService.ping();
 
             sinon.assert.notCalled(requestStub);
-            sinon.assert.calledOnce(loggingStub.warn);
-            assert.equal(loggingStub.warn.firstCall.args[0], 'Explore URL not set');
+            sinon.assert.notCalled(loggingStub.warn);
+            sinon.assert.calledOnce(loggingStub.debug);
+            assert.equal(loggingStub.debug.firstCall.args[0], 'Explore URL not set');
         });
 
         it('does not ping if explore ping is disabled', async function () {

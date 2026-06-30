@@ -54,5 +54,73 @@ const initTestMode = () => {
 
 const jobManager = new JobManager({errorHandler, workerMessageHandler, JobModel: models.Job, domainEvents, config, events});
 
+// Quiet the noisy per-job INFO chatter emitted from inside @tryghost/job-manager
+// (one "Adding offloaded job to the inline job queue" + one "Scheduling job X at Y..."
+// per registered job). Replace it with a single summary line at boot.
+//
+// We can't pass a custom logger to the external package (it imports the
+// @tryghost/logging singleton directly), so we briefly swap the singleton's
+// methods around each addJob() call and tally counts.
+const jobStats = {offloaded: 0, inline: 0, scheduled: 0};
+let summaryScheduled = false;
+
+const QUIETED_PREFIXES = [
+    'Adding offloaded job to the inline job queue',
+    'Scheduling job '
+];
+
+const scheduleSummary = () => {
+    if (summaryScheduled) {
+        return;
+    }
+    summaryScheduled = true;
+    setImmediate(() => {
+        summaryScheduled = false;
+        const total = jobStats.offloaded + jobStats.inline;
+        if (total === 0) {
+            return;
+        }
+        logging.info(
+            `[Jobs] Registered ${total} jobs (${jobStats.scheduled} scheduled, ${jobStats.inline} inline)`
+        );
+        jobStats.offloaded = 0;
+        jobStats.inline = 0;
+        jobStats.scheduled = 0;
+    });
+};
+
+const withQuietedJobLogging = (fn, jobOptions) => {
+    const originalInfo = logging.info;
+    logging.info = function (...args) {
+        const first = args[0];
+        if (typeof first === 'string' && QUIETED_PREFIXES.some(prefix => first.startsWith(prefix))) {
+            return undefined;
+        }
+        return originalInfo.apply(this, args);
+    };
+    try {
+        return fn();
+    } finally {
+        logging.info = originalInfo;
+        if (jobOptions.offloaded === false) {
+            jobStats.inline += 1;
+        } else {
+            jobStats.offloaded += 1;
+            if (jobOptions.at) {
+                jobStats.scheduled += 1;
+            }
+        }
+        scheduleSummary();
+    }
+};
+
+// We only wrap addJob — addOneOffJob() inside @tryghost/job-manager calls
+// this.addJob() internally, which now resolves to the wrapped version, so it's
+// covered transitively without double-counting.
+const originalAddJob = jobManager.addJob.bind(jobManager);
+jobManager.addJob = function (jobOptions = {}) {
+    return withQuietedJobLogging(() => originalAddJob(jobOptions), jobOptions);
+};
+
 module.exports = jobManager;
 module.exports.initTestMode = initTestMode;
