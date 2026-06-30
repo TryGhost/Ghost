@@ -557,8 +557,8 @@ async function createViewOrReplace(name, viewSql, transaction = db.knex) {
 async function getTables(transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (client === 'sqlite3') {
-        const response = await transaction.raw('select * from sqlite_master where type = "table"');
+    if (DatabaseInfo.isSQLite(transaction)) {
+        const response = await transaction.raw("select * from sqlite_master where type = 'table'");
         return _.reject(_.map(response, 'tbl_name'), name => name === 'sqlite_sequence');
     } else if (client === 'mysql2') {
         const response = await transaction.raw('show full tables where Table_type = \'BASE TABLE\'');
@@ -575,7 +575,7 @@ async function getTables(transaction = db.knex) {
 async function getIndexes(table, transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (client === 'sqlite3') {
+    if (DatabaseInfo.isSQLite(transaction)) {
         const response = await transaction.raw(`pragma index_list("${table}")`);
         return _.flatten(_.map(response, 'name'));
     } else if (client === 'mysql2') {
@@ -591,17 +591,15 @@ async function getIndexes(table, transaction = db.knex) {
  * @param {import('knex').Knex} [transaction] - connection to the DB
  */
 async function getColumns(table, transaction = db.knex) {
-    const client = transaction.client.config.client;
-
-    if (client === 'sqlite3') {
+    if (DatabaseInfo.isSQLite(transaction)) {
         const response = await transaction.raw(`pragma table_info("${table}")`);
         return _.flatten(_.map(response, 'name'));
-    } else if (client === 'mysql2') {
+    } else if (DatabaseInfo.isMySQL(transaction)) {
         const response = await transaction.raw(`SHOW COLUMNS from ${table}`);
         return _.flatten(_.map(response[0], 'Field'));
     }
 
-    return Promise.reject(tpl(messages.noSupportForDatabase, {client: client}));
+    return Promise.reject(tpl(messages.noSupportForDatabase, {client: transaction.client.config.client}));
 }
 
 function createColumnMigration(...migrations) {

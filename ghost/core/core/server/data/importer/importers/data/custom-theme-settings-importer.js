@@ -54,12 +54,11 @@ class CustomThemeSettingsImporter extends BaseImporter {
 
         await sequence(ops);
 
-        models.Settings.findOne({key: 'active_theme'}).then((theme) => {
-            const currentTheme = theme.get('value');
-            if (this.dataToImport.some(themeSetting => themeSetting.theme === currentTheme)) {
-                activate(currentTheme);
-            }
-        });
+        const theme = await models.Settings.findOne({key: 'active_theme'}, options);
+        const currentTheme = theme && theme.get('value');
+        if (currentTheme && this.dataToImport.some(themeSetting => themeSetting.theme === currentTheme)) {
+            activate(currentTheme);
+        }
     }
 }
 module.exports = CustomThemeSettingsImporter;

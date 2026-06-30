@@ -153,6 +153,9 @@ catalogs:
     '@vitest/coverage-v8':
       specifier: 4.1.9
       version: 4.1.9
+    better-sqlite3:
+      specifier: 12.11.1
+      version: 12.11.1
     bson-objectid:
       specifier: 2.0.4
       version: 2.0.4
@@ -216,6 +219,9 @@ catalogs:
     jsonc-parser:
       specifier: 3.3.1
       version: 3.3.1
+    knex-migrator:
+      specifier: 5.4.1
+      version: 5.4.1
     lodash:
       specifier: 4.18.1
       version: 4.18.1
@@ -322,6 +328,7 @@ catalogs:
       version: 3.4.19
 
 overrides:
+  knex-migrator>knex: 2.4.2
   '@tryghost/errors': ^1.3.7
   '@tryghost/logging': 4.2.1
   jackspeak: 4.2.3
@@ -395,25 +402,25 @@ importers:
         version: 13.0.2
       eslint:
         specifier: 'catalog:'
-        version: 9.39.4(jiti@2.7.0)
+        version: 9.39.4(jiti@2.7.0)(supports-color@5.5.0)
       eslint-plugin-ghost:
         specifier: 'catalog:'
-        version: 3.5.0(@babel/core@7.29.7)(eslint@9.39.4(jiti@2.7.0))
+        version: 3.5.0(@babel/core@7.29.7)(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)
       eslint-plugin-i18next:
         specifier: 6.1.4
         version: 6.1.4
       eslint-plugin-react:
         specifier: 'catalog:'
-        version: 7.37.5(eslint@9.39.4(jiti@2.7.0))
+        version: 7.37.5(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))
       eslint-plugin-react-hooks:
         specifier: 'catalog:'
-        version: 5.2.0(eslint@9.39.4(jiti@2.7.0))
+        version: 5.2.0(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))
       eslint-plugin-react-refresh:
         specifier: 'catalog:'
-        version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
+        version: 0.5.3(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))
       eslint-plugin-storybook:
         specifier: 10.4.4
-        version: 10.4.4(eslint@9.39.4(jiti@2.7.0))(storybook@10.4.4(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@5.5.0)(typescript@5.9.3)
+        version: 10.4.4(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(storybook@10.4.4(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@5.5.0)(typescript@5.9.3)
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
@@ -452,7 +459,7 @@ importers:
         version: 5.9.3
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.58.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+        version: 8.58.0(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
       vitest:
         specifier: 'catalog:'
         version: 4.1.9(@opentelemetry/api@1.9.1)(@types/node@26.0.0)(@vitest/coverage-v8@4.1.9)(jsdom@29.1.1(@noble/hashes@1.8.0))(msw@2.14.6(@types/node@26.0.0)(typescript@5.9.3))(vite@7.3.2(@types/node@26.0.0)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0))
@@ -525,7 +532,7 @@ importers:
         version: 18.3.7(@types/react@18.3.31)
       '@typescript-eslint/eslint-plugin':
         specifier: 'catalog:'
-        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
       '@typescript-eslint/parser':
         specifier: 'catalog:'
         version: 8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
@@ -1151,7 +1158,7 @@ importers:
         version: 13.15.10
       '@typescript-eslint/eslint-plugin':
         specifier: 'catalog:'
-        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
       '@typescript-eslint/parser':
         specifier: 'catalog:'
         version: 8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
@@ -1427,16 +1434,16 @@ importers:
         version: 3.4.11
       eslint:
         specifier: 'catalog:'
-        version: 9.39.4(jiti@2.7.0)(supports-color@5.5.0)
+        version: 9.39.4(jiti@2.7.0)
       eslint-plugin-ghost:
         specifier: 'catalog:'
-        version: 3.5.0(@babel/core@7.29.7)(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)
+        version: 3.5.0(@babel/core@7.29.7)(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-i18next:
         specifier: 6.1.4
         version: 6.1.4
       eslint-plugin-react:
         specifier: 'catalog:'
-        version: 7.37.5(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))
+        version: 7.37.5(eslint@9.39.4(jiti@2.7.0))
       globals:
         specifier: 'catalog:'
         version: 17.6.0
@@ -1451,7 +1458,7 @@ importers:
         version: 17.0.2(react@17.0.2)
       typescript-eslint:
         specifier: 'catalog:'
-        version: 8.58.0(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
+        version: 8.58.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       vite:
         specifier: 'catalog:'
         version: 7.3.2(@types/node@26.0.0)(jiti@2.7.0)(lightningcss@1.32.0)(terser@5.48.0)(tsx@4.22.4)(yaml@2.9.0)
@@ -1753,7 +1760,7 @@ importers:
         version: 1.6.0
       '@typescript-eslint/eslint-plugin':
         specifier: 'catalog:'
-        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
       '@typescript-eslint/parser':
         specifier: 'catalog:'
         version: 8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
@@ -1783,7 +1790,7 @@ importers:
         version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-storybook:
         specifier: 10.4.4
-        version: 10.4.4(eslint@9.39.4(jiti@2.7.0))(storybook@10.4.4(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@5.5.0)(typescript@5.9.3)
+        version: 10.4.4(eslint@9.39.4(jiti@2.7.0))(storybook@10.4.4(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
         version: 4.0.0-beta.0(tailwindcss@4.2.2)
@@ -2059,7 +2066,7 @@ importers:
         version: 2.1.4
       '@typescript-eslint/eslint-plugin':
         specifier: 'catalog:'
-        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+        version: 8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
       '@typescript-eslint/parser':
         specifier: 'catalog:'
         version: 8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
@@ -2594,7 +2601,7 @@ importers:
         version: 2.2.4
       '@tryghost/brute-knex':
         specifier: 'catalog:'
-        version: 3.1.0(express@4.22.2)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
+        version: 3.1.0(better-sqlite3@12.11.1)(express@4.22.2)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
       '@tryghost/color-utils':
         specifier: 'catalog:'
         version: 0.2.19
@@ -2605,8 +2612,8 @@ importers:
         specifier: 'catalog:'
         version: 1.0.11
       '@tryghost/database-info':
-        specifier: 0.3.35
-        version: 0.3.35
+        specifier: 2.3.1
+        version: 2.3.1
       '@tryghost/debug':
         specifier: 'catalog:'
         version: 2.2.3(supports-color@5.5.0)
@@ -2744,10 +2751,10 @@ importers:
         version: 1.20.5
       bookshelf:
         specifier: 1.2.0
-        version: 1.2.0(knex@2.4.2(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7))
+        version: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7))
       bookshelf-relations:
         specifier: 2.8.0
-        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)))
+        version: 2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)))
       bson-objectid:
         specifier: 'catalog:'
         version: 2.0.4
@@ -2774,7 +2781,7 @@ importers:
         version: 1.8.2
       compression:
         specifier: 1.8.1
-        version: 1.8.1(supports-color@1.2.0)
+        version: 1.8.1
       connect-slashes:
         specifier: 1.4.0
         version: 1.4.0
@@ -2903,10 +2910,10 @@ importers:
         version: 1.0.4
       knex:
         specifier: 2.4.2
-        version: 2.4.2(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
+        version: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
       knex-migrator:
-        specifier: 5.3.2
-        version: 5.3.2
+        specifier: 'catalog:'
+        version: 5.4.1(@types/node@22.19.21)(supports-color@5.5.0)
       leaky-bucket:
         specifier: 2.2.0
         version: 2.2.0
@@ -3221,9 +3228,9 @@ importers:
       '@tryghost/html-to-mobiledoc':
         specifier: 3.3.3
         version: 3.3.3(@noble/hashes@1.8.0)
-      sqlite3:
-        specifier: 5.1.7
-        version: 5.1.7
+      better-sqlite3:
+        specifier: 'catalog:'
+        version: 12.11.1
 
   ghost/i18n:
     dependencies:
@@ -9014,11 +9021,11 @@ packages:
   '@tryghost/custom-fonts@1.0.11':
     resolution: {integrity: sha512-WAc3LkrgMKBk+pGyFfkR+5eoS4C52RXMBWBj4kNa+tcP51f/U3DIl8QKfp9M3XrcGS44Qpwq9C5nYKRp+sz1ig==}
 
-  '@tryghost/database-info@0.3.22':
-    resolution: {integrity: sha512-AwljcoXFUjSKFIoB/V9uohTLvWY8g+fIaHHjgPLH4Cq1tBZgcAlBIZR2ridhXiY1iDX7m3cws36uAxrN0KnoUw==}
-
   '@tryghost/database-info@0.3.35':
     resolution: {integrity: sha512-S9OapApwzdh3GS0d3m+KgwH7IhZII6b9Aw5I89HA5VJRPeo6HdaDXiZzSDNcFaUzpx1FFBR0kDu7G+IRPD0eFA==}
+
+  '@tryghost/database-info@2.3.1':
+    resolution: {integrity: sha512-D/ByHaaDkS1Do88A0x6ffsCdVGxgxIkXu4CLkQmO1SSTtlSGyd9bgVnxpfr6DWAHkaoU2NYjaNYbu2rXNbxPuw==}
 
   '@tryghost/debug@0.1.40':
     resolution: {integrity: sha512-r8ecoTeoickPsn/59tkrouCNHhUEy79MNhJdPNkhx/Q3Oevw+SQBjnVYa5mHaxTaXryM4nNguKM5fbxPGPBo3Q==}
@@ -9190,8 +9197,8 @@ packages:
   '@tryghost/prometheus-metrics@1.0.8':
     resolution: {integrity: sha512-E1LRRwLgiWIN/P20uHgpTK+JVYYQ3+BarKCBszB6qmK5IBANJvQHI3LQV0wDWefVwFyl5FI6AqxLpOOpquvahA==}
 
-  '@tryghost/promise@0.3.8':
-    resolution: {integrity: sha512-ppcnLBWczpbo4sQcGWtjEA82kdZMv4NFF2MvZRi1MBP4lSOSgh9A636eUxlB1/FpIG+D5ixq84xlY4QJMqW2kA==}
+  '@tryghost/promise@0.3.20':
+    resolution: {integrity: sha512-afHCBoS72XabqRi7GmHdVAWC/UMsVPGlxnL/epNVp0c/C7tEn6+MgHABXNAW4wViZFhuOda3k7fk3i2K0FAZQg==}
 
   '@tryghost/promise@2.2.3':
     resolution: {integrity: sha512-16iSlwcIeQzbPEOBvvR4bfBe/hb6XGXg6/IcoYh6zootyt10I38//IGYf73MJvaGAvQu12JYMC8nIlpXzp1UTA==}
@@ -10981,6 +10988,10 @@ packages:
   better-path-resolve@1.0.0:
     resolution: {integrity: sha512-pbnl5XzGBdrFU/wT4jqmJVPn2B6UHPBOhzMQkY/SPUPB6QtUXtmBHBIwCbXJol93mOpGMnQyP/+BB19q04xj7g==}
     engines: {node: '>=4'}
+
+  better-sqlite3@12.11.1:
+    resolution: {integrity: sha512-dq9AtApgg5PGFtBzPFSBl3HZQjHok5gaQCM6zh2Yk0aSmDCs1CbnVI8/HgASQkNKsWFpseIO9beg5xxpYhbIfA==}
+    engines: {node: 20.x || 22.x || 23.x || 24.x || 25.x || 26.x}
 
   bidi-js@1.0.3:
     resolution: {integrity: sha512-RKshQI1R3YQ+n9YJz2QQ147P66ELpa1FQEg20Dk8oW9t2KgLbpDLLp9aGZ7y8WHSshDknG0bknqGw5/tyCs5tw==}
@@ -12838,15 +12849,6 @@ packages:
 
   debug@4.3.4:
     resolution: {integrity: sha512-PRWFHuSU3eDtQJPvnNY7Jcket1j0t5OuOsFzPPzsekD52Zl8qUfFIPEiswXqIvHWGVHOgX+7G/vCNNhehwxfkQ==}
-    engines: {node: '>=6.0'}
-    peerDependencies:
-      supports-color: '*'
-    peerDependenciesMeta:
-      supports-color:
-        optional: true
-
-  debug@4.4.1:
-    resolution: {integrity: sha512-KcKCqiftBJcZr++7ykoDIEwSa3XWowTfNPo92BYxjXiyYEVrUQh2aLyhxBCwww+heortUFxEJYcRzosstTEBYQ==}
     engines: {node: '>=6.0'}
     peerDependencies:
       supports-color: '*'
@@ -16362,8 +16364,8 @@ packages:
     resolution: {integrity: sha512-o+NO+8WrRiQEE4/7nwRJhN1HWpVmJm511pBHUxPLtp0BUISzlBplORYSmTclCnJvQq2tKu/sgl3xVpkc7ZWuQQ==}
     engines: {node: '>=6'}
 
-  knex-migrator@5.3.2:
-    resolution: {integrity: sha512-E8yLL2IWAni0yWWt1uq+x6qS80E+YVLQqwFFw1vkCQ+hq65MggHS3HjrZFXZqPv3cFrpyxHbdehwQoGQE3FC1g==}
+  knex-migrator@5.4.1:
+    resolution: {integrity: sha512-u+wmvy6tYtGfR9NFt0kGCLu+wNLK3WevTZXFtFPqrzQi3nDa67SoySV+qLhGavEWjis8QD980MeDjpzdH1wWVA==}
     engines: {node: ^14.18.0 || ^16.13.0 || ^18.12.1 || ^20.11.1 || ^22.13.1}
     hasBin: true
 
@@ -17624,10 +17626,6 @@ packages:
     resolution: {integrity: sha512-BzQguy9W9NJgoVn2mRWzbFrFWWztGCcng2QI9+41frfk+Athwgx3qhqhvStz7ExeUUu7Kzw427sNzHpEZNINog==}
     engines: {node: '>=16.0.0'}
 
-  mysql2@3.14.1:
-    resolution: {integrity: sha512-7ytuPQJjQB8TNAYX/H2yhL+iQOnIBjAMam361R7UAL0lOVXWjtdrmoL9HYKqKoLp/8UUTRcvo1QPvK9KL7wA8w==}
-    engines: {node: '>= 8.0'}
-
   mysql2@3.22.5:
     resolution: {integrity: sha512-95uZ2TrPWAZdwpB3vvvDbmEMcNG8yIeNCyu6GUcr/QnWEE/wXm7+mhOCsdQfWQDTV7qYT/PDUZ4U4UPP4AsXqQ==}
     engines: {node: '>= 8.0'}
@@ -17661,10 +17659,6 @@ packages:
 
   natural-compare@1.4.0:
     resolution: {integrity: sha512-OWND8ei3VtNC9h7V60qff3SVobHr996CTwgxubgyQYEpg290h9J0buyECNNJexkFm5sOajh5G116RYA1c8ZMSw==}
-
-  nconf@0.12.1:
-    resolution: {integrity: sha512-p2cfF+B3XXacQdswUYWZ0w6Vld0832A/tuqjLBu3H1sfUcby4N2oVbGhyuCkZv+t3iY3aiFEj7gZGqax9Q2c1w==}
-    engines: {node: '>= 0.4.0'}
 
   nconf@0.13.0:
     resolution: {integrity: sha512-hJ/u2xCpA663h6xyOiztx3y+lg9eU0rdkwJ+c4FtiHo2g/gB0sjXtW31yTdMLWLOIj1gL2FcJMwfOqouuUK/Wg==}
@@ -19990,10 +19984,6 @@ packages:
     engines: {node: '>= 0.4'}
     hasBin: true
 
-  resolve@1.22.8:
-    resolution: {integrity: sha512-oKWePCxqpd6FlLvGV1VU0x7bkPmmCNolxzjMf4NczoDnQcIWrAF+cPtZn5i6n+RfD2d9i0tzpKnG6Yk168yIyw==}
-    hasBin: true
-
   resolve@2.0.0-next.7:
     resolution: {integrity: sha512-tqt+NBWwyaMgw3zDsnygx4CByWjQEJHOPMdslYhppaQSJUtL/D4JO9CcBBlhPoI8lz9oJIDXkwXfhF4aWqP8xQ==}
     engines: {node: '>= 0.4'}
@@ -20285,9 +20275,6 @@ packages:
 
   sentry-testkit@6.4.1:
     resolution: {integrity: sha512-T0L4bHMEXoOdIT1O087VuZM1bJD9dtOWSf1QgOxst9J03nDsnvU0TuXYtBuwAwZ1MG17EmXjjxvpSa7z+mJoPg==}
-
-  seq-queue@0.0.5:
-    resolution: {integrity: sha512-hr3Wtp/GZIc/6DAGPDcV4/9WoZhjrkXsi5B/07QgX8tsdc6ilr7BFM6PM6rbdAX1kFSDYeZGLipIZZKyQP0O5Q==}
 
   serialize-javascript@4.0.0:
     resolution: {integrity: sha512-GaNA54380uFefWghODBWEGisLZFj00nS5ACs6yHa9nLqlLpVLO8ChDGeKRjZnV4Nh4n0Qi7nhYZD/9fCPzEqkw==}
@@ -20598,10 +20585,6 @@ packages:
 
   sqlite3@5.1.7:
     resolution: {integrity: sha512-GGIyOiFaG+TUra3JIfkI/zGP8yZYLPQ0pl1bH+ODjiX57sPhrLU5sQJn1y9bDKZUFYkX1crlrPfSYt0BKKdkog==}
-
-  sqlstring@2.3.3:
-    resolution: {integrity: sha512-qC9iz2FlN7DQl3+wjwn3802RTyjCx7sDvfQEXchwa6CWOx07/WVfh91gBmQ9fahw8snwGEWU3xGzOt4tFyHLxg==}
-    engines: {node: '>= 0.6'}
 
   ssh2@1.17.0:
     resolution: {integrity: sha512-wPldCk3asibAjQ/kziWQQt1Wh3PgDFpC0XpwclzKcdT1vql6KeYxf5LIt4nlFkUeR8WuphYMKqUA56X4rjbfgQ==}
@@ -28850,10 +28833,10 @@ snapshots:
 
   '@tryghost/bookshelf-transaction-events@2.2.3': {}
 
-  '@tryghost/brute-knex@3.1.0(express@4.22.2)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)':
+  '@tryghost/brute-knex@3.1.0(better-sqlite3@12.11.1)(express@4.22.2)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)':
     dependencies:
       express-brute: 1.0.1(express@4.22.2)
-      knex: 2.5.1(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
+      knex: 2.5.1(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
     transitivePeerDependencies:
       - better-sqlite3
       - express
@@ -28883,9 +28866,9 @@ snapshots:
 
   '@tryghost/custom-fonts@1.0.11': {}
 
-  '@tryghost/database-info@0.3.22': {}
-
   '@tryghost/database-info@0.3.35': {}
+
+  '@tryghost/database-info@2.3.1': {}
 
   '@tryghost/debug@0.1.40':
     dependencies:
@@ -29349,7 +29332,7 @@ snapshots:
       - '@75lb/nature'
       - supports-color
 
-  '@tryghost/promise@0.3.8': {}
+  '@tryghost/promise@0.3.20': {}
 
   '@tryghost/promise@2.2.3': {}
 
@@ -30006,12 +29989,12 @@ snapshots:
       '@types/node': 26.0.0
     optional: true
 
-  '@typescript-eslint/eslint-plugin@8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)':
+  '@typescript-eslint/eslint-plugin@8.49.0(@typescript-eslint/parser@8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3))(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
       '@typescript-eslint/parser': 8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
       '@typescript-eslint/scope-manager': 8.49.0
-      '@typescript-eslint/type-utils': 8.49.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+      '@typescript-eslint/type-utils': 8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
       '@typescript-eslint/utils': 8.49.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       '@typescript-eslint/visitor-keys': 8.49.0
       eslint: 9.39.4(jiti@2.7.0)
@@ -30059,7 +30042,7 @@ snapshots:
       '@eslint-community/regexpp': 4.12.2
       '@typescript-eslint/parser': 8.56.1(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       '@typescript-eslint/scope-manager': 8.49.0
-      '@typescript-eslint/type-utils': 8.49.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+      '@typescript-eslint/type-utils': 8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
       '@typescript-eslint/utils': 8.49.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       '@typescript-eslint/visitor-keys': 8.49.0
       eslint: 9.39.4(jiti@2.7.0)
@@ -30070,10 +30053,10 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/eslint-plugin@8.58.0(@typescript-eslint/parser@8.58.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)':
+  '@typescript-eslint/eslint-plugin@8.58.0(@typescript-eslint/parser@8.58.0(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)':
     dependencies:
       '@eslint-community/regexpp': 4.12.2
-      '@typescript-eslint/parser': 8.58.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
+      '@typescript-eslint/parser': 8.58.0(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
       '@typescript-eslint/scope-manager': 8.58.0
       '@typescript-eslint/type-utils': 8.58.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
       '@typescript-eslint/utils': 8.58.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
@@ -30298,7 +30281,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/type-utils@8.49.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)':
+  '@typescript-eslint/type-utils@8.49.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)':
     dependencies:
       '@typescript-eslint/types': 8.49.0
       '@typescript-eslint/typescript-estree': 8.49.0(typescript@5.9.3)
@@ -30480,7 +30463,18 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  '@typescript-eslint/utils@8.62.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)':
+  '@typescript-eslint/utils@8.62.0(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)':
+    dependencies:
+      '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))
+      '@typescript-eslint/scope-manager': 8.62.0
+      '@typescript-eslint/types': 8.62.0
+      '@typescript-eslint/typescript-estree': 8.62.0(supports-color@5.5.0)(typescript@5.9.3)
+      eslint: 9.39.4(jiti@2.7.0)(supports-color@5.5.0)
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - supports-color
+
+  '@typescript-eslint/utils@8.62.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)':
     dependencies:
       '@eslint-community/eslint-utils': 4.9.1(eslint@9.39.4(jiti@2.7.0))
       '@typescript-eslint/scope-manager': 8.62.0
@@ -32073,6 +32067,12 @@ snapshots:
     dependencies:
       is-windows: 1.0.2
 
+  better-sqlite3@12.11.1:
+    dependencies:
+      bindings: 1.5.0
+      prebuild-install: 7.1.3
+    optional: true
+
   bidi-js@1.0.3:
     dependencies:
       require-from-string: 2.0.2
@@ -32155,22 +32155,22 @@ snapshots:
       raw-body: 1.1.7
       safe-json-parse: 1.0.1
 
-  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7))):
+  bookshelf-relations@2.8.0(bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7))):
     dependencies:
       '@tryghost/debug': 0.1.40
       '@tryghost/errors': 1.3.13
       bluebird: 3.7.2
-      bookshelf: 1.2.0(knex@2.4.2(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7))
+      bookshelf: 1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7))
       lodash: 4.18.1
     transitivePeerDependencies:
       - supports-color
 
-  bookshelf@1.2.0(knex@2.4.2(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)):
+  bookshelf@1.2.0(knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)):
     dependencies:
       bluebird: 3.7.2
       create-error: 0.3.1
       inflection: 1.13.4
-      knex: 2.4.2(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
+      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
       lodash: 4.18.1
 
   boolbase@1.0.0: {}
@@ -33534,7 +33534,7 @@ snapshots:
     dependencies:
       mime-db: 1.54.0
 
-  compression@1.8.1(supports-color@1.2.0):
+  compression@1.8.1:
     dependencies:
       bytes: 3.1.2
       compressible: 2.0.18
@@ -34237,10 +34237,6 @@ snapshots:
   debug@4.3.4:
     dependencies:
       ms: 2.1.2
-
-  debug@4.4.1:
-    dependencies:
-      ms: 2.1.3
 
   debug@4.4.3(supports-color@5.5.0):
     dependencies:
@@ -35253,7 +35249,7 @@ snapshots:
       chalk: 4.1.2
       ci-info: 2.0.0
       clean-base-url: 1.0.0
-      compression: 1.8.1(supports-color@1.2.0)
+      compression: 1.8.1
       configstore: 5.0.1
       console-ui: 3.1.2
       core-object: 3.1.5
@@ -35289,7 +35285,7 @@ snapshots:
       isbinaryfile: 4.0.10
       js-yaml: 3.14.2
       json-stable-stringify: 1.3.0
-      leek: 0.0.24(supports-color@1.2.0)
+      leek: 0.0.24
       lodash.template: 4.18.1
       markdown-it: 12.3.2
       markdown-it-terminal: 0.2.1
@@ -36657,9 +36653,17 @@ snapshots:
       eslint: 9.39.4(jiti@2.7.0)
       globals: 17.6.0
 
+  eslint-plugin-react-hooks@5.2.0(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0)):
+    dependencies:
+      eslint: 9.39.4(jiti@2.7.0)(supports-color@5.5.0)
+
   eslint-plugin-react-hooks@5.2.0(eslint@9.39.4(jiti@2.7.0)):
     dependencies:
       eslint: 9.39.4(jiti@2.7.0)
+
+  eslint-plugin-react-refresh@0.5.3(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0)):
+    dependencies:
+      eslint: 9.39.4(jiti@2.7.0)(supports-color@5.5.0)
 
   eslint-plugin-react-refresh@0.5.3(eslint@9.39.4(jiti@2.7.0)):
     dependencies:
@@ -36743,9 +36747,18 @@ snapshots:
     dependencies:
       eslint: 9.39.4(jiti@2.7.0)
 
-  eslint-plugin-storybook@10.4.4(eslint@9.39.4(jiti@2.7.0))(storybook@10.4.4(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@5.5.0)(typescript@5.9.3):
+  eslint-plugin-storybook@10.4.4(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(storybook@10.4.4(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@5.5.0)(typescript@5.9.3):
     dependencies:
-      '@typescript-eslint/utils': 8.62.0(eslint@9.39.4(jiti@2.7.0))(supports-color@5.5.0)(typescript@5.9.3)
+      '@typescript-eslint/utils': 8.62.0(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
+      eslint: 9.39.4(jiti@2.7.0)(supports-color@5.5.0)
+      storybook: 10.4.4(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
+
+  eslint-plugin-storybook@10.4.4(eslint@9.39.4(jiti@2.7.0))(storybook@10.4.4(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3):
+    dependencies:
+      '@typescript-eslint/utils': 8.62.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
       eslint: 9.39.4(jiti@2.7.0)
       storybook: 10.4.4(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
     transitivePeerDependencies:
@@ -37250,7 +37263,7 @@ snapshots:
       qs: 6.15.2
       range-parser: 1.2.1
       safe-buffer: 5.2.1
-      send: 0.19.2(supports-color@1.2.0)
+      send: 0.19.2
       serve-static: 1.16.3
       setprototypeof: 1.2.0
       statuses: 2.0.2
@@ -37286,7 +37299,7 @@ snapshots:
       qs: 6.15.2
       range-parser: 1.2.1
       safe-buffer: 5.2.1
-      send: 0.19.2(supports-color@1.2.0)
+      send: 0.19.2
       serve-static: 1.16.3
       setprototypeof: 1.2.0
       statuses: 2.0.2
@@ -40038,26 +40051,27 @@ snapshots:
 
   kleur@4.1.5: {}
 
-  knex-migrator@5.3.2:
+  knex-migrator@5.4.1(@types/node@22.19.21)(supports-color@5.5.0):
     dependencies:
-      '@tryghost/database-info': 0.3.22
+      '@tryghost/database-info': 0.3.35
       '@tryghost/errors': 1.3.13
       '@tryghost/logging': 4.2.1(supports-color@5.5.0)
-      '@tryghost/promise': 0.3.8
+      '@tryghost/promise': 0.3.20
       commander: 5.1.0
       compare-ver: 2.0.2
-      debug: 4.4.1
-      knex: 2.4.2(mysql2@3.14.1)(sqlite3@5.1.7)
+      debug: 4.4.3(supports-color@5.5.0)
+      knex: 2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7)
       lodash: 4.18.1
       moment: 2.30.1
-      mysql2: 3.14.1
-      nconf: 0.12.1
-      resolve: 1.22.8
+      mysql2: 3.22.5(@types/node@22.19.21)
+      nconf: 0.13.0
+      resolve: 1.22.12
     optionalDependencies:
+      better-sqlite3: 12.11.1
       sqlite3: 5.1.7
     transitivePeerDependencies:
       - '@75lb/nature'
-      - better-sqlite3
+      - '@types/node'
       - bluebird
       - mysql
       - pg
@@ -40085,7 +40099,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  knex@2.4.2(mysql2@3.14.1)(sqlite3@5.1.7):
+  knex@2.4.2(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7):
     dependencies:
       colorette: 2.0.19
       commander: 9.5.0
@@ -40102,34 +40116,13 @@ snapshots:
       tarn: 3.0.2
       tildify: 2.0.0
     optionalDependencies:
-      mysql2: 3.14.1
-      sqlite3: 5.1.7
-    transitivePeerDependencies:
-      - supports-color
-
-  knex@2.4.2(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7):
-    dependencies:
-      colorette: 2.0.19
-      commander: 9.5.0
-      debug: 4.3.4
-      escalade: 3.2.0
-      esm: 3.2.25
-      get-package-type: 0.1.0
-      getopts: 2.3.0
-      interpret: 2.2.0
-      lodash: 4.18.1
-      pg-connection-string: 2.5.0
-      rechoir: 0.8.0
-      resolve-from: 5.0.0
-      tarn: 3.0.2
-      tildify: 2.0.0
-    optionalDependencies:
+      better-sqlite3: 12.11.1
       mysql2: 3.22.5(@types/node@22.19.21)
       sqlite3: 5.1.7
     transitivePeerDependencies:
       - supports-color
 
-  knex@2.5.1(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7):
+  knex@2.5.1(better-sqlite3@12.11.1)(mysql2@3.22.5(@types/node@22.19.21))(sqlite3@5.1.7):
     dependencies:
       colorette: 2.0.19
       commander: 10.0.1
@@ -40146,6 +40139,7 @@ snapshots:
       tarn: 3.0.2
       tildify: 2.0.0
     optionalDependencies:
+      better-sqlite3: 12.11.1
       mysql2: 3.22.5(@types/node@22.19.21)
       sqlite3: 5.1.7
     transitivePeerDependencies:
@@ -40211,7 +40205,7 @@ snapshots:
       ee-log: 3.0.9
       ee-types: 2.2.1
 
-  leek@0.0.24(supports-color@1.2.0):
+  leek@0.0.24:
     dependencies:
       debug: 2.6.9(supports-color@1.2.0)
       lodash.assign: 3.2.0
@@ -41612,18 +41606,6 @@ snapshots:
 
   mylas@2.1.14: {}
 
-  mysql2@3.14.1:
-    dependencies:
-      aws-ssl-profiles: 1.1.2
-      denque: 2.1.0
-      generate-function: 2.3.1
-      iconv-lite: 0.6.3
-      long: 5.3.2
-      lru.min: 1.1.4
-      named-placeholders: 1.1.6
-      seq-queue: 0.0.5
-      sqlstring: 2.3.3
-
   mysql2@3.22.5(@types/node@22.19.21):
     dependencies:
       '@types/node': 22.19.21
@@ -41674,13 +41656,6 @@ snapshots:
     optional: true
 
   natural-compare@1.4.0: {}
-
-  nconf@0.12.1:
-    dependencies:
-      async: 3.2.6
-      ini: 2.0.0
-      secure-keys: 1.0.0
-      yargs: 16.2.2
 
   nconf@0.13.0:
     dependencies:
@@ -44427,12 +44402,6 @@ snapshots:
       path-parse: 1.0.7
       supports-preserve-symlinks-flag: 1.0.0
 
-  resolve@1.22.8:
-    dependencies:
-      is-core-module: 2.16.2
-      path-parse: 1.0.7
-      supports-preserve-symlinks-flag: 1.0.0
-
   resolve@2.0.0-next.7:
     dependencies:
       es-errors: 1.3.0
@@ -44765,7 +44734,7 @@ snapshots:
 
   semver@7.8.5: {}
 
-  send@0.19.2(supports-color@1.2.0):
+  send@0.19.2:
     dependencies:
       debug: 2.6.9(supports-color@1.2.0)
       depd: 2.0.0
@@ -44806,8 +44775,6 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  seq-queue@0.0.5: {}
-
   serialize-javascript@4.0.0:
     dependencies:
       randombytes: 2.1.0
@@ -44817,7 +44784,7 @@ snapshots:
       encodeurl: 2.0.0
       escape-html: 1.0.3
       parseurl: 1.3.3
-      send: 0.19.2(supports-color@1.2.0)
+      send: 0.19.2
     transitivePeerDependencies:
       - supports-color
 
@@ -45231,8 +45198,6 @@ snapshots:
       - bluebird
       - supports-color
     optional: true
-
-  sqlstring@2.3.3: {}
 
   ssh2@1.17.0:
     dependencies:
@@ -45918,7 +45883,7 @@ snapshots:
       backbone: 1.6.1
       charm: 1.0.2
       commander: 2.20.3
-      compression: 1.8.1(supports-color@1.2.0)
+      compression: 1.8.1
       consolidate: 1.0.4(@babel/core@7.29.7)(handlebars@4.7.9)(lodash@4.18.1)(mustache@4.2.0)(react-dom@18.3.1(react@18.3.1))(react@18.3.1)(underscore@1.13.8)
       execa: 9.6.1
       express: 4.22.2(supports-color@1.2.0)
@@ -46325,7 +46290,7 @@ snapshots:
 
   typescript-eslint@8.58.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3):
     dependencies:
-      '@typescript-eslint/eslint-plugin': 8.58.0(@typescript-eslint/parser@8.58.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
+      '@typescript-eslint/eslint-plugin': 8.58.0(@typescript-eslint/parser@8.58.0(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3))(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
       '@typescript-eslint/parser': 8.58.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
       '@typescript-eslint/typescript-estree': 8.58.0(typescript@5.9.3)
       '@typescript-eslint/utils': 8.58.0(eslint@9.39.4(jiti@1.21.7))(typescript@5.9.3)
