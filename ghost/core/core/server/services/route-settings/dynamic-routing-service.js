@@ -1,6 +1,6 @@
 const debug = require('@tryghost/debug')('services:route-settings:service');
 
-class RouteSettingsService {
+class DynamicRoutingService {
     constructor() {
         this.settingsLoader = null;
         this.routerManager = null;
@@ -61,4 +61,4 @@ class RouteSettingsService {
     }
 }
 
-module.exports = RouteSettingsService;
+module.exports = DynamicRoutingService;

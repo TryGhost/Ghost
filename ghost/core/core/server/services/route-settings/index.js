@@ -1,8 +1,8 @@
 const config = require('../../../shared/config');
 const parseYaml = require('./yaml-parser');
-const RouteSettingsService = require('./route-settings-service');
+const DynamicRoutingService = require('./dynamic-routing-service');
 
-const service = new RouteSettingsService();
+const service = new DynamicRoutingService();
 
 module.exports = {
     init: async () => {
