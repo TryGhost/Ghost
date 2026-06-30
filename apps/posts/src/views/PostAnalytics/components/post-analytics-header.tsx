@@ -29,8 +29,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
     const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
-    const {settings, site, statsConfig, post, isPostLoading, postId} = useGlobalData();
+    const {settings, site, statsConfig, post, isPostLoading, postId, postType} = useGlobalData();
     const canManageGiftLink = useCanManageGiftLink(post);
+    const giftLinkResource = postType === 'page' ? 'pages' : 'posts';
 
     const siteTimezone = getSiteTimezone(settings);
 
@@ -258,6 +259,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     key={postId}
                     open={isGiftLinkOpen}
                     postId={postId}
+                    resource={giftLinkResource}
                     onOpenChange={setIsGiftLinkOpen}
                 />
             )}

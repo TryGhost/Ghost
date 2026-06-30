@@ -3,6 +3,11 @@
 // the analytics header) hits the identical query key instead of a near-miss.
 export const POST_ANALYTICS_INCLUDE = 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions,count.positive_feedback,count.negative_feedback,newsletter';
 
+// The pages endpoint shares the analytics screen but rejects the post-only
+// includes (email, newsletter, click/feedback counts), so page lookups request
+// the safe subset the pages API allows.
+export const PAGE_ANALYTICS_INCLUDE = 'authors,tags,tiers,count.signups,count.paid_conversions';
+
 export const STATS_RANGES = {
     TODAY: {name: 'Today', value: 1},
     LAST_7_DAYS: {name: 'Last 7 days', value: 7},
