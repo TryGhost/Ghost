@@ -10,7 +10,8 @@ Canonical, rule-shaped reference for AI-assisted work on Shade and any admin app
   ```ts
   import {Stack, Inline, Box, Grid, Container, Text} from '@tryghost/shade/primitives';
   import {Button, Input, Dialog} from '@tryghost/shade/components';
-  import {PageHeader, ListPage, KpiCard} from '@tryghost/shade/patterns';
+  import {PageHeader, KpiCard, Filters} from '@tryghost/shade/patterns';
+  import {ListPage} from '@tryghost/shade/page-templates';
   import {PostShareModal} from '@tryghost/shade/posts-stats';
   import {cn} from '@tryghost/shade/utils';
   import {ShadeApp} from '@tryghost/shade/app';
@@ -25,9 +26,12 @@ Canonical, rule-shaped reference for AI-assisted work on Shade and any admin app
 | **Primitives** | `src/components/primitives/` | You need layout structure | `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text` |
 | **Components** | `src/components/ui/` | You need a generic, accessible UI control | `Button`, `Input`, `Dialog`, `Tabs`, `Card`, `DropdownMenu` |
 | **Recipes** | `src/components/ui/<name>.ts` | Several components share the same visual rule (chrome, focus, density) | `inputSurface` |
-| **Patterns** | `src/components/patterns/` | The shape is product-specific and recurs across Admin | `PageHeader`, `ListPage`, `Filters`, `KpiCard`, `GhAreaChart` |
+| **Patterns** | `src/components/patterns/` | The shape is product-specific and recurs across Admin | `PageHeader`, `Filters`, `KpiCard`, `GhAreaChart` |
 
-Plus one transitional layer: **`posts-stats/`** for components shared between `apps/posts` and `apps/stats` until those merge. Don't generalise it.
+Plus two additional barrels:
+
+- **`page-templates/`** (`src/components/page-templates/`) — top-level page wrappers (`ListPage` today). Composes Patterns + Components + Primitives. Imported via `@tryghost/shade/page-templates`.
+- **`posts-stats/`** (`src/components/posts-stats/`) — transitional layer for components shared between `apps/posts` and `apps/stats` until those merge. Don't generalise it. Imported via `@tryghost/shade/posts-stats`.
 
 ## Decision flow: where does new code go?
 
