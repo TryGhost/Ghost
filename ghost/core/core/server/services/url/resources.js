@@ -122,7 +122,7 @@ class Resources {
         debug('_fetch', resourceConfig.type, resourceConfig.modelOptions);
 
         let modelOptions = _.cloneDeep(resourceConfig.modelOptions);
-        const isSQLite = DatabaseInfo.isSQLite(models.Base.Model.raw_knex);
+        const isSQLite = DatabaseInfo.isSQLite(models.Base.knex);
 
         // CASE: prevent "too many SQL variables" error on SQLite3 (https://github.com/TryGhost/Ghost/issues/5810)
         if (isSQLite) {

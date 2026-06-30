@@ -2,6 +2,7 @@ const _ = require('lodash');
 const knex = require('knex');
 const os = require('os');
 const fs = require('fs');
+const betterSqlitePatches = require('./better-sqlite3-patches');
 
 const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
@@ -55,6 +56,8 @@ function configure(dbConfig) {
             dbConfig.connection.filename = filename.replace(/^\/tmp/, os.tmpdir());
             logging.info(`Ghost DB path: ${dbConfig.connection.filename}`);
         }
+
+        betterSqlitePatches.applyBetterSqlite3Patches();
     }
 
     if (client === 'mysql2') {
