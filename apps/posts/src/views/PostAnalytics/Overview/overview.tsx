@@ -158,7 +158,7 @@ const Overview: React.FC = () => {
                                 Growth
                                     </CardTitle>
                                 </CardHeader>
-                                <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100' size='sm' variant='outline' onClick={() => {
+                                <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-200 group-hover:translate-x-0 group-hover:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100' size='sm' variant='outline' onClick={() => {
                                     navigate(`/posts/analytics/${postId}/growth`);
                                 }}>View more</Button>
                             </div>
@@ -215,7 +215,7 @@ const Overview: React.FC = () => {
                                             </CardTitle>
                                         </CardHeader>
                                         <Button
-                                            className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100'
+                                            className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100'
                                             size='sm'
                                             variant='outline'
                                             onClick={() => setIsGiftLinkOpen(true)}
