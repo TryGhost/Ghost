@@ -23,6 +23,7 @@ const postcssColorModFunction = require('postcss-color-mod-function');
 const postcssCustomMedia = require('postcss-custom-media');
 const autoprefixer = require('autoprefixer');
 const cssnano = require('cssnano');
+const targets = require('./config/targets');
 
 const codemirrorAssets = function () {
     let codemirrorFiles = [
@@ -105,7 +106,10 @@ const postcssCompilePlugins = [
         module: postcssCustomMedia
     },
     {
-        module: autoprefixer
+        module: autoprefixer,
+        options: {
+            overrideBrowserslist: targets.browsers
+        }
     }
 ];
 
