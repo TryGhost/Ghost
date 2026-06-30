@@ -109,6 +109,9 @@ const Overview: React.FC = () => {
     const showNewsletterSection = hasBeenEmailed(post as Post) && emailTrackOpensEnabled && emailTrackClicksEnabled;
     const showWebSection = !post?.email_only && appSettings?.analytics.webAnalytics;
     const showGrowthSection = appSettings?.analytics.membersTrackSources;
+    // The gift-link card only surfaces a web-analytics-derived visitor count, so
+    // it's hidden entirely when web analytics is disabled.
+    const showGiftLinkCard = Boolean(canManageGiftLink && post && appSettings?.analytics.webAnalytics);
 
     // Redirect to Growth tab if this is a published-only post with web analytics disabled
     // Only redirect if Growth section is available
@@ -147,10 +150,10 @@ const Overview: React.FC = () => {
                             post={post as Post}
                         />
                     )}
-                    {(showGrowthSection || (canManageGiftLink && post)) && (
+                    {(showGrowthSection || showGiftLinkCard) && (
                         <div className='col-span-2 flex flex-col gap-6 lg:grid lg:grid-cols-3'>
                             {showGrowthSection && (
-                                <Card className={`group overflow-hidden p-0 ${canManageGiftLink && post ? 'lg:col-span-2' : 'lg:col-span-3'}`} data-testid='growth'>
+                                <Card className={`group overflow-hidden p-0 ${showGiftLinkCard ? 'lg:col-span-2' : 'lg:col-span-3'}`} data-testid='growth'>
                                     <div className='relative flex items-center justify-between gap-6'>
                                         <CardHeader>
                                             <CardTitle className='flex items-center gap-1.5 text-lg'>
@@ -205,7 +208,7 @@ const Overview: React.FC = () => {
                             </CardContent>
                                 </Card>
                             )}
-                            {canManageGiftLink && post && (
+                            {showGiftLinkCard && (
                                 <Card className={`group/datalist overflow-hidden ${showGrowthSection ? 'lg:col-span-1' : 'lg:col-span-3'}`} data-testid='gift-link-card'>
                                     <div className='relative flex items-center justify-between gap-6'>
                                         <CardHeader>
@@ -235,12 +238,12 @@ const Overview: React.FC = () => {
                             )}
                         </div>
                     )}
-                    {!showWebSection && !showNewsletterSection && !showGrowthSection && !canManageGiftLink && (
+                    {!showWebSection && !showNewsletterSection && !showGrowthSection && !showGiftLinkCard && (
                         <DisabledSourcesIndicator className='col-span-2 py-20' />
                     )}
                 </div>
             </PostAnalyticsContent>
-            {canManageGiftLink && post && (
+            {showGiftLinkCard && (
                 <GiftLinkModal
                     key={postId}
                     open={isGiftLinkOpen}
