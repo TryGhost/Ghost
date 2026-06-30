@@ -69,10 +69,7 @@ const TINYBIRD_PIPES = [
     'api_top_utm_campaigns_v2',
     'api_top_utm_contents_v2',
     'api_top_utm_terms_v2',
-    'api_top_devices_v2',
-    // gift-link per-link usage (v2 only; web analytics always queries the
-    // version-suffixed endpoint, so the base name is never requested)
-    'api_gift_link_visits_v2'
+    'api_top_devices_v2'
 ];
 
 /**

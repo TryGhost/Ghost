@@ -74,6 +74,15 @@ describe('TinybirdService', function () {
             });
         });
 
+        it('does not include raw gift-link usage pipes in shared stats JWT scopes', async function () {
+            const result = tinybirdService._generateToken();
+            const decoded = jwt.verify(result.token, tinybirdConfig.adminToken);
+
+            assert.ok(decoded);
+            assert.ok(!decoded.scopes.some(scope => scope.resource === 'api_gift_link_visits'));
+            assert.ok(!decoded.scopes.some(scope => scope.resource === 'api_gift_link_visits_v2'));
+        });
+
         it('should return exp that matches the JWT payload exp', async function () {
             const result = tinybirdService._generateToken();
             const decoded = jwt.verify(result.token, tinybirdConfig.adminToken);
