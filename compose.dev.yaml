@@ -4,7 +4,7 @@ services:
   mysql:
     image: mysql:8.4.9@sha256:c36050afdca850f23cef85703f84c7531a5ae155a11b5ee1c60acb09937c4084
     container_name: ghost-dev-mysql
-    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
+    command: --innodb-buffer-pool-size=1G --innodb-log-buffer-size=500M --innodb-change-buffer-max-size=50 --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT --log-error-verbosity=1
     ports:
       - "3306:3306"
     environment:
@@ -24,6 +24,7 @@ services:
   redis:
     image: redis:7.0@sha256:352c1fdadc91926edda08f45aeb3f27f37194c2f14101229c0523a11195c96e3
     container_name: ghost-dev-redis
+    command: ["redis-server", "--loglevel", "warning"]
     ports:
       - "6379:6379"
     volumes:
@@ -41,6 +42,7 @@ services:
   mailpit:
     image: axllent/mailpit@sha256:37a38e48e9338cd7e89dfeb487f37b02ebfcd9cb23111bed2d345e79d37d6dd6
     container_name: ghost-dev-mailpit
+    command: ["--quiet"]
     ports:
       - "1025:1025"  # SMTP server
       - "8025:8025"  # Web interface

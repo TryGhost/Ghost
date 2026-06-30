@@ -30,7 +30,7 @@ function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
             </NavMenuItem.Link>
             <a href="#/editor/post"
                 aria-label="Create new post"
-                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2"
+                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 dark:text-gray-800 dark:hover:text-white"
             >
                 <LucideIcon.Plus
                     size={20}

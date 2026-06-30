@@ -11,6 +11,7 @@ blockExoticSubdeps: true
 
 allowBuilds:
   '@swc/core': true
+  better-sqlite3: true
   core-js: true
   cpu-features: false
   dtrace-provider: true
@@ -75,6 +76,7 @@ catalog:
   '@typescript-eslint/parser': 8.49.0
   '@vitejs/plugin-react': 4.7.0
   '@vitest/coverage-v8': 4.1.9
+  better-sqlite3: 12.11.1
   bson-objectid: 2.0.4
   c8: 11.0.0
   chai: 4.5.0
@@ -96,6 +98,7 @@ catalog:
   globals: 17.6.0
   jsdom: 29.1.1
   jsonc-parser: 3.3.1
+  knex-migrator: 5.4.1
   lodash: 4.18.1
   lucide-react: 1.18.0
   mingo: 2.5.3
@@ -136,6 +139,11 @@ catalogs:
     eslint-plugin-tailwindcss: 3.18.3
 
 overrides:
+  # knex-migrator 5.4.x bundles knex 3.x, but ghost/core is pinned to knex 2.4.2.
+  # Ghost's migrations build queries with the 2.4.2 query builder and knex-migrator
+  # executes them, so its knex must match Ghost's major or the 3.x runner throws on
+  # the 2.x builder. Pin it back to 2.4.2 until ghost/core itself moves to knex 3.x.
+  'knex-migrator>knex': 2.4.2
   '@tryghost/errors': ^1.3.7
   '@tryghost/logging': 'catalog:'
   jackspeak: 4.2.3

@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/admin-toolbar",
   "type": "module",
-  "version": "0.1.9",
+  "version": "0.1.11",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",

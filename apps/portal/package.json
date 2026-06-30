@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/portal",
   "type": "module",
-  "version": "2.69.13",
+  "version": "2.69.16",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -59,11 +59,10 @@
     "eslint-plugin-react": "catalog:",
     "globals": "catalog:",
     "jsdom": "catalog:",
-    "typescript-eslint": "catalog:",
     "react": "catalog:react17",
     "react-dom": "catalog:react17",
+    "typescript-eslint": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:"
   },

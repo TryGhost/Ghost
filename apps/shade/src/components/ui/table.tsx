@@ -120,7 +120,7 @@ const TableCell = React.forwardRef<
     <td
         ref={ref}
         className={cn(
-            'relative p-2.5 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] group-hover:bg-muted/50',
+            'relative p-2.5 align-middle [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] group-hover:bg-table-row-hover',
             className
         )}
         {...props}
