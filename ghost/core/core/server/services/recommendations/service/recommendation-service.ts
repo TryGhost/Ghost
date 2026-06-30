@@ -58,7 +58,9 @@ export class RecommendationService {
 
         // Do a slow update of all the recommendation metadata (keeping logo up to date, one-click-subscribe, etc.)
         // We better move this to a job in the future
-        if (!process.env.NODE_ENV?.startsWith('test')) {
+        if (process.env.NODE_ENV === 'development') {
+            logging.info('[Recommendations] Metadata refresh disabled in development');
+        } else if (!process.env.NODE_ENV?.startsWith('test')) {
             setTimeout(async () => {
                 try {
                     await this.updateAllRecommendationsMetadata();
