@@ -6,8 +6,15 @@
   "private": true,
   "main": "index.js",
   "exports": {
-    ".": "./index.js",
+    ".": {
+      "browser": "./index.browser.js",
+      "default": "./index.js"
+    },
     "./lib/locale-data.json": "./lib/locale-data.json"
+  },
+  "browser": {
+    "./index.js": "./index.browser.js",
+    "./lib/i18n.js": "./lib/i18n.browser.js"
   },
   "types": "./build/i18n.d.ts",
   "scripts": {
@@ -26,6 +33,7 @@
   },
   "files": [
     "index.js",
+    "index.browser.js",
     "lib",
     "locales"
   ],

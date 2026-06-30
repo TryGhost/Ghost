@@ -5,6 +5,85 @@ const fsExtra = require('fs-extra');
 const i18n = require('../');
 
 describe('i18n', function () {
+    describe('browser entry', function () {
+        const browserI18n = require('../index.browser');
+
+        it('loads bundled public app translations without server-only helpers', function () {
+            const t = browserI18n('nl', 'portal').t;
+
+            assert.equal(t('Name'), 'Naam');
+        });
+
+        it('uses the default namespace and locale', function () {
+            const t = browserI18n().t;
+
+            assert.equal(t('Name'), 'Name');
+        });
+
+        it('uses single curly braces for browser interpolation', function () {
+            const portalT = browserI18n('en', 'portal').t;
+            const ghostT = browserI18n('en', 'ghost').t;
+
+            assert.equal(portalT('Welcome, {name}', {name: '<b>John O\'Nolan</b>'}), 'Welcome, <b>John O\'Nolan</b>');
+            assert.equal(ghostT('Welcome, {name}', {name: 'John'}), 'Welcome, John');
+        });
+
+        it('uses default export translations when available', function () {
+            const translationFile = require(path.join(`../locales/`, 'nl', 'portal.json'));
+            const originalName = translationFile.Name;
+            const originalDefault = translationFile.default;
+
+            translationFile.Name = undefined;
+            translationFile.default = {
+                Name: 'Naam'
+            };
+
+            try {
+                const t = browserI18n('nl', 'portal').t;
+                assert.equal(t('Name'), 'Naam');
+            } finally {
+                translationFile.Name = originalName;
+                if (originalDefault === undefined) {
+                    delete translationFile.default;
+                } else {
+                    translationFile.default = originalDefault;
+                }
+            }
+        });
+
+        it('ignores non-object default exports', function () {
+            const translationFile = require(path.join(`../locales/`, 'nl', 'portal.json'));
+            const originalDefault = translationFile.default;
+
+            translationFile.default = 'not an object';
+
+            try {
+                const t = browserI18n('nl', 'portal').t;
+                assert.equal(t('Name'), 'Naam');
+            } finally {
+                if (originalDefault === undefined) {
+                    delete translationFile.default;
+                } else {
+                    translationFile.default = originalDefault;
+                }
+            }
+        });
+
+        it('falls back to English for missing bundled locales', function () {
+            const resources = browserI18n.generateResources(['xx'], 'portal');
+            const englishResources = browserI18n.generateResources(['en'], 'portal');
+
+            assert.deepEqual(resources.xx, englishResources.en);
+        });
+
+        it('uses empty theme resources in browser builds', function () {
+            const instance = browserI18n('en', 'theme');
+
+            assert.deepEqual(instance.store.data.en.theme, {});
+            assert.equal(instance.t('Read more'), 'Read more');
+        });
+    });
+
     it('does not have too-long strings for the Stripe personal note label', async function () {
         for (const locale of i18n.SUPPORTED_LOCALES) {
             const translationFile = require(path.join(`../locales/`, locale, 'portal.json'));
