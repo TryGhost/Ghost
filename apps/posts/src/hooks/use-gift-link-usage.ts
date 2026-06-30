@@ -8,7 +8,7 @@ export interface GiftLinkUsage {
 }
 
 interface GiftLinkVisitsRow {
-    gift: string;
+    gift_link: string;
     visits: number | string;
     views: number | string;
 }
@@ -46,7 +46,7 @@ export const useGiftLinkUsage = ({postUuid, token, enabled = true}: {
         if (!token || error || !Array.isArray(data)) {
             return undefined;
         }
-        const row = (data as unknown as GiftLinkVisitsRow[]).find(r => r.gift === token);
+        const row = (data as unknown as GiftLinkVisitsRow[]).find(r => r.gift_link === token);
         return {
             visits: Number(row?.visits) || 0,
             views: Number(row?.views) || 0
