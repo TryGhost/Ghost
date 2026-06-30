@@ -70,8 +70,10 @@ const TINYBIRD_PIPES = [
     'api_top_utm_contents_v2',
     'api_top_utm_terms_v2',
     'api_top_devices_v2',
-    // gift-link per-link usage
-    'api_gift_link_visits'
+    // gift-link per-link usage (base + v2; the browser requests the version
+    // suffix configured in tinybird:stats:version, so both must be in scope)
+    'api_gift_link_visits',
+    'api_gift_link_visits_v2'
 ];
 
 /**
