@@ -30,6 +30,14 @@ const VisitCountBadge = ({visits}: {visits: number}) => (
     </span>
 );
 
+// Static options for the gift link filter. Unlike the other fields these aren't
+// fetched from Tinybird — gift-link usage is a binary state ("used" maps to a
+// non-empty gift_link, "not used" to an empty one) so the values are hardcoded.
+const GIFT_LINK_OPTIONS = [
+    {value: 'used', label: 'used'},
+    {value: 'not_used', label: 'not used'}
+];
+
 // Configuration for each filter field type
 interface FilterFieldDefinition {
     endpoint: string;
@@ -114,7 +122,7 @@ const buildFilterParams = (
         if (filter.field === 'audience') {
             // Skip audience - handled separately via member_status
             return;
-        } else if (filter.field === 'source' || filter.field === 'device' || filter.field === 'location' || filter.field.startsWith('utm_')) {
+        } else if (filter.field === 'source' || filter.field === 'device' || filter.field === 'location' || filter.field === 'gift_link' || filter.field.startsWith('utm_')) {
             params[filter.field] = value;
         }
     });
@@ -202,8 +210,9 @@ const useTinybirdFilterOptions = (
 
 function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
-    const {post} = useGlobalData();
+    const {post, data: globalData} = useGlobalData();
     const postUuid = post?.uuid;
+    const giftLinksEnabled = globalData?.labs?.giftLinks === true;
 
     // Track which filter field is currently being selected (lazy loading)
     const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
@@ -346,6 +355,20 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
             }
         ];
 
+        // Gift link is a static binary filter (used / not used) rather than a
+        // Tinybird-backed option list, so it's defined inline here.
+        const giftLinkField: FilterFieldConfig = {
+            key: 'gift_link',
+            label: 'Gift link',
+            type: 'select',
+            icon: <LucideIcon.Gift className="size-4" />,
+            operators: supportedOperators,
+            defaultOperator: 'is',
+            hideOperatorSelect: true,
+            options: GIFT_LINK_OPTIONS,
+            searchable: false
+        };
+
         return [
             {
                 group: 'Basic',
@@ -402,7 +425,8 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                         isLoading: locationLoading,
                         searchable: true,
                         selectedOptionsClassName: 'hidden'
-                    }
+                    },
+                    ...(giftLinksEnabled ? [giftLinkField] : [])
                 ]
             },
             {
@@ -410,7 +434,7 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                 fields: utmFields
             }
         ];
-    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
+    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading, giftLinksEnabled]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;

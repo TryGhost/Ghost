@@ -1,5 +1,6 @@
 import {Filter} from '@tryghost/shade/patterns';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
+import {useGlobalData} from '@src/providers/post-analytics-context';
 import {useSearchParams} from '@tryghost/admin-x-framework';
 
 // Supported filter fields that can be synced to URL
@@ -8,6 +9,7 @@ const SUPPORTED_FILTER_FIELDS = [
     'source',
     'device',
     'location',
+    'gift_link',
     'utm_source',
     'utm_medium',
     'utm_campaign',
@@ -16,6 +18,14 @@ const SUPPORTED_FILTER_FIELDS = [
 ] as const;
 
 type SupportedFilterField = typeof SUPPORTED_FILTER_FIELDS[number];
+
+// Filter fields that only exist when a labs flag is enabled. They're excluded
+// from URL <-> filter syncing unless their flag is on, so a stale query param
+// (e.g. from a shared/bookmarked link) can't apply a filter the UI can't show
+// or remove.
+const LABS_GATED_FIELDS: Partial<Record<SupportedFilterField, string>> = {
+    gift_link: 'giftLinks'
+};
 
 // Special marker for empty string values in URL (e.g., "Direct" traffic)
 const EMPTY_VALUE_MARKER = '__empty__';
@@ -28,11 +38,11 @@ const ENCODED_COMMA = '%2C';
  * Format: field=value or field=value1,value2 for multi-select
  * Empty strings are encoded as __empty__ to preserve them in URLs
  */
-function filtersToSearchParams(filters: Filter[]): URLSearchParams {
+function filtersToSearchParams(filters: Filter[], supportedFields: ReadonlySet<string>): URLSearchParams {
     const params = new URLSearchParams();
 
     filters.forEach((filter) => {
-        if (SUPPORTED_FILTER_FIELDS.includes(filter.field as SupportedFilterField)) {
+        if (supportedFields.has(filter.field)) {
             if (filter.values.length > 0) {
                 // Join multiple values with comma, encoding empty strings and escaping commas within values
                 const value = filter.values
@@ -66,13 +76,12 @@ function getStableFilterId(field: string): string {
  * Parse URL search params into Filter objects
  * Preserves the order of params as they appear in the URL
  */
-function searchParamsToFilters(searchParams: URLSearchParams): Filter[] {
+function searchParamsToFilters(searchParams: URLSearchParams, supportedFields: ReadonlySet<string>): Filter[] {
     const filters: Filter[] = [];
-    const supportedSet = new Set<string>(SUPPORTED_FILTER_FIELDS);
 
     // Iterate in URL order to preserve the sequence filters were added
     searchParams.forEach((value, field) => {
-        if (!supportedSet.has(field)) {
+        if (!supportedFields.has(field)) {
             return;
         }
 
@@ -125,14 +134,28 @@ interface UseFilterParamsReturn {
 export function useFilterParams(options: UseFilterParamsOptions = {}): UseFilterParamsReturn {
     const [searchParams, setSearchParams] = useSearchParams();
     const {onFiltersChange} = options;
+    const {data: globalData} = useGlobalData();
+    const giftLinksEnabled = globalData?.labs?.giftLinks === true;
 
     // Track if we're currently updating to prevent loops
     const isUpdating = useRef(false);
 
+    // Only sync labs-gated fields when their flag is on, so a stale URL param
+    // can't apply a filter the UI can't show or remove.
+    const supportedFields = useMemo(() => {
+        const enabledFlags: Record<string, boolean> = {giftLinks: giftLinksEnabled};
+        return new Set<string>(
+            SUPPORTED_FILTER_FIELDS.filter((field) => {
+                const requiredFlag = LABS_GATED_FIELDS[field];
+                return !requiredFlag || enabledFlags[requiredFlag] === true;
+            })
+        );
+    }, [giftLinksEnabled]);
+
     // Parse filters from URL on mount and when URL changes
     const filters = useMemo(() => {
-        return searchParamsToFilters(searchParams);
-    }, [searchParams]);
+        return searchParamsToFilters(searchParams, supportedFields);
+    }, [searchParams, supportedFields]);
 
     // Notify parent of filter changes from URL (initial load or external navigation)
     useEffect(() => {
@@ -147,7 +170,7 @@ export function useFilterParams(options: UseFilterParamsOptions = {}): UseFilter
 
         // Handle functional updates
         const newFilters = typeof action === 'function' ? action(filters) : action;
-        const newParams = filtersToSearchParams(newFilters);
+        const newParams = filtersToSearchParams(newFilters, supportedFields);
 
         // Preserve any non-filter params (like tab, etc.)
         const currentParams = new URLSearchParams(searchParams);
@@ -169,7 +192,7 @@ export function useFilterParams(options: UseFilterParamsOptions = {}): UseFilter
         setTimeout(() => {
             isUpdating.current = false;
         }, 0);
-    }, [filters, searchParams, setSearchParams]);
+    }, [filters, searchParams, setSearchParams, supportedFields]);
 
     // Clear all filter params from URL
     const clearFilters = useCallback(() => {
