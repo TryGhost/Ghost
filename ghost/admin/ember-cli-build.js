@@ -71,6 +71,9 @@ let denylist = [];
 if (process.env.CI) {
     denylist.push('ember-cli-eslint');
 }
+if (process.env.COVERAGE !== 'true') {
+    denylist.push('ember-cli-code-coverage');
+}
 
 let publicAssetURL;
 
@@ -80,6 +83,47 @@ if (isTesting) {
     publicAssetURL = process.env.GHOST_CDN_URL + 'assets/';
 } else {
     publicAssetURL = 'assets/';
+}
+
+const postcssCompilePlugins = [
+    {
+        module: postcssImport,
+        options: {
+            path: ['app/styles']
+        }
+    },
+    {
+        module: postcssCustomProperties,
+        options: {
+            preserve: false
+        }
+    },
+    {
+        module: postcssColorModFunction
+    },
+    {
+        module: postcssCustomMedia
+    },
+    {
+        module: autoprefixer
+    }
+];
+
+if (isProduction) {
+    postcssCompilePlugins.push({
+        module: cssnano,
+        options: {
+            zindex: false,
+            // cssnano sometimes minifies animations incorrectly causing them to break
+            // See: https://github.com/ben-eb/gulp-cssnano/issues/33#issuecomment-210518957
+            reduceIdents: {
+                keyframes: false
+            },
+            discardUnused: {
+                keyframes: false
+            }
+        }
+    });
 }
 
 module.exports = function (defaults) {
@@ -148,43 +192,7 @@ module.exports = function (defaults) {
         postcssOptions: {
             compile: {
                 enabled: true,
-                plugins: [
-                    {
-                        module: postcssImport,
-                        options: {
-                            path: ['app/styles']
-                        }
-                    },
-                    {
-                        module: postcssCustomProperties,
-                        options: {
-                            preserve: false
-                        }
-                    },
-                    {
-                        module: postcssColorModFunction
-                    },
-                    {
-                        module: postcssCustomMedia
-                    },
-                    {
-                        module: autoprefixer
-                    },
-                    {
-                        module: cssnano,
-                        options: {
-                            zindex: false,
-                            // cssnano sometimes minifies animations incorrectly causing them to break
-                            // See: https://github.com/ben-eb/gulp-cssnano/issues/33#issuecomment-210518957
-                            reduceIdents: {
-                                keyframes: false
-                            },
-                            discardUnused: {
-                                keyframes: false
-                            }
-                        }
-                    }
-                ]
+                plugins: postcssCompilePlugins
             }
         },
         sourcemaps: {enabled: true},
@@ -213,7 +221,7 @@ module.exports = function (defaults) {
         autoImport: {
             publicAssetURL,
             webpack: {
-                devtool: 'source-map',
+                devtool: isProduction ? 'source-map' : 'eval-cheap-module-source-map',
                 resolve: {
                     fallback: {
                         util: require.resolve('util'),
