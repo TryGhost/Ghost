@@ -18,6 +18,7 @@ describe('JobService', function () {
                     constructor(options) {
                         workerMessageHandler = options.workerMessageHandler;
                     }
+                    addJob() {}
                 };
             }
 
@@ -121,6 +122,7 @@ describe('JobService model-event bridge wiring', function () {
                     constructor(options) {
                         workerMessageHandler = options.workerMessageHandler;
                     }
+                    addJob() {}
                 };
             }
 
@@ -210,3 +212,4 @@ describe('JobService model-event bridge wiring', function () {
         assert.equal(options.context.internal, true);
     });
 });
+
