@@ -336,7 +336,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                                     <textarea
                                         ref={textareaRef}
                                         autoFocus={true}
-                                        className='ap-textarea break-anywhere w-full resize-none bg-transparent text-[1.5rem]'
+                                        className='ap-textarea break-anywhere w-full resize-none bg-transparent text-[1.5rem] dark:placeholder:text-gray-700'
                                         data-testid="note-textarea"
                                         placeholder={placeholder}
                                         rows={1}
