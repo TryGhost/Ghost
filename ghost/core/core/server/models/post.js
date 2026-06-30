@@ -35,7 +35,6 @@ const messages = {
     emailOnlyWithoutNewsletter: 'Scheduling an email requires a newsletter reference.'
 };
 
-const MOBILEDOC_REVISIONS_COUNT = 10;
 const POST_REVISIONS_COUNT = 25;
 const POST_REVISIONS_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const ALL_STATUSES = ['published', 'draft', 'scheduled', 'sent'];
@@ -885,50 +884,11 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
-        // CASE: Handle mobiledoc backups/revisions. This is a pure database feature.
-        if (model.hasChanged('mobiledoc') && !model.get('lexical') && !options.importing && !options.migrating) {
-            ops.push(function updateRevisions() {
-                return ghostBookshelf.model('MobiledocRevision')
-                    .findAll(Object.assign({
-                        filter: `post_id:'${model.id}'`,
-                        columns: ['id']
-                    }, _.pick(options, 'transacting')))
-                    .then((revisions) => {
-                        /**
-                         * Store prev + latest mobiledoc content, because we have decided against a migration, which
-                         * iterates over all posts and creates a copy of the current mobiledoc content.
-                         *
-                         * Reasons:
-                         *   - usually migrations for the post table are slow and error-prone
-                         *   - there is no need to create a copy for all posts now, because we only want to ensure
-                         *     that posts, which you are currently working on, are getting a content backup
-                         *   - no need to create revisions for existing published posts
-                         *
-                         * The feature is very minimal in the beginning. As soon as you update to this Ghost version,
-                         * you
-                         */
-                        if (!revisions.length && options.method !== 'insert') {
-                            model.set('mobiledoc_revisions', [{
-                                post_id: model.id,
-                                mobiledoc: model.previous('mobiledoc'),
-                                created_at_ts: Date.now() - 1
-                            }, {
-                                post_id: model.id,
-                                mobiledoc: model.get('mobiledoc'),
-                                created_at_ts: Date.now()
-                            }]);
-                        } else {
-                            const revisionsJSON = revisions.toJSON().slice(0, MOBILEDOC_REVISIONS_COUNT - 1);
-
-                            model.set('mobiledoc_revisions', revisionsJSON.concat([{
-                                post_id: model.id,
-                                mobiledoc: model.get('mobiledoc'),
-                                created_at_ts: Date.now()
-                            }]));
-                        }
-                    });
-            });
-        }
+        // NOTE: mobiledoc revisions are no longer created. Any mobiledoc content is converted
+        // to lexical earlier in onSaving (so model.get('mobiledoc') is null by this point), which
+        // means the old mobiledoc backup path was unreachable. Content backups are now always
+        // lexical/post revisions (below). The mobiledoc_revisions table is kept read-only for
+        // existing legacy rows.
         if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
             const {PostRevisions} = require('../lib/post-revisions');
             const postRevisions = new PostRevisions({
