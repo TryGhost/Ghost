@@ -115,14 +115,14 @@ describe('Unit: models/post', function () {
                 assert.equal(queries.length, 2);
                 assert.equal(queries[0].sql, 'select count(distinct posts.id) as aggregate from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?))');
                 assert.deepEqual(queries[0].bindings, [
-                    '2015-07-20',
+                    '2015-07-20 00:00:00',
                     'post',
                     'published'
                 ]);
 
                 assert.equal(queries[1].sql, 'select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
                 assert.deepEqual(queries[1].bindings, [
-                    '2015-07-20',
+                    '2015-07-20 00:00:00',
                     'post',
                     'published',
                     5
@@ -148,7 +148,7 @@ describe('Unit: models/post', function () {
                 assert.equal(queries.length, 1);
                 assert.equal(queries[0].sql, 'select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
                 assert.deepEqual(queries[0].bindings, [
-                    '2015-07-20',
+                    '2015-07-20 00:00:00',
                     'post',
                     'published',
                     1
@@ -176,7 +176,7 @@ describe('Unit: models/post', function () {
                 assert.equal(queries.length, 1);
                 assert.equal(queries[0].sql, 'select `posts`.* from `posts` where (`posts`.`published_at` > ? and (`posts`.`type` = ? and `posts`.`status` = ?)) order by CASE WHEN posts.status = \'scheduled\' THEN 1 WHEN posts.status = \'draft\' THEN 2 ELSE 3 END ASC,CASE WHEN posts.status != \'draft\' THEN posts.published_at END DESC,posts.updated_at DESC,posts.id DESC limit ?');
                 assert.deepEqual(queries[0].bindings, [
-                    '2015-07-20',
+                    '2015-07-20 00:00:00',
                     'post',
                     'published',
                     1
