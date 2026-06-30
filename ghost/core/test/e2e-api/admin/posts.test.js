@@ -574,6 +574,52 @@ describe('Posts API', function () {
             assert.equal(row.lexical, null, 'lexical column remains null in the database');
         });
 
+        it('Migrates a mobiledoc post to lexical when updating with ?source=html', async function () {
+            // As above, write a genuine mobiledoc row directly to the DB to simulate
+            // legacy content - direct DB writes are the only way mobiledoc-stored posts
+            // exist after this change.
+            const legacyMobiledoc = createMobiledoc('Original mobiledoc content');
+
+            const {body: createBody} = await agent
+                .post('/posts/?formats=mobiledoc,lexical,html')
+                .body({posts: [{title: 'Legacy mobiledoc post', mobiledoc: legacyMobiledoc}]})
+                .expectStatus(201);
+
+            const postId = createBody.posts[0].id;
+
+            await models.Base.knex('posts')
+                .where('id', postId)
+                .update({mobiledoc: legacyMobiledoc, lexical: null});
+
+            // sanity check: the post is now stored as mobiledoc
+            const {body: beforeBody} = await agent
+                .get(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
+                .expectStatus(200);
+            const before = beforeBody.posts[0];
+            assert.ok(before.mobiledoc, 'post starts stored as mobiledoc');
+            assert.equal(before.lexical, null);
+
+            // an explicit ?source=html update must replace the content - converting the
+            // incoming HTML to lexical and migrating the post off mobiledoc, rather than
+            // silently dropping the edit
+            const {body: afterBody} = await agent
+                .put(`/posts/${postId}/?source=html&formats=mobiledoc,lexical,html`)
+                .body({posts: [{html: '<p>Replacement content via source=html</p>', updated_at: before.updated_at}]})
+                .expectStatus(200);
+            const after = afterBody.posts[0];
+
+            assert.equal(after.mobiledoc, null, 'post is migrated off mobiledoc');
+            assert.ok(after.lexical, 'lexical is generated from the incoming html');
+            assert.ok(after.lexical.includes('Replacement content via source=html'), 'lexical contains the new content');
+            assert.ok(after.html.includes('Replacement content via source=html'), 'html reflects the new content');
+            assert.ok(!after.html.includes('Original mobiledoc content'), 'old content is replaced, not retained');
+
+            // confirm against the database, not just the serialized response
+            const [row] = await models.Base.knex('posts').where('id', postId).select('mobiledoc', 'lexical');
+            assert.equal(row.mobiledoc, null, 'mobiledoc column is cleared in the database');
+            assert.ok(row.lexical, 'lexical column is populated in the database');
+        });
+
         describe('Access', function () {
             describe('Visibility is set to tiers', function () {
                 it('Saves only paid tiers', async function () {

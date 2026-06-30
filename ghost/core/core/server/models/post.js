@@ -561,8 +561,16 @@ Post = ghostBookshelf.Model.extend({
         // a lexical post by sending mobiledoc). Resolve to a single format here; any remaining
         // mobiledoc is converted to lexical further down.
         if (this.previous('mobiledoc') && this.get('lexical')) {
-            // post is stored as mobiledoc - keep it (explicit conversion happens via convert_to_lexical)
-            this.set('lexical', null);
+            if (options.source === 'html') {
+                // ?source=html is an explicit request to (re)generate the content from HTML,
+                // which always becomes lexical. Honour it by dropping the stored mobiledoc and
+                // migrating the post to the incoming lexical, rather than silently discarding
+                // the edit and leaving the old mobiledoc content in place.
+                this.set('mobiledoc', null);
+            } else {
+                // post is stored as mobiledoc - keep it (explicit conversion happens via convert_to_lexical)
+                this.set('lexical', null);
+            }
         } else if (this.get('mobiledoc') && this.get('lexical')) {
             // both formats are set on this save - prefer lexical unless mobiledoc is the only
             // format that was supplied (e.g. editing a lexical post by sending mobiledoc), in
@@ -1224,7 +1232,7 @@ Post = ghostBookshelf.Model.extend({
 
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
-            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision', 'convert_to_lexical']
+            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision', 'convert_to_lexical', 'source']
         };
 
         // The post model additionally supports having a formats option
