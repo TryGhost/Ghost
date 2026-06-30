@@ -19,6 +19,9 @@ interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof Dial
     postTitle?: string;
     postURL?: string;
     primaryTitle?: string;
+    // The noun used in the gift-share copy ("...full access to this <noun>?").
+    // Defaults to "post"; pass "page" when sharing a page.
+    resourceNoun?: string;
     secondaryTitle?: string;
     siteTitle?: string;
 }
@@ -37,11 +40,16 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
     postExcerpt = '',
     postTitle = '',
     postURL = '',
-    primaryTitle = 'Your post is published.',
+    primaryTitle,
+    resourceNoun = 'post',
     secondaryTitle = 'Spread the word!',
     siteTitle = '',
     ...props
 }) => {
+    // Default the headline to the resource noun ("Your page is published.") so a
+    // shared page doesn't read as a post. Callers can still pass an explicit
+    // primaryTitle (or '' to hide it).
+    const resolvedPrimaryTitle = primaryTitle ?? `Your ${resourceNoun} is published.`;
     const encodedPostTitle = encodeURIComponent(postTitle);
     const encodedPostURL = encodeURIComponent(postURL);
     const encodedPostURLTitle = encodeURIComponent(`${postTitle} ${postURL}`);
@@ -81,8 +89,8 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
                 </div>
                 <ShareModal.Header className="relative -mt-5">
                     <ShareModal.Title className="text-3xl leading-[1.15em] font-bold">
-                        {primaryTitle && <span className="text-state-success">{primaryTitle}</span>}
-                        {primaryTitle && secondaryTitle && <br />}
+                        {resolvedPrimaryTitle && <span className="text-state-success">{resolvedPrimaryTitle}</span>}
+                        {resolvedPrimaryTitle && secondaryTitle && <br />}
                         {secondaryTitle && <span>{secondaryTitle}</span>}
                     </ShareModal.Title>
                     {description && (
@@ -128,7 +136,7 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
                 </ShareModal.Footer>
                 {canShareAsGift && !emailOnly && (
                     <p className="text-center text-sm text-muted-foreground">
-                        Want to share full access to this {giftAccessLabel} post?{' '}
+                        Want to share full access to this {giftAccessLabel} {resourceNoun}?{' '}
                         <Button className="h-auto p-0 align-baseline text-sm" type="button" variant="link" onClick={onShareAsGift}>
                             Share as a gift
                         </Button>

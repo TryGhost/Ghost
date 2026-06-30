@@ -31,7 +31,10 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
     const {settings, site, statsConfig, post, isPostLoading, postId, postType} = useGlobalData();
     const canManageGiftLink = useCanManageGiftLink(post);
-    const giftLinkResource = postType === 'page' ? 'pages' : 'posts';
+    const isPage = postType === 'page';
+    const giftLinkResource = isPage ? 'pages' : 'posts';
+    const resourceNoun = isPage ? 'page' : 'post';
+    const resourceNounCapitalized = isPage ? 'Page' : 'Post';
 
     const siteTimezone = getSiteTimezone(settings);
 
@@ -109,13 +112,13 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                         </BreadcrumbItem>
                                         :
                                         <BreadcrumbItem>
-                                            <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate('/posts/', {crossApp: true})}>Posts</BreadcrumbLink>
+                                            <BreadcrumbLink className='cursor-pointer leading-[24px]' onClick={() => navigate(isPage ? '/pages/' : '/posts/', {crossApp: true})}>{isPage ? 'Pages' : 'Posts'}</BreadcrumbLink>
                                         </BreadcrumbItem>
                                     }
                                     <BreadcrumbSeparator />
                                     <BreadcrumbItem>
                                         <BreadcrumbPage className='leading-[24px]'>
-                                        Post analytics
+                                        {resourceNounCapitalized} analytics
                                         </BreadcrumbPage>
                                     </BreadcrumbItem>
                                 </BreadcrumbList>
@@ -147,6 +150,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                             postExcerpt={post?.excerpt || ''}
                                             postTitle={post?.title}
                                             postURL={post?.url}
+                                            resourceNoun={resourceNoun}
                                             siteTitle={site?.title || ''}
                                             onClose={() => setIsShareOpen(false)}
                                             onOpenChange={setIsShareOpen}
@@ -171,10 +175,10 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                                     </a>
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem onClick={() => {
-                                                    navigate(`/editor/post/${postId}`, {crossApp: true});
+                                                    navigate(`/editor/${resourceNoun}/${postId}`, {crossApp: true});
                                                 }}>
                                                     <LucideIcon.Pen />
-                                                Edit post
+                                                Edit {resourceNoun}
                                                     {/* <DropdownMenuShortcut>⌘E</DropdownMenuShortcut> */}
                                                 </DropdownMenuItem>
                                             </DropdownMenuGroup>
@@ -185,7 +189,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                                     onClick={handleDeletePost}
                                                 >
                                                     <LucideIcon.Trash />
-                                                Delete post
+                                                Delete {resourceNoun}
                                                 </DropdownMenuItem>
                                             </DropdownMenuGroup>
                                         </DropdownMenuContent>
@@ -268,7 +272,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                 <AlertDialogContent>
                     <AlertDialogHeader>
                         <AlertDialogTitle>
-                            Are you sure you want to delete this post?
+                            Are you sure you want to delete this {resourceNoun}?
                         </AlertDialogTitle>
                         <AlertDialogDescription>
                             You&apos;re about to delete &quot;<strong>{post?.title}</strong>&quot;.
