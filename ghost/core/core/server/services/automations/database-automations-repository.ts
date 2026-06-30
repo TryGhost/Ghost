@@ -1014,18 +1014,14 @@ function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreat
         return toDatabaseDate(requestedCreatedAt);
     }
 
-    // Parse the stored database date strings with moment so that parsing and
-    // formatting share the same timezone. Using `new Date(string)` here would
-    // interpret the naive (timezone-less) database string as local time while
-    // toDatabaseDate formats in UTC, shifting the timestamp by the offset.
-    const requestedTime = moment(requestedCreatedAt).valueOf();
-    const latestTime = moment(latestCreatedAt).valueOf();
+    const requestedTime = new Date(requestedCreatedAt).getTime();
+    const latestTime = new Date(latestCreatedAt).getTime();
 
     if (requestedTime > latestTime) {
         return toDatabaseDate(requestedCreatedAt);
     }
 
-    return toDatabaseDate(moment(latestTime + 1000).toDate());
+    return toDatabaseDate(new Date(latestTime + 1000));
 }
 
 function buildActionRevision(actionId: string, action: AutomationAction, createdAt: string) {

@@ -543,7 +543,7 @@ async function getTables(transaction = db.knex) {
 async function getIndexes(table, transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (client === 'sqlite3' || client === 'better-sqlite3') {
+    if (DatabaseInfo.isSQLite(transaction)) {
         const response = await transaction.raw(`pragma index_list("${table}")`);
         return _.flatten(_.map(response, 'name'));
     } else if (client === 'mysql2') {
