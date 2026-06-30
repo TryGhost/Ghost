@@ -272,6 +272,30 @@ describe('oembed-service', function () {
             assert.equal(response.metadata.title, 'Example');
         });
 
+        it('prefers the standard favicon over an apple-touch-icon in the bookmark fallback', async function () {
+            // With no oembed endpoint and no explicit type, fetchOembedDataFromUrl
+            // falls through to the bookmark fallback (!data && !type). That path
+            // resolves to a bookmark card, so it must pick the standard favicon,
+            // not the apple-touch-icon reserved for scaled-up call sites.
+            sinon.stub(oembedService, 'processImageFromUrl').callsFake(async imageUrl => imageUrl);
+
+            nock('https://www.example.com')
+                .get('/')
+                .query(true)
+                .reply(200, `<html><head>
+                    <title>Example</title>
+                    <link rel="apple-touch-icon" sizes="180x180" href="https://www.example.com/apple.png">
+                    <link rel="icon" href="https://www.example.com/favicon.png">
+                </head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.example.com');
+
+            assert.equal(response.type, 'bookmark');
+            assert.equal(response.metadata.icon, 'https://www.example.com/favicon.png');
+
+            sinon.restore();
+        });
+
         it('converts YT live URLs to watch URLs', async function () {
             nock('https://www.youtube.com')
                 .get('/oembed')

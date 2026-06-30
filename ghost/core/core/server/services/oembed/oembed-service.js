@@ -306,12 +306,12 @@ class OEmbedService {
 
         const pickFn = (sizes, pickDefault) => {
             const appleTouchIcon = sizes.find(item => item.rel?.includes('apple') && item.sizes && item.size?.width >= 180);
-            // Bookmark cards render the icon inline in the post body, where the
-            // site's standard (often transparent) favicon matches surrounding
-            // chrome better than an Apple Touch icon's solid-background square.
-            // Other call sites (Recommendations Avatar via type='mention', plus
-            // the generic oembed fallback) scale the icon up into a larger
-            // tile, where Apple Touch is the better fit.
+            // Bookmark cards (including the oembed fallback, which resolves to a
+            // bookmark) render the icon inline in the post body, where the site's
+            // standard (often transparent) favicon matches surrounding chrome
+            // better than an Apple Touch icon's solid-background square. The
+            // Recommendations Avatar (type='mention') instead scales the icon up
+            // into a larger tile, where Apple Touch is the better fit.
             if (type === 'bookmark') {
                 // metascraper-logo-favicon gathers anything matching link[rel*="icon"], which
                 // includes apple-touch-icon, mask-icon (Safari pinned-tab silhouette), and
