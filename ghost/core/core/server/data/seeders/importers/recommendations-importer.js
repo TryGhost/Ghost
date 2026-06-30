@@ -8,7 +8,7 @@ function capitalize(str) {
 class RecommendationsImporter extends TableImporter {
     static table = 'recommendations';
     static dependencies = [];
-    defaultQuantity = 15;
+    defaultQuantity = 0;
 
     constructor(knex, transaction) {
         super(RecommendationsImporter.table, knex, transaction);
