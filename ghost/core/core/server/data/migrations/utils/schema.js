@@ -240,9 +240,7 @@ function createRenameColumnMigration(table, from, to) {
  * @returns {Promise<boolean>}
  */
 async function isColumnNotNullable(table, column, knex) {
-    const client = knex.client.config.client;
-
-    if (client === 'sqlite3' || client === 'better-sqlite3') {
+    if (DatabaseInfo.isSQLite(knex)) {
         const response = await knex.raw('PRAGMA table_info(??)', [table]);
         const columnInfo = response.find(col => col.name === column);
         return columnInfo && columnInfo.notnull === 1;
@@ -261,9 +259,7 @@ async function isColumnNotNullable(table, column, knex) {
  * @returns {Promise<boolean>}
  */
 async function isColumnNullable(table, column, knex) {
-    const client = knex.client.config.client;
-
-    if (client === 'sqlite3' || client === 'better-sqlite3') {
+    if (DatabaseInfo.isSQLite(knex)) {
         const response = await knex.raw('PRAGMA table_info(??)', [table]);
         const columnInfo = response.find(col => col.name === column);
         return columnInfo && columnInfo.notnull === 0;
