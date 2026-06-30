@@ -16,7 +16,7 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "ember serve",
+    "dev": "NODE_OPTIONS=--disable-warning=DEP0179 ember serve",
     "build": "ember build --environment=production --silent",
     "build:dev": "pnpm build --environment=development",
     "test": "ember exam --split 2 --parallel",
