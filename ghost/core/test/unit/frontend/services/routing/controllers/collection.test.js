@@ -195,6 +195,40 @@ describe('Unit - services/routing/controllers/collection', function () {
         sinon.assert.notCalled(next);
     });
 
+    it('restores type and status stripped by the Content API before ownership check', async function () {
+        // The Content API strips `type` and `status` from public posts, but the
+        // lazy URL service evaluates the base filter `status:published+type:post`
+        // to decide ownership. The collection router knows it serves published
+        // posts of a given type, so the controller must restore both — otherwise
+        // an owned post is wrongly disowned and dropped from the collection.
+        const post = testUtils.DataGenerator.forKnex.createPost();
+        delete post.type;
+        delete post.status;
+
+        posts = [post];
+        res.routerOptions.resourceType = 'posts';
+
+        ownsResourceStub.reset();
+        ownsResourceStub.returns(true);
+
+        fetchDataStub.withArgs({page: 1, slug: undefined, limit: postsPerPage}, res.routerOptions)
+            .resolves({
+                posts: posts,
+                meta: {
+                    pagination: {
+                        pages: 5
+                    }
+                }
+            });
+
+        await controllers.collection(req, res, next);
+
+        const resource = ownsResourceStub.firstCall.args[1];
+        assert.equal(resource.type, 'posts');
+        assert.equal(resource.status, 'published');
+        sinon.assert.notCalled(next);
+    });
+
     it('should verify if post belongs to collection', async function () {
         posts = [
             testUtils.DataGenerator.forKnex.createPost({url: '/a/'}),
