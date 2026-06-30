@@ -6,12 +6,15 @@ import React from 'react';
 
 interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof DialogPrimitive.Root> {
     author?: string;
+    canShareAsGift?: boolean;
     children?: React.ReactNode;
     description?: React.ReactNode;
     emailOnly?: boolean;
     faviconURL?: string;
     featureImageURL?: string;
+    giftAccessLabel?: string;
     onClose?: () => void;
+    onShareAsGift?: () => void;
     postExcerpt?: string;
     postTitle?: string;
     postURL?: string;
@@ -22,12 +25,15 @@ interface PostShareModalProps extends React.ComponentPropsWithoutRef<typeof Dial
 
 const PostShareModal: React.FC<PostShareModalProps> = ({
     author = '',
+    canShareAsGift = false,
     children,
     description = '',
     emailOnly = false,
     faviconURL = '',
     featureImageURL = '',
+    giftAccessLabel = '',
     onClose = () => {},
+    onShareAsGift = () => {},
     postExcerpt = '',
     postTitle = '',
     postURL = '',
@@ -120,6 +126,15 @@ const PostShareModal: React.FC<PostShareModalProps> = ({
                         </>
                     )}
                 </ShareModal.Footer>
+                {canShareAsGift && !emailOnly && (
+                    <p className="text-center text-sm text-muted-foreground">
+                        Want to share full access to this {giftAccessLabel} post?{' '}
+                        <Button className="h-auto p-0 align-baseline text-sm" type="button" variant="link" onClick={onShareAsGift}>
+                            Share as a gift
+                        </Button>
+                        .
+                    </p>
+                )}
             </ShareModal.Content>
         </ShareModal.Root>
     );
