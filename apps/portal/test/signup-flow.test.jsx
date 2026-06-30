@@ -380,6 +380,11 @@ describe('Signup', () => {
             await within(popupIframeDocument).findByText(freeProduct.description);
             await within(popupIframeDocument).findByText(benefitText);
 
+            // When free is the only tier the card drops its selectable framing
+            // (the .only-free modifier removes the border/background/padding).
+            const freeTierCard = popupIframeDocument.querySelector('[data-test-tier="free"]');
+            expect(freeTierCard).toHaveClass('only-free');
+
             submitButton = within(popupIframeDocument).queryByRole('button', {name: 'Sign up'});
 
             fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
