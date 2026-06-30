@@ -64,17 +64,19 @@
     display: none;
 }
 
-/* Fallback only — when no publication icon is set. Mirrors the gift card
-   aesthetic from apps/portal/src/components/pages/gift-page.js: accent color
-   base, Ghost orb at 0.2 opacity, noise grain at 0.1 opacity. When an icon
-   IS set the media has no background, so a transparent PNG simply shows the
-   toast's white surface rather than the accent colour. */
+/* Fallback only — when no publication icon is set. Accent colour at 10% as
+   the surface, with the Ghost orb painted in the full accent colour over it
+   (the PNG is a cropped corner of the orb, so it fills the square cell), plus
+   noise grain at 0.1 opacity. The orb PNG only carries a white shape
+   (grayscale + alpha), so we use its alpha as a mask and fill with the accent
+   colour. When an icon IS set the media has no background, so a transparent
+   PNG simply shows the toast's white surface. */
 .gh-gift-toast-pattern {
     display: none;
     position: absolute;
     inset: 0;
     overflow: hidden;
-    background-color: var(--gh-gift-toast-accent);
+    background-color: color-mix(in srgb, var(--gh-gift-toast-accent) 10%, transparent);
 }
 
 .gh-gift-toast-media.is-fallback .gh-gift-toast-pattern {
@@ -89,11 +91,16 @@
     content: '';
     position: absolute;
     inset: 0;
-    background-image: var(--gh-gift-toast-orb-url);
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    opacity: 0.2;
+    background-color: var(--gh-gift-toast-accent);
+    -webkit-mask-image: var(--gh-gift-toast-orb-url);
+    mask-image: var(--gh-gift-toast-orb-url);
+    -webkit-mask-size: cover;
+    mask-size: cover;
+    -webkit-mask-position: center;
+    mask-position: center;
+    -webkit-mask-repeat: no-repeat;
+    mask-repeat: no-repeat;
+    opacity: 1;
     pointer-events: none;
 }
 
