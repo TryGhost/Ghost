@@ -131,7 +131,7 @@ services:
       - ./apps:/srv/apps:ro
     depends_on:
       ghost-dev:
-        condition: service_healthy
+        condition: service_started
 
   stripe:
     image: stripe/stripe-cli:latest@sha256:f22923b43d5de57ec14cc81c72053cba6e722324ecdf35d0a331301d251b7fd8
