@@ -88,7 +88,7 @@ describe('RecommendationService', function () {
             // Sandbox time
             const saved = process.env.NODE_ENV;
             try {
-                process.env.NODE_ENV = 'development';
+                process.env.NODE_ENV = 'production';
                 const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
                 await service.init();
                 await clock.tick(1000 * 60 * 60 * 24);
@@ -102,7 +102,7 @@ describe('RecommendationService', function () {
             // Sandbox time
             const saved = process.env.NODE_ENV;
             try {
-                process.env.NODE_ENV = 'development';
+                process.env.NODE_ENV = 'production';
                 const spy = sinon.stub(service, 'updateAllRecommendationsMetadata');
                 spy.rejects(new Error('test'));
                 await service.init();
@@ -129,7 +129,7 @@ describe('RecommendationService', function () {
             // Sandbox time
             const saved = process.env.NODE_ENV;
             try {
-                process.env.NODE_ENV = 'development';
+                process.env.NODE_ENV = 'production';
                 const spy = sinon.stub(service, '_updateRecommendationMetadata');
                 spy.rejects(new Error('This is a test'));
                 await service.init();
@@ -140,6 +140,32 @@ describe('RecommendationService', function () {
                     setTimeout(() => resolve(true), 50);
                 });
                 sinon.assert.calledOnce(spy);
+            } finally {
+                process.env.NODE_ENV = saved;
+            }
+        });
+
+        it('does not schedule metadata refresh in development', async function () {
+            const saved = process.env.NODE_ENV;
+            try {
+                process.env.NODE_ENV = 'development';
+                const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
+                await service.init();
+                await clock.tick(1000 * 60 * 60 * 24);
+                sinon.assert.notCalled(spy);
+            } finally {
+                process.env.NODE_ENV = saved;
+            }
+        });
+
+        it('does not schedule metadata refresh in test', async function () {
+            const saved = process.env.NODE_ENV;
+            try {
+                process.env.NODE_ENV = 'testing';
+                const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
+                await service.init();
+                await clock.tick(1000 * 60 * 60 * 24);
+                sinon.assert.notCalled(spy);
             } finally {
                 process.env.NODE_ENV = saved;
             }
