@@ -2650,9 +2650,6 @@ importers:
       '@tryghost/kg-converters':
         specifier: 'catalog:'
         version: 1.2.3
-      '@tryghost/kg-default-atoms':
-        specifier: 5.2.3
-        version: 5.2.3
       '@tryghost/kg-default-cards':
         specifier: 10.3.3
         version: 10.3.3(encoding@0.1.13)
@@ -9092,10 +9089,6 @@ packages:
 
   '@tryghost/kg-converters@1.2.3':
     resolution: {integrity: sha512-2VMfjiLl4pTURGY65efw4h+pN0aBLc27g7RBPbK3kiCd+VUytVA9aejAVE9Np3I4TErLjqgCeUwzUv+kdjvN6A==}
-
-  '@tryghost/kg-default-atoms@5.2.3':
-    resolution: {integrity: sha512-fMWzYrQwg4yGDMvvr8ZBD/Xb22hlVSwNYSQI+0jXn0Rlj/dMnW5VPqTqWgjEd3Bh9ApqZX8sGj4JmPUZI9Sl5A==}
-    engines: {node: ^22.13.1 || ^24.0.0}
 
   '@tryghost/kg-default-cards@10.3.3':
     resolution: {integrity: sha512-AcW0V02UmuqlAThT1nZrcxYe8OrVYNEixLmMZT1ThifOv2CKmbjJcGFpZMKjJ0Aw8Agi2NuNxVtl0Y5G1ohn4g==}
@@ -28959,8 +28952,6 @@ snapshots:
   '@tryghost/kg-converters@1.2.3':
     dependencies:
       lodash: 4.18.1
-
-  '@tryghost/kg-default-atoms@5.2.3': {}
 
   '@tryghost/kg-default-cards@10.3.3(encoding@0.1.13)':
     dependencies:
