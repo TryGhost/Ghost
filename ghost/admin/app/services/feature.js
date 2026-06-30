@@ -211,7 +211,12 @@ export default class FeatureService extends Service {
         $('link[title=dark]').prop('disabled', !isDark);
 
         return this._loadAdminThemeStylesheet().then(() => {
-            $('link[title=dark]').prop('disabled', !isDark);
+            // In `system` mode the OS theme may have changed while the
+            // stylesheet was loading — re-read the current preference so we
+            // don't stomp the listener's update with a stale `isDark`.
+            const currentIsDark = mode === 'system' ? this._osPrefersDark : isDark;
+            html.classList.toggle('dark', currentIsDark);
+            $('link[title=dark]').prop('disabled', !currentIsDark);
             releaseSuppression();
         }).catch(() => {
             $('link[title=dark]').prop('disabled', true);

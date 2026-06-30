@@ -172,7 +172,7 @@ export const Surface: Story = {
 export const InteractiveSurfaces: Story = {
     render: () => (
         <ColorPalette
-            description="Tinted surfaces used for hover, active, and selected states. These are translucent in dark mode so they composite over whatever surface sits behind them — don't use them where an opaque fill is required (e.g. sticky table cells)."
+            description="Tinted surfaces used for hover, active, and selected states. The overlay tokens (interactive-hover, button-hover, tab-hover, tab-active) are translucent in dark mode so they composite over whatever surface sits behind them — don't use them where an opaque fill is required (e.g. sticky table cells). table-row-hover is the opaque exception: it resolves to --color-sidebar-bg in dark mode and is the right choice for sticky / scrolling-content cells where translucency would let content bleed through."
             swatches={[
                 {name: 'interactive-hover', cssVar: '--interactive-hover'},
                 {name: 'button-hover', cssVar: '--button-hover'},
@@ -192,7 +192,7 @@ export const InteractiveSurfaces: Story = {
                     '- **interactive-hover** — generic hover surface for dropdown items, menu items, list rows, filter options, etc. The catch-all.',
                     '- **button-hover** — outline / dropdown button hover. Currently the same value as interactive-hover; kept as a separate token so the button surface can diverge later.',
                     '- **tab-hover / tab-active** — `Tabs` (button, button-sm, pill, kpis variants), `PageMenu` items, and sidebar menu items.',
-                    '- **table-row-hover** — Shade `Table` row hover (also reused for list-row patterns that visually behave like table rows: top posts list, comments list, members sticky cell).',
+                    '- **table-row-hover** — Shade `Table` row hover (also reused for list-row patterns that visually behave like table rows: top posts list, comments list, members sticky cell). This one is opaque — it tracks --color-sidebar-bg in dark — so it works where the row sits over scrolling content.',
                     '',
                     'When in doubt, reach for `interactive-hover`. Use the specific tokens only when the consumer maps to one of the categories above.'
                 ].join('\n')
