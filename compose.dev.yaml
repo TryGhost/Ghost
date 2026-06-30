@@ -104,10 +104,11 @@ services:
         required: false
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:2368',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
-      interval: 1s
+      start_period: 120s
+      start_interval: 1s
+      interval: 30s
       timeout: 5s
-      retries: 50
-      start_period: 5s
+      retries: 3
 
   # Caddy reverse proxy for the main dev instance
   # Routes Ghost backend + proxies asset requests to host dev servers
