@@ -97,7 +97,7 @@ describe('useTinybirdQuery', () => {
             data: [{visits: 1}],
             loading: true,
             error: 'Query error',
-            meta: [{name: 'visits'}],
+            meta: [{name: 'visits', type: 'UInt64'}],
             statistics: null,
             endpoint: 'https://api.example.com/test',
             token: 'mock-token',
