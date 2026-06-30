@@ -223,16 +223,14 @@ const Overview: React.FC = () => {
                                             Share
                                         </Button>
                                     </div>
-                                    {giftLinkUsage && (
-                                        <CardContent className='flex flex-col gap-1'>
-                                            <span className='text-sm text-muted-foreground'>
-                                                Visitors
-                                            </span>
-                                            <span className='text-[2.2rem] leading-none font-semibold'>
-                                                {formatNumber(giftLinkUsage.visits)}
-                                            </span>
-                                        </CardContent>
-                                    )}
+                                    <CardContent className='flex flex-col gap-1'>
+                                        <span className='text-sm text-muted-foreground'>
+                                            Visitors
+                                        </span>
+                                        <span className='text-[2.2rem] leading-none font-semibold'>
+                                            {formatNumber(giftLinkUsage?.visits ?? 0)}
+                                        </span>
+                                    </CardContent>
                                 </Card>
                             )}
                         </div>
