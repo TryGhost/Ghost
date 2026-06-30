@@ -106,7 +106,7 @@ services:
       test: ["CMD", "node", "-e", "fetch('http://localhost:2368',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
       interval: 1s
       timeout: 5s
-      retries: 10
+      retries: 50
       start_period: 5s
 
   # Caddy reverse proxy for the main dev instance
