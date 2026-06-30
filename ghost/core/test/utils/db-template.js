@@ -319,13 +319,12 @@ const restoreFromTemplate = async () => {
     // The table copy above only covers base tables; views are not in
     // getResetTables (the existing snapshot path relies on init() having created
     // them once). Recreate them here from the schema definitions, exactly as
-    // migrations/init/1-create-tables.js does, so a template-provisioned fork DB
-    // has the same views as a fully-migrated one. (sqlite copies views as part of
-    // the sqlite_master replay above, so this is mysql-only.)
+    // migrations/init/1-create-tables.js does — through commands.createViewOrReplace
+    // so the fork's views get the same SQL SECURITY INVOKER as a fully-migrated one
+    // (a plain knex createViewOrReplace would default to DEFINER on MySQL). (sqlite
+    // copies views as part of the sqlite_master replay above, so this is mysql-only.)
     for (const [name, sql] of Object.entries(schemaViews)) {
-        await db.knex.schema.createViewOrReplace(name, function (view) {
-            view.as(db.knex.raw(sql));
-        });
+        await schemaModule.commands.createViewOrReplace(name, sql, db.knex);
     }
 };
 

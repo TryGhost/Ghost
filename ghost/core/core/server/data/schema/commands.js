@@ -520,6 +520,38 @@ function deleteTable(table, transaction = db.knex) {
 }
 
 /**
+ * Create (or replace) a database VIEW.
+ *
+ * On MySQL the view is created with `SQL SECURITY INVOKER` so it runs with the
+ * privileges of the querying user rather than binding to the DEFINER account
+ * of whoever happened to run the migration. A DEFINER-bound view breaks when
+ * the database is restored under a different MySQL user (Ghost(Pro) restores,
+ * self-host server moves) — the view errors at query time because the original
+ * account does not exist on the target — and it leaks the internal account name
+ * into every mysqldump. INVOKER avoids both problems.
+ *
+ * SQLite has no DEFINER / SQL SECURITY concept, so the plain knex builder is
+ * used there (tests and local dev).
+ *
+ * All view creation — both `knex-migrator init` and versioned migrations —
+ * should go through this helper so every view is portable by default.
+ *
+ * @param {string} name - the view name
+ * @param {string} viewSql - the raw SELECT body (everything after `AS`)
+ * @param {import('knex').Knex} [transaction] - connection to the DB
+ */
+async function createViewOrReplace(name, viewSql, transaction = db.knex) {
+    if (DatabaseInfo.isMySQL(transaction)) {
+        await transaction.raw(`CREATE OR REPLACE SQL SECURITY INVOKER VIEW \`${name}\` AS ${viewSql}`);
+        return;
+    }
+
+    await transaction.schema.createViewOrReplace(name, function (view) {
+        view.as(transaction.raw(viewSql));
+    });
+}
+
+/**
  * @param {import('knex').Knex} [transaction] - connection to the DB
  */
 async function getTables(transaction = db.knex) {
@@ -605,6 +637,7 @@ function createColumnMigration(...migrations) {
 module.exports = {
     createTable,
     deleteTable,
+    createViewOrReplace,
     getTables,
     getIndexes,
     addUnique,
