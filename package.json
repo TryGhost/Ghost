@@ -50,7 +50,7 @@
     "reset:data:empty": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:0,posts:0 --seed 123'",
     "reset:data:xxl": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node index.js generate-data --clear-database --quantities members:2000000,posts:0,emails:0,members_stripe_customers:0,members_login_events:0,members_status_events:0 --seed 123'",
     "seed:multi-sub-scenarios": "docker exec ghost-dev bash -c 'cd /home/ghost/ghost/core && node scripts/seed-multi-sub-scenarios.js'",
-    "docker:build": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build --quiet",
+    "docker:build": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build",
     "docker:clean": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} --profile all down -v --remove-orphans --rmi local",
     "docker:down": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} down",
     "docker:rebase": "git fetch ${GHOST_UPSTREAM:-origin} main && git rebase ${GHOST_UPSTREAM:-origin}/main && pnpm install && pnpm nx run-many -t build --projects=@tryghost/shade,@tryghost/admin-x-design-system,@tryghost/admin-x-framework && docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} up -d --build --force-recreate ghost-dev",
@@ -123,7 +123,7 @@
       "docker:build": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build --quiet"
+          "command": "docker compose -f compose.dev.yaml ${DEV_COMPOSE_FILES} build"
         }
       },
       "docker:dev": {
