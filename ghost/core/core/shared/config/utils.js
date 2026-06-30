@@ -58,8 +58,9 @@ const sanitizeDatabaseProperties = function sanitizeDatabaseProperties(nconf) {
     }
 
     const database = nconf.get('database');
+    const client = nconf.get('database:client');
 
-    if (nconf.get('database:client') === 'mysql2') {
+    if (client === 'mysql2') {
         delete database.connection.filename;
     } else {
         delete database.connection.host;
@@ -69,8 +70,6 @@ const sanitizeDatabaseProperties = function sanitizeDatabaseProperties(nconf) {
     }
 
     nconf.set('database', database);
-
-    const client = nconf.get('database:client');
 
     if (client === 'sqlite3' || client === 'better-sqlite3') {
         makePathsAbsolute(nconf, nconf.get('database:connection'), 'database:connection');

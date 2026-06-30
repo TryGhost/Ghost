@@ -525,7 +525,7 @@ function deleteTable(table, transaction = db.knex) {
 async function getTables(transaction = db.knex) {
     const client = transaction.client.config.client;
 
-    if (client === 'sqlite3' || client === 'better-sqlite3') {
+    if (DatabaseInfo.isSQLite(transaction)) {
         const response = await transaction.raw("select * from sqlite_master where type = 'table'");
         return _.reject(_.map(response, 'tbl_name'), name => name === 'sqlite_sequence');
     } else if (client === 'mysql2') {
