@@ -17,7 +17,7 @@ Before adding anything to Shade, walk the decision flow and the promotion checkl
 | **Primitive** | `src/components/primitives/` | `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text` |
 | **Component** | `src/components/ui/` | `Button`, `Input`, `Dialog`, `Tabs`, `Card` |
 | **Recipe** | `src/components/ui/<name>.ts` (no JSX) | `inputSurface` |
-| **Pattern** | `src/components/patterns/` | `PageHeader`, `ListPage`, `KpiCard`, `Filters` |
+| **Pattern** | `src/components/patterns/` | `PageHeader`, `KpiCard`, `Filters`, `GhAreaChart` |
 
 Plus two additional barrels:
 

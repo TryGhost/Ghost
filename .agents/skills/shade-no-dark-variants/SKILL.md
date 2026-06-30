@@ -23,7 +23,7 @@ Shade's semantic tokens (`bg-background`, `text-foreground`, `border-border-defa
 // BAD — using dark: to patch a raw palette utility
 <div className="bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100">
 
-// BAD — duplicating a semantic token with a dark: override
+// BAD — redundant: the semantic token already flips itself, so the dark: variant adds a duplicate rule that does nothing. Reading it suggests dark mode is special-cased here when it isn't.
 <div className="bg-surface-elevated dark:bg-surface-elevated">
 ```
 

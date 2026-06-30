@@ -9,7 +9,7 @@ autoTrigger:
 
 `DropdownMenu`, `Select`, and `Popover` are the three Radix-backed floating menus that `Filters` and the rest of admin use. They share **one visual recipe**:
 
-```
+```text
 bg-surface-elevated-2
 border border-border/60 dark:border-border/30
 shadow-md

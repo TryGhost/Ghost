@@ -18,8 +18,9 @@ Drive every UI colour/border/surface through **semantic tokens**. They flip in d
 | Floating menu on top of elevated | `bg-surface-elevated-2` | `--surface-elevated-2` |
 | Primary text | `text-foreground` / `text-primary` | `--text-primary` |
 | Secondary / muted text | `text-muted-foreground` | `--text-secondary` |
-| Standard border | `border-border` / `border-border-default` | `--border-default` |
-| Form-control border | `border-control-border` | `--control-border` |
+| Default border (cards, banners, dividers — opaque) | `border-border-default` | `--border-default` |
+| Compositing border for floating surfaces (popover, dropdown, select — translucent in dark mode, usually with an opacity modifier like `/60` or `/30`) | `border-border` | `--border` |
+| Form-control border (inputs, selects, outline buttons) | `border-control-border` | `--control-border` |
 | Hover (generic) | `bg-interactive-hover` | `--interactive-hover` |
 | Outline button hover | `bg-button-hover` | `--button-hover` |
 | Tabs / page menu hover/active | `bg-tab-hover`, `bg-tab-active` | `--tab-hover`, `--tab-active` |
@@ -27,7 +28,7 @@ Drive every UI colour/border/surface through **semantic tokens**. They flip in d
 | Destructive | `bg-destructive`, `text-destructive` | `--destructive` |
 | Focus ring | `ring-focus-ring`, `border-focus-ring` | `--focus-ring` |
 
-Full inventory: `apps/shade/theme-variables.css`.
+Full inventory: `apps/shade/theme-variables.css` — this is where the CSS custom property **values** live, including the `.dark { ... }` overrides. The companion file `apps/shade/tailwind.theme.css` is the Tailwind v4 `@theme` block that **maps** Tailwind utility names (`bg-foreground`, `text-muted-foreground`, etc.) to the variables defined in `theme-variables.css`, plus the raw `--color-*` scale. Edit `theme-variables.css` to change a token's value; edit `tailwind.theme.css` to wire a new utility name or add a raw colour.
 
 ## Surface elevation — pick by what's behind it
 
