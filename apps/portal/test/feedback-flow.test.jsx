@@ -1,4 +1,4 @@
-import App from '../src/app.js';
+import App from '../src/app';
 import {appRender, fireEvent, waitFor, within} from './utils/test-utils';
 import setupGhostApi from '../src/utils/api.js';
 import {getMemberData, getPostsData, getSiteData} from '../src/utils/fixtures-generator.js';

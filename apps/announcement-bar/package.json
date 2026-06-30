@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/announcement-bar",
   "type": "module",
-  "version": "1.1.24",
+  "version": "1.1.28",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -19,9 +19,8 @@
     "react-dom": "catalog:react17"
   },
   "scripts": {
-    "dev": "pnpm build && concurrently --kill-others --names preview,build \"vite preview -l silent\" \"pnpm build:watch\"",
+    "dev": "vite build --watch --mode development",
     "build": "vite build",
-    "build:watch": "vite build --watch --mode development",
     "test": "vitest run",
     "test:ci": "pnpm test --coverage",
     "test:unit": "pnpm test:ci",

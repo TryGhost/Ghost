@@ -218,6 +218,34 @@ describe('oembed-service', function () {
             assert.equal(response.metadata.thumbnail, 'https://m.media-amazon.com/images/I/example-hires.jpg');
         });
 
+        it('does not apply Amazon rules to .co hosts that merely end in "a.co"', async function () {
+            nock('https://www.rangemedia.co')
+                .get('/some-post')
+                .query(true)
+                .reply(200, `<html><head>
+                    <title>Some Post</title>
+                    <meta property="og:site_name" content="RANGE Media">
+                </head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.rangemedia.co/some-post', 'bookmark');
+
+            assert.equal(response.metadata.publisher, 'RANGE Media');
+        });
+
+        it('does not apply Amazon rules to subdomain spoofs (amazon.evil.com)', async function () {
+            nock('https://amazon.evil.com')
+                .get('/x')
+                .query(true)
+                .reply(200, `<html><head>
+                    <title>Evil Page</title>
+                    <meta property="og:site_name" content="Evil Site">
+                </head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://amazon.evil.com/x', 'bookmark');
+
+            assert.equal(response.metadata.publisher, 'Evil Site');
+        });
+
         it('should return a bookmark response when the oembed endpoint returns a link type', async function () {
             nock('https://www.example.com')
                 .get('/')

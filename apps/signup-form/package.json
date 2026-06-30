@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/signup-form",
   "type": "module",
-  "version": "0.3.31",
+  "version": "0.3.34",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -15,8 +15,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "pnpm build && concurrently --kill-others --names dev,preview,build \"vite --port 6173\" \"vite preview -l silent\" \"vite build --watch --mode development\"",
-    "preview": "concurrently --kill-others --names preview,build \"vite preview -l silent\" \"vite build --watch --mode development\"",
+    "dev": "vite build --watch --mode development",
+    "dev:standalone": "vite --port 6173",
     "dev:test": "vite build && vite preview --port 6175",
     "build": "tsc && vite build",
     "lint": "pnpm run lint:js",

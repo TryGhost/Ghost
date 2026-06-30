@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/portal",
   "type": "module",
-  "version": "2.69.12",
+  "version": "2.69.16",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -15,10 +15,8 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "pnpm build && concurrently --kill-others --names preview,build \"pnpm preview -l silent\" \"pnpm build:watch\"",
+    "dev": "vite build --watch --mode development",
     "build": "vite build",
-    "build:watch": "vite build --watch --mode development",
-    "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:ci": "pnpm test --coverage",
@@ -61,11 +59,10 @@
     "eslint-plugin-react": "catalog:",
     "globals": "catalog:",
     "jsdom": "catalog:",
-    "typescript-eslint": "catalog:",
     "react": "catalog:react17",
     "react-dom": "catalog:react17",
+    "typescript-eslint": "catalog:",
     "vite": "catalog:",
-    "vite-plugin-css-injected-by-js": "3.5.2",
     "vite-plugin-svgr": "catalog:",
     "vitest": "catalog:"
   },
