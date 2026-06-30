@@ -1,0 +1,22 @@
+# Local override (untracked): run the traffic-analytics proxy from
+# TrafficAnalytics PR #742 (branch ber-3728-gift-id-passthrough) instead of the
+# published image, so the new `gift_link` dimension passes through the page-hit
+# pipeline end-to-end. Built natively for arm64 via:
+#   cd ~/Code/TrafficAnalytics && git checkout ber-3728-gift-id-passthrough \
+#     && docker build -t ghost/traffic-analytics:local-ber3746 .
+# Use with:
+#   DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml -f compose.dev.analytics.local.yaml' \
+#     pnpm nx run ghost-monorepo:docker:dev
+services:
+  analytics:
+    image: ghost/traffic-analytics:local-ber3746
+    platform: linux/arm64
+    pull_policy: never
+
+  # Production web-analytics runs on the MV-backed v2 pipes (tinybird:stats:version=v2);
+  # the gift_link filter logic lives only in the _v2/_v3 pipes. The default dev
+  # analytics compose omits this, so the admin hits the unversioned base pipes that
+  # ignore gift_link and the filter appears to do nothing. Match prod here.
+  ghost-dev:
+    environment:
+      tinybird__stats__version: "v2"
