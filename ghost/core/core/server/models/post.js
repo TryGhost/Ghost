@@ -556,15 +556,22 @@ Post = ghostBookshelf.Model.extend({
         let tagsToSave;
         const ops = [];
 
-        // normally we don't allow both mobiledoc & lexical through at the API level but there's
-        // an exception for ?source=html which always sets both when the lexical editor is enabled.
-        // That's necessary because at the input serializer layer we don't have access to the
-        // actual model to check if this would result in a change of format
-
+        // We don't allow both mobiledoc & lexical to be stored at once. A single save can
+        // still momentarily carry both: the stored format plus an incoming one (e.g. editing
+        // a lexical post by sending mobiledoc). Resolve to a single format here; any remaining
+        // mobiledoc is converted to lexical further down.
         if (this.previous('mobiledoc') && this.get('lexical')) {
+            // post is stored as mobiledoc - keep it (explicit conversion happens via convert_to_lexical)
             this.set('lexical', null);
         } else if (this.get('mobiledoc') && this.get('lexical')) {
-            this.set('mobiledoc', null);
+            // both formats are set on this save - prefer lexical unless mobiledoc is the only
+            // format that was supplied (e.g. editing a lexical post by sending mobiledoc), in
+            // which case the incoming mobiledoc wins and is converted to lexical below
+            if (this.hasChanged('mobiledoc') && !this.hasChanged('lexical')) {
+                this.set('lexical', null);
+            } else {
+                this.set('mobiledoc', null);
+            }
         }
 
         // CASE: disallow published -> scheduled
@@ -688,17 +695,14 @@ Post = ghostBookshelf.Model.extend({
             this.set('lexical', JSON.stringify(lexicalLib.blankDocument));
         }
 
-        // If we're force re-rendering we want to make sure that all image cards
-        // have original dimensions stored in the payload for use by card renderers
-        if (options.force_rerender && this.get('mobiledoc')) {
-            this.set('mobiledoc', await mobiledocLib.populateImageSizes(this.get('mobiledoc')));
-        }
-
-        // CASE: mobiledoc has changed, generate html
+        // CASE: content is still stored as mobiledoc, convert it to lexical so it can be
+        // rendered. We no longer render mobiledoc directly, so this permanently migrates
+        // the post to lexical and the lexical block below generates the html.
+        // CASE: mobiledoc has changed
         // CASE: ?force_rerender=true passed via Admin API
         // CASE: html is null, but mobiledoc exists (only important for migrations & importing)
         if (
-            !this.get('lexical') &&
+            this.get('mobiledoc') &&
             (
                 this.hasChanged('mobiledoc')
                 || options.force_rerender
@@ -706,11 +710,12 @@ Post = ghostBookshelf.Model.extend({
             )
         ) {
             try {
-                this.set('html', mobiledocLib.render(JSON.parse(this.get('mobiledoc'))));
+                this.set('lexical', mobiledocToLexical(this.get('mobiledoc')));
+                this.set('mobiledoc', null);
             } catch (err) {
                 throw new errors.ValidationError({
                     message: tpl(messages.invalidMobiledocStructure),
-                    help: 'https://ghost.org/docs/publishing/'
+                    help: messages.invalidMobiledocStructureHelp
                 });
             }
         }
@@ -927,7 +932,7 @@ Post = ghostBookshelf.Model.extend({
             let authorId = await this.contextUser(options);
             const authorExists = await ghostBookshelf.model('User').findOne({id: authorId}, {transacting: options.transacting});
             if (!authorExists) {
-                authorId = (await ghostBookshelf.model('User').getOwnerUser()).get('id');
+                authorId = (await ghostBookshelf.model('User').getOwnerUser({transacting: options.transacting})).get('id');
             }
             ops.push(async function updateRevisions() {
                 const revisionModels = await ghostBookshelf.model('PostRevision')

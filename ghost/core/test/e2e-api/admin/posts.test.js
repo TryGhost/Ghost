@@ -412,7 +412,7 @@ describe('Posts API', function () {
 
             await agent
                 .put(`/posts/${postResponse.id}/?formats=mobiledoc,lexical,html`)
-                .body({posts: [Object.assign({}, postResponse, {mobiledoc: updatedMobiledoc})]})
+                .body({posts: [Object.assign({}, postResponse, {mobiledoc: updatedMobiledoc, lexical: null})]})
                 .expectStatus(200)
                 .matchBodySnapshot({
                     posts: [Object.assign({}, matchPostShallowIncludes, {published_at: null})]
@@ -423,23 +423,22 @@ describe('Posts API', function () {
                     'x-cache-invalidate': stringMatching(/^\/p\/[a-z0-9-]+\/, \/p\/[a-z0-9-]+\/\?member_status=anonymous, \/p\/[a-z0-9-]+\/\?member_status=free, \/p\/[a-z0-9-]+\/\?member_status=paid$/)
                 });
 
-            // mobiledoc revisions are created
+            // mobiledoc input is converted to lexical on save, so no mobiledoc revisions are created
             const mobiledocRevisions = await models.MobiledocRevision
                 .where('post_id', postResponse.id)
                 .orderBy('created_at_ts', 'desc')
                 .fetchAll();
 
-            assert.equal(mobiledocRevisions.length, 2);
-            assert.equal(mobiledocRevisions.at(0).get('mobiledoc'), updatedMobiledoc);
-            assert.equal(mobiledocRevisions.at(1).get('mobiledoc'), originalMobiledoc);
+            assert.equal(mobiledocRevisions.length, 0);
 
-            // post revisions are not created
+            // content is converted to lexical, so the initial lexical post revision is
+            // created instead of a mobiledoc revision (the update omits save_revision)
             const postRevisions = await models.PostRevision
                 .where('post_id', postResponse.id)
                 .orderBy('created_at_ts', 'desc')
                 .fetchAll();
 
-            assert.equal(postRevisions.length, 0);
+            assert.equal(postRevisions.length, 1);
         });
 
         it('Can update a post with lexical', async function () {
@@ -529,6 +528,50 @@ describe('Posts API', function () {
                 .where('post_id', postResponse.id)
                 .fetchAll();
             assert.equal(revisionsAfter.length, 2, 'No new revision should be created within the interval without save_revision');
+        });
+
+        it('Does not convert a mobiledoc post to lexical on a metadata-only update', async function () {
+            // Posts created through the API are always stored as lexical, so write a
+            // genuine mobiledoc row directly to the DB to simulate legacy content -
+            // direct DB writes are the only way mobiledoc-stored posts exist after this change.
+            const legacyMobiledoc = createMobiledoc('Legacy mobiledoc content that must be preserved');
+
+            const {body: createBody} = await agent
+                .post('/posts/?formats=mobiledoc,lexical,html')
+                .body({posts: [{title: 'Legacy mobiledoc post', mobiledoc: legacyMobiledoc}]})
+                .expectStatus(201);
+
+            const postId = createBody.posts[0].id;
+
+            await models.Base.knex('posts')
+                .where('id', postId)
+                .update({mobiledoc: legacyMobiledoc, lexical: null});
+
+            // sanity check: the post is now stored as mobiledoc
+            const {body: beforeBody} = await agent
+                .get(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
+                .expectStatus(200);
+            const before = beforeBody.posts[0];
+            assert.ok(before.mobiledoc, 'post starts stored as mobiledoc');
+            assert.equal(before.lexical, null);
+            assert.ok(before.html, 'post starts with rendered html');
+
+            // a metadata-only update (title) must NOT trigger a mobiledoc -> lexical conversion
+            const {body: afterBody} = await agent
+                .put(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
+                .body({posts: [{title: 'Updated title only', updated_at: before.updated_at}]})
+                .expectStatus(200);
+            const after = afterBody.posts[0];
+
+            assert.equal(after.title, 'Updated title only', 'title is updated');
+            assert.ok(after.mobiledoc, 'post is still stored as mobiledoc after a metadata-only edit');
+            assert.equal(after.lexical, null, 'no lexical is generated for a metadata-only edit');
+            assert.equal(after.html, before.html, 'existing html is preserved (not blanked or re-rendered)');
+
+            // confirm against the database, not just the serialized response
+            const [row] = await models.Base.knex('posts').where('id', postId).select('mobiledoc', 'lexical');
+            assert.ok(row.mobiledoc, 'mobiledoc column is still populated in the database');
+            assert.equal(row.lexical, null, 'lexical column remains null in the database');
         });
 
         describe('Access', function () {

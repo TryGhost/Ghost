@@ -1084,7 +1084,7 @@ describe('Importer', function () {
 
             delete exportData.data.posts[0].html;
 
-            const options = Object.assign({formats: 'mobiledoc,html'}, testUtils.context.internal);
+            const options = Object.assign({formats: 'mobiledoc,lexical,html'}, testUtils.context.internal);
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function () {
@@ -1096,8 +1096,11 @@ describe('Importer', function () {
 
                     assert.equal(posts.length, 1);
 
-                    assert.equal(posts[0].mobiledoc, '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
-                    assert.equal(posts[0].html, '<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt loading="lazy"></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
+                    // mobiledoc is converted to lexical (the legacy card-markdown card is
+                    // normalised to a markdown node)
+                    assert.equal(posts[0].mobiledoc, null);
+                    assert.equal(posts[0].lexical, '{"root":{"children":[{"type":"image","src":"source","cardWidth":"wide"},{"type":"markdown","markdown":"# Post Content"}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
+                    assert.equal(posts[0].html, '<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt="" loading="lazy"></figure><h1 id="post-content">Post Content</h1>\n');
                 });
         });
 
@@ -1145,7 +1148,7 @@ describe('Importer', function () {
                 html: '<div class="kg-post"><h2 id="postcontent">Post Content</h2></div>\n'
             });
 
-            const options = Object.assign({formats: 'mobiledoc,html'}, testUtils.context.internal);
+            const options = Object.assign({formats: 'mobiledoc,lexical,html'}, testUtils.context.internal);
 
             return dataImporter.doImport(exportData, importOptions)
                 .then(function () {
@@ -1157,11 +1160,14 @@ describe('Importer', function () {
 
                     assert.equal(posts.length, 2);
 
-                    assert.equal(posts[0].mobiledoc, '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["markdown",{"markdown":"## Post Content"}],["image",{"src":"source2","cardWidth":"not-wide"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
-                    assert.equal(posts[0].html, '<!--kg-card-begin: markdown--><h2 id="postcontent">Post Content</h2>\n<!--kg-card-end: markdown--><figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image" alt loading="lazy"></figure>');
+                    // mobiledoc is converted to lexical on import
+                    assert.equal(posts[0].mobiledoc, null);
+                    assert.equal(posts[0].lexical, '{"root":{"children":[{"type":"markdown","markdown":"## Post Content"},{"type":"image","src":"source2","cardWidth":"not-wide"}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
+                    assert.equal(posts[0].html, '<h2 id="post-content">Post Content</h2>\n<figure class="kg-card kg-image-card kg-width-not-wide"><img src="source2" class="kg-image" alt="" loading="lazy"></figure>');
 
-                    assert.equal(posts[1].mobiledoc, '{"version":"0.3.1","markups":[],"atoms":[],"cards":[["image",{"src":"source","cardWidth":"wide"}],["markdown",{"markdown":"# Post Content"}]],"sections":[[10,0],[10,1]],"ghostVersion":"3.0"}');
-                    assert.equal(posts[1].html, '<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt loading="lazy"></figure><!--kg-card-begin: markdown--><h1 id="postcontent">Post Content</h1>\n<!--kg-card-end: markdown-->');
+                    assert.equal(posts[1].mobiledoc, null);
+                    assert.equal(posts[1].lexical, '{"root":{"children":[{"type":"image","src":"source","cardWidth":"wide"},{"type":"markdown","markdown":"# Post Content"}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
+                    assert.equal(posts[1].html, '<figure class="kg-card kg-image-card kg-width-wide"><img src="source" class="kg-image" alt="" loading="lazy"></figure><h1 id="post-content">Post Content</h1>\n');
                 });
         });
 

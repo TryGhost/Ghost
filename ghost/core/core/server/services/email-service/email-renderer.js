@@ -18,6 +18,7 @@ const {getEmailDesign} = require('../email-rendering/email-design');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
 const {getPostAccessFilter} = require('../members/content-gating');
+const {mobiledocToLexical} = require('@tryghost/kg-converters');
 /** @import {TemplateDelegate} from 'handlebars' */
 
 const DEFAULT_LOCALE = 'en-gb';
@@ -262,7 +263,6 @@ class EmailRenderer {
      * @param {{getNoReplyAddress(): string, getMembersSupportAddress(): string, getMembersValidationKey(): string, createUnsubscribeUrl(uuid: string, options: object): string}} dependencies.settingsHelpers
      * @param {object} dependencies.renderers
      * @param {{render(object, options): Promise<string>}} dependencies.renderers.lexical
-     * @param {{render(object, options): string}} dependencies.renderers.mobiledoc
      * @param {{getCachedImageSizeFromUrl(url: string): Promise<{url: string, width: number, height: number} | null>}} dependencies.imageSize
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
      * @param {{isLocalImage(url: string): boolean, isInternalImage(url: string): boolean}} dependencies.storageUtils
@@ -463,22 +463,18 @@ class EmailRenderer {
     async renderPostBaseHtml(post, newsletter) {
         const postUrl = this.#getPostUrl(post);
 
-        let html;
-        if (post.get('lexical')) {
-            // only lexical's renderer is async
-            html = await this.#renderers.lexical.render(
-                post.get('lexical'),
-                {
-                    target: 'email',
-                    postUrl,
-                    design: this.#getEmailDesign(newsletter)
-                }
-            );
-        } else {
-            html = this.#renderers.mobiledoc.render(
-                JSON.parse(post.get('mobiledoc')), {target: 'email', postUrl}
-            );
-        }
+        // posts are migrated to lexical on save, but legacy content may still be stored as
+        // mobiledoc - convert it to lexical so it can be rendered.
+        const lexical = post.get('lexical') || mobiledocToLexical(post.get('mobiledoc'));
+
+        const html = await this.#renderers.lexical.render(
+            lexical,
+            {
+                target: 'email',
+                postUrl,
+                design: this.#getEmailDesign(newsletter)
+            }
+        );
         return html;
     }
 

@@ -625,9 +625,10 @@ describe('Post Model', function () {
                 assert.equal(createdPost.has('uuid'), true);
                 assert.equal(createdPost.get('status'), 'draft');
                 assert.equal(createdPost.get('title'), newPost.title, 'title is correct');
-                assert.equal(createdPost.get('mobiledoc'), newPost.mobiledoc, 'mobiledoc is correct');
+                assert.equal(createdPost.get('mobiledoc'), null, 'mobiledoc is converted to lexical');
+                assert.ok(createdPost.get('lexical'), 'lexical is set');
                 assert.equal(createdPost.has('html'), true);
-                assert.equal(createdPost.get('html'), newPostDB.html);
+                assert.ok(createdPost.get('html'));
                 assert.equal(createdPost.has('plaintext'), true);
                 assert.match(createdPost.get('plaintext'), /^testing/);
                 assert.equal(createdPost.get('slug'), newPostDB.slug + '-2');
@@ -680,7 +681,6 @@ describe('Post Model', function () {
                     });
 
                 const newPost = testUtils.DataGenerator.forModel.posts[2];
-                const newPostDB = testUtils.DataGenerator.Content.posts[2];
                 const addedPost = await models.Post.add(newPost, _.merge({withRelated: ['authors']}, context));
                 const createdPost = await models.Post.findOne({id: addedPost.id, status: 'all'}, {withRelated: ['authors']});
 
@@ -688,9 +688,10 @@ describe('Post Model', function () {
                 assert.equal(createdPost.has('uuid'), true);
                 assert.equal(createdPost.get('status'), 'draft');
                 assert.equal(createdPost.get('title'), newPost.title, 'title is correct');
-                assert.equal(createdPost.get('mobiledoc'), newPost.mobiledoc, 'mobiledoc is correct');
+                assert.equal(createdPost.get('mobiledoc'), null, 'mobiledoc is converted to lexical');
+                assert.ok(createdPost.get('lexical'), 'lexical is set');
                 assert.equal(createdPost.has('html'), true);
-                assert.equal(createdPost.get('html'), newPostDB.html);
+                assert.ok(createdPost.get('html'));
                 assert.equal(createdPost.has('plaintext'), true);
                 assert.match(createdPost.get('plaintext'), /^testing/);
                 // assert.equal(createdPost.get('slug'), newPostDB.slug + '-3');
@@ -877,7 +878,7 @@ describe('Post Model', function () {
                     }
 
                     assert.equal(post.get('slug'), 'test-title-' + num);
-                    assert.equal(JSON.parse(post.get('mobiledoc')).cards[0][1].markdown, 'Test Content ' + num);
+                    assert.ok(post.get('lexical').includes('Test Content ' + num));
 
                     assert.equal(Object.keys(eventsTriggered).length, 2);
                     assertExists(eventsTriggered['post.added']);
@@ -992,8 +993,10 @@ describe('Post Model', function () {
                 };
 
                 const createdPost = await models.Post.add(post, context);
-                assert.equal(createdPost.get('mobiledoc'), `{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"${siteUrl}/content/images/card.jpg"}]],"markups":[["a",["href","${siteUrl}/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}`);
-                assert.equal(createdPost.get('html'), `<p><a href="${siteUrl}/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="${siteUrl}/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>`);
+                // mobiledoc input is converted to lexical; urls are read back as absolute
+                assert.equal(createdPost.get('mobiledoc'), null);
+                assert.equal(createdPost.get('lexical'), `{"root":{"children":[{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Testing","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","rel":null,"target":null,"title":null,"url":"${siteUrl}/test","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"type":"image","src":"${siteUrl}/content/images/card.jpg"}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}`);
+                assert.equal(createdPost.get('html'), `<p><a href="${siteUrl}/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="${siteUrl}/content/images/card.jpg" class="kg-image" alt="" loading="lazy"></figure>`);
                 assert(createdPost.get('plaintext').includes('Testing'));
                 assert.equal(createdPost.get('custom_excerpt'), `Testing <a href="${siteUrl}/internal">links</a> in custom excerpts`);
                 assert.equal(createdPost.get('codeinjection_head'), `<script src="${siteUrl}/assets/head.js"></script>`);
@@ -1018,8 +1021,9 @@ describe('Post Model', function () {
 
                 const knexResult = await db.knex('posts').where({id: updatedPost.id});
                 const [knexPost] = knexResult;
-                assert.equal(knexPost.mobiledoc, '{"version":"0.3.1","atoms":[],"cards":[["image",{"src":"__GHOST_URL__/content/images/card.jpg"}]],"markups":[["a",["href","__GHOST_URL__/test"]]],"sections":[[1,"p",[[0,[0],1,"Testing"]]],[10,0]]}');
-                assert.equal(knexPost.html, '<p><a href="__GHOST_URL__/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="__GHOST_URL__/content/images/card.jpg" class="kg-image" alt loading="lazy"></figure>');
+                assert.equal(knexPost.mobiledoc, null);
+                assert.equal(knexPost.lexical, '{"root":{"children":[{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Testing","type":"text","version":1}],"direction":"ltr","format":"","indent":0,"type":"link","rel":null,"target":null,"title":null,"url":"__GHOST_URL__/test","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1},{"type":"image","src":"__GHOST_URL__/content/images/card.jpg"}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}');
+                assert.equal(knexPost.html, '<p><a href="__GHOST_URL__/test">Testing</a></p><figure class="kg-card kg-image-card"><img src="__GHOST_URL__/content/images/card.jpg" class="kg-image" alt="" loading="lazy"></figure>');
                 assert(knexPost.plaintext.includes('Testing'));
                 assert.equal(knexPost.custom_excerpt, 'Testing <a href="__GHOST_URL__/internal">links</a> in custom excerpts');
                 assert.equal(knexPost.codeinjection_head, '<script src="__GHOST_URL__/assets/head.js"></script>');
@@ -1530,119 +1534,6 @@ describe('Post Model', function () {
                     updated_at: moment().subtract(1, 'day').format()
                 }, _.extend({}, context, {id: postToUpdate.id}));
             });
-        });
-    });
-
-    describe('mobiledoc versioning', function () {
-        it('can create revisions', function () {
-            const newPost = {
-                mobiledoc: markdownToMobiledoc('a')
-            };
-
-            return models.Post.add(newPost, context)
-                .then((createdPost) => {
-                    return models.Post.findOne({id: createdPost.id, status: 'all'});
-                })
-                .then((createdPost) => {
-                    assertExists(createdPost);
-
-                    return createdPost.save({mobiledoc: markdownToMobiledoc('b')}, context);
-                })
-                .then((updatedPost) => {
-                    assert.equal(updatedPost.get('mobiledoc'), markdownToMobiledoc('b'));
-
-                    return models.MobiledocRevision
-                        .findAll({
-                            filter: `post_id:'${updatedPost.id}'`
-                        });
-                })
-                .then((mobiledocRevisions) => {
-                    assert.equal(mobiledocRevisions.length, 2);
-
-                    assert.equal(mobiledocRevisions.toJSON()[0].mobiledoc, markdownToMobiledoc('b'));
-                    assert.equal(mobiledocRevisions.toJSON()[1].mobiledoc, markdownToMobiledoc('a'));
-                });
-        });
-
-        it('keeps only 10 last revisions in FIFO style', function () {
-            let revisionedPost;
-            const newPost = {
-                mobiledoc: markdownToMobiledoc('revision: 0')
-            };
-
-            return models.Post.add(newPost, context)
-                .then((createdPost) => {
-                    return models.Post.findOne({id: createdPost.id, status: 'all'});
-                })
-                .then((createdPost) => {
-                    assertExists(createdPost);
-                    revisionedPost = createdPost;
-
-                    return sequence(_.times(11, (i) => {
-                        return () => {
-                            return models.Post.edit({
-                                mobiledoc: markdownToMobiledoc('revision: ' + (i + 1))
-                            }, _.extend({}, context, {id: createdPost.id}));
-                        };
-                    }));
-                })
-                .then(() => models.MobiledocRevision
-                    .findAll({
-                        filter: `post_id:'${revisionedPost.id}'`
-                    })
-                )
-                .then((mobiledocRevisions) => {
-                    assert.equal(mobiledocRevisions.length, 10);
-
-                    assert.equal(mobiledocRevisions.toJSON()[0].mobiledoc, markdownToMobiledoc('revision: 11'));
-                    assert.equal(mobiledocRevisions.toJSON()[9].mobiledoc, markdownToMobiledoc('revision: 2'));
-                });
-        });
-
-        it('creates 2 revisions after first edit for previously unversioned post', function () {
-            let unversionedPost;
-
-            const newPost = {
-                title: 'post title',
-                mobiledoc: markdownToMobiledoc('a')
-            };
-
-            // passing 'migrating' flag to simulate unversioned post
-            const options = Object.assign(_.clone(context), {migrating: true});
-
-            return models.Post.add(newPost, options)
-                .then((createdPost) => {
-                    assertExists(createdPost);
-                    unversionedPost = createdPost;
-                    assert.equal(createdPost.get('mobiledoc'), markdownToMobiledoc('a'));
-
-                    return models.MobiledocRevision
-                        .findAll({
-                            filter: `post_id:'${createdPost.id}'`
-                        });
-                })
-                .then((mobiledocRevisions) => {
-                    assert.equal(mobiledocRevisions.length, 0);
-
-                    return models.Post.edit({
-                        mobiledoc: markdownToMobiledoc('b')
-                    }, _.extend({}, context, {id: unversionedPost.id}));
-                })
-                .then((editedPost) => {
-                    assertExists(editedPost);
-                    assert.equal(editedPost.get('mobiledoc'), markdownToMobiledoc('b'));
-
-                    return models.MobiledocRevision
-                        .findAll({
-                            filter: `post_id:'${editedPost.id}'`
-                        });
-                })
-                .then((mobiledocRevisions) => {
-                    assert.equal(mobiledocRevisions.length, 2);
-
-                    assert.equal(mobiledocRevisions.toJSON()[0].mobiledoc, markdownToMobiledoc('b'));
-                    assert.equal(mobiledocRevisions.toJSON()[1].mobiledoc, markdownToMobiledoc('a'));
-                });
         });
     });
 

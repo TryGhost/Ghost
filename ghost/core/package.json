@@ -112,7 +112,6 @@
     "@tryghost/kg-html-to-lexical": "1.3.3",
     "@tryghost/kg-lexical-html-renderer": "1.4.3",
     "@tryghost/kg-markdown-html-renderer": "7.2.3",
-    "@tryghost/kg-mobiledoc-html-renderer": "7.2.3",
     "@tryghost/limit-service": "catalog:",
     "@tryghost/logging": "catalog:",
     "@tryghost/members-csv": "2.0.7",
@@ -243,7 +242,6 @@
     "zod": "catalog:"
   },
   "optionalDependencies": {
-    "@tryghost/html-to-mobiledoc": "3.3.3",
     "better-sqlite3": "catalog:"
   },
   "devDependencies": {
