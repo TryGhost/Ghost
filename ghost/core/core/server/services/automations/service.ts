@@ -1,3 +1,4 @@
+import assert from 'node:assert/strict';
 import type {InternalKeys} from '../internal-keys';
 // @ts-expect-error @tryghost/domain-events currently lacks type declarations.
 import type DomainEvents from '@tryghost/domain-events';
@@ -88,5 +89,10 @@ export class AutomationsService {
      */
     async rescheduleAll(): Promise<void> {
         await this.#enqueuePollAt?.(new Date());
+    }
+
+    async __testOnlyEnqueuePollAt(date: Readonly<Date>): Promise<void> {
+        assert(this.#enqueuePollAt, 'Tests should not call this before initialization');
+        return await this.#enqueuePollAt(date);
     }
 }
