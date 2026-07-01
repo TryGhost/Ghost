@@ -15,7 +15,7 @@ export const getPortalPreviewUrl = ({settings, config, tiers, siteData, selected
     if (!siteData?.url) {
         return null;
     }
-    let portalTiers = tiers.filter((t) => {
+    const portalTiers = tiers.filter((t) => {
         return t.visibility === 'public' && t.type === 'paid';
     }).map(t => t.id);
 

@@ -1,4 +1,3 @@
-/* eslint-disable ghost/mocha/no-setup-in-describe */
 import React from 'react';
 import assert from 'assert/strict';
 import {describe, it, vi} from 'vitest';

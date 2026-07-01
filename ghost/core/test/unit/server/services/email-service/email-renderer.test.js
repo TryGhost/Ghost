@@ -1248,6 +1248,85 @@ describe('Email renderer', function () {
             let response = await emailRenderer.getSegments(post);
             assert.deepEqual(response, ['status:free', 'status:-free']);
         });
+
+        it('returns tier access and no-access segments for a tiers post with a paywall', async function () {
+            emailRenderer = new EmailRenderer({
+                renderers: {
+                    lexical: {
+                        render: () => {
+                            return '<p>preview</p><!--members-only--><p>members</p>';
+                        }
+                    }
+                },
+                getPostUrl: () => {
+                    return 'http://example.com/post-id';
+                },
+                labs: {
+                    isSet: () => false
+                }
+            });
+
+            const post = {
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+                    if (key === 'visibility') {
+                        return 'tiers';
+                    }
+                },
+                related: (key) => {
+                    if (key === 'tiers') {
+                        return {toJSON: () => [{slug: 'gold'}, {slug: 'silver'}]};
+                    }
+                }
+            };
+            const response = await emailRenderer.getSegments(post);
+            assert.deepEqual(response, [
+                'product:\'gold\',product:\'silver\'',
+                'product:-\'gold\'+product:-\'silver\''
+            ]);
+        });
+
+        it('splits no-access into free/paid when a tiers post also has preview cards', async function () {
+            emailRenderer = new EmailRenderer({
+                renderers: {
+                    lexical: {
+                        render: () => {
+                            return '<div data-gh-segment="status:free">upsell</div><!--members-only--><p>members</p>';
+                        }
+                    }
+                },
+                getPostUrl: () => {
+                    return 'http://example.com/post-id';
+                },
+                labs: {
+                    isSet: () => false
+                }
+            });
+
+            const post = {
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+                    if (key === 'visibility') {
+                        return 'tiers';
+                    }
+                },
+                related: (key) => {
+                    if (key === 'tiers') {
+                        return {toJSON: () => [{slug: 'gold'}]};
+                    }
+                }
+            };
+            const response = await emailRenderer.getSegments(post);
+            assert.deepEqual(response, [
+                'status:free',
+                'status:-free+(product:\'gold\')',
+                'status:-free+(product:-\'gold\')'
+            ]);
+        });
     });
 
     describe('renderBody', function () {
@@ -1305,8 +1384,8 @@ describe('Email renderer', function () {
             };
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {
-                    buildLink: (_uuid, _postId, score, key) => {
-                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid) + '&key=' + encodeURIComponent(key));
+                    buildEmailLink: (_post, score) => {
+                        return 'http://feedback-link.com/?score=' + score + '&uuid=%%{uuid}%%&key=%%{key}%%';
                     }
                 },
                 urlUtils: {
@@ -2193,6 +2272,54 @@ describe('Email renderer', function () {
             assert(!responsePaid.html.includes('Become a paid member of Test Blog to get access to all'));
         });
 
+        it('paywalls a tiers post for the no-access segment and not for the access segment', async function () {
+            renderedPost = '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
+            const post = {
+                related: (key) => {
+                    if (key === 'tiers') {
+                        return {toJSON: () => [{slug: 'gold'}]};
+                    }
+                    return null;
+                },
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+                    if (key === 'visibility') {
+                        return 'tiers';
+                    }
+                    if (key === 'title') {
+                        return 'Test Post';
+                    }
+                },
+                getLazyRelation: () => {
+                    return {models: [{get: k => (k === 'name' ? 'Test Author' : undefined)}]};
+                }
+            };
+            const newsletter = {
+                get: (key) => {
+                    if (key === 'show_post_title_section') {
+                        return true;
+                    }
+                    if (key === 'feedback_enabled') {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+
+            // Member NOT on the post's tier -> public preview + paywall
+            const noAccess = await emailRenderer.renderBody(post, newsletter, 'product:-\'gold\'', {});
+            assert(noAccess.html.includes('some text for both'));
+            assert(!noAccess.html.includes('finishing part only for members'));
+            assert(noAccess.html.includes('Become a paid member of Test Blog to get access to all'));
+
+            // Member ON the post's tier -> full content, no paywall
+            const access = await emailRenderer.renderBody(post, newsletter, 'product:\'gold\'', {});
+            assert(access.html.includes('finishing part only for members'));
+            assert(!access.html.includes('Become a paid member of Test Blog to get access to all'));
+        });
+
         it('should output valid HTML and escape HTML characters in mobiledoc', async function () {
             const post = createModel({
                 ...basePost,
@@ -2473,8 +2600,8 @@ describe('Email renderer', function () {
             labsEnabled = false;
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {
-                    buildLink: (_uuid, _postId, score) => {
-                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid));
+                    buildEmailLink: (_post, score) => {
+                        return 'http://feedback-link.com/?score=' + score + '&uuid=%%{uuid}%%';
                     }
                 },
                 urlUtils: {
@@ -3638,8 +3765,8 @@ describe('Email renderer', function () {
             });
             emailRenderer = new EmailRenderer({
                 audienceFeedbackService: {
-                    buildLink: (_uuid, _postId, score, key) => {
-                        return new URL('http://feedback-link.com/?score=' + encodeURIComponent(score) + '&uuid=' + encodeURIComponent(_uuid) + '&key=' + encodeURIComponent(key));
+                    buildEmailLink: (_post, score) => {
+                        return 'http://feedback-link.com/?score=' + score + '&uuid=%%{uuid}%%&key=%%{key}%%';
                     }
                 },
                 urlUtils: {

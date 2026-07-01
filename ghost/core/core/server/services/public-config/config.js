@@ -5,6 +5,46 @@ const labs = require('../../../shared/labs');
 const databaseInfo = require('../../data/db/info');
 const ghostVersion = require('@tryghost/version');
 
+const tinybirdStatsPayloadProperties = [
+    'endpoint',
+    'endpointBrowser',
+    'version',
+    'datasource'
+];
+
+const tinybirdLocalStatsPayloadProperties = [
+    'enabled',
+    'endpoint',
+    'datasource'
+];
+
+const copyPayloadProperties = (target, source, properties) => {
+    for (const property of properties) {
+        if (Object.prototype.hasOwnProperty.call(source, property)) {
+            target[property] = source[property];
+        }
+    }
+};
+
+const getTinybirdStatsPayload = (statsConfig, siteUuid) => {
+    const statsPayload = {};
+
+    copyPayloadProperties(statsPayload, statsConfig, tinybirdStatsPayloadProperties);
+
+    statsPayload.id = siteUuid;
+
+    if (isPlainObject(statsConfig.local)) {
+        const localStatsPayload = {};
+        copyPayloadProperties(localStatsPayload, statsConfig.local, tinybirdLocalStatsPayloadProperties);
+
+        if (Object.keys(localStatsPayload).length > 0) {
+            statsPayload.local = localStatsPayload;
+        }
+    }
+
+    return statsPayload;
+};
+
 module.exports = function getConfigProperties() {
     const configProperties = {
         version: process.env.GHOST_BUILD_VERSION || ghostVersion.original,
@@ -33,10 +73,7 @@ module.exports = function getConfigProperties() {
     if (config.get('tinybird') && config.get('tinybird:stats')) {
         const statsConfig = config.get('tinybird:stats');
         const siteUuid = statsConfig.id || settingsCache.get('site_uuid');
-        configProperties.stats = {
-            ...statsConfig,
-            id: siteUuid
-        };
+        configProperties.stats = getTinybirdStatsPayload(statsConfig, siteUuid);
     }
 
     if (labs.isSet('featurebaseFeedback') && config.get('featurebase')) {

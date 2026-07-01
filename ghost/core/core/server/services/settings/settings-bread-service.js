@@ -9,12 +9,29 @@ const sentry = require('../../../shared/sentry');
 
 const EMAIL_KEYS = ['members_support_address'];
 const PUBLIC_SITE_ACCESS_LOCKED_KEYS = ['is_private', 'password'];
+const AUTOMATIONS_LABS_FLAG = 'automations';
 const messages = {
     problemFindingSetting: 'Problem finding setting: {key}',
     accessCoreSettingFromExtReq: 'Attempted to access core setting from external request',
     invalidEmail: 'Invalid email address',
     publicSiteAccessLocked: 'Site visibility and access code cannot be changed.'
 };
+
+function parseLabsValue(value) {
+    if (!value) {
+        return {};
+    }
+
+    if (typeof value === 'string') {
+        try {
+            return JSON.parse(value);
+        } catch (err) {
+            return {};
+        }
+    }
+
+    return value;
+}
 
 class SettingsBREADService {
     /**
@@ -244,12 +261,22 @@ class SettingsBREADService {
             }
         }
 
+        const shouldLogAutomationsEnabled = this._shouldLogAutomationsEnabled(filteredSettings);
+
         // remove any email properties that are not allowed to be set without verification
         const {filteredSettings: refilteredSettings, emailsToVerify} = await this.prepSettingsForEmailVerification(filteredSettings, getSetting);
 
         const modelArray = await this.SettingsModel.edit(refilteredSettings, options).then((result) => {
             return this._formatBrowse(_.keyBy(_.invokeMap(result, 'toJSON'), 'key'), options.context);
         });
+
+        if (shouldLogAutomationsEnabled) {
+            logging.info({
+                event: {
+                    name: 'automations.beta_flag_enabled'
+                }
+            }, 'Automations beta flag enabled');
+        }
 
         return this.respondWithEmailVerification(modelArray, emailsToVerify);
     }
@@ -331,6 +358,21 @@ class SettingsBREADService {
 
     _isPublicSiteAccessLimited() {
         return Boolean(this.limitsService && this.limitsService.isDisabled('publicSiteAccess'));
+    }
+
+    _shouldLogAutomationsEnabled(settings) {
+        const labsSetting = settings.find(setting => setting.key === 'labs');
+        if (!labsSetting) {
+            return false;
+        }
+
+        const previousLabs = this.labs.getAll();
+        if (previousLabs[AUTOMATIONS_LABS_FLAG] === true) {
+            return false;
+        }
+
+        const nextLabs = parseLabsValue(labsSetting.value);
+        return nextLabs[AUTOMATIONS_LABS_FLAG] === true;
     }
 
     /**

@@ -21,7 +21,7 @@ export interface ModalProps {
     align?: 'center' | 'left' | 'right';
 
     testId?: string;
-    title?: string;
+    title?: React.ReactNode;
     okLabel?: string;
     okColor?: ButtonColor;
     okLoading?: boolean;

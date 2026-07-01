@@ -1,4 +1,4 @@
-const models = require('../../../../core/server/models');
+const {SingleUseToken} = require('../../../../core/server/models/single-use-token');
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../utils/assertions');
@@ -20,13 +20,13 @@ describe('Unit: models/single-use-token', function () {
 
     describe('fn: defaults', function () {
         it('Defaults to used_count of zero', async function () {
-            const model = new models.SingleUseToken();
+            const model = new SingleUseToken();
             const defaults = model.defaults();
             assert.equal(defaults.used_count, 0);
         });
 
         it('Generates a valid v4 UUID by default', async function () {
-            const model = new models.SingleUseToken();
+            const model = new SingleUseToken();
             const defaults = model.defaults();
 
             assertExists(defaults.uuid);
@@ -34,8 +34,8 @@ describe('Unit: models/single-use-token', function () {
         });
 
         it('Generates unique UUIDs for different instances', async function () {
-            const model1 = new models.SingleUseToken();
-            const model2 = new models.SingleUseToken();
+            const model1 = new SingleUseToken();
+            const model2 = new SingleUseToken();
 
             const defaults1 = model1.defaults();
             const defaults2 = model2.defaults();

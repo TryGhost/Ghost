@@ -158,8 +158,8 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         }
 
         if (fatalErrors && !data) {
-            let title = 'Invalid Theme';
-            let prompt = <>This theme is invalid and cannot be activated. Fix the following errors and re-upload the theme</>;
+            const title = 'Theme not uploaded';
+            const prompt = <>This theme couldn&apos;t be uploaded because Ghost found a blocking validation error. Fix the issue below and upload the theme again.</>;
             NiceModal.show(InvalidThemeModal, {
                 title,
                 prompt,
@@ -190,17 +190,15 @@ const ThemeToolbar: React.FC<ThemeToolbarProps> = ({
         }
 
         if (uploadedTheme?.errors?.length || uploadedTheme.warnings?.length) {
-            const hasErrors = uploadedTheme?.errors?.length;
-
-            title = `Upload successful with ${hasErrors ? 'errors' : 'warnings'}`;
+            title = 'Upload successful';
             prompt = <>
-                The theme <strong>&quot;{uploadedTheme.name}&quot;</strong> was installed but we detected some {hasErrors ? 'errors' : 'warnings'}.
+                The theme <strong>&quot;{uploadedTheme.name}&quot;</strong> was installed successfully.
             </>;
 
             if (!uploadedTheme.active) {
                 prompt = <>
                     {prompt}
-                    You are still able to activate and use the theme but it is recommended to fix these {hasErrors ? 'errors' : 'warnings'} before you do so.
+                    You can activate it when you&apos;re ready.
                 </>;
             }
         }
@@ -345,13 +343,13 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                     return;
                 }
 
-                let titleText = 'Install Theme';
+                const titleText = 'Install Theme';
                 const existingThemeNames = themes?.map(t => t.name) || [];
-                let willOverwrite = existingThemeNames.includes(themeName.toLowerCase());
+                const willOverwrite = existingThemeNames.includes(themeName.toLowerCase());
                 const index = existingThemeNames.indexOf(themeName.toLowerCase());
                 // get the theme that will be overwritten
                 const themeToOverwrite = themes?.[index];
-                let prompt = <>By clicking below, <strong>{themeName}</strong> will automatically be activated as the theme for your site.
+                const prompt = <>By clicking below, <strong>{themeName}</strong> will automatically be activated as the theme for your site.
                     {willOverwrite &&
                     <>
                         <br/>
@@ -484,17 +482,15 @@ const ChangeThemeModal: React.FC<ChangeThemeModalProps> = ({source, themeRef}) =
                 }
 
                 if (newlyInstalledTheme.errors?.length || newlyInstalledTheme.warnings?.length) {
-                    const hasErrors = newlyInstalledTheme.errors?.length;
-
-                    title = `Installed with ${hasErrors ? 'errors' : 'warnings'}`;
+                    title = 'Installed successfully';
                     prompt = <>
-        The theme <strong>&quot;{newlyInstalledTheme.name}&quot;</strong> was installed successfully but we detected some {hasErrors ? 'errors' : 'warnings'}.
+        The theme <strong>&quot;{newlyInstalledTheme.name}&quot;</strong> was installed successfully.
                     </>;
 
                     if (!newlyInstalledTheme.active) {
                         prompt = <>
                             {prompt}
-            You are still able to activate and use the theme but it is recommended to contact the theme developer fix these {hasErrors ? 'errors' : 'warnings'} before you do so.
+            You can activate it when you&apos;re ready.
                         </>;
                     }
                 }

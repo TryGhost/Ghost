@@ -20,13 +20,38 @@ const messages = {
 class AudienceFeedbackController {
     /** @type IFeedbackRepository */
     #repository;
+    /** @type {import('./audience-feedback-service')} */
+    #audienceFeedbackService;
 
     /**
      * @param {object} deps
      * @param {IFeedbackRepository} deps.repository
+     * @param {import('./audience-feedback-service')} deps.audienceFeedbackService
      */
     constructor(deps) {
         this.#repository = deps.repository;
+        this.#audienceFeedbackService = deps.audienceFeedbackService;
+    }
+
+    /**
+     * Express handler for the durable, id-based feedback link in newsletters.
+     * Resolves the post's *current* URL from its id and redirects to the Portal
+     * feedback flow, so changing a post's slug never breaks feedback buttons.
+     * Authentication happens later when Portal submits to the feedback API — this
+     * endpoint only forwards the uuid/key through to the destination.
+     */
+    redirectToPost(req, res, next) {
+        try {
+            const {postId} = req.params;
+            const score = req.params.score === '1' ? 1 : 0;
+            const uuid = req.query.uuid;
+            const key = req.query.key;
+
+            const target = this.#audienceFeedbackService.buildLink(uuid, {id: postId}, score, key);
+            return res.redirect(target.toString());
+        } catch (err) {
+            return next(err);
+        }
     }
 
     /**

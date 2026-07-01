@@ -45,7 +45,7 @@ const DesignSystemProvider: React.FC<DesignSystemProviderProps> = ({fetchKoenigL
     return (
         <DesignSystemContext.Provider value={{isAnyTextFieldFocused, setFocusState, fetchKoenigLexical, darkMode}}>
             <GlobalDirtyStateProvider>
-                <Toaster containerClassName="toast-outlet-react-hot-toast" />
+                <Toaster />
                 <NiceModal.Provider>
                     {children}
                 </NiceModal.Provider>

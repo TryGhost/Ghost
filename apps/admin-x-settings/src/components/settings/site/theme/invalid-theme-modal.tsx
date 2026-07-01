@@ -1,89 +1,50 @@
 import NiceModal from '@ebay/nice-modal-react';
-import React, {type ReactNode, useState} from 'react';
-import {Button, ConfirmationModalContent, Heading, List, ListItem} from '@tryghost/admin-x-design-system';
-import {type ThemeProblem} from '@tryghost/admin-x-framework/api/themes';
+import React, {type ReactNode} from 'react';
+import {ConfirmationModalContent} from '@tryghost/admin-x-design-system';
+import {ErrorTextCard, type FatalErrors, ThemeValidationDetailsDisclosure, ValidationProblemCard, getIssuesFromFatalErrors} from './theme-validation-details';
+import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 
-type FatalError = {
-    details: {
-      errors: ThemeProblem[];
-    }|string;
-  };
-
-export type FatalErrors = FatalError[];
-
-export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
-    const [isExpanded, setExpanded] = useState(false);
-
-    const handleClick = () => {
-        setExpanded(!isExpanded);
-    };
-
-    return <ListItem
-        title={
-            <>
-                <div className={`${problem.level === 'error' ? 'before:bg-red' : 'before:bg-yellow'} relative px-4 before:absolute before:top-1.5 before:left-0 before:block before:size-2 before:rounded-full before:content-['']`}>
-                    {
-                        problem?.fatal ?
-                            <strong>Fatal: </strong>
-                            :
-                            <strong>{problem.level === 'error' ? 'Error: ' : 'Warning: '}</strong>
-                    }
-                    <span dangerouslySetInnerHTML={{__html: problem.rule}} />
-                    <div className='absolute top-1 -right-4'>
-                        <Button color="green" icon={isExpanded ? 'chevron-down' : 'chevron-right'} iconColorClass='text-grey-700' size='sm' link onClick={() => handleClick()} />
-                    </div>
-                </div>
-                {
-                    isExpanded ?
-                        <div className='mt-2 px-4 text-[13px]'>
-                            <div dangerouslySetInnerHTML={{__html: problem.details}} className='mb-4' />
-                            <Heading level={6}>Affected files:</Heading>
-                            <ul className='mt-1'>
-                                {problem.failures.map(failure => <li><code>{failure.ref}</code>{failure.message ? `: ${failure.message}` : ''}</li>)}
-                            </ul>
-                        </div> :
-                        null
-                }
-            </>
-        }
-        hideActions
-        separator
-    />;
-};
+export type {FatalErrors} from './theme-validation-details';
 
 const InvalidThemeModal: React.FC<{
     title: string
     prompt: ReactNode
     fatalErrors?: FatalErrors;
+    validationDetailsDefaultOpen?: boolean;
     onRetry?: (modal?: {
         remove: () => void;
     }) => void | Promise<void>;
-}> = ({title, prompt, fatalErrors, onRetry}) => {
-    let warningPrompt = null;
-    if (fatalErrors) {
-        warningPrompt = <div className="mt-10">
-            <List title="Errors">
-                {fatalErrors.map((error) => {
-                    if (typeof error.details === 'object' && error.details.errors && error.details.errors.length > 0) {
-                        return error.details.errors.map(err => <ThemeProblemView problem={err} />);
-                    } else if (typeof error.details === 'string') {
-                        return <ListItem title={error.details} />;
-                    } else {
-                        return null;
-                    }
-                })}
-            </List>
-        </div>;
-    }
+}> = ({title, prompt, fatalErrors, validationDetailsDefaultOpen, onRetry}) => {
+    const {data: configData} = useBrowseConfig();
+    const defaultOpen = validationDetailsDefaultOpen ?? configData?.config?.environment === 'development';
+    const {blockingProblems, secondaryProblems, stringErrors} = getIssuesFromFatalErrors(fatalErrors);
+    const blockingIssueCount = blockingProblems.length + stringErrors.length;
+    const promptText = prompt ?? <>Ghost found {blockingIssueCount === 1 ? 'a blocking validation error' : `${blockingIssueCount} blocking validation errors`} and did not save your theme. Fix {blockingIssueCount === 1 ? 'the issue' : 'the issues'} below and try again.</>;
 
     return <ConfirmationModalContent
         cancelLabel='Close'
         okColor='black'
         okLabel={'Retry'}
         prompt={<>
-            {prompt}
-            {warningPrompt}
+            <div className='space-y-5'>
+                <div className='text-sm text-foreground'>{promptText}</div>
+
+                {(blockingProblems.length > 0 || stringErrors.length > 0) && (
+                    <div className='space-y-3'>
+                        {blockingProblems.map(problem => (
+                            <ValidationProblemCard key={problem.code} problem={problem} prominent />
+                        ))}
+                        {stringErrors.map(error => <ErrorTextCard key={error} message={error} />)}
+                    </div>
+                )}
+
+                <ThemeValidationDetailsDisclosure
+                    defaultOpen={defaultOpen}
+                    problems={secondaryProblems}
+                />
+            </div>
         </>}
+        stickyFooter={true}
         title={title}
         onOk={onRetry}
     />;

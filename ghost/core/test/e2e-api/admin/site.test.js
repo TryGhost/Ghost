@@ -4,7 +4,7 @@ const {anyEtag, stringMatching, anyContentLength, anyContentVersion, anyUuid} = 
 describe('Site API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
     });
 

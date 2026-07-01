@@ -29,7 +29,7 @@ export const Default: Story = {
     },
     args: {
         children: [
-            <div style={{height: 400}}>
+            <div key='popover-demo' style={{height: 400}}>
                 <Popover>
                     <PopoverTrigger asChild>
                         <Button variant="outline">Open popover</Button>
@@ -58,7 +58,7 @@ export const Placement: Story = {
     },
     args: {
         children: [
-            <div style={{display: 'flex', gap: 12, flexWrap: 'wrap', minHeight: 120}}>
+            <div key='placement-demo' style={{display: 'flex', gap: 12, flexWrap: 'wrap', minHeight: 120}}>
                 {(['top', 'right', 'bottom', 'left'] as const).map(side => (
                     <Popover key={side}>
                         <PopoverTrigger asChild>

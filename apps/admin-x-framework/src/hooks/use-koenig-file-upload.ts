@@ -180,10 +180,16 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
         } catch (error) {
             console.error(error); // eslint-disable-line
 
-            // TODO: check for or expose known error types?
+            // The API wraps some errors (e.g. HostLimitError) with a generic
+            // message and puts the specific, user-actionable text in `context`.
+            // Prefer `context` so the user sees the useful message, falling back
+            // to `message` for errors that don't set a context.
+            const context = getStringAtPath(error, ['data', 'errors', 0, 'context']) || '';
+            const message = getStringAtPath(error, ['data', 'errors', 0, 'message']) || getStringAtPath(error, ['message']) || '';
+
             const errorResult = {
-                message: getStringAtPath(error, ['data', 'errors', 0, 'message']) || getStringAtPath(error, ['message']) || '',
-                context: getStringAtPath(error, ['data', 'errors', 0, 'context']) || '',
+                message: context || message,
+                context,
                 fileName: file.name
             };
 
@@ -194,6 +200,9 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
     const upload = async (files: FileList | ReadonlyArray<File> = [], options: UploadOptions = {}) => {
         setFilesNumber(files.length);
         setLoading(true);
+        // Each upload attempt starts fresh so retries don't accumulate
+        // duplicate error messages from previous failed attempts.
+        setErrors([]);
 
         const validationResult = validate(files);
 
@@ -225,7 +234,7 @@ export const useKoenigFileUpload = (type: KoenigFileUploadType = 'image'): FileU
         } catch (error) {
             console.error(error); // eslint-disable-line no-console
 
-            setErrors(prev => [...prev, error as UploadError]);
+            setErrors([error as UploadError]);
             setLoading(false);
             setProgress(100);
             progressTracker.current.clear();

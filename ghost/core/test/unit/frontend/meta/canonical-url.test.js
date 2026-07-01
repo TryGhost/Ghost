@@ -1,21 +1,18 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const urlUtils = require('../../../../core/shared/url-utils');
+const urlService = require('../../../../core/server/services/url');
 const testUtils = require('../../../utils');
 
-let getCanonicalUrl = rewire('../../../../core/frontend/meta/canonical-url');
+const getCanonicalUrl = require('../../../../core/frontend/meta/canonical-url');
 
 describe('getCanonicalUrl', function () {
-    let getUrlStub;
+    let getUrlForResourceStub;
     let urlJoinStub;
     let urlForStub;
 
     beforeEach(function () {
-        getUrlStub = sinon.stub();
-
-        getCanonicalUrl = rewire('../../../../core/frontend/meta/canonical-url');
-        getCanonicalUrl.__set__('getUrl', getUrlStub);
+        getUrlForResourceStub = sinon.stub(urlService.facade, 'getUrlForResource');
 
         urlJoinStub = sinon.stub(urlUtils, 'urlJoin');
         urlForStub = sinon.stub(urlUtils, 'urlFor').withArgs('home', true).returns('http://localhost:9999');
@@ -28,14 +25,14 @@ describe('getCanonicalUrl', function () {
     it('should return default canonical url', function () {
         const post = testUtils.DataGenerator.forKnex.createPost();
 
-        getUrlStub.withArgs(post, false).returns('/post-url/');
+        getUrlForResourceStub.returns('/post-url/');
         urlJoinStub.withArgs('http://localhost:9999', '/post-url/').returns('canonical url');
 
         assert.equal(getCanonicalUrl(post), 'canonical url');
 
         sinon.assert.calledOnce(urlJoinStub);
         sinon.assert.calledOnce(urlForStub);
-        sinon.assert.calledOnce(getUrlStub);
+        sinon.assert.calledOnce(getUrlForResourceStub);
     });
 
     it('should return canonical url field if present', function () {
@@ -46,17 +43,19 @@ describe('getCanonicalUrl', function () {
             post: post
         }), 'https://example.com/canonical');
 
-        sinon.assert.notCalled(getUrlStub);
+        sinon.assert.notCalled(getUrlForResourceStub);
     });
 
     it('should return home if empty secure data', function () {
-        getUrlStub.withArgs({secure: true}, false).returns('/');
+        const data = {secure: true};
+
+        urlForStub.withArgs(data, {}, false).returns('/');
         urlJoinStub.withArgs('http://localhost:9999', '/').returns('canonical url');
 
-        assert.equal(getCanonicalUrl({secure: true}), 'canonical url');
+        assert.equal(getCanonicalUrl(data), 'canonical url');
 
         sinon.assert.calledOnce(urlJoinStub);
         sinon.assert.calledOnce(urlForStub);
-        sinon.assert.calledOnce(getUrlStub);
+        sinon.assert.notCalled(getUrlForResourceStub);
     });
 });

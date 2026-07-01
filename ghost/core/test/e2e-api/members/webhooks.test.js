@@ -194,7 +194,7 @@ describe('Members API', function () {
     });
 
     describe('/webhooks/stripe/', function () {
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
@@ -241,7 +241,7 @@ describe('Members API', function () {
     });
 
     describe('Handling the end of subscriptions', function () {
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
@@ -767,7 +767,7 @@ describe('Members API', function () {
         // The subscription that we got from Stripe was created 2 seconds earlier (used for testing events)
         const beforeNow = Math.floor((Date.now() - 2000) / 1000) * 1000;
 
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
@@ -1494,7 +1494,7 @@ describe('Members API', function () {
     });
 
     describe('customer.subscription.created - complimentary removal', function () {
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
@@ -1786,7 +1786,7 @@ describe('Members API', function () {
         let offer;
         let couponId = 'testCoupon123';
 
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;
@@ -2542,7 +2542,7 @@ describe('Members API', function () {
 
     // Test if the session metadata is processed correctly
     describe('Member attribution', function () {
-        before(async function () {
+        beforeAll(async function () {
             const agents = await agentProvider.getAgentsForMembers();
             membersAgent = agents.membersAgent;
             adminAgent = agents.adminAgent;

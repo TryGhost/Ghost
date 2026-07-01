@@ -369,4 +369,3 @@ export const memberWithNewsletter = {
     enable_comment_notifications: true,
     status: 'free'
 };
-/* eslint-enable no-unused-vars*/

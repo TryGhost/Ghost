@@ -63,6 +63,7 @@ export function useOnboarding() {
         hasAttemptedInvalidStartedStateDismissalRef.current = true;
         void dismissChecklist().catch((error) => {
             hasAttemptedInvalidStartedStateDismissalRef.current = false;
+            // eslint-disable-next-line no-console
             console.error(error);
         });
     }, [checklistState, dismissChecklist, hasActiveStartedAt, isOwner, isPreferencesLoading, isUserLoading]);

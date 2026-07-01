@@ -12,7 +12,7 @@ describe('Run Update Check', function () {
     let mockUpdateServer;
     let baselineMailTransport;
 
-    before(testUtils.setup('default'));
+    beforeAll(testUtils.setup('default'));
 
     beforeEach(function () {
         baselineMailTransport = process.env.mail__transport;

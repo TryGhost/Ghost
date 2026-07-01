@@ -1,17 +1,18 @@
-const {agentProvider, mockManager, fixtureManager, matchers} = require('../utils/e2e-framework');
+const {agentProvider, mockManager, fixtureManager, dbUtils, matchers} = require('../utils/e2e-framework');
 const {anyGhostAgent, anyContentVersion, anyContentLength} = matchers;
 
 describe('site.* events', function () {
     let adminAPIAgent;
     let webhookMockReceiver;
 
-    before(async function () {
+    beforeAll(async function () {
         adminAPIAgent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('integrations');
         await adminAPIAgent.loginAsOwner();
     });
 
-    beforeEach(function () {
+    beforeEach(async function () {
+        await dbUtils.truncate('webhooks');
         webhookMockReceiver = mockManager.mockWebhookRequests();
     });
 
@@ -172,6 +173,11 @@ describe('site.* events', function () {
             url: webhookURL
         });
 
+        mockManager.mockLimitService('customIntegrations', {
+            isLimited: true,
+            wouldGoOverLimit: true
+        });
+
         await adminAPIAgent
             .post('posts/')
             .body({
@@ -270,6 +276,11 @@ describe('site.* events', function () {
         await fixtureManager.insertWebhook({
             event: 'site.changed',
             url: webhookURL
+        });
+
+        mockManager.mockLimitService('customIntegrations', {
+            isLimited: true,
+            wouldGoOverLimit: true
         });
 
         await adminAPIAgent

@@ -1,6 +1,6 @@
 const urlUtils = require('../../shared/url-utils');
 const settingsCache = require('../../shared/settings-cache');
-const {blogIcon} = require('../../server/lib/image');
+const {blogIcon} = require('../services/proxy');
 
 function getBlogLogo() {
     const logo = {};

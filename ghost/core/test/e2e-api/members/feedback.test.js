@@ -3,6 +3,7 @@ const {agentProvider, mockManager, fixtureManager, matchers, configUtils} = requ
 const {anyEtag, anyObjectId, anyLocationFor, anyErrorId} = matchers;
 const models = require('../../../core/server/models');
 const sinon = require('sinon');
+const {mockSystemTime} = require('../../utils/clock-utils');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const crypto = require('crypto');
 
@@ -12,7 +13,7 @@ describe('Members Feedback', function () {
     let membersAgent, membersAgent2, memberUuid, memberHmac;
     let clock;
 
-    before(async function () {
+    beforeAll(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
         membersAgent2 = membersAgent.duplicate();
 
@@ -260,8 +261,7 @@ describe('Members Feedback', function () {
     });
 
     it('Can change existing feedback', async function () {
-        // TODO: shouldAdvanceTime is a fake-timer + HTTP-await workaround; see docs/dep-consolidation.md
-        clock = sinon.useFakeTimers({now: new Date(), shouldAdvanceTime: true});
+        clock = mockSystemTime(new Date());
         const postId = fixtureManager.get('posts', 1).id;
 
         const {body} = await membersAgent

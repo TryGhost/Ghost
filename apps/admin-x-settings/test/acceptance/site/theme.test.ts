@@ -5,6 +5,8 @@ import {expectExternalNavigate, globalDataRequests, limitRequests, mockApi, resp
 import {readFileSync} from 'fs';
 import type {Page} from '@playwright/test';
 
+const __dirname = import.meta.dirname;
+
 const themeEditorZip = readFileSync(path.join(__dirname, '../../utils/responses/theme.zip'));
 
 const customThemesLimitConfig = (allowlist: string[], error: string) => ({
@@ -120,7 +122,7 @@ test.describe('Theme settings', async () => {
         await expect(modal.getByRole('button', {name: 'Activate Casper'})).toBeVisible();
 
         await modal.getByRole('button', {name: 'Activate Casper'}).click();
-        await expect(page.getByTestId('confirmation-modal')).toHaveText(/activate/);
+        await expect(page.getByTestId('confirmation-modal')).toHaveText(/activate/i);
         await page.getByTestId('confirmation-modal').getByRole('button', {name: 'Activate'}).click();
         await expect(page.getByTestId('toast-success')).toHaveText(/casper is now your active theme/);
 

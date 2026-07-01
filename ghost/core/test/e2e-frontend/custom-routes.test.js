@@ -16,7 +16,7 @@ function assertCorrectFrontendHeaders(res) {
 describe('Custom Frontend routing', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         const routesFilePath = path.join(configUtils.config.get('paths:appRoot'), 'test/utils/fixtures/settings/newroutes.yaml');
 
         await testUtils.startGhost({
@@ -25,7 +25,7 @@ describe('Custom Frontend routing', function () {
         request = supertest.agent(configUtils.config.get('url'));
     });
 
-    after(function () {
+    afterAll(function () {
         return testUtils.stopGhost();
     });
 

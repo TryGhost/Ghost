@@ -1,6 +1,6 @@
 module.exports = {
     get entry() {
-        return require('./entry');
+        return require('./entry').entryController;
     },
 
     get collection() {

@@ -21,8 +21,8 @@ function slugify(text: string): string {
         .toLowerCase()
         .trim()
         .replace(/\s+/g, '-')
-        .replace(/[^\w\-]+/g, '')
-        .replace(/\-\-+/g, '-');
+        .replace(/[^\w-]+/g, '')
+        .replace(/--+/g, '-');
 }
 
 export interface OfferType {
@@ -524,7 +524,7 @@ const AddOfferModal = () => {
     const handleNameInput = (e: React.ChangeEvent<HTMLInputElement>) => {
         const newValue = e.target.value;
         updateForm((prevOverrides) => {
-            let newOverrides = {...prevOverrides};
+            const newOverrides = {...prevOverrides};
             newOverrides.name = newValue;
             if (!prevOverrides.code.isDirty) {
                 clearError('code');

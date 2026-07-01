@@ -11,7 +11,7 @@ describe('User API', function () {
     describe('As Owner', function () {
         let otherAuthor;
 
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
 
@@ -98,7 +98,7 @@ describe('User API', function () {
         });
 
         describe('Destroy', function () {
-            before(async function () {
+            beforeAll(async function () {
                 // login with the owner
                 request = supertest.agent(config.get('url'));
                 await localUtils.doAuth(request);
@@ -140,7 +140,7 @@ describe('User API', function () {
     describe('As Editor', function () {
         let editor;
 
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             // create editor
@@ -200,7 +200,7 @@ describe('User API', function () {
     describe('As Author', function () {
         let author;
 
-        before(async function () {
+        beforeAll(async function () {
             await localUtils.startGhost();
             request = supertest.agent(config.get('url'));
             // create author

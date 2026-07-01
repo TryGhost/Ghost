@@ -35,7 +35,7 @@ const buildMemberMatcher = (newslettersCount) => {
 };
 
 describe('Comments API', function () {
-    before(async function () {
+    beforeAll(async function () {
         membersAgent = await agentProvider.getMembersAPIAgent();
 
         await fixtureManager.init('newsletters', 'members:newsletters');
@@ -83,12 +83,32 @@ describe('Comments API', function () {
             member = await models.Member.findOne({id: member.id}, {require: true});
             assert.equal(member.get('enable_comment_notifications'), false);
         });
+
+        it('can update updates & announcements preference', async function () {
+            let member = await models.Member.findOne({id: fixtureManager.get('members', 0).id}, {require: true});
+            assert.equal(member.get('enable_updates_and_announcements'), null, 'This test requires the initial value to be null');
+
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+            const hmac = crypto.createHmac('sha256', 'test').update(member.get('uuid')).digest('hex');
+
+            await membersAgent
+                .put(`/api/member/newsletters/?uuid=${member.get('uuid')}&key=${hmac}`)
+                .body({
+                    enable_updates_and_announcements: false
+                })
+                .expectStatus(200)
+                .expect(({body}) => {
+                    assert.equal(body.enable_updates_and_announcements, false);
+                });
+            member = await models.Member.findOne({id: member.id}, {require: true});
+            assert.equal(member.get('enable_updates_and_announcements'), false);
+        });
     });
 
     describe('when authenticated', function () {
         let member;
 
-        before(async function () {
+        beforeAll(async function () {
             await membersAgent.loginAs('member@example.com');
             member = await models.Member.findOne({email: 'member@example.com'}, {require: true});
         });

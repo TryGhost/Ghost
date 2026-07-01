@@ -4,7 +4,7 @@ const {anyContentVersion, anyEtag} = matchers;
 describe('Slack API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
@@ -12,7 +12,7 @@ describe('Slack API', function () {
         mockManager.mockEvents();
     });
 
-    after(function () {
+    afterAll(function () {
         mockManager.restore();
     });
 

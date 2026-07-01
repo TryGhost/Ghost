@@ -142,7 +142,7 @@ export const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modal
         setTimeout(() => {
             modals?.load();
         }, 1000);
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);  
 
     useEffect(() => {
         const handleHashChange = () => {
@@ -165,7 +165,7 @@ export const RoutingProvider: React.FC<RoutingProviderProps> = ({basePath, modal
         return () => {
             window.removeEventListener('hashchange', handleHashChange);
         };
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []);  
 
     if (route === undefined) {
         return null;
@@ -192,7 +192,6 @@ export function useRouting() {
 export function useRouteChangeCallback(callback: (newPath: string, oldPath: string) => void, deps: React.DependencyList) {
     const {eventTarget} = useRouting();
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     const stableCallback = useCallback(callback, deps);
 
     useEffect(() => {

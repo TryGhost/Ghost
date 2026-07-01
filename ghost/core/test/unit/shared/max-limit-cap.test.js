@@ -1,15 +1,9 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const rewire = require('rewire');
 const configUtils = require('../../utils/config-utils');
+const maxLimitCap = require('../../../core/shared/max-limit-cap');
 
 describe('Shared Max Limit Cap', function () {
-    let maxLimitCap;
-
-    beforeEach(function () {
-        maxLimitCap = rewire('../../../core/shared/max-limit-cap');
-    });
-
     afterEach(function () {
         sinon.restore();
         return configUtils.restore();
@@ -25,8 +19,6 @@ describe('Shared Max Limit Cap', function () {
         it('reads from config dynamically', function () {
             configUtils.set('optimization:allowLimitAll', true);
             configUtils.set('optimization:maxLimit', 50);
-
-            maxLimitCap = rewire('../../../core/shared/max-limit-cap');
 
             assert.equal(maxLimitCap.limitConfig.allowLimitAll, true);
             assert.equal(maxLimitCap.limitConfig.maxLimit, 50);

@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
+const {Permission} = require('../../../../core/server/models/permission');
 const configUtils = require('../../../utils/config-utils');
 
 describe('Unit: models/permission', function () {
@@ -11,7 +11,7 @@ describe('Unit: models/permission', function () {
 
     describe('add', function () {
         it('[error] validation', function () {
-            return models.Permission.add({})
+            return Permission.add({})
                 .then(function () {
                     assert.equal('Should fail', true);
                 })

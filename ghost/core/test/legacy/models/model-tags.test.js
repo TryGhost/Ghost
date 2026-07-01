@@ -10,11 +10,11 @@ const urlService = require('../../../core/server/services/url');
 describe('Tag Model', function () {
     const siteUrl = configUtils.config.get('url');
 
-    before(testUtils.teardownDb);
-    before(testUtils.stopGhost);
-    after(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
+    beforeAll(testUtils.stopGhost);
+    afterAll(testUtils.teardownDb);
 
-    before(testUtils.setup('users:roles', 'posts'));
+    beforeAll(testUtils.setup('users:roles', 'posts'));
 
     beforeEach(function () {
         sinon.stub(urlService, 'getUrlByResourceId').returns('/test-url/');

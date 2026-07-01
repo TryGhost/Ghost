@@ -57,7 +57,6 @@ describe('Unit: Model: invite', function () {
             ).to.equal(1);
 
             expect(invite.email).to.equal('resend-test@example.com');
-            // eslint-disable-next-line camelcase
             expect(invite.role_id, 'role ID').to.equal('1');
         });
     });

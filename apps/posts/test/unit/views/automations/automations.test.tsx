@@ -6,6 +6,7 @@ import {render, screen} from '@testing-library/react';
 const mockUseBrowseAutomations = vi.fn();
 const mockUseBrowseSettings = vi.fn();
 const mockUseBrowseConfig = vi.fn();
+const mockUseCurrentUser = vi.fn();
 
 vi.mock('@tryghost/admin-x-framework/api/automations', async () => {
     const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/automations')>(
@@ -37,14 +38,35 @@ vi.mock('@tryghost/admin-x-framework/api/config', async () => {
     };
 });
 
+vi.mock('@tryghost/admin-x-framework/api/current-user', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework/api/current-user')>(
+        '@tryghost/admin-x-framework/api/current-user'
+    );
+    return {
+        ...actual,
+        useCurrentUser: () => mockUseCurrentUser()
+    };
+});
+
+vi.mock('@tryghost/admin-x-framework', async () => {
+    const actual = await vi.importActual<typeof import('@tryghost/admin-x-framework')>(
+        '@tryghost/admin-x-framework'
+    );
+    return {
+        ...actual,
+        getFeaturebaseToken: () => ({data: undefined}),
+        useFeaturebase: () => ({isAvailable: false, openFeedbackWidget: () => {}, preloadFeedbackWidget: () => {}})
+    };
+});
+
 const automations = [{
     id: 'automation-id-1',
-    name: 'Welcome Email (Free)',
+    name: 'Free member welcome flow',
     slug: 'member-welcome-email-free',
     status: 'active' as const
 }, {
     id: 'automation-id-2',
-    name: 'Welcome Email (Paid)',
+    name: 'Paid member welcome flow',
     slug: 'member-welcome-email-paid',
     status: 'inactive' as const
 }];
@@ -64,13 +86,14 @@ describe('Automations', () => {
         mockUseBrowseAutomations.mockReturnValue({data: {automations}, isError: false, isLoading: false});
         mockUseBrowseSettings.mockReturnValue({data: stripeConnectedSettings, isLoading: false});
         mockUseBrowseConfig.mockReturnValue({data: {config: {}}, isLoading: false});
+        mockUseCurrentUser.mockReturnValue({data: {id: 'user-1', roles: [{name: 'Owner'}]}});
     });
 
     it('shows free and paid sequences when Stripe is connected', () => {
         renderPage();
 
-        expect(screen.getByText('Welcome Email (Free)')).toBeInTheDocument();
-        expect(screen.getByText('Welcome Email (Paid)')).toBeInTheDocument();
+        expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
+        expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
     });
 
     it('hides the paid sequence when Stripe is not connected', () => {
@@ -78,8 +101,8 @@ describe('Automations', () => {
 
         renderPage();
 
-        expect(screen.getByText('Welcome Email (Free)')).toBeInTheDocument();
-        expect(screen.queryByText('Welcome Email (Paid)')).not.toBeInTheDocument();
+        expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
+        expect(screen.queryByText('Paid member welcome flow')).not.toBeInTheDocument();
     });
 
     it('hides the paid sequence when only Connect keys exist but stripeDirect is required', () => {
@@ -87,8 +110,8 @@ describe('Automations', () => {
 
         renderPage();
 
-        expect(screen.getByText('Welcome Email (Free)')).toBeInTheDocument();
-        expect(screen.queryByText('Welcome Email (Paid)')).not.toBeInTheDocument();
+        expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
+        expect(screen.queryByText('Paid member welcome flow')).not.toBeInTheDocument();
     });
 
     it('renders the loading skeleton while automations data loads', () => {

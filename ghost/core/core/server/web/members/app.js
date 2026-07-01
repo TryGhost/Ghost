@@ -4,6 +4,7 @@ const express = require('../../../shared/express');
 const sentry = require('../../../shared/sentry');
 const membersService = require('../../services/members');
 const stripeService = require('../../services/stripe');
+const audienceFeedbackService = require('../../services/audience-feedback');
 const middleware = membersService.middleware;
 const shared = require('../shared');
 const errorHandler = require('@tryghost/mw-error-handler');
@@ -133,6 +134,13 @@ module.exports = function setupMembersApp() {
         middleware.loadMemberSession,
         middleware.authMemberByUuid,
         http(api.feedbackMembers.add)
+    );
+
+    // Durable, id-based feedback link from newsletters. Resolves the post's
+    // current URL at click time so changing a slug never breaks feedback buttons.
+    membersApp.get(
+        '/feedback/:postId/:score',
+        (req, res, next) => audienceFeedbackService.controller.redirectToPost(req, res, next)
     );
 
     // Gifts

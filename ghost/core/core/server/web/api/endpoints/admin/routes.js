@@ -4,6 +4,7 @@ const {http} = require('@tryghost/api-framework');
 const auth = require('../../../../services/auth');
 const apiMw = require('../../middleware');
 const mw = require('./middleware');
+const labs = require('../../../../../shared/labs');
 
 const shared = require('../../../shared');
 
@@ -61,6 +62,15 @@ module.exports = function apiRoutes() {
     router.put('/pages/:id', mw.authAdminApi, http(api.pages.edit));
     router.delete('/pages/:id', mw.authAdminApi, http(api.pages.destroy));
     router.post('/pages/:id/copy', mw.authAdminApi, http(api.pages.copy));
+
+    // Gift links (behind the giftLinks flag)
+    router.get('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.browse));
+    router.put('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.ensure));
+    router.post('/posts/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.create));
+    router.get('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.browse));
+    router.put('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.ensure));
+    router.post('/pages/:id/gift_links', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.create));
+    router.put('/gift_links/remove_all', mw.authAdminApi, labs.enabledMiddleware('giftLinks'), http(api.giftLinks.removeAll));
 
     // # Integrations
 
@@ -190,6 +200,8 @@ module.exports = function apiRoutes() {
     // ## Automations
     router.get('/automations', mw.authAdminApi, http(api.automations.browse));
     router.get('/automations/:id', mw.authAdminApi, http(api.automations.read));
+    router.post('/automations/:id/email_preview', mw.authAdminApi, http(api.automationEmailPreviews.preview));
+    router.post('/automations/:id/email_test', shared.middleware.brute.previewEmailLimiter, mw.authAdminApi, http(api.automationEmailPreviews.sendTestEmail));
     router.put('/automations/poll', mw.authAdminApiWithUrl, http(api.automations.poll));
     router.put('/automations/:id', mw.authAdminApi, http(api.automations.edit));
 

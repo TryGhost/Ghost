@@ -45,9 +45,11 @@ Two categories of apps:
 ### Development
 ```bash
 corepack enable pnpm           # Enable corepack to use the correct pnpm version
-pnpm run setup                 # First-time setup (installs deps + submodules)
+pnpm run setup                 # First-time setup (installs deps + submodules + builds workspace packages)
 pnpm dev                       # Start development (Docker backend + host frontend dev servers)
 ```
+
+> **Fresh worktree / first run — run `pnpm setup` before anything else.** It installs deps and syncs submodules. `pnpm fix` does a clean reinstall if anything misbehaves after a branch switch.
 
 ### Building
 ```bash
@@ -66,15 +68,23 @@ cd ghost/core
 pnpm test:unit                 # Unit tests only (Vitest, run once)
 pnpm test:watch                # Watch mode — ghost/core unit tests only
 pnpm test:integration          # Integration tests
-pnpm test:e2e                  # E2E API tests (not browser)
+pnpm test:e2e                  # Server-side e2e suites (webhooks/server/frontend/api) — not browser
 pnpm test:all                  # All test types
+
+# These run on sqlite with no extra services. The Redis/MinIO/S3 adapter suites
+# probe for their service and auto-skip when it's down (run `pnpm dev:storage`
+# etc. to exercise them); they always run in CI, which starts the services.
 
 # E2E browser tests (from root)
 pnpm test:e2e                  # Run e2e/ Playwright tests
 
 # Running a single test
 cd ghost/core
-pnpm test:single test/unit/path/to/test.test.js
+pnpm test:single test/unit/path/to/test.test.js   # routes test/unit/* → unit config, test/* → DB config
+
+# Watch a single DB-backed file (integration/e2e) — the default test:watch only
+# covers unit tests, so point it at the DB config explicitly:
+pnpm exec vitest -c vitest.config.db.ts test/integration/path/to/test.test.js
 ```
 
 ### Linting
@@ -243,6 +253,25 @@ Public-facing apps (`comments-ui`, `signup-form`, `sodo-search`, `portal`, `anno
 
 ### Commit Messages
 When the user asks you to create a commit or draft a commit message, load and follow the `commit` skill from `.agents/skills/commit`.
+
+### ESLint Config
+Source of truth: [eslint.shared.mjs](eslint.shared.mjs) at the repo root. Two factories cover most workspaces — `reactAppConfig` (every `apps/*` workspace) and `nodeLibConfig` (Node libs in `ghost/`). Each factory has full JSDoc with `@example`s; hover the call site in your editor.
+
+Minimal example for a new admin React app (`apps/new-feature/eslint.config.js`):
+
+```js
+import {reactAppConfig} from '../../eslint.shared.mjs';
+export default await reactAppConfig({
+    tailwindCssPath: `${import.meta.dirname}/../admin/src/index.css`,
+    shadeRestricted: true
+});
+```
+
+Conventions:
+- **Rules are `'error'` or `'off'` — never `'warn'`.** Warnings get ignored and pollute output. Applies to every workspace covered by the factories above + the standalones; `e2e/` has its own setup (see [e2e/CLAUDE.md](e2e/CLAUDE.md)) and currently still uses warn-level Playwright rules — a separate cleanup.
+- **Params prefixed `legacy*`** (`legacyTailwindV3ConfigPath`, `legacyJsTsSplit`) are escape hatches for migrations that haven't shipped yet. Intentional and visible — PRs to remove them are scoped.
+- **Standalone configs** (`ghost/core`, `ghost/admin`, `apps/admin`, `apps/admin-toolbar`) exist because their rule sets genuinely don't fit a factory — read the file directly. They import shared atoms (`correctnessRules`, `nodeLibRules`, `localFilenamesPlugin`, `strictLinterOptions`) where applicable.
+- **Plugin deps**: workspaces that use Tailwind must list `tailwindcss` as a (dev)Dependency themselves; other eslint plugins are root devDeps because the factory imports them dynamically.
 
 ### When Working on Admin UI
 - **New features:** Build in React (`apps/admin-x-*` or `apps/posts`)

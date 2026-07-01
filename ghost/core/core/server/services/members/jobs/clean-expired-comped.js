@@ -57,18 +57,17 @@ if (parentPort) {
             .andWhere('status', 'comped');
 
         const updateMemberIds = membersToUpdate.map(d => d.id);
+        const now = new Date();
 
         // Update all comped members to free
         updatedMembers = await db.knex('members')
             .whereIn('id', updateMemberIds)
             .update({
                 status: 'free',
-                updated_at: db.knex.raw('CURRENT_TIMESTAMP')
+                updated_at: now
             });
 
         const statusEvents = membersToUpdate.map((member) => {
-            const now = db.knex.raw('CURRENT_TIMESTAMP');
-
             return {
                 id: ObjectId().toHexString(),
                 member_id: member.id,
@@ -87,6 +86,28 @@ if (parentPort) {
         // Adds status event for members going comped->free
         for (const chunk of chunks) {
             await db.knex('members_status_events').insert(chunk);
+        }
+
+        if (parentPort) {
+            for (const member of membersToUpdate) {
+                parentPort.postMessage({
+                    type: 'model-event',
+                    eventName: 'member.edited',
+                    model: 'Member',
+                    id: member.id,
+                    previous: {
+                        status: member.status,
+                        updated_at: member.updated_at
+                    },
+                    changed: {
+                        status: 'free',
+                        updated_at: now
+                    },
+                    options: {
+                        context: {internal: true}
+                    }
+                });
+            }
         }
     }
 

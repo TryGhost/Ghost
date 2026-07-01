@@ -13,8 +13,12 @@ type Feature = {
 
 const features: Feature[] = [{
     title: 'Automations',
-    description: 'Enable automations management interface.',
+    description: 'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',
     flag: 'automations'
+}, {
+    title: 'Automations analytics',
+    description: 'Show analytics for automations. Assumes the "automations" flag is also on.',
+    flag: 'automationAnalytics'
 }, {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
@@ -27,6 +31,10 @@ const features: Feature[] = [{
     title: 'Import Member Tier',
     description: 'Enables tier to be specified when importing members',
     flag: 'importMemberTier'
+}, {
+    title: 'CSV Content Importer',
+    description: 'Enables importing posts from CSV files in the Universal Importer',
+    flag: 'csvContentImporter'
 }, {
     title: 'Admin UI Refresh',
     description: 'Enable Admin UI refresh (exploration)',
@@ -60,13 +68,13 @@ const features: Feature[] = [{
     description: 'Use optimized COUNT queries for API pagination when safe',
     flag: 'smarterCounts'
 }, {
-    title: 'LLMs.txt',
-    description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
-    flag: 'llmsTxt'
-}, {
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
+}, {
+    title: 'Gift links',
+    description: 'Tokenized links that let anyone read a single gated post or page in full, no account required',
+    flag: 'giftLinks'
 }];
 
 const AlphaFeatures: React.FC = () => {

@@ -2,7 +2,8 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {metaData, settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
+const {settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
+const metaData = require('../meta');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
 // BAD REQUIRE
@@ -34,8 +35,7 @@ function finaliseStructuredData(meta) {
             _.each(meta.keywords, function (keyword) {
                 if (keyword !== '') {
                     keyword = escapeExpression(keyword);
-                    head.push(writeMetaTag(property,
-                        escapeExpression(keyword)));
+                    head.push(writeMetaTag(property, keyword));
                 }
             });
             head.push('');
@@ -208,7 +208,8 @@ function getTinybirdTrackerScript(dataRoot) {
         post_uuid: dataRoot.post?.uuid,
         post_type: dataRoot.context?.includes('post') ? 'post' : dataRoot.context?.includes('page') ? 'page' : null,
         member_uuid: dataRoot.member?.uuid,
-        member_status: dataRoot.member?.status
+        member_status: dataRoot.member?.status,
+        gift_link: dataRoot._giftLink || ''
     }, (value, key) => `tb_${key}="${value}"`).join(' ');
 
     return `<script defer src="${src}" data-stringify-payload="false" ${datasource ? `data-datasource="${datasource}"` : ''} data-storage="localStorage" data-host="${endpoint}" ${token && env !== 'production' ? `data-token="${token}"` : ''} ${tbParams}></script>`;

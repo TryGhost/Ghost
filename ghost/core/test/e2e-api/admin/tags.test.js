@@ -10,7 +10,7 @@ const urlUtilsHelper = require('../../utils/url-utils');
 describe('Tag API', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'posts');

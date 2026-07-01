@@ -303,11 +303,11 @@ const filterAddButtonVariants = cva(
         variants: {
             variant: {
                 solid: 'border border-input hover:bg-secondary/60',
-                outline: 'border border-border hover:bg-accent'
+                outline: 'border border-control-border hover:bg-interactive-hover dark:hover:bg-interactive-hover'
             },
             size: {
                 lg: 'h-10 gap-1.5 px-4 text-sm [&_svg:not([class*=size-])]:size-4',
-                md: 'h-(--control-height) gap-1.5 px-2.5 [&_svg:not([class*=size-])]:size-4',
+                md: 'h-(--control-height) gap-1.5 px-2.5 text-base [&_svg:not([class*=size-])]:size-4',
                 sm: 'h-8 gap-1.5 px-2.5 text-xs [&_svg:not([class*=size-])]:size-3.5'
             },
             radius: {
@@ -1395,7 +1395,7 @@ function SelectOptionsList<T = unknown>({
                     {(selectedOptions.length > 0 || unselectedOptions.length > 0) && <CommandSeparator />}
                     <div className="p-1.5">
                         <button
-                            className="flex w-full items-center justify-center rounded-xs px-2.5 py-1.5 text-muted-foreground hover:bg-accent hover:text-accent-foreground disabled:opacity-50"
+                            className="flex w-full items-center justify-center rounded-xs px-2.5 py-1.5 text-muted-foreground hover:bg-interactive-hover hover:text-accent-foreground disabled:opacity-50"
                             disabled={isLoadingMore}
                             type="button"
                             onClick={onLoadMore}

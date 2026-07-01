@@ -84,7 +84,7 @@ const FeedItemStats: React.FC<FeedItemStatsProps> = ({
         }
     };
 
-    const buttonClass = `px-2 gap-1.5 font-normal text-md [&_svg]:size-[18px] transition-color ap-action-button text-gray-900 hover:text-gray-900 hover:bg-black/[3%] dark:bg-black dark:hover:bg-gray-950 dark:text-gray-600 ${buttonClassName}`;
+    const buttonClass = `px-2 gap-1.5 font-normal text-md [&_svg]:size-[18px] transition-color ap-action-button text-gray-900 hover:text-gray-900 hover:bg-black/[3%] dark:hover:bg-gray-950 dark:text-gray-600 ${buttonClassName}`;
 
     return (
         <>

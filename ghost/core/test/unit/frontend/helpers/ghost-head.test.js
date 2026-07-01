@@ -373,6 +373,21 @@ describe('{{ghost_head}} helper', function () {
             published_at: new Date(0),
             updated_at: new Date(0)
         }));
+
+        posts.push(createPost({ // Post 11
+            meta_description: 'site description',
+            title: 'Welcome to Ghost',
+            feature_image: '/content/images/test-image.png',
+            tags: [
+                createTag({name: 'Tom & Jerry'})
+            ],
+            authors: [
+                authors[3]
+            ],
+            primary_author: authors[3],
+            published_at: new Date(0),
+            updated_at: new Date(0)
+        }));
     };
 
     beforeEach(function () {
@@ -595,6 +610,27 @@ describe('{{ghost_head}} helper', function () {
                     safeVersion: '0.3'
                 }
             }));
+        });
+
+        it('single-escapes special characters in article:tag meta values', async function () {
+            const renderObject = {
+                post: posts[11]
+            };
+
+            const rendered = await testGhostHead(testUtils.createHbsResponse({
+                renderObject: renderObject,
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '0.3'
+                }
+            }));
+
+            // The tag name "Tom & Jerry" must be HTML-escaped exactly once, so that
+            // consumers decode it back to the original "Tom & Jerry".
+            assert.match(rendered, /<meta property="article:tag" content="Tom &amp; Jerry">/);
+            // Guard against the double-escaping regression (&amp;amp;).
+            assert.doesNotMatch(rendered, /&amp;amp;/);
         });
 
         it('returns structured data without tags if there are no tags', async function () {
@@ -1510,6 +1546,43 @@ describe('{{ghost_head}} helper', function () {
             }));
 
             assert.match(rendered, /data-datasource="analytics_events"/);
+        });
+
+        // These call ghost_head directly rather than via testGhostHead so they
+        // assert the tb_gift_link value without taking a snapshot — keeping them
+        // out of the shared tracker snapshots.
+        it('sets tb_gift_link to the token on a verified gift read', async function () {
+            // The gift reader path sets the verified token as `_giftLink` on
+            // res.locals, which merges onto the render context root — the same
+            // place ghost_foot reads it for the toast. The tracker reads
+            // `dataRoot._giftLink` and forwards it so analytics can segment gift
+            // traffic and count per-link usage. Inject it via locals here (which
+            // createHbsResponse merges into data.root) so this guards the real
+            // production data path.
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                renderObject: {post: posts[10]},
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '4.3',
+                    _giftLink: 'gift_token_abc'
+                }
+            }))).toString();
+
+            assert.match(rendered, /tb_gift_link="gift_token_abc"/);
+        });
+
+        it('sets an empty tb_gift_link on a normal read', async function () {
+            const rendered = (await ghost_head(testUtils.createHbsResponse({
+                renderObject: {post: posts[10]},
+                locals: {
+                    relativeUrl: '/post/',
+                    context: ['post'],
+                    safeVersion: '4.3'
+                }
+            }))).toString();
+
+            assert.match(rendered, /tb_gift_link=""/);
         });
 
         it('does not include tracker script when preview is set', async function () {

@@ -11,7 +11,7 @@ describe('Post Rendering', function () {
     let siteUrl;
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost();
         request = supertest.agent(config.get('url'));
         siteUrl = config.get('url');

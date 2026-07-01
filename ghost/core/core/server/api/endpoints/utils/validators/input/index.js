@@ -2,9 +2,12 @@
 // This is a valid index.js file - it just exports a lot of stuff!
 // Long term we would like to change the API architecture to reduce this file,
 // but that's not the problem the index.js max - line eslint "proxy" rule is there to solve.
-/* eslint-disable max-lines */
 
 module.exports = {
+    get automation_email_previews() {
+        return require('./automation_email_previews');
+    },
+
     get automated_emails() {
         return require('./automated_emails');
     },

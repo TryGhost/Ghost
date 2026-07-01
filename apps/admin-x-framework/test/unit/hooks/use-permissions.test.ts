@@ -97,7 +97,6 @@ describe('usePermissions', () => {
         expect(result.current).toBe(false);
     });
 
-    // eslint-disable-next-line ghost/mocha/no-setup-in-describe
     it.each([
         {value: [] as UserRoleType[], description: 'empty array'},
         {value: undefined, description: 'undefined'},

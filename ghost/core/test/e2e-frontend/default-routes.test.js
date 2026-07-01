@@ -32,7 +32,7 @@ describe('Default Frontend routing', function () {
         sinon.restore();
     });
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost();
         request = supertest.agent(configUtils.config.get('url'));
     });
@@ -117,7 +117,7 @@ describe('Default Frontend routing', function () {
     });
 
     describe('Gift preview routes', function () {
-        before(async function () {
+        beforeAll(async function () {
             await testUtils.createPost({
                 post: {
                     title: 'Gift a subscription',
@@ -194,14 +194,14 @@ describe('Default Frontend routing', function () {
         });
 
         describe('Admin Redirects Disabled', function () {
-            before(async function () {
+            beforeAll(async function () {
                 configUtils.set('admin:redirects', false);
 
                 await testUtils.startGhost();
                 request = supertest.agent(configUtils.config.get('url'));
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
 
                 await testUtils.startGhost();
@@ -219,7 +219,7 @@ describe('Default Frontend routing', function () {
 
     describe('/ghost/ redirects', function () {
         describe('with separate admin and admin:redirects=false', function () {
-            before(async function () {
+            beforeAll(async function () {
                 configUtils.set('admin:redirects', false);
                 configUtils.set('admin:url', 'http://localhost:9999');
 
@@ -227,7 +227,7 @@ describe('Default Frontend routing', function () {
                 request = supertest.agent(configUtils.config.get('url'));
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
 
                 await testUtils.startGhost();
@@ -250,7 +250,7 @@ describe('Default Frontend routing', function () {
         });
 
         describe('with separate admin and admin:redirects=true', function () {
-            before(async function () {
+            beforeAll(async function () {
                 configUtils.set('admin:redirects', true);
                 configUtils.set('admin:url', 'http://localhost:9999');
 
@@ -258,7 +258,7 @@ describe('Default Frontend routing', function () {
                 request = supertest.agent(configUtils.config.get('url'));
             });
 
-            after(async function () {
+            afterAll(async function () {
                 await configUtils.restore();
 
                 await testUtils.startGhost();
@@ -395,7 +395,7 @@ describe('Default Frontend routing', function () {
     });
 
     describe('Site Map', function () {
-        before(async function () {
+        beforeAll(async function () {
             await testUtils.teardownDb();
             await testUtils.initData();
             await testUtils.initFixtures('posts');

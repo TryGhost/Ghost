@@ -64,7 +64,7 @@ interface PageProps {
 
 /**
  * The page component is the main container in Ghost Admin. It consists of a
- * page level toolbar (`pageToolbar` — unused ATM, it's for page level views and
+ * page level toolbar (`pageToolbar` — unused ATM, it's for page level views and
  * navigation in the future), and the main content area.
  *
  * ### Examples
@@ -123,9 +123,9 @@ const Page: React.FC<PageProps> = ({
     const globalActions = (
         (customGlobalActions?.length || showGlobalActions) &&
         <div className='sticky flex items-center gap-7'>
-            {(customGlobalActions?.map((action) => {
+            {(customGlobalActions?.map((action, idx) => {
                 return (
-                    <Button icon={action.iconName} iconColorClass='text-black dark:text-white' size='sm' link onClick={action.onClick} />
+                    <Button key={action.iconName ?? idx} icon={action.iconName} iconColorClass='text-black dark:text-white' size='sm' link onClick={action.onClick} />
                 );
             }))}
             {showGlobalActions && <GlobalActions />}

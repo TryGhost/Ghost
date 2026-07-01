@@ -13,6 +13,7 @@ import MyProfileRedirect from "./my-profile-redirect";
 // Ember
 import { EmberFallback, ForceUpgradeGuard } from "./ember-bridge";
 import type { RouteHandle } from "./ember-bridge";
+import { EmberListWithGiftLinks } from "./gift-link-modal-host";
 import { MembersRoute } from "./members-route";
 import { OnboardingRedirect } from "./onboarding/onboarding-redirect";
 
@@ -31,11 +32,9 @@ const EMBER_ROUTES: string[] = [
     "/signup/*",
     "/reset/*",
     "/pro/*",
-    "/posts",
     "/posts/analytics/:postId/mentions",
     "/posts/analytics/:postId/debug",
     "/restore",
-    "/pages",
     "/editor/*",
     "/tags/new",
     "/explore/*",
@@ -134,6 +133,8 @@ export const routes: RouteObject[] = [
                 lazy: lazyComponent(() => import("./settings/settings")),
                 handle: { allowInForceUpgrade: true } satisfies RouteHandle,
             },
+            {path: "/posts", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
+            {path: "/pages", Component: EmberListWithGiftLinks, handle: emberFallbackHandle},
             // Ember-handled routes
             ...emberFallbackRoutes,
             {

@@ -46,7 +46,7 @@ module.exports = class EmailAddressParser {
             return email.address;
         }
 
-        const escapedName = email.name.replace(/"/g, '\\"');
+        const escapedName = email.name.replace(/\\/g, '\\\\').replace(/"/g, '\\"');
 
         /**
          * https://linear.app/ghost/issue/ONC-969

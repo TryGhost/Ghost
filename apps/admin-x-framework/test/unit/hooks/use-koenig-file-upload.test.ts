@@ -29,6 +29,19 @@ const serverErrorUploadResponse: UploadResponse = {
     status: 413
 };
 
+// HostLimitError responses use a generic `message` and put the specific,
+// user-actionable text in `context` (see @tryghost/mw-error-handler).
+const hostLimitUploadResponse: UploadResponse = {
+    body: {
+        errors: [{
+            type: 'HostLimitError',
+            message: 'Host Limit error, cannot upload image.',
+            context: 'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.'
+        }]
+    },
+    status: 403
+};
+
 interface RequestLog {
     method?: string;
     url?: string;
@@ -229,6 +242,47 @@ describe('useKoenigFileUpload', () => {
         expect(result.current.errors[0].message).toBe(
             'Request is larger than the maximum file size the server allows'
         );
+    });
+
+    it('prefers the actionable context message over the generic message', async () => {
+        uploadResponse = hostLimitUploadResponse;
+
+        const {result} = renderHook(() => useKoenigFileUpload('image'));
+
+        const file = makeFile('photo.jpg');
+        await act(async () => {
+            await result.current.upload([file]);
+        });
+
+        expect(result.current.errors).toHaveLength(1);
+        expect(result.current.errors[0].fileName).toBe('photo.jpg');
+        // The user should see the specific limit text from `context`, not the
+        // generic "Host Limit error, cannot upload image." wrapper message.
+        expect(result.current.errors[0].message).toBe(
+            'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.'
+        );
+        expect(result.current.errors[0].context).toBe(
+            'Your plan supports uploads up to 5.24288MB. Please upgrade to upload larger files.'
+        );
+    });
+
+    it('does not accumulate errors across repeated failed uploads', async () => {
+        uploadResponse = hostLimitUploadResponse;
+
+        const {result} = renderHook(() => useKoenigFileUpload('image'));
+
+        const file = makeFile('photo.jpg');
+
+        await act(async () => {
+            await result.current.upload([file]);
+        });
+        expect(result.current.errors).toHaveLength(1);
+
+        // Retrying the same failing upload should replace, not append.
+        await act(async () => {
+            await result.current.upload([file]);
+        });
+        expect(result.current.errors).toHaveLength(1);
     });
 
     it('rejects files with no extension for image type', async () => {

@@ -22,7 +22,7 @@ function assertCorrectHeaders(res) {
 }
 
 describe('Admin Routing', function () {
-    before(async function () {
+    beforeAll(async function () {
         adminUtils.stubAdminFiles();
 
         await testUtils.startGhost();
@@ -46,7 +46,7 @@ describe('Admin Routing', function () {
     });
 
     describe('Auth Frame', function () {
-        before(function () {
+        beforeAll(function () {
             // ensure the admin-auth folder exists so serveStatic doesn't fall through
             adminUtils.stubAuthFrameFiles(configUtils.config.getContentPath('public'));
         });
@@ -81,7 +81,7 @@ describe('Admin Routing', function () {
 
     // we'll use X-Forwarded-Proto: https to simulate an 'https://' request behind a proxy
     describe('Require HTTPS - redirect', function () {
-        before(async function () {
+        beforeAll(async function () {
             configUtils.set('url', 'https://localhost:2390');
             urlUtils.stubUrlUtilsFromConfig();
 
@@ -89,7 +89,7 @@ describe('Admin Routing', function () {
             request = supertest.agent(configUtils.getServerUrl());
         });
 
-        after(async function () {
+        afterAll(async function () {
             await urlUtils.restore();
             await configUtils.restore();
         });

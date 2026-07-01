@@ -1,3 +1,4 @@
+import GiftLinkModal from '../modals/gift-link-modal';
 import React, {useMemo, useState} from 'react';
 import {AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, DropdownMenu, DropdownMenuContent, DropdownMenuGroup, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger, Navbar, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {H1} from '@tryghost/shade/primitives';
@@ -5,8 +6,10 @@ import {LucideIcon, formatDisplayDate, formatDisplayTime, formatNumber} from '@t
 import {Post, useGlobalData} from '@src/providers/post-analytics-context';
 import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {getSiteTimezone} from '@src/utils/get-site-timezone';
+import {giftAccessLabel} from '@src/utils/gift-link';
 import {hasBeenEmailed, isEmailOnly, isPublishedAndEmailed, isPublishedOnly, useActiveVisitors, useNavigate} from '@tryghost/admin-x-framework';
 import {useAppContext} from '@src/providers/posts-app-context';
+import {useCanManageGiftLink} from '@src/hooks/use-can-manage-gift-link';
 import {useDeletePost} from '@tryghost/admin-x-framework/api/posts';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 
@@ -25,7 +28,9 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
     const handleError = useHandleError();
     const [showDeleteDialog, setShowDeleteDialog] = useState(false);
     const [isShareOpen, setIsShareOpen] = useState(false);
+    const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
     const {settings, site, statsConfig, post, isPostLoading, postId} = useGlobalData();
+    const canManageGiftLink = useCanManageGiftLink(post);
 
     const siteTimezone = getSiteTimezone(settings);
 
@@ -87,7 +92,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
 
     return (
         <>
-            <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-black'>
+            <header className='z-50 -mx-8 bg-white/70 backdrop-blur-md dark:bg-background'>
                 <div
                     className='relative flex min-h-[102px] w-full items-start justify-between gap-5 px-8 pt-8 pb-0'
                     data-header='header'
@@ -132,9 +137,11 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                     {!post?.email_only && (
                                         <PostShareModal
                                             author={post?.authors?.[0]?.name || ''}
+                                            canShareAsGift={canManageGiftLink}
                                             description=''
                                             faviconURL={site?.icon || ''}
                                             featureImageURL={post?.feature_image}
+                                            giftAccessLabel={giftAccessLabel(post?.visibility)}
                                             open={isShareOpen}
                                             postExcerpt={post?.excerpt || ''}
                                             postTitle={post?.title}
@@ -142,6 +149,10 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                                             siteTitle={site?.title || ''}
                                             onClose={() => setIsShareOpen(false)}
                                             onOpenChange={setIsShareOpen}
+                                            onShareAsGift={() => {
+                                                setIsShareOpen(false);
+                                                setIsGiftLinkOpen(true);
+                                            }}
                                         >
                                             <Button variant='outline' onClick={() => setIsShareOpen(true)}><LucideIcon.Share /> Share</Button>
                                         </PostShareModal>
@@ -206,7 +217,7 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                     </div>
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-50 -mb-8 transform-gpu flex-col items-start gap-y-0 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
+            <Navbar className='sticky top-0 z-50 -mb-8 transform-gpu flex-col items-start gap-y-0 border-none bg-white/70 py-8 backdrop-blur-md lg:flex-row lg:items-center dark:bg-background'>
                 {!isPostLoading && (
                     <PageMenu className='min-h-[34px]' defaultValue={currentTab} responsive>
                         {availableTabs.includes('Overview') && (
@@ -241,6 +252,15 @@ const PostAnalyticsHeader:React.FC<PostAnalyticsHeaderProps> = ({
                 )}
                 {children}
             </Navbar>
+
+            {canManageGiftLink && postId && (
+                <GiftLinkModal
+                    key={postId}
+                    open={isGiftLinkOpen}
+                    postId={postId}
+                    onOpenChange={setIsGiftLinkOpen}
+                />
+            )}
 
             <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
                 <AlertDialogContent>

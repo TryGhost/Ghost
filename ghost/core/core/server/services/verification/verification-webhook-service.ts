@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import crypto from 'crypto';
 const logging = require('@tryghost/logging');
 const request = require('@tryghost/request');

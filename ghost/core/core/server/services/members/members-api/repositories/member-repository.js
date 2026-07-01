@@ -12,6 +12,7 @@ const hasActiveOffer = require('../utils/has-active-offer');
 const StartAutomationsPollEvent = require('../../../automations/events/start-automations-poll-event');
 const {MEMBER_WELCOME_EMAIL_SLUGS} = require('../../../member-welcome-emails/constants');
 const db = require('../../../../data/db');
+const labs = require('../../../../../shared/labs');
 /** @import {Knex} from 'knex' */
 /** @import * as automationsApi from '../../../automations/automations-api' */
 
@@ -63,7 +64,6 @@ module.exports = class MemberRepository {
      * @param {any} deps.StripeCustomer
      * @param {any} deps.StripeCustomerSubscription
      * @param {any} deps.OfferRedemption
-     * @param {any} deps.Outbox
      * @param {import('../../../stripe/stripe-api')} deps.stripeAPIService
      * @param {any} deps.productRepository
      * @param {any} deps.offersAPI
@@ -85,7 +85,6 @@ module.exports = class MemberRepository {
         StripeCustomer,
         StripeCustomerSubscription,
         OfferRedemption,
-        Outbox,
         stripeAPIService,
         productRepository,
         offersAPI,
@@ -104,7 +103,6 @@ module.exports = class MemberRepository {
         this._MemberStatusEvent = MemberStatusEvent;
         this._MemberProductEvent = MemberProductEvent;
         this._OfferRedemption = OfferRedemption;
-        this._Outbox = Outbox;
         this._StripeCustomer = StripeCustomer;
         this._StripeCustomerSubscription = StripeCustomerSubscription;
         this._stripeAPIService = stripeAPIService;
@@ -221,6 +219,10 @@ module.exports = class MemberRepository {
      */
     async #triggerMemberSignupLegacyAutomation(memberId, memberStatus, options) {
         if (!this._Automation || !this._WelcomeEmailAutomationRun) {
+            return;
+        }
+
+        if (labs.isSet('automations')) {
             return;
         }
 
@@ -618,6 +620,7 @@ module.exports = class MemberRepository {
             'products',
             'newsletters',
             'enable_comment_notifications',
+            'enable_updates_and_announcements',
             'last_seen_at',
             'last_commented_at',
             'expertise',

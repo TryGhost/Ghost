@@ -19,7 +19,7 @@ const AccountPage: React.FC<{
     const [value, setValue] = useState(calculatedSupportAddress);
 
     const updateSupportAddress: FocusEventHandler<HTMLInputElement> = (e) => {
-        let supportAddress = e.target.value;
+        const supportAddress = e.target.value;
 
         if (!supportAddress) {
             setError('members_support_address', 'Enter an email address');
@@ -29,7 +29,7 @@ const AccountPage: React.FC<{
             setError('members_support_address', '');
         }
 
-        let settingValue = emailDomain && supportAddress === `noreply@${emailDomain}` ? 'noreply' : supportAddress;
+        const settingValue = emailDomain && supportAddress === `noreply@${emailDomain}` ? 'noreply' : supportAddress;
 
         updateSetting('members_support_address', settingValue);
         setValue(fullEmailAddress(settingValue, siteData!, config));

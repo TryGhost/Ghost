@@ -6,7 +6,8 @@
         "shutdownTimeout": 60000
     },
     "admin": {
-        "redirects": true
+        "redirects": true,
+        "sessionMaxAgeMs": 15552000000
     },
     "externalRequest": {
         "keepAlive": true,
@@ -17,6 +18,11 @@
     "updateCheck": {
         "url": "https://updates.ghost.org",
         "forceUpdate": false
+    },
+    "remoteFlags": {
+        "enabled": false,
+        "url": null,
+        "pollInterval": null
     },
     "privacy": false,
     "security": {

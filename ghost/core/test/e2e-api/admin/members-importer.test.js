@@ -18,7 +18,7 @@ async function getNewsletters() {
 describe('Members Importer API', function () {
     let newsletters;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
         await localUtils.doAuth(request, 'newsletters', 'members:newsletters');

@@ -227,6 +227,7 @@ const HistoryModal = NiceModal.create<RoutingModalProps>(({params}) => {
                             <>
                                 <InfiniteScrollListener offset={250} onTrigger={fetchNext} />
                                 {data.actions.map(action => !action.skip && <ListItem
+                                    key={action.id}
                                     avatar={<HistoryAvatar action={action} />}
                                     detail={[
                                         new Date(action.created_at).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}),

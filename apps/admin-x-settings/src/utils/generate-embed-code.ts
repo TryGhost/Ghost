@@ -40,7 +40,7 @@ export const generateCode = ({
     const siteUrl = config.blogUrl;
     const scriptUrl = config.signupForm.url.replace('{version}', config.signupForm.version);
 
-    let options: OptionsType = {
+    const options: OptionsType = {
         site: siteUrl,
         locale: settings.locale,
         'button-color': settings.accentColor,

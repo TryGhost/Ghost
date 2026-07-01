@@ -22,7 +22,7 @@ const userMatcherWithRoles = {
 describe('User API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'user:inactive', 'posts');
         await agent.loginAsOwner();

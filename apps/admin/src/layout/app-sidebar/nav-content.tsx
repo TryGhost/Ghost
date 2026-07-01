@@ -5,7 +5,7 @@ import {formatNumber, LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useMemberCount } from "@tryghost/admin-x-framework/api/members";
 import {getSettingValue, useBrowseSettings} from "@tryghost/admin-x-framework/api/settings";
-import { canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
+import { canManageAutomations, canManageMembers, canManageTags } from "@tryghost/admin-x-framework/api/users";
 import { NavMenuItem } from "./nav-menu-item";
 import { useNavigationExpanded } from "./hooks/use-navigation-preferences";
 import { NavCustomViews } from "./nav-custom-views";
@@ -30,7 +30,7 @@ function PostsNavItemContent({isActive, to}: {isActive: boolean; to: string}) {
             </NavMenuItem.Link>
             <a href="#/editor/post"
                 aria-label="Create new post"
-                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2"
+                className="absolute top-0 right-0 flex size-8 items-center justify-center rounded-full p-0 text-gray-700 ring-sidebar-ring outline-hidden transition-all hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 dark:text-gray-800 dark:hover:text-white"
             >
                 <LucideIcon.Plus
                     size={20}
@@ -61,7 +61,7 @@ function MembersNavItemContent({
                 <LucideIcon.Users className={collapsible ? "pointer-events-none opacity-0 transition-all sidebar:opacity-100 sidebar:group-hover/menu-item:opacity-0 sidebar:group-has-[button:focus-visible]/menu-item:opacity-0" : ""} />
                 <NavMenuItem.Label>Members</NavMenuItem.Label>
             </NavMenuItem.Link>
-            {count != null && (
+            {count !== null && count !== undefined && (
                 <SidebarMenuBadge>{(formatNumber as (value: number) => string)(count)}</SidebarMenuBadge>
             )}
         </>
@@ -83,6 +83,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
     const showTags = currentUser && canManageTags(currentUser);
     const showMembers = currentUser && canManageMembers(currentUser);
+    const showAutomations = currentUser && canManageAutomations(currentUser);
     const commentsEnabled = getSettingValue<string>(settingsData?.settings, 'comments_enabled');
     const showComments = !!showMembers && commentsEnabled !== 'off';
     const isDraftPostsRouteActive = routing.isRouteActive('posts', {type: 'draft'});
@@ -208,7 +209,7 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                         </NavMenuItem>
                     )}
 
-                    {showMembers && automationsEnabled && (
+                    {showAutomations && automationsEnabled && (
                         <NavMenuItem>
                             <NavMenuItem.Link
                                 to="automations"

@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const errors = require('@tryghost/errors');
 const sinon = require('sinon');
-const models = require('../../../../../core/server/models');
+const Base = require('../../../../../core/server/models/base');
 
 describe('Models: crud', function () {
     afterEach(function () {
@@ -15,15 +15,15 @@ describe('Models: crud', function () {
                     prop: 'whatever'
                 }
             };
-            const model = models.Base.Model.forge({});
-            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
-            const forgeStub = sinon.stub(models.Base.Model, 'forge')
+            const model = Base.Model.forge({});
+            const filterOptionsSpy = sinon.spy(Base.Model, 'filterOptions');
+            const forgeStub = sinon.stub(Base.Model, 'forge')
                 .returns(model);
             const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(model);
             const destroyStub = sinon.stub(model, 'destroy');
 
-            return models.Base.Model.destroy(unfilteredOptions).then(() => {
+            return Base.Model.destroy(unfilteredOptions).then(() => {
                 assert.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
                 assert.equal(filterOptionsSpy.args[0][1], 'destroy');
 
@@ -42,15 +42,15 @@ describe('Models: crud', function () {
             const unfilteredOptions = {
                 id: 23
             };
-            const model = models.Base.Model.forge({});
-            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
-            const forgeStub = sinon.stub(models.Base.Model, 'forge')
+            const model = Base.Model.forge({});
+            const filterOptionsSpy = sinon.spy(Base.Model, 'filterOptions');
+            const forgeStub = sinon.stub(Base.Model, 'forge')
                 .returns(model);
             const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(model);
             const destroyStub = sinon.stub(model, 'destroy');
 
-            return models.Base.Model.destroy(unfilteredOptions).then(() => {
+            return Base.Model.destroy(unfilteredOptions).then(() => {
                 assert.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
                 assert.equal(filterOptionsSpy.args[0][1], 'destroy');
 
@@ -74,16 +74,16 @@ describe('Models: crud', function () {
             const unfilteredOptions = {
                 donny: 'donson'
             };
-            const model = models.Base.Model.forge({});
-            const fetchedModel = models.Base.Model.forge({});
-            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
-            const filterDataSpy = sinon.spy(models.Base.Model, 'filterData');
-            const forgeStub = sinon.stub(models.Base.Model, 'forge')
+            const model = Base.Model.forge({});
+            const fetchedModel = Base.Model.forge({});
+            const filterOptionsSpy = sinon.spy(Base.Model, 'filterOptions');
+            const filterDataSpy = sinon.spy(Base.Model, 'filterData');
+            const forgeStub = sinon.stub(Base.Model, 'forge')
                 .returns(model);
             const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(fetchedModel);
 
-            const findOneReturnValue = models.Base.Model.findOne(data, unfilteredOptions);
+            const findOneReturnValue = Base.Model.findOne(data, unfilteredOptions);
 
             return findOneReturnValue.then((result) => {
                 assert.equal(result, fetchedModel);
@@ -110,16 +110,16 @@ describe('Models: crud', function () {
                 forUpdate: true,
                 transacting: {}
             };
-            const model = models.Base.Model.forge({});
-            const fetchedModel = models.Base.Model.forge({});
-            sinon.spy(models.Base.Model, 'filterOptions');
-            sinon.spy(models.Base.Model, 'filterData');
-            sinon.stub(models.Base.Model, 'forge')
+            const model = Base.Model.forge({});
+            const fetchedModel = Base.Model.forge({});
+            sinon.spy(Base.Model, 'filterOptions');
+            sinon.spy(Base.Model, 'filterData');
+            sinon.stub(Base.Model, 'forge')
                 .returns(model);
             const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(fetchedModel);
 
-            await models.Base.Model.findOne(data, unfilteredOptions);
+            await Base.Model.findOne(data, unfilteredOptions);
 
             assert.equal(fetchStub.args[0][0].lock, 'forUpdate');
         });
@@ -133,18 +133,18 @@ describe('Models: crud', function () {
             const unfilteredOptions = {
                 id: 'something real special'
             };
-            const model = models.Base.Model.forge({});
-            const savedModel = models.Base.Model.forge({});
-            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
-            const filterDataSpy = sinon.spy(models.Base.Model, 'filterData');
-            const forgeStub = sinon.stub(models.Base.Model, 'forge')
+            const model = Base.Model.forge({});
+            const savedModel = Base.Model.forge({});
+            const filterOptionsSpy = sinon.spy(Base.Model, 'filterOptions');
+            const filterDataSpy = sinon.spy(Base.Model, 'filterData');
+            const forgeStub = sinon.stub(Base.Model, 'forge')
                 .returns(model);
             const fetchStub = sinon.stub(model, 'fetch')
                 .resolves(model);
             const saveStub = sinon.stub(model, 'save')
                 .resolves(savedModel);
 
-            return models.Base.Model.edit(data, unfilteredOptions).then((result) => {
+            return Base.Model.edit(data, unfilteredOptions).then((result) => {
                 assert.equal(result, savedModel);
 
                 assert.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
@@ -173,13 +173,13 @@ describe('Models: crud', function () {
                 transacting: {}
             };
 
-            const model = models.Base.Model.forge({});
-            sinon.stub(models.Base.Model, 'forge')
+            const model = Base.Model.forge({});
+            sinon.stub(Base.Model, 'forge')
                 .returns(model);
             const fetchStub = sinon.stub(model, 'fetch')
                 .resolves();
 
-            return models.Base.Model.findOne(data, unfilteredOptions).then(() => {
+            return Base.Model.findOne(data, unfilteredOptions).then(() => {
                 assert.equal(fetchStub.args[0][0].lock, undefined);
             });
         });
@@ -191,11 +191,11 @@ describe('Models: crud', function () {
             const unfilteredOptions = {
                 importing: true
             };
-            const model = models.Base.Model.forge({});
-            sinon.stub(models.Base.Model, 'forge').returns(model);
+            const model = Base.Model.forge({});
+            sinon.stub(Base.Model, 'forge').returns(model);
             sinon.stub(model, 'fetch').resolves();
 
-            return models.Base.Model.findOne(data, unfilteredOptions).then(() => {
+            return Base.Model.findOne(data, unfilteredOptions).then(() => {
                 assert.equal(model.hasTimestamps, true);
             });
         });
@@ -207,14 +207,14 @@ describe('Models: crud', function () {
             const unfilteredOptions = {
                 id: 'something real special'
             };
-            const model = models.Base.Model.forge({});
-            sinon.spy(models.Base.Model, 'filterOptions');
-            sinon.spy(models.Base.Model, 'filterData');
-            sinon.stub(models.Base.Model, 'forge').returns(model);
+            const model = Base.Model.forge({});
+            sinon.spy(Base.Model, 'filterOptions');
+            sinon.spy(Base.Model, 'filterData');
+            sinon.stub(Base.Model, 'forge').returns(model);
             sinon.stub(model, 'fetch').resolves();
             sinon.stub(model, 'save');
 
-            return models.Base.Model.edit(data, unfilteredOptions).then(() => {
+            return Base.Model.edit(data, unfilteredOptions).then(() => {
                 throw new Error('That should not happen');
             }).catch((err) => {
                 assert.equal((err instanceof errors.NotFoundError), true);
@@ -228,16 +228,16 @@ describe('Models: crud', function () {
                 rum: 'ham'
             };
             const unfilteredOptions = {};
-            const model = models.Base.Model.forge({});
-            const savedModel = models.Base.Model.forge({});
-            const filterOptionsSpy = sinon.spy(models.Base.Model, 'filterOptions');
-            const filterDataSpy = sinon.spy(models.Base.Model, 'filterData');
-            const forgeStub = sinon.stub(models.Base.Model, 'forge')
+            const model = Base.Model.forge({});
+            const savedModel = Base.Model.forge({});
+            const filterOptionsSpy = sinon.spy(Base.Model, 'filterOptions');
+            const filterDataSpy = sinon.spy(Base.Model, 'filterData');
+            const forgeStub = sinon.stub(Base.Model, 'forge')
                 .returns(model);
             const saveStub = sinon.stub(model, 'save')
                 .resolves(savedModel);
 
-            return models.Base.Model.add(data, unfilteredOptions).then((result) => {
+            return Base.Model.add(data, unfilteredOptions).then((result) => {
                 assert.equal(result, savedModel);
 
                 assert.equal(filterOptionsSpy.args[0][0], unfilteredOptions);
@@ -262,11 +262,11 @@ describe('Models: crud', function () {
             const unfilteredOptions = {
                 importing: true
             };
-            const model = models.Base.Model.forge({});
-            sinon.stub(models.Base.Model, 'forge').returns(model);
+            const model = Base.Model.forge({});
+            sinon.stub(Base.Model, 'forge').returns(model);
             sinon.stub(model, 'save').resolves();
 
-            return models.Base.Model.add(data, unfilteredOptions).then(() => {
+            return Base.Model.add(data, unfilteredOptions).then(() => {
                 assert.equal(model.hasTimestamps, false);
             });
         });

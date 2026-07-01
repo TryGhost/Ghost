@@ -9,5 +9,5 @@
     "core/built/**"
   ],
   "ext": "js,mjs,cjs,json,ts,tsx",
-  "exec": "node --import=tsx"
+  "exec": "node --conditions=source --import=tsx"
 }

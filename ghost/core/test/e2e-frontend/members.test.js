@@ -66,7 +66,7 @@ describe('Front-end members behavior', function () {
         return member;
     }
 
-    before(async function () {
+    beforeAll(async function () {
         const originalSettingsCacheGetFn = settingsCache.get;
 
         sinon.stub(settingsCache, 'get').callsFake(function (key, options) {
@@ -88,7 +88,7 @@ describe('Front-end members behavior', function () {
         request = supertest.agent(configUtils.config.get('url'));
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
@@ -349,6 +349,12 @@ describe('Front-end members behavior', function () {
                 .expect('Location', `${config.get('url')}/?uuid=XXX&key=YYY&action=unsubscribe`);
         });
 
+        it('should pass through an optional updates & announcements param', async function () {
+            await request.get('/unsubscribe/?uuid=XXX&updatesandannouncements=1')
+                .expect(302)
+                .expect('Location', `${config.get('url')}/?uuid=XXX&updatesandannouncements=1&action=unsubscribe`);
+        });
+
         it('should reject when missing a uuid', async function () {
             await request.get('/unsubscribe/')
                 .expect(400);
@@ -469,6 +475,28 @@ describe('Front-end members behavior', function () {
             assert.equal(updatedMember.related('newsletters').models.length, 1);
         });
 
+        it('should unsubscribe from updates & announcements on POST', async function () {
+            const newsletterId = fixtureManager.get('newsletters', 0).id;
+
+            const member = await createMember({
+                email: 'unsubscribe-member-test-updates@example.com',
+                newsletters: [
+                    {id: newsletterId}
+                ]
+            });
+
+            const memberUUID = member.get('uuid');
+            sinon.stub(settingsHelpers, 'getMembersValidationKey').returns('test');
+            const memberHmac = crypto.createHmac('sha256','test').update(memberUUID).digest('hex');
+
+            await request.post(`/unsubscribe/?uuid=${memberUUID}&key=${memberHmac}&updatesandannouncements=1`)
+                .expect(201);
+
+            const updatedMember = await members.api.members.get({id: member.id}, {withRelated: ['newsletters']});
+            assert.equal(updatedMember.get('enable_updates_and_announcements'), false);
+            assert.equal(updatedMember.related('newsletters').models.length, 1, 'newsletters should be untouched');
+        });
+
         it('unsubscribe post works with x-www-form-urlencoded', async function () {
             const newsletterId = fixtureManager.get('newsletters', 0).id;
             const member = await createMember({
@@ -544,7 +572,7 @@ describe('Front-end members behavior', function () {
         let labelPost;
         let productPost;
 
-        before(function () {
+        beforeAll(function () {
             publicPost = testUtils.DataGenerator.forKnex.createPost({
                 slug: 'free-to-see',
                 visibility: 'public',
@@ -786,7 +814,7 @@ describe('Front-end members behavior', function () {
         });
 
         describe('as free member', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await loginAsMember('member1@test.com');
             });
 
@@ -839,7 +867,7 @@ describe('Front-end members behavior', function () {
 
         describe('as free member with vip label', function () {
             const email = 'vip@test.com';
-            before(async function () {
+            beforeAll(async function () {
                 await loginAsMember(email);
             });
 
@@ -869,7 +897,7 @@ describe('Front-end members behavior', function () {
 
         describe('as paid member', function () {
             const email = 'paid@test.com';
-            before(async function () {
+            beforeAll(async function () {
                 // Member should exist, because we are signin in
                 await models.Member.findOne({email}, {require: true});
 
@@ -915,6 +943,7 @@ describe('Front-end members behavior', function () {
                         'paid',
                         'created_at',
                         'enable_comment_notifications',
+                        'enable_updates_and_announcements',
                         'can_comment',
                         'commenting',
                         'newsletters',
@@ -1003,7 +1032,7 @@ describe('Front-end members behavior', function () {
         });
 
         describe('as comped member', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await loginAsMember('comped@test.com');
             });
 
@@ -1044,7 +1073,7 @@ describe('Front-end members behavior', function () {
         });
 
         describe('as member with product', function () {
-            before(async function () {
+            beforeAll(async function () {
                 await loginAsMember('with-product@test.com');
             });
 

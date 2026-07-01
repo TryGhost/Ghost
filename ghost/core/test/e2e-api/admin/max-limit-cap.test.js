@@ -11,7 +11,7 @@ describe('Admin API - Max Limit Cap', function () {
     let agent;
     let testEmail; // Store reference to test email for exception endpoint tests
 
-    before(async function () {
+    beforeAll(async function () {
         // Set a lower max limit for testing
         sinon.stub(maxLimitCap.limitConfig, 'maxLimit').value(MAX_LIMIT);
 
@@ -23,7 +23,7 @@ describe('Admin API - Max Limit Cap', function () {
         await createBulkTestData();
     });
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 

@@ -996,8 +996,11 @@ describe('Batch Sending Service', function () {
             clock.restore();
         });
 
-        it('omits deliverytime if deadline is in the past', async function () {
-            // Set some parameters for sending the batches
+        it('respreads deliverytimes over a fresh window if the deadline is in the past', async function () {
+            // When a send is resumed after the original deadline has passed (e.g. boot-time
+            // recovery of an interrupted send, or a job system delay), we still want to
+            // spread the remaining batches over a fresh window of the same size — otherwise
+            // every remaining batch hits Mailgun in the same second and breaks the rate-spread.
             const now = new Date();
             const clock = sinon.useFakeTimers(now);
             const targetDeliveryWindow = 300000; // 5 minutes
@@ -1014,7 +1017,6 @@ describe('Batch Sending Service', function () {
             });
             let runningCount = 0;
             let maxRunningCount = 0;
-            // Stub the sendBatch method to inspect the delivery times for each batch
             const sendBatch = sinon.stub(service, 'sendBatch').callsFake(async () => {
                 runningCount += 1;
                 maxRunningCount = Math.max(maxRunningCount, runningCount);
@@ -1022,26 +1024,32 @@ describe('Batch Sending Service', function () {
                 runningCount -= 1;
                 return Promise.resolve(true);
             });
-            // Create the batches
             const batches = new Array(numBatches).fill(0).map(() => createModel({}));
-            // Invoke the sendBatches method to send the batches
+            // Advance well past the original deadline (now + 300000)
             clock.tick(1000000);
+            const startedAt = new Date(clock.now);
             await service.sendBatches({
                 email,
                 batches,
                 post: createModel({}),
                 newsletter: createModel({})
             });
-            // Assert that the sendBatch method was called the correct number of times
+
             sinon.assert.callCount(sendBatch, numBatches);
-            // Get the batches there were sent from the sendBatch method calls
             const sendBatches = sendBatch.getCalls().map(call => call.args[0].batch);
-            // Get the delivery times for each batch from the sendBatch method calls
             const deliveryTimes = sendBatch.getCalls().map(call => call.args[0].deliveryTime);
-            // Assert that the deliverytime is not set, since we're past the deadline
-            deliveryTimes.forEach((time) => {
-                assert.equal(time, undefined);
+
+            // Every batch should have a delivery time set; none should be undefined.
+            deliveryTimes.forEach((time, i) => {
+                assert.ok(time instanceof Date, `batch ${i} delivery time should be a Date, got ${time}`);
             });
+            // Times should span roughly the full fresh window (targetDeliveryWindow) from
+            // the moment sendBatches started, with batch 0 at the start and the last batch
+            // near the end.
+            const firstMs = deliveryTimes[0].getTime();
+            const lastMs = deliveryTimes[deliveryTimes.length - 1].getTime();
+            assert.ok(firstMs >= startedAt.getTime() - 100, `first delivery time too early: ${firstMs}`);
+            assert.ok(lastMs - firstMs >= targetDeliveryWindow * 0.8, `spread too narrow: ${lastMs - firstMs}ms (expected ~${targetDeliveryWindow}ms)`);
             assert.deepEqual(sendBatches, batches);
             assert.equal(maxRunningCount, 2);
             clock.restore();
@@ -1171,14 +1179,41 @@ describe('Batch Sending Service', function () {
 
             const result = await service.sendBatch({
                 email: createModel({}),
-                batch: createModel({}),
+                batch: createModel({status: 'submitted'}),
                 post: createModel({}),
                 newsletter: createModel({})
             });
 
             assert.equal(result, true);
+            // Already-submitted is an expected resume path, not an error. Logs info, not error.
+            sinon.assert.notCalled(errorLog);
+            sinon.assert.calledWithMatch(logging.info, /already submitted on a prior run/);
+        });
+
+        it('Returns false for orphan submitting batch', async function () {
+            // After a crashed worker, batches can be left in `submitting` status.
+            // updateStatusLock will return undefined (status not in pending/failed allowlist).
+            // sendBatch should return false so the parent email correctly promotes to failed
+            // instead of being falsely marked submitted.
+            const EmailBatch = createModelClass({
+                findOne: {
+                    status: 'submitting'
+                }
+            });
+            const service = new BatchSendingService({
+                models: {EmailBatch}
+            });
+
+            const result = await service.sendBatch({
+                email: createModel({}),
+                batch: createModel({status: 'submitting'}),
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+
+            assert.equal(result, false);
             sinon.assert.calledOnce(errorLog);
-            sinon.assert.calledWith(errorLog, sinon.match(/Tried sending email batch that is not pending or failed/));
+            sinon.assert.calledWith(errorLog, sinon.match(/stuck in status=submitting/));
         });
 
         it('Does send', async function () {
@@ -1891,7 +1926,11 @@ describe('Batch Sending Service', function () {
             clock.restore();
         });
 
-        it('returns an array of undefined values if we are past the deadline', async function () {
+        it('respreads batches over a fresh window if the original deadline has passed', async function () {
+            // Original behavior here was to return [undefined×n] (deliver immediately) when
+            // the deadline had passed. That defeats the rate-spread on resumed sends —
+            // 50% of a 10-min send would dump into Mailgun in the same second on restart.
+            // New contract: respread over a fresh window of the same size, starting now.
             const now = new Date();
             const clock = sinon.useFakeTimers(now);
             const TARGET_DELIVERY_WINDOW = 300000; // 5 minutes
@@ -1899,6 +1938,7 @@ describe('Batch Sending Service', function () {
                 created_at: now
             });
             const numBatches = 5;
+            const delay = TARGET_DELIVERY_WINDOW / numBatches;
             const service = new BatchSendingService({
                 sendingService: {
                     getTargetDeliveryWindow() {
@@ -1906,11 +1946,16 @@ describe('Batch Sending Service', function () {
                     }
                 }
             });
-            const expectedResult = [
-                undefined, undefined, undefined, undefined, undefined
-            ];
-            // Advance time past the deadline
+            // Advance well past the original deadline.
             clock.tick(1000000);
+            const advancedNow = new Date(clock.now);
+            const expectedResult = [
+                new Date(advancedNow.getTime() + (delay * 0)),
+                new Date(advancedNow.getTime() + (delay * 1)),
+                new Date(advancedNow.getTime() + (delay * 2)),
+                new Date(advancedNow.getTime() + (delay * 3)),
+                new Date(advancedNow.getTime() + (delay * 4))
+            ];
             const result = service.calculateDeliveryTimes(email, numBatches);
             assert.deepEqual(result, expectedResult);
             clock.restore();
@@ -1932,6 +1977,162 @@ describe('Batch Sending Service', function () {
             ];
             const result = service.calculateDeliveryTimes(email, numBatches);
             assert.deepEqual(result, expectedResult);
+        });
+    });
+
+    describe('shutdown handling', function () {
+        it('onShutdown is idempotent and returns a resolved promise', async function () {
+            const service = new BatchSendingService({});
+            await service.onShutdown();
+            await service.onShutdown();
+            // No assertion needed beyond "awaits resolved" — second call must not throw.
+        });
+
+        it('sendBatches completes normally if shutdown flag flips after queue is empty', async function () {
+            const clock = sinon.useFakeTimers(new Date());
+            const service = new BatchSendingService({
+                sendingService: {
+                    getTargetDeliveryWindow() {
+                        return 0;
+                    }
+                }
+            });
+            const sendBatch = sinon.stub(service, 'sendBatch').callsFake(async () => {
+                await simulateSleep(5, clock);
+                return Promise.resolve(true);
+            });
+            const batches = new Array(2).fill(0).map(() => createModel({}));
+            // Trigger shutdown after both batches have been picked up (queue is empty).
+            const sendPromise = service.sendBatches({
+                email: createModel({}),
+                batches,
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+            // Both batches are immediately picked up by the two workers, leaving an empty queue.
+            await service.onShutdown();
+            await sendPromise;
+            sinon.assert.callCount(sendBatch, 2);
+            clock.restore();
+        });
+
+        it('sendBatches throws SHUTDOWN_CODE if queue still has unstarted batches', async function () {
+            const service = new BatchSendingService({
+                sendingService: {
+                    getTargetDeliveryWindow() {
+                        return 0;
+                    }
+                }
+            });
+            // Flip the flag synchronously inside the first sendBatch invocation so that
+            // both workers exit on their next loop iteration with unstarted batches in queue.
+            const sendBatch = sinon.stub(service, 'sendBatch').callsFake(async () => {
+                service.onShutdown();
+                return Promise.resolve(true);
+            });
+            const batches = new Array(8).fill(0).map(() => createModel({}));
+            await assert.rejects(
+                service.sendBatches({
+                    email: createModel({}),
+                    batches,
+                    post: createModel({}),
+                    newsletter: createModel({})
+                }),
+                (err) => {
+                    return err.code === BatchSendingService.SHUTDOWN_CODE
+                        && err.errorType === 'InternalServerError';
+                }
+            );
+            // With MAX_SENDING_CONCURRENCY=2 and 8 batches, at most 2 should run before the flag
+            // is observed at loop top (the first sendBatch flips it; the second worker may have
+            // already started its own call before observing the flag).
+            assert.ok(sendBatch.callCount < batches.length, `sendBatch called ${sendBatch.callCount} times, expected fewer than ${batches.length}`);
+        });
+
+        it('onShutdown does not resolve until in-flight sendBatches settles', async function () {
+            const service = new BatchSendingService({
+                sendingService: {
+                    getTargetDeliveryWindow() {
+                        return 0;
+                    }
+                }
+            });
+            // Gate sendBatch behind a manual promise so we can observe the order
+            // in which onShutdown and the in-flight sendBatches resolve.
+            let releaseGate;
+            const gate = new Promise((resolve) => {
+                releaseGate = resolve;
+            });
+            const sendBatch = sinon.stub(service, 'sendBatch').callsFake(async () => {
+                await gate;
+                return true;
+            });
+
+            // Kick off sendBatches; do NOT await — it must remain in flight.
+            const sendPromise = service.sendBatches({
+                email: createModel({}),
+                batches: [createModel({}), createModel({})],
+                post: createModel({}),
+                newsletter: createModel({})
+            });
+
+            // Tag each promise so we can observe resolution order.
+            let onShutdownDone = false;
+            let sendBatchesDone = false;
+            const onShutdownPromise = service.onShutdown().then(() => {
+                onShutdownDone = true;
+            });
+            sendPromise.then(() => {
+                sendBatchesDone = true;
+            }).catch(() => {
+                sendBatchesDone = true;
+            });
+
+            // Yield the microtask queue. Neither sendBatches nor onShutdown can have settled
+            // because sendBatch is still awaiting the gate.
+            await new Promise((resolve) => {
+                setImmediate(resolve);
+            });
+            assert.equal(sendBatchesDone, false, 'sendBatches should still be in flight');
+            assert.equal(onShutdownDone, false, 'onShutdown must wait for in-flight sendBatches');
+
+            // Release the gate; sendBatches finishes, then onShutdown resolves.
+            releaseGate();
+            await onShutdownPromise;
+            await sendPromise;
+            assert.equal(onShutdownDone, true);
+            assert.equal(sendBatchesDone, true);
+            sinon.assert.called(sendBatch);
+        });
+
+        it('emailJob leaves email in submitting status when sendEmail rejects with SHUTDOWN_CODE', async function () {
+            const captureException = sinon.stub();
+            const Email = createModelClass({
+                findOne: {
+                    status: 'pending'
+                }
+            });
+            const service = new BatchSendingService({
+                models: {Email},
+                sentry: {captureException}
+            });
+            let afterEmailModel;
+            const sendEmail = sinon.stub(service, 'sendEmail').callsFake((email) => {
+                afterEmailModel = email;
+                return Promise.reject(new errors.InternalServerError({
+                    code: BatchSendingService.SHUTDOWN_CODE,
+                    message: 'Email send stopped because the container is shutting down'
+                }));
+            });
+            const result = await service.emailJob({emailId: '123'});
+            assert.equal(result, undefined);
+            sinon.assert.calledOnce(sendEmail);
+            sinon.assert.notCalled(errorLog);
+            sinon.assert.notCalled(captureException);
+            assert.equal(afterEmailModel.get('status'), 'submitting', 'Email status must remain submitting so the next boot can resume it');
+            assert.equal(afterEmailModel.get('error'), undefined, 'No error field should be written when send stops on shutdown');
+            // logging.info was stubbed in the outer beforeEach — confirm the shutdown breadcrumb was emitted.
+            sinon.assert.calledWithMatch(logging.info, /send stopped because the container is shutting down/);
         });
     });
 });

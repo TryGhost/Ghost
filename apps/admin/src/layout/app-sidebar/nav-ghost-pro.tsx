@@ -4,15 +4,13 @@ import {LucideIcon} from "@tryghost/shade/utils"
 import { useCurrentUser } from "@tryghost/admin-x-framework/api/current-user";
 import { useBrowseConfig } from "@tryghost/admin-x-framework/api/config";
 import { isContributorUser, isOwnerUser } from "@tryghost/admin-x-framework/api/users";
+import { useFeaturebase } from "@tryghost/admin-x-framework";
 import { NavMenuItem } from "./nav-menu-item";
-import { useFeatureFlag } from "@/hooks/use-feature-flag";
-import { useFeaturebase } from "./hooks/use-featurebase";
 
 function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
     const { data: currentUser } = useCurrentUser();
     const { data: config } = useBrowseConfig();
-    const featurebaseFeedbackFlag = useFeatureFlag('featurebaseFeedback');
-    const { openFeedbackWidget, preloadFeedbackWidget } = useFeaturebase();
+    const { isAvailable: featurebaseAvailable, openFeedbackWidget, preloadFeedbackWidget } = useFeaturebase();
 
     if (!currentUser) {
         return null;
@@ -20,7 +18,7 @@ function NavGhostPro({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
 
     const isProSite = config?.config.hostSettings?.billing?.enabled;
     const showGhostPro = isProSite && isOwnerUser(currentUser);
-    const showFeedback = featurebaseFeedbackFlag && !isContributorUser(currentUser) && config?.config.featurebase?.enabled;
+    const showFeedback = featurebaseAvailable && !isContributorUser(currentUser);
 
     if (!showGhostPro && !showFeedback) {
         return null;

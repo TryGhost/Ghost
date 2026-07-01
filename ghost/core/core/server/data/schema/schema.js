@@ -121,6 +121,20 @@ module.exports = {
         feature_image_caption: {type: 'text', maxlength: 65535, nullable: true},
         email_only: {type: 'boolean', nullable: false, defaultTo: false}
     },
+    // Every gift link added to a post; replaced tokens remain as history. Liveness lives in post_gift_links.
+    gift_links: {
+        token: {type: 'string', maxlength: 32, nullable: false, primary: true},
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
+    // A row here is what makes a link live; UNIQUE(post_id) enforces "<=1 live link per post".
+    post_gift_links: {
+        post_id: {type: 'string', maxlength: 24, nullable: false, references: 'posts.id', cascadeDelete: true, unique: true},
+        gift_link_token: {type: 'string', maxlength: 32, nullable: false, references: 'gift_links.token', cascadeDelete: true, primary: true},
+        created_at: {type: 'dateTime', nullable: false},
+        updated_at: {type: 'dateTime', nullable: true}
+    },
     // NOTE: this is the staff table
     users: {
         id: {type: 'string', maxlength: 24, nullable: false, primary: true},
@@ -431,6 +445,7 @@ module.exports = {
         note: {type: 'string', maxlength: 2000, nullable: true},
         geolocation: {type: 'string', maxlength: 2000, nullable: true},
         enable_comment_notifications: {type: 'boolean', nullable: false, defaultTo: true},
+        enable_updates_and_announcements: {type: 'boolean', nullable: true},
         email_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_opened_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_open_rate: {type: 'integer', unsigned: true, nullable: true, index: true},
@@ -991,7 +1006,11 @@ module.exports = {
         created_at: {type: 'dateTime', nullable: false},
         updated_at: {type: 'dateTime', nullable: false},
         '@@INDEXES@@': [
-            ['post_id', 'parent_id', 'pinned_at']
+            ['post_id', 'parent_id', 'pinned_at'],
+            ['created_at'],
+            ['status'],
+            ['in_reply_to_id', 'status'],
+            ['parent_id', 'in_reply_to_id', 'status']
         ]
     },
     comment_likes: {

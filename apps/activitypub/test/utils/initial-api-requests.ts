@@ -1,7 +1,7 @@
-import activityPubUser from './responses/activitypub/users.json';
-import identities from './responses/ghost/identities.json';
-import ownerUser from './responses/ghost/users.json';
-import site from './responses/ghost/site.json';
+import activityPubUser from './responses/activitypub/users.json' with {type: 'json'};
+import identities from './responses/ghost/identities.json' with {type: 'json'};
+import ownerUser from './responses/ghost/users.json' with {type: 'json'};
+import site from './responses/ghost/site.json' with {type: 'json'};
 import {Page} from '@playwright/test';
 import {mockApi} from '@tryghost/admin-x-framework/test/acceptance';
 

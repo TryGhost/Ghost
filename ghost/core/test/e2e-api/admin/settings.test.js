@@ -47,7 +47,7 @@ const matchSettingsArray = (length) => {
 describe('Settings API', function () {
     let agent;
     let emailMockReceiver;
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init();
         await agent.loginAsOwner();
@@ -258,6 +258,35 @@ describe('Settings API', function () {
                     assert.equal(emailVerificationRequired.value, false);
                 });
             emailMockReceiver.assertSentEmailCount(0);
+        });
+
+        it('can disable llms_enabled', async function () {
+            try {
+                await agent.put('settings/')
+                    .body({
+                        settings: [{key: 'llms_enabled', value: false}]
+                    })
+                    .expectStatus(200)
+                    .matchBodySnapshot({
+                        settings: matchSettingsArray(CURRENT_SETTINGS_COUNT)
+                    })
+                    .matchHeaderSnapshot({
+                        etag: anyEtag,
+                        // Special rule for this test, as the labs setting changes a lot
+                        'content-length': anyContentLength,
+                        'content-version': anyContentVersion
+                    })
+                    .expect(({body}) => {
+                        const llmsEnabled = body.settings.find(setting => setting.key === 'llms_enabled');
+                        assert.equal(llmsEnabled.value, false);
+                    });
+
+                assert.equal(settingsCache.get('llms_enabled'), false);
+                emailMockReceiver.assertSentEmailCount(0);
+            } finally {
+                // Restore so later tests see the default value
+                await models.Settings.edit({key: 'llms_enabled', value: true});
+            }
         });
 
         it('does not trigger email verification flow if members_support_address remains the same', async function () {
@@ -548,7 +577,7 @@ describe('Settings API', function () {
     });
 
     describe('Managed email without custom sending domain', function () {
-        this.beforeEach(function () {
+        beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', true);
             configUtils.set('hostSettings:managedEmail:sendingDomain', null);
             configUtils.set('mail:from', 'default@email.com');
@@ -609,7 +638,7 @@ describe('Settings API', function () {
     });
 
     describe('Managed email with custom sending domain', function () {
-        this.beforeEach(function () {
+        beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', true);
             configUtils.set('hostSettings:managedEmail:sendingDomain', 'sendingdomain.com');
             configUtils.set('mail:from', 'default@email.com');
@@ -692,7 +721,7 @@ describe('Settings API', function () {
     });
 
     describe('Self hoster without managed email', function () {
-        this.beforeEach(function () {
+        beforeEach(function () {
             configUtils.set('hostSettings:managedEmail:enabled', false);
             configUtils.set('hostSettings:managedEmail:sendingDomain', '');
         });
@@ -825,7 +854,7 @@ describe('Settings API', function () {
     });
 
     describe('Settings overrides', function () {
-        this.beforeEach(async function () {
+        beforeEach(async function () {
             const settingsOverrides = {
                 email_track_clicks: false
             };

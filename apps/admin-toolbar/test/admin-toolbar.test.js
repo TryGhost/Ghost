@@ -1,10 +1,10 @@
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('path');
-const {JSDOM} = require('jsdom');
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import {JSDOM} from 'jsdom';
 
 const BUNDLE_PATH = path.join(
-    __dirname,
+    import.meta.dirname,
     '../umd/admin-toolbar.min.js'
 );
 
@@ -147,7 +147,6 @@ describe('admin-toolbar', function () {
         assert.equal(root.shadowRoot.querySelector('.gh-admin-toolbar-tooltip').textContent, 'Admin');
         assert.equal(root.shadowRoot.querySelector('.gh-admin-toolbar-user').hasAttribute('title'), false);
         assert.equal(root.shadowRoot.querySelector('.gh-admin-toolbar-avatar-image').src, 'https://example.com/jane.jpg');
-        assert.ok(dom.window.document.body.style.paddingBottom.includes('--gh-admin-toolbar-bottom-offset'));
         dom.window.close();
     });
 

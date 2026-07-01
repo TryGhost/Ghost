@@ -18,7 +18,6 @@ class MembersStripeCustomersImporter extends TableImporter {
         let offset = 0;
         let limit = 100000;
 
-        // eslint-disable-next-line no-constant-condition
         while (true) {
             const members = await this.transaction.select('id', 'name', 'email', 'created_at', 'status').from('members').limit(limit).offset(offset);
 

@@ -105,7 +105,7 @@ describe('MrrStatsService', function () {
         });
 
         beforeEach(async function () {
-            db = knex({client: 'sqlite3', connection: {filename: ':memory:'}, useNullAsDefault: true});
+            db = knex({client: 'better-sqlite3', connection: {filename: ':memory:'}, useNullAsDefault: true});
             mrrStatsService = new MrrStatsService({knex: db});
 
             await db.schema.createTable('members_paid_subscription_events', function (table) {

@@ -21,6 +21,7 @@ import type {MemberView} from '../hooks/use-member-views';
 
 interface MembersFiltersProps {
     filters: Filter[];
+    multipleActiveSubscriptionsCount: number;
     nql?: string;
     onFiltersChange: (filters: Filter[]) => void;
     savedViews?: MemberView[];
@@ -48,6 +49,7 @@ function mapOfferRedemptionFilters(
 
 const MembersFilters: React.FC<MembersFiltersProps> = ({
     filters,
+    multipleActiveSubscriptionsCount,
     nql,
     onFiltersChange,
     savedViews = [],
@@ -104,6 +106,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
         labelValueSource,
         tierValueSource,
         offers,
+        multipleActiveSubscriptionsCount,
         postValueSource,
         emailValueSource,
         membersTrackSources,
@@ -115,8 +118,8 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const hasFilters = filters.length > 0;
     const showIconOnlyTrigger = iconOnly && !hasFilters;
     const addFilterButtonClassName = cn(
-        'border-input bg-white dark:bg-background',
-        showIconOnlyTrigger && 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-sm !px-3'
+        'bg-white dark:bg-background',
+        showIconOnlyTrigger && 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base !px-3'
     );
 
     const clearAndSaveButtons = hasFilters ? (

@@ -1,31 +1,16 @@
 import * as Sentry from '@sentry/react';
 import {showToast} from '@tryghost/admin-x-design-system';
-import {toast as sonnerToast} from 'sonner';
 import {useCallback} from 'react';
 import toast from 'react-hot-toast';
 import {useFramework} from '../providers/framework-provider';
 import {APIError, getErrorMessage} from '../utils/errors';
 
-// Stale toasts can cover UI and block clicks, especially in tests
-function dismissToasts() {
-    toast.remove();
-    sonnerToast.dismiss();
-}
-
-// There are two toast outlets: admin-x-design-system's DesignSystemProvider
-// renders react-hot-toast (marked with this class), shade's ShadeProvider
-// renders sonner - and the React shell can mount both at once. The marker's
-// presence in the DOM picks the library to emit to.
 function showErrorToast(message: React.ReactNode) {
-    dismissToasts();
-    if (document.querySelector('.toast-outlet-react-hot-toast')) {
-        showToast({
-            message,
-            type: 'error'
-        });
-    } else {
-        sonnerToast.error(message);
-    }
+    toast.remove();
+    showToast({
+        message,
+        type: 'error'
+    });
 }
 
 /**
@@ -65,7 +50,7 @@ const useHandleError = () => {
             // We use this status in tests to indicate the API request was not mocked -
             // don't show a toast because it may block clicking things in the test,
             // but still clear lingering toasts that would block clicks the same way
-            dismissToasts();
+            toast.remove();
         } else if (error instanceof APIError) {
             showErrorToast(getErrorMessage(error, error.message));
         } else {

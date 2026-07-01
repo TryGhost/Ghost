@@ -103,7 +103,7 @@ const ThemePreview: React.FC<ThemePreviewProps> = ({settings,url}) => {
 
                 // replace the iframe contents with the doctored preview html
                 const doctype = htmlDoc.doctype ? new XMLSerializer().serializeToString(htmlDoc.doctype) : '';
-                let finalDoc = doctype + htmlDoc.documentElement.outerHTML;
+                const finalDoc = doctype + htmlDoc.documentElement.outerHTML;
 
                 // Send the data to the iframe's window using postMessage
                 // Inject the received content into the iframe

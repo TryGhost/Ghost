@@ -6,12 +6,12 @@ import {render, screen} from '@testing-library/react';
 
 const automations = [{
     id: 'automation-id-1',
-    name: 'Welcome Email (Free)',
+    name: 'Free member welcome flow',
     slug: 'member-welcome-email-free',
     status: 'active' as const
 }, {
     id: 'automation-id-2',
-    name: 'Welcome Email (Paid)',
+    name: 'Paid member welcome flow',
     slug: 'member-welcome-email-paid',
     status: 'inactive' as const
 }];
@@ -23,10 +23,10 @@ describe('AutomationsList', () => {
         renderWithRouter(<AutomationsList automations={automations} />);
 
         expect(screen.getAllByTestId('automation-list-row')).toHaveLength(2);
-        expect(screen.getByText('Welcome Email (Free)')).toBeInTheDocument();
-        expect(screen.getByText('Onboard new free members with a short welcome email.')).toBeInTheDocument();
-        expect(screen.getByText('Welcome Email (Paid)')).toBeInTheDocument();
-        expect(screen.getByText('Greet new paid members and point them at member-only content.')).toBeInTheDocument();
+        expect(screen.getByText('Free member welcome flow')).toBeInTheDocument();
+        expect(screen.getByText('Welcome new free members after they sign up.')).toBeInTheDocument();
+        expect(screen.getByText('Paid member welcome flow')).toBeInTheDocument();
+        expect(screen.getByText('Welcome new paid members after they start their subscription.')).toBeInTheDocument();
         expect(screen.getByText('Live')).toBeInTheDocument();
         expect(screen.getByText('Off')).toBeInTheDocument();
     });
@@ -34,8 +34,8 @@ describe('AutomationsList', () => {
     it('links each row to the automation sequence by id', () => {
         renderWithRouter(<AutomationsList automations={automations} />);
 
-        expect(screen.getByRole('link', {name: 'Welcome Email (Free)'})).toHaveAttribute('href', '/automations/automation-id-1');
-        expect(screen.getByRole('link', {name: 'Welcome Email (Paid)'})).toHaveAttribute('href', '/automations/automation-id-2');
+        expect(screen.getByRole('link', {name: 'Free member welcome flow'})).toHaveAttribute('href', '/automations/automation-id-1');
+        expect(screen.getByRole('link', {name: 'Paid member welcome flow'})).toHaveAttribute('href', '/automations/automation-id-2');
     });
 
     it('renders a table skeleton while loading', () => {

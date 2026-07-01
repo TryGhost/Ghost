@@ -1,6 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const models = require('../../../../core/server/models');
+const {Member} = require('../../../../core/server/models/member');
+const {Label} = require('../../../../core/server/models/label');
 const configUtils = require('../../../utils/config-utils');
 const labs = require('../../../../core/shared/labs');
 
@@ -21,7 +22,7 @@ describe('Unit: models/member', function () {
 
         beforeEach(function () {
             toJSON = function (model, options) {
-                return new models.Member(model).toJSON(options);
+                return new Member(model).toJSON(options);
             };
         });
 
@@ -50,7 +51,7 @@ describe('Unit: models/member', function () {
 
     describe('onSaving', function () {
         it('skips labels without a name instead of throwing', async function () {
-            const memberModel = new models.Member({email: 'test@example.com'});
+            const memberModel = new Member({email: 'test@example.com'});
             // Simulate input from API where one label is missing `name`
             memberModel.set('labels', [
                 {name: 'Newsletter'},
@@ -65,7 +66,7 @@ describe('Unit: models/member', function () {
                 id: 'existing-1',
                 get: key => (key === 'name' ? 'Existing' : 'existing-1')
             }];
-            const findAllStub = sinon.stub(models.Label, 'findAll').resolves({
+            const findAllStub = sinon.stub(Label, 'findAll').resolves({
                 models: existingLabels
             });
 
@@ -83,7 +84,7 @@ describe('Unit: models/member', function () {
         let updatePivot;
 
         beforeEach(function () {
-            memberModel = new models.Member({email: 'text@example.com'});
+            memberModel = new Member({email: 'text@example.com'});
             updatePivot = sinon.stub();
 
             sinon.stub(memberModel, 'products').callsFake(() => {

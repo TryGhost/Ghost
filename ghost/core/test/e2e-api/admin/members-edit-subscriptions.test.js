@@ -44,7 +44,7 @@ const subscriptionSnapshotWithTier = {
 describe('Members API: edit subscriptions', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts', 'members', 'tiers:extra');
         await agent.loginAsOwner();

@@ -16,7 +16,7 @@ const secondNewsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug
 describe('Posts API', function () {
     let request;
 
-    before(async function () {
+    beforeAll(async function () {
         await localUtils.startGhost();
         request = supertest.agent(config.get('url'));
 

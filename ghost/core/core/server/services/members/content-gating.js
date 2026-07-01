@@ -26,6 +26,37 @@ const rejectUnknownKeys = input => nql.utils.mapQuery(input, function (value, ke
 });
 
 /**
+ * Builds the NQL member filter describing which members have access to a post's
+ * gated content, based purely on its `visibility`. This is the single source of
+ * truth for "who can read this post" — shared between the web content gating
+ * (checkPostAccess) and the email sending pipeline (segmentation), so the two
+ * can never drift apart.
+ *
+ * Note: `public` and `members` are handled by the callers (they don't reduce to
+ * a member-status filter); this only produces the filter for the gated cases.
+ *
+ * @param {object} post - A post object
+ * @returns {string|null} An NQL member filter, or null when the post's tiers are
+ *   misconfigured so that no member should have access.
+ */
+function getPostAccessFilter(post) {
+    if (post.visibility === 'paid') {
+        return 'status:-free';
+    }
+
+    if (post.visibility === 'tiers') {
+        if (!post.tiers) {
+            return null;
+        }
+        return post.tiers.map((product) => {
+            return `product:'${product.slug}'`;
+        }).join(',') || null;
+    }
+
+    return post.visibility;
+}
+
+/**
  * @param {object} post - A post object to check access to
  * @param {object} member - The member whos access should be checked
  *
@@ -44,15 +75,7 @@ function checkPostAccess(post, member) {
         return PERMIT_ACCESS;
     }
 
-    let visibility = post.visibility === 'paid' ? 'status:-free' : post.visibility;
-    if (visibility === 'tiers') {
-        if (!post.tiers) {
-            return BLOCK_ACCESS;
-        }
-        visibility = post.tiers.map((product) => {
-            return `product:'${product.slug}'`;
-        }).join(',');
-    }
+    const visibility = getPostAccessFilter(post);
 
     if (visibility && member.status && nql(visibility, {expansions: MEMBER_NQL_EXPANSIONS, transformer: rejectUnknownKeys}).queryJSON(member)) {
         return PERMIT_ACCESS;
@@ -88,6 +111,7 @@ function checkGatedBlockAccess(gatedBlockParams, member) {
 }
 
 module.exports = {
+    getPostAccessFilter,
     checkPostAccess,
     checkGatedBlockAccess,
     PERMIT_ACCESS,

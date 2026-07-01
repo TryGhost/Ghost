@@ -1,76 +1,49 @@
 import NiceModal from '@ebay/nice-modal-react';
-import React, {type ReactNode, useState} from 'react';
+import React, {type ReactNode} from 'react';
 import useCustomFonts from '../../../../hooks/use-custom-fonts';
-import {Button, ConfirmationModalContent, Heading, List, ListItem, showToast} from '@tryghost/admin-x-design-system';
-import {type InstalledTheme, type ThemeProblem, useActivateTheme} from '@tryghost/admin-x-framework/api/themes';
+import {ConfirmationModalContent, showToast} from '@tryghost/admin-x-design-system';
+import {type InstalledTheme, useActivateTheme} from '@tryghost/admin-x-framework/api/themes';
+import {OutcomeBanner, ThemeValidationDetailsDisclosure, getIssuesFromInstalledTheme} from './theme-validation-details';
+import {getHomepageUrl, useBrowseSite} from '@tryghost/admin-x-framework/api/site';
+import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
-
-export const ThemeProblemView = ({problem}:{problem: ThemeProblem}) => {
-    const [isExpanded, setExpanded] = useState(false);
-
-    return <ListItem
-        title={
-            <>
-                <div className={`${problem.level === 'error' ? 'before:bg-red' : 'before:bg-yellow'} relative px-4 before:absolute before:top-1.5 before:left-0 before:block before:size-2 before:rounded-full before:content-['']`}>
-                    <strong>{problem.level === 'error' ? 'Error: ' : 'Warning: '}</strong>
-                    <span dangerouslySetInnerHTML={{__html: problem.rule}} />
-                    <div className='absolute top-1 -right-4'>
-                        <Button color="green" icon={isExpanded ? 'chevron-down' : 'chevron-right'} iconColorClass='text-grey-700' size='sm' link onClick={() => setExpanded(!isExpanded)} />
-                    </div>
-                </div>
-                {
-                    isExpanded ?
-                        <div className='mt-2 px-4 text-[13px]'>
-                            <div dangerouslySetInnerHTML={{__html: problem.details}} className='mb-4' />
-                            <Heading level={6}>Affected files:</Heading>
-                            <ul className='mt-1'>
-                                {problem.failures.map(failure => <li key={failure.ref}><code>{failure.ref}</code>{failure.message ? `: ${failure.message}` : ''}</li>)}
-                            </ul>
-                        </div> :
-                        null
-                }
-            </>
-        }
-        hideActions
-        separator
-    />;
-};
 
 const ThemeInstalledModal: React.FC<{
     title: string
     prompt: ReactNode
     installedTheme: InstalledTheme;
+    validationDetailsDefaultOpen?: boolean;
     onActivate?: () => void;
-}> = ({title, prompt, installedTheme, onActivate}) => {
+}> = ({title, installedTheme, validationDetailsDefaultOpen, onActivate}) => {
     const {mutateAsync: activateTheme} = useActivateTheme();
     const {refreshActiveThemeData} = useCustomFonts();
     const handleError = useHandleError();
+    const {data: configData} = useBrowseConfig();
+    const {data: siteData} = useBrowseSite();
+    const defaultOpen = validationDetailsDefaultOpen ?? configData?.config?.environment === 'development';
+    const secondaryProblems = getIssuesFromInstalledTheme(installedTheme);
+    const homepageUrl = siteData?.site ? getHomepageUrl(siteData.site) : undefined;
 
-    /* eslint-disable react/no-array-index-key */
-    let errorPrompt = null;
-    if (installedTheme && installedTheme.errors) {
-        errorPrompt = <div className="mt-6">
-            <List hint={<>Highly recommended to fix, functionality <strong>could</strong> be restricted</>} title="Errors">
-                {installedTheme.errors?.map((error, index) => <ThemeProblemView key={index} problem={error} />)}
-            </List>
-        </div>;
-    }
-
-    let warningPrompt = null;
-    if (installedTheme && installedTheme.warnings) {
-        warningPrompt = <div className="mt-10">
-            <List title="Warnings">
-                {installedTheme.warnings?.map((warning, index) => <ThemeProblemView key={index} problem={warning} />)}
-            </List>
-        </div>;
-    }
-    /* eslint-enable react/no-array-index-key */
-
-    let okLabel = `Activate${installedTheme.errors?.length ? ' with errors' : ''}`;
+    let okLabel = 'Activate theme';
 
     if (installedTheme.active) {
         okLabel = 'OK';
     }
+
+    const modalTitle = installedTheme.active ? <span className='text-green'>It&apos;s live!</span> : title;
+    const outcomeTitle = 'Uploaded successfully';
+    const outcomeCopy = installedTheme.active ? (
+        <>
+            Your theme <strong>{installedTheme.name}</strong> was saved successfully and is now visible to your readers.
+            {homepageUrl ? <>
+                {' '}<a className='font-semibold text-black hover:underline dark:text-white' href={homepageUrl} rel='noreferrer' target='_blank'>Take a look →</a>
+            </> : null}
+        </>
+    ) : (
+        <>
+            <strong>{installedTheme.name}</strong> has been uploaded. Activate it to make it live.
+        </>
+    );
 
     return <ConfirmationModalContent
         cancelLabel='Close'
@@ -78,12 +51,27 @@ const ThemeInstalledModal: React.FC<{
         okLabel={okLabel}
         okRunningLabel='Activating...'
         prompt={<>
-            {prompt}
+            <div className='space-y-5'>
+                {installedTheme.active ? (
+                    <div className='space-y-2 text-sm text-foreground'>
+                        <p>{outcomeCopy}</p>
+                    </div>
+                ) : (
+                    <OutcomeBanner title={outcomeTitle} variant='success'>
+                        <div className='space-y-2'>
+                            <p>{outcomeCopy}</p>
+                        </div>
+                    </OutcomeBanner>
+                )}
 
-            {errorPrompt}
-            {warningPrompt}
+                <ThemeValidationDetailsDisclosure
+                    defaultOpen={defaultOpen}
+                    problems={secondaryProblems}
+                />
+            </div>
         </>}
-        title={title}
+        stickyFooter={true}
+        title={modalTitle}
         onOk={async (activateModal) => {
             if (!installedTheme.active) {
                 try {

@@ -4,7 +4,7 @@ import React, {useState} from 'react';
 import {ButtonColor} from '../button';
 
 export interface ConfirmationModalProps {
-    title?: string;
+    title?: React.ReactNode;
     prompt?: React.ReactNode;
     cancelLabel?: string;
     okLabel?: string;
@@ -16,6 +16,7 @@ export interface ConfirmationModalProps {
     }) => void | Promise<void>;
     customFooter?: boolean | React.ReactNode;
     formSheet?: boolean;
+    stickyFooter?: boolean;
 }
 
 export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
@@ -28,7 +29,8 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
     onCancel,
     onOk,
     customFooter,
-    formSheet = true
+    formSheet = true,
+    stickyFooter = false
 }) => {
     const modal = useModal();
     const [taskState, setTaskState] = useState<'running' | ''>('');
@@ -41,6 +43,7 @@ export const ConfirmationModalContent: React.FC<ConfirmationModalProps> = ({
             formSheet={formSheet}
             okColor={okColor}
             okLabel={taskState === 'running' ? okRunningLabel : okLabel}
+            stickyFooter={stickyFooter}
             testId='confirmation-modal'
             title={title}
             width={540}

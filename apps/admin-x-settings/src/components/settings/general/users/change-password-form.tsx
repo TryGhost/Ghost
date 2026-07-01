@@ -22,11 +22,10 @@ const DISALLOWED_PASSWORDS = ['ghost', 'password', 'passw0rd'];
  * we return false and therefore invalidate the string.
  */
 const validateCharacterOccurrance = (stringToTest: string) => {
-    let chars: Record<string, number> = {};
-    let allowedOccurancy;
+    const chars: Record<string, number> = {};
     let valid = true;
 
-    allowedOccurancy = stringToTest.length / 2;
+    const allowedOccurancy = stringToTest.length / 2;
 
     // Loop through string and accumulate character counts
     for (let i = 0; i < stringToTest.length; i += 1) {
@@ -39,7 +38,7 @@ const validateCharacterOccurrance = (stringToTest: string) => {
 
     // check if any of the accumulated chars exceed the allowed occurancy
     // of 50% of the words' length.
-    for (let charCount in chars) {
+    for (const charCount in chars) {
         if (chars[charCount] >= allowedOccurancy) {
             valid = false;
             return valid;
@@ -84,10 +83,9 @@ const ChangePasswordForm: React.FC<{user: User}> = ({user}) => {
 
         let blogUrl = config.blogUrl || window.location.host;
         let blogTitle = siteData.title;
-        let blogUrlWithSlash;
 
         blogUrl = blogUrl.replace(/^http(s?):\/\//, '');
-        blogUrlWithSlash = blogUrl.match(/\/$/) ? blogUrl : `${blogUrl}/`;
+        const blogUrlWithSlash = blogUrl.match(/\/$/) ? blogUrl : `${blogUrl}/`;
 
         blogTitle = blogTitle ? blogTitle.trim().toLowerCase() : blogTitle;
 

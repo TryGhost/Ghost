@@ -46,7 +46,10 @@ class AutomationsService {
         const enqueuePollAt = async (date) => {
             const isRequestedDateInTheFuture = new Date() < date;
             if (!isRequestedDateInTheFuture) {
-                this.#enqueuePollNow();
+                // Dispatch a task instead of calling immediately to resolve issues with better-sqlite3
+                // being synchronous and blocking the schedulerAdapter.schedule call below, which can
+                // cause a deadlock in some cases.
+                setImmediate(() => this.#enqueuePollNow());
                 return;
             }
 

@@ -8,10 +8,25 @@ const Sentry = require('@sentry/node');
 const fakeDSN = 'https://aaabbbccc000111222333444555667@sentry.io/1234567';
 let sentry;
 
+// These tests deliberately bust core/shared/sentry out of the require cache and
+// re-require it under different configs. Under the unit suite's shared module
+// registry (isolate: false) that swaps the singleton other already-loaded
+// modules hold a reference to, so callers like the theme-upload reporter end up
+// invoking a different sentry instance than a co-scheduled test stubbed. Snapshot
+// the original cached module and put it back after each test so the registry is
+// left exactly as we found it.
+const sentryModulePath = require.resolve('../../../core/shared/sentry');
+const originalSentryModule = require.cache[sentryModulePath];
+
 describe('UNIT: sentry', function () {
     afterEach(async function () {
         await configUtils.restore();
         sinon.restore();
+        if (originalSentryModule) {
+            require.cache[sentryModulePath] = originalSentryModule;
+        } else {
+            delete require.cache[sentryModulePath];
+        }
     });
 
     describe('No sentry config', function () {
@@ -157,10 +172,18 @@ describe('UNIT: sentry', function () {
     });
 
     describe('beforeSendTransaction', function () {
-        it('filters transactions based on an allow list', function () {
-            sentry = require('../../../core/shared/sentry');
+        beforeEach(function () {
+            // beforeSendTransaction is only exported when sentry is enabled, so
+            // configure a DSN and re-require rather than relying on a previous
+            // test having left a configured instance in the require cache.
+            configUtils.set({sentry: {disabled: false, dsn: fakeDSN}});
+            delete require.cache[require.resolve('../../../core/shared/sentry')];
 
-            const beforeSendTransaction = sentry. beforeSendTransaction;
+            sentry = require('../../../core/shared/sentry');
+        });
+
+        it('filters transactions based on an allow list', function () {
+            const beforeSendTransaction = sentry.beforeSendTransaction;
 
             const allowedTransactions = [
                 {transaction: 'GET /ghost/api/settings'},

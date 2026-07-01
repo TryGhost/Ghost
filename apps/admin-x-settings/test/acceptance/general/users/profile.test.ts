@@ -2,6 +2,8 @@ import {type StaffTokenResponseType} from '@tryghost/admin-x-framework/api/staff
 import {expect, test} from '@playwright/test';
 import {globalDataRequests, mockApi, responseFixtures, settingsWithStripe, testUrlValidation} from '@tryghost/admin-x-framework/test/acceptance';
 
+const __dirname = import.meta.dirname;
+
 test.describe('User profile', async () => {
     test('Validates basic profile fields', async ({page}) => {
         const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;

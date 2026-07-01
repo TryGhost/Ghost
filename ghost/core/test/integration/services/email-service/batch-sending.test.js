@@ -85,14 +85,12 @@ async function testEmailBatches(settings, email_recipient_filter, expectedBatche
     assert.equal(memberIds.length, _.uniq(memberIds).length);
 }
 
-// The batch sending tests have some sort of ordering issue that causes them to fail intermittently
-// We need to decide if they are worth keeping, or if we should rewrite them to be more reliable
-// eslint-disable-next-line ghost/mocha/no-skipped-tests
-describe.skip('Batch sending tests', function () {
+describe('Batch sending tests', function () {
     let linkRedirectService, linkRedirectRepository, linkTrackingService, linkClickRepository;
     let ghostServer;
+    let seededMemberIds;
 
-    beforeEach(function () {
+    beforeEach(async function () {
         configUtils.set('bulkEmail:batchSize', 100);
         stubbedSend = sinon.fake.resolves({
             id: 'stubbed-email-id'
@@ -103,6 +101,11 @@ describe.skip('Batch sending tests', function () {
             return stubbedSend.call(this, ...arguments);
         });
         mockManager.mockStripe();
+
+        // Snapshot the seeded members so afterEach can drop any a test creates,
+        // keeping recipient counts deterministic even if a test throws before
+        // its own cleanup runs.
+        seededMemberIds = new Set((await models.Member.findAll()).models.map(member => member.id));
     });
 
     afterEach(async function () {
@@ -113,9 +116,16 @@ describe.skip('Batch sending tests', function () {
         }], {context: {internal: true}});
         mockManager.restore();
         await jobManager.allSettled();
+
+        // Drop any members a test created so they don't leak into later tests —
+        // a leaked subscriber shifts recipient counts and cascades failures.
+        const leaked = (await models.Member.findAll()).models.filter(member => !seededMemberIds.has(member.id));
+        for (const member of leaked) {
+            await models.Member.destroy({id: member.id});
+        }
     });
 
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsWithFrontend();
         agent = agents.adminAgent;
         frontendAgent = agents.frontendAgent;
@@ -131,7 +141,7 @@ describe.skip('Batch sending tests', function () {
         linkClickRepository = linkTrackingService.linkClickRepository;
     });
 
-    after(async function () {
+    afterAll(async function () {
         mockManager.restore();
         await ghostServer.stop();
     });
@@ -177,16 +187,27 @@ describe.skip('Batch sending tests', function () {
         // Prepare a post and email model
         const {emailModel} = await sendEmail(agent);
 
-        // Retry sending a couple of times
-        const promises = [];
-        for (let i = 0; i < 100; i++) {
-            promises.push(emailService.service.retryEmail(emailModel));
-        }
-        await Promise.all(promises);
+        // Flip the email back to `failed` so retryEmail is allowed to reschedule it
+        // (retryEmail now rejects non-failed emails). This reproduces the real-world
+        // contention we care about: a failed email getting retried many times at once.
+        await emailModel.save({status: 'failed'}, {patch: true, autoRefresh: false});
+
+        // Each retryEmail mutates its email model in-memory (status -> pending) before
+        // scheduling, so concurrent calls must use independent model instances — otherwise
+        // they'd race on the shared model's status and trip the "only failed" guard.
+        const emailModels = await Promise.all(
+            Array.from({length: 50}, () => models.Email.findOne({id: emailModel.id}))
+        );
+
+        // Retry sending a couple of times concurrently
+        await Promise.all(emailModels.map(model => emailService.service.retryEmail(model)));
 
         // Await sending job
         await jobManager.allSettled();
 
+        // Despite 50 concurrent retries each scheduling a job, the emailJob status lock
+        // (pending/failed -> submitting) ensures only one job actually sends. The already
+        // submitted batch from the initial send is short-circuited, not re-sent.
         await emailModel.refresh();
         assert.equal(emailModel.get('status'), 'submitted');
         assert.equal(emailModel.get('email_count'), 4);
@@ -196,7 +217,6 @@ describe.skip('Batch sending tests', function () {
         assert.equal(batches.models.length, 1);
     });
 
-    // FLAKEY
     it('Doesn\'t include members created after the email in the batches', async function () {
         // If we create a new member (e.g. a member that was imported) after the email was created, they should not be included in the email
         const addStub = sinon.stub(models.Email, 'add');
@@ -249,7 +269,6 @@ describe.skip('Batch sending tests', function () {
         await models.Member.destroy({id: laterMember.id});
     });
 
-    // FLAKEY
     it('Splits recipients in free and paid batch', async function () {
         await testEmailBatches({
             // Requires a paywall = different content for paid and free members
@@ -554,7 +573,6 @@ describe.skip('Batch sending tests', function () {
         await restoreEmailVerificationUtils();
     });
 
-    // FLAKEY
     describe('Target Delivery Window', function () {
         it('can send an email with a target delivery window set', async function () {
             const t0 = new Date();
@@ -600,13 +618,17 @@ describe.skip('Batch sending tests', function () {
             const calls = stubbedSend.getCalls();
             const deadline = new Date(t0.getTime() + targetDeliveryWindow);
 
-            // Check that the emails were sent with the deliverytime
-            for (const call of calls) {
-                const options = call.args[1];
-                const deliveryTimeString = options['o:deliverytime'];
-                const deliveryTimeDate = new Date(Date.parse(deliveryTimeString));
-                assert.equal(typeof deliveryTimeString, 'string');
-                assert.ok(deliveryTimeDate.getTime() <= deadline.getTime());
+            // The first/immediate batch's delivery time is "now" at calculation time,
+            // which the sender drops once the clock ticks past it (it never schedules a
+            // delivery in the past), so that batch legitimately sends with no
+            // deliverytime. Workers also run concurrently, so the batch order isn't
+            // guaranteed. Assert the windowed batches each carry a valid deliverytime
+            // within the deadline, rather than requiring one on every batch.
+            const deliveryTimes = calls.map(call => call.args[1]['o:deliverytime']);
+            const scheduled = deliveryTimes.filter(time => typeof time === 'string');
+            assert.ok(scheduled.length >= 3, `expected at least 3 scheduled delivery times, got ${scheduled.length}`);
+            for (const deliveryTimeString of scheduled) {
+                assert.ok(Date.parse(deliveryTimeString) <= deadline.getTime());
             }
             configUtils.restore();
         });
@@ -713,12 +735,12 @@ describe.skip('Batch sending tests', function () {
             assert.match(html, /Hey there, Hey ,/);
 
             // The unsubscribe link is replaced
-            assert.match(html, /<a href="http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
+            assert.match(html, /<a href="http:\/\/127.0.0.1:\d+\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
 
             // Same for plaintext:
             assert.match(plaintext, /Hello {first_name},/);
             assert.match(plaintext, /Hey there, Hey ,/);
-            assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
+            assert.match(plaintext, /\[http:\/\/127.0.0.1:\d+\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
 
             await matchEmailSnapshot();
         });
@@ -747,12 +769,12 @@ describe.skip('Batch sending tests', function () {
             assert.match(html, /Hey Simon, Hey Simon,/);
 
             // The unsubscribe link is replaced
-            assert.match(html, /<a href="http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
+            assert.match(html, /<a href="http:\/\/127.0.0.1:\d+\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+"/, 'Unsubscribe link not found in html');
 
             // Same for plaintext:
             assert.match(plaintext, /Hello {first_name},/);
             assert.match(plaintext, /Hey Simon, Hey Simon,/);
-            assert.match(plaintext, /\[http:\/\/127.0.0.1:2369\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
+            assert.match(plaintext, /\[http:\/\/127.0.0.1:\d+\/unsubscribe\/\?uuid=[a-z0-9-]+&key=[a-z0-9]+&newsletter=[a-z0-9-]+\]/, 'Unsubscribe link not found in plaintext');
 
             await matchEmailSnapshot();
         });

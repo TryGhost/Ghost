@@ -3,7 +3,6 @@
 import {createElement as h, render} from 'preact';
 
 import {createAdminApi, canShowToolbar, createAuthFrame} from './auth';
-import {applyBodyOffset} from './body-offset';
 import {getConfig, getScript} from './config';
 import {ROOT_ID} from './constants';
 import {Toolbar} from './components';
@@ -57,11 +56,6 @@ function renderToolbar({config, user, frame}) {
     document.body.appendChild(host);
 
     render(h(Toolbar, {config, user}), mount);
-
-    window.requestAnimationFrame(() => {
-        const toolbar = mount.querySelector('.gh-admin-toolbar');
-        applyBodyOffset(toolbar?.offsetHeight || 56);
-    });
 
     frame.dataset.toolbarMounted = 'true';
 }

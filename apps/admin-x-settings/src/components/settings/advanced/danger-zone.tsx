@@ -8,17 +8,20 @@ import {useDeleteAllContent} from '@tryghost/admin-x-framework/api/db';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {useQueryClient} from '@tryghost/admin-x-framework';
+import {useRemoveAllGiftLinks} from '@tryghost/admin-x-framework/api/gift-links';
 import {useResetAuth} from '@tryghost/admin-x-framework/api/security';
 
 const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const {mutateAsync: deleteAllContent} = useDeleteAllContent();
     const {mutateAsync: resetAuth} = useResetAuth();
+    const {mutateAsync: removeAllGiftLinks} = useRemoveAllGiftLinks();
     const client = useQueryClient();
     const handleError = useHandleError();
     const {config} = useGlobalData();
     const {totalUsers} = useStaffUsers();
 
     const resetAuthEnabled = Boolean(config?.labs?.dangerZoneResetAuth);
+    const giftLinksEnabled = Boolean(config?.labs?.giftLinks);
 
     const resetAuthStaffSentence = totalUsers === 1
         ? 'You will be signed out and must reset your password before signing back in.'
@@ -83,6 +86,29 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
         });
     };
 
+    const handleRemoveAllGiftLinks = () => {
+        NiceModal.show(ConfirmationModal, {
+            title: 'Reset all gift links?',
+            prompt: 'This immediately invalidates every active gift link across your site. Anyone holding one will lose access. New gift links can still be created afterwards.',
+            okLabel: 'Reset all gift links',
+            okRunningLabel: 'Resetting...',
+            okColor: 'red',
+            onOk: async (modal) => {
+                try {
+                    const response = await removeAllGiftLinks(null);
+                    const count = response?.meta?.count ?? 0;
+                    showToast({
+                        title: `Reset ${count} gift ${count === 1 ? 'link' : 'links'}.`,
+                        type: 'success'
+                    });
+                    modal?.remove();
+                } catch (e) {
+                    handleError(e);
+                }
+            }
+        });
+    };
+
     return (
         <TopLevelGroup
             customHeader={
@@ -107,6 +133,15 @@ const DangerZone: React.FC<{ keywords: string[] }> = ({keywords}) => {
                         detail='Rotate every API key, sign out every staff user, and require a password reset. Use after a suspected credential compromise.'
                         testId='reset-all-authentication'
                         title='Reset all authentication'
+                    />
+                )}
+                {giftLinksEnabled && (
+                    <ListItem
+                        action={<Button aria-label='Reset all gift links' color='red' label='Reset' onClick={handleRemoveAllGiftLinks} />}
+                        bgOnHover={false}
+                        detail='Invalidate every active gift link across your site. Anyone holding one will lose access.'
+                        testId='reset-all-gift-links'
+                        title='Reset all gift links'
                     />
                 )}
             </div>

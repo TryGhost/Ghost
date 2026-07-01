@@ -1,6 +1,6 @@
 import classic from 'ember-classic-decorator';
 import {inject as service} from '@ember/service';
-/* eslint-disable camelcase, ghost/ember/alias-model-in-controller */
+/* eslint-disable ghost/ember/alias-model-in-controller */
 import Controller, {inject as controller} from '@ember/controller';
 import ValidationEngine from 'ghost-admin/mixins/validation-engine';
 import {action} from '@ember/object';

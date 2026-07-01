@@ -5,7 +5,6 @@
  * @see core/shared/config/defaults.json
  * @see core/server/services/adapter-manager/adapter-manager.js
  */
-/* eslint-disable ghost/filenames/match-regex */
 const RedisCache = require('../lib/redis/AdapterCacheRedis');
 
 module.exports = RedisCache;

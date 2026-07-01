@@ -178,6 +178,18 @@ const resetRateLimits = async () => {
 };
 
 /**
+ * Reset the image-size cache. core/server/lib/image captures its cache adapter
+ * at module load and never refreshes it, so under the shared boot (isolate:false)
+ * the first file to probe an image (e.g. the test content folder's test.jpg)
+ * caches a result that every later file reads — flaking email previews, whose
+ * committed snapshot expects the un-resized URL (a fresh probe of the 1x1 fixture
+ * yields no dimensions). Clear it between boots so each file probes fresh.
+ */
+const resetImageSizeCache = () => {
+    require('../../core/server/lib/image').cachedImageSizeFromUrl.cache.reset();
+};
+
+/**
  * This function ensures that Ghost's data is reset back to "factory settings"
  *
  */
@@ -192,6 +204,8 @@ const resetData = async () => {
 
     // Reset rate limiting instances (resetting the table is not enough!)
     await resetRateLimits();
+
+    resetImageSizeCache();
 };
 
 /**

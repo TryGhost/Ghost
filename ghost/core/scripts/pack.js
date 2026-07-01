@@ -17,7 +17,7 @@
  *  4. Create a Ghost-CLI compatible tarball (package/ prefix, no node_modules)
  */
 
-/* eslint-disable no-console, ghost/ghost-custom/no-native-error */
+/* eslint-disable ghost/ghost-custom/no-native-error */
 
 const fs = require('node:fs');
 const path = require('node:path');

@@ -112,6 +112,10 @@ class Bridge {
         debug('reload frontend');
         const siteApp = require('./frontend/web/site');
 
+        // Clear lazy router configs before re-registration so they don't pile up
+        // across reloads. No-op without a lazy backend; eager resets separately.
+        urlService.facade.reset();
+
         const routerConfig = {
             routeSettings: await routeSettings.loadRouteSettings(),
             urlService: urlService.facade

@@ -1,7 +1,13 @@
 const {expect} = require('chai');
 const sinon = require('sinon');
 const {BrowserService} = require('../../../../core/frontend/src/ghost-stats/browser-service.js');
+
+// ghost-stats.js auto-runs init() at module load. Outside a browser there's no
+// config, so it logs an expected "Missing required configuration" warning on
+// import. Suppress that one-time load-side-effect warning so it isn't noise.
+const importWarnStub = sinon.stub(console, 'warn');
 const {GhostStats} = require('../../../../core/frontend/src/ghost-stats/ghost-stats.js');
+importWarnStub.restore();
 
 describe('ghost-stats.js', function () {
     let sandbox;
@@ -318,14 +324,15 @@ describe('ghost-stats.js', function () {
         });
 
         it('should handle network errors gracefully', async function () {
-            mockFetch.rejects(new Error('Network error'));
-            const consoleSpy = sandbox.spy(console, 'error');
-            
+            const networkError = new Error('Network error');
+            mockFetch.rejects(networkError);
+            const consoleSpy = sandbox.stub(console, 'error');
+
             mockWindow.location.hostname = 'localhost';
             await ghostStats.trackEvent('test_event', {});
-            
+
             expect(consoleSpy.calledOnce).to.be.true;
-            consoleSpy.restore();
+            expect(consoleSpy.calledWith('Ghost Stats error:', networkError)).to.be.true;
         });
 
         it('should send properly structured analytics payloads', async function () {
@@ -557,7 +564,11 @@ describe('ghost-stats.js', function () {
         });
 
         it('should handle missing configuration gracefully', function () {
+            const consoleWarnStub = sandbox.stub(console, 'warn');
+
             expect(ghostStats.init()).to.be.false;
+
+            expect(consoleWarnStub.calledOnceWith('Ghost Stats: Missing required configuration')).to.be.true;
         });
 
         it('should set up global Tinybird API when initialized', function () {

@@ -9,13 +9,9 @@ interface ModelProperties {
 
 interface TestModel {
     id: string | null;
-    // eslint-disable-next-line no-unused-vars
     getLazyRelation: (relation: string) => Promise<any>;
-    // eslint-disable-next-line no-unused-vars
     related: (relation: string) => any;
-    // eslint-disable-next-line no-unused-vars
     get: (property: string) => any;
-    // eslint-disable-next-line no-unused-vars
     save: (properties: ModelProperties) => Promise<void>;
     toJSON: () => any;
 }
@@ -133,7 +129,6 @@ const createModelClass = (options: ModelClassOptions = {}) => {
                 }
             );
         },
-        // eslint-disable-next-line no-unused-vars
         transaction: async (callback: (transacting: any) => Promise<any>) => {
             const transacting = {transacting: 'transacting'};
             return await callback(transacting);
@@ -181,7 +176,6 @@ const createDb = ({first, all}: DbOptions = {}) => {
         first: () => {
             return Promise.resolve(first);
         },
-        // eslint-disable-next-line no-unused-vars
         then: function (resolve: (value: any) => void) {
             resolve(a);
         },

@@ -1,6 +1,7 @@
 {
   "name": "@tryghost/sodo-search",
-  "version": "1.8.23",
+  "type": "module",
+  "version": "1.8.31",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -21,57 +22,13 @@
     "react-dom": "catalog:react17"
   },
   "scripts": {
-    "dev": "pnpm build && concurrently --kill-others --names preview,build,tailwind \"vite preview -l silent\" \"pnpm build:watch\" \"pnpm tailwind\"",
-    "build": "vite build && pnpm tailwind:base",
-    "build:watch": "vite build --watch",
-    "tailwind": "pnpm tailwind:base --watch ",
-    "tailwind:base": "tailwindcss -i ./src/index.css -o ./umd/main.css --minify",
+    "dev": "vite build --watch --mode development",
+    "build": "vite build",
     "test": "vitest run",
-    "lint": "eslint src --ext .js --cache",
+    "lint": "eslint src test --cache",
     "preship": "pnpm lint",
     "ship": "node ../../.github/scripts/release-apps.js",
     "prepublishOnly": "pnpm build"
-  },
-  "eslintConfig": {
-    "env": {
-      "browser": true,
-      "jest": true
-    },
-    "parserOptions": {
-      "sourceType": "module",
-      "ecmaVersion": 2022
-    },
-    "extends": [
-      "plugin:ghost/browser",
-      "plugin:react/recommended"
-    ],
-    "plugins": [
-      "ghost"
-    ],
-    "rules": {
-      "react/prop-types": "off",
-      "ghost/filenames/match-regex": [
-        "error",
-        "^[a-z0-9.-]+$",
-        false
-      ],
-      "ghost/sort-imports-es6-autofix/sort-imports-es6": [
-        "error",
-        {
-          "memberSyntaxSortOrder": [
-            "none",
-            "all",
-            "single",
-            "multiple"
-          ]
-        }
-      ]
-    },
-    "settings": {
-      "react": {
-        "version": "detect"
-      }
-    }
   },
   "browserslist": {
     "production": [
@@ -93,15 +50,22 @@
     ]
   },
   "devDependencies": {
+    "@eslint/js": "catalog:",
     "@testing-library/jest-dom": "catalog:",
     "@testing-library/react": "catalog:react17",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
+    "autoprefixer": "10.5.0",
     "concurrently": "catalog:",
     "cross-fetch": "catalog:",
     "eslint": "catalog:",
+    "eslint-plugin-ghost": "catalog:",
+    "eslint-plugin-react": "catalog:",
+    "globals": "catalog:",
     "jsdom": "catalog:",
     "nock": "14.0.15",
+    "postcss": "catalog:",
+    "postcss-import": "16.1.1",
     "tailwindcss": "catalog:tailwind3",
     "vite": "catalog:",
     "vite-plugin-svgr": "catalog:",
@@ -109,7 +73,8 @@
   },
   "nx": {
     "tags": [
-      "i18n"
+      "i18n",
+      "public-app"
     ]
   }
 }

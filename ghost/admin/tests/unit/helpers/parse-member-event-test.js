@@ -40,6 +40,46 @@ describe('Unit: Helper: parse-member-event', function () {
         });
     });
 
+    describe('automated_email_sent_event action', function () {
+        it('returns the welcome email label for welcome automation slugs', function () {
+            const event = buildEvent({
+                type: 'automated_email_sent_event',
+                data: {
+                    automatedEmail: {
+                        source: 'automated_email',
+                        slug: 'member-welcome-email-paid',
+                        name: 'Welcome Email (Paid)',
+                        subject: 'Welcome to the paid tier'
+                    }
+                }
+            });
+            const result = helper.compute([event]);
+            expect(result.action).to.equal('received welcome email (Paid)');
+            expect(result.actionTitle).to.equal('received welcome email (Paid)');
+            expect(result.info).to.equal(undefined);
+            expect(result.description).to.equal(undefined);
+        });
+
+        it('returns the email subject inline for automation action revision rows', function () {
+            const event = buildEvent({
+                type: 'automated_email_sent_event',
+                data: {
+                    automatedEmail: {
+                        source: 'automation_action_revision',
+                        slug: 'member-welcome-email-free',
+                        name: 'New member onboarding',
+                        subject: 'Here is how to get started'
+                    }
+                }
+            });
+            const result = helper.compute([event]);
+            expect(result.action).to.equal('received automated email: Here is how to get started');
+            expect(result.actionTitle).to.equal('received automated email: Here is how to get started');
+            expect(result.info).to.equal(undefined);
+            expect(result.description).to.equal(undefined);
+        });
+    });
+
     describe('signup_event info', function () {
         it('returns null when created_with_status is "paid"', function () {
             const event = buildEvent({

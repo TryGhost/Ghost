@@ -11,7 +11,7 @@ describe('Member Commenting API', function () {
     let member;
     let owner;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('members');
         await agent.loginAsOwner();
@@ -364,7 +364,7 @@ describe('Member Commenting Service Behavior', function () {
     let adminAgent;
     let member;
 
-    before(async function () {
+    beforeAll(async function () {
         adminAgent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('members');
         await adminAgent.loginAsOwner();
@@ -458,7 +458,7 @@ describe('Member with Commenting Disabled - Comment Restriction', function () {
     let member;
     let postId;
 
-    before(async function () {
+    beforeAll(async function () {
         adminAgent = await agentProvider.getAdminAPIAgent();
         membersAgent = await agentProvider.getMembersAPIAgent();
         await fixtureManager.init('posts', 'members');

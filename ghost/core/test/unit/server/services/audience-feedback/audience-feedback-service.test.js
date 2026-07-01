@@ -100,4 +100,47 @@ describe('audienceFeedbackService', function () {
             assert.match(link.href, new RegExp(`#/feedback/${mockData.postId}/`));
         });
     });
+
+    describe('build email link', function () {
+        function createInstance(baseURL) {
+            return new AudienceFeedbackService({
+                urlService: {facade: {}},
+                config: {baseURL: new URL(baseURL)}
+            });
+        }
+
+        it('builds an id-based redirect link with placeholders (no slug)', async function () {
+            const instance = createInstance('https://localhost:2368/');
+            const link = instance.buildEmailLink(mockPost, mockData.score);
+            assert.equal(
+                link,
+                `https://localhost:2368/members/feedback/${mockData.postId}/${mockData.score}/?uuid=%%{uuid}%%&key=%%{key}%%`
+            );
+        });
+
+        it('does not depend on the url service / post slug', async function () {
+            const instance = createInstance('https://localhost:2368/');
+            const link = instance.buildEmailLink(mockPost, 0);
+            assert.match(link, new RegExp(`/members/feedback/${mockData.postId}/0/`));
+            assert(!link.includes(mockData.postTitle));
+        });
+
+        it('respects a subdirectory base URL', async function () {
+            const instance = createInstance('https://localhost:2368/blog/');
+            const link = instance.buildEmailLink(mockPost, 1);
+            assert.equal(
+                link,
+                `https://localhost:2368/blog/members/feedback/${mockData.postId}/1/?uuid=%%{uuid}%%&key=%%{key}%%`
+            );
+        });
+
+        it('serialises Bookshelf-model input so spread does not lose the id', async function () {
+            const instance = createInstance('https://localhost:2368/');
+            const fakeBookshelfModel = {
+                toJSON: () => ({id: mockData.postId, slug: mockData.postTitle, type: 'post'})
+            };
+            const link = instance.buildEmailLink(fakeBookshelfModel, 1);
+            assert.match(link, new RegExp(`/members/feedback/${mockData.postId}/1/`));
+        });
+    });
 });

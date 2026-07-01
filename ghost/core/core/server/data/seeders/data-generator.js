@@ -210,13 +210,16 @@ class DataGenerator {
         }
 
         if (this.useTransaction) {
+            // SQLite only supports serializable transactions and warns if an
+            // isolation level is passed, so only set it for other databases.
+            const transactionConfig = DatabaseInfo.isSQLite(this.knex) ? {} : {isolationLevel: 'read committed'};
             await this.knex.transaction(async (transaction) => {
                 if (!DatabaseInfo.isSQLite(this.knex)) {
                     await transaction.raw('SET autocommit=0;');
                 }
 
                 await this.#run(transaction);
-            }, {isolationLevel: 'read committed'});
+            }, transactionConfig);
         } else {
             await this.#run(this.knex);
         }

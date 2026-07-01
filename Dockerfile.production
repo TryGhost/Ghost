@@ -32,7 +32,7 @@ RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
     apt-get update && \
     apt-get install -y --no-install-recommends build-essential python3 && \
     pnpm install --ignore-scripts --prod --prefer-offline && \
-    (cd node_modules/sqlite3 && npm run install) && \
+    (cd node_modules/better-sqlite3 && npm run install) && \
     apt-get purge -y build-essential python3 && \
     apt-get autoremove -y && \
     rm -rf /var/lib/apt/lists/*

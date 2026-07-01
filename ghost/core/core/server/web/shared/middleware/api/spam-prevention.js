@@ -92,7 +92,7 @@ const handleStoreError = (err) => {
 // Defaults to 50 attempts per hour and locks the endpoint for an hour
 const globalBlock = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -121,7 +121,7 @@ const globalBlock = () => {
 
 const globalReset = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -150,7 +150,7 @@ const globalReset = () => {
 
 const webmentionsBlock = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -176,7 +176,7 @@ const webmentionsBlock = () => {
 
 const emailPreviewBlock = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -202,7 +202,7 @@ const emailPreviewBlock = () => {
 
 const membersAuth = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -235,7 +235,7 @@ const membersAuth = () => {
  */
 const membersAuthEnumeration = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -265,7 +265,7 @@ const membersAuthEnumeration = () => {
 
 const checkoutSessionGlobal = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -295,7 +295,7 @@ const checkoutSessionGlobal = () => {
 
 const checkoutSessionEmail = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -325,7 +325,7 @@ const checkoutSessionEmail = () => {
 
 const otcVerificationEnumeration = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -356,7 +356,7 @@ const otcVerificationEnumeration = () => {
 
 const otcVerification = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -391,7 +391,7 @@ const otcVerification = () => {
 // Default value of 5 attempts per user+IP pair
 const userLogin = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -422,7 +422,7 @@ const userLogin = () => {
 // The endpoint is then locked for an hour
 const userReset = function userReset() {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -451,7 +451,7 @@ const userReset = function userReset() {
 
 const userVerification = function userVerification() {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -477,7 +477,7 @@ const userVerification = function userVerification() {
 
 const sendVerificationCode = function sendVerificationCode() {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({
@@ -505,7 +505,7 @@ const sendVerificationCode = function sendVerificationCode() {
 // The endpoint is then locked for an hour
 const privateBlog = () => {
     const ExpressBrute = require('express-brute');
-    const BruteKnex = require('brute-knex');
+    const BruteKnex = require('@tryghost/brute-knex');
     const db = require('../../../../data/db');
 
     store = store || new BruteKnex({

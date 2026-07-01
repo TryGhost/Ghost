@@ -3,6 +3,7 @@ import type {User} from '@tryghost/admin-x-framework/api/users';
 
 export const MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD = 'count.active_stripe_customers';
 export const MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER = `${MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD}:>1`;
+export const NO_MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER = `${MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD}:<2`;
 
 const MultipleActiveSubscriptionsBannerPreferenceSchema = z.looseObject({
     dismissedCount: z.number().finite().optional().catch(undefined),
@@ -18,10 +19,6 @@ export type MultipleActiveSubscriptionsBannerPreference = z.infer<typeof Multipl
 
 export function isMultipleActiveSubscriptionsFilter(nql: string | undefined): boolean {
     return nql === MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FILTER;
-}
-
-export function isMultipleActiveSubscriptionsPredicate(predicate: {field: string}): boolean {
-    return predicate.field === MULTIPLE_ACTIVE_STRIPE_CUSTOMERS_FIELD;
 }
 
 export function parseAccessibilityPreferences(accessibility: string | null | undefined): AccessibilityPreferences {

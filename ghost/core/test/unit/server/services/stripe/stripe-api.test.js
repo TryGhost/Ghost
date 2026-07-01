@@ -1,11 +1,11 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 const sinon = require('sinon');
-const rewire = require('rewire');
+const stripe = require('stripe');
+const i18n = require('../../../../../core/server/services/i18n');
+const StripeAPI = require('../../../../../core/server/services/stripe/stripe-api');
 
-require('../../../../../core/server/services/i18n').init();
-const {t: i18nT} = require('../../../../../core/server/services/i18n');
-const StripeAPI = rewire('../../../../../core/server/services/stripe/stripe-api');
+i18n.init();
 
 describe('StripeAPI', function () {
     const mockCustomerEmail = 'foo@example.com';
@@ -31,8 +31,7 @@ describe('StripeAPI', function () {
                 }
             };
             mockLabsIsSet = sinon.stub(mockLabs, 'isSet');
-            const mockStripeConstructor = sinon.stub().returns(mockStripe);
-            StripeAPI.__set__('Stripe', mockStripeConstructor);
+            sinon.stub(stripe, 'Stripe').returns(mockStripe);
             api.configure({
                 checkoutSessionSuccessUrl: '/success',
                 checkoutSessionCancelUrl: '/cancel',
@@ -209,8 +208,7 @@ describe('StripeAPI', function () {
                 }
             };
             mockLabsIsSet = sinon.stub(mockLabs, 'isSet');
-            const mockStripeConstructor = sinon.stub().returns(mockStripe);
-            StripeAPI.__set__('Stripe', mockStripeConstructor);
+            sinon.stub(stripe, 'Stripe').returns(mockStripe);
             api.configure({
                 checkoutSessionSuccessUrl: '/success',
                 checkoutSessionCancelUrl: '/cancel',
@@ -256,8 +254,7 @@ describe('StripeAPI', function () {
                         })
                     }
                 };
-                const mockStripeConstructor = sinon.stub().returns(mockStripe);
-                StripeAPI.__set__('Stripe', mockStripeConstructor);
+                sinon.stub(stripe, 'Stripe').returns(mockStripe);
                 api.configure({
                     secretKey: ''
                 });
@@ -285,8 +282,7 @@ describe('StripeAPI', function () {
                         })
                     }
                 };
-                const mockStripeConstructor = sinon.stub().returns(mockStripe);
-                StripeAPI.__set__('Stripe', mockStripeConstructor);
+                sinon.stub(stripe, 'Stripe').returns(mockStripe);
                 api.configure({
                     secretKey: ''
                 });
@@ -335,8 +331,7 @@ describe('StripeAPI', function () {
                         })
                     }
                 };
-                const mockStripeConstructor = sinon.stub().returns(mockStripe);
-                StripeAPI.__set__('Stripe', mockStripeConstructor);
+                sinon.stub(stripe, 'Stripe').returns(mockStripe);
                 api.configure({
                     secretKey: ''
                 });
@@ -364,8 +359,7 @@ describe('StripeAPI', function () {
                     update: sinon.stub().resolves(mockSubscription)
                 }
             };
-            const mockStripeConstructor = sinon.stub().returns(mockStripe);
-            StripeAPI.__set__('Stripe', mockStripeConstructor);
+            sinon.stub(stripe, 'Stripe').returns(mockStripe);
             api.configure({
                 secretKey: ''
             });
@@ -404,8 +398,7 @@ describe('StripeAPI', function () {
                     update: sinon.stub().resolves(mockSubscription)
                 }
             };
-            const mockStripeConstructor = sinon.stub().returns(mockStripe);
-            StripeAPI.__set__('Stripe', mockStripeConstructor);
+            sinon.stub(stripe, 'Stripe').returns(mockStripe);
             api.configure({
                 secretKey: ''
             });
@@ -440,8 +433,7 @@ describe('StripeAPI', function () {
             };
             mockLabsIsSet = sinon.stub(mockLabs, 'isSet');
             mockLabsIsSet.withArgs('stripeAutomaticTax').returns(true);
-            const mockStripeConstructor = sinon.stub().returns(mockStripe);
-            StripeAPI.__set__('Stripe', mockStripeConstructor);
+            sinon.stub(stripe, 'Stripe').returns(mockStripe);
             api.configure({
                 checkoutSessionSuccessUrl: '/success',
                 checkoutSessionCancelUrl: '/cancel',
@@ -508,8 +500,7 @@ describe('StripeAPI', function () {
                 }
             };
             sinon.stub(mockLabs, 'isSet');
-            const mockStripeConstructor = sinon.stub().returns(mockStripe);
-            StripeAPI.__set__('Stripe', mockStripeConstructor);
+            sinon.stub(stripe, 'Stripe').returns(mockStripe);
             api.configure({
                 checkoutSessionSuccessUrl: '/success',
                 checkoutSessionCancelUrl: '/cancel',
@@ -670,11 +661,7 @@ describe('StripeAPI', function () {
             };
 
             sinon.stub(mockLabs, 'isSet');
-
-            const mockStripeConstructor = sinon.stub().returns(mockStripe);
-
-            StripeAPI.__set__('Stripe', mockStripeConstructor);
-            StripeAPI.__set__('t', i18nT);
+            sinon.stub(stripe, 'Stripe').returns(mockStripe);
 
             api.configure({
                 checkoutSessionSuccessUrl: '/success',
@@ -748,7 +735,7 @@ describe('StripeAPI', function () {
         });
 
         it('uses translated title and cadence labels', async function () {
-            StripeAPI.__set__('t', (key, options = {}) => {
+            sinon.stub(i18n, 't').callsFake((key, options = {}) => {
                 if (key === 'Gift subscription') {
                     return 'Abonnement offert';
                 }
