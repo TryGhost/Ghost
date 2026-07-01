@@ -1439,7 +1439,10 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # The Playwright container runs against the host's bind-mounted node_modules,
+        # but only needs @tryghost/e2e's dependency subgraph — not the whole monorepo
+        # (admin, apps, ghost/core). Scope the install to cut shard setup time.
+        run: pnpm install --frozen-lockfile --filter @tryghost/e2e...
 
       - name: Prepare E2E CI job
         env:
