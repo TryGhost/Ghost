@@ -10,7 +10,7 @@ import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/aud
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useLabsFlag} from '@hooks/use-labs-flag';
-import {useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {useTinybirdQuery, useWebAnalyticsEnabled} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
 countries.registerLocale(enLocale);
@@ -219,6 +219,9 @@ interface UsePostOptionsConfig {
 // This uses a different API pattern so it can't use the generic hook
 const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsConfig = {}) => {
     const {enabled = true} = config;
+    // Post options come from a Ghost API (useTopContent), not useTinybirdQuery, so
+    // they don't inherit the central web-analytics gate — apply it here.
+    const webAnalyticsEnabled = useWebAnalyticsEnabled();
     const {range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
@@ -246,7 +249,7 @@ const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsCon
     // Fetch top content data from Ghost API (which queries Tinybird and enriches with titles)
     const {data: topContentData, isLoading} = useTopContent({
         searchParams: queryParams,
-        enabled
+        enabled: enabled && webAnalyticsEnabled
     });
 
     const options = useMemo(() => {
