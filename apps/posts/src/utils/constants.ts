@@ -14,11 +14,13 @@ export const STATS_RANGES = {
 } as const;
 
 export const STATS_LABEL_MAPPINGS = {
-    // Countries
-    US: 'United States',
-    TWN: 'Taiwan',
-    TW: 'Taiwan',
-    CN: 'China',
+    // Countries — overrides where i18n-iso-countries has no friendly alias,
+    // or where the alias-mode pick isn't the common short form.
+    GB: 'United Kingdom',
+    KR: 'South Korea',
+    LA: 'Laos',
+    MD: 'Moldova',
+    SY: 'Syria',
 
     // Technical
     'mobile-ios': 'iOS',

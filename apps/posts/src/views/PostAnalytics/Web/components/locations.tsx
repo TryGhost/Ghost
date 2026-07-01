@@ -8,7 +8,7 @@ import {STATS_LABEL_MAPPINGS} from '@src/utils/constants';
 
 countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
-    return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en') || 'Unknown';
+    return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en', {select: 'alias'}) || 'Unknown';
 };
 
 interface ProcessedLocationData {

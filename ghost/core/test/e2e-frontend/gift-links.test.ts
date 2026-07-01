@@ -40,7 +40,23 @@ describe('Front-end gift links', function () {
             if (key === 'active_theme') {
                 return 'members-test-theme';
             }
+            if (key === 'web_analytics') {
+                return true;
+            }
             return originalSettingsCacheGetFn(key, options);
+        });
+
+        // Enable the web-analytics tracker so the suite can assert the gift_link
+        // dimension it emits. isWebAnalyticsEnabled() needs the setting above plus
+        // a valid tinybird config (a tracker endpoint + a local/JWT credential).
+        configUtils.set('tinybird', {
+            tracker: {
+                endpoint: 'https://e.ghost.org/tb/web_analytics',
+                token: 'tinybird_token'
+            },
+            stats: {
+                local: {enabled: true}
+            }
         });
 
         await testUtils.startGhost({copyThemes: true});
@@ -79,8 +95,9 @@ describe('Front-end gift links', function () {
         request = supertest.agent(configUtils.config.get('url'));
     });
 
-    afterAll(function () {
+    afterAll(async function () {
         sinon.restore();
+        await configUtils.restore();
     });
 
     it('paywalls the paid post for an anonymous visitor on the canonical URL', async function () {
@@ -187,5 +204,53 @@ describe('Front-end gift links', function () {
             .expect(assertUnlocked);
 
         assert.match(res.text, /gh-test-member-state">anonymous</, '@member must stay anonymous on a gift view');
+    });
+
+    describe('the gift_link analytics dimension', function () {
+        // The web-analytics tracker only carries the gift token once the entry
+        // controller has verified it and flagged the render. An unverified or
+        // forged token is 301'd to the canonical URL before any render, so it can
+        // never reach analytics — these tests prove that end to end.
+        it('emits the verified token as tb_gift_link on a valid gift read', async function () {
+            const res = await request
+                .get(`/${slug}/?gift=${token}`)
+                .expect(200);
+
+            assert.ok(
+                res.text.includes(`tb_gift_link="${token}"`),
+                'the verified token is sent as the gift_link dimension'
+            );
+        });
+
+        it('emits an empty tb_gift_link on the canonical (non-gift) URL', async function () {
+            const res = await request
+                .get(`/${slug}/`)
+                .expect(200);
+
+            assert.match(res.text, /tb_gift_link=""/, 'a normal read carries no gift dimension');
+        });
+
+        it('keeps an invalid token out of analytics — the 301 strips it and the canonical render carries none', async function () {
+            // Follow the 301 to the canonical URL it strips to.
+            const res = await request
+                .get(`/${slug}/?gift=not-a-real-token`)
+                .redirects(1)
+                .expect(200);
+
+            assert.match(res.text, /tb_gift_link=""/, 'the canonical render carries no gift dimension');
+            assert.ok(!res.text.includes('not-a-real-token'), 'the forged token never appears in the response');
+        });
+
+        it('keeps a token for another post out of that post’s analytics', async function () {
+            // Post A's token on post B 301s to B's canonical URL, which must not
+            // carry A's token as B's gift dimension.
+            const res = await request
+                .get(`/${otherSlug}/?gift=${token}`)
+                .redirects(1)
+                .expect(200);
+
+            assert.match(res.text, /tb_gift_link=""/, 'B’s render carries no gift dimension');
+            assert.ok(!res.text.includes(token), 'A’s token never appears in B’s response');
+        });
     });
 });
