@@ -1,7 +1,14 @@
 const config = require('../../shared/config');
-const escapeExpression = require('../services/theme-engine/engine').escapeExpression;
 const socialUrls = require('@tryghost/social-urls');
 const _ = require('lodash');
+
+// NOTE: values here are intentionally NOT HTML-escaped. This object is serialized
+// with JSON.stringify into an inline <script type="application/ld+json"> block by
+// the ghost_head helper, which escapes the breakout-relevant characters as JSON
+// \u escapes (see escapeJsonLd there). HTML-entity escaping here would be both the
+// wrong layer and actively harmful — JSON-LD consumers (Google et al.) parse the
+// block as JSON and never HTML-decode, so `Tom & Jerry` would be indexed as the
+// literal `Tom &amp; Jerry`.
 
 function schemaImageObject(metaDataVal) {
     let imageObject;
@@ -27,7 +34,7 @@ function schemaPublisherObject(metaDataVal) {
 
     publisherObject = {
         '@type': 'Organization',
-        name: escapeExpression(metaDataVal.site.title),
+        name: metaDataVal.site.title,
         url: metaDataVal.site.url || null,
         logo: schemaImageObject(metaDataVal.site.logo) || null
     };
@@ -66,12 +73,12 @@ function trimSameAs(author) {
     const sameAs = [];
 
     if (author.website) {
-        sameAs.push(escapeExpression(author.website));
+        sameAs.push(author.website);
     }
 
     SOCIAL_PLATFORMS.forEach((platform) => {
         if (author[platform] && typeof socialUrls[platform] === 'function') {
-            sameAs.push(escapeExpression(socialUrls[platform](author[platform])));
+            sameAs.push(socialUrls[platform](author[platform]));
         }
     });
 
@@ -86,20 +93,18 @@ function trimSameAs(author) {
 function buildContributorObjects(authors) {
     return authors.map(author => trimSchema({
         '@type': 'Person',
-        name: escapeExpression(author.name),
+        name: author.name,
         image: author.profile_image ? schemaImageObject({url: author.profile_image}) : null,
         url: author.url || null,
         sameAs: trimSameAs(author),
-        description: author.meta_description ?
-            escapeExpression(author.meta_description) :
-            null
+        description: author.meta_description || null
     }));
 }
 
 function getPostSchema(metaData, data) {
     // CASE: metaData.excerpt for post context is populated by either the custom excerpt, the meta description,
     // or the automated excerpt of 50 words. It is empty for any other context.
-    const description = metaData.excerpt ? escapeExpression(metaData.excerpt) : null;
+    const description = metaData.excerpt || null;
 
     let schema;
 
@@ -111,16 +116,14 @@ function getPostSchema(metaData, data) {
         publisher: schemaPublisherObject(metaData),
         author: {
             '@type': 'Person',
-            name: escapeExpression(data[context].primary_author.name),
+            name: data[context].primary_author.name,
             image: schemaImageObject(metaData.authorImage),
             url: metaData.authorUrl,
             sameAs: trimSameAs(data[context].primary_author),
-            description: data[context].primary_author.metaDescription ?
-                escapeExpression(data[context].primary_author.metaDescription) :
-                null
+            description: data[context].primary_author.metaDescription || null
         },
         contributor: data[context].authors && data[context].authors.length > 1 ? buildContributorObjects(data[context].authors.slice(1)) : null,
-        headline: escapeExpression(metaData.metaTitle),
+        headline: metaData.metaTitle,
         url: metaData.url,
         datePublished: metaData.publishedDate,
         dateModified: metaData.modifiedDate,
@@ -143,9 +146,7 @@ function getHomeSchema(metaData) {
         name: metaData.site.title,
         image: schemaImageObject(metaData.coverImage),
         mainEntityOfPage: metaData.url,
-        description: metaData.metaDescription ?
-            escapeExpression(metaData.metaDescription) :
-            null
+        description: metaData.metaDescription || null
     };
     return trimSchema(schema);
 }
@@ -159,9 +160,7 @@ function getTagSchema(metaData, data) {
         image: schemaImageObject(metaData.coverImage),
         name: data.tag.name,
         mainEntityOfPage: metaData.url,
-        description: metaData.metaDescription ?
-            escapeExpression(metaData.metaDescription) :
-            null
+        description: metaData.metaDescription || null
     };
 
     return trimSchema(schema);
@@ -172,13 +171,11 @@ function getAuthorSchema(metaData, data) {
         '@context': 'https://schema.org',
         '@type': 'Person',
         sameAs: trimSameAs(data.author),
-        name: escapeExpression(data.author.name),
+        name: data.author.name,
         url: metaData.authorUrl,
         image: schemaImageObject(metaData.authorImage) || schemaImageObject(metaData.coverImage),
         mainEntityOfPage: metaData.authorUrl,
-        description: metaData.metaDescription ?
-            escapeExpression(metaData.metaDescription) :
-            null
+        description: metaData.metaDescription || null
     };
 
     return trimSchema(schema);
