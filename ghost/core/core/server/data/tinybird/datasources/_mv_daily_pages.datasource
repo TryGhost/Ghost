@@ -5,10 +5,9 @@ SCHEMA >
     `pathname` String,
     `post_type` LowCardinality(String),
     `member_status` LowCardinality(String),
-    `gift_link` String,
     `visits` AggregateFunction(uniqExact, String),
     `hits` AggregateFunction(count, UInt64)
 
 ENGINE "AggregatingMergeTree"
 ENGINE_PARTITION_KEY "toYYYYMM(day)"
-ENGINE_SORTING_KEY "site_uuid, day, post_type, member_status, post_uuid, pathname, gift_link"
+ENGINE_SORTING_KEY "site_uuid, day, post_type, member_status, post_uuid, pathname"
