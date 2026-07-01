@@ -41,9 +41,6 @@ export const useGiftLinkUsage = ({postUuid, token, tokenLoading = false, tokenEr
     const {data: settingsData, isLoading: settingsLoading} = useBrowseSettings();
     const webAnalyticsEnabled = getSettingValue<boolean>(settingsData?.settings ?? null, 'web_analytics_enabled') ?? false;
 
-    // Filter to the current token server-side (api_gift_link_visits takes an
-    // exact-match gift_link param), so we fetch only this link's row instead of
-    // every link on the post.
     const params = useMemo(() => ({
         site_uuid: statsConfig?.id || '',
         post_uuid: postUuid || '',

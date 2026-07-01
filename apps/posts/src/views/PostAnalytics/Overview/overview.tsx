@@ -109,8 +109,6 @@ const Overview: React.FC = () => {
     const showNewsletterSection = hasBeenEmailed(post as Post) && emailTrackOpensEnabled && emailTrackClicksEnabled;
     const showWebSection = !post?.email_only && appSettings?.analytics.webAnalytics;
     const showGrowthSection = appSettings?.analytics.membersTrackSources;
-    // The gift-link card only surfaces a web-analytics-derived visitor count, so
-    // it's hidden entirely when web analytics is disabled.
     const showGiftLinkCard = Boolean(canManageGiftLink && post && appSettings?.analytics.webAnalytics);
 
     // Redirect to Growth tab if this is a published-only post with web analytics disabled
@@ -226,9 +224,6 @@ const Overview: React.FC = () => {
                                             Share
                                         </Button>
                                     </div>
-                                    {/* 0 is a valid count (no link yet, or a link with no visits),
-                                        so show it; only hide while loading or on error, where the
-                                        true value is unknown rather than zero. */}
                                     {!giftLinkUsageLoading && !giftLinkUsageError && (
                                         <CardContent className='flex flex-col gap-1'>
                                             <span className='text-sm text-muted-foreground'>
