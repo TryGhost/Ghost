@@ -13,12 +13,21 @@
     // Keep manually-closed immortal/grouped PRs closed unless explicitly
     // reopened from the Dependency Dashboard.
     "recreateWhen": "never",
-    // pnpm lockfile generation has been hitting Mend's 3GB memory ceiling.
-    // Renovate maintainers suggested starting with toolSettings.nodeMaxMemory
-    // set to 1024MB to reduce pnpm's Node heap usage and keep the overall job
-    // under the hosted runner limit.
+    // pnpm lockfile generation (`pnpm install --lockfile-only` across all 20
+    // workspace projects — a ~47k-line, ~4300-entry lockfile) needs well over
+    // 1GB of Node heap. The old 1024MB cap was a workaround for Mend's hosted
+    // 3GB container ceiling: shrink Node's heap enough to keep the whole job
+    // under Mend's limit. Now that Renovate runs self-hosted on ubuntu-latest
+    // (~16GB) that ceiling is gone — but the cap stayed and became the binding
+    // limit. Lockfile regeneration was OOMing at ~1GB ("FATAL ERROR: ...
+    // JavaScript heap out of memory"), which fails renovate/artifacts on every
+    // PR; the PR then opens with a stale lockfile, `Setup`
+    // (pnpm install --frozen-lockfile) fails, every required check cascades red,
+    // nothing automerges, and open PRs jam against the concurrency cap. Raised
+    // to 8192MB: ample headroom for pnpm's resolution graph, still well under
+    // the runner's memory.
     "toolSettings": {
-        "nodeMaxMemory": 1024
+        "nodeMaxMemory": 8192
     },
     // `pnpmDedupe` intentionally NOT in postUpdateOptions — Renovate dedupes
     // on its Linux runner, but `pnpm install` on macOS produces a different
