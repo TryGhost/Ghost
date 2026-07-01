@@ -6,7 +6,6 @@ import type {Entry, EntryResponse} from '../entry';
 const dataService = require('../../../data');
 const renderer = require('../../../rendering');
 const proxy = require('../../../proxy');
-const hbs = require('../../../theme-engine/engine');
 
 /**
  * Build this request's URL with `?gift` removed, preserving path, subdirectory
@@ -21,18 +20,13 @@ function strippedGiftUrl(req: Request): string {
 
 /**
  * Flag the render as a gift view so `ghost_foot` injects the toast. Stores the
- * token (not just a boolean) for a later analytics pass-through. Internal flag,
+ * token (not just a boolean) for a later analytics pass-through. Set on
+ * res.locals so it merges onto the render context root (`@root._giftLink`),
+ * where both `ghost_foot` and `ghost_head`'s tracker read it. Internal flag,
  * not a public theme API.
  */
 function setGiftTemplateFlag(res: EntryResponse, token: string): void {
-    const localTemplateOptions = hbs.getLocalTemplateOptions(res.locals);
-    hbs.updateLocalTemplateOptions(res.locals, {
-        ...localTemplateOptions,
-        data: {
-            ...localTemplateOptions.data,
-            _gift: token
-        }
-    });
+    res.locals._giftLink = token;
 }
 
 /**

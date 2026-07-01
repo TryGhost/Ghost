@@ -20,7 +20,7 @@ interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'f
 
 // Helper to get country name from code
 const getCountryName = (code: string): string => {
-    return STATS_LABEL_MAPPINGS[code as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(code, 'en') || code;
+    return STATS_LABEL_MAPPINGS[code as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(code, 'en', {select: 'alias'}) || code;
 };
 
 // Helper component for visit count badge - used by all filter options
