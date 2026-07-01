@@ -67,10 +67,17 @@ export const useAppContext = () => {
 // Unlike useAppContext, this reads the context without throwing so it can be
 // consumed by framework-level data hooks (e.g. the Tinybird hooks) that may
 // render in standalone/Ember-embedded trees without an AppProvider mounted.
-// It defaults to `true` when no provider is present so those trees keep their
-// existing behaviour — the gate only ever suppresses when we positively know
-// web analytics is turned off.
 export const useWebAnalyticsEnabled = (): boolean => {
     const context = useContext(AppContext);
-    return context?.appSettings?.analytics?.webAnalytics ?? true;
+
+    // No provider at all (standalone/Ember embed, tests): preserve the legacy
+    // behaviour where analytics simply runs — the gate can't know otherwise.
+    if (!context) {
+        return true;
+    }
+
+    // Provider mounted: only enabled when the setting is explicitly on. While
+    // settings are still resolving (appSettings undefined), treat as disabled so
+    // we don't fire Tinybird requests before the real value is known.
+    return context.appSettings?.analytics?.webAnalytics === true;
 };

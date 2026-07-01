@@ -346,5 +346,17 @@ describe('useTinybirdToken', () => {
 
             expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: true});
         });
+
+        it('stays disabled while settings are still loading (provider mounted, appSettings undefined)', () => {
+            const loadingWrapper: React.FC<{children: React.ReactNode}> = ({children}) => React.createElement(
+                QueryClientProvider,
+                {client: queryClient},
+                React.createElement(AppProvider, {appSettings: undefined}, children)
+            );
+
+            renderHook(() => useTinybirdToken({enabled: true}), {wrapper: loadingWrapper});
+
+            expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: false});
+        });
     });
 });
