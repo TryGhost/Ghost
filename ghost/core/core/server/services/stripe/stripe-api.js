@@ -599,7 +599,7 @@ module.exports = class StripeAPI {
         }
 
         if (customerId && this._config.enableAutomaticTax) {
-            stripeSessionOptions.customer_update = {address: 'auto'};
+            stripeSessionOptions.customer_update = {address: 'auto', name: 'auto'};
         }
 
         // @ts-ignore
@@ -670,7 +670,7 @@ module.exports = class StripeAPI {
         };
 
         if (customer && this._config.enableAutomaticTax) {
-            stripeSessionOptions.customer_update = {address: 'auto'};
+            stripeSessionOptions.customer_update = {address: 'auto', name: 'auto'};
         }
 
         // @ts-ignore
@@ -729,7 +729,7 @@ module.exports = class StripeAPI {
         };
 
         if (customer && this._config.enableAutomaticTax) {
-            stripeSessionOptions.customer_update = {address: 'auto'};
+            stripeSessionOptions.customer_update = {address: 'auto', name: 'auto'};
         }
 
         // @ts-ignore

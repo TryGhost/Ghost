@@ -458,7 +458,7 @@ describe('StripeAPI', function () {
             await api.createCheckoutSession('priceId', mockCustomer, {
                 trialDays: null
             });
-            assertExists(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update);
+            assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update, {address: 'auto', name: 'auto'});
         });
 
         it('createCheckoutSession does not add customer_update if automatic tax flag is enabled and customer is undefined', async function () {
@@ -647,6 +647,27 @@ describe('StripeAPI', function () {
             });
 
             assert(mockStripe.checkout.sessions.create.firstCall.firstArg.custom_fields.length <= 3);
+        });
+
+        it('sets customer_update when customer and automatic tax are enabled', async function () {
+            api.configure({
+                checkoutSessionSuccessUrl: '/success',
+                checkoutSessionCancelUrl: '/cancel',
+                checkoutSetupSessionSuccessUrl: '/setup-success',
+                checkoutSetupSessionCancelUrl: '/setup-cancel',
+                secretKey: '',
+                enableAutomaticTax: true
+            });
+
+            await api.createDonationCheckoutSession({
+                priceId: 'priceId',
+                successUrl: '/success',
+                cancelUrl: '/cancel',
+                metadata: {},
+                customer: {id: mockCustomerId}
+            });
+
+            assert.deepEqual(mockStripe.checkout.sessions.create.firstCall.firstArg.customer_update, {address: 'auto', name: 'auto'});
         });
     });
 
@@ -886,7 +907,7 @@ describe('StripeAPI', function () {
 
             const args = mockStripe.checkout.sessions.create.firstCall.firstArg;
 
-            assert.deepEqual(args.customer_update, {address: 'auto'});
+            assert.deepEqual(args.customer_update, {address: 'auto', name: 'auto'});
         });
 
         it('does not set customer_update without customer', async function () {
