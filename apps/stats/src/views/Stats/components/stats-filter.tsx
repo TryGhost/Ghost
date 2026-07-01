@@ -9,6 +9,7 @@ import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
+import {useLabsFlag} from '@hooks/use-labs-flag';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
@@ -30,6 +31,13 @@ const VisitCountBadge = ({visits}: {visits: number}) => (
         {visits.toLocaleString()}
     </span>
 );
+
+// Gift-link usage is binary, so options are hardcoded rather than Tinybird-fetched.
+// Values match the gift_link pipe param: 'false' = no gift link, else = gift traffic.
+const GIFT_LINK_OPTIONS = [
+    {value: 'true', label: 'used'},
+    {value: 'false', label: 'not used'}
+];
 
 // Configuration for each filter field type
 interface FilterFieldDefinition {
@@ -123,7 +131,7 @@ const buildFilterParams = (
         } else if (filter.field === 'audience') {
             // Skip audience - handled separately via member_status
             return;
-        } else if (filter.field === 'source' || filter.field === 'device' || filter.field === 'location' || filter.field.startsWith('utm_')) {
+        } else if (filter.field === 'source' || filter.field === 'device' || filter.field === 'location' || filter.field === 'gift_link' || filter.field.startsWith('utm_')) {
             params[filter.field] = value;
         }
     });
@@ -277,6 +285,7 @@ const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsCon
 
 function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
+    const giftLinksEnabled = useLabsFlag('giftLinks');
 
     // Track which filter field is currently being selected (lazy loading)
     const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
@@ -421,6 +430,18 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
             }
         ];
 
+        const giftLinkField: FilterFieldConfig = {
+            key: 'gift_link',
+            label: 'Gift link',
+            type: 'select',
+            icon: <LucideIcon.Gift className="size-4" />,
+            operators: supportedOperators,
+            defaultOperator: 'is',
+            hideOperatorSelect: true,
+            options: GIFT_LINK_OPTIONS,
+            searchable: false
+        };
+
         return [
             {
                 group: 'Basic',
@@ -492,7 +513,8 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                         isLoading: locationLoading,
                         searchable: true,
                         selectedOptionsClassName: 'hidden'
-                    }
+                    },
+                    ...(giftLinksEnabled ? [giftLinkField] : [])
                 ]
             },
             {
@@ -500,7 +522,7 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                 fields: utmFields
             }
         ];
-    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
+    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, postOptions, postLoading, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading, giftLinksEnabled]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;
