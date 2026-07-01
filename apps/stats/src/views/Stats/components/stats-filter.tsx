@@ -10,7 +10,7 @@ import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/aud
 import {useAppContext} from '@src/app';
 import {useGlobalData} from '@src/providers/global-data-provider';
 import {useLabsFlag} from '@hooks/use-labs-flag';
-import {useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {useTinybirdQuery, useWebAnalyticsEnabled} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
 countries.registerLocale(enLocale);
@@ -219,6 +219,9 @@ interface UsePostOptionsConfig {
 // This uses a different API pattern so it can't use the generic hook
 const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsConfig = {}) => {
     const {enabled = true} = config;
+    // Post options come from a Ghost API (useTopContent), not useTinybirdQuery, so
+    // they don't inherit the central web-analytics gate — apply it here.
+    const webAnalyticsEnabled = useWebAnalyticsEnabled();
     const {range} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
@@ -246,7 +249,7 @@ const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsCon
     // Fetch top content data from Ghost API (which queries Tinybird and enriches with titles)
     const {data: topContentData, isLoading} = useTopContent({
         searchParams: queryParams,
-        enabled
+        enabled: enabled && webAnalyticsEnabled
     });
 
     const options = useMemo(() => {
@@ -286,7 +289,6 @@ const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsCon
 function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
     const giftLinksEnabled = useLabsFlag('giftLinks');
-    const webAnalyticsEnabled = appSettings?.analytics?.webAnalytics === true;
 
     // Track which filter field is currently being selected (lazy loading)
     const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
@@ -331,17 +333,17 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     // Fetch options for all Tinybird-backed fields using the generic hook
     // Options are contextual - filtered based on currently applied filters
     // Lazy loading: only fetch when field is active or has applied filter
-    const {options: utmSourceOptions, loading: utmSourceLoading} = useTinybirdFilterOptions('utm_source', filters, {enabled: webAnalyticsEnabled && shouldFetchOptions('utm_source')});
-    const {options: utmMediumOptions, loading: utmMediumLoading} = useTinybirdFilterOptions('utm_medium', filters, {enabled: webAnalyticsEnabled && shouldFetchOptions('utm_medium')});
-    const {options: utmCampaignOptions, loading: utmCampaignLoading} = useTinybirdFilterOptions('utm_campaign', filters, {enabled: webAnalyticsEnabled && shouldFetchOptions('utm_campaign')});
-    const {options: utmContentOptions, loading: utmContentLoading} = useTinybirdFilterOptions('utm_content', filters, {enabled: webAnalyticsEnabled && shouldFetchOptions('utm_content')});
-    const {options: utmTermOptions, loading: utmTermLoading} = useTinybirdFilterOptions('utm_term', filters, {enabled: webAnalyticsEnabled && shouldFetchOptions('utm_term')});
-    const {options: sourceOptions, loading: sourceLoading} = useTinybirdFilterOptions('source', filters, {enabled: webAnalyticsEnabled && shouldFetchOptions('source')});
-    const {options: deviceOptions, loading: deviceLoading} = useTinybirdFilterOptions('device', filters, {enabled: webAnalyticsEnabled && shouldFetchOptions('device')});
-    const {options: locationOptions, loading: locationLoading} = useTinybirdFilterOptions('location', filters, {enabled: webAnalyticsEnabled && shouldFetchOptions('location')});
+    const {options: utmSourceOptions, loading: utmSourceLoading} = useTinybirdFilterOptions('utm_source', filters, {enabled: shouldFetchOptions('utm_source')});
+    const {options: utmMediumOptions, loading: utmMediumLoading} = useTinybirdFilterOptions('utm_medium', filters, {enabled: shouldFetchOptions('utm_medium')});
+    const {options: utmCampaignOptions, loading: utmCampaignLoading} = useTinybirdFilterOptions('utm_campaign', filters, {enabled: shouldFetchOptions('utm_campaign')});
+    const {options: utmContentOptions, loading: utmContentLoading} = useTinybirdFilterOptions('utm_content', filters, {enabled: shouldFetchOptions('utm_content')});
+    const {options: utmTermOptions, loading: utmTermLoading} = useTinybirdFilterOptions('utm_term', filters, {enabled: shouldFetchOptions('utm_term')});
+    const {options: sourceOptions, loading: sourceLoading} = useTinybirdFilterOptions('source', filters, {enabled: shouldFetchOptions('source')});
+    const {options: deviceOptions, loading: deviceLoading} = useTinybirdFilterOptions('device', filters, {enabled: shouldFetchOptions('device')});
+    const {options: locationOptions, loading: locationLoading} = useTinybirdFilterOptions('location', filters, {enabled: shouldFetchOptions('location')});
 
     // Fetch options for posts - data is contextual based on current filters
-    const {options: postOptions, loading: postLoading} = usePostOptions(filters, {enabled: webAnalyticsEnabled && shouldFetchOptions('post')});
+    const {options: postOptions, loading: postLoading} = usePostOptions(filters, {enabled: shouldFetchOptions('post')});
 
     // Note: Only 'is' operator supported - Tinybird pipes only support exact match
     const supportedOperators = useMemo(() => [

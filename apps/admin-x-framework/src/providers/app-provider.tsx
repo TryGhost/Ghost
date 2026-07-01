@@ -61,3 +61,16 @@ export const useAppContext = () => {
     }
     return context;
 };
+
+// Single source of truth for the web analytics kill-switch.
+//
+// Unlike useAppContext, this reads the context without throwing so it can be
+// consumed by framework-level data hooks (e.g. the Tinybird hooks) that may
+// render in standalone/Ember-embedded trees without an AppProvider mounted.
+// It defaults to `true` when no provider is present so those trees keep their
+// existing behaviour — the gate only ever suppresses when we positively know
+// web analytics is turned off.
+export const useWebAnalyticsEnabled = (): boolean => {
+    const context = useContext(AppContext);
+    return context?.appSettings?.analytics?.webAnalytics ?? true;
+};

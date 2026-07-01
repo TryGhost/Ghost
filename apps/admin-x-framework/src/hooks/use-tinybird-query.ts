@@ -2,6 +2,7 @@ import {useQuery} from '@tinybirdco/charts';
 import {useTinybirdToken} from './use-tinybird-token';
 import {StatsConfig} from '../providers/framework-provider';
 import {getStatEndpointUrl} from '../utils/stats-config';
+import {useWebAnalyticsEnabled} from '../providers/app-provider';
 
 export interface UseTinybirdQueryOptions {
     statsConfig?: StatsConfig | null;
@@ -13,8 +14,12 @@ export interface UseTinybirdQueryOptions {
 // Wrapper around Tinybird's useQuery hook that handles the token loading state
 export const useTinybirdQuery = (options: UseTinybirdQueryOptions) => {
     const {statsConfig, endpoint, params, enabled = true} = options;
+    // Web analytics is a global kill-switch, read from context rather than
+    // threaded through every call site. When it's off, shouldQuery collapses to
+    // false and the hook returns an empty state (no token, no query, no stale data).
+    const webAnalyticsEnabled = useWebAnalyticsEnabled();
 
-    const shouldQuery = Boolean(enabled && statsConfig && endpoint);
+    const shouldQuery = Boolean(enabled && webAnalyticsEnabled && statsConfig && endpoint);
     const tokenQuery = useTinybirdToken({enabled: shouldQuery});
     const endpointUrl = shouldQuery && statsConfig ? getStatEndpointUrl(statsConfig, endpoint) : undefined;
 

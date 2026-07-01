@@ -1,8 +1,21 @@
 import {renderHook} from '@testing-library/react';
+import {AppProvider, AppSettings} from '../../../src/providers/app-provider';
 import {QueryClient, QueryClientProvider} from '@tanstack/react-query';
 import {useTinybirdToken} from '../../../src/hooks/use-tinybird-token';
 import {getTinybirdToken} from '../../../src/api/tinybird';
 import React from 'react';
+
+const buildAppSettings = (webAnalytics: boolean): AppSettings => ({
+    paidMembersEnabled: true,
+    newslettersEnabled: true,
+    analytics: {
+        emailTrackOpens: true,
+        emailTrackClicks: true,
+        membersTrackSources: true,
+        outboundLinkTagging: true,
+        webAnalytics
+    }
+});
 
 // Mock the getTinybirdToken API
 vi.mock('../../../src/api/tinybird', () => ({
@@ -274,5 +287,47 @@ describe('useTinybirdToken', () => {
 
         expect(result.current.token).toBe('default-token');
         expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: true});
+    });
+
+    describe('web analytics gate', () => {
+        const withAppSettings = (webAnalytics: boolean): React.FC<{children: React.ReactNode}> =>
+            ({children}) => React.createElement(
+                QueryClientProvider,
+                {client: queryClient},
+                React.createElement(AppProvider, {appSettings: buildAppSettings(webAnalytics)}, children)
+            );
+
+        beforeEach(() => {
+            mockGetTinybirdToken.mockReturnValue({
+                data: {tinybird: {token: 'test-token'}},
+                isLoading: false,
+                error: null,
+                refetch: vi.fn()
+            } as any);
+        });
+
+        it('never loads a token when web analytics is disabled, even if enabled is true', () => {
+            renderHook(() => useTinybirdToken({enabled: true}), {wrapper: withAppSettings(false)});
+
+            expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: false});
+        });
+
+        it('loads a token when web analytics is enabled', () => {
+            renderHook(() => useTinybirdToken({enabled: true}), {wrapper: withAppSettings(true)});
+
+            expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: true});
+        });
+
+        it('stays disabled when web analytics is on but the caller passes enabled false', () => {
+            renderHook(() => useTinybirdToken({enabled: false}), {wrapper: withAppSettings(true)});
+
+            expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: false});
+        });
+
+        it('defaults to enabled when no AppProvider is mounted (preserves standalone behavior)', () => {
+            renderHook(() => useTinybirdToken({enabled: true}), {wrapper});
+
+            expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: true});
+        });
     });
 });

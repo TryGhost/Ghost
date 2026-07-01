@@ -156,24 +156,21 @@ const Web: React.FC = () => {
     const {data: kpiData, loading: kpiLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
         statsConfig,
-        params,
-        enabled: webAnalyticsEnabled
+        params
     });
 
     // Get top sources data
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
         statsConfig,
-        params,
-        enabled: webAnalyticsEnabled
+        params
     });
 
     // Get top locations data
     const {data: locationsData, loading: isLocationsLoading} = useTinybirdQuery({
         endpoint: 'api_top_locations',
         statsConfig,
-        params,
-        enabled: webAnalyticsEnabled
+        params
     });
 
     // Get total visitors for table

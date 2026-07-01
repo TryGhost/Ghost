@@ -70,8 +70,7 @@ const Overview: React.FC = () => {
     const {data: chartData, loading: chartLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
         statsConfig,
-        params: params,
-        enabled: webAnalyticsEnabled
+        params: params
     });
 
     // Calculate total visitors as a number for WebOverview component
@@ -101,8 +100,7 @@ const Overview: React.FC = () => {
     const {data: sourcesData, loading: isSourcesLoading} = useTinybirdQuery({
         endpoint: 'api_top_sources',
         statsConfig,
-        params: params,
-        enabled: webAnalyticsEnabled
+        params: params
     });
 
     const kpiIsLoading = isConfigLoading || isTotalsLoading || isPostLoading || chartLoading;

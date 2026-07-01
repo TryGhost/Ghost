@@ -2,7 +2,7 @@ import PostsAppContextProvider, {PostsAppContextType} from './providers/posts-ap
 import PostsErrorBoundary from '@components/errors/posts-error-boundary';
 import React from 'react';
 import {APP_ROUTE_PREFIX, routes} from '@src/routes';
-import {BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
+import {AppProvider, BaseAppProps, FrameworkProvider, Outlet, RouterProvider} from '@tryghost/admin-x-framework';
 import {ShadeApp} from '@tryghost/shade/app';
 
 interface AppProps extends BaseAppProps {
@@ -27,15 +27,21 @@ const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false
                 refetchOnWindowFocus: false // Disable window focus refetch (Ember admin doesn't have this)
             }}
         >
-            <PostsAppContextProvider value={appContextValue}>
-                <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
-                    <PostsErrorBoundary>
-                        <ShadeApp className="shade-posts app-container" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
-                            <Outlet />
-                        </ShadeApp>
-                    </PostsErrorBoundary>
-                </RouterProvider>
-            </PostsAppContextProvider>
+            {/* Populate the framework AppContext so framework-level hooks (e.g. the
+                Tinybird hooks) can read appSettings. PostsAppContextProvider layers its
+                app-specific `fromAnalytics` on top. This mirrors the stats app and paves
+                the way for posts/stats to converge on a single app context. */}
+            <AppProvider appSettings={appSettings}>
+                <PostsAppContextProvider value={appContextValue}>
+                    <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>
+                        <PostsErrorBoundary>
+                            <ShadeApp className="shade-posts app-container" darkMode={designSystem.darkMode} fetchKoenigLexical={null}>
+                                <Outlet />
+                            </ShadeApp>
+                        </PostsErrorBoundary>
+                    </RouterProvider>
+                </PostsAppContextProvider>
+            </AppProvider>
         </FrameworkProvider>
     );
 };

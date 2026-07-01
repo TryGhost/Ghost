@@ -98,8 +98,7 @@ const Overview: React.FC = () => {
     const {data: visitorsData, loading: isVisitorsLoading} = useTinybirdQuery({
         endpoint: 'api_kpis',
         statsConfig,
-        params: visitorsParams,
-        enabled: webAnalyticsEnabled
+        params: visitorsParams
     });
 
     const visitorsChartData = useMemo(() => {

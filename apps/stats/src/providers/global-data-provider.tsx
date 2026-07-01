@@ -2,7 +2,7 @@ import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {ReactNode, createContext, useContext, useState} from 'react';
 import {STATS_DEFAULT_RANGE_KEY, STATS_RANGE_OPTIONS} from '@src/utils/constants';
 import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
-import {StatsConfig, useAppContext, useTinybirdToken} from '@tryghost/admin-x-framework';
+import {StatsConfig, useTinybirdToken} from '@tryghost/admin-x-framework';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
 interface GlobalData {
@@ -33,27 +33,28 @@ export const useGlobalData = () => {
 };
 
 const GlobalDataProvider = ({children}: { children: ReactNode }) => {
-    const {appSettings} = useAppContext();
     const settings = useBrowseSettings();
     const site = useBrowseSite();
     const config = useBrowseConfig();
     // config.data is ConfigResponseType which has shape { config: Config }
     const configData = config.data?.config;
+    // Only load the Tinybird token when Tinybird is provisioned for this
+    // deployment. The web analytics kill-switch is applied inside
+    // useTinybirdToken, so it noops here too when the setting is off.
     const hasStatsConfig = Boolean(configData?.stats);
-    const shouldLoadTinybirdToken = hasStatsConfig && appSettings?.analytics?.webAnalytics === true;
-    const tinybirdTokenQuery = useTinybirdToken({enabled: shouldLoadTinybirdToken});
+    const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
     const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
     const [selectedNewsletterId, setSelectedNewsletterId] = useState<string | null>(null);
 
     // Check for errors in the main requests
     const ghostRequests = [config, settings, site];
     const ghostError = ghostRequests.map(request => request.error).find(Boolean);
-    const tinybirdError = shouldLoadTinybirdToken ? tinybirdTokenQuery.error : null;
+    const tinybirdError = hasStatsConfig ? tinybirdTokenQuery.error : null;
     const error = ghostError || tinybirdError;
-    
+
     // Check loading states
     const isGhostLoading = ghostRequests.some(request => request.isLoading);
-    const isTinybirdLoading = shouldLoadTinybirdToken ? tinybirdTokenQuery.isLoading : false;
+    const isTinybirdLoading = hasStatsConfig ? tinybirdTokenQuery.isLoading : false;
     const isLoading = isGhostLoading || isTinybirdLoading;
 
     if (error) {
