@@ -14,11 +14,6 @@ catalogMode: strict
 minimumReleaseAge: 4320 # 3 days in minutes; matches Renovate's minimumReleaseAge
 blockExoticSubdeps: true
 
-ignoredOptionalDependencies:
-  # sqlite3 was replaced by better-sqlite3 so it can be ignored
-  # TODO: remove once knex-migrator no longer depends on sqlite3
-  - sqlite3
-
 allowBuilds:
   # Permitted builds are version-scoped. Adding or updating a permitted version
   # requires an explicit Platform security review.
@@ -146,7 +141,7 @@ catalog:
   js-yaml: 4.3.0
   jsdom: 30.0.1
   jsonc-parser: 3.3.1
-  knex-migrator: 5.4.1
+  knex-migrator: 6.0.0
   lodash: 4.18.1
   lucide-react: 1.23.0
   mingo: 2.5.3
@@ -232,12 +227,7 @@ catalogs:
     eslint-plugin-tailwindcss: 3.18.3
 
 overrides:
-  # knex-migrator 5.4.x bundles knex 3.x, but ghost/core is pinned to knex 2.4.2.
-  # Ghost's migrations build queries with the 2.4.2 query builder and knex-migrator
-  # executes them, so its knex must match Ghost's major or the 3.x runner throws on
-  # the 2.x builder. Pin it back to 2.4.2 until ghost/core itself moves to knex 3.x.
   cron-validate: 1.4.5
-  'knex-migrator>knex': 2.4.2
   '@tryghost/errors': 'catalog:'
   '@tryghost/logging': 'catalog:'
   '@tryghost/nql': 'catalog:'
@@ -309,9 +299,6 @@ minimumReleaseAgeExclude:
   # Our own packages are published by us, so the release-age delay doesn't apply
   - '@tryghost/*'
   # TryGhost-published packages that live outside the @tryghost/ npm scope.
-  # Deliberately NOT listed: sqlite3 — TryGhost stewards it, but legacy
-  # (Mapbox-era) npm maintainer accounts can still publish, so the soak
-  # retains value there.
   - 'bookshelf-relations'
   - 'eslint-plugin-ghost'
   - 'express-hbs'
