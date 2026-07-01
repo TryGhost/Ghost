@@ -120,7 +120,7 @@ describe('Models: base', function () {
 
             securityStringSafeStub.withArgs(slug).returns(slug);
 
-            return models.Base.Model.generateSlug(Model, slug, options)
+            return Base.Model.generateSlug(Model, slug, options)
                 .then((generatedSlug) => {
                     assert.equal(generatedSlug, 'reserved-tableName');
                 });
