@@ -56,6 +56,61 @@ describe('automations service', function () {
         });
     });
 
+    describe('enqueueing poll', function () {
+        beforeEach(async function () {
+            automations.init(initOptions);
+            await flushEventLoop();
+            domainEvents.dispatch.resetHistory();
+        });
+
+        it('dispatches a StartAutomationsPollEvent if date is in the past', async function () {
+            const past = new Date(Date.now() - 1000);
+            await automations.__testOnlyEnqueuePollAt(past);
+
+            sinon.assert.calledOnceWithExactly(
+                domainEvents.dispatch,
+                sinon.match.instanceOf(StartAutomationsPollEvent)
+            );
+
+            sinon.assert.notCalled(schedulerAdapter.schedule);
+        });
+
+        it('dispatches a StartAutomationsPollEvent if date is now', async function () {
+            await automations.__testOnlyEnqueuePollAt(new Date());
+
+            sinon.assert.calledOnceWithExactly(
+                domainEvents.dispatch,
+                sinon.match.instanceOf(StartAutomationsPollEvent)
+            );
+
+            sinon.assert.notCalled(schedulerAdapter.schedule);
+        });
+
+        it('reaches out to the scheduler for dates in the future', async function () {
+            const future = new Date(Date.now() + 10_000);
+            await automations.__testOnlyEnqueuePollAt(future);
+
+            sinon.assert.calledOnceWithExactly(
+                schedulerAdapter.schedule,
+                sinon.match({
+                    time: future.getTime(),
+                    url: sinon.match((value) => (
+                        typeof value === 'string' &&
+                        new URL(value).searchParams.has('token')
+                    )),
+                    extra: {
+                        httpMethod: 'PUT'
+                    }
+                })
+            );
+
+            sinon.assert.neverCalledWith(
+                domainEvents.dispatch,
+                sinon.match.instanceOf(StartAutomationsPollEvent)
+            );
+        });
+    });
+
     describe('rescheduleAll', function () {
         it('dispatches a fresh StartAutomationsPollEvent', async function () {
             automations.init(initOptions);
