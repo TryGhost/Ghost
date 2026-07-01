@@ -113,6 +113,19 @@ describe('Models: base', function () {
                 });
         });
 
+        it('model-specific protected slug', function () {
+            Model.findOne.resolves(false);
+            Model.protectedSlugs = ['reserved'];
+            const slug = 'reserved';
+
+            securityStringSafeStub.withArgs(slug).returns(slug);
+
+            return Base.Model.generateSlug(Model, slug, options)
+                .then((generatedSlug) => {
+                    assert.equal(generatedSlug, 'reserved-tableName');
+                });
+        });
+
         it('internal tag', function () {
             Model.findOne.resolves(false);
             const slug = '#lul';
