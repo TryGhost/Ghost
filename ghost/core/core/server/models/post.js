@@ -555,32 +555,6 @@ Post = ghostBookshelf.Model.extend({
         let tagsToSave;
         const ops = [];
 
-        // We don't allow both mobiledoc & lexical to be stored at once. A single save can
-        // still momentarily carry both: the stored format plus an incoming one (e.g. editing
-        // a lexical post by sending mobiledoc). Resolve to a single format here; any remaining
-        // mobiledoc is converted to lexical further down.
-        if (this.previous('mobiledoc') && this.get('lexical')) {
-            if (options.source === 'html') {
-                // ?source=html is an explicit request to (re)generate the content from HTML,
-                // which always becomes lexical. Honour it by dropping the stored mobiledoc and
-                // migrating the post to the incoming lexical, rather than silently discarding
-                // the edit and leaving the old mobiledoc content in place.
-                this.set('mobiledoc', null);
-            } else {
-                // post is stored as mobiledoc - keep it (explicit conversion happens via convert_to_lexical)
-                this.set('lexical', null);
-            }
-        } else if (this.get('mobiledoc') && this.get('lexical')) {
-            // both formats are set on this save - prefer lexical unless mobiledoc is the only
-            // format that was supplied (e.g. editing a lexical post by sending mobiledoc), in
-            // which case the incoming mobiledoc wins and is converted to lexical below
-            if (this.hasChanged('mobiledoc') && !this.hasChanged('lexical')) {
-                this.set('lexical', null);
-            } else {
-                this.set('mobiledoc', null);
-            }
-        }
-
         // CASE: disallow published -> scheduled
         // @TODO: remove when we have versioning based on updated_at
         if (newStatus !== olderStatus && newStatus === 'scheduled' && olderStatus === 'published') {
@@ -700,6 +674,21 @@ Post = ghostBookshelf.Model.extend({
 
         if (!this.get('mobiledoc') && !this.get('lexical')) {
             this.set('lexical', JSON.stringify(lexicalLib.blankDocument));
+        }
+
+        // We never store both mobiledoc & lexical. A single save can momentarily carry both -
+        // the stored format plus an incoming one - so collapse to a single source of truth
+        // before converting/rendering below (any remaining mobiledoc is turned into lexical).
+        if (this.get('mobiledoc') && this.get('lexical')) {
+            if (this.hasChanged('mobiledoc') && !this.hasChanged('lexical')) {
+                // only mobiledoc was supplied (e.g. editing a lexical post by sending mobiledoc);
+                // it wins and is converted to lexical below
+                this.set('lexical', null);
+            } else {
+                // an incoming lexical wins (e.g. ?source=html, a direct lexical edit, or an
+                // import carrying both); drop the stored/legacy mobiledoc so the lexical renders
+                this.set('mobiledoc', null);
+            }
         }
 
         // CASE: content is still stored as mobiledoc, convert it to lexical so it can be
@@ -1183,7 +1172,7 @@ Post = ghostBookshelf.Model.extend({
 
             findAll: ['columns', 'filter'],
             destroy: ['destroyAll', 'destroyBy'],
-            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision', 'convert_to_lexical', 'source']
+            edit: ['filter', 'email_segment', 'force_rerender', 'newsletter', 'save_revision', 'convert_to_lexical']
         };
 
         // The post model additionally supports having a formats option
