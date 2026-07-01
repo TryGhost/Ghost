@@ -4,13 +4,10 @@ import {PublicPage} from '@/public-pages';
 import {createPostFactory} from '@/data-factory';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 
-// The gift-link analytics journey exercises the full pipeline: a public gift read
-// fires the real ghost-stats beacon, which flows through the TrafficAnalytics proxy
-// into Tinybird, and the count surfaces back in admin. It can only pass once the
-// proxy carries the gift_link field (TryGhost/TrafficAnalytics#742) and the
-// analytics-lane proxy image is bumped to include it — until then the pinned proxy
-// rebuilds the page-hit payload and drops gift_link, so the beacon never carries it.
-// Flip GIFT_LINK_PROXY_READY on (and bump the proxy image) to enable.
+// The full journey (public gift read → ghost-stats beacon → TrafficAnalytics proxy
+// → Tinybird → admin count) only works once the proxy carries gift_link
+// (TryGhost/TrafficAnalytics#742) and the analytics-lane image is bumped to include
+// it. Until then the pinned proxy drops gift_link; flip this on to enable.
 const GIFT_LINK_PROXY_READY = process.env.GIFT_LINK_PROXY_READY === 'true';
 
 async function recordGiftVisit({page, browser, baseURL}: {page: Page; browser: Browser; baseURL?: string}) {

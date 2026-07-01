@@ -12,7 +12,6 @@ export class PostAnalyticsOverviewPage extends AdminPage {
 
         this.giftLinkCard = page.getByTestId('gift-link-card');
         this.shareGiftLinkButton = this.giftLinkCard.getByRole('button', {name: 'Share'});
-        // Badge inside the gift-link share modal showing the visitor count.
         this.giftLinkVisitorsBadge = page.getByTestId('gift-link-views');
     }
 
