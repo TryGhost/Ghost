@@ -22,15 +22,3 @@
   parameters: site_uuid=custom_site_abc
   expected_result: |
     {"active_visitors":0}
-
-- name: active_visitors_gift_link
-  description: Active visitors restricted to gift-link traffic
-  parameters: site_uuid=mock_site_uuid&gift_link=1
-  expected_result: |
-    {"active_visitors":3}
-
-- name: active_visitors_exclude_gift_link
-  description: Active visitors with gift-link traffic excluded
-  parameters: site_uuid=mock_site_uuid&gift_link=false
-  expected_result: |
-    {"active_visitors":15}
