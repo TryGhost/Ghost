@@ -40,7 +40,7 @@
     "@types/react-dom": "18.3.7",
     "@vitejs/plugin-react": "6.0.3",
     "@vitest/coverage-v8": "4.1.9",
-    "autoprefixer": "10.5.0",
+    "autoprefixer": "10.5.2",
     "concurrently": "10.0.3",
     "eslint": "9.39.4",
     "eslint-plugin-react-hooks": "5.2.0",
