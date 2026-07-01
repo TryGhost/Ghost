@@ -201,7 +201,7 @@ const SendEmailSidebarBody: React.FC<{
                 onClick={onEditEmail}
             >
                 <LucideIcon.Pencil className='size-4' />
-              Edit email content
+              Edit email
             </Button>
             <div className='mt-auto pt-6'>
                 <DeleteStepButton onClick={onDelete} />
@@ -313,7 +313,7 @@ const getStepSidebarDetail = ({automation, stepId, onDelete, onUpdateWait, onUpd
     }
 };
 
-type StepSidebarProps = { 
+type StepSidebarProps = {
     automation: AutomationDetail
     stepId: string | null
     onDelete: (actionId: string) => void;
@@ -333,7 +333,7 @@ export const StepSidebar: React.FC<StepSidebarProps> = ({automation, stepId, onD
         onUpdateSubject,
         onEditEmail
     });
-    
+
     useEffect(() => {
         if (!detail) {
             return;
@@ -359,7 +359,7 @@ export const StepSidebar: React.FC<StepSidebarProps> = ({automation, stepId, onD
             aria-hidden={!detail}
             aria-label='Step details'
             className={cn(
-                'absolute inset-y-0 right-0 z-[1] flex w-[calc(100%-6rem)] max-w-none translate-x-full flex-col gap-6 overflow-y-auto bg-background p-6 shadow-sm transition-transform duration-200 ease-out sm:w-[36rem] dark:border-l dark:border-gray-950',
+                'absolute inset-y-0 right-0 z-[1] flex w-[calc(100%-6rem)] max-w-none translate-x-full flex-col gap-6 overflow-y-auto bg-surface-elevated p-6 shadow-sm transition-transform duration-200 ease-out sm:w-[36rem] dark:border-l dark:border-gray-950',
                 detail ? 'translate-x-0' : 'pointer-events-none'
             )}
             data-state={detail ? 'open' : 'closed'}

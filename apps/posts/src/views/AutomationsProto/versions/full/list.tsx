@@ -41,7 +41,7 @@ const AutomationRow: React.FC<{automation: Automation}> = ({automation}) => {
     const toVersioned = useVersionLink();
 
     return (
-        <TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(toVersioned(`/automations/${automation.id}`))}>
+        <TableRow className="cursor-pointer hover:bg-muted/50" onClick={() => navigate(toVersioned(`/automations-proto/${automation.id}`))}>
             <TableCell className="p-4">
                 <div className="font-medium">{automation.name}</div>
                 <div className="text-muted-foreground">{automation.description}</div>
@@ -68,7 +68,7 @@ const AutomationsList: React.FC = () => {
 
     const handleTemplatePick = (templateId: string) => {
         setTemplateDialogOpen(false);
-        navigate(toVersioned(`/automations/new?template=${templateId}`));
+        navigate(toVersioned(`/automations-proto/new?template=${templateId}`));
     };
 
     return (

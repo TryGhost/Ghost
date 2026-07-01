@@ -219,6 +219,18 @@ function NavContent({ ...props }: React.ComponentProps<typeof SidebarGroup>) {
                             </NavMenuItem.Link>
                         </NavMenuItem>
                     )}
+
+                    {showMembers && automationsEnabled && (
+                        <NavMenuItem>
+                            <NavMenuItem.Link
+                                to="automations-proto"
+                                activeOnSubpath
+                            >
+                                <LucideIcon.FlaskConical />
+                                <NavMenuItem.Label>Automations (Proto)</NavMenuItem.Label>
+                            </NavMenuItem.Link>
+                        </NavMenuItem>
+                    )}
                 </SidebarMenu>
             </SidebarGroupContent>
         </SidebarGroup>

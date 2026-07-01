@@ -74,12 +74,26 @@ export const routes: RouteObject[] = [
                 children: [
                     {
                         index: true,
-                        lazy: lazyComponent(() => import('@views/Automations/list'))
+                        lazy: lazyComponent(() => import('@views/Automations/automations'))
                     },
                     {
                         path: ':id',
                         handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
                         lazy: lazyComponent(() => import('@views/Automations/editor'))
+                    }
+                ]
+            },
+            {
+                path: 'automations-proto',
+                children: [
+                    {
+                        index: true,
+                        lazy: lazyComponent(() => import('@views/AutomationsProto/list'))
+                    },
+                    {
+                        path: ':id',
+                        handle: {hideAdminSidebar: true} satisfies AdminRouteHandle,
+                        lazy: lazyComponent(() => import('@views/AutomationsProto/editor'))
                     }
                 ]
             },

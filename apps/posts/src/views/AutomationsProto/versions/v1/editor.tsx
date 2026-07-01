@@ -575,7 +575,7 @@ const V1Editor: React.FC = () => {
     const handleConfirmDiscard = () => {
         if (!id) {
             setDiscardOpen(false);
-            navigate(toVersioned('/automations'));
+            navigate(toVersioned('/automations-proto'));
             return;
         }
         const stored = loadGraph(id);
@@ -583,7 +583,7 @@ const V1Editor: React.FC = () => {
         setEdges(stored.edges);
         setIsDirty(false);
         setDiscardOpen(false);
-        navigate(toVersioned('/automations'));
+        navigate(toVersioned('/automations-proto'));
     };
 
     const handleBack = () => {
@@ -591,7 +591,7 @@ const V1Editor: React.FC = () => {
             setDiscardOpen(true);
             return;
         }
-        navigate(toVersioned('/automations'));
+        navigate(toVersioned('/automations-proto'));
     };
 
     const workflowNodes: Node[] = (() => {
