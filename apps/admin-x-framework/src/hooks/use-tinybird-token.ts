@@ -17,17 +17,14 @@ let hasLoggedConfigWarning = false;
 
 export const useTinybirdToken = (options: UseTinybirdTokenOptions = {}): UseTinybirdTokenResult => {
     const {enabled = true} = options;
-    // Web analytics is a global kill-switch: never load a token when it's off,
-    // regardless of what a caller passes. Read from context so no call site has
-    // to thread the flag through.
+    // Web analytics is a global kill-switch read from context, so no call site threads it.
     const webAnalyticsEnabled = useWebAnalyticsEnabled();
     const effectiveEnabled = enabled && webAnalyticsEnabled;
     const tinybirdQuery = getTinybirdToken({enabled: effectiveEnabled});
 
-    // A disabled React Query (v4) that has never run still reports isLoading:true
-    // and can retain previously cached data/errors. Normalize to an idle result so
-    // direct consumers (GlobalDataProvider, PostAnalyticsProvider) don't get stuck
-    // on a loading placeholder and no stale token/error leaks through when off.
+    // A disabled React Query (v4) still reports isLoading:true and can keep cached
+    // data/errors, so return an idle result — else direct consumers (the providers)
+    // hang on a loading placeholder or leak a stale token.
     if (!effectiveEnabled) {
         return {
             token: undefined,

@@ -38,9 +38,8 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const config = useBrowseConfig();
     // config.data is ConfigResponseType which has shape { config: Config }
     const configData = config.data?.config;
-    // Only load the Tinybird token when Tinybird is provisioned for this
-    // deployment. The web analytics kill-switch is applied inside
-    // useTinybirdToken, so it noops here too when the setting is off.
+    // Load the token only when Tinybird is provisioned; the web analytics
+    // kill-switch is applied inside useTinybirdToken.
     const hasStatsConfig = Boolean(configData?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
     const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);

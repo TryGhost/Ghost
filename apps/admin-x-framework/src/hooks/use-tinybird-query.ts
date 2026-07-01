@@ -14,9 +14,8 @@ export interface UseTinybirdQueryOptions {
 // Wrapper around Tinybird's useQuery hook that handles the token loading state
 export const useTinybirdQuery = (options: UseTinybirdQueryOptions) => {
     const {statsConfig, endpoint, params, enabled = true} = options;
-    // Web analytics is a global kill-switch, read from context rather than
-    // threaded through every call site. When it's off, shouldQuery collapses to
-    // false and the hook returns an empty state (no token, no query, no stale data).
+    // Web analytics kill-switch, read from context so no call site threads it.
+    // When off, shouldQuery is false and the hook returns empty state.
     const webAnalyticsEnabled = useWebAnalyticsEnabled();
 
     const shouldQuery = Boolean(enabled && webAnalyticsEnabled && statsConfig && endpoint);

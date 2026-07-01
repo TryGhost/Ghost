@@ -27,10 +27,8 @@ const App: React.FC<AppProps> = ({framework, designSystem, fromAnalytics = false
                 refetchOnWindowFocus: false // Disable window focus refetch (Ember admin doesn't have this)
             }}
         >
-            {/* Populate the framework AppContext so framework-level hooks (e.g. the
-                Tinybird hooks) can read appSettings. PostsAppContextProvider layers its
-                app-specific `fromAnalytics` on top. This mirrors the stats app and paves
-                the way for posts/stats to converge on a single app context. */}
+            {/* Populate the framework AppContext so framework hooks (e.g. Tinybird) can
+                read appSettings; PostsAppContextProvider adds fromAnalytics on top. */}
             <AppProvider appSettings={appSettings}>
                 <PostsAppContextProvider value={appContextValue}>
                     <RouterProvider prefix={APP_ROUTE_PREFIX} routes={routes}>

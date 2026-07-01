@@ -211,11 +211,9 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Check if filters are applied
     const hasFilters = analyticsFilters.length > 0;
 
-    // Web analytics is disabled: this tab is hidden in the UI, but a direct link or
-    // bookmark can still land here. Redirect to Overview instead of rendering the
-    // empty "No visitors" state, which misrepresents a disabled feature as zero traffic.
-    // Only redirect once settings have loaded and analytics is explicitly off, so
-    // enabled sites aren't bounced away while appSettings is still resolving.
+    // The Web tab is hidden when analytics is off, but a direct link can still land
+    // here — redirect to Overview instead of an empty "No visitors" state. Only once
+    // settings have loaded, else enabled sites get bounced mid-load.
     if (appSettings && !appSettings.analytics?.webAnalytics) {
         return <Navigate to={`/posts/analytics/${postId}`} replace />;
     }

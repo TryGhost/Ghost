@@ -74,9 +74,8 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
     const [range, setRange] = useState(STATS_RANGES.LAST_30_DAYS.value);
     const settings = useBrowseSettings();
     
-    // Only fetch Tinybird token if stats config is present. The web analytics
-    // kill-switch is applied inside useTinybirdToken, so it noops here too when
-    // the setting is off.
+    // Fetch the token only when stats config is present; the web analytics
+    // kill-switch is applied inside useTinybirdToken.
     const hasStatsConfig = Boolean(config.data?.config?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
 
