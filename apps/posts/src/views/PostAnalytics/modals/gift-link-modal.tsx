@@ -35,20 +35,37 @@ const GiftLinkModal: React.FC<GiftLinkModalProps> = ({open, onOpenChange, postId
     const [resetting, setResetting] = useState(false);
     const [ensuring, setEnsuring] = useState(false);
     const cancelResetRef = useRef<HTMLButtonElement>(null);
+    const ensureGiftLinkRequestRef = useRef<{
+        postId: string;
+        request: ReturnType<typeof ensureGiftLink>;
+    } | null>(null);
 
     // Usage is best-effort: undefined when analytics is off / unavailable, in
     // which case we simply omit the visitor count.
     const {usage} = useGiftLinkUsage({postUuid: post?.uuid, token, enabled: open});
 
     // Ensure (create-or-get) the link as soon as the modal opens so there's a
-    // URL to show. Idempotent on the server.
+    // URL to show. Share one request per open target so StrictMode effect replay
+    // and local re-renders don't mint competing same-moment links.
     useEffect(() => {
         if (!open) {
+            ensureGiftLinkRequestRef.current = null;
+            setEnsuring(false);
             return;
         }
+
+        let ensureRequest = ensureGiftLinkRequestRef.current;
+        if (ensureRequest?.postId !== postId) {
+            ensureRequest = {
+                postId,
+                request: ensureGiftLink({id: postId, resource})
+            };
+            ensureGiftLinkRequestRef.current = ensureRequest;
+        }
+
         let cancelled = false;
         setEnsuring(true);
-        ensureGiftLink({id: postId, resource})
+        ensureRequest.request
             .then((response) => {
                 if (cancelled) {
                     return;
