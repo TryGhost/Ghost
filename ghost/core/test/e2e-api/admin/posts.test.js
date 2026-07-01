@@ -787,6 +787,55 @@ describe('Posts API', function () {
                     etag: anyEtag
                 });
         });
+
+        it('re-renders html and records a revision when converting a stored mobiledoc post', async function () {
+            // Posts created via the API are always lexical, so seed a genuine mobiledoc row
+            // directly in the DB to represent legacy content with stale html.
+            const legacyMobiledoc = createMobiledoc('Legacy mobiledoc to convert');
+
+            const {body: createBody} = await agent
+                .post('/posts/?formats=mobiledoc,lexical,html')
+                .body({posts: [{title: 'Legacy mobiledoc post', status: 'draft'}]})
+                .expectStatus(201);
+            const postId = createBody.posts[0].id;
+
+            await models.Base.knex('posts')
+                .where('id', postId)
+                .update({mobiledoc: legacyMobiledoc, lexical: null, html: '<p>stale html</p>'});
+
+            const {body: beforeBody} = await agent
+                .get(`/posts/${postId}/?formats=mobiledoc,lexical,html`)
+                .expectStatus(200);
+            const before = beforeBody.posts[0];
+            assert.ok(before.mobiledoc, 'post starts stored as mobiledoc');
+            assert.equal(before.lexical, null);
+
+            const revisionsBefore = await models.PostRevision.where('post_id', postId).fetchAll();
+
+            const {body: afterBody} = await agent
+                .put(`/posts/${postId}/?convert_to_lexical=true&save_revision=true&formats=mobiledoc,lexical,html`)
+                .body({posts: [{updated_at: before.updated_at}]})
+                .expectStatus(200);
+            const after = afterBody.posts[0];
+
+            // migrated off mobiledoc
+            assert.equal(after.mobiledoc, null, 'mobiledoc is cleared');
+            assert.ok(after.lexical && after.lexical.includes('Legacy mobiledoc to convert'), 'content is converted to lexical');
+
+            // html is re-rendered from the converted lexical (the conversion now goes through the
+            // shared render path, rather than leaving the stale stored html as the old late op did)
+            assert.ok(after.html.includes('Legacy mobiledoc to convert'), 'html is re-rendered from lexical');
+            assert.ok(!after.html.includes('stale html'), 'stale html is replaced');
+
+            // conversion went through the revision gate, so a lexical revision is recorded
+            const revisionsAfter = await models.PostRevision.where('post_id', postId).fetchAll();
+            assert.ok(revisionsAfter.length > revisionsBefore.length, 'a post revision is created for the conversion');
+
+            // DB ground truth
+            const [row] = await models.Base.knex('posts').where('id', postId).select('mobiledoc', 'lexical');
+            assert.equal(row.mobiledoc, null);
+            assert.ok(row.lexical);
+        });
     });
 
     describe('With integration auth', function () {

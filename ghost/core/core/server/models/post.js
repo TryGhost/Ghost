@@ -707,12 +707,15 @@ Post = ghostBookshelf.Model.extend({
         // the post to lexical and the lexical block below generates the html.
         // CASE: mobiledoc has changed
         // CASE: ?force_rerender=true passed via Admin API
+        // CASE: ?convert_to_lexical=true passed via Admin API (explicit conversion goes
+        //       through the same render + revision path instead of a separate late op)
         // CASE: html is null, but mobiledoc exists (only important for migrations & importing)
         if (
             this.get('mobiledoc') &&
             (
                 this.hasChanged('mobiledoc')
                 || options.force_rerender
+                || options.convert_to_lexical
                 || (!this.get('html') && (options.migrating || options.importing))
             )
         ) {
@@ -935,18 +938,6 @@ Post = ghostBookshelf.Model.extend({
                 };
                 const newRevisions = await postRevisions.getRevisions(current, revisions, revisionOptions);
                 model.set('post_revisions', newRevisions);
-            });
-        }
-
-        // CASE: Convert post to lexical on the fly
-        if (options.convert_to_lexical) {
-            ops.push(async function convertToLexical() {
-                const mobiledoc = model.get('mobiledoc');
-                if (mobiledoc !== null) { // only run conversion when there is a mobiledoc string
-                    const lexical = mobiledocToLexical(mobiledoc);
-                    model.set('lexical', lexical);
-                    model.set('mobiledoc', null);
-                }
             });
         }
 
