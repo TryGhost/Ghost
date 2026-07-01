@@ -13,7 +13,7 @@ interface HelpCardLayoutProps {
     children?: React.ReactNode;
 }
 
-const cardClass = 'block w-full rounded-xl border border-border bg-card p-6 text-left transition-all hover:shadow-xs hover:bg-accent/50 group/card';
+const cardClass = 'block w-full rounded-xl border border-border bg-card p-6 text-left transition-all hover:shadow-xs hover:bg-table-row-hover group/card';
 
 const HelpCardBody: React.FC<HelpCardLayoutProps> = ({title, description, children}) => (
     <div className='flex items-center gap-6'>

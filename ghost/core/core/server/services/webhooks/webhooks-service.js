@@ -32,8 +32,9 @@ class WebhooksService {
             const newWebhook = await this.WebhookModel.add(data.webhooks[0], options);
             return newWebhook;
         } catch (error) {
+            // Handle foreign key constraint errors for non-existing integration_id in MySQL and SQLite engines
             if (error.errno === 1452
-                || (error.code === 'SQLITE_CONSTRAINT' && /SQLITE_CONSTRAINT: FOREIGN KEY constraint failed/.test(error.message))
+                || (error.code === 'SQLITE_CONSTRAINT' && /FOREIGN KEY constraint failed/.test(error.message))
                 || (error.code === 'SQLITE_CONSTRAINT_FOREIGNKEY')) {
                 throw new ValidationError({
                     message: tpl(messages.nonExistingIntegrationIdProvided.message, {

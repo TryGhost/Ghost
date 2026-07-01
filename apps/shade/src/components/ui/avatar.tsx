@@ -75,7 +75,7 @@ const Avatar = React.forwardRef<
     const identity = {name: name || undefined, email: email || undefined};
     const hasIdentity = !!(name || email);
     const initials = hasIdentity ? getMemberInitials(identity) : null;
-    const bgColor = hasIdentity ? stringToHslColor(formatMemberName(identity), '75', '55') : undefined;
+    const bgColor = hasIdentity ? stringToHslColor(formatMemberName(identity), '45', '55') : undefined;
 
     return (
         <AvatarPrimitive.Root

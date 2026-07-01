@@ -3,7 +3,15 @@ const sinon = require('sinon');
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 
+const DatabaseInfo = require('@tryghost/database-info');
+const db = require('../../../../../core/server/data/db');
+
 const utils = require('../../../../../core/server/data/migrations/utils');
+
+// Nullable migrations run in a transaction on MySQL but not on SQLite (SQLite
+// cannot toggle foreign_keys inside a transaction). Both expectations are derived
+// from the configured engine, the same way createNullableMigration decides.
+const expectsTransaction = !DatabaseInfo.isSQLite(db.knex);
 
 class Deferred {
     constructor() {
@@ -173,7 +181,7 @@ const ObjectId = require('bson-objectid').default;
 
 async function setupPermissionsDb() {
     const knex = Knex({
-        client: 'sqlite',
+        client: 'better-sqlite3',
         connection: {
             filename: ':memory:'
         },
@@ -247,7 +255,7 @@ async function setupPermissionsDb() {
 
 async function setupSettingsDb() {
     const knex = Knex({
-        client: 'sqlite',
+        client: 'better-sqlite3',
         connection: {
             filename: ':memory:'
         },
@@ -274,6 +282,17 @@ async function setupSettingsDb() {
 }
 
 async function runUpMigration(knex, migration) {
+    // Non-transactional migrations receive a plain connection rather than a
+    // transaction. Wrapping them in knex.transaction() here would also deadlock,
+    // since the better-sqlite3 pool only has a single connection.
+    if (migration.config && migration.config.transaction === false) {
+        await migration.up({connection: knex});
+
+        return async function runDownMigration() {
+            await migration.down({connection: knex});
+        };
+    }
+
     {
         const transacting = await knex.transaction();
         await migration.up({transacting});
@@ -706,7 +725,7 @@ describe('migrations/utils/settings', function () {
 
 async function setupNullableTestDb() {
     const knex = Knex({
-        client: 'sqlite3',
+        client: 'better-sqlite3',
         connection: {
             filename: ':memory:'
         },
@@ -748,7 +767,7 @@ describe('migrations/utils/schema nullable functions', function () {
 
             const migration = utils.createSetNullableMigration('test_nullable_migration', 'not_nullable_col');
 
-            assert(migration.config.transaction, 'createSetNullableMigration creates a transactional migration');
+            assert.equal(migration.config.transaction, expectsTransaction, 'createSetNullableMigration is transactional on MySQL but not on SQLite');
 
             // Verify initial state - column should be not nullable
             const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'not_nullable_col', knex);
@@ -804,7 +823,7 @@ describe('migrations/utils/schema nullable functions', function () {
 
             const migration = utils.createDropNullableMigration('test_nullable_migration', 'nullable_col');
 
-            assert(migration.config.transaction, 'createDropNullableMigration creates a transactional migration');
+            assert.equal(migration.config.transaction, expectsTransaction, 'createDropNullableMigration is transactional on MySQL but not on SQLite');
 
             // Verify initial state - column should be nullable
             const isNullableInitial = await checkColumnNullable('test_nullable_migration', 'nullable_col', knex);

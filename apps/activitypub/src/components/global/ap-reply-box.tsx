@@ -41,7 +41,7 @@ const APReplyBox: React.FC<APTextAreaProps> = ({
             >
                 <APAvatar author={user as ActorProperties} />
                 <div className='flex w-full items-center'>
-                    <div className='w-full text-[1.5rem] text-gray-500 transition-colors dark:text-gray-400'>
+                    <div className='w-full text-[1.5rem] text-gray-500 transition-colors dark:text-gray-700'>
                         {placeholder}
                     </div>
                 </div>

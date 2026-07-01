@@ -131,6 +131,16 @@
     white-space: nowrap;
 }
 
+.gh-members-activity .gh-list-scrolling thead th:first-child,
+.gh-members-activity .gh-list-scrolling tbody .gh-list-data:first-child {
+    padding-left: 20px;
+}
+
+.gh-members-activity .gh-list-scrolling thead th:last-child,
+.gh-members-activity .gh-list-scrolling tbody .gh-list-data:last-child {
+    padding-right: 20px;
+}
+
 .gh-members-activity:not(.gh-members-activity-single) .gh-list-data {
     padding-top: 12px;
     padding-bottom: 12px;
@@ -367,8 +377,8 @@
 
 .gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .ember-power-select-option {
     padding: 0 1.0rem;
-    min-height: 32px;
-    height: 32px;
+    min-height: 20px;
+    height: 20px;
 }
 
 .gh-member-activity-actions-menu--suppression.gh-member-activity-actions-menu .ember-power-select-option label {

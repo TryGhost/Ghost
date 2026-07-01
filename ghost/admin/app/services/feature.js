@@ -84,6 +84,7 @@ export default class FeatureService extends Service {
     @feature('editorExcerpt') editorExcerpt;
     @feature('tagsX') tagsX;
     @feature('commentModeration') commentModeration;
+    @feature('giftLinks') giftLinks;
     _user = null;
 
     @computed('settings.labs')
@@ -175,6 +176,16 @@ export default class FeatureService extends Service {
 
         let isDark = mode === 'dark';
 
+        const html = document.documentElement;
+
+        // Double-rAF: first frame paints the new theme, second frame releases
+        // the suppression so subsequent hover/focus transitions resume cleanly.
+        const releaseSuppression = () => {
+            requestAnimationFrame(() => requestAnimationFrame(() => {
+                html.classList.remove('theme-switching');
+            }));
+        };
+
         if (mode === 'system') {
             let mediaQuery = this._getSystemThemeMediaQuery();
             isDark = mediaQuery?.matches ?? false;
@@ -183,9 +194,11 @@ export default class FeatureService extends Service {
             if (mediaQuery) {
                 this._systemThemeMediaQuery = mediaQuery;
                 this._systemThemeListener = (event) => {
-                    document.documentElement.classList.toggle('dark', event.matches);
+                    html.classList.add('theme-switching');
+                    html.classList.toggle('dark', event.matches);
                     $('link[title=dark]').prop('disabled', !event.matches);
                     set(this, '_osPrefersDark', event.matches);
+                    releaseSuppression();
                 };
                 this._addSystemThemeListener();
             }
@@ -193,14 +206,22 @@ export default class FeatureService extends Service {
             set(this, '_osPrefersDark', false);
         }
 
-        document.documentElement.classList.toggle('dark', isDark);
+        html.classList.add('theme-switching');
+        html.classList.toggle('dark', isDark);
         $('link[title=dark]').prop('disabled', !isDark);
 
         return this._loadAdminThemeStylesheet().then(() => {
-            $('link[title=dark]').prop('disabled', !isDark);
+            // In `system` mode the OS theme may have changed while the
+            // stylesheet was loading — re-read the current preference so we
+            // don't stomp the listener's update with a stale `isDark`.
+            const currentIsDark = mode === 'system' ? this._osPrefersDark : isDark;
+            html.classList.toggle('dark', currentIsDark);
+            $('link[title=dark]').prop('disabled', !currentIsDark);
+            releaseSuppression();
         }).catch(() => {
             $('link[title=dark]').prop('disabled', true);
-            document.documentElement.classList.remove('dark');
+            html.classList.remove('dark');
+            releaseSuppression();
         });
     }
 

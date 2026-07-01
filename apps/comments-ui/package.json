@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/comments-ui",
   "type": "module",
-  "version": "1.5.19",
+  "version": "1.5.22",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -16,11 +16,9 @@
     "registry": "https://registry.npmjs.org/"
   },
   "scripts": {
-    "dev": "pnpm build && concurrently --kill-others --names preview,build \"pnpm preview --host -l silent\" \"pnpm build:watch\"",
+    "dev": "vite build --watch --mode development",
     "dev:test": "vite build && vite preview --port 7175",
     "build": "vite build",
-    "build:watch": "vite build --watch --mode development",
-    "preview": "vite preview",
     "test": "pnpm test:unit",
     "test:unit": "vitest run --coverage",
     "test:acceptance": "NODE_OPTIONS='--experimental-specifier-resolution=node --no-warnings' VITE_TEST=true playwright test",
