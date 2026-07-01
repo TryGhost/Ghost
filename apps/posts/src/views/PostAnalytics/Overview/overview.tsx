@@ -31,8 +31,8 @@ const Overview: React.FC = () => {
     // Gift link card: only for eligible posts. Read the active link (without
     // minting) to scope the usage count to the current token, matching the modal.
     const canManageGiftLink = useCanManageGiftLink(post);
-    const {token: giftToken} = useActiveGiftLink(postId, {enabled: canManageGiftLink});
-    const {usage: giftLinkUsage, loading: giftLinkUsageLoading, error: giftLinkUsageError} = useGiftLinkUsage({postUuid: post?.uuid, token: giftToken, enabled: canManageGiftLink});
+    const {token: giftToken, isLoading: giftTokenLoading} = useActiveGiftLink(postId, {enabled: canManageGiftLink});
+    const {usage: giftLinkUsage, loading: giftLinkUsageLoading, error: giftLinkUsageError} = useGiftLinkUsage({postUuid: post?.uuid, token: giftToken, tokenLoading: giftTokenLoading, enabled: canManageGiftLink});
     const [isGiftLinkOpen, setIsGiftLinkOpen] = useState(false);
 
     // Calculate chart range based on days between today and post publication date

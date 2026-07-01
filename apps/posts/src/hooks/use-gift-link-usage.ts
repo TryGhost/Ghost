@@ -25,15 +25,24 @@ interface GiftLinkVisitsRow {
 // error rather than rendering a misleading "0". Gating on the web-analytics
 // setting here means every consumer (the share modal, opened from several
 // places, and the analytics card) behaves consistently when analytics is off.
-export const useGiftLinkUsage = ({postUuid, token, enabled = true}: {
+//
+// The usage query is disabled until every prerequisite is in place (config,
+// settings, and the token from the upstream active-link lookup). A disabled
+// query reports `loading: false`, which would otherwise be indistinguishable
+// from "ran and found zero". `tokenLoading` lets the caller pass in the
+// active-link lookup's own loading state; combined with the config/settings
+// reads here, `loading` stays true while any prerequisite is still resolving,
+// so callers hide the count instead of flashing a transient "0".
+export const useGiftLinkUsage = ({postUuid, token, tokenLoading = false, enabled = true}: {
     postUuid?: string;
     token?: string;
+    tokenLoading?: boolean;
     enabled?: boolean;
 }) => {
-    const {data: configData} = useBrowseConfig();
+    const {data: configData, isLoading: configLoading} = useBrowseConfig();
     const statsConfig = configData?.config?.stats as StatsConfig | undefined;
 
-    const {data: settingsData} = useBrowseSettings();
+    const {data: settingsData, isLoading: settingsLoading} = useBrowseSettings();
     const webAnalyticsEnabled = getSettingValue<boolean>(settingsData?.settings ?? null, 'web_analytics_enabled') ?? false;
 
     // Filter to the current token server-side (api_gift_link_visits takes an
@@ -45,12 +54,17 @@ export const useGiftLinkUsage = ({postUuid, token, enabled = true}: {
         gift_link: token || ''
     }), [statsConfig?.id, postUuid, token]);
 
-    const {data, loading, error} = useTinybirdQuery({
+    const {data, loading: queryLoading, error} = useTinybirdQuery({
         endpoint: 'api_gift_link_visits',
         statsConfig: statsConfig || {id: ''},
         params,
         enabled: enabled && webAnalyticsEnabled && Boolean(statsConfig?.id) && Boolean(postUuid) && Boolean(token)
     });
+
+    // Treat a still-resolving prerequisite as loading, not as a resolved zero:
+    // the query is disabled (loading:false) until config, settings, and the
+    // token are all ready, so fold those pending states into `loading`.
+    const loading = queryLoading || configLoading || settingsLoading || tokenLoading;
 
     const usage = useMemo<GiftLinkUsage | undefined>(() => {
         // Web analytics off, no token yet, the query is disabled/loading, or it
