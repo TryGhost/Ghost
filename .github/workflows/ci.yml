@@ -721,7 +721,11 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # Each matrix leg only Playwright-tests one app, so scope the install to that
+        # app's dependency subgraph instead of the whole monorepo (which drags in
+        # ghost/core, ghost-admin and unrelated apps). nx and the app's workspace deps
+        # are still installed; the nx project name matches the package name.
+        run: pnpm install --frozen-lockfile --filter ${{ matrix.app }}...
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
