@@ -121,10 +121,8 @@ describe('ContentStatsService', function () {
                 gift_link: 'true'
             });
 
-            // The gift filter must reach api_top_pages (as camelCase giftLink,
-            // which the tinybird client maps to the gift_link query param), so
-            // top content is scoped to gift-link pageviews rather than every
-            // page of a session that used a gift link.
+            // Reaches api_top_pages as camelCase giftLink (the client maps it to
+            // the gift_link query param).
             sinon.assert.calledWith(
                 mockTinybirdClient.fetch,
                 'api_top_pages',

@@ -30,11 +30,8 @@ const VisitCountBadge = ({visits}: {visits: number}) => (
     </span>
 );
 
-// Static options for the gift link filter. Unlike the other fields these aren't
-// fetched from Tinybird — gift-link usage is a binary state, so the values are
-// hardcoded. The values match the gift_link query param the Tinybird pipes
-// expect: 'false' selects traffic without a gift link, any other value selects
-// gift-link traffic.
+// Gift-link usage is binary, so options are hardcoded rather than Tinybird-fetched.
+// Values match the gift_link pipe param: 'false' = no gift link, else = gift traffic.
 const GIFT_LINK_OPTIONS = [
     {value: 'true', label: 'used'},
     {value: 'false', label: 'not used'}
@@ -357,8 +354,6 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
             }
         ];
 
-        // Gift link is a static binary filter (used / not used) rather than a
-        // Tinybird-backed option list, so it's defined inline here.
         const giftLinkField: FilterFieldConfig = {
             key: 'gift_link',
             label: 'Gift link',

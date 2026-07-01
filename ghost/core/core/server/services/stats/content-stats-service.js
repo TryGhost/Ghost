@@ -44,7 +44,7 @@ class ContentStatsService {
      * @param {string} [options.device] - Device type filter (e.g. 'desktop', 'mobile-ios', 'mobile-android', 'bot')
      * @param {string} [options.location] - Location/country code filter (e.g. 'US')
      * @param {string} [options.source] - Source filter
-     * @param {string} [options.gift_link] - Gift-link filter ('true'/'1' keeps gift-link hits, 'false'/'0' keeps non-gift hits)
+     * @param {string} [options.gift_link] - Gift-link filter ('true' = used, 'false' = not used)
      * @param {string} [options.utm_source] - UTM source filter
      * @param {string} [options.utm_medium] - UTM medium filter
      * @param {string} [options.utm_campaign] - UTM campaign filter
@@ -117,10 +117,7 @@ class ContentStatsService {
             tinybirdOptions.source = options.source;
         }
 
-        // Only add gift_link if defined (boolean-style segment: 'true'/'1' keeps
-        // gift-link hits, 'false'/'0' keeps non-gift hits). Applied on the hit
-        // scan in api_top_pages so top content is scoped to gift-link pageviews,
-        // not every page of a session that used a gift link.
+        // Add gift_link when defined ('false'/'0' are meaningful, so check !== undefined)
         if (options.gift_link !== undefined) {
             tinybirdOptions.giftLink = options.gift_link;
         }
