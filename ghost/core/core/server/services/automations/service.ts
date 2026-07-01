@@ -31,15 +31,15 @@ type AutomationsServiceOptions = {
 };
 
 export class AutomationsService {
-    #initialized = false;
-    #enqueuePollNow: () => void = () => {};
+    #enqueuePollNow: undefined | (() => void);
 
     init({domainEvents, apiUrl, schedulerAdapter, internalKeys}: AutomationsServiceOptions): void {
-        if (this.#initialized) {
+        const isInitialized = Boolean(this.#enqueuePollNow);
+        if (isInitialized) {
             return;
         }
 
-        this.#enqueuePollNow = () => domainEvents.dispatch(StartAutomationsPollEvent.create());
+        const enqueuePollNow = () => domainEvents.dispatch(StartAutomationsPollEvent.create());
 
         const enqueuePollAt = async (date: Readonly<Date>): Promise<void> => {
             const isRequestedDateInTheFuture = new Date() < date;
@@ -47,7 +47,7 @@ export class AutomationsService {
                 // Dispatch a task instead of calling immediately to resolve issues with better-sqlite3
                 // being synchronous and blocking the schedulerAdapter.schedule call below, which can
                 // cause a deadlock in some cases.
-                setImmediate(() => this.#enqueuePollNow());
+                setImmediate(() => enqueuePollNow());
                 return;
             }
 
@@ -77,7 +77,7 @@ export class AutomationsService {
 
         enqueuePollAt(new Date());
 
-        this.#initialized = true;
+        this.#enqueuePollNow = enqueuePollNow;
     }
 
     /**
@@ -86,6 +86,6 @@ export class AutomationsService {
      * poll that re-schedules the next callback under the current key.
      */
     rescheduleAll(): void {
-        this.#enqueuePollNow();
+        this.#enqueuePollNow?.();
     }
 }
