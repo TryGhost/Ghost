@@ -4,12 +4,6 @@ import {PublicPage} from '@/public-pages';
 import {createPostFactory} from '@/data-factory';
 import {expect, test, withIsolatedPage} from '@/helpers/playwright';
 
-// The full journey (public gift read → ghost-stats beacon → TrafficAnalytics proxy
-// → Tinybird → admin count) only works once the proxy carries gift_link
-// (TryGhost/TrafficAnalytics#742) and the analytics-lane image is bumped to include
-// it. Until then the pinned proxy drops gift_link; flip this on to enable.
-const GIFT_LINK_PROXY_READY = process.env.GIFT_LINK_PROXY_READY === 'true';
-
 async function recordGiftVisit({page, browser, baseURL}: {page: Page; browser: Browser; baseURL?: string}) {
     const postFactory = createPostFactory(page.request);
     const post = await postFactory.create({
@@ -35,10 +29,6 @@ async function recordGiftVisit({page, browser, baseURL}: {page: Page; browser: B
 
 test.describe('Ghost Admin - Gift link analytics journey', () => {
     test.use({labs: {giftLinks: true}});
-
-    test.beforeEach(() => {
-        test.skip(!GIFT_LINK_PROXY_READY, 'Requires gift_link passthrough in the analytics proxy (TryGhost/TrafficAnalytics#742) + the compose image bump');
-    });
 
     test('visiting a gift link - records one visitor on the per-link count', async ({page, browser, baseURL}) => {
         const {post} = await recordGiftVisit({page, browser, baseURL});
