@@ -133,11 +133,8 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             const inReplyToDetails: Partial<OpenCommentForm> = {};
 
             if (parent) {
-                if (comment.html === null) {
-                    return;
-                }
                 inReplyToDetails.in_reply_to_id = comment.id;
-                inReplyToDetails.in_reply_to_snippet = getCommentInReplyToSnippet({html: comment.html});
+                inReplyToDetails.in_reply_to_snippet = getCommentInReplyToSnippet(comment);
             }
 
             const newForm: OpenCommentForm = {
@@ -181,7 +178,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
                 ) : (
                     <>
                         <CommentHeader className={hiddenClass} comment={comment} useThreading={useThreading} />
-                        {comment.html && <CommentBody className={hiddenClass} html={comment.html} isHighlighted={isHighlighted} />}
+                        <CommentBody className={hiddenClass} html={comment.html} isHighlighted={isHighlighted} />
                         <CommentMenu
                             comment={comment}
                             highlightReplyButton={highlightReplyButton}
@@ -420,12 +417,16 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', u
 };
 
 type CommentBodyProps = {
-    html: string;
+    html?: string | null;
     className?: string;
     isHighlighted?: boolean;
 }
 
 const CommentBody: React.FC<CommentBodyProps> = ({html, className = '', isHighlighted}) => {
+    if (!html) {
+        return null;
+    }
+
     let commentHtml = html;
 
     if (isHighlighted) {
