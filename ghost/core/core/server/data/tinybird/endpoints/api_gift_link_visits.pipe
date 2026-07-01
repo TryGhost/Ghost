@@ -8,6 +8,11 @@ DESCRIPTION >
     to a site; optionally narrowed to a single post or a date range. Defaults to
     all-time, since a gift link's usage is its lifetime total.
 
+    Note: unlike the web-analytics pipes, where `gift_link` is a boolean-style
+    segment (present vs empty), here `gift_link` is an exact-match filter on the
+    token, so the admin card can request usage for just the current link instead
+    of over-fetching every link on the post.
+
 SQL >
     %
         select
@@ -26,6 +31,7 @@ SQL >
                 and timestamp < toDateTime({{ Date(date_to) }}, {{ String(timezone, 'Etc/UTC', description="Site timezone", required=False) }}) + interval 1 day
             {% end %}
             {% if defined(post_uuid) %} and post_uuid = {{ String(post_uuid, description="Post UUID to filter on", required=False) }} {% end %}
+            {% if defined(gift_link) %} and gift_link = {{ String(gift_link, description="Gift link token to filter on", required=False) }} {% end %}
         group by gift_link
         order by visits desc
 
