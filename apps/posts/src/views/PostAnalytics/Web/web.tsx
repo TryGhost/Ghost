@@ -6,7 +6,7 @@ import PostAnalyticsHeader from '../components/post-analytics-header';
 import Sources from './components/sources';
 import StatsFilter from '../components/stats-filter';
 import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, NavbarActions} from '@tryghost/shade/components';
-import {BaseSourceData, Navigate, useNavigate, useParams, useTinybirdQuery, useWebAnalyticsEnabled} from '@tryghost/admin-x-framework';
+import {BaseSourceData, Navigate, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {LucideIcon, getScrollParent} from '@tryghost/shade/utils';
 import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
@@ -14,6 +14,7 @@ import {createFilter} from '@tryghost/shade/patterns';
 import {formatQueryDate, getRangeDates, getRangeForStartDate} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {getPeriodText} from '@src/utils/chart-helpers';
+import {useAppContext} from '@src/providers/posts-app-context';
 import {useCallback, useEffect, useMemo, useRef} from 'react';
 import {useFilterParams} from '@src/hooks/use-filter-params';
 import {useGlobalData} from '@src/providers/post-analytics-context';
@@ -31,7 +32,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
     const {statsConfig, isLoading: isConfigLoading, range, data: globalData, post, isPostLoading} = useGlobalData();
-    const webAnalyticsEnabled = useWebAnalyticsEnabled();
+    const {appSettings} = useAppContext();
     const containerRef = useRef<HTMLElement>(null);
 
     // Use URL-synced filter state for bookmarking and sharing
@@ -213,7 +214,9 @@ const Web: React.FC<postAnalyticsProps> = () => {
     // Web analytics is disabled: this tab is hidden in the UI, but a direct link or
     // bookmark can still land here. Redirect to Overview instead of rendering the
     // empty "No visitors" state, which misrepresents a disabled feature as zero traffic.
-    if (!webAnalyticsEnabled) {
+    // Only redirect once settings have loaded and analytics is explicitly off, so
+    // enabled sites aren't bounced away while appSettings is still resolving.
+    if (appSettings && !appSettings.analytics?.webAnalytics) {
         return <Navigate to={`/posts/analytics/${postId}`} replace />;
     }
 
