@@ -9,8 +9,11 @@ const PATH_TYPES = ['in', 'pub', 'company', 'school'] as const;
 type PathType = typeof PATH_TYPES[number];
 
 // validation info: https://www.linkedin.com/help/linkedin/answer/a542685/manage-your-public-profile-url?lang=en
-// Alphanumeric, hyphen, 3–100 characters
+// Personal profiles (/in/): alphanumeric and hyphen only, 3–100 characters
 const USERNAME_REGEX = /^[a-zA-Z0-9-]{3,100}$/;
+// Company and school pages support Unicode characters (e.g. accented chars in non-English names),
+// underscores, and hyphens. Input may arrive percent-encoded from browsers — decode first.
+const COMPANY_USERNAME_REGEX = /^[\p{L}\p{N}_-]{3,100}$/u;
 // For /pub/ profiles: username optionally followed by slash-separated segments (i.e. 12/34/567)
 const PUB_USERNAME_REGEX = /^[a-zA-Z0-9-]{3,100}(?:\/[a-zA-Z0-9-]*)*$/;
 
@@ -42,7 +45,15 @@ const extractInputParts = (input: string) => {
 
         // don't need protocol from match
         const [, regional, pathType, rawUsername] = match;
-        const username = formatUsername(rawUsername);
+        // Browsers percent-encode non-ASCII characters before sending; decode so validation
+        // works correctly for both raw Unicode and percent-encoded input forms
+        let decodedUsername = rawUsername;
+        try {
+            decodedUsername = decodeURIComponent(rawUsername);
+        } catch {
+            // malformed percent-encoding — leave as-is and let validation reject it
+        }
+        const username = formatUsername(decodedUsername);
 
         // validate regional code is two letters if present
         // validator.js has isISO31661Alpha2, but on a later version than is currently installed
@@ -67,8 +78,13 @@ const extractInputParts = (input: string) => {
 };
 
 const isValidUsername = (pathType: PathType, username: string) => {
-    const pattern = pathType === 'pub' ? PUB_USERNAME_REGEX : USERNAME_REGEX;
-    return pattern.test(username);
+    if (pathType === 'pub') {
+        return PUB_USERNAME_REGEX.test(username);
+    }
+    if (pathType === 'company' || pathType === 'school') {
+        return COMPANY_USERNAME_REGEX.test(username);
+    }
+    return USERNAME_REGEX.test(username);
 };
 
 const buildUrl = ({regional, pathType, username}: {regional?: string; pathType: PathType; username: string}) => {

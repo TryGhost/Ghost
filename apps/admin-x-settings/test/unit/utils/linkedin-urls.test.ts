@@ -43,6 +43,21 @@ describe('LinkedIn URLs', () => {
             assert.equal(validateLinkedInUrl('linkedin.com/pub/john-smith-abc123'), 'https://www.linkedin.com/pub/john-smith-abc123');
             assert.equal(validateLinkedInUrl('linkedin.com/pub/johnsmith/12/34/567'), 'https://www.linkedin.com/pub/johnsmith/12/34/567');
         });
+
+        it('should accept company URLs with accented/international characters', () => {
+            assert.equal(
+                validateLinkedInUrl('https://www.linkedin.com/company/la-revue-européenne-des-médias-et-du-numérique/'),
+                'https://www.linkedin.com/company/la-revue-européenne-des-médias-et-du-numérique'
+            );
+            assert.equal(
+                validateLinkedInUrl('https://www.linkedin.com/company/la-revue-europ%C3%A9enne-des-m%C3%A9dias-et-du-num%C3%A9rique/'),
+                'https://www.linkedin.com/company/la-revue-européenne-des-médias-et-du-numérique'
+            );
+        });
+
+        it('should reject accented characters in personal /in/ URLs', () => {
+            assert.throws(() => validateLinkedInUrl('linkedin.com/in/jean-éric'), /Your Username is not a valid LinkedIn Username/);
+        });
     });
 
     describe('Handle to URL conversion', () => {
