@@ -201,22 +201,30 @@ const NewsletterKPIs: React.FC<{
             return {barDomain: [0, 1], barTicks: [0, 1]};
         }
 
-        const minValue = Math.min(...values);
-        const maxValue = Math.max(...values);
+        // Include the avg line value so the y-axis always contains both the
+        // tallest bar and the avg reference line.
+        const avgForTab = currentTab === 'avg-open-rate' ? avgOpenRate : avgClickRate;
+        const bucketValue = Math.max(Math.max(...values), avgForTab);
 
-        // Round to nearest 0.1
-        const roundedMin = Math.floor(minValue * 10) / 10;
-        const roundedMax = Math.ceil(maxValue * 10) / 10;
-
-        // Ensure we have some padding and don't have the same min/max
-        const finalMin = Math.max(0, roundedMin);
-        const finalMax = roundedMax === finalMin ? finalMin + 0.1 : roundedMax;
+        // Min is always 0. Upper limit:
+        //   < 1%       → 1%
+        //   1% – 10%   → next whole percent above
+        //   10% – 100% → next multiple of 10 above
+        const finalMin = 0;
+        let finalMax;
+        if (bucketValue < 0.01) {
+            finalMax = 0.01;
+        } else if (bucketValue < 0.1) {
+            finalMax = (Math.floor(bucketValue * 100) + 1) / 100;
+        } else {
+            finalMax = (Math.floor(bucketValue * 10) + 1) / 10;
+        }
 
         return {
             barDomain: [finalMin, finalMax],
             barTicks: [finalMin, finalMax]
         };
-    }, [avgsData, currentTab, tabConfig]);
+    }, [avgsData, currentTab, tabConfig, avgOpenRate, avgClickRate]);
 
     if (isLoading) {
         return (
