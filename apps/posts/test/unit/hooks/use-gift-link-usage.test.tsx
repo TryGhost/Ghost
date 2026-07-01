@@ -34,12 +34,10 @@ describe('useGiftLinkUsage', () => {
         mockUseTinybirdQuery.mockReturnValue({data: [], loading: false, error: null});
     });
 
-    it('returns usage for the row matching the token', () => {
+    it('returns usage for the current token and scopes the query to it', () => {
+        // The pipe is filtered by token server-side, so it returns a single row.
         mockUseTinybirdQuery.mockReturnValue({
-            data: [
-                {gift_link: 'other_token', visits: 9, views: 12},
-                {gift_link: TOKEN, visits: 3, views: 5}
-            ],
+            data: [{gift_link: TOKEN, visits: 3, views: 5}],
             loading: false,
             error: null
         });
@@ -47,15 +45,15 @@ describe('useGiftLinkUsage', () => {
         const {result} = renderHook(() => useGiftLinkUsage({postUuid: 'post-uuid', token: TOKEN}));
 
         expect(result.current.usage).toEqual({visits: 3, views: 5});
+        // The token is pushed down to the query as an exact-match filter rather
+        // than fetching every link on the post and matching client-side.
+        expect(mockUseTinybirdQuery.mock.calls[0][0].params.gift_link).toBe(TOKEN);
     });
 
-    it('returns a resolved zero (not undefined) when no row matches the token', () => {
-        // "Ran and found nothing" is a real zero, distinct from "could not run".
-        mockUseTinybirdQuery.mockReturnValue({
-            data: [{gift_link: 'someone_elses_link', visits: 4, views: 6}],
-            loading: false,
-            error: null
-        });
+    it('returns a resolved zero (not undefined) when the token has no reads', () => {
+        // Server-side filter matches nothing → no rows. "Ran and found nothing"
+        // is a real zero, distinct from "could not run".
+        mockUseTinybirdQuery.mockReturnValue({data: [], loading: false, error: null});
 
         const {result} = renderHook(() => useGiftLinkUsage({postUuid: 'post-uuid', token: TOKEN}));
 

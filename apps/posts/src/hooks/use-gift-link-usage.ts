@@ -36,16 +36,20 @@ export const useGiftLinkUsage = ({postUuid, token, enabled = true}: {
     const {data: settingsData} = useBrowseSettings();
     const webAnalyticsEnabled = getSettingValue<boolean>(settingsData?.settings ?? null, 'web_analytics_enabled') ?? false;
 
+    // Filter to the current token server-side (api_gift_link_visits takes an
+    // exact-match gift_link param), so we fetch only this link's row instead of
+    // every link on the post.
     const params = useMemo(() => ({
         site_uuid: statsConfig?.id || '',
-        post_uuid: postUuid || ''
-    }), [statsConfig?.id, postUuid]);
+        post_uuid: postUuid || '',
+        gift_link: token || ''
+    }), [statsConfig?.id, postUuid, token]);
 
     const {data, loading, error} = useTinybirdQuery({
         endpoint: 'api_gift_link_visits',
         statsConfig: statsConfig || {id: ''},
         params,
-        enabled: enabled && webAnalyticsEnabled && Boolean(statsConfig?.id) && Boolean(postUuid)
+        enabled: enabled && webAnalyticsEnabled && Boolean(statsConfig?.id) && Boolean(postUuid) && Boolean(token)
     });
 
     const usage = useMemo<GiftLinkUsage | undefined>(() => {
@@ -55,7 +59,8 @@ export const useGiftLinkUsage = ({postUuid, token, enabled = true}: {
         if (!webAnalyticsEnabled || !token || error || !Array.isArray(data)) {
             return undefined;
         }
-        const row = (data as unknown as GiftLinkVisitsRow[]).find(r => r.gift_link === token);
+        // The query is scoped to this token, so there is at most one row.
+        const row = (data as unknown as GiftLinkVisitsRow[])[0];
         return {
             visits: Number(row?.visits) || 0,
             views: Number(row?.views) || 0
