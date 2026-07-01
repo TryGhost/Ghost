@@ -28,6 +28,24 @@ services=(mysql redis mailpit)
 
 if [[ "$MODE" == "build" && "$MYSQL_TMPFS_ENABLED" != "false" ]]; then
   compose_files+=(-f e2e/compose.e2e.tmpfs.yaml)
+
+  # Prefer the pre-seeded mysql image, which skips first-boot initialization on the
+  # empty tmpfs. Fall back to the pinned stock image from compose.dev.yaml when it's
+  # unavailable (a fork, or before the publish workflow has built it). An explicit
+  # GHOST_E2E_MYSQL_IMAGE is respected as-is. The tmpfs override reads the result.
+  if [[ -z "${GHOST_E2E_MYSQL_IMAGE:-}" ]]; then
+    STOCK_MYSQL_IMAGE="$(yq '.services.mysql.image' compose.dev.yaml)"
+    MYSQL_VERSION="$(printf '%s' "$STOCK_MYSQL_IMAGE" | sed -E 's#^mysql:([^@]+).*#\1#')"
+    PRESEEDED_MYSQL_IMAGE="ghcr.io/tryghost/ghost-e2e-mysql:${MYSQL_VERSION}"
+    if docker image inspect "$PRESEEDED_MYSQL_IMAGE" >/dev/null 2>&1 || docker pull "$PRESEEDED_MYSQL_IMAGE" >/dev/null 2>&1; then
+      GHOST_E2E_MYSQL_IMAGE="$PRESEEDED_MYSQL_IMAGE"
+      echo "Using pre-seeded mysql image: $GHOST_E2E_MYSQL_IMAGE"
+    else
+      GHOST_E2E_MYSQL_IMAGE="$STOCK_MYSQL_IMAGE"
+      echo "Pre-seeded mysql image unavailable; using stock mysql: $GHOST_E2E_MYSQL_IMAGE"
+    fi
+  fi
+  export GHOST_E2E_MYSQL_IMAGE
 fi
 
 if [[ "$ANALYTICS_ENABLED" == "true" ]]; then

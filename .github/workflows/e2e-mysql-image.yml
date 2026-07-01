@@ -1,0 +1,82 @@
+name: Publish E2E MySQL Image
+
+# Builds the pre-seeded MySQL image consumed by the E2E stack (docker/mysql-e2e).
+# It's the stock mysql image plus a baked, already-initialized data dir, so mysqld
+# skips first-boot initialization on the empty tmpfs each shard uses — cutting a few
+# seconds of CPU-bound init off every E2E run.
+#
+# Decoupled from ci.yml: the image only changes when the pinned mysql version (in
+# compose.dev.yaml) or docker/mysql-e2e changes. infra-up.sh falls back to the stock
+# image when the matching tag isn't published yet, so a version bump stays green until
+# this workflow republishes.
+on:
+  workflow_dispatch: # Manual trigger; may run on a branch for pre-merge testing
+  schedule:
+    - cron: '0 6 * * 2' # Weekly (Tue 06:00 UTC) to absorb base-image security patches
+  push:
+    branches: [main]
+    paths:
+      - 'docker/mysql-e2e/**'
+      - '.github/workflows/e2e-mysql-image.yml'
+      # mysql version/digest pin lives here — a bump means a new seed to publish.
+      - 'compose.dev.yaml'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Build and push pre-seeded mysql to GHCR
+    runs-on: ubuntu-latest
+    # Push/schedule only publish from main; a manual dispatch may run on any branch.
+    if: github.repository == 'TryGhost/Ghost' && (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main')
+    concurrency:
+      group: publish-e2e-mysql
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Resolve mysql image + version
+        id: mysql
+        run: |
+          # Source of truth is the pinned image in compose.dev.yaml so the seed and
+          # the tag always match the mysql the E2E stack runs.
+          MYSQL_IMAGE=$(yq '.services.mysql.image' compose.dev.yaml)
+          MYSQL_VERSION=$(printf '%s' "$MYSQL_IMAGE" | sed -E 's#^mysql:([^@]+).*#\1#')
+          if [ -z "$MYSQL_IMAGE" ] || [ "$MYSQL_IMAGE" = "null" ] || [ -z "$MYSQL_VERSION" ]; then
+            echo "::error::Could not resolve mysql image/version from compose.dev.yaml"
+            exit 1
+          fi
+          echo "image=$MYSQL_IMAGE" >> "$GITHUB_OUTPUT"
+          echo "version=$MYSQL_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved: $MYSQL_IMAGE (version $MYSQL_VERSION)"
+
+      - name: Generate seed data dir
+        env:
+          MYSQL_IMAGE: ${{ steps.mysql.outputs.image }}
+        run: bash docker/mysql-e2e/generate-seed.sh
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+        with:
+          context: docker/mysql-e2e
+          push: true
+          build-args: |
+            MYSQL_IMAGE=${{ steps.mysql.outputs.image }}
+          tags: |
+            ghcr.io/tryghost/ghost-e2e-mysql:${{ steps.mysql.outputs.version }}
+            ghcr.io/tryghost/ghost-e2e-mysql:latest

@@ -1,5 +1,10 @@
 services:
   mysql:
+    # Pre-seeded mysql image, so mysqld skips first-boot init on the empty tmpfs
+    # below. infra-up.sh sets GHOST_E2E_MYSQL_IMAGE to the pre-seeded image when
+    # available, else the pinned stock image; the default here (only hit by
+    # infra-down/stop, which never pulls) mirrors the pin in compose.dev.yaml.
+    image: ${GHOST_E2E_MYSQL_IMAGE:-mysql:8.4.9@sha256:c36050afdca850f23cef85703f84c7531a5ae155a11b5ee1c60acb09937c4084}
     volumes: !override []
     tmpfs:
       - /var/lib/mysql:rw,size=${GHOST_E2E_MYSQL_TMPFS_SIZE:-2g}
