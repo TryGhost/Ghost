@@ -253,7 +253,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
                 source: 'html'
             },
             data: {
-                posts: [
+                pages: [
                     {
                         id: 'id1',
                         html: '<bananarama>'
@@ -267,7 +267,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
         });
 
         assert.throws(() => {
-            serializers.input.posts.edit({}, frame);
+            serializers.input.pages.edit({}, frame);
         }, /Failed to convert HTML to Lexical/);
     });
 
