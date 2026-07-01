@@ -6,7 +6,7 @@ import PostAnalyticsHeader from '../components/post-analytics-header';
 import Sources from './components/sources';
 import StatsFilter from '../components/stats-filter';
 import {BarChartLoadingIndicator, Card, CardContent, EmptyIndicator, NavbarActions} from '@tryghost/shade/components';
-import {BaseSourceData, useNavigate, useParams, useTinybirdQuery} from '@tryghost/admin-x-framework';
+import {BaseSourceData, Navigate, useNavigate, useParams, useTinybirdQuery, useWebAnalyticsEnabled} from '@tryghost/admin-x-framework';
 import {KpiDataItem, getWebKpiValues} from '@src/utils/kpi-helpers';
 import {LucideIcon, getScrollParent} from '@tryghost/shade/utils';
 import {STATS_RANGES, UNKNOWN_LOCATION_VALUES} from '@src/utils/constants';
@@ -31,6 +31,7 @@ const Web: React.FC<postAnalyticsProps> = () => {
     const navigate = useNavigate();
     const {postId} = useParams();
     const {statsConfig, isLoading: isConfigLoading, range, data: globalData, post, isPostLoading} = useGlobalData();
+    const webAnalyticsEnabled = useWebAnalyticsEnabled();
     const containerRef = useRef<HTMLElement>(null);
 
     // Use URL-synced filter state for bookmarking and sharing
@@ -208,6 +209,13 @@ const Web: React.FC<postAnalyticsProps> = () => {
 
     // Check if filters are applied
     const hasFilters = analyticsFilters.length > 0;
+
+    // Web analytics is disabled: this tab is hidden in the UI, but a direct link or
+    // bookmark can still land here. Redirect to Overview instead of rendering the
+    // empty "No visitors" state, which misrepresents a disabled feature as zero traffic.
+    if (!webAnalyticsEnabled) {
+        return <Navigate to={`/posts/analytics/${postId}`} replace />;
+    }
 
     return (
         <>
