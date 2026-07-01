@@ -14,9 +14,9 @@
         "test": "pnpm test:unit",
         "test:unit": "pnpm test:types && vitest run",
         "test:types": "tsc --noEmit",
-        "lint:code": "eslint --ext .js,.ts,.cjs,.tsx src/ --cache",
+        "lint:code": "eslint src/ --cache",
         "lint": "pnpm lint:code && pnpm lint:test",
-        "lint:test": "eslint -c test/.eslintrc.cjs --ext .js,.ts,.cjs,.tsx test/ --cache",
+        "lint:test": "eslint test/ --cache",
         "storybook": "storybook dev -p 6006",
         "build-storybook": "storybook build"
     },
@@ -38,17 +38,22 @@
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
         "@types/validator": "catalog:",
+        "@eslint/js": "catalog:",
         "@typescript-eslint/parser": "catalog:",
         "@vitejs/plugin-react": "catalog:",
         "autoprefixer": "10.5.0",
         "c8": "catalog:",
         "chai": "catalog:",
         "eslint": "catalog:",
+        "eslint-plugin-ghost": "catalog:",
+        "eslint-plugin-react": "catalog:",
         "eslint-plugin-react-hooks": "catalog:",
         "eslint-plugin-react-refresh": "catalog:",
         "eslint-plugin-tailwindcss": "catalog:",
         "glob": "catalog:",
+        "globals": "catalog:",
         "jsdom": "catalog:",
+        "typescript-eslint": "catalog:",
         "lodash-es": "4.18.1",
         "postcss": "catalog:",
         "postcss-import": "16.1.1",
@@ -71,7 +76,7 @@
         "@radix-ui/react-checkbox": "catalog:",
         "@radix-ui/react-form": "catalog:",
         "@radix-ui/react-popover": "catalog:",
-        "@radix-ui/react-radio-group": "1.4.0",
+        "@radix-ui/react-radio-group": "1.4.1",
         "@radix-ui/react-separator": "catalog:",
         "@radix-ui/react-switch": "catalog:",
         "@radix-ui/react-tabs": "catalog:",
@@ -90,6 +95,11 @@
     },
     "nx": {
         "targets": {
+            "dev": {
+                "dependsOn": [
+                    "^build"
+                ]
+            },
             "build": {
                 "dependsOn": [
                     "^build"

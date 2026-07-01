@@ -28,6 +28,10 @@ type MemberWelcomeEmailService = {
 type MemberModel = {
     get(key: 'name'): string | null;
     get(key: 'email' | 'status' | 'uuid'): string;
+    get(key: 'enable_updates_and_announcements'): boolean | null;
+    related(key: 'newsletters'): {
+        models: unknown[];
+    };
 };
 
 type PollOptions = {
@@ -44,6 +48,17 @@ type PollOptions = {
 const slugToMemberStatus = new Map<string, 'free' | 'paid'>(
     Object.entries(MEMBER_WELCOME_EMAIL_SLUGS).map(([status, slug]) => [slug as string, status as 'free' | 'paid'])
 );
+
+const hasUpdatesAndAnnouncementsEnabled = (member: MemberModel): boolean => {
+    const preference = member.get('enable_updates_and_announcements');
+
+    if (preference !== null) {
+        return preference;
+    }
+
+    const isSubscribedToAnyNewsletters = member.related('newsletters').models.length > 0;
+    return isSubscribedToAnyNewsletters;
+};
 
 const markMaxAttemptsExceeded = async (automationsApi: PollOptions['automationsApi'], step: AutomationStepToRun): Promise<void> => {
     await automationsApi.markStepTerminal(step, 'failed');
@@ -121,7 +136,7 @@ const processStep = async ({
         return null;
     }
 
-    const member = await Member.findOne({id: step.member_id}) as MemberModel | null;
+    const member = await Member.findOne({id: step.member_id}, {withRelated: ['newsletters']}) as MemberModel | null;
 
     if (!member) {
         // It's possible that the member was deleted between the time the step was fetched and now, though it's
@@ -147,11 +162,19 @@ const processStep = async ({
 
     try {
         switch (step.type) {
-        case 'wait': {
-            nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
+        case 'wait':
             break;
-        }
-        case 'send_email': {
+        case 'send_email':
+            if (!hasUpdatesAndAnnouncementsEnabled(member)) {
+                logging.info({
+                    system: {
+                        event: 'automations.poll.skipped_unsubscribed_member',
+                        member_id: step.member_id,
+                        step_id: step.id
+                    }
+                }, `[AUTOMATIONS] Member ${step.member_id} for step ${step.id} has unsubscribed from emails. Fast-finishing this step`);
+                break;
+            }
             memberWelcomeEmailService.init();
             await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
@@ -184,9 +207,7 @@ const processStep = async ({
                     }
                 }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
             }
-            nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
             break;
-        }
         default: {
             const _exhaustive: never = step;
             throw new errors.InternalServerError({
@@ -194,6 +215,8 @@ const processStep = async ({
             });
         }
         }
+
+        nextReadyAt = await automationsApi.finishStepAndEnqueueNext(step);
     } catch (err) {
         return await handleStepExecutionFailure({
             automationsApi,

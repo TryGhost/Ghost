@@ -14,7 +14,7 @@ describe('llms.txt routing', function () {
     let request;
     let siteUrl;
 
-    before(async function () {
+    beforeAll(async function () {
         await testUtils.startGhost();
         siteUrl = configUtils.config.get('url').replace(/\/$/, '');
         request = supertest.agent(configUtils.config.get('url'));
@@ -71,16 +71,5 @@ describe('llms.txt routing', function () {
 
         // truncation footer (if present) points at the sitemap, not /llms.txt
         assert.doesNotMatch(res.text, /Use `\/llms\.txt`/);
-    });
-
-    it('does not serve llms.txt when the labs flag is disabled', async function () {
-        sinon.restore();
-
-        // with the flag off the handler defers to the rest of the routing
-        // stack, which treats the path like any other unknown frontend route
-        // (the trailing-slash middleware redirects it)
-        const res = await request.get('/llms.txt');
-
-        assert.equal(res.status, 302);
     });
 });

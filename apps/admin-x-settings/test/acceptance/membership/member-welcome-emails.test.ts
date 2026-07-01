@@ -17,7 +17,7 @@ const automatedEmailsFixture = {
     automated_emails: [{
         id: 'free-welcome-email-id',
         status: 'active',
-        name: 'Welcome Email (Free)',
+        name: 'Free member welcome flow',
         slug: 'member-welcome-email-free',
         subject: 'Welcome to Test Site',
         // Note the lexical content includes a template token ({name})
@@ -48,6 +48,17 @@ const configWithTenorEnabled = {
         tenor: {
             googleApiKey: 'test-tenor-key',
             contentFilter: 'off'
+        }
+    }
+};
+
+const configWithAutomationsEnabled = {
+    ...responseFixtures.config,
+    config: {
+        ...responseFixtures.config.config,
+        labs: {
+            ...responseFixtures.config.config.labs,
+            automations: true
         }
     }
 };
@@ -1016,7 +1027,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'paid-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Paid)',
+                    name: 'Paid member welcome flow',
                     slug: 'member-welcome-email-paid',
                     subject: 'Welcome to your paid subscription',
                     lexical: '{"root":{"children":[]}}',
@@ -1221,7 +1232,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'paid-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Paid)',
+                    name: 'Paid member welcome flow',
                     slug: 'member-welcome-email-paid',
                     subject: 'Welcome to your paid subscription',
                     lexical: '{"root":{"children":[]}}',
@@ -1289,6 +1300,67 @@ test.describe('Member emails settings', async () => {
                 sender_email: 'shared@example.com',
                 sender_reply_to: 'shared-reply@example.com'
             });
+        });
+
+        test('saves shared sender settings without creating welcome-email rows when automations are enabled', async ({page}) => {
+            const emptyAutomatedEmailsFixture = {
+                automated_emails: []
+            };
+
+            const createdAutomatedEmailResponse = {
+                automated_emails: [{
+                    id: 'free-welcome-email-id',
+                    status: 'inactive',
+                    name: 'Welcome Email (Free)',
+                    slug: 'member-welcome-email-free',
+                    subject: 'Welcome to Test Site',
+                    lexical: '{"root":{"children":[]}}',
+                    sender_name: null,
+                    sender_email: null,
+                    sender_reply_to: null,
+                    created_at: '2024-01-01T00:00:00.000Z',
+                    updated_at: null
+                }]
+            };
+
+            const {lastApiRequests} = await mockApi({page, requests: {
+                ...globalDataRequests,
+                ...newslettersRequest,
+                browseConfig: {method: 'GET', path: '/config/', response: configWithAutomationsEnabled},
+                browseNewsletters: {method: 'GET', path: '/newsletters/?include=count.active_members%2Ccount.posts&limit=50', response: responseFixtures.newsletters},
+                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: emptyAutomatedEmailsFixture},
+                readAutomatedEmailDesign: {method: 'GET', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
+                editAutomatedEmailDesign: {method: 'PUT', path: '/automated_emails/design/', response: automatedEmailDesignFixture},
+                addAutomatedEmail: {method: 'POST', path: '/automated_emails/', response: createdAutomatedEmailResponse},
+                editAutomatedEmailSenders: {
+                    method: 'PUT',
+                    path: /^\/automated_emails\/senders\/?$/,
+                    response: emptyAutomatedEmailsFixture
+                }
+            }});
+
+            await page.goto('/');
+            await page.waitForLoadState('networkidle');
+
+            const section = page.getByTestId('emails');
+            await expect(section).toBeVisible({timeout: 10000});
+            await section.getByRole('tab', {name: 'Automation emails'}).click();
+            await section.getByTestId('automations-transactional-row').getByRole('button', {name: 'Edit'}).click();
+
+            const modal = page.getByTestId('welcome-email-customize-modal');
+            await expect(modal).toBeVisible();
+
+            await modal.getByLabel('Sender name').fill('Shared sender');
+            await modal.getByLabel('Sender email').fill('shared@example.com');
+            await modal.getByLabel('Reply-to email').fill('shared-reply@example.com');
+            await modal.getByRole('button', {name: 'Save'}).click();
+
+            await expect.poll(() => lastApiRequests.editAutomatedEmailSenders?.body).toEqual({
+                sender_name: 'Shared sender',
+                sender_email: 'shared@example.com',
+                sender_reply_to: 'shared-reply@example.com'
+            });
+            expect(lastApiRequests.addAutomatedEmail).toBeUndefined();
         });
     });
 
@@ -1363,7 +1435,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'new-free-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',
@@ -1411,7 +1483,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"Welcome!","type":"extended-text","version":1}],"direction":"ltr","format":"","indent":0,"type":"paragraph","version":1}],"direction":"ltr","format":"","indent":0,"type":"root","version":1}}',
@@ -1458,7 +1530,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'new-free-welcome-email-id',
                     status: 'active',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',
@@ -1502,7 +1574,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
                     status: 'inactive',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',
@@ -1553,7 +1625,7 @@ test.describe('Member emails settings', async () => {
                 automated_emails: [{
                     id: 'free-welcome-email-id',
                     status: 'active',
-                    name: 'Welcome Email (Free)',
+                    name: 'Free member welcome flow',
                     slug: 'member-welcome-email-free',
                     subject: 'Welcome to Test Site',
                     lexical: '{"root":{"children":[]}}',

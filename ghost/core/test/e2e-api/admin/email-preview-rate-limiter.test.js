@@ -23,7 +23,7 @@ describe('Rate limiter', function () {
         await resetRateLimits();
     });
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('users', 'newsletters', 'posts');
         await agent.loginAsOwner();

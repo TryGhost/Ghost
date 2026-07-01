@@ -3,7 +3,6 @@ import {render, RenderOptions} from '@testing-library/react';
 
 // Global HTML typings needed for tests
 declare global {
-    // eslint-disable-next-line no-unused-vars
     interface HTMLElement {
         className: string;
     }

@@ -805,8 +805,8 @@
                     "object_type": "gift_link"
                 },
                 {
-                    "name": "Reset all gift links",
-                    "action_type": "resetAll",
+                    "name": "Remove all gift links",
+                    "action_type": "removeAll",
                     "object_type": "gift_link"
                 }
             ]
@@ -1090,8 +1090,7 @@
                     "product": ["browse", "read"],
                     "newsletter": ["browse", "read"],
                     "collection": ["browse", "read", "add"],
-                    "recommendation": ["browse", "read"],
-                    "gift_link": "manage"
+                    "recommendation": ["browse", "read"]
                 },
                 "Contributor": {
                     "post": ["browse", "read", "edit", "add", "destroy"],

@@ -74,20 +74,20 @@ export const CommentComponent: React.FC<CommentProps> = ({children, comment, par
 
 type CommentProps = React.PropsWithChildren<AnimatedCommentProps>;
 
-const getReplyFormDisplayState = (comment: Comment, openCommentForms: OpenCommentForm[], useThreading: boolean) => {
+const getReplyFormState = (comment: Comment, openCommentForms: OpenCommentForm[], useThreading: boolean) => {
     // Non-threaded replies to replies are displayed inside the top-level comment,
     // so match either the comment id or parent id. Threaded replies render their
     // own reply form inline, so only match the current comment.
-    const openForm = useThreading
+    const activeReplyForm = useThreading
         ? openCommentForms.find(f => f.id === comment.id && f.type === 'reply')
         : openCommentForms.find(f => (f.id === comment.id || f.parent_id === comment.id) && f.type === 'reply');
+    const visibleReplyForm = activeReplyForm && (useThreading || !activeReplyForm.parent_id || activeReplyForm.parent_id === comment.id)
+        ? activeReplyForm
+        : undefined;
 
     return {
-        openForm,
-        // Avoid showing nested reply forms in non-threaded RepliesContainer output.
-        displayReplyForm: useThreading
-            ? !!openForm
-            : !!openForm && (!openForm.parent_id || openForm.parent_id === comment.id)
+        activeReplyForm,
+        visibleReplyForm
     };
 };
 
@@ -122,13 +122,13 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
     const editForm = openCommentForms.find(openForm => openForm.id === comment.id && openForm.type === 'edit');
     const isInEditMode = !!editForm;
 
-    const {openForm, displayReplyForm} = getReplyFormDisplayState(comment, openCommentForms, useThreading);
+    const {activeReplyForm, visibleReplyForm} = getReplyFormState(comment, openCommentForms, useThreading);
     // only highlight the reply button for the comment that is being replied to
-    const highlightReplyButton = !!(openForm && openForm.id === comment.id);
+    const highlightReplyButton = !!(activeReplyForm && activeReplyForm.id === comment.id);
 
     const openReplyForm = useCallback(async () => {
-        if (openForm && openForm.id === comment.id) {
-            dispatchAction('closeCommentForm', openForm.id);
+        if (activeReplyForm && activeReplyForm.id === comment.id) {
+            dispatchAction('closeCommentForm', activeReplyForm.id);
         } else {
             const inReplyToDetails: Partial<OpenCommentForm> = {};
 
@@ -147,10 +147,10 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
 
             await dispatchAction('openCommentForm', newForm);
         }
-    }, [comment, parent, openForm, dispatchAction]);
+    }, [comment, parent, activeReplyForm, dispatchAction]);
 
     const hasChildReplies = hasNestedReplies || (comment.replies && comment.replies.length > 0);
-    const hasReplies = displayReplyForm || hasChildReplies;
+    const hasReplies = !!visibleReplyForm || hasChildReplies;
     const avatar = (<Avatar member={comment.member} />);
     const replyFormParent = parent || comment;
     const isHighlighted = commentIdFromHash
@@ -166,7 +166,7 @@ const PublishedComment: React.FC<PublishedCommentProps> = ({children, comment, p
             layoutVariant={layoutVariant}
             memberUuid={comment.member?.uuid}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
-            replyForm={displayReplyForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
+            replyForm={visibleReplyForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={visibleReplyForm} parent={replyFormParent} useThreading={useThreading} /> : null}
             useThreading={useThreading}
         >
             <div id={comment.id}>
@@ -213,9 +213,9 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
             t('This comment has been removed.') :
             '';
 
-    const {openForm, displayReplyForm} = getReplyFormDisplayState(comment, openCommentForms, useThreading);
+    const {visibleReplyForm} = getReplyFormState(comment, openCommentForms, useThreading);
     const hasChildReplies = hasNestedReplies || (comment.replies && comment.replies.length > 0);
-    const hasReplies = displayReplyForm || hasChildReplies;
+    const hasReplies = !!visibleReplyForm || hasChildReplies;
 
     // Only show MoreButton for hidden (not deleted) comments when admin
     const showMoreButton = isAdmin && comment.status === 'hidden';
@@ -230,7 +230,7 @@ const UnpublishedComment: React.FC<React.PropsWithChildren<UnpublishedCommentPro
             isPinned={comment.pinned}
             layoutVariant={layoutVariant}
             replies={<RepliesContainer comment={comment} parent={parent} useThreading={useThreading}>{children}</RepliesContainer>}
-            replyForm={displayReplyForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={openForm} parent={replyFormParent} useThreading={useThreading} /> : null}
+            replyForm={visibleReplyForm ? <ReplyFormBox continueLine={hasChildReplies} openForm={visibleReplyForm} parent={replyFormParent} useThreading={useThreading} /> : null}
             useThreading={useThreading}
         >
             <div className="mt-[-3px] flex items-start" id={comment.id}>
@@ -417,12 +417,16 @@ const CommentHeader: React.FC<CommentHeaderProps> = ({comment, className = '', u
 };
 
 type CommentBodyProps = {
-    html: string;
+    html: string | null;
     className?: string;
     isHighlighted?: boolean;
 }
 
 const CommentBody: React.FC<CommentBodyProps> = ({html, className = '', isHighlighted}) => {
+    if (!html) {
+        return null;
+    }
+
     let commentHtml = html;
 
     if (isHighlighted) {

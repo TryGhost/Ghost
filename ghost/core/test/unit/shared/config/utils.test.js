@@ -68,4 +68,54 @@ describe('Config Utils', function () {
             assert.notEqual(changedKey[0][1], 'content\\data\\ghost.db');
         });
     });
+
+    describe('sanitizeDatabaseProperties', function () {
+        let nconf;
+
+        beforeEach(function () {
+            nconf = {
+                get: (key) => _.get(fakeConfig, key.replace(/:/g, '.')),
+                set: (key, value) => _.set(fakeConfig, key.replace(/:/g, '.'), value)
+            };
+        });
+
+        it('normalizes mysql client to mysql2', function () {
+            fakeConfig = {
+                database: {
+                    client: 'mysql',
+                    connection: {host: 'localhost', user: 'root', password: 'pw', database: 'ghost'}
+                }
+            };
+
+            configUtils.sanitizeDatabaseProperties(nconf);
+
+            assert.equal(nconf.get('database:client'), 'mysql2');
+        });
+
+        it('normalizes sqlite3 client to better-sqlite3', function () {
+            fakeConfig = {
+                database: {
+                    client: 'sqlite3',
+                    connection: {filename: 'content/data/ghost.db'}
+                }
+            };
+
+            configUtils.sanitizeDatabaseProperties(nconf);
+
+            assert.equal(nconf.get('database:client'), 'better-sqlite3');
+        });
+
+        it('leaves better-sqlite3 client unchanged', function () {
+            fakeConfig = {
+                database: {
+                    client: 'better-sqlite3',
+                    connection: {filename: 'content/data/ghost.db'}
+                }
+            };
+
+            configUtils.sanitizeDatabaseProperties(nconf);
+
+            assert.equal(nconf.get('database:client'), 'better-sqlite3');
+        });
+    });
 });

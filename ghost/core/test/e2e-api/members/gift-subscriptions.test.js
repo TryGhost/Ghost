@@ -115,7 +115,7 @@ async function expectGiftCheckoutError(bodyOverrides = {}) {
 }
 
 describe('Gift Subscriptions', function () {
-    before(async function () {
+    beforeAll(async function () {
         const agents = await agentProvider.getAgentsForMembers();
 
         membersAgent = agents.membersAgent;

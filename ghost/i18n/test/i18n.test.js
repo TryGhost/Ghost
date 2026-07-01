@@ -5,6 +5,85 @@ const fsExtra = require('fs-extra');
 const i18n = require('../');
 
 describe('i18n', function () {
+    describe('browser entry', function () {
+        const browserI18n = require('../index.browser');
+
+        it('loads bundled public app translations without server-only helpers', function () {
+            const t = browserI18n('nl', 'portal').t;
+
+            assert.equal(t('Name'), 'Naam');
+        });
+
+        it('uses the default namespace and locale', function () {
+            const t = browserI18n().t;
+
+            assert.equal(t('Name'), 'Name');
+        });
+
+        it('uses single curly braces for browser interpolation', function () {
+            const portalT = browserI18n('en', 'portal').t;
+            const ghostT = browserI18n('en', 'ghost').t;
+
+            assert.equal(portalT('Welcome, {name}', {name: '<b>John O\'Nolan</b>'}), 'Welcome, <b>John O\'Nolan</b>');
+            assert.equal(ghostT('Welcome, {name}', {name: 'John'}), 'Welcome, John');
+        });
+
+        it('uses default export translations when available', function () {
+            const translationFile = require(path.join(`../locales/`, 'nl', 'portal.json'));
+            const originalName = translationFile.Name;
+            const originalDefault = translationFile.default;
+
+            translationFile.Name = undefined;
+            translationFile.default = {
+                Name: 'Naam'
+            };
+
+            try {
+                const t = browserI18n('nl', 'portal').t;
+                assert.equal(t('Name'), 'Naam');
+            } finally {
+                translationFile.Name = originalName;
+                if (originalDefault === undefined) {
+                    delete translationFile.default;
+                } else {
+                    translationFile.default = originalDefault;
+                }
+            }
+        });
+
+        it('ignores non-object default exports', function () {
+            const translationFile = require(path.join(`../locales/`, 'nl', 'portal.json'));
+            const originalDefault = translationFile.default;
+
+            translationFile.default = 'not an object';
+
+            try {
+                const t = browserI18n('nl', 'portal').t;
+                assert.equal(t('Name'), 'Naam');
+            } finally {
+                if (originalDefault === undefined) {
+                    delete translationFile.default;
+                } else {
+                    translationFile.default = originalDefault;
+                }
+            }
+        });
+
+        it('falls back to English for missing bundled locales', function () {
+            const resources = browserI18n.generateResources(['xx'], 'portal');
+            const englishResources = browserI18n.generateResources(['en'], 'portal');
+
+            assert.deepEqual(resources.xx, englishResources.en);
+        });
+
+        it('uses empty theme resources in browser builds', function () {
+            const instance = browserI18n('en', 'theme');
+
+            assert.deepEqual(instance.store.data.en.theme, {});
+            assert.equal(instance.t('Read more'), 'Read more');
+        });
+    });
+
     it('does not have too-long strings for the Stripe personal note label', async function () {
         for (const locale of i18n.SUPPORTED_LOCALES) {
             const translationFile = require(path.join(`../locales/`, locale, 'portal.json'));
@@ -30,7 +109,7 @@ describe('i18n', function () {
         describe('Dutch', function () {
             let t;
 
-            before(function () {
+            beforeAll(function () {
                 t = i18n('nl', 'portal').t;
             });
 
@@ -44,7 +123,7 @@ describe('i18n', function () {
         describe('Afrikaans', function () {
             let t;
 
-            before(function () {
+            beforeAll(function () {
                 t = i18n('af', 'signup-form').t;
             });
 
@@ -57,7 +136,7 @@ describe('i18n', function () {
     describe('Fallback when no language is chosen will be english', function () {
         describe('English fallback', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n().t;
             });
             it('can translate with english when no language selected', function () {
@@ -69,7 +148,7 @@ describe('i18n', function () {
     describe('Fallback will be nb when no is chosen', function () {
         describe('Norwegian bokmål fallback', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n('no', 'portal').t;
             });
             it('Norwegian bokmål used when no is chosen', function () {
@@ -81,7 +160,7 @@ describe('i18n', function () {
     describe('Language will be nb when nb is chosen', function () {
         describe('Norwegian bokmål', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n('nb', 'portal').t;
             });
             it('Norwegian bokmål used when "nb" is chosen', function () {
@@ -93,7 +172,7 @@ describe('i18n', function () {
     describe('Language is properly "nn" when "nn" is chosen', function () {
         describe('Norwegian Nynorsk', function () {
             let t;
-            before(function () {
+            beforeAll(function () {
                 t = i18n('nn', 'portal').t;
             });
             it('Norwegian Nynorsk used when selected', function () {

@@ -16,7 +16,8 @@ import { Meta } from '@storybook/addon-docs/blocks';
 | **Primitives** | Layout vocabulary — rows, columns, padding, gaps. No domain meaning. | `src/components/primitives/` | `Stack`, `Inline`, `Box`, `Grid`, `Container`, `Text` |
 | **Components** | Generic, accessible UI controls. Same on every page. | `src/components/ui/` | `Button`, `Input`, `Dialog`, `Tabs`, `Card` |
 | **Recipes** | Shared visual rules (class-string functions). No JSX. | `src/components/ui/<name>.ts` | `inputSurface` — chrome shared by Input, Textarea, Select trigger |
-| **Patterns** | Product-shaped compositions. Know Ghost. | `src/components/patterns/` | `PageHeader`, `ListPage`, `Filters`, `KpiCard`, `GhAreaChart` |
+| **Patterns** | Product-shaped compositions. Know Ghost. | `src/components/patterns/` | `PageHeader`, `Filters`, `KpiCard`, `GhAreaChart` |
+| **Page templates** | Top-level page wrappers that compose patterns. | `src/components/page-templates/` | `ListPage` |
 
 Each layer is allowed to use anything below it. The reverse is forbidden: a Button can't reach into a Pattern, a Primitive can't import a Component.
 

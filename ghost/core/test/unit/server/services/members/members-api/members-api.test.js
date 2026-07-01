@@ -65,7 +65,6 @@ describe('MembersAPI', function () {
                 Settings: {},
                 Comment: {},
                 MemberFeedback: {},
-                Outbox: {},
                 Automation: {},
                 AutomatedEmailRecipient: {},
                 Gift: {}

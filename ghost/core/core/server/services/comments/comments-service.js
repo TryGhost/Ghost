@@ -107,6 +107,9 @@ class CommentsService {
         /** @private */
         this.contentGating = contentGating;
 
+        /** @private */
+        this.urlService = urlService;
+
         const Emails = require('./comments-service-emails');
         /** @private */
         this.emails = new Emails({
@@ -160,7 +163,6 @@ class CommentsService {
         }
     }
 
-    /** @private */
     async #withTransaction(options, operation) {
         if (options.transacting) {
             return await operation(options);
@@ -175,7 +177,6 @@ class CommentsService {
     }
 
     /**
-     * @private
      * Primary comment lookup: a single keyed fetch with the allowed statuses
      * applied in the query (`WHERE id = ? AND status IN (...)`), optionally locked
      * with `FOR UPDATE` inside a transaction. It deliberately does not load the
@@ -201,7 +202,6 @@ class CommentsService {
         return await model.fetch(getSafeFetchOptions(options, requiredColumns));
     }
 
-    /** @private */
     async #getPublishedCommentForAction(id, options = {}, requiredColumns = [], {forUpdate = false} = {}) {
         const model = await this.#fetchCommentByID(id, options, {
             requiredColumns,
@@ -219,7 +219,6 @@ class CommentsService {
     }
 
     /**
-     * @private
      * Member-facing read: goes through `findOne` (not the lean primitive) so the
      * serializer's default relation graph (member, counts, in_reply_to, replies)
      * is loaded. Readable statuses are constrained in the query via an NQL filter,
@@ -249,7 +248,6 @@ class CommentsService {
         return model;
     }
 
-    /** @private */
     async #getReplyParentCommentByID(id, options = {}) {
         // Deleted parent comments intentionally remain valid thread anchors: a reply
         // can still be posted under a top-level comment whose root was removed.
@@ -267,7 +265,6 @@ class CommentsService {
         return model;
     }
 
-    /** @private */
     async #getInReplyToCommentByID(id, parent, options = {}) {
         const model = await this.#fetchCommentByID(id, options, {
             requiredColumns: IN_REPLY_TO_REQUIRED_COLUMNS,
@@ -287,7 +284,6 @@ class CommentsService {
         return model;
     }
 
-    /** @private */
     async #assertCommentExists(commentId, options = {}) {
         const model = await this.#fetchCommentByID(commentId, options, {
             requiredColumns: ['id']
@@ -300,7 +296,6 @@ class CommentsService {
         }
     }
 
-    /** @private */
     async #getMemberCommentVotes({commentId, memberId, score}, options) {
         const collection = this.models.CommentLike.forge();
         collection.query((qb) => {
@@ -319,12 +314,10 @@ class CommentsService {
         return votes.models || [];
     }
 
-    /** @private */
     async #destroyCommentVotes(votes, options) {
         await Promise.all(votes.map(vote => vote.destroy(options)));
     }
 
-    /** @private */
     async #setCommentVote(commentId, member, targetScore, alreadyMessage, options = {}) {
         const memberModel = await this.models.Member.findOne({
             id: member.id
@@ -361,7 +354,6 @@ class CommentsService {
         });
     }
 
-    /** @private */
     async #clearCommentVote(commentId, member, targetScore, notFoundMessage, options = {}) {
         await this.#withTransaction(options, async (transactionOptions) => {
             await this.#getPublishedCommentForAction(commentId, transactionOptions, [], {forUpdate: true});
@@ -476,7 +468,8 @@ class CommentsService {
      * @param {AdminBrowseAllOptions} options
      */
     async getAdminAllComments({includeNested, filter, mongoTransformer, reportCount, order, page, limit}) {
-        const withRelated = ['member', 'post', 'post.tags', 'post.authors', 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.net_score', 'count.reports', 'in_reply_to', 'parent'];
+        const postUrlRelations = this.urlService.facade.getRequiredRelations().map(relation => `post.${relation}`);
+        const withRelated = ['member', 'post', ...postUrlRelations, 'count.replies', 'count.direct_replies', 'count.likes', 'count.dislikes', 'count.net_score', 'count.reports', 'in_reply_to', 'parent'];
 
         return await this.models.Comment.findPage({
             withRelated,

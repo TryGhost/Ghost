@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.46.0-rc.0",
+  "version": "6.50.0-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -16,9 +16,9 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "ember serve",
+    "dev": "SKIP_DEPENDENCY_CHECKER=true ember serve",
     "build": "ember build --environment=production --silent",
-    "build:dev": "pnpm build --environment=development",
+    "build:dev": "SKIP_DEPENDENCY_CHECKER=true pnpm build --environment=development",
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",
@@ -119,8 +119,12 @@
     "ember-test-selectors": "6.0.0",
     "ember-tooltips": "3.6.0",
     "ember-truth-helpers": "3.1.1",
+    "@eslint/js": "catalog:",
     "eslint": "catalog:",
     "eslint-plugin-babel": "5.3.1",
+    "eslint-plugin-ghost": "3.5.0",
+    "eslint-plugin-react": "7.37.5",
+    "globals": "17.6.0",
     "flexsearch": "0.7.43",
     "fs-extra": "catalog:",
     "ghost": "workspace:*",
@@ -175,6 +179,16 @@
       "!ghost"
     ],
     "targets": {
+      "dev": {
+        "dependsOn": [
+          {
+            "projects": [
+              "@tryghost/admin-x-framework"
+            ],
+            "target": "build"
+          }
+        ]
+      },
       "build:dev": {
         "dependsOn": [
           "build:dev",

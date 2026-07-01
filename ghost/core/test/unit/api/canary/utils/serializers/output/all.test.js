@@ -62,5 +62,51 @@ describe('Unit: endpoints/utils/serializers/output/all', function () {
             assertExists(response.pages[0].authors);
             assertExists(response.pages[0].authors[0].slug);
         });
+
+        it('removes a null published_by', function () {
+            const response = {post: {published_by: null, title: 'xxx'}};
+
+            serializers.output.all.after({}, {response});
+
+            assert.equal('published_by' in response.post, false);
+            assertExists(response.post.title);
+        });
+
+        it('removes published_by from deeply nested resources', function () {
+            const response = {
+                posts: [
+                    {
+                        title: 'xxx',
+                        published_by: 'xxx',
+                        tiers: [{name: 'free', published_by: 'yyy'}]
+                    }
+                ]
+            };
+
+            serializers.output.all.after({}, {response});
+
+            assert.equal('published_by' in response.posts[0], false);
+            assert.equal('published_by' in response.posts[0].tiers[0], false);
+            assert.equal(response.posts[0].tiers[0].name, 'free');
+        });
+
+        it('preserves existing behavior for object-valued published_by', function () {
+            const response = {
+                post: {
+                    published_by: {
+                        id: 'user-1',
+                        published_by: 'nested'
+                    },
+                    title: 'xxx'
+                }
+            };
+
+            serializers.output.all.after({}, {response});
+
+            assert.equal('published_by' in response.post, true);
+            assert.equal(response.post.published_by.id, 'user-1');
+            assert.equal('published_by' in response.post.published_by, false);
+            assertExists(response.post.title);
+        });
     });
 });

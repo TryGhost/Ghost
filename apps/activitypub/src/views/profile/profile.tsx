@@ -137,7 +137,7 @@ const FollowersTab: React.FC<{handle: string}> = ({handle}) => {
     );
 };
 
-const Profile: React.FC<ProfileProps> = ({}) => {
+const Profile: React.FC<ProfileProps> = () => {
     const params = useParams();
 
     const {data: account, isLoading: isLoadingAccount, error: accountError, refetch} = useAccountForUser('index', (params.handle || 'me'));

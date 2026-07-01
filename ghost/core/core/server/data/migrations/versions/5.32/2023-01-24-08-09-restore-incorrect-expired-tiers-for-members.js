@@ -14,7 +14,7 @@ module.exports = createTransactionalMigration(
                 .leftJoin('members_products as mp', 'm.id', 'mp.member_id')
                 .leftJoin('members_product_events as mpe', function () {
                     this.on('m.id', 'mpe.member_id')
-                        .andOn(knex.raw('mpe.created_at = (SELECT max(created_at) FROM members_product_events WHERE member_id = mpe.member_id and action = "added")'));
+                        .andOn(knex.raw("mpe.created_at = (SELECT max(created_at) FROM members_product_events WHERE member_id = mpe.member_id and action = 'added')"));
                 })
                 .where({'m.status': 'paid', 'mp.member_id': null, 'mpe.action': 'added'});
 

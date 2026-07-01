@@ -1,8 +1,8 @@
 const config = require('../../../shared/config');
 const parseYaml = require('./yaml-parser');
+const DynamicRoutingService = require('./dynamic-routing-service');
 
-let settingsLoader;
-let routeSettings;
+const service = new DynamicRoutingService();
 
 module.exports = {
     init: async () => {
@@ -12,8 +12,8 @@ module.exports = {
         const SettingsPathManager = require('./settings-path-manager');
 
         const settingsPathManager = new SettingsPathManager({type: 'routes', paths: [config.getContentPath('settings')]});
-        settingsLoader = new SettingsLoader({parseYaml, settingFilePath: settingsPathManager.getDefaultFilePath()});
-        routeSettings = new RouteSettings({
+        const settingsLoader = new SettingsLoader({parseYaml, settingFilePath: settingsPathManager.getDefaultFilePath()});
+        const routeSettings = new RouteSettings({
             settingsLoader,
             settingsPath: settingsPathManager.getDefaultFilePath(),
             backupPath: settingsPathManager.getBackupFilePath()
@@ -25,28 +25,36 @@ module.exports = {
             sourceFolderPath: config.get('paths').defaultRouteSettings
         });
 
-        return await defaultSettingsManager.ensureSettingsFileExists();
+        service.configure({settingsLoader, routeSettings});
+
+        await defaultSettingsManager.ensureSettingsFileExists();
+    },
+
+    get service() {
+        return service;
     },
 
     get loadRouteSettings() {
-        return settingsLoader.loadSettings.bind(settingsLoader);
+        return service.loadRouteSettings.bind(service);
     },
+
     get getDefaultHash() {
-        return routeSettings.getDefaultHash.bind(routeSettings);
+        return service.getDefaultHash.bind(service);
     },
 
     /**
-     * Methods used in the API
+     * Methods used in the API — delegate to the service instance so the
+     * legacy callers keep working without any changes.
      */
     api: {
         get setFromFilePath() {
-            return routeSettings.setFromFilePath.bind(routeSettings);
+            return service.setFromFilePath.bind(service);
         },
         get get() {
-            return routeSettings.get.bind(routeSettings);
+            return service.get.bind(service);
         },
         get getCurrentHash() {
-            return routeSettings.getCurrentHash.bind(routeSettings);
+            return service.getCurrentHash.bind(service);
         }
     }
 };

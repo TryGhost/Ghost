@@ -2,6 +2,7 @@
 const settingsCache = require('../../shared/settings-cache');
 const config = require('../../shared/config');
 const settingsHelpers = require('../../server/services/settings-helpers');
+const storageUtils = require('../../server/adapters/storage/utils');
 const internalKeys = require('../../server/services/internal-keys').default;
 const logging = require('@tryghost/logging');
 
@@ -29,6 +30,8 @@ module.exports = {
     socialUrls: require('@tryghost/social-urls'),
     blogIcon: require('../../server/lib/image').blogIcon,
     cachedImageSizeFromUrl: require('../../server/lib/image').cachedImageSizeFromUrl,
+    // bound because isInternalImage relies on `this` to reach sibling helpers in storage utils
+    isInternalImage: storageUtils.isInternalImage.bind(storageUtils),
     // Used by router service and {{get}} helper to prepare data for optimal usage in themes
     prepareContextResource(data) {
         (Array.isArray(data) ? data : [data]).forEach((resource) => {
@@ -67,6 +70,15 @@ module.exports = {
 
     // Labs utils for enabling/disabling helpers
     labs: require('../../shared/labs'),
+    // Gift links service — reached through this seam so the entry controller
+    // doesn't require a server module directly.
+    giftLinks: require('../../server/services/gift-links'),
+    // Paid-member shim for gift-link reads (shared with previews). Lazy getter so
+    // the members service resolves at call time, avoiding boot-time require-order
+    // coupling.
+    get createPaidMemberShim() {
+        return require('../../server/services/members').createPaidMemberShim;
+    },
     // URGH... Yuk (unhelpful comment :D)
     urlService: require('../../server/services/url'),
     urlUtils: require('../../shared/url-utils')

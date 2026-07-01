@@ -9,6 +9,23 @@ const {createFindResource} = require('../../core/server/services/url/lazy-find-r
 
 const RESOURCE_TYPES = ['posts', 'pages', 'tags', 'authors'];
 
+// Eager filters resources at fetch time, then drops the routing columns
+// (status/visibility) from its cache to keep it lean — so `resource.data` lacks
+// them. A real caller hands the lazy service a serialized resource that still
+// carries those columns, and the lazy service requires them to evaluate its base
+// filter. Re-add the values eager filtered on (everything in the cache is
+// published/public) so the comparison reflects what lazy actually receives.
+function toLazyResource(type, data) {
+    const resource = Object.assign({}, data, {type});
+    if (type === 'posts' || type === 'pages') {
+        resource.status = 'published';
+    }
+    if (type === 'tags') {
+        resource.visibility = 'public';
+    }
+    return resource;
+}
+
 // Routing sets registered identically on both services. Slug-backed permalinks
 // only, since that is Ghost's default shape and the one resolveUrl queries by.
 const SCENARIOS = [
@@ -66,9 +83,9 @@ function waitUntilFinished(urlService, timeout = 5000) {
 describe('Integration: eager/lazy URL service parity', function () {
     let zeroPostTag;
 
-    before(testUtils.teardownDb);
-    before(testUtils.setup('users:roles', 'posts'));
-    before(async function () {
+    beforeAll(testUtils.teardownDb);
+    beforeAll(testUtils.setup('users:roles', 'posts'));
+    beforeAll(async function () {
         // An explicit public tag with no posts, so the zero-post gating case is
         // deterministic instead of depending on fixture composition.
         zeroPostTag = await models.Tag.add(
@@ -76,9 +93,9 @@ describe('Integration: eager/lazy URL service parity', function () {
             {context: {internal: true}}
         );
     });
-    after(testUtils.teardownDb);
+    afterAll(testUtils.teardownDb);
 
-    after(function () {
+    afterAll(function () {
         sinon.restore();
     });
 
@@ -87,7 +104,7 @@ describe('Integration: eager/lazy URL service parity', function () {
             let eager;
             let lazy;
 
-            before(async function () {
+            beforeAll(async function () {
                 eager = new UrlService();
                 scenario.routes.forEach(r => eager.onRouterAddedType(r.identifier, r.filter, r.resourceType, r.permalink));
                 eager.init();
@@ -97,7 +114,7 @@ describe('Integration: eager/lazy URL service parity', function () {
                 scenario.routes.forEach(r => lazy.onRouterAddedType(r.identifier, r.filter, r.resourceType, r.permalink));
             });
 
-            after(function () {
+            afterAll(function () {
                 eager.reset();
             });
 
@@ -128,7 +145,7 @@ describe('Integration: eager/lazy URL service parity', function () {
                 for (const {type, resources} of cachedResourcesByType()) {
                     for (const resource of resources) {
                         const id = resource.data.id;
-                        const lazyResource = Object.assign({}, resource.data, {type});
+                        const lazyResource = toLazyResource(type, resource.data);
 
                         assert.equal(
                             lazy.getUrlForResource(lazyResource),
@@ -143,7 +160,7 @@ describe('Integration: eager/lazy URL service parity', function () {
                 for (const {type, resources} of cachedResourcesByType()) {
                     for (const resource of resources) {
                         const id = resource.data.id;
-                        const lazyResource = Object.assign({}, resource.data, {type});
+                        const lazyResource = toLazyResource(type, resource.data);
 
                         assert.equal(
                             lazy.getUrlForResource(lazyResource, {absolute: true}),
@@ -158,7 +175,7 @@ describe('Integration: eager/lazy URL service parity', function () {
                 for (const {type, resources} of cachedResourcesByType()) {
                     for (const resource of resources) {
                         const id = resource.data.id;
-                        const lazyResource = Object.assign({}, resource.data, {type});
+                        const lazyResource = toLazyResource(type, resource.data);
 
                         for (const route of scenario.routes) {
                             assert.equal(

@@ -1,3 +1,4 @@
+import type {ReadonlyDeep} from 'type-fest';
 import {InfiniteData} from '@tanstack/react-query';
 import {Meta, createInfiniteQuery, createMutation, createQueryWithId} from '../utils/api/hooks';
 import {deleteFromQueryCache, updateQueryCache} from '../utils/api/update-queries';
@@ -157,50 +158,67 @@ export const useMakeOwner = createMutation<UsersResponseType, string>({
 
 // Helpers
 
-export function isOwnerUser(user: User) {
+type HasRoles = ReadonlyDeep<{
+    roles: Array<Pick<UserRole, 'name'>>;
+}>;
+
+export function isOwnerUser(user: HasRoles) {
     return user.roles.some(role => role.name === 'Owner');
 }
 
-export function isAdminUser(user: User) {
+export function isAdminUser(user: HasRoles) {
     return user.roles.some(role => role.name === 'Administrator');
 }
 
-export function isEditorUser(user: User) {
+export function isEditorUser(user: HasRoles) {
     const isAnyEditor = user.roles.some(role => role.name === 'Editor')
         || user.roles.some(role => role.name === 'Super Editor');
     return isAnyEditor;
 }
 
-export function isSuperEditorUser(user: User) {
+export function isSuperEditorUser(user: HasRoles) {
     return user.roles.some(role => role.name === 'Super Editor');
 }
 
-export function isAuthorUser(user: User) {
+export function isAuthorUser(user: HasRoles) {
     return user.roles.some(role => role.name === 'Author');
 }
 
-export function isContributorUser(user: User) {
+export function isContributorUser(user: HasRoles) {
     return user.roles.some(role => role.name === 'Contributor');
 }
 
-export function isAuthorOrContributor(user: User) {
+export function isAuthorOrContributor(user: HasRoles) {
     return isAuthorUser(user) || isContributorUser(user);
 }
 
-export function canAccessSettings(user: User) {
+export function canAccessSettings(user: HasRoles) {
     return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
 }
 
-export function canManageMembers(user: User) {
+export function canManageMembers(user: HasRoles) {
     // Owner, Admin, or Super Editor can manage members
     return isOwnerUser(user) || isAdminUser(user) || isSuperEditorUser(user);
 }
 
-export function canManageTags(user: User) {
+export function canManageTags(user: HasRoles) {
     // Owner, Admin or Editor can manage tags
     return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
 }
 
-export function hasAdminAccess(user: User) {
+export function canManageGiftLinks(user: HasRoles) {
+    // Owner, Admin or Editor can manage gift links
+    return isOwnerUser(user) || isAdminUser(user) || isEditorUser(user);
+}
+
+export function hasAdminAccess(user: HasRoles) {
+    return isOwnerUser(user) || isAdminUser(user);
+}
+
+export function canManageAutomations(user: HasRoles) {
+    // Only Owner and Admin can edit automations. This matches the API permission rows,
+    // which grant automation browse/read/edit to Administrator + Admin Integration
+    // (the Owner role inherits all permissions). Super Editors can manage members but
+    // cannot edit automations, so we must not gate on canManageMembers here.
     return isOwnerUser(user) || isAdminUser(user);
 }

@@ -17,6 +17,7 @@ const EmailAddressParser = require('../email-address/email-address-parser');
 const {getEmailDesign} = require('../email-rendering/email-design');
 const {registerHelpers} = require('./helpers/register-helpers');
 const crypto = require('crypto');
+const {getPostAccessFilter} = require('../members/content-gating');
 /** @import {TemplateDelegate} from 'handlebars' */
 
 const DEFAULT_LOCALE = 'en-gb';
@@ -71,6 +72,82 @@ function isValidLocale(locale) {
     } catch (e) {
         return false; // RangeError means invalid locale
     }
+}
+
+/**
+ * Builds a plain {visibility, tiers} shape from a Post model, for the shared
+ * content-gating helpers (which operate on serialized post attributes).
+ * @param {Post} post
+ * @returns {{visibility: string, tiers: object[]|undefined}}
+ */
+function getPostGatingShape(post) {
+    const tiersRelation = post.related && post.related('tiers');
+    const tiers = tiersRelation && typeof tiersRelation.toJSON === 'function'
+        ? tiersRelation.toJSON()
+        : undefined;
+    return {
+        visibility: post.get('visibility'),
+        tiers
+    };
+}
+
+/**
+ * The NQL member filter selecting members WITHOUT access to a tier-restricted
+ * post: members who hold none of the post's tiers. This is the exact complement
+ * of the post's tier access filter (De Morgan over the OR of tiers). Free
+ * members (no products) match this naturally.
+ * @param {Post} post
+ * @returns {string|null}
+ */
+function getNegatedTierFilter(post) {
+    const tiers = getPostGatingShape(post).tiers || [];
+    if (tiers.length === 0) {
+        return null;
+    }
+    return tiers.map(tier => `product:-'${tier.slug}'`).join('+');
+}
+
+/**
+ * Returns 'status:free' / 'status:-free' identifying which free/paid audience a
+ * segment renders for. Used ONLY for data-gh-segment card stripping, which is a
+ * free/paid-only axis independent of tier access. Returns null for segments that
+ * target a mixed/everyone audience (where no free/paid cards are present anyway).
+ * @param {Segment} segment
+ * @returns {string|null}
+ */
+function getSegmentStatus(segment) {
+    if (!segment) {
+        return null;
+    }
+    if (segment.includes('status:-free')) {
+        return 'status:-free';
+    }
+    if (segment.includes('status:free')) {
+        return 'status:free';
+    }
+    return null;
+}
+
+/**
+ * Whether the members matched by a segment can read the post's gated content.
+ * Derived from the post's visibility (not just free/paid): for paid posts the
+ * access segment is the paid one; for tier-restricted posts it's the segment
+ * carrying the post's positive tier filter.
+ * @param {Post} post
+ * @param {Segment} segment
+ * @returns {boolean}
+ */
+function segmentHasPostAccess(post, segment) {
+    const visibility = post.get('visibility');
+    if (visibility !== 'paid' && visibility !== 'tiers') {
+        return true;
+    }
+    const accessFilter = getPostAccessFilter(getPostGatingShape(post));
+    if (!accessFilter) {
+        // misconfigured tiers post (no tiers) -> nobody has access
+        return false;
+    }
+    return !!segment && segment.includes(accessFilter);
 }
 
 /**
@@ -162,6 +239,7 @@ class EmailRenderer {
     #imageSize;
     #urlUtils;
     #getPostUrl;
+    #getRequiredUrlRelations;
     #storageUtils;
 
     #linkReplacer;
@@ -189,6 +267,7 @@ class EmailRenderer {
      * @param {{urlFor(type: string, optionsOrAbsolute, absolute): string, isSiteUrl(url, context): boolean}} dependencies.urlUtils
      * @param {{isLocalImage(url: string): boolean, isInternalImage(url: string): boolean}} dependencies.storageUtils
      * @param {(post: Post) => string} dependencies.getPostUrl
+     * @param {() => string[]} [dependencies.getRequiredUrlRelations] Post relations the live routes need loaded to generate URLs (lazy routing); defaults to none
      * @param {object} dependencies.linkReplacer
      * @param {object} dependencies.linkTracking
      * @param {object} dependencies.memberAttributionService
@@ -208,6 +287,7 @@ class EmailRenderer {
         urlUtils,
         storageUtils,
         getPostUrl,
+        getRequiredUrlRelations = () => [],
         linkReplacer,
         linkTracking,
         memberAttributionService,
@@ -226,6 +306,7 @@ class EmailRenderer {
         this.#urlUtils = urlUtils;
         this.#storageUtils = storageUtils;
         this.#getPostUrl = getPostUrl;
+        this.#getRequiredUrlRelations = getRequiredUrlRelations;
         this.#linkReplacer = linkReplacer;
         this.#linkTracking = linkTracking;
         this.#memberAttributionService = memberAttributionService;
@@ -244,7 +325,10 @@ class EmailRenderer {
     }
 
     #getRawFromAddress(post, newsletter) {
-        let senderName = this.#settingsCache.get('title') ? this.#settingsCache.get('title').replace(/"/g, '\\"') : '';
+        // Pass the raw name through; EmailAddressParser.stringify() is the single
+        // point that escapes it for the RFC5322 quoted-string From header. Escaping
+        // here too would double-escape (e.g. a title containing a double quote).
+        let senderName = this.#settingsCache.get('title') || '';
         if (newsletter.get('sender_name')) {
             senderName = newsletter.get('sender_name');
         }
@@ -336,24 +420,40 @@ class EmailRenderer {
         const allowedSegments = ['status:free', 'status:-free'];
         const html = await this.renderPostBaseHtml(post);
 
-        /**
-         * Always add free and paid segments if email has paywall card
-         */
-        if (html.indexOf('<!--members-only-->') !== -1) {
-            // We have different content between free and paid members
-            return allowedSegments;
-        }
+        const hasPaywall = html.indexOf('<!--members-only-->') !== -1;
 
         const $ = cheerioLoad(html);
+        const cardSegments = [...new Set(
+            $('[data-gh-segment]').get().map(el => el.attribs['data-gh-segment'])
+        )].filter(segment => allowedSegments.includes(segment));
+        const hasCards = cardSegments.length > 0;
 
-        let allSegments = $('[data-gh-segment]')
-            .get()
-            .map(el => el.attribs['data-gh-segment']);
-
-        const segments = [...new Set(allSegments)].filter(segment => allowedSegments.includes(segment));
-        if (segments.length === 0) {
-            // No difference in email content between free and paid
+        if (!hasPaywall && !hasCards) {
+            // No difference in email content between members
             return [null];
+        }
+
+        // Tier-restricted posts split recipients by tier access (not just
+        // free/paid) so members on a tier that can't read this post get the
+        // public preview + paywall, exactly as they do on the web.
+        if (post.get('visibility') === 'tiers' && hasPaywall) {
+            const accessFilter = getPostAccessFilter(getPostGatingShape(post));
+            const noAccessFilter = getNegatedTierFilter(post);
+
+            if (accessFilter && noAccessFilter) {
+                if (hasCards) {
+                    // free/paid cards in the preview need free vs paid rendering
+                    // within the no-access audience -> three render variants
+                    return [
+                        'status:free',
+                        `status:-free+(${accessFilter})`,
+                        `status:-free+(${noAccessFilter})`
+                    ];
+                }
+                // free members hold no products, so they fall into no-access
+                return [accessFilter, noAccessFilter];
+            }
+            // misconfigured tiers post (no tiers) -> fall through to free/paid
         }
 
         // We have different content between free and paid members
@@ -399,14 +499,16 @@ class EmailRenderer {
         const hasMembersOnlyContent = membersOnlyIndex !== -1;
         let addPaywall = false;
 
-        if (isPaidPost && hasMembersOnlyContent) {
-            if (segment === 'status:free') {
-                // Add paywall
-                addPaywall = true;
+        // Members without access to the gated content (free members, or members
+        // on a tier that can't read this post) get the public preview + paywall,
+        // exactly as on the web. Access is derived from the post's visibility,
+        // not just free/paid.
+        if (isPaidPost && hasMembersOnlyContent && !segmentHasPostAccess(post, segment)) {
+            // Add paywall
+            addPaywall = true;
 
-                // Remove the members-only content
-                html = html.slice(0, membersOnlyIndex);
-            }
+            // Remove the members-only content
+            html = html.slice(0, membersOnlyIndex);
         }
 
         let $ = cheerioLoad(html);
@@ -415,9 +517,13 @@ class EmailRenderer {
         // before rendering the template as the preheader for the email may be generated
         // using the HTML and we don't want to include content that should not be
         // visible depending on the segment
+        // data-gh-segment cards are a free/paid-only axis, independent of tier
+        // access. Match them against this segment's free/paid status rather than
+        // the raw segment filter (which may carry a tier expression).
+        const segmentStatus = getSegmentStatus(segment);
         $('[data-gh-segment]').get().forEach((node) => {
             // TODO: replace with NQL interpretation
-            if (node.attribs['data-gh-segment'] !== segment) {
+            if (node.attribs['data-gh-segment'] !== segmentStatus) {
                 $(node).remove();
             } else {
                 // Getting rid of the attribute for a cleaner html output
@@ -1055,19 +1161,10 @@ class EmailRenderer {
         const signupUrl = new URL(postUrl);
         signupUrl.hash = `/portal/signup`;
 
-        // Audience feedback
-        const positiveLink = this.#audienceFeedbackService.buildLink(
-            '--uuid--',
-            post,
-            1,
-            '--key--'
-        ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
-        const negativeLink = this.#audienceFeedbackService.buildLink(
-            '--uuid--',
-            post,
-            0,
-            '--key--'
-        ).href.replace('--uuid--', '%%{uuid}%%').replace('--key--', '%%{key}%%');
+        // Audience feedback — durable, id-based links resolved to the post's
+        // current URL at click time so they survive slug changes
+        const positiveLink = this.#audienceFeedbackService.buildEmailLink(post, 1);
+        const negativeLink = this.#audienceFeedbackService.buildEmailLink(post, 0);
 
         const commentUrl = new URL(postUrl);
         commentUrl.hash = '#ghost-comments-root';
@@ -1083,11 +1180,12 @@ class EmailRenderer {
         let latestPostsHasImages = false;
         if (newsletter.get('show_latest_posts')) {
             // Fetch last 3 published posts
+            const urlRelations = this.#getRequiredUrlRelations();
             const {data} = await this.#models.Post.findPage({
                 filter: `status:published+id:-'${post.id}'`,
                 order: 'published_at DESC',
                 limit: 3,
-                withRelated: ['tags', 'authors']
+                ...(urlRelations.length ? {withRelated: urlRelations} : {})
             });
 
             for (const latestPost of data) {

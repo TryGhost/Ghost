@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const errors = require('@tryghost/errors');
-const models = require('../../../../core/server/models');
+const {MemberFeedback} = require('../../../../core/server/models/member-feedback');
 
 describe('Unit: models/MemberFeedback', function () {
     afterEach(function () {
@@ -10,7 +10,7 @@ describe('Unit: models/MemberFeedback', function () {
 
     describe('validation', function () {
         it('throws if member_id is missing', function () {
-            return models.MemberFeedback.add({score: 1, post_id: 'post'})
+            return MemberFeedback.add({score: 1, post_id: 'post'})
                 .then(function () {
                     throw new Error('expected ValidationError');
                 })
@@ -22,7 +22,7 @@ describe('Unit: models/MemberFeedback', function () {
         });
 
         it('throws if post_id is missing', function () {
-            return models.MemberFeedback.add({score: 1, member_id: '123'})
+            return MemberFeedback.add({score: 1, member_id: '123'})
                 .then(function () {
                     throw new Error('expected ValidationError');
                 })
@@ -35,7 +35,7 @@ describe('Unit: models/MemberFeedback', function () {
     });
 
     it('Delete is disabled', function () {
-        return models.MemberFeedback.destroy({id: 'any'})
+        return MemberFeedback.destroy({id: 'any'})
             .then(function () {
                 throw new Error('expected IncorrectUsageError');
             })
@@ -45,7 +45,7 @@ describe('Unit: models/MemberFeedback', function () {
     });
 
     it('Has post and member relations', function () {
-        const model = models.MemberFeedback.forge({id: 'any'});
+        const model = MemberFeedback.forge({id: 'any'});
         model.post();
         model.member();
     });

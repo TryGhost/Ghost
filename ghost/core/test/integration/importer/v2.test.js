@@ -27,7 +27,7 @@ const {exportedBodyV2} = require('../../utils/fixtures/export/body-generator');
 
 // Tests in here do an import for each test
 describe('Importer', function () {
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
 
     beforeEach(function () {
         sinon.stub(importer, 'cleanUp');

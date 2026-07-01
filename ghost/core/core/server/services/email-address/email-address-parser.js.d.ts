@@ -1,4 +1,3 @@
-/* eslint-disable ghost/filenames/match-exported-class */
 
 export interface EmailAddress {
     address: string;

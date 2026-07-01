@@ -20,7 +20,7 @@ type AnnouncementBarSettings = {
 
 const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcementBackgroundColor, announcementContent, url, visibility}) => {
     // Avoid re-rendering iframe if an equivalent array is initialised each render
-    const visibilityMemo = useMemo(() => visibility, [visibility?.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+    const visibilityMemo = useMemo(() => visibility, [visibility?.join(',')]);  
 
     const injectContentIntoIframe = useCallback((iframe: HTMLIFrameElement) => {
         if (!url) {
@@ -58,7 +58,7 @@ const AnnouncementBarPreview: React.FC<AnnouncementBarSettings> = ({announcement
 
                 // replace the iframe contents with the doctored preview html
                 const doctype = htmlDoc.doctype ? new XMLSerializer().serializeToString(htmlDoc.doctype) : '';
-                let finalDoc = doctype + htmlDoc.documentElement.outerHTML;
+                const finalDoc = doctype + htmlDoc.documentElement.outerHTML;
 
                 // Send the data to the iframe's window using postMessage
                 // Inject the received content into the iframe

@@ -11,7 +11,7 @@ const {exportedBodyLatest} = require('../../utils/fixtures/export/body-generator
 const exporter = require('../../../core/server/data/exporter');
 
 describe('Exporter', function () {
-    before(testUtils.teardownDb);
+    beforeAll(testUtils.teardownDb);
     afterEach(testUtils.teardownDb);
     afterEach(function () {
         sinon.restore();
@@ -84,6 +84,7 @@ describe('Exporter', function () {
             'permissions',
             'permissions_roles',
             'permissions_users',
+            'post_gift_links',
             'post_revisions',
             'posts',
             'posts_authors',
@@ -145,7 +146,8 @@ describe('Exporter', function () {
             'members_subscribe_events',
             'outbox',
             'gifts',
-            'gift_links'
+            'gift_links',
+            'post_gift_links'
         ];
 
         excludedTables.forEach((tableName) => {

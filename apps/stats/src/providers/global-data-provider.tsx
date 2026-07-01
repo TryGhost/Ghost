@@ -38,6 +38,8 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const config = useBrowseConfig();
     // config.data is ConfigResponseType which has shape { config: Config }
     const configData = config.data?.config;
+    // Load the token only when Tinybird is provisioned; the web analytics
+    // kill-switch is applied inside useTinybirdToken.
     const hasStatsConfig = Boolean(configData?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
     const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
@@ -48,7 +50,7 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     const ghostError = ghostRequests.map(request => request.error).find(Boolean);
     const tinybirdError = hasStatsConfig ? tinybirdTokenQuery.error : null;
     const error = ghostError || tinybirdError;
-    
+
     // Check loading states
     const isGhostLoading = ghostRequests.some(request => request.isLoading);
     const isTinybirdLoading = hasStatsConfig ? tinybirdTokenQuery.isLoading : false;

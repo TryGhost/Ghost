@@ -8,7 +8,7 @@ const meta = {
         layout: 'padded',
         docs: {
             description: {
-                component: 'Elevation tokens. Most surfaces are flat or use `--shadow-sm`; heavier shadows are reserved for popovers, modals, and dropdowns.'
+                component: 'Elevation tokens. Most surfaces are flat or use `--shadow-sm`; heavier shadows are reserved for popovers, modals, and dropdowns.\n\n**Dark mode:** Tailwind v4 inlines the `@theme --shadow-*` values at compile time, so per-token overrides don\'t propagate to the utility classes. Dark mode applies stronger shadow values via direct `.dark .shadow-*` overrides in `theme-variables.css` (alpha 0.35–0.65, ~3× the default). Consumers don\'t need to do anything — use the standard `shadow-md` / `shadow-lg` utilities and they pick up the boosted values automatically in dark mode.'
             }
         }
     }

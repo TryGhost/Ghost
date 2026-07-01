@@ -17,7 +17,7 @@ const memberMatcherShallowIncludesForNewsletters = {
 let agent;
 
 describe('Members API - With Newsletters', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();
@@ -63,7 +63,7 @@ describe('Members API - With Newsletters', function () {
 });
 
 describe('Members API - With Newsletters - compat mode', function () {
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();

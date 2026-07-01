@@ -167,7 +167,7 @@ export const SourcesCard: React.FC<SourcesCardProps> = ({
                             <Button variant='outline'>View all <LucideIcon.TableOfContents /></Button>
                         </SheetTrigger>
                         <SheetContent className='overflow-y-auto pt-0 sm:max-w-[420px]'>
-                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-background/60 p-6 backdrop-blur'>
+                            <SheetHeader className='sticky top-0 z-40 -mx-6 bg-surface-elevated/60 p-6 backdrop-blur'>
                                 <SheetTitle>{title}</SheetTitle>
                                 <SheetDescription>{description}</SheetDescription>
                             </SheetHeader>

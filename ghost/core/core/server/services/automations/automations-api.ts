@@ -1,9 +1,9 @@
-/* eslint-disable @typescript-eslint/no-require-imports */
 import errors from '@tryghost/errors';
 import tpl from '@tryghost/tpl';
 import ObjectId from 'bson-objectid';
 import {z} from 'zod';
 import {createDatabaseAutomationsRepository} from './database-automations-repository';
+import {parseFakeWaitHoursMultiplier} from './fake-wait-hours-multiplier';
 import type {
     AutomationsRepository,
     EditAutomationData
@@ -12,6 +12,8 @@ import type {
 const {knex} = require('../../data/db');
 const domainEvents = require('@tryghost/domain-events');
 const labs = require('../../../shared/labs');
+const config = require('../../../shared/config');
+const lexicalLib = require('../../lib/lexical');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 
 const MAX_AUTOMATION_ACTIONS = 20;
@@ -26,7 +28,8 @@ const messages = {
     invalidAutomationEdge: 'Automation edges cannot connect an action to itself.',
     invalidAutomationGraphShape: 'Automation graph must be a single linear path without branches or cycles.',
     emptyEmailSubjectWhenActive: 'Active automations require a subject line for every email.',
-    emptyEmailBodyWhenActive: 'Active automations require a body for every email.'
+    emptyEmailBodyWhenActive: 'Active automations require a body for every email.',
+    invalidEmailLexical: 'Email lexical must be a well-formed Lexical document.'
 };
 
 const objectIdSchema = z.string().refine(value => ObjectId.isValid(value));
@@ -44,14 +47,7 @@ const sendEmailActionSchema = z.object({
     type: z.literal('send_email'),
     data: z.object({
         email_subject: z.string(),
-        email_lexical: z.string().refine((value) => {
-            try {
-                JSON.parse(value);
-                return true;
-            } catch {
-                return false;
-            }
-        }),
+        email_lexical: z.string(),
         email_design_setting_id: z.string().min(1)
     }).strict()
 }).strict();
@@ -70,7 +66,10 @@ const editAutomationDataSchema = z.object({
     edges: z.array(edgeSchema)
 }).strict();
 
-const repository = createDatabaseAutomationsRepository(knex);
+const repository = createDatabaseAutomationsRepository({
+    knex,
+    fakeWaitHoursMultiplier: parseFakeWaitHoursMultiplier(config.get('automations:fakeWaitHoursMultiplier'))
+});
 
 export async function browse() {
     return await repository.browse();
@@ -89,7 +88,7 @@ export async function read(automationId: string) {
 }
 
 export async function edit(automationId: string, data: unknown) {
-    const parsedData = validateEditData(data);
+    const parsedData = await validateEditData(data);
 
     const automation = await repository.edit(automationId, parsedData);
 
@@ -102,7 +101,7 @@ export async function edit(automationId: string, data: unknown) {
     return automation;
 }
 
-function validateEditData(data: unknown): EditAutomationData {
+async function validateEditData(data: unknown): Promise<EditAutomationData> {
     const result = editAutomationDataSchema.safeParse(data);
 
     if (!result.success) {
@@ -114,8 +113,33 @@ function validateEditData(data: unknown): EditAutomationData {
     }
 
     validateGraph(result.data.actions, result.data.edges);
+    await validateEmailLexical(result.data.actions);
     validateActiveEmailSteps(result.data.status, result.data.actions);
     return result.data;
+}
+
+async function validateEmailLexical(actions: EditAutomationData['actions']) {
+    await Promise.all(actions.map(async (action) => {
+        if (action.type !== 'send_email') {
+            return;
+        }
+
+        const lexical = action.data.email_lexical;
+
+        // Empty editor documents are valid draft state and are classified by
+        // active-body validation below. Invalid JSON is not skipped here.
+        if (isValidEmptyLexical(lexical)) {
+            return;
+        }
+
+        if (isMalformedEmptyLexical(lexical)) {
+            throwValidationError(messages.invalidEmailLexical, 'actions');
+        }
+
+        if (!await lexicalLib.validate(lexical)) {
+            throwValidationError(messages.invalidEmailLexical, 'actions');
+        }
+    }));
 }
 
 // Drafts may persist empty email steps, but an active automation must have a
@@ -144,16 +168,50 @@ function validateActiveEmailSteps(status: EditAutomationData['status'], actions:
 function isEmptyLexical(lexical: string): boolean {
     try {
         const parsed = JSON.parse(lexical);
-        const children = parsed?.root?.children;
-
-        if (!children || children.length === 0) {
-            return true;
-        }
-
-        return children.length === 1 && children[0].type === 'paragraph' && (!children[0].children || children[0].children.length === 0);
+        return isEmptyParsedLexical(parsed);
     } catch {
         return true;
     }
+}
+
+function isValidEmptyLexical(lexical: string): boolean {
+    try {
+        return isEmptyParsedLexical(JSON.parse(lexical));
+    } catch {
+        return false;
+    }
+}
+
+function isMalformedEmptyLexical(lexical: string): boolean {
+    try {
+        const children = JSON.parse(lexical)?.root?.children;
+
+        if (!Array.isArray(children) || children.length !== 1 || children[0].type !== 'paragraph') {
+            return false;
+        }
+
+        return !Array.isArray(children[0].children);
+    } catch {
+        return false;
+    }
+}
+
+function isEmptyParsedLexical(parsed: {root?: {children?: Array<{type?: string; children?: unknown}>}}): boolean {
+    const children = parsed?.root?.children;
+
+    if (!Array.isArray(children)) {
+        return false;
+    }
+
+    if (children.length === 0) {
+        return true;
+    }
+
+    if (children.length !== 1 || children[0].type !== 'paragraph') {
+        return false;
+    }
+
+    return Array.isArray(children[0].children) && children[0].children.length === 0;
 }
 
 function buildInvalidAutomationPayloadMessage(issues: z.core.$ZodIssue[]) {

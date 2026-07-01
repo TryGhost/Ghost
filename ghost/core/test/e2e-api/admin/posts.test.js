@@ -91,7 +91,7 @@ const createMobiledoc = (text) => {
 describe('Posts API', function () {
     let agent;
 
-    before(async function () {
+    beforeAll(async function () {
         agent = await agentProvider.getAdminAPIAgent();
         await fixtureManager.init('posts');
         await agent.loginAsOwner();
@@ -106,7 +106,7 @@ describe('Posts API', function () {
 
     afterEach(async function () {
         // gives pages some HTML back to alleviate test interdependence when pages are reset on create/update/delete
-        await models.Base.knex.raw('update posts set html = "<p>Testing</p>" where type = \'page\'');
+        await models.Base.knex.raw('update posts set html = \'<p>Testing</p>\' where type = \'page\'');
 
         mockManager.restore();
     });

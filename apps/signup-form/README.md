@@ -18,17 +18,18 @@ pnpm dev
 
 This starts all frontend apps (including Signup Form.)
 
-### Running the development version only
+### Running the standalone demo page
 
-Run `pnpm dev` (in package folder) to start the development server to test/develop the form standalone. 
-- This will generate a demo site on http://localhost:6173
-- This will build and watch the production build and host it on http://localhost:6174/signup-form.min.js (different port!)
+Run `pnpm dev:standalone` (in this package folder) to start the standalone development server with HMR for testing/developing the form in isolation.
+- This serves the demo page at http://localhost:6173
+
+`pnpm dev` on its own (in this package folder) only builds `umd/signup-form.min.js` and watches for changes — it does not bind a port. The UMD is served by Caddy at http://localhost:2368/ghost/assets/signup-form/signup-form.min.js when you run `pnpm dev` from the monorepo root.
 
 ### Using the UMD build during development
 
 Vite by default only supports HRM with an ESM output. But when loading a script on a site as a ESM module (`<script type="module" src="...">`), you don't have access to `document.currentScript` inside the script, which is required to determine the location to inject the iframe. In development mode we use a workaround for this to make the ESM HMR work. But this workaround is not suitable for production.
 
-To test the real production behaviour without this hack, you can use http://localhost:6173/preview.html. This HTML page will use `http://localhost:6174/signup-form.min.js` directly. 
+To test the real production behaviour without this hack, you can use http://localhost:6173/preview.html (served by `pnpm dev:standalone`). The page loads the production UMD via `<script src="http://localhost:2368/ghost/assets/signup-form/signup-form.min.js">`, which is served by Caddy when `pnpm dev` is also running from the monorepo root. Both processes need to be up at the same time.
 
 ## Develop
 
