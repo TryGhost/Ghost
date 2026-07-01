@@ -86,10 +86,8 @@ describe('useGiftLinkUsage', () => {
     });
 
     it('reports loading while the active gift-link lookup is still resolving', () => {
-        // The active-link lookup is in flight, so there is no token yet and the
-        // usage query is disabled (loading:false). Without threading that state
-        // through, the caller would treat the missing usage as a resolved 0 and
-        // flash "0" for a post that may already have an active link with traffic.
+        // No token yet, so the usage query is disabled (loading:false). The hook
+        // must still report loading so callers hide the count rather than 0.
         mockUseTinybirdQuery.mockReturnValue({data: [], loading: false, error: null});
 
         const {result} = renderHook(() => useGiftLinkUsage({postUuid: 'post-uuid', token: undefined, tokenLoading: true}));
@@ -99,9 +97,6 @@ describe('useGiftLinkUsage', () => {
     });
 
     it('reports loading while the settings prerequisite is still resolving', () => {
-        // Card visibility is driven off a separate settings read, so the card can
-        // be shown before this hook's useBrowseSettings resolves. Report loading
-        // so the count stays hidden rather than falling through to a resolved 0.
         mockUseBrowseSettings.mockReturnValue({data: undefined, isLoading: true});
         mockUseTinybirdQuery.mockReturnValue({data: [], loading: false, error: null});
 

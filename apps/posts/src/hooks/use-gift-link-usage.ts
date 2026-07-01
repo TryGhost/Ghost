@@ -14,25 +14,18 @@ interface GiftLinkVisitsRow {
     views: number | string;
 }
 
-// Reads gift-link usage from the web-analytics pipeline (the same Tinybird
-// mechanism every other analytics surface uses), keyed on the link token.
+// Reads gift-link usage (visits/views) from the web-analytics pipeline, keyed
+// on the link token via api_gift_link_visits' exact-match filter.
 //
-// Usage tracking is best-effort and entirely optional: it requires web
-// analytics to be enabled, and analytics may be off (no statsConfig) or the
-// query may error. In any of those cases `usage` is `undefined`, which the
-// caller distinguishes from a resolved zero ({visits: 0}). `loading` and
-// `error` are surfaced too so the caller can hide the count while loading or on
-// error rather than rendering a misleading "0". Gating on the web-analytics
-// setting here means every consumer (the share modal, opened from several
-// places, and the analytics card) behaves consistently when analytics is off.
-//
-// The usage query is disabled until every prerequisite is in place (config,
-// settings, and the token from the upstream active-link lookup). A disabled
-// query reports `loading: false`, which would otherwise be indistinguishable
-// from "ran and found zero". `tokenLoading` lets the caller pass in the
-// active-link lookup's own loading state; combined with the config/settings
-// reads here, `loading` stays true while any prerequisite is still resolving,
-// so callers hide the count instead of flashing a transient "0".
+// Two states the caller must not confuse:
+//   - `usage` is `undefined` when there's nothing to show — analytics off, no
+//     token, or the query errored — so the caller hides the count.
+//   - `usage` is `{visits: 0, ...}` only when the query actually ran and
+//     found zero.
+// `loading` covers every prerequisite (config, settings, and the upstream
+// active-link lookup passed in as `tokenLoading`), not just the Tinybird query:
+// a disabled query reports `loading: false`, which is otherwise indistinguishable
+// from a resolved zero and would flash "0" while a link's token is still loading.
 export const useGiftLinkUsage = ({postUuid, token, tokenLoading = false, enabled = true}: {
     postUuid?: string;
     token?: string;
@@ -61,15 +54,12 @@ export const useGiftLinkUsage = ({postUuid, token, tokenLoading = false, enabled
         enabled: enabled && webAnalyticsEnabled && Boolean(statsConfig?.id) && Boolean(postUuid) && Boolean(token)
     });
 
-    // Treat a still-resolving prerequisite as loading, not as a resolved zero:
-    // the query is disabled (loading:false) until config, settings, and the
-    // token are all ready, so fold those pending states into `loading`.
+    // Fold pending prerequisites into loading (a disabled query reads false).
     const loading = queryLoading || configLoading || settingsLoading || tokenLoading;
 
     const usage = useMemo<GiftLinkUsage | undefined>(() => {
-        // Web analytics off, no token yet, the query is disabled/loading, or it
-        // errored → no data to show. Distinct from "ran and found zero", which
-        // yields {visits: 0}.
+        // Nothing to show (analytics off, no token, error, or query not run) →
+        // undefined, distinct from a resolved {visits: 0}.
         if (!webAnalyticsEnabled || !token || error || !Array.isArray(data)) {
             return undefined;
         }
