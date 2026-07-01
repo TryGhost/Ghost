@@ -8,6 +8,7 @@ import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constant
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/providers/posts-app-context';
+import {useFeatureFlag} from '@src/hooks/use-feature-flag';
 import {useGlobalData} from '@src/providers/post-analytics-context';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 
@@ -209,9 +210,9 @@ const useTinybirdFilterOptions = (
 
 function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
-    const {post, data: globalData} = useGlobalData();
+    const {post} = useGlobalData();
     const postUuid = post?.uuid;
-    const giftLinksEnabled = globalData?.labs?.giftLinks === true;
+    const {isEnabled: giftLinksEnabled} = useFeatureFlag('giftLinks', '/analytics/');
 
     // Track which filter field is currently being selected (lazy loading)
     const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
