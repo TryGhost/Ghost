@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+const {setImmediate: flushEventLoop} = require('node:timers/promises');
 
 const StartAutomationsPollEvent = require('../../../../../core/server/services/automations/events/start-automations-poll-event');
 const {AutomationsService} = require('../../../../../core/server/services/automations/service');
@@ -36,9 +37,7 @@ describe('automations service', function () {
     describe('init', function () {
         it('dispatches a StartAutomationsPollEvent', async function () {
             automations.init(initOptions);
-            // The initial poll is enqueued for "now", which re-dispatches on the
-            // next macrotask (see enqueuePollAt's setImmediate), so wait a tick.
-            await new Promise(resolve => { setImmediate(resolve) });
+            await flushEventLoop();
             sinon.assert.calledWith(domainEvents.dispatch, sinon.match.instanceOf(StartAutomationsPollEvent));
         });
 
@@ -58,11 +57,12 @@ describe('automations service', function () {
     });
 
     describe('rescheduleAll', function () {
-        it('dispatches a fresh StartAutomationsPollEvent', function () {
+        it('dispatches a fresh StartAutomationsPollEvent', async function () {
             automations.init(initOptions);
+            await flushEventLoop();
             domainEvents.dispatch.resetHistory();
 
-            automations.rescheduleAll();
+            await automations.rescheduleAll();
 
             sinon.assert.calledOnceWithExactly(
                 domainEvents.dispatch,
@@ -70,8 +70,8 @@ describe('automations service', function () {
             );
         });
 
-        it('is a no-op before init', function () {
-            automations.rescheduleAll();
+        it('is a no-op before init', async function () {
+            await automations.rescheduleAll();
             sinon.assert.notCalled(domainEvents.dispatch);
         });
     });
