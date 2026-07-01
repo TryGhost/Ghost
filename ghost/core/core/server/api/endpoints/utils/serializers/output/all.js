@@ -1,20 +1,16 @@
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:output:all');
 
-// Strips the legacy `published_by` field (a posts/pages column) from anywhere in
-// the response. This runs after every endpoint, so the walk stays allocation-free
-// in the hot path: a direct key comparison and a typeof check, no per-key array
-// literal or lodash calls.
+// Strips the legacy `published_by` field (a posts/pages column) from API
+// responses. This runs after every endpoint, so the walk avoids per-key tuple
+// allocations, array literals, and lodash calls in the hot path.
 const removeXBY = (object) => {
     for (const key of Object.keys(object)) {
-        if (key === 'published_by') {
-            delete object[key];
-            continue;
-        }
-
         // CASE: go deeper
         const value = object[key];
-        if (value !== null && typeof value === 'object') {
+        if (value !== null && (typeof value === 'object' || typeof value === 'function')) {
             removeXBY(value);
+        } else if (key === 'published_by') {
+            delete object[key];
         }
     }
 
