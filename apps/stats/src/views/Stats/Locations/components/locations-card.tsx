@@ -10,7 +10,7 @@ import {getPeriodText} from '@src/utils/chart-helpers';
 
 countries.registerLocale(enLocale);
 const getCountryName = (label: string) => {
-    return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en') || 'Unknown';
+    return STATS_LABEL_MAPPINGS[label as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(label, 'en', {select: 'alias'}) || 'Unknown';
 };
 
 // Normalize country code for flag display
