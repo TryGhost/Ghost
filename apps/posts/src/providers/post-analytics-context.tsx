@@ -74,7 +74,8 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
     const [range, setRange] = useState(STATS_RANGES.LAST_30_DAYS.value);
     const settings = useBrowseSettings();
     
-    // Only fetch Tinybird token if stats config is present
+    // Fetch the token only when stats config is present; the web analytics
+    // kill-switch is applied inside useTinybirdToken.
     const hasStatsConfig = Boolean(config.data?.config?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
 
@@ -92,7 +93,7 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
     const ghostError = ghostRequests.map(request => request.error).find(Boolean);
     const tinybirdError = hasStatsConfig ? tinybirdTokenQuery.error : null;
     const error = ghostError || tinybirdError;
-    
+
     // Check loading states
     const isGhostLoading = ghostRequests.some(request => request.isLoading);
     const isTinybirdLoading = hasStatsConfig ? tinybirdTokenQuery.isLoading : false;
