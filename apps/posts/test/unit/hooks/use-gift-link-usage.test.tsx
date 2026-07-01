@@ -105,4 +105,16 @@ describe('useGiftLinkUsage', () => {
         expect(result.current.loading).toBe(true);
         expect(result.current.usage).toBeUndefined();
     });
+
+    it('surfaces an active gift-link lookup error so the count stays hidden', () => {
+        // The lookup failed, so there is no token and the usage query is disabled
+        // (no error of its own). Surface the lookup error rather than letting the
+        // caller treat missing usage as a resolved 0.
+        mockUseTinybirdQuery.mockReturnValue({data: undefined, loading: false, error: null});
+
+        const {result} = renderHook(() => useGiftLinkUsage({postUuid: 'post-uuid', token: undefined, tokenError: new Error('boom')}));
+
+        expect(result.current.error).toBeInstanceOf(Error);
+        expect(result.current.usage).toBeUndefined();
+    });
 });

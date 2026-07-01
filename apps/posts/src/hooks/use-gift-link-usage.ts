@@ -22,14 +22,17 @@ interface GiftLinkVisitsRow {
 //     token, or the query errored — so the caller hides the count.
 //   - `usage` is `{visits: 0, ...}` only when the query actually ran and
 //     found zero.
-// `loading` covers every prerequisite (config, settings, and the upstream
-// active-link lookup passed in as `tokenLoading`), not just the Tinybird query:
-// a disabled query reports `loading: false`, which is otherwise indistinguishable
-// from a resolved zero and would flash "0" while a link's token is still loading.
-export const useGiftLinkUsage = ({postUuid, token, tokenLoading = false, enabled = true}: {
+// `loading` and `error` cover every prerequisite, not just the Tinybird query:
+// the token comes from a separate active-link lookup (passed in as `tokenLoading`
+// / `tokenError`), and until it resolves the query is disabled and reports
+// loading:false / error:null — otherwise indistinguishable from a resolved zero,
+// so the card would flash "0" while a link's token is still loading or after the
+// lookup fails.
+export const useGiftLinkUsage = ({postUuid, token, tokenLoading = false, tokenError = null, enabled = true}: {
     postUuid?: string;
     token?: string;
     tokenLoading?: boolean;
+    tokenError?: unknown;
     enabled?: boolean;
 }) => {
     const {data: configData, isLoading: configLoading} = useBrowseConfig();
@@ -47,15 +50,18 @@ export const useGiftLinkUsage = ({postUuid, token, tokenLoading = false, enabled
         gift_link: token || ''
     }), [statsConfig?.id, postUuid, token]);
 
-    const {data, loading: queryLoading, error} = useTinybirdQuery({
+    const {data, loading: queryLoading, error: queryError} = useTinybirdQuery({
         endpoint: 'api_gift_link_visits',
         statsConfig: statsConfig || {id: ''},
         params,
         enabled: enabled && webAnalyticsEnabled && Boolean(statsConfig?.id) && Boolean(postUuid) && Boolean(token)
     });
 
-    // Fold pending prerequisites into loading (a disabled query reads false).
+    // The token comes from a separate upstream lookup, so fold its pending and
+    // failed states in too: a disabled query reads loading:false / error:null,
+    // which the caller would otherwise treat as a resolved zero.
     const loading = queryLoading || configLoading || settingsLoading || tokenLoading;
+    const error = queryError || tokenError || null;
 
     const usage = useMemo<GiftLinkUsage | undefined>(() => {
         // Nothing to show (analytics off, no token, error, or query not run) →
