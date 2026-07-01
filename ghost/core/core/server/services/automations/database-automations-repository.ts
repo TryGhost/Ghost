@@ -1014,14 +1014,20 @@ function getNextRevisionCreatedAt(latestCreatedAt: string | null, requestedCreat
         return toDatabaseDate(requestedCreatedAt);
     }
 
-    const requestedTime = new Date(requestedCreatedAt).getTime();
-    const latestTime = new Date(latestCreatedAt).getTime();
+    // Parse the stored dates with moment (not `new Date()`) so parsing and
+    // formatting happen in the same zone. `toDatabaseDate` formats via moment,
+    // whose default zone is UTC (see core/server/overrides), whereas
+    // `new Date('YYYY-MM-DD HH:mm:ss')` parses in the host's local zone — mixing
+    // the two shifts the bumped timestamp by the host's UTC offset on non-UTC
+    // machines, producing duplicate/out-of-order revision created_at values.
+    const requested = moment(requestedCreatedAt, DATABASE_DATE_FORMAT);
+    const latest = moment(latestCreatedAt, DATABASE_DATE_FORMAT);
 
-    if (requestedTime > latestTime) {
+    if (requested.isAfter(latest)) {
         return toDatabaseDate(requestedCreatedAt);
     }
 
-    return toDatabaseDate(new Date(latestTime + 1000));
+    return latest.add(1, 'second').format(DATABASE_DATE_FORMAT);
 }
 
 function buildActionRevision(actionId: string, action: AutomationAction, createdAt: string) {
