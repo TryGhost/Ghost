@@ -28,10 +28,11 @@ module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
         foot.push(tagCodeinjection);
     }
 
-    // Reader-side gift toast. `_gift` is set by the entry controller only on a
-    // verified gift render, so it shows on gift reads and never on canonical
-    // URLs. Overridable: a theme can supply its own `partials/gift-toast.hbs`.
-    if (labs.isSet('giftLinks') && options.data._gift) {
+    // Reader-side gift toast. `_giftLink` is set on res.locals by the entry
+    // controller only on a verified gift render, so it shows on gift reads and
+    // never on canonical URLs. Overridable: a theme can supply its own
+    // `partials/gift-toast.hbs`.
+    if (labs.isSet('giftLinks') && options.data.root._giftLink) {
         const data = createFrame(options.data);
         const siteUrl = urlUtils.getSiteUrl().replace(/\/$/, '');
 
