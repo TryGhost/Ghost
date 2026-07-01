@@ -312,6 +312,23 @@ describe('useTinybirdToken', () => {
             expect(mockGetTinybirdToken).toHaveBeenCalledWith({enabled: false});
         });
 
+        it('returns an idle result when disabled, even if the query reports loading/error', () => {
+            // A disabled React Query still reports isLoading:true and may retain a
+            // cached error — the hook must normalize this so providers don't hang.
+            mockGetTinybirdToken.mockReturnValue({
+                data: {tinybird: {token: 'stale-token'}},
+                isLoading: true,
+                error: new Error('stale error'),
+                refetch: vi.fn()
+            } as any);
+
+            const {result} = renderHook(() => useTinybirdToken({enabled: true}), {wrapper: withAppSettings(false)});
+
+            expect(result.current.isLoading).toBe(false);
+            expect(result.current.error).toBe(null);
+            expect(result.current.token).toBeUndefined();
+        });
+
         it('loads a token when web analytics is enabled', () => {
             renderHook(() => useTinybirdToken({enabled: true}), {wrapper: withAppSettings(true)});
 
