@@ -30,7 +30,9 @@ const messages = {
     resourceNotFound: '{resource} not found.'
 };
 
-const allowedIncludes = ['email_recipients', 'products', 'tiers'];
+// `custom_fields` is accepted unconditionally here; the members_custom_fields
+// flag gates whether it actually loads/serializes (see the members serializers).
+const allowedIncludes = ['email_recipients', 'products', 'tiers', 'custom_fields'];
 
 /** @type {import('@tryghost/api-framework').Controller} */
 const controller = {

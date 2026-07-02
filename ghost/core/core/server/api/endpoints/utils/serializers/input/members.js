@@ -1,6 +1,7 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('api:endpoints:utils:serializers:input:members');
 const mapNQLKeyValues = require('@tryghost/nql').utils.mapKeyValues;
+const labs = require('../../../../../../shared/labs');
 
 function defaultRelations(frame) {
     if (frame.options.withRelated) {
@@ -37,12 +38,23 @@ module.exports = {
             return;
         }
 
-        frame.options.withRelated = frame.options.withRelated.map((relation) => {
+        const mapped = [];
+        for (const relation of frame.options.withRelated) {
             if (relation === 'tiers') {
-                return 'products';
+                mapped.push('products');
+            } else if (relation === 'custom_fields') {
+                // Not a Bookshelf relation: values are loaded separately by the
+                // members-custom-fields service in the bread service. Signal that
+                // via an option and drop it from withRelated so Bookshelf doesn't
+                // treat it as a relation. Flag off -> silently ignored.
+                if (labs.isSet('membersCustomFields')) {
+                    frame.options.includeCustomFields = true;
+                }
+            } else {
+                mapped.push(relation);
             }
-            return relation;
-        });
+        }
+        frame.options.withRelated = mapped;
     },
 
     browse(apiConfig, frame) {

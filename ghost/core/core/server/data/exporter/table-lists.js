@@ -41,6 +41,8 @@ const BACKUP_TABLES = [
     'members_current_subscription',
     'members_subscription_created_events',
     'members_newsletters',
+    'member_custom_fields',
+    'member_custom_field_values',
     'mentions',
     'comments',
     'comment_likes',
