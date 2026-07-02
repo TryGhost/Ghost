@@ -92,8 +92,11 @@ export class MySQLManager {
         try {
             debug('Finding all test databases to clean up...');
 
-            const query = `SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE 'ghost_%' AND schema_name NOT IN ('ghost_testing', 'ghost_e2e_base', '${DEV_PRIMARY_DATABASE}')`;
-            const output = await this.exec(`mysql -uroot -proot -N -e "${query}"`);
+            if (!/^[a-zA-Z0-9_]+$/.test(DEV_PRIMARY_DATABASE)) {
+                throw new Error(`Invalid DEV_PRIMARY_DATABASE value: ${DEV_PRIMARY_DATABASE}`);
+            }
+            const query = 'SELECT schema_name FROM information_schema.schemata WHERE schema_name LIKE \'ghost_%\' AND schema_name NOT IN (\'ghost_testing\', \'ghost_e2e_base\', \'' + DEV_PRIMARY_DATABASE + '\')';
+            const output = await this.exec('mysql -uroot -proot -N -e "' + query + '"');
 
             const databaseNames = this.parseDatabaseNames(output);
             if (databaseNames === null) {
@@ -177,6 +180,10 @@ export class MySQLManager {
 
     async updateStripeSettings(database: string, secretKey: string, publishableKey: string): Promise<void> {
         debug('Updating Stripe settings in database:', database);
+
+        if (!/^[a-zA-Z0-9_]+$/.test(database)) {
+            throw new Error(`Invalid database name: ${database}`);
+        }
 
         const escapedSecretKey = secretKey.replace(/'/g, '\\\'');
         const escapedPublishableKey = publishableKey.replace(/'/g, '\\\'');
