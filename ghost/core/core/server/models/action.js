@@ -10,12 +10,23 @@ const Action = ghostBookshelf.Model.extend({
         });
     },
 
+    resourceCandidates() {
+        const candidates = this.candidates();
+
+        const User = ghostBookshelf.registry.models.User;
+        if (User) {
+            candidates.push([User, 'security_action']);
+        }
+
+        return candidates;
+    },
+
     actor() {
         return this.morphTo('actor', ['actor_type', 'actor_id'], ...this.candidates());
     },
 
     resource() {
-        return this.morphTo('resource', ['resource_type', 'resource_id'], ...this.candidates());
+        return this.morphTo('resource', ['resource_type', 'resource_id'], ...this.resourceCandidates());
     }
 }, {
     orderDefaultOptions: function orderDefaultOptions() {

@@ -119,7 +119,16 @@ const HistoryActionDescription: React.FC<{action: Action}> = ({action}) => {
     const {updateRoute} = useRouting();
     const contextResource = getContextResource(action);
 
-    if (contextResource) {
+    if (action.resource_type === 'security_action' && action.context?.action_name === 'reset_authentication') {
+        const apiKeysRotated = typeof action.context.api_keys_rotated === 'number' ? action.context.api_keys_rotated : null;
+        const usersLocked = typeof action.context.users_locked === 'number' ? action.context.users_locked : null;
+        const details = [
+            apiKeysRotated !== null ? `${apiKeysRotated} API ${apiKeysRotated === 1 ? 'key' : 'keys'} rotated` : null,
+            usersLocked !== null ? `${usersLocked} ${usersLocked === 1 ? 'user' : 'users'} locked` : null
+        ].filter(Boolean);
+
+        return <>{details.length ? details.join(', ') : 'Authentication reset'}</>;
+    } else if (contextResource) {
         const {group, key} = contextResource;
 
         return <>

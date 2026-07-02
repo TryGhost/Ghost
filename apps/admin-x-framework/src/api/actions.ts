@@ -7,7 +7,7 @@ import {JSONObject} from './config';
 
 export type Action = {
     id: string;
-    resource_id: string;
+    resource_id: string|null;
     resource_type: string;
     actor_id: string;
     actor_type: string;
@@ -46,6 +46,17 @@ export interface ActionsList {
 
 const dataType = 'ActionsResponseType';
 
+export const actionsAreGroupable = (action: Action, nextAction: Action) => {
+    const getEditedActionName = (candidate: Action) => (
+        candidate.event === 'edited' && typeof candidate.context?.action_name === 'string'
+    ) ? candidate.context.action_name : '';
+
+    return action.resource_id === nextAction.resource_id &&
+        action.resource_type === nextAction.resource_type &&
+        action.event === nextAction.event &&
+        getEditedActionName(action) === getEditedActionName(nextAction);
+};
+
 export const useBrowseActions = createInfiniteQuery<ActionsList>({
     dataType,
     path: '/actions/',
@@ -69,7 +80,7 @@ export const useBrowseActions = createInfiniteQuery<ActionsList>({
             // depending on the similarity, add additional properties to be used on the frontend for grouping
             // skip - used for hiding the event on the frontend
             // count - the number of similar events which is added to the last item
-            if (nextAction && action.resource_id === nextAction.resource_id && action.event === nextAction.event) {
+            if (nextAction && actionsAreGroupable(action, nextAction)) {
                 action.skip = true;
                 count += 1;
             } else if (count > 1) {
@@ -186,6 +197,8 @@ export const getActionTitle = (action: Action) => {
         resourceType = 'tier';
     } else if (resourceType === 'gift_link') {
         resourceType = 'gift link';
+    } else if (resourceType === 'security_action') {
+        resourceType = 'security action';
     }
 
     // Because a `page` and `post` both use the same model, we store the
@@ -202,6 +215,10 @@ export const getActionTitle = (action: Action) => {
         if (action.context?.action_name) {
             actionName = action.context?.action_name as string;
         }
+    }
+
+    if (actionName === 'reset_authentication') {
+        actionName = 'reset authentication';
     }
 
     if (action.context?.count && (action.context?.count as number) > 1) {
