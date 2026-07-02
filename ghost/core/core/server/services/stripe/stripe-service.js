@@ -206,11 +206,20 @@ module.exports = class StripeService {
             webhookSecret: config.webhookSecret,
             webhookHandlerUrl: config.webhookHandlerUrl
         });
-        await this.webhookManager.start();
 
         this.billingPortalManager.configure({
             siteUrl: config.siteUrl
         });
-        await this.billingPortalManager.start();
+
+        // In the test env there is no real Stripe to register against: the mock
+        // returns 500 for webhook_endpoints and billing_portal/configurations, so
+        // these network-registration calls only error-log on every boot — tests
+        // dispatch webhook events directly through the mocker and never need a
+        // registered endpoint or portal configuration. Skip them under test; prod
+        // and dev register exactly as before.
+        if (!config.testEnv) {
+            await this.webhookManager.start();
+            await this.billingPortalManager.start();
+        }
     }
 };

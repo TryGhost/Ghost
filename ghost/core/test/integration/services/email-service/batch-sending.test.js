@@ -2,6 +2,7 @@ const {agentProvider, fixtureManager, mockManager} = require('../../../utils/e2e
 const moment = require('moment');
 const models = require('../../../../core/server/models');
 const sinon = require('sinon');
+const logging = require('@tryghost/logging');
 const assert = require('node:assert/strict');
 const jobManager = require('../../../../core/server/services/jobs/job-service');
 const _ = require('lodash');
@@ -184,6 +185,11 @@ describe('Batch sending tests', function () {
     });
 
     it('Protects the email job from being run multiple times at the same time', async function () {
+        // The lock means only one job wins; every other concurrent attempt hits
+        // the "not pending or failed" guard and logs an expected error. Stub the
+        // logger so we can assert that guard fired instead of spamming stdout.
+        const errorLog = sinon.stub(logging, 'error');
+
         // Prepare a post and email model
         const {emailModel} = await sendEmail(agent);
 
@@ -215,6 +221,12 @@ describe('Batch sending tests', function () {
         // Did we create batches?
         const batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
         assert.equal(batches.models.length, 1);
+
+        // The losing attempts logged the expected guard error
+        sinon.assert.called(errorLog);
+        for (const call of errorLog.getCalls()) {
+            assert.match(call.args[0], /Tried sending email that is not pending or failed/);
+        }
     });
 
     it('Doesn\'t include members created after the email in the batches', async function () {
@@ -478,8 +490,19 @@ describe('Batch sending tests', function () {
         let memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
         assert.equal(memberIds.length, _.uniq(memberIds).length);
 
+        // On retry, the 3 already-submitted batches hit the "already submitted
+        // on a prior run" branch in #sendBatch and log info; only the
+        // previously-failed batch is re-sent. Stub logging.info just for the
+        // retry so the genuine failure error logged by the initial send above
+        // stays visible, then assert at least one of those skip logs fired.
+        const infoLog = sinon.stub(logging, 'info');
+
         await retryEmail(agent, emailModel.id);
         await jobManager.allSettled();
+
+        const skipLogs = infoLog.getCalls().filter(call => /already submitted on a prior run; skipping/.test(call.args[0]));
+        infoLog.restore();
+        assert.ok(skipLogs.length > 0, 'expected at least one "already submitted on a prior run; skipping" info log');
 
         await emailModel.refresh();
         batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});

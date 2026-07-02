@@ -144,7 +144,7 @@ describe('Posts API', function () {
     });
 
     it('Returns a validation error when unknown filter key is used', async function () {
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
         await request.get(localUtils.API.getApiQuery('posts/?filter=page:true'))
             .set('Origin', config.get('url'))
             .expect('Content-Type', /json/)
@@ -624,7 +624,7 @@ describe('Posts API', function () {
         const updatedPost = res.body.posts[0];
         updatedPost.status = 'published';
 
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
 
         await request
             .put(localUtils.API.getApiQuery('posts/' + id + '/?newsletter=' + newsletterSlug))
@@ -688,7 +688,7 @@ describe('Posts API', function () {
             .rejects(new errors.HostLimitError({
                 message: 'Email sending is temporarily disabled'
             }));
-        const loggingStub = sinon.stub(logging, 'error');
+        const loggingStub = sinon.stub(logging, 'warn');
 
         // Attempt to publish the scheduled email-only post
         scheduledPost.status = 'published';
@@ -1927,7 +1927,7 @@ describe('Posts API', function () {
 
             const newsletterSlug = testUtils.DataGenerator.Content.newsletters[1].slug;
 
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
 
             const response = await request
                 .put(localUtils.API.getApiQuery(`posts/${draftPost.id}/?newsletter=${newsletterSlug}`))
