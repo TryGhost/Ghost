@@ -199,7 +199,7 @@ export function SensitiveMediaOverlay({
         >
             <div className='absolute inset-0 bg-foreground/35' />
             <div className='relative z-10 grid size-full max-w-[520px] grid-rows-[minmax(0,1fr)_auto_minmax(0.5rem,6cqh)_auto_minmax(0.75rem,8cqh)_auto_minmax(0,1fr)] justify-items-center text-center'>
-                <LucideIcon.EyeOff className='row-start-2 size-[clamp(1.5rem,14cqh,2.25rem)]' strokeWidth={2.25} />
+                <LucideIcon.EyeOff aria-hidden='true' className='row-start-2 size-[clamp(1.5rem,14cqh,2.25rem)]' strokeWidth={2.25} />
                 <div className='row-start-4 flex flex-col items-center gap-1'>
                     <Text className='text-background' weight='bold'>Sensitive media</Text>
                     <Text className='leading-tight text-background'>The following may contain sensitive material</Text>
@@ -259,7 +259,7 @@ export function ContentWarningOverlay({
         >
             <div className='absolute inset-0 bg-foreground/35' />
             <div className='relative z-10 grid size-full max-w-[520px] grid-rows-[minmax(0,1fr)_auto_clamp(1.25rem,3.85cqw,1.8rem)_auto_clamp(1.5rem,5.15cqw,2.4rem)_auto_minmax(0,1fr)] justify-items-center text-center'>
-                <LucideIcon.EyeOff className='row-start-2 size-[clamp(1.5rem,4.85cqw,2.25rem)]' strokeWidth={2.25} />
+                <LucideIcon.EyeOff aria-hidden='true' className='row-start-2 size-[clamp(1.5rem,4.85cqw,2.25rem)]' strokeWidth={2.25} />
                 <div className='row-start-4 flex flex-col items-center gap-1'>
                     <Text className='text-background' weight='bold'>Content warning:</Text>
                     <Text className='leading-tight text-background'>{label}</Text>

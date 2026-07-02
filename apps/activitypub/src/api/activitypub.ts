@@ -710,9 +710,12 @@ export class ActivityPubAPI {
         const url = new URL('.ghost/activitypub/v1/preferences', this.apiUrl);
         const json = await this.fetchJSON(url, 'PUT', preferences);
 
+        if (json === null) {
+            return preferences;
+        }
+
         return {
             showSensitiveMedia:
-                json !== null &&
                 'showSensitiveMedia' in json &&
                 json.showSensitiveMedia === true
         };

@@ -12,7 +12,7 @@ import APAvatar from '@src/components/global/ap-avatar';
 import APReplyBox from '@src/components/global/ap-reply-box';
 import BackButton from '@src/components/global/back-button';
 import DeletedFeedItem from '@src/components/feed/deleted-feed-item';
-import FeedItem, {ContentWarningOverlay, SensitiveMediaHideButton, SensitiveMediaOverlay} from '@src/components/feed/feed-item';
+import FeedItem, {ContentWarningOverlay, SensitiveMediaHideButton, SensitiveMediaOverlay, getAttachment} from '@src/components/feed/feed-item';
 import FeedItemStats from '@src/components/feed/feed-item-stats';
 import FollowButton from '@src/components/global/follow-button';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
@@ -425,6 +425,15 @@ function stripMediaFromHtml(html: string): string {
     return document.body.innerHTML;
 }
 
+function htmlContainsMedia(html: string): boolean {
+    if (typeof DOMParser === 'undefined') {
+        return /<(audio|embed|iframe|img|object|picture|source|video)\b/i.test(html);
+    }
+
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    return document.querySelector('audio, embed, iframe, img, object, picture, source, video') !== null;
+}
+
 interface ReaderProps {
     postId: string;
     onClose?: () => void;
@@ -483,10 +492,21 @@ export const Reader: React.FC<ReaderProps> = ({
     const contentWarning = typeof sensitiveObject?.contentWarning === 'string' && sensitiveObject.contentWarning.trim() ? sensitiveObject.contentWarning.trim() : null;
     const hasContentWarning = contentWarning !== null;
     const shouldHideContentWarning = contentWarning !== null && !isContentWarningRevealed;
-    const shouldHideSensitiveMedia = sensitiveObject?.sensitive === true && !hasContentWarning && !showSensitiveMediaByDefault && (isSensitiveMediaManuallyHidden || !isSensitiveMediaRevealed);
-    const canHideSensitiveMedia = sensitiveObject?.sensitive === true && !hasContentWarning && !showSensitiveMediaByDefault && !shouldHideSensitiveMedia;
-    const articleHtml = shouldHideSensitiveMedia ? stripMediaFromHtml(object?.content ?? '') : object?.content ?? '';
-    const articleImage = shouldHideSensitiveMedia ? undefined : typeof object?.image === 'string' ? object.image : object?.image?.url;
+    const rawArticleHtml = object?.content ?? '';
+    const articleImageUrl = typeof object?.image === 'string' ? object.image : object?.image?.url;
+    const articleHtmlHasMedia = useMemo(() => htmlContainsMedia(rawArticleHtml), [rawArticleHtml]);
+    const hasSensitiveMedia = sensitiveObject?.sensitive === true && (
+        !!articleImageUrl ||
+        (object ? getAttachment(object as ObjectProperties) !== null : false) ||
+        articleHtmlHasMedia
+    );
+    const shouldHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && (isSensitiveMediaManuallyHidden || !isSensitiveMediaRevealed);
+    const canHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && !shouldHideSensitiveMedia;
+    const articleHtml = useMemo(
+        () => (shouldHideSensitiveMedia ? stripMediaFromHtml(rawArticleHtml) : rawArticleHtml),
+        [rawArticleHtml, shouldHideSensitiveMedia]
+    );
+    const articleImage = shouldHideSensitiveMedia ? undefined : articleImageUrl;
 
     useEffect(() => {
         setIsSensitiveMediaRevealed(false);

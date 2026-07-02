@@ -295,6 +295,83 @@ test.describe('Inbox', async () => {
         await expect(iframeContent.locator('iframe[src="https://www.youtube.com/embed/test"]')).toHaveCount(0);
     });
 
+    test('sensitive reader articles without media do not show a media warning', async ({page}) => {
+        const sensitiveTextPost = {
+            ...inboxFixture.posts[0],
+            id: 'https://techblog.example/.ghost/activitypub/article/sensitive-reader-text',
+            title: 'Sensitive reader text article',
+            excerpt: 'This sensitive article has no media.',
+            content: '<p>This sensitive reader text has no media to hide.</p>',
+            featureImageUrl: null,
+            image: undefined,
+            sensitive: true,
+            contentWarning: null,
+            attachments: []
+        };
+
+        const testInbox = {
+            ...inboxFixture,
+            posts: [sensitiveTextPost, ...inboxFixture.posts.slice(1)]
+        };
+
+        await mockApi({page, requests: {
+            getInbox: {
+                method: 'GET',
+                path: '/v1/feed/reader',
+                response: testInbox
+            },
+            getDiscoveryFeed: {
+                method: 'GET',
+                path: '/v1/feed/discover/top',
+                response: testInbox
+            },
+            getPreferences: {
+                method: 'GET',
+                path: '/v1/preferences',
+                response: {
+                    showSensitiveMedia: false
+                }
+            },
+            getPost: {
+                method: 'GET',
+                path: `/v1/replies/${encodeURIComponent(sensitiveTextPost.id)}`,
+                response: {
+                    ...sensitiveTextPost,
+                    post: {
+                        ...sensitiveTextPost,
+                        metadata: {
+                            ghostAuthors: []
+                        }
+                    },
+                    ancestors: {
+                        chain: [],
+                        next: null
+                    },
+                    children: [],
+                    next: null
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/reader');
+
+        const firstInboxItem = page.getByTestId('inbox-item').filter({
+            hasText: 'Sensitive reader text article'
+        });
+        await expect(firstInboxItem.getByTestId('sensitive-media-overlay')).toHaveCount(0);
+
+        await firstInboxItem.getByText('Sensitive reader text article').click();
+
+        const modal = page.getByRole('dialog');
+        await expect(modal.getByTestId('sensitive-media-overlay')).toHaveCount(0);
+        await expect(modal.getByRole('button', {name: 'Hide sensitive media'})).toHaveCount(0);
+
+        const iframe = modal.locator('iframe');
+        await expect(iframe).toBeVisible();
+        const iframeContent = iframe.contentFrame();
+        await expect(iframeContent.getByText('This sensitive reader text has no media to hide.')).toBeVisible();
+    });
+
     test('I can like a post', async ({page}) => {
         const secondPostFixture = inboxFixture.posts[1];
 

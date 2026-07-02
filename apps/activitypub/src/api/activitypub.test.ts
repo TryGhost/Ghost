@@ -277,6 +277,30 @@ describe('ActivityPubAPI', function () {
                 showSensitiveMedia: false
             });
         });
+
+        test('It preserves the submitted preference when the update response has no body', async function () {
+            const fakeFetch = Fetch({
+                'https://activitypub.api/.ghost/activitypub/v1/preferences': {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                        expect(init?.body).toEqual(JSON.stringify({
+                            showSensitiveMedia: true
+                        }));
+                    },
+                    response: new Response(null, {status: 204})
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await expect(api.updatePreferences({showSensitiveMedia: true})).resolves.toEqual({
+                showSensitiveMedia: true
+            });
+        });
     });
 
     describe('follow', function () {

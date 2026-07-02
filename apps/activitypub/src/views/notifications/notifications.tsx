@@ -228,6 +228,21 @@ const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({
     const shouldHideSensitiveMedia = post.sensitive === true && hasAttachments && !hasContentWarning && !showSensitiveMediaByDefault && !isSensitiveMediaRevealed;
 
     if (shouldHideContentWarning && contentWarning) {
+        if (variant === 'inline') {
+            return (
+                <button
+                    className='mt-0.5 block max-w-full truncate text-left text-sm text-gray-700 hover:text-black dark:text-gray-600 dark:hover:text-white'
+                    type='button'
+                    onClick={(event) => {
+                        event.stopPropagation();
+                        setIsContentWarningRevealed(true);
+                    }}
+                >
+                    <span className='font-semibold'>Content warning:</span> {contentWarning} <span className='font-semibold'>Show</span>
+                </button>
+            );
+        }
+
         return (
             <ContentWarningOverlay
                 label={contentWarning}
