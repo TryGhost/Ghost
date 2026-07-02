@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "jq -r '.cwd // empty' | { read -r d; cd \"$d\" 2>/dev/null || exit 0; [ \"$(jq -r '.name // empty' package.json 2>/dev/null)\" = \"ghost-monorepo\" ] || exit 0; [ -d node_modules ] && exit 0; export NVM_DIR=\"$HOME/.nvm\"; [ -s \"$NVM_DIR/nvm.sh\" ] && . \"$NVM_DIR/nvm.sh\" >/dev/null 2>&1; nvm use >/dev/null 2>&1; command -v pnpm >/dev/null 2>&1 || corepack enable pnpm >/dev/null 2>&1; if pnpm run setup >\"$HOME/.claude/ghost-worktree-setup.log\" 2>&1; then echo \"Fresh Ghost checkout: pnpm run setup completed (deps + submodules installed).\"; else echo \"Fresh Ghost checkout: pnpm run setup FAILED - check ~/.claude/ghost-worktree-setup.log and run it manually before pnpm dev.\"; fi; }",
+            "command": "jq -r '.cwd // empty' | { read -r d; cd \"$d\" 2>/dev/null || exit 0; [ -f .claude/hooks/worktree-setup.sh ] || exit 0; bash .claude/hooks/worktree-setup.sh; }",
             "timeout": 1200,
             "statusMessage": "Checking Ghost worktree setup…"
           }
