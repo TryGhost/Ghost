@@ -29,7 +29,8 @@ const GA_FEATURES = [
     'featurebaseFeedback',
     'dangerZoneResetAuth',
     'indexnow',
-    'llmsTxt'
+    'llmsTxt',
+    'giftLinks'
 ];
 
 // These features are considered publicly available and can be enabled/disabled by users
@@ -56,8 +57,7 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'pictureImageFormats',
     'smarterCounts',
-    'getHelperDeduplication',
-    'giftLinks'
+    'getHelperDeduplication'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];
