@@ -989,7 +989,7 @@ jobs:
 
       - name: Docker meta (core)
         id: meta-core
-        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
         with:
           images: ${{ steps.strategy.outputs.image-core-name }}
           tags: |
@@ -1007,7 +1007,7 @@ jobs:
 
       - name: Docker meta (full)
         id: meta-full
-        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
         with:
           images: ${{ steps.strategy.outputs.image-full-name }}
           tags: |
@@ -1227,7 +1227,7 @@ jobs:
       - name: Docker meta (e2e)
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
         id: meta-e2e
-        uses: docker/metadata-action@80c7e94dd9b9319bd5eb7a0e0fe9291e23a2a2e9 # v6
+        uses: docker/metadata-action@dc802804100637a589fabce1cb79ff13a1411302 # v6
         with:
           images: ${{ steps.strategy.outputs.image-e2e-name }}
           tags: |
