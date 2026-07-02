@@ -24,6 +24,9 @@ export class SoonestTimer {
     }
 
     #scheduleAt(at: Date): void {
+        // [`setTimeout` caps out at ~25 days][0], so we need a chain of timers
+        // if the delay is long.
+        // [0]: https://developer.mozilla.org/en-US/docs/Web/API/setTimeout#maximum_delay_value
         const msUntilDate = at.getTime() - Date.now();
         if (msUntilDate <= 0) {
             this.#scheduled = undefined;
