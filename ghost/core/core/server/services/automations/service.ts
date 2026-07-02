@@ -6,6 +6,7 @@ import {oneAtATime} from '../../../shared/one-at-a-time';
 import {poll} from './poll';
 import * as automationsApi from './automations-api';
 import {setImmediate as flushEventLoop} from 'node:timers/promises';
+import {EarliestScheduler} from '../../lib/earliest-scheduler';
 
 const urlUtils = require('../../../shared/url-utils');
 const logging = require('@tryghost/logging');
@@ -13,8 +14,6 @@ const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
 const {welcomeEmailAutomationPoll} = require('./welcome-email-automation-poll');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
-
-const MAX_TIMEOUT_MS = 2 ** 31 - 1;
 
 type SchedulerAdapter = {
     schedule(job: {
@@ -33,45 +32,6 @@ type AutomationsServiceOptions = {
     internalKeys: InternalKeys;
     schedulerAdapter: SchedulerAdapter;
 };
-
-class EarliestScheduler {
-    #scheduled: undefined | {
-        timeout: ReturnType<typeof setTimeout>;
-        at: Date;
-    };
-    #fn: () => unknown;
-
-    constructor(fn: () => unknown) {
-        this.#fn = fn;
-    }
-
-    scheduleAt(date: Readonly<Date>): void {
-        if (this.#scheduled && this.#scheduled.at <= date) {
-            return;
-        }
-
-        if (this.#scheduled) {
-            clearTimeout(this.#scheduled.timeout);
-        }
-
-        this.#scheduleAt(new Date(date));
-    }
-
-    #scheduleAt(at: Date): void {
-        const msUntilDate = at.getTime() - Date.now();
-        if (msUntilDate <= 0) {
-            this.#scheduled = undefined;
-            this.#fn();
-            return;
-        }
-
-        const timeout = setTimeout(() => {
-            this.#scheduleAt(at);
-        }, Math.min(msUntilDate, MAX_TIMEOUT_MS));
-
-        this.#scheduled = {timeout, at};
-    }
-}
 
 export class AutomationsService {
     #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);
