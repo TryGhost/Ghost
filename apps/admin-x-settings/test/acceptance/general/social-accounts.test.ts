@@ -371,4 +371,32 @@ test.describe('Social account settings', async () => {
         expect((lastApiRequests.editSettings?.body as {settings: Array<{key: string; value: string}>} | undefined)?.settings)
             .toEqual([{key: 'facebook', value: 'fb'}]);
     });
+
+    test('Blocks save when a field the user just edited is invalid, even on its first edit', async ({page}) => {
+        // A field's first-ever edit this session never becomes `dirty` if
+        // it's invalid (normalizeSocialInput throws before updateSetting is
+        // called), so save-time validation must track "did the user attempt
+        // to change this" separately from the settings' own dirty flag —
+        // otherwise, as long as some *other* field is validly dirty (enabling
+        // the Save button), this invalid, in-progress edit is silently
+        // skipped and the rest of the form saves as if nothing were wrong.
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([{key: 'facebook', value: 'fb'}])}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('social-accounts');
+
+        // Facebook is validly dirty, so the Save button is enabled
+        await section.getByLabel('Facebook').fill('fb');
+        // Instagram's first-ever edit this session is invalid and never committed
+        await section.getByLabel('Instagram').fill('john..smith'); // consecutive periods
+
+        await section.getByRole('button', {name: 'Save'}).click();
+
+        await expect(section).toContainText('Your Username is not a valid Instagram Username');
+        expect(lastApiRequests.editSettings).toBeUndefined();
+    });
 });
