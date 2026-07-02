@@ -7,8 +7,6 @@ import {getHandleParts, validateSocialWebUsername} from '@utils/social-web-handl
 import {useAccountDomainForUser, useAccountForUser, useUpdateAccountDomainMutationForUser, useUpdateAccountMutationForUser, useValidateAccountDomainMutationForUser} from '@hooks/use-activity-pub-queries';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
-type DomainAction = 'validate' | 'save' | 'remove';
-
 function normalizeDomainInput(value: string) {
     const trimmed = value.trim();
 
@@ -92,7 +90,6 @@ const Domain: React.FC = () => {
     const [validatedDomain, setValidatedDomain] = useState<string | null>(null);
     const [fieldError, setFieldError] = useState<string | null>(null);
     const [validationError, setValidationError] = useState<string | null>(null);
-    const [action, setAction] = useState<DomainAction | null>(null);
     const [hasCopiedHandle, setHasCopiedHandle] = useState(false);
     const [isHandleTooltipOpen, setIsHandleTooltipOpen] = useState(false);
     const copyTimeoutRef = useRef<number | null>(null);
@@ -156,15 +153,12 @@ const Domain: React.FC = () => {
 
         setFieldError(null);
         setValidationError(null);
-        setAction('validate');
 
         try {
             await validateDomainMutation.mutateAsync(normalizedDomain);
             setValidatedDomain(normalizedDomain);
         } catch {
             setValidationError('Redirect could not be validated');
-        } finally {
-            setAction(null);
         }
     };
 
@@ -175,7 +169,6 @@ const Domain: React.FC = () => {
 
         setFieldError(null);
         setValidationError(null);
-        setAction('save');
 
         try {
             await updateDomainMutation.mutateAsync(validatedDomain);
@@ -185,8 +178,6 @@ const Domain: React.FC = () => {
             setValidatedDomain(null);
         } catch {
             setFieldError('Could not save the custom domain. Try again.');
-        } finally {
-            setAction(null);
         }
     };
 
@@ -234,7 +225,6 @@ const Domain: React.FC = () => {
 
     const handleRemove = async () => {
         setFieldError(null);
-        setAction('remove');
 
         try {
             await updateDomainMutation.mutateAsync(null);
@@ -244,8 +234,6 @@ const Domain: React.FC = () => {
             setValidatedDomain(null);
         } catch {
             setFieldError('Could not remove the custom domain. Try again.');
-        } finally {
-            setAction(null);
         }
     };
 
@@ -433,7 +421,7 @@ const Domain: React.FC = () => {
                                     disabled
                                 />
                                 <Button className='h-9 text-sm sm:w-auto' disabled={isDisabled} variant='outline' onClick={handleRemove}>
-                                    {action === 'remove' ? (
+                                    {updateDomainMutation.isLoading ? (
                                         <>
                                             <LoadingIndicator size='sm' />
                                             Removing...
@@ -532,7 +520,7 @@ const Domain: React.FC = () => {
                                         <Button disabled={isDisabled} variant='outline' onClick={handleCancel}>Cancel</Button>
                                         {canSave ? (
                                             <Button disabled={isDisabled} onClick={handleSave}>
-                                                {action === 'save' ? (
+                                                {updateDomainMutation.isLoading ? (
                                                     <>
                                                         <LoadingIndicator color='light' size='sm' />
                                                         Saving...
@@ -541,7 +529,7 @@ const Domain: React.FC = () => {
                                             </Button>
                                         ) : (
                                             <Button disabled={isDisabled || !canValidate || hasDomainLoadError} onClick={handleValidate}>
-                                                {action === 'validate' ? (
+                                                {validateDomainMutation.isLoading ? (
                                                     <>
                                                         <LoadingIndicator color='light' size='sm' />
                                                         Validating...
