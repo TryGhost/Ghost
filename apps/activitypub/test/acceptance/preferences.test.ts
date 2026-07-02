@@ -54,6 +54,22 @@ test.describe('Preferences', async () => {
                     showSensitiveMedia: false
                 }
             },
+            getBlockedAccounts: {
+                method: 'GET',
+                path: '/v1/blocks/accounts',
+                response: {
+                    blocked_accounts: [],
+                    next: null
+                }
+            },
+            getBlockedDomains: {
+                method: 'GET',
+                path: '/v1/blocks/domains',
+                response: {
+                    blocked_domains: [],
+                    next: null
+                }
+            },
             updatePreferences: {
                 method: 'PUT',
                 path: '/v1/preferences',
@@ -64,6 +80,7 @@ test.describe('Preferences', async () => {
         }, options: {useActivityPub: true}});
 
         await page.goto('#/preferences');
+        await page.getByRole('link', {name: /Moderation/}).click();
 
         const toggle = page.getByRole('switch', {name: 'Show sensitive media by default'});
         await expect(toggle).toBeVisible();
@@ -88,6 +105,22 @@ test.describe('Preferences', async () => {
                     showSensitiveMedia: true
                 }
             },
+            getBlockedAccounts: {
+                method: 'GET',
+                path: '/v1/blocks/accounts',
+                response: {
+                    blocked_accounts: [],
+                    next: null
+                }
+            },
+            getBlockedDomains: {
+                method: 'GET',
+                path: '/v1/blocks/domains',
+                response: {
+                    blocked_domains: [],
+                    next: null
+                }
+            },
             updatePreferences: {
                 method: 'PUT',
                 path: '/v1/preferences',
@@ -98,6 +131,7 @@ test.describe('Preferences', async () => {
         }, options: {useActivityPub: true}});
 
         await page.goto('#/preferences');
+        await page.getByRole('link', {name: /Moderation/}).click();
 
         const toggle = page.getByRole('switch', {name: 'Show sensitive media by default'});
         await expect(toggle).toBeChecked();
