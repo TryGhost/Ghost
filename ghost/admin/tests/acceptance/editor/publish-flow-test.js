@@ -8,6 +8,7 @@ import {disableMembers, enableMembers} from '../../helpers/members';
 import {disableNewsletters, enableNewsletters} from '../../helpers/newsletters';
 import {enableStripe} from '../../helpers/stripe';
 import {expect} from 'chai';
+import {pasteInEditor} from '../../helpers/editor';
 import {setupApplicationTest} from 'ember-mocha';
 import {setupMirage} from 'ember-cli-mirage/test-support';
 import {visit} from '../../helpers/visit';
@@ -167,6 +168,20 @@ describe('Acceptance: Publish flow', function () {
         await testEmailUnavailableFlow.apply(this);
     });
 
+    it('does not show first_name reminder when email is unavailable', async function () {
+        await disableMembers(this.server);
+        await loginAsRole('Administrator', this.server);
+
+        const post = this.server.create('post', {status: 'draft'});
+        await visit(`/editor/post/${post.id}`);
+        await pasteInEditor('Hello {first_name},');
+
+        await click('[data-test-button="publish-flow"]');
+
+        expect(find('[data-test-modal="first-name-reminder"]'), 'first_name reminder modal').to.not.exist;
+        expect(find('[data-test-modal="publish-flow"]'), 'publish flow modal').to.exist;
+    });
+
     describe('members enabled', function () {
         beforeEach(async function () {
             enableMembers(this.server);
@@ -178,6 +193,37 @@ describe('Acceptance: Publish flow', function () {
             const label = this.server.create('label');
             this.server.createList('member', 3, {status: 'free', email_disabled: 0, labels: [label]});
             this.server.createList('member', 4, {status: 'paid', email_disabled: 0});
+        });
+
+        it('shows first_name reminder when helper is outside email card', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            await pasteInEditor('Hello {first_name},');
+
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-test-modal="first-name-reminder"]'), 'first_name reminder modal').to.exist;
+        });
+
+        it('shows only TK reminder when both TK and first_name are present', async function () {
+            await loginAsRole('Administrator', this.server);
+
+            const post = this.server.create('post', {status: 'draft'});
+            await visit(`/editor/post/${post.id}`);
+            await fillIn('[data-test-editor-title-input]', 'TK in title');
+            await pasteInEditor('Hello {first_name},');
+
+            await click('[data-test-button="publish-flow"]');
+
+            expect(find('[data-test-modal="tk-reminder"]'), 'TK reminder modal').to.exist;
+            expect(find('[data-test-modal="first-name-reminder"]'), 'first_name reminder modal').to.not.exist;
+
+            await click('[data-test-modal="tk-reminder"] .gh-btn');
+
+            expect(find('[data-test-modal="publish-flow"]'), 'publish flow modal').to.exist;
+            expect(find('[data-test-modal="first-name-reminder"]'), 'first_name reminder modal').to.not.exist;
         });
 
         it('can publish+send with single newsletter', async function () {
