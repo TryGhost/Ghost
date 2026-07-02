@@ -197,7 +197,7 @@
     "leaky-bucket": "2.2.0",
     "lodash": "catalog:",
     "luxon": "3.7.2",
-    "mailgun.js": "10.4.0",
+    "mailgun.js": "catalog:",
     "metascraper": "5.50.6",
     "metascraper-amazon": "5.50.6",
     "metascraper-author": "5.50.6",
