@@ -1478,7 +1478,22 @@ describe('ActivityPubAPI', function () {
                         notifications: [
                             {
                                 id: 'https://example.com/notifications/abc123',
-                                type: 'like'
+                                type: 'like',
+                                post: {
+                                    id: 'https://example.com/posts/sensitive',
+                                    type: 'note',
+                                    title: null,
+                                    content: '<p>Sensitive post</p>',
+                                    url: 'https://example.com/posts/sensitive',
+                                    sensitive: true,
+                                    contentWarning: 'Sensitive topic',
+                                    likeCount: 0,
+                                    likedByMe: false,
+                                    repostCount: 0,
+                                    repostedByMe: false,
+                                    replyCount: 0,
+                                    attachments: []
+                                }
                             },
                             {
                                 id: 'https://example.com/notifications/def456',
@@ -1502,7 +1517,22 @@ describe('ActivityPubAPI', function () {
             expect(actual.notifications).toEqual([
                 {
                     id: 'https://example.com/notifications/abc123',
-                    type: 'like'
+                    type: 'like',
+                    post: {
+                        id: 'https://example.com/posts/sensitive',
+                        type: 'note',
+                        title: null,
+                        content: '<p>Sensitive post</p>',
+                        url: 'https://example.com/posts/sensitive',
+                        sensitive: true,
+                        contentWarning: 'Sensitive topic',
+                        likeCount: 0,
+                        likedByMe: false,
+                        repostCount: 0,
+                        repostedByMe: false,
+                        replyCount: 0,
+                        attachments: []
+                    }
                 },
                 {
                     id: 'https://example.com/notifications/def456',

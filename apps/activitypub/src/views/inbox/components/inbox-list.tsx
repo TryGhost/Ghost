@@ -18,6 +18,7 @@ export type InboxListProps = {
     fetchNextPage: () => void,
     hasNextPage: boolean,
     isFetchingNextPage: boolean,
+    showSensitiveMediaByDefault: boolean,
     onTopicChange: (topic: Topic) => void
 }
 
@@ -28,6 +29,7 @@ const InboxList:React.FC<InboxListProps> = ({
     fetchNextPage,
     hasNextPage,
     isFetchingNextPage,
+    showSensitiveMediaByDefault,
     onTopicChange
 }) => {
     const navigate = useNavigateWithBasePath();
@@ -103,6 +105,7 @@ const InboxList:React.FC<InboxListProps> = ({
                                                         likeCount={activity.object.likeCount ?? 0}
                                                         object={activity.object}
                                                         repostCount={activity.object.repostCount ?? 0}
+                                                        showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                         type={activity.type}
                                                         onClick={() => {
                                                             navigate(`/reader/${encodeURIComponent(activity.id)}`);

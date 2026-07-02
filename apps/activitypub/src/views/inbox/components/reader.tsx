@@ -12,7 +12,7 @@ import APAvatar from '@src/components/global/ap-avatar';
 import APReplyBox from '@src/components/global/ap-reply-box';
 import BackButton from '@src/components/global/back-button';
 import DeletedFeedItem from '@src/components/feed/deleted-feed-item';
-import FeedItem from '@src/components/feed/feed-item';
+import FeedItem, {ContentWarningOverlay, SensitiveMediaOverlay} from '@src/components/feed/feed-item';
 import FeedItemStats from '@src/components/feed/feed-item-stats';
 import FollowButton from '@src/components/global/follow-button';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
@@ -228,9 +228,8 @@ const ArticleBody: React.FC<{
             return;
         }
 
-        if (!iframe.srcdoc) {
-            iframe.srcdoc = htmlContent;
-        }
+        setIsLoading(true);
+        iframe.srcdoc = htmlContent;
 
         const handleMessage = (event: MessageEvent) => {
             if (event.data.type === 'resize') {
@@ -410,6 +409,22 @@ const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-black/[8%] dark:bg-gray-950"></div>
 );
 
+function stripMediaFromHtml(html: string): string {
+    if (typeof DOMParser === 'undefined') {
+        return html;
+    }
+
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    document.querySelectorAll('audio, embed, iframe, img, object, picture, source, video').forEach(element => element.remove());
+    document.querySelectorAll('figure').forEach((element) => {
+        if (!element.textContent?.trim()) {
+            element.remove();
+        }
+    });
+
+    return document.body.innerHTML;
+}
+
 interface ReaderProps {
     postId: string;
     onClose?: () => void;
@@ -440,6 +455,8 @@ export const Reader: React.FC<ReaderProps> = ({
     const [fullyExpandedChains, setFullyExpandedChains] = useState<Set<string>>(new Set());
     const [loadingChains, setLoadingChains] = useState<Set<string>>(new Set());
     const [isLoadingMoreTopLevelReplies, setIsLoadingMoreTopLevelReplies] = useState(false);
+    const [isSensitiveMediaRevealed, setIsSensitiveMediaRevealed] = useState(false);
+    const [isContentWarningRevealed, setIsContentWarningRevealed] = useState(false);
     const {data: preferences} = usePreferencesForUser();
     const showSensitiveMediaByDefault = preferences?.showSensitiveMedia ?? false;
     const observerRef = useRef<IntersectionObserver | null>(null);
@@ -460,7 +477,18 @@ export const Reader: React.FC<ReaderProps> = ({
     const actor = activityData?.actor;
     const authors = activityData?.object?.metadata?.ghostAuthors;
 
+    const sensitiveObject = object as (typeof object & {contentWarning?: string | null; sensitive?: boolean}) | undefined;
     const replyCount = object?.replyCount ?? 0;
+    const contentWarning = typeof sensitiveObject?.contentWarning === 'string' && sensitiveObject.contentWarning.trim() ? sensitiveObject.contentWarning.trim() : null;
+    const shouldHideContentWarning = contentWarning !== null && !isContentWarningRevealed;
+    const shouldHideSensitiveMedia = sensitiveObject?.sensitive === true && !showSensitiveMediaByDefault && !isSensitiveMediaRevealed && !isContentWarningRevealed;
+    const articleHtml = shouldHideSensitiveMedia ? stripMediaFromHtml(object?.content ?? '') : object?.content ?? '';
+    const articleImage = shouldHideSensitiveMedia ? undefined : typeof object?.image === 'string' ? object.image : object?.image?.url;
+
+    useEffect(() => {
+        setIsSensitiveMediaRevealed(false);
+        setIsContentWarningRevealed(false);
+    }, [postId]);
 
     useEffect(() => {
         // Only set up infinite scroll if pagination is supported
@@ -865,21 +893,41 @@ export const Reader: React.FC<ReaderProps> = ({
                             {!isLoadingContent && <div className='grow overflow-y-auto'>
                                 <div className={`mx-auto px-6 pt-5 pb-10`} style={{maxWidth: currentMaxWidth}}>
                                     <div className='flex flex-col items-center pb-8' id='object-content'>
-                                        <ArticleBody
-                                            authors={authors}
-                                            backgroundColor={backgroundColor}
-                                            excerpt={object.summary ?? ''}
-                                            fontSize={fontSize}
-                                            fontStyle={fontStyle}
-                                            heading={object.name}
-                                            html={object.content ?? ''}
-                                            image={typeof object.image === 'string' ? object.image : object.image?.url}
-                                            isPopoverOpen={isCustomizerOpen || isTOCOpen}
-                                            postUrl={object?.url || ''}
-                                            onHeadingsExtracted={handleHeadingsExtracted}
-                                            onIframeLoad={handleIframeLoad}
-                                            onLoadingChange={setIsLoading}
-                                        />
+                                        {shouldHideContentWarning && contentWarning ? (
+                                            <ContentWarningOverlay
+                                                className='w-full'
+                                                label={contentWarning}
+                                                onReveal={(event) => {
+                                                    event.stopPropagation();
+                                                    setIsContentWarningRevealed(true);
+                                                }}
+                                            />
+                                        ) : <>
+                                            {shouldHideSensitiveMedia && (
+                                                <SensitiveMediaOverlay
+                                                    className='w-full'
+                                                    onReveal={(event) => {
+                                                        event.stopPropagation();
+                                                        setIsSensitiveMediaRevealed(true);
+                                                    }}
+                                                />
+                                            )}
+                                            <ArticleBody
+                                                authors={authors}
+                                                backgroundColor={backgroundColor}
+                                                excerpt={object.summary ?? ''}
+                                                fontSize={fontSize}
+                                                fontStyle={fontStyle}
+                                                heading={object.name}
+                                                html={articleHtml}
+                                                image={articleImage}
+                                                isPopoverOpen={isCustomizerOpen || isTOCOpen}
+                                                postUrl={object?.url || ''}
+                                                onHeadingsExtracted={handleHeadingsExtracted}
+                                                onIframeLoad={handleIframeLoad}
+                                                onLoadingChange={setIsLoading}
+                                            />
+                                        </>}
                                         <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>
                                             <FeedItemStats
                                                 actor={actor}

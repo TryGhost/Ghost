@@ -159,6 +159,8 @@ export interface Notification {
         title: string | null;
         content: string;
         url: string;
+        sensitive?: boolean;
+        contentWarning?: string | null;
         likeCount: number;
         likedByMe: boolean;
         repostCount: number;
@@ -177,6 +179,8 @@ export interface Notification {
         title: string | null;
         content: string;
         url: string;
+        sensitive?: boolean;
+        contentWarning?: string | null;
     },
     createdAt: string;
 }

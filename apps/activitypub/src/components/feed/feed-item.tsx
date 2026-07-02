@@ -178,14 +178,16 @@ export function renderFeedAttachment(
     }
 }
 
-function SensitiveMediaOverlay({
+export function SensitiveMediaOverlay({
+    className = '',
     onReveal
 }: {
+    className?: string;
     onReveal: (event: React.MouseEvent) => void;
 }) {
     return (
         <div
-            className='mt-3 rounded-md border border-border-default bg-surface-elevated p-6 text-center'
+            className={clsx('mt-3 rounded-md border border-border-default bg-surface-elevated p-6 text-center', className)}
             data-testid='sensitive-media-overlay'
             onClick={(event) => event.stopPropagation()}
         >
@@ -195,16 +197,18 @@ function SensitiveMediaOverlay({
     );
 }
 
-function ContentWarningOverlay({
+export function ContentWarningOverlay({
+    className = '',
     label,
     onReveal
 }: {
+    className?: string;
     label: string;
     onReveal: (event: React.MouseEvent) => void;
 }) {
     return (
         <div
-            className='mt-3 rounded-md border border-border-default bg-surface-elevated p-4'
+            className={clsx('mt-3 rounded-md border border-border-default bg-surface-elevated p-4', className)}
             data-testid='content-warning-overlay'
             onClick={(event) => event.stopPropagation()}
         >
@@ -810,25 +814,27 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             </div>
                             <div className='flex'>
                                 <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start gap-1'>
-                                    <H4 className='break-anywhere line-clamp-2 w-full max-w-[600px] leading-tight text-pretty' data-test-activity-heading>
-                                        {isLoading ? <Skeleton className='w-full max-w-96' /> : (object.name ? object.name : (
-                                            <span dangerouslySetInnerHTML={{
-                                                __html: sanitizeHtml(stripHtml(object.content || ''))
-                                            }}></span>
-                                        ))}
-                                    </H4>
-                                    <div className='ap-note-content break-anywhere line-clamp-2 w-full max-w-[600px] text-base leading-normal text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'>
-                                        {!isLoading ?
-                                            <div dangerouslySetInnerHTML={{
-                                                __html: sanitizeHtml(stripHtml(object.preview?.content ?? object.content ?? ''))
-                                            }} />
-                                            :
-                                            <Skeleton count={2} />
-                                        }
-                                    </div>
-                                    <span className='mt-1 shrink-0 text-sm leading-none whitespace-nowrap text-gray-600'>
-                                        {!isLoading ? (object.content && `${getReadingTime(object.content)}`) : <Skeleton className='w-16' />}
-                                    </span>
+                                    {shouldHideContentWarning ? renderContentWarningOverlay() : <>
+                                        <H4 className='break-anywhere line-clamp-2 w-full max-w-[600px] leading-tight text-pretty' data-test-activity-heading>
+                                            {isLoading ? <Skeleton className='w-full max-w-96' /> : (object.name ? object.name : (
+                                                <span dangerouslySetInnerHTML={{
+                                                    __html: sanitizeHtml(stripHtml(object.content || ''))
+                                                }}></span>
+                                            ))}
+                                        </H4>
+                                        <div className='ap-note-content break-anywhere line-clamp-2 w-full max-w-[600px] text-base leading-normal text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'>
+                                            {!isLoading ?
+                                                <div dangerouslySetInnerHTML={{
+                                                    __html: sanitizeHtml(stripHtml(object.preview?.content ?? object.content ?? ''))
+                                                }} />
+                                                :
+                                                <Skeleton count={2} />
+                                            }
+                                        </div>
+                                        <span className='mt-1 shrink-0 text-sm leading-none whitespace-nowrap text-gray-600'>
+                                            {!isLoading ? (object.content && `${getReadingTime(object.content)}`) : <Skeleton className='w-16' />}
+                                        </span>
+                                    </>}
                                 </div>
                                 <div className='invisible absolute top-8 right-3 z-[49] flex -translate-y-1/2 rounded-lg bg-white p-1 shadow-md group-hover/article:visible dark:bg-black'>
                                     {showStats && <FeedItemStats
@@ -854,7 +860,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>
                             </div>
                         </div>
-                        {renderInboxAttachment(object, isLoading)}
+                        {shouldHideContentWarning ? null : shouldHideSensitiveMedia ? (
+                            <SensitiveMediaOverlay
+                                className='ml-8 hidden h-[91px] w-[121px] shrink-0 items-center justify-center p-3 text-sm md:ml-9 @md/inbox-item:flex [&_button]:mt-1'
+                                onReveal={handleRevealSensitiveMedia}
+                            />
+                        ) : renderInboxAttachment(object, isLoading)}
                     </div>
                 )}
             </>
