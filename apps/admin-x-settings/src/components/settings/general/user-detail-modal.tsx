@@ -12,7 +12,7 @@ import {ConfirmationModal, Heading, Icon, ImageUpload, LimitModal, Menu, type Me
 import {type ErrorMessages, useForm, useHandleError} from '@tryghost/admin-x-framework/hooks';
 import {HostLimitError, useLimiter} from '../../../hooks/use-limiter';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
-import {SOCIAL_PLATFORM_CONFIGS, getSocialValidationError} from '../../../utils/social-urls/index';
+import {SOCIAL_PLATFORM_CONFIGS, SOCIAL_PLATFORM_KEYS, getSocialValidationError} from '../../../utils/social-urls/index';
 import {type User, canAccessSettings, hasAdminAccess, isAdminUser, isAuthorOrContributor, isEditorUser, isOwnerUser, useDeleteUser, useEditUser, useGetUserBySlug, useMakeOwner} from '@tryghost/admin-x-framework/api/users';
 import {getImageUrl, useUploadImage} from '@tryghost/admin-x-framework/api/images';
 import {useGlobalData} from '../../providers/global-data-provider';
@@ -87,6 +87,16 @@ const UserDetailModalContent: React.FC<{user: User}> = ({user}) => {
         savedDelay: 500,
         onValidate: (values) => {
             return Object.entries(validators).reduce<ErrorMessages>((newErrors, [key, validate]) => {
+                // a stored social handle that predates a validation-rule
+                // tightening (see ONC-1856 follow-ups) must not block saving
+                // an unrelated field on this modal — only re-validate a
+                // platform the user actually changed from what was loaded
+                const isUnchangedSocialField = (SOCIAL_PLATFORM_KEYS as readonly string[]).includes(key)
+                    && values[key as keyof User] === user[key as keyof User];
+                if (isUnchangedSocialField) {
+                    return newErrors;
+                }
+
                 const error = validate(values);
                 if (error) {
                     newErrors[key] = error;

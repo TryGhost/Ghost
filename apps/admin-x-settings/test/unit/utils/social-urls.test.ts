@@ -182,7 +182,12 @@ const FIXTURES: PlatformFixture[] = [
             ['@johnsmith', 'https://www.instagram.com/johnsmith'],
             ['johnsmith', 'https://www.instagram.com/johnsmith'],
             ['_john_smith_', 'https://www.instagram.com/_john_smith_'],
-            ['j', 'https://www.instagram.com/j'] // single-character usernames exist
+            ['j', 'https://www.instagram.com/j'], // single-character usernames exist
+            // a URL to specific content under a profile still resolves to
+            // that profile — only the first path segment is the username
+            ['instagram.com/johnsmith/reels/', 'https://www.instagram.com/johnsmith'],
+            // a mobile/alternate subdomain paste is still a valid profile URL
+            ['https://m.instagram.com/johnsmith', 'https://www.instagram.com/johnsmith']
         ],
         invalid: [
             ['https://twitter.com/johnsmith', INSTAGRAM_URL_ERROR],
@@ -231,7 +236,9 @@ const FIXTURES: PlatformFixture[] = [
             ['tiktok.com/@johnsmith/', 'https://www.tiktok.com/@johnsmith'],
             ['@johnsmith', 'https://www.tiktok.com/@johnsmith'],
             ['johnsmith', 'https://www.tiktok.com/@johnsmith'],
-            ['_john_smith_', 'https://www.tiktok.com/@_john_smith_']
+            ['_john_smith_', 'https://www.tiktok.com/@_john_smith_'],
+            // a URL to a specific video still resolves to the profile
+            ['tiktok.com/@johnsmith/video/1234567890123456789', 'https://www.tiktok.com/@johnsmith']
         ],
         invalid: [
             ['https://twitter.com/@johnsmith', TIKTOK_URL_ERROR],
@@ -289,7 +296,9 @@ const FIXTURES: PlatformFixture[] = [
             ['@example.123', 'https://www.threads.net/@example.123'],
             // a handle containing the platform's own domain as a substring
             // (not anchored at the start) must not be misrouted into URL parsing
-            ['mythreads.net', 'https://www.threads.net/@mythreads.net']
+            ['mythreads.net', 'https://www.threads.net/@mythreads.net'],
+            // a mobile/alternate subdomain paste is still a valid profile URL
+            ['https://m.threads.net/@example123', 'https://www.threads.net/@example123']
         ],
         invalid: [
             ['https://www.notthreads.com', THREADS_ERROR],
@@ -334,7 +343,12 @@ const FIXTURES: PlatformFixture[] = [
             ['channel/UC4QobU6STFB0P71PMvOGN5A', 'https://www.youtube.com/channel/UC4QobU6STFB0P71PMvOGN5A'],
             // handles support non-Latin scripts
             ['youtube.com/@日本語ハンドル', 'https://www.youtube.com/@日本語ハンドル'],
-            ['youtube.com/@%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%83%8F%E3%83%B3%E3%83%89%E3%83%AB', 'https://www.youtube.com/@日本語ハンドル']
+            ['youtube.com/@%E6%97%A5%E6%9C%AC%E8%AA%9E%E3%83%8F%E3%83%B3%E3%83%89%E3%83%AB', 'https://www.youtube.com/@日本語ハンドル'],
+            // a URL to a specific video still resolves to the channel
+            ['youtube.com/@johnsmith/videos', 'https://www.youtube.com/@johnsmith'],
+            // a mobile/alternate subdomain paste is still a valid profile URL
+            ['https://m.youtube.com/@johnsmith', 'https://www.youtube.com/@johnsmith'],
+            ['https://music.youtube.com/@johnsmith', 'https://www.youtube.com/@johnsmith']
         ],
         invalid: [
             ['https://twitter.com/@johnsmith', YOUTUBE_URL_ERROR],
@@ -349,7 +363,10 @@ const FIXTURES: PlatformFixture[] = [
             ['youtube.com/user/' + 'a'.repeat(51), YOUTUBE_USERNAME_ERROR],
             ['youtube.com/channel/UC123', YOUTUBE_USERNAME_ERROR], // malformed channel ID
             ['@@johnsmith', YOUTUBE_USERNAME_ERROR], // doubled @ is not a valid marker + username
-            ['youtube.com/@@johnsmith', YOUTUBE_USERNAME_ERROR]
+            ['youtube.com/@@johnsmith', YOUTUBE_USERNAME_ERROR],
+            // a leftover '@' after the 'user/' prefix mixes two incompatible
+            // URL conventions and is rejected, not silently stripped
+            ['youtube.com/user/@johnsmith', YOUTUBE_USERNAME_ERROR]
         ],
         handles: [
             ['@johnsmith', 'https://www.youtube.com/@johnsmith'],
@@ -365,7 +382,8 @@ const FIXTURES: PlatformFixture[] = [
             ['user/john@smith', YOUTUBE_USERNAME_ERROR],
             ['user/' + 'a'.repeat(51), YOUTUBE_USERNAME_ERROR],
             ['channel/UC123', YOUTUBE_USERNAME_ERROR],
-            ['@@johnsmith', YOUTUBE_USERNAME_ERROR]
+            ['@@johnsmith', YOUTUBE_USERNAME_ERROR],
+            ['user/@johnsmith', YOUTUBE_USERNAME_ERROR]
         ],
         urlHandles: [
             ['https://www.youtube.com/@johnsmith', '@johnsmith'],
@@ -416,7 +434,10 @@ const FIXTURES: PlatformFixture[] = [
             ['linkedin.com/in/johnsmith?foo=1', LINKEDIN_USERNAME_ERROR],
             ['linkedin.com/in/john%20smith', LINKEDIN_USERNAME_ERROR], // percent-encoded space
             ['linkedin.com/in/john%3Fsmith', LINKEDIN_USERNAME_ERROR], // percent-encoded ?
-            ['linkedin.com/in/john%2smith', LINKEDIN_USERNAME_ERROR] // malformed percent-encoding
+            ['linkedin.com/in/john%2smith', LINKEDIN_USERNAME_ERROR], // malformed percent-encoding
+            // a leftover '@' after the 'company/' prefix mixes two
+            // incompatible URL conventions and is rejected, not silently stripped
+            ['linkedin.com/company/@acme', LINKEDIN_USERNAME_ERROR]
         ],
         handles: [
             ['johnsmith', 'https://www.linkedin.com/in/johnsmith'],
@@ -434,12 +455,17 @@ const FIXTURES: PlatformFixture[] = [
             ['john#smith', LINKEDIN_USERNAME_ERROR],
             ['john.smith', LINKEDIN_USERNAME_ERROR], // dots are not allowed on linkedin
             ['jo', LINKEDIN_USERNAME_ERROR], // too short
-            ['a'.repeat(101), LINKEDIN_USERNAME_ERROR] // too long
+            ['a'.repeat(101), LINKEDIN_USERNAME_ERROR], // too long
+            ['company/@acme', LINKEDIN_USERNAME_ERROR]
         ],
         urlHandles: [
             ['https://www.linkedin.com/in/johnsmith', 'johnsmith'],
             ['https://www.linkedin.com/in/johnsmith/', 'johnsmith'],
-            ['https://www.linkedin.com/in/@johnsmith', 'johnsmith'],
+            // a redundant '@' after the 'in/' prefix is rejected, not silently
+            // stripped, consistent with company/@acme and youtube.com/user/@x
+            // (the pre-consolidation code stripped this inconsistently — only
+            // in the URL-form branch, never in the handle-form branch)
+            ['https://www.linkedin.com/in/@johnsmith', null],
             ['linkedin.com/in/johnsmith', 'johnsmith'],
             ['ca.linkedin.com/in/john-smith', 'john-smith'], // regional subdomain is dropped in storage
             ['linkedin.com/pub/john-smith-abc123', 'pub/john-smith-abc123'],
@@ -476,7 +502,14 @@ const FIXTURES: PlatformFixture[] = [
             // a domain handle containing the platform's own domain as a
             // substring (not anchored at the start) must not be misrouted into
             // URL parsing, where it would be rejected as a malformed URL
-            ['mybsky.app', 'https://bsky.app/profile/mybsky.app']
+            ['mybsky.app', 'https://bsky.app/profile/mybsky.app'],
+            // a decorative '@' after 'profile/' is still tolerated and
+            // stripped (tolerateLeadingAt) — unlike YouTube's user/ or
+            // LinkedIn's company/, Bluesky has no competing '@'-marked path
+            // type, so this isn't a mixed-convention input
+            ['bsky.app/profile/@username', 'https://bsky.app/profile/username'],
+            // a URL to a specific post still resolves to the profile
+            ['bsky.app/profile/username/post/abc123', 'https://bsky.app/profile/username']
         ],
         invalid: [
             ['https://twitter.com/username', BLUESKY_URL_ERROR],

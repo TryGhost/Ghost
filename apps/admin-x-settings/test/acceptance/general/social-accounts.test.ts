@@ -337,4 +337,38 @@ test.describe('Social account settings', async () => {
         await expect(mastodonInput).toHaveValue('https://mastodon.social/@ghost@example.com');
         await expect(mastodonInput.locator('xpath=../..')).not.toContainText('The URL must be in a format');
     });
+
+    test('Saving an unrelated field does not block on a stale stored value that predates a rule tightening', async ({page}) => {
+        // Threads' username rule was tightened after this handle could have
+        // been stored (trailing period, previously accepted). Editing an
+        // untouched Threads field must not be re-validated on save, or a
+        // legacy value like this would lock the whole form.
+        const settingsWithStaleThreads = {
+            ...responseFixtures.settings,
+            settings: responseFixtures.settings.settings.map(s => (
+                s.key === 'threads' ? {...s, value: '@ghost.tld.'} : s
+            ))
+        };
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseSettings: {method: 'GET', path: /^\/settings\/\?group=/, response: settingsWithStaleThreads},
+            editSettings: {method: 'PUT', path: '/settings/', response: updatedSettingsResponse([{key: 'facebook', value: 'fb'}])}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('social-accounts');
+
+        // the stale value displays raw rather than crashing, and shows no error
+        await expect(section.getByLabel('Threads')).toHaveValue('@ghost.tld.');
+        await expect(section).not.toContainText('The URL must be in a format like https://www.threads.net/@yourUsername');
+
+        await section.getByLabel('Facebook').fill('fb');
+        await section.getByRole('button', {name: 'Save'}).click();
+
+        await expect(section).not.toContainText('The URL must be in a format like https://www.threads.net/@yourUsername');
+        expect((lastApiRequests.editSettings?.body as {settings: Array<{key: string; value: string}>} | undefined)?.settings)
+            .toEqual([{key: 'facebook', value: 'fb'}]);
+    });
 });

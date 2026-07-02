@@ -15,7 +15,10 @@ const bluesky = createPlatformValidator({
     domains: ['bsky.app'],
     www: false,
     pathTypes: [
-        {urlPrefix: 'profile/', storagePrefix: '', rule: {patterns: BLUESKY_USERNAME_PATTERNS}}
+        // bsky.app/profile/@username is a common paste (users type Bluesky
+        // handles with a leading @ out of habit); the @ is decorative here,
+        // not a marker for a competing path type, so it's still stripped
+        {urlPrefix: 'profile/', storagePrefix: '', tolerateLeadingAt: true, rule: {patterns: BLUESKY_USERNAME_PATTERNS}}
     ],
     // DIDs are case-insensitive identifiers, canonically lowercase
     transformUsername: username => (/^did:plc:/i.test(username) ? username.toLowerCase() : username),

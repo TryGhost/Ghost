@@ -42,6 +42,15 @@ export type SocialPathType = {
     storagePrefix: string;
     /** extra prefixes recognised in typed handles, e.g. LinkedIn accepts 'in/name' although it stores bare 'name' */
     handleAliases?: string[];
+    /**
+     * strip a decorative leading '@' even though this prefix already routed
+     * the input here (Bluesky's profile/@username). Default false: a leftover
+     * '@' after a non-'@' structural prefix (YouTube's user/@x, LinkedIn's
+     * company/@x) usually means the input mixed two incompatible URL
+     * conventions, so it's left in place for the username rule to reject
+     * rather than silently stripped.
+     */
+    tolerateLeadingAt?: boolean;
     rule: UsernameRule;
 };
 
@@ -155,17 +164,24 @@ export const createPlatformValidator = (definition: SocialPlatformDefinition): S
         .sort((a, b) => b.prefix.length - a.prefix.length);
 
     const domainPattern = domains.map(domain => escapeForRegex(domain)).join('|');
-    const subdomainPattern = regionalSubdomain ? `(?:(?<region>${regionalSubdomain})\\.)?` : '';
+    // any subdomain labels (www., m., music., mobile., ...) are tolerated and
+    // discarded; the platform-specific regional subdomain (LinkedIn's 2-letter
+    // country codes) is captured separately since it's kept in the canonical
+    // URL rather than discarded. The regional capture is tried first so e.g.
+    // 'ca.' on LinkedIn is captured as a region, not swallowed as a generic label.
+    const regionalPattern = regionalSubdomain ? `(?:(?<region>${regionalSubdomain})\\.)?` : '';
+    const subdomainPattern = `${regionalPattern}(?:[a-zA-Z0-9-]+\\.)*`;
     // [\s\S] instead of . so inputs containing newlines still parse and get
     // rejected by the username rule rather than falling through as "not a URL"
     const urlRegex = new RegExp(
-        `^(?:(?:https?:)?\\/\\/)?(?:www\\.)?${subdomainPattern}(?:${domainPattern})\\/(?<rest>[\\s\\S]*)$`,
+        `^(?:(?:https?:)?\\/\\/)?${subdomainPattern}(?:${domainPattern})\\/(?<rest>[\\s\\S]*)$`,
         'i'
     );
-    // matches a bare (protocol-less) domain only when it's the whole prefix of
-    // the input, not merely a substring anywhere in it — otherwise a handle
-    // that happens to contain the domain (e.g. a Bluesky domain-handle like
-    // 'mybsky.app') gets misrouted into URL parsing and rejected as malformed
+    // matches a bare (protocol-less) domain, with any subdomain, only when
+    // it's the whole prefix of the input, not merely a substring anywhere in
+    // it — otherwise a handle that happens to contain the domain (e.g. a
+    // Bluesky domain-handle like 'mybsky.app') gets misrouted into URL parsing
+    // and rejected as malformed
     const bareDomainRegex = new RegExp(`^${subdomainPattern}(?:${domainPattern})(?:\\/|$)`, 'i');
 
     const isUrlInput = (input: string) => {
@@ -174,9 +190,12 @@ export const createPlatformValidator = (definition: SocialPlatformDefinition): S
 
     // trims a leading @, trailing slash, percent-decodes and NFC-normalises so
     // composed and decomposed forms of the same accented character store
-    // identically. `atPrefixConsumed` is true when prefix matching already ate
-    // the platform's own '@' marker (X, TikTok, ...) — in that case a leftover
-    // leading '@' in rawUsername is a second, illegitimate one (e.g. '@@ghost')
+    // identically. `atPrefixConsumed` is true whenever a structural prefix
+    // was already matched (X's/TikTok's/YouTube's '@' marker, but equally
+    // YouTube's user/, LinkedIn's company/, ...) unless that specific path
+    // type opts in via tolerateLeadingAt (Bluesky's profile/@username) — in
+    // every other such case a leftover leading '@' in rawUsername is
+    // illegitimate (e.g. '@@ghost', or 'user/@name' mixing two conventions)
     // and must NOT be stripped, so the username rule rejects it below instead
     // of the pipeline silently "fixing" malformed input.
     const formatUsername = (rawUsername: string, atPrefixConsumed: boolean) => {
@@ -193,7 +212,7 @@ export const createPlatformValidator = (definition: SocialPlatformDefinition): S
         const cleaned = input.replace(/^\//, '');
         const match = handlePrefixes.find(({prefix}) => cleaned.startsWith(prefix));
         if (match) {
-            return {pathType: match.pathType, rawUsername: cleaned.slice(match.prefix.length), atPrefixConsumed: match.prefix === '@'};
+            return {pathType: match.pathType, rawUsername: cleaned.slice(match.prefix.length), atPrefixConsumed: !match.pathType.tolerateLeadingAt};
         }
         return {pathType: compiledPathTypes[0], rawUsername: cleaned, atPrefixConsumed: false};
     };
@@ -214,14 +233,21 @@ export const createPlatformValidator = (definition: SocialPlatformDefinition): S
             throw new Error(errors.invalidUrl);
         }
 
-        const rawUsername = rest.slice(pathType.urlPrefix.length);
+        const fullRawUsername = rest.slice(pathType.urlPrefix.length);
+        // a URL to specific content under a profile (a post, video, reel, ...)
+        // still resolves to that profile — take only the first path segment,
+        // unless this path type explicitly expects further segments (LinkedIn's
+        // pub/name/12/34/567)
+        const rawUsername = (!fullPath && !pathType.rule.nestedSegments)
+            ? fullRawUsername.split('/')[0]
+            : fullRawUsername;
         // a query string or fragment after the username is not part of a profile
         // URL (except in fullPath mode, where e.g. facebook.com/pages/…?ref=ts is fine)
         if (!fullPath && /[?#]/.test(rawUsername)) {
             throw new Error(errors.invalidUsername);
         }
 
-        return {region, pathType, rawUsername, atPrefixConsumed: pathType.urlPrefix === '@'};
+        return {region, pathType, rawUsername, atPrefixConsumed: pathType.urlPrefix !== '' && !pathType.tolerateLeadingAt};
     };
 
     const checkUsername = (pathType: CompiledSocialPathType, username: string) => {

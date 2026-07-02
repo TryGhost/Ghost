@@ -85,6 +85,14 @@ const SocialAccounts: React.FC<{ keywords: string[] }> = ({keywords}) => {
 
     const handleSaveClick = () => {
         const formErrors = visiblePlatforms.reduce<Partial<Record<SocialPlatformKey, string>>>((current, config) => {
+            // a stored handle that predates a validation-rule tightening (see
+            // ONC-1856 follow-ups) must not block saving the rest of the form —
+            // only re-validate a platform the user actually changed this session
+            const isDirty = localSettings.some(setting => setting.key === config.key && setting.dirty);
+            if (!isDirty) {
+                return current;
+            }
+
             const error = getSocialValidationError(config.key, urls[config.key]);
             if (error) {
                 current[config.key] = error;
