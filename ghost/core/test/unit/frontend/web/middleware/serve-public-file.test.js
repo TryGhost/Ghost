@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const request = require('supertest');
 const express = require('express');
 const fs = require('fs-extra');
+const logging = require('@tryghost/logging');
 const config = require('../../../../../core/shared/config');
 const {servePublicFile} = require('../../../../../core/frontend/web/routers/serve-public-file');
 
@@ -166,6 +167,98 @@ describe('servePublicFile', function () {
                 code: 'PUBLIC_FILE_NOT_FOUND',
                 property: null
             });
+    });
+
+    it('rebuilds a missing built file once and serves the result', async function () {
+        const body = '.kg-card {display: block}';
+        const rebuild = sinon.stub().resolves();
+
+        const middleware = servePublicFile('built', 'public/cards.min.css', 'text/css', 3600, {rebuild});
+        const app = createApp(middleware);
+
+        const enoent = new Error();
+        enoent.code = 'ENOENT';
+
+        const fileStub = sinon.stub(fs, 'readFile');
+        fileStub.onFirstCall().callsFake(function (file, cb) {
+            cb(enoent, null);
+        });
+        fileStub.callsFake(function (file, cb) {
+            cb(null, body);
+        });
+
+        const {text} = await request(app)
+            .get('/public/cards.min.css')
+            .expect(200)
+            .expect('Content-Type', /^text\/css/);
+
+        assert.equal(text, body);
+        sinon.assert.calledOnce(rebuild);
+        sinon.assert.calledTwice(fileStub);
+        assert(fileStub.firstCall.calledBefore(rebuild.firstCall));
+    });
+
+    it('404s when the file is still missing after a rebuild', async function () {
+        const rebuild = sinon.stub().resolves();
+
+        const middleware = servePublicFile('built', 'public/cards.min.css', 'text/css', 3600, {rebuild});
+        const app = createApp(middleware);
+
+        sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            const err = new Error();
+            err.code = 'ENOENT';
+            cb(err, null);
+        });
+
+        await request(app)
+            .get('/public/cards.min.css')
+            .expect(404)
+            .expect({
+                errorType: 'NotFoundError',
+                code: 'PUBLIC_FILE_NOT_FOUND',
+                property: null
+            });
+
+        // The rebuild is only attempted once per request — no retry loops
+        sinon.assert.calledOnce(rebuild);
+    });
+
+    it('404s when the rebuild itself fails', async function () {
+        const loggingStub = sinon.stub(logging, 'error');
+        const rebuild = sinon.stub().rejects(new Error('rebuild failed'));
+
+        const middleware = servePublicFile('built', 'public/cards.min.css', 'text/css', 3600, {rebuild});
+        const app = createApp(middleware);
+
+        sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            const err = new Error();
+            err.code = 'ENOENT';
+            cb(err, null);
+        });
+
+        await request(app)
+            .get('/public/cards.min.css')
+            .expect(404);
+
+        sinon.assert.calledOnce(rebuild);
+        sinon.assert.calledOnce(loggingStub);
+    });
+
+    it('does not attempt a rebuild when no rebuild option is configured', async function () {
+        const middleware = servePublicFile('built', 'public/cards.min.css', 'text/css', 3600);
+        const app = createApp(middleware);
+
+        const fileStub = sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            const err = new Error();
+            err.code = 'ENOENT';
+            cb(err, null);
+        });
+
+        await request(app)
+            .get('/public/cards.min.css')
+            .expect(404);
+
+        sinon.assert.calledOnce(fileStub);
     });
 
     it('can serve a built asset file as well as public files', async function () {

@@ -16,6 +16,27 @@ module.exports = class AssetsMinificationBase {
         this.loading = null;
     }
 
+    /**
+     * Ensure an asset build has run, joining an in-flight load() when one
+     * exists so concurrent callers only trigger a single build. Used both by
+     * serveMiddleware() and as a recovery path when a built file has gone
+     * missing from disk at runtime.
+     *
+     * @returns {Promise<void>}
+     */
+    ensureLoaded() {
+        if (!this.loading) {
+            const pending = this.load().finally(() => {
+                if (this.loading === pending) {
+                    this.loading = null;
+                }
+            });
+            this.loading = pending;
+        }
+
+        return this.loading;
+    }
+
     generateGlobs() {
         throw new errors.InternalServerError({
             message: 'generateGlobs not implemented'
@@ -52,15 +73,15 @@ module.exports = class AssetsMinificationBase {
          */
         return async function serveMiddleware(req, res, next) {
             if (!self.ready) {
-                if (!self.loading) {
-                    const pending = self.load().finally(() => {
-                        if (self.loading === pending) {
-                            self.loading = null;
-                        }
-                    });
-                    self.loading = pending;
+                try {
+                    await self.ensureLoaded();
+                } catch (error) {
+                    // A failed build must not block the request — without this
+                    // the rejection escapes the express handler and the request
+                    // hangs. The file middleware downstream serves the previous
+                    // build, or responds with a 404 if there is none.
+                    logging.error(error);
                 }
-                await self.loading;
             }
 
             next();
