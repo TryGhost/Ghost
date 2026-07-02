@@ -28,6 +28,15 @@ describe('normalizeSocialInput', () => {
         }
     });
 
+    it('falls back to the raw stored value when a legacy handle fails validation', () => {
+        // Stored handles can predate current validation rules (or the current
+        // platform rules entirely). Display must never crash the settings UI —
+        // the raw value is shown and validation flags it when the user edits.
+        const {toDisplayValue} = SOCIAL_PLATFORM_CONFIG_BY_KEY.twitter;
+        assert.equal(toDisplayValue('not a valid handle!!'), 'not a valid handle!!');
+        assert.equal(toDisplayValue('@ghost'), 'https://x.com/ghost');
+    });
+
     it('strips the regional subdomain from LinkedIn display because it is not in storage', () => {
         // `uk.linkedin.com` is a valid input, but the stored handle drops the
         // regional prefix. The displayed value after blur should reflect what

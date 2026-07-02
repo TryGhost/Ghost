@@ -1,77 +1,30 @@
-import validator from 'validator';
+import {createPlatformValidator} from './platform-validator';
+import type {UsernameRule} from './platform-validator';
 
-// Validates and normalizes Instagram URLs or handles
-export function validateInstagramUrl(newUrl: string) {
-    const errMessage = 'The URL must be in a format like https://www.instagram.com/yourUsername';
-    const invalidUsernameMessage = 'Your Username is not a valid Instagram Username';
-    if (!newUrl) {
-        return '';
-    }
-
-    let username: string;
-
-    // Extract username from URL or handle
-    if (newUrl.startsWith('http') || newUrl.startsWith('www.') || newUrl.includes('instagram.com')) {
-        // Check for instagram.com domain
-        if (!newUrl.includes('instagram.com')) {
-            throw new Error(errMessage);
-        }
-
-        // Extract username from URL
-        const usernameMatch = newUrl.match(/(?:https?:\/\/)?(?:www\.)?instagram\.com\/@?([^/]+)/);
-        if (!usernameMatch) {
-            throw new Error(errMessage);
-        }
-        username = usernameMatch[1];
-    } else {
-        // Handle username or @username
-        username = newUrl.startsWith('@') ? newUrl.slice(1) : newUrl;
-    }
-
-    // Validate username: alphanumeric, underscore, period, 1–30 chars, no leading/trailing/consecutive periods
-    if (
-        !username.match(/^[a-zA-Z0-9_][a-zA-Z0-9._]{0,28}[a-zA-Z0-9_]$/) ||
-        username.includes('..') ||
-        username.length > 30
-    ) {
-        throw new Error(invalidUsernameMessage);
-    }
-
-    // Construct and validate full URL
-    const normalizedUrl = `https://www.instagram.com/${username}`;
-    if (!validator.isURL(normalizedUrl)) {
-        throw new Error(errMessage);
-    }
-
-    return normalizedUrl;
-}
-
-// Converts an Instagram handle to a full URL
-export const instagramHandleToUrl = (handle: string) => {
-    const errMessage = 'Your Username is not a valid Instagram Username';
-    if (!handle) {
-        throw new Error(errMessage);
-    }
-
-    let username = handle;
-    if (username.startsWith('@')) {
-        username = username.slice(1);
-    }
-
-    // Validate username: alphanumeric, underscore, period, 1–30 chars, no leading/trailing/consecutive periods
-    if (
-        !username.match(/^[a-zA-Z0-9_][a-zA-Z0-9._]{0,28}[a-zA-Z0-9_]$/) ||
-        username.includes('..') ||
-        username.length > 30
-    ) {
-        throw new Error(errMessage);
-    }
-
-    return `https://www.instagram.com/${username}`;
+// Instagram usernames are ASCII-only by platform rule: letters, numbers,
+// underscores and periods, up to 30 characters, with no leading, trailing or
+// consecutive periods. Threads reuses this rule — Threads accounts are
+// Instagram accounts.
+export const INSTAGRAM_USERNAME_RULE: UsernameRule = {
+    extra: '._',
+    min: 1,
+    max: 30,
+    notAtBoundary: '.',
+    notConsecutive: '.'
 };
 
-// Extracts an Instagram handle from a URL
-export const instagramUrlToHandle = (url: string) => {
-    const handleMatch = url.match(/(?:https?:\/\/)?(?:www\.)?instagram\.com\/@?([^/]*)/);
-    return handleMatch ? `${handleMatch[1]}` : null;
-};
+const instagram = createPlatformValidator({
+    domains: ['instagram.com'],
+    www: true,
+    pathTypes: [
+        {urlPrefix: '', storagePrefix: '', rule: INSTAGRAM_USERNAME_RULE}
+    ],
+    errors: {
+        invalidUrl: 'The URL must be in a format like https://www.instagram.com/yourUsername',
+        invalidUsername: 'Your Username is not a valid Instagram Username'
+    }
+});
+
+export const validateInstagramUrl = instagram.validate;
+export const instagramHandleToUrl = instagram.handleToUrl;
+export const instagramUrlToHandle = instagram.urlToHandle;

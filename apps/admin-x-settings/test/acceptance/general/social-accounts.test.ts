@@ -211,14 +211,15 @@ test.describe('Social account settings', async () => {
         await testUrlValidation(
             twitterInput,
             'http://github.com/username',
-            'https://x.com/username'
+            'http://github.com/username',
+            'The URL must be in a format like https://x.com/yourUsername'
         );
 
         await testUrlValidation(
             twitterInput,
             '*(&*(%%))',
             '*(&*(%%))',
-            'The URL must be in a format like https://x.com/yourUsername'
+            'Your Username is not a valid Twitter Username'
         );
 
         await testUrlValidation(
