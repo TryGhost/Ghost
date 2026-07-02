@@ -1,127 +1,49 @@
 import Component from '@glimmer/component';
 import {TrackedArray} from 'tracked-built-ins';
 import {action} from '@ember/object';
+import {escapeNqlString} from '../utils/escape-nql-string';
 import {inject as service} from '@ember/service';
-import {task} from 'ember-concurrency';
-import {tracked} from '@glimmer/tracking';
 
-const PAGE_SIZE = 100;
+const SEARCH_DEBOUNCE_MS = 250;
 
 export default class GhTagsTokenInput extends Component {
     @service store;
     @service tagsManager;
 
-    // internal attrs
-    @tracked _initialTags = new TrackedArray();
-    @tracked _searchedTags = new TrackedArray();
+    _knownTags = new TrackedArray();
 
-    _initialTagsMeta = null;
-    _hasLoadedInitialTags = false;
-    _searchedTagsQuery = null;
-    _searchedTagsMeta = null;
-
-    _powerSelectAPI = null;
-
-    constructor() {
-        super(...arguments);
-        const selectedTags = this.args.selected?.toArray ? this.args.selected.toArray() : (this.args.selected || []);
-        this._initialTags = new TrackedArray(selectedTags);
-    }
-
-    get availableTags() {
-        const selectedTags = this.args.selected || [];
-        const selectedTagIds = new Set(selectedTags.map(tag => tag.id));
-        return this.tagsManager.sortTags(this._initialTags.filter(tag => !selectedTagIds.has(tag.id)));
-    }
-
-    // if we only have one page of tags available or we've already loaded all tags
-    // then we can use the client-side search
-    get useServerSideSearch() {
-        const hasLoadedAnyTags = !!this._initialTagsMeta;
-        const hasLoadedAllTags = hasLoadedAnyTags && parseInt(this._initialTagsMeta.pagination.pages, 10) === parseInt(this._initialTagsMeta.pagination.page, 10);
-
-        return !hasLoadedAllTags;
+    @action
+    loadTagsPage({limit, page}) {
+        return this.store.query('tag', {limit, page, order: 'name asc'}).then((tags) => {
+            this._addKnownTags(tags.toArray());
+            return tags;
+        });
     }
 
     @action
-    addInitialTags(tags) {
-        const existingTagIds = new Set(this._initialTags.map(tag => tag.id));
-        const deduplicatedTags = tags.filter(tag => !existingTagIds.has(tag.id));
-        this._initialTags.push(...deduplicatedTags);
+    searchTagsPage(term, {limit, page}) {
+        return this.store.query('tag', {filter: `tags.name:~${escapeNqlString(term)}`, limit, page, order: 'name asc'}).then((tags) => {
+            this._addKnownTags(tags.toArray());
+            return tags;
+        });
     }
 
     @action
-    addSearchedTags(tags) {
-        const selectedTagIds = new Set((this.args.selected || []).map(tag => tag.id));
-        const deduplicatedTags = tags.filter(tag => !selectedTagIds.has(tag.id));
-        this._searchedTags.push(...deduplicatedTags);
+    sortTags(tags) {
+        return this.tagsManager.sortTags(tags);
     }
 
     @action
-    registerPowerSelectAPI(api) {
-        this._powerSelectAPI = api;
-    }
-
-    @action
-    async loadInitialTags() {
-        if (!this._hasLoadedInitialTags) {
-            await this.loadMoreTagsTask.perform(false);
-            this._hasLoadedInitialTags = true;
-        }
-    }
-
-    @task
-    *loadMoreTagsTask() {
-        const isSearch = !!this._powerSelectAPI.searchText;
-        if (isSearch) {
-            if (!this.useServerSideSearch) {
-                return;
-            }
-
-            if (this.searchTagsTask.isRunning) {
-                return;
-            }
-
-            if (this._searchedTagsMeta?.pagination && this._searchedTagsMeta.pagination.pages <= this._searchedTagsMeta.pagination.page) {
-                return;
-            }
-
-            const page = this._searchedTagsMeta.pagination.page + 1;
-            const tags = yield this.tagsManager.searchTagsTask.perform(this._searchedTagsQuery, {page});
-            this.addSearchedTags(tags.toArray());
-            this._searchedTagsMeta = tags.meta;
-        } else {
-            if (this._initialTagsMeta?.pagination && this._initialTagsMeta.pagination.pages <= this._initialTagsMeta.pagination.page) {
-                return;
-            }
-
-            const page = this._initialTagsMeta?.pagination.page ? this._initialTagsMeta.pagination.page + 1 : 1;
-            const tags = yield this.store.query('tag', {limit: PAGE_SIZE, page, order: 'name asc'});
-            this.addInitialTags(tags.toArray());
-            this._initialTagsMeta = tags.meta;
-        }
-    }
-
-    @task
-    *searchTagsTask(term) {
-        this._searchedTagsQuery = term;
-        const tags = yield this.tagsManager.searchTagsTask.perform(term);
-        this._searchedTagsMeta = tags.meta;
-
-        // we need to create a tracked array for vertical-collection to update as new options are loaded
-        // because we can't rely on power-select re-rendering as @options changes via auto template updates
-        this._searchedTags = new TrackedArray();
-        this.addSearchedTags(tags.toArray());
-        return this._searchedTags;
-    }
-
-    @action
-    showCreateWhen(term) {
-        const availableTagNames = this._searchedTags.map(tag => tag.name.toLowerCase());
-        availableTagNames.push(...this.args.selected.map(tag => tag.name.toLowerCase()));
+    showCreateWhen(term, tags) {
+        const availableTagNames = tags.map(tag => tag.name.toLowerCase());
+        availableTagNames.push(...(this.args.selected || []).map(tag => tag.name.toLowerCase()));
 
         const foundMatchingTagName = availableTagNames.includes(term.toLowerCase());
         return !foundMatchingTagName;
+    }
+
+    get searchDebounceMs() {
+        return SEARCH_DEBOUNCE_MS;
     }
 
     @action
@@ -187,6 +109,12 @@ export default class GhTagsTokenInput extends Component {
             return tag.name.toLowerCase() === name.toLowerCase();
         };
 
-        return this._searchedTags.find(withMatchingName) || this._initialTags.find(withMatchingName);
+        return this._knownTags.find(withMatchingName);
+    }
+
+    _addKnownTags(tags) {
+        const knownTagIds = new Set(this._knownTags.map(tag => tag.id));
+        const deduplicatedTags = tags.filter(tag => !knownTagIds.has(tag.id));
+        this._knownTags.push(...deduplicatedTags);
     }
 }
