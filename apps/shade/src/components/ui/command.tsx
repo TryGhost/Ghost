@@ -11,7 +11,7 @@ function Command({className, ...props}: React.ComponentProps<typeof CommandPrimi
     return (
         <CommandPrimitive
             className={cn(
-                'flex h-full w-full flex-col overflow-hidden rounded-md bg-transparent text-popover-foreground',
+                'flex size-full flex-col overflow-hidden rounded-md bg-transparent text-popover-foreground',
                 className
             )}
             {...props}
@@ -40,7 +40,7 @@ function CommandInput({className, ...props}: React.ComponentProps<typeof Command
             <Search className="me-2 size-4 shrink-0 opacity-50" />
             <CommandPrimitive.Input
                 className={cn(
-                    'flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-hidden text-foreground placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
+                    'flex h-11 w-full rounded-md bg-transparent py-3 text-sm text-foreground outline-hidden placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50',
                     className
                 )}
                 {...props}
@@ -52,7 +52,7 @@ function CommandInput({className, ...props}: React.ComponentProps<typeof Command
 function CommandList({className, ...props}: React.ComponentProps<typeof CommandPrimitive.List>) {
     return (
         <CommandPrimitive.List
-            className={cn('max-h-[300px] p-1 overflow-y-auto overflow-x-hidden', className)}
+            className={cn('max-h-[300px] overflow-x-hidden overflow-y-auto p-1', className)}
             data-slot="command-list"
             {...props}
         />
@@ -90,7 +90,7 @@ function CommandItem({className, ...props}: React.ComponentProps<typeof CommandP
     return (
         <CommandPrimitive.Item
             className={cn(
-                'relative flex text-foreground cursor-default gap-2 select-none items-center rounded-xs px-2 py-1.5 outline-hidden data-[disabled=true]:pointer-events-none data-[selected=true]:bg-interactive-hover data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
+                'relative flex cursor-default items-center gap-2 rounded-xs px-2 py-1.5 text-foreground outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 data-[selected=true]:bg-interactive-hover [&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0',
                 '[&_svg]:pointer-events-none [&_svg]:size-4 [&_svg]:shrink-0 [&_svg]:stroke-[1.5px]',
                 className
             )}
@@ -117,7 +117,7 @@ interface ButtonArrowProps extends React.SVGProps<SVGSVGElement> {
 function CommandCheck({icon: Icon = Check, className, ...props}: ButtonArrowProps) {
     return (
         <Icon
-            className={cn('size-4 ms-auto text-primary', className)}
+            className={cn('ms-auto size-4 text-primary', className)}
             data-check="true"
             data-slot="command-check"
             {...props}

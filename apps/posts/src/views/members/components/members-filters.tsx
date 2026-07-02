@@ -119,7 +119,7 @@ const MembersFilters: React.FC<MembersFiltersProps> = ({
     const showIconOnlyTrigger = iconOnly && !hasFilters;
     const addFilterButtonClassName = cn(
         'bg-white dark:bg-background',
-        showIconOnlyTrigger && 'min-w-[34px] gap-0 px-2 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base !px-3'
+        showIconOnlyTrigger && 'min-w-[34px] gap-0 !px-3 text-[0px] lg:min-w-0 lg:gap-1.5 lg:px-3 lg:text-base'
     );
 
     const clearAndSaveButtons = hasFilters ? (

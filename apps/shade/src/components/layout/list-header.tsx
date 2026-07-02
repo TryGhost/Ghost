@@ -17,7 +17,7 @@ type ListHeaderProps = PropsWithChildrenAndClassName & {
 function ListHeaderLeft({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Stack
-            className={cn('min-w-0 h-full min-h-(--control-height)', className)}
+            className={cn('h-full min-h-(--control-height) min-w-0', className)}
             data-list-header='list-header-left'
             gap='xs'
             justify='center'
@@ -44,7 +44,7 @@ function ListHeaderTitle({className, children}: PropsWithChildrenAndClassName) {
     return (
         <H1
             className={cn(
-                'text-2xl leading-[1.2em] sidebar:text-[2.5rem] whitespace-nowrap',
+                'text-2xl leading-[1.2em] whitespace-nowrap sidebar:text-[2.5rem]',
                 className
             )}
             data-list-header='list-header-title'
@@ -72,7 +72,7 @@ function ListHeaderCount({className, children}: PropsWithChildrenAndClassName) {
     return (
         <Text
             as='span'
-            className={cn('ml-2 lg:ml-3 text-[1.9rem] sidebar:text-[2.2rem] tabular-nums', className)}
+            className={cn('ml-2 text-[1.9rem] tabular-nums sidebar:text-[2.2rem] lg:ml-3', className)}
             data-list-header='list-header-count'
             tone='secondary'
             weight='regular'

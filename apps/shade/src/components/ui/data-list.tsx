@@ -33,7 +33,7 @@ const DataListHeader = React.forwardRef<HTMLDivElement, DataListHeaderProps>(({c
     return (
         <div
             ref={ref}
-            className={cn('flex uppercase items-center justify-between gap-2 border-b p-2 text-xs tracking-wide font-medium text-muted-foreground', className)}
+            className={cn('flex items-center justify-between gap-2 border-b p-2 text-xs font-medium tracking-wide text-muted-foreground uppercase', className)}
             {...props}
         >
             {children}
@@ -96,7 +96,7 @@ const DataListRow = React.forwardRef<HTMLDivElement, DataListRowProps>(({childre
     return (
         <div
             ref={ref}
-            className={cn('group/row py-0.5 relative flex items-center justify-between gap-3 before:absolute before:z-0 before:-inset-x-0.5 before:inset-y-0.5 before:bg-muted/60 before:opacity-0 hover:before:opacity-100 before:rounded-[6px]', className)}
+            className={cn('group/row relative flex items-center justify-between gap-3 py-0.5 before:absolute before:-inset-x-0.5 before:inset-y-0.5 before:z-0 before:rounded-[6px] before:bg-muted/60 before:opacity-0 hover:before:opacity-100', className)}
             {...props}
         >
             {children}
@@ -117,7 +117,7 @@ const DataListBar = React.forwardRef<HTMLDivElement, DataListBarProps>(({childre
     return (
         <div
             ref={ref}
-            className={cn('absolute inset-x-0 inset-y-1 z-0 origin-left rounded-[4px] bg-state-info/10 group-hover/row:bg-state-info/25 dark:bg-state-info/20 dark:group-hover/row:bg-state-info/35 transition-all', className)}
+            className={cn('absolute inset-x-0 inset-y-1 z-0 origin-left rounded-[4px] bg-state-info/10 transition-all group-hover/row:bg-state-info/25 dark:bg-state-info/20 dark:group-hover/row:bg-state-info/35', className)}
             {...props}
         >
             {children}
@@ -138,7 +138,7 @@ const DataListItemContent = React.forwardRef<HTMLDivElement, DataListItemContent
     return (
         <div
             ref={ref}
-            className={cn('text-sm p-2 font-medium relative z-10 flex min-w-0 max-w-[calc(100%-32px)] items-center transition-[max-width] duration-300 ease-in-out group-hover/datalist:max-w-[calc(100%-100px)]', className)}
+            className={cn('relative z-10 flex max-w-[calc(100%-32px)] min-w-0 items-center p-2 text-sm font-medium transition-[max-width] duration-300 ease-in-out group-hover/datalist:max-w-[calc(100%-100px)]', className)}
             {...props}
         >
             {children}
@@ -190,7 +190,7 @@ const DataListItemValueAbs = React.forwardRef<HTMLDivElement, DataListItemValueA
     return (
         <div
             ref={ref}
-            className={cn('z-10 px-2 text-sm font-mono', className)}
+            className={cn('z-10 px-2 font-mono text-sm', className)}
             data-type='value-abs'
             {...props}
         >
@@ -212,7 +212,7 @@ const DataListItemValuePerc = React.forwardRef<HTMLDivElement, DataListItemValue
     return (
         <div
             ref={ref}
-            className={cn('px-3 text-sm font-mono text-muted-foreground', className)}
+            className={cn('px-3 font-mono text-sm text-muted-foreground', className)}
             data-type='value-perc'
             {...props}
         >

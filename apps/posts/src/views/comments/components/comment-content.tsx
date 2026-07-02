@@ -48,11 +48,11 @@ function CommentContent({item}: {item: Comment}) {
                     dangerouslySetInnerHTML={{__html: item.html || ''}}
                     ref={contentRef}
                     className={cn(
-                        'prose flex-1 text-base max-w-[80ch] balance leading-[1.5em] [&_*]:leading-[1.5em] [&_*]:text-base [&_*]:font-normal [&_blockquote]:border-l-[3px] [&_blockquote]:border-foreground [&_blockquote]:p-0 [&_blockquote]:pl-3 [&_blockquote_p]:mt-0 [&_a]:underline',
+                        'prose balance max-w-[80ch] flex-1 text-base leading-[1.5em] [&_*]:text-base [&_*]:leading-[1.5em] [&_*]:font-normal [&_a]:underline [&_blockquote]:border-l-[3px] [&_blockquote]:border-foreground [&_blockquote]:p-0 [&_blockquote]:pl-3 [&_blockquote_p]:mt-0',
                         (isExpanded ?
                             '-mb-1 [&_p]:mb-[0.85em]'
                             :
-                            'line-clamp-2 [&_p]:m-0 [&_blockquote+p]:mt-1 mb-1')
+                            'mb-1 line-clamp-2 [&_blockquote+p]:mt-1 [&_p]:m-0')
                     )}
                 />
                 {isClamped && (

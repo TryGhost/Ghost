@@ -111,7 +111,7 @@ const RelativeDateFilter: React.FC<RelativeDateFilterProps> = ({
                         <div className="flex w-full items-center gap-2" data-slot="filters-input-wrapper">
                             <input
                                 aria-label="Relative date amount"
-                                className={cn(inputClass, 'min-w-[1ch] tabular-nums [field-sizing:content] [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none')}
+                                className={cn(inputClass, '[field-sizing:content] min-w-[1ch] [appearance:textfield] tabular-nums [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none')}
                                 data-slot="filters-input"
                                 min={1}
                                 type="number"
