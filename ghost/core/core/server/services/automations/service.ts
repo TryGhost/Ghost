@@ -32,6 +32,25 @@ type AutomationsServiceOptions = {
     schedulerAdapter: SchedulerAdapter;
 };
 
+class LatestScheduler {
+    #scheduled: undefined | {
+        timeout: ReturnType<typeof setTimeout>;
+        at: Date;
+    };
+    #fn: () => unknown;
+
+    constructor(fn: () => unknown) {
+        this.#fn = fn;
+    }
+
+    scheduleAt(date: Readonly<Date>): void {
+        if (this.#scheduled && this.#scheduled?.at < date) {
+            return;
+        }
+        // TODO: Schedule the function, possibly for far in the future.
+    }
+}
+
 export class AutomationsService {
     #enqueuePollAt: undefined | ((date: Readonly<Date>) => Promise<void>);
 
@@ -43,6 +62,8 @@ export class AutomationsService {
 
         const enqueuePollNow = () => domainEvents.dispatch(StartAutomationsPollEvent.create());
 
+        const latestScheduler = new LatestScheduler(enqueuePollNow);
+
         const enqueuePollAt = async (date: Readonly<Date>): Promise<void> => {
             const isRequestedDateInTheFuture = new Date() < date;
             if (!isRequestedDateInTheFuture) {
@@ -52,6 +73,8 @@ export class AutomationsService {
                 enqueuePollNow();
                 return;
             }
+
+            latestScheduler.scheduleAt(date);
 
             try {
                 const key = await internalKeys.get('ghost-scheduler');

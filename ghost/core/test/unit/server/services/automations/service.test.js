@@ -86,6 +86,22 @@ describe('automations service', function () {
             sinon.assert.notCalled(schedulerAdapter.schedule);
         });
 
+        it('schedules an in-memory timer if date is in the future', async function () {
+            // TODO: Use Sinon's fake clock.
+        });
+
+        it('can schedule a timer for far in the future, avoiding setTimeout limits', async function () {
+            // TODO: Use Sinon's fake clock. Test a 30-day timeout, which is longer than what setTimeout supports.
+        });
+
+        it('cancels future in-memory timers if the date is sooner than the previous date', async function () {
+            // TODO: Similar to the test above.
+        });
+
+        it('doesn\'t cancel future in-memory timers if the data is later than a previous date', async function () {
+            // TODO: Similar to the test above.
+        });
+
         it('reaches out to the scheduler for dates in the future', async function () {
             const future = new Date(Date.now() + 10_000);
             await automations.__testOnlyEnqueuePollAt(future);
