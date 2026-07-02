@@ -1,6 +1,6 @@
 const MAX_TIMEOUT_MS = 2 ** 31 - 1;
 
-export class EarliestScheduler {
+export class SoonestTimer {
     #scheduled: undefined | {
         timeout: ReturnType<typeof setTimeout>;
         at: Date;
