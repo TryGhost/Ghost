@@ -1,0 +1,9 @@
+# Swaps the Tinybird service to the distilled slim image (~576MB vs ~1.85GB
+# upstream) to cut pull time in E2E CI. Layered on top of compose.dev.analytics.yaml
+# by infra-up.sh when GHOST_E2E_TINYBIRD_SLIM=true. Local dev is unaffected —
+# compose.dev.analytics.yaml keeps the upstream image.
+#
+# See docker/tinybird-local-slim/ for how the image is built and published.
+services:
+  tinybird-local:
+    image: ${GHOST_E2E_TINYBIRD_SLIM_IMAGE:-ghcr.io/tryghost/tinybird-local-slim:latest}

@@ -1453,6 +1453,10 @@ jobs:
           GHOST_E2E_IMAGE: ${{ steps.load.outputs.image-tag }}
           GHOST_E2E_SKIP_IMAGE_BUILD: 'true'
           GHOST_E2E_ANALYTICS: ${{ matrix.analytics }}
+          # Flip to 'true' once ghcr.io/tryghost/tinybird-local-slim is published
+          # (publish-tinybird-local-slim.yml runs on merge to main) to pull the
+          # ~576MB slim image instead of the ~1.85GB upstream one.
+          GHOST_E2E_TINYBIRD_SLIM: 'false'
         run: bash ./e2e/scripts/prepare-ci-e2e-job.sh
 
       - name: Run e2e tests in Playwright container

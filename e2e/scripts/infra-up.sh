@@ -11,6 +11,7 @@ MODE="$(resolve_e2e_mode)"
 export GHOST_E2E_MODE="$MODE"
 ANALYTICS_ENABLED="${GHOST_E2E_ANALYTICS:-true}"
 MYSQL_TMPFS_ENABLED="${GHOST_E2E_MYSQL_TMPFS:-true}"
+TINYBIRD_SLIM_ENABLED="${GHOST_E2E_TINYBIRD_SLIM:-false}"
 
 if [[ "$MODE" != "build" ]]; then
   DEV_COMPOSE_PROJECT="${COMPOSE_PROJECT_NAME:-ghost-dev}"
@@ -33,6 +34,12 @@ fi
 if [[ "$ANALYTICS_ENABLED" == "true" ]]; then
   compose_files+=(-f compose.dev.analytics.yaml)
   services+=(tinybird-local analytics)
+
+  # Opt-in override to the distilled slim Tinybird image for faster pulls in CI.
+  # Must be layered after compose.dev.analytics.yaml to override its image.
+  if [[ "$TINYBIRD_SLIM_ENABLED" == "true" ]]; then
+    compose_files+=(-f e2e/compose.e2e.tinybird-slim.yaml)
+  fi
 fi
 
 docker compose "${compose_files[@]}" up -d --wait "${services[@]}"

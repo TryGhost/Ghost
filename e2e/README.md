@@ -73,6 +73,11 @@ snapshot restore cycles stay fast and isolated from local development data.
 Set `GHOST_E2E_MYSQL_TMPFS=false` to use the normal Docker volume instead, or
 `GHOST_E2E_MYSQL_TMPFS_SIZE=4g` to adjust the tmpfs size.
 
+Set `GHOST_E2E_TINYBIRD_SLIM=true` to swap the Tinybird service for the distilled
+slim image (`ghcr.io/tryghost/tinybird-local-slim`, ~576MB vs ~1.85GB upstream)
+for faster pulls. Override the image/tag with `GHOST_E2E_TINYBIRD_SLIM_IMAGE`.
+Local dev (`compose.dev.analytics.yaml`) always uses the upstream image.
+
 For a CI-like local preflight (pulls Playwright + gateway images and starts infra), run:
 
 ```bash
