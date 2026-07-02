@@ -1,5 +1,8 @@
 routes:
 
+# Optional: rename the pagination URL segment site-wide (default: page)
+# pagination: page
+
 collections:
   /:
     permalink: /{slug}/

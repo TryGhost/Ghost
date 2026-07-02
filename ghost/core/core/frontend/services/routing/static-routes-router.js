@@ -1,6 +1,7 @@
 const debug = require('@tryghost/debug')('routing:static-routes-router');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
+const getPageParam = require('./page-param-config');
 const RSSRouter = require('./rss-router');
 const controllers = require('./controllers');
 const middleware = require('./middleware');
@@ -59,8 +60,9 @@ class StaticRoutesRouter extends ParentRouter {
         this.mountRoute(this.route.value, controllers[this.controller]);
 
         // REGISTER: pagination
-        this.router().param('page', middleware.pageParam);
-        this.mountRoute(urlUtils.urlJoin(this.route.value, 'page', ':page(\\d+)'), controllers[this.controller]);
+        const pageParam = getPageParam();
+        this.router().param(pageParam, middleware.pageParam);
+        this.mountRoute(urlUtils.urlJoin(this.route.value, pageParam, `:${pageParam}(\\d+)`), controllers[this.controller]);
 
         this.routerCreated(this);
     }

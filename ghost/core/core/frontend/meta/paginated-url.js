@@ -1,5 +1,6 @@
 const _ = require('lodash');
 const urlUtils = require('../../shared/url-utils');
+const getPageParam = require('../services/routing/page-param-config');
 
 function getPaginatedUrl(page, data, absolute) {
     // If we don't have enough information, return null right away
@@ -7,12 +8,12 @@ function getPaginatedUrl(page, data, absolute) {
         return null;
     }
 
-    // routeKeywords.page: 'page'
-    const pagePath = urlUtils.urlJoin('/page/');
+    const pageParam = getPageParam();
+
+    const pagePath = urlUtils.urlJoin('/' + pageParam + '/');
 
     // Try to match the base url, as whatever precedes the pagePath
-    // routeKeywords.page: 'page'
-    const baseUrlPattern = new RegExp('(.+)?(/page/\\d+/)');
+    const baseUrlPattern = new RegExp('(.+)?(/' + pageParam + '/\\d+/)');
 
     const baseUrlMatch = data.relativeUrl.match(baseUrlPattern);
 

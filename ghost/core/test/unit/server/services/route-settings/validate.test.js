@@ -769,4 +769,38 @@ describe('UNIT: services/settings/validate', function () {
             throw new Error('should fail');
         });
     });
+
+    describe('pagination', function () {
+        it('omits pagination when the key is absent', function () {
+            const object = validate({});
+
+            assert.equal(Object.prototype.hasOwnProperty.call(object, 'pagination'), false);
+        });
+
+        it('accepts a valid custom segment and trims it', function () {
+            const object = validate({pagination: '  seite  '});
+
+            assert.equal(object.pagination, 'seite');
+        });
+
+        it('throws for a non-string value', function () {
+            assert.throws(() => validate({pagination: 5}), errors.ValidationError);
+        });
+
+        it('throws for an empty value', function () {
+            assert.throws(() => validate({pagination: '   '}), errors.ValidationError);
+        });
+
+        it('throws for unsafe url characters', function () {
+            ['foo/bar', 'foo?bar', 'foo#bar', 'foo:bar', 'foo bar'].forEach((value) => {
+                assert.throws(() => validate({pagination: value}), errors.ValidationError, `expected throw for "${value}"`);
+            });
+        });
+
+        it('throws for reserved route segments', function () {
+            ['tag', 'author', 'rss', 'amp', 'TAG'].forEach((value) => {
+                assert.throws(() => validate({pagination: value}), errors.ValidationError, `expected throw for "${value}"`);
+            });
+        });
+    });
 });
