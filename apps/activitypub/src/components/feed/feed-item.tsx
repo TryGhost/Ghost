@@ -2,7 +2,7 @@ import FeedItemMenu from './feed-item-menu';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActivityPubAttachment, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Skeleton} from '@tryghost/shade/components';
-import {H4} from '@tryghost/shade/primitives';
+import {H4, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 
@@ -178,6 +178,116 @@ export function renderFeedAttachment(
     }
 }
 
+export function SensitiveMediaOverlay({
+    className = '',
+    isLayered = false,
+    size = 'default',
+    onReveal
+}: {
+    className?: string;
+    isLayered?: boolean;
+    size?: 'default' | 'compact';
+    onReveal: (event: React.MouseEvent) => void;
+}) {
+    return (
+        <div
+            className={clsx(
+                '[container-type:size] flex items-center justify-center overflow-hidden bg-foreground/45 p-[clamp(0.75rem,6cqh,2rem)] text-background backdrop-blur-xl',
+                isLayered ? 'absolute inset-0 rounded-none' : size === 'compact' ? 'relative rounded-xl' : 'relative mt-3 min-h-[300px] w-full rounded-xl',
+                className
+            )}
+            data-testid='sensitive-media-overlay'
+            onClick={(event) => event.stopPropagation()}
+        >
+            <div className='absolute inset-0 bg-foreground/35' />
+            <div className='relative z-10 grid size-full max-w-[520px] grid-rows-[minmax(0,1fr)_auto_minmax(0.5rem,6cqh)_auto_minmax(0.75rem,8cqh)_auto_minmax(0,1fr)] justify-items-center text-center'>
+                <LucideIcon.EyeOff aria-hidden='true' className='row-start-2 size-[clamp(1.5rem,14cqh,2.25rem)]' strokeWidth={2.25} />
+                <div className='row-start-4 flex flex-col items-center gap-1'>
+                    <Text className='text-background' weight='bold'>Sensitive media</Text>
+                    <Text className='leading-tight text-background'>The following may contain sensitive material</Text>
+                </div>
+                <Button
+                    aria-label='Show media'
+                    className='row-start-6 rounded-full bg-background/35 px-8 font-bold text-background shadow-[0_0_0_1px_color-mix(in_oklab,var(--background)_35%,transparent)] hover:bg-background/25 hover:text-background'
+                    size='default'
+                    type='button'
+                    variant='ghost'
+                    onClick={onReveal}
+                >
+                    Show
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+export function SensitiveMediaHideButton({
+    onHide
+}: {
+    onHide: (event: React.MouseEvent) => void;
+}) {
+    return (
+        <Button
+            aria-label='Hide sensitive media'
+            className='absolute top-5 right-5 z-20 rounded-full bg-foreground/80 px-6 font-bold text-background hover:bg-foreground/90 hover:text-background'
+            size='default'
+            type='button'
+            variant='ghost'
+            onClick={onHide}
+        >
+            Hide
+        </Button>
+    );
+}
+
+export function ContentWarningOverlay({
+    className = '',
+    label,
+    size = 'default',
+    onReveal
+}: {
+    className?: string;
+    label: string;
+    size?: 'default' | 'compact';
+    onReveal: (event: React.MouseEvent) => void;
+}) {
+    return (
+        <div
+            className={clsx(
+                '[container-type:size] flex items-center justify-center overflow-hidden bg-foreground/45 p-[clamp(0.75rem,6cqh,2rem)] text-background backdrop-blur-xl',
+                size === 'compact' ? 'relative w-full rounded-xl' : 'relative mt-3 min-h-[300px] w-full rounded-xl',
+                className
+            )}
+            data-testid='content-warning-overlay'
+            onClick={(event) => event.stopPropagation()}
+        >
+            <div className='absolute inset-0 bg-foreground/35' />
+            <div className='relative z-10 grid size-full max-w-[520px] grid-rows-[minmax(0,1fr)_auto_clamp(1.25rem,3.85cqw,1.8rem)_auto_clamp(1.5rem,5.15cqw,2.4rem)_auto_minmax(0,1fr)] justify-items-center text-center'>
+                <LucideIcon.EyeOff aria-hidden='true' className='row-start-2 size-[clamp(1.5rem,4.85cqw,2.25rem)]' strokeWidth={2.25} />
+                <div className='row-start-4 flex flex-col items-center gap-1'>
+                    <Text className='text-background' weight='bold'>Content warning:</Text>
+                    <Text className='leading-tight text-background'>{label}</Text>
+                </div>
+                <Button
+                    aria-label='Show post'
+                    className='row-start-6 rounded-full bg-background/35 px-8 font-bold text-background shadow-[0_0_0_1px_color-mix(in_oklab,var(--background)_35%,transparent)] hover:bg-background/25 hover:text-background'
+                    size='default'
+                    type='button'
+                    variant='ghost'
+                    onClick={onReveal}
+                >
+                    Show
+                </Button>
+            </div>
+        </div>
+    );
+}
+
+type SensitiveObjectProperties = ObjectProperties & {
+    sensitive?: boolean;
+    contentWarning?: string | null;
+};
+
 function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | undefined) {
     const attachment = getAttachment(object);
 
@@ -254,6 +364,7 @@ interface FeedItemProps {
     onClick?: () => void;
     onDelete?: () => void;
     showStats?: boolean;
+    showSensitiveMediaByDefault?: boolean;
 }
 
 const noop = () => {};
@@ -279,19 +390,29 @@ const FeedItem: React.FC<FeedItemProps> = ({
     isChainParent = false,
     onClick: onClickHandler = noop,
     onDelete = noop,
-    showStats = true
+    showStats = true,
+    showSensitiveMediaByDefault = false
 }) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
     const [, setIsCopied] = useState(false);
     const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+    const [isSensitiveMediaRevealed, setIsSensitiveMediaRevealed] = useState(false);
+    const [isSensitiveMediaManuallyHidden, setIsSensitiveMediaManuallyHidden] = useState(false);
+    const [isContentWarningRevealed, setIsContentWarningRevealed] = useState(false);
 
     const contentRef = useRef<HTMLDivElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
 
     const deleteMutation = useDeleteMutationForUser('index');
     const navigate = useNavigateWithBasePath();
+
+    useEffect(() => {
+        setIsSensitiveMediaRevealed(false);
+        setIsSensitiveMediaManuallyHidden(false);
+        setIsContentWarningRevealed(false);
+    }, [object?.id]);
 
     const followMutation = useFollowMutationForUser(
         'index',
@@ -379,6 +500,92 @@ const FeedItem: React.FC<FeedItemProps> = ({
 
     const handleImageError = (url: string) => {
         setBrokenImages(prev => new Set(prev).add(url));
+    };
+
+    const sensitiveObject = object as SensitiveObjectProperties;
+    const hasSensitiveMedia = sensitiveObject.sensitive === true && getAttachment(object) !== null;
+    const contentWarning = sensitiveObject.contentWarning?.trim() || null;
+    const hasContentWarning = contentWarning !== null;
+    const shouldHideContentWarning = contentWarning !== null && !isContentWarningRevealed;
+    const shouldHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && (isSensitiveMediaManuallyHidden || !isSensitiveMediaRevealed);
+    const canHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && !shouldHideSensitiveMedia;
+
+    const handleRevealSensitiveMedia = (event: React.MouseEvent) => {
+        event.stopPropagation();
+        setIsSensitiveMediaManuallyHidden(false);
+        setIsSensitiveMediaRevealed(true);
+    };
+
+    const handleHideSensitiveMedia = (event: React.MouseEvent) => {
+        event.stopPropagation();
+        setIsSensitiveMediaManuallyHidden(true);
+        setIsSensitiveMediaRevealed(false);
+    };
+
+    const handleRevealContentWarning = (event: React.MouseEvent) => {
+        event.stopPropagation();
+        setIsContentWarningRevealed(true);
+    };
+
+    const renderFeedMedia = (mediaClickHandler?: (url: string) => void) => {
+        if (shouldHideSensitiveMedia) {
+            const media = renderFeedAttachment(object, undefined, brokenImages, handleImageError);
+
+            if (!media) {
+                return <SensitiveMediaOverlay onReveal={handleRevealSensitiveMedia} />;
+            }
+
+            const mediaWrapperClassName = clsx(
+                'relative mt-3 overflow-hidden rounded-xl [&>.attachment-gallery]:mt-0 [&>img]:mt-0 [&>img]:block',
+                Array.isArray(getAttachment(object)) ? 'w-full' : 'w-fit max-w-full'
+            );
+
+            return (
+                <div className={mediaWrapperClassName}>
+                    {media}
+                    <SensitiveMediaOverlay
+                        isLayered
+                        onReveal={handleRevealSensitiveMedia}
+                    />
+                </div>
+            );
+        }
+
+        const media = renderFeedAttachment(object, mediaClickHandler, brokenImages, handleImageError);
+
+        if (!media) {
+            return null;
+        }
+
+        if (canHideSensitiveMedia) {
+            const mediaWrapperClassName = clsx(
+                'relative mt-3 [&>.attachment-gallery]:mt-0 [&>img]:mt-0 [&>img]:block',
+                Array.isArray(getAttachment(object)) ? 'w-full' : 'w-fit max-w-full'
+            );
+
+            return (
+                <div className={mediaWrapperClassName}>
+                    {media}
+                    <SensitiveMediaHideButton onHide={handleHideSensitiveMedia} />
+                </div>
+            );
+        }
+
+        return media;
+    };
+
+    const renderContentWarningOverlay = () => {
+        if (!contentWarning) {
+            return null;
+        }
+
+        return (
+            <ContentWarningOverlay
+                label={contentWarning}
+                size={layout === 'inbox' || layout === 'reply' ? 'compact' : 'default'}
+                onReveal={handleRevealContentWarning}
+            />
+        );
     };
 
     let author = actor;
@@ -487,37 +694,42 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             <div className='relative col-start-2 col-end-3 w-full gap-4 pl-[52px]'>
                                 <div className='flex flex-col'>
                                     <div className=''>
-                                        {(object.type === 'Article') ? <div className='rounded-md border border-gray-200 transition-colors hover:bg-gray-100 dark:border-gray-950 dark:hover:bg-gray-950'>
-                                            {renderFeedAttachment(object, onClick, brokenImages, handleImageError)}
-                                            <div className='p-5'>
-                                                <div className='break-anywhere mb-1 line-clamp-2 text-lg leading-tight font-semibold tracking-tight text-pretty' data-test-activity-heading>{object.name}</div>
-                                                <div className='break-anywhere line-clamp-3 leading-[1.4em]'>{object.preview?.content}</div>
-                                            </div>
-                                        </div> :
-                                            <div className='relative'>
-                                                <div className='ap-note-content break-anywhere line-clamp-[10] leading-[1.4285714286] tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'>
-                                                    {!isLoading ?
-                                                        <div dangerouslySetInnerHTML={{
-                                                            __html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')
-                                                        }} ref={contentRef}
-                                                        onClick={(e) => {
-                                                            const target = e.target as HTMLElement;
-                                                            if (
-                                                                target.tagName === 'A' ||
-                                                                target.closest('a')
-                                                            ) {
-                                                                e.stopPropagation();
-                                                            }
-                                                        }}
-                                                        />
-                                                        :
-                                                        <Skeleton count={2} />
-                                                    }
+                                        {(object.type === 'Article') ? (
+                                            shouldHideContentWarning ? renderContentWarningOverlay() :
+                                                <div className='rounded-md border border-gray-200 transition-colors hover:bg-gray-100 dark:border-gray-950 dark:hover:bg-gray-950'>
+                                                    {renderFeedMedia(onClick)}
+                                                    <div className='p-5'>
+                                                        <div className='break-anywhere mb-1 line-clamp-2 text-lg leading-tight font-semibold tracking-tight text-pretty' data-test-activity-heading>{object.name}</div>
+                                                        <div className='break-anywhere line-clamp-3 leading-[1.4em]'>{object.preview?.content}</div>
+                                                    </div>
                                                 </div>
-                                                {isTruncated && (
-                                                    <button className='mt-1 text-blue-600' type='button'>Show more</button>
-                                                )}
-                                                {renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
+                                        ) :
+                                            <div className='relative'>
+                                                {shouldHideContentWarning ? renderContentWarningOverlay() : <>
+                                                    <div className='ap-note-content break-anywhere line-clamp-[10] leading-[1.4285714286] tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'>
+                                                        {!isLoading ?
+                                                            <div dangerouslySetInnerHTML={{
+                                                                __html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')
+                                                            }} ref={contentRef}
+                                                            onClick={(e) => {
+                                                                const target = e.target as HTMLElement;
+                                                                if (
+                                                                    target.tagName === 'A' ||
+                                                                    target.closest('a')
+                                                                ) {
+                                                                    e.stopPropagation();
+                                                                }
+                                                            }}
+                                                            />
+                                                            :
+                                                            <Skeleton count={2} />
+                                                        }
+                                                    </div>
+                                                    {isTruncated && (
+                                                        <button className='mt-1 text-blue-600' type='button'>Show more</button>
+                                                    )}
+                                                    {renderFeedMedia(openLightbox)}
+                                                </>}
                                             </div>
                                         }
                                     </div>
@@ -577,9 +789,11 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </>}
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
-                                        {object.name && <H4 className='break-anywhere mb-1 leading-tight' data-test-activity-heading>{object.name}</H4>}
-                                        <div dangerouslySetInnerHTML={({__html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')})} ref={contentRef} className='ap-note-content-large break-anywhere text-[1.6rem] tracking-[-0.011em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'></div>
-                                        {renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
+                                        {shouldHideContentWarning ? renderContentWarningOverlay() : <>
+                                            {object.name && <H4 className='break-anywhere mb-1 leading-tight' data-test-activity-heading>{object.name}</H4>}
+                                            <div dangerouslySetInnerHTML={({__html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')})} ref={contentRef} className='ap-note-content-large break-anywhere text-[1.6rem] tracking-[-0.011em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'></div>
+                                            {renderFeedMedia(openLightbox)}
+                                        </>}
                                         <div className='space-between mt-3 ml-[-8px] flex'>
                                             {showStats && <FeedItemStats
                                                 actor={author}
@@ -653,15 +867,17 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             </div>
                             <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4 pl-[52px]`}>
                                 <div className='flex flex-col items-start'>
-                                    {(object.type === 'Article') && renderFeedAttachment(object, onClick, brokenImages, handleImageError)}
-                                    {object.name && <H4 className='break-anywhere mt-2.5 leading-tight text-pretty' data-test-activity-heading>{object.name}</H4>}
-                                    {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')})} ref={contentRef} className='ap-note-content break-anywhere tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'></div>}
-                                    {(object.type === 'Note') && renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
-                                    {(object.type === 'Article') && <Button
-                                        className='mt-3 w-full'
-                                        id='read-more'
-                                        variant='secondary'
-                                    >Read more</Button>}
+                                    {shouldHideContentWarning ? renderContentWarningOverlay() : <>
+                                        {(object.type === 'Article') && renderFeedMedia(onClick)}
+                                        {object.name && <H4 className='break-anywhere mt-2.5 leading-tight text-pretty' data-test-activity-heading>{object.name}</H4>}
+                                        {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')})} ref={contentRef} className='ap-note-content break-anywhere tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'></div>}
+                                        {(object.type === 'Note') && renderFeedMedia(openLightbox)}
+                                        {(object.type === 'Article') && <Button
+                                            className='mt-3 w-full'
+                                            id='read-more'
+                                            variant='secondary'
+                                        >Read more</Button>}
+                                    </>}
                                     {!isCompact && <div className='space-between mt-2 ml-[-8px] flex'>
                                         {showStats && <FeedItemStats
                                             actor={author}
@@ -724,25 +940,27 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             </div>
                             <div className='flex'>
                                 <div className='flex min-h-[73px] w-full min-w-0 flex-col items-start justify-start gap-1'>
-                                    <H4 className='break-anywhere line-clamp-2 w-full max-w-[600px] leading-tight text-pretty' data-test-activity-heading>
-                                        {isLoading ? <Skeleton className='w-full max-w-96' /> : (object.name ? object.name : (
-                                            <span dangerouslySetInnerHTML={{
-                                                __html: sanitizeHtml(stripHtml(object.content || ''))
-                                            }}></span>
-                                        ))}
-                                    </H4>
-                                    <div className='ap-note-content break-anywhere line-clamp-2 w-full max-w-[600px] text-base leading-normal text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'>
-                                        {!isLoading ?
-                                            <div dangerouslySetInnerHTML={{
-                                                __html: sanitizeHtml(stripHtml(object.preview?.content ?? object.content ?? ''))
-                                            }} />
-                                            :
-                                            <Skeleton count={2} />
-                                        }
-                                    </div>
-                                    <span className='mt-1 shrink-0 text-sm leading-none whitespace-nowrap text-gray-600'>
-                                        {!isLoading ? (object.content && `${getReadingTime(object.content)}`) : <Skeleton className='w-16' />}
-                                    </span>
+                                    {shouldHideContentWarning ? renderContentWarningOverlay() : <>
+                                        <H4 className='break-anywhere line-clamp-2 w-full max-w-[600px] leading-tight text-pretty' data-test-activity-heading>
+                                            {isLoading ? <Skeleton className='w-full max-w-96' /> : (object.name ? object.name : (
+                                                <span dangerouslySetInnerHTML={{
+                                                    __html: sanitizeHtml(stripHtml(object.content || ''))
+                                                }}></span>
+                                            ))}
+                                        </H4>
+                                        <div className='ap-note-content break-anywhere line-clamp-2 w-full max-w-[600px] text-base leading-normal text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'>
+                                            {!isLoading ?
+                                                <div dangerouslySetInnerHTML={{
+                                                    __html: sanitizeHtml(stripHtml(object.preview?.content ?? object.content ?? ''))
+                                                }} />
+                                                :
+                                                <Skeleton count={2} />
+                                            }
+                                        </div>
+                                        <span className='mt-1 shrink-0 text-sm leading-none whitespace-nowrap text-gray-600'>
+                                            {!isLoading ? (object.content && `${getReadingTime(object.content)}`) : <Skeleton className='w-16' />}
+                                        </span>
+                                    </>}
                                 </div>
                                 <div className='invisible absolute top-8 right-3 z-[49] flex -translate-y-1/2 rounded-lg bg-white p-1 shadow-md group-hover/article:visible dark:bg-black'>
                                     {showStats && <FeedItemStats
@@ -768,7 +986,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </div>
                             </div>
                         </div>
-                        {renderInboxAttachment(object, isLoading)}
+                        {shouldHideContentWarning ? null : shouldHideSensitiveMedia ? (
+                            <SensitiveMediaOverlay
+                                className='ml-8 hidden h-[91px] w-[121px] shrink-0 items-center justify-center p-3 text-sm md:ml-9 @md/inbox-item:flex [&_button]:mt-1'
+                                size='compact'
+                                onReveal={handleRevealSensitiveMedia}
+                            />
+                        ) : renderInboxAttachment(object, isLoading)}
                     </div>
                 )}
             </>

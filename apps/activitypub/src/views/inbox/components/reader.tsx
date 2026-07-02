@@ -5,13 +5,14 @@ import getHandle from '../../../utils/get-handle';
 import {LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 
 import {renderTimestamp} from '../../../utils/render-timestamp';
+import {usePreferencesForUser} from '@hooks/use-activity-pub-queries';
 import {useReplyChainData} from '@hooks/use-reply-chain-data';
 
 import APAvatar from '@src/components/global/ap-avatar';
 import APReplyBox from '@src/components/global/ap-reply-box';
 import BackButton from '@src/components/global/back-button';
 import DeletedFeedItem from '@src/components/feed/deleted-feed-item';
-import FeedItem from '@src/components/feed/feed-item';
+import FeedItem, {ContentWarningOverlay, SensitiveMediaHideButton, SensitiveMediaOverlay, getAttachment} from '@src/components/feed/feed-item';
 import FeedItemStats from '@src/components/feed/feed-item-stats';
 import FollowButton from '@src/components/global/follow-button';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
@@ -19,6 +20,7 @@ import TableOfContents, {TOCItem} from '@src/components/feed/table-of-contents';
 import articleBodyStyles from '@src/components/article-body-styles';
 import getReadingTime from '../../../utils/get-reading-time';
 import {Activity} from '@src/api/activitypub';
+import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {cardsCSS, cardsJS} from '@src/utils/cards-assets';
 import {enforceVideoCardInlinePlayback, escapeHtml, isSafeUrl, openLinksInNewTab} from '@src/utils/content-formatters';
 import {handleProfileClick} from '@src/utils/handle-profile-click';
@@ -40,6 +42,7 @@ const ArticleBody: React.FC<{
         profile_image: string;
     }>;
     html: string;
+    hideMedia?: boolean;
     backgroundColor: ColorOption;
     fontSize: FontSize;
     fontStyle: string;
@@ -54,6 +57,7 @@ const ArticleBody: React.FC<{
     excerpt,
     authors,
     html,
+    hideMedia = false,
     backgroundColor,
     fontSize,
     fontStyle,
@@ -65,6 +69,8 @@ const ArticleBody: React.FC<{
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [iframeHeight, setIframeHeight] = useState('0px');
+    const hideMediaRef = useRef(hideMedia);
+    hideMediaRef.current = hideMedia;
     const darkMode = (document.documentElement.classList.contains('dark') && backgroundColor === 'SYSTEM') || backgroundColor === 'DARK';
 
     const cssContent = articleBodyStyles();
@@ -73,6 +79,21 @@ const ArticleBody: React.FC<{
         const transformedHtml = shouldEnforceVideoCardInlinePlayback ? enforceVideoCardInlinePlayback(html) : html;
         return openLinksInNewTab(transformedHtml);
     }, [html, shouldEnforceVideoCardInlinePlayback]);
+
+    const updateSensitiveMediaVisibility = useCallback(() => {
+        const iframe = iframeRef.current;
+        const iframeDocument = iframe?.contentDocument;
+        if (!iframeDocument) {
+            return;
+        }
+
+        iframeDocument.documentElement.classList.toggle('gh-sensitive-media-hidden', hideMediaRef.current);
+
+        const iframeWindow = iframe.contentWindow as IframeWindow | null;
+        if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
+            iframeWindow.resizeIframe();
+        }
+    }, []);
 
     const htmlContent = `
         <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
@@ -89,6 +110,10 @@ const ArticleBody: React.FC<{
                 }
                 .has-sepia-bg {
                     --background-color: #FCF8F1;
+                }
+                .gh-sensitive-media-hidden .gh-article-image,
+                .gh-sensitive-media-hidden .gh-content :is(audio, embed, iframe, img, object, picture, video) {
+                    display: none !important;
                 }
             </style>
             <style>
@@ -221,14 +246,18 @@ const ArticleBody: React.FC<{
         </html>
     `;
 
+    const getIframeSource = useCallback(() => {
+        if (!hideMediaRef.current) {
+            return htmlContent;
+        }
+
+        return htmlContent.replace('<html class="', '<html class="gh-sensitive-media-hidden ');
+    }, [htmlContent]);
+
     useEffect(() => {
         const iframe = iframeRef.current;
         if (!iframe) {
             return;
-        }
-
-        if (!iframe.srcdoc) {
-            iframe.srcdoc = htmlContent;
         }
 
         const handleMessage = (event: MessageEvent) => {
@@ -238,6 +267,7 @@ const ArticleBody: React.FC<{
                 iframe.style.height = newHeight;
 
                 if (event.data.isLoaded) {
+                    updateSensitiveMediaVisibility();
                     setIsLoading(false);
                 }
             }
@@ -269,10 +299,13 @@ const ArticleBody: React.FC<{
             if (iframeWindow) {
                 iframeWindow.addEventListener('keydown', handleIframeKeyDown);
             }
+            updateSensitiveMediaVisibility();
         };
 
         iframe.addEventListener('load', handleIframeLoad);
         window.addEventListener('message', handleMessage);
+        setIsLoading(true);
+        iframe.srcdoc = getIframeSource();
 
         return () => {
             window.removeEventListener('message', handleMessage);
@@ -282,7 +315,11 @@ const ArticleBody: React.FC<{
                 iframeWindow.removeEventListener('keydown', handleIframeKeyDown);
             }
         };
-    }, [htmlContent]);
+    }, [getIframeSource, updateSensitiveMediaVisibility]);
+
+    useEffect(() => {
+        updateSensitiveMediaVisibility();
+    }, [hideMedia, updateSensitiveMediaVisibility]);
 
     // Separate effect for style updates
     useEffect(() => {
@@ -409,6 +446,15 @@ const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-black/[8%] dark:bg-gray-950"></div>
 );
 
+function htmlContainsMedia(html: string): boolean {
+    if (typeof DOMParser === 'undefined') {
+        return /<(audio|embed|iframe|img|object|picture|source|video)\b/i.test(html);
+    }
+
+    const document = new DOMParser().parseFromString(html, 'text/html');
+    return document.querySelector('audio, embed, iframe, img, object, picture, source, video') !== null;
+}
+
 interface ReaderProps {
     postId: string;
     onClose?: () => void;
@@ -439,6 +485,11 @@ export const Reader: React.FC<ReaderProps> = ({
     const [fullyExpandedChains, setFullyExpandedChains] = useState<Set<string>>(new Set());
     const [loadingChains, setLoadingChains] = useState<Set<string>>(new Set());
     const [isLoadingMoreTopLevelReplies, setIsLoadingMoreTopLevelReplies] = useState(false);
+    const [isSensitiveMediaRevealed, setIsSensitiveMediaRevealed] = useState(false);
+    const [isSensitiveMediaManuallyHidden, setIsSensitiveMediaManuallyHidden] = useState(false);
+    const [isContentWarningRevealed, setIsContentWarningRevealed] = useState(false);
+    const {data: preferences} = usePreferencesForUser();
+    const showSensitiveMediaByDefault = preferences?.showSensitiveMedia ?? false;
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -457,7 +508,29 @@ export const Reader: React.FC<ReaderProps> = ({
     const actor = activityData?.actor;
     const authors = activityData?.object?.metadata?.ghostAuthors;
 
+    const sensitiveObject = object as (typeof object & {contentWarning?: string | null; sensitive?: boolean}) | undefined;
     const replyCount = object?.replyCount ?? 0;
+    const contentWarning = typeof sensitiveObject?.contentWarning === 'string' && sensitiveObject.contentWarning.trim() ? sensitiveObject.contentWarning.trim() : null;
+    const hasContentWarning = contentWarning !== null;
+    const shouldHideContentWarning = contentWarning !== null && !isContentWarningRevealed;
+    const rawArticleHtml = object?.content ?? '';
+    const articleImageUrl = typeof object?.image === 'string' ? object.image : object?.image?.url;
+    const articleHtmlHasMedia = useMemo(() => htmlContainsMedia(rawArticleHtml), [rawArticleHtml]);
+    const hasSensitiveMedia = sensitiveObject?.sensitive === true && (
+        !!articleImageUrl ||
+        (object ? getAttachment(object as ObjectProperties) !== null : false) ||
+        articleHtmlHasMedia
+    );
+    const shouldHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && (isSensitiveMediaManuallyHidden || !isSensitiveMediaRevealed);
+    const canHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && !shouldHideSensitiveMedia;
+    const articleHtml = rawArticleHtml;
+    const articleImage = articleImageUrl;
+
+    useEffect(() => {
+        setIsSensitiveMediaRevealed(false);
+        setIsSensitiveMediaManuallyHidden(false);
+        setIsContentWarningRevealed(false);
+    }, [postId]);
 
     useEffect(() => {
         // Only set up infinite scroll if pagination is supported
@@ -862,21 +935,54 @@ export const Reader: React.FC<ReaderProps> = ({
                             {!isLoadingContent && <div className='grow overflow-y-auto'>
                                 <div className={`mx-auto px-6 pt-5 pb-10`} style={{maxWidth: currentMaxWidth}}>
                                     <div className='flex flex-col items-center pb-8' id='object-content'>
-                                        <ArticleBody
-                                            authors={authors}
-                                            backgroundColor={backgroundColor}
-                                            excerpt={object.summary ?? ''}
-                                            fontSize={fontSize}
-                                            fontStyle={fontStyle}
-                                            heading={object.name}
-                                            html={object.content ?? ''}
-                                            image={typeof object.image === 'string' ? object.image : object.image?.url}
-                                            isPopoverOpen={isCustomizerOpen || isTOCOpen}
-                                            postUrl={object?.url || ''}
-                                            onHeadingsExtracted={handleHeadingsExtracted}
-                                            onIframeLoad={handleIframeLoad}
-                                            onLoadingChange={setIsLoading}
-                                        />
+                                        {shouldHideContentWarning && contentWarning ? (
+                                            <ContentWarningOverlay
+                                                className='w-full'
+                                                label={contentWarning}
+                                                onReveal={(event) => {
+                                                    event.stopPropagation();
+                                                    setIsContentWarningRevealed(true);
+                                                }}
+                                            />
+                                        ) : <>
+                                            {shouldHideSensitiveMedia && (
+                                                <SensitiveMediaOverlay
+                                                    className='w-full'
+                                                    onReveal={(event) => {
+                                                        event.stopPropagation();
+                                                        setIsSensitiveMediaManuallyHidden(false);
+                                                        setIsSensitiveMediaRevealed(true);
+                                                    }}
+                                                />
+                                            )}
+                                            <div className='relative w-full'>
+                                                <ArticleBody
+                                                    authors={authors}
+                                                    backgroundColor={backgroundColor}
+                                                    excerpt={object.summary ?? ''}
+                                                    fontSize={fontSize}
+                                                    fontStyle={fontStyle}
+                                                    heading={object.name}
+                                                    hideMedia={shouldHideSensitiveMedia}
+                                                    html={articleHtml}
+                                                    image={articleImage}
+                                                    isPopoverOpen={isCustomizerOpen || isTOCOpen}
+                                                    postUrl={object?.url || ''}
+                                                    onHeadingsExtracted={handleHeadingsExtracted}
+                                                    onIframeLoad={handleIframeLoad}
+                                                    onLoadingChange={setIsLoading}
+                                                />
+                                                {canHideSensitiveMedia && (
+                                                    <SensitiveMediaHideButton
+                                                        onHide={(event) => {
+                                                            event.stopPropagation();
+                                                            setIsSensitiveMediaManuallyHidden(true);
+                                                            setIsSensitiveMediaRevealed(false);
+                                                        }}
+                                                    />
+                                                )}
+                                            </div>
+                                        </>}
                                         <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>
                                             <FeedItemStats
                                                 actor={actor}
@@ -926,6 +1032,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             object={replyGroup.mainReply.object}
                                                             parentId={object.id}
                                                             repostCount={replyGroup.mainReply.object.repostCount ?? 0}
+                                                            showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                             type='Note'
                                                             onClick={() => {
                                                                 const container = modalRef.current;
@@ -951,6 +1058,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 object={replyGroup.chain[0].object}
                                                                 parentId={object.id}
                                                                 repostCount={replyGroup.chain[0].object.repostCount ?? 0}
+                                                                showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                                 type='Note'
                                                                 onClick={() => {
                                                                     const container = modalRef.current;
@@ -982,6 +1090,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                     object={chainItem.object}
                                                                     parentId={object.id}
                                                                     repostCount={chainItem.object.repostCount ?? 0}
+                                                                    showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                                     type='Note'
                                                                     onClick={() => {
                                                                         const container = modalRef.current;
