@@ -66,7 +66,7 @@ processingModes.forEach(({name, batchProcessing}) => {
 
             const emailRecipient = fixtureManager.get('email_recipients', 0);
             assert(emailRecipient.batch_id === emailBatch.id);
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2000, 0, 1);
 
             events = [{
@@ -111,7 +111,7 @@ processingModes.forEach(({name, batchProcessing}) => {
 
             const emailRecipient = fixtureManager.get('email_recipients', 0);
             assert(emailRecipient.batch_id === emailBatch.id);
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2000, 0, 1);
 
             // Reset
@@ -159,7 +159,7 @@ processingModes.forEach(({name, batchProcessing}) => {
 
             const emailRecipient = fixtureManager.get('email_recipients', 0);
             assert(emailRecipient.batch_id === emailBatch.id);
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2000, 0, 1);
 
             events = [{
@@ -207,7 +207,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             const emailRecipient = fixtureManager.get('email_recipients', 0);
             assert(emailRecipient.batch_id === emailBatch.id);
             const memberId = emailRecipient.member_id;
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2000, 0, 1);
 
             events = [{
@@ -303,7 +303,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             const emailRecipient = fixtureManager.get('email_recipients', 4);
             assert(emailRecipient.batch_id === emailBatch.id);
             const memberId = emailRecipient.member_id;
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2000, 0, 1);
 
             events = [{
@@ -397,7 +397,7 @@ processingModes.forEach(({name, batchProcessing}) => {
 
             const emailRecipient = fixtureManager.get('email_recipients', 0);
             assert(emailRecipient.batch_id === emailBatch.id);
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2001, 0, 1);
 
             events = [{
@@ -487,7 +487,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             const emailRecipient = fixtureManager.get('email_recipients', 1);
             assert(emailRecipient.batch_id === emailBatch.id);
             const memberId = emailRecipient.member_id;
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2000, 0, 1);
 
             events = [{
@@ -579,7 +579,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             const emailRecipient = fixtureManager.get('email_recipients', 0);
             assert(emailRecipient.batch_id === emailBatch.id);
             const memberId = emailRecipient.member_id;
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2000, 0, 1);
 
             // Reset
@@ -696,7 +696,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             const emailRecipient = fixtureManager.get('email_recipients', 0);
             assert(emailRecipient.batch_id === emailBatch.id);
             const memberId = emailRecipient.member_id;
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2001, 0, 1);
 
             events = [{
@@ -798,7 +798,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             const emailRecipient = fixtureManager.get('email_recipients', 0);
             assert(emailRecipient.batch_id === emailBatch.id);
             const memberId = emailRecipient.member_id;
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2001, 0, 2);
 
             events = [{
@@ -900,7 +900,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             const emailRecipient = fixtureManager.get('email_recipients', 0);
             assert(emailRecipient.batch_id === emailBatch.id);
             const memberId = emailRecipient.member_id;
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2001, 0, 3);
 
             events = [{
@@ -1002,7 +1002,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             const emailRecipient = fixtureManager.get('email_recipients', 1);
             assert(emailRecipient.batch_id === emailBatch.id);
             const memberId = emailRecipient.member_id;
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2000, 0, 1);
             const eventsURI = '/members/events/?' + encodeURIComponent(
                 `filter=type:-[comment_event,aggregated_click_event]+data.member_id:'${memberId}'`
@@ -1055,7 +1055,7 @@ processingModes.forEach(({name, batchProcessing}) => {
             assert(emailRecipient.batch_id === emailBatch.id);
 
             const memberId = emailRecipient.member_id;
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2000, 0, 1);
 
             // Initialise member with 2 newsletters
@@ -1113,7 +1113,7 @@ processingModes.forEach(({name, batchProcessing}) => {
 
             const emailRecipient = fixtureManager.get('email_recipients', 0);
             assert(emailRecipient.batch_id === emailBatch.id);
-            const providerId = emailBatch.provider_id;
+            const providerId = emailBatch.mailgun_message_id;
             const timestamp = new Date(2000, 0, 1);
 
             events = [{
