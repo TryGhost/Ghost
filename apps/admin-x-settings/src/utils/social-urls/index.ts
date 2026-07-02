@@ -8,3 +8,4 @@ export * from './youtube';
 export * from './tiktok';
 export * from './mastodon';
 export * from './platform-config';
+export * from './platform-validator';
