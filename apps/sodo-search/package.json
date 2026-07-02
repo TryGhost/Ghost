@@ -63,7 +63,7 @@
     "eslint-plugin-react": "catalog:",
     "globals": "catalog:",
     "jsdom": "catalog:",
-    "nock": "14.0.15",
+    "nock": "14.0.16",
     "postcss": "catalog:",
     "postcss-import": "16.1.1",
     "tailwindcss": "catalog:tailwind3",
