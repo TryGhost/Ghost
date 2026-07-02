@@ -292,7 +292,7 @@
     "nodemon": "3.1.14",
     "postcss": "catalog:",
     "postcss-cli": "11.0.1",
-    "qs": "6.15.2",
+    "qs": "6.15.3",
     "sinon": "catalog:",
     "supertest": "catalog:",
     "tmp": "0.2.7",
