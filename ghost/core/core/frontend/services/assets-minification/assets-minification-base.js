@@ -72,7 +72,10 @@ module.exports = class AssetsMinificationBase {
          * @param {import('express').NextFunction} next
          */
         return async function serveMiddleware(req, res, next) {
-            if (!self.ready) {
+            // Wait when assets are not built yet, but also when a build is in
+            // flight (e.g. the ENOENT recovery rebuild) — reading while the
+            // minifier truncates/rewrites the files would serve partial assets
+            if (!self.ready || self.loading) {
                 try {
                     await self.ensureLoaded();
                 } catch (error) {

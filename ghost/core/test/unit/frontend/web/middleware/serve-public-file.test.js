@@ -244,6 +244,50 @@ describe('servePublicFile', function () {
         sinon.assert.calledOnce(loggingStub);
     });
 
+    it('throttles rebuild attempts when the file keeps going missing', async function () {
+        const rebuild = sinon.stub().resolves();
+
+        const middleware = servePublicFile('built', 'public/cards.min.css', 'text/css', 3600, {rebuild});
+        const app = createApp(middleware);
+
+        sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            const err = new Error();
+            err.code = 'ENOENT';
+            cb(err, null);
+        });
+
+        await request(app)
+            .get('/public/cards.min.css')
+            .expect(404);
+
+        await request(app)
+            .get('/public/cards.min.css')
+            .expect(404);
+
+        // The second request arrives within the throttle window, so it must
+        // not trigger another expensive rebuild
+        sinon.assert.calledOnce(rebuild);
+    });
+
+    it('never attempts a rebuild for static files', async function () {
+        const rebuild = sinon.stub().resolves();
+
+        const middleware = servePublicFile('static', 'robots.txt', 'text/plain', 3600, {rebuild});
+        const app = createApp(middleware);
+
+        sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            const err = new Error();
+            err.code = 'ENOENT';
+            cb(err, null);
+        });
+
+        await request(app)
+            .get('/robots.txt')
+            .expect(404);
+
+        sinon.assert.notCalled(rebuild);
+    });
+
     it('does not attempt a rebuild when no rebuild option is configured', async function () {
         const middleware = servePublicFile('built', 'public/cards.min.css', 'text/css', 3600);
         const app = createApp(middleware);

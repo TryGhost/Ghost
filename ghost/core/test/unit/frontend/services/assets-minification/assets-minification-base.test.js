@@ -194,6 +194,40 @@ describe('AssetsMinificationBase', function () {
             assert.equal(assets.loading, null);
         });
 
+        it('waits for an in-flight rebuild even when assets are marked ready', async function () {
+            let resolveLoad;
+
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    await new Promise((resolve) => {
+                        resolveLoad = resolve;
+                    });
+                    this.ready = true;
+                }
+            }
+
+            const assets = new TestAssets();
+            assets.ready = true;
+
+            // A recovery rebuild is in flight (e.g. triggered by an ENOENT on a
+            // sibling file) — the minifier may be truncating/rewriting files
+            const rebuild = assets.ensureLoaded();
+
+            const middleware = assets.serveMiddleware();
+            const next = sinon.stub();
+            const request = middleware({}, {}, next);
+
+            // The request must not proceed while the rebuild is writing files
+            await new Promise((resolve) => {
+                setImmediate(resolve);
+            });
+            sinon.assert.notCalled(next);
+
+            resolveLoad();
+            await Promise.all([rebuild, request]);
+            sinon.assert.calledOnce(next);
+        });
+
         it('clears loading promise and continues the request when load() throws', async function () {
             const loggingStub = sinon.stub(logging, 'error');
             let shouldThrow = true;

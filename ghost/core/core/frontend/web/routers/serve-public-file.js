@@ -30,8 +30,14 @@ function matchCacheKey(req, cache) {
     return true;
 }
 
+// Minimum time between rebuild attempts for a missing generated file, so a
+// persistently failing build (e.g. an unwritable content folder) doesn't add
+// minification cost to every request
+const REBUILD_MIN_INTERVAL_MS = 10000;
+
 function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) {
     let cache;
+    let lastRebuildAttempt = 0;
     // These files are provided by Ghost, and therefore live inside of the core folder
     const staticFilePath = config.get('paths').publicFilePath;
     // These files are built on the fly, and must be saved in the content folder
@@ -73,7 +79,8 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
                     // CASE: a generated file has gone missing from the content folder
                     // at runtime - attempt to regenerate it once before giving up,
                     // otherwise the 404 sticks until the next reboot
-                    if (err.code === 'ENOENT' && canRebuild && options.rebuild) {
+                    if (err.code === 'ENOENT' && canRebuild && options.rebuild && location === 'built' && Date.now() - lastRebuildAttempt >= REBUILD_MIN_INTERVAL_MS) {
+                        lastRebuildAttempt = Date.now();
                         return Promise.resolve()
                             .then(options.rebuild)
                             .catch((rebuildError) => {
