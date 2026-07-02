@@ -337,6 +337,7 @@ async function initServices({ghostServer} = {}) {
     const emailService = require('./server/services/email-service');
     // TODO(ea2) What's the fate of this?
     // const emailAnalytics = require('./server/services/email-analytics');
+    const emailAnalytics2 = require('./server/services/email-analytics2');
     const mentionsService = require('./server/services/mentions');
     const tagsPublic = require('./server/services/tags-public');
     const postsPublic = require('./server/services/posts-public');
@@ -379,6 +380,9 @@ async function initServices({ghostServer} = {}) {
         emailService.init({ghostServer}),
         // TODO(ea2) What's the fate of this?
         // emailAnalytics.init(),
+        emailAnalytics2.init({
+            // TODO(ea2)
+        }),
         webhooks.listen(),
         comments.init(),
         linkTracking.init(),
