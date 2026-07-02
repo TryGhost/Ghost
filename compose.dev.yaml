@@ -106,9 +106,11 @@ services:
         required: false
     healthcheck:
       test: ["CMD", "node", "-e", "fetch('http://localhost:2368',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
+      start_period: 120s
+      start_interval: 1s
+      interval: 30s
       timeout: 5s
-      retries: 10
-      start_period: 5s
+      retries: 3
 
   # Caddy reverse proxy for the main dev instance
   # Routes Ghost backend + proxies asset requests to host dev servers
@@ -132,7 +134,7 @@ services:
       - ./apps:/srv/apps:ro
     depends_on:
       ghost-dev:
-        condition: service_healthy
+        condition: service_started
 
   stripe:
     image: stripe/stripe-cli:latest@sha256:eb2542f3d5d267a1c574c2d19a88223c1008260a99286ab1a9903517b157902e
