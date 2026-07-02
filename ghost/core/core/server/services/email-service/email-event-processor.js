@@ -50,7 +50,7 @@ class EmailEventProcessor {
         this.#db = db;
         this.#eventStorage = eventStorage;
         this.#prometheusClient = prometheusClient;
-        // Avoid having to query email_batch by provider_id for every event
+        // Avoid having to query email_batch by mailgun_provider_id for every event
         this.providerIdEmailIdMap = {};
 
         if (this.#prometheusClient) {
@@ -211,7 +211,7 @@ class EmailEventProcessor {
             return;
         }
 
-        // With the provider_id and email address we can look for the EmailRecipient
+        // With the mailgun_provider_id and email address we can look for the EmailRecipient
         const emailId = emailIdentification.emailId ?? await this.getEmailId(emailIdentification.providerId);
         if (!emailId) {
             // Invalid
@@ -269,7 +269,7 @@ class EmailEventProcessor {
 
         const {emailId} = await this.#db.knex('email_batches')
             .select('email_id as emailId')
-            .where('provider_id', providerId)
+            .where('mailgun_provider_id', providerId)
             .first() || {};
 
         if (!emailId) {
@@ -301,11 +301,11 @@ class EmailEventProcessor {
 
         if (providerIds.length > 0) {
             const providerIdMapping = await this.#db.knex('email_batches')
-                .select('provider_id', 'email_id')
-                .whereIn('provider_id', providerIds);
+                .select('mailgun_provider_id', 'email_id')
+                .whereIn('mailgun_provider_id', providerIds);
 
             for (const row of providerIdMapping) {
-                this.providerIdEmailIdMap[row.provider_id] = row.email_id;
+                this.providerIdEmailIdMap[row.mailgun_provider_id] = row.email_id;
             }
         }
 

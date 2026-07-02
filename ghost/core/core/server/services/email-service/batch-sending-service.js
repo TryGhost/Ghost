@@ -611,7 +611,7 @@ class BatchSendingService {
                 async () => {
                     await batch.save({
                         status: 'submitted',
-                        provider_id: response.id,
+                        mailgun_provider_id: response.id,
                         // reset error fields when sending succeeds
                         error_status_code: null,
                         error_message: null,

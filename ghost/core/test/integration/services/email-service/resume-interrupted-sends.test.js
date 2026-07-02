@@ -58,7 +58,7 @@ describe('Resume interrupted sends', function () {
         // 2. Mutate the DB to simulate a crash mid-send: one batch never made it to Mailgun,
         //    the other did; the parent email row is stuck in `submitting`.
         const [batchA, batchB] = batches;
-        await batchB.save({status: 'pending', provider_id: null}, {patch: true, autoRefresh: false});
+        await batchB.save({status: 'pending', mailgun_provider_id: null}, {patch: true, autoRefresh: false});
         await emailModel.save({status: 'submitting'}, {patch: true, autoRefresh: false});
 
         // 3. Reset the Mailgun stub so we only count calls produced by the resume.
@@ -97,7 +97,7 @@ describe('Resume interrupted sends', function () {
 
         const [batchA, batchB] = batches;
         // batchA: stays submitted (already accepted by Mailgun on the original run)
-        // batchB: flipped to submitting (orphan from crash) — provider_id intentionally preserved
+        // batchB: flipped to submitting (orphan from crash) — mailgun_provider_id intentionally preserved
         //          so the breadcrumb in the runbook still cross-references against Mailgun.
         await batchB.save({status: 'submitting'}, {patch: true, autoRefresh: false});
         await emailModel.save({status: 'submitting'}, {patch: true, autoRefresh: false});
