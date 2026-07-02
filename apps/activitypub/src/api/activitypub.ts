@@ -702,6 +702,18 @@ export class ActivityPubAPI {
         };
     }
 
+    async updatePreferences(preferences: Preferences): Promise<Preferences> {
+        const url = new URL('.ghost/activitypub/v1/preferences', this.apiUrl);
+        const json = await this.fetchJSON(url, 'PUT', preferences);
+
+        return {
+            showSensitiveMedia:
+                json !== null &&
+                'showSensitiveMedia' in json &&
+                json.showSensitiveMedia === true
+        };
+    }
+
     async resetNotificationsCount() {
         const url = new URL('.ghost/activitypub/v1/notifications/unread/reset', this.apiUrl);
 

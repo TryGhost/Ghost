@@ -208,6 +208,77 @@ describe('ActivityPubAPI', function () {
         });
     });
 
+    describe('updatePreferences', function () {
+        test('It saves the sensitive media display preference', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/v1/preferences': {
+                    async assert(_resource, init) {
+                        const headers = new Headers(init?.headers);
+                        expect(init?.method).toEqual('PUT');
+                        expect(headers.get('Authorization')).toContain('fake-token');
+                        expect(headers.get('Content-Type')).toEqual('application/json');
+                        expect(init?.body).toEqual(JSON.stringify({
+                            showSensitiveMedia: true
+                        }));
+                    },
+                    response: JSONResponse({
+                        showSensitiveMedia: true
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await expect(api.updatePreferences({showSensitiveMedia: true})).resolves.toEqual({
+                showSensitiveMedia: true
+            });
+        });
+
+        test('It can disable the sensitive media display preference', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/v1/preferences': {
+                    async assert(_resource, init) {
+                        expect(init?.method).toEqual('PUT');
+                        expect(init?.body).toEqual(JSON.stringify({
+                            showSensitiveMedia: false
+                        }));
+                    },
+                    response: JSONResponse({
+                        showSensitiveMedia: false
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await expect(api.updatePreferences({showSensitiveMedia: false})).resolves.toEqual({
+                showSensitiveMedia: false
+            });
+        });
+    });
+
     describe('follow', function () {
         test('It passes the token to the follow endpoint', async function () {
             const fakeFetch = Fetch({

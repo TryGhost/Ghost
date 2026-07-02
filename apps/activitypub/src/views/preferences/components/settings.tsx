@@ -1,12 +1,13 @@
 import EditProfile from './edit-profile';
 import React, {useState} from 'react';
 import {Account} from '@src/api/activitypub';
-import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger} from '@tryghost/shade/components';
+import {Button, Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Switch} from '@tryghost/shade/components';
 import {H4} from '@tryghost/shade/primitives';
 import {Link} from '@tryghost/admin-x-framework';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {useAppBasePath} from '@src/hooks/use-app-base-path';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
+import {usePreferencesForUser, useUpdatePreferencesForUser} from '@hooks/use-activity-pub-queries';
 
 interface SettingsProps {
     account?: Account;
@@ -16,6 +17,15 @@ interface SettingsProps {
 const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
     const [isEditingProfile, setIsEditingProfile] = useState(false);
     const navigate = useNavigateWithBasePath();
+    const {data: preferences, isLoading: isLoadingPreferences} = usePreferencesForUser();
+    const updatePreferences = useUpdatePreferencesForUser();
+    const showSensitiveMedia = preferences?.showSensitiveMedia ?? false;
+
+    const handleShowSensitiveMediaChange = (showSensitiveMediaValue: boolean) => {
+        updatePreferences.mutate({
+            showSensitiveMedia: showSensitiveMediaValue
+        });
+    };
 
     return (
         <div className={`flex flex-col ${className}`}>
@@ -65,6 +75,20 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
                 <SettingAction className='flex items-center gap-2'>
                     {account?.blueskyEnabled ? <span className='font-medium text-black'>On</span> : <span>Off</span>}
                     <LucideIcon.ChevronRight size={20} />
+                </SettingAction>
+            </SettingItem>
+            <SettingItem>
+                <SettingHeader>
+                    <SettingTitle>Show sensitive media by default</SettingTitle>
+                    <SettingDescription>Display media marked sensitive without a reveal prompt</SettingDescription>
+                </SettingHeader>
+                <SettingAction>
+                    <Switch
+                        aria-label='Show sensitive media by default'
+                        checked={showSensitiveMedia}
+                        disabled={isLoadingPreferences || updatePreferences.isPending}
+                        onCheckedChange={handleShowSensitiveMediaChange}
+                    />
                 </SettingAction>
             </SettingItem>
             <SettingItem to='/preferences/move' withHover>

@@ -1794,6 +1794,30 @@ export function usePreferencesForUser() {
     });
 }
 
+export function useUpdatePreferencesForUser() {
+    const queryClient = useQueryClient();
+
+    return useMutation({
+        async mutationFn(preferences: Preferences) {
+            const siteUrl = await getSiteUrl();
+            const api = createActivityPubAPI('index', siteUrl);
+
+            return api.updatePreferences(preferences);
+        },
+        async onMutate() {
+            await queryClient.cancelQueries({
+                queryKey: QUERY_KEYS.preferences
+            });
+        },
+        onError() {
+            toast.error('Could not update sensitive media preference.');
+        },
+        onSuccess(preferences) {
+            queryClient.setQueryData(QUERY_KEYS.preferences, preferences);
+        }
+    });
+}
+
 export function useInboxForUser(options: {enabled: boolean}) {
     const queryKey = QUERY_KEYS.inbox;
     const queryClient = useQueryClient();
