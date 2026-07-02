@@ -335,7 +335,8 @@ async function initServices({ghostServer} = {}) {
     const audienceFeedback = require('./server/services/audience-feedback');
     const emailSuppressionList = require('./server/services/email-suppression-list');
     const emailService = require('./server/services/email-service');
-    const emailAnalytics = require('./server/services/email-analytics');
+    // TODO(ea2) What's the fate of this?
+    // const emailAnalytics = require('./server/services/email-analytics');
     const mentionsService = require('./server/services/mentions');
     const tagsPublic = require('./server/services/tags-public');
     const postsPublic = require('./server/services/posts-public');
@@ -376,7 +377,8 @@ async function initServices({ghostServer} = {}) {
         slack.listen(),
         audienceFeedback.init(),
         emailService.init({ghostServer}),
-        emailAnalytics.init(),
+        // TODO(ea2) What's the fate of this?
+        // emailAnalytics.init(),
         webhooks.listen(),
         comments.init(),
         linkTracking.init(),
@@ -442,10 +444,11 @@ async function initBackgroundServices({config}) {
     const activitypub = require('./server/services/activitypub');
     await activitypub.init();
     // Load email analytics recurring jobs
-    if (config.get('backgroundJobs:emailAnalytics')) {
-        const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
-        await emailAnalyticsJobs.scheduleRecurringJobs();
-    }
+    // TODO(ea2) What's the fate of this?
+    // if (config.get('backgroundJobs:emailAnalytics')) {
+    //     const emailAnalyticsJobs = require('./server/services/email-analytics/jobs');
+    //     await emailAnalyticsJobs.scheduleRecurringJobs();
+    // }
 
     const updateCheck = require('./server/services/update-check');
     updateCheck.scheduleRecurringJobs();
