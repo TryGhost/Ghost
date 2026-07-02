@@ -8,7 +8,7 @@ const KpiCardHeader: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({children
         <div
             className={
                 cn(
-                    'flex flex-col border-r border-border last:border-none items-start gap-4 px-6 py-5 transition-all',
+                    'flex flex-col items-start gap-4 border-r border-border px-6 py-5 transition-all last:border-none',
                     className
                 )}
             {...props}

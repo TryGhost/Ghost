@@ -45,7 +45,7 @@ class EditorErrorBoundary extends React.Component<{children: React.ReactNode}, {
 
 const baseEditorStyles = cn(
     // Base typography
-    'text-[1.6rem] leading-[1.6] tracking-[-0.01em] pb-10',
+    'pb-10 text-[1.6rem] leading-[1.6] tracking-[-0.01em]',
     // Dark mode
     'dark:text-white dark:selection:bg-[rgba(88,101,116,0.99)]',
     // Placeholder styling
@@ -63,7 +63,7 @@ const baseEditorStyles = cn(
     // Reset content typography inside card captions to match Koenig's caption styles
     '[&_figcaption_:is(p,blockquote,aside,ul,ol)]:text-[1.4rem] [&_figcaption_:is(p,blockquote,aside,ul,ol)]:tracking-[.025em]',
     '[&_figcaption_p]:mb-0',
-    '[&_:is(h1)]:text-[36px] [&_:is(h2)]:text-[32px] [&_:is(h3)]:text-[26px] [&_:is(h4)]:text-[21px] [&_:is(h5)]:text-[19px] [&_:is(h6)]:text-[19px] [&_:is(h1,h2,h3,h4,h5,h6)]:mb-[0.5em]',
+    '[&_:is(h1)]:text-[36px] [&_:is(h1,h2,h3,h4,h5,h6)]:mb-[0.5em] [&_:is(h2)]:text-[32px] [&_:is(h3)]:text-[26px] [&_:is(h4)]:text-[21px] [&_:is(h5)]:text-[19px] [&_:is(h6)]:text-[19px]',
     // Horizontal ruler
     '[&_:is(hr)]:pt-0',
     // Paragraph spacing & bold
@@ -71,7 +71,7 @@ const baseEditorStyles = cn(
     // Keep settings panel copy compact
     '[&_[data-kg-settings-panel]_p]:!mb-0',
     // Nested-editor (callout, etc.) fixes: align placeholder with text
-    '[&_.not-kg-prose>div]:font-sans! [&_.not-kg-prose>div]:tracking-tight! [&_.not-kg-prose>div]:text-[1.6rem]! [&_.not-kg-prose>div]:leading-[1.6]!',
+    '[&_.not-kg-prose>div]:font-sans! [&_.not-kg-prose>div]:text-[1.6rem]! [&_.not-kg-prose>div]:leading-[1.6]! [&_.not-kg-prose>div]:tracking-tight!',
     '[&_.kg-inherit-styles_p]:mb-0!',
     '[&_.kg-inherit-styles]:pt-[3px]!',
     // CTA card: keep sponsor label at its intended 12.5px size

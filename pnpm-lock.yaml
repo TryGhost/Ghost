@@ -202,8 +202,8 @@ catalogs:
       specifier: 0.5.3
       version: 0.5.3
     eslint-plugin-tailwindcss:
-      specifier: 4.0.0-beta.0
-      version: 4.0.0-beta.0
+      specifier: 4.0.4
+      version: 4.0.4
     fs-extra:
       specifier: 11.3.5
       version: 11.3.5
@@ -423,7 +423,7 @@ importers:
         version: 10.4.6(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(storybook@10.4.6(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(supports-color@5.5.0)(typescript@5.9.3)
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 4.0.0-beta.0(tailwindcss@4.2.2)
+        version: 4.0.4(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(tailwindcss@4.2.2)(typescript@5.9.3)
       globals:
         specifier: 'catalog:'
         version: 17.6.0
@@ -553,7 +553,7 @@ importers:
         version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 4.0.0-beta.0(tailwindcss@4.2.2)
+        version: 4.0.4(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.2)(typescript@5.9.3)
       globals:
         specifier: 'catalog:'
         version: 17.6.0
@@ -656,7 +656,7 @@ importers:
         version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 4.0.0-beta.0(tailwindcss@4.2.2)
+        version: 4.0.4(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.2)(typescript@5.9.3)
       globals:
         specifier: 'catalog:'
         version: 17.6.0
@@ -856,7 +856,7 @@ importers:
         version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 4.0.0-beta.0(tailwindcss@4.2.2)
+        version: 4.0.4(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.2)(typescript@5.9.3)
       glob:
         specifier: 'catalog:'
         version: 13.0.6
@@ -992,7 +992,7 @@ importers:
         version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 4.0.0-beta.0(tailwindcss@4.2.2)
+        version: 4.0.4(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.2)(typescript@5.9.3)
       glob:
         specifier: 'catalog:'
         version: 13.0.6
@@ -1182,7 +1182,7 @@ importers:
         version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 4.0.0-beta.0(tailwindcss@4.2.2)
+        version: 4.0.4(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.2)(typescript@5.9.3)
       globals:
         specifier: 'catalog:'
         version: 17.6.0
@@ -1585,7 +1585,7 @@ importers:
         version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 4.0.0-beta.0(tailwindcss@4.2.2)
+        version: 4.0.4(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.2)(typescript@5.9.3)
       globals:
         specifier: 'catalog:'
         version: 17.6.0
@@ -1793,7 +1793,7 @@ importers:
         version: 10.4.6(eslint@9.39.4(jiti@2.7.0))(storybook@10.4.6(@testing-library/dom@9.3.4)(@types/react@18.3.31)(prettier@3.8.4)(react-dom@18.3.1(react@18.3.1))(react@18.3.1))(typescript@5.9.3)
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 4.0.0-beta.0(tailwindcss@4.2.2)
+        version: 4.0.4(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.2)(typescript@5.9.3)
       glob:
         specifier: 'catalog:'
         version: 13.0.6
@@ -2093,7 +2093,7 @@ importers:
         version: 0.5.3(eslint@9.39.4(jiti@2.7.0))
       eslint-plugin-tailwindcss:
         specifier: 'catalog:'
-        version: 4.0.0-beta.0(tailwindcss@4.2.2)
+        version: 4.0.4(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.2)(typescript@5.9.3)
       globals:
         specifier: 'catalog:'
         version: 17.6.0
@@ -14030,11 +14030,15 @@ packages:
     peerDependencies:
       tailwindcss: ^3.4.0 || ^4.0.0
 
-  eslint-plugin-tailwindcss@4.0.0-beta.0:
-    resolution: {integrity: sha512-WWCajZgQu38Sd67ZCl2W6i3MRzqB0d+H8s4qV9iB6lBJbsDOIpIlj6R1Fj2FXkoWErbo05pZnZYbCGIU9o/DsA==}
-    engines: {node: '>=18.12.0'}
+  eslint-plugin-tailwindcss@4.0.4:
+    resolution: {integrity: sha512-cN43gHInx32ZwymgBPz6wQcH/QWEn/1fXvu51KfwFZMTGimviXcn61CPR8NY4mpstgNkbCqN9UVCspr+YqpV9w==}
+    engines: {node: '>=20.19.0'}
     peerDependencies:
-      tailwindcss: ^3.4.0 || ^4.0.0
+      tailwindcss: ^4.0.0
+      typescript: '*'
+    peerDependenciesMeta:
+      typescript:
+        optional: true
 
   eslint-plugin-unicorn@42.0.0:
     resolution: {integrity: sha512-ixBsbhgWuxVaNlPTT8AyfJMlhyC5flCJFjyK3oKE8TRrwBnaHvUbuIkCM1lqg8ryYrFStL/T557zfKzX4GKSlg==}
@@ -18952,6 +18956,12 @@ packages:
   postcss-nested@6.2.0:
     resolution: {integrity: sha512-HQbt28KulC5AJzG+cZtj9kvKB93CFCdLvog1WFLf1D+xmMvPGlBstkpTEZfK5+AN9hfJocyBFCNiqyS48bpgzQ==}
     engines: {node: '>=12.0'}
+    peerDependencies:
+      postcss: ^8.2.14
+
+  postcss-nested@7.0.2:
+    resolution: {integrity: sha512-5osppouFc0VR9/VYzYxO03VaDa3e8F23Kfd6/9qcZTUI8P58GIYlArOET2Wq0ywSl2o2PjELhYOFI4W7l5QHKw==}
+    engines: {node: '>=18.0'}
     peerDependencies:
       postcss: ^8.2.14
 
@@ -36745,13 +36755,33 @@ snapshots:
       tailwind-api-utils: 1.0.3(tailwindcss@3.4.19(tsx@4.22.4)(yaml@2.9.0))
       tailwindcss: 3.4.19(tsx@4.22.4)(yaml@2.9.0)
 
-  eslint-plugin-tailwindcss@4.0.0-beta.0(tailwindcss@4.2.2):
+  eslint-plugin-tailwindcss@4.0.4(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(tailwindcss@4.2.2)(typescript@5.9.3):
     dependencies:
-      fast-glob: 3.3.3
+      '@typescript-eslint/utils': 8.62.0(eslint@9.39.4(jiti@2.7.0)(supports-color@5.5.0))(supports-color@5.5.0)(typescript@5.9.3)
       postcss: 8.5.15
+      postcss-nested: 7.0.2(postcss@8.5.15)
       synckit: 0.11.13
       tailwind-api-utils: 1.0.3(tailwindcss@4.2.2)
       tailwindcss: 4.2.2
+    optionalDependencies:
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - eslint
+      - supports-color
+
+  eslint-plugin-tailwindcss@4.0.4(eslint@9.39.4(jiti@2.7.0))(tailwindcss@4.2.2)(typescript@5.9.3):
+    dependencies:
+      '@typescript-eslint/utils': 8.62.0(eslint@9.39.4(jiti@2.7.0))(typescript@5.9.3)
+      postcss: 8.5.15
+      postcss-nested: 7.0.2(postcss@8.5.15)
+      synckit: 0.11.13
+      tailwind-api-utils: 1.0.3(tailwindcss@4.2.2)
+      tailwindcss: 4.2.2
+    optionalDependencies:
+      typescript: 5.9.3
+    transitivePeerDependencies:
+      - eslint
+      - supports-color
 
   eslint-plugin-unicorn@42.0.0(eslint@9.39.4(jiti@1.21.7)):
     dependencies:
@@ -43087,6 +43117,11 @@ snapshots:
     dependencies:
       postcss: 8.5.16
       postcss-selector-parser: 6.1.4
+
+  postcss-nested@7.0.2(postcss@8.5.15):
+    dependencies:
+      postcss: 8.5.15
+      postcss-selector-parser: 7.1.4
 
   postcss-nesting@10.2.0(postcss@8.5.15):
     dependencies:

@@ -72,7 +72,7 @@ export default tseslint.config([
     },
     settings: {
       tailwindcss: {
-        config: tailwindCssConfig,
+        cssConfigPath: tailwindCssConfig,
       },
     },
     rules: {
