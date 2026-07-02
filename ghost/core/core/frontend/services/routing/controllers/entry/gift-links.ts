@@ -46,6 +46,20 @@ function giftToken(req: Request): string | null {
 }
 
 /**
+ * The id of the post a token unlocks, read through the content endpoint so the
+ * check flows through the API like every other content read. Null for an unknown
+ * token (the endpoint 404s).
+ */
+async function unlockedPostId(token: string): Promise<string | null> {
+    try {
+        const {gift_links: [link]} = await proxy.api.giftLinksPublic.read({token});
+        return link?.post_id ?? null;
+    } catch {
+        return null;
+    }
+}
+
+/**
  * Re-read the entry as a paid-member shim (the grant `/p/` previews use) to
  * reveal gated content, then render it. The shim is passed as the read context
  * only, so it never leaks into res.locals/@member.
@@ -74,7 +88,7 @@ async function renderUnlocked(req: Request, res: EntryResponse, token: string) {
 export async function serveGiftRequest(req: Request, res: EntryResponse, entry: Entry) {
     const token = giftToken(req);
 
-    if (token && await proxy.giftLinks.service.isValidTokenForPost(token, entry.id)) {
+    if (token && await unlockedPostId(token) === entry.id) {
         return renderUnlocked(req, res, token);
     }
 
