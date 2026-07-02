@@ -2,6 +2,7 @@ const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
 const tpl = require('@tryghost/tpl');
 const moment = require('moment');
+const memberCustomFields = require('../../../members-custom-fields');
 
 const messages = {
     stripeNotConnected: 'Missing Stripe connection.',
@@ -392,7 +393,34 @@ module.exports = class MemberBREADService {
         const unsubscribeUrl = this.settingsHelpers.createUnsubscribeUrl(member.uuid);
         member.unsubscribe_url = unsubscribeUrl;
 
+        // Attach the flat {key: value} custom-fields map when ?include=custom_fields
+        // was requested (the input serializer sets this, gated by the flag).
+        if (options.includeCustomFields) {
+            member.custom_fields = await memberCustomFields.service.getValuesForMember(model.id, {transacting: options.transacting});
+        }
+
         return member;
+    }
+
+    /**
+     * @private
+     * Removes `custom_fields` from the incoming member data and returns it, gated
+     * by the members_custom_fields flag. Returns undefined when the flag is off or
+     * no custom_fields key was supplied (so downstream writes are skipped).
+     * @param {object} data
+     * @returns {import('../../../members-custom-fields').CustomFieldValueMap|undefined}
+     */
+    _extractCustomFields(data) {
+        const supplied = Object.prototype.hasOwnProperty.call(data, 'custom_fields');
+        const customFields = data.custom_fields;
+        // Always strip it so it can never reach the member model/repository.
+        delete data.custom_fields;
+
+        if (!supplied || !this.labsService.isSet('membersCustomFields')) {
+            return undefined;
+        }
+
+        return customFields;
     }
 
     async add(data, options) {
@@ -404,6 +432,13 @@ module.exports = class MemberBREADService {
                 help: 'You need to connect to Stripe to import Stripe customers. ',
                 property
             });
+        }
+
+        // Pull custom field values out before the member write; validate first so
+        // an invalid payload never creates a member (see edit()).
+        const customFields = this._extractCustomFields(data);
+        if (customFields !== undefined) {
+            await memberCustomFields.service.validateValues(customFields, {transacting: options.transacting});
         }
 
         let model;
@@ -462,6 +497,10 @@ module.exports = class MemberBREADService {
             throw error;
         }
 
+        if (customFields !== undefined) {
+            await memberCustomFields.service.setValuesForMember(model.id, customFields, sharedOptions);
+        }
+
         if (options.send_email) {
             await this.emailService.sendEmailWithMagicLink({
                 email: model.get('email'), requestedType: options.email_type
@@ -477,6 +516,15 @@ module.exports = class MemberBREADService {
 
     async edit(data, options) {
         delete data.last_seen_at;
+
+        // Custom field values are a typed {key: value} map, not a member column or
+        // relation — pull them out before the member write and upsert them via the
+        // members-custom-fields service. Validate first so an invalid payload never
+        // partially applies (the member is not touched).
+        const customFields = this._extractCustomFields(data);
+        if (customFields !== undefined) {
+            await memberCustomFields.service.validateValues(customFields, {transacting: options.transacting});
+        }
 
         let model;
 
@@ -498,6 +546,10 @@ module.exports = class MemberBREADService {
             }
 
             throw error;
+        }
+
+        if (customFields !== undefined) {
+            await memberCustomFields.service.setValuesForMember(model.id, customFields, {transacting: options.transacting});
         }
 
         if (this.stripeService.configured) {

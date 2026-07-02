@@ -156,6 +156,14 @@ module.exports = function apiRoutes() {
 
     router.get('/members/stripe_connect', mw.authAdminApi, http(api.membersStripeConnect.auth));
 
+    // Member custom field definitions — gated by the members_custom_fields flag.
+    // Registered before /members/:id so the literal path isn't captured by :id.
+    router.get('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.memberCustomFields.browse));
+    router.post('/members/custom_fields', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.memberCustomFields.add));
+    router.get('/members/custom_fields/:id', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.memberCustomFields.read));
+    router.put('/members/custom_fields/:id', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.memberCustomFields.edit));
+    router.delete('/members/custom_fields/:id', mw.authAdminApi, labs.enabledMiddleware('membersCustomFields'), http(api.memberCustomFields.destroy));
+
     router.get('/members/:id', mw.authAdminApi, http(api.members.read));
     router.put('/members/:id', mw.authAdminApi, http(api.members.edit));
     router.delete('/members/:id', mw.authAdminApi, http(api.members.destroy));

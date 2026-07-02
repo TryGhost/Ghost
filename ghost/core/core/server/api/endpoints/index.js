@@ -120,6 +120,10 @@ module.exports = {
         return apiFramework.pipeline(require('./member-signin-urls.js'), localUtils);
     },
 
+    get memberCustomFields() {
+        return apiFramework.pipeline(require('./member-custom-fields'), localUtils);
+    },
+
     get labels() {
         return apiFramework.pipeline(require('./labels'), localUtils);
     },

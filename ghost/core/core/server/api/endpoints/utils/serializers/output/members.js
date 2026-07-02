@@ -218,6 +218,12 @@ function serializeMember(member, options) {
 
     serialized.email_suppression = json.email_suppression;
 
+    // Present only when ?include=custom_fields was requested and the flag is on;
+    // the bread service attaches the flat {key: value} map to the member.
+    if (json.custom_fields !== undefined) {
+        serialized.custom_fields = json.custom_fields;
+    }
+
     if (json.newsletters) {
         serialized.newsletters = serializeNewsletters(json.newsletters);
     }

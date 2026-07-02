@@ -1,5 +1,5 @@
 import {z} from 'zod';
-import {snakeKeys} from './case-keys';
+import {snakeKeys} from '../../lib/case-keys';
 import {GiftLink} from './models';
 
 // Response schemas — the shapes the admin endpoints emit.

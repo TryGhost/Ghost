@@ -53,6 +53,8 @@ describe('Exporter', function () {
             'invites',
             'jobs',
             'labels',
+            'member_custom_field_values',
+            'member_custom_fields',
             'members',
             'members_cancel_events',
             'members_click_events',

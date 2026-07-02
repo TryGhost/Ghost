@@ -57,7 +57,8 @@ const PRIVATE_FEATURES = [
     'themeTranslation',
     'pictureImageFormats',
     'smarterCounts',
-    'getHelperDeduplication'
+    'getHelperDeduplication',
+    'membersCustomFields'
 ];
 
 module.exports.GA_KEYS = [...GA_FEATURES];

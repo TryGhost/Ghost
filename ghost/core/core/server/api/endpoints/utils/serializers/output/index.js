@@ -40,6 +40,10 @@ module.exports = {
         return require('./gift-links');
     },
 
+    get member_custom_fields() {
+        return require('./member-custom-fields');
+    },
+
     get redirects() {
         return require('./redirects');
     },

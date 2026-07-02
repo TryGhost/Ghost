@@ -1,6 +1,6 @@
 import {z} from 'zod';
 import type {Knex} from 'knex';
-import {camelKeys, snakeKeys} from './case-keys';
+import {camelKeys, snakeKeys} from '../../lib/case-keys';
 import {DbGiftLink} from './database';
 import {GiftLink} from './models';
 
