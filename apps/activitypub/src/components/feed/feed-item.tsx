@@ -243,17 +243,19 @@ export function SensitiveMediaHideButton({
 export function ContentWarningOverlay({
     className = '',
     label,
+    size = 'default',
     onReveal
 }: {
     className?: string;
     label: string;
+    size?: 'default' | 'compact';
     onReveal: (event: React.MouseEvent) => void;
 }) {
     return (
         <div
             className={clsx(
                 '[container-type:size] flex items-center justify-center overflow-hidden bg-foreground/45 p-[clamp(0.75rem,6cqh,2rem)] text-background backdrop-blur-xl',
-                'relative mt-3 min-h-[300px] w-full rounded-xl',
+                size === 'compact' ? 'relative w-full rounded-xl' : 'relative mt-3 min-h-[300px] w-full rounded-xl',
                 className
             )}
             data-testid='content-warning-overlay'
@@ -577,7 +579,13 @@ const FeedItem: React.FC<FeedItemProps> = ({
             return null;
         }
 
-        return <ContentWarningOverlay label={contentWarning} onReveal={handleRevealContentWarning} />;
+        return (
+            <ContentWarningOverlay
+                label={contentWarning}
+                size={layout === 'inbox' || layout === 'reply' ? 'compact' : 'default'}
+                onReveal={handleRevealContentWarning}
+            />
+        );
     };
 
     let author = actor;
