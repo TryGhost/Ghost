@@ -6,7 +6,7 @@ cd /workspaces/Ghost
 corepack enable
 corepack prepare --activate
 
-git submodule update --init --recursive
+node ghost/core/scripts/fetch-themes.js
 
 pnpm install --prefer-offline
 

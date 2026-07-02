@@ -17,8 +17,8 @@ Welcome to the Ghost contributor documentation! This guide will help you underst
 First, [fork the Ghost repository](https://github.com/TryGhost/Ghost/fork) on GitHub, then:
 
 ```bash
-# Clone your fork with submodules
-git clone --recurse-submodules git@github.com:<YourUsername>/Ghost.git
+# Clone your fork
+git clone git@github.com:<YourUsername>/Ghost.git
 cd Ghost
 
 # Configure remotes
@@ -29,7 +29,7 @@ git remote add origin git@github.com:<YourUsername>/Ghost.git
 #### 2. Install and Setup
 
 ```bash
-# Install dependencies and initialize submodules
+# Install dependencies and fetch the default themes
 corepack enable pnpm
 pnpm run setup
 ```

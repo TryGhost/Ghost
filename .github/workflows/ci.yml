@@ -648,8 +648,6 @@ jobs:
     name: Legacy tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          submodules: true
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:
@@ -657,6 +655,9 @@ jobs:
         with:
           node-version: ${{ matrix.node }}
           cache: pnpm
+
+      - name: Fetch bundled themes
+        run: node ghost/core/scripts/fetch-themes.js
 
       - name: Install dependencies
         # better-sqlite3 is an optionalDependency. Without --force, pnpm may skip
@@ -874,8 +875,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
-        with:
-          submodules: true
 
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
@@ -1911,7 +1910,11 @@ jobs:
         run: npm install -g npm@11
 
       - name: Verify tarball contents
-        run: tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null
+        run: |
+          tar -xOf ghost-*.tgz package/package.json | jq -e '.packageManager' >/dev/null
+          # Bundled themes are fetched at pack time — fail loudly if they're missing
+          tar -tf ghost-*.tgz package/content/themes/source/package.json >/dev/null
+          tar -tf ghost-*.tgz package/content/themes/casper/package.json >/dev/null
 
       - name: Publish to npm
         run: npm publish ghost-*.tgz --access public
