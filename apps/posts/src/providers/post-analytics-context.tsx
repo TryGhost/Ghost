@@ -1,9 +1,10 @@
 import {Config, useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
-import {POST_ANALYTICS_INCLUDE, STATS_RANGES} from '@src/utils/constants';
+import {PAGE_ANALYTICS_INCLUDE, POST_ANALYTICS_INCLUDE, STATS_RANGES} from '@src/utils/constants';
 import {Post as PostBase, useBrowsePosts} from '@tryghost/admin-x-framework/api/posts';
 import {ReactNode, createContext, useContext, useState} from 'react';
 import {Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {StatsConfig, useTinybirdToken} from '@tryghost/admin-x-framework';
+import {useBrowsePages} from '@tryghost/admin-x-framework/api/pages';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 import {useParams} from '@tryghost/admin-x-framework';
 
@@ -49,6 +50,9 @@ type PostAnalyticsContextType = {
     postId: string;
     post: Post | undefined;
     isPostLoading: boolean;
+    // Whether the analyzed resource is a post or a page. The screen is shared:
+    // the pages list links here too, but the posts endpoint never returns pages.
+    postType: 'post' | 'page';
 }
 
 const PostAnalyticsContext = createContext<PostAnalyticsContextType | undefined>(undefined);
@@ -81,12 +85,32 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
 
     // Fetch post data with all required includes. The gift-link modal reuses
     // POST_ANALYTICS_INCLUDE for the same query key, so both read one cached post.
-    const {data: {posts: [post]} = {posts: []}, isLoading: isPostLoading} = useBrowsePosts({
+    const {data: {posts: [post]} = {posts: []}, isLoading: isPostQueryLoading} = useBrowsePosts({
         searchParams: {
             filter: `id:${postId}`,
             include: POST_ANALYTICS_INCLUDE
         }
     });
+
+    // Pages reach this same screen (the pages list links to /posts/analytics/:id)
+    // but never come back from the posts endpoint. When the post lookup resolves
+    // empty, fall back to the pages endpoint so page analytics — and the
+    // gift-link eligibility that reads status/visibility — work too.
+    const isPageFallbackEnabled = !isPostQueryLoading && !post;
+    const {data: {pages: [page]} = {pages: []}, isLoading: isPageQueryLoading} = useBrowsePages({
+        searchParams: {
+            filter: `id:${postId}`,
+            include: PAGE_ANALYTICS_INCLUDE
+        },
+        enabled: isPageFallbackEnabled
+    });
+
+    // A page only stands in when the post lookup came back empty; if neither
+    // resolves (e.g. a bad id) we fall through as a post.
+    const isPage = !post && Boolean(page);
+    const resolvedPost = (post ?? page) as Post | undefined;
+    const postType = isPage ? 'page' as const : 'post' as const;
+    const isPostLoading = isPostQueryLoading || (isPageFallbackEnabled && isPageQueryLoading);
 
     // Check for errors in the ghost requests
     const ghostRequests = [config, site, settings];
@@ -119,8 +143,9 @@ const PostAnalyticsProvider = ({children}: { children: ReactNode }) => {
         setRange,
         settings: settings.data?.settings || [],
         postId: postId,
-        post: post as Post | undefined,
-        isPostLoading
+        post: resolvedPost,
+        isPostLoading,
+        postType
     }}>
         {children}
     </PostAnalyticsContext.Provider>;
