@@ -45,11 +45,11 @@ Two categories of apps:
 ### Development
 ```bash
 corepack enable pnpm           # Enable corepack to use the correct pnpm version
-pnpm run setup                 # First-time setup (installs deps + submodules + builds workspace packages)
+pnpm run setup                 # First-time setup (installs deps + fetches default themes + builds workspace packages)
 pnpm dev                       # Start development (Docker backend + host frontend dev servers)
 ```
 
-> **Fresh worktree / first run — run `pnpm setup` before anything else.** It installs deps and syncs submodules. `pnpm fix` does a clean reinstall if anything misbehaves after a branch switch.
+> **Fresh worktree / first run — run `pnpm setup` before anything else.** It installs deps and fetches the default themes. `pnpm fix` does a clean reinstall if anything misbehaves after a branch switch.
 
 ### Building
 ```bash

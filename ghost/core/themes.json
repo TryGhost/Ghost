@@ -1,0 +1,12 @@
+{
+    "casper": {
+        "repo": "TryGhost/Casper",
+        "version": "5.12.1",
+        "sha": "bb3d0de3c7065677bb18b38d8185a8a980b163bd"
+    },
+    "source": {
+        "repo": "TryGhost/Source",
+        "version": "1.7.1",
+        "sha": "3a5643b42a4700e961e65ebda92f6a6c56bf8c86"
+    }
+}

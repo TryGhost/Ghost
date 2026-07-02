@@ -1,8 +1,0 @@
-[submodule "ghost/core/content/themes/casper"]
-	path = ghost/core/content/themes/casper
-	url = ../../TryGhost/Casper.git
-	ignore = all
-[submodule "ghost/core/content/themes/source"]
-	path = ghost/core/content/themes/source
-	url = ../../TryGhost/Source.git
-	ignore = all

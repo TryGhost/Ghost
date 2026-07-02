@@ -10,8 +10,7 @@ const {resolveBaseTag} = require('./lib/resolve-base-tag');
 const ROOT = path.resolve(__dirname, '..');
 const GHOST_CORE_PKG = path.join(ROOT, 'ghost/core/package.json');
 const GHOST_ADMIN_PKG = path.join(ROOT, 'ghost/admin/package.json');
-const CASPER_DIR = path.join(ROOT, 'ghost/core/content/themes/casper');
-const SOURCE_DIR = path.join(ROOT, 'ghost/core/content/themes/source');
+const THEMES_MANIFEST = path.join(ROOT, 'ghost/core/themes.json');
 
 const MAX_WAIT_MS = 30 * 60 * 1000; // 30 minutes
 const POLL_INTERVAL_MS = 30 * 1000; // 30 seconds
@@ -175,40 +174,60 @@ async function waitForChecks(commit) {
     }
 }
 
-// --- Theme submodule updates ---
+// --- Theme pin updates ---
 
-function updateThemeSubmodule(themeDir, themeName) {
-    if (!fs.existsSync(themeDir)) {
-        log(`${themeName} not present, skipping`);
-        return false;
+function latestStableTheme(repo) {
+    const output = run(`git ls-remote --tags https://github.com/${repo}.git`);
+    let latest = null;
+
+    for (const line of output.split('\n')) {
+        const [sha, ref] = line.split('\t');
+        if (!ref) {
+            continue;
+        }
+        // Annotated tags list twice; the ^{} (peeled) line carries the commit SHA
+        const peeled = ref.endsWith('^{}');
+        const version = semver.valid(ref.replace('refs/tags/', '').replace('^{}', ''));
+        if (!version || semver.prerelease(version)) {
+            continue;
+        }
+        if (!latest || semver.gt(version, latest.version) || (version === latest.version && peeled)) {
+            latest = {version, sha};
+        }
     }
 
-    const currentPkg = JSON.parse(fs.readFileSync(path.join(themeDir, 'package.json'), 'utf8'));
-    const currentVersion = currentPkg.version;
+    return latest;
+}
 
-    // Checkout latest stable tag on main branch
+function updateThemePin(manifest, name) {
+    const pin = manifest[name];
+    const themeName = pin.repo.split('/')[1];
+
+    let latest;
     try {
-        execSync(
-            `git checkout $(git describe --abbrev=0 --tags $(git rev-list --tags --max-count=1 --branches=main))`,
-            {cwd: themeDir, encoding: 'utf8', stdio: 'pipe'}
-        );
+        latest = latestStableTheme(pin.repo);
     } catch (err) {
-        log(`Warning: failed to update ${themeName}: ${err.message}`);
+        log(`Warning: failed to check ${themeName} tags: ${err.message}`);
         return false;
     }
 
-    const updatedPkg = JSON.parse(fs.readFileSync(path.join(themeDir, 'package.json'), 'utf8'));
-    const newVersion = updatedPkg.version;
-
-    if (semver.gt(newVersion, currentVersion)) {
-        log(`${themeName} updated: v${currentVersion} → v${newVersion}`);
-        run(`git add -f ${path.relative(ROOT, themeDir)}`);
-        run(`git commit -m "🎨 Updated ${themeName} to v${newVersion}"`);
-        return true;
+    if (!latest) {
+        log(`Warning: no stable tag found for ${themeName}`);
+        return false;
     }
 
-    log(`${themeName} already at latest (v${currentVersion})`);
-    return false;
+    if (!semver.gt(latest.version, pin.version)) {
+        log(`${themeName} already at latest (v${pin.version})`);
+        return false;
+    }
+
+    log(`${themeName} updated: v${pin.version} → v${latest.version}`);
+    pin.version = latest.version;
+    pin.sha = latest.sha;
+    fs.writeFileSync(THEMES_MANIFEST, JSON.stringify(manifest, null, 4) + '\n');
+    run(`git add ${path.relative(ROOT, THEMES_MANIFEST)}`);
+    run(`git commit -m "🎨 Updated ${themeName} to v${latest.version}"`);
+    return true;
 }
 
 // --- Main ---
@@ -268,12 +287,13 @@ async function main() {
         log('Skipping CI checks');
     }
 
-    // 6. Update theme submodules (main branch only)
+    // 6. Update theme pins (main branch only)
     if (opts.branch === 'main') {
-        logStep('Updating theme submodules');
-        run('git submodule update --init');
-        updateThemeSubmodule(CASPER_DIR, 'Casper');
-        updateThemeSubmodule(SOURCE_DIR, 'Source');
+        logStep('Updating theme pins');
+        const themesManifest = JSON.parse(fs.readFileSync(THEMES_MANIFEST, 'utf8'));
+        for (const name of Object.keys(themesManifest)) {
+            updateThemePin(themesManifest, name);
+        }
     } else {
         logStep('Skipping theme updates (not main branch)');
     }

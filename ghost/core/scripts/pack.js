@@ -29,6 +29,11 @@ const CORE_DIR = path.resolve(__dirname, '..');
 const ROOT_DIR = path.resolve(CORE_DIR, '../..');
 const DEPLOY_DIR = path.join(CORE_DIR, 'package');
 
+// Bundled themes are fetched, not committed — ensure they're present before
+// packing so the tarball (and the Docker context built from it) includes them.
+console.log('Fetching bundled themes...');
+execFileSync('node', [path.join(__dirname, 'fetch-themes.js')], {stdio: 'inherit'});
+
 // 1. Run pnpm deploy
 // inject-workspace-packages is enabled only for deploy (not workspace-wide)
 // because it conflicts with packages that have build outputs in their files field.

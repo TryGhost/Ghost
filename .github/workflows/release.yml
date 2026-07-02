@@ -55,10 +55,6 @@ jobs:
           fetch-depth: 0
           ssh-key: ${{ secrets.DEPLOY_KEY }}
 
-      # Fetch submodules separately via HTTPS — the deploy key is scoped to
-      # Ghost only and can't authenticate against Casper/Source over SSH
-      - run: git submodule update --init
-
       - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
       - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
         env:

@@ -69,33 +69,3 @@ if [ $secretScanStatus -ne 0 ]; then
     echo -e "${red}❌ Secret scanning failed${no_color}"
     exit 1
 fi
-
-##
-## 2) Check and remove submodules before committing
-##
-
-ROOT_DIR=$(git rev-parse --show-cdup)
-SUBMODULES=$(grep path ${ROOT_DIR}.gitmodules | sed 's/^.*path = //')
-MOD_SUBMODULES=$(git diff --cached --name-only --ignore-submodules=none | grep -F "$SUBMODULES" || true)
-
-echo -e "Checking submodules ${grey}(pre-commit hook)${no_color} "
-
-# If no modified submodules, exit with status code 0, else remove them and continue
-if [[ -n "$MOD_SUBMODULES" ]]; then
-    echo -e "${grey}Removing submodules from commit...${no_color}"
-    for SUB in $MOD_SUBMODULES
-    do
-        git reset --quiet HEAD "$SUB"
-        echo -e "\t${grey}removed:\t$SUB${no_color}"
-    done
-    echo
-    echo -e "${grey}Submodules removed from commit, continuing...${no_color}"
-
-    # If there are no changes to commit after removing submodules, abort to avoid an empty commit
-    if output=$(git status --porcelain) && [ -z "$output" ]; then
-        echo -e "nothing to commit, working tree clean"
-        exit 1
-    fi
-else
-    echo "No submodules in commit, continuing..."
-fi
