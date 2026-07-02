@@ -31,6 +31,7 @@ export default class PublishManagement extends Component {
     @tracked previewFormat = 'browser';
     @tracked previewSize = 'desktop';
     @tracked previewAsSegment = 'free';
+    @tracked previewNewsletter = null;
 
     publishFlowModal = null;
     updateFlowModal = null;
@@ -121,6 +122,8 @@ export default class PublishManagement extends Component {
                 changePreviewSize: this.changePreviewSize,
                 initialPreviewAsSegment: this.previewAsSegment,
                 changePreviewAsSegment: this.changePreviewAsSegment,
+                initialPreviewNewsletter: this.previewNewsletter,
+                changePreviewNewsletter: this.changePreviewNewsletter,
                 skipAnimation
             });
         }
@@ -158,6 +161,11 @@ export default class PublishManagement extends Component {
     @action
     changePreviewAsSegment(segment) {
         this.previewAsSegment = segment;
+    }
+
+    @action
+    changePreviewNewsletter(newsletter) {
+        this.previewNewsletter = newsletter;
     }
 
     @action
