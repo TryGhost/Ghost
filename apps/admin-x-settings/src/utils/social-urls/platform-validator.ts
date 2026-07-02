@@ -87,6 +87,9 @@ export type SocialPlatformValidator = {
 // characters that need escaping inside a regex character class
 const escapeForCharClass = (chars: string) => chars.replace(/[\\\]^-]/g, '\\$&');
 
+// characters that need escaping to appear literally in a regex pattern
+const escapeForRegex = (value: string) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 const compileUsernameRule = (rule: UsernameRule) => {
     if (rule.patterns) {
         const patterns = rule.patterns;
@@ -151,7 +154,7 @@ export const createPlatformValidator = (definition: SocialPlatformDefinition): S
             .map(prefix => ({prefix, pathType})))
         .sort((a, b) => b.prefix.length - a.prefix.length);
 
-    const domainPattern = domains.map(domain => domain.replace(/\./g, '\\.')).join('|');
+    const domainPattern = domains.map(domain => escapeForRegex(domain)).join('|');
     const subdomainPattern = regionalSubdomain ? `(?:(?<region>${regionalSubdomain})\\.)?` : '';
     // [\s\S] instead of . so inputs containing newlines still parse and get
     // rejected by the username rule rather than falling through as "not a URL"
@@ -159,9 +162,14 @@ export const createPlatformValidator = (definition: SocialPlatformDefinition): S
         `^(?:(?:https?:)?\\/\\/)?(?:www\\.)?${subdomainPattern}(?:${domainPattern})\\/(?<rest>[\\s\\S]*)$`,
         'i'
     );
+    // matches a bare (protocol-less) domain only when it's the whole prefix of
+    // the input, not merely a substring anywhere in it — otherwise a handle
+    // that happens to contain the domain (e.g. a Bluesky domain-handle like
+    // 'mybsky.app') gets misrouted into URL parsing and rejected as malformed
+    const bareDomainRegex = new RegExp(`^${subdomainPattern}(?:${domainPattern})(?:\\/|$)`, 'i');
 
     const isUrlInput = (input: string) => {
-        return /^(?:https?:\/\/|\/\/|www\.)/i.test(input) || domains.some(domain => input.toLowerCase().includes(domain));
+        return /^(?:https?:\/\/|\/\/|www\.)/i.test(input) || bareDomainRegex.test(input);
     };
 
     // trims a leading @, trailing slash, percent-decodes and NFC-normalises so

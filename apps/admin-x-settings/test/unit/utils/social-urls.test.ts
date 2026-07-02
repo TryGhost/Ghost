@@ -286,7 +286,10 @@ const FIXTURES: PlatformFixture[] = [
             ['threads.net/@example123', 'https://www.threads.net/@example123'],
             // /username without the @ also resolves on threads.net
             ['https://www.threads.net/example123', 'https://www.threads.net/example123'],
-            ['@example.123', 'https://www.threads.net/@example.123']
+            ['@example.123', 'https://www.threads.net/@example.123'],
+            // a handle containing the platform's own domain as a substring
+            // (not anchored at the start) must not be misrouted into URL parsing
+            ['mythreads.net', 'https://www.threads.net/@mythreads.net']
         ],
         invalid: [
             ['https://www.notthreads.com', THREADS_ERROR],
@@ -462,11 +465,18 @@ const FIXTURES: PlatformFixture[] = [
             ['www.bsky.app/profile/did:plc:g67wcylkodj4rrrgh26eifkq', 'https://bsky.app/profile/did:plc:g67wcylkodj4rrrgh26eifkq'],
             ['did:plc:g67wcylkodj4rrrgh26eifkq', 'https://bsky.app/profile/did:plc:g67wcylkodj4rrrgh26eifkq'],
             ['did:plc:THISWILLBELOWERCASED4567', 'https://bsky.app/profile/did:plc:thiswillbelowercased4567'],
+            // DID prefix matching is case-insensitive, so an all-caps DID is
+            // still recognised and lowercased in full, not left partially-cased
+            ['DID:PLC:G67WCYLKODJ4RRRGH26EIFKQ', 'https://bsky.app/profile/did:plc:g67wcylkodj4rrrgh26eifkq'],
             ['@username', 'https://bsky.app/profile/username'],
             ['username', 'https://bsky.app/profile/username'],
             // domain handles have no 15-char limit
             ['thisusernameistoolongforblueskybutisadomain.com', 'https://bsky.app/profile/thisusernameistoolongforblueskybutisadomain.com'],
-            ['ghost.bsky.social', 'https://bsky.app/profile/ghost.bsky.social']
+            ['ghost.bsky.social', 'https://bsky.app/profile/ghost.bsky.social'],
+            // a domain handle containing the platform's own domain as a
+            // substring (not anchored at the start) must not be misrouted into
+            // URL parsing, where it would be rejected as a malformed URL
+            ['mybsky.app', 'https://bsky.app/profile/mybsky.app']
         ],
         invalid: [
             ['https://twitter.com/username', BLUESKY_URL_ERROR],

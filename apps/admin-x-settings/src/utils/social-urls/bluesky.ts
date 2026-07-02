@@ -18,7 +18,7 @@ const bluesky = createPlatformValidator({
         {urlPrefix: 'profile/', storagePrefix: '', rule: {patterns: BLUESKY_USERNAME_PATTERNS}}
     ],
     // DIDs are case-insensitive identifiers, canonically lowercase
-    transformUsername: username => (username.startsWith('did:plc:') ? username.toLowerCase() : username),
+    transformUsername: username => (/^did:plc:/i.test(username) ? username.toLowerCase() : username),
     errors: {
         invalidUrl: 'The URL must be in a format like https://bsky.app/profile/yourUsername',
         invalidUsername: 'Your Username is not a valid Bluesky Username'
