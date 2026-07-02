@@ -11,7 +11,7 @@ let giftCardNoiseTile;
 let giftCardOrbImageHref;
 
 function cacheResult(key, value) {
-    if (cache.size >= CACHE_MAX_SIZE) {
+    if (!cache.has(key) && cache.size >= CACHE_MAX_SIZE) {
         const firstKey = cache.keys().next().value;
 
         cache.delete(firstKey);
@@ -186,7 +186,7 @@ function buildNotchOverlay({accentColor}) {
     };
 }
 
-async function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tierLabel, cadenceLabel}) {
+function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tierLabel, cadenceLabel}) {
     const cacheKey = JSON.stringify({
         accentColor,
         siteTitle,
@@ -198,6 +198,19 @@ async function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tie
         return cache.get(cacheKey);
     }
 
+    const renderPromise = renderGiftPreviewImage({accentColor, siteTitle, tierLabel, cadenceLabel})
+        .catch((err) => {
+            if (cache.get(cacheKey) === renderPromise) {
+                cache.delete(cacheKey);
+            }
+            throw err;
+        });
+    cacheResult(cacheKey, renderPromise);
+
+    return renderPromise;
+}
+
+async function renderGiftPreviewImage({accentColor, siteTitle, tierLabel, cadenceLabel}) {
     const sharp = require('sharp');
 
     const svg = buildSvg({accentColor});
@@ -217,8 +230,6 @@ async function generateGiftPreviewImage({accentColor = '#15171A', siteTitle, tie
         .png()
         .timeout({seconds: 10})
         .toBuffer();
-
-    cacheResult(cacheKey, image);
 
     return image;
 }
