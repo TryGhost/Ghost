@@ -111,6 +111,231 @@ test.describe('Feed', async () => {
         expect(firstFeedItemText).toContain(new Date(firstPost.publishedAt).toLocaleString('en-GB', {month: 'short', day: 'numeric'}));
     });
 
+    test('sensitive media follows the saved preference and can be revealed per post', async ({page}) => {
+        const imageFixture = '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><rect width="1" height="1" fill="black"/></svg>';
+        const mockSensitiveImage = async () => ({
+            body: imageFixture,
+            contentType: 'image/svg+xml'
+        });
+
+        await page.route('https://test.instance/media/blog.jpg', async (route) => {
+            await route.fulfill(await mockSensitiveImage());
+        });
+
+        const shownSensitiveFeedFixture = {
+            ...feedFixture,
+            posts: [
+                {
+                    ...feedFixture.posts[3],
+                    id: 'https://test.instance/users/user6/statuses/sensitive-media',
+                    content: '<p>This note has visible text and sensitive media.</p>',
+                    featureImageUrl: null,
+                    sensitive: true,
+                    contentWarning: null,
+                    attachments: [
+                        {
+                            type: 'Image',
+                            mediaType: 'image/jpeg',
+                            name: 'Sensitive Image',
+                            url: 'https://test.instance/media/blog.jpg'
+                        }
+                    ]
+                },
+                ...feedFixture.posts.slice(1)
+            ]
+        };
+
+        await mockApi({page, requests: {
+            getFeed: {
+                method: 'GET',
+                path: '/v1/feed/notes',
+                response: shownSensitiveFeedFixture
+            },
+            getPreferences: {
+                method: 'GET',
+                path: '/v1/preferences',
+                response: {
+                    showSensitiveMedia: false
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/notes');
+
+        const feedList = page.getByTestId('feed-list');
+        await expect(feedList).toBeVisible();
+
+        const sensitivePost = page.getByTestId('feed-item').filter({
+            hasText: 'This note has visible text and sensitive media.'
+        });
+        await expect(sensitivePost).toBeVisible();
+        await expect(sensitivePost.getByTestId('sensitive-media-overlay').getByText('Sensitive media')).toBeVisible();
+        await expect(sensitivePost.getByRole('img', {name: 'Sensitive Image'})).toHaveCount(0);
+
+        await sensitivePost.getByRole('button', {name: 'Show media'}).click();
+
+        await expect(sensitivePost.getByRole('img', {name: 'Sensitive Image'})).toBeVisible();
+        await expect(sensitivePost.getByTestId('sensitive-media-overlay')).toHaveCount(0);
+
+        const enabledPage = await page.context().newPage();
+        await mockInitialApiRequests(enabledPage);
+        await enabledPage.route('https://test.instance/media/blog.jpg', async (route) => {
+            await route.fulfill(await mockSensitiveImage());
+        });
+
+        const sensitiveFeedFixture = {
+            ...feedFixture,
+            posts: [
+                {
+                    ...feedFixture.posts[3],
+                    id: 'https://test.instance/users/user6/statuses/show-sensitive-media',
+                    content: '<p>This note shows sensitive media immediately.</p>',
+                    featureImageUrl: null,
+                    sensitive: true,
+                    contentWarning: null,
+                    attachments: [
+                        {
+                            type: 'Image',
+                            mediaType: 'image/jpeg',
+                            name: 'Sensitive Image',
+                            url: 'https://test.instance/media/blog.jpg'
+                        }
+                    ]
+                },
+                ...feedFixture.posts.slice(1)
+            ]
+        };
+
+        await mockApi({page: enabledPage, requests: {
+            getFeed: {
+                method: 'GET',
+                path: '/v1/feed/notes',
+                response: sensitiveFeedFixture
+            },
+            getPost: {
+                method: 'GET',
+                path: `/v1/post/${encodeURIComponent(sensitiveFeedFixture.posts[0].id)}`,
+                response: {
+                    ...sensitiveFeedFixture.posts[0],
+                    metadata: {
+                        ghostAuthors: []
+                    }
+                }
+            },
+            getReplies: {
+                method: 'GET',
+                path: `/v1/replies/${encodeURIComponent(sensitiveFeedFixture.posts[0].id)}`,
+                response: {
+                    post: {
+                        ...sensitiveFeedFixture.posts[0],
+                        metadata: {
+                            ghostAuthors: []
+                        }
+                    },
+                    ancestors: {
+                        chain: [],
+                        next: null
+                    },
+                    children: [],
+                    next: null
+                }
+            },
+            getPreferences: {
+                method: 'GET',
+                path: '/v1/preferences',
+                response: {
+                    showSensitiveMedia: true
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await enabledPage.goto('#/notes');
+
+        const enabledFeedList = enabledPage.getByTestId('feed-list');
+        await expect(enabledFeedList).toBeVisible();
+
+        const shownSensitivePost = enabledPage.getByTestId('feed-item').filter({
+            hasText: 'This note shows sensitive media immediately.'
+        });
+        await expect(shownSensitivePost).toBeVisible();
+        await expect(shownSensitivePost.getByRole('img', {name: 'Sensitive Image'})).toBeVisible();
+        await expect(shownSensitivePost.getByTestId('sensitive-media-overlay')).toHaveCount(0);
+
+        await shownSensitivePost.click();
+
+        const modalPost = enabledPage.locator('[data-layout="modal"]');
+        await expect(modalPost.getByText('This note shows sensitive media immediately.')).toBeVisible();
+        await expect(modalPost.getByRole('img', {name: 'Sensitive Image'})).toBeVisible();
+        await expect(modalPost.getByTestId('sensitive-media-overlay')).toHaveCount(0);
+
+        await enabledPage.close();
+    });
+
+    test('content warnings hide warned content until revealed', async ({page}) => {
+        const imageFixture = '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><rect width="1" height="1" fill="black"/></svg>';
+
+        await page.route('https://test.instance/media/blog.jpg', async (route) => {
+            await route.fulfill({
+                body: imageFixture,
+                contentType: 'image/svg+xml'
+            });
+        });
+
+        const warnedFeedFixture = {
+            ...feedFixture,
+            posts: [
+                {
+                    ...feedFixture.posts[3],
+                    id: 'https://test.instance/users/user6/statuses/content-warning',
+                    content: '<p>Hidden warned content.</p>',
+                    featureImageUrl: null,
+                    sensitive: true,
+                    contentWarning: 'Graphic content',
+                    attachments: [
+                        {
+                            type: 'Image',
+                            mediaType: 'image/jpeg',
+                            name: 'Warned Image',
+                            url: 'https://test.instance/media/blog.jpg'
+                        }
+                    ]
+                },
+                ...feedFixture.posts.slice(1)
+            ]
+        };
+
+        await mockApi({page, requests: {
+            getFeed: {
+                method: 'GET',
+                path: '/v1/feed/notes',
+                response: warnedFeedFixture
+            },
+            getPreferences: {
+                method: 'GET',
+                path: '/v1/preferences',
+                response: {
+                    showSensitiveMedia: false
+                }
+            }
+        }, options: {useActivityPub: true}});
+
+        await page.goto('#/notes');
+
+        const feedList = page.getByTestId('feed-list');
+        await expect(feedList).toBeVisible();
+
+        const warnedPost = page.locator('[data-object-id="https://test.instance/users/user6/statuses/content-warning"]');
+        await expect(warnedPost.getByTestId('content-warning-overlay')).toBeVisible();
+        await expect(warnedPost.getByText('Hidden warned content.')).toHaveCount(0);
+        await expect(warnedPost.getByRole('img', {name: 'Warned Image'})).toHaveCount(0);
+
+        await warnedPost.getByRole('button', {name: 'Show post'}).click();
+
+        await expect(warnedPost.getByText('Hidden warned content.')).toBeVisible();
+        await expect(warnedPost.getByRole('img', {name: 'Warned Image'})).toBeVisible();
+        await expect(warnedPost.getByTestId('content-warning-overlay')).toHaveCount(0);
+    });
+
     test('I can like a note in my feed', async ({page}) => {
         // Use the first post which has likedByMe: false
         const firstPostFixture = feedFixture.posts[0];

@@ -2,7 +2,7 @@ import FeedItemMenu from './feed-item-menu';
 import React, {useEffect, useRef, useState} from 'react';
 import {ActivityPubAttachment, ActorProperties, ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {Button, Skeleton} from '@tryghost/shade/components';
-import {H4} from '@tryghost/shade/primitives';
+import {H4, Text} from '@tryghost/shade/primitives';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
 
@@ -178,6 +178,47 @@ export function renderFeedAttachment(
     }
 }
 
+function SensitiveMediaOverlay({
+    onReveal
+}: {
+    onReveal: (event: React.MouseEvent) => void;
+}) {
+    return (
+        <div
+            className='mt-3 rounded-md border border-border-default bg-surface-elevated p-6 text-center'
+            data-testid='sensitive-media-overlay'
+            onClick={(event) => event.stopPropagation()}
+        >
+            <Text className='mb-3' weight='medium'>Sensitive media</Text>
+            <Button size='sm' type='button' variant='secondary' onClick={onReveal}>Show media</Button>
+        </div>
+    );
+}
+
+function ContentWarningOverlay({
+    label,
+    onReveal
+}: {
+    label: string;
+    onReveal: (event: React.MouseEvent) => void;
+}) {
+    return (
+        <div
+            className='mt-3 rounded-md border border-border-default bg-surface-elevated p-4'
+            data-testid='content-warning-overlay'
+            onClick={(event) => event.stopPropagation()}
+        >
+            <Text className='mb-3' weight='medium'>{label}</Text>
+            <Button size='sm' type='button' variant='secondary' onClick={onReveal}>Show post</Button>
+        </div>
+    );
+}
+
+type SensitiveObjectProperties = ObjectProperties & {
+    sensitive?: boolean;
+    contentWarning?: string | null;
+};
+
 function renderInboxAttachment(object: ObjectProperties, isLoading: boolean | undefined) {
     const attachment = getAttachment(object);
 
@@ -254,6 +295,7 @@ interface FeedItemProps {
     onClick?: () => void;
     onDelete?: () => void;
     showStats?: boolean;
+    showSensitiveMediaByDefault?: boolean;
 }
 
 const noop = () => {};
@@ -279,13 +321,16 @@ const FeedItem: React.FC<FeedItemProps> = ({
     isChainParent = false,
     onClick: onClickHandler = noop,
     onDelete = noop,
-    showStats = true
+    showStats = true,
+    showSensitiveMediaByDefault = false
 }) => {
     const timestamp =
         new Date(object?.published ?? new Date()).toLocaleDateString('default', {year: 'numeric', month: 'short', day: '2-digit'}) + ', ' + new Date(object?.published ?? new Date()).toLocaleTimeString('default', {hour: '2-digit', minute: '2-digit'});
 
     const [, setIsCopied] = useState(false);
     const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
+    const [isSensitiveMediaRevealed, setIsSensitiveMediaRevealed] = useState(false);
+    const [isContentWarningRevealed, setIsContentWarningRevealed] = useState(false);
 
     const contentRef = useRef<HTMLDivElement>(null);
     const [isTruncated, setIsTruncated] = useState(false);
@@ -379,6 +424,38 @@ const FeedItem: React.FC<FeedItemProps> = ({
 
     const handleImageError = (url: string) => {
         setBrokenImages(prev => new Set(prev).add(url));
+    };
+
+    const sensitiveObject = object as SensitiveObjectProperties;
+    const hasSensitiveMedia = sensitiveObject.sensitive === true && getAttachment(object) !== null;
+    const contentWarning = sensitiveObject.contentWarning?.trim() || null;
+    const shouldHideContentWarning = contentWarning !== null && !isContentWarningRevealed;
+    const shouldHideSensitiveMedia = hasSensitiveMedia && !showSensitiveMediaByDefault && !isSensitiveMediaRevealed && !isContentWarningRevealed;
+
+    const handleRevealSensitiveMedia = (event: React.MouseEvent) => {
+        event.stopPropagation();
+        setIsSensitiveMediaRevealed(true);
+    };
+
+    const handleRevealContentWarning = (event: React.MouseEvent) => {
+        event.stopPropagation();
+        setIsContentWarningRevealed(true);
+    };
+
+    const renderFeedMedia = (mediaClickHandler?: (url: string) => void) => {
+        if (shouldHideSensitiveMedia) {
+            return <SensitiveMediaOverlay onReveal={handleRevealSensitiveMedia} />;
+        }
+
+        return renderFeedAttachment(object, mediaClickHandler, brokenImages, handleImageError);
+    };
+
+    const renderContentWarningOverlay = () => {
+        if (!contentWarning) {
+            return null;
+        }
+
+        return <ContentWarningOverlay label={contentWarning} onReveal={handleRevealContentWarning} />;
     };
 
     let author = actor;
@@ -487,37 +564,42 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             <div className='relative col-start-2 col-end-3 w-full gap-4 pl-[52px]'>
                                 <div className='flex flex-col'>
                                     <div className=''>
-                                        {(object.type === 'Article') ? <div className='rounded-md border border-gray-200 transition-colors hover:bg-gray-100 dark:border-gray-950 dark:hover:bg-gray-950'>
-                                            {renderFeedAttachment(object, onClick, brokenImages, handleImageError)}
-                                            <div className='p-5'>
-                                                <div className='break-anywhere mb-1 line-clamp-2 text-lg leading-tight font-semibold tracking-tight text-pretty' data-test-activity-heading>{object.name}</div>
-                                                <div className='break-anywhere line-clamp-3 leading-[1.4em]'>{object.preview?.content}</div>
-                                            </div>
-                                        </div> :
-                                            <div className='relative'>
-                                                <div className='ap-note-content break-anywhere line-clamp-[10] leading-[1.4285714286] tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'>
-                                                    {!isLoading ?
-                                                        <div dangerouslySetInnerHTML={{
-                                                            __html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')
-                                                        }} ref={contentRef}
-                                                        onClick={(e) => {
-                                                            const target = e.target as HTMLElement;
-                                                            if (
-                                                                target.tagName === 'A' ||
-                                                                target.closest('a')
-                                                            ) {
-                                                                e.stopPropagation();
-                                                            }
-                                                        }}
-                                                        />
-                                                        :
-                                                        <Skeleton count={2} />
-                                                    }
+                                        {(object.type === 'Article') ? (
+                                            shouldHideContentWarning ? renderContentWarningOverlay() :
+                                                <div className='rounded-md border border-gray-200 transition-colors hover:bg-gray-100 dark:border-gray-950 dark:hover:bg-gray-950'>
+                                                    {renderFeedMedia(onClick)}
+                                                    <div className='p-5'>
+                                                        <div className='break-anywhere mb-1 line-clamp-2 text-lg leading-tight font-semibold tracking-tight text-pretty' data-test-activity-heading>{object.name}</div>
+                                                        <div className='break-anywhere line-clamp-3 leading-[1.4em]'>{object.preview?.content}</div>
+                                                    </div>
                                                 </div>
-                                                {isTruncated && (
-                                                    <button className='mt-1 text-blue-600' type='button'>Show more</button>
-                                                )}
-                                                {renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
+                                        ) :
+                                            <div className='relative'>
+                                                {shouldHideContentWarning ? renderContentWarningOverlay() : <>
+                                                    <div className='ap-note-content break-anywhere line-clamp-[10] leading-[1.4285714286] tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'>
+                                                        {!isLoading ?
+                                                            <div dangerouslySetInnerHTML={{
+                                                                __html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')
+                                                            }} ref={contentRef}
+                                                            onClick={(e) => {
+                                                                const target = e.target as HTMLElement;
+                                                                if (
+                                                                    target.tagName === 'A' ||
+                                                                    target.closest('a')
+                                                                ) {
+                                                                    e.stopPropagation();
+                                                                }
+                                                            }}
+                                                            />
+                                                            :
+                                                            <Skeleton count={2} />
+                                                        }
+                                                    </div>
+                                                    {isTruncated && (
+                                                        <button className='mt-1 text-blue-600' type='button'>Show more</button>
+                                                    )}
+                                                    {renderFeedMedia(openLightbox)}
+                                                </>}
                                             </div>
                                         }
                                     </div>
@@ -577,9 +659,11 @@ const FeedItem: React.FC<FeedItemProps> = ({
                                 </>}
                                 <div className={`relative z-10 col-start-1 col-end-3 w-full gap-4`}>
                                     <div className='flex flex-col items-start'>
-                                        {object.name && <H4 className='break-anywhere mb-1 leading-tight' data-test-activity-heading>{object.name}</H4>}
-                                        <div dangerouslySetInnerHTML={({__html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')})} ref={contentRef} className='ap-note-content-large break-anywhere text-[1.6rem] tracking-[-0.011em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'></div>
-                                        {renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
+                                        {shouldHideContentWarning ? renderContentWarningOverlay() : <>
+                                            {object.name && <H4 className='break-anywhere mb-1 leading-tight' data-test-activity-heading>{object.name}</H4>}
+                                            <div dangerouslySetInnerHTML={({__html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')})} ref={contentRef} className='ap-note-content-large break-anywhere text-[1.6rem] tracking-[-0.011em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'></div>
+                                            {renderFeedMedia(openLightbox)}
+                                        </>}
                                         <div className='space-between mt-3 ml-[-8px] flex'>
                                             {showStats && <FeedItemStats
                                                 actor={author}
@@ -653,15 +737,17 @@ const FeedItem: React.FC<FeedItemProps> = ({
                             </div>
                             <div className={`relative z-10 col-start-2 col-end-3 w-full gap-4 pl-[52px]`}>
                                 <div className='flex flex-col items-start'>
-                                    {(object.type === 'Article') && renderFeedAttachment(object, onClick, brokenImages, handleImageError)}
-                                    {object.name && <H4 className='break-anywhere mt-2.5 leading-tight text-pretty' data-test-activity-heading>{object.name}</H4>}
-                                    {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')})} ref={contentRef} className='ap-note-content break-anywhere tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'></div>}
-                                    {(object.type === 'Note') && renderFeedAttachment(object, openLightbox, brokenImages, handleImageError)}
-                                    {(object.type === 'Article') && <Button
-                                        className='mt-3 w-full'
-                                        id='read-more'
-                                        variant='secondary'
-                                    >Read more</Button>}
+                                    {shouldHideContentWarning ? renderContentWarningOverlay() : <>
+                                        {(object.type === 'Article') && renderFeedMedia(onClick)}
+                                        {object.name && <H4 className='break-anywhere mt-2.5 leading-tight text-pretty' data-test-activity-heading>{object.name}</H4>}
+                                        {(object.preview && object.type === 'Article') ? <div className='mt-1 line-clamp-3 leading-tight'>{object.preview.content}</div> : <div dangerouslySetInnerHTML={({__html: sanitizeHtml(openLinksInNewTab(object.content || '') ?? '')})} ref={contentRef} className='ap-note-content break-anywhere tracking-[-0.006em] text-pretty text-gray-900 dark:text-gray-300 [&_p+p]:mt-3'></div>}
+                                        {(object.type === 'Note') && renderFeedMedia(openLightbox)}
+                                        {(object.type === 'Article') && <Button
+                                            className='mt-3 w-full'
+                                            id='read-more'
+                                            variant='secondary'
+                                        >Read more</Button>}
+                                    </>}
                                     {!isCompact && <div className='space-between mt-2 ml-[-8px] flex'>
                                         {showStats && <FeedItemStats
                                             actor={author}

@@ -156,6 +156,58 @@ describe('ActivityPubAPI', function () {
         });
     });
 
+    describe('getPreferences', function () {
+        test('It returns the sensitive media display preference', async function () {
+            const fakeFetch = Fetch({
+                'https://auth.api/': {
+                    response: JSONResponse({
+                        identities: [{
+                            token: 'fake-token'
+                        }]
+                    })
+                },
+                'https://activitypub.api/.ghost/activitypub/v1/preferences': {
+                    async assert(_resource, init) {
+                        const headers = new Headers(init?.headers);
+                        expect(init?.method).toEqual('GET');
+                        expect(headers.get('Authorization')).toContain('fake-token');
+                    },
+                    response: JSONResponse({
+                        showSensitiveMedia: true
+                    })
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await expect(api.getPreferences()).resolves.toEqual({
+                showSensitiveMedia: true
+            });
+        });
+
+        test('It defaults showSensitiveMedia to false when it is missing', async function () {
+            const fakeFetch = Fetch({
+                'https://activitypub.api/.ghost/activitypub/v1/preferences': {
+                    response: JSONResponse({})
+                }
+            });
+            const api = new ActivityPubAPI(
+                new URL('https://activitypub.api'),
+                new URL('https://auth.api'),
+                'index',
+                fakeFetch
+            );
+
+            await expect(api.getPreferences()).resolves.toEqual({
+                showSensitiveMedia: false
+            });
+        });
+    });
+
     describe('follow', function () {
         test('It passes the token to the follow endpoint', async function () {
             const fakeFetch = Fetch({

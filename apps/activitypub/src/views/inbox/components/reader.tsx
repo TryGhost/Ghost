@@ -5,6 +5,7 @@ import getHandle from '../../../utils/get-handle';
 import {LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 
 import {renderTimestamp} from '../../../utils/render-timestamp';
+import {usePreferencesForUser} from '@hooks/use-activity-pub-queries';
 import {useReplyChainData} from '@hooks/use-reply-chain-data';
 
 import APAvatar from '@src/components/global/ap-avatar';
@@ -439,6 +440,8 @@ export const Reader: React.FC<ReaderProps> = ({
     const [fullyExpandedChains, setFullyExpandedChains] = useState<Set<string>>(new Set());
     const [loadingChains, setLoadingChains] = useState<Set<string>>(new Set());
     const [isLoadingMoreTopLevelReplies, setIsLoadingMoreTopLevelReplies] = useState(false);
+    const {data: preferences} = usePreferencesForUser();
+    const showSensitiveMediaByDefault = preferences?.showSensitiveMedia ?? false;
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement | null>(null);
 
@@ -926,6 +929,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                             object={replyGroup.mainReply.object}
                                                             parentId={object.id}
                                                             repostCount={replyGroup.mainReply.object.repostCount ?? 0}
+                                                            showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                             type='Note'
                                                             onClick={() => {
                                                                 const container = modalRef.current;
@@ -951,6 +955,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                 object={replyGroup.chain[0].object}
                                                                 parentId={object.id}
                                                                 repostCount={replyGroup.chain[0].object.repostCount ?? 0}
+                                                                showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                                 type='Note'
                                                                 onClick={() => {
                                                                     const container = modalRef.current;
@@ -982,6 +987,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                                     object={chainItem.object}
                                                                     parentId={object.id}
                                                                     repostCount={chainItem.object.repostCount ?? 0}
+                                                                    showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                                                                     type='Note'
                                                                     onClick={() => {
                                                                         const container = modalRef.current;

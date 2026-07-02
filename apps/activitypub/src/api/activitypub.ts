@@ -206,6 +206,10 @@ export interface SocialWebDomain {
     actorUrl: string;
 }
 
+export interface Preferences {
+    showSensitiveMedia: boolean;
+}
+
 export const PostType = {
     Note: 0,
     Article: 1,
@@ -220,6 +224,8 @@ export interface Post {
     title: string;
     excerpt: string;
     summary: string | null;
+    sensitive: boolean;
+    contentWarning: string | null;
     content: string;
     url: string;
     featureImageUrl: string | null;
@@ -682,6 +688,18 @@ export class ActivityPubAPI {
             : 0;
 
         return {count};
+    }
+
+    async getPreferences(): Promise<Preferences> {
+        const url = new URL('.ghost/activitypub/v1/preferences', this.apiUrl);
+        const json = await this.fetchJSON(url);
+
+        return {
+            showSensitiveMedia:
+                json !== null &&
+                'showSensitiveMedia' in json &&
+                json.showSensitiveMedia === true
+        };
     }
 
     async resetNotificationsCount() {

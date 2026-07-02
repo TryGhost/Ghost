@@ -9,7 +9,7 @@ import {ComponentPropsWithoutRef, ReactNode} from 'react';
 import {FILE_SIZE_ERROR_MESSAGE, MAX_FILE_SIZE} from '@utils/image';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {toast} from 'sonner';
-import {uploadFile, useAccountForUser, useNoteMutationForUser, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
+import {uploadFile, useAccountForUser, useNoteMutationForUser, usePreferencesForUser, useReplyMutationForUser, useUserDataForUser} from '@hooks/use-activity-pub-queries';
 import {useNavigateWithBasePath} from '@src/hooks/use-navigate-with-base-path';
 
 interface NewNoteModalProps extends ComponentPropsWithoutRef<typeof Dialog> {
@@ -28,6 +28,8 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
     const noteMutation = useNoteMutationForUser('index', user);
     const replyMutation = useReplyMutationForUser('index', user);
     const {data: account, isLoading: isLoadingAccount} = useAccountForUser('index', 'me');
+    const {data: preferences} = usePreferencesForUser();
+    const showSensitiveMediaByDefault = preferences?.showSensitiveMedia ?? false;
     const [isOpen, setIsOpen] = useState(false);
     const textareaRef = useRef<HTMLTextAreaElement>(null);
     const altTextInputRef = useRef<HTMLInputElement>(null);
@@ -317,6 +319,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                         likeCount={replyTo.object.likeCount ?? 0}
                         object={replyTo.object}
                         repostCount={replyTo.object.repostCount ?? 0}
+                        showSensitiveMediaByDefault={showSensitiveMediaByDefault}
                         type={replyTo.object.type === 'Article' ? 'Article' : 'Note'}
                         onClick={() => {}}
                     />
