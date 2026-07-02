@@ -82,7 +82,7 @@ const EmailDesignModal: React.FC<EmailDesignModalProps> = ({
             <DialogContent
                 aria-describedby={undefined}
                 className={cn(
-                    'top-[50%] left-[50%] h-[calc(100vh-8vmin)] w-[calc(100vw-8vmin)] max-w-none translate-x-[-50%] translate-y-[-50%] gap-0 overflow-hidden p-0'
+                    'top-[50%] left-[50%] h-[calc(100vh-8vmin)] w-[calc(100vw-8vmin)] max-w-none translate-[-50%] gap-0 overflow-hidden p-0'
                 )}
                 data-testid={testId}
                 onEscapeKeyDown={(event) => {

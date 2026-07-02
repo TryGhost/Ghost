@@ -1,55 +1,53 @@
-// @ts-check
+import type {InternalKeys} from '../internal-keys';
+// @ts-expect-error @tryghost/domain-events currently lacks type declarations.
+import type DomainEvents from '@tryghost/domain-events';
+import {oneAtATime} from '../../../shared/one-at-a-time';
+import {poll} from './poll';
+import * as automationsApi from './automations-api';
+
 const urlUtils = require('../../../shared/url-utils');
-const {oneAtATime} = require('../../../shared/one-at-a-time');
 const logging = require('@tryghost/logging');
 const {getSignedAdminToken} = require('../../adapters/scheduling/utils');
 const StartAutomationsPollEvent = require('./events/start-automations-poll-event');
-const {poll} = require('./poll');
 const {welcomeEmailAutomationPoll} = require('./welcome-email-automation-poll');
-const automationsApi = require('./automations-api');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
-/** @import DomainEvents from '@tryghost/domain-events' */
 
-/**
- * @internal
- * @typedef {object} SchedulerAdapter
- * @prop {(job: {
- *     time: number;
- *     url: string;
- *     extra: {
- *         httpMethod: string;
- *     };
- * }) => void} schedule
- * @prop {(rescheduler: {rescheduleAll: () => unknown}) => void} register
- */
+type SchedulerAdapter = {
+    schedule(job: {
+        extra: {
+            httpMethod: string;
+        };
+        time: number;
+        url: string;
+    }): void;
+    register(rescheduler: {rescheduleAll: () => unknown}): void;
+};
 
-class AutomationsService {
-    #initialized = false;
-    #enqueuePollNow;
+type AutomationsServiceOptions = {
+    apiUrl: string;
+    domainEvents: Pick<DomainEvents, 'dispatch' | 'subscribe'>;
+    internalKeys: InternalKeys;
+    schedulerAdapter: SchedulerAdapter;
+};
 
-    /**
-     * @param {object} options
-     * @param {Pick<DomainEvents, 'dispatch' | 'subscribe'>} options.domainEvents
-     * @param {string} options.apiUrl
-     * @param {SchedulerAdapter} options.schedulerAdapter
-     * @param {ReadonlyMap<string, Promise<{id: string, secret: string}>>} options.internalKeys
-     * @returns {void}
-     */
-    init({domainEvents, apiUrl, schedulerAdapter, internalKeys}) {
-        if (this.#initialized) {
+export class AutomationsService {
+    #enqueuePollNow: undefined | (() => void);
+
+    init({domainEvents, apiUrl, schedulerAdapter, internalKeys}: AutomationsServiceOptions): void {
+        const isInitialized = Boolean(this.#enqueuePollNow);
+        if (isInitialized) {
             return;
         }
 
-        this.#enqueuePollNow = () => domainEvents.dispatch(StartAutomationsPollEvent.create());
+        const enqueuePollNow = () => domainEvents.dispatch(StartAutomationsPollEvent.create());
 
-        /** @param {Readonly<Date>} date */
-        const enqueuePollAt = async (date) => {
+        const enqueuePollAt = async (date: Readonly<Date>): Promise<void> => {
             const isRequestedDateInTheFuture = new Date() < date;
             if (!isRequestedDateInTheFuture) {
                 // Dispatch a task instead of calling immediately to resolve issues with better-sqlite3
                 // being synchronous and blocking the schedulerAdapter.schedule call below, which can
                 // cause a deadlock in some cases.
-                setImmediate(() => this.#enqueuePollNow());
+                setImmediate(() => enqueuePollNow());
                 return;
             }
 
@@ -79,7 +77,7 @@ class AutomationsService {
 
         enqueuePollAt(new Date());
 
-        this.#initialized = true;
+        this.#enqueuePollNow = enqueuePollNow;
     }
 
     /**
@@ -87,9 +85,7 @@ class AutomationsService {
      * key fails JWT verification when fired; this dispatches a fresh in-process
      * poll that re-schedules the next callback under the current key.
      */
-    rescheduleAll() {
+    rescheduleAll(): void {
         this.#enqueuePollNow?.();
     }
 }
-
-module.exports = AutomationsService;

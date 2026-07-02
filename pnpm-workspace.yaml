@@ -28,8 +28,8 @@ allowBuilds:
 catalog:
   '@ebay/nice-modal-react': 1.2.13
   '@eslint/js': 9.39.4
-  '@faker-js/faker': 10.4.0
-  '@playwright/test': 1.60.0
+  '@faker-js/faker': 10.5.0
+  '@playwright/test': 1.61.1
   '@radix-ui/react-avatar': 1.2.0
   '@radix-ui/react-checkbox': 1.3.5
   '@radix-ui/react-context-menu': 2.3.1
@@ -40,9 +40,9 @@ catalog:
   '@radix-ui/react-tabs': 1.1.15
   '@radix-ui/react-tooltip': 1.2.10
   '@sentry/react': 7.120.4
-  '@storybook/addon-docs': 10.4.4
-  '@storybook/addon-links': 10.4.4
-  '@storybook/react-vite': 10.4.4
+  '@storybook/addon-docs': 10.4.6
+  '@storybook/addon-links': 10.4.6
+  '@storybook/react-vite': 10.4.6
   '@tailwindcss/postcss': 4.2.2
   '@tailwindcss/vite': 4.2.2
   '@tanstack/react-query': 4.44.0
@@ -92,7 +92,7 @@ catalog:
   eslint-plugin-react: 7.37.5
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.3
-  eslint-plugin-tailwindcss: 4.0.0-beta.0
+  eslint-plugin-tailwindcss: 4.0.4
   fs-extra: 11.3.5
   glob: 13.0.6
   globals: 17.6.0
@@ -104,7 +104,7 @@ catalog:
   mingo: 2.5.3
   msw: 2.14.6
   node-html-markdown: 2.0.0
-  postcss: 8.5.15
+  postcss: 8.5.16
   preact: ^10.29.2
   react: 18.3.1
   react-dom: 18.3.1
@@ -112,7 +112,7 @@ catalog:
   react-router: 7.14.0
   sinon: 22.0.0
   sonner: 2.0.7
-  storybook: 10.4.4
+  storybook: 10.4.6
   supertest: 7.2.2
   tailwindcss: 4.2.2
   tldts: ^7.4.4
@@ -131,7 +131,7 @@ catalogs:
   react17:
     react: 17.0.2
     react-dom: 17.0.2
-    '@types/react': 17.0.90
+    '@types/react': 17.0.93
     '@types/react-dom': 17.0.26
     '@testing-library/react': 12.1.5
   tailwind3:

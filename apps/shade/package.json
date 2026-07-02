@@ -100,7 +100,7 @@
         "eslint-plugin-react": "catalog:",
         "eslint-plugin-react-hooks": "catalog:",
         "eslint-plugin-react-refresh": "catalog:",
-        "eslint-plugin-storybook": "10.4.4",
+        "eslint-plugin-storybook": "10.4.6",
         "eslint-plugin-tailwindcss": "catalog:",
         "glob": "catalog:",
         "globals": "catalog:",
@@ -120,7 +120,7 @@
     },
     "dependencies": {
         "@hookform/resolvers": "5.4.0",
-        "@number-flow/react": "0.6.0",
+        "@number-flow/react": "0.6.1",
         "@radix-ui/react-accordion": "1.2.14",
         "@radix-ui/react-alert-dialog": "1.1.17",
         "@radix-ui/react-avatar": "catalog:",

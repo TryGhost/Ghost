@@ -98,7 +98,7 @@ const NodeShell: React.FC<React.PropsWithChildren<{className?: string; data: Ste
                         data.selected && !data.errorMessage && 'border-gray-700 shadow-[inset_0_0_0_1px_var(--color-gray-700),0_1px_2px_0_rgb(0_0_0_/_0.05)]',
                         data.errorMessage && 'border-destructive',
                         !data.errorMessage && data.warningMessage && 'border-yellow-600',
-                        data.isNew && 'animate-in fade-in-0 zoom-in-90 duration-250 ease-out motion-reduce:animate-none',
+                        data.isNew && 'animate-in duration-250 ease-out fade-in-0 zoom-in-90 motion-reduce:animate-none',
                         className
                     )}
                     type='button'

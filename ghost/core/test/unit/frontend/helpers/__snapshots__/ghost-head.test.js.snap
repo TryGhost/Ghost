@@ -4230,7 +4230,7 @@ Object {
             \\"https://x.com/testuser\\"
         ]
     },
-    \\"headline\\": \\"Welcome to Ghost &quot;test&quot;\\",
+    \\"headline\\": \\"Welcome to Ghost \\\\\\"test\\\\\\"\\",
     \\"url\\": \\"http://localhost:65530/post/\\",
     \\"datePublished\\": \\"1970-01-01T00:00:00.000Z\\",
     \\"dateModified\\": \\"1970-01-01T00:00:00.000Z\\",
@@ -4239,7 +4239,7 @@ Object {
         \\"url\\": \\"http://localhost:65530/content/images/test-image.png\\"
     },
     \\"keywords\\": \\"tag1, tag2, tag3\\",
-    \\"description\\": \\"site &quot;test&quot; description\\",
+    \\"description\\": \\"site \\\\\\"test\\\\\\" description\\",
     \\"mainEntityOfPage\\": \\"http://localhost:65530/post/\\"
 }
     </script>

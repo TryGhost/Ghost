@@ -27,9 +27,11 @@ describe('Front-end gift links', function () {
     let request: any;
     let token: string;
     let pageToken: string;
+    let membersToken: string;
     const slug = 'gift-me-this-paid-post';
     const otherSlug = 'another-paid-post';
     const pageSlug = 'gift-me-this-paid-page';
+    const membersSlug = 'gift-me-this-members-post';
 
     beforeAll(async function () {
         const originalSettingsCacheGetFn = settingsCache.get;
@@ -85,12 +87,21 @@ describe('Front-end gift links', function () {
             published_at: moment().toDate(),
             mobiledoc
         });
-        await testUtils.fixtures.insertPosts([paidPost, otherPaidPost, paidPage]);
+        // A members-only post so the toast copy can be asserted for that access level.
+        const membersPost = testUtils.DataGenerator.forKnex.createPost({
+            slug: membersSlug,
+            visibility: 'members',
+            status: 'published',
+            published_at: moment().toDate(),
+            mobiledoc
+        });
+        await testUtils.fixtures.insertPosts([paidPost, otherPaidPost, paidPage, membersPost]);
 
-        // Mint a live gift link for the paid post and the paid page.
+        // Mint a live gift link for the paid post, the paid page and the members post.
         const giftLinksService = require('../../core/server/services/gift-links');
         token = (await giftLinksService.service.ensure({actor: null}, paidPost.id)).giftLinks[0].token;
         pageToken = (await giftLinksService.service.ensure({actor: null}, paidPage.id)).giftLinks[0].token;
+        membersToken = (await giftLinksService.service.ensure({actor: null}, membersPost.id)).giftLinks[0].token;
 
         request = supertest.agent(configUtils.config.get('url'));
     });
@@ -123,9 +134,19 @@ describe('Front-end gift links', function () {
         assert.equal(res.headers['x-robots-tag'], 'noindex');
         assert.equal(res.headers['referrer-policy'], 'no-referrer');
 
-        // The default gift toast renders on the verified gift view.
+        // The default gift toast renders on the verified gift view, and its copy
+        // reflects the post's access level (this fixture is a paid post).
         assert.match(res.text, /id="gh-gift-toast"/, 'default gift toast renders on a gift view');
-        assert.match(res.text, /gifted access to this post/, 'toast announces the gift');
+        assert.match(res.text, /gifted access to this paid post/, 'toast announces the gift and its paid access level');
+    });
+
+    it('varies the toast copy by access level: a members-only post reads "members-only"', async function () {
+        const res = await request
+            .get(`/${membersSlug}/?gift=${membersToken}`)
+            .expect(200);
+
+        assert.match(res.text, /id="gh-gift-toast"/, 'default gift toast renders on a gift view');
+        assert.match(res.text, /gifted access to this members-only post/, 'toast reflects the members-only access level');
     });
 
     it('301s to the canonical URL, dropping ?gift, when the token is invalid', async function () {
@@ -143,10 +164,13 @@ describe('Front-end gift links', function () {
 
     it('unlocks a paid page with a valid ?gift token on its canonical URL', async function () {
         // The feature works on pages too, not just posts — same entry controller.
-        await request
+        const res = await request
             .get(`/${pageSlug}/?gift=${pageToken}`)
             .expect(200)
             .expect(assertUnlocked);
+
+        // The toast copy says "page", not "post", for a gifted page.
+        assert.match(res.text, /gifted access to this paid page/, 'toast reflects that the gifted entry is a page');
     });
 
     it('301s a paid page, dropping ?gift, when the token is invalid', async function () {

@@ -203,7 +203,21 @@
         <span class="gh-gift-toast-pattern"{{#if @giftToast.brandUrl}} hidden{{/if}}></span>
     </div>
     <span class="gh-gift-toast-content">
-        <span class="gh-gift-toast-title">{{t "You've been gifted access to this post."}}</span>
+        <span class="gh-gift-toast-title">
+            {{~#has visibility="members"~}}
+                {{~#is "page"~}}
+                    {{t "You've been gifted access to this members-only page."}}
+                {{~else~}}
+                    {{t "You've been gifted access to this members-only post."}}
+                {{~/is~}}
+            {{~else~}}
+                {{~#is "page"~}}
+                    {{t "You've been gifted access to this paid page."}}
+                {{~else~}}
+                    {{t "You've been gifted access to this paid post."}}
+                {{~/is~}}
+            {{~/has~}}
+        </span>
     </span>
     <button type="button" class="gh-gift-toast-close" aria-label="{{t "Dismiss"}}">
         <svg viewBox="0 0 16 16" xmlns="http://www.w3.org/2000/svg" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round">

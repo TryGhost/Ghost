@@ -47,7 +47,9 @@ module.exports = function ghost_foot(options) { // eslint-disable-line camelcase
             noiseUrl: `${siteUrl}/gift/assets/gift-card-noise.png`
         };
 
-        foot.push(templates.execute('gift-toast', this, {data}));
+        // Execute with the post as context so the partial, and any theme
+        // override of it, gets the full post scope.
+        foot.push(templates.execute('gift-toast', options.data.root.post, {data}));
     }
 
     return new SafeString(foot.join(' ').trim());

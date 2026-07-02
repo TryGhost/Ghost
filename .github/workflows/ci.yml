@@ -325,7 +325,7 @@ jobs:
           NX_BASE: ${{ needs.job_setup.outputs.nx_base }}
           NX_HEAD: ${{ env.HEAD_COMMIT }}
 
-      - uses: tryghost/actions/actions/slack-build@28f4d60899ca9d61b89a660c9b1223f1f7dc7870 # main
+      - uses: tryghost/actions/actions/slack-build@2390ec2c041d2413852201ac3894381e98e4b13f # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -389,7 +389,7 @@ jobs:
           name: admin-coverage
           path: ghost/*/coverage/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@28f4d60899ca9d61b89a660c9b1223f1f7dc7870 # main
+      - uses: tryghost/actions/actions/slack-build@2390ec2c041d2413852201ac3894381e98e4b13f # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -461,7 +461,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@28f4d60899ca9d61b89a660c9b1223f1f7dc7870 # main
+      - uses: tryghost/actions/actions/slack-build@2390ec2c041d2413852201ac3894381e98e4b13f # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -606,7 +606,7 @@ jobs:
             ghost/*/coverage-e2e/cobertura-coverage.xml
             ghost/*/coverage-integration/cobertura-coverage.xml
 
-      - uses: tryghost/actions/actions/slack-build@28f4d60899ca9d61b89a660c9b1223f1f7dc7870 # main
+      - uses: tryghost/actions/actions/slack-build@2390ec2c041d2413852201ac3894381e98e4b13f # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -692,7 +692,7 @@ jobs:
             exit 1
           fi
 
-      - uses: tryghost/actions/actions/slack-build@28f4d60899ca9d61b89a660c9b1223f1f7dc7870 # main
+      - uses: tryghost/actions/actions/slack-build@2390ec2c041d2413852201ac3894381e98e4b13f # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -721,7 +721,11 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # Each matrix leg only Playwright-tests one app, so scope the install to that
+        # app's dependency subgraph instead of the whole monorepo (which drags in
+        # ghost/core, ghost-admin and unrelated apps). nx and the app's workspace deps
+        # are still installed; the nx project name matches the package name.
+        run: pnpm install --frozen-lockfile --filter ${{ matrix.app }}...
 
       - name: Setup Playwright
         uses: ./.github/actions/setup-playwright
@@ -745,7 +749,7 @@ jobs:
           path: apps/${{ steps.app_name.outputs.name }}/playwright-report
           retention-days: 30
 
-      - uses: tryghost/actions/actions/slack-build@28f4d60899ca9d61b89a660c9b1223f1f7dc7870 # main
+      - uses: tryghost/actions/actions/slack-build@2390ec2c041d2413852201ac3894381e98e4b13f # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -762,7 +766,7 @@ jobs:
           working-directory: ghost/core/core/server/data/tinybird
     services:
       tinybird:
-        image: tinybirdco/tinybird-local:latest@sha256:24c1296fdf33f1402c032ecb58bcab0a1e7f2c3e4bcddab83754fa67c612355c
+        image: tinybirdco/tinybird-local:latest@sha256:6f01c3da78ea96d166e2ff3aa91c3bbf1f9b9dc088214802525fbb193f6d3d52
         ports:
           - 7181:7181
     steps:
@@ -844,7 +848,7 @@ jobs:
         run: |
           [ -f ~/.ghost/logs/*.log ] && cat ~/.ghost/logs/*.log
 
-      - uses: tryghost/actions/actions/slack-build@28f4d60899ca9d61b89a660c9b1223f1f7dc7870 # main
+      - uses: tryghost/actions/actions/slack-build@2390ec2c041d2413852201ac3894381e98e4b13f # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}
@@ -1020,7 +1024,7 @@ jobs:
             org.opencontainers.image.vendor=TryGhost
 
       - name: Build & push core image
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         env:
           BUILDKIT_PROGRESS: plain
         with:
@@ -1038,7 +1042,7 @@ jobs:
           cache-to: ${{ steps.strategy.outputs.should-push == 'true' && format('type=registry,ref={0}:cache-{1},mode=max', steps.strategy.outputs.image-core-name, github.event_name == 'pull_request' && format('pr-{0}', github.event.pull_request.number) || 'main') || '' }}
 
       - name: Build & push full image
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         env:
           BUILDKIT_PROGRESS: plain
         with:
@@ -1238,7 +1242,7 @@ jobs:
 
       - name: Build & push E2E image
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: docker/build-push-action@f9f3042f7e2789586610d6e8b85c8f03e5195baf # v7
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
         env:
           BUILDKIT_PROGRESS: plain
         with:
@@ -1439,7 +1443,10 @@ jobs:
           cache: pnpm
 
       - name: Install dependencies
-        run: pnpm install --frozen-lockfile
+        # The Playwright container runs against the host's bind-mounted node_modules,
+        # but only needs @tryghost/e2e's dependency subgraph — not the whole monorepo
+        # (admin, apps, ghost/core). Scope the install to cut shard setup time.
+        run: pnpm install --frozen-lockfile --filter @tryghost/e2e...
 
       - name: Prepare E2E CI job
         env:
@@ -1484,7 +1491,7 @@ jobs:
           path: e2e/test-results
           retention-days: 7
 
-      - uses: tryghost/actions/actions/slack-build@28f4d60899ca9d61b89a660c9b1223f1f7dc7870 # main
+      - uses: tryghost/actions/actions/slack-build@2390ec2c041d2413852201ac3894381e98e4b13f # main
         if: failure() && github.event_name == 'push' && github.ref == 'refs/heads/main'
         with:
           status: ${{ job.status }}

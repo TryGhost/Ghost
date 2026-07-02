@@ -26,7 +26,7 @@
     ],
     "devDependencies": {
         "@codemirror/lang-html": "6.4.11",
-        "@codemirror/state": "6.6.0",
+        "@codemirror/state": "6.7.0",
         "@dnd-kit/utilities": "3.2.2",
         "@storybook/addon-docs": "catalog:",
         "@storybook/addon-links": "catalog:",
@@ -41,7 +41,7 @@
         "@eslint/js": "catalog:",
         "@typescript-eslint/parser": "catalog:",
         "@vitejs/plugin-react": "catalog:",
-        "autoprefixer": "10.5.0",
+        "autoprefixer": "10.5.2",
         "c8": "catalog:",
         "chai": "catalog:",
         "eslint": "catalog:",

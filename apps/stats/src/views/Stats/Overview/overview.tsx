@@ -37,7 +37,7 @@ export const HelpCard: React.FC<HelpCardProps> = ({
 }) => {
     return (
         <a className={cn(
-            'block rounded-xl border bg-card p-6 transition-all hover:shadow-xs hover:bg-table-row-hover group/card',
+            'group/card block rounded-xl border bg-card p-6 transition-all hover:bg-table-row-hover hover:shadow-xs',
             className
         )} href={url} rel='noreferrer' target='_blank'>
             <div className='flex items-center gap-6'>
@@ -71,6 +71,7 @@ type GrowthChartDataItem = {
 const Overview: React.FC = () => {
     const {appSettings} = useAppContext();
     const {statsConfig, isLoading: isConfigLoading, range} = useGlobalData();
+    const webAnalyticsEnabled = appSettings?.analytics?.webAnalytics === true;
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
     const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
@@ -80,7 +81,8 @@ const Overview: React.FC = () => {
             date_to: formatQueryDate(endDate),
             limit: '5',
             timezone
-        }
+        },
+        enabled: webAnalyticsEnabled
     });
 
     /* Get visitors

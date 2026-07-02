@@ -10,7 +10,7 @@ const NavbarActions = React.forwardRef<HTMLDivElement, NavbarActionsProps>(({chi
     return (
         <div
             ref={ref}
-            className={cn('[grid-area:actions] mt-3 lg:mt-0 flex items-center gap-2', className)}
+            className={cn('mt-3 flex items-center gap-2 [grid-area:actions] lg:mt-0', className)}
             data-navbar='navbar-actions'
             {...props}
         >
@@ -50,7 +50,7 @@ const Navbar = React.forwardRef<HTMLDivElement, NavbarProps>(({children, classNa
     return (
         <div
             ref={ref}
-            className={cn(`grid grid-cols-[1fr] [grid-template-areas:'navigation''actions''subactions'] lg:grid-cols-[1fr_auto] lg:[grid-template-areas:'navigation_actions''subactions_subactions'] border-b justify-between gap-x-5 gap-y-2`, className)}
+            className={cn(`grid grid-cols-[1fr] justify-between gap-x-5 gap-y-2 border-b [grid-template-areas:'navigation''actions''subactions'] lg:grid-cols-[1fr_auto] lg:[grid-template-areas:'navigation_actions''subactions_subactions']`, className)}
             data-navbar='navbar'
             {...props}
         >

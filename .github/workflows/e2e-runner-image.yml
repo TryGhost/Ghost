@@ -1,0 +1,110 @@
+name: Publish E2E Runner Image
+
+# Builds the slim, Chromium-only Playwright runner image consumed by the E2E
+# shards (see e2e/Dockerfile.runner). Deliberately decoupled from ci.yml: the
+# image only changes when the pinned Playwright version or the Dockerfile changes,
+# which is far rarer than ci.yml runs — so there's no reason to rebuild it on every
+# push, and it shares no layers with the Ghost build (no buildx-cache synergy).
+#
+# The E2E scripts fall back to the upstream Playwright image when the matching
+# ghcr.io/tryghost/ghost-e2e-runner:v<version> tag is missing, so a Playwright
+# version bump keeps CI green until this workflow publishes the new tag on merge.
+on:
+  workflow_dispatch: # Manual trigger from GitHub UI or CLI
+  schedule:
+    - cron: '0 6 * * 1' # Weekly (Mon 06:00 UTC) to absorb base-image security patches
+  push:
+    branches: [main]
+    paths:
+      - 'e2e/Dockerfile.runner'
+      - '.github/workflows/e2e-runner-image.yml'
+      # Playwright version pin — a bump here means a new runner tag to publish.
+      - 'pnpm-workspace.yaml'
+
+env:
+  NODE_VERSION: 22.18.0
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Build and push E2E runner to GHCR
+    runs-on: ubuntu-latest
+    # Push/schedule only publish from main; a manual workflow_dispatch may run on
+    # any branch so the runner image can be built and pushed for pre-merge testing.
+    if: github.repository == 'TryGhost/Ghost' && (github.event_name == 'workflow_dispatch' || github.ref == 'refs/heads/main')
+    timeout-minutes: 30
+    concurrency:
+      group: publish-e2e-runner
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+        with:
+          persist-credentials: false
+
+      - name: Resolve Playwright version
+        id: version
+        run: |
+          # Source of truth is the pnpm catalog pin so the runner tag always matches
+          # the @playwright/test the suite runs with; fall back to the version declared
+          # in e2e/package.json. yq (mikefarah) and jq are preinstalled on GitHub runners.
+          PLAYWRIGHT_VERSION=$(yq '.catalog["@playwright/test"] // ""' pnpm-workspace.yaml)
+          if [ -z "$PLAYWRIGHT_VERSION" ] || [ "$PLAYWRIGHT_VERSION" = "null" ] || [ "$PLAYWRIGHT_VERSION" = "catalog:" ]; then
+            PLAYWRIGHT_VERSION=$(jq -r '.devDependencies["@playwright/test"] // .dependencies["@playwright/test"] // empty' e2e/package.json)
+          fi
+          if [ -z "$PLAYWRIGHT_VERSION" ] || [ "$PLAYWRIGHT_VERSION" = "null" ] || [ "$PLAYWRIGHT_VERSION" = "catalog:" ]; then
+            echo "::error::Could not resolve a concrete @playwright/test version from pnpm-workspace.yaml or e2e/package.json"
+            exit 1
+          fi
+          echo "playwright_version=$PLAYWRIGHT_VERSION" >> "$GITHUB_OUTPUT"
+          echo "Resolved Playwright version: $PLAYWRIGHT_VERSION"
+
+      - name: Resolve image tags
+        id: tags
+        run: |
+          # A manual workflow_dispatch off main is a pre-merge test build: publish a
+          # throwaway commit-sha tag so it never clobbers the shared version/latest tags
+          # that CI resolves against. Everything else (push/schedule/dispatch on main)
+          # publishes the canonical v<version> + latest tags.
+          IMAGE="ghcr.io/tryghost/ghost-e2e-runner"
+          if [ "$GITHUB_EVENT_NAME" = "workflow_dispatch" ] && [ "$GITHUB_REF" != "refs/heads/main" ]; then
+            TAGS="${IMAGE}:sha-${GITHUB_SHA:0:7}"
+          else
+            TAGS="${IMAGE}:v${PLAYWRIGHT_VERSION}
+          ${IMAGE}:latest"
+          fi
+          {
+            echo "tags<<EOF"
+            printf '%s\n' "$TAGS"
+            echo "EOF"
+          } >> "$GITHUB_OUTPUT"
+          echo "Resolved image tags:"
+          printf '%s\n' "$TAGS"
+        env:
+          PLAYWRIGHT_VERSION: ${{ steps.version.outputs.playwright_version }}
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          file: e2e/Dockerfile.runner
+          push: true
+          build-args: |
+            NODE_VERSION=${{ env.NODE_VERSION }}
+            PLAYWRIGHT_VERSION=${{ steps.version.outputs.playwright_version }}
+          tags: ${{ steps.tags.outputs.tags }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

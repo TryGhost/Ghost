@@ -1,13 +1,41 @@
 # syntax=docker/dockerfile:1-labs@sha256:7d49dad25a050e14338ba7028b0460243f9d911dedc160a8fe20c34738fef3af
 
 # Production Dockerfile for Ghost
-# Two targets:
+# Targets:
+#   deps — production node_modules only (build-only stage, never shipped)
 #   core — server + production deps, no admin (Ghost-Pro base)
 #   full — core + built admin (self-hosting)
 #
 # Build context: extracted `npm pack` output from ghost/core
+#
+# Ownership model: application code (node_modules, server source, admin) is owned
+# by nobody:nogroup so the runtime user (ghost, uid 1000) can read but not modify
+# it; the writable content and log dirs are owned by ghost. Ownership is set at
+# COPY time (COPY --chown) rather than via a post-hoc `chown -R`: on overlayfs a
+# recursive chown copies every touched file into a new layer, which previously
+# duplicated node_modules (~600MB) and the admin build (~80MB) and inflated every
+# image pull.
 
 ARG NODE_VERSION=22.18.0
+
+# ---- deps: production node_modules (build-only stage, not shipped) ----
+FROM node:$NODE_VERSION-bookworm-slim AS deps
+
+WORKDIR /home/ghost
+
+RUN corepack enable
+
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
+COPY components ./components
+
+# build-essential/python3 are only needed to compile native deps (better-sqlite3).
+# Because this stage is discarded, they never reach the shipped image, so there's
+# no purge step to keep the layer clean.
+RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
+    apt-get update && \
+    apt-get install -y --no-install-recommends build-essential python3 && \
+    pnpm install --frozen-lockfile --ignore-scripts --prod --prefer-offline && \
+    (cd node_modules/better-sqlite3 && npm run install)
 
 # ---- Core: server + production deps ----
 FROM node:$NODE_VERSION-bookworm-slim AS core
@@ -25,27 +53,20 @@ WORKDIR /home/ghost
 
 RUN corepack enable
 
-COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
-COPY components ./components
+# node_modules is compiled in the deps stage and copied once with its final
+# ownership — no separate `chown -R` layer, so it isn't duplicated in the image.
+COPY --chown=nobody:nogroup --from=deps /home/ghost/node_modules ./node_modules
+COPY --chown=nobody:nogroup --exclude=core/built/admin . .
 
-RUN --mount=type=cache,target=/root/.local/share/pnpm/store,id=pnpm-store \
-    apt-get update && \
-    apt-get install -y --no-install-recommends build-essential python3 && \
-    pnpm install --ignore-scripts --prod --prefer-offline && \
-    (cd node_modules/better-sqlite3 && npm run install) && \
-    apt-get purge -y build-essential python3 && \
-    apt-get autoremove -y && \
-    rm -rf /var/lib/apt/lists/*
-
-COPY --exclude=core/built/admin . .
-
+# cp -a preserves the nobody:nogroup ownership set at COPY time, so base_content
+# and default need no re-chown; only the writable content/log dirs flip to ghost.
 RUN mkdir -p default log && \
-    cp -R content base_content && \
-    cp -R content/themes/casper default/casper && \
-    ([ -d content/themes/source ] && cp -R content/themes/source default/source || true) && \
+    cp -a content base_content && \
+    cp -a content/themes/casper default/casper && \
+    ([ -d content/themes/source ] && cp -a content/themes/source default/source || true) && \
     chown ghost:ghost /home/ghost && \
-    chown -R nobody:nogroup /home/ghost/* && \
-    chown -R ghost:ghost /home/ghost/content /home/ghost/log
+    chown nobody:nogroup default && \
+    chown -R ghost:ghost content log
 
 ARG GHOST_BUILD_VERSION=""
 ENV GHOST_BUILD_VERSION=${GHOST_BUILD_VERSION}
@@ -60,7 +81,6 @@ CMD ["node", "index.js"]
 # ---- Full: core + admin ----
 FROM core AS full
 
-USER root
-COPY core/built/admin core/built/admin
-RUN chown -R nobody:nogroup core/built/admin
-USER ghost
+# COPY --chown sets ownership in the copy layer; a post-hoc `chown -R` would
+# duplicate the ~80MB admin build into a second layer.
+COPY --chown=nobody:nogroup core/built/admin core/built/admin

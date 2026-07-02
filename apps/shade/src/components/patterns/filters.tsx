@@ -1592,7 +1592,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
                     ) : (
                         <>
                             {selectedOptions.length > 0 && selectedOptions.some(option => option.icon) && (
-                                <div className={cn('-space-x-0.5 flex shrink-0 items-center', field.selectedOptionsClassName)}>
+                                <div className={cn('flex shrink-0 items-center -space-x-0.5', field.selectedOptionsClassName)}>
                                     {selectedOptions.slice(0, 3).map(option => (
                                         <div key={String(option.value)}>{option.icon}</div>
                                     ))}
@@ -1610,7 +1610,7 @@ function ResolvedSelectOptionsPopover<T = unknown>({
             <PopoverContent
                 align="start"
                 className={cn(
-                    'p-0 data-[state=closed]:animation-none! data-[state=closed]:duration-0!',
+                    'data-[state=closed]:animation-none! p-0 data-[state=closed]:duration-0!',
                     field.className || 'w-[200px]'
                 )}
             >
@@ -2099,7 +2099,7 @@ function FilterValueSelector<T = unknown>({field, values, onChange, operator}: F
                     )}
                 </div>
             </PopoverTrigger>
-            <PopoverContent className={cn('w-36 p-0 data-[state=closed]:animation-none! data-[state=closed]:duration-0!', field.popoverContentClassName)}>
+            <PopoverContent className={cn('data-[state=closed]:animation-none! w-36 p-0 data-[state=closed]:duration-0!', field.popoverContentClassName)}>
                 <Command>
                     {field.searchable !== false && (
                         <CommandInput
@@ -2608,7 +2608,7 @@ export function Filters<T = unknown>({
                         <PopoverContent
                             align={popoverAlign}
                             className={cn(
-                                'p-0 data-[state=closed]:animation-none! data-[state=closed]:duration-0!',
+                                'data-[state=closed]:animation-none! p-0 data-[state=closed]:duration-0!',
                                 selectedFieldForOptions?.className || popoverContentClassName || 'w-[220px]'
                             )}
                         >
@@ -2764,7 +2764,7 @@ export function Filters<T = unknown>({
                                     radius: radius
                                 }),
                                 'border-0 bg-transparent hover:bg-transparent hover:text-foreground',
-                                'sm:absolute sm:right-0 sm:top-0',
+                                'sm:absolute sm:top-0 sm:right-0',
                                 clearButtonClassName
                             )}
                             type='button'

@@ -43,7 +43,7 @@ function Skeleton({
             {Array.from({length: count}).map((_, index) => (
                 <React.Fragment key={keys[index]}>
                     <span
-                        className={cn('inline-flex w-full leading-none animate-pulse rounded-[2px] bg-primary/10', className)}
+                        className={cn('inline-flex w-full animate-pulse rounded-[2px] bg-primary/10 leading-none', className)}
                         style={randomize ? {width: randomWidths[index]} : undefined}
                         {...props}
                     >&zwnj;</span>

@@ -9,7 +9,7 @@ const FeatureImagePlaceholder:React.FC<FeatureImagePlaceholderProps> = ({
     className
 }) => {
     return (
-        <div className={cn('rounded-sm bg-muted dark:bg-surface-elevated-2 flex flex-col items-center justify-center gap-1 p-6', className)}>
+        <div className={cn('flex flex-col items-center justify-center gap-1 rounded-sm bg-muted p-6 dark:bg-surface-elevated-2', className)}>
             <LucideIcon.Image className='text-muted-foreground/50' size={18} strokeWidth={1.5} />
         </div>
     );

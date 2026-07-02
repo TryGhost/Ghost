@@ -26,13 +26,13 @@ const SidebarMenuLink = React.forwardRef<HTMLButtonElement, SidebarButtonProps>(
         );
 
         const linkClass = cn(
-            'justify-start font-medium text-gray-800 dark:hover:bg-gray-950/70 dark:text-gray-500 h-8 [&_svg]:size-[18px]',
-            isActive && 'bg-gray-100 dark:bg-gray-950/70 dark:text-white text-black font-semibold'
+            'h-8 justify-start font-medium text-gray-800 dark:text-gray-500 dark:hover:bg-gray-950/70 [&_svg]:size-[18px]',
+            isActive && 'bg-gray-100 font-semibold text-black dark:bg-gray-950/70 dark:text-white'
         );
 
         const badge = count && count > 0 ? (
             <span className={cn(
-                'ml-auto bg-purple-500 text-white text-xs font-semibold py-1 px-1.5 rounded-full min-w-[20px] h-5 flex items-center justify-center'
+                'ml-auto flex h-5 min-w-[20px] items-center justify-center rounded-full bg-purple-500 px-1.5 py-1 text-xs font-semibold text-white'
             )}>
                 {formatNumber(count)}
             </span>

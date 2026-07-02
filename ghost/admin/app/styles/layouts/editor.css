@@ -792,17 +792,19 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
 
 .gh-editor-feature-image-caption-container {
     position: relative;
-    display: flex;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
     padding: .8rem 0;
 }
+
 .gh-editor-feature-image-alttext,
 .gh-editor-feature-image-caption {
+    grid-column: 1 / -1;
+    grid-row: 1;
     width: 100%;
     min-height: 24px;
     margin: 0;
-    padding: 0 3.6rem 0 0;
     outline: none;
     border-width: 0;
     border-style: none;
@@ -812,7 +814,25 @@ body[data-user-is-dragging] .gh-editor-feature-image-dropzone {
     background-color: transparent !important;
     transition: border-color .15s linear;
     -webkit-appearance: none;
+    appearance: none;
     overflow: hidden; /* Hides any indicators such as TK */
+}
+
+.gh-editor-feature-image-caption-container > button {
+    grid-column: 2;
+    grid-row: 1;
+    justify-self: end;
+    z-index: 1;
+}
+
+.gh-editor-feature-image-alttext {
+    padding: 0 3.6rem;
+    text-align: center;
+}
+
+.gh-editor-feature-image-caption {
+    padding: 0 3.6rem;
+    text-align: center;
 }
 
 .gh-editor-feature-image-alttext::placeholder,

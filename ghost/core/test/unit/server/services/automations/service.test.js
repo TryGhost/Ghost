@@ -1,7 +1,7 @@
 const sinon = require('sinon');
 
 const StartAutomationsPollEvent = require('../../../../../core/server/services/automations/events/start-automations-poll-event');
-const AutomationsService = require('../../../../../core/server/services/automations/service');
+const {AutomationsService} = require('../../../../../core/server/services/automations/service');
 
 describe('automations service', function () {
     let automations;
