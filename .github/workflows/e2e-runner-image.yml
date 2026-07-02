@@ -20,6 +20,9 @@ on:
       - '.github/workflows/e2e-runner-image.yml'
       # Playwright version pin — a bump here means a new runner tag to publish.
       - 'pnpm-workspace.yaml'
+      # pnpm's own version, pinned via `packageManager` — the Dockerfile COPYs this
+      # in and runs `corepack install` to bake it into the image.
+      - 'package.json'
 
 env:
   NODE_VERSION: 22.18.0
