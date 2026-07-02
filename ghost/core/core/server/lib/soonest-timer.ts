@@ -1,5 +1,19 @@
 const MAX_TIMEOUT_MS = 2 ** 31 - 1;
 
+/**
+ * Schedule a function for the soonest date it's been called with.
+ *
+ * @example
+ * // Runs the function at `soon`, not `later`:
+ *
+ * const soonestTimer = new SoonestTimer(fn);
+ *
+ * const later = new Date(Date.now() + 10_000);
+ * soonestTimer.scheduleAt(later);
+ *
+ * const soon = new Date(Date.now() + 1000);
+ * soonestTimer.scheduleAt(soon);
+ */
 export class SoonestTimer {
     #scheduled: undefined | {
         timeout: ReturnType<typeof setTimeout>;
