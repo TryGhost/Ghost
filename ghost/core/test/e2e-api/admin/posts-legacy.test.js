@@ -1,7 +1,5 @@
 const assert = require('node:assert/strict');
 const {assertExists} = require('../../utils/assertions');
-const nock = require('nock');
-const path = require('path');
 const supertest = require('supertest');
 const _ = require('lodash');
 const moment = require('moment-timezone');
@@ -414,15 +412,8 @@ describe('Posts API', function () {
     });
 
     it('Can update and force re-render', async function () {
-        const unsplashMock = nock('https://images.unsplash.com/')
-            .get('/favicon_too_large')
-            .query(true)
-            .replyWithFile(200, path.join(__dirname, '../../utils/fixtures/images/ghost-logo.png'), {
-                'Content-Type': 'image/png'
-            });
-
         const mobiledoc = JSON.parse(testUtils.DataGenerator.Content.posts[3].mobiledoc);
-        mobiledoc.cards.push(['image', {src: 'https://images.unsplash.com/favicon_too_large?ixlib=rb-1.2.1&q=80&fm=jpg&crop=entropy&cs=tinysrgb&w=2000&fit=max&ixid=eyJhcHBfaWQiOjExNzczfQ'}]);
+        mobiledoc.cards.push(['image', {src: 'https://example.com/image.jpg'}]);
         mobiledoc.sections.push([10, mobiledoc.cards.length - 1]);
 
         const post = {
@@ -437,7 +428,7 @@ describe('Posts API', function () {
         post.updated_at = res.body.posts[0].updated_at;
 
         const res2 = await request
-            .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[3].id + '/?force_rerender=true&formats=mobiledoc,html'))
+            .put(localUtils.API.getApiQuery('posts/' + testUtils.DataGenerator.Content.posts[3].id + '/?force_rerender=true&formats=mobiledoc,lexical,html'))
             .set('Origin', config.get('url'))
             .send({posts: [post]})
             .expect('Content-Type', /json/)
@@ -447,16 +438,10 @@ describe('Posts API', function () {
         const expectedPattern = `/p/${uuid}/, /p/${uuid}/?member_status=anonymous, /p/${uuid}/?member_status=free, /p/${uuid}/?member_status=paid`;
         assert.equal(res2.headers['x-cache-invalidate'], expectedPattern);
 
-        assert.equal(unsplashMock.isDone(), true);
-
-        // mobiledoc is updated with image sizes
-        const resMobiledoc = JSON.parse(res2.body.posts[0].mobiledoc);
-        const cardPayload = resMobiledoc.cards[mobiledoc.cards.length - 1][1];
-        assert.equal(cardPayload.width, 800);
-        assert.equal(cardPayload.height, 257);
-
-        // html is re-rendered to include srcset
-        assert.match(res2.body.posts[0].html, /srcset="https:\/\/images\.unsplash\.com\/favicon_too_large\?ixlib=rb-1\.2\.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=600&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 600w, https:\/\/images\.unsplash\.com\/favicon_too_large\?ixlib=rb-1\.2\.1&amp;q=80&amp;fm=jpg&amp;crop=entropy&amp;cs=tinysrgb&amp;w=800&amp;fit=max&amp;ixid=eyJhcHBfaWQiOjExNzczfQ 800w"/);
+        // mobiledoc input is converted to lexical and the html is re-rendered
+        assert.equal(res2.body.posts[0].mobiledoc, null);
+        assert.match(res2.body.posts[0].html, /kg-image-card/);
+        assert.ok(res2.body.posts[0].html.includes('https://example.com/image.jpg'));
     });
 
     it('Can unpublish a post', async function () {

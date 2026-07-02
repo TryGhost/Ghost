@@ -35,7 +35,6 @@ const messages = {
     emailOnlyWithoutNewsletter: 'Scheduling an email requires a newsletter reference.'
 };
 
-const MOBILEDOC_REVISIONS_COUNT = 10;
 const POST_REVISIONS_COUNT = 25;
 const POST_REVISIONS_INTERVAL_MS = 10 * 60 * 1000; // 10 minutes
 const ALL_STATUSES = ['published', 'draft', 'scheduled', 'sent'];
@@ -556,17 +555,6 @@ Post = ghostBookshelf.Model.extend({
         let tagsToSave;
         const ops = [];
 
-        // normally we don't allow both mobiledoc & lexical through at the API level but there's
-        // an exception for ?source=html which always sets both when the lexical editor is enabled.
-        // That's necessary because at the input serializer layer we don't have access to the
-        // actual model to check if this would result in a change of format
-
-        if (this.previous('mobiledoc') && this.get('lexical')) {
-            this.set('lexical', null);
-        } else if (this.get('mobiledoc') && this.get('lexical')) {
-            this.set('mobiledoc', null);
-        }
-
         // CASE: disallow published -> scheduled
         // @TODO: remove when we have versioning based on updated_at
         if (newStatus !== olderStatus && newStatus === 'scheduled' && olderStatus === 'published') {
@@ -688,29 +676,45 @@ Post = ghostBookshelf.Model.extend({
             this.set('lexical', JSON.stringify(lexicalLib.blankDocument));
         }
 
-        // If we're force re-rendering we want to make sure that all image cards
-        // have original dimensions stored in the payload for use by card renderers
-        if (options.force_rerender && this.get('mobiledoc')) {
-            this.set('mobiledoc', await mobiledocLib.populateImageSizes(this.get('mobiledoc')));
+        // We never store both mobiledoc & lexical. A single save can momentarily carry both -
+        // the stored format plus an incoming one - so collapse to a single source of truth
+        // before converting/rendering below (any remaining mobiledoc is turned into lexical).
+        if (this.get('mobiledoc') && this.get('lexical')) {
+            if (this.hasChanged('mobiledoc') && !this.hasChanged('lexical')) {
+                // only mobiledoc was supplied (e.g. editing a lexical post by sending mobiledoc);
+                // it wins and is converted to lexical below
+                this.set('lexical', null);
+            } else {
+                // an incoming lexical wins (e.g. ?source=html, a direct lexical edit, or an
+                // import carrying both); drop the stored/legacy mobiledoc so the lexical renders
+                this.set('mobiledoc', null);
+            }
         }
 
-        // CASE: mobiledoc has changed, generate html
+        // CASE: content is still stored as mobiledoc, convert it to lexical so it can be
+        // rendered. We no longer render mobiledoc directly, so this permanently migrates
+        // the post to lexical and the lexical block below generates the html.
+        // CASE: mobiledoc has changed
         // CASE: ?force_rerender=true passed via Admin API
+        // CASE: ?convert_to_lexical=true passed via Admin API (explicit conversion goes
+        //       through the same render + revision path instead of a separate late op)
         // CASE: html is null, but mobiledoc exists (only important for migrations & importing)
         if (
-            !this.get('lexical') &&
+            this.get('mobiledoc') &&
             (
                 this.hasChanged('mobiledoc')
                 || options.force_rerender
+                || options.convert_to_lexical
                 || (!this.get('html') && (options.migrating || options.importing))
             )
         ) {
             try {
-                this.set('html', mobiledocLib.render(JSON.parse(this.get('mobiledoc'))));
+                this.set('lexical', mobiledocToLexical(this.get('mobiledoc')));
+                this.set('mobiledoc', null);
             } catch (err) {
                 throw new errors.ValidationError({
                     message: tpl(messages.invalidMobiledocStructure),
-                    help: 'https://ghost.org/docs/publishing/'
+                    help: messages.invalidMobiledocStructureHelp
                 });
             }
         }
@@ -872,50 +876,11 @@ Post = ghostBookshelf.Model.extend({
             });
         }
 
-        // CASE: Handle mobiledoc backups/revisions. This is a pure database feature.
-        if (model.hasChanged('mobiledoc') && !model.get('lexical') && !options.importing && !options.migrating) {
-            ops.push(function updateRevisions() {
-                return ghostBookshelf.model('MobiledocRevision')
-                    .findAll(Object.assign({
-                        filter: `post_id:'${model.id}'`,
-                        columns: ['id']
-                    }, _.pick(options, 'transacting')))
-                    .then((revisions) => {
-                        /**
-                         * Store prev + latest mobiledoc content, because we have decided against a migration, which
-                         * iterates over all posts and creates a copy of the current mobiledoc content.
-                         *
-                         * Reasons:
-                         *   - usually migrations for the post table are slow and error-prone
-                         *   - there is no need to create a copy for all posts now, because we only want to ensure
-                         *     that posts, which you are currently working on, are getting a content backup
-                         *   - no need to create revisions for existing published posts
-                         *
-                         * The feature is very minimal in the beginning. As soon as you update to this Ghost version,
-                         * you
-                         */
-                        if (!revisions.length && options.method !== 'insert') {
-                            model.set('mobiledoc_revisions', [{
-                                post_id: model.id,
-                                mobiledoc: model.previous('mobiledoc'),
-                                created_at_ts: Date.now() - 1
-                            }, {
-                                post_id: model.id,
-                                mobiledoc: model.get('mobiledoc'),
-                                created_at_ts: Date.now()
-                            }]);
-                        } else {
-                            const revisionsJSON = revisions.toJSON().slice(0, MOBILEDOC_REVISIONS_COUNT - 1);
-
-                            model.set('mobiledoc_revisions', revisionsJSON.concat([{
-                                post_id: model.id,
-                                mobiledoc: model.get('mobiledoc'),
-                                created_at_ts: Date.now()
-                            }]));
-                        }
-                    });
-            });
-        }
+        // NOTE: mobiledoc revisions are no longer created. Any mobiledoc content is converted
+        // to lexical earlier in onSaving (so model.get('mobiledoc') is null by this point), which
+        // means the old mobiledoc backup path was unreachable. Content backups are now always
+        // lexical/post revisions (below). The mobiledoc_revisions table is kept read-only for
+        // existing legacy rows.
         if (!model.get('mobiledoc') && !options.importing && !options.migrating) {
             const {PostRevisions} = require('../lib/post-revisions');
             const postRevisions = new PostRevisions({
@@ -927,7 +892,7 @@ Post = ghostBookshelf.Model.extend({
             let authorId = await this.contextUser(options);
             const authorExists = await ghostBookshelf.model('User').findOne({id: authorId}, {transacting: options.transacting});
             if (!authorExists) {
-                authorId = (await ghostBookshelf.model('User').getOwnerUser()).get('id');
+                authorId = (await ghostBookshelf.model('User').getOwnerUser({transacting: options.transacting})).get('id');
             }
             ops.push(async function updateRevisions() {
                 const revisionModels = await ghostBookshelf.model('PostRevision')
@@ -962,18 +927,6 @@ Post = ghostBookshelf.Model.extend({
                 };
                 const newRevisions = await postRevisions.getRevisions(current, revisions, revisionOptions);
                 model.set('post_revisions', newRevisions);
-            });
-        }
-
-        // CASE: Convert post to lexical on the fly
-        if (options.convert_to_lexical) {
-            ops.push(async function convertToLexical() {
-                const mobiledoc = model.get('mobiledoc');
-                if (mobiledoc !== null) { // only run conversion when there is a mobiledoc string
-                    const lexical = mobiledocToLexical(mobiledoc);
-                    model.set('lexical', lexical);
-                    model.set('mobiledoc', null);
-                }
             });
         }
 

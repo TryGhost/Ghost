@@ -65,7 +65,7 @@ describe('Posts Content API', function () {
         // Assign a newsletter to one of the posts
         const newsletterId = testUtils.DataGenerator.Content.newsletters[0].id;
         const postId = testUtils.DataGenerator.Content.posts[0].id;
-        await models.Post.edit({newsletter_id: newsletterId}, {id: postId});
+        await models.Post.edit({newsletter_id: newsletterId}, {id: postId, context: {internal: true}});
     });
 
     it('Can request posts', async function () {

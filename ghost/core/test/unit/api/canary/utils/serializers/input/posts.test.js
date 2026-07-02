@@ -4,7 +4,7 @@ const serializers = require('../../../../../../../core/server/api/endpoints/util
 const urlService = require('../../../../../../../core/server/services/url');
 const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
 
-const mobiledocLib = require('../../../../../../../core/server/lib/mobiledoc');
+const lexicalLib = require('../../../../../../../core/server/lib/lexical');
 
 describe('Unit: endpoints/utils/serializers/input/posts', function () {
     afterEach(function () {
@@ -428,10 +428,8 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                 let postData = frame.data.posts[0];
                 assert.notEqual(postData.lexical, lexical);
                 assert.equal(postData.lexical, '{"root":{"children":[{"children":[{"detail":0,"format":0,"mode":"normal","style":"","text":"this is great feature","type":"extended-text","version":1}],"direction":null,"format":"","indent":0,"type":"paragraph","version":1}],"direction":null,"format":"","indent":0,"type":"root","version":1}}');
-                // we convert to both mobiledoc and lexical to avoid changing formats
-                // for existing content when updating with `?source=html,
-                // the unused data is cleared in the Post model when saving
-                assert.equal(postData.mobiledoc, '{"version":"0.3.1","atoms":[],"cards":[],"markups":[],"sections":[[1,"p",[[0,[],0,"this is great feature"]]]]}');
+                // `?source=html` only ever produces lexical now
+                assert.equal(postData.mobiledoc, undefined);
             });
 
             // JSDOM require is sometimes very slow on CI causing random timeouts
@@ -473,13 +471,13 @@ describe('Unit: endpoints/utils/serializers/input/posts', function () {
                     }
                 };
 
-                sinon.stub(mobiledocLib, 'htmlToMobiledocConverter').get(() => () => {
+                sinon.stub(lexicalLib, 'htmlToLexicalConverter').get(() => () => {
                     throw new Error('Some error');
                 });
 
                 assert.throws(() => {
                     serializers.input.posts.edit({}, frame);
-                }, /Failed to convert HTML to Mobiledoc/);
+                }, /Failed to convert HTML to Lexical/);
             });
         });
 

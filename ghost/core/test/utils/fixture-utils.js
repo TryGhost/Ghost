@@ -60,7 +60,30 @@ const fixtures = {
                 return Promise.all(DataGenerator.forKnex.posts_meta.map((postMeta) => {
                     return models.PostsMeta.add(postMeta, context.internal);
                 }));
+            })
+            .then(function () {
+                return fixtures.restoreLegacyMobiledocPosts();
             });
+    },
+
+    // New saves convert mobiledoc to lexical, but some fixtures need to remain
+    // stored as mobiledoc to exercise the legacy mobiledoc read/render paths.
+    // Restore the original mobiledoc directly in the DB to simulate a legacy row
+    // (the html generated during insert is kept and still contains the same URLs).
+    restoreLegacyMobiledocPosts: function restoreLegacyMobiledocPosts() {
+        const legacySlugs = ['post-with-all-media-types-mobiledoc'];
+
+        return Promise.all(legacySlugs.map((slug) => {
+            const fixture = DataGenerator.forKnex.posts.find(post => post.slug === slug);
+
+            if (!fixture) {
+                return Promise.resolve();
+            }
+
+            return models.Base.knex('posts')
+                .where('id', fixture.id)
+                .update({mobiledoc: fixture.mobiledoc, lexical: null});
+        }));
     },
 
     insertMultiAuthorPosts: function insertMultiAuthorPosts() {

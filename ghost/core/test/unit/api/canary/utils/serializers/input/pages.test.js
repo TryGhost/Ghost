@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const serializers = require('../../../../../../../core/server/api/endpoints/utils/serializers');
 const postsSchema = require('../../../../../../../core/server/data/schema').tables.posts;
 
-const mobiledocLib = require('../../../../../../../core/server/lib/mobiledoc');
+const lexicalLib = require('../../../../../../../core/server/lib/lexical');
 
 describe('Unit: endpoints/utils/serializers/input/pages', function () {
     afterEach(function () {
@@ -253,7 +253,7 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
                 source: 'html'
             },
             data: {
-                posts: [
+                pages: [
                     {
                         id: 'id1',
                         html: '<bananarama>'
@@ -262,13 +262,13 @@ describe('Unit: endpoints/utils/serializers/input/pages', function () {
             }
         };
 
-        sinon.stub(mobiledocLib, 'htmlToMobiledocConverter').get(() => () => {
+        sinon.stub(lexicalLib, 'htmlToLexicalConverter').get(() => () => {
             throw new Error('Some error');
         });
 
         assert.throws(() => {
-            serializers.input.posts.edit({}, frame);
-        }, /Failed to convert HTML to Mobiledoc/);
+            serializers.input.pages.edit({}, frame);
+        }, /Failed to convert HTML to Lexical/);
     });
 
     describe('Ensure relations format', function () {

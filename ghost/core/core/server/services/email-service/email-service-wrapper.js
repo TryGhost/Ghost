@@ -40,7 +40,6 @@ class EmailServiceWrapper {
         const labs = require('../../../shared/labs');
         const emailAddressService = require('../email-address');
         const i18nLib = require('@tryghost/i18n');
-        const mobiledocLib = require('../../lib/mobiledoc');
         const lexicalLib = require('../../lib/lexical');
         const urlUtils = require('../../../shared/url-utils');
         const memberAttribution = require('../member-attribution');
@@ -78,7 +77,6 @@ class EmailServiceWrapper {
             settingsCache,
             settingsHelpers,
             renderers: {
-                mobiledoc: mobiledocLib,
                 lexical: lexicalLib
             },
             imageSize: cachedImageSizeFromUrl,

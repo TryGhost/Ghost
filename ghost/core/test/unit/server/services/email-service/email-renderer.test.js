@@ -1475,6 +1475,40 @@ describe('Email renderer', function () {
             );
         });
 
+        it('Converts a mobiledoc-only post to lexical before rendering', async function () {
+            // Legacy posts can still be stored as mobiledoc with no lexical (mobiledoc is only
+            // converted on save, not on read). The email renderer must convert the mobiledoc to
+            // lexical on the fly via @tryghost/kg-converters and render that, rather than failing
+            // or producing empty content now that the mobiledoc renderer is gone.
+            const mobiledoc = JSON.stringify({
+                version: '0.3.1',
+                atoms: [],
+                cards: [],
+                markups: [],
+                sections: [[1, 'p', [[0, [], 0, 'Legacy mobiledoc content']]]]
+            });
+            const post = createModel({...basePost, lexical: null, mobiledoc});
+            const newsletter = createModel(baseNewsletter);
+
+            const response = await emailRenderer.renderBody(post, newsletter, null, {});
+
+            // the single rendering path is lexical - it was handed the converted-from-mobiledoc document
+            assert.ok(renderersStub.lexical.render.called, 'the lexical renderer is used');
+            const convertedFromMobiledoc = renderersStub.lexical.render.getCalls().some((call) => {
+                const lexicalArg = call.args[0];
+                return typeof lexicalArg === 'string'
+                    && lexicalArg.includes('"type":"root"')
+                    && lexicalArg.includes('Legacy mobiledoc content');
+            });
+            assert.ok(convertedFromMobiledoc, 'mobiledoc content is converted to lexical and passed to the renderer');
+
+            // the mobiledoc renderer stub must never be touched - it no longer exists in the renderers
+            assert.equal(renderersStub.mobiledoc.render.called, false, 'the mobiledoc renderer is not used');
+
+            // and the email body is produced from the lexical path
+            assert.ok(response.html.includes('Lexical Test'));
+        });
+
         it('Renders LTR <html> attributes by default', async function () {
             const post = createModel(basePost);
             const newsletter = createModel(baseNewsletter);
