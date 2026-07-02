@@ -52,10 +52,6 @@ export class GiftLinksService {
         return row ? {id: row.post_id, giftLinks: [z.decode(queries.giftLinkCodec, row)]} : null;
     }
 
-    async isValidTokenForPost(token: string, postId: string): Promise<boolean> {
-        return (await this.getPostByToken(token))?.id === postId;
-    }
-
     async ensure(context: RequestContext, postId: string): Promise<Post> {
         const post = await this.requirePost(postId);
         if (post.giftLinks.length) {
