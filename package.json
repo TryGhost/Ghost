@@ -95,7 +95,7 @@
     "jsonc-parser": "catalog:",
     "knip": "6.16.1",
     "lint-staged": "17.0.8",
-    "nx": "22.7.5",
+    "nx": "22.7.6",
     "rimraf": "6.1.3",
     "secretlint": "13.0.2",
     "semver": "7.8.5",
