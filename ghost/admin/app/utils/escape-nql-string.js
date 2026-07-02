@@ -6,5 +6,5 @@
 // breakout, and backslashes must not be doubled because that corrupts terms
 // containing a backslash.
 export function escapeNqlString(term) {
-    return '\'' + String(term).replace(/'/g, '\\\'') + '\'';
+    return '\'' + String(term).split('\'').join('\\\'') + '\'';
 }
