@@ -170,17 +170,28 @@ test.describe('Feed', async () => {
         });
         await expect(sensitivePost).toBeVisible();
         await expect(sensitivePost.getByTestId('sensitive-media-overlay').getByText('Sensitive media')).toBeVisible();
-        await expect(sensitivePost.getByRole('img', {name: 'Sensitive Image'})).toHaveCount(0);
+        await expect(sensitivePost.getByRole('img', {name: 'Sensitive Image'})).toBeVisible();
 
         await sensitivePost.getByRole('button', {name: 'Show media'}).click();
 
         await expect(sensitivePost.getByRole('img', {name: 'Sensitive Image'})).toBeVisible();
+        await expect(sensitivePost.getByRole('button', {name: 'Hide sensitive media'})).toBeVisible();
         await expect(sensitivePost.getByTestId('sensitive-media-overlay')).toHaveCount(0);
 
-        const enabledPage = await page.context().newPage();
-        await mockInitialApiRequests(enabledPage);
-        await enabledPage.route('https://test.instance/media/blog.jpg', async (route) => {
-            await route.fulfill(await mockSensitiveImage());
+        await sensitivePost.getByRole('button', {name: 'Hide sensitive media'}).click();
+
+        await expect(sensitivePost.getByTestId('sensitive-media-overlay')).toBeVisible();
+        await expect(sensitivePost.getByRole('img', {name: 'Sensitive Image'})).toBeVisible();
+    });
+
+    test('sensitive media shown by preference does not show a local hide button', async ({page}) => {
+        const imageFixture = '<svg xmlns="http://www.w3.org/2000/svg" width="1" height="1"><rect width="1" height="1" fill="black"/></svg>';
+
+        await page.route('https://test.instance/media/blog.jpg', async (route) => {
+            await route.fulfill({
+                body: imageFixture,
+                contentType: 'image/svg+xml'
+            });
         });
 
         const sensitiveFeedFixture = {
@@ -206,7 +217,7 @@ test.describe('Feed', async () => {
             ]
         };
 
-        await mockApi({page: enabledPage, requests: {
+        await mockApi({page, requests: {
             getFeed: {
                 method: 'GET',
                 path: '/v1/feed/notes',
@@ -249,26 +260,26 @@ test.describe('Feed', async () => {
             }
         }, options: {useActivityPub: true}});
 
-        await enabledPage.goto('#/notes');
+        await page.goto('#/notes');
 
-        const enabledFeedList = enabledPage.getByTestId('feed-list');
+        const enabledFeedList = page.getByTestId('feed-list');
         await expect(enabledFeedList).toBeVisible();
 
-        const shownSensitivePost = enabledPage.getByTestId('feed-item').filter({
+        const shownSensitivePost = page.getByTestId('feed-item').filter({
             hasText: 'This note shows sensitive media immediately.'
         });
         await expect(shownSensitivePost).toBeVisible();
         await expect(shownSensitivePost.getByRole('img', {name: 'Sensitive Image'})).toBeVisible();
+        await expect(shownSensitivePost.getByRole('button', {name: 'Hide sensitive media'})).toHaveCount(0);
         await expect(shownSensitivePost.getByTestId('sensitive-media-overlay')).toHaveCount(0);
 
         await shownSensitivePost.click();
 
-        const modalPost = enabledPage.locator('[data-layout="modal"]');
+        const modalPost = page.locator('[data-layout="modal"]');
         await expect(modalPost.getByText('This note shows sensitive media immediately.')).toBeVisible();
         await expect(modalPost.getByRole('img', {name: 'Sensitive Image'})).toBeVisible();
+        await expect(modalPost.getByRole('button', {name: 'Hide sensitive media'})).toHaveCount(0);
         await expect(modalPost.getByTestId('sensitive-media-overlay')).toHaveCount(0);
-
-        await enabledPage.close();
     });
 
     test('content warnings hide warned content until revealed', async ({page}) => {
@@ -334,6 +345,8 @@ test.describe('Feed', async () => {
         await expect(warnedPost.getByText('Hidden warned content.')).toBeVisible();
         await expect(warnedPost.getByRole('img', {name: 'Warned Image'})).toBeVisible();
         await expect(warnedPost.getByTestId('content-warning-overlay')).toHaveCount(0);
+        await expect(warnedPost.getByTestId('sensitive-media-overlay')).toHaveCount(0);
+        await expect(warnedPost.getByRole('button', {name: 'Hide sensitive media'})).toHaveCount(0);
     });
 
     test('I can like a note in my feed', async ({page}) => {

@@ -12,7 +12,7 @@ import APAvatar from '@src/components/global/ap-avatar';
 import APReplyBox from '@src/components/global/ap-reply-box';
 import BackButton from '@src/components/global/back-button';
 import DeletedFeedItem from '@src/components/feed/deleted-feed-item';
-import FeedItem, {ContentWarningOverlay, SensitiveMediaOverlay} from '@src/components/feed/feed-item';
+import FeedItem, {ContentWarningOverlay, SensitiveMediaHideButton, SensitiveMediaOverlay} from '@src/components/feed/feed-item';
 import FeedItemStats from '@src/components/feed/feed-item-stats';
 import FollowButton from '@src/components/global/follow-button';
 import ProfilePreviewHoverCard from '@components/global/profile-preview-hover-card';
@@ -456,6 +456,7 @@ export const Reader: React.FC<ReaderProps> = ({
     const [loadingChains, setLoadingChains] = useState<Set<string>>(new Set());
     const [isLoadingMoreTopLevelReplies, setIsLoadingMoreTopLevelReplies] = useState(false);
     const [isSensitiveMediaRevealed, setIsSensitiveMediaRevealed] = useState(false);
+    const [isSensitiveMediaManuallyHidden, setIsSensitiveMediaManuallyHidden] = useState(false);
     const [isContentWarningRevealed, setIsContentWarningRevealed] = useState(false);
     const {data: preferences} = usePreferencesForUser();
     const showSensitiveMediaByDefault = preferences?.showSensitiveMedia ?? false;
@@ -480,13 +481,16 @@ export const Reader: React.FC<ReaderProps> = ({
     const sensitiveObject = object as (typeof object & {contentWarning?: string | null; sensitive?: boolean}) | undefined;
     const replyCount = object?.replyCount ?? 0;
     const contentWarning = typeof sensitiveObject?.contentWarning === 'string' && sensitiveObject.contentWarning.trim() ? sensitiveObject.contentWarning.trim() : null;
+    const hasContentWarning = contentWarning !== null;
     const shouldHideContentWarning = contentWarning !== null && !isContentWarningRevealed;
-    const shouldHideSensitiveMedia = sensitiveObject?.sensitive === true && !showSensitiveMediaByDefault && !isSensitiveMediaRevealed && !isContentWarningRevealed;
+    const shouldHideSensitiveMedia = sensitiveObject?.sensitive === true && !hasContentWarning && !showSensitiveMediaByDefault && (isSensitiveMediaManuallyHidden || !isSensitiveMediaRevealed);
+    const canHideSensitiveMedia = sensitiveObject?.sensitive === true && !hasContentWarning && !showSensitiveMediaByDefault && !shouldHideSensitiveMedia;
     const articleHtml = shouldHideSensitiveMedia ? stripMediaFromHtml(object?.content ?? '') : object?.content ?? '';
     const articleImage = shouldHideSensitiveMedia ? undefined : typeof object?.image === 'string' ? object.image : object?.image?.url;
 
     useEffect(() => {
         setIsSensitiveMediaRevealed(false);
+        setIsSensitiveMediaManuallyHidden(false);
         setIsContentWarningRevealed(false);
     }, [postId]);
 
@@ -908,25 +912,37 @@ export const Reader: React.FC<ReaderProps> = ({
                                                     className='w-full'
                                                     onReveal={(event) => {
                                                         event.stopPropagation();
+                                                        setIsSensitiveMediaManuallyHidden(false);
                                                         setIsSensitiveMediaRevealed(true);
                                                     }}
                                                 />
                                             )}
-                                            <ArticleBody
-                                                authors={authors}
-                                                backgroundColor={backgroundColor}
-                                                excerpt={object.summary ?? ''}
-                                                fontSize={fontSize}
-                                                fontStyle={fontStyle}
-                                                heading={object.name}
-                                                html={articleHtml}
-                                                image={articleImage}
-                                                isPopoverOpen={isCustomizerOpen || isTOCOpen}
-                                                postUrl={object?.url || ''}
-                                                onHeadingsExtracted={handleHeadingsExtracted}
-                                                onIframeLoad={handleIframeLoad}
-                                                onLoadingChange={setIsLoading}
-                                            />
+                                            <div className='relative w-full'>
+                                                <ArticleBody
+                                                    authors={authors}
+                                                    backgroundColor={backgroundColor}
+                                                    excerpt={object.summary ?? ''}
+                                                    fontSize={fontSize}
+                                                    fontStyle={fontStyle}
+                                                    heading={object.name}
+                                                    html={articleHtml}
+                                                    image={articleImage}
+                                                    isPopoverOpen={isCustomizerOpen || isTOCOpen}
+                                                    postUrl={object?.url || ''}
+                                                    onHeadingsExtracted={handleHeadingsExtracted}
+                                                    onIframeLoad={handleIframeLoad}
+                                                    onLoadingChange={setIsLoading}
+                                                />
+                                                {canHideSensitiveMedia && (
+                                                    <SensitiveMediaHideButton
+                                                        onHide={(event) => {
+                                                            event.stopPropagation();
+                                                            setIsSensitiveMediaManuallyHidden(true);
+                                                            setIsSensitiveMediaRevealed(false);
+                                                        }}
+                                                    />
+                                                )}
+                                            </div>
                                         </>}
                                         <div className='-ml-3 w-full' style={{maxWidth: currentGridWidth}}>
                                             <FeedItemStats

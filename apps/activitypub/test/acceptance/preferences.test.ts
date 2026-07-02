@@ -82,7 +82,7 @@ test.describe('Preferences', async () => {
         await page.goto('#/preferences');
         await page.getByRole('link', {name: /Moderation/}).click();
 
-        const toggle = page.getByRole('switch', {name: 'Show sensitive media by default'});
+        const toggle = page.getByRole('switch', {name: 'Show sensitive media'});
         await expect(toggle).toBeVisible();
         await expect(toggle).not.toBeChecked();
 
@@ -133,7 +133,7 @@ test.describe('Preferences', async () => {
         await page.goto('#/preferences');
         await page.getByRole('link', {name: /Moderation/}).click();
 
-        const toggle = page.getByRole('switch', {name: 'Show sensitive media by default'});
+        const toggle = page.getByRole('switch', {name: 'Show sensitive media'});
         await expect(toggle).toBeChecked();
 
         await toggle.click();

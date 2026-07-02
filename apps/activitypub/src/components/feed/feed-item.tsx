@@ -180,20 +180,61 @@ export function renderFeedAttachment(
 
 export function SensitiveMediaOverlay({
     className = '',
+    isLayered = false,
     onReveal
 }: {
     className?: string;
+    isLayered?: boolean;
     onReveal: (event: React.MouseEvent) => void;
 }) {
     return (
         <div
-            className={clsx('mt-3 rounded-md border border-border-default bg-surface-elevated p-6 text-center', className)}
+            className={clsx(
+                '[container-type:size] flex items-center justify-center overflow-hidden bg-foreground/45 p-[clamp(0.75rem,6cqh,2rem)] text-background backdrop-blur-xl',
+                isLayered ? 'absolute inset-0 rounded-none' : 'relative mt-3 min-h-[300px] w-full rounded-xl',
+                className
+            )}
             data-testid='sensitive-media-overlay'
             onClick={(event) => event.stopPropagation()}
         >
-            <Text className='mb-3' weight='medium'>Sensitive media</Text>
-            <Button size='sm' type='button' variant='secondary' onClick={onReveal}>Show media</Button>
+            <div className='absolute inset-0 bg-foreground/35' />
+            <div className='relative z-10 grid size-full max-w-[520px] grid-rows-[minmax(0,1fr)_auto_minmax(0.5rem,6cqh)_auto_minmax(0.75rem,8cqh)_auto_minmax(0,1fr)] justify-items-center text-center'>
+                <LucideIcon.EyeOff className='row-start-2 size-[clamp(1.5rem,14cqh,2.25rem)]' strokeWidth={2.25} />
+                <div className='row-start-4 flex flex-col items-center gap-1'>
+                    <Text className='text-background' weight='bold'>Sensitive media</Text>
+                    <Text className='leading-tight text-background'>The following may contain sensitive material</Text>
+                </div>
+                <Button
+                    aria-label='Show media'
+                    className='row-start-6 rounded-full bg-background/35 px-8 font-bold text-background shadow-[0_0_0_1px_color-mix(in_oklab,var(--background)_35%,transparent)] hover:bg-background/25 hover:text-background'
+                    size='default'
+                    type='button'
+                    variant='ghost'
+                    onClick={onReveal}
+                >
+                    Show
+                </Button>
+            </div>
         </div>
+    );
+}
+
+export function SensitiveMediaHideButton({
+    onHide
+}: {
+    onHide: (event: React.MouseEvent) => void;
+}) {
+    return (
+        <Button
+            aria-label='Hide sensitive media'
+            className='absolute top-5 right-5 z-20 rounded-full bg-foreground/80 px-6 font-bold text-background hover:bg-foreground/90 hover:text-background'
+            size='default'
+            type='button'
+            variant='ghost'
+            onClick={onHide}
+        >
+            Hide
+        </Button>
     );
 }
 
@@ -208,12 +249,32 @@ export function ContentWarningOverlay({
 }) {
     return (
         <div
-            className={clsx('mt-3 rounded-md border border-border-default bg-surface-elevated p-4', className)}
+            className={clsx(
+                '[container-type:size] flex items-center justify-center overflow-hidden bg-foreground/45 p-[clamp(0.75rem,6cqh,2rem)] text-background backdrop-blur-xl',
+                'relative mt-3 min-h-[300px] w-full rounded-xl',
+                className
+            )}
             data-testid='content-warning-overlay'
             onClick={(event) => event.stopPropagation()}
         >
-            <Text className='mb-3' weight='medium'>{label}</Text>
-            <Button size='sm' type='button' variant='secondary' onClick={onReveal}>Show post</Button>
+            <div className='absolute inset-0 bg-foreground/35' />
+            <div className='relative z-10 grid size-full max-w-[520px] grid-rows-[minmax(0,1fr)_auto_clamp(1.25rem,3.85cqw,1.8rem)_auto_clamp(1.5rem,5.15cqw,2.4rem)_auto_minmax(0,1fr)] justify-items-center text-center'>
+                <LucideIcon.EyeOff className='row-start-2 size-[clamp(1.5rem,4.85cqw,2.25rem)]' strokeWidth={2.25} />
+                <div className='row-start-4 flex flex-col items-center gap-1'>
+                    <Text className='text-background' weight='bold'>Content warning:</Text>
+                    <Text className='leading-tight text-background'>{label}</Text>
+                </div>
+                <Button
+                    aria-label='Show post'
+                    className='row-start-6 rounded-full bg-background/35 px-8 font-bold text-background shadow-[0_0_0_1px_color-mix(in_oklab,var(--background)_35%,transparent)] hover:bg-background/25 hover:text-background'
+                    size='default'
+                    type='button'
+                    variant='ghost'
+                    onClick={onReveal}
+                >
+                    Show
+                </Button>
+            </div>
         </div>
     );
 }
@@ -334,6 +395,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const [, setIsCopied] = useState(false);
     const [brokenImages, setBrokenImages] = useState<Set<string>>(new Set());
     const [isSensitiveMediaRevealed, setIsSensitiveMediaRevealed] = useState(false);
+    const [isSensitiveMediaManuallyHidden, setIsSensitiveMediaManuallyHidden] = useState(false);
     const [isContentWarningRevealed, setIsContentWarningRevealed] = useState(false);
 
     const contentRef = useRef<HTMLDivElement>(null);
@@ -341,6 +403,12 @@ const FeedItem: React.FC<FeedItemProps> = ({
 
     const deleteMutation = useDeleteMutationForUser('index');
     const navigate = useNavigateWithBasePath();
+
+    useEffect(() => {
+        setIsSensitiveMediaRevealed(false);
+        setIsSensitiveMediaManuallyHidden(false);
+        setIsContentWarningRevealed(false);
+    }, [object?.id]);
 
     const followMutation = useFollowMutationForUser(
         'index',
@@ -433,12 +501,21 @@ const FeedItem: React.FC<FeedItemProps> = ({
     const sensitiveObject = object as SensitiveObjectProperties;
     const hasSensitiveMedia = sensitiveObject.sensitive === true && getAttachment(object) !== null;
     const contentWarning = sensitiveObject.contentWarning?.trim() || null;
+    const hasContentWarning = contentWarning !== null;
     const shouldHideContentWarning = contentWarning !== null && !isContentWarningRevealed;
-    const shouldHideSensitiveMedia = hasSensitiveMedia && !showSensitiveMediaByDefault && !isSensitiveMediaRevealed && !isContentWarningRevealed;
+    const shouldHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && (isSensitiveMediaManuallyHidden || !isSensitiveMediaRevealed);
+    const canHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && !shouldHideSensitiveMedia;
 
     const handleRevealSensitiveMedia = (event: React.MouseEvent) => {
         event.stopPropagation();
+        setIsSensitiveMediaManuallyHidden(false);
         setIsSensitiveMediaRevealed(true);
+    };
+
+    const handleHideSensitiveMedia = (event: React.MouseEvent) => {
+        event.stopPropagation();
+        setIsSensitiveMediaManuallyHidden(true);
+        setIsSensitiveMediaRevealed(false);
     };
 
     const handleRevealContentWarning = (event: React.MouseEvent) => {
@@ -448,10 +525,49 @@ const FeedItem: React.FC<FeedItemProps> = ({
 
     const renderFeedMedia = (mediaClickHandler?: (url: string) => void) => {
         if (shouldHideSensitiveMedia) {
-            return <SensitiveMediaOverlay onReveal={handleRevealSensitiveMedia} />;
+            const media = renderFeedAttachment(object, undefined, brokenImages, handleImageError);
+
+            if (!media) {
+                return <SensitiveMediaOverlay onReveal={handleRevealSensitiveMedia} />;
+            }
+
+            const mediaWrapperClassName = clsx(
+                'relative mt-3 overflow-hidden rounded-xl [&>.attachment-gallery]:mt-0 [&>img]:mt-0 [&>img]:block',
+                Array.isArray(getAttachment(object)) ? 'w-full' : 'w-fit max-w-full'
+            );
+
+            return (
+                <div className={mediaWrapperClassName}>
+                    {media}
+                    <SensitiveMediaOverlay
+                        isLayered
+                        onReveal={handleRevealSensitiveMedia}
+                    />
+                </div>
+            );
         }
 
-        return renderFeedAttachment(object, mediaClickHandler, brokenImages, handleImageError);
+        const media = renderFeedAttachment(object, mediaClickHandler, brokenImages, handleImageError);
+
+        if (!media) {
+            return null;
+        }
+
+        if (canHideSensitiveMedia) {
+            const mediaWrapperClassName = clsx(
+                'relative mt-3 [&>.attachment-gallery]:mt-0 [&>img]:mt-0 [&>img]:block',
+                Array.isArray(getAttachment(object)) ? 'w-full' : 'w-fit max-w-full'
+            );
+
+            return (
+                <div className={mediaWrapperClassName}>
+                    {media}
+                    <SensitiveMediaHideButton onHide={handleHideSensitiveMedia} />
+                </div>
+            );
+        }
+
+        return media;
     };
 
     const renderContentWarningOverlay = () => {

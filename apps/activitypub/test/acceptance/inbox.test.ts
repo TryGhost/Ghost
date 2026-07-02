@@ -188,6 +188,17 @@ test.describe('Inbox', async () => {
         await expect(modal.getByTestId('content-warning-overlay')).toContainText('Sensitive article');
         await expect(modal.getByText('This sensitive reader body should stay hidden until revealed.')).toHaveCount(0);
         await expect(modal.locator('iframe')).toHaveCount(0);
+
+        await modal.getByRole('button', {name: 'Show post'}).click();
+
+        await expect(modal.getByTestId('content-warning-overlay')).toHaveCount(0);
+        await expect(modal.getByTestId('sensitive-media-overlay')).toHaveCount(0);
+        await expect(modal.getByRole('button', {name: 'Hide sensitive media'})).toHaveCount(0);
+
+        const iframe = modal.locator('iframe');
+        await expect(iframe).toBeVisible();
+        const iframeContent = iframe.contentFrame();
+        await expect(iframeContent.getByText('This sensitive reader body should stay hidden until revealed.')).toBeVisible();
     });
 
     test('sensitive reader article media can be revealed locally', async ({page}) => {
@@ -268,11 +279,20 @@ test.describe('Inbox', async () => {
 
         await modal.getByRole('button', {name: 'Show media'}).click();
         await expect(modal.getByTestId('sensitive-media-overlay')).toHaveCount(0);
+        await expect(modal.getByRole('button', {name: 'Hide sensitive media'})).toBeVisible();
 
         iframeContent = iframe.contentFrame();
         await expect(iframeContent.locator('img[src="https://techblog.example/content/images/sensitive-reader-media.jpg"]')).toBeVisible();
         await expect(iframeContent.locator('img[src="https://techblog.example/content/images/inline-sensitive.jpg"]')).toBeVisible();
         await expect(iframeContent.locator('iframe[src="https://www.youtube.com/embed/test"]')).toBeVisible();
+
+        await modal.getByRole('button', {name: 'Hide sensitive media'}).click();
+        await expect(modal.getByTestId('sensitive-media-overlay')).toBeVisible();
+
+        iframeContent = iframe.contentFrame();
+        await expect(iframeContent.locator('img[src="https://techblog.example/content/images/sensitive-reader-media.jpg"]')).toHaveCount(0);
+        await expect(iframeContent.locator('img[src="https://techblog.example/content/images/inline-sensitive.jpg"]')).toHaveCount(0);
+        await expect(iframeContent.locator('iframe[src="https://www.youtube.com/embed/test"]')).toHaveCount(0);
     });
 
     test('I can like a post', async ({page}) => {

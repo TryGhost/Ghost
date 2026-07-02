@@ -101,12 +101,12 @@ const Moderation: React.FC = () => {
                 <div className='mt-6'>
                     <SettingItem>
                         <SettingHeader>
-                            <SettingTitle>Show sensitive media by default</SettingTitle>
-                            <SettingDescription>Display media marked sensitive without a reveal prompt</SettingDescription>
+                            <SettingTitle>Show sensitive media</SettingTitle>
+                            <SettingDescription>Display adult content or media marked as sensitive without a warning</SettingDescription>
                         </SettingHeader>
                         <SettingAction>
                             <Switch
-                                aria-label='Show sensitive media by default'
+                                aria-label='Show sensitive media'
                                 checked={showSensitiveMedia}
                                 disabled={isLoadingPreferences || updatePreferences.isPending}
                                 onCheckedChange={handleShowSensitiveMediaChange}

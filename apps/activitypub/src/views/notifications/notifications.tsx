@@ -223,8 +223,9 @@ const NotificationPostPreview: React.FC<NotificationPostPreviewProps> = ({
     const contentWarning = post.contentWarning?.trim() || null;
     const attachments = post.attachments ?? [];
     const hasAttachments = attachments.length > 0;
+    const hasContentWarning = contentWarning !== null;
     const shouldHideContentWarning = contentWarning !== null && !isContentWarningRevealed;
-    const shouldHideSensitiveMedia = post.sensitive === true && hasAttachments && !showSensitiveMediaByDefault && !isSensitiveMediaRevealed && !isContentWarningRevealed;
+    const shouldHideSensitiveMedia = post.sensitive === true && hasAttachments && !hasContentWarning && !showSensitiveMediaByDefault && !isSensitiveMediaRevealed;
 
     if (shouldHideContentWarning && contentWarning) {
         return (
