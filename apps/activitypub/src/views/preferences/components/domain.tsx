@@ -263,7 +263,10 @@ const Domain: React.FC = () => {
             window.clearTimeout(copyTimeoutRef.current);
         }
 
-        copyTimeoutRef.current = window.setTimeout(() => setHasCopiedHandle(false), 2000);
+        copyTimeoutRef.current = window.setTimeout(() => {
+            setHasCopiedHandle(false);
+            setIsHandleTooltipOpen(false);
+        }, 2000);
     };
 
     return (
