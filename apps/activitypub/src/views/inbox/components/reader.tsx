@@ -96,7 +96,7 @@ const ArticleBody: React.FC<{
     }, []);
 
     const htmlContent = `
-        <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
+        <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'} ${hideMedia ? 'gh-sensitive-media-hidden' : ''}">
         <head>
             ${cssContent}
             <style>
@@ -259,6 +259,7 @@ const ArticleBody: React.FC<{
                 iframe.style.height = newHeight;
 
                 if (event.data.isLoaded) {
+                    updateSensitiveMediaVisibility();
                     setIsLoading(false);
                 }
             }
