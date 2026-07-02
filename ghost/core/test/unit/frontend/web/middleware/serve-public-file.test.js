@@ -269,6 +269,34 @@ describe('servePublicFile', function () {
         sinon.assert.calledOnce(rebuild);
     });
 
+    it('attempts another rebuild after the throttle window has passed', async function () {
+        // Only fake Date — the throttle uses Date.now() and supertest needs
+        // real timers to run
+        const clock = sinon.useFakeTimers({now: Date.now(), toFake: ['Date']});
+        const rebuild = sinon.stub().resolves();
+
+        const middleware = servePublicFile('built', 'public/cards.min.css', 'text/css', 3600, {rebuild});
+        const app = createApp(middleware);
+
+        sinon.stub(fs, 'readFile').callsFake(function (file, cb) {
+            const err = new Error();
+            err.code = 'ENOENT';
+            cb(err, null);
+        });
+
+        await request(app)
+            .get('/public/cards.min.css')
+            .expect(404);
+
+        clock.tick(10001);
+
+        await request(app)
+            .get('/public/cards.min.css')
+            .expect(404);
+
+        sinon.assert.calledTwice(rebuild);
+    });
+
     it('never attempts a rebuild for static files', async function () {
         const rebuild = sinon.stub().resolves();
 
