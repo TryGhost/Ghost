@@ -479,7 +479,7 @@ export async function reactAppConfig(options = {}) {
 
     const baseSettings = {
         react: {version: 'detect'},
-        ...(tailwindCssPath && {tailwindcss: {config: tailwindCssPath}})
+        ...(tailwindCssPath && {tailwindcss: {cssConfigPath: tailwindCssPath}})
     };
 
     const tailwindRules = tailwindCssPath
