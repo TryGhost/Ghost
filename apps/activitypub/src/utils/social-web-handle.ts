@@ -16,7 +16,7 @@ export function validateSocialWebUsername(username: string) {
         return `Username must be at least ${SOCIAL_WEB_USERNAME_MIN_LENGTH} characters.`;
     }
 
-    if (username.length > SOCIAL_WEB_USERNAME_MAX_LENGTH) {
+    if (username.length >= SOCIAL_WEB_USERNAME_MAX_LENGTH) {
         return `Username must be less than ${SOCIAL_WEB_USERNAME_MAX_LENGTH} characters.`;
     }
 
