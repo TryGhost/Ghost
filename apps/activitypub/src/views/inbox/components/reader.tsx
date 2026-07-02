@@ -96,7 +96,7 @@ const ArticleBody: React.FC<{
     }, []);
 
     const htmlContent = `
-        <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'} ${hideMedia ? 'gh-sensitive-media-hidden' : ''}">
+        <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
         <head>
             ${cssContent}
             <style>
@@ -246,6 +246,14 @@ const ArticleBody: React.FC<{
         </html>
     `;
 
+    const getIframeSource = useCallback(() => {
+        if (!hideMediaRef.current) {
+            return htmlContent;
+        }
+
+        return htmlContent.replace('<html class="', '<html class="gh-sensitive-media-hidden ');
+    }, [htmlContent]);
+
     useEffect(() => {
         const iframe = iframeRef.current;
         if (!iframe) {
@@ -297,7 +305,7 @@ const ArticleBody: React.FC<{
         iframe.addEventListener('load', handleIframeLoad);
         window.addEventListener('message', handleMessage);
         setIsLoading(true);
-        iframe.srcdoc = htmlContent;
+        iframe.srcdoc = getIframeSource();
 
         return () => {
             window.removeEventListener('message', handleMessage);
@@ -307,7 +315,7 @@ const ArticleBody: React.FC<{
                 iframeWindow.removeEventListener('keydown', handleIframeKeyDown);
             }
         };
-    }, [htmlContent, updateSensitiveMediaVisibility]);
+    }, [getIframeSource, updateSensitiveMediaVisibility]);
 
     useEffect(() => {
         updateSensitiveMediaVisibility();
