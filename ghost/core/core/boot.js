@@ -372,7 +372,7 @@ async function initServices({ghostServer} = {}) {
         postsPublic.init(),
         membersEvents.init(),
         permissions.init(),
-        indexnow.listen(),
+        indexnow.init(),
         slack.listen(),
         audienceFeedback.init(),
         emailService.init({ghostServer}),
