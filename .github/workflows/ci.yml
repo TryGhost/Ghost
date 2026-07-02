@@ -1415,6 +1415,20 @@ jobs:
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
 
+      # Tinybird is the largest image in the analytics infra and its pull (60-90s)
+      # otherwise wouldn't start until `docker compose up` in the Prepare step,
+      # serialized behind the Ghost image load + pnpm install. Kick it off in the
+      # background now so it overlaps those steps; `compose up --wait` later finds
+      # the image cached (or coalesces with the in-flight pull). Digests come from
+      # the compose file, so there's no new pin to keep in sync. Analytics legs only.
+      - name: Prefetch analytics infra images
+        if: matrix.analytics == 'true'
+        run: |
+          nohup docker compose -f compose.dev.yaml -f compose.dev.analytics.yaml \
+            pull tinybird-local analytics >/tmp/prefetch-analytics-images.log 2>&1 &
+          disown
+          echo "Started background prefetch of tinybird-local + analytics images"
+
       - name: Pull or build Tinybird CLI Image
         if: matrix.analytics == 'true'
         run: |
