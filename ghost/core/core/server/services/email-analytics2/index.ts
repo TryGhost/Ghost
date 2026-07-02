@@ -4,17 +4,20 @@ import {batch} from './batch';
 type MailgunClient = mailgunjs.Interfaces.IMailgunClient;
 
 type Operation = {
-    type: 'update email recipients';
-    opened_at?: Date;
-} | {
-    type: 'other operation';
+    memberId: string;
+    emailId: string;
+    delivered: boolean;
+    opened: boolean;
+    failed: boolean;
+    unsubscribed: boolean;
+    complained: boolean;
 };
 
 async function* getMailgunEvents({
     mailgunClient
 }: {
     mailgunClient: MailgunClient;
-}): AsyncGenerator<mailgunjs.LogsEventItem> {
+}): AsyncGenerator<mailgunjs.LogsEventItem, void, never> {
     // TODO(ea2) Implement this.
     // See <https://github.com/mailgun/mailgun.js#logs> and <https://documentation.mailgun.com/docs/mailgun/api-reference/send/mailgun/logs/post-v1-analytics-logs>.
     // Endless loop that fetches logs from Mailgun and yields them as they are fetched, then waits, then fetches more logs, etc. Persist the last log timestamp so that we can fetch logs in batches and not miss any logs.
@@ -29,11 +32,14 @@ async function* getMailgunEvents({
         // - Fatal errors should throw an error and stop the generator, but those should indicate developer mistakes here, NOT Mailgun being down or other things that can happen as part of normal operation.
 }
 
+function mailgunEventsToOperations(mailgunEvents: ReadonlyArray<mailgunjs.LogsEventItem>): Operation[] {
+}
+
 async function* getOperations({
     mailgunClient
 }: {
     mailgunClient: MailgunClient;
-}): AsyncGenerator<Operation> {
+}): AsyncGenerator<Operation, void, never> {
     const mailgunEvents = getMailgunEvents({
         mailgunClient
     });
