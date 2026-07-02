@@ -20,6 +20,7 @@ import TableOfContents, {TOCItem} from '@src/components/feed/table-of-contents';
 import articleBodyStyles from '@src/components/article-body-styles';
 import getReadingTime from '../../../utils/get-reading-time';
 import {Activity} from '@src/api/activitypub';
+import {ObjectProperties} from '@tryghost/admin-x-framework/api/activitypub';
 import {cardsCSS, cardsJS} from '@src/utils/cards-assets';
 import {enforceVideoCardInlinePlayback, escapeHtml, isSafeUrl, openLinksInNewTab} from '@src/utils/content-formatters';
 import {handleProfileClick} from '@src/utils/handle-profile-click';

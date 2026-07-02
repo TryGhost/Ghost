@@ -181,17 +181,19 @@ export function renderFeedAttachment(
 export function SensitiveMediaOverlay({
     className = '',
     isLayered = false,
+    size = 'default',
     onReveal
 }: {
     className?: string;
     isLayered?: boolean;
+    size?: 'default' | 'compact';
     onReveal: (event: React.MouseEvent) => void;
 }) {
     return (
         <div
             className={clsx(
                 '[container-type:size] flex items-center justify-center overflow-hidden bg-foreground/45 p-[clamp(0.75rem,6cqh,2rem)] text-background backdrop-blur-xl',
-                isLayered ? 'absolute inset-0 rounded-none' : 'relative mt-3 min-h-[300px] w-full rounded-xl',
+                isLayered ? 'absolute inset-0 rounded-none' : size === 'compact' ? 'relative rounded-xl' : 'relative mt-3 min-h-[300px] w-full rounded-xl',
                 className
             )}
             data-testid='sensitive-media-overlay'
@@ -979,6 +981,7 @@ const FeedItem: React.FC<FeedItemProps> = ({
                         {shouldHideContentWarning ? null : shouldHideSensitiveMedia ? (
                             <SensitiveMediaOverlay
                                 className='ml-8 hidden h-[91px] w-[121px] shrink-0 items-center justify-center p-3 text-sm md:ml-9 @md/inbox-item:flex [&_button]:mt-1'
+                                size='compact'
                                 onReveal={handleRevealSensitiveMedia}
                             />
                         ) : renderInboxAttachment(object, isLoading)}
