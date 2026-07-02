@@ -209,13 +209,13 @@
                         </div>
                         <div class="gh-list-data gh-email-debug-batch-col-details">
                             <div class="flex flex-col items-center space-between w100">
-                                {{#if (or batch.providerId batch.errorStatusCode batch.errorMessage)}}
+                                {{#if (or batch.mailgunProviderId batch.errorStatusCode batch.errorMessage)}}
                                     <div class="detailtext">
-                                        {{#if batch.providerId}}
+                                        {{#if batch.mailgunProviderId}}
                                             <div class="noselect">
                                                 Provider id:
                                                 <code>
-                                                    {{batch.providerId}}
+                                                    {{batch.mailgunProviderId}}
                                                 </code>
                                             </div>
                                         {{/if}}

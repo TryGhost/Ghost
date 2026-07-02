@@ -69,7 +69,7 @@ describe('Admin API - Max Limit Cap', function () {
             batches.push({
                 id: ObjectId().toHexString(),
                 email_id: emailId,
-                provider_id: `test-batch-${i}-${Date.now()}`,
+                mailgun_provider_id: `test-batch-${i}-${Date.now()}`,
                 status: 'submitted',
                 member_segment: null,
                 created_at: new Date(),

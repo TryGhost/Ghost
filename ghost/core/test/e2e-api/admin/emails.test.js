@@ -21,7 +21,7 @@ const matchEmailNewsletter = {
 
 const matchBatch = {
     id: anyObjectId,
-    provider_id: anyString,
+    mailgun_provider_id: anyString,
     created_at: anyISODateTime,
     updated_at: anyISODateTime
 };

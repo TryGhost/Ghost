@@ -26,8 +26,8 @@ let stubbedSend;
 let frontendAgent;
 
 function sortBatches(a, b) {
-    const aId = a.get('provider_id');
-    const bId = b.get('provider_id');
+    const aId = a.get('mailgun_provider_id');
+    const bId = b.get('mailgun_provider_id');
     if (aId === null) {
         return 1;
     }
@@ -67,7 +67,7 @@ async function testEmailBatches(settings, email_recipient_filter, expectedBatche
         const firstBatch = remainingBatches[index];
         remainingBatches.splice(index, 1);
 
-        assert.equal(firstBatch.get('provider_id'), 'stubbed-email-id');
+        assert.equal(firstBatch.get('mailgun_provider_id'), 'stubbed-email-id');
         assert.equal(firstBatch.get('status'), 'submitted');
         assert.equal(firstBatch.get('member_segment'), expectedBatch.segment);
         assert.equal(firstBatch.get('error_status_code'), null);
@@ -162,7 +162,7 @@ describe('Batch sending tests', function () {
 
         // Check all batches are in send state
         for (const batch of batches.models) {
-            assert.equal(batch.get('provider_id'), 'stubbed-email-id');
+            assert.equal(batch.get('mailgun_provider_id'), 'stubbed-email-id');
             assert.equal(batch.get('status'), 'submitted');
             assert.equal(batch.get('member_segment'), null);
 
@@ -451,7 +451,7 @@ describe('Batch sending tests', function () {
             count += 1;
 
             if (count === 4) {
-                assert.equal(batch.get('provider_id'), null);
+                assert.equal(batch.get('mailgun_provider_id'), null);
                 assert.equal(batch.get('status'), 'failed');
                 assert.equal(batch.get('error_status_code'), 500);
                 assert.equal(batch.get('error_message'), 'Internal server error: Something went wrong');
@@ -459,7 +459,7 @@ describe('Batch sending tests', function () {
                 assert.equal(errorData.error.status, 500);
                 assert.deepEqual(errorData.messageData.to.length, 1);
             } else {
-                assert.equal(batch.get('provider_id'), 'stubbed-email-id-' + count);
+                assert.equal(batch.get('mailgun_provider_id'), 'stubbed-email-id-' + count);
                 assert.equal(batch.get('status'), 'submitted');
                 assert.equal(batch.get('error_status_code'), null);
                 assert.equal(batch.get('error_message'), null);
@@ -485,7 +485,7 @@ describe('Batch sending tests', function () {
         await emailModel.refresh();
         batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
 
-        // sort batches by provider_id (nullable) because findAll doesn't have order option
+        // sort batches by mailgun_provider_id (nullable) because findAll doesn't have order option
         batches.models.sort(sortBatches);
 
         assert.equal(emailModel.get('status'), 'submitted');
@@ -494,7 +494,7 @@ describe('Batch sending tests', function () {
         // Did we keep the batches?
         batches = await models.EmailBatch.findAll({filter: `email_id:'${emailModel.id}'`});
 
-        // sort batches by provider_id (nullable) because findAll doesn't have order option
+        // sort batches by mailgun_provider_id (nullable) because findAll doesn't have order option
         batches.models.sort(sortBatches);
         assert.equal(batches.models.length, 4);
 
@@ -502,7 +502,7 @@ describe('Batch sending tests', function () {
 
         // Check all batches are in send state
         for (const batch of batches.models) {
-            assert(!!batch.get('provider_id'));
+            assert(!!batch.get('mailgun_provider_id'));
             assert.equal(batch.get('status'), 'submitted');
             assert.equal(batch.get('member_segment'), null);
 
@@ -593,7 +593,7 @@ describe('Batch sending tests', function () {
 
             // Check all batches are in send state
             for (const batch of batches.models) {
-                assert.equal(batch.get('provider_id'), 'stubbed-email-id');
+                assert.equal(batch.get('mailgun_provider_id'), 'stubbed-email-id');
                 assert.equal(batch.get('status'), 'submitted');
                 assert.equal(batch.get('member_segment'), null);
 

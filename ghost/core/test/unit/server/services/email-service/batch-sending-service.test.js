@@ -1248,7 +1248,7 @@ describe('Batch Sending Service', function () {
             sinon.assert.calledOnce(findOne);
             const batch = await findOne.firstCall.returnValue;
             assert.equal(batch.get('status'), 'submitted');
-            assert.equal(batch.get('provider_id'), 'providerid@example.com');
+            assert.equal(batch.get('mailgun_provider_id'), 'providerid@example.com');
 
             const {members} = sendingService.send.firstCall.args[0];
             assert.equal(members.length, 2);
@@ -1289,7 +1289,7 @@ describe('Batch Sending Service', function () {
             sinon.assert.calledOnce(findOne);
             const batch = await findOne.firstCall.returnValue;
             assert.equal(batch.get('status'), 'submitted');
-            assert.equal(batch.get('provider_id'), 'providerid@example.com');
+            assert.equal(batch.get('mailgun_provider_id'), 'providerid@example.com');
 
             const {members} = sendingService.send.firstCall.args[0];
             assert.equal(members.length, 2);
@@ -1332,7 +1332,7 @@ describe('Batch Sending Service', function () {
 
                     const batch = await findOne.firstCall.returnValue;
                     assert.equal(batch.get('status'), 'submitted');
-                    assert.equal(batch.get('provider_id'), 'providerid@example.com');
+                    assert.equal(batch.get('mailgun_provider_id'), 'providerid@example.com');
                     assert.equal(batch.get('fallback_sending_domain'), useFallback);
                 });
             });
@@ -1537,7 +1537,7 @@ describe('Batch Sending Service', function () {
             sinon.assert.calledOnce(findOne);
             const batch = await findOne.firstCall.returnValue;
             assert.equal(batch.get('status'), 'submitted');
-            assert.equal(batch.get('provider_id'), 'providerid@example.com');
+            assert.equal(batch.get('mailgun_provider_id'), 'providerid@example.com');
 
             const {members} = sendingService.send.firstCall.args[0];
             assert.equal(members.length, 2);

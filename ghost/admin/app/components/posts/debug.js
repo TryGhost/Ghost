@@ -90,7 +90,7 @@ export default class Debug extends Component {
                 statusClass: batch.status,
                 createdAt: batch.created_at ? moment(batch.created_at).format('DD MMM, YYYY, HH:mm:ss') : '',
                 segment: batch.member_segment || '',
-                providerId: batch.provider_id || null,
+                mailgunProviderId: batch.mailgun_provider_id || null,
                 errorMessage: batch.error_message || '',
                 errorStatusCode: batch.error_status_code || '',
                 recipientCount: batch.count?.recipients || 0
