@@ -3,6 +3,7 @@ const sinon = require('sinon');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
+const logging = require('@tryghost/logging');
 const AssetsMinificationBase = require('../../../../../core/frontend/services/assets-minification/assets-minification-base');
 
 describe('AssetsMinificationBase', function () {
@@ -193,7 +194,42 @@ describe('AssetsMinificationBase', function () {
             assert.equal(assets.loading, null);
         });
 
-        it('clears loading promise even when load() throws', async function () {
+        it('waits for an in-flight rebuild even when assets are marked ready', async function () {
+            let resolveLoad;
+
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    await new Promise((resolve) => {
+                        resolveLoad = resolve;
+                    });
+                    this.ready = true;
+                }
+            }
+
+            const assets = new TestAssets();
+            assets.ready = true;
+
+            // A recovery rebuild is in flight (e.g. triggered by an ENOENT on a
+            // sibling file) — the minifier may be truncating/rewriting files
+            const rebuild = assets.ensureLoaded();
+
+            const middleware = assets.serveMiddleware();
+            const next = sinon.stub();
+            const request = middleware({}, {}, next);
+
+            // The request must not proceed while the rebuild is writing files
+            await new Promise((resolve) => {
+                setImmediate(resolve);
+            });
+            sinon.assert.notCalled(next);
+
+            resolveLoad();
+            await Promise.all([rebuild, request]);
+            sinon.assert.calledOnce(next);
+        });
+
+        it('clears loading promise and continues the request when load() throws', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
             let shouldThrow = true;
 
             class TestAssets extends AssetsMinificationBase {
@@ -210,7 +246,71 @@ describe('AssetsMinificationBase', function () {
             const middleware = assets.serveMiddleware();
             const next = sinon.stub();
 
-            await assert.rejects(() => middleware({}, {}, next));
+            // The rejection must not escape the middleware — that would leave
+            // the request hanging with no response
+            await middleware({}, {}, next);
+
+            sinon.assert.calledOnce(next);
+            sinon.assert.calledOnce(loggingStub);
+            assert.equal(assets.loading, null);
+        });
+    });
+
+    describe('ensureLoaded', function () {
+        it('starts a build even when assets are marked ready', async function () {
+            let loadCallCount = 0;
+
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    loadCallCount += 1;
+                    this.ready = true;
+                }
+            }
+
+            const assets = new TestAssets();
+            assets.ready = true;
+
+            await assets.ensureLoaded();
+
+            assert.equal(loadCallCount, 1);
+        });
+
+        it('joins an in-flight build instead of starting a second one', async function () {
+            let loadCallCount = 0;
+            let resolveLoad;
+
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    loadCallCount += 1;
+                    await new Promise((resolve) => {
+                        resolveLoad = resolve;
+                    });
+                    this.ready = true;
+                }
+            }
+
+            const assets = new TestAssets();
+
+            const first = assets.ensureLoaded();
+            const second = assets.ensureLoaded();
+
+            resolveLoad();
+            await Promise.all([first, second]);
+
+            assert.equal(loadCallCount, 1, 'concurrent callers should share a single load()');
+            assert.equal(assets.loading, null);
+        });
+
+        it('clears the loading promise when load() throws', async function () {
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    throw new Error('load failed');
+                }
+            }
+
+            const assets = new TestAssets();
+
+            await assert.rejects(() => assets.ensureLoaded());
 
             assert.equal(assets.loading, null);
         });

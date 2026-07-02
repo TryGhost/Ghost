@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const tpl = require('@tryghost/tpl');
@@ -29,8 +30,14 @@ function matchCacheKey(req, cache) {
     return true;
 }
 
+// Minimum time between rebuild attempts for a missing generated file, so a
+// persistently failing build (e.g. an unwritable content folder) doesn't add
+// minification cost to every request
+const REBUILD_MIN_INTERVAL_MS = 10000;
+
 function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) {
     let cache;
+    let lastRebuildAttempt = 0;
     // These files are provided by Ghost, and therefore live inside of the core folder
     const staticFilePath = config.get('paths').publicFilePath;
     // These files are built on the fly, and must be saved in the content folder
@@ -66,39 +73,56 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
         }
 
         // modify text files before caching+serving to ensure URL placeholders are transformed
-        fs.readFile(filePath, (err, buf) => {
-            if (err) {
-                // Downgrade to a simple 404 if the file didn't exist
-                if (err.code === 'ENOENT') {
-                    err = new errors.NotFoundError({
-                        message: tpl(messages.fileNotFound),
-                        code: 'PUBLIC_FILE_NOT_FOUND',
-                        property: err.path
-                    });
+        const serveFile = (canRebuild) => {
+            fs.readFile(filePath, (err, buf) => {
+                if (err) {
+                    // CASE: a generated file has gone missing from the content folder
+                    // at runtime - attempt to regenerate it once before giving up,
+                    // otherwise the 404 sticks until the next reboot
+                    if (err.code === 'ENOENT' && canRebuild && options.rebuild && location === 'built' && Date.now() - lastRebuildAttempt >= REBUILD_MIN_INTERVAL_MS) {
+                        lastRebuildAttempt = Date.now();
+                        return Promise.resolve()
+                            .then(options.rebuild)
+                            .catch((rebuildError) => {
+                                logging.error(rebuildError);
+                            })
+                            .then(() => serveFile(false));
+                    }
+
+                    // Downgrade to a simple 404 if the file didn't exist
+                    if (err.code === 'ENOENT') {
+                        err = new errors.NotFoundError({
+                            message: tpl(messages.fileNotFound),
+                            code: 'PUBLIC_FILE_NOT_FOUND',
+                            property: err.path
+                        });
+                    }
+                    return next(err);
                 }
-                return next(err);
-            }
 
-            let str = buf.toString();
+                let str = buf.toString();
 
-            if (mime === 'text/xsl' || mime === 'text/plain' || mime === 'application/javascript') {
-                str = str.replace(blogRegex, urlUtils.urlFor('home', true).replace(/\/$/, ''));
-            }
+                if (mime === 'text/xsl' || mime === 'text/plain' || mime === 'application/javascript') {
+                    str = str.replace(blogRegex, urlUtils.urlFor('home', true).replace(/\/$/, ''));
+                }
 
-            cache = {
-                headers: {
-                    'Content-Type': mime,
-                    'Content-Length': Buffer.from(str).length,
-                    ETag: `"${crypto.createHash('md5').update(str, 'utf8').digest('hex')}"`,
-                    'Cache-Control': `public, max-age=${maxAge}`
-                },
-                body: str,
-                key: req.query && req.query.v ? req.query.v : null
-            };
+                cache = {
+                    headers: {
+                        'Content-Type': mime,
+                        'Content-Length': Buffer.from(str).length,
+                        ETag: `"${crypto.createHash('md5').update(str, 'utf8').digest('hex')}"`,
+                        'Cache-Control': `public, max-age=${maxAge}`
+                    },
+                    body: str,
+                    key: req.query && req.query.v ? req.query.v : null
+                };
 
-            res.writeHead(200, cache.headers);
-            res.end(cache.body);
-        });
+                res.writeHead(200, cache.headers);
+                res.end(cache.body);
+            });
+        };
+
+        serveFile(true);
     };
 }
 
@@ -128,8 +152,9 @@ function servePublicFiles(siteApp) {
     siteApp.get('/public/ghost-stats.min.js', createPublicFileMiddleware('static', 'public/ghost-stats.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Card assets (built on the fly)
-    siteApp.get('/public/cards.min.css', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-    siteApp.get('/public/cards.min.js', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    const rebuildCardAssets = () => cardAssets.ensureLoaded();
+    siteApp.get('/public/cards.min.css', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge'), {rebuild: rebuildCardAssets}));
+    siteApp.get('/public/cards.min.js', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge'), {rebuild: rebuildCardAssets}));
 
     // Comment counts
     siteApp.get('/public/comment-counts.min.js', createPublicFileMiddleware('static', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
