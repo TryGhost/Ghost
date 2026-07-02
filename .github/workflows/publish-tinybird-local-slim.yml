@@ -1,0 +1,60 @@
+name: Publish tinybird-local-slim Image
+
+# Builds a distilled tinybird-local image (~576MB compressed vs ~1.85GB
+# upstream) for use as the Tinybird service in CI/E2E. See
+# docker/tinybird-local-slim/ for how the distillation works and how to bump
+# the pinned upstream digest.
+#
+# NOTE: tinybird-local is SSPL-licensed; this republishes a modified build to
+# our own GHCR for internal CI use only.
+
+on:
+  workflow_dispatch: # Manual trigger from GitHub UI or CLI (e.g. after a digest bump)
+  push:
+    branches: [main]
+    paths:
+      - 'docker/tinybird-local-slim/**'
+      - '.github/workflows/publish-tinybird-local-slim.yml'
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: Build and push tinybird-local-slim to GHCR
+    runs-on: ubuntu-latest
+    # Publish from main, or from any branch via a manual dispatch (for PR testing).
+    if: github.repository == 'TryGhost/Ghost' && (github.ref == 'refs/heads/main' || github.event_name == 'workflow_dispatch')
+    concurrency:
+      group: publish-tinybird-local-slim-${{ github.ref }}
+      cancel-in-progress: true
+    steps:
+      - name: Checkout
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
+
+      - name: Login to GHCR
+        uses: docker/login-action@650006c6eb7dba73a995cc03b0b2d7f5ca915bee # v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push
+        uses: docker/build-push-action@53b7df96c91f9c12dcc8a07bcb9ccacbed38856a # v7
+        with:
+          context: .
+          file: docker/tinybird-local-slim/Dockerfile
+          platforms: linux/amd64 # upstream tinybird-local is amd64-only
+          provenance: false # keep a clean single-platform manifest (no attestation entries)
+          push: true
+          # Always tag with the immutable commit SHA (PR-test runs reference this);
+          # only move :latest on main. Empty lines are ignored by the action.
+          tags: |
+            ghcr.io/tryghost/tinybird-local-slim:${{ github.sha }}
+            ${{ github.ref == 'refs/heads/main' && 'ghcr.io/tryghost/tinybird-local-slim:latest' || '' }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

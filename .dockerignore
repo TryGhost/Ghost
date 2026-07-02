@@ -27,6 +27,7 @@ compose.yml
 docker
 !docker/**/*.entrypoint.sh
 !docker/**/*entrypoint.sh
+!docker/tinybird-local-slim/cleanup.sh
 
 ghost/core/core/built/admin
 
