@@ -41,17 +41,6 @@ const newslettersRequest = {
     browseNewslettersLimit: {method: 'GET', path: '/newsletters/?filter=status%3Aactive&limit=1', response: responseFixtures.newsletters}
 };
 
-const configWithTenorEnabled = {
-    ...responseFixtures.config,
-    config: {
-        ...responseFixtures.config.config,
-        tenor: {
-            googleApiKey: 'test-tenor-key',
-            contentFilter: 'off'
-        }
-    }
-};
-
 const configWithAutomationsEnabled = {
     ...responseFixtures.config,
     config: {
@@ -816,89 +805,6 @@ test.describe('Member emails settings', async () => {
             await page.keyboard.press('Enter');
 
             await expect(modal.locator('[data-kg-card="product"]')).toBeVisible();
-        });
-
-        test('welcome email editor does not show GIF selector when Tenor is not configured', async ({page}) => {
-            await page.route('https://tenor.googleapis.com/**', async (route) => {
-                await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify({
-                        next: null,
-                        results: []
-                    }),
-                    headers: {
-                        'content-type': 'application/json'
-                    }
-                });
-            });
-
-            await mockApi({page, requests: {
-                ...globalDataRequests,
-                ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: responseFixtures.config},
-                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
-            }});
-
-            await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
-
-            const section = page.getByTestId('memberemails');
-            await expect(section).toBeVisible({timeout: 10000});
-            await section.getByTestId('free-welcome-email-preview').click();
-
-            const modal = page.getByTestId('welcome-email-modal');
-            await expect(modal).toBeVisible();
-
-            const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
-            await editor.click({timeout: 5000});
-            await expect(editor).toBeFocused();
-            await editor.press('ControlOrMeta+a');
-            await editor.press('Backspace');
-            await page.keyboard.type('/', {delay: 50});
-            const slashMenu = page.locator('[data-kg-slash-menu]');
-            await expect(slashMenu).toBeVisible({timeout: 5000});
-            await expect(slashMenu.getByText('Image', {exact: true})).toBeVisible();
-            await expect(slashMenu.getByText('GIF', {exact: true})).not.toBeVisible();
-        });
-
-        test('welcome email editor shows GIF selector when Tenor is configured', async ({page}) => {
-            await page.route('https://tenor.googleapis.com/**', async (route) => {
-                await route.fulfill({
-                    status: 200,
-                    body: JSON.stringify({
-                        next: null,
-                        results: []
-                    }),
-                    headers: {
-                        'content-type': 'application/json'
-                    }
-                });
-            });
-
-            await mockApi({page, requests: {
-                ...globalDataRequests,
-                ...newslettersRequest,
-                browseConfig: {method: 'GET', path: '/config/', response: configWithTenorEnabled},
-                browseAutomatedEmails: {method: 'GET', path: '/automated_emails/', response: automatedEmailsFixture}
-            }});
-
-            await page.goto('/#/memberemails');
-            await page.waitForLoadState('networkidle');
-
-            const section = page.getByTestId('memberemails');
-            await expect(section).toBeVisible({timeout: 10000});
-            await section.getByTestId('free-welcome-email-preview').click();
-
-            const modal = page.getByTestId('welcome-email-modal');
-            await expect(modal).toBeVisible();
-
-            const editor = modal.locator('[data-kg="editor"] div[contenteditable="true"]').first();
-            await editor.click({timeout: 5000});
-            await expect(editor).toBeFocused();
-            await editor.press('ControlOrMeta+a');
-            await editor.press('Backspace');
-            await openSlashMenu(page, 'gif');
-            await expect(page.locator('[data-kg-slash-menu]').getByText('GIF', {exact: true})).toBeVisible();
         });
 
         test('uses automated email sender fields when populated, even if newsletter differs', async ({page}) => {

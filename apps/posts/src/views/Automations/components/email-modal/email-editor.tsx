@@ -4,7 +4,6 @@ import {cn} from '@tryghost/shade/utils';
 import {focusKoenigEditorOnBottomClick, useFramework} from '@tryghost/admin-x-framework';
 import {getSettingValues, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {koenigFileUploadTypes, useKoenigFetchEmbed, useKoenigFileUpload, usePinturaConfig} from '@tryghost/admin-x-framework/hooks';
-import {useBrowseConfig} from '@tryghost/admin-x-framework/api/config';
 import {useEmailLinkSuggestions} from './use-link-suggestions';
 import {useFocusContext} from '@tryghost/shade/app';
 
@@ -91,18 +90,14 @@ const EmailEditor: React.FC<EmailEditorProps> = ({
     const {unsplashConfig} = useFramework();
     const pinturaConfig = usePinturaConfig();
     const {data: settingsData} = useBrowseSettings();
-    const {data: configData} = useBrowseConfig();
     const settings = settingsData?.settings || [];
-    const config = configData?.config;
     const {fetchAutocompleteLinks, searchLinks} = useEmailLinkSuggestions();
     const fetchEmbed = useKoenigFetchEmbed();
-    const tenorConfig = config?.tenor?.googleApiKey ? config.tenor : null;
     const [transistorEnabled] = getSettingValues<boolean>(settings, ['transistor']);
 
     const cardConfig = useMemo(() => ({
         unsplash: unsplashConfig,
         pinturaConfig,
-        tenor: tenorConfig,
         fetchEmbed,
         fetchAutocompleteLinks,
         searchLinks,
@@ -110,7 +105,7 @@ const EmailEditor: React.FC<EmailEditorProps> = ({
             transistor: transistorEnabled
         },
         visibilitySettings: 'none'
-    }), [unsplashConfig, pinturaConfig, tenorConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks, transistorEnabled]);
+    }), [unsplashConfig, pinturaConfig, fetchEmbed, fetchAutocompleteLinks, searchLinks, transistorEnabled]);
 
     const registerEditorAPI = useCallback((api: unknown) => {
         editorAPIRef.current = api as KoenigAPI | null;

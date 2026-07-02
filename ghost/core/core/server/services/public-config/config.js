@@ -59,7 +59,6 @@ module.exports = function getConfigProperties() {
         mailgunIsConfigured: !!(config.get('bulkEmail') && config.get('bulkEmail').mailgun),
         emailAnalytics: config.get('emailAnalytics:enabled'),
         hostSettings: config.get('hostSettings'),
-        tenor: config.get('tenor'),
         klipy: config.get('klipy'),
         pintura: config.get('pintura'),
         signupForm: config.get('signupForm'),
