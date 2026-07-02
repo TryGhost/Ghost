@@ -10,6 +10,19 @@
           }
         ]
       }
+    ],
+    "SessionStart": [
+      {
+        "matcher": "startup|resume",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "jq -r '.cwd // empty' | { read -r d; cd \"$d\" 2>/dev/null || exit 0; [ -f .claude/hooks/worktree-setup.sh ] || exit 0; bash .claude/hooks/worktree-setup.sh; }",
+            "timeout": 1200,
+            "statusMessage": "Checking Ghost worktree setup…"
+          }
+        ]
+      }
     ]
   }
 }
