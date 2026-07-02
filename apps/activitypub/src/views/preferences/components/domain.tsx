@@ -301,7 +301,7 @@ const Domain: React.FC = () => {
                                         )}
                                     </div>
                                     <div className='-ml-14 min-w-0 overflow-x-auto px-14'>
-                                        <div aria-label='Social Web handle breakdown' className='inline-flex pb-9 font-mono text-xl leading-none font-medium text-foreground select-none' role='group'>
+                                        <div aria-label='Social Web handle breakdown' className='inline-flex pb-9 font-mono text-xl leading-none font-medium whitespace-nowrap text-foreground select-none' role='group'>
                                             <span>@</span>
                                             <div className='relative'>
                                                 <span>{previewHandleParts.username}</span>
