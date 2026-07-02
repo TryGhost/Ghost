@@ -1,25 +1,22 @@
 import assert from 'node:assert/strict';
 import resetAuthentication from '../../../../../core/server/services/auth/reset-authentication';
 import {AutoFillingMap} from '../../../../../core/server/lib/auto-filling-map';
+import type {ActionEntry, RequestContext} from '../../../../../core/server/services/actions';
 import type {InternalApiKey, InternalIntegrationSlug} from '../../../../../core/server/services/internal-keys';
 
-interface ActionRow {
-    event: string;
-    resource_type: string;
-    actor_id: string;
-    context: {action_name: string; api_keys_rotated: number; users_locked: number};
-}
-
 type TxCallback = (_tx: object) => Promise<unknown>;
+
+const USER: RequestContext = {actor: {id: 'user-1', type: 'user'}};
 
 /**
  * In-memory pretend of the auth-domain modules. We pass it as overrides so
  * the test exercises the real orchestration body but observes outcomes
- * through state we control.
+ * through state we control. The audit is observed through an injected logAction
+ * shim that collects the domain entries — never the actions table.
  */
 function buildAuthDomain({apiKeysToRotate, usersToLock, currentKey}: {apiKeysToRotate: number; usersToLock: number; currentKey: {id: string; secret: string}}) {
     const recorded = {
-        actions: [] as ActionRow[],
+        entries: [] as ActionEntry[],
         sessionsDeleted: false,
         cacheCleared: false,
         committed: false
@@ -35,13 +32,11 @@ function buildAuthDomain({apiKeysToRotate, usersToLock, currentKey}: {apiKeysToR
         },
         ApiKey: {
             refreshAllSecrets: async () => ({count: apiKeysToRotate})
-        },
-        Action: {
-            add: async (payload: ActionRow) => {
-                recorded.actions.push(payload);
-                return {};
-            }
         }
+    };
+
+    const logAction = async (entry: ActionEntry) => {
+        recorded.entries.push(entry);
     };
 
     const internalKeys = new AutoFillingMap<InternalIntegrationSlug, Promise<InternalApiKey>>(
@@ -62,88 +57,92 @@ function buildAuthDomain({apiKeysToRotate, usersToLock, currentKey}: {apiKeysToR
 
     const userService = {lockAll: async () => ({count: usersToLock})};
 
-    return {models, internalKeys, deleteAllSessions, userService, recorded};
+    return {models, logAction, internalKeys, deleteAllSessions, userService, recorded};
 }
 
 describe('resetAuthentication', function () {
-    it('rotates keys, locks users, writes audit row with counts, returns counts', async function () {
+    it('rotates keys, locks users, records an audit action post-commit, returns counts', async function () {
         const env = buildAuthDomain({apiKeysToRotate: 4, usersToLock: 3, currentKey: {id: 'k', secret: 'old'}});
-        const adapter = {rescheduleAll: async () => {}};
 
-        const result = await resetAuthentication({
-            schedulerAdapter: adapter,
+        const result = await resetAuthentication(USER, {
+            schedulerAdapter: {rescheduleAll: async () => {}},
             userService: env.userService,
-            options: {context: {user: 'user-1'}},
+            options: {},
             models: env.models,
             internalKeys: env.internalKeys,
-            deleteAllSessions: env.deleteAllSessions
+            deleteAllSessions: env.deleteAllSessions,
+            logAction: env.logAction
         });
 
         assert.deepEqual(result, {apiKeysRotated: 4, usersLocked: 3});
         assert.equal(env.recorded.committed, true);
-        assert.equal(env.recorded.actions.length, 1);
-        assert.equal(env.recorded.actions[0].event, 'edited');
-        assert.equal(env.recorded.actions[0].resource_type, 'security_action');
-        assert.equal(env.recorded.actions[0].actor_id, 'user-1');
-        assert.equal(env.recorded.actions[0].context.action_name, 'reset_authentication');
-        assert.equal(env.recorded.actions[0].context.api_keys_rotated, 4);
-        assert.equal(env.recorded.actions[0].context.users_locked, 3);
+        assert.equal(env.recorded.entries.length, 1);
+        assert.deepEqual(env.recorded.entries[0], {
+            event: 'edited',
+            resourceType: 'security_action',
+            resourceId: null,
+            actionName: 'reset_authentication',
+            actor: {id: 'user-1', type: 'user'}
+        });
     });
 
     it('asks the scheduler adapter to reschedule with the pre-rotation key', async function () {
         const env = buildAuthDomain({apiKeysToRotate: 1, usersToLock: 1, currentKey: {id: 'k', secret: 'pre-rotation'}});
         let observed: {id: string; secret: string} | undefined;
 
-        await resetAuthentication({
+        await resetAuthentication(USER, {
             schedulerAdapter: {rescheduleAll: async (opts) => {
                 observed = opts.previousKey;
             }},
             userService: env.userService,
-            options: {context: {user: 'user-1'}},
+            options: {},
             models: env.models,
             internalKeys: env.internalKeys,
-            deleteAllSessions: env.deleteAllSessions
+            deleteAllSessions: env.deleteAllSessions,
+            logAction: env.logAction
         });
 
         assert.deepEqual(observed, {id: 'k', secret: 'pre-rotation'});
     });
 
-    it('skips the audit row when no actor is in context', async function () {
+    it('records nothing for an actor-less (internal) context', async function () {
         const env = buildAuthDomain({apiKeysToRotate: 1, usersToLock: 0, currentKey: {id: 'k', secret: 's'}});
 
-        await resetAuthentication({
+        await resetAuthentication({actor: null}, {
             schedulerAdapter: {rescheduleAll: async () => {}},
             userService: env.userService,
             options: {},
             models: env.models,
             internalKeys: env.internalKeys,
-            deleteAllSessions: env.deleteAllSessions
+            deleteAllSessions: env.deleteAllSessions,
+            logAction: env.logAction
         });
 
-        assert.equal(env.recorded.actions.length, 0);
+        assert.equal(env.recorded.entries.length, 0);
     });
 
-    it('rolls back rotation and skips sessions + reschedule when lock fails', async function () {
+    it('rolls back rotation and skips sessions + reschedule + audit when lock fails', async function () {
         const env = buildAuthDomain({apiKeysToRotate: 2, usersToLock: 0, currentKey: {id: 'k', secret: 's'}});
         let rescheduleCalled = false;
 
         await assert.rejects(
-            resetAuthentication({
+            resetAuthentication(USER, {
                 schedulerAdapter: {rescheduleAll: async () => {
                     rescheduleCalled = true;
                 }},
                 userService: {lockAll: async () => {
                     throw new Error('lock failed');
                 }},
-                options: {context: {user: 'user-1'}},
+                options: {},
                 models: env.models,
                 internalKeys: env.internalKeys,
-                deleteAllSessions: env.deleteAllSessions
+                deleteAllSessions: env.deleteAllSessions,
+                logAction: env.logAction
             }),
             /lock failed/
         );
 
-        assert.equal(env.recorded.actions.length, 0, 'audit row not written on rollback');
+        assert.equal(env.recorded.entries.length, 0, 'no audit recorded on rollback');
         assert.equal(env.recorded.sessionsDeleted, false, 'sessions are not wiped on rollback');
         assert.equal(env.recorded.cacheCleared, false, 'internal-keys cache not cleared on rollback');
         assert.equal(rescheduleCalled, false, 'adapter is not asked to reschedule on rollback');
@@ -153,15 +152,16 @@ describe('resetAuthentication', function () {
         const env = buildAuthDomain({apiKeysToRotate: 1, usersToLock: 1, currentKey: {id: 'k', secret: 's'}});
         let sessionsWipedBeforeReschedule = false;
 
-        await resetAuthentication({
+        await resetAuthentication(USER, {
             schedulerAdapter: {rescheduleAll: async () => {
                 sessionsWipedBeforeReschedule = env.recorded.sessionsDeleted;
             }},
             userService: env.userService,
-            options: {context: {user: 'user-1'}},
+            options: {},
             models: env.models,
             internalKeys: env.internalKeys,
-            deleteAllSessions: env.deleteAllSessions
+            deleteAllSessions: env.deleteAllSessions,
+            logAction: env.logAction
         });
 
         assert.equal(sessionsWipedBeforeReschedule, true);
