@@ -14,6 +14,8 @@ const StartAutomationsPollEvent = require('./events/start-automations-poll-event
 const {welcomeEmailAutomationPoll} = require('./welcome-email-automation-poll');
 const memberWelcomeEmailService = require('../member-welcome-emails/service');
 
+const MAX_TIMEOUT_MS = 2 ** 31 - 1;
+
 type SchedulerAdapter = {
     schedule(job: {
         extra: {
@@ -32,7 +34,7 @@ type AutomationsServiceOptions = {
     schedulerAdapter: SchedulerAdapter;
 };
 
-class LatestScheduler {
+class EarliestScheduler {
     #scheduled: undefined | {
         timeout: ReturnType<typeof setTimeout>;
         at: Date;
@@ -44,10 +46,30 @@ class LatestScheduler {
     }
 
     scheduleAt(date: Readonly<Date>): void {
-        if (this.#scheduled && this.#scheduled?.at < date) {
+        if (this.#scheduled && this.#scheduled.at <= date) {
             return;
         }
-        // TODO: Schedule the function, possibly for far in the future.
+
+        if (this.#scheduled) {
+            clearTimeout(this.#scheduled.timeout);
+        }
+
+        this.#scheduleAt(new Date(date));
+    }
+
+    #scheduleAt(at: Date): void {
+        const msUntilDate = at.getTime() - Date.now();
+        if (msUntilDate <= 0) {
+            this.#scheduled = undefined;
+            this.#fn();
+            return;
+        }
+
+        const timeout = setTimeout(() => {
+            this.#scheduleAt(at);
+        }, Math.min(msUntilDate, MAX_TIMEOUT_MS));
+
+        this.#scheduled = {timeout, at};
     }
 }
 
@@ -62,7 +84,7 @@ export class AutomationsService {
 
         const enqueuePollNow = () => domainEvents.dispatch(StartAutomationsPollEvent.create());
 
-        const latestScheduler = new LatestScheduler(enqueuePollNow);
+        const earliestScheduler = new EarliestScheduler(enqueuePollNow);
 
         const enqueuePollAt = async (date: Readonly<Date>): Promise<void> => {
             const isRequestedDateInTheFuture = new Date() < date;
@@ -74,7 +96,7 @@ export class AutomationsService {
                 return;
             }
 
-            latestScheduler.scheduleAt(date);
+            earliestScheduler.scheduleAt(date);
 
             try {
                 const key = await internalKeys.get('ghost-scheduler');
