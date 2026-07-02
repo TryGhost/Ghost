@@ -33,6 +33,7 @@ const DEFAULT_CSV_HEADER_MAPPING = {
     note: 'note',
     subscribed_to_emails: 'subscribed',
     created_at: 'created_at',
+    email_disabled: 'email_disabled',
     complimentary_plan: 'complimentary_plan',
     stripe_customer_id: 'stripe_customer_id',
     labels: 'labels',
@@ -176,7 +177,7 @@ module.exports = class MembersCSVImporter {
                 // Members created in the future will not appear in admin members list
                 // Refs https://github.com/TryGhost/Team/issues/2793
                 const createdAt = moment(row.created_at).isAfter(moment()) ? moment().toDate() : row.created_at;
-                const memberValues = {
+                let memberValues = {
                     email: row.email,
                     name: row.name,
                     note: row.note,
@@ -184,6 +185,12 @@ module.exports = class MembersCSVImporter {
                     created_at: createdAt,
                     labels: row.labels
                 };
+                // Apply email_disabled only if values are present, old CSV files did not have this header
+                const hasEmailDisabled = row.email_disabled !== undefined && row.email_disabled !== null && row.email_disabled !== '';
+                if (hasEmailDisabled) {
+                    memberValues.email_disabled = row.email_disabled;
+                }
+                
                 const existingMember = await membersRepository.get({email: memberValues.email}, {
                     ...options,
                     withRelated: ['labels', 'newsletters']

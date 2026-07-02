@@ -24,6 +24,7 @@ describe('MembersCSVImporter', function () {
         note: 'note',
         subscribed_to_emails: 'subscribed_to_emails',
         created_at: 'created_at',
+        email_disabled: 'email_disabled',
         complimentary_plan: 'complimentary_plan',
         stripe_customer_id: 'stripe_customer_id',
         labels: 'labels',
@@ -185,7 +186,7 @@ describe('MembersCSVImporter', function () {
 
             assert.equal(membersRepositoryStub.create.args[0][1].context.import, true, 'inserts are done in the "import" context');
 
-            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.create.args[0][0].id, undefined, 'id field should not be taken from the user input');
             assert.equal(membersRepositoryStub.create.args[0][0].email, 'member_complimentary_test@example.com');
             assert.equal(membersRepositoryStub.create.args[0][0].name, 'bobby tables');
@@ -197,7 +198,7 @@ describe('MembersCSVImporter', function () {
                 name: 'user import label'
             }]);
 
-            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.create.args[1][0].id, undefined, 'id field should not be taken from the user input');
             assert.equal(membersRepositoryStub.create.args[1][0].email, 'member_stripe_test@example.com');
             assert.equal(membersRepositoryStub.create.args[1][0].name, 'stirpey beaver');
@@ -333,105 +334,105 @@ describe('MembersCSVImporter', function () {
 
             // CASE 1: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is true
             // Member's newsletter subscriptions should not change
-            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels', 'newsletters']);
             assert.equal(membersRepositoryStub.update.args[0][0].email, 'member_subscribed_true@example.com');
             assert.equal(membersRepositoryStub.update.args[0][0].subscribed, true);
             assert.deepEqual(membersRepositoryStub.update.args[0][0].newsletters, defaultNewsletters);
 
             // CASE 2: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is false
             // Member's newsletter subscriptions should be removed
-            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.update.args[1][0].email, 'member_subscribed_false@example.com');
             assert.equal(membersRepositoryStub.update.args[1][0].subscribed, false);
             assert.equal(membersRepositoryStub.update.args[1][0].newsletters, undefined);
 
             // CASE 3: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is NULL
             // Member's newsletter subscriptions should not change
-            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[2][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[2][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels', 'newsletters']);
             assert.equal(membersRepositoryStub.update.args[2][0].email, 'member_subscribed_null@example.com');
             assert.equal(membersRepositoryStub.update.args[2][0].subscribed, true);
             assert.deepEqual(membersRepositoryStub.update.args[2][0].newsletters, defaultNewsletters);
 
             // CASE 4: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is empty
             // Member's newsletter subscriptions should not change
-            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[3][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[3][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels', 'newsletters']);
             assert.equal(membersRepositoryStub.update.args[3][0].email, 'member_subscribed_empty@example.com');
             assert.equal(membersRepositoryStub.update.args[3][0].subscribed, true);
             assert.deepEqual(membersRepositoryStub.update.args[3][0].newsletters, defaultNewsletters);
 
             // CASE 5: Existing member with at least one newsletter subscription, `subscribed_to_emails` column is invalid
             // Member's newsletter subscriptions should not change
-            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[4][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels', 'newsletters']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[4][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels', 'newsletters']);
             assert.equal(membersRepositoryStub.update.args[4][0].email, 'member_subscribed_invalid@example.com');
             assert.equal(membersRepositoryStub.update.args[4][0].subscribed, true);
             assert.deepEqual(membersRepositoryStub.update.args[4][0].newsletters, defaultNewsletters);
 
             // CASE 6: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is true
             // Member should remain unsubscribed and not added to any newsletters
-            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[5][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[5][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.update.args[5][0].email, 'member_not_subscribed_true@example.com');
             assert.equal(membersRepositoryStub.update.args[5][0].subscribed, false);
             assert.equal(membersRepositoryStub.update.args[5][0].newsletters, undefined);
 
             // CASE 7: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is false
             // Member should remain unsubscribed and not added to any newsletters
-            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[6][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[6][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.update.args[6][0].email, 'member_not_subscribed_false@example.com');
             assert.equal(membersRepositoryStub.update.args[6][0].subscribed, false);
             assert.equal(membersRepositoryStub.update.args[6][0].newsletters, undefined);
 
             // CASE 8: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is NULL
             // Member should remain unsubscribed and not added to any newsletters
-            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[7][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[7][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.update.args[7][0].email, 'member_not_subscribed_null@example.com');
             assert.equal(membersRepositoryStub.update.args[7][0].subscribed, false);
             assert.equal(membersRepositoryStub.update.args[7][0].newsletters, undefined);
 
             // CASE 9: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is empty
             // Member should remain unsubscribed and not added to any newsletters
-            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[8][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[8][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.update.args[8][0].email, 'member_not_subscribed_empty@example.com');
             assert.equal(membersRepositoryStub.update.args[8][0].subscribed, false);
             assert.equal(membersRepositoryStub.update.args[8][0].newsletters, undefined);
 
             // CASE 10: Existing member with no newsletter subscriptions, `subscribed_to_emails` column is invalid
             // Member should remain unsubscribed and not added to any newsletters
-            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[9][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.update.args[9][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.update.args[9][0].email, 'member_not_subscribed_invalid@example.com');
             assert.equal(membersRepositoryStub.update.args[9][0].subscribed, false);
             assert.equal(membersRepositoryStub.update.args[9][0].newsletters, undefined);
 
             // CASE 11: New member, `subscribed_to_emails` column is true
             // Member should be created and subscribed
-            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[0][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.create.args[0][0].email, 'new_member_true@example.com');
             assert.equal(membersRepositoryStub.create.args[0][0].subscribed, true);
             assert.equal(membersRepositoryStub.create.args[0][0].newsletters, undefined);
 
             // CASE 12: New member, `subscribed_to_emails` column is false
             // Member should be created but not subscribed
-            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[1][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.create.args[1][0].email, 'new_member_false@example.com');
             assert.equal(membersRepositoryStub.create.args[1][0].subscribed, false);
             assert.equal(membersRepositoryStub.create.args[1][0].newsletters, undefined);
 
             // CASE 13: New member, `subscribed_to_emails` column is NULL
             // Member should be created but not subscribed
-            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[2][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[2][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.create.args[2][0].email, 'new_member_null@example.com');
             assert.equal(membersRepositoryStub.create.args[2][0].subscribed, true);
             assert.equal(membersRepositoryStub.create.args[2][0].newsletters, undefined);
 
             // CASE 14: New member, `subscribed_to_emails` column is empty
             // Member should be created but not subscribed
-            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[3][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[3][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.create.args[3][0].email, 'new_member_empty@example.com');
             assert.equal(membersRepositoryStub.create.args[3][0].subscribed, true);
             assert.equal(membersRepositoryStub.create.args[3][0].newsletters, undefined);
 
             // CASE 15: New member, `subscribed_to_emails` column is invalid
             // Member should be created but not subscribed
-            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[4][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'labels']);
+            assert.deepEqual(Object.keys(membersRepositoryStub.create.args[4][0]), ['email', 'name', 'note', 'subscribed', 'created_at', 'email_disabled', 'labels']);
             assert.equal(membersRepositoryStub.create.args[4][0].email, 'new_member_invalid@example.com');
             assert.equal(membersRepositoryStub.create.args[4][0].subscribed, true);
             assert.equal(membersRepositoryStub.create.args[4][0].newsletters, undefined);
