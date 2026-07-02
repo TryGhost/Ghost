@@ -70,7 +70,7 @@
     "@types/react-dom": "catalog:react17",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "autoprefixer": "10.5.0",
+    "autoprefixer": "10.5.2",
     "bson-objectid": "catalog:",
     "concurrently": "catalog:",
     "eslint": "catalog:",
