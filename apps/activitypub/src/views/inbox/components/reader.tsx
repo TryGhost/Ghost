@@ -41,6 +41,7 @@ const ArticleBody: React.FC<{
         profile_image: string;
     }>;
     html: string;
+    hideMedia?: boolean;
     backgroundColor: ColorOption;
     fontSize: FontSize;
     fontStyle: string;
@@ -55,6 +56,7 @@ const ArticleBody: React.FC<{
     excerpt,
     authors,
     html,
+    hideMedia = false,
     backgroundColor,
     fontSize,
     fontStyle,
@@ -66,6 +68,8 @@ const ArticleBody: React.FC<{
     const iframeRef = useRef<HTMLIFrameElement>(null);
     const [isLoading, setIsLoading] = useState(true);
     const [iframeHeight, setIframeHeight] = useState('0px');
+    const hideMediaRef = useRef(hideMedia);
+    hideMediaRef.current = hideMedia;
     const darkMode = (document.documentElement.classList.contains('dark') && backgroundColor === 'SYSTEM') || backgroundColor === 'DARK';
 
     const cssContent = articleBodyStyles();
@@ -74,6 +78,21 @@ const ArticleBody: React.FC<{
         const transformedHtml = shouldEnforceVideoCardInlinePlayback ? enforceVideoCardInlinePlayback(html) : html;
         return openLinksInNewTab(transformedHtml);
     }, [html, shouldEnforceVideoCardInlinePlayback]);
+
+    const updateSensitiveMediaVisibility = useCallback(() => {
+        const iframe = iframeRef.current;
+        const iframeDocument = iframe?.contentDocument;
+        if (!iframeDocument) {
+            return;
+        }
+
+        iframeDocument.documentElement.classList.toggle('gh-sensitive-media-hidden', hideMediaRef.current);
+
+        const iframeWindow = iframe.contentWindow as IframeWindow | null;
+        if (iframeWindow && typeof iframeWindow.resizeIframe === 'function') {
+            iframeWindow.resizeIframe();
+        }
+    }, []);
 
     const htmlContent = `
         <html class="has-${!darkMode ? 'dark' : 'light'}-text has-${fontStyle}-body ${backgroundColor === 'SEPIA' && 'has-sepia-bg'}">
@@ -90,6 +109,10 @@ const ArticleBody: React.FC<{
                 }
                 .has-sepia-bg {
                     --background-color: #FCF8F1;
+                }
+                .gh-sensitive-media-hidden .gh-article-image,
+                .gh-sensitive-media-hidden .gh-content :is(audio, embed, iframe, img, object, picture, video) {
+                    display: none !important;
                 }
             </style>
             <style>
@@ -228,9 +251,6 @@ const ArticleBody: React.FC<{
             return;
         }
 
-        setIsLoading(true);
-        iframe.srcdoc = htmlContent;
-
         const handleMessage = (event: MessageEvent) => {
             if (event.data.type === 'resize') {
                 const newHeight = `${event.data.bodyHeight + 24}px`;
@@ -269,10 +289,13 @@ const ArticleBody: React.FC<{
             if (iframeWindow) {
                 iframeWindow.addEventListener('keydown', handleIframeKeyDown);
             }
+            updateSensitiveMediaVisibility();
         };
 
         iframe.addEventListener('load', handleIframeLoad);
         window.addEventListener('message', handleMessage);
+        setIsLoading(true);
+        iframe.srcdoc = htmlContent;
 
         return () => {
             window.removeEventListener('message', handleMessage);
@@ -282,7 +305,11 @@ const ArticleBody: React.FC<{
                 iframeWindow.removeEventListener('keydown', handleIframeKeyDown);
             }
         };
-    }, [htmlContent]);
+    }, [htmlContent, updateSensitiveMediaVisibility]);
+
+    useEffect(() => {
+        updateSensitiveMediaVisibility();
+    }, [hideMedia, updateSensitiveMediaVisibility]);
 
     // Separate effect for style updates
     useEffect(() => {
@@ -409,22 +436,6 @@ const FeedItemDivider: React.FC = () => (
     <div className="h-px bg-black/[8%] dark:bg-gray-950"></div>
 );
 
-function stripMediaFromHtml(html: string): string {
-    if (typeof DOMParser === 'undefined') {
-        return html;
-    }
-
-    const document = new DOMParser().parseFromString(html, 'text/html');
-    document.querySelectorAll('audio, embed, iframe, img, object, picture, source, video').forEach(element => element.remove());
-    document.querySelectorAll('figure').forEach((element) => {
-        if (!element.textContent?.trim()) {
-            element.remove();
-        }
-    });
-
-    return document.body.innerHTML;
-}
-
 function htmlContainsMedia(html: string): boolean {
     if (typeof DOMParser === 'undefined') {
         return /<(audio|embed|iframe|img|object|picture|source|video)\b/i.test(html);
@@ -502,11 +513,8 @@ export const Reader: React.FC<ReaderProps> = ({
     );
     const shouldHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && (isSensitiveMediaManuallyHidden || !isSensitiveMediaRevealed);
     const canHideSensitiveMedia = hasSensitiveMedia && !hasContentWarning && !showSensitiveMediaByDefault && !shouldHideSensitiveMedia;
-    const articleHtml = useMemo(
-        () => (shouldHideSensitiveMedia ? stripMediaFromHtml(rawArticleHtml) : rawArticleHtml),
-        [rawArticleHtml, shouldHideSensitiveMedia]
-    );
-    const articleImage = shouldHideSensitiveMedia ? undefined : articleImageUrl;
+    const articleHtml = rawArticleHtml;
+    const articleImage = articleImageUrl;
 
     useEffect(() => {
         setIsSensitiveMediaRevealed(false);
@@ -945,6 +953,7 @@ export const Reader: React.FC<ReaderProps> = ({
                                                     fontSize={fontSize}
                                                     fontStyle={fontStyle}
                                                     heading={object.name}
+                                                    hideMedia={shouldHideSensitiveMedia}
                                                     html={articleHtml}
                                                     image={articleImage}
                                                     isPopoverOpen={isCustomizerOpen || isTOCOpen}

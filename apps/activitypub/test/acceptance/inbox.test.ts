@@ -271,17 +271,21 @@ test.describe('Inbox', async () => {
 
         const iframe = modal.locator('iframe');
         await expect(iframe).toBeVisible();
-        let iframeContent = iframe.contentFrame();
+        const iframeContent = iframe.contentFrame();
         await expect(iframeContent.getByText('This sensitive reader text should stay visible.')).toBeVisible();
-        await expect(iframeContent.locator('img[src="https://techblog.example/content/images/sensitive-reader-media.jpg"]')).toHaveCount(0);
-        await expect(iframeContent.locator('img[src="https://techblog.example/content/images/inline-sensitive.jpg"]')).toHaveCount(0);
-        await expect(iframeContent.locator('iframe[src="https://www.youtube.com/embed/test"]')).toHaveCount(0);
+        await expect(iframeContent.locator('img[src="https://techblog.example/content/images/sensitive-reader-media.jpg"]')).toBeHidden();
+        await expect(iframeContent.locator('img[src="https://techblog.example/content/images/inline-sensitive.jpg"]')).toBeHidden();
+        await expect(iframeContent.locator('iframe[src="https://www.youtube.com/embed/test"]')).toBeHidden();
+
+        await iframeContent.locator('body').evaluate((body) => {
+            body.setAttribute('data-sensitive-media-marker', 'stable');
+        });
 
         await modal.getByRole('button', {name: 'Show media'}).click();
         await expect(modal.getByTestId('sensitive-media-overlay')).toHaveCount(0);
         await expect(modal.getByRole('button', {name: 'Hide sensitive media'})).toBeVisible();
 
-        iframeContent = iframe.contentFrame();
+        await expect(iframeContent.locator('body')).toHaveAttribute('data-sensitive-media-marker', 'stable');
         await expect(iframeContent.locator('img[src="https://techblog.example/content/images/sensitive-reader-media.jpg"]')).toBeVisible();
         await expect(iframeContent.locator('img[src="https://techblog.example/content/images/inline-sensitive.jpg"]')).toBeVisible();
         await expect(iframeContent.locator('iframe[src="https://www.youtube.com/embed/test"]')).toBeVisible();
@@ -289,10 +293,10 @@ test.describe('Inbox', async () => {
         await modal.getByRole('button', {name: 'Hide sensitive media'}).click();
         await expect(modal.getByTestId('sensitive-media-overlay')).toBeVisible();
 
-        iframeContent = iframe.contentFrame();
-        await expect(iframeContent.locator('img[src="https://techblog.example/content/images/sensitive-reader-media.jpg"]')).toHaveCount(0);
-        await expect(iframeContent.locator('img[src="https://techblog.example/content/images/inline-sensitive.jpg"]')).toHaveCount(0);
-        await expect(iframeContent.locator('iframe[src="https://www.youtube.com/embed/test"]')).toHaveCount(0);
+        await expect(iframeContent.locator('body')).toHaveAttribute('data-sensitive-media-marker', 'stable');
+        await expect(iframeContent.locator('img[src="https://techblog.example/content/images/sensitive-reader-media.jpg"]')).toBeHidden();
+        await expect(iframeContent.locator('img[src="https://techblog.example/content/images/inline-sensitive.jpg"]')).toBeHidden();
+        await expect(iframeContent.locator('iframe[src="https://www.youtube.com/embed/test"]')).toBeHidden();
     });
 
     test('sensitive reader articles without media do not show a media warning', async ({page}) => {
