@@ -977,7 +977,7 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
 
       - name: Log in to GitHub Container Registry
         if: steps.strategy.outputs.should-push == 'true'
@@ -1219,7 +1219,7 @@ jobs:
       - name: Set up Docker Buildx (e2e host driver)
         if: steps.strategy.outputs.use-artifact == 'true'
         continue-on-error: ${{ startsWith(github.ref, 'refs/tags/v') }}
-        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
         id: buildx-e2e-host
         with:
           driver: docker
@@ -1413,7 +1413,7 @@ jobs:
         uses: ./.github/actions/setup-docker-registry-mirrors
 
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@d7f5e7f509e45cec5c76c4d5afdd7de93d0b3df5 # v4
+        uses: docker/setup-buildx-action@bb05f3f5519dd87d3ba754cc423b652a5edd6d2c # v4
 
       - name: Pull or build Tinybird CLI Image
         if: matrix.analytics == 'true'
