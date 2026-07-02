@@ -361,6 +361,9 @@ describe('MembersCSVImporterStripeUtils', function () {
                 NEW_STRIPE_PRICE_ID,
                 {prorationBehavior: 'none'}
             ), true);
+
+            // Assert the new price was not archived — that cleanup only runs when the update fails (#22115)
+            sinon.assert.notCalled(stripeAPIServiceStub.updatePrice);
         });
 
         it('archives the newly-created price if updating the subscription fails (#22115)', async function () {
@@ -377,18 +380,14 @@ describe('MembersCSVImporterStripeUtils', function () {
                 productRepository: productRepositoryStub
             });
 
-            let thrown;
-            try {
-                await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
+            // The original error surfaces...
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
                     customer_id: CUSTOMER_ID,
                     product_id: PRODUCT_ID
-                }, OPTIONS);
-            } catch (err) {
-                thrown = err;
-            }
-
-            // The original error surfaces...
-            assert.equal(thrown, updateError);
+                }, OPTIONS),
+                err => err === updateError
+            );
 
             // ...and the price we just created is archived so it can't be orphaned/accumulate
             sinon.assert.calledOnce(stripeAPIServiceStub.updatePrice);
@@ -410,18 +409,14 @@ describe('MembersCSVImporterStripeUtils', function () {
                 productRepository: productRepositoryStub
             });
 
-            let thrown;
-            try {
-                await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
+            // The original update error must surface, not the archive failure
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
                     customer_id: CUSTOMER_ID,
                     product_id: PRODUCT_ID
-                }, OPTIONS);
-            } catch (err) {
-                thrown = err;
-            }
-
-            // The original update error must surface, not the archive failure
-            assert.equal(thrown, updateError);
+                }, OPTIONS),
+                err => err === updateError
+            );
         });
 
         it('does not archive anything when updating to an existing matching price fails — nothing was created (#22115)', async function () {
@@ -441,17 +436,13 @@ describe('MembersCSVImporterStripeUtils', function () {
                 productRepository: productRepositoryStub
             });
 
-            let thrown;
-            try {
-                await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
                     customer_id: CUSTOMER_ID,
                     product_id: PRODUCT_ID
-                }, OPTIONS);
-            } catch (err) {
-                thrown = err;
-            }
-
-            assert.equal(thrown, updateError);
+                }, OPTIONS),
+                err => err === updateError
+            );
             sinon.assert.notCalled(stripeAPIServiceStub.createPrice);
             sinon.assert.notCalled(stripeAPIServiceStub.updatePrice);
         });
@@ -467,41 +458,14 @@ describe('MembersCSVImporterStripeUtils', function () {
                 productRepository: productRepositoryStub
             });
 
-            let thrown;
-            try {
-                await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
+            await assert.rejects(
+                membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
                     customer_id: CUSTOMER_ID,
                     product_id: PRODUCT_ID
-                }, OPTIONS);
-            } catch (err) {
-                thrown = err;
-            }
-
-            assert.equal(thrown, createError);
+                }, OPTIONS),
+                err => err === createError
+            );
             sinon.assert.notCalled(stripeAPIServiceStub.updateSubscriptionItemPrice);
-            sinon.assert.notCalled(stripeAPIServiceStub.updatePrice);
-        });
-
-        it('does not archive the new price when the subscription update succeeds (#22115)', async function () {
-            const stripeAPIServiceStub = getStripeApiServiceStub();
-            const NEW_STRIPE_PRICE_ID = 'new_stripe_price_id';
-            stripeAPIServiceStub.createPrice.resolves({id: NEW_STRIPE_PRICE_ID});
-            // updateSubscriptionItemPrice resolves by default (the happy path)
-
-            const productRepositoryStub = getProductRepositoryStub({resolveGhostProductPrice: false});
-            const membersCSVImporterStripeUtils = new MembersCSVImporterStripeUtils({
-                stripeAPIService: stripeAPIServiceStub,
-                productRepository: productRepositoryStub
-            });
-
-            const result = await membersCSVImporterStripeUtils.forceStripeSubscriptionToProduct({
-                customer_id: CUSTOMER_ID,
-                product_id: PRODUCT_ID
-            }, OPTIONS);
-
-            assert.equal(result.isNewStripePrice, true);
-            assert.equal(result.stripePriceId, NEW_STRIPE_PRICE_ID);
-            // The cleanup must only run on failure — a successful update keeps the price
             sinon.assert.notCalled(stripeAPIServiceStub.updatePrice);
         });
 
