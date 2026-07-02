@@ -84,7 +84,7 @@
     "@secretlint/secretlint-rule-preset-recommend": "13.0.2",
     "eslint": "catalog:",
     "eslint-plugin-ghost": "catalog:",
-    "eslint-plugin-i18next": "6.1.4",
+    "eslint-plugin-i18next": "6.1.5",
     "eslint-plugin-react": "catalog:",
     "eslint-plugin-react-hooks": "catalog:",
     "eslint-plugin-react-refresh": "catalog:",
