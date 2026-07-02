@@ -1,4 +1,5 @@
 import Service, {inject as service} from '@ember/service';
+import {escapeNqlString} from '../utils/escape-nql-string';
 import {task, timeout} from 'ember-concurrency';
 import {tracked} from '@glimmer/tracking';
 
@@ -20,13 +21,9 @@ export default class TagsManagerService extends Service {
     }
 
     @task({restartable: true})
-    *searchTagsTask(term, {page = 1} = {}) {
+    *searchTagsTask(term, {limit = 100, page = 1} = {}) {
         // debounce the search
         yield timeout(250);
-        // Escape every single quote so the term is safely embedded in the
-        // single-quoted NQL filter below. NQL reads a lone backslash literally
-        // (only `\'`/`\"` are escapes), so quotes alone need escaping.
-        const safeTerm = term.replace(/'/g, `\\'`);
-        return yield this.store.query('tag', {filter: `tags.name:~'${safeTerm}'`, limit: 100, page, order: 'name asc'});
+        return yield this.store.query('tag', {filter: `tags.name:~${escapeNqlString(term)}`, limit, page, order: 'name asc'});
     }
 }
