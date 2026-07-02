@@ -15,6 +15,7 @@ const EDITOR_URL = `/#/editor/post/`;
 interface MockRequest {
     path: string;
     originalUrl: string;
+    query: Record<string, unknown>;
     params: object;
     route: object;
     app: {get: sinon.SinonStub};
@@ -66,6 +67,7 @@ describe('Unit - services/routing/controllers/entry', function () {
         req = {
             path: '/',
             originalUrl: '/',
+            query: {},
             params: {},
             route: {},
             app: {get: sinon.stub()},
