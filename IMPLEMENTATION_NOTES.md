@@ -36,6 +36,20 @@ What should a future implementation or design review revisit, if anything?
 
 ## Entries
 
+## 2026-07-03 - Welcome Path Revision Counters
+
+**Dilemma**:
+Task 3.2 validates revision-level `sent_count` for the newer automation poll path, but the older welcome-email automation poll path still records recipients by `automated_email_id` and does not currently have the same direct `automation_action_revision_id` counter path.
+
+**Decision**:
+Kept Task 3.2 focused on the revision-based poll path and did not broaden the spike to redesign the older welcome-email path during validation.
+
+**Rationale**:
+The plan places exact aggregate counters on `automation_action_revisions`, and the newer automation poll path already has that revision identity. Expanding the older path now would mix compatibility work into the sent-count slice.
+
+**Follow-up**:
+Before productionizing, decide whether the older welcome-email path should be migrated to revision-owned sending, explicitly excluded from automated email analytics, or given a compatibility lookup from `automated_email_id` to `automation_action_revision_id`.
+
 ## 2026-07-03 - Sent Count Send-Path Consistency
 
 **Dilemma**:
