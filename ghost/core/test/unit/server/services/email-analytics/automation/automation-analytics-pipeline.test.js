@@ -34,8 +34,12 @@ describe('AutomationAnalyticsPipeline', function () {
                 queryCalls.push(['getLastJobRunTimestamp', jobName]);
                 return new Date('2026-07-03T15:00:00.000Z');
             }),
-            setJobTimestamp: sinon.stub().resolves(),
-            setJobStatus: sinon.stub().resolves()
+            setJobTimestamp: sinon.stub().callsFake(async (jobName, status) => {
+                queryCalls.push(['setJobTimestamp', jobName, status]);
+            }),
+            setJobStatus: sinon.stub().callsFake(async (jobName, status) => {
+                queryCalls.push(['setJobStatus', jobName, status]);
+            })
         };
         const config = {
             get: sinon.stub().returns(false)
@@ -79,9 +83,25 @@ describe('AutomationAnalyticsPipeline', function () {
         }]);
         assert.deepEqual(queryCalls, [
             ['getLastEventTimestamp', 'email-analytics-automation-latest-opened', ['opened']],
+            ['setJobTimestamp', 'email-analytics-automation-latest-opened', 'started'],
+            ['setJobStatus', 'email-analytics-automation-latest-opened', 'finished'],
             ['getLastEventTimestamp', 'email-analytics-automation-latest-others', ['delivered']],
-            ['getLastJobRunTimestamp', 'email-analytics-automation-missing']
+            ['setJobTimestamp', 'email-analytics-automation-latest-others', 'started'],
+            ['setJobStatus', 'email-analytics-automation-latest-others', 'finished'],
+            ['getLastJobRunTimestamp', 'email-analytics-automation-missing'],
+            ['setJobTimestamp', 'email-analytics-automation-missing', 'started'],
+            ['setJobStatus', 'email-analytics-automation-missing', 'finished']
         ]);
+        const newsletterJobNames = [
+            'email-analytics-latest-opened',
+            'email-analytics-latest-others',
+            'email-analytics-missing'
+        ];
+        const touchedJobNames = queryCalls.map(([, jobName]) => jobName);
+        assert.equal(
+            touchedJobNames.some(jobName => newsletterJobNames.includes(jobName)),
+            false
+        );
         assert.equal(pipeline.fetchScheduled, undefined);
     });
 });
