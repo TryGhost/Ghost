@@ -6,8 +6,15 @@ const db = require('../../data/db');
 const MembersConfigProvider = require('./members-config-provider');
 const makeMembersCSVImporter = require('./importer');
 const MembersStats = require('./stats/members-stats');
-const memberJobs = require('./jobs');
+const jobQueue = require('../jobs/queue').default;
+const CleanTokensJob = require('./jobs/clean-tokens-job').default;
+const CleanExpiredCompedJob = require('./jobs/clean-expired-comped-job').default;
+const {emitMemberEditedEvents} = require('./jobs/lib/emit-member-edited-events');
+const cleanTokens = require('./jobs/lib/clean-tokens');
+const cleanExpiredComped = require('./jobs/lib/clean-expired-comped');
+const events = require('../../lib/common/events');
 const logging = require('@tryghost/logging');
+const sentry = require('../../../shared/sentry');
 const urlUtils = require('../../../shared/url-utils');
 const labsService = require('../../../shared/labs');
 const settingsCache = require('../../../shared/settings-cache');
@@ -163,11 +170,21 @@ module.exports = {
             }
         }
 
-        // Schedule daily cron job to clean expired comp subs
-        memberJobs.scheduleExpiredCompCleanupJob();
+        // Register the member cleanup jobs and arm their daily schedules
+        jobQueue.handle(CleanTokensJob, () => cleanTokens(db));
+        jobQueue.handle(CleanExpiredCompedJob, async () => {
+            // The cleanup mutates members with raw knex, so no model events
+            // fire; emit member.edited ourselves for webhooks and caches.
+            const {memberEvents} = await cleanExpiredComped(db);
+            await emitMemberEditedEvents(memberEvents, {models, events, logging, sentry});
+        });
 
-        // Schedule daily cron job to clean expired tokens
-        memberJobs.scheduleTokenCleanupJob();
+        if (!process.env.NODE_ENV?.startsWith('test')) {
+            // randomise within an off-peak window so instances don't all fire at once
+            const randomCron = maxHour => `${Math.floor(Math.random() * 60)} ${Math.floor(Math.random() * 60)} ${Math.floor(Math.random() * maxHour)} * * *`;
+            jobQueue.scheduleRecurring(new CleanExpiredCompedJob(), {cron: randomCron(6)});
+            jobQueue.scheduleRecurring(new CleanTokensJob(), {cron: randomCron(24)});
+        }
     },
     contentGating: require('./content-gating'),
 

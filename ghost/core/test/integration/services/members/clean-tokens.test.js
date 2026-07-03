@@ -6,7 +6,7 @@ const models = require('../../../../core/server/models');
 
 describe('Job: Clean tokens', function () {
     let agent;
-    let jobsService;
+    let jobQueue;
     let clock;
 
     beforeAll(async function () {
@@ -15,7 +15,7 @@ describe('Job: Clean tokens', function () {
         await agent.loginAsOwner();
 
         // Only reference services after Ghost boot
-        jobsService = require('../../../../core/server/services/jobs');
+        jobQueue = require('../../../../core/server/services/jobs/queue').default;
     });
 
     afterAll(function () {
@@ -37,18 +37,10 @@ describe('Job: Clean tokens', function () {
         // Wait one hour
         clock.tick(1 * 60 * 60 * 1000);
 
-        // Run the job
-        const completedPromise = jobsService.awaitCompletion('clean-tokens');
-        const job = require('path').resolve(__dirname, '../../../../core/server/services/members/jobs', 'clean-tokens.js');
-
-        // NOTE: the job will not use the fake clock.
-        await jobsService.addJob({
-            job,
-            name: 'clean-tokens'
-        });
-        // We need to tick the clock to activate 'bree' and run the job
-        await clock.tickAsync(1000);
-        await completedPromise;
+        // Run the job. NOTE: the handler will not use the fake clock.
+        const CleanTokensJob = require('../../../../core/server/services/members/jobs/clean-tokens-job').default;
+        await jobQueue.dispatch(new CleanTokensJob());
+        await jobQueue.allSettled();
 
         // Check second token exists
         const secondTokenExists = await models.SingleUseToken.findOne({id: secondToken.id});
