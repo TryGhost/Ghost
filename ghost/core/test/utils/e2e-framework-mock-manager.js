@@ -43,6 +43,13 @@ const stripeMocker = new StripeMocker();
 // error." log noise) and allowImageSize can put the real method back.
 let realCachedImageSizeFromUrl = null;
 
+// mockWebmentionDiscoveryDomains() is called from the shared per-test
+// afterEach (not just after a full nock.cleanAll()), so guard it — otherwise
+// every test would stack another set of persist()'d interceptors on top of
+// the last, growing unbounded across a whole worker's run. Reset to false
+// wherever we call nock.cleanAll() ourselves (restore()).
+let webmentionDomainsMocked = false;
+
 /**
  * Stripe Mocks
  */
@@ -89,28 +96,6 @@ const disableNetwork = () => {
         return false;
     });
 
-    // Fixture/example post content (fixtures.json, golden-post.json) links to real
-    // ghost.org subdomains, and several individual tests use example.com (the
-    // RFC 2606 reserved placeholder domain) as a stand-in external link. Publishing
-    // that content triggers real webmention discovery (mention-sending-service.js),
-    // which fetches every external link — nock-blocked here, so the real fetch
-    // throws and mention-discovery-service.js error-logs it on every publish.
-    // Reply with a plain page (no rel="webmention" link/header) instead of
-    // blocking the connection: same "no endpoint found" outcome discovery would
-    // reach for a real site that doesn't support webmentions, without eating a
-    // real connection error. Tests that exercise webmention discovery/sending
-    // itself (e2e-server/services/mentions.test.js) register their own specific
-    // mocks for the domains they care about, which take priority over this
-    // catch-all. (nock 14's RegExp basePath matching doesn't cover subdomains
-    // reliably, so this is an explicit list — grep test content for new domains
-    // if this list goes stale.)
-    for (const host of ['ghost.org', 'www.ghost.org', 'koenig.ghost.org', 'main.ghost.org', 'forum.ghost.org', 'static.ghost.org', 'docs.ghost.org', 'help.ghost.org', 'api.ghost.org', 'themes.ghost.org', 'marketplace.ghost.org', 'example.com', 'www.example.com']) {
-        nock(`https://${host}`)
-            .persist()
-            .get(/.*/)
-            .reply(200, '<html><body></body></html>', {'content-type': 'text/html'});
-    }
-
     // External image dimension lookups are nock-blocked in tests, so the real
     // fetch always fails and logs "Unknown Request error." on every render.
     // Replace the cache's bound lookup with a wrapper that resolves undefined
@@ -134,6 +119,46 @@ const disableNetwork = () => {
         }
         return imageSizeNoop();
     };
+};
+
+/**
+ * DB-lane only — do not call this from disableNetwork(). disableNetwork() is
+ * shared with the unit-test lane (test/utils/vitest-setup.ts calls it directly
+ * in every test's beforeAll/afterEach), and several unit tests register their
+ * own nock mocks against ghost.org/example.com and expect to be the only
+ * interceptor for that host (oembed-service.test.js, external-media-inliner
+ * tests). nock 14 matches the first-registered interceptor for a host and
+ * persisted interceptors are never consumed, so a catch-all registered here
+ * would shadow those tests' own mocks and never be evicted.
+ *
+ * Fixture/example post content (fixtures.json, golden-post.json) links to real
+ * ghost.org subdomains, and several individual DB-lane tests use example.com
+ * (the RFC 2606 reserved placeholder domain) as a stand-in external link.
+ * Publishing that content triggers real webmention discovery
+ * (mention-sending-service.js), which fetches every external link —
+ * nock-blocked here, so the real fetch throws and mention-discovery-service.js
+ * error-logs it on every publish. Reply with a plain page (no rel="webmention"
+ * link/header) instead of blocking the connection: same "no endpoint found"
+ * outcome discovery would reach for a real site that doesn't support
+ * webmentions, without eating a real connection error. Tests that exercise
+ * webmention discovery/sending itself (e2e-server/services/mentions.test.js)
+ * use entirely different hosts (otherghostsite.com/endpoint.com) so
+ * aren't affected either way. (nock 14's RegExp basePath matching doesn't
+ * cover subdomains reliably, so this is an explicit list — grep test content
+ * for new domains if this list goes stale.)
+ */
+const mockWebmentionDiscoveryDomains = () => {
+    if (webmentionDomainsMocked) {
+        return;
+    }
+    webmentionDomainsMocked = true;
+
+    for (const host of ['ghost.org', 'www.ghost.org', 'koenig.ghost.org', 'main.ghost.org', 'forum.ghost.org', 'static.ghost.org', 'docs.ghost.org', 'help.ghost.org', 'api.ghost.org', 'themes.ghost.org', 'marketplace.ghost.org', 'example.com', 'www.example.com']) {
+        nock(`https://${host}`)
+            .persist()
+            .get(/.*/)
+            .reply(200, '<html><body></body></html>', {'content-type': 'text/html'});
+    }
 };
 
 /**
@@ -444,6 +469,7 @@ const restore = () => {
     fakedSettings = {};
     emailCount = 0;
     allowedNetworkDomains = [];
+    webmentionDomainsMocked = false;
     nock.cleanAll();
     nock.enableNetConnect();
     stripeMocker.reset();
@@ -452,6 +478,7 @@ const restore = () => {
 
     // Disable network again after restoring sinon
     disableNetwork();
+    mockWebmentionDiscoveryDomains();
 };
 
 module.exports = {
@@ -470,6 +497,7 @@ module.exports = {
     mockLimitService,
     restoreLimitService,
     disableNetwork,
+    mockWebmentionDiscoveryDomains,
     allowImageSize,
     restore,
     stripeMocker,

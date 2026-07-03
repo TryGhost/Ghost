@@ -108,12 +108,13 @@ describe('EmailAddressService', function () {
             sinon.restore();
         });
 
-        it('does not log an error when the invalid replyTo matches the default from address', function () {
+        it('warns instead of erroring when the invalid replyTo matches the default from address', function () {
             const errorLog = sinon.stub(logging, 'error');
+            const warnLog = sinon.stub(logging, 'warn');
 
             const service = createService({
                 getDefaultEmail: () => ({address: 'noreply@127.0.0.1', name: 'Ghost'}),
-                isValidEmailAddress: (email: string) => email !== 'noreply@127.0.0.1'
+                isValidEmailAddress: (email: string) => email.toLowerCase() !== 'noreply@127.0.0.1'
             });
 
             const result = service.getAddress({
@@ -123,10 +124,31 @@ describe('EmailAddressService', function () {
 
             assert.equal(result.replyTo, undefined);
             sinon.assert.notCalled(errorLog);
+            sinon.assert.calledOnce(warnLog);
+        });
+
+        it('warns instead of erroring when the invalid replyTo is a case variant of the default from address', function () {
+            const errorLog = sinon.stub(logging, 'error');
+            const warnLog = sinon.stub(logging, 'warn');
+
+            const service = createService({
+                getDefaultEmail: () => ({address: 'noreply@127.0.0.1', name: 'Ghost'}),
+                isValidEmailAddress: (email: string) => email.toLowerCase() !== 'noreply@127.0.0.1'
+            });
+
+            const result = service.getAddress({
+                from: {address: 'custom@custom.example.com', name: 'Custom Sender'},
+                replyTo: {address: 'NoReply@127.0.0.1', name: 'Ghost'}
+            });
+
+            assert.equal(result.replyTo, undefined);
+            sinon.assert.notCalled(errorLog);
+            sinon.assert.calledOnce(warnLog);
         });
 
         it('logs an error when an invalid replyTo does not match the default from address', function () {
             const errorLog = sinon.stub(logging, 'error');
+            const warnLog = sinon.stub(logging, 'warn');
 
             const service = createService({
                 isValidEmailAddress: (email: string) => email !== 'not-an-email'
@@ -139,6 +161,7 @@ describe('EmailAddressService', function () {
 
             assert.equal(result.replyTo, undefined);
             sinon.assert.calledOnce(errorLog);
+            sinon.assert.notCalled(warnLog);
         });
     });
 

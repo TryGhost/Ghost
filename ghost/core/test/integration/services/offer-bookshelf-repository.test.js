@@ -15,6 +15,9 @@ const OfferBookshelfRepository = require('../../../core/server/services/offers/o
 describe('OfferBookshelfRepository', function () {
     beforeAll(testUtils.teardownDb);
     beforeEach(testUtils.setup('roles'));
+    afterEach(function () {
+        sinon.restore();
+    });
     afterEach(testUtils.teardownDb);
 
     let context, product, repository;
@@ -170,7 +173,6 @@ describe('OfferBookshelfRepository', function () {
 
             assert.equal(offer, undefined);
             sinon.assert.calledOnce(errorLog);
-            errorLog.restore();
         });
 
         it('skips redemption stats when withRedemptionStats is false', async function () {

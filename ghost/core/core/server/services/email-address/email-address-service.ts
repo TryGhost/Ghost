@@ -103,9 +103,15 @@ export class EmailAddressService {
         if (preferred.replyTo && !this.#isValidEmailAddress(preferred.replyTo.address)) {
             // The default from-address itself is allowed to fail generic email validation
             // (e.g. noreply@127.0.0.1 on an IP-only install — see the same carve-out in
-            // validate() below), so don't error-log when the replyTo just happens to match it.
-            if (preferred.replyTo.address !== this.defaultFromEmail.address) {
+            // validate() below), so don't error-log when the replyTo just happens to match
+            // it (case-insensitively — members_support_address is user-entered, so a case
+            // variant of the same address shouldn't defeat the carve-out). This also
+            // silences a genuinely malformed mail:from, not just the known IP-domain case —
+            // demote to warn instead of dropping the signal entirely.
+            if (preferred.replyTo.address.toLowerCase() !== this.defaultFromEmail.address.toLowerCase()) {
                 logging.error(`[EmailAddresses] Invalid replyTo address: ${preferred.replyTo.address}`);
+            } else {
+                logging.warn(`[EmailAddresses] replyTo address ${preferred.replyTo.address} matches the default from-address and failed generic validation; removing it`);
             }
             // Remove invalid replyTo addresses
             preferred.replyTo = undefined;

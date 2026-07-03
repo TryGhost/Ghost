@@ -87,11 +87,14 @@ describe('Domain Warming Integration Tests', function () {
     // that are created before the email"). Day 0 must therefore land strictly
     // after "now" at file-load time, or members created moments earlier in the
     // real clock look like they were created after the (now fake-backdated)
-    // email whenever this file happens to load after 12:00 UTC — anchor to the
-    // next UTC midnight instead of "today at noon", which is only safe before noon.
+    // email whenever this file happens to load after 12:00 UTC — anchor to a
+    // UTC midnight instead of "today at noon", which is only safe before noon.
+    // +2 days (not +1) so a file load landing right at a UTC midnight boundary
+    // still leaves a full day of margin, rather than a few-second window where
+    // createMembers() could tick past into the anchor day itself.
     const MILLISECONDS_IN_DAY = 24 * 60 * 60 * 1000;
     const baseDate = new Date();
-    baseDate.setUTCDate(baseDate.getUTCDate() + 1);
+    baseDate.setUTCDate(baseDate.getUTCDate() + 2);
     baseDate.setUTCHours(0, 0, 0, 0);
 
     function setDay(daysFromNow = 0) {

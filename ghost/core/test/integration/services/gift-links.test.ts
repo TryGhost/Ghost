@@ -33,6 +33,7 @@ describe('GiftLinksService (integration)', function () {
     });
 
     afterEach(async function () {
+        sinon.restore();
         await models.Base.knex('post_gift_links').del();
         await models.Base.knex('gift_links').del();
         await models.Base.knex('actions').where('resource_type', 'gift_link').del();
@@ -196,7 +197,6 @@ describe('GiftLinksService (integration)', function () {
             await assert.doesNotReject(() => failing.create(CTX, postId));
 
             sinon.assert.calledOnce(errorLog);
-            errorLog.restore();
             assert.equal((await liveLinks(postId)).length, 1, 'the gift link is still created');
         });
     });

@@ -106,6 +106,14 @@ const isTestEnv = function isTestEnv() {
 };
 
 /**
+ * env defaults to 'development' when NODE_ENV is unset (see getNodeEnv() in
+ * ./utils.js), matching ghost.js's own `process.env.NODE_ENV = process.env.NODE_ENV
+ * || 'development'` at the real CLI entry point — so in any Ghost boot via the
+ * normal entry point, this and a raw `process.env.NODE_ENV` check agree. They
+ * only diverge for programmatic embedders that require core modules directly
+ * without going through ghost.js and never set NODE_ENV themselves — those now
+ * count as 'development' (e.g. explore-ping/update-check will phone home)
+ * rather than being silently skipped.
  * @callback isProductionOrDevelopmentFn
  * @returns {boolean}
  */
