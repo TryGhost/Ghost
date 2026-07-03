@@ -158,8 +158,10 @@ export class EmailAddressService {
                 return preferred;
             }
 
-            // Invalid configuration: don't allow to send from this sending domain
-            logging.error(`[EmailAddresses] Invalid configuration: cannot send emails from ${preferred.from.address} when sending domain is ${this.sendingDomain}`);
+            // Not an error: this is the expected, handled fallback for any sender address that
+            // doesn't match the sending domain (staff/member/newsletter senders routinely don't) —
+            // we fall through to the default from-address below. Warn-level, not error-level.
+            logging.warn(`[EmailAddresses] Cannot send emails from ${preferred.from.address} when sending domain is ${this.sendingDomain} — falling back to the default from-address`);
         }
 
         // Only allow to send from the configured from address
