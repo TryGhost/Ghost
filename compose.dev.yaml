@@ -105,7 +105,7 @@ services:
         condition: service_healthy
         required: false
     healthcheck:
-      test: ["CMD", "node", "-e", "fetch('http://localhost:2368',{redirect:'manual'}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
+      test: ["CMD", "node", "-e", "fetch('http://localhost:2368',{redirect:'manual',headers:{'user-agent':'GhostDockerHealthcheck/1.0'}}).then(r=>process.exit(r.status<500?0:1)).catch(()=>process.exit(1))"]
       timeout: 5s
       retries: 10
       start_period: 5s
