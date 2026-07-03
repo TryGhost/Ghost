@@ -8,11 +8,10 @@ Automated email analytics should support the same core event types as newsletter
 
 - Delivered
 - Opened
-- Failed
-- Unsubscribed
-- Complained
 
-The automation pipeline should update `automated_email_recipients`, maintain aggregate stats for automation reporting, and optionally update member-level email analytics where product requirements call for it.
+Failed, complaint, and unsubscribe events are out of scope for the initial version.
+
+The automation pipeline should update `automated_email_recipients`, maintain aggregate stats for automation reporting, and maintain member-level automation email analytics separately from newsletter email analytics.
 
 ## Context
 
@@ -23,6 +22,8 @@ That approach is safe, but expensive at scale. Large sites can have many million
 Automated email analytics should not be added inline to the existing newsletter jobs. Doing that would increase the backlog in the same path that already has performance problems.
 
 Instead, automated email analytics should run as a separate analytics pipeline with independent jobs, cursors, logging, limits, and Mailgun tag filtering.
+
+See [ADR 0001: Use a separate pipeline for automated email analytics](docs/adr/0001-automated-email-analytics-pipeline.md).
 
 ## Proposed Shape
 
@@ -81,10 +82,9 @@ Keep newsletter and automation cursors separate. They are different filtered Mai
 Newsletter jobs:
 
 ```text
-email-analytics-newsletter-latest-opened
-email-analytics-newsletter-latest-others
-email-analytics-newsletter-missing
-email-analytics-newsletter-scheduled
+email-analytics-latest-opened
+email-analytics-latest-others
+email-analytics-missing
 ```
 
 Automation jobs:
@@ -93,24 +93,33 @@ Automation jobs:
 email-analytics-automation-latest-opened
 email-analytics-automation-latest-others
 email-analytics-automation-missing
-email-analytics-automation-scheduled
 ```
 
-The automation job should fetch only automation email events via a dedicated Mailgun tag. The newsletter job should continue fetching newsletter events via the existing bulk email tag.
+The automation job should fetch only automation email events via the `automation-email` Mailgun tag. The newsletter job should continue fetching newsletter events via the existing bulk email tag.
+
+For automation v1, `email-analytics-automation-latest-others` should fetch delivered events only. Keep the opened/non-opened job split so open events remain prioritized and the pipeline can later add more non-opened event types without changing the runner shape.
+
+The existing newsletter job names do not need to be renamed. Renaming them to `email-analytics-newsletter-*` would make the naming more symmetrical, but it also requires migration/compatibility handling for existing job rows and cursors. Keep the existing names unless a concrete operational reason to rename them appears later.
+
+Do not build scheduled/backfill automation analytics in the initial slice. The first version should cover latest event fetching and the older missing-event catch-up pass only.
+
+Keep `email-analytics-automation-missing` in v1. It is the safety pass for Mailgun event visibility delay, restarts, and short outages. It should reuse the same idempotent automation event processor and incremental aggregation path as the latest jobs.
 
 ## Event Identity
 
 Automation analytics needs a reliable way to map a Mailgun event back to a single `automated_email_recipients` row.
 
-The preferred approach is to store provider identity on `automated_email_recipients`, for example:
+The preferred approach is to store Mailgun identity on `automated_email_recipients`, for example:
 
-- `provider_id`
+- `mailgun_message_id`
 - recipient email
 - event/message metadata required by Mailgun lookup
 
 Avoid relying on fuzzy matching by member, action, and timestamp. That will be slower, harder to make idempotent, and more likely to misattribute events.
 
-The automation send path should persist enough provider metadata when an automated email is sent so event processing is a cheap indexed lookup.
+The automation send path should persist enough Mailgun metadata when an automated email is sent so event processing is a cheap indexed lookup. Use `mailgun_message_id`, not `provider_id`, to avoid confusion with generic provider identifiers already used elsewhere in email sending.
+
+Resolve Mailgun events to `automated_email_recipients` with `mailgun_message_id` plus recipient email. Do not rely on `mailgun_message_id` alone.
 
 ## Automation Event Processing
 
@@ -127,9 +136,8 @@ Examples:
 
 - `delivered` sets `automated_email_recipients.delivered_at` if not already set.
 - `opened` sets `opened_at` if not already set.
-- permanent `failed` sets `failed_at` and failure metadata if not already set.
-- `complained` records complaint state and applies suppression behavior consistent with newsletter analytics.
-- `unsubscribed` records unsubscribe state and applies the appropriate member/email preference behavior.
+
+Opened events should be processed independently of delivered events. Do not require `delivered_at` before setting `opened_at` or incrementing `opened_count`; an opened event is strong enough evidence that the email reached the recipient. The missing pass can fill in a delayed delivered event later.
 
 Processing should distinguish between duplicate events and first-time state transitions. Aggregates should only change when the recipient row actually transitions.
 
@@ -148,11 +156,21 @@ This is intentional:
 Expected aggregate targets:
 
 - Automation action revision stats, for immutable historical reporting.
-- Automation action stats, if the UI needs current action-level totals.
-- Automation stats, if the UI needs whole-automation totals.
-- Member stats, if automation emails should contribute to member email analytics.
+- Member automation email stats, separate from newsletter email stats.
 
-Prefer aggregating against immutable IDs first, especially `automation_action_revision_id`, then derive broader reporting from there if needed.
+Store automation reporting counters on `automation_action_revisions`. This gives action-version-level reporting and avoids mixing stats from different versions of the same action after edits.
+
+If the UI later needs current action-level or whole-automation totals, derive those from revision-level stats or add a follow-up projection deliberately.
+
+Member aggregate counters should be separate for newsletters and automations. Do not fold automation email events into the existing newsletter member open-rate fields unless product explicitly chooses a combined metric later.
+
+Member-level automation open rate should use the same denominator semantics as newsletter member analytics, but with automation-specific counters:
+
+```text
+automation_email_opened_count / automation_email_count
+```
+
+Follow the existing member email analytics threshold: only calculate `automation_email_open_rate` when the member has at least 5 tracked automation emails. Otherwise leave the rate null.
 
 ### Counter Model
 
@@ -162,20 +180,28 @@ Use additive counters for event transitions:
 sent_count
 delivered_count
 opened_count
-failed_count
-unsubscribed_count
-complained_count
 ```
+
+`sent_count` should be incremented by the automation send path when Ghost successfully records/sends an automated email recipient and stores its `mailgun_message_id`. It should not be driven by the Mailgun analytics job.
+
+Do not increment `sent_count` until the sent recipient row has a `mailgun_message_id`. The invariant is: a counted send is traceable to a Mailgun message. If the send path creates a pending recipient row before calling Mailgun, it should mark the row as sent and increment counters only after Mailgun returns successfully.
+
+The automation analytics job should increment only provider-event-driven counters:
+
+- `delivered_count`
+- `opened_count`
 
 Open rate should be derived from counters:
 
 ```text
-opened_count / delivered_count
+opened_count / sent_count
 ```
 
-or from the product-approved denominator if it differs.
+This matches existing newsletter analytics semantics, where open rate is based on sent/email count rather than delivered count. `delivered_count` should remain a separate delivery metric.
 
 Do not increment counters merely because an event was received. Increment counters because a recipient row moved from "not opened" to "opened", "not delivered" to "delivered", etc.
+
+Do not add `unsubscribed_count` or `complained_count` for automated email reporting in the initial version.
 
 ### Idempotency
 
@@ -192,9 +218,9 @@ AND opened_at IS NULL
 
 Only if the update affects one row should the aggregate `opened_count` be incremented.
 
-The same pattern applies to delivered, failed, unsubscribed, and complained states.
+The same pattern applies to delivered state.
 
-If the system needs to track every raw event later, add a separate event log with a provider event ID uniqueness constraint. Do not make raw event storage a prerequisite unless Mailgun duplicate behavior requires it.
+Do not add raw Mailgun event storage for the initial version, and do not treat it as a likely follow-up. Recipient state plus idempotent transitions should be the source of truth for analytics processing.
 
 ### Aggregation Writes
 
@@ -206,8 +232,7 @@ For each processed batch, collect deltas keyed by aggregate target:
 {
     automationActionRevisionId: {
         delivered: 10,
-        opened: 4,
-        failed: 1
+        opened: 4
     }
 }
 ```
@@ -217,39 +242,52 @@ Then flush those deltas with additive database updates:
 ```sql
 delivered_count = delivered_count + ?
 opened_count = opened_count + ?
-failed_count = failed_count + ?
 ```
 
 This keeps aggregation work proportional to the number of changed recipients in the current batch, not the total number of historical recipient rows.
+
+Apply recipient state changes and aggregate increments in the same database transaction for each fetched page or small processing batch. Do not wrap the entire job run in one transaction.
+
+The transaction should include:
+
+- Conditional recipient updates, for example setting `opened_at` only when it is currently null.
+- Delta collection based on the rows that actually transitioned.
+- Additive updates to `automation_action_revisions`.
+- Additive updates to member automation aggregate counters, if member counters are part of the slice.
+
+This gives a per-batch consistency guarantee: if recipient state is committed, the matching aggregate increment is also committed. If the transaction fails, neither is committed and the next job pass can retry idempotently.
+
+Keep transaction batches bounded to limit row lock duration, deadlock risk, rollback cost, and undo/redo log pressure. Rows modified by the transaction remain locked until commit, so avoid holding locks across a full catch-up run.
 
 ## Data Model Considerations
 
 Likely additions to `automated_email_recipients`:
 
-- `provider_id`
+- `mailgun_message_id`
 - `delivered_at`
 - `opened_at`
-- `failed_at`
-- `unsubscribed_at`
-- `complained_at`
-- failure metadata if needed
 
-Likely aggregate columns on automation reporting tables:
+Add an index shaped for event lookup by `mailgun_message_id` and `member_email`.
+
+Do not add `failed_at`, failure metadata, `unsubscribed_at`, or `complained_at` to `automated_email_recipients` in the first slice.
+
+Likely aggregate columns on `automation_action_revisions`:
 
 - `sent_count`
 - `delivered_count`
 - `opened_count`
-- `failed_count`
-- `unsubscribed_count`
-- `complained_count`
 
-Exact placement should follow the reporting UI:
+Member automation aggregate columns should be separate from existing newsletter member aggregate columns. Use:
 
-- If reporting is per action version, store counters on `automation_action_revisions` or a dedicated stats table keyed by revision.
-- If reporting must survive action edits while preserving history, prefer a dedicated stats table keyed by `automation_action_revision_id`.
-- If reporting is per current action, either maintain action-level counters directly or derive from revision-level stats.
+- `automation_email_count`
+- `automation_email_opened_count`
+- `automation_email_open_rate`
 
-A dedicated stats table is likely cleaner than adding many mutable analytics columns directly to core automation definition tables.
+Do not reuse `email_count`, `email_opened_count`, or `email_open_rate` for automation emails.
+
+Only set `automation_email_open_rate` once the member has at least 5 tracked automation emails, mirroring the existing member newsletter open-rate threshold.
+
+If analytics columns make `automation_action_revisions` too wide or too write-heavy, a dedicated stats table keyed by `automation_action_revision_id` remains a reasonable follow-up. The initial plan is to place the counters directly on `automation_action_revisions`.
 
 ## Recommended Module Boundaries
 
@@ -279,10 +317,12 @@ It does not own:
 The automation pipeline owns:
 
 - Mailgun tag selection for automation emails
-- Provider event to recipient lookup
+- Mailgun event to recipient lookup
 - Idempotent recipient updates
 - Incremental aggregate deltas
 - Automation-specific member side effects
+
+Automation analytics should use its own event processor. Do not route automation events through the existing newsletter `EmailEventProcessor`; that processor is shaped around `email_recipients` and newsletter-specific side effects. Share fetch orchestration and normalized Mailgun event parsing where useful, but keep automation recipient mutation and aggregate delta generation separate.
 
 ### Newsletter Pipeline
 
@@ -292,16 +332,17 @@ Do not block automation analytics on fully refactoring newsletter analytics. The
 
 ## Rollout Plan
 
-1. Add provider identity and event state columns to `automated_email_recipients`.
-2. Ensure the automation send path tags Mailgun messages with a dedicated automation analytics tag.
-3. Persist provider identity when automated emails are sent.
-4. Add automation analytics aggregate storage.
-5. Build the automation event processor with idempotent recipient updates.
-6. Build batch delta accumulation and additive aggregate flushing.
-7. Add the automation analytics recurring job with independent cursors.
-8. Add status/logging/metrics separate from newsletter analytics.
-9. Enable behind the automations beta or a dedicated private feature flag.
-10. Compare lag, throughput, and DB load against the newsletter analytics pipeline.
+1. Add Mailgun identity and event state columns to `automated_email_recipients`.
+2. Ensure the automation send path tags Mailgun messages with `automation-email`.
+3. Persist `mailgun_message_id` when automated emails are sent.
+4. Increment `sent_count` from the automation send path.
+5. Add automation analytics aggregate columns to `automation_action_revisions`.
+6. Build the automation event processor with idempotent recipient updates.
+7. Build batch delta accumulation and additive aggregate flushing.
+8. Add the automation analytics recurring job with independent cursors.
+9. Add status/logging/metrics separate from newsletter analytics.
+10. Enable behind the automations beta or a dedicated private feature flag.
+11. Compare lag, throughput, and DB load against the newsletter analytics pipeline.
 
 ## Validation
 
@@ -310,7 +351,6 @@ Unit tests:
 - Event maps to the correct `automated_email_recipients` row.
 - Duplicate events do not double-increment aggregates.
 - Event ordering is safe, for example opened before delivered if Mailgun sends events in an unexpected order.
-- Failed, complained, and unsubscribed events apply the correct side effects.
 - Batch processing accumulates deltas correctly.
 
 Integration tests:
@@ -327,14 +367,6 @@ Operational checks:
 - Track aggregate flush time.
 - Track duplicate/no-op event counts.
 - Alert if automation open-event lag exceeds an acceptable threshold.
-
-## Open Questions
-
-- What exact Mailgun tag should identify automation emails?
-- Should automation emails contribute to existing member-level email open rates, or should member automation analytics be separate?
-- Should aggregate counters live directly on automation tables or in dedicated stats tables?
-- Are scheduled/backfill analytics needed for automation immediately, or can that ship after latest/missing event processing?
-- Do we need raw event storage for auditing/debugging, or are idempotent recipient state transitions enough?
 
 ## Recommendation
 
