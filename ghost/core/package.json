@@ -1,6 +1,6 @@
 {
   "name": "ghost",
-  "version": "6.50.1-rc.0",
+  "version": "6.51.1-rc.0",
   "description": "The professional publishing platform",
   "author": "Ghost Foundation",
   "homepage": "https://ghost.org",
@@ -79,7 +79,7 @@
     "cli": "^1.29.1"
   },
   "dependencies": {
-    "@aws-sdk/client-s3": "3.1075.0",
+    "@aws-sdk/client-s3": "3.1076.0",
     "@extractus/oembed-extractor": "3.2.1",
     "@faker-js/faker": "catalog:",
     "@isaacs/ttlcache": "1.4.1",
@@ -184,7 +184,7 @@
     "image-size": "1.2.1",
     "intl": "1.2.5",
     "intl-messageformat": "5.4.3",
-    "js-yaml": "4.2.0",
+    "js-yaml": "4.3.0",
     "jsdom": "catalog:",
     "jsonc-parser": "catalog:",
     "jsonwebtoken": "8.5.1",
@@ -281,7 +281,7 @@
     "eslint-plugin-ghost": "3.5.0",
     "expect": "29.7.0",
     "form-data": "4.0.6",
-    "globals": "17.6.0",
+    "globals": "17.7.0",
     "html-minifier": "4.0.0",
     "html-validate": "11.5.3",
     "inquirer": "8.2.7",

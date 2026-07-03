@@ -43,7 +43,7 @@
     "eslint": "catalog:",
     "eslint-plugin-ghost": "3.5.0",
     "fs-extra": "catalog:",
-    "globals": "17.6.0",
+    "globals": "17.7.0",
     "glob": "catalog:",
     "i18next-parser": "9.4.0",
     "vitest": "catalog:"
