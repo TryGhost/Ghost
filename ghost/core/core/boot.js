@@ -411,6 +411,11 @@ async function initServices({ghostServer} = {}) {
         await postScheduling.rescheduleAll();
     }
 
+    // The import manager is request-driven rather than a service, so boot
+    // registers its job handler explicitly (every boot: each boot starts from
+    // an empty job registry).
+    require('./server/data/importer/import-manager').registerJobs();
+
     debug('End: Services');
 
     debug('End: initServices');
