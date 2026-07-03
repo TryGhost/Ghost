@@ -36,6 +36,20 @@ What should a future implementation or design review revisit, if anything?
 
 ## Entries
 
+## 2026-07-03 - Automation Analytics Scheduling Gate
+
+**Dilemma**:
+Task 5.2 needs automation analytics to register a separate recurring job only when automation analytics is enabled, but the spike does not introduce a dedicated automation analytics config flag.
+
+**Decision**:
+Gate automation analytics scheduling on the existing `emailAnalytics:enabled` and `backgroundJobs:emailAnalytics` config checks plus the existing `automations` labs flag, and only schedule when recent tracked automated email recipients exist.
+
+**Rationale**:
+This is the smallest rollout gate that matches the current beta shape of automations without introducing a new production config surface during the spike. The scheduler still keeps newsletter and automation recurring jobs independent once the shared global checks pass.
+
+**Follow-up**:
+Before productionizing, decide whether automation analytics should keep using the `automations` labs flag or move behind a dedicated `emailAnalytics:automations`/private-feature gate with separate operational controls.
+
 ## 2026-07-03 - Automation Pipeline Adapter Boundary
 
 **Dilemma**:
