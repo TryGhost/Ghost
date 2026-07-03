@@ -294,7 +294,7 @@ describe('useTinybirdToken', () => {
             ({children}) => React.createElement(
                 QueryClientProvider,
                 {client: queryClient},
-                React.createElement(AppProvider, {appSettings: buildAppSettings(webAnalytics)}, children)
+                React.createElement(AppProvider, {appSettings: buildAppSettings(webAnalytics), children})
             );
 
         beforeEach(() => {
@@ -351,7 +351,7 @@ describe('useTinybirdToken', () => {
             const loadingWrapper: React.FC<{children: React.ReactNode}> = ({children}) => React.createElement(
                 QueryClientProvider,
                 {client: queryClient},
-                React.createElement(AppProvider, {appSettings: undefined}, children)
+                React.createElement(AppProvider, {appSettings: undefined, children})
             );
 
             renderHook(() => useTinybirdToken({enabled: true}), {wrapper: loadingWrapper});
