@@ -77,7 +77,7 @@ describe('AutomationEventProcessor integration', function () {
             }
         });
 
-        await processor.processEvents([{
+        const firstResult = await processor.processEvents([{
             id: 'opened-event-id',
             type: 'opened',
             providerId: recipient.mailgun_message_id,
@@ -90,6 +90,29 @@ describe('AutomationEventProcessor integration', function () {
             recipientEmail: member.email,
             timestamp: deliveredAt
         }]);
+
+        const secondResult = await processor.processEvents([{
+            id: 'opened-event-id',
+            type: 'opened',
+            providerId: recipient.mailgun_message_id,
+            recipientEmail: member.email,
+            timestamp: openedAt
+        }, {
+            id: 'delivered-event-id',
+            type: 'delivered',
+            providerId: recipient.mailgun_message_id,
+            recipientEmail: member.email,
+            timestamp: deliveredAt
+        }]);
+
+        assert.deepEqual(firstResult, {
+            delivered: 1,
+            opened: 1
+        });
+        assert.deepEqual(secondResult, {
+            delivered: 0,
+            opened: 0
+        });
 
         const savedRecipient = await testUtils.knex('automated_email_recipients')
             .where({id: recipient.id})
