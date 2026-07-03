@@ -89,7 +89,8 @@ describe('EmailAnalyticsRunner', function () {
         sinon.assert.calledWithMatch(logging.info, sinon.match((message) => {
             return message.includes('Pipeline: newsletter') &&
                 message.includes('Job complete: latest-opened') &&
-                message.includes('2 events');
+                message.includes('2 events') &&
+                message.includes('Events: opened=2 delivered=0 failed=0 unprocessable=0');
         }));
     });
 });
