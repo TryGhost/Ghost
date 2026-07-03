@@ -50,6 +50,20 @@ Running `knex-migrator init` would change local database state outside the narro
 **Follow-up**:
 Run `pnpm knex-migrator migrate --v 6.51 --force` in an initialized Ghost database before promoting the spike implementation.
 
+## 2026-07-03 - Migration Lock Verification Limitation
+
+**Dilemma**:
+Task 2.3 attempted manual migration execution with `pnpm knex-migrator migrate --v 6.51 --force` after the schema and syntax checks passed, but the local database reported that migrations are locked.
+
+**Decision**:
+Kept the member automation counter migration verified by syntax check and schema integrity, and did not manually release the local migration lock from the spike task.
+
+**Rationale**:
+Manually mutating `migrations_lock` would alter local database state outside the narrow schema task. The migration follows the same idempotent column-migration utility pattern as the previous Phase 2 migrations.
+
+**Follow-up**:
+Run `pnpm knex-migrator migrate --v 6.51 --force` in a clean initialized Ghost database before promoting the spike implementation.
+
 ## Production Design Questions To Revisit
 
 - Is `mailgun_message_id + member_email` sufficient as the long-term recipient lookup key?
