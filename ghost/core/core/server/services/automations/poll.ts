@@ -57,6 +57,7 @@ type PollOptions = {
         'fetchAndLockSteps' |
         'finishStepAndEnqueueNext' |
         'incrementActionRevisionSentCount' |
+        'incrementMemberAutomationEmailCount' |
         'markStepTerminal' |
         'retryStep'
     >;
@@ -220,6 +221,7 @@ const processStep = async ({
                 });
                 if (mailgunMessageId) {
                     await automationsApi.incrementActionRevisionSentCount(step.automation_action_revision_id);
+                    await automationsApi.incrementMemberAutomationEmailCount(step.member_id);
                 }
             } catch (err) {
                 logging.error({

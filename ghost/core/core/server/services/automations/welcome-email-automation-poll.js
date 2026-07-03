@@ -261,6 +261,12 @@ async function processRun({
                 ...(mailgunMessageId ? {mailgun_message_id: mailgunMessageId} : {})
             }, {transacting});
 
+            if (mailgunMessageId) {
+                await transacting('members')
+                    .where('id', run.member_id)
+                    .increment('automation_email_count', 1);
+            }
+
             await markExited(run.id, 'finished', transacting);
         });
     } catch (err) {

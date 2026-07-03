@@ -220,6 +220,12 @@ export function createDatabaseAutomationsRepository({
             await knex('automation_action_revisions')
                 .where('id', automationActionRevisionId)
                 .increment('sent_count', 1);
+        },
+
+        async incrementMemberAutomationEmailCount(memberId: string): Promise<void> {
+            await knex('members')
+                .where('id', memberId)
+                .increment('automation_email_count', 1);
         }
     };
 }

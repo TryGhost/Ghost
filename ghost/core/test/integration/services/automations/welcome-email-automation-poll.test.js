@@ -304,6 +304,24 @@ describe('automations poll', function () {
             'member1@example.com': 'mailgun-message-id-1',
             'member2@example.com': 'mailgun-message-id-2'
         });
+
+        const members = await testUtils.knex('members')
+            .select('email', 'email_count', 'automation_email_count')
+            .whereIn('id', [member1.id, member2.id])
+            .orderBy('email');
+        assert.deepEqual(members.map(member => ({
+            email: member.email,
+            email_count: member.email_count,
+            automation_email_count: member.automation_email_count
+        })), [{
+            email: 'member1@example.com',
+            email_count: 0,
+            automation_email_count: 1
+        }, {
+            email: 'member2@example.com',
+            email_count: 0,
+            automation_email_count: 1
+        }]);
     });
 
     it('requests retry if email send fails', async function () {

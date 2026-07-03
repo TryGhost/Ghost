@@ -130,6 +130,7 @@ describe('automations poll', function () {
             fetchAndLockSteps: fake<AutomationsApi['fetchAndLockSteps']>().resolves({steps: [], nextStepReadyAt: null}),
             finishStepAndEnqueueNext: fake<AutomationsApi['finishStepAndEnqueueNext']>().resolves(null),
             incrementActionRevisionSentCount: fake<AutomationsApi['incrementActionRevisionSentCount']>().resolves(),
+            incrementMemberAutomationEmailCount: fake<AutomationsApi['incrementMemberAutomationEmailCount']>().resolves(),
             markStepTerminal: fake<AutomationsApi['markStepTerminal']>().resolves(true),
             retryStep: fake<AutomationsApi['retryStep']>().resolves(true)
         };
@@ -403,6 +404,26 @@ describe('automations poll', function () {
         sinon.assert.calledOnce(automatedEmailRecipientAdd);
         sinon.assert.notCalled(automationsApi.incrementActionRevisionSentCount);
         sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, untrackedStep);
+    });
+
+    it('increments the member automation email count after recording a Mailgun-tracked send', async function () {
+        const step = buildEmailStep({
+            member_id: 'member-id'
+        });
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+            id: 'mailgun-message-id'
+        });
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.incrementMemberAutomationEmailCount, 'member-id');
+        sinon.assert.callOrder(
+            memberWelcomeEmailService.api.sendAutomationEmail,
+            automatedEmailRecipientAdd,
+            automationsApi.incrementMemberAutomationEmailCount,
+            automationsApi.finishStepAndEnqueueNext
+        );
     });
 
     it('does not retry the email send when recording the automated email recipient fails', async function () {

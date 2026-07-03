@@ -106,6 +106,12 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('member_email').notNullable();
     });
 
+    await database.schema.createTable('members', (table) => {
+        table.text('id').primary();
+        table.integer('email_count').notNullable().defaultTo(0);
+        table.integer('automation_email_count').notNullable().defaultTo(0);
+    });
+
     await database.schema.createTable('automation_run_steps', (table) => {
         table.text('id').primary();
         table.text('created_at').notNullable();
@@ -534,6 +540,27 @@ describe('automations repository', function () {
                 .first();
 
             assert.equal(revision.sent_count, 1);
+        });
+    });
+
+    describe('incrementMemberAutomationEmailCount', function () {
+        it('increments automation_email_count without changing newsletter email_count', async function () {
+            const memberId = ObjectId().toHexString();
+            await knex('members').insert({
+                id: memberId,
+                email_count: 2,
+                automation_email_count: 3
+            });
+
+            await repo.incrementMemberAutomationEmailCount(memberId);
+
+            const member = await knex('members')
+                .select('email_count', 'automation_email_count')
+                .where('id', memberId)
+                .first();
+
+            assert.equal(member.email_count, 2);
+            assert.equal(member.automation_email_count, 4);
         });
     });
 

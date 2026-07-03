@@ -148,4 +148,5 @@ export interface AutomationsRepository {
         retryAt: Readonly<Date>
     ): Promise<boolean>;
     incrementActionRevisionSentCount(automationActionRevisionId: string): Promise<void>;
+    incrementMemberAutomationEmailCount(memberId: string): Promise<void>;
 }

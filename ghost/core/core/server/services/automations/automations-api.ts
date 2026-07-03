@@ -363,3 +363,7 @@ export async function retryStep(...args: Parameters<AutomationsRepository['retry
 export async function incrementActionRevisionSentCount(...args: Parameters<AutomationsRepository['incrementActionRevisionSentCount']>) {
     return await repository.incrementActionRevisionSentCount(...args);
 }
+
+export async function incrementMemberAutomationEmailCount(...args: Parameters<AutomationsRepository['incrementMemberAutomationEmailCount']>) {
+    return await repository.incrementMemberAutomationEmailCount(...args);
+}
