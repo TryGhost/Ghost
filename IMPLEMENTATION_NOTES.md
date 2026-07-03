@@ -36,7 +36,19 @@ What should a future implementation or design review revisit, if anything?
 
 ## Entries
 
-No implementation decisions recorded yet.
+## 2026-07-03 - Migration Verification Limitation
+
+**Dilemma**:
+Task 2.1 calls for focused migration/schema verification. The schema integrity test is available and passed, but manual migration execution with `pnpm knex-migrator migrate --v 6.51 --force` failed because this worktree's local database has not been initialized for knex-migrator.
+
+**Decision**:
+Kept the generated migration and schema changes, verified them with `test/unit/server/data/schema/integrity.test.js`, and recorded the blocked manual migration check rather than initializing or mutating the local database state for the spike.
+
+**Rationale**:
+Running `knex-migrator init` would change local database state outside the narrow schema slice. The integrity test verifies the declared schema hash, while the migration file follows the existing Ghost migration helpers and should be manually exercised in an initialized dev/test database before production.
+
+**Follow-up**:
+Run `pnpm knex-migrator migrate --v 6.51 --force` in an initialized Ghost database before promoting the spike implementation.
 
 ## Production Design Questions To Revisit
 
