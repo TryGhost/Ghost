@@ -76,7 +76,7 @@
         "@radix-ui/react-checkbox": "catalog:",
         "@radix-ui/react-form": "catalog:",
         "@radix-ui/react-popover": "catalog:",
-        "@radix-ui/react-radio-group": "1.4.1",
+        "@radix-ui/react-radio-group": "1.4.2",
         "@radix-ui/react-separator": "catalog:",
         "@radix-ui/react-switch": "catalog:",
         "@radix-ui/react-tabs": "catalog:",
