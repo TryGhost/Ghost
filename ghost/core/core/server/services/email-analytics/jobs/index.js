@@ -17,6 +17,12 @@ function createRandomizedFiveMinuteCron() {
     return `${s} ${m}/5 * * * *`;
 }
 
+function createRandomizedThirtySecondCron() {
+    const s = Math.floor(Math.random() * 30); // 0-29
+
+    return `${s}/30 * * * * *`;
+}
+
 async function hasRecentNewsletterEmails(skipEmailCheck) {
     if (skipEmailCheck) {
         return true;
@@ -58,7 +64,7 @@ module.exports = {
 
             if (!hasScheduledAutomation && labs.isSet('automations') && await hasRecentAutomatedEmailRecipients()) {
                 jobsService.addJob({
-                    at: createRandomizedFiveMinuteCron(),
+                    at: createRandomizedThirtySecondCron(),
                     job: path.resolve(__dirname, 'automation-fetch-latest/index.js'),
                     name: 'email-analytics-automation-fetch-latest'
                 });

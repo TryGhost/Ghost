@@ -93,7 +93,7 @@ describe('Email analytics jobs', function () {
         assert.ok(newsletterJob);
         assert.ok(automationJob);
         assert.match(newsletterJob.at, /^\d+ \d\/5 \* \* \* \*$/);
-        assert.match(automationJob.at, /^\d+ \d\/5 \* \* \* \*$/);
+        assert.match(automationJob.at, /^\d+\/30 \* \* \* \* \*$/);
         assert.equal(newsletterJob.job, path.resolve(__dirname, '../../../../../core/server/services/email-analytics/jobs/fetch-latest/index.js'));
         assert.equal(automationJob.job, path.resolve(__dirname, '../../../../../core/server/services/email-analytics/jobs/automation-fetch-latest/index.js'));
     });
