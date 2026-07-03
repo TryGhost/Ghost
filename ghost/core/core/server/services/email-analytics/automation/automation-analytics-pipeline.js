@@ -49,10 +49,6 @@ class AutomationAnalyticsPipeline {
         });
     }
 
-    async getLastOpenedEventTimestamp() {
-        return await this.service.getLastOpenedEventTimestamp();
-    }
-
     async fetchLatestOpenedEvents(options) {
         return await this.service.fetchLatestOpenedEvents(options);
     }

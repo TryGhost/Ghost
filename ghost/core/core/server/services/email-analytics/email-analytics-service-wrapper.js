@@ -96,9 +96,6 @@ class EmailAnalyticsServiceWrapper {
                     restoreScheduled: async () => {
                         await this.service.restoreScheduled();
                     },
-                    getLastOpenedEventTimestamp: async () => {
-                        return await this.service.getLastOpenedEventTimestamp();
-                    },
                     fetchLatestOpenedEvents: async (options) => {
                         return await this._fetchLatestOpenedEventsResult(options);
                     },
@@ -129,9 +126,6 @@ class EmailAnalyticsServiceWrapper {
             this.automationRunner = new EmailAnalyticsRunner({
                 adapter: {
                     name: 'automation',
-                    getLastOpenedEventTimestamp: async () => {
-                        return await this.automationPipeline.getLastOpenedEventTimestamp();
-                    },
                     fetchLatestOpenedEvents: async (options) => {
                         return await this.automationPipeline.fetchLatestOpenedEvents(options);
                     },

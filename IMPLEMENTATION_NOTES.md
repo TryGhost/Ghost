@@ -36,6 +36,20 @@ What should a future implementation or design review revisit, if anything?
 
 ## Entries
 
+## 2026-07-03 - Aggregate Delta Flush Granularity
+
+**Dilemma**:
+The plan describes collecting aggregate deltas for a fetched page and flushing one additive update per aggregate target where possible. The spike implementation applies conditional recipient transitions and immediately increments the matching action/member counters inside the same per-batch transaction.
+
+**Decision**:
+Keep the per-transition aggregate increments for the spike instead of introducing a second delta accumulator late in the implementation.
+
+**Rationale**:
+The current shape preserves the important idempotency and transaction guarantees while keeping the event processor straightforward and covered by the focused tests. The remaining difference is write efficiency for batches with many events for the same aggregate target, which should be measured before productionizing.
+
+**Follow-up**:
+Before productionizing, test realistic Mailgun page sizes and decide whether to replace per-transition aggregate writes with per-batch delta flushing keyed by action revision and member.
+
 ## 2026-07-03 - Automation No-Op Logging Source
 
 **Dilemma**:
@@ -199,3 +213,4 @@ Run `pnpm knex-migrator migrate --v 6.51 --force` in a clean initialized Ghost d
 - Do existing automation recipient rows need a migration/backfill strategy, or can analytics start only for newly sent automation emails?
 - What config flag or beta gate should control automation analytics in production?
 - What metrics/alerts are needed for automation analytics lag and no-op duplicate event rates?
+- Should automation analytics replace per-transition aggregate increments with per-batch delta flushing before production rollout?

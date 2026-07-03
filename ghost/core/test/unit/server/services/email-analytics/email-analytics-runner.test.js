@@ -16,7 +16,6 @@ describe('EmailAnalyticsRunner', function () {
             restoreScheduled: sinon.stub().callsFake(async () => {
                 calls.push(['restoreScheduled']);
             }),
-            getLastOpenedEventTimestamp: sinon.stub(),
             fetchLatestOpenedEvents: sinon.stub().callsFake(async (options) => {
                 calls.push(['opened', options]);
                 return 3;
