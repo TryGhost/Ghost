@@ -69,5 +69,35 @@ describe('EmailAnalyticsServiceWrapper', function () {
             sinon.assert.notCalled(wrapper.fetchScheduled);
             sinon.assert.calledOnceWithExactly(wrapper._restartFetch, 'high opened event count');
         });
+
+        it('does not run overlapping fetches', async function () {
+            const wrapper = createWrapper();
+            let resolveOpenedEvents;
+            const openedEvents = new Promise((resolve) => {
+                resolveOpenedEvents = resolve;
+            });
+
+            wrapper.fetchLatestOpenedEvents = sinon.stub().returns(openedEvents);
+            wrapper.fetchLatestNonOpenedEvents = sinon.stub().resolves(0);
+            wrapper.fetchMissing = sinon.stub().resolves(0);
+            wrapper.fetchScheduled = sinon.stub().resolves(0);
+
+            const firstFetch = wrapper.startFetch();
+            await Promise.resolve();
+            await Promise.resolve();
+
+            const secondFetch = wrapper.startFetch();
+            await secondFetch;
+
+            sinon.assert.calledOnce(wrapper.fetchLatestOpenedEvents);
+
+            resolveOpenedEvents(0);
+            await firstFetch;
+
+            sinon.assert.calledOnce(wrapper.fetchLatestOpenedEvents);
+            sinon.assert.calledOnce(wrapper.fetchLatestNonOpenedEvents);
+            sinon.assert.calledOnce(wrapper.fetchMissing);
+            sinon.assert.calledOnce(wrapper.fetchScheduled);
+        });
     });
 });
