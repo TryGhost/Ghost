@@ -90,19 +90,21 @@ const disableNetwork = () => {
     });
 
     // Fixture/example post content (fixtures.json, golden-post.json) links to real
-    // ghost.org subdomains. Publishing that content triggers real webmention
-    // discovery (mention-sending-service.js), which fetches every external link —
-    // nock-blocked here, so the real fetch throws and mention-discovery-service.js
-    // error-logs it on every publish. Reply with a plain page (no rel="webmention"
-    // link/header) instead of blocking the connection: same "no endpoint found"
-    // outcome discovery would reach for a real site that doesn't support
-    // webmentions, without eating a real connection error. Tests that exercise
-    // webmention discovery/sending itself (e2e-server/services/mentions.test.js)
-    // register their own specific mocks for the domains they care about, which
-    // take priority over this catch-all. (nock 14's RegExp basePath matching
-    // doesn't cover subdomains reliably, so this is an explicit list — grep the
-    // fixtures for new ghost.org subdomains if this list goes stale.)
-    for (const host of ['ghost.org', 'www.ghost.org', 'koenig.ghost.org', 'main.ghost.org', 'forum.ghost.org', 'static.ghost.org', 'docs.ghost.org', 'help.ghost.org', 'api.ghost.org', 'themes.ghost.org', 'marketplace.ghost.org']) {
+    // ghost.org subdomains, and several individual tests use example.com (the
+    // RFC 2606 reserved placeholder domain) as a stand-in external link. Publishing
+    // that content triggers real webmention discovery (mention-sending-service.js),
+    // which fetches every external link — nock-blocked here, so the real fetch
+    // throws and mention-discovery-service.js error-logs it on every publish.
+    // Reply with a plain page (no rel="webmention" link/header) instead of
+    // blocking the connection: same "no endpoint found" outcome discovery would
+    // reach for a real site that doesn't support webmentions, without eating a
+    // real connection error. Tests that exercise webmention discovery/sending
+    // itself (e2e-server/services/mentions.test.js) register their own specific
+    // mocks for the domains they care about, which take priority over this
+    // catch-all. (nock 14's RegExp basePath matching doesn't cover subdomains
+    // reliably, so this is an explicit list — grep test content for new domains
+    // if this list goes stale.)
+    for (const host of ['ghost.org', 'www.ghost.org', 'koenig.ghost.org', 'main.ghost.org', 'forum.ghost.org', 'static.ghost.org', 'docs.ghost.org', 'help.ghost.org', 'api.ghost.org', 'themes.ghost.org', 'marketplace.ghost.org', 'example.com', 'www.example.com']) {
         nock(`https://${host}`)
             .persist()
             .get(/.*/)

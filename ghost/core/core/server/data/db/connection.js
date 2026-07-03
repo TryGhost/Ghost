@@ -37,6 +37,13 @@ function configure(dbConfig) {
                 // better-sqlite3 exposes .pragma() method for setting PRAGMA commands
                 conn.pragma('foreign_keys = ON');
 
+                // The knex pool defaults to up to 10 connections, but SQLite only ever
+                // allows one writer at a time. Without a busy_timeout, a second
+                // connection's write while another is in progress fails immediately
+                // with SQLITE_BUSY ("database is locked") instead of waiting — set a
+                // timeout so it retries internally instead of surfacing a spurious error.
+                conn.pragma('busy_timeout = 5000');
+
                 // These two are meant to improve performance at the cost of reliability
                 // Should be safe for tests. We add them here and leave them on
                 if (config.get('env').startsWith('testing')) {
