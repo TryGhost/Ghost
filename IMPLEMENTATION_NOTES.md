@@ -36,6 +36,20 @@ What should a future implementation or design review revisit, if anything?
 
 ## Entries
 
+## 2026-07-03 - Automation Opened Transaction Boundary
+
+**Dilemma**:
+Task 4.2 needs opened-event recipient state and aggregate increments to happen in a per-batch transaction, but the current unit tests are intentionally focused on processor behavior and do not run against a real database transaction.
+
+**Decision**:
+Expose a small transaction boundary on the automation recipient repository (`withTransaction`) and have the processor execute opened-event resolution, conditional recipient transition, action revision increments, member opened increments, and member open-rate updates inside that boundary.
+
+**Rationale**:
+This keeps the processor behavior testable with a fake repository while mapping directly to the DB-backed repository's `db.knex.transaction` implementation. The conditional recipient update remains the idempotency gate for aggregate writes.
+
+**Follow-up**:
+Phase 6 should add DB-backed integration coverage that proves the transaction boundary commits recipient state and aggregate increments together, and that rollback behavior is acceptable for a processing batch.
+
 ## 2026-07-03 - Automation Event Identity Shape
 
 **Dilemma**:

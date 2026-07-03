@@ -39,4 +39,94 @@ describe('AutomationEventProcessor', function () {
         );
         assert.equal(result, recipient);
     });
+
+    it('applies opened events to recipient and automation counters', async function () {
+        const openedAt = new Date('2026-07-03T16:30:00.000Z');
+        const recipientRepository = createFakeRecipientRepository({
+            recipient: {
+                id: 'recipient-id',
+                mailgun_message_id: '<message-id@mailgun.example>',
+                member_email: 'member@example.com',
+                member_id: 'member-id',
+                automation_action_revision_id: 'revision-id',
+                opened_at: null
+            },
+            actionRevision: {
+                id: 'revision-id',
+                opened_count: 0
+            },
+            member: {
+                id: 'member-id',
+                automation_email_count: 5,
+                automation_email_opened_count: 1,
+                automation_email_open_rate: null
+            }
+        });
+        const processor = new AutomationEventProcessor({recipientRepository});
+
+        await processor.processEvents([{
+            id: 'event-id',
+            type: 'opened',
+            providerId: '<message-id@mailgun.example>',
+            recipientEmail: 'member@example.com',
+            timestamp: openedAt
+        }]);
+
+        assert.equal(recipientRepository.recipient.opened_at, openedAt);
+        assert.equal(recipientRepository.actionRevision.opened_count, 1);
+        assert.equal(recipientRepository.member.automation_email_opened_count, 2);
+        assert.equal(recipientRepository.member.automation_email_open_rate, 40);
+        assert.equal(recipientRepository.transactionCount, 1);
+    });
 });
+
+function createFakeRecipientRepository({recipient, actionRevision, member}) {
+    return {
+        recipient,
+        actionRevision,
+        member,
+        transactionCount: 0,
+
+        async withTransaction(callback) {
+            this.transactionCount += 1;
+            return await callback({transaction: true});
+        },
+
+        async findByMailgunMessageIdAndMemberEmail({mailgunMessageId, memberEmail}) {
+            if (
+                recipient.mailgun_message_id === mailgunMessageId &&
+                recipient.member_email === memberEmail
+            ) {
+                return recipient;
+            }
+
+            return null;
+        },
+
+        async markOpened({recipientId, openedAt}) {
+            assert.equal(recipientId, recipient.id);
+            recipient.opened_at = openedAt;
+            return true;
+        },
+
+        async incrementActionRevisionOpenedCount({automationActionRevisionId, incrementBy}) {
+            assert.equal(automationActionRevisionId, actionRevision.id);
+            actionRevision.opened_count += incrementBy;
+        },
+
+        async incrementMemberAutomationOpenedCount({memberId, incrementBy}) {
+            assert.equal(memberId, member.id);
+            member.automation_email_opened_count += incrementBy;
+
+            return {
+                automationEmailCount: member.automation_email_count,
+                automationEmailOpenedCount: member.automation_email_opened_count
+            };
+        },
+
+        async updateMemberAutomationOpenRate({memberId, openRate}) {
+            assert.equal(memberId, member.id);
+            member.automation_email_open_rate = openRate;
+        }
+    };
+}
