@@ -28,8 +28,7 @@ module.exports.init = async function init() {
     // The explore ping is a background "phone home" request. It should not run
     // in the test environment (cf. the update-check service, which gates on the
     // same environments), where there is no explore URL configured.
-    const allowedEnvironments = ['development', 'production'];
-    if (!allowedEnvironments.includes(config.get('env'))) {
+    if (!config.isProductionOrDevelopment()) {
         return;
     }
 

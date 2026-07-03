@@ -98,13 +98,33 @@ const getContentPath = function getContentPath(type) {
 };
 
 /**
+ * @callback isTestEnvFn
+ * @returns {boolean}
+ */
+const isTestEnv = function isTestEnv() {
+    return this.get('env').startsWith('test');
+};
+
+/**
+ * @callback isProductionOrDevelopmentFn
+ * @returns {boolean}
+ */
+const isProductionOrDevelopment = function isProductionOrDevelopment() {
+    return ['development', 'production'].includes(this.get('env'));
+};
+
+/**
  * @typedef ConfigHelpers
  * @property {isPrivacyDisabledFn} isPrivacyDisabled
  * @property {getContentPathFn} getContentPath
+ * @property {isTestEnvFn} isTestEnv
+ * @property {isProductionOrDevelopmentFn} isProductionOrDevelopment
  */
 module.exports.bindAll = (nconf) => {
     nconf.isPrivacyDisabled = isPrivacyDisabled.bind(nconf);
     nconf.getContentPath = getContentPath.bind(nconf);
     nconf.getBackendMountPath = getBackendMountPath.bind(nconf);
     nconf.getFrontendMountPath = getFrontendMountPath.bind(nconf);
+    nconf.isTestEnv = isTestEnv.bind(nconf);
+    nconf.isProductionOrDevelopment = isProductionOrDevelopment.bind(nconf);
 };
