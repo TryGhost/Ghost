@@ -485,7 +485,7 @@ describe('Posts Content API', function () {
             published_at: publishedAt,
             slug: 'consistent-ordering-1',
             tags: [{slug: 'consistent-order-test'}],
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('post 1')
+            lexical: testUtils.DataGenerator.markdownToLexical('post 1')
         }, {context: {internal: true}});
 
         const post2 = await models.Post.add({
@@ -494,7 +494,7 @@ describe('Posts Content API', function () {
             published_at: publishedAt,
             slug: 'consistent-ordering-2',
             tags: [{slug: 'consistent-order-test'}],
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('post 2')
+            lexical: testUtils.DataGenerator.markdownToLexical('post 2')
         }, {context: {internal: true}});
 
         const page1Response = await agent
