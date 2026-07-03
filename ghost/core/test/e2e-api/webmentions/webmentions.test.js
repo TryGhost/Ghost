@@ -9,22 +9,21 @@ const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
 const urlUtils = require('../../../core/shared/url-utils');
 const nock = require('nock');
-const jobsService = require('../../../core/server/services/mentions-jobs');
+const jobQueue = require('../../../core/server/services/jobs/queue').default;
 const DomainEvents = require('@tryghost/domain-events');
 
 async function allSettled() {
-    await jobsService.allSettled();
+    await jobQueue.allSettled();
     await DomainEvents.allSettled();
 }
 
 async function receiveWebmention(agent, body) {
-    const processWebmentionJob = jobsService.awaitCompletion('processWebmention');
-
     await agent.post('/receive')
         .body(body)
         .expectStatus(202);
 
-    await processWebmentionJob;
+    // The webmention job is dispatched on the JobQueue during the request
+    await jobQueue.allSettled();
     await DomainEvents.allSettled();
 }
 

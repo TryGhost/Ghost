@@ -8,10 +8,15 @@ const logging = require('@tryghost/logging');
 const dnsPromises = require('node:dns').promises;
 const {createModel} = require('./utils/index.js');
 
-// mock up job service
-let jobService = {
-    async addJob(name, fn) {
-        return fn();
+// mock up the job queue: runs the registered handler synchronously on dispatch
+// so tests can assert side effects right after dispatching.
+const jobQueue = {
+    _handler: null,
+    handle(JobClass, handler) {
+        this._handler = handler;
+    },
+    dispatch(job) {
+        return this._handler(job);
     }
 };
 
@@ -133,8 +138,9 @@ describe('MentionSendingService', function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
                 getPostUrl: () => 'https://site.com/post/',
-                jobService: jobService
+                jobQueue: jobQueue
             });
+            service.registerJobs();
             const stub = sinon.stub(service, 'sendForHTMLResource');
             await service.sendForPost(createModel({
                 status: 'published',
@@ -155,8 +161,9 @@ describe('MentionSendingService', function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
                 getPostUrl: () => 'https://site.com/post/',
-                jobService: jobService
+                jobQueue: jobQueue
             });
+            service.registerJobs();
             const stub = sinon.stub(service, 'sendForHTMLResource');
             await service.sendForPost(createModel({
                 status: 'draft',
@@ -177,8 +184,9 @@ describe('MentionSendingService', function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
                 getPostUrl: () => 'https://site.com/post/',
-                jobService: jobService
+                jobQueue: jobQueue
             });
+            service.registerJobs();
             const stub = sinon.stub(service, 'sendForHTMLResource');
             await service.sendForPost(createModel({
                 status: 'published',
@@ -198,8 +206,10 @@ describe('MentionSendingService', function () {
         it('Catches and logs errors', async function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
-                getPostUrl: () => 'https://site.com/post/'
+                getPostUrl: () => 'https://site.com/post/',
+                jobQueue: jobQueue
             });
+            service.registerJobs();
             sinon.stub(service, 'sendForHTMLResource').rejects(new Error('Internal error test'));
             await service.sendForPost(createModel({
                 status: 'published',
@@ -216,8 +226,9 @@ describe('MentionSendingService', function () {
             const service = new MentionSendingService({
                 isEnabled: () => true,
                 getPostUrl: () => 'https://site.com/post/',
-                jobService: jobService
+                jobQueue: jobQueue
             });
+            service.registerJobs();
             const stub = sinon.stub(service, 'sendForHTMLResource');
             await service.sendForPost(createModel({
                 status: 'published',
@@ -316,8 +327,9 @@ describe('MentionSendingService', function () {
                 discoveryService: {
                     getEndpoint: async () => new URL('https://example.org/webmentions-test')
                 },
-                jobService: jobService
+                jobQueue: jobQueue
             });
+            service.registerJobs();
             await service.sendForHTMLResource({url: new URL('https://site.com'),
                 html: `<a href="https://example.com">Example</a>`,
                 previousHtml: `<a href="https://typo.com">Example</a>`});

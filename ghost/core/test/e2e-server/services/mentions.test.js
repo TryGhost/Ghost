@@ -2,7 +2,7 @@ const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-fr
 const nock = require('nock');
 const assert = require('node:assert/strict');
 const markdownToLexical = require('../../utils/fixtures/data-generator').markdownToLexical;
-const jobsService = require('../../../core/server/services/mentions-jobs');
+const jobsService = require('../../../core/server/services/jobs/queue').default;
 
 let agent;
 let mentionUrl = new URL('https://www.otherghostsite.com/');

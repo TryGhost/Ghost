@@ -1,5 +1,6 @@
 const errors = require('@tryghost/errors');
 const logging = require('@tryghost/logging');
+const SendWebmentionsJob = require('./jobs/send-webmentions-job').default;
 
 module.exports = class MentionSendingService {
     #discoveryService;
@@ -7,15 +8,31 @@ module.exports = class MentionSendingService {
     #getSiteUrl;
     #getPostUrl;
     #isEnabled;
-    #jobService;
+    #jobQueue;
 
-    constructor({discoveryService, externalRequest, getSiteUrl, getPostUrl, isEnabled, jobService}) {
+    constructor({discoveryService, externalRequest, getSiteUrl, getPostUrl, isEnabled, jobQueue}) {
         this.#discoveryService = discoveryService;
         this.#externalRequest = externalRequest;
         this.#getSiteUrl = getSiteUrl;
         this.#getPostUrl = getPostUrl;
         this.#isEnabled = isEnabled;
-        this.#jobService = jobService;
+        this.#jobQueue = jobQueue;
+    }
+
+    /** Called on every boot: each boot starts from an empty job registry. */
+    registerJobs() {
+        if (this.#jobQueue) {
+            // Capped: sends crawl every link in a post (15s timeout x 3 retries each).
+            this.#jobQueue.handle(SendWebmentionsJob, job => this.#sendWebmentions(job.data), {concurrency: 2});
+        }
+    }
+
+    async #sendWebmentions({url, html, previousHtml}) {
+        await this.sendForHTMLResource({
+            url: new URL(url),
+            html,
+            previousHtml
+        });
     }
 
     get siteUrl() {
@@ -66,13 +83,11 @@ module.exports = class MentionSendingService {
             let html = post.get('status') === 'published' ? post.get('html') : null;
             let previousHtml = post.previous('status') === 'published' ? post.previous('html') : null;
             if (html || previousHtml) {
-                await this.#jobService.addJob('sendWebmentions', async () => {
-                    await this.sendForHTMLResource({
-                        url: new URL(this.#getPostUrl(post)),
-                        html: html,
-                        previousHtml: previousHtml
-                    });
-                });
+                await this.#jobQueue.dispatch(new SendWebmentionsJob({
+                    url: String(this.#getPostUrl(post)),
+                    html,
+                    previousHtml
+                }));
             }
         } catch (e) {
             logging.error('Error in webmention sending service post update event handler:');
