@@ -7,11 +7,11 @@ const DEFAULT_TAGS = ['bulk-email'];
 class EmailAnalyticsProviderMailgun {
     mailgunClient;
 
-    constructor({config, settings, labs}) {
+    constructor({config, settings, labs, tags}) {
         this.mailgunClient = new MailgunClient({config, settings, labs});
-        this.tags = [...DEFAULT_TAGS];
+        this.tags = tags ? [...tags] : [...DEFAULT_TAGS];
 
-        if (config.get('bulkEmail:mailgun:tag')) {
+        if (!tags && config.get('bulkEmail:mailgun:tag')) {
             this.tags.push(config.get('bulkEmail:mailgun:tag'));
         }
     }

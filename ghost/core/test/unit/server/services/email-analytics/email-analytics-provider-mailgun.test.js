@@ -154,6 +154,33 @@ describe('EmailAnalyticsProviderMailgun', function () {
             }, batchHandler, {maxEvents: undefined});
         });
 
+        it('uses constructor-provided tags when supplied', async function () {
+            const configStub = sinon.stub(config, 'get');
+            configStub.withArgs('bulkEmail').returns({
+                mailgun: {
+                    apiKey: 'apiKey',
+                    domain: 'domain.com',
+                    baseUrl: 'https://api.mailgun.net/v3'
+                }
+            });
+
+            const mailgunProvider = new EmailAnalyticsProviderMailgun({
+                config,
+                settings,
+                tags: ['automation-email']
+            });
+
+            const batchHandler = sinon.spy();
+            const mailgunFetchEventsStub = sinon.stub(mailgunProvider.mailgunClient, 'fetchEvents').returns(SAMPLE_EVENTS);
+
+            await mailgunProvider.fetchLatest(batchHandler, {begin: LATEST_TIMESTAMP});
+
+            sinon.assert.calledWithExactly(mailgunFetchEventsStub, {
+                ...MAILGUN_OPTIONS,
+                tags: 'automation-email'
+            }, batchHandler, {maxEvents: undefined});
+        });
+
         it('uses provided events when supplied', async function () {
             const configStub = sinon.stub(config, 'get');
             configStub.withArgs('bulkEmail').returns({
