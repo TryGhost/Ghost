@@ -1227,6 +1227,9 @@ module.exports = {
         email_subject: {type: 'string', maxlength: 300, nullable: true},
         email_lexical: {type: 'text', maxlength: 1000000000, fieldtype: 'long', nullable: true},
         email_design_setting_id: {type: 'string', maxlength: 24, nullable: true, references: 'email_design_settings.id', setNullDelete: true},
+        sent_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        delivered_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
+        opened_count: {type: 'integer', nullable: false, unsigned: true, defaultTo: 0},
         '@@UNIQUE_CONSTRAINTS@@': [
             ['created_at', 'action_id']
         ]
