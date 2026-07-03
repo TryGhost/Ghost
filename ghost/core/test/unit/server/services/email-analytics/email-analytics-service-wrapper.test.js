@@ -99,5 +99,23 @@ describe('EmailAnalyticsServiceWrapper', function () {
             sinon.assert.calledOnce(wrapper.fetchMissing);
             sinon.assert.calledOnce(wrapper.fetchScheduled);
         });
+
+        it('does not run scheduled fetches when latest and missing events exceed the event budget', async function () {
+            const wrapper = createWrapper();
+
+            wrapper.fetchLatestOpenedEvents = sinon.stub().resolves(4000);
+            wrapper.fetchLatestNonOpenedEvents = sinon.stub().resolves(4000);
+            wrapper.fetchMissing = sinon.stub().resolves(2001);
+            wrapper.fetchScheduled = sinon.stub().resolves(0);
+            wrapper._restartFetch = sinon.stub();
+
+            await wrapper.startFetch();
+
+            sinon.assert.calledOnceWithExactly(wrapper.fetchLatestOpenedEvents, {maxEvents: 10000});
+            sinon.assert.calledOnceWithExactly(wrapper.fetchLatestNonOpenedEvents, {maxEvents: 6000});
+            sinon.assert.calledOnceWithExactly(wrapper.fetchMissing, {maxEvents: 2000});
+            sinon.assert.notCalled(wrapper.fetchScheduled);
+            sinon.assert.calledOnceWithExactly(wrapper._restartFetch, 'high event count');
+        });
     });
 });
