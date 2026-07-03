@@ -1,73 +1,73 @@
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const config = require('../../../shared/config');
+const jobQueue = require('../jobs/queue').default;
+const EmailAnalyticsFetchLatestJob = require('./jobs/fetch-latest-job').default;
 
 class EmailAnalyticsServiceWrapper {
     #restoredSchedule = false;
+    // Guards double-scheduling across boot + mega's re-trigger; dies with the
+    // durable schedule table, which makes scheduling idempotent.
+    #hasScheduled = false;
 
     init() {
-        if (this.service) {
-            return;
+        if (!this.service) {
+            const EmailAnalyticsService = require('./email-analytics-service');
+            const EmailEventStorage = require('../email-service/email-event-storage');
+            const EmailEventProcessor = require('../email-service/email-event-processor');
+            const MailgunProvider = require('./email-analytics-provider-mailgun');
+            const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
+            const domainEvents = require('@tryghost/domain-events');
+            const settings = require('../../../shared/settings-cache');
+            const labs = require('../../../shared/labs');
+            const db = require('../../data/db');
+            const queries = require('./lib/queries');
+            const membersService = require('../members');
+            const membersRepository = membersService.api.members;
+            const emailSuppressionList = require('../email-suppression-list');
+            const prometheusClient = require('../../../shared/prometheus-client');
+
+            this.eventStorage = new EmailEventStorage({
+                db,
+                membersRepository,
+                models: {
+                    Email,
+                    EmailRecipientFailure,
+                    EmailSpamComplaintEvent
+                },
+                emailSuppressionList,
+                prometheusClient
+            });
+
+            const eventProcessor = new EmailEventProcessor({
+                domainEvents,
+                db,
+                eventStorage: this.eventStorage,
+                prometheusClient
+            });
+
+            this.service = new EmailAnalyticsService({
+                config,
+                settings,
+                eventProcessor,
+                providers: [
+                    new MailgunProvider({config, settings, labs})
+                ],
+                queries,
+                domainEvents,
+                prometheusClient
+            });
+
+            // Log the processing mode on initialization
+            const batchProcessingEnabled = config.get('emailAnalytics:batchProcessing');
+            logging.info(`[EmailAnalytics] Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`);
         }
 
-        const EmailAnalyticsService = require('./email-analytics-service');
-        const EmailEventStorage = require('../email-service/email-event-storage');
-        const EmailEventProcessor = require('../email-service/email-event-processor');
-        const MailgunProvider = require('./email-analytics-provider-mailgun');
-        const {EmailRecipientFailure, EmailSpamComplaintEvent, Email} = require('../../models');
-        const StartEmailAnalyticsJobEvent = require('./events/start-email-analytics-job-event');
-        const domainEvents = require('@tryghost/domain-events');
-        const settings = require('../../../shared/settings-cache');
-        const labs = require('../../../shared/labs');
-        const db = require('../../data/db');
-        const queries = require('./lib/queries');
-        const membersService = require('../members');
-        const membersRepository = membersService.api.members;
-        const emailSuppressionList = require('../email-suppression-list');
-        const prometheusClient = require('../../../shared/prometheus-client');
-
-        this.eventStorage = new EmailEventStorage({
-            db,
-            membersRepository,
-            models: {
-                Email,
-                EmailRecipientFailure,
-                EmailSpamComplaintEvent
-            },
-            emailSuppressionList,
-            prometheusClient
-        });
-
-        // Since this is running in a worker thread, we cant dispatch directly
-        // So we post the events as a message to the job manager
-        const eventProcessor = new EmailEventProcessor({
-            domainEvents,
-            db,
-            eventStorage: this.eventStorage,
-            prometheusClient
-        });
-
-        this.service = new EmailAnalyticsService({
-            config,
-            settings,
-            eventProcessor,
-            providers: [
-                new MailgunProvider({config, settings, labs})
-            ],
-            queries,
-            domainEvents,
-            prometheusClient
-        });
-
-        // Log the processing mode on initialization
-        const batchProcessingEnabled = config.get('emailAnalytics:batchProcessing');
-        logging.info(`[EmailAnalytics] Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`);
-
-        // We currently cannot trigger a non-offloaded job from the job manager
-        // So the email analytics jobs simply emits an event.
-        domainEvents.subscribe(StartEmailAnalyticsJobEvent, async () => {
-            await this.startFetch();
-        });
+        // Handler registrations (and armed schedules) do not survive a
+        // re-boot: boot resets the job registry, so they re-run here even
+        // when the service instance is reused.
+        this.#hasScheduled = false;
+        jobQueue.handle(EmailAnalyticsFetchLatestJob, () => this.startFetch());
     }
 
     /**
@@ -227,6 +227,42 @@ class EmailAnalyticsServiceWrapper {
         this.fetching = false;
         logging.info(`[EmailAnalytics] Restarting fetch due to ${reason}`);
         this.startFetch();
+    }
+
+    // Gated on analytics being enabled and sent emails existing; mega
+    // re-triggers this after the first send.
+    async scheduleRecurringJobs(skipEmailCheck = false) {
+        const moment = require('moment');
+        const models = require('../../models');
+
+        if (
+            !this.#hasScheduled &&
+            config.get('emailAnalytics:enabled') &&
+            config.get('backgroundJobs:emailAnalytics') &&
+            !process.env.NODE_ENV.startsWith('test')
+        ) {
+            // Don't register email analytics job if we have no emails,
+            // processor usage from many sites spinning up threads can be high.
+            // Mega service will re-run this scheduling task when an email is sent
+            const emailCount = skipEmailCheck ? 1 : (await models.Email
+                .where('created_at', '>', moment.utc().subtract(30, 'days').toDate())
+                .where('status', '<>', 'failed')
+                .count());
+
+            // Re-check: boot and mega can race through the count query above.
+            if (emailCount > 0 && !this.#hasScheduled) {
+                // use a random seconds value to avoid spikes to external APIs on the minute
+                const s = Math.floor(Math.random() * 60); // 0-59
+                // run every 5 minutes, on 1,6,11..., 2,7,12..., 3,8,13..., etc
+                const m = Math.floor(Math.random() * 5); // 0-4
+
+                jobQueue.scheduleRecurring(new EmailAnalyticsFetchLatestJob(), {cron: `${s} ${m}/5 * * * *`});
+
+                this.#hasScheduled = true;
+            }
+        }
+
+        return this.#hasScheduled;
     }
 }
 

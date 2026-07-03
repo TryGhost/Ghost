@@ -44,7 +44,7 @@ class EmailServiceWrapper {
             const linkTracking = require('../link-tracking');
             const audienceFeedback = require('../audience-feedback');
             const storageUtils = require('../../adapters/storage/utils');
-            const emailAnalyticsJobs = require('../email-analytics/jobs');
+            const emailAnalyticsJobs = require('../email-analytics');
             const {cachedImageSizeFromUrl} = require('../../lib/image');
 
             // capture errors from mailgun client and log them in sentry
