@@ -1,0 +1,9 @@
+services:
+  ghost-dev:
+    environment:
+      # Route Ghost transactional/test emails via the Mailgun API instead of Mailpit.
+      # Values come from the host environment/.env file.
+      mail__transport: Mailgun
+      mail__options__url: https://api.mailgun.net
+      mail__options__auth__api_key: ${MAILGUN_API_KEY}
+      mail__options__auth__domain: ${MAILGUN_DOMAIN}

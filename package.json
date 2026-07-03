@@ -35,6 +35,7 @@
     "dev": "pnpm nx run ghost-monorepo:docker:dev",
     "dev:sqlite": "DEV_COMPOSE_FILES='-f compose.dev.sqlite.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:mailgun": "DEV_COMPOSE_FILES='-f compose.dev.mailgun.yaml' pnpm nx run ghost-monorepo:docker:dev",
+    "dev:mailgun-api": "DEV_COMPOSE_FILES='-f compose.dev.mailgun-api.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:lexical": "EDITOR_URL=http://localhost:2368/ghost/assets/koenig-lexical/ pnpm dev",
     "dev:analytics": "DEV_COMPOSE_FILES='-f compose.dev.analytics.yaml' pnpm nx run ghost-monorepo:docker:dev",
     "dev:storage": "DEV_COMPOSE_FILES='-f compose.dev.storage.yaml' pnpm nx run ghost-monorepo:docker:dev",
