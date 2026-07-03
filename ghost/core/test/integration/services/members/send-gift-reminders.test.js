@@ -24,8 +24,8 @@ describe('Gift reminder processing', function () {
         await fixtureManager.init('newsletters', 'members:newsletters');
         await agent.loginAsOwner();
 
+        // Boot already initialised the gift service; grab the shared instance.
         giftService = require('../../../../core/server/services/gifts');
-        await giftService.init();
 
         paidTier = await models.Product.findOne({type: 'paid'}, {require: true});
     });
