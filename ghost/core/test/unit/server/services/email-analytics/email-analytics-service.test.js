@@ -144,6 +144,36 @@ describe('EmailAnalyticsService', function () {
                 await service.fetchLatestOpenedEvents();
                 sinon.assert.notCalled(fetchLatestSpy);
             });
+
+            it('uses configured job names when fetching opened events', async function () {
+                const getLastEventTimestampStub = sinon.stub().resolves();
+                const setJobTimestampStub = sinon.stub().resolves();
+                const setJobStatusStub = sinon.stub().resolves();
+                const service = new EmailAnalyticsService({
+                    config: createMockConfig(),
+                    queries: {
+                        getLastEventTimestamp: getLastEventTimestampStub,
+                        setJobTimestamp: setJobTimestampStub,
+                        setJobStatus: setJobStatusStub
+                    },
+                    providers: [{
+                        fetchLatest: (processBatch) => {
+                            processBatch([]);
+                        }
+                    }],
+                    fetchJobNames: {
+                        latestOpenedJobName: 'email-analytics-automation-latest-opened',
+                        latestNonOpenedJobName: 'email-analytics-automation-latest-others',
+                        missingJobName: 'email-analytics-automation-missing'
+                    }
+                });
+
+                await service.fetchLatestOpenedEvents();
+
+                sinon.assert.calledWith(getLastEventTimestampStub, 'email-analytics-automation-latest-opened', ['opened']);
+                sinon.assert.calledWith(setJobTimestampStub, 'email-analytics-automation-latest-opened', 'started');
+                sinon.assert.calledWith(setJobStatusStub, 'email-analytics-automation-latest-opened', 'finished');
+            });
         });
 
         describe('fetchLatestNonOpenedEvents', function () {
