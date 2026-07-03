@@ -26,10 +26,37 @@ class AutomationEventProcessor {
     async processEvents(events) {
         return await this.#recipientRepository.withTransaction(async (transacting) => {
             const result = {
+                delivered: 0,
                 opened: 0
             };
 
             for (const event of events) {
+                if (event?.type === 'delivered') {
+                    const recipient = await this.#resolveRecipient(event, {transacting});
+
+                    if (!recipient) {
+                        continue;
+                    }
+
+                    const deliveredAt = this.#getEventTimestamp(event);
+                    const didTransition = await this.#recipientRepository.markDelivered({
+                        recipientId: recipient.id,
+                        deliveredAt
+                    }, {transacting});
+
+                    if (!didTransition) {
+                        continue;
+                    }
+
+                    await this.#recipientRepository.incrementActionRevisionDeliveredCount({
+                        automationActionRevisionId: recipient.automation_action_revision_id,
+                        incrementBy: 1
+                    }, {transacting});
+
+                    result.delivered += 1;
+                    continue;
+                }
+
                 if (event?.type !== 'opened') {
                     continue;
                 }
@@ -138,10 +165,26 @@ function createRecipientRepository({db} = {}) {
             return affectedRows > 0;
         },
 
+        async markDelivered({recipientId, deliveredAt}, {transacting} = {}) {
+            const affectedRows = await (transacting || db.knex)('automated_email_recipients')
+                .where('id', recipientId)
+                .update({
+                    delivered_at: deliveredAt
+                });
+
+            return affectedRows > 0;
+        },
+
         async incrementActionRevisionOpenedCount({automationActionRevisionId, incrementBy}, {transacting} = {}) {
             await (transacting || db.knex)('automation_action_revisions')
                 .where('id', automationActionRevisionId)
                 .increment('opened_count', incrementBy);
+        },
+
+        async incrementActionRevisionDeliveredCount({automationActionRevisionId, incrementBy}, {transacting} = {}) {
+            await (transacting || db.knex)('automation_action_revisions')
+                .where('id', automationActionRevisionId)
+                .increment('delivered_count', incrementBy);
         },
 
         async incrementMemberAutomationOpenedCount({memberId, incrementBy}, {transacting} = {}) {
