@@ -93,7 +93,7 @@ catalog:
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.3
   eslint-plugin-tailwindcss: 4.0.4
-  fs-extra: 11.3.5
+  fs-extra: 11.3.6
   glob: 13.0.6
   globals: 17.6.0
   jsdom: 29.1.1
