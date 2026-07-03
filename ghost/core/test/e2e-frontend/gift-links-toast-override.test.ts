@@ -80,7 +80,7 @@ describe('Front-end gift links — theme toast override', function () {
             visibility: 'paid',
             status: 'published',
             published_at: moment().toDate(),
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall')
+            lexical: testUtils.DataGenerator.markdownToLexical('Before paywall\n\n<!--members-only-->\n\nAfter paywall')
         });
         await testUtils.fixtures.insertPosts([paidPost]);
 

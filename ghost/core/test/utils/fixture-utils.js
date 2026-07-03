@@ -179,22 +179,20 @@ const fixtures = {
             id: '618ba1ffbe2896088840a6ef',
             title: 'This has a paywall',
             slug: 'paywall',
-            lexical: '',
             status: 'draft',
             uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c905',
-            mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
+            lexical: DataGenerator.markdownToLexical('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
             visibility: 'paid',
             authors: [owner.toJSON()]
         }, {
             id: '618ba1ffbe2896088840a6ff',
             title: 'This has a tiered paywall',
             slug: 'paywall-tiered',
-            lexical: '',
             status: 'draft',
             uuid: 'd52c42ae-2755-455c-80ec-70b2ec55c906',
             visibility: 'tiers',
             tiers: [tier.toJSON()],
-            mobiledoc: DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
+            lexical: DataGenerator.markdownToLexical('Before paywall\n\n<!--members-only-->\n\nAfter paywall'),
             authors: [owner.toJSON()]
         }];
 

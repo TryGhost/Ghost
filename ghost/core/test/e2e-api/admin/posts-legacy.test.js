@@ -264,7 +264,7 @@ describe('Posts API', function () {
             feature_image_alt: 'Testing feature image alt',
             feature_image_caption: 'Testing <b>feature image caption</b>',
             published_at: '2016-05-30T07:00:00.000Z',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment('2016-05-30T06:30:00.456Z').toDate(),
             updated_at: moment('2016-05-30T06:30:00.456Z').toDate()
         };
@@ -412,9 +412,17 @@ describe('Posts API', function () {
     });
 
     it('Can update and force re-render', async function () {
-        const mobiledoc = JSON.parse(testUtils.DataGenerator.Content.posts[3].mobiledoc);
-        mobiledoc.cards.push(['image', {src: 'https://example.com/image.jpg'}]);
-        mobiledoc.sections.push([10, mobiledoc.cards.length - 1]);
+        // send legacy mobiledoc content to check it's converted to lexical and rendered
+        const mobiledoc = {
+            version: '0.3.1',
+            markups: [],
+            atoms: [],
+            cards: [
+                ['markdown', {markdown: 'my post'}],
+                ['image', {src: 'https://example.com/image.jpg'}]
+            ],
+            sections: [[10, 0], [10, 1]]
+        };
 
         const post = {
             mobiledoc: JSON.stringify(mobiledoc)
@@ -546,7 +554,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing newsletter',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate(),
             newsletter: {
@@ -587,7 +595,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing newsletter',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -630,7 +638,7 @@ describe('Posts API', function () {
         const post = {
             title: 'My scheduled email-only post',
             status: 'draft',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -712,7 +720,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing posts',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -768,7 +776,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing posts',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -837,7 +845,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing newsletter_id',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -905,7 +913,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing newsletter_id',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -976,7 +984,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing newsletter in posts',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -1046,7 +1054,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing newsletter in posts',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -1115,7 +1123,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing newsletter in posts',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -1184,7 +1192,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing newsletter_id in scheduled posts',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -1277,7 +1285,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing newsletter_id in scheduled posts',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -1365,7 +1373,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing no newsletter in scheduled posts',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -1455,7 +1463,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing newsletter in scheduled posts',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -1546,7 +1554,7 @@ describe('Posts API', function () {
         const post = {
             title: 'My scheduled email only post without newsletter',
             status: 'draft',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post')
+            lexical: testUtils.DataGenerator.markdownToLexical('my post')
         };
 
         const res = await request.post(localUtils.API.getApiQuery('posts'))
@@ -1587,7 +1595,7 @@ describe('Posts API', function () {
             status: 'draft',
             feature_image_alt: 'Testing newsletter_id',
             feature_image_caption: 'Testing <b>feature image caption</b>',
-            mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+            lexical: testUtils.DataGenerator.markdownToLexical('my post'),
             created_at: moment().subtract(2, 'days').toDate(),
             updated_at: moment().subtract(2, 'days').toDate()
         };
@@ -1768,7 +1776,7 @@ describe('Posts API', function () {
                 authors: [{id: request.user.id}],
                 feature_image_alt: 'Testing newsletter_id',
                 feature_image_caption: 'Testing <b>feature image caption</b>',
-                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+                lexical: testUtils.DataGenerator.markdownToLexical('my post'),
                 created_at: moment().subtract(2, 'days').toDate(),
                 updated_at: moment().subtract(2, 'days').toDate()
             };
@@ -1830,7 +1838,7 @@ describe('Posts API', function () {
                 authors: [{id: request.user.id}],
                 feature_image_alt: 'Testing newsletter in posts',
                 feature_image_caption: 'Testing <b>feature image caption</b>',
-                mobiledoc: testUtils.DataGenerator.markdownToMobiledoc('my post'),
+                lexical: testUtils.DataGenerator.markdownToLexical('my post'),
                 created_at: moment().subtract(2, 'days').toDate(),
                 updated_at: moment().subtract(2, 'days').toDate()
             };
