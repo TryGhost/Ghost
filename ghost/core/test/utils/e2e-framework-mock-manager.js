@@ -97,8 +97,8 @@ const disableNetwork = () => {
     // booted, after which disableNetwork runs in every afterEach.
     const imageLib = require('../../core/server/lib/image');
     const cachedImageSize = imageLib.cachedImageSizeFromUrl;
-    // Capture the real method once, guarded so re-entry doesn't capture the no-op.
-    if (!realCachedImageSizeFromUrl && cachedImageSize.getImageSizeFromUrl !== imageSizeNoop) {
+    // Capture the real method once, on the first call only.
+    if (!realCachedImageSizeFromUrl) {
         realCachedImageSizeFromUrl = cachedImageSize.getImageSizeFromUrl;
     }
     // Use a plain function (not a sinon stub) so it survives per-test sinon.restore().
