@@ -65,7 +65,6 @@ let lastEmailModel;
  */
 async function sendEmail(agent, settings, email_recipient_filter) {
     // Prepare a post and email model
-    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
     const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
 
     assert.ok(emailModel.get('subject'));
@@ -73,8 +72,8 @@ async function sendEmail(agent, settings, email_recipient_filter) {
     // posts created with mobiledoc are converted to lexical on save
     assert.equal(emailModel.get('source_type'), 'lexical');
 
-    // Await sending job
-    await completedPromise;
+    // Await sending job (dispatched on the JobQueue during publish)
+    await jobManager.allSettled();
 
     await emailModel.refresh();
     assert.equal(emailModel.get('status'), 'submitted');
@@ -91,7 +90,6 @@ async function sendEmail(agent, settings, email_recipient_filter) {
  */
 async function sendFailedEmail(agent, settings, email_recipient_filter) {
     // Prepare a post and email model
-    const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
     const emailModel = await createPublishedPostEmail(agent, settings, email_recipient_filter);
 
     assert.ok(emailModel.get('subject'));
@@ -99,8 +97,8 @@ async function sendFailedEmail(agent, settings, email_recipient_filter) {
     // posts created with mobiledoc are converted to lexical on save
     assert.equal(emailModel.get('source_type'), 'lexical');
 
-    // Await sending job
-    await completedPromise;
+    // Await sending job (dispatched on the JobQueue during publish)
+    await jobManager.allSettled();
 
     await emailModel.refresh();
     assert.equal(emailModel.get('status'), 'failed');

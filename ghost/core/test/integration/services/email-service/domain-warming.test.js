@@ -68,13 +68,12 @@ describe('Domain Warming Integration Tests', function () {
 
         const postId = res.body.posts[0].id;
         const newsletterSlug = fixtureManager.get('newsletters', 0).slug;
-        const completedPromise = jobManager.awaitCompletion('batch-sending-service-job');
-
+        
         await agent.put(`posts/${postId}/?newsletter=${newsletterSlug}`)
             .body({posts: [{status: 'published', updated_at: res.body.posts[0].updated_at}]})
             .expectStatus(200);
 
-        await completedPromise;
+        await jobManager.allSettled();
         return await models.Email.findOne({post_id: postId});
     }
 

@@ -1,5 +1,6 @@
 const {createModel, createModelClass, createDb, sleep} = require('./utils');
 const BatchSendingService = require('../../../../../core/server/services/email-service/batch-sending-service');
+const JobQueue = require('../../../../../core/server/adapters/jobqueue/InMemoryJobQueue').default;
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
@@ -37,17 +38,19 @@ describe('Batch Sending Service', function () {
     });
 
     describe('scheduleEmail', function () {
-        it('schedules email', async function () {
-            const jobsService = {
-                addJob: sinon.stub().resolves()
-            };
+        it('dispatches a job that runs emailJob with the email id', async function () {
+            const jobQueue = new JobQueue({logging});
             const service = new BatchSendingService({
-                jobsService
+                jobQueue
             });
-            service.scheduleEmail(createModel({}));
-            sinon.assert.calledOnce(jobsService.addJob);
-            const job = jobsService.addJob.firstCall.args[0].job;
-            assert.equal(typeof job, 'function');
+            service.registerJobs();
+            const emailJob = sinon.stub(service, 'emailJob').resolves();
+
+            await service.scheduleEmail(createModel({id: 'abc123'}));
+            await jobQueue.allSettled();
+
+            sinon.assert.calledOnce(emailJob);
+            sinon.assert.calledWith(emailJob, {emailId: 'abc123'});
         });
     });
 
