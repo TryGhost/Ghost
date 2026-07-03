@@ -118,6 +118,49 @@ describe('AutomationEventProcessor', function () {
         assert.equal(recipientRepository.transactionCount, 1);
     });
 
+    it('applies opened events before delivered events', async function () {
+        const openedAt = new Date('2026-07-03T16:30:00.000Z');
+        const recipientRepository = createFakeRecipientRepository({
+            recipient: {
+                id: 'recipient-id',
+                mailgun_message_id: '<message-id@mailgun.example>',
+                member_email: 'member@example.com',
+                member_id: 'member-id',
+                automation_action_revision_id: 'revision-id',
+                delivered_at: null,
+                opened_at: null
+            },
+            actionRevision: {
+                id: 'revision-id',
+                delivered_count: 0,
+                opened_count: 0
+            },
+            member: {
+                id: 'member-id',
+                automation_email_count: 5,
+                automation_email_opened_count: 1,
+                automation_email_open_rate: null
+            }
+        });
+        const processor = new AutomationEventProcessor({recipientRepository});
+
+        await processor.processEvents([{
+            id: 'event-id',
+            type: 'opened',
+            providerId: '<message-id@mailgun.example>',
+            recipientEmail: 'member@example.com',
+            timestamp: openedAt
+        }]);
+
+        assert.equal(recipientRepository.recipient.delivered_at, null);
+        assert.equal(recipientRepository.recipient.opened_at, openedAt);
+        assert.equal(recipientRepository.actionRevision.delivered_count, 0);
+        assert.equal(recipientRepository.actionRevision.opened_count, 1);
+        assert.equal(recipientRepository.member.automation_email_opened_count, 2);
+        assert.equal(recipientRepository.member.automation_email_open_rate, 40);
+        assert.equal(recipientRepository.transactionCount, 1);
+    });
+
     it('does not double-increment counters for duplicate opened events', async function () {
         const firstOpenedAt = new Date('2026-07-03T16:30:00.000Z');
         const duplicateOpenedAt = new Date('2026-07-03T16:35:00.000Z');
