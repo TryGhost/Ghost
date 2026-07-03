@@ -218,6 +218,34 @@ describe('oembed-service', function () {
             assert.equal(response.metadata.thumbnail, 'https://m.media-amazon.com/images/I/example-hires.jpg');
         });
 
+        it('does not apply Amazon rules to .co hosts that merely end in "a.co"', async function () {
+            nock('https://www.rangemedia.co')
+                .get('/some-post')
+                .query(true)
+                .reply(200, `<html><head>
+                    <title>Some Post</title>
+                    <meta property="og:site_name" content="RANGE Media">
+                </head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.rangemedia.co/some-post', 'bookmark');
+
+            assert.equal(response.metadata.publisher, 'RANGE Media');
+        });
+
+        it('does not apply Amazon rules to subdomain spoofs (amazon.evil.com)', async function () {
+            nock('https://amazon.evil.com')
+                .get('/x')
+                .query(true)
+                .reply(200, `<html><head>
+                    <title>Evil Page</title>
+                    <meta property="og:site_name" content="Evil Site">
+                </head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://amazon.evil.com/x', 'bookmark');
+
+            assert.equal(response.metadata.publisher, 'Evil Site');
+        });
+
         it('should return a bookmark response when the oembed endpoint returns a link type', async function () {
             nock('https://www.example.com')
                 .get('/')
@@ -242,6 +270,30 @@ describe('oembed-service', function () {
             assert.equal(response.type, 'bookmark');
             assert.equal(response.url, 'https://www.example.com');
             assert.equal(response.metadata.title, 'Example');
+        });
+
+        it('prefers the standard favicon over an apple-touch-icon in the bookmark fallback', async function () {
+            // With no oembed endpoint and no explicit type, fetchOembedDataFromUrl
+            // falls through to the bookmark fallback (!data && !type). That path
+            // resolves to a bookmark card, so it must pick the standard favicon,
+            // not the apple-touch-icon reserved for scaled-up call sites.
+            sinon.stub(oembedService, 'processImageFromUrl').callsFake(async imageUrl => imageUrl);
+
+            nock('https://www.example.com')
+                .get('/')
+                .query(true)
+                .reply(200, `<html><head>
+                    <title>Example</title>
+                    <link rel="apple-touch-icon" sizes="180x180" href="https://www.example.com/apple.png">
+                    <link rel="icon" href="https://www.example.com/favicon.png">
+                </head></html>`);
+
+            const response = await oembedService.fetchOembedDataFromUrl('https://www.example.com');
+
+            assert.equal(response.type, 'bookmark');
+            assert.equal(response.metadata.icon, 'https://www.example.com/favicon.png');
+
+            sinon.restore();
         });
 
         it('converts YT live URLs to watch URLs', async function () {
@@ -626,6 +678,84 @@ describe('oembed-service', function () {
                 call => call.args[0].url.pathname === '/favicon.ico'
             );
             assert.ok(faviconCall, 'beforeRequest hook should have been called for the favicon fetch');
+        });
+    });
+
+    describe('fetchBookmarkData favicon selection', function () {
+        // Icons declared as <link> tags are resolved by metascraper-logo-favicon
+        // directly from the HTML, so these assertions exercise pickFn without
+        // hitting the network favicon probe. The picked icon is normally
+        // post-processed (downloaded for bookmarks, HEAD-checked for mentions),
+        // so we stub both to surface pickFn's raw selection.
+        let service;
+
+        beforeEach(function () {
+            const externalRequest = sinon.stub().resolves({});
+            externalRequest.head = sinon.stub().resolves({});
+            externalRequest.defaults = {options: {}};
+
+            service = new OembedService({
+                config: {get() {
+                    return true;
+                }},
+                externalRequest
+            });
+            sinon.stub(service, 'processImageFromUrl').callsFake(async url => url);
+        });
+
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        const buildHtml = links => `<html><head><title>Test Page</title>${links}</head><body></body></html>`;
+
+        const getIcon = (links, type) => service
+            .fetchBookmarkData('https://example.com/page', buildHtml(links), type)
+            .then(result => result.metadata.icon);
+
+        it('bookmark cards prefer the standard favicon over an apple-touch-icon', async function () {
+            const icon = await getIcon(`
+                <link rel="apple-touch-icon" sizes="180x180" href="https://example.com/apple.png">
+                <link rel="icon" href="https://example.com/favicon.png">
+            `, 'bookmark');
+
+            assert.equal(icon, 'https://example.com/favicon.png');
+        });
+
+        it('bookmark cards prefer an SVG favicon over other standard icons', async function () {
+            const icon = await getIcon(`
+                <link rel="icon" href="https://example.com/favicon.png">
+                <link rel="icon" href="https://example.com/icon.svg">
+            `, 'bookmark');
+
+            assert.equal(icon, 'https://example.com/icon.svg');
+        });
+
+        it('bookmark cards skip mask-icon/fluid-icon silhouettes', async function () {
+            const icon = await getIcon(`
+                <link rel="mask-icon" href="https://example.com/mask.svg" color="#000000">
+                <link rel="fluid-icon" href="https://example.com/fluid.png">
+                <link rel="icon" href="https://example.com/favicon.png">
+            `, 'bookmark');
+
+            assert.equal(icon, 'https://example.com/favicon.png');
+        });
+
+        it('bookmark cards fall back to an apple-touch-icon when no standard favicon exists', async function () {
+            const icon = await getIcon(`
+                <link rel="apple-touch-icon" sizes="180x180" href="https://example.com/apple.png">
+            `, 'bookmark');
+
+            assert.equal(icon, 'https://example.com/apple.png');
+        });
+
+        it('mentions keep the apple-touch-icon priority for the scaled-up avatar', async function () {
+            const icon = await getIcon(`
+                <link rel="apple-touch-icon" sizes="180x180" href="https://example.com/apple.png">
+                <link rel="icon" href="https://example.com/favicon.png">
+            `, 'mention');
+
+            assert.equal(icon, 'https://example.com/apple.png');
         });
     });
 });

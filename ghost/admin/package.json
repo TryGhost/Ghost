@@ -1,6 +1,6 @@
 {
   "name": "ghost-admin",
-  "version": "6.48.1-rc.0",
+  "version": "6.50.1-rc.0",
   "description": "Ember.js admin client for Ghost",
   "author": "Ghost Foundation",
   "homepage": "http://ghost.org",
@@ -16,9 +16,9 @@
     "test": "tests"
   },
   "scripts": {
-    "dev": "ember serve",
+    "dev": "SKIP_DEPENDENCY_CHECKER=true ember serve",
     "build": "ember build --environment=production --silent",
-    "build:dev": "pnpm build --environment=development",
+    "build:dev": "SKIP_DEPENDENCY_CHECKER=true pnpm build --environment=development",
     "test": "ember exam --split 2 --parallel",
     "lint:js": "eslint . --cache",
     "lint:hbs": "ember-template-lint .",

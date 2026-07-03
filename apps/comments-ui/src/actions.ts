@@ -80,7 +80,7 @@ async function addComment({state, api, data: comment}: {state: EditableAppContex
     };
 }
 
-async function addReply({state, api, data: {reply, parent}}: {state: EditableAppContext, api: GhostApi, data: {reply: any, parent: any}}) {
+async function addReply({state, api, data: {reply, parent}}: {state: EditableAppContext, api: GhostApi, data: {reply: AddComment, parent: Comment}}) {
     const data = await api.comments.add({
         comment: {...reply, parent_id: parent.id}
     });
@@ -89,7 +89,7 @@ async function addReply({state, api, data: {reply, parent}}: {state: EditableApp
     const allReplies = await api.comments.replies({commentId: parent.id, limit: 'all'});
     // Caching can serve a stale replies response immediately after creation, so
     // keep the refetch for concurrent replies but preserve the POSTed reply.
-    const replies = allReplies.comments.some(replyComment => replyComment.id === newComment.id)
+    const replies = allReplies.comments.some((replyComment: Comment) => replyComment.id === newComment.id)
         ? allReplies.comments
         : [...allReplies.comments, newComment];
 
@@ -112,7 +112,7 @@ async function addReply({state, api, data: {reply, parent}}: {state: EditableApp
     };
 }
 
-async function hideComment({state, data: comment}: {state: EditableAppContext, adminApi: any, data: {id: string}}) {
+async function hideComment({state, data: comment}: {state: EditableAppContext, data: {id: string}}) {
     if (state.adminApi) {
         await state.adminApi.hideComment(comment.id);
     }
@@ -146,7 +146,7 @@ async function hideComment({state, data: comment}: {state: EditableAppContext, a
     };
 }
 
-async function showComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, adminApi: any, data: {id: string}}) {
+async function showComment({state, api, data: comment}: {state: EditableAppContext, api: GhostApi, data: {id: string}}) {
     if (state.adminApi) {
         await state.adminApi.showComment({id: comment.id});
     }
@@ -652,7 +652,7 @@ function closePopup() {
 
 function openCommentForm({data: newForm, state}: {data: OpenCommentForm, state: EditableAppContext}) {
     // We want to keep the number of displayed forms to a minimum so when opening a
-    // new form, we close any existing forms that are empty or have had no changes
+    // new form, we close existing forms that are empty or have had no changes
     const openFormsAfterAutoclose = state.openCommentForms.filter(form => form.hasUnsavedChanges);
 
     // avoid multiple forms being open for the same id
@@ -753,25 +753,34 @@ export const Actions = {
 
 export type ActionType = keyof typeof Actions;
 
+type ActionPayloadMap = {
+    [T in ActionType]: Parameters<(typeof Actions)[T]>[0] extends {data: infer Data} ? Data : never
+};
+type SyncActionPayloadMap = {
+    [T in SyncActionType]: Parameters<(typeof SyncActions)[T]>[0] extends {data: infer Data} ? Data : never
+};
+type ActionPayload<T extends ActionType> = ActionPayloadMap[T];
+type SyncActionPayload<T extends SyncActionType> = SyncActionPayloadMap[T];
+
 export function isSyncAction(action: string): action is SyncActionType {
-    return !!(SyncActions as any)[action];
+    return Object.prototype.hasOwnProperty.call(SyncActions, action);
 }
 
 /** Handle actions in the App, returns updated state */
-export async function ActionHandler({action, data, state, api, adminApi, options, dispatchAction}: {action: ActionType, data: any, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi, dispatchAction: DispatchActionType}): Promise<Partial<EditableAppContext>> {
-    const handler = Actions[action];
+export async function ActionHandler<T extends ActionType>({action, data, state, api, adminApi, options, dispatchAction}: {action: T, data: ActionPayload<T>, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi, dispatchAction: DispatchActionType}): Promise<Partial<EditableAppContext>> {
+    const handler = Actions[action] as (args: Parameters<(typeof Actions)[T]>[0]) => ReturnType<(typeof Actions)[T]>;
     if (handler) {
-        return await handler({data, state, api, adminApi, options, dispatchAction} as any) || {};
+        return await handler({data, state, api, adminApi, options, dispatchAction} as Parameters<(typeof Actions)[T]>[0]) || {};
     }
     return {};
 }
 
 /** Handle actions in the App, returns updated state */
-export function SyncActionHandler({action, data, state, api, adminApi, options}: {action: SyncActionType, data: any, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi}): Partial<EditableAppContext> {
-    const handler = SyncActions[action];
+export function SyncActionHandler<T extends SyncActionType>({action, data, state, api, adminApi, options}: {action: T, data: SyncActionPayload<T>, state: EditableAppContext, options: CommentsOptions, api: GhostApi, adminApi: AdminApi}): Partial<EditableAppContext> {
+    const handler = SyncActions[action] as (args: Parameters<(typeof SyncActions)[T]>[0]) => ReturnType<(typeof SyncActions)[T]>;
     if (handler) {
         // Do not await here
-        return handler({data, state, api, adminApi, options} as any) || {};
+        return handler({data, state, api, adminApi, options} as Parameters<(typeof SyncActions)[T]>[0]) || {};
     }
     return {};
 }

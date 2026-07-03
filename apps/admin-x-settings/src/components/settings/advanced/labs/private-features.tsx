@@ -16,6 +16,10 @@ const features: Feature[] = [{
     description: 'Toggle the automations beta. Unexpected problems can occur if you turn this off after previously turning it on.',
     flag: 'automations'
 }, {
+    title: 'Automations analytics',
+    description: 'Show analytics for automations. Assumes the "automations" flag is also on.',
+    flag: 'automationAnalytics'
+}, {
     title: 'Stripe Automatic Tax (private beta)',
     description: 'Use Stripe Automatic Tax at Stripe Checkout. Needs to be enabled in Stripe',
     flag: 'stripeAutomaticTax'
@@ -64,17 +68,9 @@ const features: Feature[] = [{
     description: 'Use optimized COUNT queries for API pagination when safe',
     flag: 'smarterCounts'
 }, {
-    title: 'LLMs.txt',
-    description: 'Serve llms.txt, per-entry markdown exports, and Accept: text/markdown content negotiation for AI and LLM tooling',
-    flag: 'llmsTxt'
-}, {
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
-}, {
-    title: 'Gift links',
-    description: 'Tokenized links that let anyone read a single gated post or page in full, no account required',
-    flag: 'giftLinks'
 }];
 
 const AlphaFeatures: React.FC = () => {

@@ -231,15 +231,14 @@ select.error {
 .gh-input:focus,
 .gh-input.focus {
     outline: 0;
-    border-color: var(--green);
-    box-shadow: inset 0 0 0 1px var(--green);
-    background: var(--white);
+    border-color: var(--midgrey);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--midgrey) 25%, transparent);
 }
 
 .error .gh-input:focus,
 .error .gh-input.focus {
     border-color: var(--red);
-    box-shadow: inset 0 0 0 1px var(--red);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--red) 25%, transparent);
 }
 
 .gh-select:focus,
@@ -294,9 +293,8 @@ textarea {
 
 .gh-input-x:focus:not(.ember-basic-dropdown-trigger),
 .gh-input-x:focus-visible:not(.ember-basic-dropdown-trigger) {
-    background-color: var(--white);
-    border: 1px solid var(--green);
-    box-shadow: 0 0 0 2px rgba(48,207,67,.25);
+    border: 1px solid var(--midgrey);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--midgrey) 25%, transparent);
     outline: none;
 }
 
@@ -308,9 +306,9 @@ textarea.gh-input-x {
 .gh-input-x.ember-basic-dropdown-trigger--below.ember-power-select-trigger[aria-expanded="true"],
 .gh-input-x.ember-power-select-trigger:focus {
     border-radius: 8px;
-    background: var(--grey-150);
-    border: 1px solid transparent;
-    box-shadow: none;
+    background: transparent;
+    border: 1px solid var(--midgrey);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--midgrey) 25%, transparent);
     outline: none;
 }
 

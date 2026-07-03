@@ -200,6 +200,12 @@ export interface GetBlockedDomainsResponse {
     next: string | null;
 }
 
+export interface SocialWebDomain {
+    domain: string | null;
+    handle: string;
+    actorUrl: string;
+}
+
 export const PostType = {
     Note: 0,
     Article: 1,
@@ -522,6 +528,27 @@ export class ActivityPubAPI {
         const json = await this.fetchJSON(url);
 
         return parseAccountAliasesResponse(json);
+    }
+
+    async getDomain(): Promise<SocialWebDomain> {
+        const url = new URL('.ghost/activitypub/v1/domain', this.apiUrl);
+        const json = await this.fetchJSON(url);
+
+        return json as SocialWebDomain;
+    }
+
+    async updateDomain(domain: string | null): Promise<SocialWebDomain> {
+        const url = new URL('.ghost/activitypub/v1/domain', this.apiUrl);
+        const json = await this.fetchJSON(url, 'PUT', {domain});
+
+        return json as SocialWebDomain;
+    }
+
+    async validateDomain(domain: string): Promise<SocialWebDomain> {
+        const url = new URL('.ghost/activitypub/v1/domain/validate', this.apiUrl);
+        const json = await this.fetchJSON(url, 'POST', {domain});
+
+        return json as SocialWebDomain;
     }
 
     async addAccountAlias(sourceHandle: string): Promise<AccountAliasesResponse> {

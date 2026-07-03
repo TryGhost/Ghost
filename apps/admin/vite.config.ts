@@ -50,6 +50,9 @@ export default defineConfig(({ command }) => ({
         port: 5174,
         allowedHosts: true
     },
+    optimizeDeps: {
+        include: ["@tryghost/koenig-lexical"],
+    },
     resolve: {
         alias: {
             "@ghost-cards": GHOST_CARDS_PATH,

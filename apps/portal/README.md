@@ -49,10 +49,7 @@ Portal runs automatically when using Ghost's development command from the monore
 pnpm dev
 ```
 
-This starts all frontend apps (including Portal.)
----
-
-To run Portal in a standalone fashion, use `pnpm preview` and open [http://localhost:3000](http://localhost:3000).
+This starts all frontend apps (including Portal.) Portal is served via the dev gateway at `http://localhost:2368/ghost/assets/portal/portal.min.js` and is loaded into theme pages on the dev site.
 
 ## Build
 

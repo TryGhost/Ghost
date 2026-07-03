@@ -157,6 +157,76 @@ describe('Tag API', function () {
         assert.equal(jsonResponse.tags[0].description, 'hey ho ab ins klo');
     });
 
+    it('Uses safe slugs when creating public tags with new as the generated or explicit slug', async function () {
+        const tag = testUtils.DataGenerator.forKnex.createTag({
+            name: 'new',
+            slug: null
+        });
+
+        const res = await request
+            .post(localUtils.API.getApiQuery('tags/'))
+            .set('Origin', config.get('url'))
+            .send({
+                tags: [tag]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        assert.equal(res.body.tags[0].name, 'new');
+        assert.equal(res.body.tags[0].slug, 'new-tag');
+
+        const explicitSlugTag = testUtils.DataGenerator.forKnex.createTag({
+            name: 'Explicit New Slug',
+            slug: 'new'
+        });
+
+        const explicitSlugRes = await request
+            .post(localUtils.API.getApiQuery('tags/'))
+            .set('Origin', config.get('url'))
+            .send({
+                tags: [explicitSlugTag]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        assert.equal(explicitSlugRes.body.tags[0].name, 'Explicit New Slug');
+        assert.equal(explicitSlugRes.body.tags[0].slug, 'new-tag-2');
+    });
+
+    it('Preserves an existing slug when editing a tag name to new without a slug', async function () {
+        const tag = testUtils.DataGenerator.forKnex.createTag({
+            name: 'Editable Tag',
+            slug: 'editable-tag'
+        });
+
+        const createRes = await request
+            .post(localUtils.API.getApiQuery('tags/'))
+            .set('Origin', config.get('url'))
+            .send({
+                tags: [tag]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(201);
+
+        const res = await request
+            .put(localUtils.API.getApiQuery(`tags/${createRes.body.tags[0].id}`))
+            .set('Origin', config.get('url'))
+            .send({
+                tags: [{
+                    name: 'new'
+                }]
+            })
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        assert.equal(res.body.tags[0].name, 'new');
+        assert.equal(res.body.tags[0].slug, 'editable-tag');
+    });
+
     it('Can destroy a tag', async function () {
         const res = await request
             .del(localUtils.API.getApiQuery(`tags/${testUtils.getExistingData().tags[0].id}`))

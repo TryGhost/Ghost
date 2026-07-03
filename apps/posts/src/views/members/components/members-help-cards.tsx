@@ -11,7 +11,7 @@ interface MembersHelpCardProps {
 const MembersHelpCard: React.FC<MembersHelpCardProps> = ({children, description, title, url}) => {
     return (
         <a
-            className="group/card block rounded-xl border bg-card p-6 transition-all hover:bg-accent/50 hover:shadow-xs"
+            className="group/card block rounded-xl border bg-card p-6 transition-all hover:bg-table-row-hover hover:shadow-xs"
             href={url}
             rel="noopener noreferrer"
             target="_blank"

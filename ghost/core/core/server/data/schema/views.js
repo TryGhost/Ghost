@@ -35,8 +35,11 @@
 //      subscriptions share the same `created_at` (programmatic creation,
 //      simultaneous webhooks).
 //
-// `mostRelevantSubscription` in apps/posts/src/views/members/member-query-params.ts
-// must match this ordering so the displayed sub matches the filter result.
+// The admin display reads the resolved subscription straight from the
+// `current_subscription` field the backend derives from this view (via the
+// members_current_subscription lookup), so the ordering here is the single
+// source of truth for both filtering and display — see getCurrentSubscription
+// in apps/posts/src/views/members/member-query-params.ts.
 module.exports = {
     members_resolved_subscription: `
         SELECT member_id, subscription_id

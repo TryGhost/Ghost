@@ -8,6 +8,7 @@ import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@src/utils/constant
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@src/utils/audience';
 import {useAppContext} from '@src/providers/posts-app-context';
+import {useFeatureFlag} from '@src/hooks/use-feature-flag';
 import {useGlobalData} from '@src/providers/post-analytics-context';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';
 
@@ -20,7 +21,7 @@ interface StatsFilterProps extends Omit<React.ComponentProps<typeof Filters>, 'f
 
 // Helper to get country name from code
 const getCountryName = (code: string): string => {
-    return STATS_LABEL_MAPPINGS[code as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(code, 'en') || code;
+    return STATS_LABEL_MAPPINGS[code as keyof typeof STATS_LABEL_MAPPINGS] || countries.getName(code, 'en', {select: 'alias'}) || code;
 };
 
 // Helper component for visit count badge - used by all filter options
@@ -29,6 +30,13 @@ const VisitCountBadge = ({visits}: {visits: number}) => (
         {visits.toLocaleString()}
     </span>
 );
+
+// Gift-link usage is binary, so options are hardcoded rather than Tinybird-fetched.
+// Values match the gift_link pipe param: 'false' = no gift link, else = gift traffic.
+const GIFT_LINK_OPTIONS = [
+    {value: 'true', label: 'used'},
+    {value: 'false', label: 'not used'}
+];
 
 // Configuration for each filter field type
 interface FilterFieldDefinition {
@@ -114,7 +122,7 @@ const buildFilterParams = (
         if (filter.field === 'audience') {
             // Skip audience - handled separately via member_status
             return;
-        } else if (filter.field === 'source' || filter.field === 'device' || filter.field === 'location' || filter.field.startsWith('utm_')) {
+        } else if (filter.field === 'source' || filter.field === 'device' || filter.field === 'location' || filter.field === 'gift_link' || filter.field.startsWith('utm_')) {
             params[filter.field] = value;
         }
     });
@@ -204,6 +212,7 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
     const {appSettings} = useAppContext();
     const {post} = useGlobalData();
     const postUuid = post?.uuid;
+    const {isEnabled: giftLinksEnabled} = useFeatureFlag('giftLinks', '/analytics/');
 
     // Track which filter field is currently being selected (lazy loading)
     const [activeFilterField, setActiveFilterField] = useState<string | null>(null);
@@ -346,6 +355,18 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
             }
         ];
 
+        const giftLinkField: FilterFieldConfig = {
+            key: 'gift_link',
+            label: 'Gift link',
+            type: 'select',
+            icon: <LucideIcon.Gift className="size-4" />,
+            operators: supportedOperators,
+            defaultOperator: 'is',
+            hideOperatorSelect: true,
+            options: GIFT_LINK_OPTIONS,
+            searchable: false
+        };
+
         return [
             {
                 group: 'Basic',
@@ -402,7 +423,8 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                         isLoading: locationLoading,
                         searchable: true,
                         selectedOptionsClassName: 'hidden'
-                    }
+                    },
+                    ...(giftLinksEnabled ? [giftLinkField] : [])
                 ]
             },
             {
@@ -410,7 +432,7 @@ function StatsFilter({filters, onChange, ...props}: StatsFilterProps) {
                 fields: utmFields
             }
         ];
-    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading]);
+    }, [utmSourceOptions, utmSourceLoading, utmMediumOptions, utmMediumLoading, utmCampaignOptions, utmCampaignLoading, utmContentOptions, utmContentLoading, utmTermOptions, utmTermLoading, supportedOperators, audienceOptions, sourceOptions, sourceLoading, deviceOptions, deviceLoading, locationOptions, locationLoading, giftLinksEnabled]);
 
     // Show clear button when there's at least one filter
     const hasFilters = filters.length > 0;

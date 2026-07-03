@@ -27,9 +27,11 @@ describe('Front-end gift links', function () {
     let request: any;
     let token: string;
     let pageToken: string;
+    let membersToken: string;
     const slug = 'gift-me-this-paid-post';
     const otherSlug = 'another-paid-post';
     const pageSlug = 'gift-me-this-paid-page';
+    const membersSlug = 'gift-me-this-members-post';
 
     beforeAll(async function () {
         const originalSettingsCacheGetFn = settingsCache.get;
@@ -40,25 +42,41 @@ describe('Front-end gift links', function () {
             if (key === 'active_theme') {
                 return 'members-test-theme';
             }
+            if (key === 'web_analytics') {
+                return true;
+            }
             return originalSettingsCacheGetFn(key, options);
+        });
+
+        // Enable the web-analytics tracker so the suite can assert the gift_link
+        // dimension it emits. isWebAnalyticsEnabled() needs the setting above plus
+        // a valid tinybird config (a tracker endpoint + a local/JWT credential).
+        configUtils.set('tinybird', {
+            tracker: {
+                endpoint: 'https://e.ghost.org/tb/web_analytics',
+                token: 'tinybird_token'
+            },
+            stats: {
+                local: {enabled: true}
+            }
         });
 
         await testUtils.startGhost({copyThemes: true});
 
-        const mobiledoc = testUtils.DataGenerator.markdownToMobiledoc('Before paywall\n\n<!--members-only-->\n\nAfter paywall');
+        const lexical = testUtils.DataGenerator.markdownToLexical('Before paywall\n\n<!--members-only-->\n\nAfter paywall');
         const paidPost = testUtils.DataGenerator.forKnex.createPost({
             slug,
             visibility: 'paid',
             status: 'published',
             published_at: moment().toDate(),
-            mobiledoc
+            lexical
         });
         const otherPaidPost = testUtils.DataGenerator.forKnex.createPost({
             slug: otherSlug,
             visibility: 'paid',
             status: 'published',
             published_at: moment().toDate(),
-            mobiledoc
+            lexical
         });
         // A gift link works on a page's canonical URL too, not just a post's.
         const paidPage = testUtils.DataGenerator.forKnex.createPost({
@@ -67,20 +85,30 @@ describe('Front-end gift links', function () {
             visibility: 'paid',
             status: 'published',
             published_at: moment().toDate(),
-            mobiledoc
+            lexical
         });
-        await testUtils.fixtures.insertPosts([paidPost, otherPaidPost, paidPage]);
+        // A members-only post so the toast copy can be asserted for that access level.
+        const membersPost = testUtils.DataGenerator.forKnex.createPost({
+            slug: membersSlug,
+            visibility: 'members',
+            status: 'published',
+            published_at: moment().toDate(),
+            lexical
+        });
+        await testUtils.fixtures.insertPosts([paidPost, otherPaidPost, paidPage, membersPost]);
 
-        // Mint a live gift link for the paid post and the paid page.
+        // Mint a live gift link for the paid post, the paid page and the members post.
         const giftLinksService = require('../../core/server/services/gift-links');
         token = (await giftLinksService.service.ensure({actor: null}, paidPost.id)).giftLinks[0].token;
         pageToken = (await giftLinksService.service.ensure({actor: null}, paidPage.id)).giftLinks[0].token;
+        membersToken = (await giftLinksService.service.ensure({actor: null}, membersPost.id)).giftLinks[0].token;
 
         request = supertest.agent(configUtils.config.get('url'));
     });
 
-    afterAll(function () {
+    afterAll(async function () {
         sinon.restore();
+        await configUtils.restore();
     });
 
     it('paywalls the paid post for an anonymous visitor on the canonical URL', async function () {
@@ -106,9 +134,19 @@ describe('Front-end gift links', function () {
         assert.equal(res.headers['x-robots-tag'], 'noindex');
         assert.equal(res.headers['referrer-policy'], 'no-referrer');
 
-        // The default gift toast renders on the verified gift view.
+        // The default gift toast renders on the verified gift view, and its copy
+        // reflects the post's access level (this fixture is a paid post).
         assert.match(res.text, /id="gh-gift-toast"/, 'default gift toast renders on a gift view');
-        assert.match(res.text, /gifted access to this post/, 'toast announces the gift');
+        assert.match(res.text, /gifted access to this paid post/, 'toast announces the gift and its paid access level');
+    });
+
+    it('varies the toast copy by access level: a members-only post reads "members-only"', async function () {
+        const res = await request
+            .get(`/${membersSlug}/?gift=${membersToken}`)
+            .expect(200);
+
+        assert.match(res.text, /id="gh-gift-toast"/, 'default gift toast renders on a gift view');
+        assert.match(res.text, /gifted access to this members-only post/, 'toast reflects the members-only access level');
     });
 
     it('301s to the canonical URL, dropping ?gift, when the token is invalid', async function () {
@@ -126,10 +164,13 @@ describe('Front-end gift links', function () {
 
     it('unlocks a paid page with a valid ?gift token on its canonical URL', async function () {
         // The feature works on pages too, not just posts — same entry controller.
-        await request
+        const res = await request
             .get(`/${pageSlug}/?gift=${pageToken}`)
             .expect(200)
             .expect(assertUnlocked);
+
+        // The toast copy says "page", not "post", for a gifted page.
+        assert.match(res.text, /gifted access to this paid page/, 'toast reflects that the gifted entry is a page');
     });
 
     it('301s a paid page, dropping ?gift, when the token is invalid', async function () {
@@ -187,5 +228,53 @@ describe('Front-end gift links', function () {
             .expect(assertUnlocked);
 
         assert.match(res.text, /gh-test-member-state">anonymous</, '@member must stay anonymous on a gift view');
+    });
+
+    describe('the gift_link analytics dimension', function () {
+        // The web-analytics tracker only carries the gift token once the entry
+        // controller has verified it and flagged the render. An unverified or
+        // forged token is 301'd to the canonical URL before any render, so it can
+        // never reach analytics — these tests prove that end to end.
+        it('emits the verified token as tb_gift_link on a valid gift read', async function () {
+            const res = await request
+                .get(`/${slug}/?gift=${token}`)
+                .expect(200);
+
+            assert.ok(
+                res.text.includes(`tb_gift_link="${token}"`),
+                'the verified token is sent as the gift_link dimension'
+            );
+        });
+
+        it('emits an empty tb_gift_link on the canonical (non-gift) URL', async function () {
+            const res = await request
+                .get(`/${slug}/`)
+                .expect(200);
+
+            assert.match(res.text, /tb_gift_link=""/, 'a normal read carries no gift dimension');
+        });
+
+        it('keeps an invalid token out of analytics — the 301 strips it and the canonical render carries none', async function () {
+            // Follow the 301 to the canonical URL it strips to.
+            const res = await request
+                .get(`/${slug}/?gift=not-a-real-token`)
+                .redirects(1)
+                .expect(200);
+
+            assert.match(res.text, /tb_gift_link=""/, 'the canonical render carries no gift dimension');
+            assert.ok(!res.text.includes('not-a-real-token'), 'the forged token never appears in the response');
+        });
+
+        it('keeps a token for another post out of that post’s analytics', async function () {
+            // Post A's token on post B 301s to B's canonical URL, which must not
+            // carry A's token as B's gift dimension.
+            const res = await request
+                .get(`/${otherSlug}/?gift=${token}`)
+                .redirects(1)
+                .expect(200);
+
+            assert.match(res.text, /tb_gift_link=""/, 'B’s render carries no gift dimension');
+            assert.ok(!res.text.includes(token), 'A’s token never appears in B’s response');
+        });
     });
 });

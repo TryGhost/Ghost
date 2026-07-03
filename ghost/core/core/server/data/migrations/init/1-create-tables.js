@@ -24,9 +24,7 @@ module.exports.up = async (options) => {
     // Existing installs receive new views via versioned migrations.
     for (const [name, sql] of Object.entries(views)) {
         logging.info('Creating view: ' + name);
-        await connection.schema.createViewOrReplace(name, function (view) {
-            view.as(connection.raw(sql));
-        });
+        await commands.createViewOrReplace(name, sql, connection);
     }
 };
 

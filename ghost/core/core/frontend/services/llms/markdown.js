@@ -124,10 +124,6 @@ function renderEntryMarkdownBody(entry) {
         return markdown;
     }
 
-    if (entry.plaintext) {
-        return collapseWhitespace(entry.plaintext);
-    }
-
     return collapseWhitespace(htmlToPlaintext.excerpt(entry.html || ''));
 }
 

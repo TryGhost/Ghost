@@ -24,6 +24,7 @@
     --surface-panel-foreground: var(--color-black);
     --surface-elevated: var(--color-white);
     --surface-elevated-foreground: var(--color-black);
+    --surface-elevated-2: var(--color-white);
     --surface-overlay: var(--color-white);
     --surface-overlay-foreground: var(--color-black);
     --surface-inverse: var(--color-black);
@@ -70,34 +71,77 @@
     --sidebar-accent-foreground: var(--color-black);
     --sidebar-border: var(--color-gray-100);
     --sidebar-ring: var(--color-gray-600);
+    --tab-hover: var(--color-gray-100);
+    --tab-active: color-mix(in oklab, var(--color-gray-700) 10%, transparent);
+    --button-hover: var(--color-gray-100);
+    --interactive-hover: var(--button-hover);
+    --control-border: var(--color-gray-200);
+    --table-row-hover: var(--color-gray-50);
+    --members-sticky-hover-bg: var(--table-row-hover);
     --mobile-navbar-height: 64px;
 }
 
 .dark {
-    --background: var(--color-black);
+    /* Less-saturated gray scale for dark mode (lightness + hue preserved, chroma halved again) */
+    --color-gray-50: oklch(98.54% 0.0003 286.4);
+    --color-gray-100: oklch(96.97% 0.0004 247.8);
+    --color-gray-200: oklch(94.74% 0.0011 236.5);
+    --color-gray-300: oklch(90.78% 0.0018 247.9);
+    --color-gray-400: oklch(86.68% 0.0024 242.9);
+    --color-gray-500: oklch(77.55% 0.0044 250.9);
+    --color-gray-600: oklch(70.33% 0.0056 248.1);
+    --color-gray-700: oklch(62.98% 0.0072 248.3);
+    --color-gray-800: oklch(52.97% 0.0058 250.6);
+    --color-gray-900: oklch(36.77% 0.0038 248.2);
+    --color-gray-950: oklch(25.95% 0.0016 258.4);
+    --color-grey-50: oklch(98.54% 0.0003 286.4);
+    --color-grey-100: oklch(96.97% 0.0004 247.8);
+    --color-grey-200: oklch(94.74% 0.0011 236.5);
+    --color-grey-300: oklch(90.78% 0.0018 247.9);
+    --color-grey-400: oklch(86.68% 0.0024 242.9);
+    --color-grey-500: oklch(77.55% 0.0044 250.9);
+    --color-grey-600: oklch(70.33% 0.0056 248.1);
+    --color-grey-700: oklch(62.98% 0.0072 248.3);
+    --color-grey-800: oklch(52.97% 0.0058 250.6);
+    --color-grey-900: oklch(36.77% 0.0038 248.2);
+    --color-grey-950: oklch(25.95% 0.0016 258.4);
+
+    /* One-off colors (not in the standard color scale) */
+    --color-sidebar-bg: oklch(0.204 0.004 258);
+
+    --tab-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+    --tab-active: color-mix(in oklab, oklch(36.77% 0.006 248.2) 60%, transparent);
+    --button-hover: color-mix(in oklab, var(--color-gray-900) 30%, transparent);
+    --interactive-hover: var(--button-hover);
+    --control-border: color-mix(in oklab, var(--color-gray-900) 70%, transparent);
+    --table-row-hover: var(--color-sidebar-bg);
+    --members-sticky-hover-bg: var(--table-row-hover);
+
+    --background: oklch(0.178 0.003 271);
     --foreground: var(--color-gray-200);
     --muted: var(--color-gray-900);
     --muted-foreground: var(--color-gray-600);
     --accent: var(--color-gray-900);
     --accent-foreground: var(--color-gray-100);
-    --popover: var(--color-black);
+    --popover: var(--color-sidebar-bg);
     --popover-foreground: var(--color-gray-400);
-    --border: var(--color-gray-950);
+    --border: color-mix(in oklab, var(--color-gray-900) 50%, transparent);
     --input: var(--color-gray-900);
-    --card: var(--color-black);
+    --card: var(--background);
     --card-foreground: var(--color-gray-100);
-    --primary: var(--color-gray-100);
+    --primary: var(--color-gray-200);
     --primary-foreground: var(--color-black);
     --secondary: var(--color-gray-900);
     --secondary-foreground: var(--color-gray-100);
-    --destructive: var(--color-red-900);
+    --destructive: var(--color-red-500);
     --destructive-foreground: var(--color-gray-50);
     --ring: var(--color-gray-900);
     --surface-page: var(--color-black);
     --surface-panel: var(--color-black);
     --surface-panel-foreground: var(--color-gray-100);
-    --surface-elevated: var(--color-gray-950);
+    --surface-elevated: var(--color-sidebar-bg);
     --surface-elevated-foreground: var(--color-gray-100);
+    --surface-elevated-2: oklch(0.235 0.004 260);
     --surface-overlay: var(--color-black);
     --surface-overlay-foreground: var(--color-gray-400);
     --surface-inverse: var(--color-white);
@@ -124,12 +168,35 @@
     --chart-4: hsl(201 82% 90%);
     --chart-5: hsl(201 87% 94%);
     --chart-gray: hsl(210 13% 55%);
-    --sidebar-background: var(--color-gray-950);
-    --sidebar-foreground: var(--color-gray-100);
+    --sidebar-background: var(--color-sidebar-bg);
+    --sidebar-foreground: var(--color-gray-500);
     --sidebar-primary: var(--color-gray-900);
     --sidebar-primary-foreground: var(--color-white);
-    --sidebar-accent: var(--color-gray-900);
+    --sidebar-accent: var(--tab-active);
     --sidebar-accent-foreground: var(--color-gray-100);
-    --sidebar-border: var(--color-gray-900);
+    --sidebar-border: var(--border);
     --sidebar-ring: var(--color-gray-700);
+}
+
+/* Stronger shadows in dark mode — default Tailwind values use ~10% black alpha,
+   which is essentially invisible against a dark page. Override --tw-shadow (not
+   box-shadow) so Tailwind v4's composed `box-shadow: var(--tw-inset-shadow), ...,
+   var(--tw-ring-shadow), var(--tw-shadow)` keeps the ring/focus layers intact. */
+.dark .shadow-xs {
+    --tw-shadow: 0 1px 2px 0 rgb(0 0 0 / 0.15);
+}
+.dark .shadow-sm {
+    --tw-shadow: 0 2px 4px 0 rgb(0 0 0 / 0.2), 0 1px 2px -1px rgb(0 0 0 / 0.2);
+}
+.dark .shadow-md {
+    --tw-shadow: 0 6px 12px -2px rgb(0 0 0 / 0.25), 0 3px 6px -3px rgb(0 0 0 / 0.25);
+}
+.dark .shadow-lg {
+    --tw-shadow: 0 13px 22px -4px rgb(0 0 0 / 0.3), 0 6px 10px -5px rgb(0 0 0 / 0.3);
+}
+.dark .shadow-xl {
+    --tw-shadow: 0 22px 34px -6px rgb(0 0 0 / 0.35), 0 10px 16px -8px rgb(0 0 0 / 0.35);
+}
+.dark .shadow-2xl {
+    --tw-shadow: 0 30px 58px -12px rgb(0 0 0 / 0.4);
 }

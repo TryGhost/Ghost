@@ -444,9 +444,10 @@ class EmailService {
      */
     async previewEmail(post, newsletter, segment) {
         const exampleMember = await this.getExampleMember(null, segment);
+        const renderSegment = this.#emailRenderer.getPreviewSegment(post, segment);
 
         const subject = this.#emailRenderer.getSubject(post);
-        let {html, plaintext, replacements} = await this.#emailRenderer.renderBody(post, newsletter, segment, {clickTrackingEnabled: false});
+        let {html, plaintext, replacements} = await this.#emailRenderer.renderBody(post, newsletter, renderSegment, {clickTrackingEnabled: false});
 
         return {
             subject,
@@ -471,7 +472,7 @@ class EmailService {
         await this.#sendingService.send({
             post,
             newsletter,
-            segment,
+            segment: this.#emailRenderer.getPreviewSegment(post, segment),
             members,
             emailId: null
         }, {

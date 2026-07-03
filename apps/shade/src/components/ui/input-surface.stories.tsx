@@ -129,7 +129,7 @@ export const CustomFocusScope: Story = {
                 className={cn(
                     inputSurfaceClasses.base,
                     inputSurfaceClasses.invalidWithin,
-                    'has-[[data-slot=control]:focus-visible]:outline-hidden has-[[data-slot=control]:focus-visible]:bg-transparent has-[[data-slot=control]:focus-visible]:border-focus-ring has-[[data-slot=control]:focus-visible]:ring-2 has-[[data-slot=control]:focus-visible]:ring-focus-ring/25',
+                    'has-[[data-slot=control]:focus-visible]:border-focus-ring has-[[data-slot=control]:focus-visible]:bg-transparent has-[[data-slot=control]:focus-visible]:ring-2 has-[[data-slot=control]:focus-visible]:ring-focus-ring/25 has-[[data-slot=control]:focus-visible]:outline-hidden',
                     'flex w-[320px] items-center gap-2 px-3 outline-hidden'
                 )}
             >

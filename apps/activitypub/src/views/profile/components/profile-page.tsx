@@ -193,7 +193,7 @@ const ProfilePage:React.FC<ProfilePageProps> = ({
                         }
                         <div className={`mx-auto max-w-[620px] px-6 ${(!account?.bannerImageUrl && !canGoBack) ? '-mt-8' : '-mt-12'}`}>
                             <div className='flex items-end justify-between'>
-                                <div className='-ml-2 rounded-full bg-white p-1 dark:bg-black'>
+                                <div className='-ml-2 rounded-full bg-white p-1 dark:bg-background'>
                                     {isLoadingAccount ?
                                         <Skeleton className='size-[92px] rounded-full' />
                                         :

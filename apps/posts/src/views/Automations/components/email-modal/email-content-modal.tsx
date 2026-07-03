@@ -28,9 +28,9 @@ const EmailPreviewModalContent = React.forwardRef<
     <div
         ref={ref}
         className={cn(
-            'flex h-full w-full flex-col gap-0 overflow-hidden p-0',
+            'flex size-full flex-col gap-0 overflow-hidden p-0',
             isEditMode ? 'bg-white' : 'bg-gray-100',
-            'dark:bg-gray-975',
+            'dark:bg-[#151719]',
             className
         )}
     >
@@ -59,7 +59,7 @@ interface EmailPreviewEmailHeaderProps {
 
 const EmailPreviewEmailHeader: React.FC<EmailPreviewEmailHeaderProps> = ({children, className}) => (
     <div className={cn(
-        'relative z-20 isolate mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-grey-975',
+        'relative isolate z-20 mx-auto w-full max-w-[780px] rounded-t-lg border border-b-0 border-gray-200 bg-white px-6 py-4 transition-[max-width,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:bg-[#2E3338]',
         className
     )}>
         {children}
@@ -73,7 +73,7 @@ interface EmailPreviewBodyProps {
 
 const EmailPreviewBody: React.FC<EmailPreviewBodyProps> = ({children, className}) => (
     <div className={cn(
-        'flex mx-auto w-full rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:shadow-none grow max-w-[780px]',
+        'mx-auto flex w-full max-w-[780px] grow rounded-b-lg transition-[max-width,height,padding] duration-300 ease-out motion-reduce:transition-none dark:border-grey-900 dark:shadow-none',
         className
     )}>
         {children}
@@ -257,7 +257,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
             }}>
                 <DialogContent
                     aria-describedby={undefined}
-                    className='top-0 left-0 h-[100dvh] w-full max-w-full translate-x-0 translate-y-0 grid-rows-[1fr] gap-0 rounded-none border-0 p-0 shadow-none outline-hidden sm:rounded-none dark:bg-[#151719]'
+                    className='top-0 left-0 h-[100dvh] w-full max-w-full translate-0 grid-rows-[1fr] gap-0 rounded-none border-0 p-0 shadow-none outline-hidden sm:rounded-none dark:bg-[#151719]'
                     onEscapeKeyDown={(event) => {
                         event.preventDefault();
                         event.stopPropagation();
@@ -273,8 +273,8 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                                 variant='segmented-sm'
                                 onValueChange={value => value && handleModeChange(value as EmailModalMode)}
                             >
-                                <TabsList className='grid w-[240px] grid-cols-2 bg-gray-100 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)]'>
-                                    <TabsTrigger className='w-full justify-center data-[state=active]:bg-white dark:data-[state=active]:bg-white dark:data-[state=active]:text-black' data-testid='email-mode-edit' value='edit'>Email content</TabsTrigger>
+                                <TabsList className='grid w-[240px] grid-cols-2 shadow-[inset_0_0_0_1px_rgba(0,0,0,0.04)] dark:shadow-[inset_0_0_0_1px_rgba(255,255,255,0.04)]'>
+                                    <TabsTrigger className='w-full justify-center' data-testid='email-mode-edit' value='edit'>Email content</TabsTrigger>
                                     <TabsTrigger className='w-full justify-center' data-testid='email-mode-preview' value='preview'>Preview</TabsTrigger>
                                 </TabsList>
                             </Tabs>
@@ -344,7 +344,7 @@ const EmailContentModal: React.FC<EmailContentModalProps> = ({
                                 </EmailPreviewEmailHeader>
                             )}
                             <EmailPreviewBody className={cn(
-                                mode === 'preview' && 'shadow-sm bg-white dark:bg-grey-975',
+                                mode === 'preview' && 'bg-white shadow-sm dark:bg-[#151719]',
                                 mode === 'edit' && 'px-6',
                                 mode === 'edit' && 'rounded-lg',
                                 mode === 'edit' && errors.lexical && 'border border-red-500'

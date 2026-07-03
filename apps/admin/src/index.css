@@ -137,6 +137,9 @@ body.react-admin .safe-area-inset-bottom {
 body.react-admin #ember-app {
     width: 100%;
     height: 100%;
+    /* Contain legacy Ember z-indexes (e.g. the billing overlay at 9999) so they can't
+       paint over React shell chrome like the mobile sidebar drawer (z-50). */
+    isolation: isolate;
 }
 
 /* Temporary overrides until Ember transition is finished */

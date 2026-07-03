@@ -33,7 +33,7 @@ const TierBenefits: React.FC<{benefits: string[]}> = ({benefits}) => {
         return (
             <div className="mt-4 w-full text-md leading-snug text-grey-900 opacity-30">
                 <div className="mb-2.5 flex items-start">
-                    <Icon className="mt-[3px] mr-[10px] h-3.5! w-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
+                    <Icon className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
                     <div>Expert analysis</div>
                 </div>
             </div>
@@ -46,7 +46,7 @@ const TierBenefits: React.FC<{benefits: string[]}> = ({benefits}) => {
                     return (
                         <div key={benefit} className="mt-4 w-full text-md leading-snug text-grey-900">
                             <div className="mb-2.5 flex items-start">
-                                <Icon className="mt-[3px] mr-[10px] h-3.5! w-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
+                                <Icon className="mt-[3px] mr-[10px] size-3.5! min-w-[14px] overflow-visible stroke-[3px]!" name='check' />
                                 <div>{benefit}</div>
                             </div>
                         </div>

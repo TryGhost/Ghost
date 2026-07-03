@@ -12,12 +12,15 @@ export type StateBridgeEventMap = {
     subscriptionChange: SubscriptionState;
     sidebarVisibilityChange: SidebarVisibilityChangeEvent;
     routeChange: RouteChangeEvent;
+    openGiftLinkModal: OpenGiftLinkModalEvent;
 }
 
 export interface StateBridge {
     onUpdate: (dataType: string, response: unknown) => void;
     onInvalidate: (dataType: string) => void;
     onDelete: (dataType: string, id: string) => void;
+    preloadAdminThemeStylesheet?: () => Promise<void>;
+    applyAdminThemePreference?: (mode: 'light' | 'dark' | 'system') => Promise<void> | void;
     on<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
     off<K extends keyof StateBridgeEventMap>(event: K, callback: (event: StateBridgeEventMap[K]) => void): void;
     sidebarVisible: boolean;
@@ -57,6 +60,11 @@ export interface SidebarVisibilityChangeEvent {
 export interface RouteChangeEvent {
     routeName: string;
     queryParams: Record<string, unknown>;
+}
+
+export interface OpenGiftLinkModalEvent {
+    id: string;
+    resource: 'posts' | 'pages';
 }
 
 export type EmberRouting = Pick<StateBridge, 'getRouteUrl' | 'isRouteActive'>;
@@ -206,6 +214,18 @@ export function useSubscriptionStatus() {
     }, []);
 
     return subscriptionStatus;
+}
+
+/**
+ * Subscribes to Ember's request to open the (React-owned) gift-link modal.
+ *
+ * Ember surfaces — the posts/pages list context menu — fire `openGiftLinkModal`
+ * over the bridge instead of rendering their own modal. The consumer owns the
+ * modal's open/close state and just reacts to each request. Returns an
+ * unsubscribe function.
+ */
+export function subscribeOpenGiftLinkModal(handler: (event: OpenGiftLinkModalEvent) => void): () => void {
+    return onEmberStateBridgeEvent('openGiftLinkModal', handler);
 }
 
 // External store for sidebar visibility state

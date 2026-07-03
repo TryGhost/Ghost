@@ -11,12 +11,12 @@ class InMemoryClickEventRepository<T extends ClickEvent|SubscribeEvent> extends 
 
 describe('RecommendationService', function () {
     let service: RecommendationService;
-    let enabled = false;
+    let enabled = 'false';
     let clock: sinon.SinonFakeTimers;
     let fetchMetadataStub: sinon.SinonStub<any[], Promise<RecommendationMetadata>>;
 
     beforeEach(function () {
-        enabled = false;
+        enabled = 'false';
         fetchMetadataStub = sinon.stub().resolves({
             title: 'Test',
             excerpt: null,
@@ -46,10 +46,10 @@ describe('RecommendationService', function () {
             },
             recommendationEnablerService: {
                 getSetting() {
-                    return enabled.toString();
+                    return enabled;
                 },
                 setSetting(e) {
-                    enabled = e === 'true';
+                    enabled = e;
                     return Promise.resolve();
                 }
             },
@@ -73,6 +73,7 @@ describe('RecommendationService', function () {
         });
 
         it('should update recommendations on boot', async function () {
+            enabled = 'true';
             const recommendation = Recommendation.create({
                 id: '2',
                 url: 'http://localhost/1',
@@ -86,6 +87,69 @@ describe('RecommendationService', function () {
             await service.repository.save(recommendation);
 
             // Sandbox time
+            const saved = process.env.NODE_ENV;
+            try {
+                process.env.NODE_ENV = 'production';
+                const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
+                await service.init();
+                await clock.tick(1000 * 60 * 60 * 24);
+                sinon.assert.calledOnce(spy);
+            } finally {
+                process.env.NODE_ENV = saved;
+            }
+        });
+
+        it('ignores errors when update recommendations on boot', async function () {
+            enabled = 'true';
+            // Sandbox time
+            const saved = process.env.NODE_ENV;
+            try {
+                process.env.NODE_ENV = 'production';
+                const spy = sinon.stub(service, 'updateAllRecommendationsMetadata');
+                spy.rejects(new Error('test'));
+                await service.init();
+                clock.tick(1000 * 60 * 60 * 24);
+                sinon.assert.calledOnce(spy);
+            } finally {
+                process.env.NODE_ENV = saved;
+            }
+        });
+
+        it('should errors when update recommendations on boot (invidiual)', async function () {
+            enabled = 'true';
+            const recommendation = Recommendation.create({
+                id: '2',
+                url: 'http://localhost/1',
+                title: 'Test',
+                description: null,
+                excerpt: null,
+                featuredImage: null,
+                favicon: null,
+                oneClickSubscribe: false
+            });
+            await service.repository.save(recommendation);
+
+            // Sandbox time
+            const saved = process.env.NODE_ENV;
+            try {
+                process.env.NODE_ENV = 'production';
+                const spy = sinon.stub(service, '_updateRecommendationMetadata');
+                spy.rejects(new Error('This is a test'));
+                await service.init();
+                clock.tick(1000 * 60 * 60 * 24);
+                clock.restore();
+                // This assert doesn't work without a timeout because the timeout in boot is async
+                await new Promise((resolve) => {
+                    setTimeout(() => resolve(true), 50);
+                });
+                sinon.assert.calledOnce(spy);
+            } finally {
+                process.env.NODE_ENV = saved;
+            }
+        });
+
+        it('schedules metadata refresh in development when recommendations are enabled', async function () {
+            enabled = 'true';
             const saved = process.env.NODE_ENV;
             try {
                 process.env.NODE_ENV = 'development';
@@ -98,48 +162,28 @@ describe('RecommendationService', function () {
             }
         });
 
-        it('ignores errors when update recommendations on boot', async function () {
-            // Sandbox time
+        it('does not schedule metadata refresh when recommendations are disabled', async function () {
             const saved = process.env.NODE_ENV;
             try {
-                process.env.NODE_ENV = 'development';
-                const spy = sinon.stub(service, 'updateAllRecommendationsMetadata');
-                spy.rejects(new Error('test'));
+                process.env.NODE_ENV = 'production';
+                const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
                 await service.init();
-                clock.tick(1000 * 60 * 60 * 24);
-                sinon.assert.calledOnce(spy);
+                await clock.tick(1000 * 60 * 60 * 24);
+                sinon.assert.notCalled(spy);
             } finally {
                 process.env.NODE_ENV = saved;
             }
         });
 
-        it('should errors when update recommendations on boot (invidiual)', async function () {
-            const recommendation = Recommendation.create({
-                id: '2',
-                url: 'http://localhost/1',
-                title: 'Test',
-                description: null,
-                excerpt: null,
-                featuredImage: null,
-                favicon: null,
-                oneClickSubscribe: false
-            });
-            await service.repository.save(recommendation);
-
-            // Sandbox time
+        it('does not schedule metadata refresh in test', async function () {
+            enabled = 'true';
             const saved = process.env.NODE_ENV;
             try {
-                process.env.NODE_ENV = 'development';
-                const spy = sinon.stub(service, '_updateRecommendationMetadata');
-                spy.rejects(new Error('This is a test'));
+                process.env.NODE_ENV = 'testing';
+                const spy = sinon.spy(service, 'updateAllRecommendationsMetadata');
                 await service.init();
-                clock.tick(1000 * 60 * 60 * 24);
-                clock.restore();
-                // This assert doesn't work without a timeout because the timeout in boot is async
-                await new Promise((resolve) => {
-                    setTimeout(() => resolve(true), 50);
-                });
-                sinon.assert.calledOnce(spy);
+                await clock.tick(1000 * 60 * 60 * 24);
+                sinon.assert.notCalled(spy);
             } finally {
                 process.env.NODE_ENV = saved;
             }
@@ -297,7 +341,7 @@ describe('RecommendationService', function () {
 
     describe('updateRecommendationsEnabledSetting', function () {
         it('should set to true if more than one', async function () {
-            enabled = false;
+            enabled = 'false';
             await service.updateRecommendationsEnabledSetting([
                 Recommendation.create({
                     url: 'http://localhost/1',
@@ -309,11 +353,11 @@ describe('RecommendationService', function () {
                     oneClickSubscribe: false
                 })
             ]);
-            assert(enabled);
+            assert.equal(enabled, 'true');
         });
 
         it('should keep enabled true if already enabled', async function () {
-            enabled = true;
+            enabled = 'true';
             await service.updateRecommendationsEnabledSetting([
                 Recommendation.create({
                     url: 'http://localhost/1',
@@ -325,19 +369,19 @@ describe('RecommendationService', function () {
                     oneClickSubscribe: false
                 })
             ]);
-            assert(enabled);
+            assert.equal(enabled, 'true');
         });
 
         it('should set to false if none', async function () {
-            enabled = false;
+            enabled = 'false';
             await service.updateRecommendationsEnabledSetting([]);
-            assert.equal(enabled, false);
+            assert.equal(enabled, 'false');
         });
 
         it('should set to false if none if currently enabled', async function () {
-            enabled = true;
+            enabled = 'true';
             await service.updateRecommendationsEnabledSetting([]);
-            assert.equal(enabled, false);
+            assert.equal(enabled, 'false');
         });
     });
 

@@ -14,6 +14,24 @@ const crypto = require('crypto');
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
 const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
 
+// metascraper-amazon's built-in URL test is a substring regex that misfires on
+// any host ending in a letter followed by `.co/` (e.g. `rangemedia.co`), causing
+// it to hardcode `publisher: 'Amazon'`. Gate the plugin on the registrable
+// domain (PSL-aware via tldts) so subdomain spoofs like `amazon.evil.com` or
+// `amazon.com.evil.org` are rejected too.
+const {getDomain} = require('tldts');
+
+const isAmazonUrl = (url) => {
+    const domain = getDomain(url);
+    if (!domain) {
+        return false;
+    }
+    if (domain === 'a.co') {
+        return true;
+    }
+    return /^(?:amazon|amzn)\./.test(domain);
+};
+
 const messages = {
     noUrlProvided: 'No url provided.',
     insufficientMetadata: 'URL contains insufficient metadata.',
@@ -286,15 +304,39 @@ class OEmbedService {
             };
         }
 
-        const pickFn = (sizes, pickDefault) => {
-            // Prioritize apple touch icon with sizes > 180
-            const appleTouchIcon = sizes.find(item => item.rel?.includes('apple') && item.sizes && item.size.width >= 180);
+        // metascraper-logo-favicon 5.50.x awaits pickFn and passes the resolved
+        // value straight to its logo sanitizer, so pickFn must return a URL
+        // string, not a size entry like the pre-5.43 API. Its bundled default
+        // picker (pickBiggerSize) also network-validates every candidate via
+        // reachable-url before returning it, which drops icons whenever probes
+        // are blocked (tests) or slow. Icon URLs here come from the page's own
+        // markup, so keep the pre-5.43 behavior and pick purely by parsed size.
+        const pickBiggest = (iconSizes) => {
+            const sorted = [...iconSizes].sort((a, b) => (b.size?.priority ?? 0) - (a.size?.priority ?? 0));
+            return (sorted.find(item => item.size?.square) || sorted[0])?.url;
+        };
+        const pickFn = (sizes) => {
+            const appleTouchIcon = sizes.find(item => item.rel?.includes('apple') && item.sizes && item.size?.width >= 180);
+            // Bookmark cards (including the oembed fallback, which resolves to a
+            // bookmark) render the icon inline in the post body, where the site's
+            // standard (often transparent) favicon matches surrounding chrome
+            // better than an Apple Touch icon's solid-background square. The
+            // Recommendations Avatar (type='mention') instead scales the icon up
+            // into a larger tile, where Apple Touch is the better fit.
+            if (type === 'bookmark') {
+                // metascraper-logo-favicon gathers anything matching link[rel*="icon"], which
+                // includes apple-touch-icon, mask-icon (Safari pinned-tab silhouette), and
+                // fluid-icon (Fluid SSB) — none of those are the site's standard brand
+                // favicon, so skip them when picking what to show in a bookmark card.
+                const standardIcons = sizes.filter(item => !/apple|mask-icon|fluid-icon/.test(item.rel ?? ''));
+                const svgIcon = standardIcons.find(item => item.href?.endsWith('svg'));
+                return svgIcon?.url || pickBiggest(standardIcons) || appleTouchIcon?.url;
+            }
             const svgIcon = sizes.find(item => item.href?.endsWith('svg'));
-            return appleTouchIcon || svgIcon || pickDefault(sizes);
+            return appleTouchIcon?.url || svgIcon?.url || pickBiggest(sizes);
         };
 
-        const metascraper = require('metascraper')([
-            require('metascraper-amazon')(),
+        const scrapers = [
             require('metascraper-url')(),
             require('metascraper-title')(),
             require('metascraper-description')(),
@@ -306,7 +348,13 @@ class OEmbedService {
                 pickFn
             }),
             require('metascraper-logo')()
-        ]);
+        ];
+
+        if (isAmazonUrl(url)) {
+            scrapers.unshift(require('metascraper-amazon')());
+        }
+
+        const metascraper = require('metascraper')(scrapers);
 
         let scraperResponse;
 
@@ -551,7 +599,7 @@ class OEmbedService {
 
             // fallback to bookmark when we can't get oembed
             if (!data && !type) {
-                data = await this.fetchBookmarkData(url, body, type);
+                data = await this.fetchBookmarkData(url, body, 'bookmark');
             }
 
             // couldn't get anything, throw a validation error

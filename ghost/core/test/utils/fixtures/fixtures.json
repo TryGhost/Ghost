@@ -1220,8 +1220,7 @@
                     "product": ["browse", "read"],
                     "newsletter": ["browse", "read"],
                     "collection": ["browse", "read", "add"],
-                    "recommendation": ["browse", "read"],
-                    "gift_link": "manage"
+                    "recommendation": ["browse", "read"]
                 },
                 "Super Editor": {
                     "notification": "all",

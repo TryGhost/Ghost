@@ -111,7 +111,7 @@ describe('Migrations', function () {
             assertHavePermission(permissions, 'Delete posts', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);
             assertHavePermission(permissions, 'Publish posts', ['Administrator', 'Editor', 'Admin Integration', 'Scheduler Integration', 'Super Editor']);
             assertHavePermission(permissions, 'Flush gift reminders', ['Scheduler Integration']);
-            assertHavePermission(permissions, 'Manage gift links', ['Administrator', 'Editor', 'Author', 'Admin Integration', 'Super Editor']);
+            assertHavePermission(permissions, 'Manage gift links', ['Administrator', 'Editor', 'Admin Integration', 'Super Editor']);
             assertHavePermission(permissions, 'Remove all gift links', ['Administrator']);
 
             assertHavePermission(permissions, 'Browse settings', ['Administrator', 'Editor', 'Author', 'Contributor', 'Admin Integration', 'Super Editor']);

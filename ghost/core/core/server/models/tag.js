@@ -218,6 +218,8 @@ Tags = ghostBookshelf.Collection.extend({
     model: Tag
 });
 
+Tag.protectedSlugs = ['new'];
+
 module.exports = {
     Tag: ghostBookshelf.model('Tag', Tag),
     Tags: ghostBookshelf.collection('Tags', Tags)

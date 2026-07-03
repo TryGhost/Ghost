@@ -41,7 +41,7 @@ const FollowButton: React.FC<FollowButtonProps> = ({onFollow, onUnfollow, author
 
     return (
         <Button
-            className='absolute -right-1.5 bottom-px z-10 flex size-4 items-center justify-center rounded-full p-0 outline outline-2 outline-white transition-transform hover:scale-105 active:scale-100 dark:outline-black'
+            className='absolute -right-1.5 bottom-px z-10 flex size-4 items-center justify-center rounded-full p-0 outline-2 outline-white transition-transform hover:scale-105 active:scale-100 dark:outline-black'
             title={showCheckmark ? 'Unfollow' : 'Follow'}
             onClick={handleClick}
         >
@@ -73,7 +73,7 @@ interface APAvatarProps {
 const APAvatar: React.FC<APAvatarProps> = ({author, size, isLoading = false, disabled = false, className = '', showFollowButton = false}) => {
     let iconSize = 20;
     let containerClass = `shrink-0 items-center justify-center rounded-full relative z-10 flex bg-black/5 dark:bg-gray-900 ${size === 'lg' || disabled ? '' : 'cursor-pointer'} ${className}`;
-    let imageClass = 'z-10 object-cover rounded-full outline outline-[0.5px] outline-offset-[-0.5px] outline-black/10';
+    let imageClass = 'z-10 object-cover rounded-full outline-[0.5px] outline-offset-[-0.5px] outline-black/10';
     const [iconUrl, setIconUrl] = useState(author?.icon?.url);
     const navigate = useNavigateWithBasePath();
 

@@ -13,7 +13,7 @@
         }
     },
     "database": {
-        "client": "sqlite3",
+        "client": "better-sqlite3",
         "connection": {
             "filename": "content/data/ghost-dev.db"
         },
@@ -21,9 +21,6 @@
     },
     "paths": {
         "contentPath": "content/"
-    },
-    "privacy": {
-        "useUpdateCheck": true
     },
     "useMinFiles": false,
     "caching": {
@@ -33,5 +30,8 @@
         "admin": {
             "maxAge": 0
         }
+    },
+    "security": {
+        "staffDeviceVerification": false
     }
 }

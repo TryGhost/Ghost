@@ -25,7 +25,7 @@ const crypto = require('crypto');
 const assert = require('node:assert/strict');
 
 const fixtureUtils = require('./fixture-utils');
-const cacheRules = require('./fixtures/cache-rules');
+const {cacheRules} = require('./fixtures/cache-rules');
 const redirectsUtils = require('./redirects');
 const configUtils = require('./config-utils');
 const urlServiceUtils = require('./url-service-utils');

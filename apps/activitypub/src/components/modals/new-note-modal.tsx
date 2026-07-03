@@ -336,7 +336,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                                     <textarea
                                         ref={textareaRef}
                                         autoFocus={true}
-                                        className='ap-textarea break-anywhere w-full resize-none bg-transparent text-[1.5rem]'
+                                        className='ap-textarea break-anywhere w-full resize-none bg-transparent text-[1.5rem] dark:placeholder:text-gray-700'
                                         data-testid="note-textarea"
                                         placeholder={placeholder}
                                         rows={1}
@@ -362,7 +362,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                 </div>
                 {imagePreview &&
                     <div className='group relative mt-6 flex min-h-[200px] w-full items-center justify-center'>
-                        <img alt='Image attachment preview' className={`max-h-[320px] w-full rounded-sm object-cover outline outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
+                        <img alt='Image attachment preview' className={`max-h-[320px] w-full rounded-sm object-cover outline-1 -outline-offset-1 outline-black/10 ${isImageUploading && 'opacity-10'}`} src={imagePreview} />
                         {isImageUploading &&
                             <div className='absolute leading-[0]'>
                                 <LoadingIndicator size='md' />
@@ -384,7 +384,7 @@ const NewNoteModal: React.FC<NewNoteModalProps> = ({children, replyTo, onReply, 
                         />
                     </div>
                 }
-                <DialogFooter className={`${isSticky ? 'sticky' : 'static'} bottom-0 flex-row bg-background py-6 dark:bg-(--color-popover)`}>
+                <DialogFooter className={`${isSticky ? 'sticky' : 'static'} bottom-0 flex-row bg-background py-6 dark:bg-surface-elevated-2`}>
                     <Button className='mr-auto w-[34px] min-w-0!' variant='outline' onClick={() => imageInputRef.current?.click()}><LucideIcon.Image /></Button>
                     <div className='flex items-center gap-3'>
                         <div className={`text-sm ${content.length >= MAX_CONTENT_LENGTH ? 'text-red-500' : content.length >= MAX_CONTENT_LENGTH * 0.9 ? 'text-yellow-600' : 'text-gray-500'}`}>

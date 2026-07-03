@@ -39,7 +39,7 @@ const ColorSwatch: React.FC<{
             className={clsx(
                 `relative flex shrink-0 cursor-pointer items-center rounded-full border border-grey-300 dark:border-grey-800`,
                 sizeClass,
-                isSelected && 'outline outline-2 outline-green'
+                isSelected && 'outline-2 outline-green'
             )}
             style={{backgroundColor: hex}}
             title={title}

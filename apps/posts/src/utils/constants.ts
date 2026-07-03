@@ -1,3 +1,8 @@
+// The includes the post-analytics screen fetches for a post. Shared so any
+// consumer wanting the *same* cached post (e.g. the gift-link modal opened from
+// the analytics header) hits the identical query key instead of a near-miss.
+export const POST_ANALYTICS_INCLUDE = 'email,authors,tags,tiers,count.clicks,count.signups,count.paid_conversions,count.positive_feedback,count.negative_feedback,newsletter';
+
 export const STATS_RANGES = {
     TODAY: {name: 'Today', value: 1},
     LAST_7_DAYS: {name: 'Last 7 days', value: 7},
@@ -9,11 +14,13 @@ export const STATS_RANGES = {
 } as const;
 
 export const STATS_LABEL_MAPPINGS = {
-    // Countries
-    US: 'United States',
-    TWN: 'Taiwan',
-    TW: 'Taiwan',
-    CN: 'China',
+    // Countries — overrides where i18n-iso-countries has no friendly alias,
+    // or where the alias-mode pick isn't the common short form.
+    GB: 'United Kingdom',
+    KR: 'South Korea',
+    LA: 'Laos',
+    MD: 'Moldova',
+    SY: 'Syria',
 
     // Technical
     'mobile-ios': 'iOS',

@@ -85,7 +85,7 @@ const PublicationHeader: React.FC<{
             {showIcon && iconUrl && (
                 <img
                     alt={siteTitle || 'Publication icon'}
-                    className="mx-auto mb-3 h-12 w-12 rounded"
+                    className="mx-auto mb-3 size-12 rounded"
                     src={iconUrl}
                 />
             )}

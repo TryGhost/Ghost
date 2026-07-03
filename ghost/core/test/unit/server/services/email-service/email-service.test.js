@@ -48,6 +48,9 @@ describe('Email Service', function () {
                     plaintext: 'Plaintext',
                     replacements: []
                 };
+            },
+            getPreviewSegment: (post, segment) => {
+                return segment;
             }
         };
         sendingService = {
@@ -806,6 +809,27 @@ describe('Email Service', function () {
             assert.equal(data.plaintext, 'Hello Jamie Larson');
             assert.equal(data.subject, 'Subject');
         });
+
+        it('renders using the preview segment mapped for the post', async function () {
+            const post = createModel({
+                id: '123',
+                newsletter: createModel({
+                    status: 'active',
+                    feedback_enabled: true
+                })
+            });
+            sinon.stub(emailRenderer, 'getPreviewSegment').returns('status:-free+(product:\'gold\')');
+            const renderBody = sinon.stub(emailRenderer, 'renderBody').resolves({
+                html: 'HTML',
+                plaintext: 'Plaintext',
+                replacements: []
+            });
+
+            await service.previewEmail(post, post.get('newsletter'), 'status:-free');
+
+            sinon.assert.calledOnceWithExactly(emailRenderer.getPreviewSegment, post, 'status:-free');
+            assert.equal(renderBody.firstCall.args[2], 'status:-free+(product:\'gold\')');
+        });
     });
 
     describe('sendTestEmail', function () {
@@ -824,6 +848,25 @@ describe('Email Service', function () {
             assert.equal(members.length, 1);
             assert.equal(members[0].email, 'example@example.com');
             assert.equal(options.isTestEmail, true);
+        });
+
+        it('sends with the mapped preview segment while personalizing for the chosen audience', async function () {
+            const post = createModel({
+                id: '123',
+                newsletter: createModel({
+                    status: 'active',
+                    feedback_enabled: true
+                })
+            });
+            sinon.stub(emailRenderer, 'getPreviewSegment').returns('status:-free+(product:\'gold\')');
+
+            await service.sendTestEmail(post, post.get('newsletter'), 'status:-free', ['example@example.com']);
+
+            sinon.assert.calledOnce(sendingService.send);
+            const {segment, members} = sendingService.send.firstCall.args[0];
+            assert.equal(segment, 'status:-free+(product:\'gold\')');
+            // The example member is still built from the audience choice, not the mapped filter
+            assert.equal(members[0].status, 'paid');
         });
     });
 });

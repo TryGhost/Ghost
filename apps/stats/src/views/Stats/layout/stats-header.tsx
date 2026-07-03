@@ -24,7 +24,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
 
     return (
         <>
-            <header className='z-40 -mx-6 bg-white/70 backdrop-blur-md dark:bg-black'>
+            <header className='z-40 -mx-6 bg-white/70 backdrop-blur-md dark:bg-background'>
                 <div
                     className='relative flex w-full items-center justify-between gap-5 px-6 pt-5 pb-0'
                     data-header='header'
@@ -66,7 +66,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
                     )}
                 </div>
             </header>
-            <Navbar className='sticky top-0 z-40 transform-gpu flex-col items-start gap-y-0 border-none bg-white/70 pt-9 pb-6 backdrop-blur-md lg:flex-row lg:items-center dark:bg-black'>
+            <Navbar className='sticky top-0 z-40 transform-gpu flex-col items-start gap-y-0 border-none bg-white/70 pt-9 pb-6 backdrop-blur-md lg:flex-row lg:items-center dark:bg-background'>
                 <NavbarNavigation>
                     <PageMenu defaultValue={normalizedPath} responsive>
                         <PageMenuItem value="/analytics/" onClick={() => {

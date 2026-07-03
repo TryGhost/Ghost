@@ -315,6 +315,7 @@ const NewSubscribersCadence: React.FC<NewSubscribersCadenceProps> = ({isLoading,
                                     dataKey="count"
                                     innerRadius={70}
                                     nameKey="name"
+                                    stroke="var(--card)"
                                     strokeWidth={5}
                                 >
                                     <Recharts.Label

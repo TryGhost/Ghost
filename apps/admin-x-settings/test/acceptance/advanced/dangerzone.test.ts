@@ -45,4 +45,29 @@ test.describe('DangerZone', async () => {
 
         expect(lastApiRequests.resetAuth).toBeTruthy();
     });
+
+    test('Reset all gift links', async ({page}) => {
+        toggleLabsFlag('giftLinks', true);
+
+        const {lastApiRequests} = await mockApi({page, requests: {
+            ...globalDataRequests,
+            removeAllGiftLinks: {
+                method: 'PUT',
+                path: '/gift_links/remove_all/',
+                response: {meta: {count: 3}}
+            }
+        }});
+
+        await page.goto('/');
+
+        const dangerZone = page.getByTestId('dangerzone');
+        await dangerZone.getByTestId('reset-all-gift-links').getByRole('button', {name: 'Reset'}).click();
+
+        const modal = page.getByTestId('confirmation-modal');
+        await modal.getByRole('button', {name: 'Reset all gift links'}).click();
+
+        await expect(page.getByTestId('toast-success')).toContainText('Reset 3 gift links');
+
+        expect(lastApiRequests.removeAllGiftLinks).toBeTruthy();
+    });
 });

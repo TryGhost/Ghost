@@ -1,6 +1,7 @@
 const logging = require('@tryghost/logging');
 const {createIrreversibleMigration} = require('../../utils');
-const mobiledocLib = require('../../../../lib/mobiledoc');
+const lexicalLib = require('../../../../lib/lexical');
+const {mobiledocToLexical} = require('@tryghost/kg-converters');
 const htmlToPlaintext = require('@tryghost/html-to-plaintext');
 
 module.exports = createIrreversibleMigration(async (knex) => {
@@ -43,7 +44,7 @@ module.exports = createIrreversibleMigration(async (knex) => {
                 continue;
             }
 
-            const html = mobiledocLib.render(mobiledoc);
+            const html = await lexicalLib.render(mobiledocToLexical(post.mobiledoc));
 
             const updatedAttrs = {
                 html

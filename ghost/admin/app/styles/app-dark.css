@@ -76,8 +76,8 @@
     --whitegrey: #17191C;
     --blue: color-mod(#3eb0ef l(+5%) s(+5%));
 
-    --main-bg-color: #15171A;
-    --dark-main-bg-color: #15171A;
+    --main-bg-color: #101114;
+    --dark-main-bg-color: #101114;
     --hairline-color-1: #22252A;
     --hairline-color-2: #5E6874;
 
@@ -101,18 +101,23 @@ hr {
 input,
 .gh-input,
 .gh-select,
-.for-switch .input-toggle-component,
 .gh-select select {
+    color: var(--darkgrey);
+    border-color: var(--lightgrey-l2);
+    background: transparent;
+}
+
+.for-switch .input-toggle-component {
     color: var(--darkgrey);
     border-color: color-mod(var(--lightgrey));
     background: color-mod(var(--lightgrey));
 }
 
-input:focus,
 .gh-input:focus,
 .gh-select:focus,
 .gh-select select:focus {
-    border-color: color-mod(var(--lightgrey) l(+10%));
+    border-color: var(--midgrey);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--midgrey) 25%, transparent);
 }
 
 .for-checkbox label:hover input:not(:checked) + .input-toggle-component,
@@ -144,7 +149,7 @@ input:focus,
 }
 
 .gh-main-white {
-    background: var(--white);
+    background: var(--dark-main-bg-color);
 }
 
 .settings-menu-header {
@@ -165,8 +170,8 @@ input:focus,
 }
 
 .ember-power-select-multiple-trigger {
-    border-color: color-mod(var(--lightgrey));
-    background: color-mod(var(--lightgrey));
+    border-color: var(--lightgrey-l2);
+    background: transparent;
 }
 
 .ember-power-select-multiple-remove-btn svg path {
@@ -192,7 +197,8 @@ input:focus,
 .ember-basic-dropdown--opened > .ember-power-select-trigger,
 .ember-power-select-trigger[aria-expanded="true"],
 .ember-power-select-search input {
-    border-color: color-mod(var(--lightgrey));
+    border-color: var(--midgrey);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--midgrey) 25%, transparent);
 }
 
 .ember-power-calendar-weekdays,
@@ -454,7 +460,7 @@ input:focus,
 }
 
 .ember-power-select-multiple-option {
-    background: var(--white);
+    background: var(--lightgrey);
     color: var(--black);
 }
 
@@ -673,7 +679,7 @@ input:focus,
 
 .gh-editor-title,
 .gh-editor-excerpt {
-    background: var(--white);
+    background: var(--dark-main-bg-color);
 }
 
 .gh-editor-title::placeholder {
@@ -681,7 +687,7 @@ input:focus,
 }
 
 .gh-btn-editor {
-    background: var(--white);
+    background: var(--dark-main-bg-color);
 }
 
 .gh-btn-editor:hover,
@@ -691,7 +697,7 @@ input:focus,
 }
 
 .gh-editor-post-status {
-    background: var(--white);
+    background: var(--dark-main-bg-color);
 }
 
 .gh-editor-feature-image-add-button {
@@ -719,7 +725,7 @@ input:focus,
 }
 
 .gh-editor-wordcount-container {
-    background: var(--white);
+    background: var(--dark-main-bg-color);
 }
 
 /* Segment input */
@@ -745,6 +751,11 @@ input:focus,
 }
 
 /* Post preview modal */
+.fullscreen-modal-total-overlay,
+.gh-publish-setting-form {
+    background: var(--dark-main-bg-color);
+}
+
 .gh-post-preview-modal,
 .gh-post-preview-header,
 .fullscreen-modal-total-overlay .gh-pe-mobile-container {
@@ -1004,11 +1015,11 @@ input:focus,
 }
 
 .gh-list-scrolling thead th:first-child {
-    background: linear-gradient(90deg, rgba(21,23,26,1) 90%, rgba(21,23,26,0) 100%);
+    background: linear-gradient(90deg, rgba(16,17,20,1) 90%, rgba(16,17,20,0) 100%);
 }
 
 .gh-list-scrolling tbody .gh-list-data:first-child {
-    background: linear-gradient(90deg, rgba(21,23,26,1) 90%, rgba(21,23,26,0) 100%);
+    background: linear-gradient(90deg, rgba(16,17,20,1) 90%, rgba(16,17,20,0) 100%);
 }
 
 .kg-settings-headerstyle-btn-group .gh-btn {
@@ -1116,6 +1127,14 @@ kbd {
 
 /* Post rows */
 
+.gh-posts-list-item-group:before {
+    background-color: oklch(0.204 0.004 258);
+}
+
+.gh-members-activity .gh-list-scrolling tbody tr:hover > .gh-list-data {
+    background: oklch(0.204 0.004 258);
+}
+
 .gh-posts-list-item .gh-content-entry-meta,
 .gh-posts-list-item .gh-content-entry-status,
 .gh-posts-list-item .gh-content-email-stats {
@@ -1197,44 +1216,33 @@ New form styles */
 
 
 .gh-input-x {
-    background-color: var(--grey-900);
+    background-color: transparent;
+    border-color: var(--lightgrey-l2);
 }
 
 .gh-input-x::placeholder {
     color: var(--grey-700);
 }
 
-.gh-input-x:hover {
-    background-color: var(--grey-925);
-}
-
 .gh-input-x:focus,
 .gh-input-x:focus-visible {
-    background-color: var(--grey-950);
-    border: 1px solid var(--green);
-}
-
-.gh-input-x.ember-basic-dropdown-trigger--below.ember-power-select-trigger[aria-expanded=true],
-.gh-input-x.ember-power-select-trigger:focus {
-    background-color: var(--grey-900);
+    background-color: transparent;
+    border: 1px solid var(--midgrey);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--midgrey) 25%, transparent);
 }
 
 .settings-menu-container select,
 .settings-menu-pane .gh-date-time-picker-date,
 .settings-menu-pane .gh-date-time-picker-time {
-    background-color: var(--grey-900);
-}
-
-.settings-menu-container select:hover,
-.settings-menu-pane .gh-date-time-picker-date:hover,
-.settings-menu-pane .gh-date-time-picker-time:hover {
-    background-color: var(--grey-925);
+    background-color: transparent;
+    border-color: var(--lightgrey-l2);
 }
 
 .settings-menu-pane .gh-date-time-picker-date:focus,
 .settings-menu-pane .gh-date-time-picker-time:focus {
-    background-color: var(--grey-950);
-    border: 1px solid var(--green);
+    background-color: transparent;
+    border: 1px solid var(--midgrey);
+    box-shadow: 0 0 0 2px color-mix(in oklab, var(--midgrey) 25%, transparent);
 }
 
 .gh-tag-image-uploader .gh-image-uploader {
@@ -1255,11 +1263,11 @@ New form styles */
 }
 
 .gh-post-list-feature-image {
-    background-color: var(--whitegrey-l2);
+    background-color: oklch(0.27 0.009 260);
 }
 
 .gh-posts-list-item-group:hover .gh-post-list-feature-image {
-    background-color: #36373A;
+    background-color: oklch(0.27 0.009 260);
 }
 
 /* .gh-post-list-feature-image-placeholder,

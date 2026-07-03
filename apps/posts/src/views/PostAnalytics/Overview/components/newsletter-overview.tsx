@@ -74,7 +74,7 @@ const NewsletterOverview: React.FC<NewsletterOverviewProps> = ({post, isNewslett
                         Newsletter performance
                     </CardTitle>
                 </CardHeader>
-                <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100' size='sm' variant='outline' onClick={() => {
+                <Button className='absolute right-6 translate-x-10 opacity-0 transition-all duration-300 group-hover/datalist:translate-x-0 group-hover/datalist:opacity-100 focus-visible:translate-x-0 focus-visible:opacity-100' size='sm' variant='outline' onClick={() => {
                     navigate(`/posts/analytics/${postId}/newsletter`);
                 }}>View more</Button>
             </div>

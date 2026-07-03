@@ -73,11 +73,13 @@ module.exports = function collectionController(req, res, next) {
              * People should always invert their filters to ensure that the database query loads unique posts per collection.
              */
             result.posts = _.filter(result.posts, (post) => {
-                // Tag the resource with the router-level type — the post
-                // objects from the API have their DB `type` column stripped
-                // by the serializer, but the collection router knows what
-                // type it serves.
-                const resource = {...post, type: res.routerOptions.resourceType};
+                // Restore the routing columns the Content API serializer strips:
+                // `type` (the collection router knows what it serves) and
+                // `status` (collections only ever load published posts). The
+                // lazy URL service evaluates the base filter
+                // `status:published+type:post` against these to decide ownership,
+                // so without them an owned post is wrongly disowned and dropped.
+                const resource = {...post, type: res.routerOptions.resourceType, status: 'published'};
                 if (routerManager.ownsResource(res.routerOptions.identifier, resource)) {
                     return post;
                 }

@@ -932,3 +932,71 @@ test.describe('User profile', async () => {
         });
     });
 });
+
+test.describe('Staff profile URLs', async () => {
+    test('Updates the URL and keeps the modal open when changing a user\'s slug', async ({page}) => {
+        const userToEdit = responseFixtures.users.users.find(user => user.email === 'administrator@test.com')!;
+
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            getUserBySlug: {method: 'GET', path: `/users/slug/${userToEdit.slug}/?include=roles`, response: {
+                users: [userToEdit]
+            }},
+            getUserByNewSlug: {method: 'GET', path: '/users/slug/new-admin/?include=roles', response: {
+                users: [{...userToEdit, slug: 'new-admin'}]
+            }},
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+            editUser: {method: 'PUT', path: `/users/${userToEdit.id}/?include=roles`, response: {
+                users: [{...userToEdit, slug: 'new-admin'}]
+            }}
+        }});
+
+        await page.goto('/');
+
+        const section = page.getByTestId('users');
+        const activeTab = section.locator('[role=tabpanel]:not(.hidden)');
+
+        await section.getByRole('tab', {name: 'Administrators'}).click();
+
+        const listItem = activeTab.getByTestId('user-list-item').last();
+        await listItem.hover();
+        await listItem.getByRole('button', {name: 'Edit'}).click();
+
+        const modal = page.getByTestId('user-detail-modal');
+
+        await expect(page).toHaveURL(new RegExp(`#/settings/staff/${userToEdit.slug}$`));
+
+        // The server sanitizes the submitted slug ('New Admin' -> 'new-admin')
+        await modal.getByLabel('Slug').fill('New Admin');
+        await modal.getByRole('button', {name: 'Save'}).click();
+
+        await expect(modal.getByRole('button', {name: 'Saved'})).toBeVisible();
+
+        // The URL and form follow the server-sanitized slug and the modal stays open
+        await expect(page).toHaveURL(/#\/settings\/staff\/new-admin$/);
+        await expect(modal).toBeVisible();
+        await expect(modal.getByLabel('Slug')).toHaveValue('new-admin');
+
+        // Refreshing the updated URL loads the same profile
+        await page.reload();
+        await expect(page.getByTestId('user-detail-modal')).toBeVisible();
+        await expect(page).toHaveURL(/#\/settings\/staff\/new-admin$/);
+    });
+
+    test('Shows an error and returns to the staff list when the user is not found', async ({page}) => {
+        await mockApi({page, requests: {
+            ...globalDataRequests,
+            browseUsers: {method: 'GET', path: '/users/?limit=100&include=roles', response: responseFixtures.users},
+            getUserBySlug: {method: 'GET', path: '/users/slug/unknown-user/?include=roles', responseStatus: 404, response: {
+                errors: [{type: 'NotFoundError', message: 'Resource not found error, cannot read user.'}]
+            }}
+        }});
+
+        await page.goto('/#/settings/staff/unknown-user');
+
+        await expect(page.getByTestId('toast-error').filter({hasText: 'User not found'})).toBeVisible();
+        await expect(page).toHaveURL(/#\/settings\/staff$/);
+        await expect(page.getByTestId('user-detail-modal')).not.toBeVisible();
+    });
+
+});

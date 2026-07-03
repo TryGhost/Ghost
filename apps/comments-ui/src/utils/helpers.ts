@@ -233,8 +233,8 @@ export const scrollToElementInstantly = (element: HTMLElement) => {
     });
 };
 
-export function getCommentInReplyToSnippet(comment: {html?: string}): string {
-    const {html = ''} = comment;
+export function getCommentInReplyToSnippet(comment: {html?: string | null}): string {
+    const html = comment.html ?? '';
 
     // It would be nicer to use DOMParser here so we can use `innerText` instead
     // of `textContent` to have a more native "visible content" implementation.

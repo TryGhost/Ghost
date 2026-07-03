@@ -57,6 +57,7 @@ const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, data} = useGlobalData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
+    const webAnalyticsEnabled = appSettings?.analytics?.webAnalytics === true;
 
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -178,7 +179,7 @@ const Web: React.FC = () => {
     // Calculate combined loading state
     const isPageLoading = isConfigLoading;
 
-    if (!appSettings?.analytics.webAnalytics) {
+    if (!webAnalyticsEnabled) {
         return (
             <Navigate to='/' />
         );

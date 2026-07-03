@@ -1,7 +1,7 @@
 {
   "name": "@tryghost/sodo-search",
   "type": "module",
-  "version": "1.8.27",
+  "version": "1.8.31",
   "license": "MIT",
   "repository": "https://github.com/TryGhost/Ghost",
   "author": "Ghost Foundation",
@@ -22,9 +22,8 @@
     "react-dom": "catalog:react17"
   },
   "scripts": {
-    "dev": "pnpm build && concurrently --kill-others --names preview,build \"vite preview -l silent\" \"pnpm build:watch\"",
+    "dev": "vite build --watch --mode development",
     "build": "vite build",
-    "build:watch": "vite build --watch --mode development",
     "test": "vitest run",
     "lint": "eslint src test --cache",
     "preship": "pnpm lint",
@@ -56,7 +55,7 @@
     "@testing-library/react": "catalog:react17",
     "@vitejs/plugin-react": "catalog:",
     "@vitest/coverage-v8": "catalog:",
-    "autoprefixer": "10.5.0",
+    "autoprefixer": "10.5.2",
     "concurrently": "catalog:",
     "cross-fetch": "catalog:",
     "eslint": "catalog:",
@@ -64,7 +63,7 @@
     "eslint-plugin-react": "catalog:",
     "globals": "catalog:",
     "jsdom": "catalog:",
-    "nock": "14.0.15",
+    "nock": "14.0.16",
     "postcss": "catalog:",
     "postcss-import": "16.1.1",
     "tailwindcss": "catalog:tailwind3",

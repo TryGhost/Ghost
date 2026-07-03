@@ -21,7 +21,7 @@ const addHours = (dateCol: unknown, hours: number): Date => {
 
 const createDatabase = async (): Promise<Knex> => {
     const database = createKnex({
-        client: 'sqlite3',
+        client: 'better-sqlite3',
         connection: {
             filename: ':memory:'
         },

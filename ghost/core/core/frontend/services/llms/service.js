@@ -41,7 +41,7 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
         const responseKey = resourceType === 'pages' ? 'pages' : 'posts';
         const response = await controller.read({
             id,
-            formats: 'html,plaintext',
+            formats: 'html',
             include: 'authors,tags',
             context: {member}
         });
@@ -316,7 +316,7 @@ function createLlmsService({settingsCache, labs, config, urlUtils, routing, api,
             limit: BROWSE_PAGE_SIZE,
             page: pageNum,
             fields: LLMS_FULL_TXT_FIELDS,
-            formats: 'html,plaintext'
+            formats: 'html'
         });
 
         return {entries, hasMore: Boolean(pagination && pagination.next)};

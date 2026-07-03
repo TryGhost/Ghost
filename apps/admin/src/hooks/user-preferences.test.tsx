@@ -249,6 +249,43 @@ describe("useUserPreferences", () => {
             });
         });
 
+        describe("nightShift migration", () => {
+            [
+                {scenario: "legacy boolean true", value: true, expected: "dark"},
+                {scenario: "legacy boolean false", value: false, expected: "light"},
+                {scenario: "dark string", value: "dark", expected: "dark"},
+                {scenario: "light string", value: "light", expected: "light"},
+                {scenario: "system string", value: "system", expected: "system"},
+                {scenario: "invalid value", value: "invalid", expected: "light"},
+            ].forEach(({scenario, value, expected}) => {
+                queryTest(`parses ${scenario}`, async ({ setup }) => {
+                    const result = await setup({
+                        accessibility: JSON.stringify({nightShift: value}),
+                    });
+
+                    expect(result.current.data?.nightShift).toBe(expected);
+                });
+            });
+
+            queryTest("omits nightShift when the preference is absent", async ({ setup }) => {
+                const result = await setup({
+                    accessibility: JSON.stringify({}),
+                });
+
+                // Absent stays absent so it isn't written back on unrelated saves;
+                // the display fallback to "light" lives in useTheme.
+                expect(result.current.data?.nightShift).toBeUndefined();
+            });
+
+            queryTest("preserves explicit system preference", async ({ setup }) => {
+                const result = await setup({
+                    accessibility: JSON.stringify({nightShift: "system"}),
+                });
+
+                expect(result.current.data?.nightShift).toBe("system");
+            });
+        });
+
         queryTest("returns undefined when user is not loaded", async ({ server, wrapper }) => {
             server.use(
                 http.get(USERS_API_URL, () => {
@@ -280,7 +317,7 @@ describe("useUserPreferences", () => {
                                     expanded: { posts: false },
                                     menu: { visible: true },
                                 },
-                                nightShift: true,
+                                nightShift: "dark",
                             }),
                         }],
                     });
@@ -455,7 +492,7 @@ describe("useEditUserPreferences", () => {
                         completedSteps: ["customize-design"],
                         checklistState: "started",
                     },
-                    nightShift: true,
+                    nightShift: "dark",
                 }),
             });
 
@@ -476,7 +513,7 @@ describe("useEditUserPreferences", () => {
                         completedSteps: ["customize-design", "first-post"],
                         checklistState: "started",
                     },
-                    nightShift: true, // Preserved
+                    nightShift: "dark", // Preserved
                 });
             });
         });

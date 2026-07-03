@@ -112,7 +112,7 @@ export function MappingStep({
                                             currentlyDisplayedData.map(row => (
                                                 <TableRow key={row.key} className={cn(!row.mapTo && 'bg-muted')}>
                                                     <TableCell className="text-sm font-medium break-all">{row.key}</TableCell>
-                                                    <TableCell className={cn('break-all text-sm', !row.value && 'text-muted-foreground')}>
+                                                    <TableCell className={cn('text-sm break-all', !row.value && 'text-muted-foreground')}>
                                                         {row.value || '\u00A0'}
                                                     </TableCell>
                                                     <TableCell>

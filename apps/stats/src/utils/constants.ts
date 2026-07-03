@@ -34,10 +34,13 @@ export const STATS_RANGE_OPTIONS = Object.values(STATS_RANGES);
 export const STATS_DEFAULT_RANGE_KEY = 2;
 
 export const STATS_LABEL_MAPPINGS = {
-    // Countries
-    US: 'United States',
-    TWN: 'Taiwan',
-    TW: 'Taiwan',
+    // Countries — overrides where i18n-iso-countries has no friendly alias,
+    // or where the alias-mode pick isn't the common short form.
+    GB: 'United Kingdom',
+    KR: 'South Korea',
+    LA: 'Laos',
+    MD: 'Moldova',
+    SY: 'Syria',
 
     // Technical
     'mobile-ios': 'iOS',
