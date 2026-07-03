@@ -254,8 +254,6 @@ describe('Members Importer API', function () {
 
             assert.equal(settingsCache.get('email_verification_required'), false, 'Email verification should not be required');
 
-            const awaitCompletion = jobManager.awaitCompletion('members-import');
-
             const res = await request
                 .post(localUtils.API.getApiQuery(`members/upload/`))
                 .field('labels', ['new-global-label'])
@@ -270,8 +268,8 @@ describe('Members Importer API', function () {
             assertExists(jsonResponse);
             assertExists(jsonResponse.meta);
 
-            // Wait for the job to finish
-            await awaitCompletion;
+            // Wait for the import job (dispatched on the JobQueue) to finish
+            await jobManager.allSettled();
 
             assert.equal(settingsCache.get('email_verification_required'), true, 'Email verification should now be required');
 
@@ -315,8 +313,6 @@ describe('Members Importer API', function () {
 
             assert.equal(settingsCache.get('email_verification_required'), false, 'Email verification should not be required');
 
-            const awaitCompletion = jobManager.awaitCompletion('members-import');
-
             const res = await request
                 .post(localUtils.API.getApiQuery(`members/upload/`))
                 .field('labels', ['new-global-label'])
@@ -331,8 +327,8 @@ describe('Members Importer API', function () {
             assertExists(jsonResponse);
             assertExists(jsonResponse.meta);
 
-            // Wait for the job to finish
-            await awaitCompletion;
+            // Wait for the import job (dispatched on the JobQueue) to finish
+            await jobManager.allSettled();
 
             assert.equal(settingsCache.get('email_verification_required'), true, 'Email verification should now be required');
 

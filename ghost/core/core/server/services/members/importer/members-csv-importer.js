@@ -7,7 +7,8 @@ const errors = require('@tryghost/errors');
 const tpl = require('@tryghost/tpl');
 const emailTemplate = require('./email-template');
 const logging = require('@tryghost/logging');
-
+const jobQueue = require('../../jobs/queue').default;
+const ProcessMemberImportJob = require('./jobs/process-member-import-job').default;
 const messages = {
     filenameCollision: 'Filename already exists, please try again.',
     freeMemberNotAllowedImportTier: 'You cannot import a free member with a specified tier.',
@@ -50,7 +51,6 @@ const DEFAULT_CSV_HEADER_MAPPING = {
  * @property {() => Promise<import('../../gifts/gift-service').GiftService>} getGiftService - async function returning the GiftService instance
  * @property {Function} sendEmail - function sending an email
  * @property {(string) => boolean} isSet - Method checking if specific feature is enabled
- * @property {({job, offloaded, name}) => void} addJob - Method registering an async job
  * @property {Object} knex - An instance of the Ghost Database connection
  * @property {Function} urlFor - function generating urls
  * @property {Object} context
@@ -61,7 +61,7 @@ module.exports = class MembersCSVImporter {
     /**
      * @param {MembersCSVImporterOptions} options
      */
-    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, getTierByName, getGiftService, sendEmail, isSet, addJob, knex, urlFor, context, stripeUtils}) {
+    constructor({storagePath, getTimezone, getMembersRepository, getDefaultTier, getTierByName, getGiftService, sendEmail, isSet, knex, urlFor, context, stripeUtils, getLabelModel, getVerificationTrigger}) {
         this._storagePath = storagePath;
         this._getTimezone = getTimezone;
         this._getMembersRepository = getMembersRepository;
@@ -70,11 +70,13 @@ module.exports = class MembersCSVImporter {
         this._getGiftService = getGiftService;
         this._sendEmail = sendEmail;
         this._isSet = isSet;
-        this._addJob = addJob;
         this._knex = knex;
         this._urlFor = urlFor;
         this._context = context;
         this._stripeUtils = stripeUtils;
+        // Resolved lazily so the job payload stays serialisable.
+        this._getLabelModel = getLabelModel;
+        this._getVerificationTrigger = getVerificationTrigger;
         this._tierIdCache = new Map();
     }
 
@@ -439,44 +441,54 @@ module.exports = class MembersCSVImporter {
             };
         } else {
             const emailRecipient = user.email;
-            this._addJob({
-                job: async () => {
-                    try {
-                        const result = await this.perform(job.filePath);
-                        const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
-                        const emailContent = this.generateCompletionEmail(result, {
-                            emailRecipient,
-                            importLabel: importLabelModel ? importLabelModel.toJSON() : null
-                        });
-                        const errorCSV = this.generateErrorCSV(result);
-                        const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
-                        await this.sendErrorEmail({
-                            emailRecipient,
-                            emailSubject,
-                            emailContent,
-                            errorCSV,
-                            importLabel
-                        });
-                    } catch (e) {
-                        logging.error('Error in members import job');
-                        logging.error(e);
-                    }
-
-                    // Still check verification triggers in case of errors (e.g., email sending failed)
-                    try {
-                        await verificationTrigger.testImportThreshold();
-                    } catch (e) {
-                        logging.error('Error in members import job when testing import threshold');
-                        logging.error(e);
-                    }
-                },
-                offloaded: false,
-                name: 'members-import'
-            });
+            await jobQueue.dispatch(new ProcessMemberImportJob({
+                filePath: job.filePath,
+                emailRecipient,
+                importLabel
+            }));
 
             return {
                 meta
             };
+        }
+    }
+
+    /**
+     * Runs a queued member import: performs the import, emails the caller the
+     * result, and re-checks verification thresholds. Errors are logged, not
+     * thrown — this runs in the background after `process` has returned.
+     * @param {object} data
+     */
+    async runImportJob({filePath, emailRecipient, importLabel}) {
+        const LabelModel = this._getLabelModel();
+        const verificationTrigger = this._getVerificationTrigger();
+        try {
+            const result = await this.perform(filePath);
+            const importLabelModel = result.imported ? await LabelModel.findOne(importLabel) : null;
+            const emailContent = this.generateCompletionEmail(result, {
+                emailRecipient,
+                importLabel: importLabelModel ? importLabelModel.toJSON() : null
+            });
+            const errorCSV = this.generateErrorCSV(result);
+            const emailSubject = result.imported > 0 ? 'Your member import is complete' : 'Your member import was unsuccessful';
+            await this.sendErrorEmail({
+                emailRecipient,
+                emailSubject,
+                emailContent,
+                errorCSV,
+                importLabel
+            });
+        } catch (e) {
+            logging.error('Error in members import job');
+            logging.error(e);
+        }
+
+        // Still check verification triggers in case of errors (e.g., email sending failed)
+        try {
+            await verificationTrigger.testImportThreshold();
+        } catch (e) {
+            logging.error('Error in members import job when testing import threshold');
+            logging.error(e);
         }
     }
 

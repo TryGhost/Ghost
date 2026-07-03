@@ -83,7 +83,8 @@ const initMembersCSVImporter = ({stripeAPIService}) => {
         getGiftService: () => giftService.service,
         sendEmail: ghostMailer.send.bind(ghostMailer),
         isSet: flag => labsService.isSet(flag),
-        addJob: jobsService.addJob.bind(jobsService),
+        getLabelModel: () => models.Label,
+        getVerificationTrigger: () => module.exports.verificationTrigger,
         knex: db.knex,
         urlFor: urlUtils.urlFor.bind(urlUtils),
         context: {
