@@ -348,7 +348,7 @@ describe('automations poll', function () {
         });
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
         memberWelcomeEmailService.api.sendAutomationEmail.resolves({
-            id: 'mailgun-message-id'
+            id: '<mailgun-message-id>'
         });
 
         await poll(options);

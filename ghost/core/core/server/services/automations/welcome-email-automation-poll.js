@@ -50,14 +50,26 @@ function getMailgunMessageId(sendResult) {
     const {id, messageId} = sendResult;
 
     if (typeof id === 'string') {
-        return id;
+        return normalizeMailgunMessageId(id);
     }
 
     if (typeof messageId === 'string') {
-        return messageId;
+        return normalizeMailgunMessageId(messageId);
     }
 
     return undefined;
+}
+
+/**
+ * @param {string} mailgunMessageId
+ * @returns {string}
+ */
+function normalizeMailgunMessageId(mailgunMessageId) {
+    if (mailgunMessageId.startsWith('<') && mailgunMessageId.endsWith('>')) {
+        return mailgunMessageId.slice(1, -1);
+    }
+
+    return mailgunMessageId;
 }
 
 /**

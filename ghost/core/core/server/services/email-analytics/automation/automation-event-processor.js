@@ -139,6 +139,8 @@ function createRecipientRepository({db} = {}) {
         },
 
         async findByMailgunMessageIdAndMemberEmail({mailgunMessageId, memberEmail}, {transacting} = {}) {
+            const mailgunMessageIdVariants = getMailgunMessageIdVariants(mailgunMessageId);
+
             return await (transacting || db.knex)('automated_email_recipients')
                 .select(
                     'id',
@@ -149,7 +151,7 @@ function createRecipientRepository({db} = {}) {
                     'delivered_at',
                     'opened_at'
                 )
-                .where('mailgun_message_id', mailgunMessageId)
+                .whereIn('mailgun_message_id', mailgunMessageIdVariants)
                 .where('member_email', memberEmail)
                 .first() || null;
         },
@@ -214,6 +216,33 @@ function createRecipientRepository({db} = {}) {
                 });
         }
     };
+}
+
+function getMailgunMessageIdVariants(mailgunMessageId) {
+    const normalizedMailgunMessageId = normalizeMailgunMessageId(mailgunMessageId);
+    const variants = [mailgunMessageId];
+
+    if (normalizedMailgunMessageId !== mailgunMessageId) {
+        variants.push(normalizedMailgunMessageId);
+    }
+
+    if (normalizedMailgunMessageId) {
+        variants.push(`<${normalizedMailgunMessageId}>`);
+    }
+
+    return [...new Set(variants)];
+}
+
+function normalizeMailgunMessageId(mailgunMessageId) {
+    if (typeof mailgunMessageId !== 'string') {
+        return mailgunMessageId;
+    }
+
+    if (mailgunMessageId.startsWith('<') && mailgunMessageId.endsWith('>')) {
+        return mailgunMessageId.slice(1, -1);
+    }
+
+    return mailgunMessageId;
 }
 
 module.exports = AutomationEventProcessor;

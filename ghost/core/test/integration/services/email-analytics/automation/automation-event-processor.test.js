@@ -71,6 +71,7 @@ describe('AutomationEventProcessor integration', function () {
             created_at: currentTime,
             updated_at: currentTime
         });
+        const eventProviderId = 'automation-message@mailgun.example';
         const processor = new AutomationEventProcessor({
             db: {
                 knex: testUtils.knex
@@ -80,13 +81,13 @@ describe('AutomationEventProcessor integration', function () {
         const firstResult = await processor.processEvents([{
             id: 'opened-event-id',
             type: 'opened',
-            providerId: recipient.mailgun_message_id,
+            providerId: eventProviderId,
             recipientEmail: member.email,
             timestamp: openedAt
         }, {
             id: 'delivered-event-id',
             type: 'delivered',
-            providerId: recipient.mailgun_message_id,
+            providerId: eventProviderId,
             recipientEmail: member.email,
             timestamp: deliveredAt
         }]);
@@ -94,13 +95,13 @@ describe('AutomationEventProcessor integration', function () {
         const secondResult = await processor.processEvents([{
             id: 'opened-event-id',
             type: 'opened',
-            providerId: recipient.mailgun_message_id,
+            providerId: eventProviderId,
             recipientEmail: member.email,
             timestamp: openedAt
         }, {
             id: 'delivered-event-id',
             type: 'delivered',
-            providerId: recipient.mailgun_message_id,
+            providerId: eventProviderId,
             recipientEmail: member.email,
             timestamp: deliveredAt
         }]);
