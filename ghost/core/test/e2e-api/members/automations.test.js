@@ -127,7 +127,7 @@ async function updateAutomation(automation, overrides = {}) {
 function getMemberWelcomeEmailSends() {
     return mailService.GhostMailer.prototype.send.getCalls()
         .map(call => call.args[0])
-        .filter(emailToSend => emailToSend.tags?.includes('member-welcome-email'));
+        .filter(emailToSend => emailToSend.tags?.includes('automation-email'));
 }
 
 describe('Members Automations', function () {
@@ -213,8 +213,8 @@ describe('Members Automations', function () {
         assert.deepEqual(sentEmails.map(({forceTextContent}) => forceTextContent), [true, true]);
         assert.deepEqual(sentEmails.map(({replyTo}) => replyTo), [AUTOMATION_EMAIL_REPLY_TO, AUTOMATION_EMAIL_REPLY_TO]);
         assert.deepEqual(sentEmails.map(({tags}) => tags), [
-            ['member-welcome-email'],
-            ['member-welcome-email']
+            ['automation-email'],
+            ['automation-email']
         ]);
         sinon.assert.calledWithMatch(mailService.GhostMailer.prototype.send, {
             to: email,
