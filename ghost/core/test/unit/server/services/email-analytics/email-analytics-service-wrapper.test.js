@@ -24,21 +24,21 @@ describe('EmailAnalyticsServiceWrapper', function () {
             const wrapper = createWrapper();
             const calls = [];
 
-            wrapper.fetchLatestOpenedEvents = sinon.stub().callsFake(async (options) => {
+            wrapper._fetchLatestOpenedEventsResult = sinon.stub().callsFake(async (options) => {
                 calls.push(['opened', options]);
-                return 3;
+                return {eventCount: 3};
             });
-            wrapper.fetchLatestNonOpenedEvents = sinon.stub().callsFake(async (options) => {
+            wrapper._fetchLatestNonOpenedEventsResult = sinon.stub().callsFake(async (options) => {
                 calls.push(['non-opened', options]);
-                return 5;
+                return {eventCount: 5};
             });
-            wrapper.fetchMissing = sinon.stub().callsFake(async (options) => {
+            wrapper._fetchMissingResult = sinon.stub().callsFake(async (options) => {
                 calls.push(['missing', options]);
-                return 7;
+                return {eventCount: 7};
             });
-            wrapper.fetchScheduled = sinon.stub().callsFake(async (options) => {
+            wrapper._fetchScheduledResult = sinon.stub().callsFake(async (options) => {
                 calls.push(['scheduled', options]);
-                return 0;
+                return {eventCount: 0};
             });
 
             await wrapper.startFetch();
@@ -55,18 +55,18 @@ describe('EmailAnalyticsServiceWrapper', function () {
         it('restarts without fetching non-opened events when opened events hit the event budget', async function () {
             const wrapper = createWrapper();
 
-            wrapper.fetchLatestOpenedEvents = sinon.stub().resolves(10000);
-            wrapper.fetchLatestNonOpenedEvents = sinon.stub().resolves(0);
-            wrapper.fetchMissing = sinon.stub().resolves(0);
-            wrapper.fetchScheduled = sinon.stub().resolves(0);
+            wrapper._fetchLatestOpenedEventsResult = sinon.stub().resolves({eventCount: 10000});
+            wrapper._fetchLatestNonOpenedEventsResult = sinon.stub().resolves({eventCount: 0});
+            wrapper._fetchMissingResult = sinon.stub().resolves({eventCount: 0});
+            wrapper._fetchScheduledResult = sinon.stub().resolves({eventCount: 0});
             wrapper._restartFetch = sinon.stub();
 
             await wrapper.startFetch();
 
-            sinon.assert.calledOnceWithExactly(wrapper.fetchLatestOpenedEvents, {maxEvents: 10000});
-            sinon.assert.notCalled(wrapper.fetchLatestNonOpenedEvents);
-            sinon.assert.notCalled(wrapper.fetchMissing);
-            sinon.assert.notCalled(wrapper.fetchScheduled);
+            sinon.assert.calledOnceWithExactly(wrapper._fetchLatestOpenedEventsResult, {maxEvents: 10000});
+            sinon.assert.notCalled(wrapper._fetchLatestNonOpenedEventsResult);
+            sinon.assert.notCalled(wrapper._fetchMissingResult);
+            sinon.assert.notCalled(wrapper._fetchScheduledResult);
             sinon.assert.calledOnceWithExactly(wrapper._restartFetch, 'high opened event count');
         });
 
@@ -77,10 +77,10 @@ describe('EmailAnalyticsServiceWrapper', function () {
                 resolveOpenedEvents = resolve;
             });
 
-            wrapper.fetchLatestOpenedEvents = sinon.stub().returns(openedEvents);
-            wrapper.fetchLatestNonOpenedEvents = sinon.stub().resolves(0);
-            wrapper.fetchMissing = sinon.stub().resolves(0);
-            wrapper.fetchScheduled = sinon.stub().resolves(0);
+            wrapper._fetchLatestOpenedEventsResult = sinon.stub().returns(openedEvents);
+            wrapper._fetchLatestNonOpenedEventsResult = sinon.stub().resolves({eventCount: 0});
+            wrapper._fetchMissingResult = sinon.stub().resolves({eventCount: 0});
+            wrapper._fetchScheduledResult = sinon.stub().resolves({eventCount: 0});
 
             const firstFetch = wrapper.startFetch();
             await Promise.resolve();
@@ -89,32 +89,32 @@ describe('EmailAnalyticsServiceWrapper', function () {
             const secondFetch = wrapper.startFetch();
             await secondFetch;
 
-            sinon.assert.calledOnce(wrapper.fetchLatestOpenedEvents);
+            sinon.assert.calledOnce(wrapper._fetchLatestOpenedEventsResult);
 
-            resolveOpenedEvents(0);
+            resolveOpenedEvents({eventCount: 0});
             await firstFetch;
 
-            sinon.assert.calledOnce(wrapper.fetchLatestOpenedEvents);
-            sinon.assert.calledOnce(wrapper.fetchLatestNonOpenedEvents);
-            sinon.assert.calledOnce(wrapper.fetchMissing);
-            sinon.assert.calledOnce(wrapper.fetchScheduled);
+            sinon.assert.calledOnce(wrapper._fetchLatestOpenedEventsResult);
+            sinon.assert.calledOnce(wrapper._fetchLatestNonOpenedEventsResult);
+            sinon.assert.calledOnce(wrapper._fetchMissingResult);
+            sinon.assert.calledOnce(wrapper._fetchScheduledResult);
         });
 
         it('does not run scheduled fetches when latest and missing events exceed the event budget', async function () {
             const wrapper = createWrapper();
 
-            wrapper.fetchLatestOpenedEvents = sinon.stub().resolves(4000);
-            wrapper.fetchLatestNonOpenedEvents = sinon.stub().resolves(4000);
-            wrapper.fetchMissing = sinon.stub().resolves(2001);
-            wrapper.fetchScheduled = sinon.stub().resolves(0);
+            wrapper._fetchLatestOpenedEventsResult = sinon.stub().resolves({eventCount: 4000});
+            wrapper._fetchLatestNonOpenedEventsResult = sinon.stub().resolves({eventCount: 4000});
+            wrapper._fetchMissingResult = sinon.stub().resolves({eventCount: 2001});
+            wrapper._fetchScheduledResult = sinon.stub().resolves({eventCount: 0});
             wrapper._restartFetch = sinon.stub();
 
             await wrapper.startFetch();
 
-            sinon.assert.calledOnceWithExactly(wrapper.fetchLatestOpenedEvents, {maxEvents: 10000});
-            sinon.assert.calledOnceWithExactly(wrapper.fetchLatestNonOpenedEvents, {maxEvents: 6000});
-            sinon.assert.calledOnceWithExactly(wrapper.fetchMissing, {maxEvents: 2000});
-            sinon.assert.notCalled(wrapper.fetchScheduled);
+            sinon.assert.calledOnceWithExactly(wrapper._fetchLatestOpenedEventsResult, {maxEvents: 10000});
+            sinon.assert.calledOnceWithExactly(wrapper._fetchLatestNonOpenedEventsResult, {maxEvents: 6000});
+            sinon.assert.calledOnceWithExactly(wrapper._fetchMissingResult, {maxEvents: 2000});
+            sinon.assert.notCalled(wrapper._fetchScheduledResult);
             sinon.assert.calledOnceWithExactly(wrapper._restartFetch, 'high event count');
         });
     });

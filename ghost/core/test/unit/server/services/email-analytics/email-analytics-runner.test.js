@@ -46,4 +46,50 @@ describe('EmailAnalyticsRunner', function () {
             ['scheduled', {maxEvents: 10000}]
         ]);
     });
+
+    it('logs non-empty fetch completion with pipeline name, job type, and event count', async function () {
+        const logging = {
+            info: sinon.stub(),
+            error: sinon.stub()
+        };
+        const adapter = {
+            name: 'newsletter',
+            fetchLatestOpenedEvents: sinon.stub().resolves({
+                eventCount: 2,
+                apiPollingTimeMs: 100,
+                processingTimeMs: 50,
+                aggregationTimeMs: 25,
+                emailAggregationTimeMs: 10,
+                memberAggregationTimeMs: 15,
+                result: {
+                    opened: 2,
+                    delivered: 0,
+                    permanentFailed: 0,
+                    temporaryFailed: 0,
+                    unprocessable: 0
+                }
+            }),
+            fetchLatestNonOpenedEvents: sinon.stub().resolves(0),
+            fetchMissing: sinon.stub().resolves(0),
+            fetchScheduled: sinon.stub().resolves(0)
+        };
+        const runner = new EmailAnalyticsRunner({
+            adapter,
+            logging,
+            config: {
+                get: sinon.stub().returns(false)
+            },
+            metrics: {
+                metric: sinon.stub()
+            }
+        });
+
+        await runner.start();
+
+        sinon.assert.calledWithMatch(logging.info, sinon.match((message) => {
+            return message.includes('Pipeline: newsletter') &&
+                message.includes('Job complete: latest-opened') &&
+                message.includes('2 events');
+        }));
+    });
 });

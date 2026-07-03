@@ -81,72 +81,39 @@ class EmailAnalyticsServiceWrapper {
                         return await this.service.getLastOpenedEventTimestamp();
                     },
                     fetchLatestOpenedEvents: async (options) => {
-                        return await this.fetchLatestOpenedEvents(options);
+                        return await this._fetchLatestOpenedEventsResult(options);
                     },
                     fetchLatestNonOpenedEvents: async (options) => {
-                        return await this.fetchLatestNonOpenedEvents(options);
+                        return await this._fetchLatestNonOpenedEventsResult(options);
                     },
                     fetchMissing: async (options) => {
-                        return await this.fetchMissing(options);
+                        return await this._fetchMissingResult(options);
                     },
                     fetchScheduled: async (options) => {
-                        return await this.fetchScheduled(options);
+                        return await this._fetchScheduledResult(options);
                     },
                     restartFetch: (reason) => {
                         this._restartFetch(reason);
                     }
                 },
-                logging
+                logging,
+                metrics,
+                config
             });
         }
 
         return this.runner;
     }
 
-    /**
-     * Log comprehensive job completion with timing metrics
-     * @param {string} jobType - Type of job (e.g., 'latest-opened', 'latest', 'missing', 'scheduled')
-     * @param {object} fetchResult - The fetch result from EmailAnalyticsService
-     * @param {number} totalDurationMs - Total duration in milliseconds
-     */
-    _logJobCompletion(jobType, fetchResult, totalDurationMs) {
-        const {eventCount, apiPollingTimeMs, processingTimeMs, aggregationTimeMs, emailAggregationTimeMs, memberAggregationTimeMs, result} = fetchResult;
-
-        if (eventCount === 0) {
-            return;
+    _getEventCount(fetchResult) {
+        if (typeof fetchResult === 'number') {
+            return fetchResult;
         }
 
-        const throughput = totalDurationMs > 0 ? eventCount / (totalDurationMs / 1000) : 0;
-        const apiPercent = totalDurationMs > 0 ? Math.round((apiPollingTimeMs / totalDurationMs) * 100) : 0;
-        const processingPercent = totalDurationMs > 0 ? Math.round((processingTimeMs / totalDurationMs) * 100) : 0;
-        const aggregationPercent = totalDurationMs > 0 ? Math.round((aggregationTimeMs / totalDurationMs) * 100) : 0;
-        const batchMode = config.get('emailAnalytics:batchProcessing') ? 'BATCHED' : 'SEQUENTIAL';
-
-        const logMessage = [
-            `[EmailAnalytics] Job complete: ${jobType}`,
-            `${eventCount} events in ${(totalDurationMs / 1000).toFixed(1)}s (${throughput.toFixed(2)} events/s)`,
-            `Mode: ${batchMode}`,
-            `Timings: API ${(apiPollingTimeMs / 1000).toFixed(1)}s (${apiPercent}%) / Processing ${(processingTimeMs / 1000).toFixed(1)}s (${processingPercent}%) / Aggregation ${(aggregationTimeMs / 1000).toFixed(1)}s (${aggregationPercent}%) [Email ${(emailAggregationTimeMs / 1000).toFixed(1)}s / Member ${(memberAggregationTimeMs / 1000).toFixed(1)}s]`,
-            `Events: opened=${result.opened} delivered=${result.delivered} failed=${result.permanentFailed + result.temporaryFailed} unprocessable=${result.unprocessable}`
-        ].join(' | ');
-
-        logging.info(logMessage);
-
-        // We're only concerned with open throughput as this is displayed to users and is most sensitive to being up to date
-        if (jobType === 'latest-opened') {
-            const openThroughputEnabled = config.get('emailAnalytics:metrics:openThroughput:enabled');
-            const openThroughputThreshold = config.get('emailAnalytics:metrics:openThroughput:threshold') || 0;
-            if (openThroughputEnabled && eventCount >= openThroughputThreshold) {
-                metrics.metric('email-analytics-open-throughput', {
-                    value: throughput,
-                    events: eventCount,
-                    duration: totalDurationMs
-                });
-            }
-        }
+        return fetchResult?.eventCount || 0;
     }
 
-    async fetchLatestOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
+    async _fetchLatestOpenedEventsResult({maxEvents} = {maxEvents: Infinity}) {
         const beginTimestamp = await this.service.getLastOpenedEventTimestamp();
         const lagMinutes = (Date.now() - beginTimestamp.getTime()) / 60000;
         const lagThreshold = config.get('emailAnalytics:openedJobLagWarningMinutes');
@@ -158,47 +125,57 @@ class EmailAnalyticsServiceWrapper {
             logging.warn(`[EmailAnalytics] Opened events processing is ${lagMinutes.toFixed(1)} minutes behind (threshold: ${lagThreshold})`);
         }
 
-        const fetchStartDate = new Date();
         const fetchResult = await this.service.fetchLatestOpenedEvents({maxEvents});
-        const totalDuration = Date.now() - fetchStartDate.getTime();
 
-        this._logJobCompletion('latest-opened', fetchResult, totalDuration);
+        return fetchResult;
+    }
 
-        return fetchResult.eventCount;
+    async fetchLatestOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
+        const fetchResult = await this._getRunner().fetchAndLogCompletion('latest-opened', async () => {
+            return await this._fetchLatestOpenedEventsResult({maxEvents});
+        });
+
+        return this._getEventCount(fetchResult);
+    }
+
+    async _fetchLatestNonOpenedEventsResult({maxEvents} = {maxEvents: Infinity}) {
+        return await this.service.fetchLatestNonOpenedEvents({maxEvents});
     }
 
     async fetchLatestNonOpenedEvents({maxEvents} = {maxEvents: Infinity}) {
-        const fetchStartDate = new Date();
-        const fetchResult = await this.service.fetchLatestNonOpenedEvents({maxEvents});
-        const totalDuration = Date.now() - fetchStartDate.getTime();
+        const fetchResult = await this._getRunner().fetchAndLogCompletion('latest', async () => {
+            return await this._fetchLatestNonOpenedEventsResult({maxEvents});
+        });
 
-        this._logJobCompletion('latest', fetchResult, totalDuration);
+        return this._getEventCount(fetchResult);
+    }
 
-        return fetchResult.eventCount;
+    async _fetchMissingResult({maxEvents} = {maxEvents: Infinity}) {
+        return await this.service.fetchMissing({maxEvents});
     }
 
     async fetchMissing({maxEvents} = {maxEvents: Infinity}) {
-        const fetchStartDate = new Date();
-        const fetchResult = await this.service.fetchMissing({maxEvents});
-        const totalDuration = Date.now() - fetchStartDate.getTime();
+        const fetchResult = await this._getRunner().fetchAndLogCompletion('missing', async () => {
+            return await this._fetchMissingResult({maxEvents});
+        });
 
-        this._logJobCompletion('missing', fetchResult, totalDuration);
-
-        return fetchResult.eventCount;
+        return this._getEventCount(fetchResult);
     }
 
-    async fetchScheduled({maxEvents}) {
+    async _fetchScheduledResult({maxEvents}) {
         if (maxEvents < 300) {
             return 0;
         }
 
-        const fetchStartDate = new Date();
-        const fetchResult = await this.service.fetchScheduled({maxEvents});
-        const totalDuration = Date.now() - fetchStartDate.getTime();
+        return await this.service.fetchScheduled({maxEvents});
+    }
 
-        this._logJobCompletion('scheduled', fetchResult, totalDuration);
+    async fetchScheduled({maxEvents}) {
+        const fetchResult = await this._getRunner().fetchAndLogCompletion('scheduled', async () => {
+            return await this._fetchScheduledResult({maxEvents});
+        });
 
-        return fetchResult.eventCount;
+        return this._getEventCount(fetchResult);
     }
 
     async startFetch() {
