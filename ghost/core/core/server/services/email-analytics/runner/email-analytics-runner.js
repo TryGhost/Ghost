@@ -138,6 +138,10 @@ class EmailAnalyticsRunner {
             eventCounts.push(`unprocessable=${result.unprocessable || 0}`);
         }
 
+        if (Object.prototype.hasOwnProperty.call(result, 'noop')) {
+            eventCounts.push(`noop=${result.noop || 0}`);
+        }
+
         return eventCounts.join(' ');
     }
 

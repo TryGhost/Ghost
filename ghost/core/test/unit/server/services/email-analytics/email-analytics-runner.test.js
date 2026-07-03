@@ -93,4 +93,51 @@ describe('EmailAnalyticsRunner', function () {
                 message.includes('Events: opened=2 delivered=0 failed=0 unprocessable=0');
         }));
     });
+
+    it('logs automation fetch completion timings and no-op counts when available', async function () {
+        const logging = {
+            info: sinon.stub(),
+            error: sinon.stub()
+        };
+        const adapter = {
+            name: 'automation',
+            fetchLatestOpenedEvents: sinon.stub().resolves({
+                eventCount: 4,
+                apiPollingTimeMs: 100,
+                processingTimeMs: 50,
+                aggregationTimeMs: 25,
+                emailAggregationTimeMs: 0,
+                memberAggregationTimeMs: 10,
+                result: {
+                    opened: 1,
+                    delivered: 1,
+                    noop: 2
+                }
+            }),
+            fetchLatestNonOpenedEvents: sinon.stub().resolves(0),
+            fetchMissing: sinon.stub().resolves(0)
+        };
+        const runner = new EmailAnalyticsRunner({
+            adapter,
+            logging,
+            config: {
+                get: sinon.stub().returns(false)
+            },
+            metrics: {
+                metric: sinon.stub()
+            }
+        });
+
+        await runner.start();
+
+        sinon.assert.calledWithMatch(logging.info, sinon.match((message) => {
+            return message.includes('Pipeline: automation') &&
+                message.includes('Job complete: latest-opened') &&
+                message.includes('4 events') &&
+                message.includes('Timings: API 0.1s') &&
+                message.includes('Processing 0.1s') &&
+                message.includes('Aggregation 0.0s') &&
+                message.includes('Events: opened=1 delivered=1 noop=2');
+        }));
+    });
 });
