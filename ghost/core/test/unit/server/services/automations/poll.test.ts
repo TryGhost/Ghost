@@ -345,6 +345,9 @@ describe('automations poll', function () {
             automation_action_revision_id: 'revision-id'
         });
         automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+            id: 'mailgun-message-id'
+        });
 
         await poll(options);
 
@@ -353,7 +356,8 @@ describe('automations poll', function () {
             member_uuid: '00000000-0000-4000-8000-000000000001',
             member_email: 'member@example.com',
             member_name: 'Test Member',
-            automation_action_revision_id: 'revision-id'
+            automation_action_revision_id: 'revision-id',
+            mailgun_message_id: 'mailgun-message-id'
         });
         sinon.assert.callOrder(
             memberWelcomeEmailService.api.sendAutomationEmail,

@@ -25,6 +25,24 @@ type MemberWelcomeEmailService = {
     };
 };
 
+const getMailgunMessageId = (sendResult: unknown): string | undefined => {
+    if (!sendResult || typeof sendResult !== 'object') {
+        return undefined;
+    }
+
+    const {id, messageId} = sendResult as {id?: unknown; messageId?: unknown};
+
+    if (typeof id === 'string') {
+        return id;
+    }
+
+    if (typeof messageId === 'string') {
+        return messageId;
+    }
+
+    return undefined;
+};
+
 type MemberModel = {
     get(key: 'name'): string | null;
     get(key: 'email' | 'status' | 'uuid'): string;
@@ -176,7 +194,7 @@ const processStep = async ({
                 break;
             }
             memberWelcomeEmailService.init();
-            await memberWelcomeEmailService.api.sendAutomationEmail({
+            const sendResult = await memberWelcomeEmailService.api.sendAutomationEmail({
                 email: {
                     designSettingId: step.email_design_setting_id,
                     lexical: step.email_lexical,
@@ -189,13 +207,15 @@ const processStep = async ({
                 },
                 memberStatus
             });
+            const mailgunMessageId = getMailgunMessageId(sendResult);
             try {
                 await AutomatedEmailRecipient.add({
                     member_id: step.member_id,
                     member_uuid: member.get('uuid'),
                     member_email: member.get('email'),
                     member_name: member.get('name'),
-                    automation_action_revision_id: step.automation_action_revision_id
+                    automation_action_revision_id: step.automation_action_revision_id,
+                    ...(mailgunMessageId ? {mailgun_message_id: mailgunMessageId} : {})
                 });
             } catch (err) {
                 logging.error({

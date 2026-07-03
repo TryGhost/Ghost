@@ -39,6 +39,28 @@ const RETRY_DELAY_MS = 10 * 60 * 1000;
 const LOCK_TIMEOUT = 30 * 60 * 1000;
 
 /**
+ * @param {unknown} sendResult
+ * @returns {string | undefined}
+ */
+function getMailgunMessageId(sendResult) {
+    if (!sendResult || typeof sendResult !== 'object') {
+        return undefined;
+    }
+
+    const {id, messageId} = sendResult;
+
+    if (typeof id === 'string') {
+        return id;
+    }
+
+    if (typeof messageId === 'string') {
+        return messageId;
+    }
+
+    return undefined;
+}
+
+/**
  * @internal
  * @typedef {typeof MEMBER_WELCOME_EMAIL_SLUGS} Slugs
  */
@@ -219,7 +241,7 @@ async function processRun({
             return;
         }
 
-        await memberWelcomeEmailService.api.send({
+        const sendResult = await memberWelcomeEmailService.api.send({
             member: {
                 name: member.get('name'),
                 email: member.get('email'),
@@ -227,6 +249,7 @@ async function processRun({
             },
             memberStatus
         });
+        const mailgunMessageId = getMailgunMessageId(sendResult);
 
         await db.knex.transaction(async (transacting) => {
             await AutomatedEmailRecipient.add({
@@ -234,7 +257,8 @@ async function processRun({
                 automated_email_id: run.automated_email_id,
                 member_uuid: member.get('uuid'),
                 member_email: member.get('email'),
-                member_name: member.get('name')
+                member_name: member.get('name'),
+                ...(mailgunMessageId ? {mailgun_message_id: mailgunMessageId} : {})
             }, {transacting});
 
             await markExited(run.id, 'finished', transacting);

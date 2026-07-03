@@ -36,6 +36,20 @@ What should a future implementation or design review revisit, if anything?
 
 ## Entries
 
+## 2026-07-03 - Automation Send Message Id Shape
+
+**Dilemma**:
+Task 3.1 needs `mailgun_message_id` from the automation send path. The bulk Mailgun email provider normalizes successful sends to `{id}`, while the automation send path currently uses `GhostMailer` and receives the underlying mail transport response.
+
+**Decision**:
+Persist `mailgun_message_id` from a successful send result by accepting either `id` or `messageId`, preferring `id` when present.
+
+**Rationale**:
+`id` matches the existing Mailgun provider contract and the analytics terminology in the spike plan. Accepting `messageId` keeps the automation path tolerant of the transactional mailer response without changing newsletter send behavior.
+
+**Follow-up**:
+Production should confirm the exact Mailgun transport response for `GhostMailer` and consider normalizing transactional Mailgun sends behind a small explicit return type.
+
 ## 2026-07-03 - Migration Verification Limitation
 
 **Dilemma**:
