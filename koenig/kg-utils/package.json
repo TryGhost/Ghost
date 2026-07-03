@@ -42,7 +42,7 @@
     "sinon": "22.0.0",
     "tsx": "4.22.4",
     "typescript": "5.9.3",
-    "typescript-eslint": "8.62.0"
+    "typescript-eslint": "8.62.1"
   },
   "dependencies": {
     "semver": "7.8.5"
