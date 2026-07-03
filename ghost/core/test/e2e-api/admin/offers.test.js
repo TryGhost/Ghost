@@ -265,7 +265,7 @@ describe('Offers API', function () {
     });
 
     it('Cannot create a signup offer without a tier', async function () {
-        sinon.stub(logging, 'error');
+        sinon.stub(logging, 'warn');
 
         const newOffer = {
             name: 'Bad Signup Offer',
@@ -294,7 +294,7 @@ describe('Offers API', function () {
     });
 
     it('Cannot create a retention offer with a tier', async function () {
-        sinon.stub(logging, 'error');
+        sinon.stub(logging, 'warn');
 
         const newOffer = {
             name: 'Bad Retention Offer',
@@ -325,7 +325,7 @@ describe('Offers API', function () {
     });
 
     it('Cannot create offer with same code', async function () {
-        sinon.stub(logging, 'error');
+        sinon.stub(logging, 'warn');
 
         const newOffer = {
             name: 'Fourth of July',
@@ -356,7 +356,7 @@ describe('Offers API', function () {
     });
 
     it('Cannot create offer with same slugified code', async function () {
-        sinon.stub(logging, 'error');
+        sinon.stub(logging, 'warn');
 
         const newOffer = {
             name: 'Another Black Friday Sale',
@@ -387,7 +387,7 @@ describe('Offers API', function () {
     });
 
     it('Cannot create offer with same name', async function () {
-        sinon.stub(logging, 'error');
+        sinon.stub(logging, 'warn');
 
         const newOffer = {
             name: 'Fourth of July Sales',
@@ -516,7 +516,7 @@ describe('Offers API', function () {
     });
 
     it('Cannot update offer code to one that exists', async function () {
-        sinon.stub(logging, 'error');
+        sinon.stub(logging, 'warn');
 
         // We can change all fields except discount related fields
         let updatedOffer = {
@@ -539,7 +539,7 @@ describe('Offers API', function () {
     });
 
     it('Cannot update offer code to one that exists after it is slugified', async function () {
-        sinon.stub(logging, 'error');
+        sinon.stub(logging, 'warn');
 
         // We can change all fields except discount related fields
         let updatedOffer = {
@@ -562,7 +562,7 @@ describe('Offers API', function () {
     });
 
     it('Cannot update offer name to one that exists', async function () {
-        sinon.stub(logging, 'error');
+        sinon.stub(logging, 'warn');
 
         // We can change all fields except discount related fields
         let updatedOffer = {

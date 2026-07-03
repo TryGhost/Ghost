@@ -175,7 +175,7 @@ describe('Media API', function () {
         });
 
         it('Rejects non-media file type', async function () {
-            const loggingStub = sinon.stub(logging, 'error');
+            const loggingStub = sinon.stub(logging, 'warn');
             const res = await request.post(localUtils.API.getApiQuery('media/upload'))
                 .set('Origin', config.get('url'))
                 .expect('Content-Type', /json/)

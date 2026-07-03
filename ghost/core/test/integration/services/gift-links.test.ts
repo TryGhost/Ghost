@@ -1,5 +1,7 @@
 import {afterAll, afterEach, beforeAll, describe, it} from 'vitest';
 import assert from 'node:assert/strict';
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
 import errors from '@tryghost/errors';
 import {GiftLinksService, type RequestContext} from '../../../core/server/services/gift-links/service';
 import type {GiftLink} from '../../../core/server/services/gift-links/models';
@@ -31,6 +33,7 @@ describe('GiftLinksService (integration)', function () {
     });
 
     afterEach(async function () {
+        sinon.restore();
         await models.Base.knex('post_gift_links').del();
         await models.Base.knex('gift_links').del();
         await models.Base.knex('actions').where('resource_type', 'gift_link').del();
@@ -187,7 +190,13 @@ describe('GiftLinksService (integration)', function () {
                 }}
             });
 
+            // recordAction() swallows the failure and logs it. Stub the logger
+            // so we can assert that path fired instead of spamming stdout.
+            const errorLog = sinon.stub(logging, 'error');
+
             await assert.doesNotReject(() => failing.create(CTX, postId));
+
+            sinon.assert.calledOnce(errorLog);
             assert.equal((await liveLinks(postId)).length, 1, 'the gift link is still created');
         });
     });

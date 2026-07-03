@@ -258,6 +258,10 @@ describe('Can send cards via email', function () {
     });
 
     it('uses URL-based dimension lookup for CDN images', async function () {
+        // This test stubs ImageSize internals and asserts the URL lookup chain
+        // runs, so restore the real cache method (disableNetwork no-ops it globally).
+        mockManager.allowImageSize();
+
         const cdnImageUrl = 'https://cdn.com/uuid/content/images/image.jpg';
 
         const imageSizeFromUrlStub = sinon.stub(ImageSize.prototype, '_imageSizeFromUrl').resolves({
@@ -284,6 +288,10 @@ describe('Can send cards via email', function () {
     });
 
     it('does not use storage-path lookup for CDN post content images', async function () {
+        // This test stubs ImageSize internals and asserts the URL lookup chain
+        // runs, so restore the real cache method (disableNetwork no-ops it globally).
+        mockManager.allowImageSize();
+
         const cdnImageUrl = 'https://cdn.com/uuid/content/images/post-image.jpg';
 
         const urlStub = sinon.stub(ImageSize.prototype, '_imageSizeFromUrl').resolves({width: 1200, height: 800});

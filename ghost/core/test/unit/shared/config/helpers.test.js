@@ -52,3 +52,45 @@ describe('vhost utils', function () {
         });
     });
 });
+
+describe('env helpers', function () {
+    afterEach(async function () {
+        await configUtils.restore();
+    });
+
+    describe('isTestEnv', function () {
+        it('returns true for testing and testing-mysql', function () {
+            configUtils.set('env', 'testing');
+            assert.equal(configUtils.config.isTestEnv(), true);
+
+            configUtils.set('env', 'testing-mysql');
+            assert.equal(configUtils.config.isTestEnv(), true);
+        });
+
+        it('returns false for development and production', function () {
+            configUtils.set('env', 'development');
+            assert.equal(configUtils.config.isTestEnv(), false);
+
+            configUtils.set('env', 'production');
+            assert.equal(configUtils.config.isTestEnv(), false);
+        });
+    });
+
+    describe('isProductionOrDevelopment', function () {
+        it('returns true for development and production', function () {
+            configUtils.set('env', 'development');
+            assert.equal(configUtils.config.isProductionOrDevelopment(), true);
+
+            configUtils.set('env', 'production');
+            assert.equal(configUtils.config.isProductionOrDevelopment(), true);
+        });
+
+        it('returns false for testing and other environments', function () {
+            configUtils.set('env', 'testing');
+            assert.equal(configUtils.config.isProductionOrDevelopment(), false);
+
+            configUtils.set('env', 'staging');
+            assert.equal(configUtils.config.isProductionOrDevelopment(), false);
+        });
+    });
+});
