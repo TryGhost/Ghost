@@ -91,4 +91,31 @@ describe('Unit: endpoints/utils/serializers/output/members', function () {
         assertExists(frame.response.members[0].enable_comment_notifications);
         assert.equal(frame.response.members[0].enable_comment_notifications, true);
     });
+
+    it('read: includes automation email stats separately from newsletter email stats', function () {
+        const apiConfig = {docName: 'members'};
+        const frame = {
+            options: {
+                context: {}
+            }
+        };
+
+        const ctrlResponse = memberModel(testUtils.DataGenerator.forKnex.createMember({
+            email_count: 12,
+            email_opened_count: 6,
+            email_open_rate: 50,
+            automation_email_count: 8,
+            automation_email_opened_count: 2,
+            automation_email_open_rate: 25
+        }));
+
+        memberSerializer.read(ctrlResponse, apiConfig, frame);
+
+        assert.equal(frame.response.members[0].email_count, 12);
+        assert.equal(frame.response.members[0].email_opened_count, 6);
+        assert.equal(frame.response.members[0].email_open_rate, 50);
+        assert.equal(frame.response.members[0].automation_email_count, 8);
+        assert.equal(frame.response.members[0].automation_email_opened_count, 2);
+        assert.equal(frame.response.members[0].automation_email_open_rate, 25);
+    });
 });

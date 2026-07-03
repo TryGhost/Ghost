@@ -181,6 +181,9 @@ function serializeMember(member, options) {
         email_count: json.email_count,
         email_opened_count: json.email_opened_count,
         email_open_rate: json.email_open_rate,
+        automation_email_count: json.automation_email_count,
+        automation_email_opened_count: json.automation_email_opened_count,
+        automation_email_open_rate: json.automation_email_open_rate,
         email_recipients: json.email_recipients,
         status: json.status,
         last_seen_at: json.last_seen_at,
@@ -273,7 +276,10 @@ function createSerializer(debugString, serialize) {
  * @prop {boolean} comped
  * @prop {number} email_count
  * @prop {number} email_opened_count
- * @prop {number} email_open_rate
+ * @prop {number|null} email_open_rate
+ * @prop {number} automation_email_count
+ * @prop {number} automation_email_opened_count
+ * @prop {number|null} automation_email_open_rate
  * @prop {null|SerializedEmailRecipient[]} email_recipients
  * @prop {boolean} enable_comment_notifications
  * @prop {boolean|null} enable_updates_and_announcements
