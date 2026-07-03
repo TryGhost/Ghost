@@ -2144,7 +2144,7 @@ importers:
         version: 1.6.0
       dockerode:
         specifier: 5.0.1
-        version: 5.0.1
+        version: 5.0.1(supports-color@5.5.0)
       dotenv:
         specifier: 'catalog:'
         version: 17.4.2
@@ -3192,8 +3192,8 @@ importers:
         specifier: 11.0.1
         version: 11.0.1(jiti@2.7.0)(postcss@8.5.16)(tsx@4.22.4)
       qs:
-        specifier: 6.15.2
-        version: 6.15.2
+        specifier: 6.15.3
+        version: 6.15.3
       sinon:
         specifier: 'catalog:'
         version: 22.0.0
@@ -19421,8 +19421,8 @@ packages:
 
       (For a CapTP with native promises, see @endo/eventual-send and @endo/captp)
 
-  qs@6.15.2:
-    resolution: {integrity: sha512-Rzq0KEyX/w/tEybncDgdkZrJgVUsUMk3xjh3t5bv3S1HTAtg+uOYt72+ZfwiQwKdysThkTBdL/rTi6HDmX9Ddw==}
+  qs@6.15.3:
+    resolution: {integrity: sha512-O9gl3zCl5h5blw1KGUzQKhA5oUXSl8rwUIM5o0S3nCXMliSvy5Dzx7/DJcI+SwgICv+IneSZwhBh1oSyEHA71A==}
     engines: {node: '>=0.6'}
 
   quansync@0.2.11:
@@ -32049,7 +32049,7 @@ snapshots:
       http-errors: 2.0.1
       iconv-lite: 0.4.24
       on-finished: 2.4.1
-      qs: 6.15.2
+      qs: 6.15.3
       raw-body: 2.5.3
       type-is: 1.6.18
       unpipe: 1.0.0
@@ -32064,7 +32064,7 @@ snapshots:
       http-errors: 2.0.1
       iconv-lite: 0.7.2
       on-finished: 2.4.1
-      qs: 6.15.2
+      qs: 6.15.3
       raw-body: 3.0.2
       type-is: 2.1.0
     transitivePeerDependencies:
@@ -34310,7 +34310,7 @@ snapshots:
 
   dlv@1.1.3: {}
 
-  docker-modem@5.0.7:
+  docker-modem@5.0.7(supports-color@5.5.0):
     dependencies:
       debug: 4.4.3(supports-color@5.5.0)
       readable-stream: 3.6.2
@@ -34319,12 +34319,12 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  dockerode@5.0.1:
+  dockerode@5.0.1(supports-color@5.5.0):
     dependencies:
       '@balena/dockerignore': 1.0.2
       '@grpc/grpc-js': 1.14.4
       '@grpc/proto-loader': 0.7.15
-      docker-modem: 5.0.7
+      docker-modem: 5.0.7(supports-color@5.5.0)
       protobufjs: 7.6.4
       tar-fs: 2.1.4
     transitivePeerDependencies:
@@ -37183,7 +37183,7 @@ snapshots:
       parseurl: 1.3.3
       path-to-regexp: 0.1.13
       proxy-addr: 2.0.7
-      qs: 6.15.2
+      qs: 6.15.3
       range-parser: 1.2.1
       safe-buffer: 5.2.1
       send: 0.19.2(supports-color@1.2.0)
@@ -37219,7 +37219,7 @@ snapshots:
       parseurl: 1.3.3
       path-to-regexp: 0.1.13
       proxy-addr: 2.0.7
-      qs: 6.15.2
+      qs: 6.15.3
       range-parser: 1.2.1
       safe-buffer: 5.2.1
       send: 0.19.2(supports-color@1.2.0)
@@ -37254,7 +37254,7 @@ snapshots:
       once: 1.4.0
       parseurl: 1.3.3
       proxy-addr: 2.0.7
-      qs: 6.15.2
+      qs: 6.15.3
       range-parser: 1.2.1
       router: 2.2.0(supports-color@5.5.0)
       send: 1.2.1(supports-color@5.5.0)
@@ -41542,7 +41542,7 @@ snapshots:
     dependencies:
       jquery-deferred: 0.3.1
       lodash: 4.18.1
-      qs: 6.15.2
+      qs: 6.15.3
 
   named-placeholders@1.1.6:
     dependencies:
@@ -43657,8 +43657,9 @@ snapshots:
 
   q@1.5.1: {}
 
-  qs@6.15.2:
+  qs@6.15.3:
     dependencies:
+      es-define-property: 1.0.1
       side-channel: 1.1.1
 
   quansync@0.2.11: {}
@@ -44220,7 +44221,7 @@ snapshots:
       mime-types: 2.1.35
       oauth-sign: 0.9.0
       performance-now: 2.1.0
-      qs: 6.15.2
+      qs: 6.15.3
       safe-buffer: 5.2.1
       tough-cookie: 4.1.4
       tunnel-agent: 0.6.0
@@ -45383,7 +45384,7 @@ snapshots:
   stripe@8.222.0:
     dependencies:
       '@types/node': 26.0.0
-      qs: 6.15.2
+      qs: 6.15.3
 
   strtok3@10.3.5:
     dependencies:
@@ -45443,7 +45444,7 @@ snapshots:
       formidable: 3.5.4
       methods: 1.1.2
       mime: 2.6.0
-      qs: 6.15.2
+      qs: 6.15.3
     transitivePeerDependencies:
       - supports-color
 
@@ -45457,7 +45458,7 @@ snapshots:
       formidable: 1.2.6
       methods: 1.1.2
       mime: 2.6.0
-      qs: 6.15.2
+      qs: 6.15.3
       readable-stream: 3.6.2
       semver: 7.8.5
     transitivePeerDependencies:
@@ -45922,7 +45923,7 @@ snapshots:
       faye-websocket: 0.11.4
       livereload-js: 3.4.1
       object-assign: 4.1.1
-      qs: 6.15.2
+      qs: 6.15.3
     transitivePeerDependencies:
       - supports-color
 
@@ -46446,7 +46447,7 @@ snapshots:
   url@0.11.4:
     dependencies:
       punycode: 1.4.1
-      qs: 6.15.2
+      qs: 6.15.3
 
   use-callback-ref@1.3.3(@types/react@18.3.31)(react@18.3.1):
     dependencies:
