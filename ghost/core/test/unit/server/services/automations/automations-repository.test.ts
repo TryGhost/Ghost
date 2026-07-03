@@ -85,6 +85,9 @@ const createDatabase = async (): Promise<Knex> => {
         table.text('email_subject');
         table.text('email_lexical');
         table.text('email_design_setting_id').references('id').inTable('email_design_settings');
+        table.integer('sent_count').notNullable().defaultTo(0);
+        table.integer('delivered_count').notNullable().defaultTo(0);
+        table.integer('opened_count').notNullable().defaultTo(0);
         table.unique(['created_at', 'action_id']);
     });
 
@@ -516,6 +519,22 @@ describe('automations repository', function () {
 
     afterEach(async function () {
         await knex?.destroy();
+    });
+
+    describe('incrementActionRevisionSentCount', function () {
+        it('increments sent_count for the action revision', async function () {
+            const automation = await getAutomationBySlug('member-welcome-email-free');
+            const action = await getActionByIndex(automation.id, 1);
+
+            await repo.incrementActionRevisionSentCount(action.revision_id);
+
+            const revision = await knex('automation_action_revisions')
+                .select('sent_count')
+                .where('id', action.revision_id)
+                .first();
+
+            assert.equal(revision.sent_count, 1);
+        });
     });
 
     describe('browse', function () {
