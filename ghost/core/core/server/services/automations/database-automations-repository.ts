@@ -214,6 +214,12 @@ export function createDatabaseAutomationsRepository({
 
         async retryStep(step: AutomationStepToRun, retryAt: Date): Promise<boolean> {
             return await knex.transaction(trx => retryStep(trx, step, retryAt));
+        },
+
+        async incrementActionRevisionSentCount(automationActionRevisionId: string): Promise<void> {
+            await knex('automation_action_revisions')
+                .where('id', automationActionRevisionId)
+                .increment('sent_count', 1);
         }
     };
 }

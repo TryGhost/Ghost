@@ -56,6 +56,7 @@ type PollOptions = {
     automationsApi: Pick<AutomationsRepository,
         'fetchAndLockSteps' |
         'finishStepAndEnqueueNext' |
+        'incrementActionRevisionSentCount' |
         'markStepTerminal' |
         'retryStep'
     >;
@@ -217,6 +218,9 @@ const processStep = async ({
                     automation_action_revision_id: step.automation_action_revision_id,
                     ...(mailgunMessageId ? {mailgun_message_id: mailgunMessageId} : {})
                 });
+                if (mailgunMessageId) {
+                    await automationsApi.incrementActionRevisionSentCount(step.automation_action_revision_id);
+                }
             } catch (err) {
                 logging.error({
                     err,

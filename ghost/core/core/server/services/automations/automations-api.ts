@@ -359,3 +359,7 @@ export async function markStepTerminal(...args: Parameters<AutomationsRepository
 export async function retryStep(...args: Parameters<AutomationsRepository['retryStep']>) {
     return await repository.retryStep(...args);
 }
+
+export async function incrementActionRevisionSentCount(...args: Parameters<AutomationsRepository['incrementActionRevisionSentCount']>) {
+    return await repository.incrementActionRevisionSentCount(...args);
+}

@@ -36,6 +36,20 @@ What should a future implementation or design review revisit, if anything?
 
 ## Entries
 
+## 2026-07-03 - Sent Count Send-Path Consistency
+
+**Dilemma**:
+Task 3.2 needs `automation_action_revisions.sent_count` to increment only for sends with a persisted `mailgun_message_id`. The newer automation poll path records recipients through `AutomatedEmailRecipient.add` but keeps step state writes behind the automations repository, so there is no existing transaction that spans recipient persistence and action revision counter updates.
+
+**Decision**:
+Increment `sent_count` through the automations repository only after the recipient row has been recorded with a Mailgun message id. Do not increment when the send result lacks a message id.
+
+**Rationale**:
+This preserves the required traceability invariant and keeps the spike change close to the send path without broadening the repository API around recipient persistence. It avoids counting untracked sends, which would be harder to reconcile later.
+
+**Follow-up**:
+Before productionizing, consider moving recipient creation plus send-path counter increments into one transaction-owned repository method so a tracked recipient and `sent_count` cannot diverge if the second write fails.
+
 ## 2026-07-03 - Automation Send Message Id Shape
 
 **Dilemma**:

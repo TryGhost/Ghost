@@ -129,6 +129,7 @@ describe('automations poll', function () {
         automationsApi = {
             fetchAndLockSteps: fake<AutomationsApi['fetchAndLockSteps']>().resolves({steps: [], nextStepReadyAt: null}),
             finishStepAndEnqueueNext: fake<AutomationsApi['finishStepAndEnqueueNext']>().resolves(null),
+            incrementActionRevisionSentCount: fake<AutomationsApi['incrementActionRevisionSentCount']>().resolves(),
             markStepTerminal: fake<AutomationsApi['markStepTerminal']>().resolves(true),
             retryStep: fake<AutomationsApi['retryStep']>().resolves(true)
         };
@@ -364,6 +365,44 @@ describe('automations poll', function () {
             automatedEmailRecipientAdd,
             automationsApi.finishStepAndEnqueueNext
         );
+    });
+
+    it('increments the action revision sent count only after recording a Mailgun-tracked send', async function () {
+        const trackedStep = buildEmailStep({
+            automation_action_revision_id: 'tracked-revision-id'
+        });
+        automationsApi.fetchAndLockSteps.resolves({steps: [trackedStep], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({
+            id: 'mailgun-message-id'
+        });
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automationsApi.incrementActionRevisionSentCount, 'tracked-revision-id');
+        sinon.assert.callOrder(
+            memberWelcomeEmailService.api.sendAutomationEmail,
+            automatedEmailRecipientAdd,
+            automationsApi.incrementActionRevisionSentCount,
+            automationsApi.finishStepAndEnqueueNext
+        );
+
+        automationsApi.fetchAndLockSteps.resetHistory();
+        automationsApi.finishStepAndEnqueueNext.resetHistory();
+        automationsApi.incrementActionRevisionSentCount.resetHistory();
+        automatedEmailRecipientAdd.resetHistory();
+        memberWelcomeEmailService.api.sendAutomationEmail.resetHistory();
+
+        const untrackedStep = buildEmailStep({
+            automation_action_revision_id: 'untracked-revision-id'
+        });
+        automationsApi.fetchAndLockSteps.resolves({steps: [untrackedStep], nextStepReadyAt: null});
+        memberWelcomeEmailService.api.sendAutomationEmail.resolves({});
+
+        await poll(options);
+
+        sinon.assert.calledOnce(automatedEmailRecipientAdd);
+        sinon.assert.notCalled(automationsApi.incrementActionRevisionSentCount);
+        sinon.assert.calledOnceWithExactly(automationsApi.finishStepAndEnqueueNext, untrackedStep);
     });
 
     it('does not retry the email send when recording the automated email recipient fails', async function () {

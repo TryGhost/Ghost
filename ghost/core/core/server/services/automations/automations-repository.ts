@@ -147,4 +147,5 @@ export interface AutomationsRepository {
         step: Pick<AutomationStepToRun, 'id' | 'locked_by'>,
         retryAt: Readonly<Date>
     ): Promise<boolean>;
+    incrementActionRevisionSentCount(automationActionRevisionId: string): Promise<void>;
 }
