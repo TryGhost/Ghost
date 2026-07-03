@@ -1,9 +1,33 @@
+const debug = require('@tryghost/debug')('mediaInliner');
+const jobQueue = require('../jobs/queue').default;
+const ExternalMediaInlinerJob = require('./jobs/external-media-inliner-job').default;
+
+const DEFAULT_DOMAINS = [
+    'https://s3.amazonaws.com/revue',
+    'https://substackcdn.com'
+];
+
 module.exports = {
+    api: {
+        startMediaInliner: async (domains) => {
+            if (!domains || !domains.length) {
+                // default domains to inline from if none are provided
+                domains = DEFAULT_DOMAINS;
+            }
+
+            debug('[Inliner] Starting media inlining job for domains: ', domains);
+
+            await jobQueue.dispatch(new ExternalMediaInlinerJob({domains}));
+
+            return {
+                status: 'success'
+            };
+        }
+    },
+
     async init() {
-        const debug = require('@tryghost/debug')('mediaInliner');
         const MediaInliner = require('./external-media-inliner');
         const models = require('../../models');
-        const jobsService = require('../jobs');
 
         const mediaStorage = require('../../adapters/storage').getStorage('media');
         const imageStorage = require('../../adapters/storage').getStorage('images');
@@ -29,34 +53,8 @@ module.exports = {
             }
         });
 
-        this.api = {
-
-            startMediaInliner: async (domains) => {
-                if (!domains || !domains.length) {
-                    // default domains to inline from if none are provided
-                    domains = [
-                        'https://s3.amazonaws.com/revue',
-                        'https://substackcdn.com'
-                    ];
-                }
-
-                debug('[Inliner] Starting media inlining job for domains: ', domains);
-
-                // @NOTE: the job is "inline" (aka non-offloaded into a thread), because usecases are currently
-                //        limited to migrational, so there is no expectations for site's availability etc.
-                await jobsService.addJob({
-                    name: 'external-media-inliner',
-                    job: (data) => {
-                        return mediaInliner.inline(data.domains);
-                    },
-                    data: {domains},
-                    offloaded: false
-                });
-
-                return {
-                    status: 'success'
-                };
-            }
-        };
+        // Own pool: inlining crawls every post and can run for hours; it must
+        // not occupy the default queue's slots, starving the recurring jobs.
+        jobQueue.handle(ExternalMediaInlinerJob, job => mediaInliner.inline(job.data.domains), {concurrency: 1});
     }
 };
