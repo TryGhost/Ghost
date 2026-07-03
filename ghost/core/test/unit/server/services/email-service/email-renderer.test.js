@@ -1329,6 +1329,63 @@ describe('Email renderer', function () {
         });
     });
 
+    describe('getPreviewSegment', function () {
+        let emailRenderer;
+
+        beforeEach(function () {
+            emailRenderer = new EmailRenderer({});
+        });
+
+        function createTiersPost(tiers) {
+            return {
+                get: (key) => {
+                    if (key === 'visibility') {
+                        return 'tiers';
+                    }
+                },
+                related: (key) => {
+                    if (key === 'tiers') {
+                        return {toJSON: () => tiers};
+                    }
+                }
+            };
+        }
+
+        it('maps the paid audience to the tier access segment for a tiers post', function () {
+            const post = createTiersPost([{slug: 'gold'}, {slug: 'silver'}]);
+            assert.equal(
+                emailRenderer.getPreviewSegment(post, 'status:-free'),
+                'status:-free+(product:\'gold\',product:\'silver\')'
+            );
+        });
+
+        it('keeps the free audience segment for a tiers post', function () {
+            const post = createTiersPost([{slug: 'gold'}]);
+            assert.equal(emailRenderer.getPreviewSegment(post, 'status:free'), 'status:free');
+        });
+
+        it('passes the paid audience through for non-tiers posts', function () {
+            const post = {
+                get: (key) => {
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+                }
+            };
+            assert.equal(emailRenderer.getPreviewSegment(post, 'status:-free'), 'status:-free');
+        });
+
+        it('passes through for a tiers post with no tiers', function () {
+            const post = createTiersPost([]);
+            assert.equal(emailRenderer.getPreviewSegment(post, 'status:-free'), 'status:-free');
+        });
+
+        it('passes through a null segment', function () {
+            const post = createTiersPost([{slug: 'gold'}]);
+            assert.equal(emailRenderer.getPreviewSegment(post, null), null);
+        });
+    });
+
     describe('renderBody', function () {
         let renderedPost;
         let postUrl = 'http://example.com';
@@ -2352,6 +2409,50 @@ describe('Email renderer', function () {
             const access = await emailRenderer.renderBody(post, newsletter, 'product:\'gold\'', {});
             assert(access.html.includes('finishing part only for members'));
             assert(!access.html.includes('Become a paid member of Test Blog to get access to all'));
+
+            // The composite shape the email preview maps the paid audience to -> full content
+            const preview = await emailRenderer.renderBody(post, newsletter, 'status:-free+(product:\'gold\')', {});
+            assert(preview.html.includes('finishing part only for members'));
+            assert(!preview.html.includes('Become a paid member of Test Blog to get access to all'));
+        });
+
+        it('does not paywall an unsegmented (null segment) render of a gated post', async function () {
+            renderedPost = '<div> Lexical Test </div> some text for both <!--members-only--> finishing part only for members';
+            const post = {
+                related: () => {
+                    return null;
+                },
+                get: (key) => {
+                    if (key === 'lexical') {
+                        return '{}';
+                    }
+                    if (key === 'visibility') {
+                        return 'paid';
+                    }
+                    if (key === 'title') {
+                        return 'Test Post';
+                    }
+                },
+                getLazyRelation: () => {
+                    return {models: [{get: k => (k === 'name' ? 'Test Author' : undefined)}]};
+                }
+            };
+            const newsletter = {
+                get: (key) => {
+                    if (key === 'show_post_title_section') {
+                        return true;
+                    }
+                    if (key === 'feedback_enabled') {
+                        return true;
+                    }
+                    return false;
+                }
+            };
+
+            const response = await emailRenderer.renderBody(post, newsletter, null, {});
+            assert(response.html.includes('some text for both'));
+            assert(response.html.includes('finishing part only for members'));
+            assert(!response.html.includes('Become a paid member of Test Blog to get access to all'));
         });
 
         it('should output valid HTML and escape HTML characters in mobiledoc', async function () {
