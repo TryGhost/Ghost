@@ -1,10 +1,9 @@
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const config = require('../../../shared/config');
+const EmailAnalyticsRunner = require('./runner/email-analytics-runner');
 
 class EmailAnalyticsServiceWrapper {
-    #restoredSchedule = false;
-
     init() {
         if (this.service) {
             return;
@@ -68,6 +67,40 @@ class EmailAnalyticsServiceWrapper {
         domainEvents.subscribe(StartEmailAnalyticsJobEvent, async () => {
             await this.startFetch();
         });
+    }
+
+    _getRunner() {
+        if (!this.runner) {
+            this.runner = new EmailAnalyticsRunner({
+                adapter: {
+                    name: 'newsletter',
+                    restoreScheduled: async () => {
+                        await this.service.restoreScheduled();
+                    },
+                    getLastOpenedEventTimestamp: async () => {
+                        return await this.service.getLastOpenedEventTimestamp();
+                    },
+                    fetchLatestOpenedEvents: async (options) => {
+                        return await this.fetchLatestOpenedEvents(options);
+                    },
+                    fetchLatestNonOpenedEvents: async (options) => {
+                        return await this.fetchLatestNonOpenedEvents(options);
+                    },
+                    fetchMissing: async (options) => {
+                        return await this.fetchMissing(options);
+                    },
+                    fetchScheduled: async (options) => {
+                        return await this.fetchScheduled(options);
+                    },
+                    restartFetch: (reason) => {
+                        this._restartFetch(reason);
+                    }
+                },
+                logging
+            });
+        }
+
+        return this.runner;
     }
 
     /**
@@ -169,58 +202,7 @@ class EmailAnalyticsServiceWrapper {
     }
 
     async startFetch() {
-        if (!this.#restoredSchedule) {
-            this.#restoredSchedule = true;
-            await this.service.restoreScheduled();
-        }
-
-        if (this.fetching) {
-            logging.info('Email analytics fetch already running, skipping');
-            return;
-        }
-        this.fetching = true;
-
-        // NOTE: Data shows we can process ~2500 events per minute on Pro for a large-ish db (150k members).
-        //       This can vary locally, but we should be conservative with the number of events we fetch.
-        try {
-            // Prioritize opens since they are the most important (only data directly displayed to users)
-            const c1 = await this.fetchLatestOpenedEvents({maxEvents: 10000});
-            if (c1 >= 10000) {
-                this._restartFetch('high opened event count');
-                return;
-            }
-
-            // Set limits on how much we fetch without checkings for opened events. During surge events (following newsletter send)
-            //  we want to make sure we don't spend too much time collecting delivery data.
-            const c2 = await this.fetchLatestNonOpenedEvents({maxEvents: 10000 - c1});
-            const c3 = await this.fetchMissing({maxEvents: 10000 - c1 - c2});
-
-            // Always restart immediately instead of waiting for the next scheduled job if we're fetching a lot of events
-            if ((c1 + c2 + c3) > 10000) {
-                this._restartFetch('high event count');
-                return;
-            }
-
-            // Only backfill if we're not currently fetching a lot of events
-            const c4 = await this.fetchScheduled({maxEvents: 10000});
-            if (c4 > 0) {
-                this._restartFetch('scheduled backfill');
-                return;
-            }
-
-            // Log summary if no events were found across all jobs
-            if (c1 + c2 + c3 + c4 === 0) {
-                logging.info('[EmailAnalytics] Job complete - No events');
-            }
-
-            this.fetching = false;
-        } catch (e) {
-            logging.error(e, 'Error while fetching email analytics');
-
-            // Log again only the error, otherwise we lose the stack trace
-            logging.error(e);
-        }
-        this.fetching = false;
+        await this._getRunner().start();
     }
 
     _restartFetch(reason) {
