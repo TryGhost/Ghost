@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const Module = require('module');
 
 const sinon = require('sinon');
 
@@ -116,6 +117,115 @@ describe('EmailAnalyticsServiceWrapper', function () {
             sinon.assert.calledOnceWithExactly(wrapper._fetchMissingResult, {maxEvents: 2000});
             sinon.assert.notCalled(wrapper._fetchScheduledResult);
             sinon.assert.calledOnceWithExactly(wrapper._restartFetch, 'high event count');
+        });
+    });
+
+    describe('init', function () {
+        let originalLoad;
+
+        beforeEach(function () {
+            originalLoad = Module._load;
+        });
+
+        afterEach(function () {
+            Module._load = originalLoad;
+        });
+
+        it('initializes newsletter and automation analytics runners independently', async function () {
+            class EmailAnalyticsService {}
+            class EmailEventStorage {}
+            class EmailEventProcessor {}
+            class MailgunProvider {}
+            class AutomationAnalyticsPipeline {}
+            class StartEmailAnalyticsJobEvent {}
+            class StartAutomationEmailAnalyticsJobEvent {}
+
+            const subscribedHandlers = new Map();
+            const domainEvents = {
+                subscribe: sinon.stub().callsFake((event, handler) => {
+                    subscribedHandlers.set(event, handler);
+                })
+            };
+            const labs = {
+                isSet: sinon.stub().withArgs('automations').returns(true)
+            };
+
+            Module._load = function (request, parent, isMain) {
+                if (request === './email-analytics-service') {
+                    return EmailAnalyticsService;
+                }
+                if (request === '../email-service/email-event-storage') {
+                    return EmailEventStorage;
+                }
+                if (request === '../email-service/email-event-processor') {
+                    return EmailEventProcessor;
+                }
+                if (request === './email-analytics-provider-mailgun') {
+                    return MailgunProvider;
+                }
+                if (request === './automation/automation-analytics-pipeline') {
+                    return AutomationAnalyticsPipeline;
+                }
+                if (request === './events/start-email-analytics-job-event') {
+                    return StartEmailAnalyticsJobEvent;
+                }
+                if (request === './events/start-automation-email-analytics-job-event') {
+                    return StartAutomationEmailAnalyticsJobEvent;
+                }
+                if (request === '@tryghost/domain-events') {
+                    return domainEvents;
+                }
+                if (request === '../../../shared/labs') {
+                    return labs;
+                }
+                if (request === '../../models') {
+                    return {};
+                }
+                if (request === '../members') {
+                    return {
+                        api: {
+                            members: {}
+                        }
+                    };
+                }
+                if ([
+                    '../../../shared/settings-cache',
+                    '../../data/db',
+                    './lib/queries',
+                    '../email-suppression-list',
+                    '../../../shared/prometheus-client'
+                ].includes(request)) {
+                    return {};
+                }
+
+                return originalLoad.call(this, request, parent, isMain);
+            };
+
+            const wrapper = new EmailAnalyticsServiceWrapper();
+            const newsletterRunner = {
+                start: sinon.stub().resolves()
+            };
+            const automationRunner = {
+                start: sinon.stub().resolves()
+            };
+
+            sinon.stub(wrapper, '_getRunner').returns(newsletterRunner);
+            sinon.stub(wrapper, '_getAutomationRunner').returns(automationRunner);
+
+            wrapper.init();
+
+            assert.ok(subscribedHandlers.has(StartEmailAnalyticsJobEvent));
+            assert.ok(subscribedHandlers.has(StartAutomationEmailAnalyticsJobEvent));
+
+            await subscribedHandlers.get(StartEmailAnalyticsJobEvent)();
+
+            sinon.assert.calledOnce(newsletterRunner.start);
+            sinon.assert.notCalled(automationRunner.start);
+
+            await subscribedHandlers.get(StartAutomationEmailAnalyticsJobEvent)();
+
+            sinon.assert.calledOnce(newsletterRunner.start);
+            sinon.assert.calledOnce(automationRunner.start);
         });
     });
 });

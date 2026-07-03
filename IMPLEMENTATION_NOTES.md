@@ -36,6 +36,20 @@ What should a future implementation or design review revisit, if anything?
 
 ## Entries
 
+## 2026-07-03 - Automation Pipeline Bootstrap Gate
+
+**Dilemma**:
+Task 5.3 needs newsletter and automation analytics runners initialized independently, but the scheduler gate already owns the global `emailAnalytics:enabled` and `backgroundJobs:emailAnalytics` checks.
+
+**Decision**:
+Keep newsletter wrapper initialization unchanged, and initialize the automation pipeline/event listener only when the existing `automations` labs flag is enabled. The automation pipeline module is required inside that gated block so disabled automation analytics cannot affect newsletter bootstrap.
+
+**Rationale**:
+This matches the Task 5.2 scheduling gate without duplicating global config checks in the event listener layer. It also keeps the two pipelines independent: newsletter can subscribe and run even when automation analytics is disabled or not loaded.
+
+**Follow-up**:
+Before productionizing, decide whether the bootstrap gate should use a dedicated automation analytics config flag alongside or instead of the `automations` labs flag.
+
 ## 2026-07-03 - Automation Analytics Scheduling Gate
 
 **Dilemma**:

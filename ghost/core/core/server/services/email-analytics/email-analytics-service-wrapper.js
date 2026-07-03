@@ -5,7 +5,7 @@ const EmailAnalyticsRunner = require('./runner/email-analytics-runner');
 
 class EmailAnalyticsServiceWrapper {
     init() {
-        if (this.service) {
+        if (this.service && this.automationPipeline) {
             return;
         }
 
@@ -25,48 +25,67 @@ class EmailAnalyticsServiceWrapper {
         const emailSuppressionList = require('../email-suppression-list');
         const prometheusClient = require('../../../shared/prometheus-client');
 
-        this.eventStorage = new EmailEventStorage({
-            db,
-            membersRepository,
-            models: {
-                Email,
-                EmailRecipientFailure,
-                EmailSpamComplaintEvent
-            },
-            emailSuppressionList,
-            prometheusClient
-        });
+        if (!this.service) {
+            this.eventStorage = new EmailEventStorage({
+                db,
+                membersRepository,
+                models: {
+                    Email,
+                    EmailRecipientFailure,
+                    EmailSpamComplaintEvent
+                },
+                emailSuppressionList,
+                prometheusClient
+            });
 
-        // Since this is running in a worker thread, we cant dispatch directly
-        // So we post the events as a message to the job manager
-        const eventProcessor = new EmailEventProcessor({
-            domainEvents,
-            db,
-            eventStorage: this.eventStorage,
-            prometheusClient
-        });
+            // Since this is running in a worker thread, we cant dispatch directly
+            // So we post the events as a message to the job manager
+            const eventProcessor = new EmailEventProcessor({
+                domainEvents,
+                db,
+                eventStorage: this.eventStorage,
+                prometheusClient
+            });
 
-        this.service = new EmailAnalyticsService({
-            config,
-            settings,
-            eventProcessor,
-            providers: [
-                new MailgunProvider({config, settings, labs})
-            ],
-            queries,
-            domainEvents,
-            prometheusClient
-        });
+            this.service = new EmailAnalyticsService({
+                config,
+                settings,
+                eventProcessor,
+                providers: [
+                    new MailgunProvider({config, settings, labs})
+                ],
+                queries,
+                domainEvents,
+                prometheusClient
+            });
 
-        // Log the processing mode on initialization
-        const batchProcessingEnabled = config.get('emailAnalytics:batchProcessing');
-        logging.info(`[EmailAnalytics] Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`);
+            // Log the processing mode on initialization
+            const batchProcessingEnabled = config.get('emailAnalytics:batchProcessing');
+            logging.info(`[EmailAnalytics] Initialized with ${batchProcessingEnabled ? 'BATCHED' : 'SEQUENTIAL'} processing mode`);
 
-        // We currently cannot trigger a non-offloaded job from the job manager
-        // So the email analytics jobs simply emits an event.
-        domainEvents.subscribe(StartEmailAnalyticsJobEvent, async () => {
-            await this.startFetch();
-        });
+            // We currently cannot trigger a non-offloaded job from the job manager
+            // So the email analytics jobs simply emits an event.
+            domainEvents.subscribe(StartEmailAnalyticsJobEvent, async () => {
+                await this.startFetch();
+            });
+        }
+
+        if (!this.automationPipeline && labs.isSet('automations')) {
+            const StartAutomationEmailAnalyticsJobEvent = require('./events/start-automation-email-analytics-job-event');
+            const AutomationAnalyticsPipeline = require('./automation/automation-analytics-pipeline');
+
+            this.automationPipeline = new AutomationAnalyticsPipeline({
+                config,
+                settings,
+                labs,
+                queries,
+                db
+            });
+
+            domainEvents.subscribe(StartAutomationEmailAnalyticsJobEvent, async () => {
+                await this.startAutomationFetch();
+            });
+        }
     }
 
     _getRunner() {
@@ -103,6 +122,36 @@ class EmailAnalyticsServiceWrapper {
         }
 
         return this.runner;
+    }
+
+    _getAutomationRunner() {
+        if (!this.automationRunner) {
+            this.automationRunner = new EmailAnalyticsRunner({
+                adapter: {
+                    name: 'automation',
+                    getLastOpenedEventTimestamp: async () => {
+                        return await this.automationPipeline.getLastOpenedEventTimestamp();
+                    },
+                    fetchLatestOpenedEvents: async (options) => {
+                        return await this.automationPipeline.fetchLatestOpenedEvents(options);
+                    },
+                    fetchLatestNonOpenedEvents: async (options) => {
+                        return await this.automationPipeline.fetchLatestNonOpenedEvents(options);
+                    },
+                    fetchMissing: async (options) => {
+                        return await this.automationPipeline.fetchMissing(options);
+                    },
+                    restartFetch: (reason) => {
+                        this._restartAutomationFetch(reason);
+                    }
+                },
+                logging,
+                metrics,
+                config
+            });
+        }
+
+        return this.automationRunner;
     }
 
     _getEventCount(fetchResult) {
@@ -182,10 +231,19 @@ class EmailAnalyticsServiceWrapper {
         await this._getRunner().start();
     }
 
+    async startAutomationFetch() {
+        await this._getAutomationRunner().start();
+    }
+
     _restartFetch(reason) {
         this.fetching = false;
         logging.info(`[EmailAnalytics] Restarting fetch due to ${reason}`);
         this.startFetch();
+    }
+
+    _restartAutomationFetch(reason) {
+        logging.info(`[EmailAnalytics] Restarting automation fetch due to ${reason}`);
+        this.startAutomationFetch();
     }
 }
 
