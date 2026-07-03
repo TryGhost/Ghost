@@ -163,6 +163,52 @@ describe('AutomationEventProcessor', function () {
         assert.equal(recipientRepository.member.automation_email_open_rate, 40);
         assert.equal(recipientRepository.transactionCount, 1);
     });
+
+    it('does not double-increment counters for duplicate delivered events', async function () {
+        const firstDeliveredAt = new Date('2026-07-03T16:30:00.000Z');
+        const duplicateDeliveredAt = new Date('2026-07-03T16:35:00.000Z');
+        const recipientRepository = createFakeRecipientRepository({
+            recipient: {
+                id: 'recipient-id',
+                mailgun_message_id: '<message-id@mailgun.example>',
+                member_email: 'member@example.com',
+                member_id: 'member-id',
+                automation_action_revision_id: 'revision-id',
+                delivered_at: null
+            },
+            actionRevision: {
+                id: 'revision-id',
+                delivered_count: 0
+            },
+            member: {
+                id: 'member-id',
+                automation_email_count: 5,
+                automation_email_opened_count: 1,
+                automation_email_open_rate: null
+            }
+        });
+        const processor = new AutomationEventProcessor({recipientRepository});
+
+        await processor.processEvents([{
+            id: 'event-id-1',
+            type: 'delivered',
+            providerId: '<message-id@mailgun.example>',
+            recipientEmail: 'member@example.com',
+            timestamp: firstDeliveredAt
+        }, {
+            id: 'event-id-2',
+            type: 'delivered',
+            providerId: '<message-id@mailgun.example>',
+            recipientEmail: 'member@example.com',
+            timestamp: duplicateDeliveredAt
+        }]);
+
+        assert.equal(recipientRepository.recipient.delivered_at, firstDeliveredAt);
+        assert.equal(recipientRepository.actionRevision.delivered_count, 1);
+        assert.equal(recipientRepository.member.automation_email_opened_count, 1);
+        assert.equal(recipientRepository.member.automation_email_open_rate, null);
+        assert.equal(recipientRepository.transactionCount, 1);
+    });
 });
 
 function createFakeRecipientRepository({recipient, actionRevision, member}) {
@@ -201,6 +247,10 @@ function createFakeRecipientRepository({recipient, actionRevision, member}) {
 
         async markDelivered({recipientId, deliveredAt}) {
             assert.equal(recipientId, recipient.id);
+
+            if (recipient.delivered_at) {
+                return false;
+            }
 
             recipient.delivered_at = deliveredAt;
             return true;

@@ -168,6 +168,7 @@ function createRecipientRepository({db} = {}) {
         async markDelivered({recipientId, deliveredAt}, {transacting} = {}) {
             const affectedRows = await (transacting || db.knex)('automated_email_recipients')
                 .where('id', recipientId)
+                .whereNull('delivered_at')
                 .update({
                     delivered_at: deliveredAt
                 });
