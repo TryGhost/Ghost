@@ -1,4 +1,6 @@
 import assert from 'assert/strict';
+import sinon from 'sinon';
+import logging from '@tryghost/logging';
 import {EmailAddressService} from '../../../../../core/server/services/email-address/email-address-service';
 
 describe('EmailAddressService', function () {
@@ -98,6 +100,45 @@ describe('EmailAddressService', function () {
             assert.equal(result.from.name, 'Fallback Sender');
             assert.equal(result.replyTo?.address, 'custom@custom.example.com');
             assert.equal(result.replyTo?.name, 'Custom Sender');
+        });
+    });
+
+    describe('getAddress with invalid replyTo', function () {
+        afterEach(function () {
+            sinon.restore();
+        });
+
+        it('does not log an error when the invalid replyTo matches the default from address', function () {
+            const errorLog = sinon.stub(logging, 'error');
+
+            const service = createService({
+                getDefaultEmail: () => ({address: 'noreply@127.0.0.1', name: 'Ghost'}),
+                isValidEmailAddress: (email: string) => email !== 'noreply@127.0.0.1'
+            });
+
+            const result = service.getAddress({
+                from: {address: 'custom@custom.example.com', name: 'Custom Sender'},
+                replyTo: {address: 'noreply@127.0.0.1', name: 'Ghost'}
+            });
+
+            assert.equal(result.replyTo, undefined);
+            sinon.assert.notCalled(errorLog);
+        });
+
+        it('logs an error when an invalid replyTo does not match the default from address', function () {
+            const errorLog = sinon.stub(logging, 'error');
+
+            const service = createService({
+                isValidEmailAddress: (email: string) => email !== 'not-an-email'
+            });
+
+            const result = service.getAddress({
+                from: {address: 'custom@custom.example.com', name: 'Custom Sender'},
+                replyTo: {address: 'not-an-email', name: 'Bad'}
+            });
+
+            assert.equal(result.replyTo, undefined);
+            sinon.assert.calledOnce(errorLog);
         });
     });
 

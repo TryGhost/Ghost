@@ -101,8 +101,13 @@ export class EmailAddressService {
      */
     getAddress(preferred: EmailAddresses, options: GetAddressOptions = {useFallbackAddress: false}): EmailAddresses {
         if (preferred.replyTo && !this.#isValidEmailAddress(preferred.replyTo.address)) {
+            // The default from-address itself is allowed to fail generic email validation
+            // (e.g. noreply@127.0.0.1 on an IP-only install — see the same carve-out in
+            // validate() below), so don't error-log when the replyTo just happens to match it.
+            if (preferred.replyTo.address !== this.defaultFromEmail.address) {
+                logging.error(`[EmailAddresses] Invalid replyTo address: ${preferred.replyTo.address}`);
+            }
             // Remove invalid replyTo addresses
-            logging.error(`[EmailAddresses] Invalid replyTo address: ${preferred.replyTo.address}`);
             preferred.replyTo = undefined;
         }
 

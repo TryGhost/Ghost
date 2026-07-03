@@ -444,6 +444,11 @@ describe('Batch sending tests', function () {
             };
         };
 
+        // One batch deliberately fails (simulated Mailgun 500 above), so the batch and
+        // job-level error handlers both log it. Stub the logger so we can assert that
+        // guard fired instead of spamming stdout.
+        const errorLog = sinon.stub(logging, 'error');
+
         // Prepare a post and email model
         const {emailModel} = await sendFailedEmail(agent);
         assert.equal(emailModel.get('email_count'), 4);
@@ -491,11 +496,14 @@ describe('Batch sending tests', function () {
         let memberIds = emailRecipients.map(recipient => recipient.get('member_id'));
         assert.equal(memberIds.length, _.uniq(memberIds).length);
 
+        // The simulated 500 logged the expected batch-send failure
+        sinon.assert.called(errorLog);
+        errorLog.restore();
+
         // On retry, the 3 already-submitted batches hit the "already submitted
         // on a prior run" branch in #sendBatch and log info; only the
         // previously-failed batch is re-sent. Stub logging.info just for the
-        // retry so the genuine failure error logged by the initial send above
-        // stays visible, then assert at least one of those skip logs fired.
+        // retry so we can assert those skip logs fired.
         const infoLog = sinon.stub(logging, 'info');
 
         await retryEmail(agent, emailModel.id);
