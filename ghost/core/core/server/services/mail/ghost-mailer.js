@@ -20,6 +20,7 @@ const messages = {
 const EmailAddressParser = require('../email-address/email-address-parser');
 const DEFAULT_TAGS = ['ghost-email', 'transactional-email'];
 const MAX_MAILGUN_TAGS = 10;
+const MAILGUN_SMTP_HOST = 'smtp.mailgun.org';
 
 function getDomain() {
     const domain = urlUtils.urlFor('home', true).match(new RegExp('^https?://([^/:?#]+)(?:[/:?#]|$)', 'i'));
@@ -108,7 +109,8 @@ module.exports = class GhostMailer {
 
         this.state = {
             usingDirect: transport === 'direct',
-            usingMailgun: transport === 'mailgun'
+            usingMailgun: transport === 'mailgun',
+            usingMailgunSmtp: transport === 'smtp' && options.host === MAILGUN_SMTP_HOST
         };
         this.transport = nodemailer(transport, options);
     }
@@ -138,8 +140,8 @@ module.exports = class GhostMailer {
         }
 
         const messageToSend = createMessage(message);
+        const tags = (this.state.usingMailgun || this.state.usingMailgunSmtp) ? this.getTags(message.tags) : [];
         if (this.state.usingMailgun) {
-            const tags = this.getTags(message.tags);
             if (tags.length > 0) {
                 messageToSend['o:tag'] = tags;
             }
@@ -151,6 +153,9 @@ module.exports = class GhostMailer {
                     messageToSend[`h:${key}`] = value;
                 }
             }
+        }
+        if (this.state.usingMailgunSmtp && tags.length > 0) {
+            messageToSend.headers['X-Mailgun-Tag'] = tags;
         }
 
         const response = await this.sendMail(messageToSend);

@@ -431,6 +431,40 @@ describe('Mail: Ghostmailer', function () {
             assert.equal(sentMessage.forceTextContent, undefined);
         });
 
+        it('should include custom tags when using Mailgun SMTP', async function () {
+            configUtils.set({
+                hostSettings: {siteId: '123123'},
+                mail: {
+                    transport: 'SMTP',
+                    options: {
+                        host: 'smtp.mailgun.org',
+                        port: 587,
+                        auth: {
+                            user: 'postmaster@example.com',
+                            pass: 'test'
+                        }
+                    }
+                }
+            });
+
+            mailer = new mail.GhostMailer();
+            const sendMailSpy = sandbox.stub(mailer.transport, 'sendMail').resolves({});
+
+            await mailer.send({
+                to: 'user@example.com',
+                subject: 'test',
+                html: 'content',
+                tags: ['automation-email']
+            });
+
+            const sentMessage = sendMailSpy.firstCall.args[0];
+            assert.equal(sentMessage['o:tag'], undefined);
+            assert(sentMessage.headers['X-Mailgun-Tag'].includes('transactional-email'));
+            assert(sentMessage.headers['X-Mailgun-Tag'].includes('automation-email'));
+            assert.equal(sentMessage.tags, undefined);
+            assert.equal(sentMessage.forceTextContent, undefined);
+        });
+
         it('should truncate tags to Mailgun maximum and log warning', async function () {
             configUtils.set({
                 hostSettings: {siteId: '123123'}
