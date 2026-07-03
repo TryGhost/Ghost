@@ -36,6 +36,20 @@ What should a future implementation or design review revisit, if anything?
 
 ## Entries
 
+## 2026-07-03 - Automation Event Identity Shape
+
+**Dilemma**:
+The automated email analytics plan names the stored lookup key `mailgun_message_id`, while the existing Mailgun event normalization exposes the Mailgun message header as `providerId`.
+
+**Decision**:
+The automation event processor consumes normalized events using `event.providerId` as the Mailgun message id and resolves recipients with `providerId + recipientEmail`.
+
+**Rationale**:
+This keeps the processor compatible with the existing provider normalization and avoids adding an automation-only normalized event shape before the pipeline wiring exists.
+
+**Follow-up**:
+Before productionizing, consider renaming or aliasing the normalized field at the automation pipeline boundary so downstream automation code consistently uses `mailgunMessageId`.
+
 ## 2026-07-03 - Welcome Path Revision Counters
 
 **Dilemma**:
