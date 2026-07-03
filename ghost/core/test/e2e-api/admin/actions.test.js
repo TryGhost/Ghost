@@ -5,6 +5,7 @@ const supertest = require('supertest');
 const testUtils = require('../../utils');
 const localUtils = require('./utils');
 const config = require('../../../core/shared/config');
+const models = require('../../../core/server/models');
 
 describe('Actions API', function () {
     let request;
@@ -136,5 +137,38 @@ describe('Actions API', function () {
         assert.equal(res5.body.actions[0].actor.image, null);
         assert.equal(res5.body.actions[0].actor.name, testUtils.DataGenerator.Content.integrations[0].name);
         assert.equal(res5.body.actions[0].actor.slug, testUtils.DataGenerator.Content.integrations[0].slug);
+    });
+
+    it('Can request security actions with resource included', async function () {
+        const actorId = testUtils.DataGenerator.Content.users[0].id;
+        const action = await models.Action.add({
+            event: 'edited',
+            resource_type: 'security_action',
+            resource_id: null,
+            actor_type: 'user',
+            actor_id: actorId,
+            context: {
+                action_name: 'reset_authentication',
+                api_keys_rotated: 1,
+                users_locked: 1
+            }
+        });
+
+        const res = await request
+            .get(localUtils.API.getApiQuery(`actions/?filter=${encodeURIComponent(`id:'${action.id}'`)}&include=actor,resource`))
+            .set('Origin', config.get('url'))
+            .expect('Content-Type', /json/)
+            .expect('Cache-Control', testUtils.cacheRules.private)
+            .expect(200);
+
+        localUtils.API.checkResponse(res.body, 'actions');
+        localUtils.API.checkResponse(res.body.actions[0], 'action');
+
+        assert.equal(res.body.actions.length, 1);
+        assert.equal(res.body.actions[0].resource_type, 'security_action');
+        assert.equal(res.body.actions[0].resource_id, null);
+        assert.equal(res.body.actions[0].actor_type, 'user');
+        assert.equal(res.body.actions[0].actor.id, actorId);
+        assert.equal(res.body.actions[0].resource, undefined);
     });
 });
