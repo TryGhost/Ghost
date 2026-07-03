@@ -36,6 +36,20 @@ What should a future implementation or design review revisit, if anything?
 
 ## Entries
 
+## 2026-07-03 - Automation No-Op Logging Source
+
+**Dilemma**:
+Task 7.1 added runner support for logging duplicate/no-op counts when a pipeline result exposes `noop`, but the current automation event processor only returns applied `delivered` and `opened` transitions.
+
+**Decision**:
+Keep the runner logging formatter optional for `noop` and do not force the automation processor or shared `EventProcessingResult` shape to emit no-op counts during this spike.
+
+**Rationale**:
+The task only requires no-op logging when the count is available, and broadening processor result semantics now would touch the shared newsletter result type late in the spike. The current implementation still preserves newsletter logging and gives automation a clear logging path once no-op accounting is added.
+
+**Follow-up**:
+Before productionizing, decide whether automation duplicate/no-op counts should be emitted by `AutomationEventProcessor`, preserved through `EventProcessingResult`, or tracked as a separate pipeline metric.
+
 ## 2026-07-03 - Automation Pipeline Bootstrap Gate
 
 **Dilemma**:
