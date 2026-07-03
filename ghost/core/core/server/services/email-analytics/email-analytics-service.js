@@ -53,6 +53,13 @@ const DEFAULT_FETCH_JOB_NAMES = {
     scheduledJobName: 'email-analytics-scheduled'
 };
 
+const DEFAULT_FETCH_EVENT_TYPES = {
+    latestOpened: ['opened'],
+    latestNonOpened: ['delivered', 'failed', 'unsubscribed', 'complained'],
+    latestNonOpenedTimestamp: ['delivered', 'failed'],
+    missing: null
+};
+
 /**
  * Helper function to create an empty fetch result
  * @returns {EmailAnalyticsFetchResult}
@@ -80,6 +87,8 @@ module.exports = class EmailAnalyticsService {
      * @type {FetchJobNames}
      */
     #fetchJobNames = DEFAULT_FETCH_JOB_NAMES;
+
+    #fetchEventTypes = DEFAULT_FETCH_EVENT_TYPES;
 
     /**
      * @type {FetchData}
@@ -123,8 +132,10 @@ module.exports = class EmailAnalyticsService {
      * @param {import('@tryghost/domain-events')} dependencies.domainEvents
      * @param {import('@tryghost/prometheus-metrics')} dependencies.prometheusClient
      * @param {Partial<FetchJobNames>} [dependencies.fetchJobNames]
+     * @param {Partial<typeof DEFAULT_FETCH_EVENT_TYPES>} [dependencies.fetchEventTypes]
+     * @param {Function} [dependencies.eventBatchProcessor]
      */
-    constructor({config, settings, queries, eventProcessor, providers, domainEvents, prometheusClient, fetchJobNames}) {
+    constructor({config, settings, queries, eventProcessor, providers, domainEvents, prometheusClient, fetchJobNames, fetchEventTypes, eventBatchProcessor}) {
         this.config = config;
         this.settings = settings;
         this.queries = queries;
@@ -132,9 +143,14 @@ module.exports = class EmailAnalyticsService {
         this.providers = providers;
         this.domainEvents = domainEvents;
         this.prometheusClient = prometheusClient;
+        this.eventBatchProcessor = eventBatchProcessor;
         this.#fetchJobNames = {
             ...DEFAULT_FETCH_JOB_NAMES,
             ...fetchJobNames
+        };
+        this.#fetchEventTypes = {
+            ...DEFAULT_FETCH_EVENT_TYPES,
+            ...fetchEventTypes
         };
         this.#fetchLatestOpenedData.jobName = this.#fetchJobNames.latestOpenedJobName;
         this.#fetchLatestNonOpenedData.jobName = this.#fetchJobNames.latestNonOpenedJobName;
@@ -168,7 +184,7 @@ module.exports = class EmailAnalyticsService {
      * Returns the timestamp of the last non-opened event we processed. Defaults to now minus 30 minutes if we have no data yet.
      */
     async getLastNonOpenedEventTimestamp() {
-        return this.#fetchLatestNonOpenedData?.lastEventTimestamp ?? (await this.queries.getLastEventTimestamp(this.#fetchLatestNonOpenedData.jobName,['delivered','failed'])) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
+        return this.#fetchLatestNonOpenedData?.lastEventTimestamp ?? (await this.queries.getLastEventTimestamp(this.#fetchLatestNonOpenedData.jobName, this.#fetchEventTypes.latestNonOpenedTimestamp)) ?? new Date(Date.now() - TRUST_THRESHOLD_MS);
     }
 
     /**
@@ -201,7 +217,7 @@ module.exports = class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        return await this.#fetchEvents(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: ['opened']});
+        return await this.#fetchEvents(this.#fetchLatestOpenedData, {begin, end, maxEvents, eventTypes: this.#fetchEventTypes.latestOpened});
     }
 
     /**
@@ -220,7 +236,7 @@ module.exports = class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        return await this.#fetchEvents(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: ['delivered', 'failed', 'unsubscribed', 'complained']});
+        return await this.#fetchEvents(this.#fetchLatestNonOpenedData, {begin, end, maxEvents, eventTypes: this.#fetchEventTypes.latestNonOpened});
     }
 
     /**
@@ -246,7 +262,7 @@ module.exports = class EmailAnalyticsService {
             return createEmptyResult();
         }
 
-        return await this.#fetchEvents(this.#fetchMissingData, {begin, end, maxEvents});
+        return await this.#fetchEvents(this.#fetchMissingData, {begin, end, maxEvents, eventTypes: this.#fetchEventTypes.missing});
     }
 
     /**
@@ -564,6 +580,11 @@ module.exports = class EmailAnalyticsService {
      * @returns {Promise<void>}
      */
     async processEventBatch(events, result, fetchData) {
+        if (this.eventBatchProcessor) {
+            await this.eventBatchProcessor(events, result, fetchData);
+            return;
+        }
+
         const useBatchProcessing = this.config.get('emailAnalytics:batchProcessing');
 
         if (useBatchProcessing) {

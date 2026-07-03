@@ -36,6 +36,20 @@ What should a future implementation or design review revisit, if anything?
 
 ## Entries
 
+## 2026-07-03 - Automation Pipeline Adapter Boundary
+
+**Dilemma**:
+Task 5.1 needs an automation pipeline adapter with automation-specific Mailgun tags, job names, event filters, and event processing, but duplicating the existing fetch cursor/window logic would make the spike harder to compare with newsletter behavior.
+
+**Decision**:
+Keep the automation adapter thin by composing `EmailAnalyticsService` with configurable fetch event types, automation job names, the `automation-email` provider tag, and an automation batch processor callback.
+
+**Rationale**:
+This preserves newsletter defaults while reusing the existing fetch mechanics for latest-opened, latest-others, and missing passes. The adapter owns only the automation-specific choices and does not introduce scheduled/backfill automation analytics.
+
+**Follow-up**:
+Before productionizing, revisit whether `EmailAnalyticsService` should become a more explicitly named shared fetch service so the newsletter-shaped class name does not obscure its role in both pipelines.
+
 ## 2026-07-03 - Automation Opened Transaction Boundary
 
 **Dilemma**:
