@@ -58,16 +58,14 @@ describe('GiftLinksService (integration)', function () {
         assert.equal((await liveLinks(postId)).length, 1);
     });
 
-    it('a replaced token stops resolving and validating', async function () {
+    it('a replaced token stops resolving', async function () {
         const token = (await service.ensure(CTX, postId)).giftLinks[0]!.token;
         assert.equal((await service.getPostByToken(token))?.id, postId);
-        assert.equal(await service.isValidTokenForPost(token, postId), true);
 
         await service.create(CTX, postId);
 
         // The replaced token must lose access even though it stays in gift_links history.
         assert.equal(await service.getPostByToken(token), null);
-        assert.equal(await service.isValidTokenForPost(token, postId), false);
     });
 
     it('removeAll drops every live link across posts and returns the count', async function () {

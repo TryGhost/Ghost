@@ -55,7 +55,25 @@ export async function entryController(req: Request, res: EntryResponse, next: Ne
     debug('entryController', res.routerOptions);
 
     try {
-        const lookup = await dataService.entryLookup(req.path, res.routerOptions, res.locals);
+        // A gift view is html-only. Redirecting before the lookup keeps the
+        // token off the read, so markdown paths can never see an unlocked entry.
+        if (giftLinks.isGiftRequest(req) && (markdown.isMdRequest(res) || markdown.isAcceptsRequest(req))) {
+            return giftLinks.stripGiftAndRedirect(req, res);
+        }
+
+        // The raw gift token rides the lookup as read context; the API read
+        // verifies it against the entry and unlocks, or rejects the lookup.
+        const giftToken = giftLinks.isGiftRequest(req) ? giftLinks.giftToken(req) : null;
+
+        let lookup;
+        try {
+            lookup = await dataService.entryLookup(req.path, res.routerOptions, res.locals, {giftToken});
+        } catch (err) {
+            if (giftLinks.isInvalidGiftTokenError(err)) {
+                return giftLinks.stripGiftAndRedirect(req, res);
+            }
+            throw err;
+        }
         const entry = lookup ? lookup.entry : false;
 
         if (!entry || lookup.isUnknownOption) {
@@ -82,12 +100,17 @@ export async function entryController(req: Request, res: EntryResponse, next: Ne
         // MUST run after the permalink redirect above: negotiation rides on the
         // canonical URL, so a stale dated-permalink URL is 301'd to canonical
         // first, then markdown is served.
-        if (markdown.isAcceptsRequest(req, entry)) {
+        if (markdown.isAcceptsRequest(req) && markdown.isPublic(entry)) {
             return markdown.serveAcceptsRequest(res, entry);
         }
 
         if (giftLinks.isGiftRequest(req)) {
-            return await giftLinks.serveGiftRequest(req, res, entry);
+            if (!giftToken) {
+                return giftLinks.stripGiftAndRedirect(req, res);
+            }
+            // Reaching here means the lookup verified the token: the entry is
+            // the unlocked variant.
+            giftLinks.prepareGiftRender(res, giftToken);
         }
 
         return renderer.renderEntry(req, res)(entry);
