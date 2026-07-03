@@ -43,12 +43,7 @@ const stripeMocker = new StripeMocker();
 // error." log noise) and allowImageSize can put the real method back.
 let realCachedImageSizeFromUrl = null;
 
-// mockWebmentionDiscoveryDomains() is called from the shared per-test
-// afterEach (not just after a full nock.cleanAll()), so guard it — otherwise
-// every test would stack another set of persist()'d interceptors on top of
-// the last, growing unbounded across a whole worker's run. Reset to false
-// wherever we call nock.cleanAll() ourselves (restore()).
-let webmentionDomainsMocked = false;
+const WEBMENTION_MOCK_HOST = 'ghost.org';
 
 /**
  * Stripe Mocks
@@ -148,10 +143,15 @@ const disableNetwork = () => {
  * for new domains if this list goes stale.)
  */
 const mockWebmentionDiscoveryDomains = () => {
-    if (webmentionDomainsMocked) {
+    // Check nock's actual live state rather than tracking a module-level flag: a
+    // handful of DB-lane test files (webhook-request, themes, webmentions,
+    // milestones, mentions) call nock.cleanAll() directly, bypassing restore() —
+    // a flag reset only in restore() would go stale and skip re-registering here
+    // even though the interceptors were just wiped, silently letting the
+    // webmention noise these mocks suppress return for the rest of the worker.
+    if (nock.activeMocks().some(mock => mock.includes(`https://${WEBMENTION_MOCK_HOST}:`))) {
         return;
     }
-    webmentionDomainsMocked = true;
 
     for (const host of ['ghost.org', 'www.ghost.org', 'koenig.ghost.org', 'main.ghost.org', 'forum.ghost.org', 'static.ghost.org', 'docs.ghost.org', 'help.ghost.org', 'api.ghost.org', 'themes.ghost.org', 'marketplace.ghost.org', 'example.com', 'www.example.com']) {
         nock(`https://${host}`)
@@ -469,7 +469,6 @@ const restore = () => {
     fakedSettings = {};
     emailCount = 0;
     allowedNetworkDomains = [];
-    webmentionDomainsMocked = false;
     nock.cleanAll();
     nock.enableNetConnect();
     stripeMocker.reset();
