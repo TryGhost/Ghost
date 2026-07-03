@@ -455,9 +455,9 @@ async function initBackgroundServices({config}) {
     }
 
     const updateCheck = require('./server/services/update-check');
-    updateCheck.scheduleRecurringJobs();
+    updateCheck.init();
     if (config.get('updateCheck:forceUpdate')) {
-        updateCheck.scheduleBootJob();
+        await updateCheck.scheduleBootJob();
     }
 
     // Remote feature-flag overrides (config-gated; inert unless explicitly configured).

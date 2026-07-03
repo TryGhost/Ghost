@@ -1,21 +1,27 @@
 const assert = require('node:assert/strict');
 const http = require('http');
-const path = require('path');
 const testUtils = require('../../utils');
-const jobService = require('../../../core/server/services/jobs/job-service');
+const configUtils = require('../../utils/config-utils');
+const updateCheck = require('../../../core/server/services/update-check');
 const models = require('../../../core/server/models');
-
-const JOB_NAME = 'update-check';
-const JOB_PATH = path.resolve(__dirname, '../../../core/server/services/update-check/run-update-check.js');
 
 describe('Run Update Check', function () {
     let mockUpdateServer;
-    let baselineMailTransport;
 
-    beforeAll(testUtils.setup('default'));
+    beforeAll(testUtils.setup('default', 'perms:init'));
 
-    beforeEach(function () {
-        baselineMailTransport = process.env.mail__transport;
+    beforeAll(async function () {
+        // The old worker re-initialised these for its own process; in-process
+        // the update check relies on boot having done it, so the minimal test
+        // harness does it here.
+        await require('../../../core/server/services/email-address').init();
+        // The update check builds its GhostMailer per run, so this routes the
+        // alert email to the stub transport instead of a real SMTP connection.
+        configUtils.set('mail', {transport: 'stub'});
+    });
+
+    afterAll(async function () {
+        await configUtils.restore();
     });
 
     afterEach(async function () {
@@ -24,21 +30,13 @@ describe('Run Update Check', function () {
         }
         // Reset notifications between tests so each starts clean
         await models.Settings.edit({key: 'notifications', value: '[]'}, {context: {internal: true}});
-        // Remove the job so the next test can re-register it
-        await jobService.removeJob(JOB_NAME).catch(() => {});
-        if (baselineMailTransport === undefined) {
-            delete process.env.mail__transport;
-        } else {
-            process.env.mail__transport = baselineMailTransport;
-        }
     });
 
     it('successfully executes the update checker', async function () {
         let mockUpdateServerRequestCount = 0;
 
-        // Initialise mock update server - We use a mock server here instead of
-        // nock because the update-check job will be executed in a separate
-        // process which will prevent nock from intercepting HTTP requests
+        // Initialise a real mock update server so the full HTTP request path
+        // is exercised, as it was when this ran in a worker process
         mockUpdateServer = http.createServer((req, res) => {
             mockUpdateServerRequestCount += 1;
 
@@ -51,17 +49,12 @@ describe('Run Update Check', function () {
 
         const mockUpdateServerPort = mockUpdateServer.address().port;
 
-        // Trigger the update-check job and wait for it to finish
-        await jobService.addJob({
-            name: JOB_NAME,
-            job: JOB_PATH,
-            data: {
-                forceUpdate: true,
-                updateCheckUrl: `http://127.0.0.1:${mockUpdateServerPort}`
-            }
+        // Run the update check in-process, as the JobQueue handler does
+        await updateCheck({
+            rethrowErrors: true,
+            forceUpdate: true,
+            updateCheckUrl: `http://127.0.0.1:${mockUpdateServerPort}`
         });
-
-        await jobService.awaitCompletion(JOB_NAME);
 
         // Assert that the mock update server received a request (which means the update-check job ran successfully)
         assert.equal(mockUpdateServerRequestCount, 1, 'Expected mock server to receive 1 request');
@@ -78,11 +71,6 @@ describe('Run Update Check', function () {
             {context: {internal: true}, withRelated: ['roles']}
         );
         await owner.save({status: 'active'}, {patch: true, context: {internal: true}});
-
-        // Worker threads inherit process.env, so this routes the worker's
-        // GhostMailer to nodemailer-stub-transport. Without it the worker
-        // hits the default SMTP transport and ECONNREFUSEs on localhost:587.
-        process.env.mail__transport = 'stub';
 
         mockUpdateServer = http.createServer((req, res) => {
             res.writeHead(200, {'Content-Type': 'application/json'});
@@ -106,16 +94,12 @@ describe('Run Update Check', function () {
         mockUpdateServer.listen(0);
         const port = mockUpdateServer.address().port;
 
-        await jobService.addJob({
-            name: JOB_NAME,
-            job: JOB_PATH,
-            data: {
-                forceUpdate: true,
-                updateCheckUrl: `http://127.0.0.1:${port}`
-            }
+        // Run the update check in-process, as the JobQueue handler does
+        await updateCheck({
+            rethrowErrors: true,
+            forceUpdate: true,
+            updateCheckUrl: `http://127.0.0.1:${port}`
         });
-
-        await jobService.awaitCompletion(JOB_NAME);
 
         const setting = await models.Settings.findOne({key: 'notifications'}, {context: {internal: true}});
         const stored = JSON.parse(setting.get('value'));
