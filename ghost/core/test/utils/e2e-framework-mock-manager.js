@@ -113,8 +113,12 @@ const disableNetwork = () => {
 
     // External image dimension lookups are nock-blocked in tests, so the real
     // fetch always fails and logs "Unknown Request error." on every render.
-    // Replace the cache's bound lookup with a no-op that resolves undefined
-    // (same outcome as the blocked fetch — dimensions omitted — but no log).
+    // Replace the cache's bound lookup with a wrapper that resolves undefined
+    // for external URLs only (same outcome as the blocked fetch — dimensions
+    // omitted — but no log). Locally stored images never touch the network —
+    // getImageSizeFromUrl's own isLocalImage check just reads local file
+    // storage — so those still delegate to the real lookup; no-op'ing them too
+    // would silently drop dimensions from every locally-hosted test image.
     // The image lib is required lazily because it's only loaded once Ghost has
     // booted, after which disableNetwork runs in every afterEach.
     const imageLib = require('../../core/server/lib/image');
@@ -124,7 +128,12 @@ const disableNetwork = () => {
         realCachedImageSizeFromUrl = cachedImageSize.getImageSizeFromUrl;
     }
     // Use a plain function (not a sinon stub) so it survives per-test sinon.restore().
-    cachedImageSize.getImageSizeFromUrl = imageSizeNoop;
+    cachedImageSize.getImageSizeFromUrl = (imagePath) => {
+        if (imageLib.imageSize.storageUtils.isLocalImage(imagePath)) {
+            return realCachedImageSizeFromUrl(imagePath);
+        }
+        return imageSizeNoop();
+    };
 };
 
 /**

@@ -2,22 +2,20 @@ const {EventEmitter} = require('node:events');
 const sinon = require('sinon');
 
 const logging = require('@tryghost/logging');
-const config = require('../../../../../../core/shared/config');
+const configUtils = require('../../../../../utils/config-utils');
 
 const logRequest = require('../../../../../../core/server/web/parent/middleware/log-request');
 
 describe('Log request middleware', function () {
-    let configGetStub;
-
     beforeEach(function () {
         sinon.stub(logging, 'error');
         sinon.stub(logging, 'warn');
         sinon.stub(logging, 'info');
-        configGetStub = sinon.stub(config, 'get');
     });
 
-    afterEach(function () {
+    afterEach(async function () {
         sinon.restore();
+        await configUtils.restore();
     });
 
     function createReq({statusCode} = {}) {
@@ -49,7 +47,7 @@ describe('Log request middleware', function () {
     });
 
     it('logs a 4xx request error via logging.warn when logClientErrorsAsError is false', function () {
-        configGetStub.withArgs('logging:logClientErrorsAsError').returns(false);
+        configUtils.set('logging:logClientErrorsAsError', false);
 
         run(createReq({statusCode: 422}));
 
@@ -59,7 +57,7 @@ describe('Log request middleware', function () {
     });
 
     it('logs a 4xx request error via logging.error when logClientErrorsAsError is true', function () {
-        configGetStub.withArgs('logging:logClientErrorsAsError').returns(true);
+        configUtils.set('logging:logClientErrorsAsError', true);
 
         run(createReq({statusCode: 422}));
 
