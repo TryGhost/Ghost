@@ -27,8 +27,18 @@
         "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
     },
 
-    // Codespaces prebuild step — runs once when the image is built.
-    // Primes the pnpm store so first-open is fast.
+    // Runs on the host/Codespaces VM before the container is built or pulled.
+    // Warms the local image cache with the prebuilt ghost-dev image
+    // (.github/workflows/devcontainer-build.yml) so ghost-dev's cache_from
+    // (see compose.devcontainer.yaml) has something to reuse layers from,
+    // whether this container gets pulled directly or rebuilt locally.
+    // Best-effort: don't fail creation if the registry is unreachable.
+    "initializeCommand": "docker pull ghcr.io/tryghost/ghost-devcontainer:latest || true",
+
+    // Runs once the workspace mount is ready, after the container is created.
+    // Note: no Codespaces prebuild is configured for this repo, so this runs
+    // live on every creation rather than being baked into a snapshot ahead of
+    // time — same as postCreateCommand below.
     "onCreateCommand": "corepack enable && corepack prepare --activate && cd /workspaces/Ghost && pnpm install --prefer-offline || true",
 
     // Runs after the workspace mount is ready on every container create.
