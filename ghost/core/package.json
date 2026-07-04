@@ -210,7 +210,7 @@
     "mingo": "catalog:",
     "moment": "2.24.0",
     "moment-timezone": "0.5.45",
-    "multer": "2.1.1",
+    "multer": "2.2.0",
     "mysql2": "3.22.5",
     "nconf": "0.13.0",
     "node-fetch": "2.7.0",
