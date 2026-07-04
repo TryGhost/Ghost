@@ -40,6 +40,10 @@
     // The script guards against double-starting if the stack is already up.
     "postAttachCommand": "bash .devcontainer/start-dev-stack.sh",
 
+    // Portal, Comments UI, Signup Form, Sodo Search, Announcement Bar, and
+    // Admin Toolbar are NOT listed here — since the Caddy file_server switch
+    // (#28970) they build to disk (`vite build --watch`) instead of running
+    // a dev server, so there's no port to forward for them.
     "forwardPorts": [
         2368,
         3306,
@@ -48,11 +52,6 @@
         8025,
         5174,
         4200,
-        4175,
-        7173,
-        6174,
-        4178,
-        4177,
         4173
     ],
     "portsAttributes": {
@@ -63,12 +62,7 @@
         "8025": {"label": "Mailpit Web"},
         "5174": {"label": "Admin (Vite)"},
         "4200": {"label": "Ember live-reload"},
-        "4175": {"label": "Portal"},
-        "7173": {"label": "Comments UI"},
-        "6174": {"label": "Signup Form"},
-        "4178": {"label": "Sodo Search"},
-        "4177": {"label": "Announcement Bar"},
-        "4173": {"label": "Koenig Lexical"}
+        "4173": {"label": "Koenig Lexical (optional)"}
     },
 
     "customizations": {
