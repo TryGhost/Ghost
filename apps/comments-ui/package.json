@@ -91,6 +91,16 @@
     "vitest": "catalog:"
   },
   "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/comments-ui",
+          "command": "vite build --watch --mode development"
+        }
+      }
+    },
     "tags": [
       "i18n",
       "public-app"

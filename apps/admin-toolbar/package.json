@@ -38,6 +38,16 @@
     "vitest": "catalog:"
   },
   "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/admin-toolbar",
+          "command": "vite build --watch --mode development"
+        }
+      }
+    },
     "tags": [
       "public-app"
     ]
