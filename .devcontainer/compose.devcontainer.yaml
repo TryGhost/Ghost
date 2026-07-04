@@ -2,8 +2,8 @@ services:
   mysql:
     # Smaller InnoDB buffer pool than the baseline compose.dev.yaml (1G).
     # Lets the dev stack stay within a 2-core / 8 GB Codespace's budget
-    # after Ghost + 6 Vite dev servers are running. 256 MB is plenty for
-    # dev data volumes.
+    # after Ghost + the default Admin/Portal dev watchers are running.
+    # 256 MB is plenty for dev data volumes.
     command: --innodb-buffer-pool-size=256M --innodb-log-buffer-size=64M --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
     mem_limit: 512m
     restart: unless-stopped
@@ -38,15 +38,12 @@ services:
   ghost-dev-gateway:
     # Point Caddy at the dev servers running inside the ghost-dev container
     # instead of host.docker.internal (which is the default for the hybrid
-    # host/container dev setup).
+    # host/container dev setup). Public apps (Portal, Comments UI, Signup
+    # Form, Sodo Search, Announcement Bar, Admin Toolbar) have no entry here
+    # — Caddy serves their umd/ build output directly via file_server, so
+    # there's no dev-server host:port to point at.
     environment:
       GHOST_BACKEND: ghost-dev:2368
       ADMIN_DEV_SERVER: ghost-dev:5174
       ADMIN_LIVE_RELOAD_SERVER: ghost-dev:4200
-      PORTAL_DEV_SERVER: ghost-dev:4175
-      COMMENTS_DEV_SERVER: ghost-dev:7173
-      SIGNUP_DEV_SERVER: ghost-dev:6174
-      SEARCH_DEV_SERVER: ghost-dev:4178
-      ANNOUNCEMENT_DEV_SERVER: ghost-dev:4177
-      ADMIN_TOOLBAR_DEV_SERVER: ghost-dev:4176
       LEXICAL_DEV_SERVER: ghost-dev:4173
