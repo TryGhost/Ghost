@@ -19,8 +19,28 @@ services:
     # The original ./ghost:/home/ghost/ghost mount from compose.dev.yaml is
     # preserved via merge semantics so nodemon hot-reload still works for anyone
     # running the backend the original way.
+    #
+    # pnpm-store is a separate named volume, NOT under /workspaces/Ghost, so
+    # it survives the bind mount above (which fully shadows anything baked
+    # into the image at that path with the host's — node_modules-less — repo
+    # checkout). onCreateCommand/postCreateCommand still have to run a real
+    # `pnpm install` every time since the source is live-mounted, but with
+    # the store already warm it's linking already-fetched content instead of
+    # re-downloading and recompiling native deps (better-sqlite3, sharp, etc.)
+    # from scratch.
     volumes:
       - ./:/workspaces/Ghost:cached
+      - pnpm-store:/pnpm-store
+    environment:
+      npm_config_store_dir: /pnpm-store
+    # Prefer the prebuilt image (docker/ghost-dev/Dockerfile, published by
+    # .github/workflows/devcontainer-build.yml) over a local build. cache_from
+    # makes a local `docker compose build` (e.g. after a Dockerfile edit)
+    # reuse those layers too, rather than starting from zero.
+    image: ghcr.io/tryghost/ghost-devcontainer:latest
+    build:
+      cache_from:
+        - ghcr.io/tryghost/ghost-devcontainer:latest
     # Override the default `pnpm dev` command. VS Code controls startup and the
     # user runs backend/frontend dev servers as tasks (see .vscode/tasks.json).
     command: ["sleep", "infinity"]
@@ -47,3 +67,6 @@ services:
       ADMIN_DEV_SERVER: ghost-dev:5174
       ADMIN_LIVE_RELOAD_SERVER: ghost-dev:4200
       LEXICAL_DEV_SERVER: ghost-dev:4173
+
+volumes:
+  pnpm-store:
