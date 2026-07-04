@@ -71,7 +71,6 @@ type GrowthChartDataItem = {
 const Overview: React.FC = () => {
     const {appSettings} = useAppContext();
     const {statsConfig, isLoading: isConfigLoading, range} = useGlobalData();
-    const webAnalyticsEnabled = appSettings?.analytics?.webAnalytics === true;
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
     const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
@@ -81,8 +80,7 @@ const Overview: React.FC = () => {
             date_to: formatQueryDate(endDate),
             limit: '5',
             timezone
-        },
-        enabled: webAnalyticsEnabled
+        }
     });
 
     /* Get visitors
