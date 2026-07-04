@@ -56,7 +56,14 @@
   "nx": {
     "targets": {
       "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/admin",
+          "command": "vite"
+        },
         "dependsOn": [
+          "ghost-monorepo:docker:up",
           "ghost-admin:dev",
           "@tryghost/admin-x-framework:dev",
           "@tryghost/admin-x-design-system:dev",

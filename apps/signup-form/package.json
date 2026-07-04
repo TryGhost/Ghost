@@ -64,6 +64,16 @@
     "vitest": "catalog:"
   },
   "nx": {
+    "targets": {
+      "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "apps/signup-form",
+          "command": "vite build --watch --mode development"
+        }
+      }
+    },
     "tags": [
       "i18n",
       "public-app"

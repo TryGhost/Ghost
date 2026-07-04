@@ -96,6 +96,12 @@
     "nx": {
         "targets": {
             "dev": {
+                "continuous": true,
+                "executor": "nx:run-commands",
+                "options": {
+                    "cwd": "apps/admin-x-design-system",
+                    "command": "vite build --watch"
+                },
                 "dependsOn": [
                     "^build"
                 ]

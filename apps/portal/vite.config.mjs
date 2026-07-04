@@ -10,7 +10,7 @@ export default publicAppViteConfig({
     cssCodeSplit: false,
     overrides: {
         define: {
-            REACT_APP_VERSION: JSON.stringify(process.env.npm_package_version)
+            REACT_APP_VERSION: JSON.stringify(pkg.version)
         },
         resolve: {
             dedupe: ['@tryghost/debug']

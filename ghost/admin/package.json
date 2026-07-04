@@ -180,6 +180,12 @@
     ],
     "targets": {
       "dev": {
+        "continuous": true,
+        "executor": "nx:run-commands",
+        "options": {
+          "cwd": "ghost/admin",
+          "command": "JOBS=4 SKIP_DEPENDENCY_CHECKER=true ember serve"
+        },
         "dependsOn": [
           {
             "projects": [
