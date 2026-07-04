@@ -100,7 +100,7 @@ catalog:
   jsonc-parser: 3.3.1
   knex-migrator: 5.4.1
   lodash: 4.18.1
-  lucide-react: 1.18.0
+  lucide-react: 1.23.0
   mingo: 2.5.3
   msw: 2.14.6
   node-html-markdown: 2.0.0
