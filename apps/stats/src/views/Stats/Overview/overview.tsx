@@ -74,9 +74,6 @@ const Overview: React.FC = () => {
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
     const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
-    // Not gated on webAnalyticsEnabled: this hits Ghost's own API, which already
-    // falls back to DB-only data (no view counts) when Tinybird isn't configured.
-    // The views metric itself is hidden by TopPosts via showWebAnalytics.
     const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({
         searchParams: {
             date_from: formatQueryDate(startDate),

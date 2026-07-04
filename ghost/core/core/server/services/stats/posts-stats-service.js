@@ -1211,9 +1211,6 @@ class PostsStatsService {
 
             let postsWithViews = [];
 
-            // Skip this lookup entirely when there's no Tinybird views data to enrich -
-            // postsWithViews would always end up empty anyway, since it's built by mapping
-            // over viewsData (nothing to match against DB posts).
             if (viewsData.length > 0) {
                 // Get posts data from Ghost DB - prioritize posts that were sent as newsletters
                 const posts = await this.knex('posts as p')
