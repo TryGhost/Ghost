@@ -3165,8 +3165,8 @@ importers:
         specifier: 4.0.0
         version: 4.0.0
       html-validate:
-        specifier: 11.5.3
-        version: 11.5.3(@jest/globals@29.7.0)(@vitest/expect@4.1.9)(jest-snapshot@30.3.0)(jest@29.7.0(@types/node@22.20.0)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1))(vitest@4.1.9)
+        specifier: 11.5.4
+        version: 11.5.4(@jest/globals@29.7.0)(@vitest/expect@4.1.9)(jest-snapshot@30.3.0)(jest@29.7.0(@types/node@22.20.0)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1))(vitest@4.1.9)
       inquirer:
         specifier: 8.2.7
         version: 8.2.7(@types/node@22.20.0)
@@ -15247,8 +15247,8 @@ packages:
     engines: {node: '>=10.23.2'}
     hasBin: true
 
-  html-validate@11.5.3:
-    resolution: {integrity: sha512-YJAqUomHuND2ppz4QoRoWMm4tLHFxGTkqoBDiMjBm9pzictNkEB78q0yT3U9s6oiy9XoEmVC2QEQcube+fMw5g==}
+  html-validate@11.5.4:
+    resolution: {integrity: sha512-aymwqx0ebjogll8nbVnnNQzKjkPgzYy2RmN9/6ThXvqjxC/Azo9tuzLb7pBCCXQ/UfN7tpFIEQo8BxyiRzjumw==}
     engines: {node: ^22.22.0 || >= 24.8.0}
     hasBin: true
     peerDependencies:
@@ -38663,7 +38663,7 @@ snapshots:
       minimist: 1.2.8
       selderee: 0.6.0
 
-  html-validate@11.5.3(@jest/globals@29.7.0)(@vitest/expect@4.1.9)(jest-snapshot@30.3.0)(jest@29.7.0(@types/node@22.20.0)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1))(vitest@4.1.9):
+  html-validate@11.5.4(@jest/globals@29.7.0)(@vitest/expect@4.1.9)(jest-snapshot@30.3.0)(jest@29.7.0(@types/node@22.20.0)(babel-plugin-macros@3.1.0)(node-notifier@10.0.1))(vitest@4.1.9):
     dependencies:
       '@html-validate/stylish': 6.0.0
       '@sidvind/better-ajv-errors': 7.0.0(ajv@8.20.0)
