@@ -28,8 +28,11 @@ This lightweight image:
 This image is used automatically when running:
 
 ```bash
-pnpm dev              # Starts Docker backend + frontend dev servers on host
+pnpm dev              # Starts Docker backend + Admin/Ember/shared/Portal dev watchers
+pnpm dev:public       # Include all optional public UMD app watchers
 pnpm dev:analytics    # Include Tinybird analytics
 pnpm dev:storage      # Include MinIO S3-compatible object storage
-pnpm dev:all          # Include all optional services
+pnpm dev:stripe       # Include Stripe webhook forwarding
+pnpm dev:full         # Include analytics, storage, Stripe, and public app watchers
+pnpm dev:all          # Backwards-compatible alias for all optional services
 ```
