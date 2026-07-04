@@ -5,7 +5,15 @@ services:
     # after Ghost + the default Admin/Portal dev watchers are running.
     # 256 MB is plenty for dev data volumes.
     command: --innodb-buffer-pool-size=256M --innodb-log-buffer-size=64M --innodb-flush-log-at-trx_commit=0 --innodb-flush-method=O_DIRECT
-    mem_limit: 512m
+    # mem_limit is a hard cgroup ceiling, separate from the buffer pool size
+    # above. Measured via `docker stats` under real usage: actual RSS sits
+    # around 440-460MiB, so the previous 512m cap left MySQL pinned at
+    # 85-90% of its ceiling continuously (real, not just at boot) -- more
+    # memory-management overhead on every query than the buffer pool size
+    # alone would suggest. 1g (matching host-hybrid's unconstrained default)
+    # gives real headroom above the actual working set, still a small slice
+    # even on the 2-core/8GB minimum tier.
+    mem_limit: 1g
     restart: unless-stopped
 
   redis:
