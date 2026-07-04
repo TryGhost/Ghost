@@ -2585,8 +2585,8 @@ importers:
         specifier: 7.120.4
         version: 7.120.4
       '@slack/webhook':
-        specifier: 7.0.9
-        version: 7.0.9(debug@4.4.3)
+        specifier: 7.1.0
+        version: 7.1.0(debug@4.4.3)
       '@tryghost/adapter-base-cache':
         specifier: 0.1.26
         version: 0.1.26
@@ -7619,8 +7619,8 @@ packages:
     resolution: {integrity: sha512-I8vmSjNYWsaxuWPx6dz4yeh0h7vRBWbgAMK14LEmblbZ404BtrPbXs6jDPx4cYgGf8msDGF4A9opLZBu21FViQ==}
     engines: {node: '>= 12.13.0', npm: '>= 6.12.0'}
 
-  '@slack/webhook@7.0.9':
-    resolution: {integrity: sha512-hMfkQ5Y3Y7FtL+ZYhcxFblidx4Z2LPRFrhY1KJb6NqQdnK6kzTzTS1mjH5taVQIB496eqwpg9FE9mq9BFx0DWw==}
+  '@slack/webhook@7.1.0':
+    resolution: {integrity: sha512-cVXjP1n5s9gF7EW0zi58gYhf9JQ+FDu9t0Tq4ufdJxSO6QkT4wBMjSWYGAz61Xi6eHaZlnyGu7RuzwpGERLYbw==}
     engines: {node: '>= 18', npm: '>= 8.6.0'}
 
   '@smithy/core@3.28.0':
@@ -27283,7 +27283,7 @@ snapshots:
 
   '@slack/types@2.21.1': {}
 
-  '@slack/webhook@7.0.9(debug@4.4.3)':
+  '@slack/webhook@7.1.0(debug@4.4.3)':
     dependencies:
       '@slack/types': 2.21.1
       '@types/node': 26.0.0
