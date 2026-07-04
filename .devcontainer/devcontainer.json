@@ -23,8 +23,13 @@
     // dev containers where the host is the developer's own machine, but do
     // NOT replicate this pattern in shared build agents, CI runners, or
     // environments where untrusted code runs in the container.
+    // sshd enables `gh codespace ssh`/`logs` for direct diagnosis (top,
+    // free, docker stats) instead of only being able to probe over HTTP.
+    // Same trust boundary as docker-outside-of-docker below — standard for
+    // a Codespace/local dev container where the host is your own machine.
     "features": {
-        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {}
+        "ghcr.io/devcontainers/features/docker-outside-of-docker:1": {},
+        "ghcr.io/devcontainers/features/sshd:1": {}
     },
 
     // Runs on the host/Codespaces VM before the container is built or pulled.
