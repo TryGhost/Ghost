@@ -126,7 +126,7 @@
       "docker:build": {
         "executor": "nx:run-commands",
         "options": {
-          "command": "docker compose --progress=quiet -f compose.dev.yaml ${DEV_COMPOSE_FILES} build"
+          "command": "if [ -n \"$CODESPACES$REMOTE_CONTAINERS\" ]; then echo 'Skipping docker compose build: already running inside a devcontainer, whose own compose lifecycle built/pulled these images.'; else docker compose --progress=quiet -f compose.dev.yaml ${DEV_COMPOSE_FILES} build; fi"
         }
       },
       "docker:dev": {
