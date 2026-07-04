@@ -123,10 +123,10 @@ The `pnpm dev` command uses a **hybrid Docker + host development** setup:
 
 **Setup:**
 ```bash
-# Start the default Docker backend + host frontend watchers
+# Start Ghost backend, Admin, Portal, and Docker services
 pnpm dev
 
-# Add optional public app watchers
+# Add optional public apps (comments-ui, sodo-search, signup-form, admin-toolbar)
 pnpm dev:public
 
 # With optional services (uses Docker Compose file composition)
@@ -134,7 +134,9 @@ pnpm dev:analytics             # Include Tinybird analytics
 pnpm dev:storage               # Include MinIO S3-compatible object storage
 pnpm dev:stripe                # Include Stripe webhook forwarding
 pnpm dev:full                  # Include analytics, storage, Stripe, and public app watchers
-pnpm dev:all                   # Backwards-compatible alias for all optional services
+
+# Everything available
+pnpm dev:all                   #
 ```
 
 **Accessing Services:**
