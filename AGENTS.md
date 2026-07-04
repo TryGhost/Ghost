@@ -117,19 +117,24 @@ The `pnpm dev` command uses a **hybrid Docker + host development** setup:
 - MySQL, Redis, Mailpit
 - Caddy gateway/reverse proxy
 
-**What runs on host:**
-- Frontend dev servers (Admin, Portal, Comments UI, etc.) in watch mode with HMR
-- Foundation libraries (shade, admin-x-framework, etc.)
+**What runs on host by default:**
+- Admin, legacy Ember admin, Portal, and foundation library dev watchers
+- Optional public UMD app watchers can be added when needed
 
 **Setup:**
 ```bash
-# Start everything (Docker + frontend dev servers)
+# Start the default Docker backend + host frontend watchers
 pnpm dev
+
+# Add optional public app watchers
+pnpm dev:public
 
 # With optional services (uses Docker Compose file composition)
 pnpm dev:analytics             # Include Tinybird analytics
 pnpm dev:storage               # Include MinIO S3-compatible object storage
-pnpm dev:all                   # Include all optional services
+pnpm dev:stripe                # Include Stripe webhook forwarding
+pnpm dev:full                  # Include analytics, storage, Stripe, and public app watchers
+pnpm dev:all                   # Backwards-compatible alias for all optional services
 ```
 
 **Accessing Services:**
