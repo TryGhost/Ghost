@@ -75,7 +75,7 @@ const Overview: React.FC = () => {
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {isLoading: isGrowthStatsLoading, chartData: growthChartData, totals: growthTotals, currencySymbol} = useGrowthStats(range);
     const {data: latestPostStats, isLoading: isLatestPostLoading} = useLatestPostStats();
-    const {data: topPostsData, isLoading: isTopPostsQueryLoading} = useTopPostsViews({
+    const {data: topPostsData, isLoading: isTopPostsLoading} = useTopPostsViews({
         searchParams: {
             date_from: formatQueryDate(startDate),
             date_to: formatQueryDate(endDate),
@@ -84,9 +84,6 @@ const Overview: React.FC = () => {
         },
         enabled: webAnalyticsEnabled
     });
-    // React Query's isLoading stays true forever for a disabled query that never
-    // fetched, so only report loading while the query is actually allowed to run.
-    const isTopPostsLoading = webAnalyticsEnabled && isTopPostsQueryLoading;
 
     /* Get visitors
     /* ---------------------------------------------------------------------- */

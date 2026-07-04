@@ -59,9 +59,12 @@ export const createQuery = <ResponseData>(options: QueryOptions<ResponseData>) =
         }
     }, [handleError, result.error, query.defaultErrorHandler]);
 
+    // React Query v4 keeps `isLoading` true forever for a disabled query that
+    // never fetched (fetchStatus stays 'idle'), so gate it on fetchStatus too.
     return {
         ...result,
-        data
+        data,
+        isLoading: result.isLoading && result.fetchStatus !== 'idle'
     };
 };
 
@@ -102,10 +105,13 @@ export const createPaginatedQuery = <ResponseData extends {meta?: Meta}>(options
         }
     }, [handleError, result.error, query.defaultErrorHandler]);
 
+    // React Query v4 keeps `isLoading` true forever for a disabled query that
+    // never fetched (fetchStatus stays 'idle'), so gate it on fetchStatus too.
     return {
         ...result,
         data,
-        pagination
+        pagination,
+        isLoading: result.isLoading && result.fetchStatus !== 'idle'
     };
 };
 
@@ -143,9 +149,12 @@ export const createInfiniteQuery = <ResponseData>(options: InfiniteQueryOptions<
         }
     }, [handleError, result.error, query.defaultErrorHandler]);
 
+    // React Query v4 keeps `isLoading` true forever for a disabled query that
+    // never fetched (fetchStatus stays 'idle'), so gate it on fetchStatus too.
     return {
         ...result,
-        data
+        data,
+        isLoading: result.isLoading && result.fetchStatus !== 'idle'
     };
 };
 
