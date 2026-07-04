@@ -5,13 +5,21 @@ ARG NODE_VERSION=22.18.0
 
 FROM node:$NODE_VERSION-bullseye-slim
 
-# Install system dependencies needed for building native modules
+# Install system dependencies needed for building native modules.
+# watchman: ember-cli (ghost/admin's dev server) auto-detects and prefers it
+# over its default Node-based file watcher, which is far less efficient over
+# a large tree like this bind-mounted monorepo -- without it, ember serve's
+# idle watch mode pegs multiple CPU cores continuously (observed: ~240% CPU
+# at idle, not during an active build). Only benefits ghost-dev's own
+# container; the host-hybrid flow runs ember-cli on the developer's own
+# machine, not in this image, so this has no effect there either way.
 RUN apt-get update && \
     apt-get install -y \
     build-essential \
     curl \
     python3 \
-    git && \
+    git \
+    watchman && \
     rm -rf /var/lib/apt/lists/* && \
     apt clean
 
