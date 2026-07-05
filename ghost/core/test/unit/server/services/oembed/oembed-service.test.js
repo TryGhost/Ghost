@@ -272,6 +272,62 @@ describe('oembed-service', function () {
             assert.equal(response.metadata.title, 'Example');
         });
 
+        it('uses allowlisted provider metadata for explicit YouTube bookmark requests', async function () {
+            const thumbnailUrl = 'https://i.ytimg.com/vi/0i1Xz-xiYSU/hqdefault.jpg';
+            const processImageFromUrlStub = sinon.stub(oembedService, 'processImageFromUrl')
+                .resolves('/content/images/thumbnail/youtube.jpg');
+
+            nock('https://www.youtube.com')
+                .get('/oembed')
+                .query(true)
+                .reply(200, {
+                    title: 'Meet the people who fly spacecraft, without ever leaving Earth!',
+                    author_name: 'Matt Gray',
+                    author_url: 'https://www.youtube.com/@MattGrayYES',
+                    type: 'video',
+                    version: '1.0',
+                    provider_name: 'YouTube',
+                    provider_url: 'https://www.youtube.com/',
+                    thumbnail_url: thumbnailUrl,
+                    html: '<iframe src="https://www.youtube.com/embed/0i1Xz-xiYSU"></iframe>',
+                    width: 200,
+                    height: 113
+                });
+
+            try {
+                const response = await oembedService.fetchOembedDataFromUrl('https://www.youtube.com/watch?v=0i1Xz-xiYSU', 'bookmark');
+
+                assert.equal(response.version, '1.0');
+                assert.equal(response.type, 'bookmark');
+                assert.equal(response.url, 'https://www.youtube.com/watch?v=0i1Xz-xiYSU');
+                assert.equal(response.metadata.url, 'https://www.youtube.com/watch?v=0i1Xz-xiYSU');
+                assert.equal(response.metadata.title, 'Meet the people who fly spacecraft, without ever leaving Earth!');
+                assert.equal(response.metadata.author, 'Matt Gray');
+                assert.equal(response.metadata.publisher, 'YouTube');
+                assert.equal(response.metadata.thumbnail, '/content/images/thumbnail/youtube.jpg');
+                assert.equal(response.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+                sinon.assert.calledOnceWithExactly(processImageFromUrlStub, thumbnailUrl, 'thumbnail');
+            } finally {
+                sinon.restore();
+            }
+        });
+
+        it('does not process missing bookmark images', async function () {
+            const processImageFromUrlStub = sinon.stub(oembedService, 'processImageFromUrl')
+                .callsFake(async imageUrl => imageUrl);
+
+            try {
+                const response = await oembedService.fetchBookmarkData('https://www.example.com', '<html><head><title>Example</title></head></html>', 'bookmark');
+
+                assert.equal(response.metadata.title, 'Example');
+                assert.equal(response.metadata.thumbnail, null);
+                assert.equal(response.metadata.icon, 'https://static.ghost.org/v5.0.0/images/link-icon.svg');
+                sinon.assert.notCalled(processImageFromUrlStub);
+            } finally {
+                sinon.restore();
+            }
+        });
+
         it('prefers the standard favicon over an apple-touch-icon in the bookmark fallback', async function () {
             // With no oembed endpoint and no explicit type, fetchOembedDataFromUrl
             // falls through to the bookmark fallback (!data && !type). That path
@@ -432,6 +488,28 @@ describe('oembed-service', function () {
 
     describe('processImageFromUrl', function () {
         const UUID_RE = /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/;
+
+        it('returns null without fetching when the image URL is missing', async function () {
+            const externalRequest = sinon.stub();
+            const service = new OembedService({
+                config: {
+                    getContentPath() {
+                        return '/tmp/content/images';
+                    }
+                },
+                storage: {
+                    getStorage() {
+                        throw new Error('storage should not be used');
+                    }
+                },
+                externalRequest
+            });
+
+            const storedUrl = await service.processImageFromUrl(null, 'thumbnail');
+
+            assert.equal(storedUrl, null);
+            sinon.assert.notCalled(externalRequest);
+        });
 
         it('stores downloaded bookmark assets via image storage and returns the adapter URL', async function () {
             const imageBytes = Buffer.from('img-bytes');

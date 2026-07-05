@@ -13,6 +13,7 @@ const crypto = require('crypto');
 // Some sites block non-standard user agents so we need to mimic a typical browser
 // Note: the Ghost/5.0 string _may_ be in use by 3rd parties so use caution when updating across majors
 const USER_AGENT = 'Mozilla/5.0 (compatible; Ghost/5.0; +https://ghost.org/)';
+const DEFAULT_BOOKMARK_ICON = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
 
 // metascraper-amazon's built-in URL test is a substring regex that misfires on
 // any host ending in a letter followed by `.co/` (e.g. `rangemedia.co`), causing
@@ -163,11 +164,15 @@ class OEmbedService {
 
     /**
      * Process and store image from a URL
-     * @param {string} imageUrl - URL of the image to process
+     * @param {string|null|undefined} imageUrl - URL of the image to process
      * @param {string} imageType - What is the image used for. Example - icon, thumbnail
-     * @returns {Promise<String>} - URL where the image is stored
+     * @returns {Promise<String|null>} - URL where the image is stored
      */
     async processImageFromUrl(imageUrl, imageType) {
+        if (!imageUrl) {
+            return null;
+        }
+
         // Fetch image buffer from the URL
         const imageBuffer = await this.fetchImageBuffer(imageUrl);
         const store = this.storage.getStorage('images');
@@ -182,6 +187,59 @@ class OEmbedService {
         const targetPath = path.join(imageType, uniqueFileName);
 
         return store.saveRaw(imageBuffer, targetPath);
+    }
+
+    /**
+     * Build bookmark metadata from a known oEmbed provider without exposing the
+     * provider-supplied HTML that embed cards use.
+     *
+     * @param {string} url
+     * @returns {Promise<Object|undefined>}
+     */
+    async fetchBookmarkDataFromKnownProvider(url) {
+        const {url: providerUrl, provider} = findUrlWithProvider(url);
+        if (!provider) {
+            return;
+        }
+
+        let oembed;
+        try {
+            oembed = await this.knownProvider(providerUrl);
+        } catch {
+            // Known-provider metadata is an enhancement for explicit bookmark
+            // cards. If it fails, fall back to scraping the page as before.
+            return;
+        }
+
+        if (!oembed.title) {
+            return;
+        }
+
+        const metadata = {
+            url,
+            title: oembed.title,
+            description: oembed.description || null,
+            author: oembed.author_name || null,
+            publisher: oembed.provider_name || null,
+            thumbnail: oembed.thumbnail_url || (oembed.type === 'photo' ? oembed.url : null),
+            icon: DEFAULT_BOOKMARK_ICON
+        };
+
+        if (metadata.thumbnail) {
+            await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
+                .then((processedImageUrl) => {
+                    metadata.thumbnail = processedImageUrl;
+                }).catch((err) => {
+                    logging.error(err);
+                });
+        }
+
+        return {
+            version: '1.0',
+            type: 'bookmark',
+            url,
+            metadata
+        };
     }
 
     /**
@@ -391,24 +449,31 @@ class OEmbedService {
                 try {
                     await this.externalRequest.head(metadata.icon);
                 } catch (err) {
-                    metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
+                    metadata.icon = DEFAULT_BOOKMARK_ICON;
                     logging.error(err);
                 }
             }
         } else {
-            await this.processImageFromUrl(metadata.icon, 'icon')
-                .then((processedImageUrl) => {
-                    metadata.icon = processedImageUrl;
-                }).catch((err) => {
-                    metadata.icon = 'https://static.ghost.org/v5.0.0/images/link-icon.svg';
-                    logging.error(err);
-                });
-            await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
-                .then((processedImageUrl) => {
-                    metadata.thumbnail = processedImageUrl;
-                }).catch((err) => {
-                    logging.error(err);
-                });
+            if (metadata.icon) {
+                await this.processImageFromUrl(metadata.icon, 'icon')
+                    .then((processedImageUrl) => {
+                        metadata.icon = processedImageUrl;
+                    }).catch((err) => {
+                        metadata.icon = DEFAULT_BOOKMARK_ICON;
+                        logging.error(err);
+                    });
+            } else {
+                metadata.icon = DEFAULT_BOOKMARK_ICON;
+            }
+
+            if (metadata.thumbnail) {
+                await this.processImageFromUrl(metadata.thumbnail, 'thumbnail')
+                    .then((processedImageUrl) => {
+                        metadata.thumbnail = processedImageUrl;
+                    }).catch((err) => {
+                        logging.error(err);
+                    });
+            }
         }
 
         return {
@@ -549,6 +614,13 @@ class OEmbedService {
                 const {url: providerUrl, provider} = findUrlWithProvider(url);
                 if (provider) {
                     return this.knownProvider(providerUrl);
+                }
+            }
+
+            if (type === 'bookmark') {
+                const knownProviderBookmark = await this.fetchBookmarkDataFromKnownProvider(url);
+                if (knownProviderBookmark) {
+                    return knownProviderBookmark;
                 }
             }
 
