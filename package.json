@@ -95,7 +95,7 @@
     "globals": "catalog:",
     "husky": "9.1.7",
     "jsonc-parser": "catalog:",
-    "knip": "6.23.0",
+    "knip": "6.24.0",
     "lint-staged": "17.0.8",
     "nx": "22.7.6",
     "rimraf": "6.1.3",

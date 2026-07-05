@@ -434,8 +434,8 @@ importers:
         specifier: 'catalog:'
         version: 3.3.1
       knip:
-        specifier: 6.23.0
-        version: 6.23.0
+        specifier: 6.24.0
+        version: 6.24.0
       lint-staged:
         specifier: 17.0.8
         version: 17.0.8
@@ -16512,8 +16512,8 @@ packages:
       tedious:
         optional: true
 
-  knip@6.23.0:
-    resolution: {integrity: sha512-2DvAOX2pZWiG4SLvRRxOAU0aWGEn1ZoVblI541xIoXFdHqq2THMZXy66/qcY5WGuW3TXhb9T1x1zd/Hd1u+yqg==}
+  knip@6.24.0:
+    resolution: {integrity: sha512-PokLlgeEjLh1rAsB7ts+52wZ37HBr1nDhE6NNONwEaXdeZGCJOkP7ZlIAI2Gtu8xohquzTWy75bc/1diI9shQw==}
     engines: {node: ^20.19.0 || >=22.12.0}
     hasBin: true
 
@@ -40283,7 +40283,7 @@ snapshots:
     transitivePeerDependencies:
       - supports-color
 
-  knip@6.23.0:
+  knip@6.24.0:
     dependencies:
       fdir: 6.5.0(picomatch@4.0.4)
       formatly: 0.3.0
