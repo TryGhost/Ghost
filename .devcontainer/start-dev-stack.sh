@@ -26,6 +26,23 @@ echo "Starting Ghost dev stack..."
 if [ -n "${CODESPACES:-}" ] && [ -n "${CODESPACE_NAME:-}" ]; then
     export url="https://${CODESPACE_NAME}-2368.${GITHUB_CODESPACES_PORT_FORWARDING_DOMAIN:-app.github.dev}"
     echo "Codespaces detected: setting Ghost url=$url so admin session origin checks match the forwarded tunnel" >> /tmp/ghost-backend.log
+
+    # Once url above is HTTPS, Ghost's url-redirects middleware
+    # (getAdminRedirectUrl in ghost/core/core/server/web/shared/middleware/
+    # url-redirects.js) 301s any request it sees as insecure (protocol
+    # mismatch) to that HTTPS url. Real browser traffic is fine — Caddy sets
+    # X-Forwarded-Proto: https, so Express's req.secure is true. But
+    # apps/admin's own vite dev server bootstraps itself by fetching
+    # GHOST_URL + ghost/api/admin/site/ directly (vite-backend-proxy.ts),
+    # bypassing Caddy entirely by default (http://localhost:2368) — Express
+    # sees that as insecure, 301s it to the public tunnel URL, and since
+    # that's an external, GitHub-auth-gated address, Vite's plain fetch()
+    # can't complete the login flow and crashes on the HTML it gets back
+    # instead of JSON. Routing GHOST_URL through the gateway container
+    # instead keeps the request on the internal Docker network (still gets
+    # X-Forwarded-Proto: https from Caddy, so no redirect) while never
+    # touching the external, auth-gated tunnel at all.
+    export GHOST_URL="http://ghost-dev-gateway:80/"
 fi
 
 # Append to log files (don't truncate) so previous crash tails survive a
