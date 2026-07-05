@@ -82,6 +82,13 @@ function createMessage(message) {
     };
 }
 
+/**
+ * @param {object} [options]
+ * @param {string} [options.message]
+ * @param {Error} [options.err]
+ * @param {boolean} [options.ignoreDefaultMessage]
+ * @return {errors.EmailError}
+ */
 function createMailError({message, err, ignoreDefaultMessage} = {message: ''}) {
     const helpMessage = tpl(messages.checkEmailConfigInstructions, {url: 'https://ghost.org/docs/config/#mail'});
     const defaultErrorMessage = tpl(messages.failedSendingEmailError);
