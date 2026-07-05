@@ -155,4 +155,56 @@ describe('Tags Content API', function () {
         assert(getTag('/tag/bacon/'));
         assert(getTag('/tag/chorizo/'));
     });
+
+    describe('Internal tags are not exposed', function () {
+        const models = require('../../../core/server/models');
+
+        beforeAll(async function () {
+            // Internal tag (#) attached to a published post, with private code injection
+            await models.Post.add({
+                title: 'Post with an internal tag',
+                status: 'published',
+                tags: [{
+                    name: '#secret',
+                    codeinjection_head: '<script>/* private */</script>'
+                }]
+            }, testUtils.context.internal);
+        });
+
+        it('excludes internal tags from browse', async function () {
+            const res = await request.get(localUtils.API.getApiQuery(`tags/?limit=all&key=${validKey}`))
+                .set('Origin', testUtils.API.getURL())
+                .expect(200);
+
+            const internal = res.body.tags.filter(t => t.visibility === 'internal');
+            assert.deepEqual(internal, [], 'internal tags leaked via browse');
+        });
+
+        it('does not expose an internal tag via read by slug', async function () {
+            await request.get(localUtils.API.getApiQuery(`tags/slug/hash-secret/?key=${validKey}`))
+                .set('Origin', testUtils.API.getURL())
+                .expect(404);
+        });
+
+        it('cannot be widened by a caller-supplied visibility filter', async function () {
+            const res = await request.get(localUtils.API.getApiQuery(`tags/?limit=all&key=${validKey}&filter=visibility:internal`))
+                .set('Origin', testUtils.API.getURL())
+                .expect(200);
+
+            const internal = res.body.tags.filter(t => t.visibility === 'internal');
+            assert.deepEqual(internal, [], 'internal tags leaked via caller filter');
+        });
+
+        it('cannot select an internal tag directly via the filter param', async function () {
+            // Without the enforced override this filter matches the internal tag by slug
+            // and returns it; the override must exclude it.
+            const payload = encodeURIComponent('slug:hash-secret');
+            const res = await request.get(localUtils.API.getApiQuery(`tags/?limit=all&key=${validKey}&filter=${payload}`))
+                .set('Origin', testUtils.API.getURL())
+                .expect(200);
+
+            const internal = res.body.tags.filter(t => t.visibility === 'internal');
+            assert.deepEqual(internal, [], 'internal tags leaked via caller filter');
+        });
+    });
 });

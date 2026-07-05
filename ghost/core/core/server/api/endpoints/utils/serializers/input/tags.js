@@ -15,6 +15,12 @@ function setDefaultOrder(frame) {
     }
 }
 
+function enforcePublicVisibility(frame) {
+    if (!frame.options.filter) {
+        frame.options.filter = 'visibility:public';
+    }
+}
+
 module.exports = {
     browse(apiConfig, frame) {
         debug('browse');
@@ -23,6 +29,7 @@ module.exports = {
 
         if (utils.isContentAPI(frame)) {
             setDefaultOrder(frame);
+            enforcePublicVisibility(frame);
         }
     },
 
