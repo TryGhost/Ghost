@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const deferred = require('../../../../utils/deferred');
+const {deferred} = require('../../../../utils/deferred')
 const mail = require('../../../../../core/server/services/mail');
 const settingsCache = require('../../../../../core/shared/settings-cache');
 const configUtils = require('../../../../utils/config-utils');

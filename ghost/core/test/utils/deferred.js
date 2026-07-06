@@ -10,12 +10,10 @@
  *       return promise;
  *   });
  */
-function deferred() {
+exports.deferred = function deferred() {
     let done;
     const promise = new Promise((resolve, reject) => {
         done = err => (err ? reject(err) : resolve());
     });
     return {promise, done};
-}
-
-module.exports = deferred;
+};
