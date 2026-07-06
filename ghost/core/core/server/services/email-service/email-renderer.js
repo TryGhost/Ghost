@@ -1368,24 +1368,52 @@ class EmailRenderer {
     }
 
     /**
+     * Finds the first paywall card in the post's lexical document so custom
+     * CTA copy set on the card in the editor can drive the email paywall.
+     *
+     * @private
+     * @param {Post} post
+     * @returns {{heading?: string, description?: string, buttonText?: string} | null}
+     */
+    #getLexicalPaywallCard(post) {
+        try {
+            const lexical = JSON.parse(post.get('lexical') || '{}');
+            const stack = [...(lexical.root?.children || [])];
+            while (stack.length) {
+                const node = stack.shift();
+                if (node?.type === 'paywall') {
+                    return node;
+                }
+                if (Array.isArray(node?.children)) {
+                    stack.push(...node.children);
+                }
+            }
+        } catch (e) {
+            // invalid lexical document — treat as no card
+        }
+        return null;
+    }
+
+    /**
      * Builds the paywall section data for a truncated (free-segment) email.
-     * Custom copy and an attached offer come from posts_meta (set per post);
-     * every field falls back to the default upgrade CTA.
+     * Custom copy comes from the paywall card itself when set in the editor,
+     * then posts_meta (API-settable), then the default upgrade CTA.
      *
      * @private
      * @param {Post} post
      * @param {URL} signupUrl
      */
     #getPaywallData(post, signupUrl) {
+        const card = this.#getLexicalPaywallCard(post);
         const postsMeta = post.related('posts_meta');
         const offerCode = postsMeta?.get('email_paywall_offer_code');
         const siteUrl = this.#urlUtils.urlFor('home', true);
 
         return {
             signupUrl: signupUrl.href,
-            heading: postsMeta?.get('email_paywall_heading'),
-            description: postsMeta?.get('email_paywall_description'),
-            buttonText: postsMeta?.get('email_paywall_button_text'),
+            heading: card?.heading || postsMeta?.get('email_paywall_heading'),
+            description: card?.description || postsMeta?.get('email_paywall_description'),
+            buttonText: card?.buttonText || postsMeta?.get('email_paywall_button_text'),
             offerUrl: offerCode ? new URL(offerCode, siteUrl).href : null
         };
     }
