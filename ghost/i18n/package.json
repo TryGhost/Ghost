@@ -7,17 +7,21 @@
   "main": "index.js",
   "exports": {
     ".": {
-      "browser": "./index.browser.js",
+      "types": "./build/i18n.d.ts",
+      "browser": "./index.esm.mjs",
+      "import": "./index.esm.mjs",
+      "require": "./index.js",
       "default": "./index.js"
     },
     "./lib/locale-data.json": "./lib/locale-data.json"
   },
   "browser": {
-    "./index.js": "./index.browser.js",
+    "./index.js": "./index.esm.mjs",
     "./lib/i18n.js": "./lib/i18n.browser.js"
   },
   "types": "./build/i18n.d.ts",
   "scripts": {
+    "build:registry": "node scripts/generate-locale-registry.js",
     "test:base": "NODE_ENV=testing vitest run --coverage",
     "test": "pnpm test:base && pnpm translate",
     "lint:code": "eslint *.js lib/ --cache",
@@ -34,8 +38,10 @@
   "files": [
     "index.js",
     "index.browser.js",
+    "index.esm.mjs",
     "lib",
-    "locales"
+    "locales",
+    "scripts"
   ],
   "devDependencies": {
     "@eslint/js": "catalog:",

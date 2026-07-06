@@ -6,27 +6,33 @@ const LOCALE_DATA = require('./locale-data.json');
 // Export just the locale codes for backward compatibility
 const SUPPORTED_LOCALES = LOCALE_DATA.map(locale => locale.code);
 
-function generateResources(locales, ns) {
-    return locales.reduce((acc, locale) => {
-        let res;
-        // add an extra fallback - this handles the case where we have a partial set of translations for some reason
-        // by falling back to the english translations
-        try {
-            res = require(`../locales/${locale}/${ns}.json`);
-        } catch (err) {
-            res = require(`../locales/en/${ns}.json`);
-        }
-
-        // Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
-        // If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
-        acc[locale] = {
-            [ns]: {...res, ...(res.default && typeof res.default === 'object' ? res.default : {})}
-        };
-        return acc;
-    }, {});
+// Merge quirk preserved verbatim from the original implementation:
+// Note: due some random thing in TypeScript, 'requiring' a JSON file with a space in a key name, only adds it to the default export
+// If changing this behaviour, please also check the comments and signup-form apps in another language (mainly sentences with a space in them)
+function mergeDefaultExport(res) {
+    return {...res, ...(res.default && typeof res.default === 'object' ? res.default : {})};
 }
 
-function createI18n({generateThemeResources}) {
+// Factory: given a resource loader, produce a `generateResources(locales, ns)` fn
+// with the exact original behaviour/shape. Callers that need the classic dynamic-require
+// behaviour just use the default-exported `generateResources` below.
+function createGenerateResources(loadResource) {
+    return function generateResources(locales, ns) {
+        return locales.reduce((acc, locale) => {
+            let res = loadResource(locale, ns);
+            // Fallback to English if a locale/namespace pair is missing entirely.
+            if (res === undefined) {
+                res = loadResource('en', ns);
+            }
+            acc[locale] = {
+                [ns]: mergeDefaultExport(res)
+            };
+            return acc;
+        }, {});
+    };
+}
+
+function createI18n({generateThemeResources, generateResources: genResources}) {
     return (lng = 'en', ns = 'portal', options = {}) => {
         const i18nextInstance = i18next.createInstance();
         const interpolation = {
@@ -38,7 +44,7 @@ function createI18n({generateThemeResources}) {
         }
         let resources;
         if (ns !== 'theme') {
-            resources = generateResources(SUPPORTED_LOCALES, ns);
+            resources = genResources(SUPPORTED_LOCALES, ns);
         } else {
             resources = generateThemeResources(lng, options);
         }
@@ -74,7 +80,8 @@ function createI18n({generateThemeResources}) {
 
 module.exports = {
     createI18n,
-    generateResources,
+    createGenerateResources,
+    mergeDefaultExport,
     LOCALE_DATA,
     SUPPORTED_LOCALES
 };

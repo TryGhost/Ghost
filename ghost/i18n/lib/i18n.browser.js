@@ -1,4 +1,7 @@
-const {createI18n, generateResources, LOCALE_DATA, SUPPORTED_LOCALES} = require('./i18n-core');
+const {createI18n, createGenerateResources, LOCALE_DATA, SUPPORTED_LOCALES} = require('./i18n-core');
+const {requireLoader} = require('./require-loader');
+
+const generateResources = createGenerateResources(requireLoader);
 
 function generateThemeResources(lng) {
     return {
@@ -8,7 +11,7 @@ function generateThemeResources(lng) {
     };
 }
 
-const i18n = createI18n({generateThemeResources});
+const i18n = createI18n({generateResources, generateThemeResources});
 
 module.exports = i18n;
 module.exports.SUPPORTED_LOCALES = SUPPORTED_LOCALES;
