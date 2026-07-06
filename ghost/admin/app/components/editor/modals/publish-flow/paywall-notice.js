@@ -24,6 +24,13 @@ export default class PaywallNotice extends Component {
         return this.args.publishOptions.willEmail;
     }
 
+    // count free members the same way the send does — scoped to the selected
+    // newsletter — so the number here always matches the recipients row
+    get freeCountFilter() {
+        const newsletterFilter = this.args.publishOptions.newsletter?.recipientFilter;
+        return newsletterFilter ? `${newsletterFilter}+(status:free)` : 'status:free';
+    }
+
     // Paid post, free members in the send list, but no paywall divider in the
     // content — free members would receive the full paid post by email
     get showFullContentWarning() {
