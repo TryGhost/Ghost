@@ -47,4 +47,41 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         await expect(page.getByTestId('member-detail-location')).toHaveText('Unknown location');
         await expect(sidebar).toContainText('Created —');
     });
+
+    test('edits a member name and persists it', async ({page}) => {
+        const member = await memberFactory.create({name: 'Ada Lovelace', email: 'ada-edit@ghost.org'});
+        const memberDetailsPage = new MemberDetailsPage(page);
+
+        await page.goto(previewPath(member.id));
+        await memberDetailsPage.nameInput.fill('Ada L. Byron');
+        await memberDetailsPage.save();
+
+        // Reload straight from the server to prove the edit was persisted, not just local.
+        await page.reload();
+        await expect(page.getByTestId('member-detail-title')).toHaveText('Ada L. Byron');
+        await expect(memberDetailsPage.nameInput).toHaveValue('Ada L. Byron');
+    });
+
+    test('warns before leaving with unsaved changes', async ({page}) => {
+        const member = await memberFactory.create({name: 'Grace Hopper', email: 'grace-edit@ghost.org'});
+        const memberDetailsPage = new MemberDetailsPage(page);
+
+        await page.goto(previewPath(member.id));
+        await memberDetailsPage.nameInput.fill('Grace B. Hopper');
+        await memberDetailsPage.membersBackLink.click();
+
+        await expect(memberDetailsPage.confirmLeaveButton).toBeVisible();
+        await memberDetailsPage.confirmLeaveButton.click();
+        await expect(page).toHaveURL(/#\/members$/);
+    });
+
+    test('disables save when the email is invalid', async ({page}) => {
+        const member = await memberFactory.create({name: 'Katherine Johnson', email: 'katherine-edit@ghost.org'});
+        const memberDetailsPage = new MemberDetailsPage(page);
+
+        await page.goto(previewPath(member.id));
+        await memberDetailsPage.emailInput.fill('not-an-email');
+
+        await expect(memberDetailsPage.saveButton).toBeDisabled();
+    });
 });
