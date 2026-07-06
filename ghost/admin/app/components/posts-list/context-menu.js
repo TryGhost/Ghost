@@ -67,7 +67,6 @@ export default class PostsContextMenu extends Component {
     @service store;
     @service notifications;
     @service membersUtils;
-    @service feature;
     @service stateBridge;
 
     get menu() {
@@ -82,7 +81,6 @@ export default class PostsContextMenu extends Component {
             return false;
         }
         return canCopyGiftLink({
-            feature: this.feature,
             user: this.session.user,
             post: this.selectionList.first
         });
