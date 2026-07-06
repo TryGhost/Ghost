@@ -5,7 +5,7 @@ import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {Link, useConfirmUnload, useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {LucideIcon} from '@tryghost/shade/utils';
-import {buildMemberFieldEditPayload, getMemberEditableSlice, isDraftInSyncWithServer, isValidMemberEmail} from './member-detail-edit';
+import {buildMemberFieldEditPayload, getMemberEditableSlice, isDraftInSyncWithServer, isValidMemberEmail, normalizeDraftForComparison} from './member-detail-edit';
 import {dequal} from 'dequal';
 import {deriveMemberDetailBackPath} from './member-detail-nav';
 import {formatMemberName} from '@tryghost/shade/app';
@@ -79,7 +79,7 @@ const MemberDetail: React.FC = () => {
 
     // Create compares against an empty baseline; edit against the loaded member.
     const serverSlice = isCreating ? getMemberEditableSlice({}) : (member ? getMemberEditableSlice(member) : undefined);
-    const hasUnsavedChanges = !!draft && !!serverSlice && !dequal(getMemberEditableSlice(draft), serverSlice);
+    const hasUnsavedChanges = !!draft && !!serverSlice && !dequal(normalizeDraftForComparison(draft), serverSlice);
     const emailValid = !!draft && isValidMemberEmail(draft.email);
     const emailError = draft && !emailValid
         ? (draft.email.trim() === '' ? 'Email is required.' : 'Invalid email.')
@@ -129,7 +129,7 @@ const MemberDetail: React.FC = () => {
         if (!member || draftMemberIdRef.current !== member.id) {
             return;
         }
-        editMutation.mutate(buildMemberFieldEditPayload(member.id, draft), {
+        editMutation.mutate(buildMemberFieldEditPayload(member.id, draft, getMemberEditableSlice(member)), {
             onSuccess: (response) => {
                 const saved = response.members?.[0];
                 if (saved) {
@@ -199,7 +199,7 @@ const MemberDetail: React.FC = () => {
                     <div className='flex flex-1 flex-col gap-8 overflow-y-auto p-6 lg:flex-row-reverse lg:items-start'>
                         {member && <MemberDetailSidebar member={member} />}
                         <div className='min-w-0 flex-1'>
-                            <MemberDetailForm disabled={activeMutation.isLoading} draft={draft} emailError={emailError} onChange={onFieldChange} />
+                            <MemberDetailForm disabled={activeMutation.isLoading} draft={draft} emailError={emailError} isCreating={isCreating} onChange={onFieldChange} />
                         </div>
                     </div>
                 )}

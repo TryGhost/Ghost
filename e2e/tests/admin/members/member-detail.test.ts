@@ -115,6 +115,24 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         await expect(labelsField.getByText('Beta')).toBeVisible();
     });
 
+    test('toggles a newsletter subscription and persists it', async ({page}) => {
+        const member = await memberFactory.create({name: 'Newsletter Test', email: 'newsletter-test@ghost.org'});
+        const memberDetailsPage = new MemberDetailsPage(page);
+        const newsletters = page.getByTestId('member-newsletters-field');
+        const firstToggle = memberDetailsPage.newsletterSubscriptionToggles.first();
+
+        await page.goto(previewPath(member.id));
+        await expect(newsletters).toBeVisible();
+
+        const initiallyChecked = (await firstToggle.getAttribute('data-state')) === 'checked';
+        await firstToggle.click();
+        await memberDetailsPage.save();
+
+        await page.reload();
+        const nowChecked = (await memberDetailsPage.newsletterSubscriptionToggles.first().getAttribute('data-state')) === 'checked';
+        expect(nowChecked).toBe(!initiallyChecked);
+    });
+
     test('creates a new member and redirects to their detail', async ({page}) => {
         const memberDetailsPage = new MemberDetailsPage(page);
 
@@ -122,6 +140,9 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         await page.goto(previewPath('new'));
         await expect(page.getByTestId('member-detail-title')).toHaveText('New member');
         await expect(memberDetailsPage.saveButton).toBeDisabled();
+        // Newsletter toggles hide in create mode — showing them would silently
+        // discard user choices because we don't send newsletters on create.
+        await expect(page.getByTestId('member-newsletters-field')).toHaveCount(0);
 
         await memberDetailsPage.nameInput.fill('Grace Hopper');
         await memberDetailsPage.emailInput.fill('grace-new@ghost.org');

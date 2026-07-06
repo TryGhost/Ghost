@@ -1,20 +1,20 @@
-import {NOTE_MAX_LENGTH, getMemberEditableSlice, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, resolveSlugsToLabels} from './member-detail-edit';
+import {NOTE_MAX_LENGTH, buildMemberFieldEditPayload, getMemberEditableSlice, getMemberNewslettersUiEnabled, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, resolveSlugsToLabels, toggleMemberNewsletter} from './member-detail-edit';
 import {describe, expect, it} from 'vitest';
 
 describe('getMemberEditableSlice', () => {
-    it('normalizes missing fields to empty strings and an empty label list', () => {
-        expect(getMemberEditableSlice({})).toEqual({name: '', email: '', note: '', labels: []});
-        expect(getMemberEditableSlice({name: null, email: null, note: null, labels: null})).toEqual({name: '', email: '', note: '', labels: []});
+    it('normalizes missing fields to empty strings and empty relation lists', () => {
+        expect(getMemberEditableSlice({})).toEqual({name: '', email: '', note: '', labels: [], newsletters: []});
+        expect(getMemberEditableSlice({name: null, email: null, note: null, labels: null, newsletters: null})).toEqual({name: '', email: '', note: '', labels: [], newsletters: []});
     });
 
     it('trims name and email (matching Ember blur-trim) but preserves note whitespace', () => {
         expect(getMemberEditableSlice({name: '  Ada  ', email: ' ada@x.co ', note: '  hi  '}))
-            .toEqual({name: 'Ada', email: 'ada@x.co', note: '  hi  ', labels: []});
+            .toEqual({name: 'Ada', email: 'ada@x.co', note: '  hi  ', labels: [], newsletters: []});
     });
 
     it('passes through already-clean fields', () => {
         expect(getMemberEditableSlice({name: 'Ada', email: 'ada@x.co', note: 'VIP'}))
-            .toEqual({name: 'Ada', email: 'ada@x.co', note: 'VIP', labels: []});
+            .toEqual({name: 'Ada', email: 'ada@x.co', note: 'VIP', labels: [], newsletters: []});
     });
 
     it('normalizes labels to {name, slug} sorted by slug', () => {
@@ -29,6 +29,78 @@ describe('getMemberEditableSlice', () => {
             {name: 'Beta', slug: 'beta'},
             {name: 'VIP', slug: 'vip'}
         ]);
+    });
+
+    it('normalizes newsletter subscriptions to an id list sorted by id', () => {
+        const slice = getMemberEditableSlice({
+            newsletters: [
+                {id: 'nl_c'},
+                {id: 'nl_a'},
+                {id: 'nl_b'}
+            ]
+        });
+        expect(slice.newsletters).toEqual(['nl_a', 'nl_b', 'nl_c']);
+    });
+});
+
+describe('buildMemberFieldEditPayload', () => {
+    const baseline = {
+        name: 'Ada',
+        email: 'ada@x.co',
+        note: '',
+        labels: [],
+        newsletters: ['nl_a', 'nl_b']
+    };
+
+    it('omits newsletters when the user has not changed them', () => {
+        // Sending `[]` would unsubscribe the member from every newsletter, so an
+        // unchanged newsletter set must NOT appear on the payload at all.
+        const payload = buildMemberFieldEditPayload('mem_1', {...baseline, name: 'Ada B'}, baseline);
+        expect(payload.newsletters).toBeUndefined();
+        expect(payload.name).toBe('Ada B');
+    });
+
+    it('sends newsletters as {id}[] when the user has toggled them', () => {
+        const payload = buildMemberFieldEditPayload('mem_1', {...baseline, newsletters: ['nl_a']}, baseline);
+        expect(payload.newsletters).toEqual([{id: 'nl_a'}]);
+    });
+
+    it('sends an empty newsletters array only when the user has explicitly unsubscribed from all', () => {
+        const payload = buildMemberFieldEditPayload('mem_1', {...baseline, newsletters: []}, baseline);
+        expect(payload.newsletters).toEqual([]);
+    });
+});
+
+describe('getMemberNewslettersUiEnabled', () => {
+    it('hides the section only when explicitly disabled', () => {
+        expect(getMemberNewslettersUiEnabled('disabled')).toBe(false);
+    });
+
+    it('shows the section for every other setting value', () => {
+        expect(getMemberNewslettersUiEnabled('all')).toBe(true);
+        expect(getMemberNewslettersUiEnabled('paid')).toBe(true);
+        expect(getMemberNewslettersUiEnabled('filter')).toBe(true);
+    });
+
+    it('shows the section while the setting is still loading (prevents a flash-out)', () => {
+        expect(getMemberNewslettersUiEnabled(undefined)).toBe(true);
+        expect(getMemberNewslettersUiEnabled(null)).toBe(true);
+    });
+});
+
+describe('toggleMemberNewsletter', () => {
+    it('subscribes a member to a newsletter they are not yet subscribed to', () => {
+        expect(toggleMemberNewsletter(['nl_a'], 'nl_b')).toEqual(['nl_a', 'nl_b']);
+    });
+
+    it('unsubscribes a member from a newsletter they are subscribed to', () => {
+        expect(toggleMemberNewsletter(['nl_a', 'nl_b'], 'nl_a')).toEqual(['nl_b']);
+    });
+
+    it('is stable for a repeated toggle', () => {
+        const once = toggleMemberNewsletter([], 'nl_a');
+        const twice = toggleMemberNewsletter(once, 'nl_a');
+        expect(twice).toEqual([]);
     });
 });
 
@@ -69,26 +141,36 @@ describe('getNoteCharactersLeft', () => {
 });
 
 describe('isDraftInSyncWithServer', () => {
-    const server = {name: 'Ada', email: 'ada@x.co', note: 'VIP', labels: [{name: 'Beta', slug: 'beta'}]};
+    const server = {
+        name: 'Ada',
+        email: 'ada@x.co',
+        note: 'VIP',
+        labels: [{name: 'Beta', slug: 'beta'}],
+        newsletters: ['nl_a']
+    };
 
     it('is in sync when there is no draft yet', () => {
         expect(isDraftInSyncWithServer(undefined, server)).toBe(true);
     });
 
     it('is in sync when the draft equals the server baseline', () => {
-        expect(isDraftInSyncWithServer({name: 'Ada', email: 'ada@x.co', note: 'VIP', labels: [{name: 'Beta', slug: 'beta'}]}, server)).toBe(true);
+        expect(isDraftInSyncWithServer({...server}, server)).toBe(true);
     });
 
     it('ignores whitespace-only differences (normalized comparison)', () => {
-        expect(isDraftInSyncWithServer({name: 'Ada ', email: ' ada@x.co', note: 'VIP', labels: [{name: 'Beta', slug: 'beta'}]}, server)).toBe(true);
+        expect(isDraftInSyncWithServer({...server, name: 'Ada ', email: ' ada@x.co'}, server)).toBe(true);
     });
 
     it('is out of sync when the user has edited a field', () => {
-        expect(isDraftInSyncWithServer({name: 'Ada B', email: 'ada@x.co', note: 'VIP', labels: [{name: 'Beta', slug: 'beta'}]}, server)).toBe(false);
+        expect(isDraftInSyncWithServer({...server, name: 'Ada B'}, server)).toBe(false);
     });
 
     it('is out of sync when the user has changed labels', () => {
-        expect(isDraftInSyncWithServer({name: 'Ada', email: 'ada@x.co', note: 'VIP', labels: []}, server)).toBe(false);
+        expect(isDraftInSyncWithServer({...server, labels: []}, server)).toBe(false);
+    });
+
+    it('is out of sync when the user has toggled a newsletter', () => {
+        expect(isDraftInSyncWithServer({...server, newsletters: []}, server)).toBe(false);
     });
 });
 

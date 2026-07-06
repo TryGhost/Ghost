@@ -11,6 +11,8 @@ export interface MemberEditableFields {
     email: string;
     note: string;
     labels: MemberEditableLabel[];
+    // Subscribed-newsletter ids, sorted, so order changes never look dirty.
+    newsletters: string[];
 }
 
 // The members API returns null (not just undefined) for unset name/email/note,
@@ -20,6 +22,7 @@ interface MemberFieldSource {
     email?: string | null;
     note?: string | null;
     labels?: Array<{name: string; slug: string}> | null;
+    newsletters?: Array<{id: string}> | null;
 }
 
 // Same shape as the import-members validator already used in this app.
@@ -44,13 +47,38 @@ export function getMemberEditableSlice(member: MemberFieldSource): MemberEditabl
         // order — or a reordered server response — never reads as a dirty change.
         labels: (member.labels ?? [])
             .map(label => ({name: label.name, slug: label.slug}))
-            .sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0))
+            .sort((a, b) => (a.slug < b.slug ? -1 : a.slug > b.slug ? 1 : 0)),
+        newsletters: (member.newsletters ?? [])
+            .map(nl => nl.id)
+            .sort()
     };
+}
+
+/**
+ * Add or remove a newsletter id from the subscribed set, preserving sort order.
+ * Idempotent by construction so a repeated toggle round-trips to no change.
+ */
+export function toggleMemberNewsletter(subscribedIds: string[], newsletterId: string): string[] {
+    if (subscribedIds.includes(newsletterId)) {
+        return subscribedIds.filter(id => id !== newsletterId);
+    }
+    return [...subscribedIds, newsletterId].sort();
 }
 
 /** Client-side email sanity check for the save gate; the server remains authoritative. */
 export function isValidMemberEmail(email: string): boolean {
     return MEMBER_EMAIL_REGEX.test(email.trim());
+}
+
+/**
+ * Whether the newsletter section of the member form should render, gated on the
+ * `editor_default_email_recipients` setting the same way Ember does: only
+ * `'disabled'` hides it. Treating `undefined`/`null` as "show" biases for the
+ * common case (sites with emails enabled see no flash) at the cost of a possible
+ * flash-out on disabled sites when the setting finishes loading.
+ */
+export function getMemberNewslettersUiEnabled(editorDefaultEmailRecipients: string | null | undefined): boolean {
+    return editorDefaultEmailRecipients !== 'disabled';
 }
 
 /**
@@ -65,12 +93,29 @@ export function getNoteCharactersLeft(note: string): number {
 
 /**
  * Build the `useEditMember` payload for the field edits in this slice. Labels are
- * sent as {name, slug}; the server matches existing labels case-insensitively by
- * name and creates any that are missing.
+ * sent as {name, slug} (server matches case-insensitively by name). Newsletters
+ * are sent as {id}[] ONLY when the user changed them, because the server replaces
+ * the subscription set with exactly what we send — including [] which would
+ * unsubscribe the member from every newsletter. Callers pass the server baseline
+ * so we can tell "unchanged" from "all newsletters removed".
  */
-export function buildMemberFieldEditPayload(id: string, draft: MemberFieldSource): EditMemberData {
-    const {name, email, note, labels} = getMemberEditableSlice(draft);
-    return {id, name, email, note, labels};
+export function buildMemberFieldEditPayload(
+    id: string,
+    draft: MemberEditableFields,
+    serverBaseline: MemberEditableFields
+): EditMemberData {
+    const normalized = normalizeDraftForComparison(draft);
+    const payload: EditMemberData = {
+        id,
+        name: normalized.name,
+        email: normalized.email,
+        note: normalized.note,
+        labels: normalized.labels
+    };
+    if (!dequal(normalized.newsletters, serverBaseline.newsletters)) {
+        payload.newsletters = normalized.newsletters.map(nlId => ({id: nlId}));
+    }
+    return payload;
 }
 
 /**
@@ -87,6 +132,22 @@ export function resolveSlugsToLabels(
 }
 
 /**
+ * Normalize an already-shaped draft for dirty comparison. The draft carries user
+ * input for string fields (which may contain leading/trailing whitespace); the
+ * relation lists (labels, newsletters) are already in their normalized shape.
+ * Trims strings so whitespace-only differences don't read as dirty.
+ */
+export function normalizeDraftForComparison(draft: MemberEditableFields): MemberEditableFields {
+    return {
+        name: draft.name.trim(),
+        email: draft.email.trim(),
+        note: draft.note,
+        labels: draft.labels,
+        newsletters: draft.newsletters
+    };
+}
+
+/**
  * Whether the current draft still matches the last server baseline it was seeded
  * from — i.e. the user has made no local edits. When true, a fresh server value
  * (from a background refetch) can safely replace the draft without clobbering user
@@ -97,5 +158,5 @@ export function isDraftInSyncWithServer(
     draft: MemberEditableFields | undefined,
     serverBaseline: MemberEditableFields | undefined
 ): boolean {
-    return !draft || (!!serverBaseline && dequal(getMemberEditableSlice(draft), serverBaseline));
+    return !draft || (!!serverBaseline && dequal(normalizeDraftForComparison(draft), serverBaseline));
 }
