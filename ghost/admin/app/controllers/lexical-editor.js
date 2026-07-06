@@ -326,36 +326,81 @@ export default class LexicalEditorController extends Controller {
         this._timedSaveTask.perform();
     }
 
-    // Paywall card <-> access sync: adding a paywall to a public draft is
-    // treated as the intent "gate this post", so access flips to paid in the
-    // same action instead of requiring a separate trip to the settings menu.
-    // Removing the card undoes the flip only when we made it.
+    // Finds the first paywall card in a serialized lexical document.
+    // Cheap substring check first so the JSON parse only runs when needed.
+    _findPaywallCard(lexicalString) {
+        if (!lexicalString || !lexicalString.includes('"type":"paywall"')) {
+            return null;
+        }
+
+        try {
+            const stack = [...(JSON.parse(lexicalString).root?.children || [])];
+            while (stack.length) {
+                const node = stack.shift();
+                if (node?.type === 'paywall') {
+                    return node;
+                }
+                if (Array.isArray(node?.children)) {
+                    stack.push(...node.children);
+                }
+            }
+        } catch (e) {
+            // invalid document - treat as no card
+        }
+        return null;
+    }
+
+    // Paywall card <-> access sync: the card declares who can read past it
+    // (gate: paid|members), and access follows in the same action instead of
+    // requiring a separate trip to the settings menu. Removing the card undoes
+    // the change only when we made it.
     _syncPaywallVisibility(lexicalString) {
-        const hasPaywall = lexicalString.includes('"type":"paywall"');
+        const card = this._findPaywallCard(lexicalString);
+        const gate = card?.gate === 'members' ? 'members' : 'paid';
 
-        if (this._hasPaywall === undefined) {
+        if (this._paywallGate === undefined) {
             // baseline from the saved document so pre-existing paywalls don't trigger
-            this._hasPaywall = (this.post.lexical || '').includes('"type":"paywall"');
+            const savedCard = this._findPaywallCard(this.post.lexical);
+            this._paywallGate = savedCard ? (savedCard.gate === 'members' ? 'members' : 'paid') : null;
         }
 
-        if (hasPaywall === this._hasPaywall) {
-            return;
-        }
-        this._hasPaywall = hasPaywall;
+        const previousGate = this._paywallGate;
+        this._paywallGate = card ? gate : null;
 
         if (!this.post.isDraft) {
             return;
         }
 
-        if (hasPaywall && this.post.visibility === 'public') {
-            this.post.set('visibility', 'paid');
+        const gateMessages = {
+            paid: {
+                title: 'Paywall added — this post is now for paid members',
+                description: 'Everything below the paywall is paid-only. Free subscribers get a preview by email.'
+            },
+            members: {
+                title: 'Paywall added — this post is now for members',
+                description: 'Anyone can sign up for free to read past the paywall. Your email list gets the full post.'
+            }
+        };
+
+        if (card && previousGate === null && this.post.visibility === 'public') {
+            // card inserted into a public draft -> gate the post
+            this.post.set('visibility', gate);
             this._paywallSetVisibility = true;
-            this.notifications.showNotification('Paywall added — this post is now for paid members', {
+            this.notifications.showNotification(gateMessages[gate].title, {
                 type: 'success',
-                description: 'Everything below the paywall is paid-only. Free subscribers get a preview by email.',
+                description: gateMessages[gate].description,
                 key: 'post.paywall-visibility'
             });
-        } else if (!hasPaywall && this._paywallSetVisibility && this.post.visibility === 'paid') {
+        } else if (card && previousGate && previousGate !== gate && this.post.visibility === previousGate) {
+            // gate changed on the card while access still matches the old gate
+            this.post.set('visibility', gate);
+            this._paywallSetVisibility = true;
+            this.notifications.showNotification(gate === 'members' ? 'Post access changed to members — free signup unlocks the full post' : 'Post access changed to paid members', {
+                type: 'success',
+                key: 'post.paywall-visibility'
+            });
+        } else if (!card && previousGate && this._paywallSetVisibility && this.post.visibility === previousGate) {
+            // card removed -> revert the change we made
             this.post.set('visibility', 'public');
             this._paywallSetVisibility = false;
             this.notifications.showNotification('Paywall removed — post access is public again', {
@@ -1395,7 +1440,7 @@ export default class LexicalEditorController extends Controller {
 
         this._setPostState = null;
         this._postStates = [];
-        this._hasPaywall = undefined;
+        this._paywallGate = undefined;
         this._paywallSetVisibility = false;
 
         this.set('post', null);
