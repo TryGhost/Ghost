@@ -71,6 +71,10 @@ const features: Feature[] = [{
     title: 'Get helper deduplication',
     description: 'Deduplicate identical {{#get}} helper queries within a single request to avoid redundant database calls',
     flag: 'getHelperDeduplication'
+}, {
+    title: 'Cloudflare Turnstile',
+    description: 'Protect member signup and signin with Cloudflare Turnstile bot verification',
+    flag: 'turnstile'
 }];
 
 const AlphaFeatures: React.FC = () => {

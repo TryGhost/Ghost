@@ -225,7 +225,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 
 ### Phase 0 — scaffolding
 - [x] Read `git show 1091014ae7` end to end; note any integration points this plan missed and update this doc
-- [ ] Labs flag `turnstile` (use `add-private-feature-flag` skill)
+- [x] Labs flag `turnstile` (use `add-private-feature-flag` skill)
 - [ ] Settings `turnstile_sitekey` + `turnstile_secret_key`: default-settings.json, migration (use `create-database-migration` skill), `EDITABLE_SETTINGS`, public exposure of sitekey only; integrity/exporter test snapshots updated
 
 ### Phase 1 — backend verification
@@ -265,3 +265,6 @@ anything that diverged from the plan and why._
   and two prior-art divergences — the old CaptchaService was config-driven and constructed once
   at boot (no restart-free enablement; our lazy-read requirement must be built fresh), and its
   middleware was mounted in members-api.js rather than web/members/app.js. No code changes.
+- **2026-07-06** — Labs flag `turnstile` added via the add-private-feature-flag skill:
+  `PRIVATE_FEATURES` in labs.js, toggle in private-features.tsx, config.test.js snapshot updated
+  (verified diff only adds the one flag). Labs unit tests + config e2e pass; lint clean.
