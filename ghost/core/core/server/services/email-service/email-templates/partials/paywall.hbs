@@ -17,15 +17,23 @@
             </tr>
         </tbody>
     </table>
+    {{#if paywall.heading}}
+    <h3>{{paywall.heading}}</h3>
+    {{else}}
     <h3>{{t 'Upgrade to continue reading.'}}</h3>
+    {{/if}}
+    {{#if paywall.description}}
+    <p>{{paywall.description}}</p>
+    {{else}}
     <p>{{{t 'Become a paid member of {site} to get access to all premium content.' site=site.title}}}</p>
+    {{/if}}
         <table border="0" cellpadding="0" cellspacing="0">
             <tr>
                 <td>
                     <table class="btn" border="0" cellspacing="0" cellpadding="0" align="center">
                         <tr>
                             <td align="center">
-                                <a href="{{paywall.signupUrl}}">{{t 'Upgrade'}}</a>
+                                <a href="{{#if paywall.offerUrl}}{{paywall.offerUrl}}{{else}}{{paywall.signupUrl}}{{/if}}">{{#if paywall.buttonText}}{{paywall.buttonText}}{{else}}{{t 'Upgrade'}}{{/if}}</a>
                             </td>
                         </tr>
                     </table>

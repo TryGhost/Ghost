@@ -1359,14 +1359,35 @@ class EmailRenderer {
             feedbackButtonCellWidth,
 
             // Paywall
-            paywall: addPaywall ? {
-                signupUrl: signupUrl.href
-            } : null,
+            paywall: addPaywall ? this.#getPaywallData(post, signupUrl) : null,
 
             year: new Date().getFullYear().toString()
         };
 
         return data;
+    }
+
+    /**
+     * Builds the paywall section data for a truncated (free-segment) email.
+     * Custom copy and an attached offer come from posts_meta (set per post);
+     * every field falls back to the default upgrade CTA.
+     *
+     * @private
+     * @param {Post} post
+     * @param {URL} signupUrl
+     */
+    #getPaywallData(post, signupUrl) {
+        const postsMeta = post.related('posts_meta');
+        const offerCode = postsMeta?.get('email_paywall_offer_code');
+        const siteUrl = this.#urlUtils.urlFor('home', true);
+
+        return {
+            signupUrl: signupUrl.href,
+            heading: postsMeta?.get('email_paywall_heading'),
+            description: postsMeta?.get('email_paywall_description'),
+            buttonText: postsMeta?.get('email_paywall_button_text'),
+            offerUrl: offerCode ? new URL(offerCode, siteUrl).href : null
+        };
     }
 
     /**
