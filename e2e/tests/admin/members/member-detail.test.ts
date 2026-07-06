@@ -115,6 +115,108 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         await expect(labelsField.getByText('Beta')).toBeVisible();
     });
 
+    test.describe('subscription display (stripe enabled)', () => {
+        test.use({stripeEnabled: true});
+
+        test('renders a paid subscription row with price, interval and renewal date', async ({page}) => {
+            const member = await memberFactory.create({name: 'Paid Member', email: 'paid-member@ghost.org'});
+
+            // Real Stripe subscriptions aren't reachable from the e2e factory, so
+            // inject a synthetic one into the members read the same way the suppression
+            // test does. Narrow regex + `body.members?.[0]` guard so unrelated
+            // endpoints aren't rewritten.
+            const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+            await page.route(memberReadRegex, async (route) => {
+                if (route.request().method() !== 'GET') {
+                    return route.continue();
+                }
+                const response = await route.fetch();
+                const body = await response.json();
+                if (body?.members?.[0]) {
+                    body.members[0].subscriptions = [{
+                        id: 'sub_paid_123',
+                        customer: {id: 'cus_paid_123', name: 'Paid Member', email: member.email},
+                        plan: {id: 'plan_paid', nickname: 'Monthly', interval: 'month', currency: 'usd', amount: 1050},
+                        status: 'active',
+                        start_date: '2026-01-15T12:00:00.000Z',
+                        current_period_end: '2026-02-15T12:00:00.000Z',
+                        cancel_at_period_end: false,
+                        price: {id: 'price_paid', price_id: 'price_paid', nickname: 'Monthly', amount: 1050, currency: 'usd', type: 'recurring', interval: 'month'},
+                        tier: {id: 'tier_bronze', name: 'Bronze', slug: 'bronze', active: true, type: 'paid'},
+                        offer: null
+                    }];
+                }
+                return route.fulfill({response, body: JSON.stringify(body)});
+            });
+
+            await page.goto(previewPath(member.id));
+
+            const subscriptions = page.getByTestId('member-subscriptions');
+            await expect(subscriptions).toBeVisible();
+            await expect(page.getByTestId('member-subscription-tier')).toHaveText('Bronze');
+            await expect(page.getByTestId('member-subscription-status')).toHaveText('Active');
+            await expect(subscriptions).toContainText('$10.50 monthly');
+            // "Renews <date>" — no "on", matching Ember validityDetails copy exactly.
+            await expect(subscriptions).toContainText('Renews 15 Feb 2026');
+        });
+
+        test('renders a complimentary subscription with the correct copy and expiry', async ({page}) => {
+            const member = await memberFactory.create({name: 'Comp Member', email: 'comp-member@ghost.org'});
+
+            const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+            await page.route(memberReadRegex, async (route) => {
+                if (route.request().method() !== 'GET') {
+                    return route.continue();
+                }
+                const response = await route.fetch();
+                const body = await response.json();
+                if (body?.members?.[0]) {
+                    body.members[0].status = 'comped';
+                    body.members[0].subscriptions = [{
+                        // Comp subscriptions arrive with empty-string id (the members
+                        // BREAD service synthesises them without a Stripe id). Ember's
+                        // `!sub.id` classification treats '' the same as null.
+                        id: '',
+                        customer: {id: 'cus_comp', name: null, email: member.email},
+                        plan: {id: 'plan_comp', nickname: 'Complimentary', interval: 'year', currency: 'usd', amount: 0},
+                        status: 'active',
+                        start_date: '2026-01-15T12:00:00.000Z',
+                        current_period_end: '2027-01-15T12:00:00.000Z',
+                        cancel_at_period_end: false,
+                        price: {id: 'price_comp', price_id: 'price_comp', nickname: 'Complimentary', amount: 0, currency: 'usd', type: 'recurring', interval: 'year'},
+                        tier: {id: 'tier_gold', name: 'Gold', slug: 'gold', active: true, type: 'paid', expiry_at: '2027-01-15T12:00:00.000Z'},
+                        offer: null
+                    }];
+                }
+                return route.fulfill({response, body: JSON.stringify(body)});
+            });
+
+            await page.goto(previewPath(member.id));
+
+            const subscriptions = page.getByTestId('member-subscriptions');
+            await expect(subscriptions).toBeVisible();
+            await expect(page.getByTestId('member-subscription-tier')).toHaveText('Gold');
+            await expect(page.getByTestId('member-subscription-status')).toHaveText('Active');
+            // Comp reads "Complimentary" — never "$0 yearly" (bug from the earlier attempt)
+            // — and shows the expiry, not a renewal date. Explicitly assert that neither
+            // the currency nor the interval label leaks through.
+            await expect(subscriptions).toContainText('Complimentary');
+            await expect(subscriptions).not.toContainText('$0');
+            await expect(subscriptions).not.toContainText('yearly');
+            await expect(subscriptions).not.toContainText('monthly');
+            await expect(subscriptions).toContainText('Expires 15 Jan 2027');
+        });
+
+        test('does not render a subscriptions section for a member with no subscriptions', async ({page}) => {
+            const member = await memberFactory.create({name: 'Empty Sub Member', email: 'empty-sub-member@ghost.org'});
+
+            await page.goto(previewPath(member.id));
+
+            await expect(page.getByTestId('member-detail-sidebar')).toBeVisible();
+            await expect(page.getByTestId('member-subscriptions')).toHaveCount(0);
+        });
+    });
+
     test('shows a suppression banner and clears it after re-enabling email', async ({page}) => {
         const member = await memberFactory.create({name: 'Bounced Member', email: 'bounced-member@ghost.org'});
 

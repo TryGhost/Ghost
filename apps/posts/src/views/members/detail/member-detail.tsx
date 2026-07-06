@@ -1,6 +1,7 @@
 import MainLayout from '@components/layout/main-layout';
 import MemberDetailForm from './member-detail-form';
 import MemberDetailSidebar from './member-detail-sidebar';
+import MemberSubscriptionsSection from './member-subscriptions-section';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {Link, useConfirmUnload, useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
@@ -10,6 +11,7 @@ import {dequal} from 'dequal';
 import {deriveMemberDetailBackPath} from './member-detail-nav';
 import {formatMemberName} from '@tryghost/shade/app';
 import {getMember, useAddMember, useEditMember} from '@tryghost/admin-x-framework/api/members';
+import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
 import type {MemberEditableFields} from './member-detail-edit';
@@ -37,6 +39,12 @@ const MemberDetail: React.FC = () => {
     const editMutation = useEditMember();
     const addMutation = useAddMember();
     const activeMutation = isCreating ? addMutation : editMutation;
+
+    // `paid_members_enabled` gates the subscriptions section: sites without paid
+    // memberships never see subscription UI. Matches Ember's `paidMembersEnabled`
+    // check in `gh-member-settings-form.hbs:82`.
+    const {data: settingsData} = useBrowseSettings({});
+    const paidMembersEnabled = getSettingValue<boolean>(settingsData?.settings, 'paid_members_enabled') === true;
 
     // Draft holds the user's in-progress edits; the query cache stays server truth.
     const [draft, setDraft] = React.useState<MemberEditableFields | undefined>(undefined);
@@ -198,7 +206,7 @@ const MemberDetail: React.FC = () => {
                 {showEditor && draft && (
                     <div className='flex flex-1 flex-col gap-8 overflow-y-auto p-6 lg:flex-row-reverse lg:items-start'>
                         {member && <MemberDetailSidebar member={member} />}
-                        <div className='min-w-0 flex-1'>
+                        <div className='flex min-w-0 flex-1 flex-col gap-8'>
                             <MemberDetailForm
                                 disabled={activeMutation.isLoading}
                                 draft={draft}
@@ -208,6 +216,9 @@ const MemberDetail: React.FC = () => {
                                 memberId={member?.id}
                                 onChange={onFieldChange}
                             />
+                            {member && !isCreating && (
+                                <MemberSubscriptionsSection member={member} paidMembersEnabled={paidMembersEnabled} />
+                            )}
                         </div>
                     </div>
                 )}

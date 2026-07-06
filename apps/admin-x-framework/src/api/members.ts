@@ -16,6 +16,9 @@ export type MemberTier = {
     slug: string;
     active: boolean;
     type: string;
+    // Populated for complimentary / gift subscriptions; the tier expiry the admin
+    // set when the comp was created, or the gift expiry from the redemption.
+    expiry_at?: string | null;
 };
 
 export type MemberNewsletter = {
@@ -27,6 +30,11 @@ export type MemberNewsletter = {
 };
 
 export type MemberSubscription = {
+    // Complimentary and gift subscriptions arrive from the members BREAD service
+    // with `id: ''` — they're synthesised from the member's tier and carry no
+    // Stripe subscription id. Paid ones always have a real Stripe id. The Ember
+    // screen classifies via `!sub.id` (empty-string is falsy) combined with the
+    // plan nickname.
     id: string;
     customer: {
         id: string;
@@ -44,6 +52,9 @@ export type MemberSubscription = {
     start_date: string;
     current_period_end: string;
     cancel_at_period_end: boolean;
+    // Populated for subscriptions currently in a Stripe trial; used to render
+    // "Free trial" + "Ends <date>" copy without leaning on the paid-price branch.
+    trial_end_at?: string | null;
     price: {
         id: string;
         price_id: string;
