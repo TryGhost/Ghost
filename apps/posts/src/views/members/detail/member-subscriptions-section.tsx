@@ -1,6 +1,6 @@
 import MemberSubscriptionActions from './member-subscription-actions';
 import React from 'react';
-import {Badge} from '@tryghost/shade/components';
+import {Badge, Card, CardContent, CardHeader, CardTitle} from '@tryghost/shade/components';
 import {classifyMemberSubscription, formatSubscriptionAmount, formatSubscriptionInterval, getSubscriptionStatusLabel, getSubscriptionValidityLabel, groupSubscriptionsByTier} from './member-subscription';
 import type {Member, MemberSubscription} from '@tryghost/admin-x-framework/api/members';
 
@@ -60,23 +60,27 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
     }
 
     return (
-        <section className='flex flex-col gap-4' data-testid='member-subscriptions'>
-            <h3 className='text-sm font-semibold'>Subscriptions</h3>
-            {groups.map(group => (
-                <div key={group.tier.id} className='flex flex-col gap-2'>
-                    {group.subscriptions.map((sub, i) => (
-                        // For a member with 2+ subs on the same tier, the second key
-                        // needs a fallback since comp/gift subs have `id: ''`.
-                        <SubscriptionRow key={sub.id || `${group.tier.id}-${i}`} memberId={member.id} sub={sub} />
-                    ))}
-                    {group.subscriptions.length > 1 && (
-                        <div className='text-sm text-muted-foreground'>
-                            {group.subscriptions.length} subscriptions
-                        </div>
-                    )}
-                </div>
-            ))}
-        </section>
+        <Card data-testid='member-subscriptions'>
+            <CardHeader>
+                <CardTitle className='text-base'>Subscriptions</CardTitle>
+            </CardHeader>
+            <CardContent className='flex flex-col gap-4'>
+                {groups.map(group => (
+                    <div key={group.tier.id} className='flex flex-col gap-2'>
+                        {group.subscriptions.map((sub, i) => (
+                            // For a member with 2+ subs on the same tier, the second key
+                            // needs a fallback since comp/gift subs have `id: ''`.
+                            <SubscriptionRow key={sub.id || `${group.tier.id}-${i}`} memberId={member.id} sub={sub} />
+                        ))}
+                        {group.subscriptions.length > 1 && (
+                            <div className='text-sm text-muted-foreground'>
+                                {group.subscriptions.length} subscriptions
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </CardContent>
+        </Card>
     );
 };
 

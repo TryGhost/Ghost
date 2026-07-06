@@ -3,9 +3,8 @@ import MemberDetailForm from './member-detail-form';
 import MemberDetailSidebar from './member-detail-sidebar';
 import MemberSubscriptionsSection from './member-subscriptions-section';
 import React from 'react';
-import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Button, type ButtonProps, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
+import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, type ButtonProps, Card, CardContent, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {Link, useConfirmUnload, useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
-import {LucideIcon} from '@tryghost/shade/utils';
 import {buildMemberFieldEditPayload, getMemberEditableSlice, isDraftInSyncWithServer, isValidMemberEmail, normalizeDraftForComparison} from './member-detail-edit';
 import {dequal} from 'dequal';
 import {deriveMemberDetailBackPath} from './member-detail-nav';
@@ -177,19 +176,26 @@ const MemberDetail: React.FC = () => {
     return (
         <MainLayout>
             <div className='flex h-full flex-col' data-testid='member-detail'>
-                <header className='flex h-14 shrink-0 items-center gap-3 border-b border-border px-2'>
-                    <Button aria-label='Back to members' variant='ghost' asChild>
-                        <Link data-test-link='members-back' to={backPath}>
-                            <LucideIcon.ArrowLeft strokeWidth={2} />
-                        </Link>
-                    </Button>
-                    {!isCreating && isLoading ? (
-                        <Skeleton className='h-6 w-48' />
-                    ) : (
-                        <h1 className='min-w-0 flex-1 truncate text-xl font-semibold tracking-tight' data-testid='member-detail-title'>
-                            {title}
-                        </h1>
-                    )}
+                <header className='flex h-14 shrink-0 items-center gap-3 px-2'>
+                    <Breadcrumb className='min-w-0 flex-1'>
+                        <BreadcrumbList>
+                            <BreadcrumbItem>
+                                <BreadcrumbLink asChild>
+                                    <Link data-test-link='members-back' to={backPath}>Members</Link>
+                                </BreadcrumbLink>
+                            </BreadcrumbItem>
+                            <BreadcrumbSeparator />
+                            <BreadcrumbItem>
+                                {!isCreating && isLoading ? (
+                                    <Skeleton className='h-4 w-40' />
+                                ) : (
+                                    <BreadcrumbPage className='truncate' data-testid='member-detail-title'>
+                                        {title}
+                                    </BreadcrumbPage>
+                                )}
+                            </BreadcrumbItem>
+                        </BreadcrumbList>
+                    </Breadcrumb>
                     {(isCreating || member) && (
                         <Button disabled={saveDisabled} variant={saveVariant} onClick={onSave}>
                             {saveLabel}
@@ -204,18 +210,22 @@ const MemberDetail: React.FC = () => {
                 )}
 
                 {showEditor && draft && (
-                    <div className='flex flex-1 flex-col gap-8 overflow-y-auto p-6 lg:flex-row-reverse lg:items-start'>
-                        {member && <MemberDetailSidebar member={member} />}
-                        <div className='flex min-w-0 flex-1 flex-col gap-8'>
-                            <MemberDetailForm
-                                disabled={activeMutation.isLoading}
-                                draft={draft}
-                                emailError={emailError}
-                                emailSuppression={member?.email_suppression}
-                                isCreating={isCreating}
-                                memberId={member?.id}
-                                onChange={onFieldChange}
-                            />
+                    <div className='flex flex-1 flex-col gap-8 overflow-y-auto p-6 lg:flex-row lg:items-start'>
+                        <MemberDetailSidebar draftEmail={draft.email} draftName={draft.name} member={member} />
+                        <div className='flex min-w-0 flex-1 flex-col gap-6'>
+                            <Card>
+                                <CardContent className='pt-6'>
+                                    <MemberDetailForm
+                                        disabled={activeMutation.isLoading}
+                                        draft={draft}
+                                        emailError={emailError}
+                                        emailSuppression={member?.email_suppression}
+                                        isCreating={isCreating}
+                                        memberId={member?.id}
+                                        onChange={onFieldChange}
+                                    />
+                                </CardContent>
+                            </Card>
                             {member && !isCreating && (
                                 <MemberSubscriptionsSection member={member} paidMembersEnabled={paidMembersEnabled} />
                             )}
