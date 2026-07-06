@@ -10,8 +10,12 @@
  *
  * The namespace is fixed at build time by which per-namespace registry module is
  * imported, so bundlers include ONLY that namespace's locale files.
+ *
+ * Note: this imports the ESM core (./i18n-core.mjs), NOT the CJS ./i18n-core.js.
+ * The CJS core uses require('i18next'), which leaks a bare `require(...)` into the
+ * browser UMD bundle and throws "require is not defined" at load.
  */
-import * as i18nCore from './i18n-core.js';
+import * as i18nCore from './i18n-core.mjs';
 
 const {createI18n, createGenerateResources, LOCALE_DATA, SUPPORTED_LOCALES} = i18nCore;
 

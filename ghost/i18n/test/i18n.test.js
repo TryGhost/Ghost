@@ -54,6 +54,53 @@ describe('i18n', function () {
         });
     });
 
+    describe('CJS/ESM core parity', function () {
+        // lib/i18n-core.js (Node) and lib/i18n-core.mjs (browser) are deliberate
+        // twins: the browser path must be pure ESM (a CJS file leaks require()/
+        // module.exports into the UMD bundle and throws at load), while Ghost core
+        // require()s the package synchronously. This test guards against drift.
+        let cjsCore;
+        let esmCore;
+
+        beforeAll(async function () {
+            cjsCore = require('../lib/i18n-core');
+            esmCore = await import('../lib/i18n-core.mjs');
+        });
+
+        it('exposes identical locale data and supported locales', function () {
+            assert.deepEqual(esmCore.SUPPORTED_LOCALES, cjsCore.SUPPORTED_LOCALES);
+            assert.deepEqual(esmCore.LOCALE_DATA, cjsCore.LOCALE_DATA);
+        });
+
+        it('mergeDefaultExport behaves identically', function () {
+            const input = {Name: 'Direct', default: {Name: 'FromDefault', Extra: 'x'}};
+
+            assert.deepEqual(esmCore.mergeDefaultExport(input), cjsCore.mergeDefaultExport(input));
+        });
+
+        it('createGenerateResources produces identical output for the same loader', function () {
+            const loader = locale => (locale === 'en' ? {Name: 'English'} : {Name: locale});
+            const esmGen = esmCore.createGenerateResources(loader);
+            const cjsGen = cjsCore.createGenerateResources(loader);
+
+            assert.deepEqual(esmGen(['de', 'xx'], 'portal'), cjsGen(['de', 'xx'], 'portal'));
+        });
+
+        it('createI18n produces instances that translate identically', function () {
+            const generateResources = locales => locales.reduce((acc, l) => {
+                acc[l] = {portal: {Hello: l === 'nl' ? 'Hallo' : 'Hello'}};
+                return acc;
+            }, {});
+            const generateThemeResources = lng => ({[lng]: {theme: {}}});
+
+            const esm = esmCore.createI18n({generateResources, generateThemeResources})('nl', 'portal');
+            const cjs = cjsCore.createI18n({generateResources, generateThemeResources})('nl', 'portal');
+
+            assert.equal(esm.t('Hello'), 'Hallo');
+            assert.equal(esm.t('Hello'), cjs.t('Hello'));
+        });
+    });
+
     it('does not have too-long strings for the Stripe personal note label', async function () {
         for (const locale of i18n.SUPPORTED_LOCALES) {
             const translationFile = require(path.join(`../locales/`, locale, 'portal.json'));
