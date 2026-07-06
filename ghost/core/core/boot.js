@@ -145,6 +145,13 @@ async function initCore({ghostServer, config, frontend}) {
         ghostServer.registerCleanupTask(async () => {
             await jobService.shutdown();
         });
+
+        // JobQueue — the class-based interface that services are migrating
+        // onto; runs alongside the legacy job service above.
+        const jobQueue = require('./server/services/jobs/queue').default;
+        ghostServer.registerCleanupTask(async () => {
+            await jobQueue.shutdown();
+        });
         debug('End: Job Service');
 
         // Mentions Job Service allows mentions to be processed in the background
@@ -562,6 +569,13 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
 
         // Step 4 - Load Ghost with all its services
         debug('Begin: Load Ghost Services & Apps');
+
+        // Each boot owns the JobQueue's handler registry: services re-register
+        // as they init, so an in-process re-boot (tests) must start from a
+        // clean registry or every registration would collide with the last
+        // boot's.
+        require('./server/services/jobs/queue').default.reset();
+
         await initCore({ghostServer, config, frontend});
 
         // Instrument the knex instance and connection pool if prometheus is enabled

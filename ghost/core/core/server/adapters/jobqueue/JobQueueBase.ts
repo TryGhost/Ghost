@@ -41,6 +41,7 @@ export default abstract class JobQueueBase {
     #handlers = new Map<string, {handler: JobHandler; concurrency?: number}>();
     #logging: Logger;
     #errorHandler: (error: Error) => void;
+    #errorListeners: Array<(error: Error) => void> = [];
 
     constructor({logging = defaultLogging, errorHandler}: JobQueueOptions = {}) {
         this.#logging = logging;
@@ -117,8 +118,16 @@ export default abstract class JobQueueBase {
         return this.#handlers.get(type)?.concurrency;
     }
 
+    /** Runtime error wiring (e.g. Sentry) — adapters are built from JSON config. */
+    onError(listener: (error: Error) => void): void {
+        this.#errorListeners.push(listener);
+    }
+
     protected reportError(error: Error): void {
         this.#errorHandler(error);
+        for (const listener of this.#errorListeners) {
+            listener(error);
+        }
     }
 
 }

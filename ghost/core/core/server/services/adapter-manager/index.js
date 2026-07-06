@@ -17,6 +17,8 @@ adapterManager.registerAdapter('scheduling', require('../../adapters/scheduling/
 adapterManager.registerAdapter('sso', require('../../adapters/sso/SSOBase'));
 adapterManager.registerAdapter('cache', require('@tryghost/adapter-base-cache'));
 adapterManager.registerAdapter('redirects', require('../../adapters/redirects/RedirectsStoreBase'));
+// JobQueueBase is a TS module, so the class sits on `.default`
+adapterManager.registerAdapter('jobqueue', require('../../adapters/jobqueue/JobQueueBase').default);
 
 module.exports = {
     /**
