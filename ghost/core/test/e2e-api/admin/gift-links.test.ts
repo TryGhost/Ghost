@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
+const {agentProvider, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 
 describe('Gift Links Admin API', function () {
@@ -23,12 +23,7 @@ describe('Gift Links Admin API', function () {
         pageId = (await models.Base.knex('posts').where('type', 'page').first('id')).id;
     });
 
-    beforeEach(function () {
-        mockManager.mockLabsEnabled('giftLinks');
-    });
-
     afterEach(async function () {
-        mockManager.restore();
         await models.Base.knex('post_gift_links').del();
         await models.Base.knex('gift_links').del();
         await models.Base.knex('actions').where('resource_type', 'gift_link').del();
@@ -168,10 +163,5 @@ describe('Gift Links Admin API', function () {
             assert.equal(deleted.actor_id, actorId);
             assert.equal(actionNameOf(deleted), undefined);
         });
-    });
-
-    it('404s when the giftLinks flag is disabled', async function () {
-        mockManager.mockLabsDisabled('giftLinks');
-        await agent.get(`posts/${postId}/gift_links/`).expectStatus(404);
     });
 });

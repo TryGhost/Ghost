@@ -64,7 +64,7 @@ describe('Front-end gift links — theme toast override', function () {
         const originalSettingsCacheGetFn = settingsCache.get;
         sinon.stub(settingsCache, 'get').callsFake(function (key: any, options: any) {
             if (key === 'labs') {
-                return {members: true, giftLinks: true};
+                return {members: true};
             }
             if (key === 'active_theme') {
                 return OVERRIDE_THEME;
