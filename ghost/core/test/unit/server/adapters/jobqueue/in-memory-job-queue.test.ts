@@ -148,6 +148,104 @@ describe('InMemoryJobQueue', function () {
         });
     });
 
+    describe('per-type concurrency caps', function () {
+        function deferred() {
+            let resolve!: () => void;
+            const promise = new Promise<void>((res) => {
+                resolve = res;
+            });
+            return {promise, resolve};
+        }
+
+        it('holds a capped type at its limit while other types keep running', async function () {
+            const jobs = new InMemoryJobQueue({logging, concurrency: 3});
+            class Webmention {
+                static type = 'webmention';
+            }
+            class SendEmail {
+                static type = 'send-email';
+            }
+
+            const gate = deferred();
+            const started: string[] = [];
+            jobs.handle(Webmention, async () => {
+                started.push('webmention');
+                await gate.promise;
+            }, {concurrency: 1});
+            jobs.handle(SendEmail, async () => {
+                started.push('email');
+            });
+
+            await jobs.dispatch(new Webmention());
+            await jobs.dispatch(new Webmention());
+            await jobs.dispatch(new SendEmail());
+            await new Promise(setImmediate);
+
+            assert.deepEqual(started, ['webmention', 'email'], 'second webmention must wait, email must not');
+
+            gate.resolve();
+            await jobs.allSettled();
+            assert.equal(started.filter(s => s === 'webmention').length, 2, 'capped job still runs to completion');
+        });
+
+        it('lets an uncapped type use every global slot', async function () {
+            const jobs = new InMemoryJobQueue({logging, concurrency: 2});
+            class Task {
+                static type = 'task';
+            }
+
+            const gate = deferred();
+            let inFlight = 0;
+            let maxInFlight = 0;
+            jobs.handle(Task, async () => {
+                inFlight += 1;
+                maxInFlight = Math.max(maxInFlight, inFlight);
+                await gate.promise;
+                inFlight -= 1;
+            });
+
+            await jobs.dispatch(new Task());
+            await jobs.dispatch(new Task());
+            await jobs.dispatch(new Task());
+            await new Promise(setImmediate);
+
+            assert.equal(maxInFlight, 2, 'bounded by the global limit only');
+            gate.resolve();
+            await jobs.allSettled();
+        });
+
+        it('runs a capped type in its own pool alongside the default queue', async function () {
+            // Default queue fully occupied; the capped type still runs, because
+            // its pool is independent rather than a share of the global limit.
+            const jobs = new InMemoryJobQueue({logging, concurrency: 1});
+            class SlowEmail {
+                static type = 'slow-email';
+            }
+            class Webmention {
+                static type = 'webmention';
+            }
+
+            const gate = deferred();
+            const started: string[] = [];
+            jobs.handle(SlowEmail, async () => {
+                started.push('email');
+                await gate.promise;
+            });
+            jobs.handle(Webmention, async () => {
+                started.push('webmention');
+            }, {concurrency: 1});
+
+            await jobs.dispatch(new SlowEmail());
+            await jobs.dispatch(new Webmention());
+            await new Promise(setImmediate);
+
+            assert.deepEqual(started, ['email', 'webmention'], 'capped type is not blocked by a saturated default queue');
+
+            gate.resolve();
+            await jobs.allSettled();
+        });
+    });
+
     describe('scheduleRecurring', function () {
         let clock: sinon.SinonFakeTimers;
 

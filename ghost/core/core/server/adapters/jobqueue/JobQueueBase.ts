@@ -13,6 +13,11 @@ export interface JobClass<T extends Job = Job> {
 
 export type JobHandler<T extends Job = Job> = (job: T) => void | Promise<void>;
 
+export interface HandleOptions {
+    /** Max jobs of this type running at once — the isolation lever that lets unbounded work share one queue. */
+    concurrency?: number;
+}
+
 export interface Logger {
     info(...args: unknown[]): void;
     warn(...args: unknown[]): void;
@@ -33,7 +38,7 @@ export default abstract class JobQueueBase {
     /** Contract checked by the adapter manager when an implementation loads. */
     readonly requiredFns = ['handle', 'dispatch', 'scheduleRecurring', 'allSettled', 'shutdown'];
 
-    #handlers = new Map<string, JobHandler>();
+    #handlers = new Map<string, {handler: JobHandler; concurrency?: number}>();
     #logging: Logger;
     #errorHandler: (error: Error) => void;
 
@@ -43,7 +48,7 @@ export default abstract class JobQueueBase {
     }
 
     /** Register the one handler that owns a job class. */
-    handle<T extends Job>(jobClass: JobClass<T>, handler: JobHandler<T>): void {
+    handle<T extends Job>(jobClass: JobClass<T>, handler: JobHandler<T>, options: HandleOptions = {}): void {
         const type = jobClass.type;
 
         if (typeof type !== 'string' || type.length === 0) {
@@ -58,7 +63,7 @@ export default abstract class JobQueueBase {
             });
         }
 
-        this.#handlers.set(type, handler as JobHandler);
+        this.#handlers.set(type, {handler: handler as JobHandler, concurrency: options.concurrency});
     }
 
     /**
@@ -104,7 +109,12 @@ export default abstract class JobQueueBase {
     static readonly SHUTDOWN_TIMEOUT_MS = 30 * 1000;
 
     protected getHandler(type: string): JobHandler | undefined {
-        return this.#handlers.get(type);
+        return this.#handlers.get(type)?.handler;
+    }
+
+    /** Undefined when the type is uncapped and only the backend's global limit applies. */
+    protected getTypeConcurrency(type: string): number | undefined {
+        return this.#handlers.get(type)?.concurrency;
     }
 
     protected reportError(error: Error): void {

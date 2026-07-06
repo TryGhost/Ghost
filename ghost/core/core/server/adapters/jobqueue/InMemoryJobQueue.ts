@@ -9,6 +9,7 @@ const later = require('@breejs/later');
 later.date.localTime();
 
 export interface InMemoryJobQueueOptions extends JobQueueOptions {
+    /** Max jobs running at once on the default queue. */
     concurrency?: number;
 }
 
@@ -17,28 +18,56 @@ interface QueueUnit {
 }
 
 /**
- * In-memory job queue built on fastq (queue + concurrency) and @breejs/later
+ * In-memory job queue built on fastq (queues + concurrency) and @breejs/later
  * (recurring schedules). fastq starts a handler eagerly — synchronously up to
- * its first await; later accepts invalid cron silently. Delivery is
- * best-effort at-most-once, so handlers must be idempotent; durable backends
- * share this surface.
+ * its first await. A capped type gets its own fastq pool at that concurrency,
+ * alongside the default queue — so total concurrency is the default limit
+ * plus the sum of the caps. Delivery is best-effort at-most-once, so handlers
+ * must be idempotent; durable backends share this surface.
  */
 export default class InMemoryJobQueue extends JobQueueBase {
-    #queue: any;
+    #defaultQueue: any;
+    #typeQueues = new Map<string, any>();
     #timers = new Set<{clear(): void}>();
     #idleResolvers: Array<() => void> = [];
 
     constructor({concurrency = 3, ...options}: InMemoryJobQueueOptions = {}) {
         super(options);
+        this.#defaultQueue = this.#makeQueue(concurrency);
+    }
+
+    #makeQueue(concurrency: number): any {
         // The worker never rejects (handler errors are caught in #runUnit).
-        this.#queue = fastq(this, (unit: QueueUnit, done: (err: Error | null) => void) => {
+        const queue = fastq(this, (unit: QueueUnit, done: (err: Error | null) => void) => {
             this.#runUnit(unit).then(() => done(null), done);
         }, concurrency);
-        this.#queue.drain = () => this.#signalIdleIfDone();
+        queue.drain = () => this.#signalIdleIfDone();
+        return queue;
+    }
+
+    #queueFor(job: Job): any {
+        const type = this.#typeOf(job);
+        if (!type) {
+            return this.#defaultQueue;
+        }
+        const cap = this.getTypeConcurrency(type);
+        if (cap === undefined) {
+            return this.#defaultQueue;
+        }
+        let queue = this.#typeQueues.get(type);
+        if (!queue) {
+            queue = this.#makeQueue(cap);
+            this.#typeQueues.set(type, queue);
+        }
+        return queue;
+    }
+
+    #typeOf(job: Job): string | undefined {
+        return (job.constructor as Partial<JobClass>).type;
     }
 
     async dispatch(job: Job): Promise<void> {
-        const type = (job.constructor as Partial<JobClass>).type;
+        const type = this.#typeOf(job);
         // Fail loudly at the dispatch site: a job with no owner would
         // otherwise evaporate after the caller was told it was accepted.
         if (!type || !this.getHandler(type)) {
@@ -46,11 +75,11 @@ export default class InMemoryJobQueue extends JobQueueBase {
                 message: `No handler registered for job "${type ?? job.constructor.name}".`
             });
         }
-        this.#queue.push({job});
+        this.#queueFor(job).push({job});
     }
 
     async #runUnit({job}: QueueUnit): Promise<void> {
-        const type = (job.constructor as Partial<JobClass>).type as string;
+        const type = this.#typeOf(job) as string;
         const handler = this.getHandler(type);
 
         if (!handler) {
@@ -87,8 +116,12 @@ export default class InMemoryJobQueue extends JobQueueBase {
 
     reset(): void {
         // Disarm the previous boot's schedules along with its registrations,
-        // or a re-boot would double-fire every recurring job.
+        // or a re-boot would double-fire every recurring job. Per-type pools
+        // are dropped too — their caps belong to the old registrations. Jobs
+        // still in flight in a dropped pool finish detached: allSettled() no
+        // longer sees them (test boots drain before re-booting).
         this.#clearTimers();
+        this.#typeQueues.clear();
         super.reset();
     }
 
@@ -99,8 +132,20 @@ export default class InMemoryJobQueue extends JobQueueBase {
         this.#timers.clear();
     }
 
+    #allIdle(): boolean {
+        if (!this.#defaultQueue.idle()) {
+            return false;
+        }
+        for (const queue of this.#typeQueues.values()) {
+            if (!queue.idle()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     async allSettled(): Promise<void> {
-        if (this.#queue.idle()) {
+        if (this.#allIdle()) {
             return;
         }
         return new Promise((resolve) => {
@@ -109,7 +154,7 @@ export default class InMemoryJobQueue extends JobQueueBase {
     }
 
     #signalIdleIfDone(): void {
-        if (!this.#queue.idle()) {
+        if (!this.#allIdle()) {
             return;
         }
         const resolvers = this.#idleResolvers;
