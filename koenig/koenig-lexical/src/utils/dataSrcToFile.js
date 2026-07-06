@@ -10,7 +10,7 @@ export async function dataSrcToFile(src, fileName) {
         try {
             uuid = window.crypto.randomUUID();
         } catch (e) {
-            uuid = Math.random().toString(36).substring(2, 15);
+            uuid = Array.from(window.crypto.getRandomValues(new Uint8Array(8)), byte => byte.toString(16).padStart(2, '0')).join('');
         }
         const extension = mimeType.split('/')[1];
         fileName = `data-src-image-${uuid}.${extension}`;

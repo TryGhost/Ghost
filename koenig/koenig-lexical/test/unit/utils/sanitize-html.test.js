@@ -7,6 +7,15 @@ describe('Utils: sanitize-html', () => {
         expect(sanitizedHtml).toEqual('<span>Hey</span><pre class="js-embed-placeholder">Embedded JavaScript</pre>');
     });
 
+    test.each([
+        '</script >',
+        '</script\t\n bar>',
+        '</script/foo>'
+    ])('can replace scripts with lax end tags: %j', function (endTag) {
+        const sanitizedHtml = sanitizeHtml(`<span>Hey</span><script>alert("hello");${endTag}`);
+        expect(sanitizedHtml).toEqual('<span>Hey</span><pre class="js-embed-placeholder">Embedded JavaScript</pre>');
+    });
+
     it('can render html', function () {
         const sanitizedHtml = sanitizeHtml('<strong>bold</strong>');
         expect(sanitizedHtml).toEqual('<strong>bold</strong>');
