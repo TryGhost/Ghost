@@ -357,11 +357,28 @@ export default class LexicalEditorController extends Controller {
     // a manual power case, and legacy cards (saved without a gate, from
     // before the gate existed) don't override a deliberate members setting.
     _syncPaywallVisibility(lexicalString) {
+        const card = this._findPaywallCard(lexicalString);
+
         if (!this.post.isDraft) {
+            // Published posts never have their access changed silently — but
+            // an explicit gate change on the card is the publisher's own
+            // action and must not desync from enforcement. Track transitions
+            // and follow them; the change applies with the next Update.
+            const gate = card ? (card.gate === 'members' ? 'members' : 'paid') : null;
+            const previousGate = this._paywallGate;
+            this._paywallGate = gate;
+
+            if (previousGate !== undefined && previousGate && gate && previousGate !== gate && ['paid', 'members'].includes(this.post.visibility)) {
+                this.post.set('visibility', gate);
+                this.notifications.showNotification(gate === 'members' ? 'Post access will change to members — free signup unlocks the full post' : 'Post access will change to paid members', {
+                    type: 'success',
+                    description: 'The change takes effect when you hit Update.',
+                    key: 'post.paywall-visibility'
+                });
+            }
             return;
         }
-
-        const card = this._findPaywallCard(lexicalString);
+        this._paywallGate = card ? (card.gate === 'members' ? 'members' : 'paid') : null;
 
         if (!card) {
             if (this._paywallSetVisibility && ['paid', 'members'].includes(this.post.visibility)) {

@@ -25,7 +25,12 @@
     {{#if paywall.description}}
     <p>{{paywall.description}}</p>
     {{else}}
+    {{#unless paywall.heading}}
+    {{! only the fully-default paywall keeps the built-in supporting line —
+        once any custom copy is in play, a blank description renders blank,
+        matching the web wall so both surfaces tell the same story }}
     <p>{{{t 'Become a paid member of {site} to get access to all premium content.' site=site.title}}}</p>
+    {{/unless}}
     {{/if}}
         <table border="0" cellpadding="0" cellspacing="0">
             <tr>
