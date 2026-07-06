@@ -24,8 +24,11 @@ function createGenerateResources(loadResource) {
             if (res === undefined) {
                 res = loadResource('en', ns);
             }
+            // English floor: if even English is missing for this namespace, use an
+            // empty object so the promised English fallback never lets
+            // mergeDefaultExport receive undefined (which would throw).
             acc[locale] = {
-                [ns]: mergeDefaultExport(res)
+                [ns]: mergeDefaultExport(res || {})
             };
             return acc;
         }, {});

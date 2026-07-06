@@ -29,6 +29,16 @@ export default [{
             // Keep the index entry points small — they're public surface.
             files: ['lib/**/index.js', 'index.js'],
             rules: {'max-lines': ['error', {skipBlankLines: true, skipComments: true, max: 50}]}
+        },
+        {
+            // Hand-authored ESM entry glue (lib/esm-factory.mjs). Lint it as real ESM so
+            // it isn't silently rule-less. The generated lib/registry/** stays ignored.
+            files: ['*.mjs', 'lib/**/*.mjs'],
+            languageOptions: {sourceType: 'module'},
+            rules: {
+                'no-unused-vars': 'error',
+                'no-undef': 'error'
+            }
         }
     ]
 })];

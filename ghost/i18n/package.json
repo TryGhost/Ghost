@@ -8,8 +8,6 @@
   "exports": {
     ".": {
       "types": "./build/i18n.d.ts",
-      "browser": "./index.esm.mjs",
-      "import": "./index.esm.mjs",
       "require": "./index.js",
       "default": "./index.js"
     },
@@ -20,10 +18,6 @@
     "./lib/locale-data.json": "./lib/locale-data.json",
     "./package.json": "./package.json"
   },
-  "browser": {
-    "./index.js": "./index.esm.mjs",
-    "./lib/i18n.js": "./lib/i18n.browser.js"
-  },
   "types": "./build/i18n.d.ts",
   "scripts": {
     "build": "pnpm build:registry && pnpm build:types",
@@ -32,7 +26,7 @@
     "prebuild:check": "node scripts/check-registry-fresh.js",
     "test:base": "NODE_ENV=testing vitest run --coverage",
     "test": "pnpm test:base && pnpm build:registry && pnpm prebuild:check && pnpm translate",
-    "lint:code": "eslint *.js lib/ --cache",
+    "lint:code": "eslint *.js *.mjs lib/ --cache",
     "lint": "pnpm lint:code && pnpm lint:test && pnpm lint:translations",
     "lint:test": "eslint test/ --cache",
     "lint:translations": "node ./test/i18n.lint.js",
@@ -45,8 +39,6 @@
   },
   "files": [
     "index.js",
-    "index.browser.js",
-    "index.esm.mjs",
     "lib",
     "locales",
     "scripts",
@@ -70,6 +62,14 @@
   "nx": {
     "tags": [
       "i18n"
-    ]
+    ],
+    "targets": {
+      "build": {
+        "outputs": [
+          "{projectRoot}/build",
+          "{projectRoot}/lib/registry"
+        ]
+      }
+    }
   }
 }

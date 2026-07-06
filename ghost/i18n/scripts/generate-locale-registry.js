@@ -21,7 +21,13 @@ const path = require('path');
 const I18N_ROOT = path.join(__dirname, '..');
 const LOCALES_DIR = path.join(I18N_ROOT, 'locales');
 const LOCALE_DATA = require('../lib/locale-data.json');
-const OUT_DIR = path.join(I18N_ROOT, 'lib', 'registry');
+// Output dir is overridable so the freshness check (check-registry-fresh.js) can
+// regenerate into a temp dir and diff, without mutating the tracked lib/registry.
+// The generated files' internal import paths are relative strings baked at codegen
+// time, so content is identical regardless of the physical output location.
+const OUT_DIR = process.env.I18N_REGISTRY_OUT_DIR
+    ? path.resolve(process.env.I18N_REGISTRY_OUT_DIR)
+    : path.join(I18N_ROOT, 'lib', 'registry');
 
 const NAMESPACES = ['ghost', 'portal', 'signup-form', 'comments', 'search'];
 
