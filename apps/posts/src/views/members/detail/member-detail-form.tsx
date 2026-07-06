@@ -5,6 +5,7 @@ import {Input, Label, Textarea} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
 import {getMemberNewslettersUiEnabled, getNoteCharactersLeft} from './member-detail-edit';
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
+import type {Member} from '@tryghost/admin-x-framework/api/members';
 import type {MemberEditableFields} from './member-detail-edit';
 
 interface MemberDetailFormProps {
@@ -15,10 +16,12 @@ interface MemberDetailFormProps {
     // (`member-repository.js:461`). We don't send `newsletters` on create, so showing
     // toggles here would silently discard the user's choices — hide the section instead.
     isCreating?: boolean;
+    memberId?: string;
+    emailSuppression?: Member['email_suppression'];
     onChange: (patch: Partial<MemberEditableFields>) => void;
 }
 
-const MemberDetailForm: React.FC<MemberDetailFormProps> = ({draft, emailError, disabled, isCreating, onChange}) => {
+const MemberDetailForm: React.FC<MemberDetailFormProps> = ({draft, emailError, disabled, isCreating, memberId, emailSuppression, onChange}) => {
     // Soft limit: the note can be typed past 500 (Ember has no hard cap); the counter
     // just turns negative and red.
     const noteCharactersLeft = getNoteCharactersLeft(draft.note);
@@ -60,9 +63,11 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({draft, emailError, d
                 <MemberLabelsField disabled={disabled} labels={draft.labels} onChange={nextLabels => onChange({labels: nextLabels})} />
             </div>
 
-            {showNewsletters && !isCreating && (
+            {showNewsletters && !isCreating && memberId && (
                 <MemberNewslettersField
                     disabled={disabled}
+                    emailSuppression={emailSuppression}
+                    memberId={memberId}
                     subscribedIds={draft.newsletters}
                     onChange={nextIds => onChange({newsletters: nextIds})}
                 />

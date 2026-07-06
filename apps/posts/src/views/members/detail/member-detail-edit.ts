@@ -1,5 +1,6 @@
+import moment from 'moment-timezone';
 import {dequal} from 'dequal';
-import type {EditMemberData} from '@tryghost/admin-x-framework/api/members';
+import type {EditMemberData, Member} from '@tryghost/admin-x-framework/api/members';
 
 export interface MemberEditableLabel {
     name: string;
@@ -68,6 +69,44 @@ export function toggleMemberNewsletter(subscribedIds: string[], newsletterId: st
 /** Client-side email sanity check for the save gate; the server remains authoritative. */
 export function isValidMemberEmail(email: string): boolean {
     return MEMBER_EMAIL_REGEX.test(email.trim());
+}
+
+export interface MemberSuppressionInfo {
+    // Undefined for a `suppressed:true` member without a bounce/complaint history —
+    // e.g. `email_disabled` was flipped directly. Ember still renders the banner in
+    // that case, just without the reason line.
+    reason?: string;
+    label: string | null;
+}
+
+/**
+ * Extract a display-ready suppression status for the newsletter/suppression banner.
+ * Returns null only when the member is not suppressed. `suppressed:true` is enough
+ * to render the banner even without the info block, matching Ember's behaviour
+ * where `email_disabled` alone (with the Mailgun row already cleaned) still shows
+ * "Email disabled" + the Re-enable button. Dates use site-local formatting to
+ * match the Ember copy exactly.
+ */
+export function getMemberSuppressionInfo(
+    emailSuppression: Member['email_suppression']
+): MemberSuppressionInfo | null {
+    if (!emailSuppression?.suppressed) {
+        return null;
+    }
+    const info = emailSuppression.info;
+    if (!info) {
+        return {label: null};
+    }
+    const {reason, timestamp} = info;
+    const date = moment(new Date(timestamp)).format('D MMM YYYY');
+    switch (reason) {
+    case 'fail':
+        return {reason, label: `Bounced on ${date}`};
+    case 'spam':
+        return {reason, label: `Flagged as spam on ${date}`};
+    default:
+        return {reason, label: `Email disabled on ${date}`};
+    }
 }
 
 /**

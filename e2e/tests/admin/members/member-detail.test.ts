@@ -115,6 +115,59 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         await expect(labelsField.getByText('Beta')).toBeVisible();
     });
 
+    test('shows a suppression banner and clears it after re-enabling email', async ({page}) => {
+        const member = await memberFactory.create({name: 'Bounced Member', email: 'bounced-member@ghost.org'});
+
+        // The email suppression list is populated by external delivery events, so we
+        // intercept the specific members read endpoint to simulate a bounced state.
+        // Narrow match: only the GET on `.../members/<id>/` — this is deliberately
+        // stricter than a **/members/${id}/** wildcard so we don't rewrite unrelated
+        // responses (subscriptions, signin_urls, etc.) whose bodies aren't shaped
+        // like `{members: [...]}` and would throw on the mutation below.
+        const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+        // Flip suppression state OFF after the admin hits Re-enable — the refetch
+        // that fires on mutation success must see a non-suppressed member.
+        let suppressed = true;
+        await page.route(memberReadRegex, async (route) => {
+            if (route.request().method() !== 'GET') {
+                return route.continue();
+            }
+            const response = await route.fetch();
+            const body = await response.json();
+            if (body?.members?.[0]) {
+                body.members[0].email_suppression = suppressed
+                    ? {suppressed: true, info: {reason: 'fail', timestamp: '2026-01-15T12:00:00.000Z'}}
+                    : {suppressed: false};
+            }
+            return route.fulfill({response, body: JSON.stringify(body)});
+        });
+
+        // Stub the DELETE /suppression/ endpoint (204) and flip the read flag so the
+        // invalidation-driven refetch returns an un-suppressed member.
+        await page.route(`**/members/${member.id}/suppression/**`, async (route) => {
+            if (route.request().method() !== 'DELETE') {
+                return route.continue();
+            }
+            suppressed = false;
+            return route.fulfill({status: 204, body: ''});
+        });
+
+        await page.goto(previewPath(member.id));
+
+        // Suppression banner replaces the newsletter toggles.
+        const banner = page.getByTestId('member-suppression-banner');
+        await expect(banner).toBeVisible();
+        await expect(banner).toContainText('Email disabled');
+        await expect(banner).toContainText('Bounced on 15 Jan 2026');
+        await expect(page.getByTestId('member-subscription-toggle')).toHaveCount(0);
+
+        // Re-enabling should call DELETE, invalidate the members query, and clear
+        // the banner once the refetch resolves.
+        await page.getByRole('button', {name: 'Re-enable email'}).click();
+        await expect(banner).toHaveCount(0);
+        await expect(page.getByText('Email re-enabled successfully')).toBeVisible();
+    });
+
     test('toggles a newsletter subscription and persists it', async ({page}) => {
         const member = await memberFactory.create({name: 'Newsletter Test', email: 'newsletter-test@ghost.org'});
         const memberDetailsPage = new MemberDetailsPage(page);

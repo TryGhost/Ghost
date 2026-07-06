@@ -1,4 +1,4 @@
-import {NOTE_MAX_LENGTH, buildMemberFieldEditPayload, getMemberEditableSlice, getMemberNewslettersUiEnabled, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, resolveSlugsToLabels, toggleMemberNewsletter} from './member-detail-edit';
+import {NOTE_MAX_LENGTH, buildMemberFieldEditPayload, getMemberEditableSlice, getMemberNewslettersUiEnabled, getMemberSuppressionInfo, getNoteCharactersLeft, isDraftInSyncWithServer, isValidMemberEmail, resolveSlugsToLabels, toggleMemberNewsletter} from './member-detail-edit';
 import {describe, expect, it} from 'vitest';
 
 describe('getMemberEditableSlice', () => {
@@ -68,6 +68,41 @@ describe('buildMemberFieldEditPayload', () => {
     it('sends an empty newsletters array only when the user has explicitly unsubscribed from all', () => {
         const payload = buildMemberFieldEditPayload('mem_1', {...baseline, newsletters: []}, baseline);
         expect(payload.newsletters).toEqual([]);
+    });
+});
+
+describe('getMemberSuppressionInfo', () => {
+    it('returns null when the member is not suppressed', () => {
+        expect(getMemberSuppressionInfo(undefined)).toBeNull();
+        expect(getMemberSuppressionInfo({suppressed: false})).toBeNull();
+    });
+
+    it('shows the banner without a label when suppressed but the info block is missing', () => {
+        // Ember still renders "Email disabled" + the Re-enable button in this case
+        // (e.g. email_disabled=true after the Mailgun row was cleaned), so we do too.
+        expect(getMemberSuppressionInfo({suppressed: true})).toEqual({label: null});
+    });
+
+    it('reports the "Bounced" reason with a formatted date for a fail suppression', () => {
+        // Use a mid-day UTC timestamp so the local-vs-UTC render doesn't cross a day boundary.
+        expect(getMemberSuppressionInfo({
+            suppressed: true,
+            info: {reason: 'fail', timestamp: '2026-01-15T12:00:00.000Z'}
+        })).toEqual({reason: 'fail', label: 'Bounced on 15 Jan 2026'});
+    });
+
+    it('reports the "Flagged as spam" reason with a formatted date for a spam suppression', () => {
+        expect(getMemberSuppressionInfo({
+            suppressed: true,
+            info: {reason: 'spam', timestamp: '2026-02-01T12:00:00.000Z'}
+        })).toEqual({reason: 'spam', label: 'Flagged as spam on 1 Feb 2026'});
+    });
+
+    it('falls back to a generic label for an unexpected reason', () => {
+        expect(getMemberSuppressionInfo({
+            suppressed: true,
+            info: {reason: 'other', timestamp: '2026-03-01T12:00:00.000Z'}
+        })).toEqual({reason: 'other', label: 'Email disabled on 1 Mar 2026'});
     });
 });
 

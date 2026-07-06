@@ -199,7 +199,15 @@ const MemberDetail: React.FC = () => {
                     <div className='flex flex-1 flex-col gap-8 overflow-y-auto p-6 lg:flex-row-reverse lg:items-start'>
                         {member && <MemberDetailSidebar member={member} />}
                         <div className='min-w-0 flex-1'>
-                            <MemberDetailForm disabled={activeMutation.isLoading} draft={draft} emailError={emailError} isCreating={isCreating} onChange={onFieldChange} />
+                            <MemberDetailForm
+                                disabled={activeMutation.isLoading}
+                                draft={draft}
+                                emailError={emailError}
+                                emailSuppression={member?.email_suppression}
+                                isCreating={isCreating}
+                                memberId={member?.id}
+                                onChange={onFieldChange}
+                            />
                         </div>
                     </div>
                 )}
