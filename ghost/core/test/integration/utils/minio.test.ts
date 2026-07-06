@@ -1,5 +1,5 @@
-const assert = require('node:assert/strict');
-const {
+import assert from 'node:assert/strict';
+import {
     createTestS3Client,
     createTestBucket,
     emptyTestBucket,
@@ -7,14 +7,15 @@ const {
     putObject,
     getObject,
     deleteObject
-} = require('../../utils/minio');
+} from '../../utils/minio';
+import type {S3Client} from '@aws-sdk/client-s3';
 
 // Skip when MinIO is unreachable. The flag is set by the integration
 // globalSetup (vitest-globalsetup-services.ts), which probes MinIO once before
 // the forks spawn.
 describe.skipIf(process.env.GHOST_TEST_MINIO_AVAILABLE !== '1')('Integration: MinIO test helper', function () {
-    let client;
-    let bucket;
+    let client: S3Client;
+    let bucket: string;
 
     beforeAll(async function () {
         client = createTestS3Client();
