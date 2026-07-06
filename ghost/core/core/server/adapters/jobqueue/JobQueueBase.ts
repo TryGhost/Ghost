@@ -76,6 +76,33 @@ export default abstract class JobQueueBase {
     /** Resolves once the queue is drained and no jobs are running. */
     abstract allSettled(): Promise<void>;
 
+    /** How a schedule is stored and who fires the tick is a backend decision. */
+    abstract scheduleRecurring(job: Job, options: {cron: string}): void;
+
+    /** Hook for backends with a background worker; no-op otherwise. */
+    start(): void {}
+
+    /**
+     * Backends override to stop their own schedules and workers first. The
+     * drain is bounded: a stuck handler must not hold shutdown until the
+     * process watchdog hard-kills Ghost.
+     */
+    async shutdown(): Promise<void> {
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const timedOut = await Promise.race([
+            this.allSettled().then(() => false),
+            new Promise<boolean>((resolve) => {
+                timer = setTimeout(() => resolve(true), JobQueueBase.SHUTDOWN_TIMEOUT_MS);
+            })
+        ]);
+        clearTimeout(timer);
+        if (timedOut) {
+            this.#logging.warn(`JobQueue shutdown timed out after ${JobQueueBase.SHUTDOWN_TIMEOUT_MS}ms with jobs still in flight`);
+        }
+    }
+
+    static readonly SHUTDOWN_TIMEOUT_MS = 30 * 1000;
+
     protected getHandler(type: string): JobHandler | undefined {
         return this.#handlers.get(type);
     }

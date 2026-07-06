@@ -147,4 +147,96 @@ describe('InMemoryJobQueue', function () {
             assert.ok(errorHandler.firstCall.args[0] instanceof Error);
         });
     });
+
+    describe('scheduleRecurring', function () {
+        let clock: sinon.SinonFakeTimers;
+
+        beforeEach(function () {
+            clock = sinon.useFakeTimers({
+                now: new Date(2026, 0, 1, 2, 0, 0).getTime(),
+                toFake: ['setTimeout', 'clearTimeout', 'Date']
+            });
+        });
+
+        afterEach(function () {
+            clock.restore();
+        });
+
+        class CleanTokens {
+            static type = 'clean-tokens';
+        }
+
+        it('does not fire the handler before the scheduled time', async function () {
+            const jobs = createQueue();
+            const handler = sinon.stub().resolves();
+            jobs.handle(CleanTokens, handler);
+
+            jobs.scheduleRecurring(new CleanTokens(), {cron: '0 0 3 * * *'});
+
+            await clock.tickAsync(59 * 60 * 1000); // to 02:59, before 03:00
+            assert.equal(handler.callCount, 0);
+        });
+
+        it('fires the handler when the cron time arrives', async function () {
+            const jobs = createQueue();
+            const handler = sinon.stub().resolves();
+            jobs.handle(CleanTokens, handler);
+
+            jobs.scheduleRecurring(new CleanTokens(), {cron: '0 0 3 * * *'});
+
+            await clock.tickAsync(60 * 60 * 1000); // advance to 03:00
+            await jobs.allSettled();
+            assert.equal(handler.callCount, 1);
+        });
+
+        it('re-arms and fires again on the next period', async function () {
+            const jobs = createQueue();
+            const handler = sinon.stub().resolves();
+            jobs.handle(CleanTokens, handler);
+
+            jobs.scheduleRecurring(new CleanTokens(), {cron: '0 0 3 * * *'});
+
+            await clock.tickAsync(25 * 60 * 60 * 1000); // 25h: covers two 03:00s
+            await jobs.allSettled();
+            assert.equal(handler.callCount, 2);
+        });
+
+        it('throws immediately on an invalid cron expression', function () {
+            const jobs = createQueue();
+            jobs.handle(CleanTokens, sinon.stub());
+
+            assert.throws(() => jobs.scheduleRecurring(new CleanTokens(), {cron: 'not a cron'}), /cron/);
+            assert.throws(() => jobs.scheduleRecurring(new CleanTokens(), {cron: '99 99 99 * * *'}), /Invalid value/);
+        });
+
+        it('bounds the shutdown drain when a handler never settles', async function () {
+            const jobs = createQueue();
+            class Stuck {
+                static type = 'stuck';
+            }
+            jobs.handle(Stuck, () => new Promise(() => {}));
+
+            await jobs.dispatch(new Stuck());
+            await clock.tickAsync(1); // let the handler start
+
+            const shutdown = jobs.shutdown();
+            await clock.tickAsync(31 * 1000);
+            await shutdown;
+
+            assert.equal(logging.warn.callCount, 1);
+            assert.match(logging.warn.firstCall.args[0], /timed out/);
+        });
+
+        it('stops firing after shutdown', async function () {
+            const jobs = createQueue();
+            const handler = sinon.stub().resolves();
+            jobs.handle(CleanTokens, handler);
+
+            jobs.scheduleRecurring(new CleanTokens(), {cron: '0 0 3 * * *'});
+            await jobs.shutdown();
+
+            await clock.tickAsync(25 * 60 * 60 * 1000);
+            assert.equal(handler.callCount, 0);
+        });
+    });
 });
