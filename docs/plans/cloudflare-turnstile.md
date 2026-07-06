@@ -256,7 +256,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 - [x] Spike: confirm Turnstile widget renders inside Portal's srcDoc iframe with a real test sitekey; record result here
 - [x] `utils/turnstile.js` overlay helper (+ helpers.js `hasTurnstileEnabled`/`getTurnstileSitekey`)
 - [x] Portal signup + signin flows send `turnstileToken`; overlay-on-interaction inside popup; vitest coverage
-- [ ] `data-attributes.js` flow with main-page overlay; vitest coverage
+- [x] `data-attributes.js` flow with main-page overlay; vitest coverage
 - [ ] i18n: new portal strings + `pnpm --filter @tryghost/i18n translate`
 
 ### Phase 4 — Admin UI
@@ -354,3 +354,12 @@ anything that diverged from the plan and why._
   drops it — verified existing exact-args test assertions still pass because vitest equality
   ignores undefined keys). 6 new flow tests incl. overlay-visibility-in-popup and flag-off
   regression; full Portal suite 602 passed / 1 pre-existing skip; lint clean.
+- **2026-07-06** — Data-attribute forms wired. `handleDataAttributes` resolves the sitekey once
+  (`hasTurnstileEnabled` gate) and passes `turnstileSitekey` into `formSubmitHandler`, mirroring
+  the old `captchaId` param; the handler awaits `getTurnstileToken({doc: document, ...})` between
+  the integrity-token fetch and the send-magic-link POST (main-page overlay; api.js already on
+  the page via ghost_head, and the helper falls back to injecting it if a theme lacks it).
+  Failures fall into the existing `[data-members-error]` handling. New test asserts the POST body
+  carries turnstileToken and the overlay exists-but-hidden in the main document; existing
+  no-sitekey test doubles as the disabled regression. Full Portal suite 603/604 (1 pre-existing
+  skip); lint clean.

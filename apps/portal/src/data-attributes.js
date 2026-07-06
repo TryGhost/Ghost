@@ -1,5 +1,6 @@
 /* eslint-disable no-console */
-import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory} from './utils/helpers';
+import {getCheckoutSessionDataFromPlanAttribute, getUrlHistory, hasTurnstileEnabled, getTurnstileSitekey} from './utils/helpers';
+import {getTurnstileToken} from './utils/turnstile';
 import {HumanReadableError, chooseBestErrorMessage} from './utils/errors';
 import {t} from './utils/i18n';
 
@@ -16,7 +17,7 @@ function handleError(error, form, errorEl) {
 }
 
 export async function formSubmitHandler(
-    {event, form, errorEl, siteUrl, submitHandler, doAction, captureException}
+    {event, form, errorEl, siteUrl, submitHandler, doAction, captureException, turnstileSitekey}
 ) {
     form.removeEventListener('submit', submitHandler);
     event.preventDefault();
@@ -79,6 +80,12 @@ export async function formSubmitHandler(
     try {
         const integrityTokenRes = await fetch(`${siteUrl}/members/api/integrity-token/`, {method: 'GET'});
         const integrityToken = await integrityTokenRes.text();
+
+        if (turnstileSitekey) {
+            // Runs the widget in the main page's document; the overlay only
+            // appears if Cloudflare requires interaction
+            reqBody.turnstileToken = await getTurnstileToken({doc: document, sitekey: turnstileSitekey});
+        }
 
         const magicLinkRes = await fetch(`${siteUrl}/members/api/send-magic-link/`, {
             method: 'POST',
@@ -210,10 +217,11 @@ export function handleDataAttributes({siteUrl, site = {}, member, offers = [], d
     }
 
     siteUrl = siteUrl.replace(/\/$/, '');
+    const turnstileSitekey = hasTurnstileEnabled({site}) ? getTurnstileSitekey({site}) : null;
     Array.prototype.forEach.call(document.querySelectorAll('form[data-members-form]'), function (form) {
         let errorEl = form.querySelector('[data-members-error]');
         function submitHandler(event) {
-            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, doAction, captureException});
+            formSubmitHandler({event, errorEl, form, siteUrl, submitHandler, doAction, captureException, turnstileSitekey});
         }
         form.addEventListener('submit', submitHandler);
     });

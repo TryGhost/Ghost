@@ -171,6 +171,56 @@ describe('Member Data attributes:', () => {
             expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
         });
 
+        test('includes turnstileToken when a turnstile sitekey is provided', async () => {
+            const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
+
+            // Fake Turnstile API on the main page window (ghost_head injects
+            // api.js there when Turnstile is active)
+            const state = {};
+            window.turnstile = {
+                render: vi.fn((container, options) => {
+                    state.options = options;
+                    return 'widget-1';
+                }),
+                execute: vi.fn(() => {
+                    setTimeout(() => state.options.callback('turnstile-test-token'), 0);
+                }),
+                reset: vi.fn(),
+                remove: vi.fn()
+            };
+
+            try {
+                await formSubmitHandler({event, form, errorEl, siteUrl, submitHandler, turnstileSitekey: '1x00000000000000000000BB'});
+            } finally {
+                delete window.turnstile;
+            }
+
+            expect(window.fetch).toHaveBeenCalledTimes(2);
+            const expectedBody = JSON.stringify({
+                email: 'jamie@example.com',
+                emailType: 'signup',
+                labels: ['Gold'],
+                name: 'Jamie Larsen',
+                autoRedirect: true,
+                urlHistory: [{
+                    path: '/blog/',
+                    refMedium: null,
+                    refSource: 'ghost-explore',
+                    refUrl: 'https://example.com/blog/',
+                    time: 1611234567890
+                }],
+                turnstileToken: 'turnstile-test-token',
+                integrityToken: 'testtoken'
+            });
+            expect(window.fetch).toHaveBeenLastCalledWith('https://portal.localhost/members/api/send-magic-link/', {body: expectedBody, headers: {'Content-Type': 'application/json'}, method: 'POST'});
+
+            // The overlay lives in the main-page document and stays hidden
+            // unless Cloudflare requires interaction
+            const overlay = document.querySelector('[data-testid="turnstile-overlay"]');
+            expect(overlay).not.toBeNull();
+            expect(overlay.style.display).toEqual('none');
+        });
+
         test('trims whitespace from name on signup', async () => {
             // Simulate a name input with leading/trailing whitespace
             const {event, form, errorEl, siteUrl, submitHandler} = getMockData();
