@@ -13,6 +13,7 @@ import {useGlobalData} from '../../providers/global-data-provider';
 
 export const searchKeywords = {
     access: ['membership', 'default', 'access', 'subscription', 'post', 'membership', 'comments', 'commenting', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email', 'password protection', 'lock site', 'private site', 'private site mode', 'make this site private'],
+    spamFilters: ['membership', 'signup', 'sign up', 'spam', 'filters', 'prevention', 'prevent', 'block', 'domains', 'email', 'turnstile', 'captcha', 'bot', 'cloudflare'],
     tiers: ['membership', 'tiers', 'payment', 'paid', 'stripe'],
     portal: ['membership', 'portal', 'signup', 'sign up', 'signin', 'sign in', 'login', 'account', 'membership', 'support', 'email', 'address', 'support email address', 'support address'],
     giftSubscriptions: ['membership', 'gift', 'gifts', 'gift subscriptions', 'present', 'share', 'shareable link'],
@@ -27,6 +28,7 @@ const MembershipSettings: React.FC = () => {
     const hasAutomations = useFeatureFlag('automations');
     const visibleSearchKeywords = [
         searchKeywords.access,
+        searchKeywords.spamFilters,
         searchKeywords.tiers,
         searchKeywords.portal,
         ...(paidMembersEnabled ? [searchKeywords.giftSubscriptions] : []),
@@ -37,7 +39,7 @@ const MembershipSettings: React.FC = () => {
     return (
         <SearchableSection keywords={visibleSearchKeywords} title='Membership'>
             <Access keywords={searchKeywords.access} />
-            <SpamFilters keywords={searchKeywords.access} />
+            <SpamFilters keywords={searchKeywords.spamFilters} />
             <Tiers keywords={searchKeywords.tiers} />
             <Portal keywords={searchKeywords.portal} />
             {paidMembersEnabled && <GiftSubscriptions keywords={searchKeywords.giftSubscriptions} />}

@@ -260,7 +260,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 - [x] i18n: new portal strings + `pnpm --filter @tryghost/i18n translate`
 
 ### Phase 4 — Admin UI
-- [ ] Turnstile fields + third-party-forms warning in Spam filters group (behind flag); admin-x-settings tests
+- [x] Turnstile fields + third-party-forms warning in Spam filters group (behind flag); admin-x-settings tests
 
 ### Phase 5 — verification passes
 - [ ] Full test sweep: `ghost/core` unit + affected e2e-api suites, portal tests, admin-x-settings tests, lint, i18n translate check
@@ -372,3 +372,13 @@ anything that diverged from the plan and why._
   filled (CI rejects empty ones). i18n tests 37/37, lint:translations clean, portal errors tests
   7/7. 'Security verification cancelled' stays internal (only thrown by destroy()); 'Turnstile
   token missing' is unreachable through Portal-managed forms, so neither is translated.
+- **2026-07-06** — Admin UI landed (Phase 4 complete). Spam filters group gets, behind the flag:
+  sitekey TextField, password-type secret TextField, yellow Banner warning about third-party
+  forms + embed domain allowlisting, both-or-neither validation in `onValidate` (error attached
+  to whichever field is missing). Keys save trimmed-or-null. SpamFilters got its own
+  `spamFilters` search keyword list (turnstile/captcha/bot/cloudflare) instead of piggybacking on
+  `access`. The masked secret ('••••••••') from the API counts as "set" for validation and is
+  only re-sent if the user edits it (framework sends dirty settings only). 4 new Playwright
+  acceptance tests (hidden-when-flag-off, save both keys + warning visible, both-or-neither
+  validation blocks save, clear-both) — all 8 in the file pass (needed a one-off
+  `playwright install chromium` locally); unit suite 177/177; lint clean.
