@@ -26,6 +26,7 @@ allowBuilds:
   ssh2: false
 
 catalog:
+  '@breejs/later': 4.2.0
   '@ebay/nice-modal-react': 1.2.13
   '@eslint/js': 9.39.4
   '@faker-js/faker': 10.5.0
@@ -93,6 +94,7 @@ catalog:
   eslint-plugin-react-hooks: 5.2.0
   eslint-plugin-react-refresh: 0.5.3
   eslint-plugin-tailwindcss: 4.0.4
+  fastq: 1.20.1
   fs-extra: 11.3.6
   glob: 13.0.6
   globals: 17.7.0

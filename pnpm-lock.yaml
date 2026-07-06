@@ -6,6 +6,9 @@ settings:
 
 catalogs:
   default:
+    '@breejs/later':
+      specifier: 4.2.0
+      version: 4.2.0
     '@ebay/nice-modal-react':
       specifier: 1.2.13
       version: 1.2.13
@@ -204,6 +207,9 @@ catalogs:
     eslint-plugin-tailwindcss:
       specifier: 4.0.4
       version: 4.0.4
+    fastq:
+      specifier: 1.20.1
+      version: 1.20.1
     fs-extra:
       specifier: 11.3.6
       version: 11.3.6
@@ -2572,6 +2578,9 @@ importers:
       '@aws-sdk/client-s3':
         specifier: 3.1079.0
         version: 3.1079.0
+      '@breejs/later':
+        specifier: 'catalog:'
+        version: 4.2.0
       '@extractus/oembed-extractor':
         specifier: 3.2.1
         version: 3.2.1(encoding@0.1.13)
@@ -2836,6 +2845,9 @@ importers:
       express-session:
         specifier: 1.19.0
         version: 1.19.0(supports-color@1.2.0)
+      fastq:
+        specifier: 'catalog:'
+        version: 1.20.1
       file-type:
         specifier: 21.3.4
         version: 21.3.4(supports-color@5.5.0)
