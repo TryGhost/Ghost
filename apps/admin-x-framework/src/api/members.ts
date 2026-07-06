@@ -141,6 +141,9 @@ export function useMemberCount() {
 export type NewMember = {
     email: string;
     name?: string | null;
+    note?: string | null;
+    // Matched/created by name on the server, same as the edit payload.
+    labels?: Array<{name: string; slug?: string}>;
 };
 
 export const useAddMember = createMutation<MembersResponseType, NewMember>({
