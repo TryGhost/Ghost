@@ -66,6 +66,16 @@ const membersRoute: RouteObject = {
         {
             path: "import",
             lazy: lazyComponent(() => import("@tryghost/posts/members"))
+        },
+        {
+            // TEMPORARY preview route for the in-progress React member-detail
+            // migration. Ember still owns `/members/:member_id` (see EMBER_ROUTES),
+            // so this parallel path lets us build + verify the React screen without
+            // breaking the live screen or its e2e suite. At cutover (Phase 8) this
+            // becomes `:member_id`, EMBER_ROUTES drops the entry, and this comment
+            // and path go away.
+            path: "preview/:member_id",
+            lazy: lazyComponent(() => import("@tryghost/posts/member-detail"))
         }
     ]
 };
