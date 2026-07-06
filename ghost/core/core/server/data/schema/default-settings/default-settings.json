@@ -372,6 +372,30 @@
         "blocked_email_domains": {
             "defaultValue": "[]",
             "type": "array"
+        },
+        "paywall_heading_members": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_heading_paid": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_heading_tiers": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_description": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_button_text": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_offer_code": {
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "portal": {

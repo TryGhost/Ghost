@@ -11,9 +11,28 @@
 // Dev flag feature: In case of restricted content access for member-only posts, shows CTA box
 
 const {templates, hbs, SafeString} = require('../services/handlebars');
+const {settingsCache, urlUtils} = require('../services/proxy');
 const downsize = require('downsize-cjs');
 const _ = require('lodash');
 const createFrame = hbs.handlebars.createFrame;
+
+const PAYWALL_HEADING_SETTINGS = {
+    members: 'paywall_heading_members',
+    paid: 'paywall_heading_paid',
+    tiers: 'paywall_heading_tiers'
+};
+
+function getPaywallCustomisation(visibility) {
+    const headingKey = PAYWALL_HEADING_SETTINGS[visibility];
+    const offerCode = settingsCache.get('paywall_offer_code');
+
+    return {
+        heading: headingKey ? settingsCache.get(headingKey) : null,
+        description: settingsCache.get('paywall_description'),
+        buttonText: settingsCache.get('paywall_button_text'),
+        offerUrl: offerCode ? urlUtils.createUrl(`/${offerCode}`, true) : null
+    };
+}
 
 function restrictedCta(options) {
     options = options || {};
@@ -21,7 +40,8 @@ function restrictedCta(options) {
 
     _.merge(this, {
         // @deprecated in Ghost 5.16.1 - not documented & removed from core templates
-        accentColor: (options.data.site && options.data.site.accent_color)
+        accentColor: (options.data.site && options.data.site.accent_color),
+        paywall: getPaywallCustomisation(this.visibility)
     });
 
     const data = createFrame(options.data);
