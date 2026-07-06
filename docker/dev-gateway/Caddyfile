@@ -1,5 +1,13 @@
 {
 	admin off
+
+	# Everything reaching this gateway comes from loopback or the docker
+	# bridge, so trust it as a proxy hop. This makes Caddy pass through
+	# X-Forwarded-Proto from https tunnel agents (tailscale funnel / ngrok)
+	# instead of overwriting it with the plain-http scheme it sees on :80.
+	servers {
+		trusted_proxies static private_ranges
+	}
 }
 
 :80 {
@@ -50,11 +58,16 @@
 
 	# ActivityPub API - proxy activityPub requests to activityPub service (running in separate project)
 	# Requires activitypub containers to be running via the ActivityPub project's docker-compose
+	#
+	# Unlike the Ghost blocks below, the ActivityPub blocks must NOT force
+	# X-Forwarded-Proto: the AP service derives its own URLs (and whether to
+	# fetch Ghost's JWKS over http or https) from the real scheme. Direct
+	# localhost access needs http; tunneled access gets https passed through
+	# from the tunnel agent via trusted_proxies (see global options).
 	handle /.ghost/activitypub/* {
 		reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
 			header_up Host {host}
 			header_up X-Real-IP {remote_host}
-			header_up X-Forwarded-Proto https
 		}
 	}
 
@@ -63,7 +76,6 @@
 		reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
 			header_up Host {host}
 			header_up X-Real-IP {remote_host}
-			header_up X-Forwarded-Proto https
 		}
 	}
 
@@ -72,7 +84,6 @@
 		reverse_proxy {env.ACTIVITYPUB_PROXY_TARGET} {
 			header_up Host {host}
 			header_up X-Real-IP {remote_host}
-			header_up X-Forwarded-Proto https
 		}
 	}
 
