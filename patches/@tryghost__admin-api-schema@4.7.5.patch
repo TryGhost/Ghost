@@ -1,0 +1,366 @@
+diff --git a/lib/schemas/posts.json b/lib/schemas/posts.json
+index aa46b7115abefd7e4493091c1ab8f67d67fbf8bf..2cb3faffbaa187ce32562e2069488439cdf1ad58 100644
+--- a/lib/schemas/posts.json
++++ b/lib/schemas/posts.json
+@@ -17,30 +17,48 @@
+           "maxLength": 191
+         },
+         "mobiledoc": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "format": "json-string",
+           "maxLength": 1000000000
+         },
+         "lexical": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "format": "json-string",
+           "maxLength": 1000000000
+         },
+         "html": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 1000000000
+         },
+         "feature_image": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "format": "uri-reference",
+           "maxLength": 2000
+         },
+         "feature_image_alt": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 65535
+         },
+         "feature_image_caption": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 65535
+         },
+         "featured": {
+@@ -48,85 +66,147 @@
+         },
+         "status": {
+           "type": "string",
+-          "enum": ["published", "draft", "scheduled", "sent"]
++          "enum": [
++            "published",
++            "draft",
++            "scheduled",
++            "sent"
++          ]
+         },
+         "locale": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 6
+         },
+         "visibility": {
+-          "type": ["string", "null"]
++          "type": [
++            "string",
++            "null"
++          ]
+         },
+         "visibility_filter": {
+-          "type": ["string", "null"]
++          "type": [
++            "string",
++            "null"
++          ]
+         },
+         "tiers": {
+           "$ref": "#/definitions/post-products"
+         },
+         "meta_title": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 300
+         },
+         "meta_description": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 500
+         },
+         "updated_at": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "format": "date-time"
+         },
+         "published_at": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "format": "date-time"
+         },
+         "custom_excerpt": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 300
+         },
+         "codeinjection_head": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 65535
+         },
+         "codeinjection_foot": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 65535
+         },
+         "og_image": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "format": "uri-reference",
+           "maxLength": 2000
+         },
+         "og_title": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 300
+         },
+         "og_description": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 500
+         },
+         "twitter_image": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "format": "uri-reference",
+           "maxLength": 2000
+         },
+         "twitter_title": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 300
+         },
+         "twitter_description": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 500
+         },
+         "email_subject": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 300
+         },
+         "custom_template": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "maxLength": 100
+         },
+         "canonical_url": {
+-          "type": ["string", "null"],
++          "type": [
++            "string",
++            "null"
++          ],
+           "format": "uri-reference",
+           "maxLength": 2000
+         },
+@@ -141,6 +221,34 @@
+         },
+         "collections": {
+           "$ref": "#/definitions/post-collections"
++        },
++        "email_paywall_heading": {
++          "type": [
++            "string",
++            "null"
++          ],
++          "maxLength": 300
++        },
++        "email_paywall_description": {
++          "type": [
++            "string",
++            "null"
++          ],
++          "maxLength": 500
++        },
++        "email_paywall_button_text": {
++          "type": [
++            "string",
++            "null"
++          ],
++          "maxLength": 191
++        },
++        "email_paywall_offer_code": {
++          "type": [
++            "string",
++            "null"
++          ],
++          "maxLength": 191
+         }
+       }
+     },
+@@ -161,14 +269,29 @@
+                 "maxLength": 191
+               },
+               "slug": {
+-                "type": ["string", "null"],
++                "type": [
++                  "string",
++                  "null"
++                ],
+                 "maxLength": 191
+               }
+             },
+             "anyOf": [
+-              { "required": ["id"] },
+-              { "required": ["name"] },
+-              { "required": ["slug"] }
++              {
++                "required": [
++                  "id"
++                ]
++              },
++              {
++                "required": [
++                  "name"
++                ]
++              },
++              {
++                "required": [
++                  "slug"
++                ]
++              }
+             ]
+           },
+           {
+@@ -200,9 +323,21 @@
+               }
+             },
+             "anyOf": [
+-              { "required": ["id"] },
+-              { "required": ["slug"] },
+-              { "required": ["email"] }
++              {
++                "required": [
++                  "id"
++                ]
++              },
++              {
++                "required": [
++                  "slug"
++                ]
++              },
++              {
++                "required": [
++                  "email"
++                ]
++              }
+             ]
+           },
+           {
+@@ -229,14 +364,29 @@
+                 "maxLength": 191
+               },
+               "slug": {
+-                "type": ["string", "null"],
++                "type": [
++                  "string",
++                  "null"
++                ],
+                 "maxLength": 191
+               }
+             },
+             "anyOf": [
+-              { "required": ["id"] },
+-              { "required": ["name"] },
+-              { "required": ["slug"] }
++              {
++                "required": [
++                  "id"
++                ]
++              },
++              {
++                "required": [
++                  "name"
++                ]
++              },
++              {
++                "required": [
++                  "slug"
++                ]
++              }
+             ]
+           },
+           {
+@@ -259,7 +409,9 @@
+                 "maxLength": 24
+               }
+             },
+-            "required": ["id"]
++            "required": [
++              "id"
++            ]
+           },
+           {
+             "type": "string",
