@@ -1,4 +1,5 @@
 const {agentProvider, mockManager, fixtureManager, matchers, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
+const nock = require('nock');
 const sinon = require('sinon');
 const {mockSystemTime} = require('../../utils/clock-utils');
 const assert = require('node:assert/strict');
@@ -743,6 +744,143 @@ describe('sendMagicLink', function () {
                     emailType: 'signup'
                 })
                 .expectStatus(201);
+        });
+    });
+
+    describe('Turnstile verification', function () {
+        function mockSiteverify() {
+            let receivedBody = null;
+            const scope = nock('https://challenges.cloudflare.com')
+                .post('/turnstile/v0/siteverify', (body) => {
+                    receivedBody = body;
+                    return true;
+                });
+            return {scope, getReceivedBody: () => receivedBody};
+        }
+
+        beforeEach(async function () {
+            mockManager.disableNetwork();
+            mockManager.mockLabsEnabled('turnstile');
+            mockManager.mockSetting('turnstile_sitekey', '1x00000000000000000000BB');
+            mockManager.mockSetting('turnstile_secret_key', 'test-turnstile-secret');
+
+            // Ensure earlier suites' requests don't rate limit us
+            await dbUtils.truncate('brute');
+            await resetRateLimits();
+        });
+
+        it('Rejects signup requests without a token', async function () {
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'turnstile-missing-token@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        message: 'Turnstile token missing'
+                    }]
+                });
+
+            mockManager.assert.sentEmailCount(0);
+        });
+
+        it('Accepts signup and sends email when siteverify approves the token', async function () {
+            const {scope, getReceivedBody} = mockSiteverify();
+            scope.reply(200, {success: true});
+
+            const email = 'turnstile-verified-signup@test.com';
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email,
+                    emailType: 'signup',
+                    turnstileToken: 'XXXX.DUMMY.TOKEN.XXXX'
+                })
+                .expectStatus(201);
+
+            mockManager.assert.sentEmail({
+                to: email,
+                subject: /Complete your sign up to Ghost!/
+            });
+
+            // The siteverify call carries the secret, token and requester IP
+            const receivedBody = new URLSearchParams(getReceivedBody());
+            assert.equal(receivedBody.get('secret'), 'test-turnstile-secret');
+            assert.equal(receivedBody.get('response'), 'XXXX.DUMMY.TOKEN.XXXX');
+            assert.ok(receivedBody.get('remoteip'));
+        });
+
+        it('Rejects signup and sends no email when siteverify rejects the token', async function () {
+            const {scope} = mockSiteverify();
+            scope.reply(200, {success: false, 'error-codes': ['invalid-input-response']});
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'turnstile-rejected-signup@test.com',
+                    emailType: 'signup',
+                    turnstileToken: 'XXXX.DUMMY.TOKEN.XXXX'
+                })
+                .expectStatus(400)
+                .matchBodySnapshot({
+                    errors: [{
+                        id: anyErrorId,
+                        message: 'Turnstile verification failed'
+                    }]
+                });
+
+            mockManager.assert.sentEmailCount(0);
+        });
+
+        it('Enforces verification on the signin path too', async function () {
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'member1@test.com',
+                    emailType: 'signin'
+                })
+                .expectStatus(400);
+
+            mockManager.assert.sentEmailCount(0);
+
+            const {scope} = mockSiteverify();
+            scope.reply(200, {success: true});
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'member1@test.com',
+                    emailType: 'signin',
+                    turnstileToken: 'XXXX.DUMMY.TOKEN.XXXX'
+                })
+                .expectStatus(201);
+
+            mockManager.assert.sentEmail({to: 'member1@test.com'});
+        });
+
+        it('Is not enforced when the labs flag is off', async function () {
+            mockManager.mockLabsDisabled('turnstile');
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'turnstile-flag-off@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+
+            mockManager.assert.sentEmail({to: 'turnstile-flag-off@test.com'});
+        });
+
+        it('Is not enforced when the keys are not set', async function () {
+            mockManager.mockSetting('turnstile_sitekey', null);
+            mockManager.mockSetting('turnstile_secret_key', null);
+
+            await membersAgent.post('/api/send-magic-link')
+                .body({
+                    email: 'turnstile-keys-unset@test.com',
+                    emailType: 'signup'
+                })
+                .expectStatus(201);
+
+            mockManager.assert.sentEmail({to: 'turnstile-keys-unset@test.com'});
         });
     });
 

@@ -237,7 +237,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 ### Phase 1 — backend verification
 - [x] `TurnstileService` + unit tests
 - [x] Config default `turnstile.siteverifyUrl` in defaults.json
-- [ ] Mount middleware on `send-magic-link` (all email types); e2e API tests with nock (success / failure / missing token / disabled regression / signin path)
+- [x] Mount middleware on `send-magic-link` (all email types); e2e API tests with nock (success / failure / missing token / disabled regression / signin path)
 
 ### Phase 2 — script injection
 - [ ] `ghost_head`: conditionally inject api.js script + `data-turnstile-sitekey` attribute; unit/snapshot tests
@@ -302,3 +302,13 @@ anything that diverged from the plan and why._
 - **2026-07-06** — Config default `turnstile.siteverifyUrl` added to defaults.json (production
   Cloudflare endpoint). Verified the key loads via `config.get('turnstile:siteverifyUrl')`;
   config loader unit tests + admin config e2e green.
+- **2026-07-06** — Middleware mounted. Divergence from the plan's wiring note: the service is
+  constructed in `services/members/middleware.js` (exported as `verifyTurnstile`) rather than in
+  `api.js`/`members-api.js` — with the lazy-read service there's nothing boot-time to wire there,
+  and middleware.js is where the route middlewares already live. Mounted in `web/members/app.js`
+  exactly where the plan says: after `verifyIntegrityToken`, before the brute pair. Activity check:
+  `labs.isSet('turnstile') && sitekey && secret_key`, all read per request. Six e2e tests in
+  `send-magic-link.test.js` (nock on challenges.cloudflare.com, `mockManager.disableNetwork()` +
+  `mockSetting`/`mockLabsEnabled`): missing token 400, mocked success 201 + email + siteverify body
+  carries secret/response/remoteip, mocked failure 400 + no email, signin enforced (400 then 201),
+  flag-off regression, keys-unset regression. Full suite 50/50; members middleware unit 19/19.

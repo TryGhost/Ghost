@@ -90,6 +90,42 @@ Object {
 }
 `;
 
+exports[`sendMagicLink Turnstile verification Rejects signup and sends no email when siteverify rejects the token 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Turnstile verification failed",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
+exports[`sendMagicLink Turnstile verification Rejects signup requests without a token 1: [body] 1`] = `
+Object {
+  "errors": Array [
+    Object {
+      "code": null,
+      "context": null,
+      "details": null,
+      "ghostErrorCode": null,
+      "help": null,
+      "id": StringMatching /\\[a-f0-9\\]\\{8\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{4\\}-\\[a-f0-9\\]\\{12\\}/,
+      "message": "Turnstile token missing",
+      "property": null,
+      "type": "BadRequestError",
+    },
+  ],
+}
+`;
+
 exports[`sendMagicLink blocked email domains blocks changing email to a blocked domain 1: [body] 1`] = `
 Object {
   "errors": Array [
