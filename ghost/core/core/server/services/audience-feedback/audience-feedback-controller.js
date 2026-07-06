@@ -13,7 +13,7 @@ const messages = {
  * @prop {(feedback: Feedback) => Promise<void>} add
  * @prop {(feedback: Feedback) => Promise<void>} edit
  * @prop {(postId, memberId) => Promise<Feedback>} get
- * @prop {(id: string) => Promise<object|undefined>} getPostById
+ * @prop {(id: string, options?: object) => Promise<object|undefined>} getPostById
  * @prop {(postId: string, options?: object) => Promise<{data: object[], meta: object}>} getForPost
  */
 
@@ -40,14 +40,21 @@ class AudienceFeedbackController {
      * Authentication happens later when Portal submits to the feedback API — this
      * endpoint only forwards the uuid/key through to the destination.
      */
-    redirectToPost(req, res, next) {
+    async redirectToPost(req, res, next) {
         try {
             const {postId} = req.params;
             const score = req.params.score === '1' ? 1 : 0;
             const uuid = req.query.uuid;
             const key = req.query.key;
 
-            const target = this.#audienceFeedbackService.buildLink(uuid, {id: postId}, score, key);
+            // Load the full post (with tags/authors) rather than passing an
+            // id-only resource: the URL service needs status to apply the
+            // published base filter and tags/authors to evaluate filtered
+            // routes — the lazy backend rejects a bare {id} as thin.
+            const post = await this.#repository.getPostById(postId, {withRelated: ['tags', 'authors']});
+            const target = post
+                ? this.#audienceFeedbackService.buildLink(uuid, post, score, key)
+                : this.#audienceFeedbackService.buildFallbackLink(uuid, postId, score, key);
             return res.redirect(target.toString());
         } catch (err) {
             return next(err);
