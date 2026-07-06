@@ -76,7 +76,10 @@ describe('automations service', function () {
         });
 
         it('dispatches a StartAutomationsPollEvent if date is now', async function () {
-            await automations.__testOnlyEnqueuePollAt(new Date());
+            const now = new Date('2026-01-01T00:00:00.000Z');
+            sinon.useFakeTimers({now, toFake: ['Date']});
+
+            await automations.__testOnlyEnqueuePollAt(now);
 
             sinon.assert.calledOnceWithExactly(
                 domainEvents.dispatch,
