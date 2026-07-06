@@ -80,8 +80,43 @@ function _updateTextAttrs(attrs) {
     }
 }
 
+/**
+ * Extracts custom paywall CTA copy from the post's paywall card so the
+ * frontend can render it in place of the site-wide default. Runs before the
+ * lexical source is stripped from Content API output.
+ *
+ * @param {Object} attrs
+ * @returns {{heading?: string, description?: string, button_text?: string} | null}
+ */
+const getPaywallCardCta = (lexical) => {
+    if (!lexical || !lexical.includes('"type":"paywall"')) {
+        return null;
+    }
+
+    try {
+        const stack = [...(JSON.parse(lexical).root?.children || [])];
+        while (stack.length) {
+            const node = stack.shift();
+            if (node?.type === 'paywall') {
+                const cta = {
+                    heading: node.heading || null,
+                    description: node.description || null,
+                    button_text: node.buttonText || null
+                };
+                return (cta.heading || cta.description || cta.button_text) ? cta : null;
+            }
+            if (Array.isArray(node?.children)) {
+                stack.push(...node.children);
+            }
+        }
+    } catch (err) {
+        // invalid lexical document - no custom CTA
+    }
+    return null;
+};
+
 // @TODO: reconsider the location of this - it's part of members and adds a property to the API
-const forPost = (attrs, frame) => {
+const forPost = (attrs, frame, {lexical} = {}) => {
     // CASE: Access always defaults to true, unless members is enabled and the member does not have access
     if (!Object.prototype.hasOwnProperty.call(frame.options, 'columns') || (frame.options.columns.includes('access'))) {
         attrs.access = true;
@@ -91,6 +126,13 @@ const forPost = (attrs, frame) => {
 
     if (!memberHasAccess) {
         const paywallIndex = (attrs.html || '').indexOf('<!--members-only-->');
+
+        // Per-post CTA copy set on the paywall card travels with the post so
+        // the frontend can render it instead of the site-wide default
+        const paywallCardCta = getPaywallCardCta(lexical || attrs.lexical);
+        if (paywallCardCta) {
+            attrs.paywall_cta = paywallCardCta;
+        }
 
         if (paywallIndex !== -1) {
             attrs.html = attrs.html.slice(0, paywallIndex);

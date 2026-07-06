@@ -22,14 +22,18 @@ const PAYWALL_HEADING_SETTINGS = {
     tiers: 'paywall_heading_tiers'
 };
 
-function getPaywallCustomisation(visibility) {
-    const headingKey = PAYWALL_HEADING_SETTINGS[visibility];
+function getPaywallCustomisation(post) {
+    const headingKey = PAYWALL_HEADING_SETTINGS[post.visibility];
     const offerCode = settingsCache.get('paywall_offer_code');
 
+    // Per-post copy set on the paywall card wins over the site-wide settings,
+    // which win over the built-in defaults in the template
+    const cardCta = post.paywall_cta || {};
+
     return {
-        heading: headingKey ? settingsCache.get(headingKey) : null,
-        description: settingsCache.get('paywall_description'),
-        buttonText: settingsCache.get('paywall_button_text'),
+        heading: cardCta.heading || (headingKey ? settingsCache.get(headingKey) : null),
+        description: cardCta.description || settingsCache.get('paywall_description'),
+        buttonText: cardCta.button_text || settingsCache.get('paywall_button_text'),
         offerUrl: offerCode ? urlUtils.createUrl(`/${offerCode}`, true) : null
     };
 }
@@ -41,7 +45,7 @@ function restrictedCta(options) {
     _.merge(this, {
         // @deprecated in Ghost 5.16.1 - not documented & removed from core templates
         accentColor: (options.data.site && options.data.site.accent_color),
-        paywall: getPaywallCustomisation(this.visibility)
+        paywall: getPaywallCustomisation(this)
     });
 
     const data = createFrame(options.data);
