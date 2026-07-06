@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const tpl = require('@tryghost/tpl');
@@ -102,6 +103,70 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
     };
 }
 
+/**
+ * Serve an asset straight from an in-memory assets service (e.g. card assets)
+ * instead of reading it back from disk. The service is the source of truth:
+ * a wiped or unwritable content folder can never 404 these assets.
+ *
+ * @param {Object} service An assets-minification service exposing `ready`,
+ * `ensureLoaded()` and `getContent(filename)`
+ * @param {string} filename e.g. 'cards.min.css'
+ * @param {string} mime
+ * @param {number} maxAge
+ */
+function createInMemoryAssetMiddleware(service, filename, mime, maxAge) {
+    let cache = null;
+    const blogRegex = /(\{\{blog-url\}\})/g;
+
+    return async function serveInMemoryAssetMiddleware(req, res, next) {
+        if (!service.ready) {
+            try {
+                await service.ensureLoaded();
+            } catch (error) {
+                // A failed build must not block the request — the rejection
+                // would escape the async handler and hang the request under
+                // Express 4. If there's no content we 404 below; the service
+                // retries the build on a later request (past its backoff).
+                logging.error(error);
+            }
+        }
+
+        const content = service.getContent(filename);
+
+        if (content === null || content === undefined) {
+            return next(new errors.NotFoundError({
+                message: tpl(messages.fileNotFound),
+                code: 'PUBLIC_FILE_NOT_FOUND'
+            }));
+        }
+
+        // Memoize the computed body + headers keyed by the content reference,
+        // so the md5 isn't recomputed per request. A rebuild produces a new
+        // string reference, which invalidates the memo.
+        if (!cache || cache.content !== content) {
+            let str = content;
+
+            if (mime === 'text/xsl' || mime === 'text/plain' || mime === 'application/javascript') {
+                str = str.replace(blogRegex, urlUtils.urlFor('home', true).replace(/\/$/, ''));
+            }
+
+            cache = {
+                content,
+                headers: {
+                    'Content-Type': mime,
+                    'Content-Length': Buffer.from(str).length,
+                    ETag: `"${crypto.createHash('md5').update(str, 'utf8').digest('hex')}"`,
+                    'Cache-Control': `public, max-age=${maxAge}`
+                },
+                body: str
+            };
+        }
+
+        res.writeHead(200, cache.headers);
+        res.end(cache.body);
+    };
+}
+
 // Handles requests to robots.txt and favicon.ico (and caches them)
 function servePublicFile(location, file, type, maxAge, options = {}) {
     const publicFileMiddleware = createPublicFileMiddleware(location, file, type, maxAge, options);
@@ -127,9 +192,9 @@ function servePublicFiles(siteApp) {
     // Traffic analytics tracking script
     siteApp.get('/public/ghost-stats.min.js', createPublicFileMiddleware('static', 'public/ghost-stats.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
-    // Card assets (built on the fly)
-    siteApp.get('/public/cards.min.css', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-    siteApp.get('/public/cards.min.js', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    // Card assets (built on the fly, served from memory)
+    siteApp.get('/public/cards.min.css', createInMemoryAssetMiddleware(cardAssets, 'cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
+    siteApp.get('/public/cards.min.js', createInMemoryAssetMiddleware(cardAssets, 'cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Comment counts
     siteApp.get('/public/comment-counts.min.js', createPublicFileMiddleware('static', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
@@ -163,3 +228,4 @@ function servePublicFiles(siteApp) {
 module.exports = servePublicFiles;
 module.exports.servePublicFile = servePublicFile;
 module.exports.createPublicFileMiddleware = createPublicFileMiddleware;
+module.exports.createInMemoryAssetMiddleware = createInMemoryAssetMiddleware;

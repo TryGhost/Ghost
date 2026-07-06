@@ -136,6 +136,39 @@ class Minifier {
     }
 
     /**
+     * Run the minification pipeline for a single destination:
+     * glob + concat the source files, apply replacements, minify.
+     *
+     * @private
+     * @param {string} src source glob
+     * @param {string} dest destination file name (must end in .css or .js)
+     * @param {Object} [options]
+     * @param {Object} [options.replacements] Key value pairs that should get replaced in the content before minifying
+     * @returns {Promise<string|null>} Minified contents, or null when there was no output
+     */
+    async minifyDestination(src, dest, options) {
+        let contents = await this.getSrcFileContents(src);
+
+        if (options?.replacements) {
+            for (const key of Object.keys(options.replacements)) {
+                contents = contents.replace(key, options.replacements[key]);
+            }
+        }
+
+        if (dest.endsWith('.css')) {
+            return await this.minifyCSS(contents);
+        } else if (dest.endsWith('.js')) {
+            return await this.minifyJS(contents);
+        }
+
+        throw new errors.IncorrectUsageError({
+            message: tpl(messages.badDestination.message, {dest}),
+            context: tpl(messages.badDestination.context),
+            help: tpl(messages.globalHelp)
+        });
+    }
+
+    /**
      * Minify files
      *
      * @param {Object} globs An object in the form of
@@ -155,27 +188,7 @@ class Minifier {
         const minifiedFiles = [];
 
         for (const dest of destinations) {
-            const src = globs[dest];
-            let contents = await this.getSrcFileContents(src);
-
-            if (options?.replacements) {
-                for (const key of Object.keys(options.replacements)) {
-                    contents = contents.replace(key, options.replacements[key]);
-                }
-            }
-            let minifiedContents;
-
-            if (dest.endsWith('.css')) {
-                minifiedContents = await this.minifyCSS(contents);
-            } else if (dest.endsWith('.js')) {
-                minifiedContents = await this.minifyJS(contents);
-            } else {
-                throw new errors.IncorrectUsageError({
-                    message: tpl(messages.badDestination.message, {dest}),
-                    context: tpl(messages.badDestination.context),
-                    help: tpl(messages.globalHelp)
-                });
-            }
+            const minifiedContents = await this.minifyDestination(globs[dest], dest, options);
 
             const result = await this.writeFile(minifiedContents, dest);
             if (result) {
@@ -185,6 +198,30 @@ class Minifier {
 
         debug('End');
         return minifiedFiles;
+    }
+
+    /**
+     * Minify files in memory, without writing anything to disk
+     *
+     * @param {Object} globs Same shape as minify()
+     * @param {Object} [options]
+     * @param {Object} [options.replacements] Key value pairs that should get replaced in the content before minifying
+     * @returns {Promise<Object<string, string>>} Map of destination file name to minified contents
+     * (destinations whose minified output was empty are omitted)
+     */
+    async minifyInMemory(globs, options) {
+        debug('Begin (in memory)', globs);
+        const outputs = {};
+
+        for (const dest of Object.keys(globs)) {
+            const minifiedContents = await this.minifyDestination(globs[dest], dest, options);
+            if (minifiedContents) {
+                outputs[dest] = minifiedContents;
+            }
+        }
+
+        debug('End (in memory)');
+        return outputs;
     }
 }
 

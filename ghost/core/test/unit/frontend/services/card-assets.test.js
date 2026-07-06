@@ -1,8 +1,10 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
+const logging = require('@tryghost/logging');
 
 const CardAssetService = require('../../../../core/frontend/services/assets-minification/card-assets');
 
@@ -28,6 +30,10 @@ describe('Card Asset Service', function () {
         await fs.rm(testDir, {recursive: true});
     });
 
+    afterEach(function () {
+        sinon.restore();
+    });
+
     it('can load nothing', async function () {
         const cardAssets = new CardAssetService({
             src: srcDir,
@@ -37,6 +43,8 @@ describe('Card Asset Service', function () {
         await cardAssets.load();
 
         assert.deepEqual(cardAssets.files, []);
+        assert.deepEqual(cardAssets.outputs, {});
+        assert.equal(cardAssets.ready, true);
     });
 
     it('can load a single css file', async function () {
@@ -50,6 +58,7 @@ describe('Card Asset Service', function () {
         await cardAssets.load(true);
 
         assert.deepEqual(cardAssets.files, ['cards.min.css']);
+        assert.equal(cardAssets.ready, true);
     });
 
     it('can correctly load nothing when config is false', async function () {
@@ -63,6 +72,62 @@ describe('Card Asset Service', function () {
         await cardAssets.load(false);
 
         assert.deepEqual(cardAssets.files, []);
+        assert.deepEqual(cardAssets.outputs, {});
+    });
+
+    it('keeps the minified contents in memory and exposes them via getContent', async function () {
+        const cardAssets = new CardAssetService({
+            src: srcDir,
+            dest: destDir
+        });
+
+        await fs.writeFile(path.join(srcDir, 'css', 'test.css'), '.test { color: #fff }');
+        await fs.writeFile(path.join(srcDir, 'js', 'test.js'), 'const test = "hello world";console.log(test);');
+
+        await cardAssets.load(true);
+
+        assert.deepEqual(cardAssets.files.sort(), ['cards.min.css', 'cards.min.js']);
+        assert.match(cardAssets.getContent('cards.min.css'), /\.test\{color:#fff\}/);
+        assert.match(cardAssets.getContent('cards.min.js'), /hello world/);
+        assert.equal(cardAssets.getContent('unknown.min.js'), null);
+        assert.equal(cardAssets.hasFile('css'), true);
+        assert.equal(cardAssets.hasFile('js'), true);
+    });
+
+    it('writes the minified files to disk as a best-effort side effect', async function () {
+        const cardAssets = new CardAssetService({
+            src: srcDir,
+            dest: destDir
+        });
+
+        await fs.writeFile(path.join(srcDir, 'css', 'test.css'), '.test { color: #fff }');
+
+        await cardAssets.load(true);
+
+        const diskContents = await fs.readFile(path.join(destDir, 'cards.min.css'), 'utf8');
+        assert.equal(diskContents, cardAssets.getContent('cards.min.css'));
+    });
+
+    it('is still ready + servable when the disk write fails', async function () {
+        const loggingStub = sinon.stub(logging, 'warn');
+
+        const cardAssets = new CardAssetService({
+            src: srcDir,
+            dest: destDir
+        });
+
+        await fs.writeFile(path.join(srcDir, 'css', 'test.css'), '.test { color: #fff }');
+
+        const eaccesError = new Error('permission denied');
+        eaccesError.code = 'EACCES';
+        sinon.stub(cardAssets.minifier, 'writeFile').rejects(eaccesError);
+
+        await cardAssets.load(true);
+
+        assert.equal(cardAssets.ready, true, 'a failed disk write must not affect readiness');
+        assert.match(cardAssets.getContent('cards.min.css'), /\.test\{color:#fff\}/);
+        assert.equal(cardAssets.hasFile('css'), true);
+        sinon.assert.called(loggingStub);
     });
 
     describe('Generate the correct glob strings', function () {

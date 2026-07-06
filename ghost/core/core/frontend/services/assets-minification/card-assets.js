@@ -1,6 +1,7 @@
 const debug = require('@tryghost/debug')('card-assets');
 const _ = require('lodash');
 const path = require('path');
+const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const Minifier = require('./minifier');
 const AssetsMinificationBase = require('./assets-minification-base');
@@ -18,6 +19,13 @@ module.exports = class CardAssets extends AssetsMinificationBase {
         }
 
         this.files = [];
+
+        /**
+         * Minified card assets, keyed by destination file name
+         * (e.g. `{'cards.min.css': '...'}`) — the source of truth for serving.
+         * @type {Object<string, string>}
+         */
+        this.outputs = {};
     }
 
     /**
@@ -62,6 +70,16 @@ module.exports = class CardAssets extends AssetsMinificationBase {
         return Object.keys(this.generateGlobs()).indexOf(`cards.min.${type}`) > -1;
     }
 
+    /**
+     * Get the minified contents of a built card asset
+     *
+     * @param {string} filename e.g. 'cards.min.css'
+     * @returns {string|null} the minified contents, or null when not built/produced
+     */
+    getContent(filename) {
+        return this.outputs[filename] ?? null;
+    }
+
     invalidate(cardAssetConfig) {
         if (cardAssetConfig) {
             this.config = cardAssetConfig;
@@ -86,6 +104,23 @@ module.exports = class CardAssets extends AssetsMinificationBase {
 
         debug('globs', globs);
 
-        this.files = await this.minify(globs) || [];
+        // Build in memory — this is the source of truth for serving, so a
+        // missing or unwritable content folder can never take the assets
+        // offline. An in-memory build cannot fail with EACCES/ENOENT on the
+        // destination, so a successful build is always servable.
+        this.outputs = await this.minifier.minifyInMemory(globs);
+        this.files = Object.keys(this.outputs);
+        this.ready = true;
+
+        // Best-effort disk write for back-compat with setups that expect the
+        // built files in content/public — failures are logged and must never
+        // affect serving.
+        for (const [dest, contents] of Object.entries(this.outputs)) {
+            try {
+                await this.minifier.writeFile(contents, dest);
+            } catch (error) {
+                logging.warn(`Ghost was not able to write card asset ${dest} to disk — serving it from memory. Reason: ${error.message}`);
+            }
+        }
     }
 };
