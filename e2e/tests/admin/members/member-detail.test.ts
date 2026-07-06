@@ -35,4 +35,16 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
 
         await expect(page).toHaveURL(/#\/members$/);
     });
+
+    test('shows the member sidebar with location and signup date', async ({page}) => {
+        const member = await memberFactory.create({name: 'Katherine Johnson', email: 'katherine@ghost.org'});
+
+        await page.goto(previewPath(member.id));
+
+        const sidebar = page.getByTestId('member-detail-sidebar');
+        await expect(sidebar).toBeVisible();
+        // API-created members have no geolocation, so the location falls back deterministically.
+        await expect(page.getByTestId('member-detail-location')).toHaveText('Unknown location');
+        await expect(sidebar).toContainText('Created —');
+    });
 });

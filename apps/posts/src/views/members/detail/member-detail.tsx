@@ -1,4 +1,5 @@
 import MainLayout from '@components/layout/main-layout';
+import MemberDetailSidebar from './member-detail-sidebar';
 import React from 'react';
 import {Button, Skeleton} from '@tryghost/shade/components';
 import {Link, useLocation, useParams} from '@tryghost/admin-x-framework';
@@ -45,7 +46,13 @@ const MemberDetail: React.FC = () => {
                     </div>
                 )}
 
-                {/* Member body (sidebar, subscriptions, newsletters, activity) arrives in later slices. */}
+                {member && (
+                    <div className='flex flex-1 flex-col gap-8 overflow-y-auto p-6 lg:flex-row-reverse lg:items-start'>
+                        <MemberDetailSidebar member={member} />
+                        {/* Main column (fields, subscriptions, newsletters, activity) arrives in later slices. */}
+                        <div className='min-w-0 flex-1' />
+                    </div>
+                )}
             </div>
         </MainLayout>
     );

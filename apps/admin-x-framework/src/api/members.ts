@@ -81,6 +81,15 @@ export type Member = {
     // TODO: The server returns geolocation as a JSON-encoded string (not a parsed object).
     // Long term we should parse this on the server side and return a proper object.
     geolocation?: string | null;
+    attribution?: {
+        id?: string | null;
+        type?: string | null;
+        url?: string | null;
+        title?: string | null;
+        referrer_source?: string | null;
+        referrer_medium?: string | null;
+        referrer_url?: string | null;
+    } | null;
     email_suppression?: {
         suppressed: boolean;
         info?: {
