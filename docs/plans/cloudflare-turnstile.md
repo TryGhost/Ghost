@@ -148,10 +148,20 @@ The sitekey is also available to Portal via the public settings it already fetch
   `api.member.sendMagicLink()` in `apps/portal/src/utils/api.js`), passing `turnstileToken` in the
   request body when Turnstile is active. Helpers `hasTurnstileEnabled({site})` /
   `getTurnstileSitekey({site})` in `utils/helpers.js` mirror the removed captcha helpers.
-  - ⚠️ **Spike first:** verify a Turnstile widget actually renders inside Portal's `srcDoc` iframe
-    (it inherits the parent origin, so domain validation should pass — but confirm early). If it
-    doesn't work, fall back to rendering in the parent page via the existing
-    `window.parent.postMessage` channel, and record that in this doc.
+  - ✅ **Spike passed (2026-07-06):** a Turnstile widget renders, executes, and returns tokens
+    inside a `srcDoc="<!DOCTYPE html>"` iframe exactly like Portal's Frame (tested in Chromium
+    against real api.js on localhost). `location.href` is `about:srcdoc`, `origin` inherits the
+    parent — so domain validation sees the parent hostname. The invisible test key
+    (`1x…BB`) delivered a token via `execute()`; the forced-interactive key (`3x…FF`) fired
+    `before-interactive-callback` and visibly rendered the challenge UI inside the iframe.
+    No postMessage fallback needed. Two implementation gotchas found:
+    1. An iframe carries a transient `about:blank` document before the srcdoc document replaces
+       it; anything injected into the transient document is silently discarded. Inject api.js
+       only once `contentWindow.location.href === 'about:srcdoc'` (Portal's Frame `load` event
+       is the equivalent signal).
+    2. Turnstile renders its challenge in a **closed shadow root** — the widget's internal
+       iframe can't be queried or measured. The overlay helper must size its own container
+       (the standard widget is ~300×65) rather than measuring the widget.
 - **Data-attribute forms:** in `apps/portal/src/data-attributes.js` `formSubmitHandler()`, when
   Turnstile is active, await `getToken()` (main-page document/overlay) between fetching the
   integrity token and posting to `send-magic-link`, and include `turnstileToken` in `reqBody`. The
@@ -243,7 +253,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 - [x] `ghost_head`: conditionally inject api.js script + `data-turnstile-sitekey` attribute; unit/snapshot tests
 
 ### Phase 3 — Portal + embedded forms
-- [ ] Spike: confirm Turnstile widget renders inside Portal's srcDoc iframe with a real test sitekey; record result here
+- [x] Spike: confirm Turnstile widget renders inside Portal's srcDoc iframe with a real test sitekey; record result here
 - [ ] `utils/turnstile.js` overlay helper (+ helpers.js `hasTurnstileEnabled`/`getTurnstileSitekey`)
 - [ ] Portal signup + signin flows send `turnstileToken`; overlay-on-interaction inside popup; vitest coverage
 - [ ] `data-attributes.js` flow with main-page overlay; vitest coverage
@@ -318,3 +328,9 @@ anything that diverged from the plan and why._
   middleware (flag + both keys). Sitekey is escaped via `escapeExpression`. Three snapshot tests
   (active / flag off / keys unset) in ghost-head.test.js; suite 99/99, snapshot diff verified to
   contain only the three new entries.
+- **2026-07-06** — Iframe spike PASSED (details recorded inline in the Portal design section
+  above): widget renders + executes + returns tokens inside a srcDoc iframe; interactive
+  challenge renders visibly; no postMessage fallback needed. Two gotchas for the overlay helper:
+  wait for the srcdoc document (transient about:blank discards injected scripts), and don't try
+  to measure the widget (closed shadow root). Spike page kept at
+  scratchpad/turnstile-spike/spike.html (session-local, not committed).
