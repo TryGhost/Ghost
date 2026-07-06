@@ -240,7 +240,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 - [x] Mount middleware on `send-magic-link` (all email types); e2e API tests with nock (success / failure / missing token / disabled regression / signin path)
 
 ### Phase 2 — script injection
-- [ ] `ghost_head`: conditionally inject api.js script + `data-turnstile-sitekey` attribute; unit/snapshot tests
+- [x] `ghost_head`: conditionally inject api.js script + `data-turnstile-sitekey` attribute; unit/snapshot tests
 
 ### Phase 3 — Portal + embedded forms
 - [ ] Spike: confirm Turnstile widget renders inside Portal's srcDoc iframe with a real test sitekey; record result here
@@ -312,3 +312,9 @@ anything that diverged from the plan and why._
   `mockSetting`/`mockLabsEnabled`): missing token 400, mocked success 201 + email + siteverify body
   carries secret/response/remoteip, mocked failure 400 + no email, signin enforced (400 then 201),
   flag-off regression, keys-unset regression. Full suite 50/50; members middleware unit 19/19.
+- **2026-07-06** — `ghost_head` injection done. `labs` comes via the frontend `proxy` (no direct
+  shared/labs require needed). Both the `data-turnstile-sitekey` attribute and the api.js script
+  are emitted inside the portal-script branch of `getMembersHelper()` — same active check as the
+  middleware (flag + both keys). Sitekey is escaped via `escapeExpression`. Three snapshot tests
+  (active / flag off / keys unset) in ghost-head.test.js; suite 99/99, snapshot diff verified to
+  contain only the three new entries.

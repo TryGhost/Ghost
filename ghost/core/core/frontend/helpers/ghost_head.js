@@ -2,7 +2,7 @@
 // Usage: `{{ghost_head}}`
 //
 // Outputs scripts and other assets at the top of a Ghost theme
-const {settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers} = require('../services/proxy');
+const {settingsCache, config, blogIcon, urlUtils, getFrontendKey, settingsHelpers, labs} = require('../services/proxy');
 const metaData = require('../meta');
 const {escapeExpression, SafeString} = require('../services/handlebars');
 const {generateCustomFontCss, isValidCustomFont, isValidCustomHeadingFont} = require('@tryghost/custom-fonts');
@@ -81,6 +81,10 @@ function getMembersHelper(data, frontendKey, excludeList) {
     if (!settingsCache.get('members_enabled') && !settingsCache.get('donations_enabled') && !settingsCache.get('recommendations_enabled')) {
         return '';
     }
+    // Active only when the labs flag is on AND both keys are set, matching the
+    // send-magic-link middleware — never inject the widget when the server
+    // wouldn't enforce it
+    const turnstileSitekey = labs.isSet('turnstile') && settingsCache.get('turnstile_secret_key') && settingsCache.get('turnstile_sitekey');
     let membersHelper = '';
     if (!excludeList.has('portal')) {
         const {scriptUrl} = getFrontendAppConfig('portal');
@@ -97,8 +101,15 @@ function getMembersHelper(data, frontendKey, excludeList) {
             if (colorString) {
                 attributes['accent-color'] = colorString;
             }
+            if (turnstileSitekey) {
+                attributes['turnstile-sitekey'] = escapeExpression(turnstileSitekey);
+            }
             const dataAttributes = getDataAttributes(attributes);
             membersHelper += `<script defer src="${scriptUrl}" ${dataAttributes} crossorigin="anonymous"></script>`;
+            if (turnstileSitekey) {
+                // Main-page copy of the Turnstile API, used by [data-members-form] forms
+                membersHelper += `<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>`;
+            }
         }
     }
     if (!excludeList.has('cta_styles')) {
