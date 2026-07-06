@@ -318,10 +318,51 @@ export default class LexicalEditorController extends Controller {
             // ignore revision save errors
         }
 
+        this._syncPaywallVisibility(lexicalString);
+
         // save 3 seconds after last edit
         this._autosaveTask.perform();
         // force save at 60 seconds
         this._timedSaveTask.perform();
+    }
+
+    // Paywall card <-> access sync: adding a paywall to a public draft is
+    // treated as the intent "gate this post", so access flips to paid in the
+    // same action instead of requiring a separate trip to the settings menu.
+    // Removing the card undoes the flip only when we made it.
+    _syncPaywallVisibility(lexicalString) {
+        const hasPaywall = lexicalString.includes('"type":"paywall"');
+
+        if (this._hasPaywall === undefined) {
+            // baseline from the saved document so pre-existing paywalls don't trigger
+            this._hasPaywall = (this.post.lexical || '').includes('"type":"paywall"');
+        }
+
+        if (hasPaywall === this._hasPaywall) {
+            return;
+        }
+        this._hasPaywall = hasPaywall;
+
+        if (!this.post.isDraft) {
+            return;
+        }
+
+        if (hasPaywall && this.post.visibility === 'public') {
+            this.post.set('visibility', 'paid');
+            this._paywallSetVisibility = true;
+            this.notifications.showNotification('Paywall added — this post is now for paid members', {
+                type: 'success',
+                description: 'Everything below the paywall is paid-only. Free subscribers get a preview by email.',
+                key: 'post.paywall-visibility'
+            });
+        } else if (!hasPaywall && this._paywallSetVisibility && this.post.visibility === 'paid') {
+            this.post.set('visibility', 'public');
+            this._paywallSetVisibility = false;
+            this.notifications.showNotification('Paywall removed — post access is public again', {
+                type: 'success',
+                key: 'post.paywall-visibility'
+            });
+        }
     }
 
     @action
@@ -1354,6 +1395,8 @@ export default class LexicalEditorController extends Controller {
 
         this._setPostState = null;
         this._postStates = [];
+        this._hasPaywall = undefined;
+        this._paywallSetVisibility = false;
 
         this.set('post', null);
         this.set('hasDirtyAttributes', false);
