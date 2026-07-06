@@ -1,4 +1,5 @@
 const sinon = require('sinon');
+const {setImmediate: flushEventLoop} = require('node:timers/promises');
 
 const StartAutomationsPollEvent = require('../../../../../core/server/services/automations/events/start-automations-poll-event');
 const {AutomationsService} = require('../../../../../core/server/services/automations/service');
@@ -36,9 +37,7 @@ describe('automations service', function () {
     describe('init', function () {
         it('dispatches a StartAutomationsPollEvent', async function () {
             automations.init(initOptions);
-            // The initial poll is enqueued for "now", which re-dispatches on the
-            // next macrotask (see enqueuePollAt's setImmediate), so wait a tick.
-            await new Promise(resolve => { setImmediate(resolve) });
+            await flushEventLoop();
             sinon.assert.calledWith(domainEvents.dispatch, sinon.match.instanceOf(StartAutomationsPollEvent));
         });
 
@@ -57,12 +56,71 @@ describe('automations service', function () {
         });
     });
 
-    describe('rescheduleAll', function () {
-        it('dispatches a fresh StartAutomationsPollEvent', function () {
+    describe('enqueueing poll', function () {
+        beforeEach(async function () {
             automations.init(initOptions);
+            await flushEventLoop();
+            domainEvents.dispatch.resetHistory();
+        });
+
+        it('dispatches a StartAutomationsPollEvent if date is in the past', async function () {
+            const past = new Date(Date.now() - 1000);
+            await automations.__testOnlyEnqueuePollAt(past);
+
+            sinon.assert.calledOnceWithExactly(
+                domainEvents.dispatch,
+                sinon.match.instanceOf(StartAutomationsPollEvent)
+            );
+
+            sinon.assert.notCalled(schedulerAdapter.schedule);
+        });
+
+        it('dispatches a StartAutomationsPollEvent if date is now', async function () {
+            const now = new Date('2026-01-01T00:00:00.000Z');
+            sinon.useFakeTimers({now, toFake: ['Date']});
+
+            await automations.__testOnlyEnqueuePollAt(now);
+
+            sinon.assert.calledOnceWithExactly(
+                domainEvents.dispatch,
+                sinon.match.instanceOf(StartAutomationsPollEvent)
+            );
+
+            sinon.assert.notCalled(schedulerAdapter.schedule);
+        });
+
+        it('reaches out to the scheduler for dates in the future', async function () {
+            const future = new Date(Date.now() + 10_000);
+            await automations.__testOnlyEnqueuePollAt(future);
+
+            sinon.assert.calledOnceWithExactly(
+                schedulerAdapter.schedule,
+                sinon.match({
+                    time: future.getTime(),
+                    url: sinon.match((value) => (
+                        typeof value === 'string' &&
+                        new URL(value).searchParams.has('token')
+                    )),
+                    extra: {
+                        httpMethod: 'PUT'
+                    }
+                })
+            );
+
+            sinon.assert.neverCalledWith(
+                domainEvents.dispatch,
+                sinon.match.instanceOf(StartAutomationsPollEvent)
+            );
+        });
+    });
+
+    describe('rescheduleAll', function () {
+        it('dispatches a fresh StartAutomationsPollEvent', async function () {
+            automations.init(initOptions);
+            await flushEventLoop();
             domainEvents.dispatch.resetHistory();
 
-            automations.rescheduleAll();
+            await automations.rescheduleAll();
 
             sinon.assert.calledOnceWithExactly(
                 domainEvents.dispatch,
@@ -70,8 +128,8 @@ describe('automations service', function () {
             );
         });
 
-        it('is a no-op before init', function () {
-            automations.rescheduleAll();
+        it('is a no-op before init', async function () {
+            await automations.rescheduleAll();
             sinon.assert.notCalled(domainEvents.dispatch);
         });
     });
