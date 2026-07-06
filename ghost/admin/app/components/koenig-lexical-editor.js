@@ -433,6 +433,15 @@ export default class KoenigLexicalEditor extends Component {
             }
         };
 
+        // Current site-wide web paywall copy (with the rendered defaults), so
+        // the paywall card can show what visitors actually see on the web
+        const sitePaywallCopy = {
+            membersHeading: this.settings.paywallHeadingMembers || 'This post is for subscribers only',
+            paidHeading: this.settings.paywallHeadingPaid || 'This post is for paying subscribers only',
+            description: this.settings.paywallDescription || '',
+            buttonText: this.settings.paywallButtonText || 'Subscribe now'
+        };
+
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
@@ -441,6 +450,7 @@ export default class KoenigLexicalEditor extends Component {
             fetchEmbed,
             fetchLabels,
             fetchOffers,
+            sitePaywallCopy,
             renderLabels: !this.session.user.isContributor,
             feature: {
                 transistor: this.settings.transistor

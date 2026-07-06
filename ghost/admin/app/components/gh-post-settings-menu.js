@@ -118,6 +118,12 @@ export default class GhPostSettingsMenu extends Component {
     )
         showVisibilityInput;
 
+    @computed('post.{lexicalScratch,lexical}')
+    get hasPaywallCard() {
+        const lexical = this.post.lexicalScratch || this.post.lexical || '';
+        return lexical.includes('"type":"paywall"');
+    }
+
     @computed('metaTitleScratch', 'post.titleScratch')
     get seoTitle() {
         return this.metaTitleScratch || this.post.titleScratch || '(Untitled)';
