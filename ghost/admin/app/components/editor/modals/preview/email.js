@@ -163,8 +163,10 @@ export default class ModalPostPreviewEmailComponent extends Component {
         if (post.html && post.subject) {
             html = post.html;
             subject = post.subject;
-        // model is a post with an existing email
-        } else if (post.email) {
+        // model is a post with an existing email — but a failed or pending
+        // send can leave the record without html, so only trust it when the
+        // rendered content is actually there (otherwise fetch a live preview)
+        } else if (post.email?.html && post.email?.subject) {
             html = post.email.html;
             subject = post.email.subject;
         // model is a post, fetch email preview

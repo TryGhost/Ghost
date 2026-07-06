@@ -1419,13 +1419,18 @@ class EmailRenderer {
                 // deleted or unreadable offer — fall back to the standard signup CTA
             }
         }
-        offerCode = offerCode || postsMeta?.get('email_paywall_offer_code');
+        offerCode = offerCode || postsMeta?.get('email_paywall_offer_code') || this.#settingsCache.get('paywall_offer_code');
+
+        // Same resolution order as the web wall: this post's card, then the
+        // site-wide paywall settings, then the built-in template copy —
+        // "blank fields use your site-wide message" must hold in email too
+        const siteHeadingKey = post.get('visibility') === 'tiers' ? 'paywall_heading_tiers' : 'paywall_heading_paid';
 
         return {
             signupUrl: signupUrl.href,
-            heading: card?.heading || postsMeta?.get('email_paywall_heading'),
-            description: card?.description || postsMeta?.get('email_paywall_description'),
-            buttonText: card?.buttonText || postsMeta?.get('email_paywall_button_text'),
+            heading: card?.heading || postsMeta?.get('email_paywall_heading') || this.#settingsCache.get(siteHeadingKey),
+            description: card?.description || postsMeta?.get('email_paywall_description') || this.#settingsCache.get('paywall_description'),
+            buttonText: card?.buttonText || postsMeta?.get('email_paywall_button_text') || this.#settingsCache.get('paywall_button_text'),
             offerUrl: offerCode ? new URL(offerCode, siteUrl).href : null
         };
     }
