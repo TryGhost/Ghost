@@ -235,7 +235,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 - [x] Settings `turnstile_sitekey` + `turnstile_secret_key`: default-settings.json, migration (use `create-database-migration` skill), `EDITABLE_SETTINGS`, public exposure of sitekey only; integrity/exporter test snapshots updated
 
 ### Phase 1 — backend verification
-- [ ] `TurnstileService` + unit tests
+- [x] `TurnstileService` + unit tests
 - [ ] Config default `turnstile.siteverifyUrl` in defaults.json
 - [ ] Mount middleware on `send-magic-link` (all email types); e2e API tests with nock (success / failure / missing token / disabled regression / signin path)
 
@@ -289,3 +289,13 @@ anything that diverged from the plan and why._
   null), admin settings snapshots + `CURRENT_SETTINGS_COUNT` 107→109 + labs matcher index 68→70.
   New Content API e2e test asserts sitekey is exposed and the secret never is. Suites green:
   integrity, exporter, labs unit, content settings, admin settings, members site. Lint clean.
+- **2026-07-06** — `TurnstileService` + 8 unit tests landed. Two divergences from the plan's
+  letter, same spirit: (1) file is `services/members/turnstile-service.js` (kebab-case) because
+  ghost/core's `local-filenames/match-regex` lint forbids `TurnstileService.js`; class name is
+  still `TurnstileService`. (2) To satisfy the lazy-read requirement, `enabled`/`secretKey`
+  constructor params accept functions evaluated per request (plain values also work);
+  `getMiddleware()` returns one middleware that checks activity per request rather than choosing
+  no-op vs active at construction — flipping the flag needs no restart and no re-mount. Verifies
+  via `externalRequest.post(siteverifyUrl, {form, responseType: 'json'})`; missing token → 400,
+  `success: false` → sparse 400 with codes logged server-side only, network error → sparse 500.
+  Note for the e2e item: vitest 4 rejects `done()`-style tests — write promise-style.
