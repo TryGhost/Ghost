@@ -501,6 +501,14 @@ export function hasFreeProductPrice({site}) {
     return isFreeSignupAllowed({site}) && portalPlans.includes('free');
 }
 
+export function hasTurnstileEnabled({site}) {
+    return !!(site?.labs?.turnstile && site?.turnstile_sitekey);
+}
+
+export function getTurnstileSitekey({site}) {
+    return site?.turnstile_sitekey || '';
+}
+
 export function getSiteNewsletters({site}) {
     const {
         newsletters = []

@@ -254,7 +254,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 
 ### Phase 3 — Portal + embedded forms
 - [x] Spike: confirm Turnstile widget renders inside Portal's srcDoc iframe with a real test sitekey; record result here
-- [ ] `utils/turnstile.js` overlay helper (+ helpers.js `hasTurnstileEnabled`/`getTurnstileSitekey`)
+- [x] `utils/turnstile.js` overlay helper (+ helpers.js `hasTurnstileEnabled`/`getTurnstileSitekey`)
 - [ ] Portal signup + signin flows send `turnstileToken`; overlay-on-interaction inside popup; vitest coverage
 - [ ] `data-attributes.js` flow with main-page overlay; vitest coverage
 - [ ] i18n: new portal strings + `pnpm --filter @tryghost/i18n translate`
@@ -334,3 +334,12 @@ anything that diverged from the plan and why._
   wait for the srcdoc document (transient about:blank discards injected scripts), and don't try
   to measure the widget (closed shadow root). Spike page kept at
   scratchpad/turnstile-spike/spike.html (session-local, not committed).
+- **2026-07-06** — Portal overlay helper landed: `createTurnstile({doc, sitekey})` in
+  `apps/portal/src/utils/turnstile.js` returning `{getToken, destroy}` — lazy api.js injection
+  into the given document, fixed-size overlay box (closed-shadow-root gotcha), overlay shown only
+  between before/after-interactive callbacks, widget reset before every re-execution, concurrent
+  `getToken` calls share the in-flight promise. `hasTurnstileEnabled` requires
+  `site.labs.turnstile` AND `site.turnstile_sitekey` (Portal's site object is built from the
+  public settings response, which carries both — confirmed in api.js `init`). 8 + 6 new vitest
+  tests; portal suite for both files 136/136; lint clean. Error strings are plain English for
+  now — they surface through Portal notifications in the next item, where i18n gets applied.

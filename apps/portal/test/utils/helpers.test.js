@@ -29,6 +29,8 @@ import {
     getSubscriptionExpiry,
     isInThePast,
     hasNewsletterSendingEnabled,
+    hasTurnstileEnabled,
+    getTurnstileSitekey,
     getUpdatedOfferPrice,
     isComplimentaryMember,
     subscriptionHasFreeTrial,
@@ -988,6 +990,38 @@ describe('Helpers - ', () => {
         test('returns true when editor default email recipients is set to filter', () => {
             const site = {editor_default_email_recipients: 'filter'};
             expect(hasNewsletterSendingEnabled({site})).toBe(true);
+        });
+    });
+
+    describe('hasTurnstileEnabled', () => {
+        test('returns true when the labs flag is on and a sitekey is set', () => {
+            const site = {labs: {turnstile: true}, turnstile_sitekey: '1x00000000000000000000BB'};
+            expect(hasTurnstileEnabled({site})).toBe(true);
+        });
+
+        test('returns false when the labs flag is off', () => {
+            const site = {labs: {turnstile: false}, turnstile_sitekey: '1x00000000000000000000BB'};
+            expect(hasTurnstileEnabled({site})).toBe(false);
+        });
+
+        test('returns false when no sitekey is set', () => {
+            const site = {labs: {turnstile: true}, turnstile_sitekey: null};
+            expect(hasTurnstileEnabled({site})).toBe(false);
+        });
+
+        test('returns false for a site without labs', () => {
+            expect(hasTurnstileEnabled({site: {}})).toBe(false);
+        });
+    });
+
+    describe('getTurnstileSitekey', () => {
+        test('returns the sitekey', () => {
+            const site = {turnstile_sitekey: '1x00000000000000000000BB'};
+            expect(getTurnstileSitekey({site})).toEqual('1x00000000000000000000BB');
+        });
+
+        test('returns an empty string when unset', () => {
+            expect(getTurnstileSitekey({site: {}})).toEqual('');
         });
     });
 });
