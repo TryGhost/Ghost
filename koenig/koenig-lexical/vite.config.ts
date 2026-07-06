@@ -4,8 +4,11 @@ import pkg from './package.json';
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import {defineConfig, esmExternalRequirePlugin, loadEnv} from 'vite';
-import {resolve} from 'path';
+import {resolve, dirname} from 'path';
+import {fileURLToPath} from 'url';
 import {sentryVitePlugin} from '@sentry/vite-plugin';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const outputFileName = pkg.name[0] === '@' ? pkg.name.slice(pkg.name.indexOf('/') + 1) : pkg.name;
 
@@ -87,7 +90,7 @@ export default (function viteConfig({mode}) {
             sourcemap: true,
             cssCodeSplit: true,
             lib: {
-                entry: resolve(__dirname, 'src/index.js'),
+                entry: resolve(__dirname, 'src/index.ts'),
                 name: pkg.name,
                 fileName(format) {
                     if (format === 'umd') {
@@ -120,7 +123,7 @@ export default (function viteConfig({mode}) {
         test: {
             globals: true, // required for @testing-library/jest-dom extensions
             environment: 'jsdom',
-            setupFiles: './test/test-setup.js',
+            setupFiles: './test/test-setup.ts',
             include: ['./test/unit/**/*.test.{js,jsx,ts,tsx}'],
             testTimeout: process.env.TIMEOUT ? parseInt(process.env.TIMEOUT) : 10000,
             ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674

@@ -44,12 +44,12 @@ export default defineConfig({
         {
             name: 'chromium',
             use: {...devices['Desktop Chrome']},
-            testIgnore: /.*firefox.test.js/
+            testIgnore: /.*firefox.test.ts/
         },
         {
             name: 'firefox',
             use: {...devices['Desktop Firefox']},
-            testMatch: /.*firefox.test.js/
+            testMatch: /.*firefox.test.ts/
         }
     ],
 

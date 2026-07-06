@@ -1,7 +1,10 @@
 import react from '@vitejs/plugin-react';
 import svgr from 'vite-plugin-svgr';
 import {defineConfig} from 'vite';
-import {resolve} from 'path';
+import {resolve, dirname} from 'path';
+import {fileURLToPath} from 'url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
 
 // https://vitejs.dev/config/
 export default (function viteDemoConfig() {
@@ -41,7 +44,7 @@ export default (function viteDemoConfig() {
         test: {
             globals: true, // required for @testing-library/jest-dom extensions
             environment: 'jsdom',
-            setupFiles: './test/test-setup.js',
+            setupFiles: './test/test-setup.ts',
             include: ['./test/unit/*'],
             testTimeout: 10000,
             ...(process.env.CI && { // https://github.com/vitest-dev/vitest/issues/1674

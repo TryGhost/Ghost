@@ -5,6 +5,7 @@ import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import storybookPlugin from 'eslint-plugin-storybook';
 import tailwindcssPlugin from 'eslint-plugin-tailwindcss';
+import tseslint from 'typescript-eslint';
 import globals from 'globals';
 import {fileURLToPath} from 'node:url';
 
@@ -12,13 +13,13 @@ const ghost = fixupPluginRules(ghostPlugin);
 const tailwindConfigPath = fileURLToPath(new URL('./tailwind.config.cjs', import.meta.url));
 
 export default [
-    {ignores: ['dist/**', 'build/**', '.storybook/**']},
+    {ignores: ['dist/**', 'build/**', '.storybook/**', '**/*.d.ts']},
     eslint.configs.recommended,
     reactPlugin.configs.flat.recommended,
     reactPlugin.configs.flat['jsx-runtime'],
     ...storybookPlugin.configs['flat/recommended'],
     {
-        files: ['demo/**/*.{js,jsx}', 'src/**/*.{js,jsx}', 'test/**/*.{js,jsx}'],
+        files: ['demo/**/*.{js,jsx,ts,tsx}', 'src/**/*.{js,jsx,ts,tsx}', 'test/**/*.{js,jsx,ts,tsx}'],
         plugins: {
             ghost,
             'react-hooks': reactHooksPlugin,
@@ -30,6 +31,7 @@ export default [
             }
         },
         languageOptions: {
+            parser: tseslint.parser,
             globals: {
                 ...globals.browser,
                 ...globals.node
@@ -78,7 +80,7 @@ export default [
         }
     },
     {
-        files: ['test/**/*.{js,jsx}'],
+        files: ['test/**/*.{js,jsx,ts,tsx}'],
         languageOptions: {
             globals: {
                 ...globals.jest,
@@ -87,8 +89,8 @@ export default [
         }
     },
     {
-        files: ['src/components/ui/cards/*.jsx'],
-        ignores: ['src/components/ui/cards/*.stories.jsx'],
+        files: ['src/components/ui/cards/*.{jsx,tsx}'],
+        ignores: ['src/components/ui/cards/*.stories.{jsx,tsx}'],
         rules: {
             'react/prop-types': 'error'
         }
