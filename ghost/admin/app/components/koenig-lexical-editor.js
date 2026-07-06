@@ -423,6 +423,16 @@ export default class KoenigLexicalEditor extends Component {
             return hasDirectKeys || hasConnectKeys;
         };
 
+        const fetchOffers = async () => {
+            try {
+                const offers = await this.fetchOffersTask.perform();
+                return offers.map(offer => ({id: offer.id, name: offer.name}));
+            } catch (e) {
+                // e.g. missing permissions — cards degrade to no offer options
+                return [];
+            }
+        };
+
         const defaultCardConfig = {
             unsplash: this.settings.unsplash ? unsplashConfig.defaultHeaders : null,
             tenor: this.config.tenor?.googleApiKey ? this.config.tenor : null,
@@ -430,6 +440,7 @@ export default class KoenigLexicalEditor extends Component {
             fetchAutocompleteLinks,
             fetchEmbed,
             fetchLabels,
+            fetchOffers,
             renderLabels: !this.session.user.isContributor,
             feature: {
                 transistor: this.settings.transistor

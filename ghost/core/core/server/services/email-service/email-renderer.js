@@ -1359,7 +1359,7 @@ class EmailRenderer {
             feedbackButtonCellWidth,
 
             // Paywall
-            paywall: addPaywall ? this.#getPaywallData(post, signupUrl) : null,
+            paywall: addPaywall ? await this.#getPaywallData(post, signupUrl) : null,
 
             year: new Date().getFullYear().toString()
         };
@@ -1403,11 +1403,23 @@ class EmailRenderer {
      * @param {Post} post
      * @param {URL} signupUrl
      */
-    #getPaywallData(post, signupUrl) {
+    async #getPaywallData(post, signupUrl) {
         const card = this.#getLexicalPaywallCard(post);
         const postsMeta = post.related('posts_meta');
-        const offerCode = postsMeta?.get('email_paywall_offer_code');
         const siteUrl = this.#urlUtils.urlFor('home', true);
+
+        // The card stores the offer id (stable across code renames); the
+        // redemption URL is the offer's current code, resolved at send time
+        let offerCode = null;
+        if (card?.offerId) {
+            try {
+                const offer = await this.#models.Offer.findOne({id: card.offerId});
+                offerCode = offer?.get('code') ?? null;
+            } catch (e) {
+                // deleted or unreadable offer — fall back to the standard signup CTA
+            }
+        }
+        offerCode = offerCode || postsMeta?.get('email_paywall_offer_code');
 
         return {
             signupUrl: signupUrl.href,

@@ -24,7 +24,7 @@ class EmailServiceWrapper {
         const MailgunEmailProvider = require('./mailgun-email-provider');
         const {DomainWarmingService} = require('./domain-warming-service');
 
-        const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
+        const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member, Offer} = require('../../models');
         const urlService = require('../url');
         const getRequiredUrlRelations = () => urlService.facade.getRequiredRelations();
         const MailgunClient = require('../lib/mailgun-client');
@@ -91,7 +91,7 @@ class EmailServiceWrapper {
             outboundLinkTagger: memberAttribution.outboundLinkTagger,
             emailAddressService: emailAddressService.service,
             labs,
-            models: {Post},
+            models: {Post, Offer},
             t: i18n.t,
             dir: i18n.dir.bind(i18n)
         });
