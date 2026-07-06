@@ -1,6 +1,6 @@
 const {assertExists} = require('../../../../../utils/assertions');
 const sinon = require('sinon');
-const deferred = require('../../../../../utils/deferred');
+const {deferred} = require('../../../../../utils/deferred')
 
 const api = require('../../../../../../core/frontend/services/proxy').api;
 const themeEngine = require('../../../../../../core/frontend/services/theme-engine');
