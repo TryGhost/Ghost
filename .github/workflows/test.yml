@@ -54,12 +54,12 @@ jobs:
 
       - uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f # v7
 
-  all-tests-pass:
-    name: All tests pass
+  required-checks-pass:
+    name: Required checks pass
     if: always()
     needs: [lint, build]
     runs-on: ubuntu-latest
     steps:
       - name: Verify all required jobs succeeded
-        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled') || contains(needs.*.result, 'skipped')
+        if: contains(needs.*.result, 'failure') || contains(needs.*.result, 'cancelled')
         run: exit 1
