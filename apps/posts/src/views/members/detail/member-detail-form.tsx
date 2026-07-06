@@ -1,3 +1,4 @@
+import MemberLabelsField from './member-labels-field';
 import React from 'react';
 import {Input, Label, Textarea} from '@tryghost/shade/components';
 import {cn} from '@tryghost/shade/utils';
@@ -39,6 +40,11 @@ const MemberDetailForm: React.FC<MemberDetailFormProps> = ({draft, emailError, d
                     onChange={e => onChange({email: e.target.value})}
                 />
                 {emailError && <p className='text-sm text-destructive'>{emailError}</p>}
+            </div>
+
+            <div className='flex flex-col gap-1.5'>
+                <Label>Labels</Label>
+                <MemberLabelsField disabled={disabled} labels={draft.labels} onChange={nextLabels => onChange({labels: nextLabels})} />
             </div>
 
             <div className='flex flex-col gap-1.5'>

@@ -84,4 +84,34 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
 
         await expect(memberDetailsPage.saveButton).toBeDisabled();
     });
+
+    test('removes an existing label and persists it', async ({page}) => {
+        const member = await memberFactory.create({name: 'Labeled Member', email: 'labeled@ghost.org', labels: ['VIP']});
+        const memberDetailsPage = new MemberDetailsPage(page);
+        const labelsField = page.getByTestId('member-labels-field');
+
+        await page.goto(previewPath(member.id));
+        await expect(labelsField.getByText('VIP')).toBeVisible();
+
+        await labelsField.getByText('VIP').click();
+        await memberDetailsPage.save();
+
+        await page.reload();
+        await expect(labelsField.getByText('VIP')).toHaveCount(0);
+    });
+
+    test('adds a new label via the picker and persists it', async ({page}) => {
+        const member = await memberFactory.create({name: 'Unlabeled Member', email: 'unlabeled@ghost.org'});
+        const memberDetailsPage = new MemberDetailsPage(page);
+        const labelsField = page.getByTestId('member-labels-field');
+
+        await page.goto(previewPath(member.id));
+        await labelsField.getByRole('combobox').click();
+        await page.getByPlaceholder('Search labels...').fill('Beta');
+        await page.getByText('Create "Beta"').click();
+        await memberDetailsPage.save();
+
+        await page.reload();
+        await expect(labelsField.getByText('Beta')).toBeVisible();
+    });
 });
