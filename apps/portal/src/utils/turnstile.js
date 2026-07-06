@@ -178,3 +178,25 @@ export function createTurnstile({doc, sitekey}) {
 
     return {getToken, destroy};
 }
+
+// One verifier per document. Keyed weakly so a popup iframe's verifier is
+// dropped with its document when the popup closes and re-opens.
+const verifiers = new WeakMap();
+
+/**
+ * Fetches a fresh Turnstile token using the verifier bound to the given
+ * document, creating it on first use.
+ *
+ * @param {Object} options
+ * @param {Document} options.doc
+ * @param {string} options.sitekey
+ * @returns {Promise<string>}
+ */
+export function getTurnstileToken({doc, sitekey}) {
+    let entry = verifiers.get(doc);
+    if (!entry || entry.sitekey !== sitekey) {
+        entry = {sitekey, verifier: createTurnstile({doc, sitekey})};
+        verifiers.set(doc, entry);
+    }
+    return entry.verifier.getToken();
+}

@@ -664,3 +664,84 @@ describe('OTC Integration Flow', () => {
         });
     });
 });
+
+describe('Signin with turnstile enabled', () => {
+    beforeEach(() => {
+        // Mock window.location
+        Object.defineProperty(window, 'location', {
+            value: new URL('https://portal.localhost/#/portal/signin'),
+            writable: true
+        });
+    });
+
+    afterEach(() => {
+        window.location = realLocation;
+    });
+
+    const turnstileSite = base => ({
+        ...base,
+        labs: {...(base.labs || {}), turnstile: true},
+        turnstile_sitekey: '1x00000000000000000000BB'
+    });
+
+    // Installs a fake Turnstile API on the popup iframe's window (the overlay
+    // helper is document-bound, so the mock must live on that window)
+    function mockTurnstile(popupFrame, token = 'mocked-turnstile-token') {
+        const win = popupFrame.contentDocument.defaultView;
+        const state = {};
+        win.turnstile = {
+            render: vi.fn((container, options) => {
+                state.options = options;
+                return 'widget-1';
+            }),
+            execute: vi.fn(() => {
+                setTimeout(() => state.options.callback(token), 0);
+            }),
+            reset: vi.fn(),
+            remove: vi.fn()
+        };
+        return {win, state};
+    }
+
+    test('sends turnstileToken on a single tier site', async () => {
+        const {ghostApi, popupFrame, emailInput, submitButton, popupIframeDocument} = await setup({
+            site: turnstileSite(FixtureSite.singleTier.basic)
+        });
+        mockTurnstile(popupFrame);
+
+        fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+        fireEvent.click(submitButton);
+
+        const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+        expect(magicLink).toBeInTheDocument();
+
+        expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+            email: 'jamie@example.com',
+            emailType: 'signin',
+            integrityToken: 'testtoken',
+            turnstileToken: 'mocked-turnstile-token',
+            includeOTC: true
+        });
+    });
+
+    test('sends turnstileToken on a multi tier site', async () => {
+        const {ghostApi, popupFrame, emailInput, submitButton, popupIframeDocument} = await multiTierSetup({
+            site: turnstileSite(FixtureSite.multipleTiers.basic)
+        });
+        mockTurnstile(popupFrame);
+
+        fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+        fireEvent.click(submitButton);
+
+        const magicLink = await within(popupIframeDocument).findByText(/Now check your email/i);
+        expect(magicLink).toBeInTheDocument();
+
+        expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+            email: 'jamie@example.com',
+            emailType: 'signin',
+            integrityToken: 'testtoken',
+            turnstileToken: 'mocked-turnstile-token',
+            includeOTC: true
+        });
+    });
+});

@@ -322,7 +322,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
          *     otc_ref?: string;
          * }}
          */
-        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, phonenumber, customUrlHistory, token, giftToken, autoRedirect = true, includeOTC}) {
+        async sendMagicLink({email, emailType, labels, name, oldEmail, newsletters, redirect, integrityToken, turnstileToken, phonenumber, customUrlHistory, token, giftToken, autoRedirect = true, includeOTC}) {
             const url = endpointFor({type: 'members', resource: 'send-magic-link'});
             const body = {
                 name,
@@ -334,6 +334,7 @@ function setupGhostApi({siteUrl = window.location.origin, apiUrl, apiKey}) {
                 requestSrc: 'portal',
                 redirect,
                 integrityToken,
+                turnstileToken,
                 // we don't actually use a phone #, this is from a hidden field to prevent bot activity
                 honeypot: phonenumber,
                 token,

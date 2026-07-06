@@ -1,10 +1,23 @@
 import setupGhostApi from './utils/api';
 import {chooseBestErrorMessage} from './utils/errors';
 import {getGiftRedemptionErrorMessage, getGiftRedemptionSuccessMessage} from './utils/gift-redemption-notification';
-import {createNotification, createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain} from './utils/helpers';
+import {createNotification, createPopupNotification, getMemberEmail, getMemberName, getProductCadenceFromPrice, removePortalLinkFromUrl, getRefDomain, hasTurnstileEnabled, getTurnstileSitekey} from './utils/helpers';
+import {getTurnstileToken} from './utils/turnstile';
 import {t} from './utils/i18n';
 
 const CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION = 'CANNOT_CHECKOUT_WITH_EXISTING_SUBSCRIPTION';
+
+// Runs Turnstile verification inside the popup iframe's document, so the
+// challenge overlay (shown only if Cloudflare requires interaction) appears
+// over the popup content. Resolves to undefined when Turnstile is inactive.
+async function getPopupTurnstileToken({state}) {
+    if (!hasTurnstileEnabled({site: state.site})) {
+        return undefined;
+    }
+    const popupFrame = document.querySelector('iframe[data-testid="portal-popup-frame"]');
+    const doc = popupFrame?.contentDocument || document;
+    return getTurnstileToken({doc, sitekey: getTurnstileSitekey({site: state.site})});
+}
 
 function switchPage({data, state}) {
     return {
@@ -109,11 +122,13 @@ async function signout({api, state}) {
 
 async function signin({data, api, state}) {
     try {
+        const turnstileToken = await getPopupTurnstileToken({state});
         const integrityToken = await api.member.getIntegrityToken();
         const payload = {
             ...data,
             emailType: 'signin',
             integrityToken,
+            turnstileToken,
             includeOTC: true
         };
         const {otc_ref: otcRef, inboxLinks} = await api.member.sendMagicLink(payload);
@@ -191,8 +206,9 @@ async function signup({data, state, api}) {
 
         let inboxLinks;
         if (plan.toLowerCase() === 'free') {
+            const turnstileToken = await getPopupTurnstileToken({state});
             const integrityToken = await api.member.getIntegrityToken();
-            ({inboxLinks} = await api.member.sendMagicLink({emailType: 'signup', integrityToken, ...data, name}));
+            ({inboxLinks} = await api.member.sendMagicLink({emailType: 'signup', integrityToken, turnstileToken, ...data, name}));
         } else {
             // An existing (logged-in) member starting a paid checkout is upgrading, not signing up,
             // so flag it as an upgrade to suppress the signup email.

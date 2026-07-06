@@ -255,7 +255,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 ### Phase 3 — Portal + embedded forms
 - [x] Spike: confirm Turnstile widget renders inside Portal's srcDoc iframe with a real test sitekey; record result here
 - [x] `utils/turnstile.js` overlay helper (+ helpers.js `hasTurnstileEnabled`/`getTurnstileSitekey`)
-- [ ] Portal signup + signin flows send `turnstileToken`; overlay-on-interaction inside popup; vitest coverage
+- [x] Portal signup + signin flows send `turnstileToken`; overlay-on-interaction inside popup; vitest coverage
 - [ ] `data-attributes.js` flow with main-page overlay; vitest coverage
 - [ ] i18n: new portal strings + `pnpm --filter @tryghost/i18n translate`
 
@@ -343,3 +343,14 @@ anything that diverged from the plan and why._
   public settings response, which carries both — confirmed in api.js `init`). 8 + 6 new vitest
   tests; portal suite for both files 136/136; lint clean. Error strings are plain English for
   now — they surface through Portal notifications in the next item, where i18n gets applied.
+- **2026-07-06** — Portal signup/signin wired. `getPopupTurnstileToken` in actions.js finds the
+  popup iframe via `iframe[data-testid="portal-popup-frame"]` and runs the document-bound verifier
+  in it — no captchaRef-style state threading, and `PopupModal` needed no changes (the overlay is
+  created in the popup document at getToken time; the popup iframe is full-viewport so the fixed
+  overlay covers the popup). `utils/turnstile.js` gained `getTurnstileToken({doc, sitekey})` with a
+  per-document WeakMap cache (popup close/reopen gets a fresh verifier). Token fetched before the
+  integrity token (hCaptcha's order); failures fall into the existing signin:failed/signup:failed
+  notifications. `sendMagicLink` carries `turnstileToken`; undefined when inactive (JSON.stringify
+  drops it — verified existing exact-args test assertions still pass because vitest equality
+  ignores undefined keys). 6 new flow tests incl. overlay-visibility-in-popup and flag-off
+  regression; full Portal suite 602 passed / 1 pre-existing skip; lint clean.
