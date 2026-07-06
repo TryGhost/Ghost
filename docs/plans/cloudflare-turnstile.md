@@ -382,3 +382,14 @@ anything that diverged from the plan and why._
   acceptance tests (hidden-when-flag-off, save both keys + warning visible, both-or-neither
   validation blocks save, clear-both) — all 8 in the file pass (needed a one-off
   `playwright install chromium` locally); unit suite 177/177; lint clean.
+- **2026-07-06** — Full test sweep run; item left UNCHECKED pending a human call. Results:
+  Portal 603 passed / 1 pre-existing skip; admin-x-settings unit 177/177 + spam-filters
+  acceptance 8/8; affected e2e-api suites re-run green (send-magic-link 50, members site 3,
+  content settings 3, admin settings 30, admin config 3); lint clean in ghost/core, portal,
+  admin-x-settings; `i18n translate` produces no diff. ghost/core unit: 7155/7158 — the only
+  failures are 2–3 tests in `test/unit/server/services/automations/automations-repository.test.ts`
+  ("only inserts action revisions when action data changes", "enqueues the latest revision of the
+  next action"), a **pre-existing timezone bug unrelated to this branch**: the file passes under
+  `TZ=UTC` and fails under Europe/London (BST) with a UNIQUE constraint collision on generated
+  `created_at` values one hour apart. No branch commit touches automations. Flagged as a separate
+  task. If that's accepted as unrelated, the sweep is otherwise fully green.
