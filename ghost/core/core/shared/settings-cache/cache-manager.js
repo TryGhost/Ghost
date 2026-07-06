@@ -61,6 +61,8 @@ const _ = require('lodash');
  * @property {string|null} support_email_address - Support email address
  * @property {string|null} editor_default_email_recipients - Default email recipients for editor
  * @property {string|null} labs - JSON string of enabled labs features
+ * @property {string|null} turnstile_sitekey - Cloudflare Turnstile sitekey
+ * @property {string|null} turnstile_secret_key - Cloudflare Turnstile secret key
  * @property {boolean|null} social_web_enabled - Whether social web is enabled
  * @property {boolean|null} web_analytics_enabled - Whether web analytics is enabled
  * @property {boolean|null} web_analytics_configured - Whether web analytics is configured

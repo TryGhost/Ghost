@@ -62,6 +62,12 @@ Read end to end. Points the plan above missed (now folded into the relevant chec
 - **Portal test fixtures** — `apps/portal/src/utils/fixtures-generator.js` `getSiteData()` took
   `captchaEnabled`/`captchaSitekey` params; add turnstile equivalents for Portal tests (Phase 3).
   The old Portal tests set `captcha_enabled`/`captcha_sitekey` directly on the site fixture.
+- **Test default-settings fixture** (discovered while implementing, not in the cleanup diff) —
+  the testing configs point `paths.defaultSettings` at `test/utils/fixtures/default-settings.json`,
+  a pinned copy of the real file. New settings MUST be added there too or they simply don't exist
+  in e2e/integration test databases. Also: the Admin settings e2e test has a
+  `CURRENT_SETTINGS_COUNT` constant and positional `public_hash`/`labs` matchers that shift when
+  settings are added.
 - **Prior-art wiring differs from our plan in two settled ways** (no action, just context):
   1. `CaptchaService` was constructed **once at boot** in `services/members/api.js` from labs +
      `config.get('captcha:*')` (config-driven, not settings-driven) — it did **not** support
@@ -226,7 +232,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 ### Phase 0 — scaffolding
 - [x] Read `git show 1091014ae7` end to end; note any integration points this plan missed and update this doc
 - [x] Labs flag `turnstile` (use `add-private-feature-flag` skill)
-- [ ] Settings `turnstile_sitekey` + `turnstile_secret_key`: default-settings.json, migration (use `create-database-migration` skill), `EDITABLE_SETTINGS`, public exposure of sitekey only; integrity/exporter test snapshots updated
+- [x] Settings `turnstile_sitekey` + `turnstile_secret_key`: default-settings.json, migration (use `create-database-migration` skill), `EDITABLE_SETTINGS`, public exposure of sitekey only; integrity/exporter test snapshots updated
 
 ### Phase 1 — backend verification
 - [ ] `TurnstileService` + unit tests
@@ -268,3 +274,18 @@ anything that diverged from the plan and why._
 - **2026-07-06** — Labs flag `turnstile` added via the add-private-feature-flag skill:
   `PRIVATE_FEATURES` in labs.js, toggle in private-features.tsx, config.test.js snapshot updated
   (verified diff only adds the one flag). Labs unit tests + config e2e pass; lint clean.
+- **2026-07-06** — Settings `turnstile_sitekey` + `turnstile_secret_key` landed: two `addSetting()`
+  migrations in 6.50 (verified up/idempotent-rerun/down directly against sqlite; `knex-migrator
+  migrate --v 6.50 --force` silently skips re-running recorded migrations, so don't rely on it for
+  verification), default-settings.json, `EDITABLE_SETTINGS`, cache-manager typedef, sitekey in
+  settings-cache `public.js` (settings-public endpoint needed no change — it merges `getPublic()`).
+  Secret auto-redacts via `isSecretSetting` (`/secret|api_key/`). Added `turnstile_secret_key` to
+  the exporter `SETTING_KEYS_BLOCKLIST`, following the precedent of every other secret setting.
+  Learned the hard way: e2e test DBs populate settings from the pinned copy at
+  `test/utils/fixtures/default-settings.json` (testing config overrides `paths.defaultSettings`) —
+  added both settings there; six older settings are missing from it (pre-existing drift, flagged as
+  a separate task, not touched on this branch). Updated: integrity hash, exporter allowedKeysLength
+  (109; only +1 because the secret is blocklisted), content settings snapshot (sitekey exposed,
+  null), admin settings snapshots + `CURRENT_SETTINGS_COUNT` 107→109 + labs matcher index 68→70.
+  New Content API e2e test asserts sitekey is exposed and the secret never is. Suites green:
+  integrity, exporter, labs unit, content settings, admin settings, members site. Lint clean.

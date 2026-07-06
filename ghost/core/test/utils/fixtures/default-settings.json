@@ -368,6 +368,14 @@
                 "isIn": [["true", "false"]]
             },
             "type": "boolean"
+        },
+        "turnstile_sitekey": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "turnstile_secret_key": {
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "portal": {
