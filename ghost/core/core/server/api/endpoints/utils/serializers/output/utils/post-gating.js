@@ -101,9 +101,10 @@ const getPaywallCardCta = (lexical) => {
                 const cta = {
                     heading: node.heading || null,
                     description: node.description || null,
-                    button_text: node.buttonText || null
+                    button_text: node.buttonText || null,
+                    offer_id: node.offerId || null
                 };
-                return (cta.heading || cta.description || cta.button_text) ? cta : null;
+                return (cta.heading || cta.description || cta.button_text || cta.offer_id) ? cta : null;
             }
             if (Array.isArray(node?.children)) {
                 stack.push(...node.children);

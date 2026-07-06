@@ -24,17 +24,29 @@ const PAYWALL_HEADING_SETTINGS = {
 
 function getPaywallCustomisation(post) {
     const headingKey = PAYWALL_HEADING_SETTINGS[post.visibility];
-    const offerCode = settingsCache.get('paywall_offer_code');
 
     // Per-post copy set on the paywall card wins over the site-wide settings,
     // which win over the built-in defaults in the template
     const cardCta = post.paywall_cta || {};
 
+    // Offers are payment CTAs: they apply to paid/tier walls only — a
+    // registration (members) wall must never send visitors into a checkout.
+    // Per-post offer from the card wins over the site-wide offer.
+    let offerUrl = null;
+    if (post.visibility === 'paid' || post.visibility === 'tiers') {
+        const settingsOfferCode = settingsCache.get('paywall_offer_code');
+        if (cardCta.offer_url) {
+            offerUrl = urlUtils.createUrl(cardCta.offer_url, true);
+        } else if (settingsOfferCode) {
+            offerUrl = urlUtils.createUrl(`/${settingsOfferCode}`, true);
+        }
+    }
+
     return {
         heading: cardCta.heading || (headingKey ? settingsCache.get(headingKey) : null),
         description: cardCta.description || settingsCache.get('paywall_description'),
         buttonText: cardCta.button_text || settingsCache.get('paywall_button_text'),
-        offerUrl: offerCode ? urlUtils.createUrl(`/${offerCode}`, true) : null
+        offerUrl
     };
 }
 

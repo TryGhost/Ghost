@@ -439,7 +439,10 @@ export default class KoenigLexicalEditor extends Component {
             membersHeading: this.settings.paywallHeadingMembers || 'This post is for subscribers only',
             paidHeading: this.settings.paywallHeadingPaid || 'This post is for paying subscribers only',
             description: this.settings.paywallDescription || '',
-            buttonText: this.settings.paywallButtonText || 'Subscribe now'
+            buttonText: this.settings.paywallButtonText || 'Subscribe now',
+            // whether the publisher has set any site-wide copy (vs built-in
+            // defaults) — the card warns when a post's message replaces it
+            isCustomised: Boolean(this.settings.paywallHeadingMembers || this.settings.paywallHeadingPaid || this.settings.paywallDescription || this.settings.paywallButtonText)
         };
 
         const defaultCardConfig = {

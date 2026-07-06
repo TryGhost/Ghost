@@ -91,6 +91,21 @@ module.exports = async (model, frame, options = {}) => {
         // lexical is a source format that toJSON strips for the Content API,
         // so hand it to gating directly for paywall card CTA extraction
         gating.forPost(jsonModel, frame, {lexical: (typeof model.get === 'function' && model.get('lexical')) || jsonModel.lexical});
+
+        // An offer attached to the paywall card is stored by id; resolve it to
+        // its current redemption URL so the frontend button stays correct even
+        // if the offer's code is renamed
+        if (jsonModel.paywall_cta?.offer_id) {
+            try {
+                const models = require('../../../../../../models');
+                const offer = await models.Offer.findOne({id: jsonModel.paywall_cta.offer_id});
+                jsonModel.paywall_cta.offer_url = offer?.get('code') ? `/${offer.get('code')}` : null;
+            } catch (err) {
+                jsonModel.paywall_cta.offer_url = null;
+            }
+            delete jsonModel.paywall_cta.offer_id;
+        }
+
         previewRendering.forPost(jsonModel, frame);
 
         if (jsonModel.access) {

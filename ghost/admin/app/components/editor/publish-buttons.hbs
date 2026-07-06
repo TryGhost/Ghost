@@ -43,6 +43,17 @@
             <GhTooltip @shortcut={{array "⌘" "&#8679;" "P"}}  />
         </button>
     {{else}}
+        <button
+            type="button"
+            class="gh-btn gh-btn-editor gh-editor-preview-trigger gh-tooltip-trigger tooltip-bottom no-text"
+            {{on "click" @publishManagement.openPreview}}
+            {{on-key "cmd+p" @publishManagement.togglePreview}}
+            data-test-button="publish-preview"
+        >
+            <span>Preview</span>
+            <GhTooltip @shortcut={{array "⌘" "P"}}  />
+        </button>
+
         <GhTaskButton
             @task={{@publishManagement.saveTask}}
             @buttonText="Update"
