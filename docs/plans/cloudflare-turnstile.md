@@ -257,7 +257,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 - [x] `utils/turnstile.js` overlay helper (+ helpers.js `hasTurnstileEnabled`/`getTurnstileSitekey`)
 - [x] Portal signup + signin flows send `turnstileToken`; overlay-on-interaction inside popup; vitest coverage
 - [x] `data-attributes.js` flow with main-page overlay; vitest coverage
-- [ ] i18n: new portal strings + `pnpm --filter @tryghost/i18n translate`
+- [x] i18n: new portal strings + `pnpm --filter @tryghost/i18n translate`
 
 ### Phase 4 — Admin UI
 - [ ] Turnstile fields + third-party-forms warning in Spam filters group (behind flag); admin-x-settings tests
@@ -363,3 +363,12 @@ anything that diverged from the plan and why._
   carries turnstileToken and the overlay exists-but-hidden in the main document; existing
   no-sitekey test doubles as the disabled regression. Full Portal suite 603/604 (1 pre-existing
   skip); lint clean.
+- **2026-07-06** — i18n done. Learned: Portal only displays non-generic error messages that are
+  on the `specialMessages` allowlist in `utils/errors.js` (used as translation keys at display
+  time) — so rather than wrapping strings in `t()` at the throw site, the four Turnstile failure
+  strings ('Turnstile verification failed' from the server, plus the helper's 'Security
+  verification failed/expired' and 'Failed to load security verification') were added to that
+  allowlist. `translate` propagated them to portal.json in all locales; context.json descriptions
+  filled (CI rejects empty ones). i18n tests 37/37, lint:translations clean, portal errors tests
+  7/7. 'Security verification cancelled' stays internal (only thrown by destroy()); 'Turnstile
+  token missing' is unreachable through Portal-managed forms, so neither is translated.
