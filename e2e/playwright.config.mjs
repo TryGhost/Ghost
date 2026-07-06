@@ -48,7 +48,7 @@ const config = {
         },
         {
             name: 'main',
-            testIgnore: ['**/*.setup.ts', '**/*.teardown.ts', 'analytics/**/*.test.ts'],
+            testIgnore: ['**/*.setup.ts', '**/*.teardown.ts', 'analytics/**/*.test.ts', 'smoke/**/*.test.ts'],
             testDir: './tests',
             use: {
                 viewport: {width: 1920, height: 1080}
@@ -59,6 +59,19 @@ const config = {
             name: 'analytics',
             testDir: './tests',
             testMatch: ['analytics/**/*.test.ts'],
+            use: {
+                viewport: {width: 1920, height: 1080}
+            },
+            dependencies: ['global-setup']
+        },
+        // Runtime acceptance gate: boots the real admin bundle for each major view
+        // and fails on non-allowlisted console.error / pageerror (see
+        // tests/admin/smoke/). Runs in the analytics CI lane so Tinybird is present
+        // for the stats/analytics views; non-analytics views run there too.
+        {
+            name: 'smoke',
+            testDir: './tests',
+            testMatch: ['smoke/**/*.test.ts'],
             use: {
                 viewport: {width: 1920, height: 1080}
             },

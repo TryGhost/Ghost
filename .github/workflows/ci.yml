@@ -1395,13 +1395,15 @@ jobs:
             analytics: 'false'
             shardIndex: 10
             shardTotal: 10
+          # The smoke runtime-gate project (tests/admin/smoke) runs in this lane so
+          # Tinybird is available for its stats/analytics views.
           - projectName: Analytics
-            projects: analytics
+            projects: analytics,smoke
             analytics: 'true'
             shardIndex: 1
             shardTotal: 2
           - projectName: Analytics
-            projects: analytics
+            projects: analytics,smoke
             analytics: 'true'
             shardIndex: 2
             shardTotal: 2
