@@ -422,3 +422,170 @@ export const useBulkDeleteMembers = createMutation<
     searchParams: buildBulkMemberSearchParams,
     invalidateQueries: {dataType}
 });
+
+// -----------------------------------------------------------------------------
+// Single-member detail-screen operations
+// -----------------------------------------------------------------------------
+
+// Labels are matched/created by name+slug, newsletters and tiers by id. `tiers`
+// carries complimentary-subscription assignments (with optional expiry); passing
+// a shorter list removes the omitted comp tiers. `include=tiers` mirrors the
+// Ember save so the response carries the refreshed tier list.
+export interface EditMemberData {
+    id: string;
+    name?: string;
+    email?: string;
+    note?: string | null;
+    subscribed?: boolean;
+    labels?: Array<{name: string; slug?: string}>;
+    newsletters?: Array<{id: string}>;
+    tiers?: Array<{id: string; expiry_at?: string | null}>;
+}
+
+export const useEditMember = createMutation<MembersResponseType, EditMemberData>({
+    method: 'PUT',
+    path: ({id}) => `/members/${id}/`,
+    defaultSearchParams: {include: 'tiers'},
+    body: ({id, ...rest}) => ({members: [{id, ...rest}]}),
+    invalidateQueries: {dataType}
+});
+
+export const useDeleteMember = createMutation<void, {id: string; cancel?: boolean}>({
+    method: 'DELETE',
+    path: ({id}) => `/members/${id}/`,
+    searchParams: ({cancel}) => ({cancel: cancel ? 'true' : 'false'}),
+    invalidateQueries: {dataType}
+});
+
+export interface MemberSigninUrlResponseType {
+    member_id: string;
+    url: string;
+}
+
+// Read hook — consumers should gate with `enabled` so the magic link is only
+// generated when the impersonate modal opens.
+export const getMemberSigninUrl = createQueryWithId<MemberSigninUrlResponseType>({
+    dataType: 'MemberSigninUrlResponseType',
+    path: id => `/members/${id}/signin_urls/`
+});
+
+export const useMemberLogout = createMutation<void, {id: string}>({
+    method: 'DELETE',
+    path: ({id}) => `/members/${id}/sessions/`,
+    invalidateQueries: {dataType}
+});
+
+// cancel_at_period_end true=cancel / false=continue; status:'canceled' is used by
+// the complimentary flow to end an active paid subscription before comping.
+export interface EditMemberSubscriptionData {
+    memberId: string;
+    subscriptionId: string;
+    cancelAtPeriodEnd?: boolean;
+    status?: 'canceled';
+}
+
+export const useEditMemberSubscription = createMutation<MembersResponseType, EditMemberSubscriptionData>({
+    method: 'PUT',
+    path: ({memberId, subscriptionId}) => `/members/${memberId}/subscriptions/${subscriptionId}/`,
+    body: ({cancelAtPeriodEnd, status}) => ({
+        ...(cancelAtPeriodEnd !== undefined ? {cancel_at_period_end: cancelAtPeriodEnd} : {}),
+        ...(status ? {status} : {})
+    }),
+    invalidateQueries: {dataType}
+});
+
+export const useRemoveMemberEmailSuppression = createMutation<void, {id: string}>({
+    method: 'DELETE',
+    path: ({id}) => `/members/${id}/suppression/`,
+    invalidateQueries: {dataType}
+});
+
+// -----------------------------------------------------------------------------
+// Per-member activity feed (GET /members/events)
+// -----------------------------------------------------------------------------
+
+export interface MemberActivityEventMember {
+    id: string;
+    uuid: string;
+    name: string | null;
+    email: string;
+    avatar_image: string | null;
+}
+
+// The feed returns heterogeneous event types (signup, subscription, email,
+// click, comment, feedback, …); `data` is narrowed per-type at the render layer.
+// `data.created_at` is the pagination cursor field and is present on every event.
+export interface MemberActivityEvent {
+    type: string;
+    data: {
+        created_at?: string;
+        member?: MemberActivityEventMember | null;
+        [key: string]: unknown;
+    };
+}
+
+export interface MemberActivityFeedResponseType {
+    events: MemberActivityEvent[];
+    meta?: Meta;
+}
+
+export interface MemberActivityFeedInfiniteResponseType extends MemberActivityFeedResponseType {
+    isEnd: boolean;
+}
+
+const MEMBER_ACTIVITY_LIMIT = '20';
+
+// The events endpoint paginates by cursor rather than page number: each request
+// asks for events older than a UTC `YYYY-MM-DD HH:mm:ss` timestamp taken from the
+// last event of the previous page (events are ordered created_at desc).
+function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
+    const createdAt = events[events.length - 1]?.data?.created_at;
+    if (!createdAt) {
+        return undefined;
+    }
+    return new Date(createdAt).toISOString().slice(0, 19).replace('T', ' ');
+}
+
+function buildMemberEventsFilter(memberId: string): string {
+    return `data.member_id:'${memberId}'`;
+}
+
+const useMemberActivityFeedQuery = createInfiniteQuery<MemberActivityFeedInfiniteResponseType>({
+    dataType: 'MemberActivityFeedResponseType',
+    path: '/members/events/',
+    defaultSearchParams: {limit: MEMBER_ACTIVITY_LIMIT},
+    defaultNextPageParams: (lastPage, otherParams) => {
+        const limit = Number(otherParams.limit ?? MEMBER_ACTIVITY_LIMIT);
+        const cursor = memberEventsCursor(lastPage.events);
+        // Stop when the last page wasn't full or we can't advance the cursor.
+        if (!cursor || lastPage.events.length < limit) {
+            return undefined;
+        }
+        // otherParams.filter is the base member filter (no cursor) — rebuild with it.
+        return {
+            ...otherParams,
+            filter: `data.created_at:<'${cursor}'+${otherParams.filter ?? ''}`
+        };
+    },
+    returnData: (originalData) => {
+        const {pages} = originalData as InfiniteData<MemberActivityFeedResponseType>;
+        const events = pages.flatMap(page => page.events);
+        const lastPage = pages[pages.length - 1];
+        return {
+            events,
+            meta: lastPage?.meta,
+            isEnd: (lastPage?.events.length ?? 0) < Number(MEMBER_ACTIVITY_LIMIT)
+        };
+    }
+});
+
+export function useMemberActivityFeed(memberId: string, options: {enabled?: boolean; limit?: string} = {}) {
+    const {limit = MEMBER_ACTIVITY_LIMIT, enabled} = options;
+    return useMemberActivityFeedQuery({
+        searchParams: {
+            filter: buildMemberEventsFilter(memberId),
+            limit
+        },
+        ...(enabled !== undefined ? {enabled} : {})
+    });
+}
