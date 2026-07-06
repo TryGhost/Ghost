@@ -1,4 +1,5 @@
 const assert = require('node:assert/strict');
+const sinon = require('sinon');
 const {assertExists} = require('../../../../utils/assertions');
 
 const path = require('path');
@@ -30,6 +31,10 @@ describe('Minifier', function () {
 
     afterAll(async function () {
         await fs.rm(testDir, {recursive: true, force: true});
+    });
+
+    afterEach(function () {
+        sinon.restore();
     });
 
     describe('getMatchingFiles expands globs correctly', function () {
@@ -94,6 +99,60 @@ describe('Minifier', function () {
 
             assert(Array.isArray(result));
             assert.equal(result.length, 2);
+        });
+
+        it('writes the destination file with the minified content', async function () {
+            const result = await minifier.minify({
+                'content-check.min.css': 'css/*.css'
+            });
+
+            assert.deepEqual(result, ['content-check.min.css']);
+
+            const content = await fs.readFile(minifier.getFullDest('content-check.min.css'), 'utf8');
+            assert(content.length > 0, 'destination file should not be empty');
+            assert.match(content, /\.kg-/, 'destination file should contain the minified css');
+        });
+
+        it('keeps the previous destination content and cleans up the temp file when the write fails', async function () {
+            // First build succeeds
+            await minifier.minify({
+                'stable.min.css': 'css/*.css'
+            });
+            const before = await fs.readFile(minifier.getFullDest('stable.min.css'), 'utf8');
+
+            // Second build fails at the rename step (after the temp file is written)
+            const renameError = new Error('rename failed');
+            sinon.stub(fs, 'rename').rejects(renameError);
+
+            await assert.rejects(() => minifier.minify({
+                'stable.min.css': 'css/*.css'
+            }), renameError);
+
+            sinon.restore();
+
+            // Destination keeps its previous, complete content
+            const after = await fs.readFile(minifier.getFullDest('stable.min.css'), 'utf8');
+            assert.equal(after, before);
+
+            // No temp files left behind
+            const entries = await fs.readdir(testDir);
+            assert.deepEqual(entries.filter(name => name.endsWith('.tmp')), []);
+        });
+
+        it('rethrows the original error when the temp file write fails', async function () {
+            const writeError = new Error('disk full');
+            sinon.stub(fs, 'writeFile').rejects(writeError);
+
+            await assert.rejects(() => minifier.minify({
+                'unwritable.min.css': 'css/*.css'
+            }), writeError);
+
+            sinon.restore();
+
+            // No temp files left behind and no destination created
+            const entries = await fs.readdir(testDir);
+            assert.deepEqual(entries.filter(name => name.endsWith('.tmp')), []);
+            assert(!entries.includes('unwritable.min.css'));
         });
 
         it('can replace the content', async function () {

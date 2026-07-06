@@ -2,6 +2,7 @@ const crypto = require('crypto');
 const fs = require('fs-extra');
 const path = require('path');
 const errors = require('@tryghost/errors');
+const logging = require('@tryghost/logging');
 const config = require('../../../shared/config');
 const urlUtils = require('../../../shared/url-utils');
 const tpl = require('@tryghost/tpl');
@@ -65,16 +66,42 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
             });
         }
 
+        // Read the file from disk. If a built (runtime-generated) file has
+        // gone missing, ask the owning service to rebuild it once and retry
+        // the read — all rebuild policy (single-flight, backoff) lives on the
+        // service, not here.
+        async function readFileWithRebuild() {
+            try {
+                return await fs.readFile(filePath);
+            } catch (err) {
+                if (err.code !== 'ENOENT' || !options.rebuild || location !== 'built') {
+                    throw err;
+                }
+
+                try {
+                    await options.rebuild();
+                } catch (rebuildError) {
+                    logging.error(rebuildError);
+                }
+
+                return await fs.readFile(filePath);
+            }
+        }
+
         // modify text files before caching+serving to ensure URL placeholders are transformed
-        fs.readFile(filePath, (err, buf) => {
-            if (err) {
+        (async function readAndServe() {
+            let buf;
+
+            try {
+                buf = await readFileWithRebuild();
+            } catch (err) {
                 // Downgrade to a simple 404 if the file didn't exist
                 if (err.code === 'ENOENT') {
-                    err = new errors.NotFoundError({
+                    return next(new errors.NotFoundError({
                         message: tpl(messages.fileNotFound),
                         code: 'PUBLIC_FILE_NOT_FOUND',
                         property: err.path
-                    });
+                    }));
                 }
                 return next(err);
             }
@@ -85,7 +112,7 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
                 str = str.replace(blogRegex, urlUtils.urlFor('home', true).replace(/\/$/, ''));
             }
 
-            cache = {
+            const servedFile = {
                 headers: {
                     'Content-Type': mime,
                     'Content-Length': Buffer.from(str).length,
@@ -96,9 +123,18 @@ function createPublicFileMiddleware(location, file, mime, maxAge, options = {}) 
                 key: req.query && req.query.v ? req.query.v : null
             };
 
-            res.writeHead(200, cache.headers);
-            res.end(cache.body);
-        });
+            // Built files are generated (and re-generated) at runtime, so they
+            // must not be pinned in this permanent in-memory cache — a torn or
+            // stale read would otherwise be served until restart. They are
+            // re-read from disk per request (page-cache-warm, small files);
+            // ETag/Cache-Control still enable client/CDN caching.
+            if (location !== 'built') {
+                cache = servedFile;
+            }
+
+            res.writeHead(200, servedFile.headers);
+            res.end(servedFile.body);
+        })().catch(next);
     };
 }
 
@@ -128,8 +164,12 @@ function servePublicFiles(siteApp) {
     siteApp.get('/public/ghost-stats.min.js', createPublicFileMiddleware('static', 'public/ghost-stats.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
 
     // Card assets (built on the fly)
-    siteApp.get('/public/cards.min.css', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge')));
-    siteApp.get('/public/cards.min.js', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));
+    // Only rebuild when the build is expected to produce the file — a theme
+    // whose card config legitimately yields no output must 404 fast instead
+    // of triggering a rebuild per request.
+    const rebuildCardAssets = type => () => (cardAssets.hasFile(type) ? cardAssets.ensureLoaded() : Promise.resolve());
+    siteApp.get('/public/cards.min.css', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.css', 'text/css', config.get('caching:publicAssets:maxAge'), {rebuild: rebuildCardAssets('css')}));
+    siteApp.get('/public/cards.min.js', cardAssets.serveMiddleware(), createPublicFileMiddleware('built', 'public/cards.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge'), {rebuild: rebuildCardAssets('js')}));
 
     // Comment counts
     siteApp.get('/public/comment-counts.min.js', createPublicFileMiddleware('static', 'public/comment-counts.min.js', 'application/javascript', config.get('caching:publicAssets:maxAge')));

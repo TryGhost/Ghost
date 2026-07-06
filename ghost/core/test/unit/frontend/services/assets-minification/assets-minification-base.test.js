@@ -3,7 +3,10 @@ const sinon = require('sinon');
 const path = require('path');
 const fs = require('fs').promises;
 const os = require('os');
+const logging = require('@tryghost/logging');
 const AssetsMinificationBase = require('../../../../../core/frontend/services/assets-minification/assets-minification-base');
+
+const BUILD_MIN_INTERVAL_MS = 10000;
 
 describe('AssetsMinificationBase', function () {
     let testDir;
@@ -18,6 +21,184 @@ describe('AssetsMinificationBase', function () {
 
     afterEach(function () {
         sinon.restore();
+    });
+
+    describe('ensureLoaded', function () {
+        it('joins an in-flight build: concurrent callers share one load()', async function () {
+            let loadCallCount = 0;
+
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    loadCallCount += 1;
+                    await new Promise((resolve) => {
+                        setTimeout(resolve, 50);
+                    });
+                    this.ready = true;
+                }
+            }
+
+            const assets = new TestAssets();
+
+            await Promise.all([
+                assets.ensureLoaded(),
+                assets.ensureLoaded(),
+                assets.ensureLoaded()
+            ]);
+
+            assert.equal(loadCallCount, 1, 'load() should be called exactly once');
+        });
+
+        it('does not rebuild within the backoff window after a failed build and rejects with the stored error', async function () {
+            const clock = sinon.useFakeTimers({now: 1000000, toFake: ['Date']});
+            let loadCallCount = 0;
+            const buildError = new Error('build failed');
+
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    loadCallCount += 1;
+                    throw buildError;
+                }
+            }
+
+            const assets = new TestAssets();
+
+            await assert.rejects(() => assets.ensureLoaded(), buildError);
+            assert.equal(loadCallCount, 1);
+
+            // Within the backoff window: no build, rejects with the stored error
+            clock.tick(BUILD_MIN_INTERVAL_MS - 1);
+            await assert.rejects(() => assets.ensureLoaded(), buildError);
+            assert.equal(loadCallCount, 1, 'load() should not be called within the backoff window');
+
+            // After the window has elapsed a new build runs
+            clock.tick(2);
+            await assert.rejects(() => assets.ensureLoaded(), buildError);
+            assert.equal(loadCallCount, 2, 'load() should run again once the backoff has expired');
+        });
+
+        it('does not rebuild within the backoff window after a resolved-but-not-ready build (EACCES-style)', async function () {
+            const clock = sinon.useFakeTimers({now: 1000000, toFake: ['Date']});
+            let loadCallCount = 0;
+
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    loadCallCount += 1;
+                    // resolves, but ready stays false — mirrors minify()
+                    // swallowing EACCES
+                }
+            }
+
+            const assets = new TestAssets();
+
+            await assets.ensureLoaded();
+            assert.equal(loadCallCount, 1);
+            assert.equal(assets.ready, false);
+
+            clock.tick(BUILD_MIN_INTERVAL_MS - 1);
+            await assets.ensureLoaded();
+            assert.equal(loadCallCount, 1, 'load() should not be called within the backoff window');
+
+            clock.tick(2);
+            await assets.ensureLoaded();
+            assert.equal(loadCallCount, 2);
+        });
+
+        it('invalidate() resets the backoff so the next ensureLoaded() builds immediately', async function () {
+            sinon.useFakeTimers({now: 1000000, toFake: ['Date']});
+            let loadCallCount = 0;
+
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    loadCallCount += 1;
+                    if (loadCallCount === 1) {
+                        throw new Error('build failed');
+                    }
+                    this.ready = true;
+                }
+            }
+
+            const assets = new TestAssets();
+
+            await assert.rejects(() => assets.ensureLoaded());
+            assert.equal(loadCallCount, 1);
+
+            assets.invalidate();
+
+            await assets.ensureLoaded();
+            assert.equal(loadCallCount, 2, 'load() should run immediately after invalidate()');
+            assert.equal(assets.ready, true);
+        });
+
+        it('re-runs load() when invalidate() happens during an in-flight build, without concurrent loads', async function () {
+            let loadCallCount = 0;
+            let concurrentLoads = 0;
+            let maxConcurrentLoads = 0;
+            let resolveFirstLoad;
+
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    loadCallCount += 1;
+                    concurrentLoads += 1;
+                    maxConcurrentLoads = Math.max(maxConcurrentLoads, concurrentLoads);
+                    try {
+                        if (loadCallCount === 1) {
+                            await new Promise((resolve) => {
+                                resolveFirstLoad = resolve;
+                            });
+                        }
+                        this.ready = true;
+                    } finally {
+                        concurrentLoads -= 1;
+                    }
+                }
+            }
+
+            const assets = new TestAssets();
+
+            // First build starts and hangs
+            const firstBuild = assets.ensureLoaded();
+
+            // Theme switch mid-build: generation bumps, loading is kept
+            assets.invalidate();
+
+            // A caller arriving now joins the same in-flight build
+            const secondCaller = assets.ensureLoaded();
+            assert.equal(secondCaller, firstBuild, 'concurrent caller should join the in-flight build');
+
+            resolveFirstLoad();
+            await firstBuild;
+            await secondCaller;
+
+            assert.equal(loadCallCount, 2, 'load() should re-run after the mid-flight invalidation');
+            assert.equal(maxConcurrentLoads, 1, 'two loads should never run concurrently');
+            assert.equal(assets.ready, true);
+        });
+
+        it('clears loading after the build settles', async function () {
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    this.ready = true;
+                }
+            }
+
+            const assets = new TestAssets();
+            await assets.ensureLoaded();
+
+            assert.equal(assets.loading, null);
+        });
+
+        it('clears loading even when the build fails', async function () {
+            class TestAssets extends AssetsMinificationBase {
+                async load() {
+                    throw new Error('load failed');
+                }
+            }
+
+            const assets = new TestAssets();
+            await assert.rejects(() => assets.ensureLoaded());
+
+            assert.equal(assets.loading, null);
+        });
     });
 
     describe('serveMiddleware', function () {
@@ -139,19 +320,13 @@ describe('AssetsMinificationBase', function () {
             assert.equal(loadCallCount, 2);
         });
 
-        it('does not clobber a new loading promise when invalidate() is called mid-flight', async function () {
-            let loadCallCount = 0;
-            let resolveFirstLoad;
+        it('continues the request and logs when load() rejects', async function () {
+            const loggingStub = sinon.stub(logging, 'error');
+            const buildError = new Error('load failed');
 
             class TestAssets extends AssetsMinificationBase {
                 async load() {
-                    loadCallCount += 1;
-                    if (loadCallCount === 1) {
-                        await new Promise((resolve) => {
-                            resolveFirstLoad = resolve;
-                        });
-                    }
-                    this.ready = true;
+                    throw buildError;
                 }
             }
 
@@ -159,60 +334,13 @@ describe('AssetsMinificationBase', function () {
             const middleware = assets.serveMiddleware();
             const next = sinon.stub();
 
-            // First request starts load, which hangs
-            const firstRequest = middleware({}, {}, next);
-
-            // invalidate() mid-flight: clears loading and ready
-            assets.invalidate();
-
-            // Second request starts a new load since loading was cleared
-            const secondRequest = middleware({}, {}, next);
-
-            // First load settles — its .finally() must NOT clobber the second load
-            resolveFirstLoad();
-            await firstRequest;
-            await secondRequest;
-
-            assert.equal(loadCallCount, 2, 'load() should be called twice (once per invalidation cycle)');
-            sinon.assert.calledTwice(next);
-        });
-
-        it('clears loading promise after load() completes', async function () {
-            class TestAssets extends AssetsMinificationBase {
-                async load() {
-                    this.ready = true;
-                }
-            }
-
-            const assets = new TestAssets();
-            const middleware = assets.serveMiddleware();
-            const next = sinon.stub();
-
+            // Must not reject — a rejection would hang the request under Express 4
             await middleware({}, {}, next);
 
-            assert.equal(assets.loading, null);
-        });
-
-        it('clears loading promise even when load() throws', async function () {
-            let shouldThrow = true;
-
-            class TestAssets extends AssetsMinificationBase {
-                async load() {
-                    if (shouldThrow) {
-                        shouldThrow = false;
-                        throw new Error('load failed');
-                    }
-                    this.ready = true;
-                }
-            }
-
-            const assets = new TestAssets();
-            const middleware = assets.serveMiddleware();
-            const next = sinon.stub();
-
-            await assert.rejects(() => middleware({}, {}, next));
-
-            assert.equal(assets.loading, null);
+            sinon.assert.calledOnce(next);
+            assert.equal(next.firstCall.args.length, 0, 'next() should be called without an error');
+            sinon.assert.calledOnceWithExactly(loggingStub, buildError);
+            assert.equal(assets.loading, null, 'loading should be cleared after the build settles');
         });
     });
 });

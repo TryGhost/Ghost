@@ -129,8 +129,20 @@ class Minifier {
             let writePath = this.getFullDest(dest);
             // Ensure the output folder exists
             await fs.mkdir(this.destPath, {recursive: true});
-            // Create the file
-            await fs.writeFile(writePath, contents);
+            // Write to a temporary file in the same directory, then rename it
+            // into place. A rename within a directory atomically replaces the
+            // destination, so concurrent readers see either the old or the new
+            // complete file — never a partially written one.
+            const tmpPath = `${writePath}.${process.pid}.${Math.random().toString(36).slice(2)}.tmp`;
+            try {
+                await fs.writeFile(tmpPath, contents);
+                await fs.rename(tmpPath, writePath);
+            } catch (error) {
+                // Best-effort cleanup of the temporary file — the original
+                // error is what matters to the caller
+                await fs.unlink(tmpPath).catch(() => {});
+                throw error;
+            }
             return writePath;
         }
     }
