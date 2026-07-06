@@ -500,12 +500,16 @@ export const useMemberLogout = createMutation<void, {id: string}>({
 
 // cancel_at_period_end true=cancel / false=continue; status:'canceled' is used by
 // the complimentary flow to end an active paid subscription before comping.
-export interface EditMemberSubscriptionData {
+// The two are mutually exclusive — either you're toggling the soft cancel flag OR
+// you're hard-canceling. A discriminated union prevents callers from accidentally
+// setting both at once (which the request body would silently send together).
+interface EditMemberSubscriptionBase {
     memberId: string;
     subscriptionId: string;
-    cancelAtPeriodEnd?: boolean;
-    status?: 'canceled';
 }
+export type EditMemberSubscriptionData =
+    | (EditMemberSubscriptionBase & {cancelAtPeriodEnd: boolean; status?: undefined})
+    | (EditMemberSubscriptionBase & {status: 'canceled'; cancelAtPeriodEnd?: undefined});
 
 export const useEditMemberSubscription = createMutation<MembersResponseType, EditMemberSubscriptionData>({
     method: 'PUT',

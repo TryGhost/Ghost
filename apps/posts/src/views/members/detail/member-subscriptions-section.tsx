@@ -1,9 +1,10 @@
+import MemberSubscriptionActions from './member-subscription-actions';
 import React from 'react';
 import {Badge} from '@tryghost/shade/components';
 import {classifyMemberSubscription, formatSubscriptionAmount, formatSubscriptionInterval, getSubscriptionStatusLabel, getSubscriptionValidityLabel, groupSubscriptionsByTier} from './member-subscription';
 import type {Member, MemberSubscription} from '@tryghost/admin-x-framework/api/members';
 
-const SubscriptionRow: React.FC<{sub: MemberSubscription}> = ({sub}) => {
+const SubscriptionRow: React.FC<{memberId: string; sub: MemberSubscription}> = ({memberId, sub}) => {
     const kind = classifyMemberSubscription(sub);
     const status = getSubscriptionStatusLabel(sub);
     const validity = getSubscriptionValidityLabel(sub);
@@ -26,6 +27,10 @@ const SubscriptionRow: React.FC<{sub: MemberSubscription}> = ({sub}) => {
                     <div className='mt-0.5 text-sm text-muted-foreground'>{validity}</div>
                 )}
             </div>
+            {/* Gift subs get no action menu (Ember parity); comp actions arrive in Phase 6. */}
+            {kind === 'paid' && (
+                <MemberSubscriptionActions memberId={memberId} subscription={sub} />
+            )}
         </div>
     );
 };
@@ -61,8 +66,8 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
                 <div key={group.tier.id} className='flex flex-col gap-2'>
                     {group.subscriptions.map((sub, i) => (
                         // For a member with 2+ subs on the same tier, the second key
-                        // needs a fallback since comp/gift subs have `id: null`.
-                        <SubscriptionRow key={sub.id ?? `${group.tier.id}-${i}`} sub={sub} />
+                        // needs a fallback since comp/gift subs have `id: ''`.
+                        <SubscriptionRow key={sub.id || `${group.tier.id}-${i}`} memberId={member.id} sub={sub} />
                     ))}
                     {group.subscriptions.length > 1 && (
                         <div className='text-sm text-muted-foreground'>

@@ -215,6 +215,116 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             await expect(page.getByTestId('member-detail-sidebar')).toBeVisible();
             await expect(page.getByTestId('member-subscriptions')).toHaveCount(0);
         });
+
+        test('cancel and continue toggle the subscription state via the actions menu', async ({page}) => {
+            const member = await memberFactory.create({name: 'Cancel Continue Member', email: 'cancel-continue@ghost.org'});
+            // Track the local state the mocks pretend Stripe owns so subsequent reads
+            // reflect the last cancel/continue action.
+            let cancelAtPeriodEnd = false;
+
+            const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+            await page.route(memberReadRegex, async (route) => {
+                if (route.request().method() !== 'GET') {
+                    return route.continue();
+                }
+                const response = await route.fetch();
+                const body = await response.json();
+                if (body?.members?.[0]) {
+                    body.members[0].subscriptions = [{
+                        id: 'sub_toggle_123',
+                        customer: {id: 'cus_toggle_123', name: 'Cancel Continue Member', email: member.email},
+                        plan: {id: 'plan_paid', nickname: 'Monthly', interval: 'month', currency: 'usd', amount: 500},
+                        status: 'active',
+                        start_date: '2026-01-15T12:00:00.000Z',
+                        current_period_end: '2026-02-15T12:00:00.000Z',
+                        cancel_at_period_end: cancelAtPeriodEnd,
+                        price: {id: 'price_paid', price_id: 'price_paid', nickname: 'Monthly', amount: 500, currency: 'usd', type: 'recurring', interval: 'month'},
+                        tier: {id: 'tier_bronze', name: 'Bronze', slug: 'bronze', active: true, type: 'paid'},
+                        offer: null
+                    }];
+                }
+                return route.fulfill({response, body: JSON.stringify(body)});
+            });
+
+            // Stub the PUT subscription endpoint and flip the tracked flag so the
+            // invalidated members refetch returns the new state. We also record each
+            // PUT body so the test can assert the client sent the correct payload —
+            // catching a regression where e.g. the wrong field name would be shipped
+            // but the UI still looked right thanks to some other mock behaviour.
+            const putBodies: Array<Record<string, unknown>> = [];
+            await page.route(`**/members/${member.id}/subscriptions/sub_toggle_123/**`, async (route) => {
+                if (route.request().method() !== 'PUT') {
+                    return route.continue();
+                }
+                const body = route.request().postDataJSON();
+                if (typeof body?.cancel_at_period_end === 'boolean') {
+                    putBodies.push(body);
+                    cancelAtPeriodEnd = body.cancel_at_period_end;
+                }
+                return route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({members: [{id: member.id}]})});
+            });
+
+            await page.goto(previewPath(member.id));
+
+            const status = page.getByTestId('member-subscription-status');
+            await expect(status).toHaveText('Active');
+
+            // Cancel: menu → Cancel subscription → status flips to Canceled + validity switches.
+            await page.getByTestId('subscription-actions').click();
+            await page.getByTestId('cancel-subscription').click();
+            await expect(status).toHaveText('Canceled');
+            await expect(page.getByTestId('member-subscriptions')).toContainText('Has access until 15 Feb 2026');
+
+            // Continue: menu → Continue subscription → status returns to Active.
+            await page.getByTestId('subscription-actions').click();
+            await page.getByTestId('continue-subscription').click();
+            await expect(status).toHaveText('Active');
+            await expect(page.getByTestId('member-subscriptions')).toContainText('Renews 15 Feb 2026');
+
+            // Pin the exact payload contract so a client-side rename can't silently
+            // slip through while the UI still looks right for other reasons.
+            expect(putBodies).toEqual([
+                {cancel_at_period_end: true},
+                {cancel_at_period_end: false}
+            ]);
+        });
+
+        test('gift subscription has no action menu (Ember parity)', async ({page}) => {
+            const member = await memberFactory.create({name: 'Gift Member', email: 'gift-member@ghost.org'});
+
+            const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+            await page.route(memberReadRegex, async (route) => {
+                if (route.request().method() !== 'GET') {
+                    return route.continue();
+                }
+                const response = await route.fetch();
+                const body = await response.json();
+                if (body?.members?.[0]) {
+                    body.members[0].status = 'gift';
+                    body.members[0].subscriptions = [{
+                        id: '',
+                        customer: {id: 'cus_gift', name: null, email: member.email},
+                        plan: {id: 'plan_gift', nickname: 'Gift Subscription', interval: 'year', currency: 'usd', amount: 0},
+                        status: 'active',
+                        start_date: '2026-01-15T12:00:00.000Z',
+                        current_period_end: '2027-01-15T12:00:00.000Z',
+                        cancel_at_period_end: false,
+                        price: {id: 'price_gift', price_id: 'price_gift', nickname: 'Gift Subscription', amount: 0, currency: 'usd', type: 'recurring', interval: 'year'},
+                        tier: {id: 'tier_gold', name: 'Gold', slug: 'gold', active: true, type: 'paid', expiry_at: '2027-01-15T12:00:00.000Z'},
+                        offer: null
+                    }];
+                }
+                return route.fulfill({response, body: JSON.stringify(body)});
+            });
+
+            await page.goto(previewPath(member.id));
+
+            const subscriptions = page.getByTestId('member-subscriptions');
+            await expect(subscriptions).toContainText('Gift subscription');
+            await expect(subscriptions).toContainText('Expires 15 Jan 2027');
+            // No action menu — gifts are managed via the gift flow, not the member screen.
+            await expect(page.getByTestId('subscription-actions')).toHaveCount(0);
+        });
     });
 
     test('shows a suppression banner and clears it after re-enabling email', async ({page}) => {
