@@ -43,6 +43,41 @@ its structure with Turnstile equivalents. Differences from hCaptcha:
   `before-interactive-callback` / `after-interactive-callback` to implement the
   modal-only-when-needed behaviour.
 
+### Integration points confirmed from the cleanup diff (read 2026-07-06)
+
+Read end to end. Points the plan above missed (now folded into the relevant checklist items):
+
+- **`ghost/core/core/shared/settings-cache/CacheManager.js`** — the JSDoc typedef of known
+  settings listed `captcha_enabled`; add `turnstile_sitekey` / `turnstile_secret_key` there when
+  adding the settings (Phase 0).
+- **Content API / version snapshots** — public exposure of the sitekey will change
+  `test/e2e-api/content/__snapshots__/settings.test.js.snap` and
+  `test/e2e-api/shared/__snapshots__/version.test.js.snap`, not just the integrity/exporter tests.
+  The old code also had a dedicated Content API test ("Can request captcha settings" in
+  `test/e2e-api/content/settings.test.js`) — add a Turnstile equivalent (Phase 0).
+- **Exporter key count** — `test/unit/server/data/exporter/index.test.js` pins
+  `allowedKeysLength`; two new settings means +2 (Phase 0).
+- **Labs flag snapshot** — `test/e2e-api/admin/__snapshots__/config.test.js.snap` lists all labs
+  flags; updates with the flag (Phase 0, the add-private-feature-flag skill should cover it).
+- **Portal test fixtures** — `apps/portal/src/utils/fixtures-generator.js` `getSiteData()` took
+  `captchaEnabled`/`captchaSitekey` params; add turnstile equivalents for Portal tests (Phase 3).
+  The old Portal tests set `captcha_enabled`/`captcha_sitekey` directly on the site fixture.
+- **Prior-art wiring differs from our plan in two settled ways** (no action, just context):
+  1. `CaptchaService` was constructed **once at boot** in `services/members/api.js` from labs +
+     `config.get('captcha:*')` (config-driven, not settings-driven) — it did **not** support
+     enabling without a restart. The plan's lazy per-request read of labs/settingsCache has no
+     prior-art template; implement it fresh (e.g. construct the middleware so it evaluates
+     enabled/keys inside the request handler).
+  2. The middleware was mounted inside `members-api.js` (`middleware.sendMagicLink` Router),
+     not in `web/members/app.js`. The plan deliberately mounts in `web/members/app.js` instead so
+     it can sit after `verifyIntegrityToken` and before brute (decision in Design section).
+- **Error semantics** — old middleware threw `InternalServerError` (sparse) on failed
+  verification and `BadRequestError` only for a missing token. The plan uses `BadRequestError`
+  for both, which is more accurate HTTP semantics; keep the sparse-message rule.
+- **Vestigial state** — old code threaded a `captchaRef` through Portal's `App.js` state/context,
+  `DEV_MODE_DATA`, and `SigninPage.js` component state. The overlay-helper design shouldn't need
+  any of that; don't recreate it.
+
 ## Design
 
 ### Backend (ghost/core)
@@ -189,7 +224,7 @@ Work top to bottom. Each item = at least one commit (use the `commit` skill for 
 non-user-facing until the flag GA's, so no emoji prefixes).
 
 ### Phase 0 — scaffolding
-- [ ] Read `git show 1091014ae7` end to end; note any integration points this plan missed and update this doc
+- [x] Read `git show 1091014ae7` end to end; note any integration points this plan missed and update this doc
 - [ ] Labs flag `turnstile` (use `add-private-feature-flag` skill)
 - [ ] Settings `turnstile_sitekey` + `turnstile_secret_key`: default-settings.json, migration (use `create-database-migration` skill), `EDITABLE_SETTINGS`, public exposure of sitekey only; integrity/exporter test snapshots updated
 
@@ -223,3 +258,10 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 
 _Append dated notes here as work proceeds: what landed, what was learned (esp. the iframe spike),
 anything that diverged from the plan and why._
+
+- **2026-07-06** — Read the `1091014ae7` cleanup diff end to end. Added "Integration points
+  confirmed from the cleanup diff" to Prior art: missed snapshot/test touchpoints (CacheManager
+  typedef, content settings + version snapshots, exporter key count, Portal fixtures-generator)
+  and two prior-art divergences — the old CaptchaService was config-driven and constructed once
+  at boot (no restart-free enablement; our lazy-read requirement must be built fresh), and its
+  middleware was mounted in members-api.js rather than web/members/app.js. No code changes.
