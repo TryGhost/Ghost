@@ -321,6 +321,9 @@
     "gravatar": {
         "url": "https://www.gravatar.com/avatar/{hash}?s={size}&r={rating}&d={_default}"
     },
+    "turnstile": {
+        "siteverifyUrl": "https://challenges.cloudflare.com/turnstile/v0/siteverify"
+    },
     "milestones": {
         "arr": [
             {

@@ -236,7 +236,7 @@ non-user-facing until the flag GA's, so no emoji prefixes).
 
 ### Phase 1 — backend verification
 - [x] `TurnstileService` + unit tests
-- [ ] Config default `turnstile.siteverifyUrl` in defaults.json
+- [x] Config default `turnstile.siteverifyUrl` in defaults.json
 - [ ] Mount middleware on `send-magic-link` (all email types); e2e API tests with nock (success / failure / missing token / disabled regression / signin path)
 
 ### Phase 2 — script injection
@@ -299,3 +299,6 @@ anything that diverged from the plan and why._
   via `externalRequest.post(siteverifyUrl, {form, responseType: 'json'})`; missing token → 400,
   `success: false` → sparse 400 with codes logged server-side only, network error → sparse 500.
   Note for the e2e item: vitest 4 rejects `done()`-style tests — write promise-style.
+- **2026-07-06** — Config default `turnstile.siteverifyUrl` added to defaults.json (production
+  Cloudflare endpoint). Verified the key loads via `config.get('turnstile:siteverifyUrl')`;
+  config loader unit tests + admin config e2e green.
