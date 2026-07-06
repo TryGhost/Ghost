@@ -393,3 +393,12 @@ anything that diverged from the plan and why._
   `TZ=UTC` and fails under Europe/London (BST) with a UNIQUE constraint collision on generated
   `created_at` values one hour apart. No branch commit touches automations. Flagged as a separate
   task. If that's accepted as unrelated, the sweep is otherwise fully green.
+- **2026-07-06** — Rebased onto latest main (1d33898848). Conflicts: labs.js +
+  private-features.tsx (main promoted `giftLinks` to GA — kept main's lists, re-added
+  `turnstile`) and an admin settings snapshot content-length (regenerated at the tip: 5570).
+  Two post-rebase fixes: moved the two setting migrations from versions/6.50 to versions/6.51
+  (main released 6.51; `migrate:create` confirms 6.51 is the current target — migrations left in
+  a shipped folder risk being skipped on upgraded sites), and the snapshot regen. Re-verified at
+  the tip: integrity/exporter/labs/turnstile-service/middleware/ghost-head units, all five
+  affected e2e-api suites, Portal 604/605, admin-x-settings 203 unit + 8 acceptance (Playwright
+  browser needed reinstall after main's version bump), i18n translate clean.
