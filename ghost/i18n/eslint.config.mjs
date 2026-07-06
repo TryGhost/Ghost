@@ -1,6 +1,10 @@
 import {nodeLibConfig, noGhostIgnitionRequireRule} from '../../eslint.shared.mjs';
 
-export default await nodeLibConfig({
+export default [{
+    // Generated locale registries and ESM entry glue are code-generated / hand-authored
+    // ESM shims; they're not part of the linted CJS source surface.
+    ignores: ['lib/registry/**', 'build/**']
+}, ...await nodeLibConfig({
     // ghost/i18n is JS-only (CommonJS) and uses the local-filenames variant of
     // match-regex instead of the ghost-plugin one. legacyLocalFilenames handles both.
     typescript: false,
@@ -27,4 +31,5 @@ export default await nodeLibConfig({
             rules: {'max-lines': ['error', {skipBlankLines: true, skipComments: true, max: 50}]}
         }
     ]
-});
+})];
+

@@ -5,7 +5,6 @@ export default publicAppViteConfig({
     packageRoot: import.meta.dirname,
     packageName: pkg.name,
     entry: 'src/index.tsx',
-    i18nNamespace: 'signup-form',
     sourcemap: false,
     overrides: {
         define: {
