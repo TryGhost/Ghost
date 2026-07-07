@@ -97,6 +97,36 @@ describe('container', function () {
     });
 
     describe('seed values', function () {
+        it('leaves identical seed references untouched on refresh', function () {
+            const root = createContainer();
+            const sharedInstance = {get: () => 'value', stores: {a: 1}};
+            const scope = root.createScope({configInstance: sharedInstance});
+
+            scope.refreshSeeds({configInstance: sharedInstance});
+
+            assert.equal(sharedInstance.stores.a, 1);
+            assert.equal(typeof sharedInstance.get, 'function');
+        });
+
+        it('refreshes seed contents in place so captured references see new values', function () {
+            const root = createContainer();
+            root.register('service', {
+                lifetime: 'SCOPED',
+                factory: ({siteConfig}) => ({
+                    getUrl: () => siteConfig.url
+                })
+            });
+
+            const scope = root.createScope({siteConfig: {url: 'https://before.example'}});
+            const service = scope.resolve('service') as {getUrl: () => string};
+            assert.equal(service.getUrl(), 'https://before.example');
+
+            scope.refreshSeeds({siteConfig: {url: 'https://after.example'}, newSeed: 'added'});
+
+            assert.equal(service.getUrl(), 'https://after.example');
+            assert.equal(scope.resolve('newSeed'), 'added');
+        });
+
         it('exposes seed values through the cradle, per scope', function () {
             const root = createContainer();
             root.register('service', {

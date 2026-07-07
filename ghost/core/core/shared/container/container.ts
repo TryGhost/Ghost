@@ -117,6 +117,27 @@ class Scope {
         }
     }
 
+    /**
+     * Replace seed contents while keeping object identity, so factories that
+     * captured a seed reference observe the new values (repeat boots in tests).
+     */
+    refreshSeeds(seeds: Cradle) {
+        for (const [key, value] of Object.entries(seeds)) {
+            const existing = this.seeds[key];
+            if (existing === value) {
+                continue;
+            }
+            if (existing && typeof existing === 'object' && !Array.isArray(existing) && typeof value === 'object' && !Array.isArray(value)) {
+                for (const existingKey of Object.keys(existing)) {
+                    delete existing[existingKey];
+                }
+                Object.assign(existing, value);
+            } else {
+                this.seeds[key] = value;
+            }
+        }
+    }
+
     async dispose() {
         await this.cache.dispose(this.root.registrations);
     }

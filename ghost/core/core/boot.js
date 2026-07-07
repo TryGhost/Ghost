@@ -541,17 +541,21 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         // The DI container underpins service wiring; composition roots migrate to it incrementally.
         // Repeat boots (test reboots) reuse the existing scope, matching the historic singleton lifetime.
         debug('Begin: Load DI container');
-        const {getRootContainer, setDefaultScope, hasDefaultScope} = require('./shared/container/current');
+        const {getRootContainer, setDefaultScope, hasDefaultScope, getCurrentScope} = require('./shared/container/current');
+        const {buildSiteConfig} = require('./shared/config/site-config');
+        const bootSeeds = () => ({
+            siteConfig: buildSiteConfig(config),
+            adapterPaths: ['', config.getContentPath('adapters'), config.get('paths').internalAdaptersPath],
+            adapterConfig: config
+        });
         if (!hasDefaultScope()) {
             const {registerCoreServices} = require('./registrations');
-            const {buildSiteConfig} = require('./shared/config/site-config');
             const rootContainer = getRootContainer();
             registerCoreServices(rootContainer);
-            setDefaultScope(rootContainer.createScope({
-                siteConfig: buildSiteConfig(config),
-                adapterPaths: ['', config.getContentPath('adapters'), config.get('paths').internalAdaptersPath],
-                adapterConfig: config
-            }));
+            setDefaultScope(rootContainer.createScope(bootSeeds()));
+        } else {
+            // Reused scope on repeat boots: refresh seeds so config changes land
+            getCurrentScope().refreshSeeds(bootSeeds());
         }
         debug('End: Load DI container');
 
