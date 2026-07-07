@@ -14,13 +14,6 @@ export default publicAppViteConfig({
         resolve: {
             dedupe: ['@tryghost/debug']
         },
-        build: {
-            rollupOptions: {
-                output: {
-                    manualChunks: false
-                }
-            }
-        },
         test: {
             setupFiles: './test/setup-tests.js',
             coverage: {
