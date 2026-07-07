@@ -138,6 +138,11 @@ catalogs:
   tailwind3:
     tailwindcss: 3.4.19
     eslint-plugin-tailwindcss: 3.18.3
+  # Admin-surface apps (posts, stats, admin, admin-x-*, shade, activitypub) opt into
+  # the Rolldown bundler by pointing their `vite` dep at `catalog:rolldown`. Public
+  # UMD apps stay on stock vite (catalog `vite`) until their Rolldown config lands.
+  rolldown:
+    vite: 'npm:rolldown-vite@7.3.1'
 
 overrides:
   # knex-migrator 5.4.x bundles knex 3.x, but ghost/core is pinned to knex 2.4.2.

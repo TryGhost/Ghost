@@ -1,6 +1,6 @@
 {
     "name": "@tryghost/stats",
-  "type": "module",
+    "type": "module",
     "version": "0.0.0",
     "license": "MIT",
     "repository": {
@@ -60,7 +60,7 @@
         "jsdom": "catalog:",
         "typescript-eslint": "catalog:",
         "tailwindcss": "catalog:",
-        "vite": "catalog:",
+        "vite": "catalog:rolldown",
         "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },

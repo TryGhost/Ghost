@@ -113,7 +113,7 @@
         "tsx": "catalog:",
         "tw-animate-css": "catalog:",
         "typescript": "catalog:",
-        "vite": "catalog:",
+        "vite": "catalog:rolldown",
         "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },
