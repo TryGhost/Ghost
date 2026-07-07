@@ -40,8 +40,25 @@ import createEmailSuppressionList from './server/services/email-suppression-list
 import createRecommendationsService from './server/services/recommendations/create';
 import createMemberAttributionService from './server/services/member-attribution/create';
 import createStatsService from './server/services/stats/create';
+import createGiftService from './server/services/gifts/create';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('gifts', {
+        lifetime: 'SCOPED',
+        factory: ({models, domainEvents, settingsCache, urlUtils, settingsHelpers, tiers, staff}: Cradle) => createGiftService({
+            models,
+            domainEvents,
+            settingsCache,
+            urlUtils,
+            settingsHelpers,
+            tiers,
+            staff,
+            // Bridged until these migrate
+            membersService: require('./server/services/members'),
+            t: require('./server/services/i18n').t
+        })
+    });
+
     container.register('stats', {
         lifetime: 'SCOPED',
         factory: ({knex, models, siteConfig, adapterManager}: Cradle) => {
