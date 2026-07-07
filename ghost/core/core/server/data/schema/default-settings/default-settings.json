@@ -396,6 +396,14 @@
         "paywall_offer_code": {
             "defaultValue": null,
             "type": "string"
+        },
+        "paywall_signup_description": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_signup_button_text": {
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "portal": {

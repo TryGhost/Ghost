@@ -433,16 +433,24 @@ export default class KoenigLexicalEditor extends Component {
             }
         };
 
-        // Current site-wide web paywall copy (with the rendered defaults), so
-        // the paywall card can show what visitors actually see on the web
+        // Current site-wide wall copy (with the rendered defaults), per wall
+        // type, so the paywall card can show what readers actually see.
+        // Sign-up walls and payment walls have separate site-wide copy.
         const sitePaywallCopy = {
-            membersHeading: this.settings.paywallHeadingMembers || 'This post is for subscribers only',
-            paidHeading: this.settings.paywallHeadingPaid || 'This post is for paying subscribers only',
-            description: this.settings.paywallDescription || '',
-            buttonText: this.settings.paywallButtonText || 'Subscribe now',
+            signup: {
+                heading: this.settings.paywallHeadingMembers || 'This post is for subscribers only',
+                description: this.settings.paywallSignupDescription || '',
+                buttonText: this.settings.paywallSignupButtonText || 'Subscribe now'
+            },
+            payment: {
+                heading: this.settings.paywallHeadingPaid || 'This post is for paying subscribers only',
+                tiersHeading: this.settings.paywallHeadingTiers || '',
+                description: this.settings.paywallDescription || '',
+                buttonText: this.settings.paywallButtonText || 'Subscribe now'
+            },
             // whether the publisher has set any site-wide copy (vs built-in
             // defaults) — the card warns when a post's message replaces it
-            isCustomised: Boolean(this.settings.paywallHeadingMembers || this.settings.paywallHeadingPaid || this.settings.paywallDescription || this.settings.paywallButtonText)
+            isCustomised: Boolean(this.settings.paywallHeadingMembers || this.settings.paywallHeadingPaid || this.settings.paywallHeadingTiers || this.settings.paywallDescription || this.settings.paywallButtonText || this.settings.paywallSignupDescription || this.settings.paywallSignupButtonText)
         };
 
         const defaultCardConfig = {
