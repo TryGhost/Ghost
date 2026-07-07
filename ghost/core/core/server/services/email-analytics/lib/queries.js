@@ -233,7 +233,7 @@ module.exports = {
         const [emailOpenedCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ? AND opened_at IS NOT NULL', [memberId]);
 
         const updateQuery = {
-            email_count: emailCount.count,
+            newsletter_email_count: emailCount.count,
             email_opened_count: emailOpenedCount.count
         };
 
@@ -271,7 +271,7 @@ module.exports = {
                 : null;
 
             memberStatsMap.set(stat.member_id, {
-                email_count: stat.email_count,
+                newsletter_email_count: stat.email_count,
                 email_opened_count: stat.email_opened_count,
                 email_open_rate: emailOpenRate
             });
@@ -287,13 +287,13 @@ module.exports = {
 
         for (const memberId of memberIds) {
             const memberStats = memberStatsMap.get(memberId) || {
-                email_count: 0,
+                newsletter_email_count: 0,
                 email_opened_count: 0,
                 email_open_rate: null
             };
 
             emailCountCases.push(`WHEN ? THEN ?`);
-            emailCountBindings.push(memberId, memberStats.email_count);
+            emailCountBindings.push(memberId, memberStats.newsletter_email_count);
 
             emailOpenedCountCases.push(`WHEN ? THEN ?`);
             emailOpenedCountBindings.push(memberId, memberStats.email_opened_count);
@@ -323,7 +323,7 @@ module.exports = {
         await db.knex.raw(`
             UPDATE members
             SET
-                email_count = CASE id ${emailCountCases.join(' ')} END,
+                newsletter_email_count = CASE id ${emailCountCases.join(' ')} END,
                 email_opened_count = CASE id ${emailOpenedCountCases.join(' ')} END,
                 email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
             WHERE id IN (${memberIds.map(() => '?').join(',')})

@@ -16,7 +16,7 @@ const Member = ghostBookshelf.Model.extend({
             status: 'free',
             uuid: crypto.randomUUID(),
             transient_id: crypto.randomUUID(),
-            email_count: 0,
+            newsletter_email_count: 0,
             email_opened_count: 0,
             enable_comment_notifications: true
         };
@@ -36,6 +36,11 @@ const Member = ghostBookshelf.Model.extend({
             attrs.can_comment = commenting.canComment;
         }
 
+        if (attrs.newsletter_email_count !== undefined && attrs.email_count === undefined) {
+            attrs.email_count = attrs.newsletter_email_count;
+            delete attrs.newsletter_email_count;
+        }
+
         return attrs;
     },
 
@@ -51,6 +56,11 @@ const Member = ghostBookshelf.Model.extend({
         // Convert MemberCommenting domain object to JSON string for storage
         if (attrs.commenting) {
             attrs.commenting = MemberCommentingCodec.format(attrs.commenting);
+        }
+
+        if (attrs.email_count !== undefined && attrs.newsletter_email_count === undefined) {
+            attrs.newsletter_email_count = attrs.email_count;
+            delete attrs.email_count;
         }
 
         return ghostBookshelf.Model.prototype.format.call(this, attrs);
@@ -87,6 +97,9 @@ const Member = ghostBookshelf.Model.extend({
         }, {
             key: 'conversion',
             replacement: 'conversions.attribution_id'
+        }, {
+            key: 'email_count',
+            replacement: 'members.newsletter_email_count'
         }, {
             key: 'opened_emails.post_id',
             replacement: 'emails.post_id',
