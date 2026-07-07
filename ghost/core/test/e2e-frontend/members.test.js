@@ -8,6 +8,7 @@ const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const config = require('../../core/shared/config');
 const settingsCache = require('../../core/shared/settings-cache');
+const {ensureDefaultScope} = require('../utils/container-utils');
 const settingsHelpers = require('../../core/server/services/settings-helpers');
 const DomainEvents = require('../../core/server/lib/common/domain-events');
 const {MemberPageViewEvent} = require('../../core/shared/events');
@@ -67,6 +68,7 @@ describe('Front-end members behavior', function () {
     }
 
     beforeAll(async function () {
+        ensureDefaultScope();
         const originalSettingsCacheGetFn = settingsCache.get;
 
         sinon.stub(settingsCache, 'get').callsFake(function (key, options) {

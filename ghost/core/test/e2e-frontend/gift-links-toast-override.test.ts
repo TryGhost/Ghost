@@ -9,6 +9,7 @@ const fs = require('fs-extra');
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const settingsCache = require('../../core/shared/settings-cache');
+const {ensureDefaultScope} = require('../utils/container-utils');
 const themeActivator = require('../../core/server/services/themes/activate');
 
 const OVERRIDE_THEME = 'gift-toast-override-theme';
@@ -61,6 +62,7 @@ describe('Front-end gift links — theme toast override', function () {
     const slug = 'gift-override-paid-post';
 
     beforeAll(async function () {
+        ensureDefaultScope();
         const originalSettingsCacheGetFn = settingsCache.get;
         sinon.stub(settingsCache, 'get').callsFake(function (key: any, options: any) {
             if (key === 'labs') {

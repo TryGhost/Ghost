@@ -9,6 +9,7 @@ import {afterAll, beforeAll} from 'vitest';
 const testUtils = require('../utils');
 const configUtils = require('../utils/config-utils');
 const settingsCache = require('../../core/shared/settings-cache');
+const {ensureDefaultScope} = require('../utils/container-utils');
 
 // Default member-test-theme renders `{{content}}`; a paid post with a
 // `<!--members-only-->` marker truncates at the paywall when the reader has no
@@ -38,6 +39,8 @@ describe('Front-end gift links', function () {
     const publicGatedBlocksSlug = 'gift-me-this-public-gated-blocks-post';
 
     beforeAll(async function () {
+        // Stubs installed before boot must land on the scope boot will reuse
+        ensureDefaultScope();
         const originalSettingsCacheGetFn = settingsCache.get;
         sinon.stub(settingsCache, 'get').callsFake(function (key: any, options: any) {
             if (key === 'labs') {

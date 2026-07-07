@@ -1,5 +1,5 @@
 {
     "moduleSingletons": 5,
     "chokePointRequires": 412,
-    "bootLines": 664
+    "bootLines": 656
 }
