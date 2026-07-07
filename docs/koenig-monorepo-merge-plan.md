@@ -203,13 +203,16 @@ No new test job (the old plan's `job_koenig_tests` is obsolete). Instead:
   `nx show projects --withTarget test:unit` automatically.
 - **Playwright suites:** rename koenig-lexical's `test:e2e` to
   `test:acceptance` (kg-unsplash-selector already has `test:acceptance`), and
-  widen the `job_setup` filter
-  `nx show projects --withTarget test:acceptance --projects 'apps/*'` to
-  include `koenig/*`. Check `job_apps_acceptance-tests` covers koenig's needs:
-  Playwright browser install/cache exists there; **add the MS core fonts
-  install** (Koenig's visual-regression tests depend on it — see Koenig's
-  test.yml) either unconditionally or keyed on the koenig-lexical matrix
-  entry. Keep the playwright-report artifact upload.
+  select the `job_apps_acceptance-tests` matrix by an Nx **`playwright` tag**
+  (set via `nx.tags` in each acceptance-suite package.json) instead of the
+  current directory glob `--projects 'apps/*'` — packages opt in by tagging
+  themselves, so the matrix isn't coupled to workspace layout. Check
+  `job_apps_acceptance-tests` covers koenig's needs: Playwright browser
+  install/cache exists there. (MS core fonts turned out to be unnecessary —
+  the visual-regression assertions they supported no longer exist in the
+  suite; no `toHaveScreenshot`/`toMatchSnapshot` usages remain.) Keep the
+  playwright-report artifact upload, resolving each project's root via
+  `nx show project` since suites live in both `apps/*` and `koenig/*`.
 - **Path filters:** confirm the `shared`/`e2e`/`any-code` path filters in
   `job_setup` treat `koenig/**` as code (Nx-affected does the per-project
   work, but the workflow-level filters gate whole lanes like run_e2e).
