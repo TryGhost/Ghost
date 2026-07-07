@@ -8,8 +8,17 @@ import type {Container, Cradle} from './shared/container/container';
 import createConnection from './server/data/db/create-connection';
 import createBookshelf from './server/models/base/create-bookshelf';
 import createModels from './server/models/create-models';
+import createEventRegistry from './server/lib/common/create-event-registry';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('events', {
+        lifetime: 'SCOPED',
+        factory: () => createEventRegistry(),
+        dispose: (instance) => {
+            (instance as import('events').EventEmitter).removeAllListeners();
+        }
+    });
+
     container.register('knex', {
         lifetime: 'SCOPED',
         factory: ({siteConfig}: Cradle) => createConnection(siteConfig.database),

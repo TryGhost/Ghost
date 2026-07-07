@@ -64,6 +64,31 @@ describe('two scopes in one process', function () {
         }
     });
 
+    it('gives each scope its own event bus', async function () {
+        const root = createContainer();
+        registerCoreServices(root);
+        const scopeA = createSiteScope(root);
+        const scopeB = createSiteScope(root);
+
+        try {
+            const eventsA = scopeA.resolve('events') as import('events').EventEmitter;
+            const eventsB = scopeB.resolve('events') as import('events').EventEmitter;
+            let fired = 0;
+            eventsA.on('settings.edited', () => {
+                fired += 1;
+            });
+
+            eventsB.emit('settings.edited');
+            assert.equal(fired, 0);
+
+            eventsA.emit('settings.edited');
+            assert.equal(fired, 1);
+        } finally {
+            await scopeA.dispose();
+            await scopeB.dispose();
+        }
+    });
+
     it('disposing one scope leaves the other working', async function () {
         const root = createContainer();
         registerCoreServices(root);
