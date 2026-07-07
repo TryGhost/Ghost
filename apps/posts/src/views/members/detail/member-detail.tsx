@@ -157,7 +157,7 @@ const MemberDetail: React.FC = () => {
                     // freshly-created member.
                     bypassGuardRef.current = true;
                     toast.success('Member created');
-                    navigate(`/members/preview/${created.id}`, {replace: true});
+                    navigate(`/members/${created.id}`, {replace: true});
                 },
                 onError: () => {
                     toast.error('Member couldn’t be created');

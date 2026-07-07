@@ -13,18 +13,26 @@ class SettingsSection extends BasePage {
     readonly confirmDeleteButton: Locator;
     readonly cancelDeleteButton: Locator;
 
-    constructor(page: Page) {
+    constructor(page: Page, root: Locator) {
         super(page);
-        this.memberActionsButton = page.getByTestId('member-actions');
+        // Everything is scoped to the React member-detail root so we never
+        // match Ember's still-mounted (but visually hidden) member view when
+        // both routers claim the same URL post-cutover.
+        this.memberActionsButton = root.getByTestId('member-actions');
 
-        this.impersonateButton = page.getByRole('button', {name: 'Impersonate'});
-        this.signOutOfAllDevices = page.getByRole('button', {name: 'Sign out of all devices'});
-        this.disableCommentingButton = page.getByRole('button', {name: 'Disable commenting'});
-        this.enableCommentingButton = page.getByRole('button', {name: 'Enable commenting'});
+        // Dropdown items are `menuitem`, not `button`, in the React version
+        // (Radix DropdownMenu). The legacy Ember version rendered plain
+        // `<button>`s inside the dropdown — the shared page object needs a
+        // locator that resolves both so the legacy Playwright tests still
+        // pass against the React screen.
+        this.impersonateButton = root.getByRole('menuitem', {name: 'Impersonate'}).or(root.getByRole('button', {name: 'Impersonate'}));
+        this.signOutOfAllDevices = root.getByRole('menuitem', {name: 'Sign out of all devices'}).or(root.getByRole('button', {name: 'Sign out of all devices'}));
+        this.disableCommentingButton = root.getByRole('menuitem', {name: 'Disable commenting'}).or(root.getByRole('button', {name: 'Disable commenting'}));
+        this.enableCommentingButton = root.getByRole('menuitem', {name: 'Enable commenting'}).or(root.getByRole('button', {name: 'Enable commenting'}));
 
-        this.deleteButton = page.getByRole('button', {name: 'Delete member'});
-        this.confirmDeleteButton = page.getByTestId('confirm-delete-member');
-        this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
+        this.deleteButton = root.getByRole('menuitem', {name: 'Delete member'}).or(root.getByRole('button', {name: 'Delete member'}));
+        this.confirmDeleteButton = root.getByTestId('confirm-delete-member');
+        this.cancelDeleteButton = root.getByTestId('cancel-delete-member');
     }
 }
 
@@ -60,30 +68,39 @@ export class MemberDetailsPage extends AdminPage {
         super(page);
         this.pageUrl = '/ghost/#/members/';
 
-        this.nameInput = page.getByRole('textbox', {name: 'Name'});
-        this.emailInput = page.getByRole('textbox', {name: 'Email'});
-        this.noteInput = page.getByRole('textbox', {name: 'Note'});
-        this.labelsInput = page.getByText('Labels').locator('+ div');
-        this.labels = this.labelsInput.getByRole('listitem');
-        this.newsletterSubscriptionToggles = page.getByTestId('member-subscription-toggle');
+        // Post-cutover, the URL `/members/:id` is served by React BUT Ember's
+        // still-mounted member view also renders into a hidden `#ember-app`
+        // container. Scope every locator to the React root so a duplicate
+        // testid/role in the Ember DOM can't cause strict-mode ambiguity or
+        // click the wrong element.
+        const root = page.getByTestId('member-detail');
 
-        this.saveButton = page.getByRole('button', {name: 'Save'});
-        this.savedButton = page.getByRole('button', {name: 'Saved'});
-        this.retryButton = page.getByRole('button', {name: 'Retry'});
-        this.membersBackLink = page.locator('[data-test-link="members-back"]');
+        this.nameInput = root.getByRole('textbox', {name: 'Name'});
+        this.emailInput = root.getByRole('textbox', {name: 'Email'});
+        this.noteInput = root.getByRole('textbox', {name: 'Note'});
+        this.labelsInput = root.getByText('Labels').locator('+ div');
+        this.labels = this.labelsInput.getByRole('listitem');
+        this.newsletterSubscriptionToggles = root.getByTestId('member-subscription-toggle');
+
+        this.saveButton = root.getByRole('button', {name: 'Save'});
+        this.savedButton = root.getByRole('button', {name: 'Saved'});
+        this.retryButton = root.getByRole('button', {name: 'Retry'});
+        this.membersBackLink = root.locator('[data-test-link="members-back"]');
         this.copyLinkButton = page.getByRole('button', {name: 'Copy link'});
         this.magicLinkInput = page.getByTestId('member-signin-url').last();
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
-        this.settingsSection = new SettingsSection(page);
+        this.settingsSection = new SettingsSection(page, root);
 
-        this.activityHeading = page.getByRole('heading', {name: 'Activity', level: 4});
+        this.activityHeading = root.getByRole('heading', {name: 'Activity', level: 4});
 
-        this.disableCommentingModal = page.getByRole('dialog');
+        // Modals render in a portal outside the DetailPage root, so scope them
+        // by role rather than the React root.
+        this.disableCommentingModal = page.getByTestId('disable-commenting-modal');
         this.disableCommentingConfirmButton = this.disableCommentingModal.getByRole('button', {name: 'Disable commenting'});
         this.disableCommentingCancelButton = this.disableCommentingModal.getByRole('button', {name: 'Cancel'});
         this.hideCommentsCheckbox = this.disableCommentingModal.getByText('Hide all previous comments');
-        this.commentingDisabledIndicator = page.getByText('Comments disabled');
-        this.enableCommentingLink = page.getByRole('button', {name: 'Enable', exact: true});
+        this.commentingDisabledIndicator = root.getByText('Comments disabled');
+        this.enableCommentingLink = root.getByRole('button', {name: 'Enable', exact: true});
     }
 
     async clickNewsletterSubscriptionToggle(index: number = 0) {

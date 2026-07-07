@@ -7,6 +7,7 @@ import {buildMemberDetailPath} from '../member-detail-hash';
 import {forwardRef, useEffect, useMemo, useRef, useState} from 'react';
 import {getMemberTableLayout, getMemberTableLayoutStyles} from './member-table-layout';
 import {useInfiniteVirtualScroll} from '@components/virtual-table/use-infinite-virtual-scroll';
+import {useNavigate} from '@tryghost/admin-x-framework';
 import {useScrollRestoration} from '@components/virtual-table/use-scroll-restoration';
 import {useVirtualListWindow} from '@components/virtual-table/virtual-list-window';
 import type {ActiveColumn} from '../member-query-params';
@@ -66,6 +67,7 @@ function MembersList({
     pageHeaderRef,
     onRowClick
 }: MembersListProps) {
+    const navigate = useNavigate();
     const parentRef = useRef<HTMLDivElement>(null);
     const stickyHeaderRef = useRef<HTMLTableSectionElement>(null);
     const scrollingMemberHeaderRef = useRef<HTMLTableCellElement>(null);
@@ -191,8 +193,10 @@ function MembersList({
         if (onRowClick) {
             onRowClick(memberId);
         } else {
-            // Default: Navigate to Ember member detail page
-            window.location.hash = buildMemberDetailPath(memberId, backPath);
+            // Post-cutover: member detail is React, so we get client-side
+            // navigation for free with `navigate(...)` — no full-page reload
+            // like the old `window.location.hash = ...` triggered.
+            navigate(buildMemberDetailPath(memberId, backPath));
         }
     };
 

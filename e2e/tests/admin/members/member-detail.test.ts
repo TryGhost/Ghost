@@ -5,11 +5,10 @@ import {usePerTestIsolation} from '@/helpers/playwright/isolation';
 
 usePerTestIsolation();
 
-// The React member-detail screen is being migrated from Ember. While it is built
-// up it lives on a temporary preview route (`/members/preview/:id`) so the live
-// Ember screen and its legacy e2e suite keep working. At cutover this navigates
-// to the real `/members/:id` path.
-const previewPath = (memberId: string) => `/ghost/#/members/preview/${memberId}`;
+// After the Phase 8 cutover, `/members/:member_id` is the React route. The
+// same helper covers the create sentinel `new` since the route is a single
+// dynamic segment (`:member_id`) that the component branches on.
+const memberPath = (memberId: string) => `/ghost/#/members/${memberId}`;
 
 test.describe('Ghost Admin - Member Detail (React)', () => {
     let memberFactory: MemberFactory;
@@ -21,7 +20,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
     test('renders the member name for an existing member', async ({page}) => {
         const member = await memberFactory.create({name: 'Ada Lovelace', email: 'ada@ghost.org'});
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
 
         await expect(page.getByTestId('member-detail-title')).toHaveText('Ada Lovelace');
     });
@@ -30,7 +29,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         const member = await memberFactory.create({name: 'Grace Hopper', email: 'grace@ghost.org'});
         const memberDetailsPage = new MemberDetailsPage(page);
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
         await memberDetailsPage.membersBackLink.click();
 
         await expect(page).toHaveURL(/#\/members$/);
@@ -39,7 +38,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
     test('shows the member sidebar with location and signup date', async ({page}) => {
         const member = await memberFactory.create({name: 'Katherine Johnson', email: 'katherine@ghost.org'});
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
 
         const sidebar = page.getByTestId('member-detail-sidebar');
         await expect(sidebar).toBeVisible();
@@ -52,7 +51,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         const member = await memberFactory.create({name: 'Ada Lovelace', email: 'ada-edit@ghost.org'});
         const memberDetailsPage = new MemberDetailsPage(page);
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
         await memberDetailsPage.nameInput.fill('Ada L. Byron');
         await memberDetailsPage.save();
 
@@ -66,7 +65,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         const member = await memberFactory.create({name: 'Grace Hopper', email: 'grace-edit@ghost.org'});
         const memberDetailsPage = new MemberDetailsPage(page);
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
         await memberDetailsPage.nameInput.fill('Grace B. Hopper');
         await memberDetailsPage.membersBackLink.click();
 
@@ -79,7 +78,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         const member = await memberFactory.create({name: 'Katherine Johnson', email: 'katherine-edit@ghost.org'});
         const memberDetailsPage = new MemberDetailsPage(page);
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
         await memberDetailsPage.emailInput.fill('not-an-email');
 
         await expect(memberDetailsPage.saveButton).toBeDisabled();
@@ -90,7 +89,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         const memberDetailsPage = new MemberDetailsPage(page);
         const labelsField = page.getByTestId('member-labels-field');
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
         await expect(labelsField.getByText('VIP')).toBeVisible();
 
         await labelsField.getByText('VIP').click();
@@ -105,7 +104,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         const memberDetailsPage = new MemberDetailsPage(page);
         const labelsField = page.getByTestId('member-labels-field');
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
         await labelsField.getByRole('combobox').click();
         await page.getByPlaceholder('Search labels...').fill('Beta');
         await page.getByText('Create "Beta"').click();
@@ -149,7 +148,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
                 return route.fulfill({response, body: JSON.stringify(body)});
             });
 
-            await page.goto(previewPath(member.id));
+            await page.goto(memberPath(member.id));
 
             const subscriptions = page.getByTestId('member-subscriptions');
             await expect(subscriptions).toBeVisible();
@@ -195,7 +194,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
                 return route.fulfill({response, body: JSON.stringify(body)});
             });
 
-            await page.goto(previewPath(member.id));
+            await page.goto(memberPath(member.id));
 
             const subscriptions = page.getByTestId('member-subscriptions');
             await expect(subscriptions).toBeVisible();
@@ -214,7 +213,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         test('renders the subscriptions empty state (with Add complimentary) for a member with no subs', async ({page}) => {
             const member = await memberFactory.create({name: 'Empty Sub Member', email: 'empty-sub-member@ghost.org'});
 
-            await page.goto(previewPath(member.id));
+            await page.goto(memberPath(member.id));
 
             await expect(page.getByTestId('member-detail-sidebar')).toBeVisible();
             // The section renders with an empty state now (Ember parity) — the row
@@ -272,7 +271,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
                 return route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({members: [{id: member.id}]})});
             });
 
-            await page.goto(previewPath(member.id));
+            await page.goto(memberPath(member.id));
 
             const status = page.getByTestId('member-subscription-status');
             await expect(status).toHaveText('Active');
@@ -344,7 +343,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
                 return route.fulfill({response, body: JSON.stringify(body)});
             });
 
-            await page.goto(previewPath(member.id));
+            await page.goto(memberPath(member.id));
 
             await expect(page.getByTestId('member-subscription-tier')).toHaveText('Gold');
             await page.getByTestId('subscription-actions').click();
@@ -409,7 +408,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
                 return route.fulfill({response, body: JSON.stringify(body)});
             });
 
-            await page.goto(previewPath(member.id));
+            await page.goto(memberPath(member.id));
 
             // Remove the Bronze tier — Gold's expiry_at must ride along.
             await page.getByTestId('subscription-actions').first().click();
@@ -474,7 +473,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
                 });
             });
 
-            await page.goto(previewPath(member.id));
+            await page.goto(memberPath(member.id));
 
             await page.getByTestId('add-complimentary').click();
             await expect(page.getByTestId('add-comp-modal')).toBeVisible();
@@ -526,7 +525,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
                 return route.fulfill({response, body: JSON.stringify(body)});
             });
 
-            await page.goto(previewPath(member.id));
+            await page.goto(memberPath(member.id));
 
             const subscriptions = page.getByTestId('member-subscriptions');
             // Ember uses the plan/price nickname verbatim as the priceLabel;
@@ -575,7 +574,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             return route.fulfill({status: 204, body: ''});
         });
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
 
         // Suppression banner replaces the newsletter toggles.
         const banner = page.getByTestId('member-suppression-banner');
@@ -597,7 +596,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         const newsletters = page.getByTestId('member-newsletters-field');
         const firstToggle = memberDetailsPage.newsletterSubscriptionToggles.first();
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
         await expect(newsletters).toBeVisible();
 
         const initiallyChecked = (await firstToggle.getAttribute('data-state')) === 'checked';
@@ -612,7 +611,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
     test('opens the impersonate modal from the actions menu and shows a signin URL', async ({page}) => {
         const member = await memberFactory.create({name: 'Impersonate Target', email: 'impersonate@ghost.org'});
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
 
         // Actions menu trigger is gated on canManageMembers (owner is authed here).
         await page.getByTestId('member-actions').click();
@@ -649,7 +648,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             return route.continue();
         });
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
 
         await page.getByTestId('member-actions').click();
         await page.getByTestId('member-actions-logout').click();
@@ -668,7 +667,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
     test('deletes a member from the actions menu and navigates back to the list', async ({page}) => {
         const member = await memberFactory.create({name: 'Delete Target', email: 'delete@ghost.org'});
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
 
         await page.getByTestId('member-actions').click();
         await page.getByTestId('member-actions-delete').click();
@@ -732,7 +731,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             return route.fulfill({response, body: JSON.stringify(body)});
         });
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
 
         await page.getByTestId('member-actions').click();
         // Fresh members have commenting enabled, so the menu offers to disable.
@@ -771,7 +770,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             }
         );
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
         await page.getByTestId('member-actions').click();
         await page.getByTestId('member-actions-commenting').click();
 
@@ -819,7 +818,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             return route.fulfill({response, body: JSON.stringify(body)});
         });
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
         await page.getByTestId('member-actions').click();
         // Member starts disabled → menu offers to enable, no confirm modal.
         await expect(page.getByTestId('member-actions-commenting')).toHaveText('Enable commenting');
@@ -844,7 +843,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         const member = await memberFactory.create({name: 'Delete With Edits', email: 'delete-edits@ghost.org'});
         const memberDetailsPage = new MemberDetailsPage(page);
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
         await memberDetailsPage.nameInput.fill('Delete With Edits Modified');
 
         await page.getByTestId('member-actions').click();
@@ -903,7 +902,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
                 return route.fulfill({response, body: JSON.stringify(body)});
             });
 
-            await page.goto(previewPath(member.id));
+            await page.goto(memberPath(member.id));
 
             await page.getByTestId('member-actions').click();
             await page.getByTestId('member-actions-delete').click();
@@ -934,7 +933,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         // Fresh members always have at least one server-generated event
         // (signup / newsletter subscribe on creation), so we can assert
         // against real data instead of mocking the feed.
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
 
         const feed = page.getByTestId('member-activity-feed');
         await expect(feed).toBeVisible();
@@ -962,7 +961,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             });
         });
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
 
         await expect(page.getByTestId('member-activity-empty')).toBeVisible();
         // View-all link still renders even with no inline events — matches
@@ -971,7 +970,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
     });
 
     test('activity feed hides in create mode', async ({page}) => {
-        await page.goto(previewPath('new'));
+        await page.goto(memberPath('new'));
 
         // Ember `activity-feed.hbs:2` short-circuits when the member is new; the
         // React equivalent hides the section entirely, not just the rows.
@@ -982,7 +981,7 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         const memberDetailsPage = new MemberDetailsPage(page);
 
         // The create screen reuses the preview route with the sentinel id "new".
-        await page.goto(previewPath('new'));
+        await page.goto(memberPath('new'));
         await expect(page.getByTestId('member-detail-title')).toHaveText('New member');
         await expect(memberDetailsPage.saveButton).toBeDisabled();
         // Newsletter toggles hide in create mode — showing them would silently

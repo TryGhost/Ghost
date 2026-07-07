@@ -39,8 +39,6 @@ const EMBER_ROUTES: string[] = [
     "/tags/new",
     "/explore/*",
     "/migrate/*",
-    "/members/new",
-    "/members/:member_id",
     "/members-activity",
     "/designsandbox",
     "/mentions",
@@ -68,13 +66,12 @@ const membersRoute: RouteObject = {
             lazy: lazyComponent(() => import("@tryghost/posts/members"))
         },
         {
-            // TEMPORARY preview route for the in-progress React member-detail
-            // migration. Ember still owns `/members/:member_id` (see EMBER_ROUTES),
-            // so this parallel path lets us build + verify the React screen without
-            // breaking the live screen or its e2e suite. At cutover (Phase 8) this
-            // becomes `:member_id`, EMBER_ROUTES drops the entry, and this comment
-            // and path go away.
-            path: "preview/:member_id",
+            // Single route covers both edit (`:member_id`) and create (the
+            // sentinel `new`) — the same component branches on `member_id ===
+            // 'new'` and skips the fetch in create mode. Safe because real
+            // member ids are 24-char hex ObjectIds and can't collide with the
+            // literal "new".
+            path: ":member_id",
             lazy: lazyComponent(() => import("@tryghost/posts/member-detail"))
         }
     ]
