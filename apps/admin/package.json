@@ -13,6 +13,7 @@
         "typecheck": "tsc -b"
     },
     "dependencies": {
+        "@svg-maps/world": "2.0.0",
         "@tryghost/activitypub": "workspace:*",
         "@tryghost/admin-x-framework": "workspace:*",
         "@tryghost/admin-x-settings": "workspace:*",
@@ -20,10 +21,13 @@
         "@tryghost/koenig-lexical": "workspace:*",
         "@tryghost/posts": "workspace:*",
         "@tryghost/shade": "workspace:*",
-        "@tryghost/stats": "workspace:*",
+        "i18n-iso-countries": "7.14.0",
         "mingo": "catalog:",
+        "moment": "catalog:",
+        "moment-timezone": "catalog:",
         "react": "catalog:",
         "react-dom": "catalog:",
+        "react-svg-map": "2.2.0",
         "zod": "catalog:"
     },
     "devDependencies": {
@@ -35,6 +39,7 @@
         "@types/node": "catalog:",
         "@types/react": "catalog:",
         "@types/react-dom": "catalog:",
+        "@types/react-svg-map": "2.1.4",
         "@vitejs/plugin-react": "catalog:",
         "eslint": "catalog:",
         "eslint-plugin-no-relative-import-paths": "1.6.1",

@@ -7,7 +7,7 @@ import { FeatureFlagsProvider, routes as activityPubRoutes } from "@tryghost/act
 import { PostsAppContextProvider, routes as postRoutes } from "@tryghost/posts/api";
 
 // Stats (aka analytics)
-import { GlobalDataProvider, routes as statsRoutes } from "@tryghost/stats/api";
+import { GlobalDataProvider, routes as statsRoutes } from "./analytics/api";
 import MyProfileRedirect from "./my-profile-redirect";
 
 // Ember
