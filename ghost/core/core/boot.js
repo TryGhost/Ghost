@@ -541,7 +541,14 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         // The DI container underpins service wiring; composition roots migrate to it incrementally
         debug('Begin: Load DI container');
         const {getRootContainer, setDefaultScope} = require('./shared/container/current');
-        setDefaultScope(getRootContainer().createScope());
+        const {registerCoreServices} = require('./registrations');
+        const rootContainer = getRootContainer();
+        registerCoreServices(rootContainer);
+        setDefaultScope(rootContainer.createScope({
+            siteConfig: {
+                database: config.get('database')
+            }
+        }));
         debug('End: Load DI container');
 
         // Sentry must be initialized early, but requires config
