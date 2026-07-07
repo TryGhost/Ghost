@@ -684,9 +684,8 @@ const fixtures = {
 
         for (const member of members) {
             for (const subscription of member.subscriptions) {
-                const product = subscription.price.product.product_id;
                 await models.Member.edit({products: member.products.concat({
-                    id: product
+                    id: subscription.price.product.product_id
                 })}, {id: member.id});
             }
         }

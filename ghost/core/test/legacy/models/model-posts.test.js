@@ -854,12 +854,13 @@ describe('Post Model', function () {
 
             it('can generate a non conflicting slug', async function () {
                 // Create 12 posts with the same title
-                const createdPosts = await Promise.all(_.times(12, function (i) {
-                    return models.Post.add({
+                const createdPosts = [];
+                for (let i = 0; i < 12; i += 1) {
+                    createdPosts.push(await models.Post.add({
                         title: 'Test Title',
                         lexical: markdownToLexical('Test Content ' + (i + 1))
-                    }, context);
-                }));
+                    }, context));
+                }
 
                 // Should have created 12 posts
                 assert.equal(createdPosts.length, 12);
