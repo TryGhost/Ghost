@@ -3,7 +3,7 @@ declare function createMemberWelcomeEmailService(deps: {
     events: object;
     settingsCache: object;
 }): {
-    readonly api: object | null;
+    api: object | null;
     init(): void;
 };
 

@@ -8,26 +8,25 @@ const SingleUseTokenProvider = require('../members/single-use-token-provider');
  * @param {object} deps.settingsCache
  */
 module.exports = function createMemberWelcomeEmailService({models, events, settingsCache}) {
-    let api = null;
     let i18n = null;
 
-    return {
-        get api() {
-            return api;
-        },
+    const wrapper = {
+        api: null,
         init() {
-            if (api) {
+            if (wrapper.api) {
                 return;
             }
 
-            const i18nLib = require('@tryghost/i18n');
-            i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
+            if (!i18n) {
+                const i18nLib = require('@tryghost/i18n');
+                i18n = i18nLib(settingsCache.get('locale') || 'en', 'ghost');
 
-            events.on('settings.locale.edited', (model) => {
-                i18n.changeLanguage(model.get('value'));
-            });
+                events.on('settings.locale.edited', (model) => {
+                    i18n.changeLanguage(model.get('value'));
+                });
+            }
 
-            api = new MemberWelcomeEmailService({
+            wrapper.api = new MemberWelcomeEmailService({
                 t: i18n.t,
                 dir: i18n.dir.bind(i18n),
                 singleUseTokenProvider: new SingleUseTokenProvider({
@@ -39,4 +38,6 @@ module.exports = function createMemberWelcomeEmailService({models, events, setti
             });
         }
     };
+
+    return wrapper;
 };
