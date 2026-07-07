@@ -16,8 +16,20 @@ import createUrlUtils from './shared/create-url-utils';
 import createLimitService from './server/services/create-limit-service';
 import createTiersService from './server/services/tiers/create';
 import createDonationService from './server/services/donations/create';
+import createAudienceFeedbackService from './server/services/audience-feedback/create';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('audienceFeedback', {
+        lifetime: 'SCOPED',
+        factory: ({models, urlUtils}: Cradle) => createAudienceFeedbackService({
+            models,
+            urlUtils,
+            // Bridged until the url service migrates; required lazily so the container
+            // does not drag the whole frontend url subsystem in at import time
+            urlService: require('./server/services/url')
+        })
+    });
+
     container.register('donations', {
         lifetime: 'SCOPED',
         factory: ({models}: Cradle) => createDonationService({models})

@@ -234,7 +234,7 @@ describe('two scopes in one process', function () {
         const scopeA = createSiteScope(root);
         const scopeB = createSiteScope(root);
 
-        const scopedServices = ['tiers', 'donations'];
+        const scopedServices = ['tiers', 'donations', 'audienceFeedback'];
 
         try {
             for (const name of scopedServices) {
