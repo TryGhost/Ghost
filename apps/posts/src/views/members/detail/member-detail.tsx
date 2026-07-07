@@ -5,6 +5,7 @@ import MemberSubscriptionsSection from './member-subscriptions-section';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, type ButtonProps, Card, CardContent, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {Link, useConfirmUnload, useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
+import {PageHeader} from '@tryghost/shade/patterns';
 import {buildMemberFieldEditPayload, getMemberEditableSlice, isDraftInSyncWithServer, isValidMemberEmail, normalizeDraftForComparison} from './member-detail-edit';
 import {dequal} from 'dequal';
 import {deriveMemberDetailBackPath} from './member-detail-nav';
@@ -176,32 +177,40 @@ const MemberDetail: React.FC = () => {
     return (
         <MainLayout>
             <div className='flex h-full flex-col' data-testid='member-detail'>
-                <header className='flex h-14 shrink-0 items-center gap-3 px-2'>
-                    <Breadcrumb className='min-w-0 flex-1'>
-                        <BreadcrumbList>
-                            <BreadcrumbItem>
-                                <BreadcrumbLink asChild>
-                                    <Link data-test-link='members-back' to={backPath}>Members</Link>
-                                </BreadcrumbLink>
-                            </BreadcrumbItem>
-                            <BreadcrumbSeparator />
-                            <BreadcrumbItem>
-                                {!isCreating && isLoading ? (
-                                    <Skeleton className='h-4 w-40' />
-                                ) : (
-                                    <BreadcrumbPage className='truncate' data-testid='member-detail-title'>
-                                        {title}
-                                    </BreadcrumbPage>
-                                )}
-                            </BreadcrumbItem>
-                        </BreadcrumbList>
-                    </Breadcrumb>
+                <PageHeader blurredBackground={false} className='px-6 pt-6' sticky={false}>
+                    <PageHeader.Left>
+                        <PageHeader.Breadcrumb>
+                            <Breadcrumb>
+                                <BreadcrumbList>
+                                    <BreadcrumbItem>
+                                        <BreadcrumbLink asChild>
+                                            <Link data-test-link='members-back' to={backPath}>Members</Link>
+                                        </BreadcrumbLink>
+                                    </BreadcrumbItem>
+                                    <BreadcrumbSeparator />
+                                    <BreadcrumbItem>
+                                        {!isCreating && isLoading ? (
+                                            <Skeleton className='h-4 w-40' />
+                                        ) : (
+                                            <BreadcrumbPage className='truncate' data-testid='member-detail-title'>
+                                                {title}
+                                            </BreadcrumbPage>
+                                        )}
+                                    </BreadcrumbItem>
+                                </BreadcrumbList>
+                            </Breadcrumb>
+                        </PageHeader.Breadcrumb>
+                    </PageHeader.Left>
                     {(isCreating || member) && (
-                        <Button disabled={saveDisabled} variant={saveVariant} onClick={onSave}>
-                            {saveLabel}
-                        </Button>
+                        <PageHeader.Actions>
+                            <PageHeader.ActionGroup>
+                                <Button disabled={saveDisabled} variant={saveVariant} onClick={onSave}>
+                                    {saveLabel}
+                                </Button>
+                            </PageHeader.ActionGroup>
+                        </PageHeader.Actions>
                     )}
-                </header>
+                </PageHeader>
 
                 {notFound && (
                     <div className='flex flex-1 items-center justify-center'>
@@ -210,7 +219,7 @@ const MemberDetail: React.FC = () => {
                 )}
 
                 {showEditor && draft && (
-                    <div className='flex flex-1 flex-col gap-8 overflow-y-auto p-6 lg:flex-row lg:items-start'>
+                    <div className='flex flex-1 flex-col gap-8 overflow-y-auto px-6 pb-6 lg:flex-row lg:items-start'>
                         <MemberDetailSidebar draftEmail={draft.email} draftName={draft.name} member={member} />
                         <div className='flex min-w-0 flex-1 flex-col gap-6'>
                             <Card>
