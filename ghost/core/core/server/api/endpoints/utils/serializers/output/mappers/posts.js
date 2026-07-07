@@ -94,12 +94,14 @@ module.exports = async (model, frame, options = {}) => {
 
         // An offer attached to the paywall card is stored by id; resolve it to
         // its current redemption URL so the frontend button stays correct even
-        // if the offer's code is renamed
+        // if the offer's code is renamed. Archived offers resolve to nothing —
+        // archiving an offer is the one-step teardown that reverts every wall
+        // advertising it back to the standard signup CTA.
         if (jsonModel.paywall_cta?.offer_id) {
             try {
                 const models = require('../../../../../../models');
                 const offer = await models.Offer.findOne({id: jsonModel.paywall_cta.offer_id});
-                jsonModel.paywall_cta.offer_url = offer?.get('code') ? `/${offer.get('code')}` : null;
+                jsonModel.paywall_cta.offer_url = (offer?.get('active') && offer.get('code')) ? `/${offer.get('code')}` : null;
             } catch (err) {
                 jsonModel.paywall_cta.offer_url = null;
             }

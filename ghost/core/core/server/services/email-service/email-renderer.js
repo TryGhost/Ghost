@@ -1409,12 +1409,14 @@ class EmailRenderer {
         const siteUrl = this.#urlUtils.urlFor('home', true);
 
         // The card stores the offer id (stable across code renames); the
-        // redemption URL is the offer's current code, resolved at send time
+        // redemption URL is the offer's current code, resolved at send time.
+        // Archived offers resolve to nothing so a retired promo can never be
+        // advertised by a wall.
         let offerCode = null;
         if (card?.offerId) {
             try {
                 const offer = await this.#models.Offer.findOne({id: card.offerId});
-                offerCode = offer?.get('code') ?? null;
+                offerCode = offer?.get('active') ? (offer.get('code') ?? null) : null;
             } catch (e) {
                 // deleted or unreadable offer — fall back to the standard signup CTA
             }
