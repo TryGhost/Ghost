@@ -2,7 +2,7 @@ import NiceModal from '@ebay/nice-modal-react';
 import React from 'react';
 import toast from 'react-hot-toast';
 import useSettingGroup from '../../../../hooks/use-setting-group';
-import {Form, Modal, Select, TextField} from '@tryghost/admin-x-design-system';
+import {Form, Modal, Select, TextField, Toggle} from '@tryghost/admin-x-design-system';
 import {type RoutingModalProps, useRouting} from '@tryghost/admin-x-framework/routing';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
@@ -26,6 +26,7 @@ const PaywallWallModal: React.FC<RoutingModalProps> = ({params}) => {
         'paywall_heading_members', 'paywall_signup_description', 'paywall_signup_button_text',
         'paywall_heading_paid', 'paywall_heading_tiers', 'paywall_description', 'paywall_button_text', 'paywall_offer_code'
     ]) as (string | null)[];
+    const [campaignMode] = getSettingValues(localSettings, ['paywall_campaign_mode']) as boolean[];
 
     const {data: {offers} = {}} = useBrowseOffers();
 
@@ -125,8 +126,23 @@ const PaywallWallModal: React.FC<RoutingModalProps> = ({params}) => {
                             title='Offer'
                             onSelect={(option) => {
                                 updateSetting('paywall_offer_code', option?.value || null);
+                                if (!option?.value) {
+                                    updateSetting('paywall_campaign_mode', false);
+                                }
                             }}
                         />
+                        {offerCode &&
+                            <Toggle
+                                checked={Boolean(campaignMode)}
+                                direction='rtl'
+                                hint='While on, this offer takes over every payment wall — including posts with their own offers — until you turn it off or archive the offer. Posts return to their own offers afterwards.'
+                                label='Campaign mode'
+                                testId='paywall-campaign-toggle'
+                                onChange={(event) => {
+                                    updateSetting('paywall_campaign_mode', event.target.checked);
+                                }}
+                            />
+                        }
                     </Form>
                 )}
             </div>

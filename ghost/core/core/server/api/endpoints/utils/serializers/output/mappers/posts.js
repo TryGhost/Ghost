@@ -92,20 +92,41 @@ module.exports = async (model, frame, options = {}) => {
         // so hand it to gating directly for paywall card CTA extraction
         gating.forPost(jsonModel, frame, {lexical: (typeof model.get === 'function' && model.get('lexical')) || jsonModel.lexical});
 
-        // An offer attached to the paywall card is stored by id; resolve it to
-        // its current redemption URL so the frontend button stays correct even
-        // if the offer's code is renamed. Archived offers resolve to nothing —
+        // Offers on walls resolve live, by reference, and only while active —
         // archiving an offer is the one-step teardown that reverts every wall
         // advertising it back to the standard signup CTA.
-        if (jsonModel.paywall_cta?.offer_id) {
-            try {
-                const models = require('../../../../../../models');
-                const offer = await models.Offer.findOne({id: jsonModel.paywall_cta.offer_id});
-                jsonModel.paywall_cta.offer_url = (offer?.get('active') && offer.get('code')) ? `/${offer.get('code')}` : null;
-            } catch (err) {
-                jsonModel.paywall_cta.offer_url = null;
+        if (!jsonModel.access && ['paid', 'tiers'].includes(jsonModel.visibility)) {
+            const models = require('../../../../../../models');
+
+            // Per-post offer from the paywall card, stored by id so the button
+            // stays correct even if the offer's code is renamed
+            if (jsonModel.paywall_cta?.offer_id) {
+                try {
+                    const offer = await models.Offer.findOne({id: jsonModel.paywall_cta.offer_id});
+                    jsonModel.paywall_cta.offer_url = (offer?.get('active') && offer.get('code')) ? `/${offer.get('code')}` : null;
+                } catch (err) {
+                    jsonModel.paywall_cta.offer_url = null;
+                }
+                delete jsonModel.paywall_cta.offer_id;
             }
-            delete jsonModel.paywall_cta.offer_id;
+
+            // Site-wide offer from the paywall settings — the steady-state
+            // default, or (in campaign mode) a takeover of every payment wall
+            const settingsCache = require('../../../../../../../shared/settings-cache');
+            const siteOfferCode = settingsCache.get('paywall_offer_code');
+            if (siteOfferCode) {
+                try {
+                    const siteOffer = await models.Offer.findOne({code: siteOfferCode});
+                    if (siteOffer?.get('active')) {
+                        jsonModel.paywall_site_offer = {
+                            offer_url: `/${siteOffer.get('code')}`,
+                            campaign: settingsCache.get('paywall_campaign_mode') === true
+                        };
+                    }
+                } catch (err) {
+                    // unresolvable site offer — walls fall back per precedence
+                }
+            }
         }
 
         previewRendering.forPost(jsonModel, frame);

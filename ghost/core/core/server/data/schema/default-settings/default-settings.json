@@ -404,6 +404,14 @@
         "paywall_signup_button_text": {
             "defaultValue": null,
             "type": "string"
+        },
+        "paywall_campaign_mode": {
+            "defaultValue": "false",
+            "validations": {
+                "isEmpty": false,
+                "isIn": [["true", "false"]]
+            },
+            "type": "boolean"
         }
     },
     "portal": {

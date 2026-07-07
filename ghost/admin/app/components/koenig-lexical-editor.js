@@ -448,6 +448,9 @@ export default class KoenigLexicalEditor extends Component {
                 description: this.settings.paywallDescription || '',
                 buttonText: this.settings.paywallButtonText || 'Subscribe now'
             },
+            // an active campaign takes over every payment wall's offer — the
+            // card tells the author when their post's offer is being overridden
+            campaign: Boolean(this.settings.paywallCampaignMode && this.settings.paywallOfferCode),
             // whether the publisher has set any site-wide copy (vs built-in
             // defaults) — the card warns when a post's message replaces it
             isCustomised: Boolean(this.settings.paywallHeadingMembers || this.settings.paywallHeadingPaid || this.settings.paywallHeadingTiers || this.settings.paywallDescription || this.settings.paywallButtonText || this.settings.paywallSignupDescription || this.settings.paywallSignupButtonText)

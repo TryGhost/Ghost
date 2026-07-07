@@ -1408,20 +1408,31 @@ class EmailRenderer {
         const postsMeta = post.related('posts_meta');
         const siteUrl = this.#urlUtils.urlFor('home', true);
 
-        // The card stores the offer id (stable across code renames); the
-        // redemption URL is the offer's current code, resolved at send time.
-        // Archived offers resolve to nothing so a retired promo can never be
-        // advertised by a wall.
-        let offerCode = null;
-        if (card?.offerId) {
+        // Offers resolve live at send time and only while active, so a
+        // retired promo can never be advertised. Precedence matches the web
+        // wall: a site offer in campaign mode takes over; otherwise the
+        // post's own offer wins over the steady-state site offer.
+        const resolveActiveOfferCode = async (query) => {
             try {
-                const offer = await this.#models.Offer.findOne({id: card.offerId});
-                offerCode = offer?.get('active') ? (offer.get('code') ?? null) : null;
+                const offer = await this.#models.Offer.findOne(query);
+                return offer?.get('active') ? (offer.get('code') ?? null) : null;
             } catch (e) {
-                // deleted or unreadable offer — fall back to the standard signup CTA
+                return null;
             }
+        };
+
+        const siteOfferSetting = this.#settingsCache.get('paywall_offer_code');
+        const siteOfferCode = siteOfferSetting ? await resolveActiveOfferCode({code: siteOfferSetting}) : null;
+        const campaignActive = this.#settingsCache.get('paywall_campaign_mode') === true && siteOfferCode;
+
+        let offerCode = null;
+        if (campaignActive) {
+            offerCode = siteOfferCode;
+        } else {
+            offerCode = (card?.offerId ? await resolveActiveOfferCode({id: card.offerId}) : null) ||
+                postsMeta?.get('email_paywall_offer_code') ||
+                siteOfferCode;
         }
-        offerCode = offerCode || postsMeta?.get('email_paywall_offer_code') || this.#settingsCache.get('paywall_offer_code');
 
         // Same resolution order as the web wall: this post's card, then the
         // site-wide paywall settings, then the built-in template copy —

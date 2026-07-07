@@ -37,14 +37,18 @@ function getPaywallCustomisation(post) {
 
     // Offers are payment CTAs: they apply to paid/tier walls only — a
     // registration (members) wall must never send visitors into a checkout.
-    // Per-post offer from the card wins over the site-wide offer.
+    // Precedence: a site offer in campaign mode takes over every payment
+    // wall; otherwise the post's own offer wins over the steady-state site
+    // offer. Both arrive pre-resolved (and archival-checked) from the API.
     let offerUrl = null;
     if (isPaymentWall) {
-        const settingsOfferCode = settingsCache.get('paywall_offer_code');
-        if (cardCta.offer_url) {
+        const siteOffer = post.paywall_site_offer;
+        if (siteOffer?.campaign) {
+            offerUrl = urlUtils.createUrl(siteOffer.offer_url, true);
+        } else if (cardCta.offer_url) {
             offerUrl = urlUtils.createUrl(cardCta.offer_url, true);
-        } else if (settingsOfferCode) {
-            offerUrl = urlUtils.createUrl(`/${settingsOfferCode}`, true);
+        } else if (siteOffer?.offer_url) {
+            offerUrl = urlUtils.createUrl(siteOffer.offer_url, true);
         }
     }
 

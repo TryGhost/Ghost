@@ -16,12 +16,13 @@ const Paywall: React.FC<{ keywords: string[] }> = ({keywords}) => {
         'paywall_heading_members', 'paywall_signup_description', 'paywall_signup_button_text',
         'paywall_heading_paid', 'paywall_heading_tiers', 'paywall_description', 'paywall_button_text', 'paywall_offer_code'
     ]) as (string | null)[];
+    const [campaignMode] = getSettingValues(settings, ['paywall_campaign_mode']) as boolean[];
 
     const signupSummary = headingMembers || signupDescription || signupButtonText
         ? `“${headingMembers || 'This post is for subscribers only'}”`
         : 'Default message';
     const paymentSummary = headingPaid || headingTiers || description || buttonText || offerCode
-        ? `“${headingPaid || 'This post is for paying subscribers only'}”${offerCode ? ' · offer attached' : ''}`
+        ? `“${headingPaid || 'This post is for paying subscribers only'}”${offerCode ? (campaignMode ? ' · CAMPAIGN LIVE' : ' · offer attached') : ''}`
         : 'Default message';
 
     const walls = [
