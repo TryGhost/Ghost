@@ -1,15 +1,17 @@
-// CJS (Node) core for @tryghost/i18n.
-//
-// Sibling of ./i18n-core.mjs (the ESM/browser twin). Ghost core require()s this
-// package synchronously, so the Node path must stay CommonJS; the browser path
-// must be pure ESM (a CJS file in the browser bundle leaks a bare `require(...)`
-// or `module.exports` and throws at load). The two cores are therefore kept as
-// deliberate twins and guarded by a parity test in test/i18n.test.js — change
-// shared behaviour in BOTH files.
-const i18next = require('i18next');
-
-// Locale data loaded from JSON (single source of truth)
-const LOCALE_DATA = require('./locale-data.json');
+/**
+ * ESM (browser) core for @tryghost/i18n — the pure-ESM twin of ./i18n-core.js.
+ *
+ * The per-namespace registry entries load through ./esm-factory.mjs, so this
+ * path must stay 100% ESM: a CJS file anywhere in the browser graph leaks a
+ * bare `require(...)` or `module.exports` into the UMD bundle and throws
+ * ("require is not defined" / "module is not defined") at load. That is why the
+ * core is duplicated here rather than shared from the CJS file.
+ *
+ * Keep behaviour identical to ./i18n-core.js — the two are guarded by a parity
+ * test in test/i18n.test.js. Change shared behaviour in BOTH files.
+ */
+import i18next from 'i18next';
+import LOCALE_DATA from './locale-data.json' with {type: 'json'};
 
 // Export just the locale codes for backward compatibility
 const SUPPORTED_LOCALES = LOCALE_DATA.map(locale => locale.code);
@@ -22,8 +24,7 @@ function mergeDefaultExport(res) {
 }
 
 // Factory: given a resource loader, produce a `generateResources(locales, ns)` fn
-// with the exact original behaviour/shape. Callers that need the classic dynamic-require
-// behaviour just use the default-exported `generateResources` below.
+// with the exact original behaviour/shape.
 function createGenerateResources(loadResource) {
     return function generateResources(locales, ns) {
         return locales.reduce((acc, locale) => {
@@ -89,10 +90,4 @@ function createI18n({generateThemeResources, generateResources: genResources}) {
     };
 }
 
-module.exports = {
-    createI18n,
-    createGenerateResources,
-    mergeDefaultExport,
-    LOCALE_DATA,
-    SUPPORTED_LOCALES
-};
+export {createI18n, createGenerateResources, mergeDefaultExport, LOCALE_DATA, SUPPORTED_LOCALES};

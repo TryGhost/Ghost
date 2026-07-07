@@ -7,7 +7,6 @@ export default publicAppViteConfig({
     packageRoot: import.meta.dirname,
     packageName: pkg.name,
     entry: 'src/index.tsx',
-    i18nNamespace: 'comments',
     sourcemap: false,
     overrides: {
         plugins: [stripFingerprintingPlugin()],
