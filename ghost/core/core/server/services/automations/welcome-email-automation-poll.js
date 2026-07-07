@@ -1,5 +1,6 @@
 const logging = require('@tryghost/logging');
 const db = require('../../data/db');
+const settingsCache = require('../../../shared/settings-cache');
 const {MEMBER_WELCOME_EMAIL_SLUGS, MEMBER_WELCOME_EMAIL_ELIGIBLE_STATUSES} = require('../member-welcome-emails/constants');
 const {AutomatedEmailRecipient, Member, WelcomeEmailAutomationRun} = require('../../models');
 /** @import {Knex} from 'knex' */
@@ -228,13 +229,16 @@ async function processRun({
             memberStatus
         });
 
+        const trackOpens = !!settingsCache.get('email_track_opens');
+
         await db.knex.transaction(async (transacting) => {
             await AutomatedEmailRecipient.add({
                 member_id: run.member_id,
                 automated_email_id: run.automated_email_id,
                 member_uuid: member.get('uuid'),
                 member_email: member.get('email'),
-                member_name: member.get('name')
+                member_name: member.get('name'),
+                track_opens: trackOpens
             }, {transacting});
 
             await markExited(run.id, 'finished', transacting);

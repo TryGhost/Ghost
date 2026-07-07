@@ -43,8 +43,8 @@ describe('Domain Warming Integration Tests', function () {
                 status: 'free',
                 email_disabled: false,
                 enable_comment_notifications: true,
-                email_count: 0,
-                email_opened_count: 0,
+                newsletter_email_count: 0,
+                newsletter_email_open_count: 0,
                 created_at: now,
                 updated_at: now
             });
