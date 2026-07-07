@@ -17,7 +17,7 @@ const ghost_head = require('../../../../core/frontend/helpers/ghost_head');
 const proxy = require('../../../../core/frontend/services/proxy');
 const assetHash = require('../../../../core/frontend/services/asset-hash');
 const internalKeys = require('../../../../core/server/services/internal-keys').default;
-const {settingsCache, settingsHelpers} = proxy;
+const {settingsCache, settingsHelpers, labs} = proxy;
 
 /**
  * This test helper asserts that the helper response matches the stored snapshot. This helps us detect issues where we
@@ -1331,6 +1331,59 @@ describe('{{ghost_head}} helper', function () {
                 }
             }));
         });
+        describe('turnstile', function () {
+            beforeEach(function () {
+                getStub.withArgs('members_enabled').returns(true);
+            });
+
+            it('includes turnstile script and sitekey attribute when active', async function () {
+                sinon.stub(labs, 'isSet').withArgs('turnstile').returns(true);
+                getStub.withArgs('turnstile_sitekey').returns('1x00000000000000000000BB');
+                getStub.withArgs('turnstile_secret_key').returns('test-secret');
+
+                const rendered = await testGhostHead(testUtils.createHbsResponse({
+                    locals: {
+                        relativeUrl: '/',
+                        context: ['home', 'index'],
+                        safeVersion: '4.3'
+                    }
+                }));
+
+                assert.match(rendered, /src="https:\/\/challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit"/);
+                assert.match(rendered, /data-turnstile-sitekey="1x00000000000000000000BB"/);
+            });
+
+            it('omits turnstile when the labs flag is off', async function () {
+                sinon.stub(labs, 'isSet').withArgs('turnstile').returns(false);
+                getStub.withArgs('turnstile_sitekey').returns('1x00000000000000000000BB');
+                getStub.withArgs('turnstile_secret_key').returns('test-secret');
+
+                const rendered = await testGhostHead(testUtils.createHbsResponse({
+                    locals: {
+                        relativeUrl: '/',
+                        context: ['home', 'index'],
+                        safeVersion: '4.3'
+                    }
+                }));
+
+                assert.doesNotMatch(rendered, /turnstile/);
+            });
+
+            it('omits turnstile when the keys are not set', async function () {
+                sinon.stub(labs, 'isSet').withArgs('turnstile').returns(true);
+
+                const rendered = await testGhostHead(testUtils.createHbsResponse({
+                    locals: {
+                        relativeUrl: '/',
+                        context: ['home', 'index'],
+                        safeVersion: '4.3'
+                    }
+                }));
+
+                assert.doesNotMatch(rendered, /turnstile/);
+            });
+        });
+
         it('does not inject the portal script when portal url is disabled', async function () {
             getStub.withArgs('members_enabled').returns(true);
             getStub.withArgs('paid_members_enabled').returns(true);

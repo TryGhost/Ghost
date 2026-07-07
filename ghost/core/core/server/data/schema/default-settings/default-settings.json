@@ -372,6 +372,14 @@
         "blocked_email_domains": {
             "defaultValue": "[]",
             "type": "array"
+        },
+        "turnstile_sitekey": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "turnstile_secret_key": {
+            "defaultValue": null,
+            "type": "string"
         }
     },
     "portal": {

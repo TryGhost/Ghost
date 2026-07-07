@@ -95,6 +95,7 @@ Object {
     "transistor_portal_enabled": false,
     "transistor_portal_heading": "Podcasts",
     "transistor_portal_url_template": "https://partner.transistor.fm/ghost/{memberUuid}",
+    "turnstile_sitekey": null,
     "twitter": "@ghost",
     "twitter_description": null,
     "twitter_image": null,

@@ -939,3 +939,135 @@ describe('Signup', () => {
         });
     });
 });
+
+describe('Signup with turnstile enabled', () => {
+    const turnstileSite = base => ({
+        ...base,
+        labs: {...(base.labs || {}), turnstile: true},
+        turnstile_sitekey: '1x00000000000000000000BB'
+    });
+
+    // Installs a fake Turnstile API on the popup iframe's window (the overlay
+    // helper is document-bound, so the mock must live on that window)
+    function mockTurnstile(popupFrame, {autoPass = true, token = 'mocked-turnstile-token'} = {}) {
+        const win = popupFrame.contentDocument.defaultView;
+        const state = {};
+        win.turnstile = {
+            render: vi.fn((container, options) => {
+                state.options = options;
+                return 'widget-1';
+            }),
+            execute: vi.fn(() => {
+                if (autoPass) {
+                    setTimeout(() => state.options.callback(token), 0);
+                }
+            }),
+            reset: vi.fn(),
+            remove: vi.fn()
+        };
+        return {win, state};
+    }
+
+    test('sends turnstileToken with free signup on a single tier site', async () => {
+        const {ghostApi, popupFrame, emailInput, nameInput, chooseBtns, popupIframeDocument} = await setup({
+            site: turnstileSite(FixtureSite.singleTier.basic)
+        });
+        mockTurnstile(popupFrame);
+
+        fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+        fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+        fireEvent.click(chooseBtns[0]);
+
+        const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+        expect(magicLink).toBeInTheDocument();
+
+        expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+            email: 'jamie@example.com',
+            emailType: 'signup',
+            name: 'Jamie Larsen',
+            plan: 'free',
+            integrityToken: 'testtoken',
+            turnstileToken: 'mocked-turnstile-token'
+        });
+    });
+
+    test('sends turnstileToken with free signup on a multi tier site', async () => {
+        const {ghostApi, popupFrame, emailInput, nameInput, chooseBtns, popupIframeDocument} = await multiTierSetup({
+            site: turnstileSite(FixtureSite.multipleTiers.basic)
+        });
+        mockTurnstile(popupFrame);
+
+        fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+        fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+        fireEvent.click(chooseBtns[0]);
+
+        const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+        expect(magicLink).toBeInTheDocument();
+
+        expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+            email: 'jamie@example.com',
+            emailType: 'signup',
+            name: 'Jamie Larsen',
+            plan: 'free',
+            integrityToken: 'testtoken',
+            turnstileToken: 'mocked-turnstile-token'
+        });
+    });
+
+    test('shows the challenge overlay inside the popup only while interaction is required', async () => {
+        const {ghostApi, popupFrame, emailInput, nameInput, chooseBtns, popupIframeDocument} = await setup({
+            site: turnstileSite(FixtureSite.singleTier.basic)
+        });
+        const {win, state} = mockTurnstile(popupFrame, {autoPass: false});
+
+        fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+        fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+        fireEvent.click(chooseBtns[0]);
+
+        await waitFor(() => {
+            expect(win.turnstile.execute).toHaveBeenCalled();
+        });
+
+        const overlay = popupIframeDocument.querySelector('[data-testid="turnstile-overlay"]');
+        expect(overlay).not.toBeNull();
+        expect(overlay.style.display).toEqual('none');
+
+        state.options['before-interactive-callback']();
+        expect(overlay.style.display).toEqual('flex');
+
+        state.options['after-interactive-callback']();
+        expect(overlay.style.display).toEqual('none');
+
+        state.options.callback('mocked-turnstile-token');
+
+        const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+        expect(magicLink).toBeInTheDocument();
+        expect(ghostApi.member.sendMagicLink).toHaveBeenCalled();
+    });
+
+    test('does not send turnstileToken when the labs flag is off', async () => {
+        const {ghostApi, popupFrame, emailInput, nameInput, chooseBtns, popupIframeDocument} = await setup({
+            site: {
+                ...FixtureSite.singleTier.basic,
+                turnstile_sitekey: '1x00000000000000000000BB'
+            }
+        });
+        const {win} = mockTurnstile(popupFrame);
+
+        fireEvent.change(nameInput, {target: {value: 'Jamie Larsen'}});
+        fireEvent.change(emailInput, {target: {value: 'jamie@example.com'}});
+        fireEvent.click(chooseBtns[0]);
+
+        const magicLink = await within(popupIframeDocument).findByText(/now check your email/i);
+        expect(magicLink).toBeInTheDocument();
+
+        expect(win.turnstile.render).not.toHaveBeenCalled();
+        expect(ghostApi.member.sendMagicLink).toHaveBeenLastCalledWith({
+            email: 'jamie@example.com',
+            emailType: 'signup',
+            name: 'Jamie Larsen',
+            plan: 'free',
+            integrityToken: 'testtoken'
+        });
+    });
+});

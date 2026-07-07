@@ -5,12 +5,12 @@ const db = require('../../../core/server/data/db');
 // Stuff we are testing
 const models = require('../../../core/server/models');
 
-const SETTINGS_LENGTH = 112;
+const SETTINGS_LENGTH = 114;
 
 describe('Settings Model', function () {
     // Create the schema once, then empty every table before each test — these
     // assert populateDefaults() starting from an empty settings table (setup()
-    // itself populates the 112 defaults, hence the teardown). Under the old
+    // itself populates the 114 defaults, hence the teardown). Under the old
     // serial model this free-rode on an earlier file's init + truncated state;
     // per-file isolation means each file does its own.
     beforeAll(testUtils.setup());

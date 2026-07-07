@@ -82,6 +82,8 @@ module.exports = function setupMembersApp() {
         '/api/send-magic-link',
         bodyParser.json(),
         middleware.verifyIntegrityToken,
+        // Reject bots before they consume brute allowance for a real email
+        middleware.verifyTurnstile,
         // Prevent brute forcing email addresses (user enumeration)
         shared.middleware.brute.membersAuthEnumeration,
         // Prevent brute forcing passwords for the same email address

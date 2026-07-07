@@ -1,10 +1,13 @@
 import React from 'react';
 import TopLevelGroup from '../../top-level-group';
+import useFeatureFlag from '../../../hooks/use-feature-flag';
 import useSettingGroup from '../../../hooks/use-setting-group';
-import {SettingGroupContent, TextArea, withErrorBoundary} from '@tryghost/admin-x-design-system';
+import {Banner, Separator, SettingGroupContent, TextArea, TextField, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
 
 const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
+    const hasTurnstileFlag = useFeatureFlag('turnstile');
+
     const {
         localSettings,
         isEditing,
@@ -17,6 +20,11 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         handleEditingChange
     } = useSettingGroup({
         onValidate: () => {
+            const [sitekey, secretKey] = getSettingValues(localSettings, ['turnstile_sitekey', 'turnstile_secret_key']) as string[];
+            if (hasTurnstileFlag && !!sitekey !== !!secretKey) {
+                const message = 'Enter both a site key and a secret key to enable Turnstile, or clear both to disable it';
+                return sitekey ? {turnstileSecretKey: message} : {turnstileSitekey: message};
+            }
             return {};
         }
     });
@@ -24,6 +32,8 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
     const [initialBlockedEmailDomainsJSON] = getSettingValues(localSettings, ['blocked_email_domains']) as string[];
     const initialBlockedEmailDomains = JSON.parse(initialBlockedEmailDomainsJSON || '[]') as string[];
     const [blockedEmailDomains, setBlockedEmailDomains] = React.useState(initialBlockedEmailDomains.join('\n'));
+
+    const [turnstileSitekey, turnstileSecretKey] = getSettingValues(localSettings, ['turnstile_sitekey', 'turnstile_secret_key']) as string[];
 
     const updateBlockedEmailDomainsSetting = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
         const input = e.target.value;
@@ -41,9 +51,23 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
         }
     };
 
+    const updateTurnstileSetting = (key: 'turnstile_sitekey' | 'turnstile_secret_key', e: React.ChangeEvent<HTMLInputElement>) => {
+        updateSetting(key, e.target.value.trim() || null);
+
+        if (!isEditing) {
+            handleEditingChange(true);
+        }
+    };
+
     const hint = (
         <>
             Prevent unwanted signups by blocking email domains. Add one domain per line, e.g., <code>spam.xyz</code> to block signups from email addresses like <code>hello@spam.xyz</code>.
+        </>
+    );
+
+    const turnstileHint = (
+        <>
+            Verify member signups and signins with <a className="text-green hover:text-green-400" href="https://developers.cloudflare.com/turnstile/" rel="noreferrer" target="_blank">Cloudflare Turnstile</a>. Create a widget in the Cloudflare dashboard to get a site key and secret key.
         </>
     );
 
@@ -73,7 +97,39 @@ const SpamFilters: React.FC<{ keywords: string[] }> = ({keywords}) => {
                     onChange={updateBlockedEmailDomainsSetting}
                     onKeyDown={() => clearError('spam-filters')}
                 />
-
+                {hasTurnstileFlag && (<>
+                    <Separator className="border-grey-200 dark:border-grey-900" />
+                    <div className="flex flex-col gap-4">
+                        <div>
+                            <div className="text-sm font-medium tracking-normal text-grey-900 dark:text-grey-400">Cloudflare Turnstile</div>
+                            <div className="mt-1 text-xs text-grey-700">{turnstileHint}</div>
+                        </div>
+                        <Banner color='yellow' data-testid='turnstile-warning'>
+                            While Turnstile is enabled, custom or third-party signup forms that post to the members API directly will stop working, and signup forms embedded on other websites only work if those domains are added to the widget&apos;s hostname allowlist in the Cloudflare dashboard.
+                        </Banner>
+                        <TextField
+                            error={!!errors.turnstileSitekey}
+                            hint={errors.turnstileSitekey}
+                            title='Turnstile site key'
+                            value={turnstileSitekey || ''}
+                            onChange={(e) => {
+                                updateTurnstileSetting('turnstile_sitekey', e);
+                            }}
+                            onKeyDown={() => clearError('turnstileSitekey')}
+                        />
+                        <TextField
+                            error={!!errors.turnstileSecretKey}
+                            hint={errors.turnstileSecretKey}
+                            title='Turnstile secret key'
+                            type='password'
+                            value={turnstileSecretKey || ''}
+                            onChange={(e) => {
+                                updateTurnstileSetting('turnstile_secret_key', e);
+                            }}
+                            onKeyDown={() => clearError('turnstileSecretKey')}
+                        />
+                    </div>
+                </>)}
             </SettingGroupContent>
         </TopLevelGroup>
     );

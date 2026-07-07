@@ -39,6 +39,7 @@ Object {
       "superEditors": true,
       "tagsX": true,
       "themeTranslation": true,
+      "turnstile": true,
       "urlCache": true,
     },
     "mail": "",

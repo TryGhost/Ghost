@@ -1,0 +1,404 @@
+# Cloudflare Turnstile for member signup
+
+Plan for adding Cloudflare Turnstile verification to member signup/signin to prevent spam signups.
+Implemented on the `cf-turnstile` branch. Work through the checklist in order; each checked item
+should correspond to at least one commit.
+
+## Decisions (made 2026-07-06, do not re-litigate)
+
+1. **Enforcement:** When Turnstile is active, `POST /members/api/send-magic-link` requests without a
+   valid token are **rejected** (4xx). The Admin settings UI must carry an explicit warning that
+   custom/third-party signup forms posting to the members API will stop working while Turnstile is
+   enabled. (Server-to-server integrations that create members via the Admin API are unaffected.)
+2. **Embedded (`[data-members-form]`) forms:** Turnstile executes invisibly on submit. The widget
+   lives in a hidden, Portal-owned overlay on the main page; the overlay is shown **only if**
+   Cloudflare requires interaction (`before-interactive-callback`) and hidden again afterwards.
+   Never inject the widget inline into theme markup.
+3. **Scope:** All `send-magic-link` email types are protected — `signup`, `subscribe`, **and**
+   `signin` — like the previous hCaptcha implementation.
+4. **Portal:** Same invisible + modal-overlay pattern as embedded forms. Do not change the layout of
+   Portal's signup/signin pages; reveal the widget in an overlay inside the Portal popup only when
+   Cloudflare requires interaction.
+
+"Active" means: labs flag enabled **and** both `turnstile_sitekey` and `turnstile_secret_key` are
+set. Any of those missing → every code path is a no-op.
+
+## Prior art (important)
+
+Ghost shipped a complete hCaptcha integration in early 2025 and removed it in
+**`1091014ae7` — "Cleanup captcha (#23118)"**. That commit is the map of every integration point:
+service + middleware, members API wiring, settings, labs flag, public settings exposure,
+`ghost_head`, Portal widget, data-attribute forms, admin UI (SpamFilters), and tests (including a
+170-line `CaptchaService.test.js`). Read it with `git show 1091014ae7` before starting, and mirror
+its structure with Turnstile equivalents. Differences from hCaptcha:
+
+- No SDK/npm dependency needed. Server verification is a single POST to
+  `https://challenges.cloudflare.com/turnstile/v0/siteverify` with `secret`, `response`, and
+  `remoteip` — use `externalRequest` (`ghost/core/core/server/lib/request-external.js`).
+- Client widget comes from `https://challenges.cloudflare.com/turnstile/v0/api.js` (load with
+  `?render=explicit`), driven via `window.turnstile.render/execute/reset`. Hand-roll a thin wrapper;
+  do not add `@marsidev/react-turnstile` or similar (Portal is a size-sensitive UMD bundle, and the
+  same wrapper must also work outside React for data-attribute forms).
+- Use `appearance: 'interaction-only'` + `execution: 'execute'` with
+  `before-interactive-callback` / `after-interactive-callback` to implement the
+  modal-only-when-needed behaviour.
+
+### Integration points confirmed from the cleanup diff (read 2026-07-06)
+
+Read end to end. Points the plan above missed (now folded into the relevant checklist items):
+
+- **`ghost/core/core/shared/settings-cache/CacheManager.js`** — the JSDoc typedef of known
+  settings listed `captcha_enabled`; add `turnstile_sitekey` / `turnstile_secret_key` there when
+  adding the settings (Phase 0).
+- **Content API / version snapshots** — public exposure of the sitekey will change
+  `test/e2e-api/content/__snapshots__/settings.test.js.snap` and
+  `test/e2e-api/shared/__snapshots__/version.test.js.snap`, not just the integrity/exporter tests.
+  The old code also had a dedicated Content API test ("Can request captcha settings" in
+  `test/e2e-api/content/settings.test.js`) — add a Turnstile equivalent (Phase 0).
+- **Exporter key count** — `test/unit/server/data/exporter/index.test.js` pins
+  `allowedKeysLength`; two new settings means +2 (Phase 0).
+- **Labs flag snapshot** — `test/e2e-api/admin/__snapshots__/config.test.js.snap` lists all labs
+  flags; updates with the flag (Phase 0, the add-private-feature-flag skill should cover it).
+- **Portal test fixtures** — `apps/portal/src/utils/fixtures-generator.js` `getSiteData()` took
+  `captchaEnabled`/`captchaSitekey` params; add turnstile equivalents for Portal tests (Phase 3).
+  The old Portal tests set `captcha_enabled`/`captcha_sitekey` directly on the site fixture.
+- **Test default-settings fixture** (discovered while implementing, not in the cleanup diff) —
+  the testing configs point `paths.defaultSettings` at `test/utils/fixtures/default-settings.json`,
+  a pinned copy of the real file. New settings MUST be added there too or they simply don't exist
+  in e2e/integration test databases. Also: the Admin settings e2e test has a
+  `CURRENT_SETTINGS_COUNT` constant and positional `public_hash`/`labs` matchers that shift when
+  settings are added.
+- **Prior-art wiring differs from our plan in two settled ways** (no action, just context):
+  1. `CaptchaService` was constructed **once at boot** in `services/members/api.js` from labs +
+     `config.get('captcha:*')` (config-driven, not settings-driven) — it did **not** support
+     enabling without a restart. The plan's lazy per-request read of labs/settingsCache has no
+     prior-art template; implement it fresh (e.g. construct the middleware so it evaluates
+     enabled/keys inside the request handler).
+  2. The middleware was mounted inside `members-api.js` (`middleware.sendMagicLink` Router),
+     not in `web/members/app.js`. The plan deliberately mounts in `web/members/app.js` instead so
+     it can sit after `verifyIntegrityToken` and before brute (decision in Design section).
+- **Error semantics** — old middleware threw `InternalServerError` (sparse) on failed
+  verification and `BadRequestError` only for a missing token. The plan uses `BadRequestError`
+  for both, which is more accurate HTTP semantics; keep the sparse-message rule.
+- **Vestigial state** — old code threaded a `captchaRef` through Portal's `App.js` state/context,
+  `DEV_MODE_DATA`, and `SigninPage.js` component state. The overlay-helper design shouldn't need
+  any of that; don't recreate it.
+
+## Design
+
+### Backend (ghost/core)
+
+- **Labs flag** `turnstile` in `PRIVATE_FEATURES` (`ghost/core/core/shared/labs.js`). Use the
+  `add-private-feature-flag` skill (includes the admin-x-settings toggle).
+- **Settings** (group `members`), added to
+  `ghost/core/core/server/data/schema/default-settings/default-settings.json` **and** a migration
+  (use the `create-database-migration` skill; `addSetting()` util; see the old captcha migration
+  `2025-03-05-16-36-39-add-captcha-setting.js` for shape):
+  - `turnstile_sitekey` (string, null default) — public.
+  - `turnstile_secret_key` (string, null default) — private; the key name contains `secret` so the
+    settings API auto-redacts it to `••••••••` (`settings-utils.js` `isSecretSetting`).
+  - Add both to `EDITABLE_SETTINGS` in
+    `ghost/core/core/server/api/endpoints/utils/serializers/input/settings.js`.
+  - Expose **only** the sitekey publicly: `ghost/core/core/shared/settings-cache/public.js` and the
+    members/public settings serializer (`api/endpoints/settings-public.js`) — mirror what the old
+    captcha commit did (in reverse).
+- **TurnstileService** at `ghost/core/core/server/services/members/TurnstileService.js`, modeled on
+  the removed `CaptchaService.js` (visible in `git show 1091014ae7`):
+  - Constructed with `{enabled, secretKey, siteverifyUrl}`; `getMiddleware()` returns a no-op when
+    inactive.
+  - When active: require `req.body.turnstileToken`; missing → `BadRequestError`. Verify via
+    `externalRequest.post(siteverifyUrl, {form: {secret, response, remoteip: req.ip}})`; on
+    `success: false` reject with `BadRequestError` using a deliberately sparse message (don't leak
+    error codes to clients; log them server-side).
+  - `siteverify` URL comes from config `turnstile.siteverifyUrl` with the production default in
+    `ghost/core/core/shared/config/defaults.json` (the old captcha had a similar config block).
+  - Wired up in `services/members/api.js` / `members-api.js` reading labs + settings, and mounted in
+    `ghost/core/core/server/web/members/app.js` on the `send-magic-link` route, after
+    `verifyIntegrityToken` and before the brute middleware (failing a bot before it consumes brute
+    allowance for a real email). Applies to **all** email types (decision 3).
+  - Settings changes must take effect without a restart — read enabled/keys lazily (per-request via
+    settingsCache/labs), not once at boot. Check how the old implementation handled this.
+
+### Script injection (ghost_head)
+
+In `getMembersHelper()` (`ghost/core/core/frontend/helpers/ghost_head.js`), when the members script
+is being injected **and** Turnstile is active:
+
+- Inject `<script src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" async defer></script>`
+  (this is the main-page copy used by data-attribute forms).
+- Add `data-turnstile-sitekey` to the Portal script tag attributes (via the existing `attributes`
+  object → `getDataAttributes()`).
+
+The sitekey is also available to Portal via the public settings it already fetches
+(`/members/api/settings/`) — use whichever is simpler inside Portal, but keep the data attribute so
+`data-attributes.js` can operate before/independently of the settings fetch.
+
+### Portal + embedded forms (apps/portal)
+
+- **Shared helper** `apps/portal/src/utils/turnstile.js`: given a document + sitekey, lazily loads
+  the api.js script into that document if `window.turnstile` is absent, renders a widget
+  (`appearance: 'interaction-only'`, `execution: 'execute'`) into an overlay container it creates,
+  and exposes `getToken(): Promise<string>` that executes the widget, shows the overlay on
+  `before-interactive-callback`, hides it on `after-interactive-callback`/completion, and resets the
+  widget after each use (tokens are single-use — a failed submit must get a fresh token on retry).
+- **Portal popup:** Portal renders inside an iframe (`srcDoc`), so the widget must be created in the
+  iframe's own document (the old hCaptcha component also lived inside the popup — see
+  `PopupModal.js` in the cleanup diff). Overlay is styled by Portal, shown over the popup content.
+  Hook into the signup **and signin** submit paths (`actions.js` `signup`/`signin` →
+  `api.member.sendMagicLink()` in `apps/portal/src/utils/api.js`), passing `turnstileToken` in the
+  request body when Turnstile is active. Helpers `hasTurnstileEnabled({site})` /
+  `getTurnstileSitekey({site})` in `utils/helpers.js` mirror the removed captcha helpers.
+  - ✅ **Spike passed (2026-07-06):** a Turnstile widget renders, executes, and returns tokens
+    inside a `srcDoc="<!DOCTYPE html>"` iframe exactly like Portal's Frame (tested in Chromium
+    against real api.js on localhost). `location.href` is `about:srcdoc`, `origin` inherits the
+    parent — so domain validation sees the parent hostname. The invisible test key
+    (`1x…BB`) delivered a token via `execute()`; the forced-interactive key (`3x…FF`) fired
+    `before-interactive-callback` and visibly rendered the challenge UI inside the iframe.
+    No postMessage fallback needed. Two implementation gotchas found:
+    1. An iframe carries a transient `about:blank` document before the srcdoc document replaces
+       it; anything injected into the transient document is silently discarded. Inject api.js
+       only once `contentWindow.location.href === 'about:srcdoc'` (Portal's Frame `load` event
+       is the equivalent signal).
+    2. Turnstile renders its challenge in a **closed shadow root** — the widget's internal
+       iframe can't be queried or measured. The overlay helper must size its own container
+       (the standard widget is ~300×65) rather than measuring the widget.
+- **Data-attribute forms:** in `apps/portal/src/data-attributes.js` `formSubmitHandler()`, when
+  Turnstile is active, await `getToken()` (main-page document/overlay) between fetching the
+  integrity token and posting to `send-magic-link`, and include `turnstileToken` in `reqBody`. The
+  old hCaptcha version of this file (in the cleanup diff) shows the exact seams; replace its inline
+  widget with the overlay helper.
+- Surface verification failures through the existing error elements (`[data-members-error]` /
+  Portal notifications). Any new user-facing strings go through Portal's `t()` and
+  `ghost/i18n/locales/en/portal.json` with `context.json` descriptions; run
+  `pnpm --filter @tryghost/i18n translate`.
+
+### Admin settings UI (apps/admin-x-settings)
+
+Extend the existing **Spam filters** group
+(`apps/admin-x-settings/src/components/settings/advanced/spam-filters.tsx`) — this is where the old
+captcha UI lived (`SpamFilters.tsx` in the cleanup diff). Behind the `turnstile` labs flag:
+
+- `TextField` for sitekey, `TextField` (password-style) for secret key, using `useSettingGroup()`.
+- Validation: both set or both blank.
+- Static callout/warning: enabling Turnstile blocks signups from custom or third-party forms that
+  post to the members API directly (decision 1), and — for the embed builder / `signup-form` app —
+  any external embedding domains must be added to the widget's domain allowlist in the Cloudflare
+  dashboard.
+- Add search keywords ("turnstile", "captcha", "spam", "bot").
+
+### Embeddable signup-form app (apps/signup-form) — follow-up phase
+
+The `signup-form` embed runs on **external** sites, so it's effectively a third-party form: with
+enforcement on, embeds break unless the site owner allowlists the embedding domains for their
+Turnstile widget. Phase 6 adds the same invisible+overlay flow inside the signup-form iframe (it
+already fetches an integrity token in `form-page.tsx`), passing the sitekey through the embed
+config. The Admin warning copy (above) covers the gap until then. If Phase 6 turns out to be
+low-value, keeping just the warning is acceptable — flag it for a human decision rather than
+silently dropping it.
+
+## Testing
+
+Cloudflare publishes dummy keys that work on any domain including localhost
+(https://developers.cloudflare.com/turnstile/troubleshooting/testing/):
+
+| Key | Value | Behaviour |
+|---|---|---|
+| sitekey | `1x00000000000000000000AA` | visible, always passes |
+| sitekey | `2x00000000000000000000AB` | visible, always fails |
+| sitekey | `1x00000000000000000000BB` | invisible, always passes |
+| sitekey | `2x00000000000000000000BB` | invisible, always fails |
+| sitekey | `3x00000000000000000000FF` | visible, forces interactive challenge |
+| secret | `1x0000000000000000000000000000000AA` | always passes validation |
+| secret | `2x0000000000000000000000000000000AA` | always fails validation |
+| secret | `3x0000000000000000000000000000000AA` | yields "token already spent" |
+
+Dummy sitekeys mint tokens of the form `XXXX.DUMMY.TOKEN.XXXX`; dummy secrets only accept dummy
+tokens.
+
+- **Unit (ghost/core):** `TurnstileService` — no-op when disabled, missing token, siteverify
+  success/failure/network error, sparse client-facing errors. Template: the removed
+  `CaptchaService.test.js` (170 lines, in the cleanup diff).
+- **E2E API (ghost/core):** extend `test/e2e-api/members/send-magic-link.test.js` — with flag +
+  keys set: missing token → 4xx, nock-mocked siteverify success → 201 + email sent, siteverify
+  failure → 4xx + no email; signin path also enforced; flag off / keys unset → current behaviour
+  (regression). Mock `challenges.cloudflare.com` with nock via the e2e-framework mock manager.
+- **ghost_head unit tests:** script tag + `data-turnstile-sitekey` present when active, absent when
+  flag off or keys missing (snapshot tests in `test/unit/frontend/helpers/ghost-head.test.js`).
+- **Portal (vitest):** mock `window.turnstile`; signup and signin flows include `turnstileToken` in
+  the `send-magic-link` body when enabled and omit it when disabled; overlay shows/hides around
+  `before/after-interactive` callbacks; data-attribute form test in
+  `test/data-attributes.test.jsx`. The removed hCaptcha tests in `SignupFlow.test.js` /
+  `SigninFlow.test.js` / `data-attributes.test.js` (cleanup diff) show the shape.
+- **Browser E2E (e2e/, stretch):** Playwright test with the real api.js and forced-interactive
+  sitekey `3x00000000000000000000FF` to exercise the overlay, and `1x00000000000000000000BB` for
+  the invisible happy path. Requires egress to `challenges.cloudflare.com` (the suite has egress
+  monitoring) — if that's not permitted in CI, skip this and rely on the mocked layers.
+
+## Checklist
+
+Work top to bottom. Each item = at least one commit (use the `commit` skill for messages; this is
+non-user-facing until the flag GA's, so no emoji prefixes).
+
+### Phase 0 — scaffolding
+- [x] Read `git show 1091014ae7` end to end; note any integration points this plan missed and update this doc
+- [x] Labs flag `turnstile` (use `add-private-feature-flag` skill)
+- [x] Settings `turnstile_sitekey` + `turnstile_secret_key`: default-settings.json, migration (use `create-database-migration` skill), `EDITABLE_SETTINGS`, public exposure of sitekey only; integrity/exporter test snapshots updated
+
+### Phase 1 — backend verification
+- [x] `TurnstileService` + unit tests
+- [x] Config default `turnstile.siteverifyUrl` in defaults.json
+- [x] Mount middleware on `send-magic-link` (all email types); e2e API tests with nock (success / failure / missing token / disabled regression / signin path)
+
+### Phase 2 — script injection
+- [x] `ghost_head`: conditionally inject api.js script + `data-turnstile-sitekey` attribute; unit/snapshot tests
+
+### Phase 3 — Portal + embedded forms
+- [x] Spike: confirm Turnstile widget renders inside Portal's srcDoc iframe with a real test sitekey; record result here
+- [x] `utils/turnstile.js` overlay helper (+ helpers.js `hasTurnstileEnabled`/`getTurnstileSitekey`)
+- [x] Portal signup + signin flows send `turnstileToken`; overlay-on-interaction inside popup; vitest coverage
+- [x] `data-attributes.js` flow with main-page overlay; vitest coverage
+- [x] i18n: new portal strings + `pnpm --filter @tryghost/i18n translate`
+
+### Phase 4 — Admin UI
+- [x] Turnstile fields + third-party-forms warning in Spam filters group (behind flag); admin-x-settings tests
+
+### Phase 5 — verification passes
+- [ ] Full test sweep: `ghost/core` unit + affected e2e-api suites, portal tests, admin-x-settings tests, lint, i18n translate check
+- [ ] Manual smoke with `pnpm dev` + CF test keys (invisible pass, forced-interactive overlay, always-fail secret) on Portal, data-attribute form, and signin; record results here
+
+### Phase 6 — follow-ups (need human sign-off before starting)
+- [ ] signup-form embed app support (domain-allowlist caveat above)
+- [ ] Browser E2E in `e2e/` with real test sitekeys (egress permitting)
+
+## Progress log
+
+_Append dated notes here as work proceeds: what landed, what was learned (esp. the iframe spike),
+anything that diverged from the plan and why._
+
+- **2026-07-06** — Read the `1091014ae7` cleanup diff end to end. Added "Integration points
+  confirmed from the cleanup diff" to Prior art: missed snapshot/test touchpoints (CacheManager
+  typedef, content settings + version snapshots, exporter key count, Portal fixtures-generator)
+  and two prior-art divergences — the old CaptchaService was config-driven and constructed once
+  at boot (no restart-free enablement; our lazy-read requirement must be built fresh), and its
+  middleware was mounted in members-api.js rather than web/members/app.js. No code changes.
+- **2026-07-06** — Labs flag `turnstile` added via the add-private-feature-flag skill:
+  `PRIVATE_FEATURES` in labs.js, toggle in private-features.tsx, config.test.js snapshot updated
+  (verified diff only adds the one flag). Labs unit tests + config e2e pass; lint clean.
+- **2026-07-06** — Settings `turnstile_sitekey` + `turnstile_secret_key` landed: two `addSetting()`
+  migrations in 6.50 (verified up/idempotent-rerun/down directly against sqlite; `knex-migrator
+  migrate --v 6.50 --force` silently skips re-running recorded migrations, so don't rely on it for
+  verification), default-settings.json, `EDITABLE_SETTINGS`, cache-manager typedef, sitekey in
+  settings-cache `public.js` (settings-public endpoint needed no change — it merges `getPublic()`).
+  Secret auto-redacts via `isSecretSetting` (`/secret|api_key/`). Added `turnstile_secret_key` to
+  the exporter `SETTING_KEYS_BLOCKLIST`, following the precedent of every other secret setting.
+  Learned the hard way: e2e test DBs populate settings from the pinned copy at
+  `test/utils/fixtures/default-settings.json` (testing config overrides `paths.defaultSettings`) —
+  added both settings there; six older settings are missing from it (pre-existing drift, flagged as
+  a separate task, not touched on this branch). Updated: integrity hash, exporter allowedKeysLength
+  (109; only +1 because the secret is blocklisted), content settings snapshot (sitekey exposed,
+  null), admin settings snapshots + `CURRENT_SETTINGS_COUNT` 107→109 + labs matcher index 68→70.
+  New Content API e2e test asserts sitekey is exposed and the secret never is. Suites green:
+  integrity, exporter, labs unit, content settings, admin settings, members site. Lint clean.
+- **2026-07-06** — `TurnstileService` + 8 unit tests landed. Two divergences from the plan's
+  letter, same spirit: (1) file is `services/members/turnstile-service.js` (kebab-case) because
+  ghost/core's `local-filenames/match-regex` lint forbids `TurnstileService.js`; class name is
+  still `TurnstileService`. (2) To satisfy the lazy-read requirement, `enabled`/`secretKey`
+  constructor params accept functions evaluated per request (plain values also work);
+  `getMiddleware()` returns one middleware that checks activity per request rather than choosing
+  no-op vs active at construction — flipping the flag needs no restart and no re-mount. Verifies
+  via `externalRequest.post(siteverifyUrl, {form, responseType: 'json'})`; missing token → 400,
+  `success: false` → sparse 400 with codes logged server-side only, network error → sparse 500.
+  Note for the e2e item: vitest 4 rejects `done()`-style tests — write promise-style.
+- **2026-07-06** — Config default `turnstile.siteverifyUrl` added to defaults.json (production
+  Cloudflare endpoint). Verified the key loads via `config.get('turnstile:siteverifyUrl')`;
+  config loader unit tests + admin config e2e green.
+- **2026-07-06** — Middleware mounted. Divergence from the plan's wiring note: the service is
+  constructed in `services/members/middleware.js` (exported as `verifyTurnstile`) rather than in
+  `api.js`/`members-api.js` — with the lazy-read service there's nothing boot-time to wire there,
+  and middleware.js is where the route middlewares already live. Mounted in `web/members/app.js`
+  exactly where the plan says: after `verifyIntegrityToken`, before the brute pair. Activity check:
+  `labs.isSet('turnstile') && sitekey && secret_key`, all read per request. Six e2e tests in
+  `send-magic-link.test.js` (nock on challenges.cloudflare.com, `mockManager.disableNetwork()` +
+  `mockSetting`/`mockLabsEnabled`): missing token 400, mocked success 201 + email + siteverify body
+  carries secret/response/remoteip, mocked failure 400 + no email, signin enforced (400 then 201),
+  flag-off regression, keys-unset regression. Full suite 50/50; members middleware unit 19/19.
+- **2026-07-06** — `ghost_head` injection done. `labs` comes via the frontend `proxy` (no direct
+  shared/labs require needed). Both the `data-turnstile-sitekey` attribute and the api.js script
+  are emitted inside the portal-script branch of `getMembersHelper()` — same active check as the
+  middleware (flag + both keys). Sitekey is escaped via `escapeExpression`. Three snapshot tests
+  (active / flag off / keys unset) in ghost-head.test.js; suite 99/99, snapshot diff verified to
+  contain only the three new entries.
+- **2026-07-06** — Iframe spike PASSED (details recorded inline in the Portal design section
+  above): widget renders + executes + returns tokens inside a srcDoc iframe; interactive
+  challenge renders visibly; no postMessage fallback needed. Two gotchas for the overlay helper:
+  wait for the srcdoc document (transient about:blank discards injected scripts), and don't try
+  to measure the widget (closed shadow root). Spike page kept at
+  scratchpad/turnstile-spike/spike.html (session-local, not committed).
+- **2026-07-06** — Portal overlay helper landed: `createTurnstile({doc, sitekey})` in
+  `apps/portal/src/utils/turnstile.js` returning `{getToken, destroy}` — lazy api.js injection
+  into the given document, fixed-size overlay box (closed-shadow-root gotcha), overlay shown only
+  between before/after-interactive callbacks, widget reset before every re-execution, concurrent
+  `getToken` calls share the in-flight promise. `hasTurnstileEnabled` requires
+  `site.labs.turnstile` AND `site.turnstile_sitekey` (Portal's site object is built from the
+  public settings response, which carries both — confirmed in api.js `init`). 8 + 6 new vitest
+  tests; portal suite for both files 136/136; lint clean. Error strings are plain English for
+  now — they surface through Portal notifications in the next item, where i18n gets applied.
+- **2026-07-06** — Portal signup/signin wired. `getPopupTurnstileToken` in actions.js finds the
+  popup iframe via `iframe[data-testid="portal-popup-frame"]` and runs the document-bound verifier
+  in it — no captchaRef-style state threading, and `PopupModal` needed no changes (the overlay is
+  created in the popup document at getToken time; the popup iframe is full-viewport so the fixed
+  overlay covers the popup). `utils/turnstile.js` gained `getTurnstileToken({doc, sitekey})` with a
+  per-document WeakMap cache (popup close/reopen gets a fresh verifier). Token fetched before the
+  integrity token (hCaptcha's order); failures fall into the existing signin:failed/signup:failed
+  notifications. `sendMagicLink` carries `turnstileToken`; undefined when inactive (JSON.stringify
+  drops it — verified existing exact-args test assertions still pass because vitest equality
+  ignores undefined keys). 6 new flow tests incl. overlay-visibility-in-popup and flag-off
+  regression; full Portal suite 602 passed / 1 pre-existing skip; lint clean.
+- **2026-07-06** — Data-attribute forms wired. `handleDataAttributes` resolves the sitekey once
+  (`hasTurnstileEnabled` gate) and passes `turnstileSitekey` into `formSubmitHandler`, mirroring
+  the old `captchaId` param; the handler awaits `getTurnstileToken({doc: document, ...})` between
+  the integrity-token fetch and the send-magic-link POST (main-page overlay; api.js already on
+  the page via ghost_head, and the helper falls back to injecting it if a theme lacks it).
+  Failures fall into the existing `[data-members-error]` handling. New test asserts the POST body
+  carries turnstileToken and the overlay exists-but-hidden in the main document; existing
+  no-sitekey test doubles as the disabled regression. Full Portal suite 603/604 (1 pre-existing
+  skip); lint clean.
+- **2026-07-06** — i18n done. Learned: Portal only displays non-generic error messages that are
+  on the `specialMessages` allowlist in `utils/errors.js` (used as translation keys at display
+  time) — so rather than wrapping strings in `t()` at the throw site, the four Turnstile failure
+  strings ('Turnstile verification failed' from the server, plus the helper's 'Security
+  verification failed/expired' and 'Failed to load security verification') were added to that
+  allowlist. `translate` propagated them to portal.json in all locales; context.json descriptions
+  filled (CI rejects empty ones). i18n tests 37/37, lint:translations clean, portal errors tests
+  7/7. 'Security verification cancelled' stays internal (only thrown by destroy()); 'Turnstile
+  token missing' is unreachable through Portal-managed forms, so neither is translated.
+- **2026-07-06** — Admin UI landed (Phase 4 complete). Spam filters group gets, behind the flag:
+  sitekey TextField, password-type secret TextField, yellow Banner warning about third-party
+  forms + embed domain allowlisting, both-or-neither validation in `onValidate` (error attached
+  to whichever field is missing). Keys save trimmed-or-null. SpamFilters got its own
+  `spamFilters` search keyword list (turnstile/captcha/bot/cloudflare) instead of piggybacking on
+  `access`. The masked secret ('••••••••') from the API counts as "set" for validation and is
+  only re-sent if the user edits it (framework sends dirty settings only). 4 new Playwright
+  acceptance tests (hidden-when-flag-off, save both keys + warning visible, both-or-neither
+  validation blocks save, clear-both) — all 8 in the file pass (needed a one-off
+  `playwright install chromium` locally); unit suite 177/177; lint clean.
+- **2026-07-06** — Full test sweep run; item left UNCHECKED pending a human call. Results:
+  Portal 603 passed / 1 pre-existing skip; admin-x-settings unit 177/177 + spam-filters
+  acceptance 8/8; affected e2e-api suites re-run green (send-magic-link 50, members site 3,
+  content settings 3, admin settings 30, admin config 3); lint clean in ghost/core, portal,
+  admin-x-settings; `i18n translate` produces no diff. ghost/core unit: 7155/7158 — the only
+  failures are 2–3 tests in `test/unit/server/services/automations/automations-repository.test.ts`
+  ("only inserts action revisions when action data changes", "enqueues the latest revision of the
+  next action"), a **pre-existing timezone bug unrelated to this branch**: the file passes under
+  `TZ=UTC` and fails under Europe/London (BST) with a UNIQUE constraint collision on generated
+  `created_at` values one hour apart. No branch commit touches automations. Flagged as a separate
+  task. If that's accepted as unrelated, the sweep is otherwise fully green.
+- **2026-07-06** — Rebased onto latest main (1d33898848). Conflicts: labs.js +
+  private-features.tsx (main promoted `giftLinks` to GA — kept main's lists, re-added
+  `turnstile`) and an admin settings snapshot content-length (regenerated at the tip: 5570).
+  Two post-rebase fixes: moved the two setting migrations from versions/6.50 to versions/6.51
+  (main released 6.51; `migrate:create` confirms 6.51 is the current target — migrations left in
+  a shipped folder risk being skipped on upgraded sites), and the snapshot regen. Re-verified at
+  the tip: integrity/exporter/labs/turnstile-service/middleware/ghost-head units, all five
+  affected e2e-api suites, Portal 604/605, admin-x-settings 203 unit + 8 acceptance (Playwright
+  browser needed reinstall after main's version bump), i18n translate clean.

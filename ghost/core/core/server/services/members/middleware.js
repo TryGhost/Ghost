@@ -16,6 +16,9 @@ const onHeaders = require('on-headers');
 const tiersService = require('../tiers/service');
 const config = require('../../../shared/config');
 const settingsHelpers = require('../settings-helpers');
+const labs = require('../../../shared/labs');
+const settingsCache = require('../../../shared/settings-cache');
+const TurnstileService = require('./turnstile-service');
 
 const messages = {
     missingUuid: 'Missing uuid.',
@@ -196,6 +199,16 @@ const createIntegrityToken = async function createIntegrityToken(req, res) {
         res.end();
     }
 };
+
+// Turnstile is only active when the labs flag is on AND both keys are set;
+// enabled/secretKey are functions so settings changes apply without a restart
+const turnstileService = new TurnstileService({
+    enabled: () => labs.isSet('turnstile') && !!settingsCache.get('turnstile_sitekey') && !!settingsCache.get('turnstile_secret_key'),
+    secretKey: () => settingsCache.get('turnstile_secret_key'),
+    siteverifyUrl: config.get('turnstile:siteverifyUrl')
+});
+
+const verifyTurnstile = turnstileService.getMiddleware();
 
 const verifyIntegrityToken = async function verifyIntegrityToken(req, res, next) {
     const shouldThrowForInvalidToken = config.get('verifyRequestIntegrity');
@@ -470,5 +483,6 @@ module.exports = {
     accessInfoSession,
     deleteSuppression,
     createIntegrityToken,
-    verifyIntegrityToken
+    verifyIntegrityToken,
+    verifyTurnstile
 };
