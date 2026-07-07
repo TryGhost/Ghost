@@ -35,8 +35,57 @@ import createExploreService from './server/services/explore/create';
 import createEmailAddressService from './server/services/email-address/create';
 import createCustomThemeSettingsService from './server/services/custom-theme-settings/create';
 import CustomThemeSettingsCache from './shared/custom-theme-settings-cache/custom-theme-settings-cache';
-
+import createMemberWelcomeEmailService from './server/services/member-welcome-emails/create';
+import createEmailSuppressionList from './server/services/email-suppression-list/create';
 export const registerCoreServices = (container: Container): void => {
+    container.register('memberWelcomeEmails', {
+        lifetime: 'SCOPED',
+        factory: ({models, events, settingsCache}: Cradle) => createMemberWelcomeEmailService({models, events, settingsCache})
+    });
+
+    container.register('emailSuppressionList', {
+        lifetime: 'SCOPED',
+        factory: ({models, settingsCache, siteConfig, deploymentConfig}: Cradle) => createEmailSuppressionList({
+            models,
+            settingsCache,
+            configView: createConfigView({siteConfig, deploymentConfig}),
+            // Bridged until labs migrates
+            labs: require('./shared/labs')
+        })
+    });
+
+    container.register('customThemeSettingsCache', {
+        lifetime: 'SCOPED',
+        factory: () => new CustomThemeSettingsCache()
+    });
+
+    container.register('customThemeSettings', {
+        lifetime: 'SCOPED',
+        factory: ({models, customThemeSettingsCache}: Cradle) => createCustomThemeSettingsService({models, customThemeSettingsCache})
+    });
+
+    container.register('emailAddress', {
+        lifetime: 'SCOPED',
+        factory: ({settingsHelpers, siteConfig, deploymentConfig}: Cradle) => createEmailAddressService({
+            settingsHelpers,
+            configView: createConfigView({siteConfig, deploymentConfig}),
+            // Bridged until labs migrates
+            labs: require('./shared/labs')
+        })
+    });
+
+    container.register('explore', {
+        lifetime: 'SCOPED',
+        factory: ({models}: Cradle) => createExploreService({
+            models,
+            // Bridged until these migrate
+            membersService: require('./server/services/members'),
+            postsService: require('./server/services/posts/posts-service-instance')(),
+            publicConfigService: require('./server/services/public-config'),
+            statsService: require('./server/services/stats'),
+            stripeService: require('./server/services/stripe')
+        })
+    });
     container.register('tagsPublic', {
         lifetime: 'SCOPED',
         factory: ({events, siteConfig, adapterManager}: Cradle) => {
