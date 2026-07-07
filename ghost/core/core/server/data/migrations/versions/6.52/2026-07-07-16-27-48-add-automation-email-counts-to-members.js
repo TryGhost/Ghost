@@ -8,7 +8,7 @@ const columnDefinition = {
 };
 
 module.exports = combineNonTransactionalMigrations(
-    createAddColumnMigration('members', 'automation_email_count', columnDefinition),
-    createAddColumnMigration('members', 'automation_tracked_email_count', columnDefinition),
-    createAddColumnMigration('members', 'automation_email_open_count', columnDefinition)
+    createAddColumnMigration('members', 'automation_email_count', columnDefinition, {algorithm: 'instant'}),
+    createAddColumnMigration('members', 'automation_tracked_email_count', columnDefinition, {algorithm: 'instant'}),
+    createAddColumnMigration('members', 'automation_email_open_count', columnDefinition, {algorithm: 'instant'})
 );
