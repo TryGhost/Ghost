@@ -25,9 +25,11 @@ let postsInserted = 0;
 /** TEST FIXTURES **/
 const fixtures = {
     insertPosts: async function insertPosts(posts) {
-        return Promise.all(posts.map((post) => {
-            return models.Post.add(post, context.internal);
-        }));
+        const results = [];
+        for (const post of posts) {
+            results.push(await models.Post.add(post, context.internal));
+        }
+        return results;
     },
 
     insertPostsAndTags: async function insertPostsAndTags() {
