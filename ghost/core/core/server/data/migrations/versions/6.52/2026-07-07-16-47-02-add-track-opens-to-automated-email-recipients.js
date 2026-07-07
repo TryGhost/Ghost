@@ -4,4 +4,4 @@ module.exports = createAddColumnMigration('automated_email_recipients', 'track_o
     type: 'boolean',
     nullable: false,
     defaultTo: false
-}, {algorithm: 'auto'});
+}, {algorithm: 'instant'});

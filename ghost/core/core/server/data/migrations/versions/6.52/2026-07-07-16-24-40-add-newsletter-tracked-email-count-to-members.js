@@ -4,4 +4,4 @@ module.exports = createAddColumnMigration('members', 'newsletter_tracked_email_c
     type: 'integer',
     unsigned: true,
     nullable: true
-}, {algorithm: 'auto'});
+}, {algorithm: 'instant'});

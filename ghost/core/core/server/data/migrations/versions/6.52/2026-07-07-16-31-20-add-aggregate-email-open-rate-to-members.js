@@ -4,4 +4,4 @@ module.exports = createAddColumnMigration('members', 'aggregate_email_open_rate'
     type: 'integer',
     unsigned: true,
     nullable: true
-}, {algorithm: 'auto'});
+}, {algorithm: 'instant'});
