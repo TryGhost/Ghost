@@ -13,9 +13,7 @@
  * uses Preact and never installs `@vitejs/plugin-react`).
  *
  * i18n note: apps import their locales via `@tryghost/i18n/registry/<namespace>`,
- * a static ESM registry. The old `commonjsOptions.dynamicRequireTargets` shim is
- * gone — it never worked under Rolldown, and the static registry lets any bundler
- * resolve locale JSON statically.
+ * a static ESM registry any bundler can resolve.
  */
 import {resolve} from 'path';
 import {defineConfig, mergeConfig} from 'vitest/config';

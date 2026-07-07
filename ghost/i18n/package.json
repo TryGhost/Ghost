@@ -7,22 +7,21 @@
   "main": "index.js",
   "exports": {
     ".": {
-      "types": "./build/i18n.d.ts",
+      "types": "./index.d.ts",
       "require": "./index.js",
       "default": "./index.js"
     },
     "./registry/*": {
-      "types": "./build/registry.d.ts",
+      "types": "./registry.d.ts",
       "default": "./lib/registry/*.mjs"
     },
     "./lib/locale-data.json": "./lib/locale-data.json",
     "./package.json": "./package.json"
   },
-  "types": "./build/i18n.d.ts",
+  "types": "./index.d.ts",
   "scripts": {
-    "build": "pnpm build:registry && pnpm build:types",
+    "build": "pnpm build:registry",
     "build:registry": "node scripts/generate-locale-registry.js",
-    "build:types": "node scripts/generate-types.js",
     "prebuild:check": "node scripts/check-registry-fresh.js",
     "test:base": "NODE_ENV=testing vitest run --coverage",
     "test": "pnpm test:base && pnpm build:registry && pnpm prebuild:check && pnpm translate",
@@ -39,10 +38,11 @@
   },
   "files": [
     "index.js",
+    "index.d.ts",
+    "registry.d.ts",
     "lib",
     "locales",
-    "scripts",
-    "build"
+    "scripts"
   ],
   "devDependencies": {
     "@eslint/js": "catalog:",
@@ -66,7 +66,6 @@
     "targets": {
       "build": {
         "outputs": [
-          "{projectRoot}/build",
           "{projectRoot}/lib/registry"
         ]
       }
