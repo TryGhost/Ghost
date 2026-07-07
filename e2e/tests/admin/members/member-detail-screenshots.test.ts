@@ -19,7 +19,9 @@ usePerTestIsolation();
 // without cluttering the e2e workspace. `process.cwd()` is the e2e/ dir in dev runs.
 const OUT_DIR = path.resolve(process.cwd(), '../apps/posts/tmp/screenshots');
 
-const previewPath = (memberId: string) => `/ghost/#/members/preview/${memberId}`;
+// Post-Phase 8 cutover: `/members/:member_id` is the React route. The
+// temporary preview route was retired in slice 8.3.
+const memberPath = (memberId: string) => `/ghost/#/members/${memberId}`;
 
 function ensureOutDir() {
     if (!fs.existsSync(OUT_DIR)) {
@@ -65,7 +67,7 @@ test.describe('Ghost Admin - Member Detail (React) - visual', () => {
             return route.fulfill({response, body: JSON.stringify(body)});
         });
 
-        await page.goto(previewPath(member.id));
+        await page.goto(memberPath(member.id));
         await expect(page.getByTestId('member-subscription-tier')).toHaveText('Bronze');
 
         await page.screenshot({path: path.join(OUT_DIR, 'react-paid-subscription.png'), fullPage: true});
