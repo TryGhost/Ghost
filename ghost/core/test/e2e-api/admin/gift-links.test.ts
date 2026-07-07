@@ -111,6 +111,30 @@ describe('Gift Links Admin API', function () {
         });
     });
 
+    describe('a post that does not exist', function () {
+        const MISSING_POST_ID = '0123456789abcdef01234567';
+
+        it('404s on GET, PUT and POST', async function () {
+            await agent.get(`posts/${MISSING_POST_ID}/gift_links/`).expectStatus(404);
+            await agent.put(`posts/${MISSING_POST_ID}/gift_links/`).expectStatus(404);
+            await agent.post(`posts/${MISSING_POST_ID}/gift_links/`).expectStatus(404);
+        });
+    });
+
+    it('concurrent ensures settle on a single live link (last writer wins)', async function () {
+        const [a, b] = await Promise.all([
+            agent.put(`posts/${postId}/gift_links/`).expectStatus(200),
+            agent.put(`posts/${postId}/gift_links/`).expectStatus(200)
+        ]);
+
+        const {body} = await agent.get(`posts/${postId}/gift_links/`).expectStatus(200);
+        assert.equal(body.gift_links.length, 1);
+        // The surviving live token must be one a caller actually received — a link
+        // no client holds would be unshareable.
+        const returnedTokens = [a.body.gift_links[0].token, b.body.gift_links[0].token];
+        assert.ok(returnedTokens.includes(body.gift_links[0].token));
+    });
+
     describe('records actions in the history (via the actions API)', function () {
         let actorId: string;
 
