@@ -158,7 +158,8 @@ test.describe('Spam prevention settings', async () => {
             toggleLabsFlag('turnstile', true);
 
             const {lastApiRequests} = await mockApi({page, requests: {
-                ...globalDataRequests
+                ...globalDataRequests,
+                editSettings: {method: 'PUT', path: '/settings/', response: responseFixtures.settings}
             }});
 
             await page.goto('/');
