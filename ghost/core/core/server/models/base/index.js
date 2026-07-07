@@ -1,6 +1,6 @@
-const db = require('../../data/db');
+const {knexProxy} = require('../../data/db/knex-proxy');
 const createBookshelf = require('./create-bookshelf');
 
-// The process-wide bookshelf instance; model files register on this at require
-// time until the models factory migration completes
-module.exports = createBookshelf(db.knex);
+// The process-wide bookshelf binds the knex proxy, so model queries follow the
+// container's current connection even when models load before boot
+module.exports = createBookshelf(knexProxy);
