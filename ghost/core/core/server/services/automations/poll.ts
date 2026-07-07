@@ -193,20 +193,23 @@ const processStep = async ({
                 memberStatus
             });
             try {
+                const trackOpens = !!settingsCache.get('email_track_opens');
+
                 await db.knex.transaction(async (trx) => {
                     await AutomatedEmailRecipient.add({
                         member_id: step.member_id,
                         member_uuid: member.get('uuid'),
                         member_email: member.get('email'),
                         member_name: member.get('name'),
-                        automation_action_revision_id: step.automation_action_revision_id
+                        automation_action_revision_id: step.automation_action_revision_id,
+                        track_opens: trackOpens
                     }, {transacting: trx});
 
                     await trx('members')
                         .where({id: step.member_id})
                         .increment('automation_email_count', 1);
 
-                    if (settingsCache.get('email_track_opens')) {
+                    if (trackOpens) {
                         await trx('members')
                             .where({id: step.member_id})
                             .increment('automation_tracked_email_count', 1);

@@ -371,7 +371,8 @@ describe('automations poll', function () {
             member_uuid: '00000000-0000-4000-8000-000000000001',
             member_email: 'member@example.com',
             member_name: 'Test Member',
-            automation_action_revision_id: 'revision-id'
+            automation_action_revision_id: 'revision-id',
+            track_opens: true
         }, {transacting: trx});
         sinon.assert.callOrder(
             memberWelcomeEmailService.api.sendAutomationEmail,
@@ -392,7 +393,8 @@ describe('automations poll', function () {
             member_uuid: '00000000-0000-4000-8000-000000000001',
             member_email: 'member@example.com',
             member_name: 'Test Member',
-            automation_action_revision_id: 'revision-id'
+            automation_action_revision_id: 'revision-id',
+            track_opens: true
         }, {transacting: trx});
         sinon.assert.calledWithExactly(incrementAutomationEmailCount, 'automation_email_count', 1);
         sinon.assert.callOrder(
@@ -419,6 +421,23 @@ describe('automations poll', function () {
         await poll(options);
 
         sinon.assert.neverCalledWith(incrementAutomationEmailCount, 'automation_tracked_email_count', 1);
+    });
+
+    it('records the automated email recipient with open tracking disabled when the setting is disabled', async function () {
+        settingsCache.get.withArgs('email_track_opens').returns(false);
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+
+        await poll(options);
+
+        sinon.assert.calledOnceWithExactly(automatedEmailRecipientAdd, {
+            member_id: step.member_id,
+            member_uuid: '00000000-0000-4000-8000-000000000001',
+            member_email: 'member@example.com',
+            member_name: 'Test Member',
+            automation_action_revision_id: 'revision-id',
+            track_opens: false
+        }, {transacting: trx});
     });
 
     it('does not retry the email send when recording the automated email recipient fails', async function () {
