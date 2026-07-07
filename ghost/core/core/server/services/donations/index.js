@@ -1,3 +1,6 @@
-const DonationServiceWrapper = require('./donation-service-wrapper');
+const createFacade = require('../../../shared/container/create-facade');
+const createDonationService = require('./create');
 
-module.exports = new DonationServiceWrapper();
+module.exports = createFacade('donations', () => createDonationService({
+    models: require('../../models')
+}));

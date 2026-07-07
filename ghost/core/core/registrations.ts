@@ -15,8 +15,14 @@ import {createAdapterManager} from './server/services/adapter-manager';
 import createUrlUtils from './shared/create-url-utils';
 import createLimitService from './server/services/create-limit-service';
 import createTiersService from './server/services/tiers/create';
+import createDonationService from './server/services/donations/create';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('donations', {
+        lifetime: 'SCOPED',
+        factory: ({models}: Cradle) => createDonationService({models})
+    });
+
     container.register('tiers', {
         lifetime: 'SCOPED',
         factory: ({models, domainEvents}: Cradle) => createTiersService({models, domainEvents})

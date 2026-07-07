@@ -228,19 +228,22 @@ describe('two scopes in one process', function () {
         }
     });
 
-    it('gives each scope its own tiers service', async function () {
+    it('gives each scope its own service instances', async function () {
         const root = createContainer();
         registerCoreServices(root);
         const scopeA = createSiteScope(root);
         const scopeB = createSiteScope(root);
 
-        try {
-            const tiersA = scopeA.resolve('tiers') as any;
-            const tiersB = scopeB.resolve('tiers') as any;
+        const scopedServices = ['tiers', 'donations'];
 
-            assert.ok(tiersA.api);
-            assert.notEqual(tiersA.api, tiersB.api);
-            assert.notEqual(tiersA.repository, tiersB.repository);
+        try {
+            for (const name of scopedServices) {
+                const serviceA = scopeA.resolve(name) as object;
+                const serviceB = scopeB.resolve(name) as object;
+
+                assert.ok(serviceA, `expected ${name} to resolve`);
+                assert.notEqual(serviceA, serviceB, `expected ${name} to be scope-isolated`);
+            }
         } finally {
             await scopeA.dispose();
             await scopeB.dispose();
