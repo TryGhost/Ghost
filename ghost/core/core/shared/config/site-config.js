@@ -14,7 +14,17 @@ const buildSiteConfig = config => ({
     siteUuid: config.get('site_uuid'),
     hostSettings: config.get('hostSettings'),
     labs: config.get('labs'),
-    contentPath: config.get('paths:contentPath')
+    contentPath: config.get('paths:contentPath'),
+    getSiteUrl: config.getSiteUrl,
+    getAdminUrl: config.getAdminUrl,
+    getSubdir: config.getSubdir,
+    assetBaseUrls: {
+        media: config.get('urls:media'),
+        files: config.get('urls:files'),
+        image: config.get('urls:image')
+    },
+    protectedSlugs: config.get('slugs').protected,
+    redirectCacheMaxAge: config.get('caching:301:maxAge')
 });
 
 module.exports = {buildSiteConfig};

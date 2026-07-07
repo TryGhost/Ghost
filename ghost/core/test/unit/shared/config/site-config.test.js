@@ -3,7 +3,10 @@ const {buildSiteConfig} = require('../../../../core/shared/config/site-config');
 
 describe('buildSiteConfig', function () {
     const fakeConfig = (values) => ({
-        get: key => values[key]
+        get: key => (key === 'slugs' ? {protected: ['ghost']} : values[key]),
+        getSiteUrl: () => values.url,
+        getAdminUrl: () => values['admin:url'],
+        getSubdir: () => ''
     });
 
     it('picks the site-level keys from config', function () {
@@ -27,6 +30,8 @@ describe('buildSiteConfig', function () {
         assert.deepEqual(siteConfig.hostSettings, {siteId: '123'});
         assert.deepEqual(siteConfig.labs, {someFlag: true});
         assert.equal(siteConfig.contentPath, '/content/site-a');
+        assert.equal(siteConfig.getSiteUrl(), 'https://site-a.example');
+        assert.deepEqual(siteConfig.protectedSlugs, ['ghost']);
     });
 
     it('keeps the database object identity so dialect shaping stays visible to the migrator', function () {

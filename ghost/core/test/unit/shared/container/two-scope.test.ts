@@ -8,13 +8,20 @@ import {registerCoreServices} from '../../../../core/registrations';
  * Every migrated subsystem gets its isolation asserted here.
  */
 describe('two scopes in one process', function () {
-    const createSiteScope = (root: ReturnType<typeof createContainer>) => {
+    const createSiteScope = (root: ReturnType<typeof createContainer>, url = 'https://site.example/') => {
         return root.createScope({
             siteConfig: {
                 database: {
                     client: 'better-sqlite3',
                     connection: {filename: ':memory:'}
-                }
+                },
+                url,
+                getSiteUrl: () => url,
+                getAdminUrl: () => undefined,
+                getSubdir: () => '',
+                assetBaseUrls: {},
+                protectedSlugs: ['ghost'],
+                redirectCacheMaxAge: 0
             },
             adapterPaths: ['', `${__dirname}/../../../../core/server/adapters/`],
             adapterConfig: {
@@ -143,6 +150,24 @@ describe('two scopes in one process', function () {
 
             cacheA.set('key', 'site-a');
             assert.equal(await cacheB.get('key'), undefined);
+        } finally {
+            await scopeA.dispose();
+            await scopeB.dispose();
+        }
+    });
+
+    it('gives each scope url utils for its own site url', async function () {
+        const root = createContainer();
+        registerCoreServices(root);
+        const scopeA = createSiteScope(root, 'https://site-a.example/');
+        const scopeB = createSiteScope(root, 'https://site-b.example/');
+
+        try {
+            const urlUtilsA = scopeA.resolve('urlUtils') as any;
+            const urlUtilsB = scopeB.resolve('urlUtils') as any;
+
+            assert.equal(urlUtilsA.urlFor('home', true), 'https://site-a.example/');
+            assert.equal(urlUtilsB.urlFor('home', true), 'https://site-b.example/');
         } finally {
             await scopeA.dispose();
             await scopeB.dispose();
