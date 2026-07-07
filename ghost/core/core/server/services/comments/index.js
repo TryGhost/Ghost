@@ -1,39 +1,13 @@
-class CommentsServiceWrapper {
-    init() {
-        const CommentsService = require('./comments-service');
-        const CommentsController = require('./comments-controller');
-        const CommentsStats = require('./comments-stats-service');
+const createFacade = require('../../../shared/container/create-facade');
+const createCommentsService = require('./create');
 
-        const config = require('../../../shared/config');
-        const logging = require('@tryghost/logging');
-        const models = require('../../models');
-        const {GhostMailer} = require('../mail');
-        const mailer = new GhostMailer();
-        const settingsCache = require('../../../shared/settings-cache');
-        const urlService = require('../url');
-        const urlUtils = require('../../../shared/url-utils');
-        const membersService = require('../members');
-        const db = require('../../data/db');
-        const settingsHelpers = require('../settings-helpers');
-        const labs = require('../../../shared/labs');
-
-        this.api = new CommentsService({
-            config,
-            logging,
-            models,
-            mailer,
-            settingsCache,
-            settingsHelpers,
-            urlService,
-            urlUtils,
-            contentGating: membersService.contentGating,
-            labs
-        });
-
-        const stats = new CommentsStats({db});
-
-        this.controller = new CommentsController(this.api, stats);
-    }
-}
-
-module.exports = new CommentsServiceWrapper();
+module.exports = createFacade('comments', () => createCommentsService({
+    models: require('../../models'),
+    settingsCache: require('../../../shared/settings-cache'),
+    urlUtils: require('../../../shared/url-utils'),
+    knex: require('../../data/db').knex,
+    urlService: require('../url'),
+    members: require('../members'),
+    settingsHelpers: require('../settings-helpers'),
+    labs: require('../../../shared/labs')
+}));

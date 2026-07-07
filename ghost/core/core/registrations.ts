@@ -24,8 +24,39 @@ import createStaffService from './server/services/staff/create';
 import createNewslettersService from './server/services/newsletters/create';
 import createMentionsService from './server/services/mentions/create';
 import createMilestonesService from './server/services/milestones/create';
-
+import createMembersEventsService from './server/services/members-events/create';
+import createCommentsService from './server/services/comments/create';
 export const registerCoreServices = (container: Container): void => {
+    container.register('membersEvents', {
+        lifetime: 'SCOPED',
+        factory: ({models, domainEvents, events, settingsCache, knex, deploymentConfig}: Cradle) => createMembersEventsService({
+            models,
+            domainEvents,
+            events,
+            settingsCache,
+            knex,
+            deploymentConfig,
+            // Bridged until these migrate
+            labs: require('./shared/labs'),
+            members: require('./server/services/members')
+        })
+    });
+
+    container.register('comments', {
+        lifetime: 'SCOPED',
+        factory: ({models, settingsCache, urlUtils, knex}: Cradle) => createCommentsService({
+            models,
+            settingsCache,
+            urlUtils,
+            knex,
+            // Bridged until these migrate
+            urlService: require('./server/services/url'),
+            members: require('./server/services/members'),
+            settingsHelpers: require('./server/services/settings-helpers'),
+            labs: require('./shared/labs')
+        })
+    });
+
     container.register('milestones', {
         lifetime: 'SCOPED',
         factory: ({models, domainEvents, knex, settingsCache, getMilestonesConfig}: Cradle) => createMilestonesService({models, domainEvents, knex, settingsCache, getMilestonesConfig})
