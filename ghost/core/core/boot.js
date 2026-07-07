@@ -544,12 +544,11 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         const {getRootContainer, setDefaultScope, hasDefaultScope} = require('./shared/container/current');
         if (!hasDefaultScope()) {
             const {registerCoreServices} = require('./registrations');
+            const {buildSiteConfig} = require('./shared/config/site-config');
             const rootContainer = getRootContainer();
             registerCoreServices(rootContainer);
             setDefaultScope(rootContainer.createScope({
-                siteConfig: {
-                    database: config.get('database')
-                }
+                siteConfig: buildSiteConfig(config)
             }));
         }
         debug('End: Load DI container');
