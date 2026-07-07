@@ -4,15 +4,11 @@ export default defineConfig({
     test: {
         globals: true,
         include: ['test/**/*.test.js'],
-        // Load the ESM entry files as real Node ESM (not Vitest-transformed) so their
-        // re-import of the CJS lib/i18n-core.js resolves to the SAME instrumented module
-        // instance the CJS tests use — otherwise v8 counts a phantom second copy and
-        // mis-reports i18n-core.js branch coverage.
-        server: {
-            deps: {
-                external: [/lib\/esm-factory\.mjs$/, /lib\/registry\/.*\.mjs$/]
-            }
-        },
+        // The registry entries use Vite's import.meta.glob, so they MUST be
+        // Vitest-transformed (not externalized) or the glob stays an unresolved runtime
+        // call. The CJS lib/i18n-core.js is covered by the CJS suite; the ESM path uses
+        // the separate lib/i18n-core.mjs twin, so there's no shared-instance coverage
+        // issue to work around.
         coverage: {
             provider: 'v8',
             include: [
