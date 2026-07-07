@@ -33,7 +33,7 @@ describe('two scopes in one process', function () {
                 getContentPath: () => '/tmp/ghost-test-content'
             },
             getMilestonesConfig: () => ({}),
-            deploymentConfig: {get: (key: string) => (key === 'paths' ? {urlCache: '/tmp/ghost-test-urlcache'} : undefined)},
+            deploymentConfig: {get: (key: string) => (key === 'paths' ? {urlCache: '/tmp/ghost-test-urlcache', helperTemplates: '/tmp/ghost-test-helpers'} : undefined)},
             isTestEnv: () => true
         });
     };
@@ -240,7 +240,7 @@ describe('two scopes in one process', function () {
         const scopeA = createSiteScope(root);
         const scopeB = createSiteScope(root);
 
-        const scopedServices = ['tiers', 'donations', 'audienceFeedback', 'linkRedirection', 'linkTracking', 'slackNotifications', 'staff', 'newsletters', 'mentions', 'milestones', 'membersEvents', 'comments', 'tagsPublic', 'postsPublic', 'invites', 'settingsHelpers', 'explore', 'emailAddress', 'customThemeSettingsCache', 'customThemeSettings', 'memberWelcomeEmails', 'emailSuppressionList', 'recommendations', 'memberAttribution', 'stats', 'gifts', 'automations', 'stripe', 'emailService', 'themeI18n', 'themeI18next', 'routingRegistry', 'routing', 'urlService'];
+        const scopedServices = ['tiers', 'donations', 'audienceFeedback', 'linkRedirection', 'linkTracking', 'slackNotifications', 'staff', 'newsletters', 'mentions', 'milestones', 'membersEvents', 'comments', 'tagsPublic', 'postsPublic', 'invites', 'settingsHelpers', 'explore', 'emailAddress', 'customThemeSettingsCache', 'customThemeSettings', 'memberWelcomeEmails', 'emailSuppressionList', 'recommendations', 'memberAttribution', 'stats', 'gifts', 'automations', 'stripe', 'emailService', 'themeI18n', 'themeI18next', 'routingRegistry', 'routing', 'urlService', 'hbsEngine', 'activeThemeHolder'];
 
         try {
             for (const name of scopedServices) {

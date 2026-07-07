@@ -23,7 +23,10 @@ const themeI18next = require('./i18next');
 const labs = require('../../../shared/labs');
 const assetHash = require('../asset-hash');
 // Current instance of ActiveTheme
-let currentActiveTheme;
+const createFacade = require('../../../shared/container/create-facade');
+
+// Holds the scope's active theme; there can only ever be one per scope
+const holder = createFacade('activeThemeHolder', () => ({current: undefined}));
 
 class ActiveTheme {
     /**
@@ -136,7 +139,7 @@ class ActiveTheme {
 
 module.exports = {
     get() {
-        return currentActiveTheme;
+        return holder.current;
     },
     /**
      * Set theme
@@ -151,7 +154,7 @@ module.exports = {
      * @return {ActiveTheme}
      */
     set(settings, loadedTheme, checkedTheme) {
-        currentActiveTheme = new ActiveTheme(settings, loadedTheme, checkedTheme);
-        return currentActiveTheme;
+        holder.current = new ActiveTheme(settings, loadedTheme, checkedTheme);
+        return holder.current;
     }
 };
