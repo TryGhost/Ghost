@@ -1,57 +1,9 @@
-const urlService = require('../url');
-const urlUtils = require('../../../shared/url-utils');
-const settingsCache = require('../../../shared/settings-cache');
-const config = require('../../../shared/config');
+const createFacade = require('../../../shared/container/create-facade');
+const createMemberAttributionService = require('./create');
 
-class MemberAttributionServiceWrapper {
-    init() {
-        if (this.service) {
-            // Already done
-            return;
-        }
-
-        // Wire up all the dependencies
-        const MemberAttributionService = require('./member-attribution-service');
-        const UrlTranslator = require('./url-translator');
-        const ReferrerTranslator = require('./referrer-translator');
-        const AttributionBuilder = require('./attribution-builder');
-        const OutboundLinkTagger = require('./outbound-link-tagger');
-        const models = require('../../models');
-
-        const urlTranslator = new UrlTranslator({
-            urlService,
-            urlUtils,
-            models: {
-                Post: models.Post,
-                User: models.User,
-                Tag: models.Tag
-            }
-        });
-
-        const referrerTranslator = new ReferrerTranslator({
-            siteUrl: urlUtils.urlFor('home', true),
-            adminUrl: urlUtils.urlFor('admin', true)
-        });
-
-        this.attributionBuilder = new AttributionBuilder({urlTranslator, referrerTranslator});
-
-        this.outboundLinkTagger = new OutboundLinkTagger({
-            isEnabled: () => !!settingsCache.get('outbound_link_tagging'),
-            getSiteUrl: () => config.getSiteUrl(),
-            urlUtils
-        });
-
-        // Expose the service
-        this.service = new MemberAttributionService({
-            models: {
-                MemberCreatedEvent: models.MemberCreatedEvent,
-                SubscriptionCreatedEvent: models.SubscriptionCreatedEvent,
-                Integration: models.Integration
-            },
-            attributionBuilder: this.attributionBuilder,
-            getTrackingEnabled: () => !!settingsCache.get('members_track_sources')
-        });
-    }
-}
-
-module.exports = new MemberAttributionServiceWrapper();
+module.exports = createFacade('memberAttribution', () => createMemberAttributionService({
+    models: require('../../models'),
+    urlUtils: require('../../../shared/url-utils'),
+    settingsCache: require('../../../shared/settings-cache'),
+    urlService: require('../url')
+}));
