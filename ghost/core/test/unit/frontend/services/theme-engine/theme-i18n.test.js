@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 
-const ThemeI18n = require('../../../../../core/frontend/services/theme-engine/i18n').ThemeI18n;
+const ThemeI18n = require('../../../../../core/frontend/services/theme-engine/i18n/theme-i18n');
 
 describe('ThemeI18n Class behavior', function () {
     it('defaults to en', function () {

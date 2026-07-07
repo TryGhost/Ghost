@@ -20,6 +20,7 @@ const buildSiteConfig = config => ({
     contentPath: config.get('paths:contentPath'),
     publicContentPath: config.getContentPath('public'),
     dataContentPath: config.getContentPath('data'),
+    themesContentPath: config.getContentPath('themes'),
     getSiteUrl: config.getSiteUrl,
     getAdminUrl: config.getAdminUrl,
     getSubdir: config.getSubdir,
