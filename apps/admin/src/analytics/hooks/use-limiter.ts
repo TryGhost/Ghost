@@ -1,4 +1,4 @@
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 
 interface ConfigHostSettings {
     hostSettings?: {
@@ -11,7 +11,7 @@ interface ConfigHostSettings {
 }
 
 export const useLimiter = () => {
-    const {data} = useGlobalData();
+    const {data} = useAnalyticsData();
 
     const isLimited = (limitName: string): boolean => {
         const config = data?.config as ConfigHostSettings;

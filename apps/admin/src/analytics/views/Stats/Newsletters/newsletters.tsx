@@ -13,7 +13,8 @@ import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/a
 import {getPeriodText} from '@/analytics/utils/chart-helpers';
 import {getRangeDates} from '@tryghost/shade/app';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalytics} from '@/analytics/providers/analytics-context';
+import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 import {useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@/analytics/hooks/use-newsletter-stats-with-range';
 import type {TopNewslettersOrder} from '@/analytics/hooks/use-newsletter-stats-with-range';
 
@@ -36,7 +37,7 @@ const NewsletterTableRows: React.FC<{
     sortBy: TopNewslettersOrder;
 }> = React.memo(({range, selectedNewsletterId, shouldFetchStats, sortBy}) => {
     const navigate = useNavigate();
-    const {settings} = useGlobalData();
+    const {settings} = useAnalyticsData();
 
     // Get site timezone from settings for displaying dates consistently
     const siteTimezone = String(settings.find(setting => setting.key === 'timezone')?.value || 'Etc/UTC');
@@ -225,7 +226,7 @@ const TopNewslettersTable: React.FC<{
 TopNewslettersTable.displayName = 'TopNewslettersTable';
 
 const Newsletters: React.FC = () => {
-    const {range, selectedNewsletterId} = useGlobalData();
+    const {range, selectedNewsletterId} = useAnalytics();
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();
 

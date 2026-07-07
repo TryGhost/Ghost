@@ -16,7 +16,8 @@ import {getScrollParent} from '@tryghost/shade/utils';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/analytics/utils/audience';
 import {useFilterParams} from '@/analytics/hooks/use-filter-params';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalytics} from '@/analytics/providers/analytics-context';
+import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 
 interface SourcesData {
     source?: string | number;
@@ -26,7 +27,8 @@ interface SourcesData {
 }
 
 const Web: React.FC = () => {
-    const {statsConfig, isLoading: isConfigLoading, range, data} = useGlobalData();
+    const {range} = useAnalytics();
+    const {statsConfig, isLoading: isConfigLoading, data} = useAnalyticsData();
     const {startDate, endDate, timezone} = getRangeDates(range);
     const {appSettings} = useAppContext();
     const webAnalyticsEnabled = appSettings?.analytics?.webAnalytics === true;

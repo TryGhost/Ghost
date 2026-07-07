@@ -24,16 +24,21 @@ export {
 
 // Default mock data (uses centralized responseFixtures)
 export const defaultMockData = {
-    // Properly typed mock for GlobalDataProvider
-    globalData: {
-        isLoading: false,
-        settings: [],
-        data: undefined,
-        statsConfig: undefined,
+    // View-state exposed by useAnalytics (AnalyticsProvider)
+    analyticsViewState: {
         range: 30,
         setRange: vi.fn(),
         selectedNewsletterId: null,
         setSelectedNewsletterId: vi.fn()
+    },
+    // Framework data exposed by useAnalyticsData (sourced from the shell)
+    analyticsData: {
+        isLoading: false,
+        settings: [],
+        data: undefined,
+        statsConfig: undefined,
+        site: {},
+        tinybirdToken: undefined
     }
 };
 
@@ -46,21 +51,24 @@ export const setupStatsAppMocks = () => {
     const mockUseNewsletterStatsByNewsletterId = vi.fn();
     const mockUseSubscriberCountByNewsletterId = vi.fn();
     const mockUseTopPostsStats = vi.fn();
-    const mockUseGlobalData = vi.fn();
+    const mockUseAnalytics = vi.fn();
+    const mockUseAnalyticsData = vi.fn();
     const mockGetSettingValue = vi.fn();
 
     // Set up ALL mocks with sensible defaults using centralized fixtures
     mockApiHook<NewsletterStatsResponseType>(mockUseNewsletterStatsByNewsletterId, responseFixtures.newsletterStats);
     mockApiHook<NewsletterStatsResponseType>(mockUseSubscriberCountByNewsletterId, responseFixtures.newsletterStats);
     mockApiHook<TopPostsStatsResponseType>(mockUseTopPostsStats, responseFixtures.topPosts);
-    mockUseGlobalData.mockReturnValue(defaultMockData.globalData);
+    mockUseAnalytics.mockReturnValue(defaultMockData.analyticsViewState);
+    mockUseAnalyticsData.mockReturnValue(defaultMockData.analyticsData);
     mockGetSettingValue.mockReturnValue('{}');
 
     return {
         mockUseNewsletterStatsByNewsletterId,
         mockUseSubscriberCountByNewsletterId,
         mockUseTopPostsStats,
-        mockUseGlobalData,
+        mockUseAnalytics,
+        mockUseAnalyticsData,
         mockGetSettingValue
     };
 };
@@ -78,8 +86,11 @@ export const applyMocksToModules = (mocks: ReturnType<typeof setupStatsAppMocks>
     }));
 
     vi.doMock('@/analytics/providers/analytics-context', () => ({
-        default: () => null,
-        useGlobalData: mocks.mockUseGlobalData
+        useAnalytics: mocks.mockUseAnalytics
+    }));
+
+    vi.doMock('@/analytics/hooks/use-analytics-data', () => ({
+        useAnalyticsData: mocks.mockUseAnalyticsData
     }));
 
     vi.doMock('@tryghost/admin-x-framework/api/settings', () => ({
@@ -96,9 +107,9 @@ export const createMockSourcesData = () => [
     {source: '', visits: 50} // Already direct traffic
 ];
 
-// Helper to create mock global data with custom site URL
-export const createMockGlobalData = (siteUrl = 'https://ghost.org') => ({
-    ...defaultMockData.globalData,
+// Helper to create mock analytics framework data with a custom site URL
+export const createMockAnalyticsData = (siteUrl = 'https://ghost.org') => ({
+    ...defaultMockData.analyticsData,
     data: {
         url: siteUrl
     }

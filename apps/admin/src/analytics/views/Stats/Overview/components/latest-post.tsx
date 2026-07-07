@@ -6,7 +6,7 @@ import {PostShareModal} from '@tryghost/shade/posts-stats';
 import {type Post, getPostMetricsToDisplay} from '@tryghost/admin-x-framework';
 import {getPostDestination} from '@/analytics/utils/url-helpers';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 
 // Import the interface from the hook
 import {type LatestPostWithStats} from '@/analytics/hooks/use-latest-post-stats';
@@ -32,7 +32,7 @@ const LatestPost: React.FC<LatestPostProps> = ({
 }) => {
     const navigate = useNavigate();
     const [isShareOpen, setIsShareOpen] = useState(false);
-    const {site, settings} = useGlobalData();
+    const {site, settings} = useAnalyticsData();
     const {appSettings} = useAppContext();
     const {
         emailTrackClicks: emailTrackClicksEnabled,

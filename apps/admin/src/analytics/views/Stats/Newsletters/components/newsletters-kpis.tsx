@@ -6,7 +6,7 @@ import {LucideIcon, Recharts, formatDisplayDate, formatNumber, formatPercentage}
 import {calculateYAxisWidth} from '@tryghost/shade/app';
 import {getPeriodText, sanitizeChartData} from '@/analytics/utils/chart-helpers';
 import {useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalytics} from '@/analytics/providers/analytics-context';
 
 interface BarTooltipPayload {
     value: number;
@@ -88,7 +88,7 @@ const NewsletterKPIs: React.FC<{
 }) => {
     const [currentTab, setCurrentTab] = useState(initialTab);
     const [isHoveringClickable, setIsHoveringClickable] = useState(false);
-    const {range} = useGlobalData();
+    const {range} = useAnalytics();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();
     const {appSettings} = useAppContext();

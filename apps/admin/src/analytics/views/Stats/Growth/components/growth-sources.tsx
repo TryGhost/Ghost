@@ -7,7 +7,7 @@ import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {centsToDollars} from '@tryghost/shade/app';
 import {getFaviconDomain, getSymbol, useAppContext} from '@tryghost/admin-x-framework';
 import {getPeriodText} from '@/analytics/utils/chart-helpers';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 import {useMrrHistory} from '@tryghost/admin-x-framework/api/stats';
 import {useTopSourcesGrowth} from '@/analytics/hooks/use-top-sources-growth';
 
@@ -94,7 +94,7 @@ export const GrowthSources: React.FC<GrowthSourcesProps> = ({
     sortBy: externalSortBy,
     setSortBy: externalSetSortBy
 }) => {
-    const {data: globalData} = useGlobalData();
+    const {data: globalData} = useAnalyticsData();
     const {data: mrrHistoryResponse} = useMrrHistory();
     const {appSettings} = useAppContext();
 

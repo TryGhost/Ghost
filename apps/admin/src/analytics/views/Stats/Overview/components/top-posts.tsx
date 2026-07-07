@@ -7,7 +7,8 @@ import {getPeriodText} from '@/analytics/utils/chart-helpers';
 import {getPostDestination} from '@/analytics/utils/url-helpers';
 import {getPostStatusText} from '@tryghost/admin-x-framework/utils/post-utils';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalytics} from '@/analytics/providers/analytics-context';
+import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 
 interface PostlistTooptipProps {
     title?: string;
@@ -60,7 +61,8 @@ const TopPosts: React.FC<TopPostsProps> = ({
     isLoading
 }) => {
     const navigate = useNavigate();
-    const {range, settings} = useGlobalData();
+    const {range} = useAnalytics();
+    const {settings} = useAnalyticsData();
     const {appSettings} = useAppContext();
 
     // Get site timezone from settings for displaying dates consistently

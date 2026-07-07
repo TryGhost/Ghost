@@ -16,7 +16,8 @@ import {centsToDollars} from '@tryghost/shade/app';
 import {getClickHandler} from '@/analytics/utils/url-helpers';
 import {getPeriodText} from '@/analytics/utils/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalytics} from '@/analytics/providers/analytics-context';
+import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 import {useGrowthStats} from '@/analytics/hooks/use-growth-stats';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 import {useTopPostsStatsWithRange} from '@/analytics/hooks/use-top-posts-stats-with-range';
@@ -44,7 +45,8 @@ type SourcesOrder = 'free_members desc' | 'paid_members desc' | 'mrr desc' | 'so
 type UnifiedSortOrder = TopPostsOrder | SourcesOrder;
 
 const Growth: React.FC = () => {
-    const {range, site, settings} = useGlobalData();
+    const {range} = useAnalytics();
+    const {site, settings} = useAnalyticsData();
 
     // Get site timezone from settings for displaying dates consistently
     const siteTimezone = String(settings.find(setting => setting.key === 'timezone')?.value || 'Etc/UTC');

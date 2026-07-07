@@ -7,7 +7,7 @@ import {centsToDollars, formatDisplayDateWithRange} from '@tryghost/shade/app';
 import {formatNumber} from '@tryghost/shade/utils';
 import {sanitizeChartData} from '@/analytics/utils/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalytics} from '@/analytics/providers/analytics-context';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 
 type ChartDataItem = {
@@ -121,7 +121,7 @@ const GrowthKPIs: React.FC<{
 }> = ({chartData: allChartData, totals, initialTab, currencySymbol, isLoading, onTabChange}) => {
     const validatedInitialTab = isValidTab(initialTab) ? initialTab : 'total-members';
     const [currentTab, setCurrentTab] = useState<KpiTab>(validatedInitialTab);
-    const {range} = useGlobalData();
+    const {range} = useAnalytics();
     const {appSettings} = useAppContext();
     const navigate = useNavigate();
     const [searchParams] = useSearchParams();

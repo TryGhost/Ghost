@@ -8,7 +8,8 @@ import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@/analytics/utils/c
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/analytics/utils/audience';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalytics} from '@/analytics/providers/analytics-context';
+import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 import {useTinybirdQuery, useWebAnalyticsEnabled} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
@@ -150,7 +151,8 @@ const useTinybirdFilterOptions = (
     config: UseTinybirdFilterOptionsConfig = {}
 ) => {
     const {enabled = true} = config;
-    const {statsConfig, range} = useGlobalData();
+    const {range} = useAnalytics();
+    const {statsConfig} = useAnalyticsData();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
     const definition = FILTER_FIELD_DEFINITIONS[fieldKey];
@@ -221,7 +223,7 @@ const usePostOptions = (currentFilters: Filter[] = [], config: UsePostOptionsCon
     // Post options come from a Ghost API (useTopContent), not useTinybirdQuery, so
     // they don't inherit the central web-analytics gate — apply it here.
     const webAnalyticsEnabled = useWebAnalyticsEnabled();
-    const {range} = useGlobalData();
+    const {range} = useAnalytics();
     const {startDate, endDate, timezone} = getRangeDates(range);
 
     // Derive audience from filters (URL is the source of truth)

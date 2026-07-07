@@ -3,7 +3,7 @@ import {H1} from '@tryghost/shade/primitives';
 import {LucideIcon, formatNumber} from '@tryghost/shade/utils';
 import {Navbar, NavbarNavigation, PageMenu, PageMenuItem} from '@tryghost/shade/components';
 import {useActiveVisitors, useAppContext, useLocation, useNavigate} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 
 interface StatsHeaderProps {
     children?: React.ReactNode;
@@ -15,7 +15,7 @@ const StatsHeader:React.FC<StatsHeaderProps> = ({
     const navigate = useNavigate();
     const location = useLocation();
     const {appSettings} = useAppContext();
-    const {site, statsConfig} = useGlobalData();
+    const {site, statsConfig} = useAnalyticsData();
     const {activeVisitors, isLoading: isActiveVisitorsLoading} = useActiveVisitors({
         statsConfig,
         enabled: appSettings?.analytics?.webAnalytics ?? false

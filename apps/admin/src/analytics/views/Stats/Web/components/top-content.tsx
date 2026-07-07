@@ -5,7 +5,7 @@ import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceQueryParam} from '@/analytics/utils/audience';
 import {getClickHandler} from '@/analytics/utils/url-helpers';
 import {getPeriodText} from '@/analytics/utils/chart-helpers';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalyticsData} from '@/analytics/hooks/use-analytics-data';
 import {useMemo, useState} from 'react';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
@@ -31,7 +31,7 @@ interface TopContentTableProps {
 
 const TopContentTable: React.FC<TopContentTableProps> = ({tableHeader = false, data, contentType}) => {
     const navigate = useNavigate();
-    const {site} = useGlobalData();
+    const {site} = useAnalyticsData();
 
     const getTableHeader = () => {
         switch (contentType) {

@@ -2,14 +2,14 @@ import React, {useEffect} from 'react';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {STATS_RANGES, STATS_RANGE_OPTIONS} from '@/analytics/utils/constants';
 import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {useGlobalData} from '@/analytics/providers/analytics-context';
+import {useAnalytics} from '@/analytics/providers/analytics-context';
 
 interface DateRangeSelectProps {
     excludeRanges?: (keyof typeof STATS_RANGES)[];
 }
 
 const DateRangeSelect: React.FC<DateRangeSelectProps> = ({excludeRanges = []}) => {
-    const {range, setRange} = useGlobalData();
+    const {range, setRange} = useAnalytics();
 
     const excludeValues = excludeRanges.map(key => STATS_RANGES[key].value);
     const filteredOptions = STATS_RANGE_OPTIONS.filter(option => !excludeValues.includes(option.value)

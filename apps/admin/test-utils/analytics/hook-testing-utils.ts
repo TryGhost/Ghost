@@ -37,14 +37,14 @@ export const createStandardApiMock = <T>(data: T = null as T): MockInstance => {
  * Setup mocks for common hook dependencies
  */
 export interface HookMockSetup {
-    mockUseGlobalData: MockInstance;
+    mockUseAnalytics: MockInstance;
     mockGetRangeDates: MockInstance;
     mockFormatQueryDate: MockInstance;
     mockGetAudienceQueryParam: MockInstance;
 }
 
 export const setupCommonHookMocks = (): HookMockSetup => {
-    const mockUseGlobalData = vi.fn().mockReturnValue({
+    const mockUseAnalytics = vi.fn().mockReturnValue({
         range: 30,
         setRange: vi.fn()
     });
@@ -62,7 +62,7 @@ export const setupCommonHookMocks = (): HookMockSetup => {
     const mockGetAudienceQueryParam = vi.fn().mockReturnValue('all');
 
     return {
-        mockUseGlobalData,
+        mockUseAnalytics,
         mockGetRangeDates,
         mockFormatQueryDate,
         mockGetAudienceQueryParam
