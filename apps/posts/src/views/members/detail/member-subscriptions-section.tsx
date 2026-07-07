@@ -1,4 +1,5 @@
 import MemberSubscriptionActions from './member-subscription-actions';
+import MemberSubscriptionCompActions from './member-subscription-comp-actions';
 import React from 'react';
 import moment from 'moment-timezone';
 import {Badge, Card, CardContent} from '@tryghost/shade/components';
@@ -62,7 +63,7 @@ const SubscriptionDetails: React.FC<{sub: MemberSubscription}> = ({sub}) => {
     );
 };
 
-const SubscriptionRow: React.FC<{memberId: string; sub: MemberSubscription; showDivider: boolean}> = ({memberId, sub, showDivider}) => {
+const SubscriptionRow: React.FC<{member: Member; sub: MemberSubscription; showDivider: boolean}> = ({member, sub, showDivider}) => {
     const [showDetails, setShowDetails] = React.useState(false);
     const kind = classifyMemberSubscription(sub);
     const status = getSubscriptionStatusLabel(sub);
@@ -98,9 +99,14 @@ const SubscriptionRow: React.FC<{memberId: string; sub: MemberSubscription; show
                     {showDetails && <SubscriptionDetails sub={sub} />}
                 </div>
             </div>
-            {/* Gift subs get no action menu (Ember parity); comp actions arrive in Phase 6. */}
+            {/* Gift subs get no action menu (Ember parity). Comp subs get their
+                own menu with Remove complimentary; paid subs get Cancel/Continue +
+                Stripe links. */}
             {kind === 'paid' && (
-                <MemberSubscriptionActions memberId={memberId} subscription={sub} />
+                <MemberSubscriptionActions memberId={member.id} subscription={sub} />
+            )}
+            {kind === 'complimentary' && sub.tier?.id && (
+                <MemberSubscriptionCompActions member={member} tierId={sub.tier.id} />
             )}
         </div>
     );
@@ -145,7 +151,7 @@ const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({
                             // needs a fallback since comp/gift subs have `id: ''`.
                             <SubscriptionRow
                                 key={sub.id || `${group.tier.id}-${i}`}
-                                memberId={member.id}
+                                member={member}
                                 showDivider={i > 0}
                                 sub={sub}
                             />

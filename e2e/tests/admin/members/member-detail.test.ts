@@ -293,6 +293,132 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             ]);
         });
 
+        test('removes a complimentary subscription via the actions menu', async ({page}) => {
+            const member = await memberFactory.create({name: 'Comp Remove Member', email: 'comp-remove@ghost.org'});
+            // Track the removal so the members refetch after mutation reflects a clean member.
+            let removed = false;
+
+            const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+            // Single route handler dispatches by method so GET/PUT semantics don't
+            // interfere with each other in Playwright's LIFO route resolution.
+            const putBodies: Array<Record<string, unknown>> = [];
+            await page.route(memberReadRegex, async (route) => {
+                const method = route.request().method();
+                if (method === 'PUT') {
+                    const body = route.request().postDataJSON();
+                    putBodies.push(body);
+                    removed = true;
+                    return route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({members: [{id: member.id, tiers: [], subscriptions: []}]})});
+                }
+                if (method !== 'GET') {
+                    return route.continue();
+                }
+                const response = await route.fetch();
+                const body = await response.json();
+                if (body?.members?.[0]) {
+                    if (!removed) {
+                        body.members[0].status = 'comped';
+                        body.members[0].tiers = [{id: 'tier_gold', name: 'Gold', slug: 'gold', active: true, type: 'paid', expiry_at: '2027-01-15T12:00:00.000Z'}];
+                        body.members[0].subscriptions = [{
+                            id: '',
+                            customer: {id: 'cus_comp_rm', name: null, email: member.email},
+                            plan: {id: 'plan_comp', nickname: 'Complimentary', interval: 'year', currency: 'usd', amount: 0},
+                            status: 'active',
+                            start_date: '2026-01-15T12:00:00.000Z',
+                            current_period_end: '2027-01-15T12:00:00.000Z',
+                            cancel_at_period_end: false,
+                            price: {id: 'price_comp', price_id: 'price_comp', nickname: 'Complimentary', amount: 0, currency: 'usd', type: 'recurring', interval: 'year'},
+                            tier: {id: 'tier_gold', name: 'Gold', slug: 'gold', active: true, type: 'paid', expiry_at: '2027-01-15T12:00:00.000Z'},
+                            offer: null
+                        }];
+                    } else {
+                        body.members[0].status = 'free';
+                        body.members[0].tiers = [];
+                        body.members[0].subscriptions = [];
+                    }
+                }
+                return route.fulfill({response, body: JSON.stringify(body)});
+            });
+
+            await page.goto(previewPath(member.id));
+
+            await expect(page.getByTestId('member-subscription-tier')).toHaveText('Gold');
+            await page.getByTestId('subscription-actions').click();
+            await page.getByTestId('remove-complimentary').click();
+            await page.getByTestId('confirm-remove-complimentary').click();
+
+            // Row disappears once the members refetch returns an empty subscriptions list.
+            await expect(page.getByTestId('member-subscription')).toHaveCount(0);
+            // Pin the payload contract: filter the tier out and PUT the remaining set.
+            // Empty tiers array — the member had a single comp tier being removed.
+            // `email` is included to match Ember (`gh-member-settings-form.js:194-198`).
+            expect(putBodies).toHaveLength(1);
+            expect(putBodies[0]).toEqual({members: [{id: member.id, email: member.email, tiers: []}]});
+        });
+
+        test('preserves expiry_at on surviving tiers when removing a comp', async ({page}) => {
+            // Multiple comp tiers is a rare state the server usually blocks on add, but a
+            // member can end up with more than one via imports or legacy data. In that
+            // case removing one must NOT wipe the survivors' expiry_at (the server pivot
+            // update turns missing expiry_at into null).
+            const member = await memberFactory.create({name: 'Multi Comp Member', email: 'multi-comp@ghost.org'});
+
+            const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+            const putBodies: Array<Record<string, unknown>> = [];
+            await page.route(memberReadRegex, async (route) => {
+                const method = route.request().method();
+                if (method === 'PUT') {
+                    putBodies.push(route.request().postDataJSON());
+                    return route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({members: [{id: member.id}]})});
+                }
+                if (method !== 'GET') {
+                    return route.continue();
+                }
+                const response = await route.fetch();
+                const body = await response.json();
+                if (body?.members?.[0]) {
+                    body.members[0].status = 'comped';
+                    // Two tiers so we can check that the survivor keeps its expiry.
+                    body.members[0].tiers = [
+                        {id: 'tier_bronze', name: 'Bronze', slug: 'bronze', active: true, type: 'paid', expiry_at: '2027-06-01T12:00:00.000Z'},
+                        {id: 'tier_gold', name: 'Gold', slug: 'gold', active: true, type: 'paid', expiry_at: '2028-01-15T12:00:00.000Z'}
+                    ];
+                    body.members[0].subscriptions = [
+                        {
+                            id: '', customer: {id: 'cus_bronze', name: null, email: member.email},
+                            plan: {id: 'plan_comp_a', nickname: 'Complimentary', interval: 'year', currency: 'usd', amount: 0},
+                            status: 'active', start_date: '2026-06-01T12:00:00.000Z', current_period_end: '2027-06-01T12:00:00.000Z', cancel_at_period_end: false,
+                            price: {id: 'price_comp_a', price_id: 'price_comp_a', nickname: 'Complimentary', amount: 0, currency: 'usd', type: 'recurring', interval: 'year'},
+                            tier: {id: 'tier_bronze', name: 'Bronze', slug: 'bronze', active: true, type: 'paid', expiry_at: '2027-06-01T12:00:00.000Z'},
+                            offer: null
+                        },
+                        {
+                            id: '', customer: {id: 'cus_gold', name: null, email: member.email},
+                            plan: {id: 'plan_comp_b', nickname: 'Complimentary', interval: 'year', currency: 'usd', amount: 0},
+                            status: 'active', start_date: '2026-01-15T12:00:00.000Z', current_period_end: '2028-01-15T12:00:00.000Z', cancel_at_period_end: false,
+                            price: {id: 'price_comp_b', price_id: 'price_comp_b', nickname: 'Complimentary', amount: 0, currency: 'usd', type: 'recurring', interval: 'year'},
+                            tier: {id: 'tier_gold', name: 'Gold', slug: 'gold', active: true, type: 'paid', expiry_at: '2028-01-15T12:00:00.000Z'},
+                            offer: null
+                        }
+                    ];
+                }
+                return route.fulfill({response, body: JSON.stringify(body)});
+            });
+
+            await page.goto(previewPath(member.id));
+
+            // Remove the Bronze tier — Gold's expiry_at must ride along.
+            await page.getByTestId('subscription-actions').first().click();
+            await page.getByTestId('remove-complimentary').click();
+            await page.getByTestId('confirm-remove-complimentary').click();
+
+            // Payload must include Gold with its expiry_at preserved.
+            expect(putBodies).toHaveLength(1);
+            expect(putBodies[0]).toEqual({
+                members: [{id: member.id, email: member.email, tiers: [{id: 'tier_gold', expiry_at: '2028-01-15T12:00:00.000Z'}]}]
+            });
+        });
+
         test('gift subscription has no action menu (Ember parity)', async ({page}) => {
             const member = await memberFactory.create({name: 'Gift Member', email: 'gift-member@ghost.org'});
 
