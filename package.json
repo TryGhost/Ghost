@@ -23,7 +23,8 @@
     "test": "vitest run --coverage",
     "test:unit": "pnpm test",
     "prepare": "npm run build",
-    "ship": "sh -c 'if [ \"$#\" -eq 0 ]; then echo \"Usage: pnpm ship <patch|minor|major|version>\"; exit 1; fi; pnpm test && pro-ship --publish \"$@\"' --"
+    "preship": "pnpm test",
+    "ship": "pro-ship"
   },
   "license": "MIT",
   "main": "./dist/BaseStorage.js",

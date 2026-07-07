@@ -1,0 +1,73 @@
+name: Publish
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'package.json'
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: 'Preview what would be published without actually publishing'
+        required: false
+        type: boolean
+        default: true
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+
+jobs:
+  publish:
+    name: Publish to npm
+    runs-on: ubuntu-latest
+
+    permissions:
+      # OIDC trusted publishing to npm. Provenance is enabled because this
+      # repository is public; public repos can generate a provenance
+      # attestation at publish time.
+      id-token: write
+      contents: read
+
+    env:
+      FORCE_COLOR: 1
+      CI: true
+      NPM_CONFIG_PROVENANCE: true
+      NPM_CONFIG_REGISTRY: 'https://registry.npmjs.org'
+
+    steps:
+      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7
+        with:
+          persist-credentials: false
+
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: '24.14.1'
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install Corepack
+        run: npm install --global corepack@0.34.6
+      - name: Enable corepack
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --prefer-offline
+
+      - name: Determine whether to publish
+        id: pub
+        run: |
+          name=$(jq -r .name package.json)
+          version=$(jq -r .version package.json)
+          if [ -n "$(npm view "$name@$version" version 2>/dev/null)" ]; then
+            echo "$name@$version is already published; nothing to do"
+            echo "publish=false" >> "$GITHUB_OUTPUT"
+          else
+            echo "queueing $name@$version"
+            echo "publish=true" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Publish to npm
+        if: steps.pub.outputs.publish == 'true'
+        # --no-git-checks is required because actions/checkout leaves the repo on
+        # a detached HEAD, which pnpm's default publish branch check rejects.
+        run: pnpm publish --no-git-checks ${{ (github.event.inputs['dry-run'] == 'true' && '--dry-run') || '' }}
