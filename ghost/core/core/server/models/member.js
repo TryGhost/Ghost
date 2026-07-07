@@ -534,6 +534,12 @@ const Member = ghostBookshelf.Model.extend({
             attrs.commenting = MemberCommentingCodec.toJSON(attrs.commenting);
         }
 
+        delete attrs.newsletter_tracked_email_count;
+        delete attrs.automation_email_count;
+        delete attrs.automation_tracked_email_count;
+        delete attrs.automation_email_open_count;
+        delete attrs.aggregate_email_open_rate;
+
         return attrs;
     }
 }, {
