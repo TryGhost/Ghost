@@ -928,6 +928,56 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         });
     });
 
+    test('shows an activity feed with the recent event and a View all link', async ({page}) => {
+        const member = await memberFactory.create({name: 'Activity Target', email: 'activity@ghost.org'});
+
+        // Fresh members always have at least one server-generated event
+        // (signup / newsletter subscribe on creation), so we can assert
+        // against real data instead of mocking the feed.
+        await page.goto(previewPath(member.id));
+
+        const feed = page.getByTestId('member-activity-feed');
+        await expect(feed).toBeVisible();
+        // At least one event row rendered from GET /members/events.
+        await expect(feed.getByTestId('member-activity-event').first()).toBeVisible();
+
+        const viewAll = page.getByTestId('member-activity-view-all');
+        await expect(viewAll).toHaveAttribute('href', `#/members-activity?member=${member.id}`);
+    });
+
+    test('activity feed shows empty state when the member has no events', async ({page}) => {
+        const member = await memberFactory.create({name: 'No Activity', email: 'no-activity@ghost.org'});
+
+        // Force the feed API to return an empty page so we exercise the
+        // empty-state branch deterministically (fresh members otherwise have
+        // at least a signup event).
+        await page.route(/\/ghost\/api\/admin\/members\/events\/?\?/, async (route) => {
+            if (route.request().method() !== 'GET') {
+                return route.continue();
+            }
+            return route.fulfill({
+                status: 200,
+                contentType: 'application/json',
+                body: JSON.stringify({events: [], meta: {pagination: {}}})
+            });
+        });
+
+        await page.goto(previewPath(member.id));
+
+        await expect(page.getByTestId('member-activity-empty')).toBeVisible();
+        // View-all link still renders even with no inline events — matches
+        // Ember which points at the full activity feed regardless.
+        await expect(page.getByTestId('member-activity-view-all')).toBeVisible();
+    });
+
+    test('activity feed hides in create mode', async ({page}) => {
+        await page.goto(previewPath('new'));
+
+        // Ember `activity-feed.hbs:2` short-circuits when the member is new; the
+        // React equivalent hides the section entirely, not just the rows.
+        await expect(page.getByTestId('member-activity-feed')).toHaveCount(0);
+    });
+
     test('creates a new member and redirects to their detail', async ({page}) => {
         const memberDetailsPage = new MemberDetailsPage(page);
 

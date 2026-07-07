@@ -1,5 +1,6 @@
 import MainLayout from '@components/layout/main-layout';
 import MemberActionsMenu from './member-actions-menu';
+import MemberActivityFeed from './member-activity-feed';
 import MemberDetailForm from './member-detail-form';
 import MemberDetailSidebar from './member-detail-sidebar';
 import MemberNewslettersField from './member-newsletters-field';
@@ -17,6 +18,7 @@ import {getMember, useAddMember, useEditMember} from '@tryghost/admin-x-framewor
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
+import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
 import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import type {MemberEditableFields} from './member-detail-edit';
 
@@ -62,6 +64,20 @@ const MemberDetail: React.FC = () => {
         enabled: paidMembersEnabled
     });
     const canAddComp = (tiersData?.tiers?.length ?? 0) > 0;
+
+    // Newsletter list is fetched inside `MemberNewslettersField`; react-query
+    // dedupes matching query keys so re-querying here is free and lets us
+    // derive `hasMultipleNewsletters` for the activity feed's newsletter rows.
+    // We surface `newslettersResolved` too — the feed uses it to defer parsing
+    // until the answer is known, avoiding a label churn from generic
+    // "subscribed to newsletter" → specific "subscribed to Weekly".
+    const {data: newslettersData} = useBrowseNewsletters({
+        searchParams: {filter: 'status:active', limit: '50'},
+        enabled: !isCreating
+    });
+    const newslettersResolved = newslettersData !== undefined;
+    const hasMultipleNewsletters = (newslettersData?.newsletters?.length ?? 0) > 1;
+    const hasMultipleTiers = (tiersData?.tiers?.length ?? 0) > 1;
 
     // Draft holds the user's in-progress edits; the query cache stays server truth.
     const [draft, setDraft] = React.useState<MemberEditableFields | undefined>(undefined);
@@ -293,6 +309,26 @@ const MemberDetail: React.FC = () => {
                                         <h3 className='text-xs font-semibold tracking-wide text-muted-foreground uppercase' id='member-subscriptions-heading'>Subscriptions</h3>
                                         <MemberSubscriptionsSection canAddComp={canAddComp} member={member} paidMembersEnabled={paidMembersEnabled} />
                                     </section>
+                                )}
+
+                                {/* Recent activity feed — Ember `activity-feed.hbs` shows the top
+                                    5 events; the "View all" link routes the admin to Ember's
+                                    paginated `/members-activity` page (still Ember post-cutover
+                                    per the plan). Hidden in create mode: `activity-feed.hbs:2`
+                                    short-circuits when the member is `isNew`. */}
+                                {member && !isCreating && newslettersResolved && (
+                                    // `newslettersResolved` avoids a row-label
+                                    // churn: if we rendered before the
+                                    // newsletters query finished, a
+                                    // newsletter_event would flash "subscribed
+                                    // to newsletter" then flip to "subscribed
+                                    // to Weekly" once the fetch returned.
+                                    <MemberActivityFeed
+                                        hasMultipleNewsletters={hasMultipleNewsletters}
+                                        hasMultipleTiers={hasMultipleTiers}
+                                        memberId={member.id}
+                                        paidMembersEnabled={paidMembersEnabled}
+                                    />
                                 )}
                             </div>
                         </div>
