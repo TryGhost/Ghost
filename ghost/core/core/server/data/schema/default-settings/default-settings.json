@@ -409,6 +409,14 @@
             "defaultValue": null,
             "type": "string"
         },
+        "paywall_email_heading": {
+            "defaultValue": null,
+            "type": "string"
+        },
+        "paywall_email_description": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "paywall_campaign_mode": {
             "defaultValue": "false",
             "validations": {

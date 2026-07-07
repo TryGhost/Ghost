@@ -1439,13 +1439,13 @@ class EmailRenderer {
         // "blank fields use your site-wide message" must hold in email too
         const siteHeadingKey = post.get('visibility') === 'tiers' ? 'paywall_heading_tiers' : 'paywall_heading_paid';
 
+        // Email readers are always existing members, so an email-specific
+        // variant of the message wins over the shared one at each level:
+        // card email > card > site email > site > built-in
         return {
             signupUrl: signupUrl.href,
-            heading: card?.heading || postsMeta?.get('email_paywall_heading') || this.#settingsCache.get(siteHeadingKey),
-            description: card?.description || postsMeta?.get('email_paywall_description') || this.#settingsCache.get('paywall_description'),
-            // The CTA verb is audience-relative (an email reader is always an
-            // existing member), so an email-specific button wins over the
-            // shared one at each level: card email > card > site email > site
+            heading: card?.emailHeading || card?.heading || postsMeta?.get('email_paywall_heading') || this.#settingsCache.get('paywall_email_heading') || this.#settingsCache.get(siteHeadingKey),
+            description: card?.emailDescription || card?.description || postsMeta?.get('email_paywall_description') || this.#settingsCache.get('paywall_email_description') || this.#settingsCache.get('paywall_description'),
             buttonText: card?.emailButtonText || card?.buttonText || postsMeta?.get('email_paywall_button_text') || this.#settingsCache.get('paywall_email_button_text') || this.#settingsCache.get('paywall_button_text'),
             offerUrl: offerCode ? new URL(offerCode, siteUrl).href : null
         };

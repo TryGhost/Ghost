@@ -26,7 +26,7 @@ const PaywallWallModal: React.FC<RoutingModalProps> = ({params}) => {
         'paywall_heading_members', 'paywall_signup_description', 'paywall_signup_button_text',
         'paywall_heading_paid', 'paywall_heading_tiers', 'paywall_description', 'paywall_button_text', 'paywall_offer_code'
     ]) as (string | null)[];
-    const [emailButtonText] = getSettingValues(localSettings, ['paywall_email_button_text']) as (string | null)[];
+    const [emailButtonText, emailHeading, emailDescription] = getSettingValues(localSettings, ['paywall_email_button_text', 'paywall_email_heading', 'paywall_email_description']) as (string | null)[];
     const [campaignMode] = getSettingValues(localSettings, ['paywall_campaign_mode']) as boolean[];
 
     const {data: {offers} = {}} = useBrowseOffers();
@@ -119,8 +119,20 @@ const PaywallWallModal: React.FC<RoutingModalProps> = ({params}) => {
                             value={buttonText || ''}
                             onChange={e => updateTextSetting('paywall_button_text', e.target.value)}
                         />
+                        <p className='mt-2 -mb-2 text-sm font-semibold'>Email version <span className='font-normal text-grey-700 dark:text-grey-500'>(optional) — email readers are already free members; speak to them directly. Blank fields use the message above.</span></p>
                         <TextField
-                            hint='Email readers are already free members — an upgrade-flavoured CTA usually fits better. Blank uses the button text above (or the default, "Upgrade")'
+                            placeholder={headingPaid || 'Upgrade to continue reading.'}
+                            title='Headline — email'
+                            value={emailHeading || ''}
+                            onChange={e => updateTextSetting('paywall_email_heading', e.target.value)}
+                        />
+                        <TextField
+                            placeholder={description || 'Become a paid member to get access to all premium content.'}
+                            title='Description — email'
+                            value={emailDescription || ''}
+                            onChange={e => updateTextSetting('paywall_email_description', e.target.value)}
+                        />
+                        <TextField
                             placeholder={buttonText || 'Upgrade'}
                             title='Button text — email'
                             value={emailButtonText || ''}
