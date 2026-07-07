@@ -437,6 +437,7 @@ export default class KoenigLexicalEditor extends Component {
         // type, so the paywall card can show what readers actually see.
         // Sign-up walls and payment walls have separate site-wide copy.
         const sitePaywallCopy = {
+            accentColor: this.settings.accentColor || null,
             signup: {
                 heading: this.settings.paywallHeadingMembers || 'This post is for subscribers only',
                 description: this.settings.paywallSignupDescription || '',
@@ -468,6 +469,8 @@ export default class KoenigLexicalEditor extends Component {
             fetchLabels,
             fetchOffers,
             sitePaywallCopy,
+            // free-membership sites gate for members by default
+            defaultPaywallGate: this.settings.defaultContentVisibility === 'members' ? 'members' : 'paid',
             renderLabels: !this.session.user.isContributor,
             feature: {
                 transistor: this.settings.transistor

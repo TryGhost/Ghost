@@ -50,7 +50,11 @@ module.exports = function previewController(req, res, next) {
             }
 
             // published content should only resolve to /:slug - /p/:uuid is for drafts only in lieu of an actual preview api
-            if (post.status === 'published') {
+            // EXCEPT when an explicit member_status simulation is requested:
+            // the admin's preview modal uses this to show authors their wall
+            // as each audience, which the live URL can't do (it renders for
+            // the actual visitor). Same uuid-as-secret model as draft previews.
+            if (post.status === 'published' && !req.query?.member_status) {
                 // The preview controller serves either posts or pages
                 // depending on the routerOptions; query.resource is the
                 // routing-level type ('posts' / 'pages'). The post object

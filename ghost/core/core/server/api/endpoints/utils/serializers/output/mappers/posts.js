@@ -103,7 +103,10 @@ module.exports = async (model, frame, options = {}) => {
             if (jsonModel.paywall_cta?.offer_id) {
                 try {
                     const offer = await models.Offer.findOne({id: jsonModel.paywall_cta.offer_id});
-                    jsonModel.paywall_cta.offer_url = (offer?.get('active') && offer.get('code')) ? `/${offer.get('code')}` : null;
+                    const isUsable = offer?.get('active') && offer.get('code');
+                    jsonModel.paywall_cta.offer_url = isUsable ? `/${offer.get('code')}` : null;
+                    // readers should see what the button is offering them
+                    jsonModel.paywall_cta.offer_hint = isUsable ? (offer.get('portal_title') || offer.get('name')) : null;
                 } catch (err) {
                     jsonModel.paywall_cta.offer_url = null;
                 }
@@ -120,6 +123,7 @@ module.exports = async (model, frame, options = {}) => {
                     if (siteOffer?.get('active')) {
                         jsonModel.paywall_site_offer = {
                             offer_url: `/${siteOffer.get('code')}`,
+                            offer_hint: siteOffer.get('portal_title') || siteOffer.get('name'),
                             campaign: settingsCache.get('paywall_campaign_mode') === true
                         };
                     }

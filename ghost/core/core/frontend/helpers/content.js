@@ -41,14 +41,18 @@ function getPaywallCustomisation(post) {
     // wall; otherwise the post's own offer wins over the steady-state site
     // offer. Both arrive pre-resolved (and archival-checked) from the API.
     let offerUrl = null;
+    let offerHint = null;
     if (isPaymentWall) {
         const siteOffer = post.paywall_site_offer;
         if (siteOffer?.campaign) {
             offerUrl = urlUtils.createUrl(siteOffer.offer_url, true);
+            offerHint = siteOffer.offer_hint;
         } else if (cardCta.offer_url) {
             offerUrl = urlUtils.createUrl(cardCta.offer_url, true);
+            offerHint = cardCta.offer_hint;
         } else if (siteOffer?.offer_url) {
             offerUrl = urlUtils.createUrl(siteOffer.offer_url, true);
+            offerHint = siteOffer.offer_hint;
         }
     }
 
@@ -56,7 +60,8 @@ function getPaywallCustomisation(post) {
         heading: cardCta.heading || (headingKey ? settingsCache.get(headingKey) : null),
         description: cardCta.description || siteDescription,
         buttonText: cardCta.button_text || siteButtonText,
-        offerUrl
+        offerUrl,
+        offerHint
     };
 }
 

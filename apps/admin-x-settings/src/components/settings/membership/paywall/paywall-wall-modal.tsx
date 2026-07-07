@@ -40,6 +40,19 @@ const PaywallWallModal: React.FC<RoutingModalProps> = ({params}) => {
         })) || [])
     ];
 
+    // a selected offer that has since been archived must stay visible —
+    // a blank select over live state reads as a bug
+    const selectedArchivedOffer = offerCode && !offerOptions.some(option => option.value === offerCode)
+        ? offers?.find(offer => offer.code === offerCode)
+        : undefined;
+    if (selectedArchivedOffer) {
+        offerOptions.push({
+            value: selectedArchivedOffer.code,
+            label: `${selectedArchivedOffer.name} (archived — not shown on walls)`,
+            hint: 'Archived offers never render; pick an active offer or None'
+        });
+    }
+
     const updateTextSetting = (key: string, value: string) => {
         updateSetting(key, value === '' ? null : value);
     };

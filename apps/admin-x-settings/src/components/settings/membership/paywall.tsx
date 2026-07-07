@@ -2,6 +2,7 @@ import React from 'react';
 import TopLevelGroup from '../../top-level-group';
 import {Button, Table, TableCell, TableRow, withErrorBoundary} from '@tryghost/admin-x-design-system';
 import {getSettingValues} from '@tryghost/admin-x-framework/api/settings';
+import {useBrowseOffers} from '@tryghost/admin-x-framework/api/offers';
 import {useGlobalData} from '../../providers/global-data-provider';
 import {useRouting} from '@tryghost/admin-x-framework/routing';
 
@@ -17,12 +18,14 @@ const Paywall: React.FC<{ keywords: string[] }> = ({keywords}) => {
         'paywall_heading_paid', 'paywall_heading_tiers', 'paywall_description', 'paywall_button_text', 'paywall_offer_code'
     ]) as (string | null)[];
     const [campaignMode] = getSettingValues(settings, ['paywall_campaign_mode']) as boolean[];
+    const {data: {offers} = {}} = useBrowseOffers();
+    const attachedOfferArchived = Boolean(offerCode && offers && !offers.some(offer => offer.code === offerCode && offer.status === 'active'));
 
     const signupSummary = headingMembers || signupDescription || signupButtonText
         ? `“${headingMembers || 'This post is for subscribers only'}”`
         : 'Default message';
     const paymentSummary = headingPaid || headingTiers || description || buttonText || offerCode
-        ? `“${headingPaid || 'This post is for paying subscribers only'}”${offerCode ? (campaignMode ? ' · CAMPAIGN LIVE' : ' · offer attached') : ''}`
+        ? `“${headingPaid || 'This post is for paying subscribers only'}”${offerCode ? (attachedOfferArchived ? ' · attached offer archived' : (campaignMode ? ' · CAMPAIGN LIVE' : ' · offer attached')) : ''}`
         : 'Default message';
 
     const walls = [

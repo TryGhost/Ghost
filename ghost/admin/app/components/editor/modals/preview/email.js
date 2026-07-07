@@ -53,6 +53,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
     @tracked subject = '';
     @tracked previewEmailAddress = this.session.user.email;
     @tracked sendPreviewEmailError = '';
+    @tracked contentSource = 'live';
     @tracked newsletter = this.args.post.newsletter || this.args.newsletter;
     @tracked newslettersList;
 
@@ -169,6 +170,7 @@ export default class ModalPostPreviewEmailComponent extends Component {
         } else if (post.email?.html && post.email?.subject) {
             html = post.email.html;
             subject = post.email.subject;
+            this.contentSource = 'sent';
         // model is a post, fetch email preview
         } else {
             let url = new URL(this.ghostPaths.url.api('/email_previews/posts', post.id), window.location.href);
@@ -179,6 +181,9 @@ export default class ModalPostPreviewEmailComponent extends Component {
             let [emailPreview] = response.email_previews;
             html = emailPreview.html;
             subject = emailPreview.subject;
+            // an emailed post rendered live: inboxes hold the sent version,
+            // not whatever has been edited since — say so in the UI
+            this.contentSource = post.email ? 'live-after-send' : 'live';
         }
 
         // inject extra CSS so the preview behaves consistently inside the iframe

@@ -143,6 +143,17 @@ class OffersAPI {
             if (Reflect.has(data, 'status')) {
                 const status = OfferStatus.create(data.status);
                 offer.status = status;
+
+                // Archiving the offer that powers the paywall campaign ends
+                // the campaign for good — otherwise reactivating the offer
+                // months later would silently relaunch a site-wide promo
+                if (data.status === 'archived') {
+                    const settingsCache = require('../../../../shared/settings-cache');
+                    if (settingsCache.get('paywall_campaign_mode') === true && settingsCache.get('paywall_offer_code') === offer.code.value) {
+                        const settingsBread = require('../../settings').getSettingsBREADServiceInstance();
+                        await settingsBread.edit([{key: 'paywall_campaign_mode', value: 'false'}], {context: {internal: true}});
+                    }
+                }
             }
 
             await this.repository.save(offer, updateOptions);

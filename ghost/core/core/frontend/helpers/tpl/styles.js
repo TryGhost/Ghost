@@ -62,6 +62,11 @@ const contentHelper = `.gh-post-upgrade-cta-content,
 
 .gh-post-upgrade-cta a.gh-btn:hover {
     opacity: 0.92;
+}
+
+.gh-post-upgrade-cta-offer {
+    margin: 10px 0 0;
+    opacity: 0.85;
 }`;
 
 const styles = contentHelper;

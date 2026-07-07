@@ -173,7 +173,9 @@ export default class PublishOptions {
     }
 
     get postHasPaywall() {
-        return (this.post.lexical || '').includes('"type":"paywall"');
+        // lexicalScratch carries unsaved edits — a fast publish can open this
+        // flow before autosave has flushed the paywall card into post.lexical
+        return ((this.post.lexicalScratch || this.post.lexical) || '').includes('"type":"paywall"');
     }
 
     get recipientFilter() {

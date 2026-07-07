@@ -7,7 +7,7 @@ export default class PaywallNotice extends Component {
     }
 
     get hasPaywall() {
-        const lexical = this.post.lexical || '';
+        const lexical = this.post.lexicalScratch || this.post.lexical || '';
         return lexical.includes('"type":"paywall"');
     }
 
@@ -46,6 +46,12 @@ export default class PaywallNotice extends Component {
     // Everything lines up — spell out what free members will actually receive
     get showPreviewConfirmation() {
         return this.willEmail && this.isGatedVisibility && this.freeMembersIncluded && this.hasPaywall;
+    }
+
+    // Sign-up walls never truncate email (every recipient is a member), but
+    // say so here instead of leaving the flow silent about the gate
+    get showSignupWallInfo() {
+        return this.willEmail && this.post.visibility === 'members' && this.hasPaywall;
     }
 
     @action

@@ -32,12 +32,14 @@
         {{#if @member}}
             {{#if paywall.offerUrl}}
                 <a class="gh-btn" href="{{paywall.offerUrl}}" style="color:{{@site.accent_color}}">{{#if paywall.buttonText}}{{paywall.buttonText}}{{else}}{{t "Upgrade your account"}}{{/if}}</a>
+                {{#if paywall.offerHint}}<p class="gh-post-upgrade-cta-offer"><small>{{paywall.offerHint}}</small></p>{{/if}}
             {{else}}
                 <a class="gh-btn" data-portal="account/plans" href="#/portal/account/plans" style="color:{{@site.accent_color}}">{{#if paywall.buttonText}}{{paywall.buttonText}}{{else}}{{t "Upgrade your account"}}{{/if}}</a>
             {{/if}}
         {{else}}
             {{#if paywall.offerUrl}}
                 <a class="gh-btn" href="{{paywall.offerUrl}}" style="color:{{@site.accent_color}}">{{#if paywall.buttonText}}{{paywall.buttonText}}{{else}}{{t "Subscribe now"}}{{/if}}</a>
+                {{#if paywall.offerHint}}<p class="gh-post-upgrade-cta-offer"><small>{{paywall.offerHint}}</small></p>{{/if}}
             {{else}}
                 <a class="gh-btn" data-portal="signup" href="#/portal/signup" style="color:{{@site.accent_color}}">{{#if paywall.buttonText}}{{paywall.buttonText}}{{else}}{{t "Subscribe now"}}{{/if}}</a>
             {{/if}}

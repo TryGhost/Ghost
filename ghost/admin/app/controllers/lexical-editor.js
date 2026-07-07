@@ -372,22 +372,33 @@ export default class LexicalEditorController extends Controller {
                 this.post.set('visibility', gate);
                 this.notifications.showNotification(gate === 'members' ? 'Post access will change to members — free signup unlocks the full post' : 'Post access will change to paid members', {
                     type: 'success',
-                    description: 'The change takes effect when you hit Update.',
+                    description: 'The change takes effect when you hit Update. Review your wall message — it was written for the previous audience.',
                     key: 'post.paywall-visibility'
                 });
             }
             return;
         }
+        const previousDraftGate = this._paywallGate;
         this._paywallGate = card ? (card.gate === 'members' ? 'members' : 'paid') : null;
 
         if (!card) {
-            if (this._paywallSetVisibility && ['paid', 'members'].includes(this.post.visibility)) {
-                // card removed -> revert the change we made
-                this.post.set('visibility', 'public');
-                this.notifications.showNotification('Paywall removed — post access is public again', {
-                    type: 'success',
-                    key: 'post.paywall-visibility'
-                });
+            if (['paid', 'members'].includes(this.post.visibility)) {
+                if (this._paywallSetVisibility) {
+                    // card removed -> revert the change we made
+                    this.post.set('visibility', 'public');
+                    this.notifications.showNotification('Paywall removed — post access is public again', {
+                        type: 'success',
+                        key: 'post.paywall-visibility'
+                    });
+                } else if (previousDraftGate) {
+                    // card removed but access wasn't ours to revert — never
+                    // leave the post silently gated with no wall in sight
+                    this.notifications.showNotification(`Paywall removed — this post is still for ${this.post.visibility === 'members' ? 'members' : 'paid members'} only`, {
+                        type: 'success',
+                        description: 'Change post access in the settings menu if that\u2019s not intended.',
+                        key: 'post.paywall-visibility'
+                    });
+                }
             }
             this._paywallSetVisibility = false;
             return;
@@ -427,7 +438,7 @@ export default class LexicalEditorController extends Controller {
 
         this.notifications.showNotification(messages[gate].title, {
             type: 'success',
-            description: wasPublic ? messages[gate].description : undefined,
+            description: wasPublic ? messages[gate].description : 'Review your wall message — it was written for the previous audience.',
             key: 'post.paywall-visibility'
         });
     }
