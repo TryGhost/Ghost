@@ -17,7 +17,7 @@ const Member = ghostBookshelf.Model.extend({
             uuid: crypto.randomUUID(),
             transient_id: crypto.randomUUID(),
             newsletter_email_count: 0,
-            email_opened_count: 0,
+            newsletter_email_open_count: 0,
             enable_comment_notifications: true
         };
     },
@@ -41,6 +41,11 @@ const Member = ghostBookshelf.Model.extend({
             delete attrs.newsletter_email_count;
         }
 
+        if (attrs.newsletter_email_open_count !== undefined && attrs.email_opened_count === undefined) {
+            attrs.email_opened_count = attrs.newsletter_email_open_count;
+            delete attrs.newsletter_email_open_count;
+        }
+
         return attrs;
     },
 
@@ -61,6 +66,11 @@ const Member = ghostBookshelf.Model.extend({
         if (attrs.email_count !== undefined && attrs.newsletter_email_count === undefined) {
             attrs.newsletter_email_count = attrs.email_count;
             delete attrs.email_count;
+        }
+
+        if (attrs.email_opened_count !== undefined && attrs.newsletter_email_open_count === undefined) {
+            attrs.newsletter_email_open_count = attrs.email_opened_count;
+            delete attrs.email_opened_count;
         }
 
         return ghostBookshelf.Model.prototype.format.call(this, attrs);

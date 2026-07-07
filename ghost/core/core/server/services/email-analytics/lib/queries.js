@@ -234,7 +234,7 @@ module.exports = {
 
         const updateQuery = {
             newsletter_email_count: emailCount.count,
-            email_opened_count: emailOpenedCount.count
+            newsletter_email_open_count: emailOpenedCount.count
         };
 
         if (trackedEmailCount >= MIN_EMAIL_COUNT_FOR_OPEN_RATE) {
@@ -272,7 +272,7 @@ module.exports = {
 
             memberStatsMap.set(stat.member_id, {
                 newsletter_email_count: stat.email_count,
-                email_opened_count: stat.email_opened_count,
+                newsletter_email_open_count: stat.email_opened_count,
                 email_open_rate: emailOpenRate
             });
         }
@@ -288,7 +288,7 @@ module.exports = {
         for (const memberId of memberIds) {
             const memberStats = memberStatsMap.get(memberId) || {
                 newsletter_email_count: 0,
-                email_opened_count: 0,
+                newsletter_email_open_count: 0,
                 email_open_rate: null
             };
 
@@ -296,7 +296,7 @@ module.exports = {
             emailCountBindings.push(memberId, memberStats.newsletter_email_count);
 
             emailOpenedCountCases.push(`WHEN ? THEN ?`);
-            emailOpenedCountBindings.push(memberId, memberStats.email_opened_count);
+            emailOpenedCountBindings.push(memberId, memberStats.newsletter_email_open_count);
 
             if (memberStats.email_open_rate !== null) {
                 emailOpenRateCases.push(`WHEN ? THEN ?`);
@@ -324,7 +324,7 @@ module.exports = {
             UPDATE members
             SET
                 newsletter_email_count = CASE id ${emailCountCases.join(' ')} END,
-                email_opened_count = CASE id ${emailOpenedCountCases.join(' ')} END,
+                newsletter_email_open_count = CASE id ${emailOpenedCountCases.join(' ')} END,
                 email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
             WHERE id IN (${memberIds.map(() => '?').join(',')})
         `, bindings);
