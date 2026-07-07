@@ -31,10 +31,10 @@ const printState = ({state}) => {
 };
 
 class DatabaseStateManager {
-    constructor({knexMigratorFilePath}) {
-        this.knexMigrator = new KnexMigrator({
-            knexMigratorFilePath
-        });
+    constructor({knexMigratorFilePath, knexMigratorConfig}) {
+        this.knexMigrator = new KnexMigrator(
+            knexMigratorConfig ? {knexMigratorConfig} : {knexMigratorFilePath}
+        );
     }
 
     async getState() {
