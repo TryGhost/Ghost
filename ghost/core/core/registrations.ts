@@ -41,8 +41,14 @@ import createRecommendationsService from './server/services/recommendations/crea
 import createMemberAttributionService from './server/services/member-attribution/create';
 import createStatsService from './server/services/stats/create';
 import createGiftService from './server/services/gifts/create';
+import {AutomationsService} from './server/services/automations/service';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('automations', {
+        lifetime: 'SCOPED',
+        factory: () => new AutomationsService()
+    });
+
     container.register('gifts', {
         lifetime: 'SCOPED',
         factory: ({models, domainEvents, settingsCache, urlUtils, settingsHelpers, tiers, staff}: Cradle) => createGiftService({
