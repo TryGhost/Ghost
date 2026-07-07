@@ -48,7 +48,9 @@ export default defineConfig(({ command }) => ({
     server: {
         host: '0.0.0.0',
         port: 5174,
-        allowedHosts: true
+        allowedHosts: true,
+        // Forward browser console warnings/errors to the dev-server terminal
+        forwardConsole: { logLevels: ['warn', 'error'] }
     },
     optimizeDeps: {
         include: ["@tryghost/koenig-lexical"],
