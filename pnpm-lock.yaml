@@ -13,8 +13,8 @@ importers:
         version: 2.30.1
     devDependencies:
       '@tryghost/pro-ship':
-        specifier: 1.1.4
-        version: 1.1.4
+        specifier: 1.1.5
+        version: 1.1.5
       '@types/express':
         specifier: 5.0.6
         version: 5.0.6
@@ -311,8 +311,8 @@ packages:
   '@standard-schema/spec@1.1.0':
     resolution: {integrity: sha512-l2aFy5jALhniG5HgqrD6jXLi/rUWrKvqN/qJx6yoJsgKhblVd+iqqU4RCXavm/jPityDo5TCvKMnpjKnOriy0w==}
 
-  '@tryghost/pro-ship@1.1.4':
-    resolution: {integrity: sha512-k4okNuZwxWfyumyC5+A+/96cE/bnBZmcigghWNTP6n/8QuMX4eFQoPlu3XGyUToF5vKGfl1HU5pELPbwSLDYLA==}
+  '@tryghost/pro-ship@1.1.5':
+    resolution: {integrity: sha512-gwd4ynAnEHkj6bx+tfkZCYaL+WlNHQQmCkAJn7Q2H0Uq+mG74i2wwxUWr+wTuyxjLg8KviMux5uwtkEQfzi1VA==}
     engines: {node: '>=20.20.0'}
     hasBin: true
 
@@ -895,7 +895,7 @@ snapshots:
 
   '@standard-schema/spec@1.1.0': {}
 
-  '@tryghost/pro-ship@1.1.4':
+  '@tryghost/pro-ship@1.1.5':
     dependencies:
       '@tryghost/root-utils': 2.3.1
       semver: 7.8.5
