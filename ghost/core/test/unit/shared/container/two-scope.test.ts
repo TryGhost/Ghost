@@ -228,6 +228,25 @@ describe('two scopes in one process', function () {
         }
     });
 
+    it('gives each scope its own tiers service', async function () {
+        const root = createContainer();
+        registerCoreServices(root);
+        const scopeA = createSiteScope(root);
+        const scopeB = createSiteScope(root);
+
+        try {
+            const tiersA = scopeA.resolve('tiers') as any;
+            const tiersB = scopeB.resolve('tiers') as any;
+
+            assert.ok(tiersA.api);
+            assert.notEqual(tiersA.api, tiersB.api);
+            assert.notEqual(tiersA.repository, tiersB.repository);
+        } finally {
+            await scopeA.dispose();
+            await scopeB.dispose();
+        }
+    });
+
     it('disposing one scope leaves the other working', async function () {
         const root = createContainer();
         registerCoreServices(root);

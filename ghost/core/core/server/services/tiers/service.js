@@ -1,36 +1,7 @@
-class TiersServiceWrapper {
-    async init() {
-        if (this.api) {
-            // Already done
-            return;
-        }
+const createFacade = require('../../../shared/container/create-facade');
+const createTiersService = require('./create');
 
-        const TiersAPI = require('./tiers-api');
-        const DomainEvents = require('../../lib/common/domain-events');
-
-        const models = require('../../models');
-        const TierRepository = require('./tier-repository');
-
-        const repository = new TierRepository({
-            ProductModel: models.Product,
-            DomainEvents
-        });
-
-        const slugService = {
-            async generate(input) {
-                return models.Product.generateSlug(models.Product, input, {});
-            }
-        };
-
-        await repository.init();
-
-        this.repository = repository;
-
-        this.api = new TiersAPI({
-            repository,
-            slugService
-        });
-    }
-}
-
-module.exports = new TiersServiceWrapper();
+module.exports = createFacade('tiers', () => createTiersService({
+    models: require('../../models'),
+    domainEvents: require('../../lib/common/domain-events')
+}));
