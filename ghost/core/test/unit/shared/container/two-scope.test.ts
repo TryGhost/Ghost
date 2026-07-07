@@ -8,13 +8,14 @@ import {registerCoreServices} from '../../../../core/registrations';
  * Every migrated subsystem gets its isolation asserted here.
  */
 describe('two scopes in one process', function () {
-    const createSiteScope = (root: ReturnType<typeof createContainer>, url = 'https://site.example/') => {
+    const createSiteScope = (root: ReturnType<typeof createContainer>, url = 'https://site.example/', hostSettings: object = {}) => {
         return root.createScope({
             siteConfig: {
                 database: {
                     client: 'better-sqlite3',
                     connection: {filename: ':memory:'}
                 },
+                hostSettings,
                 url,
                 getSiteUrl: () => url,
                 getAdminUrl: () => undefined,
@@ -168,6 +169,26 @@ describe('two scopes in one process', function () {
 
             assert.equal(urlUtilsA.urlFor('home', true), 'https://site-a.example/');
             assert.equal(urlUtilsB.urlFor('home', true), 'https://site-b.example/');
+        } finally {
+            await scopeA.dispose();
+            await scopeB.dispose();
+        }
+    });
+
+    it('gives each scope its own limit service from its own host settings', async function () {
+        const root = createContainer();
+        registerCoreServices(root);
+        const scopeA = createSiteScope(root, 'https://site-a.example/', {
+            limits: {staff: {max: 1, error: 'No more staff for you'}}
+        });
+        const scopeB = createSiteScope(root, 'https://site-b.example/');
+
+        try {
+            const limitsA = scopeA.resolve('limits') as any;
+            const limitsB = scopeB.resolve('limits') as any;
+
+            assert.equal(limitsA.isLimited('staff'), true);
+            assert.equal(limitsB.isLimited('staff'), false);
         } finally {
             await scopeA.dispose();
             await scopeB.dispose();

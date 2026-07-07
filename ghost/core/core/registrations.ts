@@ -12,8 +12,17 @@ import createEventRegistry from './server/lib/common/create-event-registry';
 import createSettingsCache from './shared/settings-cache/create';
 import {createAdapterManager} from './server/services/adapter-manager';
 import createUrlUtils from './shared/create-url-utils';
+import createLimitService from './server/services/create-limit-service';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('limits', {
+        lifetime: 'SCOPED',
+        factory: ({siteConfig, knex}: Cradle) => createLimitService({
+            getHostSettings: () => siteConfig.hostSettings,
+            db: {knex}
+        })
+    });
+
     container.register('urlUtils', {
         lifetime: 'SCOPED',
         factory: ({siteConfig}: Cradle) => createUrlUtils({siteConfig})
