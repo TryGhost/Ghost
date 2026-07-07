@@ -7,6 +7,8 @@ import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../../../core/server/services/me
 // @ts-expect-error Models currently lack type definitions.
 import {AutomatedEmailRecipient, Member} from '../../../../../core/server/models';
 
+const db = require('../../../../../core/server/data/db');
+
 const MAX_STEPS_PER_BATCH = 100;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
 
@@ -120,6 +122,9 @@ function buildEmailStep(attrs: Partial<SendEmailStep> = {}): SendEmailStep {
 describe('automations poll', function () {
     let automationsApi: AutomationsApiStubs;
     let automatedEmailRecipientAdd: sinon.SinonStub<Parameters<AutomatedEmailRecipientAdd>, ReturnType<AutomatedEmailRecipientAdd>>;
+    let incrementAutomationEmailCount: sinon.SinonStub;
+    let transaction: sinon.SinonStub;
+    let trx: sinon.SinonStub;
     let memberWelcomeEmailService: MemberWelcomeEmailServiceStubs;
     let options: PollOptionsStubs;
 
@@ -149,6 +154,17 @@ describe('automations poll', function () {
 
         sinon.stub(Member, 'findOne').resolves(buildMember());
         automatedEmailRecipientAdd = sinon.stub(AutomatedEmailRecipient, 'add').resolves();
+
+        incrementAutomationEmailCount = sinon.stub().resolves();
+        trx = sinon.stub().withArgs('members').returns({
+            where: sinon.stub().withArgs({id: 'member-id'}).returns({
+                increment: incrementAutomationEmailCount
+            })
+        });
+        transaction = sinon.stub().callsFake(async callback => callback(trx));
+        sinon.stub(db, 'knex').get(() => ({
+            transaction
+        }));
     });
 
     afterEach(function () {
@@ -354,10 +370,32 @@ describe('automations poll', function () {
             member_email: 'member@example.com',
             member_name: 'Test Member',
             automation_action_revision_id: 'revision-id'
-        });
+        }, {transacting: trx});
         sinon.assert.callOrder(
             memberWelcomeEmailService.api.sendAutomationEmail,
             automatedEmailRecipientAdd,
+            automationsApi.finishStepAndEnqueueNext
+        );
+    });
+
+    it('increments the member automation email count in the recipient transaction', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+
+        await poll(options);
+
+        sinon.assert.calledOnce(transaction);
+        sinon.assert.calledOnceWithExactly(automatedEmailRecipientAdd, {
+            member_id: step.member_id,
+            member_uuid: '00000000-0000-4000-8000-000000000001',
+            member_email: 'member@example.com',
+            member_name: 'Test Member',
+            automation_action_revision_id: 'revision-id'
+        }, {transacting: trx});
+        sinon.assert.calledOnceWithExactly(incrementAutomationEmailCount, 'automation_email_count', 1);
+        sinon.assert.callOrder(
+            automatedEmailRecipientAdd,
+            incrementAutomationEmailCount,
             automationsApi.finishStepAndEnqueueNext
         );
     });

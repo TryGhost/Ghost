@@ -6,6 +6,8 @@ import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
 // @ts-expect-error Models currently lack type definitions.
 import {AutomatedEmailRecipient, Member} from '../../models';
 
+const db = require('../../data/db');
+
 type MemberWelcomeEmailService = {
     init: () => unknown;
     api: {
@@ -190,12 +192,18 @@ const processStep = async ({
                 memberStatus
             });
             try {
-                await AutomatedEmailRecipient.add({
-                    member_id: step.member_id,
-                    member_uuid: member.get('uuid'),
-                    member_email: member.get('email'),
-                    member_name: member.get('name'),
-                    automation_action_revision_id: step.automation_action_revision_id
+                await db.knex.transaction(async (trx) => {
+                    await AutomatedEmailRecipient.add({
+                        member_id: step.member_id,
+                        member_uuid: member.get('uuid'),
+                        member_email: member.get('email'),
+                        member_name: member.get('name'),
+                        automation_action_revision_id: step.automation_action_revision_id
+                    }, {transacting: trx});
+
+                    await trx('members')
+                        .where({id: step.member_id})
+                        .increment('automation_email_count', 1);
                 });
             } catch (err) {
                 logging.error({
@@ -205,7 +213,7 @@ const processStep = async ({
                         member_id: step.member_id,
                         step_id: step.id
                     }
-                }, `[AUTOMATIONS] Failed to record automated email recipient for step ${step.id}`);
+                }, `[AUTOMATIONS] Failed to record automated email recipient stats for step ${step.id}`);
             }
             break;
         default: {
