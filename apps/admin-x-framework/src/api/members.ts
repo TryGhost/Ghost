@@ -494,11 +494,16 @@ export interface MemberSigninUrlResponseType {
     url: string;
 }
 
-// Read hook — consumers should gate with `enabled` so the magic link is only
-// generated when the impersonate modal opens.
+// The Admin API wraps the controller payload in the `member_signin_urls` array
+// envelope (see `member-signin-urls.js` + framework serializer). Unwrap here so
+// consumers get the flat `{member_id, url}` object they actually want.
 export const getMemberSigninUrl = createQueryWithId<MemberSigninUrlResponseType>({
     dataType: 'MemberSigninUrlResponseType',
-    path: id => `/members/${id}/signin_urls/`
+    path: id => `/members/${id}/signin_urls/`,
+    returnData: (originalData) => {
+        const envelope = originalData as {member_signin_urls?: MemberSigninUrlResponseType[]};
+        return envelope.member_signin_urls?.[0] ?? {member_id: '', url: ''};
+    }
 });
 
 export const useMemberLogout = createMutation<void, {id: string}>({

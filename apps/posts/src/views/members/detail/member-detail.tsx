@@ -1,4 +1,5 @@
 import MainLayout from '@components/layout/main-layout';
+import MemberActionsMenu from './member-actions-menu';
 import MemberDetailForm from './member-detail-form';
 import MemberDetailSidebar from './member-detail-sidebar';
 import MemberNewslettersField from './member-newsletters-field';
@@ -224,6 +225,7 @@ const MemberDetail: React.FC = () => {
                         {(isCreating || member) && (
                             <PageHeader.Actions>
                                 <PageHeader.ActionGroup>
+                                    {member && !isCreating && <MemberActionsMenu member={member} />}
                                     <Button disabled={saveDisabled} variant={saveVariant} onClick={onSave}>
                                         {saveLabel}
                                     </Button>

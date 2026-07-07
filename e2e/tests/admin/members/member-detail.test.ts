@@ -609,6 +609,30 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         expect(nowChecked).toBe(!initiallyChecked);
     });
 
+    test('opens the impersonate modal from the actions menu and shows a signin URL', async ({page}) => {
+        const member = await memberFactory.create({name: 'Impersonate Target', email: 'impersonate@ghost.org'});
+
+        await page.goto(previewPath(member.id));
+
+        // Actions menu trigger is gated on canManageMembers (owner is authed here).
+        await page.getByTestId('member-actions').click();
+        await page.getByTestId('member-actions-impersonate').click();
+
+        const modal = page.getByTestId('impersonate-modal');
+        await expect(modal).toBeVisible();
+
+        // The framework hook fetches the signin URL only when the modal opens.
+        // Pin that the field is populated with a real single-use URL (not empty
+        // and not the loading placeholder).
+        const signinUrl = modal.getByTestId('member-signin-url');
+        await expect(signinUrl).not.toHaveValue('');
+        await expect(signinUrl).not.toHaveValue('Generating link…');
+        await expect(signinUrl).toHaveValue(/^https?:\/\//);
+
+        await modal.getByRole('button', {name: 'Close'}).click();
+        await expect(modal).toBeHidden();
+    });
+
     test('creates a new member and redirects to their detail', async ({page}) => {
         const memberDetailsPage = new MemberDetailsPage(page);
 

@@ -393,7 +393,10 @@ describe('members api', () => {
         it('reads a member signin url for impersonation', async () => {
             const queryClient = createQueryClientWithCurrentUser();
 
-            await withMockFetch({json: {member_id: 'member-1', url: 'https://example.com/magic'}}, async (mock) => {
+            // The Admin API wraps the payload in a `member_signin_urls` envelope,
+            // matching the framework serializer. The hook must unwrap it so
+            // consumers get the flat object.
+            await withMockFetch({json: {member_signin_urls: [{member_id: 'member-1', url: 'https://example.com/magic'}]}}, async (mock) => {
                 const {result} = renderHookWithProviders(() => getMemberSigninUrl('member-1'), {queryClient});
 
                 await waitFor(() => expect(result.current.isSuccess).toBe(true));
