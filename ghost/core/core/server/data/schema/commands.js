@@ -608,6 +608,25 @@ async function getColumns(table, transaction = db.knex) {
     return Promise.reject(tpl(messages.noSupportForDatabase, {client: transaction.client.config.client}));
 }
 
+/**
+ * knex's hasColumn uses `PRAGMA table_info` on SQLite, which omits generated
+ * columns entirely — use table_xinfo instead so they are seen (hidden=2 for
+ * VIRTUAL, hidden=3 for STORED).
+ *
+ * @param {import('knex').Knex} conn
+ * @param {string} table
+ * @param {string} column
+ * @returns {Promise<boolean>}
+ */
+async function hasColumnIncludingGenerated(conn, table, column) {
+    if (DatabaseInfo.isSQLite(conn)) {
+        const rows = await conn.raw('SELECT name FROM pragma_table_xinfo(?)', [table]);
+        return rows.some(row => row.name === column);
+    }
+
+    return conn.schema.hasColumn(table, column);
+}
+
 function createColumnMigration(...migrations) {
     async function runColumnMigration(conn, migration) {
         const {
@@ -620,7 +639,7 @@ function createColumnMigration(...migrations) {
             options
         } = migration;
 
-        const hasColumn = await conn.schema.hasColumn(table, column);
+        const hasColumn = await hasColumnIncludingGenerated(conn, table, column);
         const isInCorrectState = dbIsInCorrectState(hasColumn);
 
         if (isInCorrectState) {

@@ -181,6 +181,16 @@ const resetMySQLFromSnapshot = async () => {
     await restoreMySQLSnapshot();
 };
 
+// Generated columns cannot be INSERTed into, so table copies need to name the
+// writable columns explicitly instead of using SELECT *.
+const getMySQLWritableColumns = async (table) => {
+    const [rows] = await db.knex.raw(
+        'SELECT COLUMN_NAME AS name FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = ? AND EXTRA NOT LIKE \'%GENERATED%\' ORDER BY ORDINAL_POSITION',
+        [table]
+    );
+    return rows.map(row => row.name);
+};
+
 const createMySQLSnapshot = async () => {
     if (!module.exports.isMySQL()) {
         return;
@@ -193,7 +203,9 @@ const createMySQLSnapshot = async () => {
 
         await db.knex.schema.dropTableIfExists(snapshotTable);
         await db.knex.raw('CREATE TABLE ?? LIKE ??', [snapshotTable, table]);
-        await db.knex.raw('INSERT INTO ?? SELECT * FROM ??', [snapshotTable, table]);
+        const columns = await getMySQLWritableColumns(table);
+        const columnList = columns.map(() => '??').join(', ');
+        await db.knex.raw(`INSERT INTO ?? (${columnList}) SELECT ${columnList} FROM ??`, [snapshotTable, ...columns, ...columns, table]);
     }));
 
     mysqlSnapshotDatabase = getMySQLDatabaseName();
@@ -213,7 +225,9 @@ const restoreMySQLSnapshot = async () => {
                 const snapshotTable = getMySQLSnapshotTableName(table);
 
                 await db.knex.raw('DELETE FROM ??', [table]).transacting(trx);
-                await db.knex.raw('INSERT INTO ?? SELECT * FROM ??', [table, snapshotTable]).transacting(trx);
+                const columns = await getMySQLWritableColumns(table);
+                const columnList = columns.map(() => '??').join(', ');
+                await db.knex.raw(`INSERT INTO ?? (${columnList}) SELECT ${columnList} FROM ??`, [table, ...columns, ...columns, snapshotTable]).transacting(trx);
             }));
         } finally {
             await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;').transacting(trx);
