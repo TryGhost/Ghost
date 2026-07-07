@@ -23,8 +23,14 @@ import createSlackNotificationsService from './server/services/slack-notificatio
 import createStaffService from './server/services/staff/create';
 import createNewslettersService from './server/services/newsletters/create';
 import createMentionsService from './server/services/mentions/create';
+import createMilestonesService from './server/services/milestones/create';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('milestones', {
+        lifetime: 'SCOPED',
+        factory: ({models, domainEvents, knex, settingsCache, getMilestonesConfig}: Cradle) => createMilestonesService({models, domainEvents, knex, settingsCache, getMilestonesConfig})
+    });
+
     container.register('mentions', {
         lifetime: 'SCOPED',
         factory: ({models, events, domainEvents, urlUtils, settingsCache}: Cradle) => createMentionsService({

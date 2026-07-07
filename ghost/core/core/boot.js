@@ -546,7 +546,8 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         const bootSeeds = () => ({
             siteConfig: buildSiteConfig(config),
             adapterPaths: ['', config.getContentPath('adapters'), config.get('paths').internalAdaptersPath],
-            adapterConfig: config
+            adapterConfig: config,
+            getMilestonesConfig: () => config.get('milestones')
         });
         if (!hasDefaultScope()) {
             const {registerCoreServices} = require('./registrations');

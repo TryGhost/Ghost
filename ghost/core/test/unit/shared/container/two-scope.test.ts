@@ -28,7 +28,8 @@ describe('two scopes in one process', function () {
             adapterConfig: {
                 get: (key: string) => (key === 'adapters' ? {cache: {active: 'MemoryCache', linkRedirectsPublic: {}}} : undefined),
                 getContentPath: () => '/tmp/ghost-test-content'
-            }
+            },
+            getMilestonesConfig: () => ({})
         });
     };
 
@@ -234,7 +235,7 @@ describe('two scopes in one process', function () {
         const scopeA = createSiteScope(root);
         const scopeB = createSiteScope(root);
 
-        const scopedServices = ['tiers', 'donations', 'audienceFeedback', 'linkRedirection', 'linkTracking', 'slackNotifications', 'staff', 'newsletters', 'mentions'];
+        const scopedServices = ['tiers', 'donations', 'audienceFeedback', 'linkRedirection', 'linkTracking', 'slackNotifications', 'staff', 'newsletters', 'mentions', 'milestones'];
 
         try {
             for (const name of scopedServices) {
