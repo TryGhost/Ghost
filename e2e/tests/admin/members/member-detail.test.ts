@@ -927,6 +927,40 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         });
     });
 
+    test('shows a retryable error state when the member load fails, not a "not found" message', async ({page}) => {
+        const member = await memberFactory.create({name: 'Retry Target', email: 'retry@ghost.org'});
+        // First GET fails with a 500, second GET (after clicking Retry) succeeds.
+        // Distinguishes a real network/server error from an actual 404 so an
+        // outage on the endpoint doesn't get mistranslated as "This member
+        // couldn't be found".
+        let requests = 0;
+        const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+        await page.route(memberReadRegex, async (route) => {
+            if (route.request().method() !== 'GET') {
+                return route.continue();
+            }
+            requests += 1;
+            if (requests === 1) {
+                return route.fulfill({status: 500, contentType: 'application/json', body: JSON.stringify({errors: [{message: 'boom'}]})});
+            }
+            return route.continue();
+        });
+
+        await page.goto(memberPath(member.id));
+
+        const errorPanel = page.getByTestId('member-detail-load-error');
+        await expect(errorPanel).toBeVisible();
+        await expect(errorPanel).toContainText('Couldn’t load this member.');
+        // Explicitly assert the "not found" copy DOES NOT show — that was the
+        // exact P2 regression flagged by Codex confidence review.
+        await expect(page.getByText('This member couldn’t be found.')).toHaveCount(0);
+
+        await errorPanel.getByRole('button', {name: 'Retry'}).click();
+        // Second request returns the real member; the editor appears.
+        await expect(page.getByTestId('member-detail-title')).toHaveText('Retry Target');
+        await expect(errorPanel).toHaveCount(0);
+    });
+
     test('shows an activity feed with the recent event and a View all link', async ({page}) => {
         const member = await memberFactory.create({name: 'Activity Target', email: 'activity@ghost.org'});
 

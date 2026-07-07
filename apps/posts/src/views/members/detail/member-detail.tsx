@@ -34,13 +34,17 @@ const MemberDetail: React.FC = () => {
     const isCreating = memberId === CREATE_ID;
 
     // `include=tiers` mirrors the Ember route so complimentary tiers arrive with the member.
-    const {data, isLoading} = getMember(memberId, {
+    const {data, isLoading, error, refetch} = getMember(memberId, {
         enabled: !!memberId && !isCreating,
         searchParams: {include: 'tiers'},
         defaultErrorHandler: false
     });
     const member = data?.members?.[0];
-    const notFound = !isCreating && !isLoading && !member;
+    // 4xx from the members endpoint on a real id means "gone" (deleted mid-flow
+    // is the realistic case). 5xx/network is a different story — we don't want
+    // to lie about that with a "not found" message.
+    const loadError = !isCreating && !isLoading && !!error;
+    const notFound = !isCreating && !isLoading && !error && !member;
 
     const editMutation = useEditMember();
     const addMutation = useAddMember();
@@ -264,6 +268,13 @@ const MemberDetail: React.FC = () => {
                 </DetailPage.Header>
 
                 <DetailPage.Body>
+                    {loadError && (
+                        <div className='flex flex-1 flex-col items-center justify-center gap-3' data-testid='member-detail-load-error'>
+                            <p className='text-muted-foreground'>Couldn’t load this member.</p>
+                            <Button variant='outline' onClick={() => refetch()}>Retry</Button>
+                        </div>
+                    )}
+
                     {notFound && (
                         <div className='flex flex-1 items-center justify-center'>
                             <p className='text-muted-foreground'>This member couldn’t be found.</p>

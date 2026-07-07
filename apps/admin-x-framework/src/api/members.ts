@@ -579,6 +579,13 @@ const MEMBER_ACTIVITY_LIMIT = '20';
 // The events endpoint paginates by cursor rather than page number: each request
 // asks for events older than a UTC `YYYY-MM-DD HH:mm:ss` timestamp taken from the
 // last event of the previous page (events are ordered created_at desc).
+//
+// KNOWN LIMITATION: the cursor is `created_at`-only, without the id tie-breaker
+// Ember's version added (`+id:<'<lastId>'`). Two events emitted in the same
+// second on a page boundary can be skipped from the paginated list. The current
+// consumer (`MemberActivityFeed` in `apps/posts`) only fetches 5 events and
+// never calls `fetchNextPage`, so this is not exploitable today; add an id
+// secondary cursor before another screen starts paginating.
 function memberEventsCursor(events: MemberActivityEvent[]): string | undefined {
     const createdAt = events[events.length - 1]?.data?.created_at;
     if (!createdAt) {
