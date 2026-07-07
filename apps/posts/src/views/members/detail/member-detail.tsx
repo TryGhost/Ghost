@@ -4,6 +4,7 @@ import MemberDetailSidebar from './member-detail-sidebar';
 import MemberSubscriptionsSection from './member-subscriptions-section';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, type ButtonProps, Card, CardContent, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
+import {DetailPage} from '@tryghost/shade/page-templates';
 import {Link, useConfirmUnload, useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {PageHeader} from '@tryghost/shade/patterns';
 import {buildMemberFieldEditPayload, getMemberEditableSlice, isDraftInSyncWithServer, isValidMemberEmail, normalizeDraftForComparison} from './member-detail-edit';
@@ -176,71 +177,75 @@ const MemberDetail: React.FC = () => {
 
     return (
         <MainLayout>
-            <div className='flex h-full flex-col' data-testid='member-detail'>
-                <PageHeader blurredBackground={false} className='px-6 pt-6' sticky={false}>
-                    <PageHeader.Left>
-                        <PageHeader.Breadcrumb>
-                            <Breadcrumb>
-                                <BreadcrumbList>
-                                    <BreadcrumbItem>
-                                        <BreadcrumbLink asChild>
-                                            <Link data-test-link='members-back' to={backPath}>Members</Link>
-                                        </BreadcrumbLink>
-                                    </BreadcrumbItem>
-                                    <BreadcrumbSeparator />
-                                    <BreadcrumbItem>
-                                        {!isCreating && isLoading ? (
-                                            <Skeleton className='h-4 w-40' />
-                                        ) : (
-                                            <BreadcrumbPage className='truncate' data-testid='member-detail-title'>
-                                                {title}
-                                            </BreadcrumbPage>
-                                        )}
-                                    </BreadcrumbItem>
-                                </BreadcrumbList>
-                            </Breadcrumb>
-                        </PageHeader.Breadcrumb>
-                    </PageHeader.Left>
-                    {(isCreating || member) && (
-                        <PageHeader.Actions>
-                            <PageHeader.ActionGroup>
-                                <Button disabled={saveDisabled} variant={saveVariant} onClick={onSave}>
-                                    {saveLabel}
-                                </Button>
-                            </PageHeader.ActionGroup>
-                        </PageHeader.Actions>
-                    )}
-                </PageHeader>
+            <DetailPage data-testid='member-detail'>
+                <DetailPage.Header>
+                    <PageHeader blurredBackground={false} sticky={false}>
+                        <PageHeader.Left>
+                            <PageHeader.Breadcrumb>
+                                <Breadcrumb>
+                                    <BreadcrumbList>
+                                        <BreadcrumbItem>
+                                            <BreadcrumbLink asChild>
+                                                <Link data-test-link='members-back' to={backPath}>Members</Link>
+                                            </BreadcrumbLink>
+                                        </BreadcrumbItem>
+                                        <BreadcrumbSeparator />
+                                        <BreadcrumbItem>
+                                            {!isCreating && isLoading ? (
+                                                <Skeleton className='h-4 w-40' />
+                                            ) : (
+                                                <BreadcrumbPage className='truncate' data-testid='member-detail-title'>
+                                                    {title}
+                                                </BreadcrumbPage>
+                                            )}
+                                        </BreadcrumbItem>
+                                    </BreadcrumbList>
+                                </Breadcrumb>
+                            </PageHeader.Breadcrumb>
+                        </PageHeader.Left>
+                        {(isCreating || member) && (
+                            <PageHeader.Actions>
+                                <PageHeader.ActionGroup>
+                                    <Button disabled={saveDisabled} variant={saveVariant} onClick={onSave}>
+                                        {saveLabel}
+                                    </Button>
+                                </PageHeader.ActionGroup>
+                            </PageHeader.Actions>
+                        )}
+                    </PageHeader>
+                </DetailPage.Header>
 
-                {notFound && (
-                    <div className='flex flex-1 items-center justify-center'>
-                        <p className='text-muted-foreground'>This member couldn’t be found.</p>
-                    </div>
-                )}
-
-                {showEditor && draft && (
-                    <div className='flex flex-1 flex-col gap-8 overflow-y-auto px-6 pb-6 lg:flex-row lg:items-start'>
-                        <MemberDetailSidebar draftEmail={draft.email} draftName={draft.name} member={member} />
-                        <div className='flex min-w-0 flex-1 flex-col gap-6'>
-                            <Card>
-                                <CardContent className='pt-6'>
-                                    <MemberDetailForm
-                                        disabled={activeMutation.isLoading}
-                                        draft={draft}
-                                        emailError={emailError}
-                                        emailSuppression={member?.email_suppression}
-                                        isCreating={isCreating}
-                                        memberId={member?.id}
-                                        onChange={onFieldChange}
-                                    />
-                                </CardContent>
-                            </Card>
-                            {member && !isCreating && (
-                                <MemberSubscriptionsSection member={member} paidMembersEnabled={paidMembersEnabled} />
-                            )}
+                <DetailPage.Body>
+                    {notFound && (
+                        <div className='flex flex-1 items-center justify-center'>
+                            <p className='text-muted-foreground'>This member couldn’t be found.</p>
                         </div>
-                    </div>
-                )}
+                    )}
+
+                    {showEditor && draft && (
+                        <div className='flex flex-1 flex-col gap-8 lg:flex-row lg:items-start'>
+                            <MemberDetailSidebar draftEmail={draft.email} draftName={draft.name} member={member} />
+                            <div className='flex min-w-0 flex-1 flex-col gap-6'>
+                                <Card>
+                                    <CardContent className='pt-6'>
+                                        <MemberDetailForm
+                                            disabled={activeMutation.isLoading}
+                                            draft={draft}
+                                            emailError={emailError}
+                                            emailSuppression={member?.email_suppression}
+                                            isCreating={isCreating}
+                                            memberId={member?.id}
+                                            onChange={onFieldChange}
+                                        />
+                                    </CardContent>
+                                </Card>
+                                {member && !isCreating && (
+                                    <MemberSubscriptionsSection member={member} paidMembersEnabled={paidMembersEnabled} />
+                                )}
+                            </div>
+                        </div>
+                    )}
+                </DetailPage.Body>
 
                 <AlertDialog open={isBlocked} onOpenChange={(open) => {
                     if (!open && isBlocked) {
@@ -258,7 +263,7 @@ const MemberDetail: React.FC = () => {
                         </AlertDialogFooter>
                     </AlertDialogContent>
                 </AlertDialog>
-            </div>
+            </DetailPage>
         </MainLayout>
     );
 };
