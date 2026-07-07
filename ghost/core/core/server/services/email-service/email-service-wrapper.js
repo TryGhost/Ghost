@@ -1,9 +1,17 @@
 const debug = require('@tryghost/debug')('i18n');
 const logging = require('@tryghost/logging');
 const url = require('../../api/endpoints/utils/serializers/output/utils/url');
-const events = require('../../lib/common/events');
 
 class EmailServiceWrapper {
+    #deps;
+
+    /**
+     * @param {object} deps - the scope's services and config views; see init() usage
+     */
+    constructor(deps) {
+        this.#deps = deps;
+    }
+
     getPostUrl(post) {
         const jsonModel = post.toJSON();
         url.forPost(post.id, jsonModel, {options: {}});
@@ -23,32 +31,25 @@ class EmailServiceWrapper {
         const EmailSegmenter = require('./email-segmenter');
         const MailgunEmailProvider = require('./mailgun-email-provider');
         const {DomainWarmingService} = require('./domain-warming-service');
-
-        const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = require('../../models');
-        const urlService = require('../url');
-        const getRequiredUrlRelations = () => urlService.facade.getRequiredRelations();
         const MailgunClient = require('../lib/mailgun-client');
-        const configService = require('../../../shared/config');
-        const settingsCache = require('../../../shared/settings-cache');
-        const settingsHelpers = require('../settings-helpers');
-        const jobsService = require('../jobs');
-        const membersService = require('../members');
-        const db = require('../../data/db');
-        const sentry = require('../../../shared/sentry');
-        const membersRepository = membersService.api.members;
-        const limitService = require('../limits');
-        const labs = require('../../../shared/labs');
-        const emailAddressService = require('../email-address');
         const i18nLib = require('@tryghost/i18n');
         const lexicalLib = require('../../lib/lexical');
-        const urlUtils = require('../../../shared/url-utils');
-        const memberAttribution = require('../member-attribution');
         const linkReplacer = require('../lib/link-replacer');
-        const linkTracking = require('../link-tracking');
-        const audienceFeedback = require('../audience-feedback');
         const storageUtils = require('../../adapters/storage/utils');
         const emailAnalyticsJobs = require('../email-analytics/jobs');
         const {cachedImageSizeFromUrl} = require('../../lib/image');
+        const sentry = require('../../../shared/sentry');
+
+        const {
+            models, events, settingsCache, settingsHelpers, urlUtils, limits: limitService,
+            emailAddress: emailAddressService, memberAttribution, linkTracking, audienceFeedback,
+            knex, urlService, jobsService, membersService, labs, deploymentConfig: configService,
+            siteConfig
+        } = this.#deps;
+        const {Post, Newsletter, Email, EmailBatch, EmailRecipient, Member} = models;
+        const getRequiredUrlRelations = () => urlService.facade.getRequiredRelations();
+        const db = {knex};
+        const membersRepository = membersService.api.members;
 
         // capture errors from mailgun client and log them in sentry
         const errorHandler = (error) => {
@@ -126,7 +127,7 @@ class EmailServiceWrapper {
             db,
             sentry,
             getRequiredUrlRelations,
-            debugStorageFilePath: configService.getContentPath('data')
+            debugStorageFilePath: siteConfig.dataContentPath
         });
 
         if (ghostServer) {
