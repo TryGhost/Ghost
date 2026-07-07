@@ -329,9 +329,9 @@ module.exports = {
             emailOpenedCountCases.push(`WHEN ? THEN ?`);
             emailOpenedCountBindings.push(memberId, memberStats.newsletter_email_open_count);
 
-            const automationStats = automationStatsMap.get(memberId) || {};
-            const aggregateTrackedEmailCount = Number(memberStats.newsletter_tracked_email_count || 0) + Number(automationStats.automation_tracked_email_count || 0);
-            const aggregateEmailOpenCount = Number(memberStats.newsletter_email_open_count || 0) + Number(automationStats.automation_email_open_count || 0);
+            const memberAutomationStats = automationStatsMap.get(memberId) || {};
+            const aggregateTrackedEmailCount = Number(memberStats.newsletter_tracked_email_count || 0) + Number(memberAutomationStats.automation_tracked_email_count || 0);
+            const aggregateEmailOpenCount = Number(memberStats.newsletter_email_open_count || 0) + Number(memberAutomationStats.automation_email_open_count || 0);
             const aggregateEmailOpenRate = getOpenRate(aggregateEmailOpenCount, aggregateTrackedEmailCount);
 
             if (memberStats.email_open_rate !== null) {

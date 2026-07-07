@@ -48,6 +48,14 @@ type PollOptions = {
     memberWelcomeEmailService: MemberWelcomeEmailService;
 };
 
+type Transaction = {
+    (tableName: string): {
+        where: (criteria: {id: string}) => {
+            increment: (column: string, amount: number) => Promise<unknown>;
+        };
+    };
+};
+
 const slugToMemberStatus = new Map<string, 'free' | 'paid'>(
     Object.entries(MEMBER_WELCOME_EMAIL_SLUGS).map(([status, slug]) => [slug as string, status as 'free' | 'paid'])
 );
@@ -139,7 +147,8 @@ const processStep = async ({
         return null;
     }
 
-    const member = await Member.findOne({id: step.member_id}, {withRelated: ['newsletters']}) as MemberModel | null;
+    const memberId = step.member_id;
+    const member = await Member.findOne({id: memberId}, {withRelated: ['newsletters']}) as MemberModel | null;
 
     if (!member) {
         // It's possible that the member was deleted between the time the step was fetched and now, though it's
@@ -147,10 +156,10 @@ const processStep = async ({
         logging.warn({
             system: {
                 event: 'automations.poll.member_missing',
-                member_id: step.member_id,
+                member_id: memberId,
                 step_id: step.id
             }
-        }, `[AUTOMATIONS] Member ${step.member_id} for step ${step.id} doesn't exist`);
+        }, `[AUTOMATIONS] Member ${memberId} for step ${step.id} doesn't exist`);
         await automationsApi.markStepTerminal(step, 'member unsubscribed');
         return null;
     }
@@ -172,10 +181,10 @@ const processStep = async ({
                 logging.info({
                     system: {
                         event: 'automations.poll.skipped_unsubscribed_member',
-                        member_id: step.member_id,
+                        member_id: memberId,
                         step_id: step.id
                     }
-                }, `[AUTOMATIONS] Member ${step.member_id} for step ${step.id} has unsubscribed from emails. Fast-finishing this step`);
+                }, `[AUTOMATIONS] Member ${memberId} for step ${step.id} has unsubscribed from emails. Fast-finishing this step`);
                 break;
             }
             memberWelcomeEmailService.init();
@@ -195,9 +204,9 @@ const processStep = async ({
             try {
                 const trackOpens = !!settingsCache.get('email_track_opens');
 
-                await db.knex.transaction(async (trx) => {
+                await db.knex.transaction(async (trx: Transaction) => {
                     await AutomatedEmailRecipient.add({
-                        member_id: step.member_id,
+                        member_id: memberId,
                         member_uuid: member.get('uuid'),
                         member_email: member.get('email'),
                         member_name: member.get('name'),
@@ -206,12 +215,12 @@ const processStep = async ({
                     }, {transacting: trx});
 
                     await trx('members')
-                        .where({id: step.member_id})
+                        .where({id: memberId})
                         .increment('automation_email_count', 1);
 
                     if (trackOpens) {
                         await trx('members')
-                            .where({id: step.member_id})
+                            .where({id: memberId})
                             .increment('automation_tracked_email_count', 1);
                     }
                 });
