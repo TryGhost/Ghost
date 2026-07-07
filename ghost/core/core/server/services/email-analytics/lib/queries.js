@@ -234,6 +234,7 @@ module.exports = {
 
         const updateQuery = {
             newsletter_email_count: emailCount.count,
+            newsletter_tracked_email_count: trackedEmailCount,
             newsletter_email_open_count: emailOpenedCount.count
         };
 
@@ -272,6 +273,7 @@ module.exports = {
 
             memberStatsMap.set(stat.member_id, {
                 newsletter_email_count: stat.email_count,
+                newsletter_tracked_email_count: stat.tracked_count,
                 newsletter_email_open_count: stat.email_opened_count,
                 email_open_rate: emailOpenRate
             });
@@ -279,21 +281,27 @@ module.exports = {
 
         // Build CASE statements for batch update
         const emailCountCases = [];
+        const trackedEmailCountCases = [];
         const emailOpenedCountCases = [];
         const emailOpenRateCases = [];
         const emailCountBindings = [];
+        const trackedEmailCountBindings = [];
         const emailOpenedCountBindings = [];
         const emailOpenRateBindings = [];
 
         for (const memberId of memberIds) {
             const memberStats = memberStatsMap.get(memberId) || {
                 newsletter_email_count: 0,
+                newsletter_tracked_email_count: 0,
                 newsletter_email_open_count: 0,
                 email_open_rate: null
             };
 
             emailCountCases.push(`WHEN ? THEN ?`);
             emailCountBindings.push(memberId, memberStats.newsletter_email_count);
+
+            trackedEmailCountCases.push(`WHEN ? THEN ?`);
+            trackedEmailCountBindings.push(memberId, memberStats.newsletter_tracked_email_count);
 
             emailOpenedCountCases.push(`WHEN ? THEN ?`);
             emailOpenedCountBindings.push(memberId, memberStats.newsletter_email_open_count);
@@ -309,11 +317,13 @@ module.exports = {
 
         // Combine bindings in the order they appear in the SQL statement:
         // 1. All bindings for email_count CASE statement
-        // 2. All bindings for email_opened_count CASE statement
-        // 3. All bindings for email_open_rate CASE statement
-        // 4. Member IDs for the WHERE IN clause
+        // 2. All bindings for newsletter_tracked_email_count CASE statement
+        // 3. All bindings for email_opened_count CASE statement
+        // 4. All bindings for email_open_rate CASE statement
+        // 5. Member IDs for the WHERE IN clause
         const bindings = [
             ...emailCountBindings,
+            ...trackedEmailCountBindings,
             ...emailOpenedCountBindings,
             ...emailOpenRateBindings,
             ...memberIds
@@ -324,6 +334,7 @@ module.exports = {
             UPDATE members
             SET
                 newsletter_email_count = CASE id ${emailCountCases.join(' ')} END,
+                newsletter_tracked_email_count = CASE id ${trackedEmailCountCases.join(' ')} END,
                 newsletter_email_open_count = CASE id ${emailOpenedCountCases.join(' ')} END,
                 email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
             WHERE id IN (${memberIds.map(() => '?').join(',')})
