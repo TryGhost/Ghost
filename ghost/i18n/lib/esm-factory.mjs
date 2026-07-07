@@ -19,6 +19,23 @@ import * as i18nCore from './i18n-core.mjs';
 
 const {createI18n, createGenerateResources, LOCALE_DATA, SUPPORTED_LOCALES} = i18nCore;
 
+/**
+ * Shared body of every per-namespace browser entry. Collects a Vite
+ * `import.meta.glob` result (path -> resource JSON) into a locale-keyed registry
+ * and builds the namespaced i18n instance.
+ *
+ * This exists because Vite requires the `import.meta.glob` pattern to be a string
+ * literal, so each namespace needs its own tiny entry to hold that literal — but
+ * the parsing/wiring is identical, so it lives here once.
+ */
+export function i18nFromGlob(globModules, namespace) {
+    const registry = {};
+    for (const [filePath, resource] of Object.entries(globModules)) {
+        registry[filePath.match(/\/locales\/([^/]+)\//)[1]] = resource;
+    }
+    return createNamespacedI18n(registry, namespace);
+}
+
 export function createNamespacedI18n(registry, boundNamespace) {
     // Registry loader: returns undefined for an unknown locale so the core falls
     // back to English (mirrors the CJS try/catch fallback).
