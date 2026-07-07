@@ -1,117 +1,120 @@
-const ghostBookshelf = require('./base');
-const urlUtils = require('../../shared/url-utils');
+module.exports = function (ghostBookshelf) {
+    const urlUtils = require('../../shared/url-utils');
 
-const Collection = ghostBookshelf.Model.extend({
-    tableName: 'collections',
+    const Collection = ghostBookshelf.Model.extend({
+        tableName: 'collections',
 
-    hooks: {
-        belongsToMany: {
-            /**
-             * @this {Collection}
-             * @param {*} existing
-             * @param {*} targets
-             * @param {*} options
-             */
-            after(existing, targets, options) {
-                if (this.get('type') === 'automatic') {
-                    return;
-                }
-
-                const queryOptions = {
-                    query: {
-                        where: {}
+        hooks: {
+            belongsToMany: {
+                /**
+                 * @this {Collection}
+                 * @param {*} existing
+                 * @param {*} targets
+                 * @param {*} options
+                 */
+                after(existing, targets, options) {
+                    if (this.get('type') === 'automatic') {
+                        return;
                     }
-                };
 
-                return Promise.all(targets.models.map((target, index) => {
-                    queryOptions.query.where[existing.relatedData.otherKey] = target.id;
+                    const queryOptions = {
+                        query: {
+                            where: {}
+                        }
+                    };
 
-                    return existing.updatePivot({
-                        sort_order: index
-                    }, {
-                        ...options,
-                        ...queryOptions
-                    });
-                }));
+                    return Promise.all(targets.models.map((target, index) => {
+                        queryOptions.query.where[existing.relatedData.otherKey] = target.id;
+
+                        return existing.updatePivot({
+                            sort_order: index
+                        }, {
+                            ...options,
+                            ...queryOptions
+                        });
+                    }));
+                }
             }
-        }
-    },
+        },
 
-    formatOnWrite(attrs) {
-        if (attrs.feature_image) {
-            attrs.feature_image = urlUtils.toTransformReady(attrs.feature_image);
-        }
-        return attrs;
-    },
+        formatOnWrite(attrs) {
+            if (attrs.feature_image) {
+                attrs.feature_image = urlUtils.toTransformReady(attrs.feature_image);
+            }
+            return attrs;
+        },
 
-    parse() {
-        const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
+        parse() {
+            const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
 
-        if (attrs.feature_image) {
-            attrs.feature_image = urlUtils.transformReadyToAbsolute(attrs.feature_image);
-        }
+            if (attrs.feature_image) {
+                attrs.feature_image = urlUtils.transformReadyToAbsolute(attrs.feature_image);
+            }
 
-        return attrs;
-    },
+            return attrs;
+        },
 
-    relationships: ['posts'],
-    relationshipConfig: {
-        posts: {
-            editable: false
-        }
-    },
-
-    relationshipBelongsTo: {
-        posts: 'posts'
-    },
-
-    filterExpansions() {
-        return [{
-            key: 'posts',
-            replacement: 'posts.id'
-        }];
-    },
-
-    filterRelations() {
-        return {
+        relationships: ['posts'],
+        relationshipConfig: {
             posts: {
-                tableName: 'posts',
-                type: 'manyToMany',
-                joinTable: 'collections_posts',
-                joinFrom: 'collection_id',
-                joinTo: 'post_id'
+                editable: false
             }
-        };
-    },
+        },
 
-    permittedAttributes() {
-        let filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
+        relationshipBelongsTo: {
+            posts: 'posts'
+        },
 
-        this.relationships.forEach((key) => {
-            filteredKeys.push(key);
-        });
+        filterExpansions() {
+            return [{
+                key: 'posts',
+                replacement: 'posts.id'
+            }];
+        },
 
-        return filteredKeys;
-    },
+        filterRelations() {
+            return {
+                posts: {
+                    tableName: 'posts',
+                    type: 'manyToMany',
+                    joinTable: 'collections_posts',
+                    joinFrom: 'collection_id',
+                    joinTo: 'post_id'
+                }
+            };
+        },
 
-    posts() {
-        return this.belongsToMany(
-            'Post',
-            'collections_posts',
-            'collection_id',
-            'post_id',
-            'id',
-            'id'
-        );
-    },
+        permittedAttributes() {
+            let filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
 
-    collectionPosts() {
-        return this.hasMany(
-            'CollectionPost'
-        );
-    }
-});
+            this.relationships.forEach((key) => {
+                filteredKeys.push(key);
+            });
 
-module.exports = {
-    Collection: ghostBookshelf.model('Collection', Collection)
+            return filteredKeys;
+        },
+
+        posts() {
+            return this.belongsToMany(
+                'Post',
+                'collections_posts',
+                'collection_id',
+                'post_id',
+                'id',
+                'id'
+            );
+        },
+
+        collectionPosts() {
+            return this.hasMany(
+                'CollectionPost'
+            );
+        }
+    });
+
+    return {
+        Collection: ghostBookshelf.model('Collection', Collection)
+    };
 };
+
+Object.assign(module.exports, module.exports(require('./base')));

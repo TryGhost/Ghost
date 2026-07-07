@@ -1,46 +1,48 @@
-const ghostBookshelf = require('./base');
+module.exports = function (ghostBookshelf) {
+    let Permission;
+    let Permissions;
 
-let Permission;
-let Permissions;
+    Permission = ghostBookshelf.Model.extend({
 
-Permission = ghostBookshelf.Model.extend({
+        tableName: 'permissions',
 
-    tableName: 'permissions',
+        relationships: ['roles'],
+        relationshipBelongsTo: {
+            roles: 'roles'
+        },
 
-    relationships: ['roles'],
-    relationshipBelongsTo: {
-        roles: 'roles'
-    },
+        /**
+         * The base model keeps only the columns, which are defined in the schema.
+         * We have to add the relations on top, otherwise bookshelf-relations
+         * has no access to the nested relations, which should be updated.
+         */
+        permittedAttributes: function permittedAttributes() {
+            let filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
 
-    /**
-     * The base model keeps only the columns, which are defined in the schema.
-     * We have to add the relations on top, otherwise bookshelf-relations
-     * has no access to the nested relations, which should be updated.
-     */
-    permittedAttributes: function permittedAttributes() {
-        let filteredKeys = ghostBookshelf.Model.prototype.permittedAttributes.apply(this, arguments);
+            this.relationships.forEach((key) => {
+                filteredKeys.push(key);
+            });
 
-        this.relationships.forEach((key) => {
-            filteredKeys.push(key);
-        });
+            return filteredKeys;
+        },
 
-        return filteredKeys;
-    },
+        roles: function roles() {
+            return this.belongsToMany('Role', 'permissions_roles', 'permission_id', 'role_id');
+        },
 
-    roles: function roles() {
-        return this.belongsToMany('Role', 'permissions_roles', 'permission_id', 'role_id');
-    },
+        users: function users() {
+            return this.belongsToMany('User');
+        }
+    });
 
-    users: function users() {
-        return this.belongsToMany('User');
-    }
-});
+    Permissions = ghostBookshelf.Collection.extend({
+        model: Permission
+    });
 
-Permissions = ghostBookshelf.Collection.extend({
-    model: Permission
-});
-
-module.exports = {
-    Permission: ghostBookshelf.model('Permission', Permission),
-    Permissions: ghostBookshelf.collection('Permissions', Permissions)
+    return {
+        Permission: ghostBookshelf.model('Permission', Permission),
+        Permissions: ghostBookshelf.collection('Permissions', Permissions)
+    };
 };
+
+Object.assign(module.exports, module.exports(require('./base')));

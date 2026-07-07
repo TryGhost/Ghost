@@ -1,42 +1,45 @@
-const ghostBookshelf = require('./base');
-const urlUtils = require('../../shared/url-utils');
+module.exports = function (ghostBookshelf) {
+    const urlUtils = require('../../shared/url-utils');
 
-const PostsMeta = ghostBookshelf.Model.extend({
-    tableName: 'posts_meta',
+    const PostsMeta = ghostBookshelf.Model.extend({
+        tableName: 'posts_meta',
 
-    defaults: function defaults() {
-        return {
-            email_only: false
-        };
-    },
+        defaults: function defaults() {
+            return {
+                email_only: false
+            };
+        },
 
-    formatOnWrite(attrs) {
-        ['og_image', 'twitter_image'].forEach((attr) => {
-            if (attrs[attr]) {
-                attrs[attr] = urlUtils.toTransformReady(attrs[attr]);
-            }
-        });
+        formatOnWrite(attrs) {
+            ['og_image', 'twitter_image'].forEach((attr) => {
+                if (attrs[attr]) {
+                    attrs[attr] = urlUtils.toTransformReady(attrs[attr]);
+                }
+            });
 
-        return attrs;
-    },
+            return attrs;
+        },
 
-    parse() {
-        const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
+        parse() {
+            const attrs = ghostBookshelf.Model.prototype.parse.apply(this, arguments);
 
-        ['og_image', 'twitter_image'].forEach((attr) => {
-            if (attrs[attr]) {
-                attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
-            }
-        });
+            ['og_image', 'twitter_image'].forEach((attr) => {
+                if (attrs[attr]) {
+                    attrs[attr] = urlUtils.transformReadyToAbsolute(attrs[attr]);
+                }
+            });
 
-        return attrs;
-    }
-}, {
-    post() {
-        return this.belongsTo('Post');
-    }
-});
+            return attrs;
+        }
+    }, {
+        post() {
+            return this.belongsTo('Post');
+        }
+    });
 
-module.exports = {
-    PostsMeta: ghostBookshelf.model('PostsMeta', PostsMeta)
+    return {
+        PostsMeta: ghostBookshelf.model('PostsMeta', PostsMeta)
+    };
 };
+
+Object.assign(module.exports, module.exports(require('./base')));

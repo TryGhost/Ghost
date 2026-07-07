@@ -1,9 +1,11 @@
-const ghostBookshelf = require('./base');
+module.exports = function (ghostBookshelf) {
+    const Milestone = ghostBookshelf.Model.extend({
+        tableName: 'milestones'
+    });
 
-const Milestone = ghostBookshelf.Model.extend({
-    tableName: 'milestones'
-});
-
-module.exports = {
-    Milestone: ghostBookshelf.model('Milestone', Milestone)
+    return {
+        Milestone: ghostBookshelf.model('Milestone', Milestone)
+    };
 };
+
+Object.assign(module.exports, module.exports(require('./base')));

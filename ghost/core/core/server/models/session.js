@@ -1,88 +1,90 @@
-const ghostBookshelf = require('./base');
+module.exports = function (ghostBookshelf) {
+    const Session = ghostBookshelf.Model.extend({
+        tableName: 'sessions',
 
-const Session = ghostBookshelf.Model.extend({
-    tableName: 'sessions',
+        parse(attrs) {
+            attrs.session_data = JSON.parse(attrs.session_data);
+            return attrs;
+        },
 
-    parse(attrs) {
-        attrs.session_data = JSON.parse(attrs.session_data);
-        return attrs;
-    },
+        format(attrs) {
+            // CASE: format will be called when formatting all data for the DB
+            // including for SELECTs meaning that if we call findOne without
+            // a session_data property we'll get unintended JSON.stringify(undefined) calls
+            if (attrs.session_data) {
+                attrs.session_data = JSON.stringify(attrs.session_data);
+            }
+            return attrs;
+        },
 
-    format(attrs) {
-        // CASE: format will be called when formatting all data for the DB
-        // including for SELECTs meaning that if we call findOne without
-        // a session_data property we'll get unintended JSON.stringify(undefined) calls
-        if (attrs.session_data) {
-            attrs.session_data = JSON.stringify(attrs.session_data);
+        user() {
+            return this.belongsTo('User');
         }
-        return attrs;
-    },
+    }, {
 
-    user() {
-        return this.belongsTo('User');
-    }
-}, {
+        permittedOptions(methodName) {
+            const permittedOptions = ghostBookshelf.Model.permittedOptions.call(this, methodName);
+            if (methodName === 'upsert') {
+                return permittedOptions.concat('session_id');
+            }
+            if (methodName === 'destroy') {
+                return permittedOptions.concat('session_id');
+            }
+            return permittedOptions;
+        },
 
-    permittedOptions(methodName) {
-        const permittedOptions = ghostBookshelf.Model.permittedOptions.call(this, methodName);
-        if (methodName === 'upsert') {
-            return permittedOptions.concat('session_id');
+        destroy(unfilteredOptions) {
+            if (unfilteredOptions.id) {
+                return ghostBookshelf.Model.destroy.call(this, unfilteredOptions);
+            }
+            const options = this.filterOptions(unfilteredOptions, 'destroy');
+
+            // Fetch the object before destroying it, so that the changed data is available to events.
+            // A missing row is treated as success: password-change flows destroy
+            // every session for the user, then call req.session.regenerate(), which
+            // asks the store to destroy the same session_id a second time.
+            return this.forge({session_id: options.session_id})
+                .fetch(options)
+                .then(obj => obj?.destroy(options));
+        },
+
+        destroyAll() {
+            // As of 2021, it's the recommended way to truncate a table
+            // https://github.com/bookshelf/bookshelf/issues/1740
+            return ghostBookshelf.knex('sessions').truncate();
+        },
+
+        upsert(data, unfilteredOptions) {
+            const options = this.filterOptions(unfilteredOptions, 'upsert');
+            const sessionId = options.session_id;
+            const sessionData = data.session_data;
+            const userId = sessionData.user_id;
+            return this.findOne({session_id: sessionId}, options)
+                .then((model) => {
+                    if (model) {
+                        return this.edit({
+                            session_data: sessionData
+                        }, Object.assign(options, {
+                            id: model.id
+                        }));
+                    }
+                    return this.add({
+                        session_id: sessionId,
+                        session_data: sessionData,
+                        user_id: userId
+                    }, options);
+                });
         }
-        if (methodName === 'destroy') {
-            return permittedOptions.concat('session_id');
-        }
-        return permittedOptions;
-    },
+    });
 
-    destroy(unfilteredOptions) {
-        if (unfilteredOptions.id) {
-            return ghostBookshelf.Model.destroy.call(this, unfilteredOptions);
-        }
-        const options = this.filterOptions(unfilteredOptions, 'destroy');
+    const Sessions = ghostBookshelf.Collection.extend({
+        model: Session
+    });
 
-        // Fetch the object before destroying it, so that the changed data is available to events.
-        // A missing row is treated as success: password-change flows destroy
-        // every session for the user, then call req.session.regenerate(), which
-        // asks the store to destroy the same session_id a second time.
-        return this.forge({session_id: options.session_id})
-            .fetch(options)
-            .then(obj => obj?.destroy(options));
-    },
-
-    destroyAll() {
-        // As of 2021, it's the recommended way to truncate a table
-        // https://github.com/bookshelf/bookshelf/issues/1740
-        return ghostBookshelf.knex('sessions').truncate();
-    },
-
-    upsert(data, unfilteredOptions) {
-        const options = this.filterOptions(unfilteredOptions, 'upsert');
-        const sessionId = options.session_id;
-        const sessionData = data.session_data;
-        const userId = sessionData.user_id;
-        return this.findOne({session_id: sessionId}, options)
-            .then((model) => {
-                if (model) {
-                    return this.edit({
-                        session_data: sessionData
-                    }, Object.assign(options, {
-                        id: model.id
-                    }));
-                }
-                return this.add({
-                    session_id: sessionId,
-                    session_data: sessionData,
-                    user_id: userId
-                }, options);
-            });
-    }
-});
-
-const Sessions = ghostBookshelf.Collection.extend({
-    model: Session
-});
-
-module.exports = {
-    Session: ghostBookshelf.model('Session', Session),
-    Sessions: ghostBookshelf.collection('Sessions', Sessions)
+    return {
+        Session: ghostBookshelf.model('Session', Session),
+        Sessions: ghostBookshelf.collection('Sessions', Sessions)
+    };
 };
+
+Object.assign(module.exports, module.exports(require('./base')));

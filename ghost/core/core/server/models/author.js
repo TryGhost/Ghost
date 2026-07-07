@@ -1,18 +1,22 @@
-const ghostBookshelf = require('./base');
-const user = require('./user');
+module.exports = function (ghostBookshelf) {
+    // User must be registered before Author can extend it
+    require('./user');
 
-const Author = user.User.extend({
-    shouldHavePosts: {
-        joinTo: 'author_id',
-        joinTable: 'posts_authors'
-    }
-});
+    const Author = ghostBookshelf.model('User').extend({
+        shouldHavePosts: {
+            joinTo: 'author_id',
+            joinTable: 'posts_authors'
+        }
+    });
 
-const Authors = ghostBookshelf.Collection.extend({
-    model: Author
-});
+    const Authors = ghostBookshelf.Collection.extend({
+        model: Author
+    });
 
-module.exports = {
-    Author: ghostBookshelf.model('Author', Author),
-    Authors: ghostBookshelf.collection('Authors', Authors)
+    return {
+        Author: ghostBookshelf.model('Author', Author),
+        Authors: ghostBookshelf.collection('Authors', Authors)
+    };
 };
+
+Object.assign(module.exports, module.exports(require('./base')));

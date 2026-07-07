@@ -1,55 +1,58 @@
-const errors = require('@tryghost/errors');
-const ghostBookshelf = require('./base');
+module.exports = function (ghostBookshelf) {
+    const errors = require('@tryghost/errors');
 
-const SubscriptionCreatedEvent = ghostBookshelf.Model.extend({
-    tableName: 'members_subscription_created_events',
+    const SubscriptionCreatedEvent = ghostBookshelf.Model.extend({
+        tableName: 'members_subscription_created_events',
 
-    member() {
-        return this.belongsTo('Member', 'member_id', 'id');
-    },
+        member() {
+            return this.belongsTo('Member', 'member_id', 'id');
+        },
 
-    /**
-     * The member created event that happend at the same time (if any)
-     */
-    memberCreatedEvent() {
-        return this.belongsTo('MemberCreatedEvent', 'batch_id', 'batch_id');
-    },
+        /**
+         * The member created event that happend at the same time (if any)
+         */
+        memberCreatedEvent() {
+            return this.belongsTo('MemberCreatedEvent', 'batch_id', 'batch_id');
+        },
 
-    /**
-     * The status transition recorded at subscription creation time (if any)
-     * (e.g. free -> paid, or gift -> paid).
-     * Should only ever match one row per batch_id today; orderBy makes the choice deterministic if not.
-     */
-    paidStatusEvent() {
-        return this.belongsTo('MemberStatusEvent', 'batch_id', 'batch_id')
-            .query(qb => qb.where('to_status', 'paid').orderBy('created_at', 'desc'));
-    },
+        /**
+         * The status transition recorded at subscription creation time (if any)
+         * (e.g. free -> paid, or gift -> paid).
+         * Should only ever match one row per batch_id today; orderBy makes the choice deterministic if not.
+         */
+        paidStatusEvent() {
+            return this.belongsTo('MemberStatusEvent', 'batch_id', 'batch_id')
+                .query(qb => qb.where('to_status', 'paid').orderBy('created_at', 'desc'));
+        },
 
-    subscription() {
-        return this.belongsTo('StripeCustomerSubscription', 'subscription_id', 'id');
-    },
+        subscription() {
+            return this.belongsTo('StripeCustomerSubscription', 'subscription_id', 'id');
+        },
 
-    postAttribution() {
-        return this.belongsTo('Post', 'attribution_id', 'id');
-    },
+        postAttribution() {
+            return this.belongsTo('Post', 'attribution_id', 'id');
+        },
 
-    userAttribution() {
-        return this.belongsTo('User', 'attribution_id', 'id');
-    },
+        userAttribution() {
+            return this.belongsTo('User', 'attribution_id', 'id');
+        },
 
-    tagAttribution() {
-        return this.belongsTo('Tag', 'attribution_id', 'id');
-    }
-}, {
-    async edit() {
-        throw new errors.IncorrectUsageError({message: 'Cannot edit SubscriptionCreatedEvent'});
-    },
+        tagAttribution() {
+            return this.belongsTo('Tag', 'attribution_id', 'id');
+        }
+    }, {
+        async edit() {
+            throw new errors.IncorrectUsageError({message: 'Cannot edit SubscriptionCreatedEvent'});
+        },
 
-    async destroy() {
-        throw new errors.IncorrectUsageError({message: 'Cannot destroy SubscriptionCreatedEvent'});
-    }
-});
+        async destroy() {
+            throw new errors.IncorrectUsageError({message: 'Cannot destroy SubscriptionCreatedEvent'});
+        }
+    });
 
-module.exports = {
-    SubscriptionCreatedEvent: ghostBookshelf.model('SubscriptionCreatedEvent', SubscriptionCreatedEvent)
+    return {
+        SubscriptionCreatedEvent: ghostBookshelf.model('SubscriptionCreatedEvent', SubscriptionCreatedEvent)
+    };
 };
+
+Object.assign(module.exports, module.exports(require('./base')));

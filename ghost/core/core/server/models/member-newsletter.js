@@ -1,9 +1,11 @@
-const ghostBookshelf = require('./base');
+module.exports = function (ghostBookshelf) {
+    const MemberNewsletter = ghostBookshelf.Model.extend({
+        tableName: 'members_newsletters'
+    });
 
-const MemberNewsletter = ghostBookshelf.Model.extend({
-    tableName: 'members_newsletters'
-});
-
-module.exports = {
-    MemberNewsletter: ghostBookshelf.model('MemberNewsletter', MemberNewsletter)
+    return {
+        MemberNewsletter: ghostBookshelf.model('MemberNewsletter', MemberNewsletter)
+    };
 };
+
+Object.assign(module.exports, module.exports(require('./base')));

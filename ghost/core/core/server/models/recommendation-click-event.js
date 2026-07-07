@@ -1,22 +1,25 @@
-const errors = require('@tryghost/errors');
-const ghostBookshelf = require('./base');
+module.exports = function (ghostBookshelf) {
+    const errors = require('@tryghost/errors');
 
-const RecommendationClickEvent = ghostBookshelf.Model.extend({
-    tableName: 'recommendation_click_events'
-}, {
-    async edit() {
-        throw new errors.IncorrectUsageError({
-            message: 'Cannot edit RecommendationClickEvent'
-        });
-    },
+    const RecommendationClickEvent = ghostBookshelf.Model.extend({
+        tableName: 'recommendation_click_events'
+    }, {
+        async edit() {
+            throw new errors.IncorrectUsageError({
+                message: 'Cannot edit RecommendationClickEvent'
+            });
+        },
 
-    async destroy() {
-        throw new errors.IncorrectUsageError({
-            message: 'Cannot destroy RecommendationClickEvent'
-        });
-    }
-});
+        async destroy() {
+            throw new errors.IncorrectUsageError({
+                message: 'Cannot destroy RecommendationClickEvent'
+            });
+        }
+    });
 
-module.exports = {
-    RecommendationClickEvent: ghostBookshelf.model('RecommendationClickEvent', RecommendationClickEvent)
+    return {
+        RecommendationClickEvent: ghostBookshelf.model('RecommendationClickEvent', RecommendationClickEvent)
+    };
 };
+
+Object.assign(module.exports, module.exports(require('./base')));

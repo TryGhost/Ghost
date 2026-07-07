@@ -1,9 +1,11 @@
-const ghostBookshelf = require('./base');
+module.exports = function (ghostBookshelf) {
+    const CollectionPost = ghostBookshelf.Model.extend({
+        tableName: 'collections_posts'
+    });
 
-const CollectionPost = ghostBookshelf.Model.extend({
-    tableName: 'collections_posts'
-});
-
-module.exports = {
-    CollectionPost: ghostBookshelf.model('CollectionPost', CollectionPost)
+    return {
+        CollectionPost: ghostBookshelf.model('CollectionPost', CollectionPost)
+    };
 };
+
+Object.assign(module.exports, module.exports(require('./base')));
