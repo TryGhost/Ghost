@@ -60,7 +60,7 @@
         "jsdom": "catalog:",
         "typescript-eslint": "catalog:",
         "tailwindcss": "catalog:",
-        "vite": "catalog:rolldown",
+        "vite": "catalog:",
         "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },

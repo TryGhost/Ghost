@@ -62,7 +62,7 @@
         "typescript-eslint": "catalog:",
         "msw": "catalog:",
         "tailwindcss": "catalog:",
-        "vite": "catalog:rolldown",
+        "vite": "catalog:",
         "vitest": "catalog:"
     },
     "dependencies": {

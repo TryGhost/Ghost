@@ -59,7 +59,7 @@
         "eslint-plugin-react": "catalog:",
         "globals": "catalog:",
         "jsdom": "catalog:",
-        "vite": "catalog:rolldown",
+        "vite": "catalog:",
         "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },
