@@ -20,13 +20,20 @@ module.exports = function createFacade(registrationName, createLegacy) {
         return legacyInstance;
     };
 
+    // Module loaders probe these during require interop; resolving for them
+    // would construct the instance at import time, before config/boot are ready
+    const isInteropProbe = prop => typeof prop === 'symbol' || prop === '__esModule' || prop === 'default' || prop === 'then' || prop === 'module.exports';
+
     return new Proxy({}, {
-        get: (_, prop) => Reflect.get(resolve(), prop),
+        get: (_, prop) => (isInteropProbe(prop) ? undefined : Reflect.get(resolve(), prop)),
         set: (_, prop, value) => Reflect.set(resolve(), prop, value),
-        has: (_, prop) => Reflect.has(resolve(), prop),
+        has: (_, prop) => (isInteropProbe(prop) ? false : Reflect.has(resolve(), prop)),
         deleteProperty: (_, prop) => Reflect.deleteProperty(resolve(), prop),
         ownKeys: () => Reflect.ownKeys(resolve()),
         getOwnPropertyDescriptor: (_, prop) => {
+            if (isInteropProbe(prop)) {
+                return undefined;
+            }
             const descriptor = Reflect.getOwnPropertyDescriptor(resolve(), prop);
             if (descriptor) {
                 descriptor.configurable = true;
