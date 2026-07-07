@@ -15,24 +15,25 @@ class SettingsSection extends BasePage {
 
     constructor(page: Page, root: Locator) {
         super(page);
-        // Everything is scoped to the React member-detail root so we never
-        // match Ember's still-mounted (but visually hidden) member view when
-        // both routers claim the same URL post-cutover.
+        // The gear-icon trigger lives inside the React root — scope it there
+        // so it doesn't ambiguously match any legacy admin element with the
+        // same testid.
         this.memberActionsButton = root.getByTestId('member-actions');
 
-        // Dropdown items are `menuitem`, not `button`, in the React version
-        // (Radix DropdownMenu). The legacy Ember version rendered plain
-        // `<button>`s inside the dropdown — the shared page object needs a
-        // locator that resolves both so the legacy Playwright tests still
-        // pass against the React screen.
-        this.impersonateButton = root.getByRole('menuitem', {name: 'Impersonate'}).or(root.getByRole('button', {name: 'Impersonate'}));
-        this.signOutOfAllDevices = root.getByRole('menuitem', {name: 'Sign out of all devices'}).or(root.getByRole('button', {name: 'Sign out of all devices'}));
-        this.disableCommentingButton = root.getByRole('menuitem', {name: 'Disable commenting'}).or(root.getByRole('button', {name: 'Disable commenting'}));
-        this.enableCommentingButton = root.getByRole('menuitem', {name: 'Enable commenting'}).or(root.getByRole('button', {name: 'Enable commenting'}));
+        // DropdownMenuItem / DialogContent are rendered by Radix into PORTALS
+        // at the document root — outside the `member-detail` scope. Search
+        // them page-wide, but stay specific enough not to collide with Ember's
+        // hidden shell:
+        //   - menu items also fall back through `button` role because the
+        //     legacy Ember admin rendered plain `<button>`s in its dropdown.
+        this.impersonateButton = page.getByRole('menuitem', {name: 'Impersonate'}).or(page.getByRole('button', {name: 'Impersonate'}));
+        this.signOutOfAllDevices = page.getByRole('menuitem', {name: 'Sign out of all devices'}).or(page.getByRole('button', {name: 'Sign out of all devices'}));
+        this.disableCommentingButton = page.getByRole('menuitem', {name: 'Disable commenting'}).or(page.getByRole('button', {name: 'Disable commenting'}));
+        this.enableCommentingButton = page.getByRole('menuitem', {name: 'Enable commenting'}).or(page.getByRole('button', {name: 'Enable commenting'}));
 
-        this.deleteButton = root.getByRole('menuitem', {name: 'Delete member'}).or(root.getByRole('button', {name: 'Delete member'}));
-        this.confirmDeleteButton = root.getByTestId('confirm-delete-member');
-        this.cancelDeleteButton = root.getByTestId('cancel-delete-member');
+        this.deleteButton = page.getByRole('menuitem', {name: 'Delete member'}).or(page.getByRole('button', {name: 'Delete member'}));
+        this.confirmDeleteButton = page.getByTestId('confirm-delete-member');
+        this.cancelDeleteButton = page.getByTestId('cancel-delete-member');
     }
 }
 
@@ -68,11 +69,11 @@ export class MemberDetailsPage extends AdminPage {
         super(page);
         this.pageUrl = '/ghost/#/members/';
 
-        // Post-cutover, the URL `/members/:id` is served by React BUT Ember's
-        // still-mounted member view also renders into a hidden `#ember-app`
-        // container. Scope every locator to the React root so a duplicate
-        // testid/role in the Ember DOM can't cause strict-mode ambiguity or
-        // click the wrong element.
+        // Post-Phase 8 cutover, the URL `/members/:id` renders React. Scope
+        // *page-body* locators to the React root so Ember's hidden shell (which
+        // shares `data-test-link="members-back"` and a few other test hooks)
+        // can't ambiguously match. Anything rendered by Radix in a portal —
+        // menu items, modal contents — has to be searched page-wide instead.
         const root = page.getByTestId('member-detail');
 
         this.nameInput = root.getByRole('textbox', {name: 'Name'});
@@ -86,6 +87,8 @@ export class MemberDetailsPage extends AdminPage {
         this.savedButton = root.getByRole('button', {name: 'Saved'});
         this.retryButton = root.getByRole('button', {name: 'Retry'});
         this.membersBackLink = root.locator('[data-test-link="members-back"]');
+
+        // Dialog contents render in a portal — must be searched page-wide.
         this.copyLinkButton = page.getByRole('button', {name: 'Copy link'});
         this.magicLinkInput = page.getByTestId('member-signin-url').last();
         this.confirmLeaveButton = page.getByRole('button', {name: 'Leave'});
@@ -93,8 +96,6 @@ export class MemberDetailsPage extends AdminPage {
 
         this.activityHeading = root.getByRole('heading', {name: 'Activity', level: 4});
 
-        // Modals render in a portal outside the DetailPage root, so scope them
-        // by role rather than the React root.
         this.disableCommentingModal = page.getByTestId('disable-commenting-modal');
         this.disableCommentingConfirmButton = this.disableCommentingModal.getByRole('button', {name: 'Disable commenting'});
         this.disableCommentingCancelButton = this.disableCommentingModal.getByRole('button', {name: 'Cancel'});
