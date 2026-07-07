@@ -239,10 +239,6 @@ module.exports = {
 
         const [emailCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ?', [memberId]);
         const [emailOpenedCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ? AND opened_at IS NOT NULL', [memberId]);
-        const member = await db.knex('members')
-            .select('automation_tracked_email_count', 'automation_email_open_count')
-            .where('id', memberId)
-            .first() || {};
 
         const updateQuery = {
             newsletter_email_count: emailCount.count,
@@ -253,13 +249,6 @@ module.exports = {
         const emailOpenRate = getOpenRate(emailOpenedCount.count, trackedEmailCount);
         if (emailOpenRate !== null) {
             updateQuery.email_open_rate = emailOpenRate;
-        }
-
-        const aggregateTrackedEmailCount = Number(trackedEmailCount || 0) + Number(member.automation_tracked_email_count || 0);
-        const aggregateEmailOpenCount = Number(emailOpenedCount.count || 0) + Number(member.automation_email_open_count || 0);
-        const aggregateEmailOpenRate = getOpenRate(aggregateEmailOpenCount, aggregateTrackedEmailCount);
-        if (aggregateEmailOpenRate !== null) {
-            updateQuery.aggregate_email_open_rate = aggregateEmailOpenRate;
         }
 
         await db.knex('members')
@@ -284,10 +273,6 @@ module.exports = {
             .whereIn('email_recipients.member_id', memberIds)
             .groupBy('email_recipients.member_id');
 
-        const automationStats = await db.knex('members')
-            .select('id', 'automation_tracked_email_count', 'automation_email_open_count')
-            .whereIn('id', memberIds);
-
         // Build update data for each member
         const memberStatsMap = new Map();
         for (const stat of stats) {
@@ -298,19 +283,15 @@ module.exports = {
                 email_open_rate: getOpenRate(stat.email_opened_count, stat.tracked_count)
             });
         }
-        const automationStatsMap = new Map(automationStats.map(stat => [stat.id, stat]));
-
         // Build CASE statements for batch update
         const emailCountCases = [];
         const trackedEmailCountCases = [];
         const emailOpenedCountCases = [];
         const emailOpenRateCases = [];
-        const aggregateEmailOpenRateCases = [];
         const emailCountBindings = [];
         const trackedEmailCountBindings = [];
         const emailOpenedCountBindings = [];
         const emailOpenRateBindings = [];
-        const aggregateEmailOpenRateBindings = [];
 
         for (const memberId of memberIds) {
             const memberStats = memberStatsMap.get(memberId) || {
@@ -329,25 +310,12 @@ module.exports = {
             emailOpenedCountCases.push(`WHEN ? THEN ?`);
             emailOpenedCountBindings.push(memberId, memberStats.newsletter_email_open_count);
 
-            const memberAutomationStats = automationStatsMap.get(memberId) || {};
-            const aggregateTrackedEmailCount = Number(memberStats.newsletter_tracked_email_count || 0) + Number(memberAutomationStats.automation_tracked_email_count || 0);
-            const aggregateEmailOpenCount = Number(memberStats.newsletter_email_open_count || 0) + Number(memberAutomationStats.automation_email_open_count || 0);
-            const aggregateEmailOpenRate = getOpenRate(aggregateEmailOpenCount, aggregateTrackedEmailCount);
-
             if (memberStats.email_open_rate !== null) {
                 emailOpenRateCases.push(`WHEN ? THEN ?`);
                 emailOpenRateBindings.push(memberId, memberStats.email_open_rate);
             } else {
                 emailOpenRateCases.push(`WHEN ? THEN NULL`);
                 emailOpenRateBindings.push(memberId);
-            }
-
-            if (aggregateEmailOpenRate !== null) {
-                aggregateEmailOpenRateCases.push(`WHEN ? THEN ?`);
-                aggregateEmailOpenRateBindings.push(memberId, aggregateEmailOpenRate);
-            } else {
-                aggregateEmailOpenRateCases.push(`WHEN ? THEN NULL`);
-                aggregateEmailOpenRateBindings.push(memberId);
             }
         }
 
@@ -356,14 +324,12 @@ module.exports = {
         // 2. All bindings for newsletter_tracked_email_count CASE statement
         // 3. All bindings for email_opened_count CASE statement
         // 4. All bindings for email_open_rate CASE statement
-        // 5. All bindings for aggregate_email_open_rate CASE statement
-        // 6. Member IDs for the WHERE IN clause
+        // 5. Member IDs for the WHERE IN clause
         const bindings = [
             ...emailCountBindings,
             ...trackedEmailCountBindings,
             ...emailOpenedCountBindings,
             ...emailOpenRateBindings,
-            ...aggregateEmailOpenRateBindings,
             ...memberIds
         ];
 
@@ -374,8 +340,7 @@ module.exports = {
                 newsletter_email_count = CASE id ${emailCountCases.join(' ')} END,
                 newsletter_tracked_email_count = CASE id ${trackedEmailCountCases.join(' ')} END,
                 newsletter_email_open_count = CASE id ${emailOpenedCountCases.join(' ')} END,
-                email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END,
-                aggregate_email_open_rate = CASE id ${aggregateEmailOpenRateCases.join(' ')} END
+                email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
             WHERE id IN (${memberIds.map(() => '?').join(',')})
         `, bindings);
     }

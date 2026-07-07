@@ -61,6 +61,9 @@ const Member = ghostBookshelf.Model.extend({
         // Remove computed field - it should not be persisted
         delete attrs.can_comment;
 
+        // Generated column - the database computes it, writing to it is an error
+        delete attrs.aggregate_email_open_rate;
+
         // Convert MemberCommenting domain object to JSON string for storage
         if (attrs.commenting) {
             attrs.commenting = MemberCommentingCodec.format(attrs.commenting);

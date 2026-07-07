@@ -248,7 +248,14 @@ const restoreFromTemplateSQLite = async () => {
 
             await sequence(dataTables.map(table => async () => {
                 await run('DELETE FROM ??', [table]);
-                await run('INSERT INTO ?? SELECT * FROM template.??', [table, table]);
+                // Generated columns cannot be INSERTed into, so name the writable
+                // columns explicitly (table_xinfo marks generated columns hidden=2
+                // for VIRTUAL and hidden=3 for STORED).
+                const columns = (await run(
+                    'SELECT name FROM pragma_table_xinfo(?) WHERE hidden NOT IN (2, 3)', [table]
+                )).map(row => row.name);
+                const columnList = columns.map(() => '??').join(', ');
+                await run(`INSERT INTO ?? (${columnList}) SELECT ${columnList} FROM template.??`, [table, ...columns, ...columns, table]);
             }));
         } finally {
             await run('PRAGMA foreign_keys = ON');
@@ -310,7 +317,15 @@ const restoreFromTemplate = async () => {
             const [[{'Create Table': createTableSql}]] = await db.knex.raw('SHOW CREATE TABLE ??.??', [templateDb, table]);
             await db.knex.schema.dropTableIfExists(table);
             await db.knex.raw(createTableSql);
-            await db.knex.raw('INSERT INTO ?? SELECT * FROM ??.??', [table, templateDb, table]);
+            // Generated columns cannot be INSERTed into, so name the writable
+            // columns explicitly.
+            const [columnRows] = await db.knex.raw(
+                'SELECT COLUMN_NAME AS name FROM information_schema.COLUMNS WHERE TABLE_SCHEMA = ? AND TABLE_NAME = ? AND EXTRA NOT LIKE \'%GENERATED%\' ORDER BY ORDINAL_POSITION',
+                [templateDb, table]
+            );
+            const columns = columnRows.map(row => row.name);
+            const columnList = columns.map(() => '??').join(', ');
+            await db.knex.raw(`INSERT INTO ?? (${columnList}) SELECT ${columnList} FROM ??.??`, [table, ...columns, ...columns, templateDb, table]);
         }));
     } finally {
         await db.knex.raw('SET FOREIGN_KEY_CHECKS=1;');

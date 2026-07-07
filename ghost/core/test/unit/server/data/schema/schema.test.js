@@ -20,7 +20,8 @@ const VALID_KEYS = {
         'nullable',
         'unsigned',
         'defaultTo',
-        'index'
+        'index',
+        'generatedAlwaysAs'
     ],
     string: [
         'maxlength',

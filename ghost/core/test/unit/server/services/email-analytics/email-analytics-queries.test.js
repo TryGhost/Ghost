@@ -29,7 +29,7 @@ describe('Email analytics queries', function () {
             table.integer('automation_tracked_email_count').notNullable().defaultTo(0);
             table.integer('automation_email_open_count').notNullable().defaultTo(0);
             table.integer('email_open_rate').nullable();
-            table.integer('aggregate_email_open_rate').nullable();
+            table.specificType('aggregate_email_open_rate', 'integer generated always as (case when coalesce(newsletter_tracked_email_count, 0) + automation_tracked_email_count >= 5 then round((newsletter_email_open_count + automation_email_open_count) * 100.0 / (coalesce(newsletter_tracked_email_count, 0) + automation_tracked_email_count)) else null end) virtual').nullable();
         });
 
         await testDb.schema.createTable('emails', function (table) {

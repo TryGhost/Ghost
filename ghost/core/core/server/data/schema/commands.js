@@ -20,9 +20,15 @@ const messages = {
  */
 function addTableColumn(tableName, tableBuilder, columnName, columnSpec = schema[tableName][columnName]) {
     let column;
+    const isGenerated = Object.prototype.hasOwnProperty.call(columnSpec, 'generatedAlwaysAs');
 
     // creation distinguishes between text with fieldtype, string with maxlength and all others
-    if (columnSpec.type === 'text' && Object.prototype.hasOwnProperty.call(columnSpec, 'fieldtype')) {
+    if (isGenerated) {
+        // unsigned is part of the data type and must come before "generated always as" on MySQL,
+        // so it can't be applied via knex's unsigned() modifier (which appends after the type)
+        const unsigned = columnSpec.unsigned && DatabaseInfo.isMySQL(db.knex) ? ' unsigned' : '';
+        column = tableBuilder.specificType(columnName, `${columnSpec.type}${unsigned} generated always as (${columnSpec.generatedAlwaysAs}) virtual`);
+    } else if (columnSpec.type === 'text' && Object.prototype.hasOwnProperty.call(columnSpec, 'fieldtype')) {
         column = tableBuilder[columnSpec.type](columnName, columnSpec.fieldtype);
     } else if (columnSpec.type === 'string') {
         if (Object.prototype.hasOwnProperty.call(columnSpec, 'maxlength')) {
@@ -45,7 +51,7 @@ function addTableColumn(tableName, tableBuilder, columnName, columnSpec = schema
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'unique') && columnSpec.unique) {
         column.unique();
     }
-    if (Object.prototype.hasOwnProperty.call(columnSpec, 'unsigned') && columnSpec.unsigned) {
+    if (Object.prototype.hasOwnProperty.call(columnSpec, 'unsigned') && columnSpec.unsigned && !isGenerated) {
         column.unsigned();
     }
     if (Object.prototype.hasOwnProperty.call(columnSpec, 'references')) {
