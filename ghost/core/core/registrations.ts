@@ -22,8 +22,23 @@ import createLinkTrackingService from './server/services/link-tracking/create';
 import createSlackNotificationsService from './server/services/slack-notifications/create';
 import createStaffService from './server/services/staff/create';
 import createNewslettersService from './server/services/newsletters/create';
+import createMentionsService from './server/services/mentions/create';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('mentions', {
+        lifetime: 'SCOPED',
+        factory: ({models, events, domainEvents, urlUtils, settingsCache}: Cradle) => createMentionsService({
+            models,
+            events,
+            domainEvents,
+            urlUtils,
+            settingsCache,
+            // Bridged until these migrate
+            urlService: require('./server/services/url'),
+            jobsService: require('./server/services/mentions-jobs')
+        })
+    });
+
     container.register('staff', {
         lifetime: 'SCOPED',
         factory: ({models, domainEvents, settingsCache, urlUtils}: Cradle) => createStaffService({

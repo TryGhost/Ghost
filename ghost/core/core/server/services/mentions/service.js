@@ -1,118 +1,12 @@
-const MentionController = require('./mention-controller');
-const WebmentionMetadata = require('./webmention-metadata');
-const MentionsAPI = require('./mentions-api');
-const MentionSendingService = require('./mention-sending-service');
-const MentionDiscoveryService = require('./mention-discovery-service');
-const BookshelfMentionRepository = require('./bookshelf-mention-repository');
-const ResourceService = require('./resource-service');
-const RoutingService = require('./routing-service');
-const models = require('../../models');
-const events = require('../../lib/common/events');
-const externalRequest = require('../../../server/lib/request-external.js');
-const urlUtils = require('../../../shared/url-utils');
-const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
-const urlService = require('../url');
-const settingsCache = require('../../../shared/settings-cache');
-const DomainEvents = require('../../lib/common/domain-events');
-const jobsService = require('../mentions-jobs');
+const createFacade = require('../../../shared/container/create-facade');
+const createMentionsService = require('./create');
 
-function getPostUrl(post) {
-    const jsonModel = post.toJSON();
-    outputSerializerUrlUtil.forPost(post.id, jsonModel, {options: {}});
-    return jsonModel.url;
-}
-
-module.exports = {
-    /** @type {import('./mentions-api')} */
-    api: null,
-    /** @type {import('./bookshelf-mention-repository')} */
-    repository: null,
-    controller: new MentionController(),
-    metadata: new WebmentionMetadata(),
-    /** @type {import('./mention-sending-service')} */
-    sendingService: null,
-    didInit: false,
-    async init() {
-        if (this.didInit) {
-            return;
-        }
-        this.didInit = true;
-        const repository = new BookshelfMentionRepository({
-            MentionModel: models.Mention,
-            DomainEvents
-        });
-        this.repository = repository;
-
-        const webmentionMetadata = this.metadata;
-        const discoveryService = new MentionDiscoveryService({externalRequest});
-        const resourceService = new ResourceService({
-            urlUtils,
-            urlService
-        });
-
-        const routingService = new RoutingService({
-            siteUrl: new URL(urlUtils.getSiteUrl()),
-            resourceService,
-            externalRequest
-        });
-
-        const api = new MentionsAPI({
-            repository,
-            webmentionMetadata,
-            resourceService,
-            routingService
-        });
-
-        this.api = api;
-
-        this.controller.init({
-            api,
-            jobService: {
-                async addJob(name, fn) {
-                    jobsService.addJob({
-                        name,
-                        job: fn,
-                        offloaded: false
-                    });
-                }
-            },
-            mentionResourceService: {
-                async getByID(id) {
-                    if (!id) {
-                        return null;
-                    }
-                    const post = await models.Post.findOne({id: id.toHexString()});
-
-                    if (!post) {
-                        return null;
-                    }
-                    return {
-                        id: id,
-                        name: post.get('title'),
-                        type: post.get('type')
-                    };
-                }
-            }
-        });
-
-        const sendingService = new MentionSendingService({
-            discoveryService,
-            externalRequest,
-            getSiteUrl: () => urlUtils.urlFor('home', true),
-            getPostUrl: post => getPostUrl(post),
-            isEnabled: () => !settingsCache.get('is_private'),
-            jobService: {
-                async addJob(name, fn) {
-                    jobsService.addJob({
-                        name,
-                        job: fn,
-                        offloaded: false
-                    });
-                }
-            }
-        });
-        sendingService.listen(events);
-
-        this.sendingService = sendingService;
-    }
-};
+module.exports = createFacade('mentions', () => createMentionsService({
+    models: require('../../models'),
+    events: require('../../lib/common/events'),
+    domainEvents: require('../../lib/common/domain-events'),
+    urlUtils: require('../../../shared/url-utils'),
+    settingsCache: require('../../../shared/settings-cache'),
+    urlService: require('../url'),
+    jobsService: require('../mentions-jobs')
+}));
