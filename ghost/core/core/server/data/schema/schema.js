@@ -447,6 +447,7 @@ module.exports = {
         enable_comment_notifications: {type: 'boolean', nullable: false, defaultTo: true},
         enable_updates_and_announcements: {type: 'boolean', nullable: true},
         newsletter_email_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
+        newsletter_tracked_email_count: {type: 'integer', unsigned: true, nullable: true},
         newsletter_email_open_count: {type: 'integer', unsigned: true, nullable: false, defaultTo: 0},
         email_open_rate: {type: 'integer', unsigned: true, nullable: true, index: true},
         email_disabled: {type: 'boolean', nullable: false, defaultTo: false},
