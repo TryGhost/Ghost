@@ -6,7 +6,7 @@ import {LucideIcon, Recharts, formatDisplayDate, formatNumber, formatPercentage}
 import {calculateYAxisWidth} from '@tryghost/shade/app';
 import {getPeriodText, sanitizeChartData} from '@/analytics/utils/chart-helpers';
 import {useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/analytics-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-context';
 
 interface BarTooltipPayload {
     value: number;
@@ -355,13 +355,16 @@ const NewsletterKPIs: React.FC<{
                                                 top: 20
                                             }}
                                             onClick={(e) => {
-                                                if (e.activePayload && e.activePayload[0].payload.post_id) {
-                                                    navigate(`/posts/analytics/${e.activePayload[0].payload.post_id}`, {crossApp: true});
+                                                // Recharts types activePayload as `any`; narrow the row we read.
+                                                const activePostId = (e.activePayload?.[0] as {payload?: {post_id?: string}} | undefined)?.payload?.post_id;
+                                                if (activePostId) {
+                                                    navigate(`/posts/analytics/${activePostId}`, {crossApp: true});
                                                 }
                                             }}
                                             onMouseLeave={() => setIsHoveringClickable(false)}
                                             onMouseMove={(e) => {
-                                                setIsHoveringClickable(!!(e.activePayload && e.activePayload[0].payload.post_id));
+                                                const activePostId = (e.activePayload?.[0] as {payload?: {post_id?: string}} | undefined)?.payload?.post_id;
+                                                setIsHoveringClickable(!!activePostId);
                                             }}
                                         >
                                             <defs>
@@ -383,7 +386,7 @@ const NewsletterKPIs: React.FC<{
                                             <Recharts.YAxis
                                                 axisLine={false}
                                                 domain={barDomain}
-                                                tickFormatter={value => formatPercentage(value)}
+                                                tickFormatter={(value: number) => formatPercentage(value)}
                                                 tickLine={false}
                                                 ticks={barTicks}
                                                 width={calculateYAxisWidth(barTicks, (value: number) => formatPercentage(value))}

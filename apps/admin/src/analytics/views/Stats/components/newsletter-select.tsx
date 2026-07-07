@@ -2,7 +2,7 @@ import React, {useEffect, useMemo} from 'react';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {type Newsletter} from '@tryghost/admin-x-framework/api/newsletters';
 import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {useGlobalData} from '@/analytics/providers/analytics-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-context';
 
 interface NewsletterSelectProps {
     newsletters?: Newsletter[];

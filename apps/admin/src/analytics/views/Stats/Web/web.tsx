@@ -9,15 +9,14 @@ import StatsView from '@/analytics/views/Stats/layout/stats-view';
 import TopContent from './components/top-content';
 import WebKPIs, {type KpiDataItem} from './components/web-kpis';
 import {Card, CardContent, NavbarActions} from '@tryghost/shade/components';
-import {type KpiMetric} from '@/analytics/types/kpi';
 import {Navigate, useAppContext, useTinybirdQuery} from '@tryghost/admin-x-framework';
 import {STATS_DEFAULT_SOURCE_ICON_URL} from '@/analytics/utils/constants';
 import {createFilter} from '@tryghost/shade/patterns';
-import {formatDuration, formatNumber, formatPercentage, getScrollParent} from '@tryghost/shade/utils';
+import {getScrollParent} from '@tryghost/shade/utils';
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/analytics/utils/audience';
 import {useFilterParams} from '@/analytics/hooks/use-filter-params';
-import {useGlobalData} from '@/analytics/providers/analytics-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-context';
 
 interface SourcesData {
     source?: string | number;
@@ -25,33 +24,6 @@ interface SourcesData {
     [key: string]: unknown;
     percentage?: number;
 }
-
-export const KPI_METRICS: Record<string, KpiMetric> = {
-    visits: {
-        dataKey: 'visits',
-        label: 'Visitors',
-        chartColor: 'var(--chart-blue)',
-        formatter: formatNumber
-    },
-    views: {
-        dataKey: 'pageviews',
-        label: 'Pageviews',
-        chartColor: 'var(--chart-teal)',
-        formatter: formatNumber
-    },
-    'bounce-rate': {
-        dataKey: 'bounce_rate',
-        label: 'Bounce rate',
-        chartColor: 'var(--chart-teal)',
-        formatter: formatPercentage
-    },
-    'visit-duration': {
-        dataKey: 'avg_session_sec',
-        label: 'Visit duration',
-        chartColor: 'var(--chart-teal)',
-        formatter: formatDuration
-    }
-};
 
 const Web: React.FC = () => {
     const {statsConfig, isLoading: isConfigLoading, range, data} = useGlobalData();

@@ -241,7 +241,8 @@ export const useNewsletterStatsWithRangeSplit = (range?: number, order?: TopNews
         const clickStats = clickStatsResult.data?.stats || [];
 
         // Create a map of click data by post_id for fast lookup
-        const clickStatsMap = new Map();
+        type ClickStat = (typeof clickStats)[number];
+        const clickStatsMap = new Map<ClickStat['post_id'], ClickStat>();
         clickStats.forEach((clickStat) => {
             clickStatsMap.set(clickStat.post_id, clickStat);
         });
@@ -269,8 +270,8 @@ export const useNewsletterStatsWithRangeSplit = (range?: number, order?: TopNews
         error: basicStatsResult.error || clickStatsResult.error,
         isError: basicStatsResult.isError || clickStatsResult.isError,
         refetch: () => {
-            basicStatsResult.refetch();
-            clickStatsResult.refetch();
+            void basicStatsResult.refetch();
+            void clickStatsResult.refetch();
         }
     };
 };

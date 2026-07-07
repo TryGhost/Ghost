@@ -399,7 +399,7 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                 />
                                 <Recharts.YAxis
                                     axisLine={false}
-                                    tickFormatter={(value) => {
+                                    tickFormatter={(value: number) => {
                                         return value < 0 ? formatNumber(value * -1) : formatNumber(value);
                                     }}
                                     tickLine={false}
@@ -416,22 +416,26 @@ const PaidMembersChangeChart: React.FC<PaidMembersChangeChartProps> = ({
                                                 displayValue = rawValue < 0 ? formatNumber(rawValue * -1) : formatNumber(rawValue);
                                             }
 
+                                            // Recharts types the tooltip payload as `any`; narrow the row we read.
+                                            const row = (payload as {payload?: {new?: number; cancelled?: number; date?: string; rawDate?: string}} | undefined)?.payload;
+
                                             // Calculate net change (new + cancelled, since cancelled is negative)
-                                            const newValue = Number(payload?.payload?.new || 0);
-                                            const cancelledValue = Number(payload?.payload?.cancelled || 0);
+                                            const newValue = Number(row?.new || 0);
+                                            const cancelledValue = Number(row?.cancelled || 0);
                                             const netChange = newValue + cancelledValue;
                                             const netChangeFormatted = netChange === 0 ? '0' : (netChange > 0 ? `+${formatNumber(netChange)}` : formatNumber(netChange));
 
                                             // Format tooltip date based ONLY on selectedResolution, not the global range
-                                            let tooltipDate = payload?.payload?.date;
-                                            if (payload?.payload?.rawDate) {
+                                            let tooltipDate = row?.date;
+                                            const rawDate = row?.rawDate;
+                                            if (rawDate) {
                                             // Map resolution directly to date format
                                                 if (selectedResolution === 'monthly') {
-                                                    tooltipDate = formatDisplayDateWithRange(payload.payload.rawDate, 366); // Force "MMM YYYY"
+                                                    tooltipDate = formatDisplayDateWithRange(rawDate, 366); // Force "MMM YYYY"
                                                 } else if (selectedResolution === 'weekly') {
-                                                    tooltipDate = formatDisplayDateWithRange(payload.payload.rawDate, 91); // Force "Week of"
+                                                    tooltipDate = formatDisplayDateWithRange(rawDate, 91); // Force "Week of"
                                                 } else {
-                                                    tooltipDate = formatDisplayDateWithRange(payload.payload.rawDate, 30); // Daily format
+                                                    tooltipDate = formatDisplayDateWithRange(rawDate, 30); // Daily format
                                                 }
                                             }
 

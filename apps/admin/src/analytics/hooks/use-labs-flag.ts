@@ -1,5 +1,5 @@
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
-import {useGlobalData} from '@/analytics/providers/analytics-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-context';
 
 /**
  * Simple hook to check if a labs feature flag is enabled
@@ -12,7 +12,7 @@ export const useLabsFlag = (flagName: string): boolean => {
     const labsJSON = getSettingValue<string>(settings, 'labs') || '{}';
 
     try {
-        const labs = JSON.parse(labsJSON);
+        const labs = JSON.parse(labsJSON) as Record<string, unknown>;
         return labs[flagName] === true;
     } catch {
         return false;

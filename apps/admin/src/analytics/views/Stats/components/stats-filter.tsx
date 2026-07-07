@@ -8,7 +8,7 @@ import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@/analytics/utils/c
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/analytics/utils/audience';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/analytics-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-context';
 import {useTinybirdQuery, useWebAnalyticsEnabled} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 
@@ -86,7 +86,7 @@ const FILTER_FIELD_DEFINITIONS: Record<string, FilterFieldDefinition> = {
         endpoint: 'api_top_locations',
         valueKey: 'location',
         filterItem(item) {
-            const location = String(item.location || '');
+            const location = String((item.location as string | number | null | undefined) ?? '');
             return location !== '' && !UNKNOWN_LOCATION_VALUES.includes(location);
         },
         transformValue: v => ({value: v, label: getCountryName(v)})
@@ -193,7 +193,7 @@ const useTinybirdFilterOptions = (
         return items
             .filter(item => (definition.filterItem ? definition.filterItem(item) : true))
             .map((item) => {
-                const rawValue = String(item[definition.valueKey] ?? '');
+                const rawValue = String((item[definition.valueKey] ?? '') as string | number);
                 const visits = Number(item.visits) || 0;
                 const {value, label} = definition.transformValue
                     ? definition.transformValue(rawValue)

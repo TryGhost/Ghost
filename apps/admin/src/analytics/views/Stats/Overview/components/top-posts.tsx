@@ -7,7 +7,7 @@ import {getPeriodText} from '@/analytics/utils/chart-helpers';
 import {getPostDestination} from '@/analytics/utils/url-helpers';
 import {getPostStatusText} from '@tryghost/admin-x-framework/utils/post-utils';
 import {useAppContext, useNavigate} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/analytics-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-context';
 
 interface PostlistTooptipProps {
     title?: string;

@@ -1,4 +1,4 @@
-import {useGlobalData} from '@/analytics/providers/analytics-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-context';
 
 interface ConfigHostSettings {
     hostSettings?: {
