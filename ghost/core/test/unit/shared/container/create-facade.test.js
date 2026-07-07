@@ -41,4 +41,31 @@ describe('createFacade', function () {
         assert.equal(facade.value, 'hello');
         assert.equal(constructed, 1);
     });
+
+    it('supports classes with private fields', function () {
+        class WithPrivates {
+            #value = 'secret';
+
+            reveal() {
+                return this.#value;
+            }
+        }
+        const facade = createFacade('privates', () => new WithPrivates());
+
+        assert.equal(facade.reveal(), 'secret');
+    });
+
+    it('preserves own-property function identity for stubbing', function () {
+        const instance = {value: 1, getValue() {
+            return this.value;
+        }};
+        const facade = createFacade('stubbable', () => instance);
+
+        const replacement = () => 'stubbed';
+        replacement.restore = () => 'restored';
+        facade.getValue = replacement;
+
+        assert.equal(facade.getValue(), 'stubbed');
+        assert.equal(facade.getValue.restore(), 'restored');
+    });
 });
