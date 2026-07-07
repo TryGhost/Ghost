@@ -633,6 +633,159 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         await expect(modal).toBeHidden();
     });
 
+    test('signs a member out of all devices from the actions menu', async ({page}) => {
+        const member = await memberFactory.create({name: 'Logout Target', email: 'logout@ghost.org'});
+        const sessionsUrl = `**/ghost/api/admin/members/${member.id}/sessions/`;
+
+        // Intercept the DELETE so we don't depend on the server having a live
+        // session to invalidate — this test is about the UI contract (menu →
+        // confirm → success toast), not the sessions store.
+        let deleteCalled = false;
+        await page.route(sessionsUrl, async (route) => {
+            if (route.request().method() === 'DELETE') {
+                deleteCalled = true;
+                return route.fulfill({status: 204, body: ''});
+            }
+            return route.continue();
+        });
+
+        await page.goto(previewPath(member.id));
+
+        await page.getByTestId('member-actions').click();
+        await page.getByTestId('member-actions-logout').click();
+
+        const modal = page.getByTestId('logout-member-modal');
+        await expect(modal).toBeVisible();
+        await expect(modal).toContainText('Logout Target');
+
+        await page.getByTestId('confirm-logout-member').click();
+
+        // Modal auto-closes after the mutation resolves and success toast fires.
+        await expect(modal).toBeHidden();
+        expect(deleteCalled).toBe(true);
+    });
+
+    test('deletes a member from the actions menu and navigates back to the list', async ({page}) => {
+        const member = await memberFactory.create({name: 'Delete Target', email: 'delete@ghost.org'});
+
+        await page.goto(previewPath(member.id));
+
+        await page.getByTestId('member-actions').click();
+        await page.getByTestId('member-actions-delete').click();
+
+        const modal = page.getByTestId('delete-member-modal');
+        await expect(modal).toBeVisible();
+        await expect(modal).toContainText('delete@ghost.org');
+
+        // No Stripe subs on this member — the "Also cancel in Stripe" toggle
+        // must not render (Ember parity, `delete-member.hbs:12`).
+        await expect(page.getByTestId('delete-member-cancel-stripe')).toHaveCount(0);
+        // Confirm button label is plain "Delete member" when the toggle is
+        // hidden/off.
+        await expect(page.getByTestId('confirm-delete-member')).toHaveText('Delete member');
+
+        await page.getByTestId('confirm-delete-member').click();
+
+        // Redirects to the members list after the DELETE resolves.
+        await expect(page).toHaveURL(/#\/members$/);
+
+        // Member is gone from the server-side store, not just the UI.
+        const search = await page.request.get(`/ghost/api/admin/members/${member.id}/`);
+        expect(search.status()).toBe(404);
+    });
+
+    test('deleting a member with unsaved edits does not trigger the discard-changes dialog', async ({page}) => {
+        // Regression: the parent's `useBlocker` fires on ANY route change while
+        // the draft is dirty. Deleting a member with pending field edits used
+        // to pop "Discard unsaved changes?" over the already-deleted member —
+        // the modal must bypass the guard before it calls `navigate('/members')`.
+        const member = await memberFactory.create({name: 'Delete With Edits', email: 'delete-edits@ghost.org'});
+        const memberDetailsPage = new MemberDetailsPage(page);
+
+        await page.goto(previewPath(member.id));
+        await memberDetailsPage.nameInput.fill('Delete With Edits Modified');
+
+        await page.getByTestId('member-actions').click();
+        await page.getByTestId('member-actions-delete').click();
+        await page.getByTestId('confirm-delete-member').click();
+
+        await expect(page).toHaveURL(/#\/members$/);
+        // The discard-changes AlertDialog must NOT be visible on the list page.
+        await expect(page.getByRole('button', {name: 'Leave'})).toHaveCount(0);
+    });
+
+    test.describe('delete member with active Stripe subscription', () => {
+        // No `stripeEnabled` fixture — the toggle branch is a pure client-side
+        // decision on `member.subscriptions`, so a route mock is enough. Adding
+        // real Stripe here would just slow the test down without changing
+        // what's exercised.
+
+        test('shows the cancel-Stripe toggle and forwards its state to the DELETE call', async ({page}) => {
+            const member = await memberFactory.create({name: 'Delete Paid', email: 'delete-paid@ghost.org'});
+
+            const memberRouteRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+            // Single handler dispatches by method — playwright's `page.route`
+            // resolution is LIFO, so two separate handlers on overlapping URLs
+            // would race, with the later handler swallowing the GET and
+            // bypassing the subscription injection below.
+            let deleteUrl: string | null = null;
+            await page.route(memberRouteRegex, async (route) => {
+                const method = route.request().method();
+                if (method === 'DELETE') {
+                    deleteUrl = route.request().url();
+                    return route.fulfill({status: 204, body: ''});
+                }
+                if (method !== 'GET') {
+                    return route.continue();
+                }
+                // Inject an active paid subscription into the GET so the delete
+                // modal hits its `hasCancelableStripeSubscription: true`
+                // branch. Faster than provisioning a real Stripe customer.
+                const response = await route.fetch();
+                const body = await response.json();
+                if (body?.members?.[0]) {
+                    body.members[0].status = 'paid';
+                    body.members[0].subscriptions = [{
+                        id: 'sub_delete_1',
+                        customer: {id: 'cus_delete_1', name: null, email: member.email},
+                        plan: {id: 'plan_1', nickname: 'Monthly', interval: 'month', currency: 'usd', amount: 500},
+                        status: 'active',
+                        start_date: '2026-01-01T12:00:00.000Z',
+                        current_period_end: '2026-02-01T12:00:00.000Z',
+                        cancel_at_period_end: false,
+                        price: {id: 'price_1', price_id: 'price_1', nickname: 'Monthly', amount: 500, currency: 'usd', type: 'recurring', interval: 'month'},
+                        tier: {id: 'tier_1', name: 'Gold', slug: 'gold', active: true, type: 'paid'},
+                        offer: null
+                    }];
+                }
+                return route.fulfill({response, body: JSON.stringify(body)});
+            });
+
+            await page.goto(previewPath(member.id));
+
+            await page.getByTestId('member-actions').click();
+            await page.getByTestId('member-actions-delete').click();
+
+            const modal = page.getByTestId('delete-member-modal');
+            const cancelStripeToggle = page.getByTestId('delete-member-cancel-stripe');
+            await expect(cancelStripeToggle).toBeVisible();
+            // Default off — reset on every open so a prior selection can't leak.
+            await expect(cancelStripeToggle).toHaveAttribute('data-state', 'unchecked');
+            await expect(page.getByTestId('confirm-delete-member')).toHaveText('Delete member');
+
+            // Flipping it on updates the button label so the admin sees they're
+            // triggering two ops, not one (Ember `delete-member.hbs:44`).
+            await cancelStripeToggle.click();
+            await expect(page.getByTestId('confirm-delete-member')).toHaveText('Delete member + Cancel subscription');
+
+            await page.getByTestId('confirm-delete-member').click();
+
+            await expect(modal).toBeHidden();
+            await expect(page).toHaveURL(/#\/members$/);
+            expect(deleteUrl).toMatch(/[?&]cancel=true(&|$)/);
+        });
+    });
+
     test('creates a new member and redirects to their detail', async ({page}) => {
         const memberDetailsPage = new MemberDetailsPage(page);
 

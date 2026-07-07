@@ -225,7 +225,19 @@ const MemberDetail: React.FC = () => {
                         {(isCreating || member) && (
                             <PageHeader.Actions>
                                 <PageHeader.ActionGroup>
-                                    {member && !isCreating && <MemberActionsMenu member={member} />}
+                                    {member && !isCreating && (
+                                        // key={member.id} unmounts+remounts on member change so
+                                        // local modal state (`showDelete`, `cancelStripe`, etc.)
+                                        // can't leak across members if the user navigates while a
+                                        // modal is open.
+                                        <MemberActionsMenu
+                                            key={member.id}
+                                            allowLeaveWithUnsavedChanges={() => {
+                                                bypassGuardRef.current = true;
+                                            }}
+                                            member={member}
+                                        />
+                                    )}
                                     <Button disabled={saveDisabled} variant={saveVariant} onClick={onSave}>
                                         {saveLabel}
                                     </Button>
