@@ -120,6 +120,14 @@ beforeEach((context: {task: {name: string; suite?: unknown; file?: {filepath?: s
     });
 });
 
+afterEach(() => {
+    // The unit suite runs isolate:false, so a test file that seeds a default
+    // container scope would poison facade resolution for every later file in
+    // the worker
+    const {resetContainer} = require('../../core/shared/container/current');
+    resetContainer();
+});
+
 afterEach(async () => {
     const domainEvents = require('../../core/server/lib/common/domain-events');
     const mentionsJobsService = require('../../core/server/services/mentions-jobs');
