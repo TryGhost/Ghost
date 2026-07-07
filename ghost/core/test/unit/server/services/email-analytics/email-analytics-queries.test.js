@@ -25,7 +25,11 @@ describe('Email analytics queries', function () {
             table.integer('newsletter_email_count').notNullable().defaultTo(0);
             table.integer('newsletter_tracked_email_count').nullable();
             table.integer('newsletter_email_open_count').notNullable().defaultTo(0);
+            table.integer('automation_email_count').notNullable().defaultTo(0);
+            table.integer('automation_tracked_email_count').notNullable().defaultTo(0);
+            table.integer('automation_email_open_count').notNullable().defaultTo(0);
             table.integer('email_open_rate').nullable();
+            table.integer('aggregate_email_open_rate').nullable();
         });
 
         await testDb.schema.createTable('emails', function (table) {
@@ -46,8 +50,8 @@ describe('Email analytics queries', function () {
         await testDb.destroy();
     });
 
-    async function createMember(id) {
-        await testDb('members').insert({id});
+    async function createMember(id, attrs = {}) {
+        await testDb('members').insert({id, ...attrs});
     }
 
     async function createEmail(id, trackOpens) {
@@ -67,7 +71,10 @@ describe('Email analytics queries', function () {
     }
 
     it('stores tracked newsletter email count when aggregating one member', async function () {
-        await createMember('member-1');
+        await createMember('member-1', {
+            automation_tracked_email_count: 3,
+            automation_email_open_count: 2
+        });
         await createEmail('tracked-opened', true);
         await createEmail('tracked-unopened', true);
         await createEmail('untracked', false);
@@ -81,11 +88,18 @@ describe('Email analytics queries', function () {
         assert.equal(member.newsletter_email_count, 3);
         assert.equal(member.newsletter_tracked_email_count, 2);
         assert.equal(member.newsletter_email_open_count, 1);
+        assert.equal(member.aggregate_email_open_rate, 60);
     });
 
     it('stores tracked newsletter email count when aggregating members in a batch', async function () {
-        await createMember('member-1');
-        await createMember('member-2');
+        await createMember('member-1', {
+            automation_tracked_email_count: 3,
+            automation_email_open_count: 2
+        });
+        await createMember('member-2', {
+            automation_tracked_email_count: 5,
+            automation_email_open_count: 1
+        });
         await createMember('member-3');
         await createEmail('tracked', true);
         await createEmail('untracked', false);
@@ -98,7 +112,10 @@ describe('Email analytics queries', function () {
 
         const members = await testDb('members').orderBy('id');
         assert.equal(members[0].newsletter_tracked_email_count, 2);
+        assert.equal(members[0].aggregate_email_open_rate, 60);
         assert.equal(members[1].newsletter_tracked_email_count, 0);
+        assert.equal(members[1].aggregate_email_open_rate, 20);
         assert.equal(members[2].newsletter_tracked_email_count, 0);
+        assert.equal(members[2].aggregate_email_open_rate, null);
     });
 });
