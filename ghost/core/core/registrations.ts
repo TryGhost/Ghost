@@ -9,8 +9,14 @@ import createConnection from './server/data/db/create-connection';
 import createBookshelf from './server/models/base/create-bookshelf';
 import createModels from './server/models/create-models';
 import createEventRegistry from './server/lib/common/create-event-registry';
+import createSettingsCache from './shared/settings-cache/create';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('settingsCache', {
+        lifetime: 'SCOPED',
+        factory: () => createSettingsCache()
+    });
+
     container.register('events', {
         lifetime: 'SCOPED',
         factory: () => createEventRegistry(),

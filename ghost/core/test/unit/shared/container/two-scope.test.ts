@@ -89,6 +89,37 @@ describe('two scopes in one process', function () {
         }
     });
 
+    it('gives each scope its own settings cache wired to its own event bus', async function () {
+        const root = createContainer();
+        registerCoreServices(root);
+        const scopeA = createSiteScope(root);
+        const scopeB = createSiteScope(root);
+
+        try {
+            const cacheA = scopeA.resolve('settingsCache') as any;
+            const cacheB = scopeB.resolve('settingsCache') as any;
+            const eventsA = scopeA.resolve('events') as any;
+            const MemoryCache = require('../../../../core/server/adapters/cache/MemoryCache');
+
+            assert.notEqual(cacheA, cacheB);
+
+            cacheA.init(eventsA, null, [], new MemoryCache(), {});
+            cacheB.init(scopeB.resolve('events'), null, [], new MemoryCache(), {});
+
+            const settingModel = {
+                get: (key: string) => (key === 'key' ? 'title' : undefined),
+                toJSON: () => ({key: 'title', value: 'Site A'})
+            };
+            eventsA.emit('settings.edited', settingModel);
+
+            assert.equal(cacheA.get('title'), 'Site A');
+            assert.equal(cacheB.get('title'), undefined);
+        } finally {
+            await scopeA.dispose();
+            await scopeB.dispose();
+        }
+    });
+
     it('disposing one scope leaves the other working', async function () {
         const root = createContainer();
         registerCoreServices(root);
