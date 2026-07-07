@@ -15,6 +15,7 @@ const buildSiteConfig = config => ({
     hostSettings: config.get('hostSettings'),
     labs: config.get('labs'),
     contentPath: config.get('paths:contentPath'),
+    publicContentPath: config.getContentPath('public'),
     getSiteUrl: config.getSiteUrl,
     getAdminUrl: config.getAdminUrl,
     getSubdir: config.getSubdir,

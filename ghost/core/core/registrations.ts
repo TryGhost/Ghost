@@ -37,7 +37,23 @@ import createCustomThemeSettingsService from './server/services/custom-theme-set
 import CustomThemeSettingsCache from './shared/custom-theme-settings-cache/custom-theme-settings-cache';
 import createMemberWelcomeEmailService from './server/services/member-welcome-emails/create';
 import createEmailSuppressionList from './server/services/email-suppression-list/create';
-export const registerCoreServices = (container: Container): void => {
+import createRecommendationsService from './server/services/recommendations/create';export const registerCoreServices = (container: Container): void => {
+    container.register('recommendations', {
+        lifetime: 'SCOPED',
+        factory: ({models, domainEvents, urlUtils, siteConfig, deploymentConfig, mentions, staff}: Cradle) => createRecommendationsService({
+            models,
+            domainEvents,
+            urlUtils,
+            siteConfig,
+            deploymentConfig,
+            mentions,
+            staff,
+            // Bridged until these migrate
+            settingsBREADService: require('./server/services/settings').getSettingsBREADServiceInstance(),
+            oembedService: require('./server/services/oembed')
+        })
+    });
+
     container.register('memberWelcomeEmails', {
         lifetime: 'SCOPED',
         factory: ({models, events, settingsCache}: Cradle) => createMemberWelcomeEmailService({models, events, settingsCache})

@@ -22,7 +22,8 @@ describe('two scopes in one process', function () {
                 getSubdir: () => '',
                 assetBaseUrls: {},
                 protectedSlugs: ['ghost'],
-                redirectCacheMaxAge: 0
+                redirectCacheMaxAge: 0,
+                publicContentPath: '/tmp/ghost-test-public'
             },
             adapterPaths: ['', `${__dirname}/../../../../core/server/adapters/`],
             adapterConfig: {
@@ -236,7 +237,7 @@ describe('two scopes in one process', function () {
         const scopeA = createSiteScope(root);
         const scopeB = createSiteScope(root);
 
-        const scopedServices = ['tiers', 'donations', 'audienceFeedback', 'linkRedirection', 'linkTracking', 'slackNotifications', 'staff', 'newsletters', 'mentions', 'milestones', 'membersEvents', 'comments', 'tagsPublic', 'postsPublic', 'invites', 'settingsHelpers', 'explore', 'emailAddress', 'customThemeSettingsCache', 'customThemeSettings', 'memberWelcomeEmails', 'emailSuppressionList'];
+        const scopedServices = ['tiers', 'donations', 'audienceFeedback', 'linkRedirection', 'linkTracking', 'slackNotifications', 'staff', 'newsletters', 'mentions', 'milestones', 'membersEvents', 'comments', 'tagsPublic', 'postsPublic', 'invites', 'settingsHelpers', 'explore', 'emailAddress', 'customThemeSettingsCache', 'customThemeSettings', 'memberWelcomeEmails', 'emailSuppressionList', 'recommendations'];
 
         try {
             for (const name of scopedServices) {

@@ -7,7 +7,8 @@ describe('buildSiteConfig', function () {
         get: key => (key === 'slugs' ? {protected: ['ghost']} : values[key]),
         getSiteUrl: () => values.url,
         getAdminUrl: () => values['admin:url'],
-        getSubdir: () => ''
+        getSubdir: () => '',
+        getContentPath: type => `/content/${type}`
     });
 
     it('picks the site-level keys from config', function () {
