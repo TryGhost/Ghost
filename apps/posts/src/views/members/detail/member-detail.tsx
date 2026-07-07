@@ -16,6 +16,7 @@ import {getMember, useAddMember, useEditMember} from '@tryghost/admin-x-framewor
 import {getSettingValue, useBrowseSettings} from '@tryghost/admin-x-framework/api/settings';
 import {toast} from 'sonner';
 import {useBlocker} from 'react-router';
+import {useBrowseTiers} from '@tryghost/admin-x-framework/api/tiers';
 import type {MemberEditableFields} from './member-detail-edit';
 
 // The create screen reuses this route with the sentinel id "new". Safe because
@@ -52,6 +53,14 @@ const MemberDetail: React.FC = () => {
     const newslettersUiEnabled = getMemberNewslettersUiEnabled(
         getSettingValue<string>(settingsData?.settings, 'editor_default_email_recipients')
     );
+    // "Add complimentary" is only meaningful when the site has at least one active
+    // paid tier for the comp to reference. Skip the query entirely if paid members
+    // aren't enabled — nothing on this screen consumes it in that case.
+    const {data: tiersData} = useBrowseTiers({
+        searchParams: {filter: 'type:paid+active:true', limit: 'all'},
+        enabled: paidMembersEnabled
+    });
+    const canAddComp = (tiersData?.tiers?.length ?? 0) > 0;
 
     // Draft holds the user's in-progress edits; the query cache stays server truth.
     const [draft, setDraft] = React.useState<MemberEditableFields | undefined>(undefined);
@@ -259,11 +268,16 @@ const MemberDetail: React.FC = () => {
                                     />
                                 )}
 
-                                {/* Subscriptions: external "SUBSCRIPTIONS" label + own card. */}
-                                {member && !isCreating && paidMembersEnabled && (member.subscriptions?.length ?? 0) > 0 && (
+                                {/* Subscriptions: external "SUBSCRIPTIONS" label + own card. The
+                                    section renders when there are subs to show — and the section
+                                    itself may additionally render the "Add complimentary" affordance
+                                    (empty state or footer) when eligible. */}
+                                {member && !isCreating && paidMembersEnabled
+                                    && ((member.subscriptions?.length ?? 0) > 0
+                                        || (canAddComp && (member.tiers?.length ?? 0) === 0)) && (
                                     <section aria-labelledby='member-subscriptions-heading' className='flex flex-col gap-3'>
                                         <h3 className='text-xs font-semibold tracking-wide text-muted-foreground uppercase' id='member-subscriptions-heading'>Subscriptions</h3>
-                                        <MemberSubscriptionsSection member={member} paidMembersEnabled={paidMembersEnabled} />
+                                        <MemberSubscriptionsSection canAddComp={canAddComp} member={member} paidMembersEnabled={paidMembersEnabled} />
                                     </section>
                                 )}
                             </div>

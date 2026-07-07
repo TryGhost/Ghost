@@ -1,8 +1,9 @@
+import MemberAddCompModal from './member-add-comp-modal';
 import MemberSubscriptionActions from './member-subscription-actions';
 import MemberSubscriptionCompActions from './member-subscription-comp-actions';
 import React from 'react';
 import moment from 'moment-timezone';
-import {Badge, Card, CardContent} from '@tryghost/shade/components';
+import {Badge, Button, Card, CardContent} from '@tryghost/shade/components';
 import {LucideIcon, cn} from '@tryghost/shade/utils';
 import {classifyMemberSubscription, formatSubscriptionInterval, getSubscriptionPriceLabel, getSubscriptionStatusLabel, getSubscriptionValidityLabel, groupSubscriptionsByTier} from './member-subscription';
 import {getSymbol} from '@tryghost/admin-x-framework';
@@ -115,6 +116,9 @@ const SubscriptionRow: React.FC<{member: Member; sub: MemberSubscription; showDi
 interface MemberSubscriptionsSectionProps {
     member: Member;
     paidMembersEnabled: boolean;
+    // True when there is at least one active paid tier the member could be
+    // granted a comp on. Caller (`member-detail.tsx`) fetches tiers and computes.
+    canAddComp: boolean;
 }
 
 /**
@@ -126,45 +130,87 @@ interface MemberSubscriptionsSectionProps {
  * The section heading sits **outside** the card (rendered by the parent) so the
  * card contents flow edge-to-edge without a nested header, matching Ember.
  */
-const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({member, paidMembersEnabled}) => {
+const MemberSubscriptionsSection: React.FC<MemberSubscriptionsSectionProps> = ({member, paidMembersEnabled, canAddComp}) => {
+    const [showAddComp, setShowAddComp] = React.useState(false);
+
     if (!paidMembersEnabled) {
         return null;
     }
     const subscriptions = member.subscriptions ?? [];
-    if (subscriptions.length === 0) {
-        return null;
-    }
     const groups = groupSubscriptionsByTier(subscriptions);
-    if (groups.length === 0) {
+    const hasSubscriptions = groups.length > 0;
+
+    // Ember's `isAddComplimentaryAllowed`: paidMembersEnabled + not new + no tiers
+    // yet + at least one active paid tier exists. The caller already checks the
+    // first two; we complete the check here with the member's current tier state.
+    const isAddCompAllowed = canAddComp && (member.tiers?.length ?? 0) === 0;
+
+    // Nothing to show — no rows, no way to add.
+    if (!hasSubscriptions && !isAddCompAllowed) {
         return null;
     }
 
-    // Flatten so rows can render with dividers regardless of tier grouping — the
-    // "N subscriptions" count still shows per group.
+    // The Add-complimentary button appears in TWO places, matching Ember exactly
+    // (`gh-member-settings-form.hbs:82-111,279-293`):
+    //   - As the empty-state affordance when there are no subs at all.
+    //   - As a footer under existing subs when the member has active paid subs but
+    //     no comp tier yet — that's the "cancel Stripe and comp on top" flow.
+    const addCompButton = isAddCompAllowed ? (
+        <Button
+            data-testid='add-complimentary'
+            variant='outline'
+            onClick={() => setShowAddComp(true)}
+        >
+            <LucideIcon.Plus className='mr-1' size={16} />
+            Add complimentary subscription
+        </Button>
+    ) : null;
+
     return (
-        <Card data-testid='member-subscriptions'>
-            <CardContent className='pt-6'>
-                {groups.map(group => (
-                    <div key={group.tier.id} className='flex flex-col'>
-                        {group.subscriptions.map((sub, i) => (
-                            // For a member with 2+ subs on the same tier, the second key
-                            // needs a fallback since comp/gift subs have `id: ''`.
-                            <SubscriptionRow
-                                key={sub.id || `${group.tier.id}-${i}`}
-                                member={member}
-                                showDivider={i > 0}
-                                sub={sub}
-                            />
-                        ))}
-                        {group.subscriptions.length > 1 && (
-                            <div className='pt-3 text-sm text-muted-foreground'>
-                                {group.subscriptions.length} subscriptions
+        <>
+            <Card data-testid='member-subscriptions'>
+                <CardContent className='pt-6'>
+                    {hasSubscriptions
+                        ? (
+                            <>
+                                {groups.map(group => (
+                                    <div key={group.tier.id} className='flex flex-col'>
+                                        {group.subscriptions.map((sub, i) => (
+                                            // For a member with 2+ subs on the same tier, the second key
+                                            // needs a fallback since comp/gift subs have `id: ''`.
+                                            <SubscriptionRow
+                                                key={sub.id || `${group.tier.id}-${i}`}
+                                                member={member}
+                                                showDivider={i > 0}
+                                                sub={sub}
+                                            />
+                                        ))}
+                                        {group.subscriptions.length > 1 && (
+                                            <div className='pt-3 text-sm text-muted-foreground'>
+                                                {group.subscriptions.length} subscriptions
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                                {addCompButton && (
+                                    <div className='mt-4 flex justify-center border-t border-border pt-4'>
+                                        {addCompButton}
+                                    </div>
+                                )}
+                            </>
+                        )
+                        : (
+                            <div className='flex flex-col items-center gap-3 py-6 text-center'>
+                                <p className='text-sm text-muted-foreground'>No subscriptions</p>
+                                {addCompButton}
                             </div>
                         )}
-                    </div>
-                ))}
-            </CardContent>
-        </Card>
+                </CardContent>
+            </Card>
+            {isAddCompAllowed && (
+                <MemberAddCompModal member={member} open={showAddComp} onOpenChange={setShowAddComp} />
+            )}
+        </>
     );
 };
 

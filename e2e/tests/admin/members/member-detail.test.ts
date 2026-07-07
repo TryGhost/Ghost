@@ -211,13 +211,17 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             await expect(subscriptions).toContainText('Expires 15 Jan 2027');
         });
 
-        test('does not render a subscriptions section for a member with no subscriptions', async ({page}) => {
+        test('renders the subscriptions empty state (with Add complimentary) for a member with no subs', async ({page}) => {
             const member = await memberFactory.create({name: 'Empty Sub Member', email: 'empty-sub-member@ghost.org'});
 
             await page.goto(previewPath(member.id));
 
             await expect(page.getByTestId('member-detail-sidebar')).toBeVisible();
-            await expect(page.getByTestId('member-subscriptions')).toHaveCount(0);
+            // The section renders with an empty state now (Ember parity) — the row
+            // itself is absent but the "Add complimentary" affordance is present
+            // because the dev test env has at least one active paid tier.
+            await expect(page.getByTestId('member-subscription')).toHaveCount(0);
+            await expect(page.getByTestId('add-complimentary')).toBeVisible();
         });
 
         test('cancel and continue toggle the subscription state via the actions menu', async ({page}) => {
@@ -416,6 +420,81 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             expect(putBodies).toHaveLength(1);
             expect(putBodies[0]).toEqual({
                 members: [{id: member.id, email: member.email, tiers: [{id: 'tier_gold', expiry_at: '2028-01-15T12:00:00.000Z'}]}]
+            });
+        });
+
+        test('adds a complimentary subscription (forever) via the modal', async ({page}) => {
+            const member = await memberFactory.create({name: 'Add Comp Member', email: 'add-comp@ghost.org'});
+            let compAdded = false;
+
+            const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+            const memberPutBodies: Array<Record<string, unknown>> = [];
+            await page.route(memberReadRegex, async (route) => {
+                const method = route.request().method();
+                if (method === 'PUT') {
+                    memberPutBodies.push(route.request().postDataJSON());
+                    compAdded = true;
+                    return route.fulfill({status: 200, contentType: 'application/json', body: JSON.stringify({members: [{id: member.id}]})});
+                }
+                if (method !== 'GET') {
+                    return route.continue();
+                }
+                const response = await route.fetch();
+                const body = await response.json();
+                if (body?.members?.[0]) {
+                    if (compAdded) {
+                        // After the add, return a member on the picked comp tier so the
+                        // modal closes and the row renders.
+                        body.members[0].status = 'comped';
+                        body.members[0].tiers = [{id: 'tier_bronze', name: 'Bronze', slug: 'bronze', active: true, type: 'paid'}];
+                        body.members[0].subscriptions = [{
+                            id: '',
+                            customer: {id: 'cus_comp_new', name: null, email: member.email},
+                            plan: {id: 'plan_comp_new', nickname: 'Complimentary', interval: 'year', currency: 'usd', amount: 0},
+                            status: 'active', start_date: '2026-07-07T12:00:00.000Z', current_period_end: '2027-07-07T12:00:00.000Z', cancel_at_period_end: false,
+                            price: {id: 'price_comp_new', price_id: 'price_comp_new', nickname: 'Complimentary', amount: 0, currency: 'usd', type: 'recurring', interval: 'year'},
+                            tier: {id: 'tier_bronze', name: 'Bronze', slug: 'bronze', active: true, type: 'paid'},
+                            offer: null
+                        }];
+                    } else {
+                        // Fresh member — no tiers, no subs — so the empty state shows.
+                        body.members[0].tiers = [];
+                        body.members[0].subscriptions = [];
+                    }
+                }
+                return route.fulfill({response, body: JSON.stringify(body)});
+            });
+
+            // Serve a paid tier so the "Add complimentary" affordance appears.
+            await page.route(/\/ghost\/api\/admin\/tiers\/\??[^/]*$/, async (route) => {
+                return route.fulfill({
+                    status: 200,
+                    contentType: 'application/json',
+                    body: JSON.stringify({tiers: [{id: 'tier_bronze', name: 'Bronze', slug: 'bronze', type: 'paid', active: true}], meta: {pagination: {page: 1, limit: 'all', pages: 1, total: 1, next: null, prev: null}}})
+                });
+            });
+
+            await page.goto(previewPath(member.id));
+
+            await page.getByTestId('add-complimentary').click();
+            await expect(page.getByTestId('add-comp-modal')).toBeVisible();
+
+            // Radix Select — click the trigger, then pick the tier.
+            await page.getByTestId('comp-tier-select').click();
+            await page.getByRole('option', {name: 'Bronze'}).click();
+
+            await page.getByTestId('comp-add-confirm').click();
+
+            // Modal closes after success.
+            await expect(page.getByTestId('add-comp-modal')).toHaveCount(0);
+            // The row now shows for Bronze.
+            await expect(page.getByTestId('member-subscription-tier')).toHaveText('Bronze');
+
+            // The forever comp sends `tiers: [{id}]` with NO expiry_at (Ember parity).
+            // Only one PUT because the member had no active paid subs to cancel first.
+            expect(memberPutBodies).toHaveLength(1);
+            expect(memberPutBodies[0]).toEqual({
+                members: [{id: member.id, email: member.email, tiers: [{id: 'tier_bronze'}]}]
             });
         });
 
