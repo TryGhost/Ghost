@@ -9,7 +9,6 @@ const models = require('../../../../core/server/models');
 const config = require('../../../../core/shared/config');
 const testUtils = require('../../../utils');
 const localUtils = require('./utils');
-const {sequence} = require('@tryghost/promise');
 
 describe('Schedules API', function () {
     const resources = [];
@@ -80,7 +79,7 @@ describe('Schedules API', function () {
             }]
         }));
 
-        const result = await sequence(resources.map(post => async () => {
+        const result = await Promise.all(resources.map((post) => {
             return models.Post.add(post, {context: {internal: true}});
         }));
 
