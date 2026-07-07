@@ -1,3 +1,4 @@
+import path from 'node:path';
 import js from '@eslint/js';
 import globals from 'globals';
 import ghostPlugin from 'eslint-plugin-ghost';
@@ -182,6 +183,30 @@ export default tseslint.config(
         rules: {
             'no-restricted-syntax': migrationLoopRules,
             'ghost/no-return-in-loop/no-return-in-loop': 'error'
+        }
+    },
+    // ============================================================
+    // DI container code receives dependencies through the cradle;
+    // requiring a global singleton from here defeats the migration
+    // ============================================================
+    {
+        files: ['core/shared/container/**', 'core/registrations.ts'],
+        plugins: {ghost: ghostPlugin},
+        rules: {
+            'ghost/node/no-restricted-require': ['error', [
+                {name: path.resolve(import.meta.dirname, 'core/shared/config/**'), message: 'Container code must take config via the cradle, not the global singleton.'},
+                {name: path.resolve(import.meta.dirname, 'core/shared/settings-cache/**'), message: 'Container code must take the settings cache via the cradle, not the global singleton.'},
+                {name: '@tryghost/domain-events', message: 'Container code must take domain events via the cradle, not the global dispatcher.'}
+            ]],
+            'no-restricted-imports': ['error', {
+                paths: [
+                    {name: '@tryghost/domain-events', message: 'Container code must take domain events via the cradle, not the global dispatcher.'}
+                ],
+                patterns: [
+                    {group: ['**/shared/config', '**/shared/config/**', '../config', '../config/**'], message: 'Container code must take config via the cradle, not the global singleton.'},
+                    {regex: '(shared|\\.\\.)/settings-cache(/index(\\.js)?)?$', message: 'Container code must take the settings cache via the cradle, not the global singleton.'}
+                ]
+            }]
         }
     },
     // ============================================================
