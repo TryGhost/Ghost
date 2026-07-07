@@ -1,5 +1,6 @@
 const assert = require('node:assert/strict');
 const {buildSiteConfig} = require('../../../../core/shared/config/site-config');
+const {createConfigView} = require('../../../../core/shared/container/config-view');
 
 describe('buildSiteConfig', function () {
     const fakeConfig = (values) => ({
@@ -39,5 +40,19 @@ describe('buildSiteConfig', function () {
         const siteConfig = buildSiteConfig(fakeConfig({database}));
 
         assert.equal(siteConfig.database, database);
+    });
+});
+
+describe('createConfigView', function () {
+    it('serves hostSettings from siteConfig and everything else from deployment config', function () {
+        const view = createConfigView({
+            siteConfig: {hostSettings: {managedEmail: {enabled: true}}},
+            deploymentConfig: {get: key => (key === 'mail:from' ? 'test@example.com' : undefined)}
+        });
+
+        assert.deepEqual(view.get('hostSettings'), {managedEmail: {enabled: true}});
+        assert.equal(view.get('hostSettings:managedEmail:enabled'), true);
+        assert.equal(view.get('hostSettings:missing:deep'), undefined);
+        assert.equal(view.get('mail:from'), 'test@example.com');
     });
 });
