@@ -49,6 +49,10 @@ export default defineConfig(({ command }) => ({
         host: '0.0.0.0',
         port: 5174,
         allowedHosts: true
+        // Vite 8 already forwards browser console warn/error to the terminal
+        // when it detects an AI agent is driving the dev server, and stays
+        // quiet for humans. Uncomment to force it on for everyone (noisier):
+        // forwardConsole: { logLevels: ['warn', 'error'] }
     },
     optimizeDeps: {
         include: ["@tryghost/koenig-lexical"],
