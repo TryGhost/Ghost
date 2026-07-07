@@ -101,7 +101,7 @@
         "msw": "catalog:",
         "type-fest": "catalog:",
         "typescript": "catalog:",
-        "vite": "catalog:rolldown",
+        "vite": "catalog:",
         "vite-plugin-css-injected-by-js": "3.5.2",
         "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"

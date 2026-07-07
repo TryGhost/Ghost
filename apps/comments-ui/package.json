@@ -86,7 +86,7 @@
         "postcss-import": "16.1.1",
         "sinon": "catalog:",
         "tailwindcss": "catalog:tailwind3",
-        "vite": "catalog:rolldown",
+        "vite": "catalog:",
         "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },

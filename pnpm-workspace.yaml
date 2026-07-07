@@ -74,7 +74,7 @@ catalog:
   '@types/validator': 13.15.10
   '@typescript-eslint/eslint-plugin': 8.49.0
   '@typescript-eslint/parser': 8.49.0
-  '@vitejs/plugin-react': 5.2.0
+  '@vitejs/plugin-react': 6.0.3
   '@vitest/coverage-v8': 4.1.9
   better-sqlite3: 12.11.1
   bson-objectid: 2.0.4
@@ -123,7 +123,7 @@ catalog:
   typescript: 5.9.3
   typescript-eslint: 8.58.0
   validator: 13.12.0
-  vite: 7.3.2
+  vite: 8.1.3
   vite-plugin-svgr: 4.5.0
   vitest: 4.1.9
   zod: 4.4.3
@@ -138,11 +138,6 @@ catalogs:
   tailwind3:
     tailwindcss: 3.4.19
     eslint-plugin-tailwindcss: 3.18.3
-  # Admin-surface apps (posts, stats, admin, admin-x-*, shade, activitypub) opt into
-  # the Rolldown bundler by pointing their `vite` dep at `catalog:rolldown`. Public
-  # UMD apps stay on stock vite (catalog `vite`) until their Rolldown config lands.
-  rolldown:
-    vite: 'npm:rolldown-vite@7.3.1'
 
 overrides:
   # knex-migrator 5.4.x bundles knex 3.x, but ghost/core is pinned to knex 2.4.2.

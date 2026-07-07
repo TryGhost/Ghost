@@ -4,7 +4,7 @@ import { defineConfig } from "vitest/config";
 import type { PluginOption } from "vite";
 const require = createRequire(import.meta.url);
 import tsconfigPaths from "vite-tsconfig-paths";
-import react from "@vitejs/plugin-react-swc";
+import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
 import { emberAssetsPlugin } from "./vite-ember-assets";

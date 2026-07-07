@@ -62,7 +62,7 @@
         "react": "catalog:react17",
         "react-dom": "catalog:react17",
         "typescript-eslint": "catalog:",
-        "vite": "catalog:rolldown",
+        "vite": "catalog:",
         "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },

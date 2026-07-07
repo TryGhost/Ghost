@@ -57,7 +57,7 @@
         "jsdom": "catalog:",
         "typescript-eslint": "catalog:",
         "tailwindcss": "catalog:",
-        "vite": "catalog:rolldown",
+        "vite": "catalog:",
         "vitest": "catalog:"
     },
     "nx": {

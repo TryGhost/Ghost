@@ -64,7 +64,7 @@
         "tailwindcss": "catalog:",
         "typescript": "catalog:",
         "validator": "catalog:",
-        "vite": "catalog:rolldown",
+        "vite": "catalog:",
         "vite-plugin-svgr": "catalog:",
         "vitest": "catalog:"
     },
