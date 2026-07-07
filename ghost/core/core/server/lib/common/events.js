@@ -11,23 +11,6 @@
  *
  */
 
-const events = require('events');
+const createEventRegistry = require('./create-event-registry');
 
-class EventRegistry extends events.EventEmitter {
-    /**
-     * This is method is semi-hack to make sure listeners are only registered once
-     * during the lifetime of the process. And example problem it solves is
-     * registering duplicate listeners between Ghost instance reboots when running tests.
-     * @param {string} eventName
-     * @param {string} listenerName named function name registered as a listener for the event
-     * @returns {boolean}
-     */
-    hasRegisteredListener(eventName, listenerName) {
-        return !!(this.listeners(eventName).find(listener => (listener.name === listenerName)));
-    }
-}
-
-const eventRegistryInstance = new EventRegistry();
-eventRegistryInstance.setMaxListeners(100);
-
-module.exports = eventRegistryInstance;
+module.exports = createEventRegistry();
