@@ -1,18 +1,11 @@
-const ExploreService = require('./explore-service');
+const createFacade = require('../../../shared/container/create-facade');
+const createExploreService = require('./create');
 
-const MembersService = require('../members');
-const PostsService = require('../posts/posts-service-instance')();
-const PublicConfigService = require('../public-config');
-const StatsService = require('../stats');
-const StripeService = require('../stripe');
-
-const models = require('../../models');
-
-module.exports = new ExploreService({
-    MembersService,
-    PostsService,
-    PublicConfigService,
-    StatsService,
-    StripeService,
-    UserModel: models.User
-});
+module.exports = createFacade('explore', () => createExploreService({
+    models: require('../../models'),
+    membersService: require('../members'),
+    postsService: require('../posts/posts-service-instance')(),
+    publicConfigService: require('../public-config'),
+    statsService: require('../stats'),
+    stripeService: require('../stripe')
+}));

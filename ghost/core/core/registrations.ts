@@ -31,6 +31,10 @@ import createPostsPublicService from './server/services/posts-public/create';
 import createInvitesService from './server/services/invites/create';
 import createSettingsHelpers from './server/services/settings-helpers/create';
 import {createConfigView} from './shared/container/config-view';
+import createExploreService from './server/services/explore/create';
+import createEmailAddressService from './server/services/email-address/create';
+import createCustomThemeSettingsService from './server/services/custom-theme-settings/create';
+import CustomThemeSettingsCache from './shared/custom-theme-settings-cache/custom-theme-settings-cache';
 
 export const registerCoreServices = (container: Container): void => {
     container.register('tagsPublic', {
