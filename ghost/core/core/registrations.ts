@@ -17,8 +17,23 @@ import createLimitService from './server/services/create-limit-service';
 import createTiersService from './server/services/tiers/create';
 import createDonationService from './server/services/donations/create';
 import createAudienceFeedbackService from './server/services/audience-feedback/create';
+import createLinkRedirectsService from './server/services/link-redirection/create';
+import createLinkTrackingService from './server/services/link-tracking/create';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('linkRedirection', {
+        lifetime: 'SCOPED',
+        factory: ({models, urlUtils, events, siteConfig, adapterManager}: Cradle) => {
+            const cacheAdapter = siteConfig.hostSettings?.linkRedirectsPublicCache?.enabled ? adapterManager.getAdapter('cache:linkRedirectsPublic') : null;
+            return createLinkRedirectsService({models, urlUtils, events, cacheAdapter});
+        }
+    });
+
+    container.register('linkTracking', {
+        lifetime: 'SCOPED',
+        factory: ({models, urlUtils, domainEvents, linkRedirection}: Cradle) => createLinkTrackingService({models, urlUtils, domainEvents, linkRedirection})
+    });
+
     container.register('audienceFeedback', {
         lifetime: 'SCOPED',
         factory: ({models, urlUtils}: Cradle) => createAudienceFeedbackService({
