@@ -7,6 +7,7 @@ import {MAX_ATTEMPTS, MAX_STEPS_PER_BATCH, RETRY_DELAY_MS} from './constants';
 import {AutomatedEmailRecipient, Member} from '../../models';
 
 const db = require('../../data/db');
+const settingsCache = require('../../../shared/settings-cache');
 
 type MemberWelcomeEmailService = {
     init: () => unknown;
@@ -204,6 +205,12 @@ const processStep = async ({
                     await trx('members')
                         .where({id: step.member_id})
                         .increment('automation_email_count', 1);
+
+                    if (settingsCache.get('email_track_opens')) {
+                        await trx('members')
+                            .where({id: step.member_id})
+                            .increment('automation_tracked_email_count', 1);
+                    }
                 });
             } catch (err) {
                 logging.error({

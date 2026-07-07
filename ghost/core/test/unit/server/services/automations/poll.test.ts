@@ -8,6 +8,7 @@ import {MEMBER_WELCOME_EMAIL_SLUGS} from '../../../../../core/server/services/me
 import {AutomatedEmailRecipient, Member} from '../../../../../core/server/models';
 
 const db = require('../../../../../core/server/data/db');
+const settingsCache = require('../../../../../core/shared/settings-cache');
 
 const MAX_STEPS_PER_BATCH = 100;
 const RETRY_DELAY_MS = 10 * 60 * 1000;
@@ -165,6 +166,7 @@ describe('automations poll', function () {
         sinon.stub(db, 'knex').get(() => ({
             transaction
         }));
+        sinon.stub(settingsCache, 'get').withArgs('email_track_opens').returns(true);
     });
 
     afterEach(function () {
@@ -392,12 +394,31 @@ describe('automations poll', function () {
             member_name: 'Test Member',
             automation_action_revision_id: 'revision-id'
         }, {transacting: trx});
-        sinon.assert.calledOnceWithExactly(incrementAutomationEmailCount, 'automation_email_count', 1);
+        sinon.assert.calledWithExactly(incrementAutomationEmailCount, 'automation_email_count', 1);
         sinon.assert.callOrder(
             automatedEmailRecipientAdd,
             incrementAutomationEmailCount,
             automationsApi.finishStepAndEnqueueNext
         );
+    });
+
+    it('increments the member automation tracked email count when open tracking is enabled', async function () {
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+
+        await poll(options);
+
+        sinon.assert.calledWithExactly(incrementAutomationEmailCount, 'automation_tracked_email_count', 1);
+    });
+
+    it('does not increment the member automation tracked email count when open tracking is disabled', async function () {
+        settingsCache.get.withArgs('email_track_opens').returns(false);
+        const step = buildEmailStep();
+        automationsApi.fetchAndLockSteps.resolves({steps: [step], nextStepReadyAt: null});
+
+        await poll(options);
+
+        sinon.assert.neverCalledWith(incrementAutomationEmailCount, 'automation_tracked_email_count', 1);
     });
 
     it('does not retry the email send when recording the automated email recipient fails', async function () {
