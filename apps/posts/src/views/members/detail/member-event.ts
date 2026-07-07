@@ -24,12 +24,16 @@ export interface RawMemberEvent {
         member_id?: string;
         email_id?: string;
         email?: unknown;
+        // Nullable to match the framework's `MemberActivityEventMember | null`
+        // shape (server sends `null` for guest-generated events with no member
+        // record). Uses a structural subset with no index signature so the
+        // stricter framework type (which has `uuid`, `avatar_image` etc but no
+        // catch-all) is still assignable.
         member?: {
             id?: string;
             name?: string | null;
             email?: string;
-            [k: string]: unknown;
-        };
+        } | null;
         name?: string;
         // The Ember helper reads many arbitrary event-specific fields — the
         // rest come through as `unknown` so we don't over-model this at the

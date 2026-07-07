@@ -15,36 +15,40 @@ interface MemberActivityFeedProps {
 }
 
 /**
- * Maps Ember's custom SVG icon names (e.g. `event-signed-up`) to Lucide
- * substitutes. This is an intentional visual approximation for the inline
- * feed — the "View all member activity" link routes the admin to Ember's
- * full activity view for the pixel-perfect experience. Anything unmapped
- * falls back to the generic `Activity` icon so a new event type from the
- * server never crashes the row.
+ * Renders a Lucide substitute for Ember's custom SVG icon names
+ * (`event-signed-up`, `event-comment`, …). Intentional visual approximation
+ * — pixel-perfect rendering lives behind the "View all member activity"
+ * link that routes to Ember. Anything unmapped falls back to the generic
+ * `Activity` icon so a new server-side event type never crashes the row.
+ *
+ * A switch (rather than a `Record<string, React.ComponentType>` map) sidesteps
+ * a repo-wide type-mismatch: React 17 and 18 typings coexist in node_modules,
+ * and Lucide's `ForwardRefExoticComponent` type doesn't fit `React.ElementType`
+ * under that mix. Inline JSX resolves each icon at its use-site, which is what
+ * every other member-detail component already does.
  */
-const ICON_MAP: Record<string, React.ComponentType<{size?: number; className?: string}>> = {
-    'event-signed-up': LucideIcon.UserPlus,
-    'event-logged-in': LucideIcon.LogIn,
-    'event-subscriptions': LucideIcon.CreditCard,
-    'event-canceled-subscription': LucideIcon.CircleSlash,
-    'event-subscribed-to-email': LucideIcon.MailPlus,
-    'event-unsubscribed-from-email': LucideIcon.MailMinus,
-    'event-opened-email': LucideIcon.MailOpen,
-    'event-received-email': LucideIcon.Mail,
-    'event-sent-email': LucideIcon.Send,
-    'event-email-delivery-failed': LucideIcon.MailX,
-    'event-email-delivery-spam': LucideIcon.MailWarning,
-    'event-email-changed': LucideIcon.AtSign,
-    'event-comment': LucideIcon.MessageSquare,
-    'event-click': LucideIcon.MousePointerClick,
-    'event-more-like-this': LucideIcon.ThumbsUp,
-    'event-less-like-this': LucideIcon.ThumbsDown,
-    'event-gift': LucideIcon.Gift
-};
-
 const EventIcon: React.FC<{iconName: string}> = ({iconName}) => {
-    const Component = ICON_MAP[iconName] ?? LucideIcon.Activity;
-    return <Component className='shrink-0 text-muted-foreground' size={16} />;
+    const iconProps = {className: 'shrink-0 text-muted-foreground', size: 16};
+    switch (iconName) {
+    case 'event-signed-up': return <LucideIcon.UserPlus {...iconProps} />;
+    case 'event-logged-in': return <LucideIcon.LogIn {...iconProps} />;
+    case 'event-subscriptions': return <LucideIcon.CreditCard {...iconProps} />;
+    case 'event-canceled-subscription': return <LucideIcon.CircleSlash {...iconProps} />;
+    case 'event-subscribed-to-email': return <LucideIcon.MailPlus {...iconProps} />;
+    case 'event-unsubscribed-from-email': return <LucideIcon.MailMinus {...iconProps} />;
+    case 'event-opened-email': return <LucideIcon.MailOpen {...iconProps} />;
+    case 'event-received-email': return <LucideIcon.Mail {...iconProps} />;
+    case 'event-sent-email': return <LucideIcon.Send {...iconProps} />;
+    case 'event-email-delivery-failed': return <LucideIcon.MailX {...iconProps} />;
+    case 'event-email-delivery-spam': return <LucideIcon.MailWarning {...iconProps} />;
+    case 'event-email-changed': return <LucideIcon.AtSign {...iconProps} />;
+    case 'event-comment': return <LucideIcon.MessageSquare {...iconProps} />;
+    case 'event-click': return <LucideIcon.MousePointerClick {...iconProps} />;
+    case 'event-more-like-this': return <LucideIcon.ThumbsUp {...iconProps} />;
+    case 'event-less-like-this': return <LucideIcon.ThumbsDown {...iconProps} />;
+    case 'event-gift': return <LucideIcon.Gift {...iconProps} />;
+    default: return <LucideIcon.Activity {...iconProps} />;
+    }
 };
 
 /**
