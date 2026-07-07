@@ -322,14 +322,15 @@ const emittedEvent = (name) => {
  */
 
 let fakedSettings = {};
-const originalSettingsGetter = settingsCache.get;
 
 const fakeSettingsGetter = (setting) => {
     if (fakedSettings.hasOwnProperty(setting)) {
         return fakedSettings[setting];
     }
 
-    return originalSettingsGetter(setting);
+    // The pre-stub getter for the booted scope's cache; a load-time capture
+    // would bind the unbooted fallback instance instead
+    return mocks.settings.wrappedMethod.call(settingsCache, setting);
 };
 
 const mockSetting = (key, value) => {

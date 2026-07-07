@@ -1,6 +1,4 @@
-const CacheManager = require('./cache-manager');
-const publicSettings = require('./public');
+const createFacade = require('../container/create-facade');
+const createSettingsCache = require('./create');
 
-const cacheManager = new CacheManager({publicSettings});
-
-module.exports = cacheManager;
+module.exports = createFacade('settingsCache', createSettingsCache);
