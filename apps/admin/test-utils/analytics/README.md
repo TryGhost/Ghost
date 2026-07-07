@@ -18,7 +18,7 @@ Main export file that provides backward compatibility and re-exports all testing
 
 **Usage:**
 ```typescript
-import { setupDateMocking, getExpectedDateRange } from '../../utils/test-helpers';
+import { setupDateMocking, getExpectedDateRange } from '@test-utils/analytics/test-helpers';
 
 beforeEach(() => {
     const dateMocking = setupDateMocking();
@@ -39,7 +39,7 @@ const { expectedDateFrom, expectedDateTo } = getExpectedDateRange(30);
 
 **Usage:**
 ```typescript
-import { MockPostBuilder, createMockPost } from '../../utils/test-helpers';
+import { MockPostBuilder, createMockPost } from '@test-utils/analytics/test-helpers';
 
 // Builder pattern for complex data
 const post = new MockPostBuilder()
@@ -63,7 +63,7 @@ const simplePost = createMockPost({ id: 'simple-123' });
 
 **Usage:**
 ```typescript
-import { createStandardHookTestSuite } from '../../utils/test-helpers';
+import { createStandardHookTestSuite } from '@test-utils/analytics/test-helpers';
 
 const testSuite = createStandardHookTestSuite(
     'useMyHook',

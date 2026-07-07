@@ -1,7 +1,7 @@
 import moment from 'moment';
 import {TestWrapper} from '@tryghost/admin-x-framework/test/test-utils';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
+import {getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '@test-utils/analytics/test-helpers';
 import {mockApiHook, mockDataFactories, mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook} from '@testing-library/react';
 import {
@@ -11,12 +11,12 @@ import {
     useNewsletterStatsWithRangeSplit,
     useNewslettersList,
     useSubscriberCountWithRange
-} from '@hooks/use-newsletter-stats-with-range';
+} from '@/analytics/hooks/use-newsletter-stats-with-range';
 
 // Mock the API hooks
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@tryghost/admin-x-framework/api/newsletters');
-vi.mock('@src/providers/analytics-provider');
+vi.mock('@/analytics/providers/analytics-context');
 
 const {useNewsletterStats, useSubscriberCount, useNewsletterBasicStats, useNewsletterClickStats} = await import('@tryghost/admin-x-framework/api/stats');
 const {useBrowseNewsletters} = await import('@tryghost/admin-x-framework/api/newsletters');

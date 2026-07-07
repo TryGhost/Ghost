@@ -2,7 +2,7 @@ import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {mockError, mockLoading, mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook} from '@testing-library/react';
-import {useTopSourcesGrowth} from '@hooks/use-top-sources-growth';
+import {useTopSourcesGrowth} from '@/analytics/hooks/use-top-sources-growth';
 
 // Mock external dependencies
 vi.mock('@tryghost/shade/app', () => ({
@@ -14,14 +14,14 @@ vi.mock('@tryghost/admin-x-framework/api/referrers', () => ({
     useTopSourcesGrowth: vi.fn()
 }));
 
-vi.mock('@src/utils/audience', () => ({
+vi.mock('@/analytics/utils/audience', () => ({
     getAudienceQueryParam: vi.fn()
 }));
 
 const mockFormatQueryDate = vi.mocked(await import('@tryghost/shade/app')).formatQueryDate;
 const mockGetRangeDates = vi.mocked(await import('@tryghost/shade/app')).getRangeDates;
 const mockUseTopSourcesGrowthAPI = vi.mocked(await import('@tryghost/admin-x-framework/api/referrers')).useTopSourcesGrowth;
-const mockGetAudienceQueryParam = vi.mocked(await import('@src/utils/audience')).getAudienceQueryParam;
+const mockGetAudienceQueryParam = vi.mocked(await import('@/analytics/utils/audience')).getAudienceQueryParam;
 
 describe('useTopSourcesGrowth', () => {
     let mockStartDate: moment.Moment;

@@ -1,4 +1,4 @@
-import NewSubscribersCadence from '@src/views/Stats/Growth/components/new-subscribers-cadence';
+import NewSubscribersCadence from '@/analytics/views/Stats/Growth/components/new-subscribers-cadence';
 import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';

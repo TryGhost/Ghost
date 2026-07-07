@@ -1,4 +1,7 @@
-import 'dotenv/config';
+// NOTE(PLA-124): dropped `import 'dotenv/config'` — unit-test infra shouldn't
+// load a .env file, and it pulled in a dependency admin doesn't carry. If these
+// Tinybird data generators are ever wired into integration tests, restore env
+// loading there instead.
 import {faker} from '@faker-js/faker';
 
 export const statsConfig = {

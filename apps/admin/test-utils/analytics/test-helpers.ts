@@ -77,7 +77,7 @@ export const applyMocksToModules = (mocks: ReturnType<typeof setupStatsAppMocks>
         useTopPostsStats: mocks.mockUseTopPostsStats
     }));
 
-    vi.doMock('@src/providers/GlobalDataProvider', () => ({
+    vi.doMock('@/analytics/providers/analytics-context', () => ({
         default: () => null,
         useGlobalData: mocks.mockUseGlobalData
     }));

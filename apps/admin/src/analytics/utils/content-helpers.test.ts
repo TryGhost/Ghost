@@ -1,10 +1,10 @@
 import {
     CONTENT_TYPES,
-    ContentType,
+    type ContentType,
     getContentDescription,
     getContentTitle,
     getGrowthContentDescription
-} from '@src/utils/content-helpers';
+} from '@/analytics/utils/content-helpers';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 
 describe('content-helpers', () => {

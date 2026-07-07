@@ -1,4 +1,4 @@
-import {MockInstance, vi} from 'vitest';
+import {type MockInstance, vi} from 'vitest';
 import {expectApiCallWithDateRange} from './date-testing-utils';
 import {renderHook} from '@testing-library/react';
 

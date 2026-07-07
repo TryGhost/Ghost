@@ -627,6 +627,9 @@ importers:
       '@eslint/js':
         specifier: 'catalog:'
         version: 9.39.4
+      '@faker-js/faker':
+        specifier: 'catalog:'
+        version: 10.5.0
       '@tailwindcss/vite':
         specifier: 'catalog:'
         version: 4.2.2(vite@8.1.3(@types/node@22.20.0)(esbuild@0.28.1)(jiti@2.7.0)(terser@5.48.0)(tsx@4.23.0)(yaml@2.9.0))

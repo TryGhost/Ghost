@@ -1,8 +1,8 @@
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {expectMemoizationWithoutParams} from '../../utils/hook-testing-utils';
+import {expectMemoizationWithoutParams} from '@test-utils/analytics/hook-testing-utils';
 import {mockApiHook, mockLoading, mockNull, mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook, waitFor} from '@testing-library/react';
-import {useLatestPostStats} from '@hooks/use-latest-post-stats';
+import {useLatestPostStats} from '@/analytics/hooks/use-latest-post-stats';
 import type {PostStatsResponseType} from '@tryghost/admin-x-framework/api/stats';
 import type {PostsResponseType} from '@tryghost/admin-x-framework/api/posts';
 

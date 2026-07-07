@@ -2,7 +2,7 @@ import moment from 'moment';
 import {describe, expect, it, vi} from 'vitest';
 import {render, screen} from '@testing-library/react';
 
-import PaidMembersChangeChart from '@src/views/Stats/Growth/components/paid-subscription-change-chart';
+import PaidMembersChangeChart from '@/analytics/views/Stats/Growth/components/paid-subscription-change-chart';
 
 // Mock dependencies from @tryghost/shade/app
 vi.mock('@tryghost/shade/app', async () => {
@@ -27,7 +27,7 @@ vi.mock('@tryghost/shade/utils', async () => {
 });
 
 // Mock chart helpers
-vi.mock('@src/utils/chart-helpers', () => ({
+vi.mock('@/analytics/utils/chart-helpers', () => ({
     determineAggregationStrategy: vi.fn(() => 'daily'),
     getPeriodText: vi.fn((range: number) => `in the last ${range} days`),
     sanitizeChartData: vi.fn((data: unknown[]) => data)

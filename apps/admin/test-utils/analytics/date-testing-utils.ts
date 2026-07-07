@@ -1,5 +1,5 @@
 import moment from 'moment';
-import {MockInstance, vi} from 'vitest';
+import {type MockInstance, vi} from 'vitest';
 
 /**
  * Date testing utilities to provide consistent, reliable date mocking
@@ -103,7 +103,7 @@ export const setupDateMocking = () => {
 
     // Mock external date functions
     vi.mock('@tryghost/shade/app', async () => {
-        const actual = await vi.importActual('@tryghost/shade/app') as Record<string, unknown>;
+        const actual = await vi.importActual<Record<string, unknown>>('@tryghost/shade/app');
         return {
             ...actual,
             getRangeDates: vi.fn().mockImplementation(mockGetRangeDates()),

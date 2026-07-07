@@ -32,6 +32,7 @@
     },
     "devDependencies": {
         "@eslint/js": "catalog:",
+        "@faker-js/faker": "catalog:",
         "@tailwindcss/vite": "catalog:",
         "@tanstack/react-query": "catalog:",
         "@testing-library/jest-dom": "catalog:",

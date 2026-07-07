@@ -2,7 +2,7 @@ import moment from 'moment';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
 import {mockLoading, mockNull, mockSuccess} from '@tryghost/admin-x-framework/test/hook-testing-utils';
 import {renderHook, waitFor} from '@testing-library/react';
-import {useGrowthStats} from '@hooks/use-growth-stats';
+import {useGrowthStats} from '@/analytics/hooks/use-growth-stats';
 
 // Mock external dependencies
 vi.mock('@tryghost/admin-x-framework/api/stats', () => ({

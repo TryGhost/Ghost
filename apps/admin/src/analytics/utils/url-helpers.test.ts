@@ -5,7 +5,7 @@ import {
     getFrontendUrl,
     getPostDestination,
     shouldMakeClickable
-} from '@src/utils/url-helpers';
+} from '@/analytics/utils/url-helpers';
 
 // Mock window.open for testing
 const mockWindowOpen = vi.fn();

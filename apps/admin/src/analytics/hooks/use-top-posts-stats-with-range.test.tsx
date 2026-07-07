@@ -1,12 +1,12 @@
 import moment from 'moment';
 import {TestWrapper} from '@tryghost/admin-x-framework/test/test-utils';
 import {beforeEach, describe, expect, it, vi} from 'vitest';
-import {getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '../../utils/test-helpers';
+import {getExpectedDateRange, setupDateMocking, setupStatsAppMocks} from '@test-utils/analytics/test-helpers';
 import {renderHook} from '@testing-library/react';
-import {useTopPostsStatsWithRange} from '@hooks/use-top-posts-stats-with-range';
+import {useTopPostsStatsWithRange} from '@/analytics/hooks/use-top-posts-stats-with-range';
 
 vi.mock('@tryghost/admin-x-framework/api/stats');
-vi.mock('@src/providers/analytics-provider');
+vi.mock('@/analytics/providers/analytics-context');
 vi.mock('@tryghost/shade/app', () => ({
     formatQueryDate: vi.fn(),
     getRangeDates: vi.fn()

@@ -1,5 +1,5 @@
 import moment from 'moment-timezone';
-import {STATS_RANGE_OPTIONS} from '@src/utils/constants';
+import {STATS_RANGE_OPTIONS} from '@/analytics/utils/constants';
 import {
     aggregateByMonthExact,
     aggregateByWeek,
@@ -9,7 +9,7 @@ import {
     getPeriodText,
     sanitizeChartData,
     truncateLeadingEmptyData
-} from '@src/utils/chart-helpers';
+} from '@/analytics/utils/chart-helpers';
 import {describe, expect, it} from 'vitest';
 
 type ChartDataItem = {
