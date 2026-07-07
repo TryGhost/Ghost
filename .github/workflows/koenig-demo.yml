@@ -1,0 +1,58 @@
+name: Koenig Demo
+
+# Deploys the koenig-lexical demo (https://koenig.ghost.org) to GitHub Pages
+# on main pushes that touch koenig/. Replaces the pages.yml workflow from the
+# archived TryGhost/Koenig repo. Requires Pages to be enabled on this repo
+# (gh-pages branch) and the TENOR/KLIPY API key secrets to be present.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'koenig/**'
+      - 'pnpm-lock.yaml'
+      - '.github/workflows/koenig-demo.yml'
+  workflow_dispatch:
+
+concurrency:
+  group: koenig-demo
+  cancel-in-progress: true
+
+env:
+  NODE_VERSION: 22.18.0
+
+jobs:
+  deploy:
+    name: Build and deploy
+    runs-on: ubuntu-latest
+    if: github.repository == 'TryGhost/Ghost'
+    permissions:
+      contents: write
+    env:
+      VITE_TENOR_API_KEY: ${{ secrets.TENOR_API_KEY }}
+      VITE_KLIPY_API_KEY: ${{ secrets.KLIPY_API_KEY }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
+
+      - uses: pnpm/action-setup@0ebf47130e4866e96fce0953f49152a61190b271 # v6.0.9
+      - name: Set up Node.js
+        uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile --filter @tryghost/koenig-lexical...
+
+      - name: Build demo
+        run: pnpm nx run @tryghost/koenig-lexical:build:demo
+
+      - name: Add CNAME
+        run: echo 'koenig.ghost.org' > koenig/koenig-lexical/dist/CNAME
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@84c30a85c19949d7eee79c4ff27748b70285e453 # v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./koenig/koenig-lexical/dist
