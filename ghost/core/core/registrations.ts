@@ -20,8 +20,37 @@ import createAudienceFeedbackService from './server/services/audience-feedback/c
 import createLinkRedirectsService from './server/services/link-redirection/create';
 import createLinkTrackingService from './server/services/link-tracking/create';
 import createSlackNotificationsService from './server/services/slack-notifications/create';
+import createStaffService from './server/services/staff/create';
+import createNewslettersService from './server/services/newsletters/create';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('staff', {
+        lifetime: 'SCOPED',
+        factory: ({models, domainEvents, settingsCache, urlUtils}: Cradle) => createStaffService({
+            models,
+            domainEvents,
+            settingsCache,
+            urlUtils,
+            // Bridged until these migrate
+            memberAttribution: require('./server/services/member-attribution'),
+            settingsHelpers: require('./server/services/settings-helpers'),
+            labs: require('./shared/labs')
+        })
+    });
+
+    container.register('newsletters', {
+        lifetime: 'SCOPED',
+        factory: ({models, urlUtils, limits}: Cradle) => createNewslettersService({
+            models,
+            urlUtils,
+            limits,
+            // Bridged until these migrate
+            mail: require('./server/services/mail'),
+            labs: require('./shared/labs'),
+            emailAddressService: require('./server/services/email-address')
+        })
+    });
+
     container.register('slackNotifications', {
         lifetime: 'SCOPED',
         factory: ({domainEvents, urlUtils, siteConfig}: Cradle) => createSlackNotificationsService({domainEvents, urlUtils, siteConfig})

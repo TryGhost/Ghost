@@ -1,28 +1,11 @@
-const NewslettersService = require('./newsletters-service.js');
-const SingleUseTokenProvider = require('../members/single-use-token-provider');
-const mail = require('../mail');
-const models = require('../../models');
-const urlUtils = require('../../../shared/url-utils');
-const limitService = require('../limits');
-const labs = require('../../../shared/labs');
-const emailAddressService = require('../email-address');
+const createFacade = require('../../../shared/container/create-facade');
+const createNewslettersService = require('./create');
 
-const MAGIC_LINK_TOKEN_VALIDITY = 24 * 60 * 60 * 1000;
-const MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE = 10 * 60 * 1000;
-const MAGIC_LINK_TOKEN_MAX_USAGE_COUNT = 7;
-
-module.exports = new NewslettersService({
-    NewsletterModel: models.Newsletter,
-    MemberModel: models.Member,
-    mail,
-    singleUseTokenProvider: new SingleUseTokenProvider({
-        SingleUseTokenModel: models.SingleUseToken,
-        validityPeriod: MAGIC_LINK_TOKEN_VALIDITY,
-        validityPeriodAfterUsage: MAGIC_LINK_TOKEN_VALIDITY_AFTER_USAGE,
-        maxUsageCount: MAGIC_LINK_TOKEN_MAX_USAGE_COUNT
-    }),
-    urlUtils,
-    limitService,
-    labs,
-    emailAddressService: emailAddressService
-});
+module.exports = createFacade('newsletters', () => createNewslettersService({
+    models: require('../../models'),
+    urlUtils: require('../../../shared/url-utils'),
+    limits: require('../limits'),
+    mail: require('../mail'),
+    labs: require('../../../shared/labs'),
+    emailAddressService: require('../email-address')
+}));

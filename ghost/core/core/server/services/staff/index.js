@@ -1,40 +1,12 @@
-const DomainEvents = require('../../lib/common/domain-events');
-const labs = require('../../../shared/labs');
+const createFacade = require('../../../shared/container/create-facade');
+const createStaffService = require('./create');
 
-class StaffServiceWrapper {
-    init() {
-        if (this.api) {
-            // Prevent creating duplicate DomainEvents subscribers
-            return;
-        }
-
-        const StaffService = require('./staff-service');
-
-        const logging = require('@tryghost/logging');
-        const models = require('../../models');
-        const memberAttribution = require('../member-attribution');
-        const {GhostMailer} = require('../mail');
-        const mailer = new GhostMailer();
-        const settingsCache = require('../../../shared/settings-cache');
-        const urlUtils = require('../../../shared/url-utils');
-        const {blogIcon} = require('../../../server/lib/image');
-        const settingsHelpers = require('../settings-helpers');
-
-        this.api = new StaffService({
-            logging,
-            models,
-            mailer,
-            settingsHelpers,
-            settingsCache,
-            urlUtils,
-            blogIcon,
-            DomainEvents,
-            memberAttributionService: memberAttribution.service,
-            labs
-        });
-
-        this.api.subscribeEvents();
-    }
-}
-
-module.exports = new StaffServiceWrapper();
+module.exports = createFacade('staff', () => createStaffService({
+    models: require('../../models'),
+    domainEvents: require('../../lib/common/domain-events'),
+    settingsCache: require('../../../shared/settings-cache'),
+    urlUtils: require('../../../shared/url-utils'),
+    memberAttribution: require('../member-attribution'),
+    settingsHelpers: require('../settings-helpers'),
+    labs: require('../../../shared/labs')
+}));
