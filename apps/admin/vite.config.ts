@@ -3,6 +3,7 @@ import { createRequire } from "node:module";
 import { defineConfig } from "vitest/config";
 import type { PluginOption } from "vite";
 const require = createRequire(import.meta.url);
+import tsconfigPaths from "vite-tsconfig-paths";
 import react from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 
@@ -40,7 +41,7 @@ function getBase(command: 'build' | 'serve'): string {
 // https://vite.dev/config/
 export default defineConfig(({ command }) => ({
     base: getBase(command),
-    plugins: [tailwindcss() as PluginOption, react(), emberAssetsPlugin(), ghostBackendProxyPlugin()],
+    plugins: [tailwindcss() as PluginOption, react(), emberAssetsPlugin(), ghostBackendProxyPlugin(), tsconfigPaths()],
     define: {
         "process.env.DEBUG": false, // Shim env var utilized by the @tryghost/nql package
     },
@@ -56,8 +57,6 @@ export default defineConfig(({ command }) => ({
     },
     resolve: {
         alias: {
-            "@": resolve(__dirname, "./src"),
-            "@test-utils": resolve(__dirname, "./test-utils"),
             "@ghost-cards": GHOST_CARDS_PATH,
             // TODO: Remove this when @tryghost/nql is updated
             mingo: require.resolve("mingo/dist/mingo.js"),
