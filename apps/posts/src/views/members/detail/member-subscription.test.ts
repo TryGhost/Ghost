@@ -1,4 +1,4 @@
-import {classifyMemberSubscription, formatSubscriptionAmount, formatSubscriptionInterval, getSubscriptionStatusLabel, getSubscriptionValidityLabel, groupSubscriptionsByTier} from './member-subscription';
+import {classifyMemberSubscription, formatSubscriptionAmount, formatSubscriptionInterval, getSubscriptionPriceLabel, getSubscriptionStatusLabel, getSubscriptionValidityLabel, groupSubscriptionsByTier} from './member-subscription';
 import {describe, expect, it} from 'vitest';
 import type {MemberSubscription} from '@tryghost/admin-x-framework/api/members';
 
@@ -169,6 +169,38 @@ describe('getSubscriptionValidityLabel', () => {
             trial_end_at: future.toISOString()
         });
         expect(getSubscriptionValidityLabel(sub)).toBe('Ended 1 Feb 2026');
+    });
+});
+
+describe('getSubscriptionPriceLabel', () => {
+    it('is null for a normal paid subscription (Monthly nickname)', () => {
+        expect(getSubscriptionPriceLabel(makeSub())).toBeNull();
+    });
+
+    it('is null for a Yearly-nickname paid subscription', () => {
+        expect(getSubscriptionPriceLabel(makeSub({
+            price: {...makeSub().price, nickname: 'Yearly', interval: 'year'}
+        }))).toBeNull();
+    });
+
+    it('is "Free trial" while a paid subscription still has a future trial_end_at', () => {
+        const future = new Date();
+        future.setDate(future.getDate() + 7);
+        expect(getSubscriptionPriceLabel(makeSub({trial_end_at: future.toISOString()}))).toBe('Free trial');
+    });
+
+    it('is the custom nickname for a comp (Ember surfaces "Complimentary" this way)', () => {
+        expect(getSubscriptionPriceLabel(makeSub({
+            id: '',
+            price: {...makeSub().price, nickname: 'Complimentary'}
+        }))).toBe('Complimentary');
+    });
+
+    it('is the custom nickname for a gift', () => {
+        expect(getSubscriptionPriceLabel(makeSub({
+            id: '',
+            price: {...makeSub().price, nickname: 'Gift Subscription'}
+        }))).toBe('Gift Subscription');
     });
 });
 

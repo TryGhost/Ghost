@@ -50,6 +50,26 @@ export function formatSubscriptionInterval(interval: MemberSubscription['price']
 }
 
 /**
+ * The bold label that sits in front of the validity line — Ember's `priceLabel`.
+ * Returns "Free trial" while a paid subscription's `trial_end_at` is in the future,
+ * otherwise falls back to any `price.nickname` that isn't the plain "Monthly"/
+ * "Yearly" interval label — that's how Ember surfaces "Complimentary" for comps
+ * and "Gift Subscription" for gifts (their price nicknames). Matches
+ * `subscription-data.js:priceLabel`.
+ */
+export function getSubscriptionPriceLabel(sub: MemberSubscription): string | null {
+    const isTrial = !!sub.trial_end_at && moment(sub.trial_end_at).isAfter(new Date(), 'day');
+    if (isTrial) {
+        return 'Free trial';
+    }
+    const nickname = sub.price?.nickname;
+    if (nickname && nickname !== 'Monthly' && nickname !== 'Yearly') {
+        return nickname;
+    }
+    return null;
+}
+
+/**
  * A subscription reads as "Canceled" when it is already canceled or set to cancel
  * at period end; otherwise "Active" — matching the Ember status badge.
  */

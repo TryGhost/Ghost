@@ -155,7 +155,11 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             await expect(subscriptions).toBeVisible();
             await expect(page.getByTestId('member-subscription-tier')).toHaveText('Bronze');
             await expect(page.getByTestId('member-subscription-status')).toHaveText('Active');
-            await expect(subscriptions).toContainText('$10.50 monthly');
+            // The price block splits "$", "10.50" and "monthly" across separate
+            // elements, so assert the pieces rather than a single joined string.
+            await expect(subscriptions).toContainText('$');
+            await expect(subscriptions).toContainText('10.50');
+            await expect(subscriptions).toContainText('monthly');
             // "Renews <date>" — no "on", matching Ember validityDetails copy exactly.
             await expect(subscriptions).toContainText('Renews 15 Feb 2026');
         });
@@ -320,7 +324,9 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
             await page.goto(previewPath(member.id));
 
             const subscriptions = page.getByTestId('member-subscriptions');
-            await expect(subscriptions).toContainText('Gift subscription');
+            // Ember uses the plan/price nickname verbatim as the priceLabel;
+            // the seeded server value is capital-S "Gift Subscription".
+            await expect(subscriptions).toContainText('Gift Subscription');
             await expect(subscriptions).toContainText('Expires 15 Jan 2027');
             // No action menu — gifts are managed via the gift flow, not the member screen.
             await expect(page.getByTestId('subscription-actions')).toHaveCount(0);

@@ -1,5 +1,5 @@
 import React from 'react';
-import {Button, Label, LoadingIndicator, Switch} from '@tryghost/shade/components';
+import {Button, Card, CardContent, LoadingIndicator, Switch} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {getMemberSuppressionInfo, toggleMemberNewsletter} from './member-detail-edit';
 import {toast} from 'sonner';
@@ -55,11 +55,15 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
         });
     };
 
+    // The whole section — external heading + card — is owned by this component
+    // so an empty-newsletters state can hide it cleanly (returning null above).
     return (
-        <div className='flex flex-col gap-3' data-testid='member-newsletters-field'>
-            <Label>Newsletters</Label>
-            {suppression ? (
-                <div className='flex items-center justify-between gap-4 rounded-md border border-border bg-muted p-4' data-testid='member-suppression-banner'>
+        <section aria-labelledby='member-newsletters-heading' className='flex flex-col gap-3' data-testid='member-newsletters-field'>
+            <h3 className='text-xs font-semibold tracking-wide text-muted-foreground uppercase' id='member-newsletters-heading'>Newsletters</h3>
+            <Card>
+                <CardContent className='p-6'>
+                    {suppression ? (
+                <div className='flex items-center justify-between gap-4' data-testid='member-suppression-banner'>
                     <div className='flex items-start gap-3'>
                         <LucideIcon.MailX className='mt-0.5 shrink-0 text-muted-foreground' size={20} />
                         <div className='min-w-0'>
@@ -90,28 +94,37 @@ const MemberNewslettersField: React.FC<MemberNewslettersFieldProps> = ({
                     </Button>
                 </div>
             ) : (
-                newsletters.map((newsletter) => {
-                    const checked = subscribedIds.includes(newsletter.id);
-                    return (
-                        <div key={newsletter.id} className='flex items-center justify-between gap-4'>
-                            <div className='min-w-0'>
-                                <div className='font-medium'>{newsletter.name}</div>
-                                {newsletter.description && (
-                                    <p className='truncate text-sm text-muted-foreground'>{newsletter.description}</p>
-                                )}
-                            </div>
-                            <Switch
-                                aria-label={`Subscribe to ${newsletter.name}`}
-                                checked={checked}
-                                data-testid='member-subscription-toggle'
-                                disabled={disabled}
-                                onCheckedChange={() => onChange(toggleMemberNewsletter(subscribedIds, newsletter.id))}
-                            />
-                        </div>
-                    );
-                })
+                <>
+                    <ul className='divide-y divide-border'>
+                        {newsletters.map((newsletter) => {
+                            const checked = subscribedIds.includes(newsletter.id);
+                            return (
+                                <li key={newsletter.id} className='flex items-center justify-between gap-4 py-3 first:pt-0 last:pb-0'>
+                                    <div className='min-w-0'>
+                                        <div className='font-medium'>{newsletter.name}</div>
+                                        {newsletter.description && (
+                                            <p className='truncate text-sm text-muted-foreground'>{newsletter.description}</p>
+                                        )}
+                                    </div>
+                                    <Switch
+                                        aria-label={`Subscribe to ${newsletter.name}`}
+                                        checked={checked}
+                                        data-testid='member-subscription-toggle'
+                                        disabled={disabled}
+                                        onCheckedChange={() => onChange(toggleMemberNewsletter(subscribedIds, newsletter.id))}
+                                    />
+                                </li>
+                            );
+                        })}
+                    </ul>
+                    <p className='mt-4 text-sm text-muted-foreground'>
+                        If disabled, member will <em>not</em> receive newsletter emails
+                    </p>
+                </>
             )}
-        </div>
+                </CardContent>
+            </Card>
+        </section>
     );
 };
 

@@ -219,3 +219,6 @@ yalc.lock
 .env.tinybird
 .cursor/rules/nx-rules.mdc
 .github/instructions/nx.instructions.md
+
+# Local screenshots directory for visual verification (not tracked).
+apps/posts/tmp/

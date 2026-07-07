@@ -1,13 +1,14 @@
 import MainLayout from '@components/layout/main-layout';
 import MemberDetailForm from './member-detail-form';
 import MemberDetailSidebar from './member-detail-sidebar';
+import MemberNewslettersField from './member-newsletters-field';
 import MemberSubscriptionsSection from './member-subscriptions-section';
 import React from 'react';
 import {AlertDialog, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, Breadcrumb, BreadcrumbItem, BreadcrumbLink, BreadcrumbList, BreadcrumbPage, BreadcrumbSeparator, Button, type ButtonProps, Card, CardContent, LoadingIndicator, Skeleton} from '@tryghost/shade/components';
 import {DetailPage} from '@tryghost/shade/page-templates';
 import {Link, useConfirmUnload, useLocation, useNavigate, useParams} from '@tryghost/admin-x-framework';
 import {PageHeader} from '@tryghost/shade/patterns';
-import {buildMemberFieldEditPayload, getMemberEditableSlice, isDraftInSyncWithServer, isValidMemberEmail, normalizeDraftForComparison} from './member-detail-edit';
+import {buildMemberFieldEditPayload, getMemberEditableSlice, getMemberNewslettersUiEnabled, isDraftInSyncWithServer, isValidMemberEmail, normalizeDraftForComparison} from './member-detail-edit';
 import {dequal} from 'dequal';
 import {deriveMemberDetailBackPath} from './member-detail-nav';
 import {formatMemberName} from '@tryghost/shade/app';
@@ -44,8 +45,13 @@ const MemberDetail: React.FC = () => {
     // `paid_members_enabled` gates the subscriptions section: sites without paid
     // memberships never see subscription UI. Matches Ember's `paidMembersEnabled`
     // check in `gh-member-settings-form.hbs:82`.
+    // `editor_default_email_recipients` gates the newsletters section (Ember hides
+    // the whole thing when set to `'disabled'`).
     const {data: settingsData} = useBrowseSettings({});
     const paidMembersEnabled = getSettingValue<boolean>(settingsData?.settings, 'paid_members_enabled') === true;
+    const newslettersUiEnabled = getMemberNewslettersUiEnabled(
+        getSettingValue<string>(settingsData?.settings, 'editor_default_email_recipients')
+    );
 
     // Draft holds the user's in-progress edits; the query cache stays server truth.
     const [draft, setDraft] = React.useState<MemberEditableFields | undefined>(undefined);
@@ -228,22 +234,37 @@ const MemberDetail: React.FC = () => {
                     {showEditor && draft && (
                         <div className='flex flex-1 flex-col gap-8 lg:flex-row lg:items-start'>
                             <MemberDetailSidebar draftEmail={draft.email} draftName={draft.name} member={member} />
-                            <div className='flex min-w-0 flex-1 flex-col gap-6'>
+                            <div className='flex min-w-0 flex-1 flex-col gap-8'>
+                                {/* First card: name, email, labels, note — no external header. */}
                                 <Card>
-                                    <CardContent className='pt-6'>
+                                    <CardContent className='p-6'>
                                         <MemberDetailForm
                                             disabled={activeMutation.isLoading}
                                             draft={draft}
                                             emailError={emailError}
-                                            emailSuppression={member?.email_suppression}
-                                            isCreating={isCreating}
-                                            memberId={member?.id}
                                             onChange={onFieldChange}
                                         />
                                     </CardContent>
                                 </Card>
-                                {member && !isCreating && (
-                                    <MemberSubscriptionsSection member={member} paidMembersEnabled={paidMembersEnabled} />
+
+                                {/* Newsletters section owns its external heading + card so an empty
+                                    newsletter list hides the whole thing (returns null). */}
+                                {newslettersUiEnabled && !isCreating && member && (
+                                    <MemberNewslettersField
+                                        disabled={activeMutation.isLoading}
+                                        emailSuppression={member.email_suppression}
+                                        memberId={member.id}
+                                        subscribedIds={draft.newsletters}
+                                        onChange={nextIds => onFieldChange({newsletters: nextIds})}
+                                    />
+                                )}
+
+                                {/* Subscriptions: external "SUBSCRIPTIONS" label + own card. */}
+                                {member && !isCreating && paidMembersEnabled && (member.subscriptions?.length ?? 0) > 0 && (
+                                    <section aria-labelledby='member-subscriptions-heading' className='flex flex-col gap-3'>
+                                        <h3 className='text-xs font-semibold tracking-wide text-muted-foreground uppercase' id='member-subscriptions-heading'>Subscriptions</h3>
+                                        <MemberSubscriptionsSection member={member} paidMembersEnabled={paidMembersEnabled} />
+                                    </section>
                                 )}
                             </div>
                         </div>

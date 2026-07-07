@@ -69,6 +69,15 @@ export type MemberSubscription = {
         id: string;
         name: string;
     } | null;
+    attribution?: {
+        id?: string | null;
+        type?: string | null;
+        url?: string | null;
+        title?: string | null;
+        referrer_source?: string | null;
+        referrer_medium?: string | null;
+        referrer_url?: string | null;
+    } | null;
 };
 
 export type Member = {
