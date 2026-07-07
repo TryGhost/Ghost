@@ -7,7 +7,8 @@ describe('di-burndown', function () {
             const files = [
                 {path: 'core/a.js', content: 'module.exports = new Thing();\n'},
                 {path: 'core/b.js', content: 'module.exports = {new: 1};\nmodule.exports = new Other({});\n'},
-                {path: 'core/c.js', content: 'module.exports = factory;\n'}
+                {path: 'core/c.js', content: 'module.exports = factory;\n'},
+                {path: 'core/d.js', content: 'module.exports = new Proxy({}, {});\n'}
             ];
 
             assert.equal(countModuleSingletons(files), 2);

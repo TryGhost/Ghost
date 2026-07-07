@@ -37,7 +37,8 @@ const isExempt = (filePath) => {
 
 const countModuleSingletons = (files) => {
     return files.reduce((count, file) => {
-        return count + (file.content.match(/module\.exports\s*=\s*new\s/g) || []).length;
+        // `new Proxy` exports are container facades, not require-time state
+        return count + (file.content.match(/module\.exports\s*=\s*new\s(?!Proxy\b)/g) || []).length;
     }, 0);
 };
 
