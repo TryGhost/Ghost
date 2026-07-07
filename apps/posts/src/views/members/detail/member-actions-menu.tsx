@@ -1,11 +1,16 @@
 import MemberDeleteModal from './member-delete-modal';
+import MemberDisableCommentingModal from './member-disable-commenting-modal';
 import MemberImpersonateModal from './member-impersonate-modal';
 import MemberLogoutModal from './member-logout-modal';
 import React from 'react';
 import {Button, DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger} from '@tryghost/shade/components';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {canManageMembers} from '@tryghost/admin-x-framework/api/users';
+import {getMemberCommentingActionLabel, isMemberCommentingDisabled} from './member-commenting';
+import {toast} from 'sonner';
 import {useCurrentUser} from '@tryghost/admin-x-framework/api/current-user';
+import {useEnableMemberCommenting} from '@tryghost/admin-x-framework/api/members';
+import {useIsFetching, useQueryClient} from '@tanstack/react-query';
 import type {Member} from '@tryghost/admin-x-framework/api/members';
 
 interface MemberActionsMenuProps {
@@ -21,18 +26,50 @@ interface MemberActionsMenuProps {
 /**
  * The "Actions" gear menu in the member-detail header. Gated on `canManageMembers`
  * (contributors don't see it) and holds every member-level action modal:
- * Impersonate, Sign out of all devices, Delete member,
- * Disable/Enable commenting (later slice).
+ * Impersonate, Sign out of all devices, Disable/Enable commenting, Delete member.
  */
 const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({member, allowLeaveWithUnsavedChanges}) => {
+    const queryClient = useQueryClient();
     const {data: currentUser} = useCurrentUser();
     const [showImpersonate, setShowImpersonate] = React.useState(false);
     const [showLogout, setShowLogout] = React.useState(false);
+    const [showDisableCommenting, setShowDisableCommenting] = React.useState(false);
     const [showDelete, setShowDelete] = React.useState(false);
+
+    const enableCommenting = useEnableMemberCommenting();
+    // Stays > 0 through the mutation AND the follow-up members refetch, so a
+    // second click can't fire while the label is still showing "Enable
+    // commenting" from a stale `member` prop.
+    const membersFetching = useIsFetching(['MembersResponseType']);
+    const commentingBusy = enableCommenting.isLoading || membersFetching > 0;
+    const commentingDisabled = isMemberCommentingDisabled(member);
+    const commentingLabel = getMemberCommentingActionLabel(member);
+    const displayName = member.name || member.email || 'this member';
 
     if (!currentUser || !canManageMembers(currentUser)) {
         return null;
     }
+
+    const onCommentingSelect = async () => {
+        // Disable → open the confirm modal (needs the hide-comments checkbox);
+        // Enable → fire directly. Matches Ember `controllers/member.js:200-224`.
+        if (!commentingDisabled) {
+            setShowDisableCommenting(true);
+            return;
+        }
+        try {
+            await enableCommenting.mutateAsync({id: member.id});
+            toast.success(`Commenting has been enabled for ${displayName}.`);
+        } catch {
+            toast.error('Couldn’t enable commenting. Please try again.');
+            return;
+        }
+        // Fire-and-forget the extra members-cache refresh so the menu label
+        // flips back on the next render. Not awaited: a follow-up refetch
+        // failure must NOT flip the toast to an error (the enable itself
+        // succeeded and is already reflected server-side).
+        queryClient.invalidateQueries(['MembersResponseType']);
+    };
 
     return (
         <>
@@ -55,6 +92,13 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({member, allowLeave
                     >
                         Sign out of all devices
                     </DropdownMenuItem>
+                    <DropdownMenuItem
+                        data-testid='member-actions-commenting'
+                        disabled={commentingBusy}
+                        onSelect={onCommentingSelect}
+                    >
+                        {commentingLabel}
+                    </DropdownMenuItem>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                         className='text-destructive focus:text-destructive'
@@ -75,6 +119,11 @@ const MemberActionsMenu: React.FC<MemberActionsMenuProps> = ({member, allowLeave
                 member={member}
                 open={showLogout}
                 onOpenChange={setShowLogout}
+            />
+            <MemberDisableCommentingModal
+                member={member}
+                open={showDisableCommenting}
+                onOpenChange={setShowDisableCommenting}
             />
             <MemberDeleteModal
                 allowLeaveWithUnsavedChanges={allowLeaveWithUnsavedChanges}

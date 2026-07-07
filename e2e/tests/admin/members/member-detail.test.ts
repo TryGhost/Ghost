@@ -694,6 +694,148 @@ test.describe('Ghost Admin - Member Detail (React)', () => {
         expect(search.status()).toBe(404);
     });
 
+    test('disables commenting via the actions menu (hide-comments off)', async ({page}) => {
+        const member = await memberFactory.create({name: 'Comment Off', email: 'comment-off@ghost.org'});
+        let disablePayload: Record<string, unknown> | null = null;
+
+        // Intercept the POST so we don't depend on the comments service being
+        // wired in the test environment — this test is about the UI wiring
+        // (menu → confirm → payload → toast → label flip).
+        await page.route(
+            `**/ghost/api/admin/members/${member.id}/commenting/disable`,
+            async (route) => {
+                if (route.request().method() === 'POST') {
+                    disablePayload = route.request().postDataJSON();
+                    return route.fulfill({status: 204, body: ''});
+                }
+                return route.continue();
+            }
+        );
+
+        // On the follow-up GET (invalidateQueries → refetch) return the member
+        // with commenting.disabled=true so we can assert the menu label flips.
+        let disableSubmitted = false;
+        const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+        await page.route(memberReadRegex, async (route) => {
+            if (route.request().method() !== 'GET') {
+                return route.continue();
+            }
+            const response = await route.fetch();
+            const body = await response.json();
+            if (disableSubmitted && body?.members?.[0]) {
+                // Flip the property the UI actually gates on (Ember-parity —
+                // `can_comment`, not `commenting.disabled`, since the latter
+                // stays truthy after a temporary disable expires).
+                body.members[0].can_comment = false;
+                body.members[0].commenting = {disabled: true, disabled_reason: 'Disabled from member settings'};
+            }
+            return route.fulfill({response, body: JSON.stringify(body)});
+        });
+
+        await page.goto(previewPath(member.id));
+
+        await page.getByTestId('member-actions').click();
+        // Fresh members have commenting enabled, so the menu offers to disable.
+        await page.getByTestId('member-actions-commenting').click();
+
+        const modal = page.getByTestId('disable-commenting-modal');
+        await expect(modal).toBeVisible();
+        await expect(modal).toContainText('Comment Off');
+        // Hide-comments toggle defaults off; leave it that way.
+        await expect(page.getByTestId('disable-commenting-hide-comments')).toHaveAttribute('data-state', 'unchecked');
+
+        disableSubmitted = true;
+        await page.getByTestId('confirm-disable-commenting').click();
+
+        await expect(modal).toBeHidden();
+        // Payload matches Ember exactly: fixed reason, hide_comments=false.
+        expect(disablePayload).toEqual({reason: 'Disabled from member settings', hide_comments: false});
+
+        // Menu label flips to "Enable commenting" after invalidate/refetch.
+        await page.getByTestId('member-actions').click();
+        await expect(page.getByTestId('member-actions-commenting')).toHaveText('Enable commenting');
+    });
+
+    test('disables commenting with hide-comments enabled', async ({page}) => {
+        const member = await memberFactory.create({name: 'Comment Hide', email: 'comment-hide@ghost.org'});
+        let disablePayload: Record<string, unknown> | null = null;
+
+        await page.route(
+            `**/ghost/api/admin/members/${member.id}/commenting/disable`,
+            async (route) => {
+                if (route.request().method() === 'POST') {
+                    disablePayload = route.request().postDataJSON();
+                    return route.fulfill({status: 204, body: ''});
+                }
+                return route.continue();
+            }
+        );
+
+        await page.goto(previewPath(member.id));
+        await page.getByTestId('member-actions').click();
+        await page.getByTestId('member-actions-commenting').click();
+
+        await page.getByTestId('disable-commenting-hide-comments').click();
+        await page.getByTestId('confirm-disable-commenting').click();
+
+        expect(disablePayload).toEqual({reason: 'Disabled from member settings', hide_comments: true});
+    });
+
+    test('enables commenting inline when the member is currently disabled', async ({page}) => {
+        const member = await memberFactory.create({name: 'Comment Blocked', email: 'comment-blocked@ghost.org'});
+        let enableCalled = false;
+
+        await page.route(
+            `**/ghost/api/admin/members/${member.id}/commenting/enable`,
+            async (route) => {
+                if (route.request().method() === 'POST') {
+                    enableCalled = true;
+                    return route.fulfill({status: 204, body: ''});
+                }
+                return route.continue();
+            }
+        );
+
+        // Inject `commenting.disabled=true` on the initial GET, then flip it
+        // back to `false` on the post-mutation refetch — otherwise the menu
+        // label wouldn't confirm the label-flip contract.
+        let enableSubmitted = false;
+        const memberReadRegex = new RegExp(`/ghost/api/admin/members/${member.id}/\\??[^/]*$`);
+        await page.route(memberReadRegex, async (route) => {
+            if (route.request().method() !== 'GET') {
+                return route.continue();
+            }
+            const response = await route.fetch();
+            const body = await response.json();
+            if (body?.members?.[0]) {
+                // The UI gates on `can_comment` (Ember-parity). Before the
+                // enable submits, the member is disabled (`can_comment:false`);
+                // after submit + refetch, the server flips it back to true.
+                body.members[0].can_comment = enableSubmitted;
+                body.members[0].commenting = enableSubmitted
+                    ? {disabled: false}
+                    : {disabled: true, disabled_reason: 'Disabled from member settings'};
+            }
+            return route.fulfill({response, body: JSON.stringify(body)});
+        });
+
+        await page.goto(previewPath(member.id));
+        await page.getByTestId('member-actions').click();
+        // Member starts disabled → menu offers to enable, no confirm modal.
+        await expect(page.getByTestId('member-actions-commenting')).toHaveText('Enable commenting');
+
+        enableSubmitted = true;
+        await page.getByTestId('member-actions-commenting').click();
+
+        // No confirm modal is opened for enable (Ember parity: enable is inline).
+        await expect(page.getByTestId('disable-commenting-modal')).toHaveCount(0);
+        expect(enableCalled).toBe(true);
+
+        // Reopen the menu — label has flipped back to "Disable commenting".
+        await page.getByTestId('member-actions').click();
+        await expect(page.getByTestId('member-actions-commenting')).toHaveText('Disable commenting');
+    });
+
     test('deleting a member with unsaved edits does not trigger the discard-changes dialog', async ({page}) => {
         // Regression: the parent's `useBlocker` fires on ANY route change while
         // the draft is dirty. Deleting a member with pending field edits used
