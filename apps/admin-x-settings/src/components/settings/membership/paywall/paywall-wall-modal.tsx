@@ -26,6 +26,7 @@ const PaywallWallModal: React.FC<RoutingModalProps> = ({params}) => {
         'paywall_heading_members', 'paywall_signup_description', 'paywall_signup_button_text',
         'paywall_heading_paid', 'paywall_heading_tiers', 'paywall_description', 'paywall_button_text', 'paywall_offer_code'
     ]) as (string | null)[];
+    const [emailButtonText] = getSettingValues(localSettings, ['paywall_email_button_text']) as (string | null)[];
     const [campaignMode] = getSettingValues(localSettings, ['paywall_campaign_mode']) as boolean[];
 
     const {data: {offers} = {}} = useBrowseOffers();
@@ -117,6 +118,13 @@ const PaywallWallModal: React.FC<RoutingModalProps> = ({params}) => {
                             title='Button text'
                             value={buttonText || ''}
                             onChange={e => updateTextSetting('paywall_button_text', e.target.value)}
+                        />
+                        <TextField
+                            hint='Email readers are already free members — an upgrade-flavoured CTA usually fits better. Blank uses the button text above (or the default, "Upgrade")'
+                            placeholder={buttonText || 'Upgrade'}
+                            title='Button text — email'
+                            value={emailButtonText || ''}
+                            onChange={e => updateTextSetting('paywall_email_button_text', e.target.value)}
                         />
                         <Select
                             hint='Send readers to an offer instead of the standard signup'

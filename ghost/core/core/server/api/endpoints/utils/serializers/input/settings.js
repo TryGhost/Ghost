@@ -92,6 +92,7 @@ const EDITABLE_SETTINGS = [
     'paywall_signup_description',
     'paywall_signup_button_text',
     'paywall_campaign_mode',
+    'paywall_email_button_text',
     'require_email_mfa',
     'social_web',
     'explore_ping',

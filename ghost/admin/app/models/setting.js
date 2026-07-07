@@ -54,6 +54,7 @@ export default Model.extend(ValidationEngine, {
     paywallButtonText: attr('string'),
     paywallSignupDescription: attr('string'),
     paywallSignupButtonText: attr('string'),
+    paywallEmailButtonText: attr('string'),
     paywallOfferCode: attr('string'),
     paywallCampaignMode: attr('boolean'),
     sharedViews: attr('string'),

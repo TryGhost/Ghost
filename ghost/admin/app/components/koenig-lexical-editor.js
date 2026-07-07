@@ -446,7 +446,8 @@ export default class KoenigLexicalEditor extends Component {
                 heading: this.settings.paywallHeadingPaid || 'This post is for paying subscribers only',
                 tiersHeading: this.settings.paywallHeadingTiers || '',
                 description: this.settings.paywallDescription || '',
-                buttonText: this.settings.paywallButtonText || 'Subscribe now'
+                buttonText: this.settings.paywallButtonText || 'Subscribe now',
+                emailButtonText: this.settings.paywallEmailButtonText || ''
             },
             // an active campaign takes over every payment wall's offer — the
             // card tells the author when their post's offer is being overridden

@@ -405,6 +405,10 @@
             "defaultValue": null,
             "type": "string"
         },
+        "paywall_email_button_text": {
+            "defaultValue": null,
+            "type": "string"
+        },
         "paywall_campaign_mode": {
             "defaultValue": "false",
             "validations": {
