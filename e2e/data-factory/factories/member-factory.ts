@@ -18,7 +18,7 @@ export interface Member {
     note?: string | null;
     geolocation: string | null;
     labels?: string[];
-    email_count: number;
+    newsletter_email_count: number;
     email_opened_count: number;
     email_open_rate: number | null;
     status: 'free' | 'paid' | 'comped' | 'gift';
@@ -55,7 +55,7 @@ export class MemberFactory extends Factory<Partial<Member>, Member> {
             note: faker.lorem.sentence(),
             geolocation: null,
             labels: [],
-            email_count: 0,
+            newsletter_email_count: 0,
             email_opened_count: 0,
             email_open_rate: null,
             status: 'free',

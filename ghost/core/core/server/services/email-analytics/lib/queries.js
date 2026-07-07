@@ -233,7 +233,7 @@ module.exports = {
         const [emailOpenedCount] = await db.knex('email_recipients').count('id as count').whereRaw('member_id = ? AND opened_at IS NOT NULL', [memberId]);
 
         const updateQuery = {
-            email_count: emailCount.count,
+            newsletter_email_count: emailCount.count,
             email_opened_count: emailOpenedCount.count
         };
 
@@ -308,7 +308,7 @@ module.exports = {
         }
 
         // Combine bindings in the order they appear in the SQL statement:
-        // 1. All bindings for email_count CASE statement
+        // 1. All bindings for newsletter_email_count CASE statement
         // 2. All bindings for email_opened_count CASE statement
         // 3. All bindings for email_open_rate CASE statement
         // 4. Member IDs for the WHERE IN clause
@@ -323,7 +323,7 @@ module.exports = {
         await db.knex.raw(`
             UPDATE members
             SET
-                email_count = CASE id ${emailCountCases.join(' ')} END,
+                newsletter_email_count = CASE id ${emailCountCases.join(' ')} END,
                 email_opened_count = CASE id ${emailOpenedCountCases.join(' ')} END,
                 email_open_rate = CASE id ${emailOpenRateCases.join(' ')} END
             WHERE id IN (${memberIds.map(() => '?').join(',')})

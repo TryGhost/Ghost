@@ -58,7 +58,7 @@ class MembersImporter extends TableImporter {
         for (const [memberId, emailInfo] of Object.entries(memberData)) {
             const openRate = Math.round(100 * (emailInfo.openedCount / emailInfo.emailCount));
             await this.transaction('members').update({
-                email_count: emailInfo.emailCount,
+                newsletter_email_count: emailInfo.emailCount,
                 email_opened_count: emailInfo.openedCount,
                 email_open_rate: emailInfo.emailCount >= 5 ? openRate : null
             }).where({id: memberId});
@@ -84,7 +84,7 @@ class MembersImporter extends TableImporter {
                 country_code: faker.location.countryCode('alpha-2'),
                 region: faker.location.state()
             }),
-            email_count: 0, // Depends on number of emails sent since created_at, the newsletter they're a part of and subscription status
+            newsletter_email_count: 0, // Depends on number of emails sent since created_at, the newsletter they're a part of and subscription status
             email_opened_count: 0,
             email_open_rate: null,
             // 40% of users logged in within a week, 60% sometime since registering

@@ -79,6 +79,15 @@ describe('Unit: models/member', function () {
         });
     });
 
+    describe('filterExpansions', function () {
+        it('maps public email_count filter to newsletter_email_count database column', function () {
+            const memberModel = new Member();
+            const expansion = memberModel.filterExpansions().find(item => item.key === 'email_count');
+
+            assert.equal(expansion.replacement, 'newsletter_email_count');
+        });
+    });
+
     describe('updateTierExpiry', function () {
         let memberModel;
         let updatePivot;

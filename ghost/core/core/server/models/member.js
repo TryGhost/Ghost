@@ -16,7 +16,7 @@ const Member = ghostBookshelf.Model.extend({
             status: 'free',
             uuid: crypto.randomUUID(),
             transient_id: crypto.randomUUID(),
-            email_count: 0,
+            newsletter_email_count: 0,
             email_opened_count: 0,
             enable_comment_notifications: true
         };
@@ -78,7 +78,10 @@ const Member = ghostBookshelf.Model.extend({
         }, {
             key: 'tier_id',
             replacement: 'products.id'
-        },{
+        }, {
+            key: 'email_count',
+            replacement: 'newsletter_email_count'
+        }, {
             key: 'newsletters',
             replacement: 'newsletters.slug'
         }, {

@@ -178,7 +178,7 @@ function serializeMember(member, options) {
         subscriptions: subscriptions,
         avatar_image: json.avatar_image,
         comped: comped,
-        email_count: json.email_count,
+        email_count: json.newsletter_email_count,
         email_opened_count: json.email_opened_count,
         email_open_rate: json.email_open_rate,
         email_recipients: json.email_recipients,
