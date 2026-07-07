@@ -32,6 +32,11 @@ export default publicAppViteConfig({
                 'react-dom': resolve(import.meta.dirname, 'node_modules/react-dom')
             }
         },
+        build: {
+            rollupOptions: {
+                output: {}
+            }
+        },
         test: {
             setupFiles: './src/setup-tests.ts',
             include: ['test/unit/**/*.test.{js,jsx,ts,tsx}'],
