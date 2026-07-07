@@ -162,6 +162,38 @@ jobs:
               - '!ghost/core/vitest.config.ts'
               - *renovate_only
 
+      - name: Determine Tinybird datafile changes in push
+        id: tinybird_push_changes
+        if: github.event_name == 'push' && env.IS_TAG != 'true'
+        run: |
+          set -euo pipefail
+
+          BASE_SHA='${{ github.event.before }}'
+          HEAD_SHA='${{ github.sha }}'
+
+          # New branches have an all-zero `before` SHA. We only deploy Tinybird
+          # from existing pushes to main, so treat that case as no deployable
+          # Tinybird datafile change rather than diffing the whole repository.
+          if [[ "$BASE_SHA" =~ ^0{40}$ ]]; then
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+
+          if ! git cat-file -e "${BASE_SHA}^{commit}" 2>/dev/null; then
+            git fetch --no-tags --filter=tree:0 origin "$BASE_SHA"
+          fi
+
+          CHANGED_FILES=$(git diff --name-only "$BASE_SHA" "$HEAD_SHA" -- 'ghost/core/core/server/data/tinybird' | grep -vE '\.md$' || true)
+
+          if [[ -n "$CHANGED_FILES" ]]; then
+            echo "Tinybird datafiles changed in this push:"
+            echo "$CHANGED_FILES"
+            echo "changed=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "No Tinybird datafiles changed in this push."
+            echo "changed=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Define Node test matrix
         id: node_matrix
         run: |
@@ -237,6 +269,10 @@ jobs:
       changed_core: ${{ steps.changed.outputs.core }}
       changed_tinybird: ${{ steps.changed.outputs.tinybird }}
       changed_tinybird_datafiles: ${{ steps.changed.outputs.tinybird-datafiles }}
+      # Deploys must be gated on the actual push diff, not the Nx base diff.
+      # The Nx base intentionally points at the last successful CI run, which
+      # can become stale and re-include already-merged Tinybird changes.
+      changed_tinybird_datafiles_in_push: ${{ steps.tinybird_push_changes.outputs.changed == 'true' }}
       changed_any_code: ${{ steps.changed.outputs.any-code }}
       # Single gate for the build + browser-E2E lane. True for tags, or when a
       # changed file could affect a running Ghost instance (see the `e2e` path
@@ -1806,7 +1842,7 @@ jobs:
       job_setup,
       job_tinybird-tests
     ]
-    if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird_datafiles == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
+    if: always() && github.repository == 'TryGhost/Ghost' && github.event_name == 'push' && needs.job_setup.outputs.changed_tinybird_datafiles_in_push == 'true' && needs.job_setup.result == 'success' && needs.job_tinybird-tests.result == 'success' && needs.job_setup.outputs.is_main == 'true'
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6
       - name: Trigger and watch traffic analytics infra Tinybird workflow
