@@ -51,7 +51,7 @@ const Settings: React.FC<SettingsProps> = ({account, className = ''}) => {
             <SettingItem to='/preferences/moderation' withHover>
                 <SettingHeader>
                     <SettingTitle>Moderation</SettingTitle>
-                    <SettingDescription>Manage blocked users and domains</SettingDescription>
+                    <SettingDescription>Manage sensitive media, blocked users and blocked domains</SettingDescription>
                 </SettingHeader>
                 <SettingAction className='flex items-center gap-2'>
                     <LucideIcon.ChevronRight size={20} />
