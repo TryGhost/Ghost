@@ -512,6 +512,9 @@ jobs:
     env:
       DB: ${{ matrix.env.DB }}
       NODE_ENV: ${{ matrix.env.NODE_ENV }}
+      # The acceptance job has intermittently segfaulted before Nx starts the
+      # target script. Keep Nx orchestration, but avoid its native PTY runner.
+      NX_NATIVE_COMMAND_RUNNER: "false"
     name: Acceptance tests (Node ${{ matrix.node }}, ${{ matrix.env.DB }})
     steps:
       - uses: actions/checkout@df4cb1c069e1874edd31b4311f1884172cec0e10 # v6.0.3
