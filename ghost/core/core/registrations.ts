@@ -42,8 +42,28 @@ import createMemberAttributionService from './server/services/member-attribution
 import createStatsService from './server/services/stats/create';
 import createGiftService from './server/services/gifts/create';
 import {AutomationsService} from './server/services/automations/service';
+import createStripeService from './server/services/stripe/create';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('stripe', {
+        lifetime: 'SCOPED',
+        factory: ({models, settingsCache, settingsHelpers, urlUtils, events, donations, gifts, staff, deploymentConfig, isTestEnv}: Cradle) => createStripeService({
+            models,
+            settingsCache,
+            settingsHelpers,
+            urlUtils,
+            events,
+            donations,
+            gifts,
+            staff,
+            deploymentConfig,
+            isTestEnv,
+            // Bridged until these migrate
+            labs: require('./shared/labs'),
+            membersService: require('./server/services/members')
+        })
+    });
+
     container.register('automations', {
         lifetime: 'SCOPED',
         factory: () => new AutomationsService()
@@ -144,14 +164,14 @@ export const registerCoreServices = (container: Container): void => {
 
     container.register('explore', {
         lifetime: 'SCOPED',
-        factory: ({models, stats}: Cradle) => createExploreService({
+        factory: ({models, stats, stripe}: Cradle) => createExploreService({
             models,
             statsService: stats,
+            stripeService: stripe,
             // Bridged until these migrate
             membersService: require('./server/services/members'),
             postsService: require('./server/services/posts/posts-service-instance')(),
-            publicConfigService: require('./server/services/public-config'),
-            stripeService: require('./server/services/stripe')
+            publicConfigService: require('./server/services/public-config')
         })
     });
 
