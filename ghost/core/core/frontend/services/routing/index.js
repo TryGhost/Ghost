@@ -1,11 +1,10 @@
-const registry = require('./registry');
-const RouterManager = require('./router-manager');
-const routerManager = new RouterManager({registry});
+const createFacade = require('../../../shared/container/create-facade');
 
-module.exports = {
-    routerManager: routerManager,
-
-    get registry() {
-        return registry;
-    }
-};
+module.exports = createFacade('routing', () => {
+    const registry = require('./registry');
+    const RouterManager = require('./router-manager');
+    return {
+        routerManager: new RouterManager({registry}),
+        registry
+    };
+});

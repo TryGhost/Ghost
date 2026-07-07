@@ -46,8 +46,23 @@ import createStripeService from './server/services/stripe/create';
 import EmailServiceWrapper from './server/services/email-service/email-service-wrapper';
 import ThemeI18n from './frontend/services/theme-engine/i18n/theme-i18n';
 import ThemeI18next from './frontend/services/theme-engine/i18next/theme-i18n';
+import RouterRegistry from './frontend/services/routing/router-registry';
+import RouterManager from './frontend/services/routing/router-manager';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('routingRegistry', {
+        lifetime: 'SCOPED',
+        factory: () => new RouterRegistry()
+    });
+
+    container.register('routing', {
+        lifetime: 'SCOPED',
+        factory: ({routingRegistry}: Cradle) => ({
+            routerManager: new RouterManager({registry: routingRegistry}),
+            registry: routingRegistry
+        })
+    });
+
     container.register('themeI18n', {
         lifetime: 'SCOPED',
         factory: ({siteConfig}: Cradle) => new ThemeI18n({basePath: siteConfig.themesContentPath})
