@@ -1,5 +1,5 @@
 import assert from 'node:assert/strict';
-import {getCurrentScope, getRootContainer, setDefaultScope, resetContainer} from '../../../../core/shared/container/current';
+import {getCurrentScope, getRootContainer, setDefaultScope, resetContainer, hasDefaultScope} from '../../../../core/shared/container/current';
 import {ContainerResolutionError} from '../../../../core/shared/container/container';
 
 describe('container/current', function () {
@@ -20,6 +20,12 @@ describe('container/current', function () {
 
     it('memoizes the root container', function () {
         assert.equal(getRootContainer(), getRootContainer());
+    });
+
+    it('reports whether a default scope is set', function () {
+        assert.equal(hasDefaultScope(), false);
+        setDefaultScope(getRootContainer().createScope());
+        assert.equal(hasDefaultScope(), true);
     });
 
     it('resets both root and default scope', function () {

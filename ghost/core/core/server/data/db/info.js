@@ -1,4 +1,4 @@
-const connection = require('./connection');
+const db = require('./index');
 const DatabaseInfo = require('@tryghost/database-info');
 
-module.exports = new DatabaseInfo(connection);
+module.exports = new DatabaseInfo(db.knex);

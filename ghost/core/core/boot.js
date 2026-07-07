@@ -538,17 +538,20 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
     try {
         // Step 1 - require more fundamental components
 
-        // The DI container underpins service wiring; composition roots migrate to it incrementally
+        // The DI container underpins service wiring; composition roots migrate to it incrementally.
+        // Repeat boots (test reboots) reuse the existing scope, matching the historic singleton lifetime.
         debug('Begin: Load DI container');
-        const {getRootContainer, setDefaultScope} = require('./shared/container/current');
-        const {registerCoreServices} = require('./registrations');
-        const rootContainer = getRootContainer();
-        registerCoreServices(rootContainer);
-        setDefaultScope(rootContainer.createScope({
-            siteConfig: {
-                database: config.get('database')
-            }
-        }));
+        const {getRootContainer, setDefaultScope, hasDefaultScope} = require('./shared/container/current');
+        if (!hasDefaultScope()) {
+            const {registerCoreServices} = require('./registrations');
+            const rootContainer = getRootContainer();
+            registerCoreServices(rootContainer);
+            setDefaultScope(rootContainer.createScope({
+                siteConfig: {
+                    database: config.get('database')
+                }
+            }));
+        }
         debug('End: Load DI container');
 
         // Sentry must be initialized early, but requires config
@@ -583,7 +586,7 @@ async function bootGhost({backend = true, frontend = true, server = true} = {}) 
         debug('Begin: Get DB ready');
         await initDatabase({config});
         bootLogger.log('database ready');
-        const connection = require('./server/data/db/connection');
+        const connection = require('./server/data/db').knex;
         sentry.initQueryTracing(
             connection
         );

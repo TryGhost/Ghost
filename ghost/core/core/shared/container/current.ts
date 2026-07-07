@@ -18,6 +18,10 @@ export const setDefaultScope = (scope: Scope): void => {
     defaultScope = scope;
 };
 
+export const hasDefaultScope = (): boolean => {
+    return defaultScope !== null;
+};
+
 export const getCurrentScope = (): Scope => {
     if (!defaultScope) {
         throw new ContainerResolutionError({message: 'No default scope set — the container is wired during boot'});
