@@ -10,8 +10,14 @@ import createBookshelf from './server/models/base/create-bookshelf';
 import createModels from './server/models/create-models';
 import createEventRegistry from './server/lib/common/create-event-registry';
 import createSettingsCache from './shared/settings-cache/create';
+import {createAdapterManager} from './server/services/adapter-manager';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('adapterManager', {
+        lifetime: 'SCOPED',
+        factory: ({adapterConfig, adapterPaths}: Cradle) => createAdapterManager({config: adapterConfig, pathsToAdapters: adapterPaths})
+    });
+
     container.register('settingsCache', {
         lifetime: 'SCOPED',
         factory: () => createSettingsCache()
