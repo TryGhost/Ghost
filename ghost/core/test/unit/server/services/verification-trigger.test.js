@@ -1,6 +1,6 @@
 const sinon = require('sinon');
 const assert = require('node:assert/strict');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../../core/server/lib/common/domain-events');
 
 const VerificationTrigger = require('../../../../core/server/services/verification-trigger');
 const {MemberCreatedEvent} = require('../../../../core/shared/events');

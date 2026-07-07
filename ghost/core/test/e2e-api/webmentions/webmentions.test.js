@@ -10,7 +10,7 @@ const assert = require('node:assert/strict');
 const urlUtils = require('../../../core/shared/url-utils');
 const nock = require('nock');
 const jobsService = require('../../../core/server/services/mentions-jobs');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../core/server/lib/common/domain-events');
 
 async function allSettled() {
     await jobsService.allSettled();

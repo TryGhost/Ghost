@@ -4,7 +4,7 @@ const testUtils = require('../../utils');
 const assert = require('node:assert/strict');
 const models = require('../../../core/server/models');
 const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
+const DomainEvents = require('../../../core/server/lib/common/domain-events');
 const settingsHelpers = require('../../../core/server/services/settings-helpers');
 const sinon = require('sinon');
 

@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const {mockSystemTime} = require('../../utils/clock-utils');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../core/server/lib/common/domain-events');
 const {agentProvider, fixtureManager, mockManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const db = require('../../../core/server/data/db');

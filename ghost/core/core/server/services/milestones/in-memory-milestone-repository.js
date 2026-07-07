@@ -13,12 +13,12 @@ module.exports = class InMemoryMilestoneRepository {
     /** @type {Object.<string, true>} */
     #ids = {};
 
-    /** @type {import('@tryghost/domain-events')} */
+    /** @type {import('../../lib/common/domain-events')} */
     #DomainEvents;
 
     /**
      * @param {object} deps
-     * @param {import('@tryghost/domain-events')} deps.DomainEvents
+     * @param {import('../../lib/common/domain-events')} deps.DomainEvents
      */
     constructor(deps) {
         this.#DomainEvents = deps.DomainEvents;

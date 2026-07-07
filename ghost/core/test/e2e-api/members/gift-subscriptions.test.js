@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../core/server/lib/common/domain-events');
 const {agentProvider, mockManager, fixtureManager, configUtils, matchers} = require('../../utils/e2e-framework');
 const {stripeMocker} = require('../../utils/e2e-framework-mock-manager');
 const models = require('../../../core/server/models');

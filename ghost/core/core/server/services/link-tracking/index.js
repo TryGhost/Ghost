@@ -18,7 +18,7 @@ class LinkTrackingServiceWrapper {
         // Wire up all the dependencies
         const models = require('../../models');
         const {MemberLinkClickEvent} = require('../../../shared/events');
-        const DomainEvents = require('@tryghost/domain-events');
+        const DomainEvents = require('../../lib/common/domain-events');
 
         const LinkClickTrackingService = require('./link-click-tracking-service');
 

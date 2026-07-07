@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 
 const {Milestone} = require('../../../../../core/server/models/milestone');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../../../core/server/lib/common/domain-events');
 
 describe('BookshelfMilestoneRepository', function () {
     let repository;

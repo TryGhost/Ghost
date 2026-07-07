@@ -41,7 +41,7 @@ const settingsService = require('../../core/server/services/settings/settings-se
 const supertest = require('supertest');
 const {stopGhost} = require('./e2e-utils');
 const adapterManager = require('../../core/server/services/adapter-manager').default;
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../core/server/lib/common/domain-events');
 
 // Require additional assertions which help us keep our tests small and clear
 require('./assertions');

@@ -17,13 +17,13 @@ module.exports = class TierRepository {
     /** @type {Object} */
     #ProductModel;
 
-    /** @type {import('@tryghost/domain-events')} */
+    /** @type {import('../../lib/common/domain-events')} */
     #DomainEvents;
 
     /**
      * @param {object} deps
      * @param {object} deps.ProductModel Bookshelf Model
-     * @param {import('@tryghost/domain-events')} deps.DomainEvents
+     * @param {import('../../lib/common/domain-events')} deps.DomainEvents
      */
     constructor(deps) {
         this.#ProductModel = deps.ProductModel;

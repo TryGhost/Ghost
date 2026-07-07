@@ -49,7 +49,7 @@ describe('JobService', function () {
                 return {captureException: sinon.stub()};
             }
 
-            if (request === '@tryghost/domain-events') {
+            if (request === '../../../../../core/server/lib/common/domain-events') {
                 return {};
             }
 
@@ -140,7 +140,7 @@ describe('JobService model-event bridge wiring', function () {
                 return {captureException: sinon.stub()};
             }
 
-            if (request === '@tryghost/domain-events') {
+            if (request === '../../../../../core/server/lib/common/domain-events') {
                 return {};
             }
 

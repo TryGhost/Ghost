@@ -31,7 +31,7 @@ const MilestoneCreatedEvent = require('../milestones/milestone-created-event');
  */
 
 module.exports = class SlackNotificationsService {
-    /** @type {import('@tryghost/domain-events')} */
+    /** @type {import('../../lib/common/domain-events')} */
     #DomainEvents;
 
     /** @type {import('@tryghost/logging')} */
@@ -46,7 +46,7 @@ module.exports = class SlackNotificationsService {
     /**
      *
      * @param {object} deps
-     * @param {import('@tryghost/domain-events')} deps.DomainEvents
+     * @param {import('../../lib/common/domain-events')} deps.DomainEvents
      * @param {config} deps.config
      * @param {import('@tryghost/logging')} deps.logging
      * @param {ISlackNotifications} deps.slackNotifications

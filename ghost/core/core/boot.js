@@ -360,7 +360,7 @@ async function initServices({ghostServer} = {}) {
     const emailAddressService = require('./server/services/email-address');
     const statsService = require('./server/services/stats');
     const explorePingService = require('./server/services/explore-ping');
-    const domainEvents = require('@tryghost/domain-events');
+    const domainEvents = require('./server/lib/common/domain-events');
     const automations = require('./server/services/automations');
 
     const {createAdapter: createSchedulerAdapter} = require('./server/adapters/scheduling/utils');

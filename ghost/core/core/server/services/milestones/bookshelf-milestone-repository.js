@@ -11,13 +11,13 @@ module.exports = class BookshelfMilestoneRepository {
     /** @type {Object} */
     #MilestoneModel;
 
-    /** @type {import('@tryghost/domain-events')} */
+    /** @type {import('../../lib/common/domain-events')} */
     #DomainEvents;
 
     /**
      * @param {object} deps
      * @param {object} deps.MilestoneModel Bookshelf Model
-     * @param {import('@tryghost/domain-events')} deps.DomainEvents
+     * @param {import('../../lib/common/domain-events')} deps.DomainEvents
      */
     constructor(deps) {
         this.#MilestoneModel = deps.MilestoneModel;

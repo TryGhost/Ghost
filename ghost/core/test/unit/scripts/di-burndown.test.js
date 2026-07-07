@@ -30,10 +30,10 @@ describe('di-burndown', function () {
             assert.equal(countChokePointRequires(files), 3);
         });
 
-        it('counts domain-events package requires', function () {
+        it('counts domain-events requires', function () {
             const files = [{
                 path: 'core/server/services/example/service.js',
-                content: 'const DomainEvents = require(\'@tryghost/domain-events\');'
+                content: 'const DomainEvents = require(\'../../lib/common/domain-events\');'
             }];
 
             assert.equal(countChokePointRequires(files), 1);

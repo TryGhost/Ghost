@@ -1,6 +1,6 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
-const domainEvents = require('@tryghost/domain-events');
+const domainEvents = require('../../../../core/server/lib/common/domain-events');
 const giftRemindersController = require('../../../../core/server/api/endpoints/gift-reminders');
 const StartGiftReminderFlushEvent = require('../../../../core/server/services/gifts/events/start-gift-reminder-flush-event');
 

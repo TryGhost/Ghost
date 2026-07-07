@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
+const DomainEvents = require('../../../../../core/server/lib/common/domain-events');
 const Users = require('../../../../../core/server/services/users');
 
 describe('Users service', function () {

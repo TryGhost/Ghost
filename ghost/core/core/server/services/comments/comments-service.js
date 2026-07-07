@@ -1,7 +1,7 @@
 const tpl = require('@tryghost/tpl');
 const errors = require('@tryghost/errors');
 const {MemberCommentEvent} = require('../../../shared/events');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../lib/common/domain-events');
 const {byNQL} = require('../../models/base/plugins/bulk-filters');
 
 const messages = {

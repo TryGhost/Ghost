@@ -22,13 +22,13 @@ module.exports = class BookshelfMentionRepository {
     /** @type {Object} */
     #MentionModel;
 
-    /** @type {import('@tryghost/domain-events')} */
+    /** @type {import('../../lib/common/domain-events')} */
     #DomainEvents;
 
     /**
      * @param {object} deps
      * @param {object} deps.MentionModel Bookshelf Model
-     * @param {import('@tryghost/domain-events')} deps.DomainEvents
+     * @param {import('../../lib/common/domain-events')} deps.DomainEvents
      */
     constructor(deps) {
         this.#MentionModel = deps.MentionModel;

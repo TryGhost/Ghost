@@ -1,4 +1,4 @@
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../lib/common/domain-events');
 const MentionCreatedEvent = require('../mentions/mention-created-event');
 const logging = require('@tryghost/logging');
 

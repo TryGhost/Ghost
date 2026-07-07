@@ -4,7 +4,7 @@ const mentionsService = require('../../../core/server/services/mentions');
 const recommendationsService = require('../../../core/server/services/recommendations');
 
 let agent;
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../core/server/lib/common/domain-events');
 const {Recommendation} = require('../../../core/server/services/recommendations/service');
 const Mention = require('../../../core/server/services/mentions/mention');
 

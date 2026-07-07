@@ -1,4 +1,4 @@
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../server/lib/common/domain-events');
 const errors = require('@tryghost/errors');
 const urlUtils = require('../../../shared/url-utils');
 const {URLResourceUpdatedEvent} = require('../../../shared/events');

@@ -1,6 +1,6 @@
 const _ = require('lodash');
 const debug = require('@tryghost/debug')('services:url:resources');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../lib/common/domain-events');
 const {URLResourceUpdatedEvent} = require('../../../shared/events');
 const Resource = require('./resource');
 const models = require('../../models');

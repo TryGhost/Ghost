@@ -7,7 +7,7 @@
 // contract onto vitest's globals.
 //
 // Execution model: one Ghost server == one process (Ghost's db/knex,
-// @tryghost/domain-events, the jobs manager, nconf, settings cache, and the url
+// ../../core/server/lib/common/domain-events, the jobs manager, nconf, settings cache, and the url
 // service are all module-level singletons that are reset in place between boots,
 // never duplicated). The DB suites therefore run in a single non-isolated worker
 // — `isolate: false` so the module registry (and the booted server) is shared
@@ -220,7 +220,7 @@ beforeEach((context: {task: {name: string; suite?: unknown; file?: {filepath?: s
 });
 
 afterEach(async () => {
-    const domainEvents = require('@tryghost/domain-events');
+    const domainEvents = require('../../core/server/lib/common/domain-events');
     const mentionsJobsService = require('../../core/server/services/mentions-jobs');
     const jobsService = require('../../core/server/services/jobs');
 

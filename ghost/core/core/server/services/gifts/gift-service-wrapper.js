@@ -32,7 +32,7 @@ class GiftServiceWrapper {
         const membersService = require('../members');
         const tiersService = require('../tiers');
         const staffService = require('../staff');
-        const DomainEvents = require('@tryghost/domain-events');
+        const DomainEvents = require('../../lib/common/domain-events');
         const logging = require('@tryghost/logging');
         const {SubscriptionActivatedEvent} = require('../../../shared/events');
         const StartGiftReminderFlushEvent = require('./events/start-gift-reminder-flush-event');

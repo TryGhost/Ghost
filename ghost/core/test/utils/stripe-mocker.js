@@ -1,4 +1,4 @@
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../core/server/lib/common/domain-events');
 const nock = require('nock');
 let members = {};
 let stripeService = {};

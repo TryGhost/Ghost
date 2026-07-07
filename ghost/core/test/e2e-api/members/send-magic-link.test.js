@@ -6,7 +6,7 @@ const cheerio = require('cheerio');
 const {assertMatchSnapshot} = require('../../utils/assertions');
 const settingsCache = require('../../../core/shared/settings-cache');
 const settingsService = require('../../../core/server/services/settings');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../core/server/lib/common/domain-events');
 const {anyErrorId, anyString} = matchers;
 const spamPrevention = require('../../../core/server/web/shared/middleware/api/spam-prevention');
 

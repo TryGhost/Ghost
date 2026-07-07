@@ -195,6 +195,39 @@ describe('two scopes in one process', function () {
         }
     });
 
+    it('gives each scope its own domain events bus', async function () {
+        const root = createContainer();
+        registerCoreServices(root);
+        const scopeA = createSiteScope(root);
+        const scopeB = createSiteScope(root);
+
+        try {
+            const domainEventsA = scopeA.resolve('domainEvents') as any;
+            const domainEventsB = scopeB.resolve('domainEvents') as any;
+
+            class TestEvent {
+                timestamp = new Date();
+                data = {};
+            }
+
+            let fired = 0;
+            domainEventsA.subscribe(TestEvent, () => {
+                fired += 1;
+            });
+
+            domainEventsB.dispatch(new TestEvent());
+            await domainEventsB.allSettled();
+            assert.equal(fired, 0);
+
+            domainEventsA.dispatch(new TestEvent());
+            await domainEventsA.allSettled();
+            assert.equal(fired, 1);
+        } finally {
+            await scopeA.dispose();
+            await scopeB.dispose();
+        }
+    });
+
     it('disposing one scope leaves the other working', async function () {
         const root = createContainer();
         registerCoreServices(root);

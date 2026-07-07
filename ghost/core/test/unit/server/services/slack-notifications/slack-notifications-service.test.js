@@ -3,7 +3,7 @@ const sinon = require('sinon');
 const SlackNotificationsService = require('../../../../../core/server/services/slack-notifications/slack-notifications-service');
 const ObjectId = require('bson-objectid').default;
 const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../../../core/server/lib/common/domain-events');
 
 describe('SlackNotificationsService', function () {
     describe('Constructor', function () {

@@ -13,7 +13,7 @@ const urlUtils = require('../../../shared/url-utils');
 const outputSerializerUrlUtil = require('../../../server/api/endpoints/utils/serializers/output/utils/url');
 const urlService = require('../url');
 const settingsCache = require('../../../shared/settings-cache');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../lib/common/domain-events');
 const jobsService = require('../mentions-jobs');
 
 function getPostUrl(post) {

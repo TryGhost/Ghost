@@ -5,7 +5,7 @@ const models = require('../../../core/server/models');
 const moment = require('moment-timezone');
 const settingsCache = require('../../../core/shared/settings-cache');
 const sinon = require('sinon');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../core/server/lib/common/domain-events');
 
 let membersAgent, membersAgent2, postId, postAuthorEmail, postTitle;
 let emailMockReceiver;

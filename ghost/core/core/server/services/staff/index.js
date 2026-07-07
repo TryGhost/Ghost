@@ -1,4 +1,4 @@
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../lib/common/domain-events');
 const labs = require('../../../shared/labs');
 
 class StaffServiceWrapper {

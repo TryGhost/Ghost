@@ -15,7 +15,7 @@ import emailSuppressionList from '../email-suppression-list';
 // @ts-expect-error This module lacks type definitions.
 import {EmailRecipientFailure, EmailSpamComplaintEvent, Email} from '../../models';
 // @ts-expect-error This module lacks type definitions.
-import domainEvents from '@tryghost/domain-events';
+import domainEvents from '../../lib/common/domain-events';
 // @ts-expect-error This module lacks type definitions.
 import prometheusClient from '../../../shared/prometheus-client';
 // @ts-expect-error This module lacks type definitions.

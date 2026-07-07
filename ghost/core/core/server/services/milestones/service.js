@@ -1,4 +1,4 @@
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../lib/common/domain-events');
 const logging = require('@tryghost/logging');
 const models = require('../../models');
 const BookshelfMilestoneRepository = require('./bookshelf-milestone-repository');

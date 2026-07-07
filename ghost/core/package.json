@@ -101,7 +101,6 @@
     "@tryghost/custom-fonts": "catalog:",
     "@tryghost/database-info": "2.3.1",
     "@tryghost/debug": "catalog:",
-    "@tryghost/domain-events": "catalog:",
     "@tryghost/email-mock-receiver": "2.1.0",
     "@tryghost/errors": "catalog:",
     "@tryghost/helpers": "catalog:",

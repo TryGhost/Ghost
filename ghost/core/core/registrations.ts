@@ -9,6 +9,7 @@ import createConnection from './server/data/db/create-connection';
 import createBookshelf from './server/models/base/create-bookshelf';
 import createModels from './server/models/create-models';
 import createEventRegistry from './server/lib/common/create-event-registry';
+import createDomainEvents from './server/lib/common/create-domain-events';
 import createSettingsCache from './shared/settings-cache/create';
 import {createAdapterManager} from './server/services/adapter-manager';
 import createUrlUtils from './shared/create-url-utils';
@@ -36,6 +37,11 @@ export const registerCoreServices = (container: Container): void => {
     container.register('settingsCache', {
         lifetime: 'SCOPED',
         factory: () => createSettingsCache()
+    });
+
+    container.register('domainEvents', {
+        lifetime: 'SCOPED',
+        factory: () => createDomainEvents()
     });
 
     container.register('events', {

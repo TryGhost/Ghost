@@ -1,5 +1,5 @@
 const sinon = require('sinon');
-const domainEvents = require('@tryghost/domain-events');
+const domainEvents = require('../../../core/server/lib/common/domain-events');
 const models = require('../../../core/server/models');
 const {getSignedAdminToken} = require('../../../core/server/adapters/scheduling/utils');
 const {agentProvider, fixtureManager, matchers, assertions} = require('../../utils/e2e-framework');

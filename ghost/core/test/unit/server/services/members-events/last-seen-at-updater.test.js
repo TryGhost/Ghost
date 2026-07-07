@@ -1,7 +1,7 @@
 const assert = require('node:assert/strict');
 const sinon = require('sinon');
 const LastSeenAtUpdater = require('../../../../../core/server/services/members-events/last-seen-at-updater');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../../../core/server/lib/common/domain-events');
 const {MemberPageViewEvent, MemberCommentEvent, MemberSubscribeEvent, MemberLinkClickEvent} = require('../../../../../core/shared/events');
 const moment = require('moment');
 const EmailOpenedEvent = require('../../../../../core/server/services/email-service/events/email-opened-event');

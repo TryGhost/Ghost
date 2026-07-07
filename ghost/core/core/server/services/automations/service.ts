@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import type {InternalKeys} from '../internal-keys';
-// @ts-expect-error @tryghost/domain-events currently lacks type declarations.
-import type DomainEvents from '@tryghost/domain-events';
+// @ts-expect-error ../../lib/common/domain-events currently lacks type declarations.
+import type DomainEvents from '../../lib/common/domain-events';
 import {oneAtATime} from '../../../shared/one-at-a-time';
 import {poll} from './poll';
 import * as automationsApi from './automations-api';

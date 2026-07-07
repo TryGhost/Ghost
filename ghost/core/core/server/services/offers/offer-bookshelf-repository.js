@@ -1,6 +1,6 @@
 const {flowRight} = require('lodash');
 const {mapKeyValues, mapQuery} = require('@tryghost/mongo-utils');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../lib/common/domain-events');
 const Offer = require('./domain/models/offer');
 const sentry = require('../../../shared/sentry');
 const logger = require('@tryghost/logging');

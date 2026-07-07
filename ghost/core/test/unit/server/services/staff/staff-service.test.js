@@ -6,7 +6,7 @@ const {MemberCreatedEvent, SubscriptionCancelledEvent, SubscriptionActivatedEven
 const MilestoneCreatedEvent = require('../../../../../core/server/services/milestones/milestone-created-event');
 
 // Stuff we are testing
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../../../core/server/lib/common/domain-events');
 
 const StaffService = require('../../../../../core/server/services/staff/staff-service');
 

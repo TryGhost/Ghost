@@ -121,7 +121,7 @@ beforeEach((context: {task: {name: string; suite?: unknown; file?: {filepath?: s
 });
 
 afterEach(async () => {
-    const domainEvents = require('@tryghost/domain-events');
+    const domainEvents = require('../../core/server/lib/common/domain-events');
     const mentionsJobsService = require('../../core/server/services/mentions-jobs');
     const jobsService = require('../../core/server/services/jobs');
 

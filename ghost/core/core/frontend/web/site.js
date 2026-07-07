@@ -1,7 +1,7 @@
 const debug = require('@tryghost/debug')('frontend');
 const path = require('path');
 const express = require('../../shared/express');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../server/lib/common/domain-events');
 const {MemberPageViewEvent} = require('../../shared/events');
 
 // App requires

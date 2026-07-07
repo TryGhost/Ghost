@@ -1,5 +1,5 @@
 const errors = require('@tryghost/errors');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../lib/common/domain-events');
 const {MemberCreatedEvent} = require('../../shared/events');
 
 const messages = {

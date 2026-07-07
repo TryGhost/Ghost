@@ -1,4 +1,4 @@
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../core/server/lib/common/domain-events');
 const Mention = require('../../../core/server/services/mentions/mention');
 const mentionsService = require('../../../core/server/services/mentions');
 const assert = require('node:assert/strict');

@@ -3,7 +3,7 @@ const assert = require('node:assert/strict');
 const {assertExists} = require('../../../../utils/assertions');
 
 // Stuff we are testing
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../../../core/server/lib/common/domain-events');
 const {URLResourceUpdatedEvent} = require('../../../../../core/shared/events');
 
 const events = require('../../../../../core/server/lib/common/events');

@@ -2,7 +2,7 @@
 
 const {agentProvider, fixtureManager, mockManager, configUtils, resetRateLimits, dbUtils} = require('../../utils/e2e-framework');
 const sinon = require('sinon');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../core/server/lib/common/domain-events');
 
 async function allSettled() {
     await DomainEvents.allSettled();

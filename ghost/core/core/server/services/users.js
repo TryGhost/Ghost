@@ -5,7 +5,7 @@ const ObjectId = require('bson-objectid').default;
 /**
  * @TODO: pass these in as dependencies
  */
-const DomainEvents = require('@tryghost/domain-events/lib/DomainEvents');
+const DomainEvents = require('../lib/common/domain-events');
 
 /**
  * @typedef {Object} IdbBackup

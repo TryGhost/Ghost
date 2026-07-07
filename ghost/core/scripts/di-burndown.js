@@ -14,6 +14,7 @@ const CHOKE_POINTS = [
     'core/server/data/db',
     'core/server/models',
     'core/server/lib/common/events',
+    'core/server/lib/common/domain-events',
     'core/server/services/adapter-manager'
 ];
 

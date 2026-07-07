@@ -1,7 +1,7 @@
 const logging = require('@tryghost/logging');
 const metrics = require('@tryghost/metrics');
 const config = require('../../../shared/config');
-const domainEvents = require('@tryghost/domain-events');
+const domainEvents = require('../../lib/common/domain-events');
 /** @import {PrometheusClient} from '@tryghost/prometheus-metrics' */
 /** @import {BatchEventProcessor} from './batch-event-processor' */
 /** @import {JobNames, CursorSeed} from './email-analytics-service' */

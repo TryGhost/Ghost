@@ -15,7 +15,7 @@ let targetHtml = `<head><link rel="webmention" href="${endpointUrl.href}"</head>
 let targetHtml2 = `<head><link rel="webmention" href="${endpointUrl2.href}"</head><body>Some content</body>`;
 let mentionMock;
 let endpointMock;
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../core/server/lib/common/domain-events');
 
 const mentionsPost = {
     title: 'testing sending webmentions',

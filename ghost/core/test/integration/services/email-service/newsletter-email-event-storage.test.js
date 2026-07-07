@@ -3,7 +3,7 @@ const {agentProvider, fixtureManager, configUtils} = require('../../../utils/e2e
 const assert = require('node:assert/strict');
 const logging = require('@tryghost/logging');
 const MailgunClient = require('../../../../core/server/services/lib/mailgun-client');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../../core/server/lib/common/domain-events');
 const emailAnalytics = require('../../../../core/server/services/email-analytics');
 
 async function resetFailures(models, emailId) {

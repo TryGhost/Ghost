@@ -132,9 +132,6 @@ catalogs:
     '@tryghost/debug':
       specifier: 2.2.3
       version: 2.2.3
-    '@tryghost/domain-events':
-      specifier: 3.2.5
-      version: 3.2.5
     '@tryghost/helpers':
       specifier: 1.1.106
       version: 1.1.106
@@ -2427,9 +2424,6 @@ importers:
       '@tryghost/debug':
         specifier: 'catalog:'
         version: 2.2.3(supports-color@5.5.0)
-      '@tryghost/domain-events':
-        specifier: 'catalog:'
-        version: 3.2.5
       '@tryghost/email-mock-receiver':
         specifier: 2.1.0
         version: 2.1.0
@@ -9934,9 +9928,6 @@ packages:
 
   '@tryghost/debug@2.3.1':
     resolution: {integrity: sha512-m35yRGwmmmvHWzs42qJnf0duCvi5Yd456bPa436Gcldv/rxK5YMPehtGDrwjHstJ4K2If0oguXsdHJf3tjgAjw==}
-
-  '@tryghost/domain-events@3.2.5':
-    resolution: {integrity: sha512-/35ZUlvdMBJRZDUmseW/xqvD8+apKFxzWUsqxh+OTQrEI4X1gAXqU4caCvcZAenRfMQWSgIlSKqPPFXoA7TDYQ==}
 
   '@tryghost/elasticsearch@3.0.29':
     resolution: {integrity: sha512-WGfoGbPXzX7SYPKeD7naYyoF8Lc7KruQPixFSJGLciRQ3wkrZQANQIguD4nA71upp0dhsT4D4aWP296VfJxuPw==}
@@ -30760,8 +30751,6 @@ snapshots:
       debug: 4.4.3(supports-color@5.5.0)
     transitivePeerDependencies:
       - supports-color
-
-  '@tryghost/domain-events@3.2.5': {}
 
   '@tryghost/elasticsearch@3.0.29(supports-color@5.5.0)':
     dependencies:

@@ -1,7 +1,7 @@
 const {agentProvider, mockManager, fixtureManager} = require('../../utils/e2e-framework');
 const models = require('../../../core/server/models');
 const assert = require('node:assert/strict');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../core/server/lib/common/domain-events');
 
 let membersAgent;
 let membersService;

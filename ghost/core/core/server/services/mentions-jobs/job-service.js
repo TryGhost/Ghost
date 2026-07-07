@@ -7,7 +7,7 @@ const JobManager = require('@tryghost/job-manager');
 const logging = require('@tryghost/logging');
 const models = require('../../models');
 const sentry = require('../../../shared/sentry');
-const domainEvents = require('@tryghost/domain-events');
+const domainEvents = require('../../lib/common/domain-events');
 
 const errorHandler = (error, workerMeta) => {
     logging.info(`Capturing error for worker during execution of job: ${workerMeta.name}`);

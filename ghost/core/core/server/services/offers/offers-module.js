@@ -1,6 +1,6 @@
 // @TODO: Reduce file length and remove the line above
 
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../lib/common/domain-events');
 const OfferCodeChangeEvent = require('./domain/events/offer-code-change-event');
 const OfferCreatedEvent = require('./domain/events/offer-created-event');
 const Offer = require('./domain/models/offer');

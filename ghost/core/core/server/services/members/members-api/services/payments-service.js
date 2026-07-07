@@ -1,5 +1,5 @@
 const logging = require('@tryghost/logging');
-const DomainEvents = require('@tryghost/domain-events');
+const DomainEvents = require('../../../../lib/common/domain-events');
 const TierCreatedEvent = require('../../../tiers/tier-created-event');
 const TierPriceChangeEvent = require('../../../tiers/tier-price-change-event');
 const TierNameChangeEvent = require('../../../tiers/tier-name-change-event');
