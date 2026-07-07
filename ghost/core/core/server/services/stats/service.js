@@ -1,33 +1,13 @@
-class StatsServiceWrapper {
-    constructor() {
-        this.api = null;
-        this.cache = null;
-    }
+const createFacade = require('../../../shared/container/create-facade');
+const createStatsService = require('./create');
 
-    async init() {
-        if (this.api) {
-            // Already done
-            return;
-        }
-
-        const StatsService = require('./stats-service');
-        const db = require('../../data/db');
-        const models = require('../../models');
-        const urlService = require('../url');
-
-        this.api = StatsService.create({
-            knex: db.knex,
-            models,
-            urlService
-        });
-
-        const adapterManager = require('../adapter-manager').default;
-        const config = require('../../../shared/config');
-
-        if (config.get('hostSettings:statsCache:enabled')) {
-            this.cache = adapterManager.getAdapter('cache:stats');
-        }
-    }
-}
-
-module.exports = new StatsServiceWrapper();
+module.exports = createFacade('stats', () => {
+    const config = require('../../../shared/config');
+    const adapterManager = require('../adapter-manager').default;
+    return createStatsService({
+        knex: require('../../data/db').knex,
+        models: require('../../models'),
+        urlService: require('../url'),
+        cacheAdapter: config.get('hostSettings:statsCache:enabled') ? adapterManager.getAdapter('cache:stats') : null
+    });
+});

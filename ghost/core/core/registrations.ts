@@ -39,8 +39,23 @@ import createMemberWelcomeEmailService from './server/services/member-welcome-em
 import createEmailSuppressionList from './server/services/email-suppression-list/create';
 import createRecommendationsService from './server/services/recommendations/create';
 import createMemberAttributionService from './server/services/member-attribution/create';
+import createStatsService from './server/services/stats/create';
 
 export const registerCoreServices = (container: Container): void => {
+    container.register('stats', {
+        lifetime: 'SCOPED',
+        factory: ({knex, models, siteConfig, adapterManager}: Cradle) => {
+            const cacheAdapter = siteConfig.hostSettings?.statsCache?.enabled ? adapterManager.getAdapter('cache:stats') : null;
+            return createStatsService({
+                knex,
+                models,
+                cacheAdapter,
+                // Bridged until the url service migrates
+                urlService: require('./server/services/url')
+            });
+        }
+    });
+
     container.register('memberAttribution', {
         lifetime: 'SCOPED',
         factory: ({models, urlUtils, settingsCache}: Cradle) => createMemberAttributionService({
@@ -106,13 +121,13 @@ export const registerCoreServices = (container: Container): void => {
 
     container.register('explore', {
         lifetime: 'SCOPED',
-        factory: ({models}: Cradle) => createExploreService({
+        factory: ({models, stats}: Cradle) => createExploreService({
             models,
+            statsService: stats,
             // Bridged until these migrate
             membersService: require('./server/services/members'),
             postsService: require('./server/services/posts/posts-service-instance')(),
             publicConfigService: require('./server/services/public-config'),
-            statsService: require('./server/services/stats'),
             stripeService: require('./server/services/stripe')
         })
     });
