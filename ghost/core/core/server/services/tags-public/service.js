@@ -1,27 +1,11 @@
-class TagsPublicServiceWrapper {
-    async init() {
-        if (this.api) {
-            // Already done
-            return;
-        }
+const createFacade = require('../../../shared/container/create-facade');
+const createTagsPublicService = require('./create');
 
-        // Wire up all the dependencies
-        const adapterManager = require('../adapter-manager').default;
-        const config = require('../../../shared/config');
-        const EventRegistry = require('../../lib/common/events');
-
-        let tagsCache;
-        if (config.get('hostSettings:tagsPublicCache:enabled')) {
-            tagsCache = adapterManager.getAdapter('cache:tagsPublic');
-            EventRegistry.on('site.changed', () => {
-                tagsCache.reset();
-            });
-        }
-
-        this.api = {
-            cache: tagsCache
-        };
-    }
-}
-
-module.exports = new TagsPublicServiceWrapper();
+module.exports = createFacade('tagsPublic', () => {
+    const config = require('../../../shared/config');
+    const adapterManager = require('../adapter-manager').default;
+    return createTagsPublicService({
+        events: require('../../lib/common/events'),
+        cacheAdapter: config.get('hostSettings:tagsPublicCache:enabled') ? adapterManager.getAdapter('cache:tagsPublic') : null
+    });
+});

@@ -1,12 +1,9 @@
-const settingsCache = require('../../../shared/settings-cache');
-const settingsHelpers = require('../settings-helpers');
-const mailService = require('../../services/mail');
-const urlUtils = require('../../../shared/url-utils');
-const Invites = require('./invites');
+const createFacade = require('../../../shared/container/create-facade');
+const createInvitesService = require('./create');
 
-module.exports = new Invites({
-    settingsCache,
-    settingsHelpers,
-    mailService,
-    urlUtils
-});
+module.exports = createFacade('invites', () => createInvitesService({
+    settingsCache: require('../../../shared/settings-cache'),
+    settingsHelpers: require('../settings-helpers'),
+    urlUtils: require('../../../shared/url-utils'),
+    mailService: require('../mail')
+}));

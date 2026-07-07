@@ -1,27 +1,11 @@
-class PostsPublicServiceWrapper {
-    async init() {
-        if (this.api) {
-            // Already done
-            return;
-        }
+const createFacade = require('../../../shared/container/create-facade');
+const createPostsPublicService = require('./create');
 
-        // Wire up all the dependencies
-        const adapterManager = require('../adapter-manager').default;
-        const config = require('../../../shared/config');
-        const EventRegistry = require('../../lib/common/events');
-
-        let postsCache;
-        if (config.get('hostSettings:postsPublicCache:enabled')) {
-            postsCache = adapterManager.getAdapter('cache:postsPublic');
-            EventRegistry.on('site.changed', () => {
-                postsCache.reset();
-            });
-        }
-
-        this.api = {
-            cache: postsCache
-        };
-    }
-}
-
-module.exports = new PostsPublicServiceWrapper();
+module.exports = createFacade('postsPublic', () => {
+    const config = require('../../../shared/config');
+    const adapterManager = require('../adapter-manager').default;
+    return createPostsPublicService({
+        events: require('../../lib/common/events'),
+        cacheAdapter: config.get('hostSettings:postsPublicCache:enabled') ? adapterManager.getAdapter('cache:postsPublic') : null
+    });
+});

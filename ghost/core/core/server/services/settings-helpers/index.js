@@ -1,8 +1,13 @@
-const settingsCache = require('../../../shared/settings-cache');
-const urlUtils = require('../../../shared/url-utils');
-const config = require('../../../shared/config');
-const SettingsHelpers = require('./settings-helpers');
-const labs = require('../../../shared/labs');
-const limitService = require('../limits');
+const createFacade = require('../../../shared/container/create-facade');
+const createSettingsHelpers = require('./create');
 
-module.exports = new SettingsHelpers({settingsCache, urlUtils, config, labs, limitService});
+module.exports = createFacade('settingsHelpers', () => {
+    const config = require('../../../shared/config');
+    return createSettingsHelpers({
+        settingsCache: require('../../../shared/settings-cache'),
+        urlUtils: require('../../../shared/url-utils'),
+        configView: config,
+        labs: require('../../../shared/labs'),
+        limits: require('../limits')
+    });
+});
