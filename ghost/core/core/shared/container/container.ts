@@ -131,7 +131,7 @@ class Scope {
                 for (const existingKey of Object.keys(existing)) {
                     delete existing[existingKey];
                 }
-                Object.assign(existing, value);
+                Object.defineProperties(existing, Object.getOwnPropertyDescriptors(value));
             } else {
                 this.seeds[key] = value;
             }

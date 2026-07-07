@@ -12,7 +12,10 @@ const buildSiteConfig = config => ({
     adminUrl: config.get('admin:url'),
     database: config.get('database'),
     siteUuid: config.get('site_uuid'),
-    hostSettings: config.get('hostSettings'),
+    // Live getter: tests mutate hostSettings at runtime and services read per call
+    get hostSettings() {
+        return config.get('hostSettings');
+    },
     labs: config.get('labs'),
     contentPath: config.get('paths:contentPath'),
     publicContentPath: config.getContentPath('public'),
