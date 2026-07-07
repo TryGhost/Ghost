@@ -7,7 +7,7 @@ import {centsToDollars, formatDisplayDateWithRange} from '@tryghost/shade/app';
 import {formatNumber} from '@tryghost/shade/utils';
 import {sanitizeChartData} from '@/analytics/utils/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/global-data-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-provider';
 import {useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
 
 type ChartDataItem = {

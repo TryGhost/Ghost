@@ -8,7 +8,7 @@ import {STATS_LABEL_MAPPINGS, UNKNOWN_LOCATION_VALUES} from '@/analytics/utils/c
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/analytics/utils/audience';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/global-data-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-provider';
 import {useTinybirdQuery, useWebAnalyticsEnabled} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';
 

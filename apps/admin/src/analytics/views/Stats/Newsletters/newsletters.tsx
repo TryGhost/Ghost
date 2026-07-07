@@ -13,7 +13,7 @@ import {Navigate, useAppContext, useNavigate, useSearchParams} from '@tryghost/a
 import {getPeriodText} from '@/analytics/utils/chart-helpers';
 import {getRangeDates} from '@tryghost/shade/app';
 import {useBrowseNewsletters} from '@tryghost/admin-x-framework/api/newsletters';
-import {useGlobalData} from '@/analytics/providers/global-data-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-provider';
 import {useNewsletterStatsWithRangeSplit, useSubscriberCountWithRange} from '@/analytics/hooks/use-newsletter-stats-with-range';
 import type {TopNewslettersOrder} from '@/analytics/hooks/use-newsletter-stats-with-range';
 

@@ -14,7 +14,7 @@ import {NavbarActions} from '@tryghost/shade/components';
 import {centsToDollars, formatQueryDate, getRangeDates, sanitizeChartData} from '@tryghost/shade/app';
 import {getAudienceQueryParam} from '@/analytics/utils/audience';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/global-data-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-provider';
 import {useGrowthStats} from '@/analytics/hooks/use-growth-stats';
 import {useLatestPostStats} from '@/analytics/hooks/use-latest-post-stats';
 import {useTinybirdQuery} from '@tryghost/admin-x-framework';

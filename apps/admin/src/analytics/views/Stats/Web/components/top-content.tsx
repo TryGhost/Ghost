@@ -5,7 +5,7 @@ import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceQueryParam} from '@/analytics/utils/audience';
 import {getClickHandler} from '@/analytics/utils/url-helpers';
 import {getPeriodText} from '@/analytics/utils/chart-helpers';
-import {useGlobalData} from '@/analytics/providers/global-data-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-provider';
 import {useMemo, useState} from 'react';
 import {useNavigate} from '@tryghost/admin-x-framework';
 import {useTopContent} from '@tryghost/admin-x-framework/api/stats';

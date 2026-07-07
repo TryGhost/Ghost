@@ -6,7 +6,7 @@ import {STATS_RANGES} from '@/analytics/utils/constants';
 import {centsToDollars} from '@tryghost/shade/app';
 import {getPeriodText} from '@/analytics/utils/chart-helpers';
 import {useAppContext} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/global-data-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-provider';
 import {useLimiter} from '@/analytics/hooks/use-limiter';
 import {useNavigate} from '@tryghost/admin-x-framework';
 

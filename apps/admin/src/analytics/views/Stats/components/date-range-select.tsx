@@ -2,7 +2,7 @@ import React, {useEffect} from 'react';
 import {LucideIcon} from '@tryghost/shade/utils';
 import {STATS_RANGES, STATS_RANGE_OPTIONS} from '@/analytics/utils/constants';
 import {Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue} from '@tryghost/shade/components';
-import {useGlobalData} from '@/analytics/providers/global-data-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-provider';
 
 interface DateRangeSelectProps {
     excludeRanges?: (keyof typeof STATS_RANGES)[];

@@ -1,6 +1,6 @@
 /**
- * Public API for cross-package imports.
- * Admin uses these exports instead of reaching into src/ directly.
+ * Public surface of the analytics domain, consumed by the admin shell
+ * (apps/admin/src/routes.tsx). Everything else in this domain is internal.
  */
-export {default as GlobalDataProvider} from './providers/global-data-provider';
-export {routes} from './routes';
+export {default as AnalyticsProvider} from './providers/analytics-provider';
+export {analyticsRouteChildren} from './routes';

@@ -5,7 +5,19 @@ import {type Setting, useBrowseSettings} from '@tryghost/admin-x-framework/api/s
 import {type StatsConfig, useTinybirdToken} from '@tryghost/admin-x-framework';
 import {useBrowseSite} from '@tryghost/admin-x-framework/api/site';
 
-interface GlobalData {
+interface AnalyticsData {
+    // --- View-state: owned by this provider (the slim end-state) ---
+    range: number;
+    setRange: (value: number) => void;
+    selectedNewsletterId: string | null;
+    setSelectedNewsletterId: (id: string | null) => void;
+
+    // --- TODO(PLA-192): framework-data below is a temporary passthrough. ---
+    // config/site/settings/tinybirdToken all duplicate data the shell already
+    // exposes via admin-x-framework hooks (FrameworkProvider + AppProvider wrap
+    // the whole admin tree). Hoisting these out of the analytics context lets
+    // this provider shrink to just the view-state above. Deferred to avoid
+    // churning the ~18 consumer call sites in this spike.
     data: Config | undefined;
     site: {
         url?: string;
@@ -15,24 +27,29 @@ interface GlobalData {
     statsConfig: StatsConfig | undefined;
     tinybirdToken: string | undefined;
     isLoading: boolean;
-    range: number;
-    setRange: (value: number) => void;
     settings: Setting[];
-    selectedNewsletterId: string | null;
-    setSelectedNewsletterId: (id: string | null) => void;
 }
 
-const GlobalDataContext = createContext<GlobalData | undefined>(undefined);
+const AnalyticsContext = createContext<AnalyticsData | undefined>(undefined);
 
-export const useGlobalData = () => {
-    const context = useContext(GlobalDataContext);
+export const useAnalytics = () => {
+    const context = useContext(AnalyticsContext);
     if (context === undefined) {
-        throw new Error('useGlobalData must be used within a GlobalDataProvider');
+        throw new Error('useAnalytics must be used within an AnalyticsProvider');
     }
     return context;
 };
 
-const GlobalDataProvider = ({children}: { children: ReactNode }) => {
+// TODO(PLA-124): Back-compat alias. Migrate the ~18 `useGlobalData` call sites in
+// src/analytics to `useAnalytics`, then remove this export.
+export const useGlobalData = useAnalytics;
+
+const AnalyticsProvider = ({children}: { children: ReactNode }) => {
+    // --- View-state (this provider's real responsibility) ---
+    const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
+    const [selectedNewsletterId, setSelectedNewsletterId] = useState<string | null>(null);
+
+    // --- TODO(PLA-192): framework-data half — hoist to shell FrameworkProvider ---
     const settings = useBrowseSettings();
     const site = useBrowseSite();
     const config = useBrowseConfig();
@@ -42,8 +59,6 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
     // kill-switch is applied inside useTinybirdToken.
     const hasStatsConfig = Boolean(configData?.stats);
     const tinybirdTokenQuery = useTinybirdToken({enabled: hasStatsConfig});
-    const [range, setRange] = useState(STATS_RANGE_OPTIONS[STATS_DEFAULT_RANGE_KEY].value);
-    const [selectedNewsletterId, setSelectedNewsletterId] = useState<string | null>(null);
 
     // Check for errors in the main requests
     const ghostRequests = [config, settings, site];
@@ -67,20 +82,21 @@ const GlobalDataProvider = ({children}: { children: ReactNode }) => {
         title: site.data?.site.title
     };
 
-    return <GlobalDataContext.Provider value={{
+    return <AnalyticsContext.Provider value={{
+        range,
+        setRange,
+        selectedNewsletterId,
+        setSelectedNewsletterId,
+        // TODO(PLA-192): framework-data passthrough
         data: configData,
         site: siteData,
         statsConfig: configData?.stats,
         tinybirdToken: tinybirdTokenQuery.token,
         isLoading,
-        range,
-        setRange,
-        settings: settings.data?.settings || [],
-        selectedNewsletterId,
-        setSelectedNewsletterId
+        settings: settings.data?.settings || []
     }}>
         {children}
-    </GlobalDataContext.Provider>;
+    </AnalyticsContext.Provider>;
 };
 
-export default GlobalDataProvider;
+export default AnalyticsProvider;

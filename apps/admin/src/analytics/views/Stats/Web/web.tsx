@@ -17,7 +17,7 @@ import {formatDuration, formatNumber, formatPercentage, getScrollParent} from '@
 import {formatQueryDate, getRangeDates} from '@tryghost/shade/app';
 import {getAudienceFromFilterValues, getAudienceQueryParam} from '@/analytics/utils/audience';
 import {useFilterParams} from '@/analytics/hooks/use-filter-params';
-import {useGlobalData} from '@/analytics/providers/global-data-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-provider';
 
 interface SourcesData {
     source?: string | number;

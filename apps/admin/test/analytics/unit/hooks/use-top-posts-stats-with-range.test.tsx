@@ -6,7 +6,7 @@ import {renderHook} from '@testing-library/react';
 import {useTopPostsStatsWithRange} from '@hooks/use-top-posts-stats-with-range';
 
 vi.mock('@tryghost/admin-x-framework/api/stats');
-vi.mock('@src/providers/global-data-provider');
+vi.mock('@src/providers/analytics-provider');
 vi.mock('@tryghost/shade/app', () => ({
     formatQueryDate: vi.fn(),
     getRangeDates: vi.fn()

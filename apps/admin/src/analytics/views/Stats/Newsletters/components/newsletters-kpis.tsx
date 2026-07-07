@@ -6,7 +6,7 @@ import {LucideIcon, Recharts, formatDisplayDate, formatNumber, formatPercentage}
 import {calculateYAxisWidth} from '@tryghost/shade/app';
 import {getPeriodText, sanitizeChartData} from '@/analytics/utils/chart-helpers';
 import {useAppContext, useNavigate, useSearchParams} from '@tryghost/admin-x-framework';
-import {useGlobalData} from '@/analytics/providers/global-data-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-provider';
 
 interface BarTooltipPayload {
     value: number;

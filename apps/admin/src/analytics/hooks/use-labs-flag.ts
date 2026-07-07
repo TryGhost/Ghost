@@ -1,5 +1,5 @@
 import {getSettingValue} from '@tryghost/admin-x-framework/api/settings';
-import {useGlobalData} from '@/analytics/providers/global-data-provider';
+import {useGlobalData} from '@/analytics/providers/analytics-provider';
 
 /**
  * Simple hook to check if a labs feature flag is enabled

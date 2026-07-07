@@ -16,7 +16,7 @@ import {
 // Mock the API hooks
 vi.mock('@tryghost/admin-x-framework/api/stats');
 vi.mock('@tryghost/admin-x-framework/api/newsletters');
-vi.mock('@src/providers/global-data-provider');
+vi.mock('@src/providers/analytics-provider');
 
 const {useNewsletterStats, useSubscriberCount, useNewsletterBasicStats, useNewsletterClickStats} = await import('@tryghost/admin-x-framework/api/stats');
 const {useBrowseNewsletters} = await import('@tryghost/admin-x-framework/api/newsletters');
