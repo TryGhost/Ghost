@@ -44,6 +44,26 @@ describe('two scopes in one process', function () {
         }
     });
 
+    it('gives each scope its own model graph bound to its own database', async function () {
+        const root = createContainer();
+        registerCoreServices(root);
+        const scopeA = createSiteScope(root);
+        const scopeB = createSiteScope(root);
+
+        try {
+            const modelsA = scopeA.resolve('models') as Record<string, {knex?: unknown}>;
+            const modelsB = scopeB.resolve('models') as Record<string, {knex?: unknown}>;
+
+            assert.ok(modelsA.Post);
+            assert.notEqual(modelsA.Post, modelsB.Post);
+            assert.equal(modelsA.Base.knex, scopeA.resolve('knex'));
+            assert.equal(modelsB.Base.knex, scopeB.resolve('knex'));
+        } finally {
+            await scopeA.dispose();
+            await scopeB.dispose();
+        }
+    });
+
     it('disposing one scope leaves the other working', async function () {
         const root = createContainer();
         registerCoreServices(root);

@@ -6,11 +6,18 @@
 
 import type {Container, Cradle} from './shared/container/container';
 import createConnection from './server/data/db/create-connection';
+import createBookshelf from './server/models/base/create-bookshelf';
+import createModels from './server/models/create-models';
 
 export const registerCoreServices = (container: Container): void => {
     container.register('knex', {
         lifetime: 'SCOPED',
         factory: ({siteConfig}: Cradle) => createConnection(siteConfig.database),
         dispose: instance => (instance as import('knex').Knex).destroy()
+    });
+
+    container.register('models', {
+        lifetime: 'SCOPED',
+        factory: ({knex}: Cradle) => createModels(createBookshelf(knex))
     });
 };
