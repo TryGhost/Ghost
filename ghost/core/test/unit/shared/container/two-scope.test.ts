@@ -240,8 +240,9 @@ describe('two scopes in one process', function () {
         const scopeA = createSiteScope(root);
         const scopeB = createSiteScope(root);
 
-        const scopedServices = ['tiers', 'donations', 'audienceFeedback', 'linkRedirection', 'linkTracking', 'slackNotifications', 'staff', 'newsletters', 'mentions', 'milestones', 'membersEvents', 'comments', 'tagsPublic', 'postsPublic', 'invites', 'settingsHelpers', 'explore', 'emailAddress', 'customThemeSettingsCache', 'customThemeSettings', 'memberWelcomeEmails', 'emailSuppressionList', 'recommendations', 'memberAttribution', 'stats', 'gifts', 'automations', 'stripe', 'emailService', 'themeI18n', 'themeI18next', 'routingRegistry', 'routing', 'urlService', 'hbsEngine', 'activeThemeHolder'];
-
+        // Every registration must construct and be scope-isolated — derived from
+        // the container itself so new registrations are covered automatically
+        const scopedServices = [...(root as any).registrations.keys()];
         try {
             for (const name of scopedServices) {
                 const serviceA = scopeA.resolve(name) as object;
