@@ -201,10 +201,15 @@ const MemberActivityFeed: React.FC<MemberActivityFeedProps> = ({memberId, hasMul
             <section className='flex flex-col gap-3' data-testid='member-activity-feed'>
                 <h4 className='text-base font-semibold'>Activity</h4>
                 <Card>
-                    <CardContent className='py-4'>
-                        <EmptyIndicator description={NEW_MEMBER_ACTIVITY_COPY} title='Activity'>
-                            <LucideIcon.Activity />
-                        </EmptyIndicator>
+                    {/* Same wrapper padding as the Subscriptions empty state
+                        (`member-subscriptions-section.tsx`) so both cards line
+                        up visually when they render side-by-side. */}
+                    <CardContent className='pt-6'>
+                        <div className='flex flex-col items-center gap-3 py-4'>
+                            <EmptyIndicator description={NEW_MEMBER_ACTIVITY_COPY} title='Activity'>
+                                <LucideIcon.Activity />
+                            </EmptyIndicator>
+                        </div>
                     </CardContent>
                 </Card>
             </section>
