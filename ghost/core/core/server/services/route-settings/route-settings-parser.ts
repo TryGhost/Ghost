@@ -53,7 +53,7 @@ export interface ChannelRoute extends RouteBase {
     filter?: string;
     order?: string;
     limit?: number | 'all';
-    rss: boolean;
+    rss?: boolean;
 }
 
 export interface TemplateRoute extends RouteBase {
@@ -238,9 +238,14 @@ const RouteObjectSchema = z.object({
     if (val.controller === 'channel') {
         const route: Omit<ChannelRoute, 'path'> = {
             type: 'channel',
-            templates,
-            rss: val.rss ?? true
+            templates
         };
+        // Preserve rss only when the author set it explicitly — the domain model
+        // mirrors user intent (unset vs true vs false), so the activation bridge
+        // reproduces validate.js output byte-for-byte.
+        if (val.rss !== undefined) {
+            route.rss = val.rss;
+        }
         if (val.filter !== undefined) {
             route.filter = val.filter;
         }
@@ -460,7 +465,7 @@ export function serializeRouteSettings(settings: RouteSettings): string {
                 if (channel.limit !== undefined) {
                     entry.limit = channel.limit;
                 }
-                if (channel.rss !== true) {
+                if (channel.rss !== undefined) {
                     entry.rss = channel.rss;
                 }
             } else {
