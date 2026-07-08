@@ -14,6 +14,11 @@ class EmailAnalyticsProviderMailgun {
         if (config.get('bulkEmail:mailgun:tag')) {
             this.tags.push(config.get('bulkEmail:mailgun:tag'));
         }
+
+        if (labs.isSet('automationAnalytics')) {
+            // TODO: Import this from `member-welcome-emails/constants.ts`. Don't hard-code it here.
+            this.tags.push('automation-email');
+        }
     }
 
     /**
